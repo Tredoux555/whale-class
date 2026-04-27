@@ -1,8 +1,9 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import MontreeLogo from '@/components/montree/MonteeLogo';
 
-// /montree/page.tsx — Montree landing page (dark redesign)
+// /montree/page.tsx — Montree landing page
 
 function DemoModal({ open, onClose }: { open: boolean; onClose: () => void }) {
   const [name, setName] = useState('');
@@ -69,7 +70,7 @@ function DemoModal({ open, onClose }: { open: boolean; onClose: () => void }) {
                 style={{ padding: '11px 14px', borderRadius: 10, border: '1px solid #e5e7eb', fontSize: 14, outline: 'none', background: '#f9fafb', color: '#111827' }} />
               {error && <p style={{ color: '#ef4444', fontSize: '0.8rem', margin: 0 }}>{error}</p>}
               <button type="submit" disabled={sending}
-                style={{ padding: '13px 0', borderRadius: 10, background: 'linear-gradient(135deg, #10b981, #14b8a6)', color: 'white', fontSize: 14, fontWeight: 500, border: 'none', cursor: sending ? 'wait' : 'pointer', opacity: sending ? 0.6 : 1, letterSpacing: '0.2px', marginTop: 4 }}>
+                style={{ padding: '13px 0', borderRadius: 10, background: 'linear-gradient(90deg, #10b981, #14b8a6)', color: 'white', fontSize: 14, fontWeight: 500, border: 'none', cursor: sending ? 'wait' : 'pointer', opacity: sending ? 0.6 : 1, marginTop: 4 }}>
                 {sending ? 'Sending…' : 'Request a Demo'}
               </button>
             </form>
@@ -113,282 +114,293 @@ export default function MontreeLanding() {
   return (
     <>
       <style jsx global>{`
-        @import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;1,400;1,500&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Lora:wght@400;500&display=swap');
+
         * { box-sizing: border-box; margin: 0; padding: 0; }
         html { scroll-behavior: smooth; }
-        body { -webkit-font-smoothing: antialiased; background: #0f172a; }
-        a { text-decoration: none; }
-        .m-cta {
-          transition: opacity 0.18s ease, transform 0.18s ease !important;
-          display: inline-block;
+        html, body { min-height: 100%; }
+
+        body {
+          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+          font-weight: 400;
+          color: rgba(255,255,255,0.9);
+          background: #0f172a;
+          -webkit-font-smoothing: antialiased;
+          -moz-osx-font-smoothing: grayscale;
+          line-height: 1.5;
+          position: relative;
+          overflow-x: hidden;
         }
-        .m-cta:hover {
-          opacity: 0.88 !important;
-          transform: translateY(-1px) !important;
+
+        /* Full-page gradient + radial emerald glow */
+        body::before {
+          content: "";
+          position: fixed;
+          inset: 0;
+          background:
+            radial-gradient(ellipse 900px 700px at 88% 8%, rgba(16,185,129,0.18), rgba(16,185,129,0) 60%),
+            linear-gradient(150deg, #0f172a 0%, #064e3b 55%, #134e4a 100%);
+          z-index: -1;
+          pointer-events: none;
+        }
+
+        .m-label {
+          font-size: 10px;
+          text-transform: uppercase;
+          letter-spacing: 0.14em;
+          color: rgba(52,211,153,0.65);
+          font-weight: 500;
+        }
+
+        .m-pill {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          padding: 14px 28px;
+          border-radius: 999px;
+          background: linear-gradient(90deg, #10b981 0%, #14b8a6 100%);
+          color: #ffffff;
+          text-decoration: none;
+          font-size: 0.9375rem;
+          font-weight: 500;
+          letter-spacing: 0.005em;
+          border: 0;
+          cursor: pointer;
+          transition: transform 200ms ease, box-shadow 200ms ease, filter 200ms ease;
+          box-shadow: 0 1px 0 rgba(255,255,255,0.18) inset, 0 8px 24px -8px rgba(16,185,129,0.45);
+          white-space: nowrap;
+          font-family: inherit;
+        }
+        .m-pill:hover {
+          transform: translateY(-1px);
+          box-shadow: 0 1px 0 rgba(255,255,255,0.22) inset, 0 14px 32px -10px rgba(16,185,129,0.55);
+          filter: brightness(1.04);
+        }
+        .m-pill:active {
+          transform: translateY(0);
+          filter: brightness(0.98);
+        }
+        .m-pill-lg {
+          padding: 18px 34px;
+          font-size: 1rem;
+        }
+
+        .m-nav {
+          position: sticky;
+          top: 0;
+          z-index: 50;
+          background: rgba(15,23,42,0.75);
+          backdrop-filter: saturate(180%) blur(14px);
+          -webkit-backdrop-filter: saturate(180%) blur(14px);
+          border-bottom: 1px solid rgba(255,255,255,0.06);
+        }
+        .m-nav-inner {
+          max-width: 1180px;
+          margin: 0 auto;
+          padding: 18px 32px;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+        }
+        .m-logo {
+          display: inline-flex;
+          align-items: center;
+          gap: 10px;
+          text-decoration: none;
+        }
+        .m-logo-word {
+          font-family: "Lora", Georgia, serif;
+          font-weight: 500;
+          font-size: 1.125rem;
+          letter-spacing: -0.01em;
+          background: linear-gradient(90deg, #34d399 0%, #14b8a6 100%);
+          -webkit-background-clip: text;
+          background-clip: text;
+          -webkit-text-fill-color: transparent;
+        }
+        .m-nav .m-pill {
+          padding: 10px 20px;
+          font-size: 0.875rem;
+        }
+
+        .m-hero {
+          min-height: calc(100vh - 70px);
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          text-align: center;
+          padding: 120px 32px 140px;
+        }
+        .m-hero .m-label { margin-bottom: 40px; }
+        .m-hero h1 {
+          font-family: "Lora", Georgia, serif;
+          font-weight: 400;
+          font-size: clamp(3.25rem, 8vw, 6rem);
+          line-height: 1.04;
+          letter-spacing: -0.025em;
+          color: #ffffff;
+          margin-bottom: 28px;
+          max-width: 14ch;
+        }
+        .m-hero-sub {
+          font-size: 1.125rem;
+          color: rgba(255,255,255,0.55);
+          line-height: 1.6;
+          margin-bottom: 44px;
+          max-width: 36ch;
+        }
+        .m-hero-fineprint {
+          margin-top: 22px;
+          font-size: 0.78rem;
+          color: rgba(255,255,255,0.25);
+          letter-spacing: 0.02em;
+        }
+
+        .m-editorial {
+          padding: 60px 32px 140px;
+        }
+        .m-editorial-inner {
+          max-width: 600px;
+          margin: 0 auto;
+        }
+        .m-block {
+          padding: 56px 0;
+          border-bottom: 1px solid rgba(255,255,255,0.06);
+        }
+        .m-block:first-child { padding-top: 16px; }
+        .m-block:last-child { border-bottom: 0; }
+        .m-block .m-label { display: block; margin-bottom: 22px; }
+        .m-block h2 {
+          font-family: "Lora", Georgia, serif;
+          font-weight: 400;
+          font-size: clamp(1.875rem, 3.6vw, 2.5rem);
+          line-height: 1.18;
+          letter-spacing: -0.018em;
+          color: rgba(255,255,255,0.92);
+          margin-bottom: 22px;
+        }
+        .m-block p {
+          color: rgba(255,255,255,0.38);
+          line-height: 1.85;
+          font-size: 1.0625rem;
+        }
+
+        .m-closing {
+          padding: 160px 32px;
+          text-align: center;
+          border-top: 1px solid rgba(255,255,255,0.06);
+        }
+        .m-closing h2 {
+          font-family: "Lora", Georgia, serif;
+          font-weight: 400;
+          font-size: clamp(2.25rem, 5.2vw, 3.4rem);
+          line-height: 1.1;
+          letter-spacing: -0.022em;
+          color: #ffffff;
+          margin-bottom: 24px;
+        }
+        .m-closing-sub {
+          color: rgba(255,255,255,0.55);
+          font-size: 1.0625rem;
+          line-height: 1.7;
+          max-width: 44ch;
+          margin: 0 auto 40px;
+        }
+
+        .m-footer {
+          padding: 56px 32px 64px;
+          text-align: center;
+          color: rgba(255,255,255,0.22);
+          font-size: 0.78rem;
+          letter-spacing: 0.02em;
+          border-top: 1px solid rgba(255,255,255,0.04);
+        }
+        .m-footer-inner {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+        }
+
+        @media (max-width: 640px) {
+          .m-nav-inner { padding: 14px 20px; }
+          .m-hero { padding: 80px 24px 100px; }
+          .m-hero .m-label { margin-bottom: 28px; }
+          .m-hero-sub { margin-bottom: 32px; }
+          .m-editorial { padding: 40px 24px 100px; }
+          .m-block { padding: 40px 0; }
+          .m-closing { padding: 110px 24px; }
+          .m-footer { padding: 40px 24px 48px; }
         }
       `}</style>
 
       <DemoModal open={demoOpen} onClose={() => setDemoOpen(false)} />
 
-      <div style={{
-        fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif',
-        background: 'linear-gradient(150deg, #0f172a 0%, #064e3b 55%, #134e4a 100%)',
-        minHeight: '100vh',
-        color: 'white',
-        position: 'relative',
-        overflowX: 'hidden',
-      }}>
+      {/* ── NAV ── */}
+      <nav className="m-nav" aria-label="Primary">
+        <div className="m-nav-inner">
+          <a className="m-logo" href="/montree" aria-label="Montree home">
+            <MontreeLogo size={28} />
+            <span className="m-logo-word">Montree</span>
+          </a>
+          <a className="m-pill" href="/montree/login-select?signup=true">Get started</a>
+        </div>
+      </nav>
 
-        {/* Ambient glow — adds depth to the gradient */}
-        <div style={{
-          position: 'fixed', top: '-20%', right: '-10%', width: '60vw', height: '60vw',
-          borderRadius: '50%',
-          background: 'radial-gradient(ellipse, rgba(16,185,129,0.08) 0%, transparent 70%)',
-          pointerEvents: 'none', zIndex: 0,
-        }} />
-        <div style={{
-          position: 'fixed', bottom: '-10%', left: '-10%', width: '50vw', height: '50vw',
-          borderRadius: '50%',
-          background: 'radial-gradient(ellipse, rgba(20,184,166,0.06) 0%, transparent 70%)',
-          pointerEvents: 'none', zIndex: 0,
-        }} />
+      {/* ── HERO ── */}
+      <section className="m-hero">
+        <div ref={addReveal} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          <span className="m-label">Montessori classroom management</span>
+          <h1>The magic of Montree.</h1>
+          <p className="m-hero-sub">A teacher takes a photo. Montree does the rest.</p>
+          <button className="m-pill m-pill-lg" onClick={() => setDemoOpen(true)}>
+            Experience it free for 30 days
+          </button>
+          <p className="m-hero-fineprint">One classroom · No credit card</p>
+        </div>
+      </section>
 
-        {/* ── NAV ── */}
-        <nav style={{
-          position: 'fixed', top: 0, width: '100%', zIndex: 50,
-          background: 'rgba(15,23,42,0.75)',
-          backdropFilter: 'blur(20px)',
-          WebkitBackdropFilter: 'blur(20px)',
-          borderBottom: '1px solid rgba(255,255,255,0.05)',
-        }}>
-          <div style={{
-            maxWidth: 1120, margin: '0 auto', padding: '0 32px',
-            height: 64, display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-            position: 'relative', zIndex: 1,
-          }}>
+      {/* ── THREE STATEMENTS ── */}
+      <section className="m-editorial" aria-label="What Montree does">
+        <div className="m-editorial-inner">
 
-            {/* Logo */}
-            <a href="/montree" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <div style={{
-                width: 34, height: 34, borderRadius: 9,
-                background: 'linear-gradient(135deg, #34d399, #14b8a6)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: 17, flexShrink: 0,
-              }}>🌿</div>
-              <span style={{
-                fontFamily: "'Lora', Georgia, serif",
-                fontSize: '1.2rem', fontWeight: 500,
-                background: 'linear-gradient(135deg, #34d399, #14b8a6)',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                backgroundClip: 'text',
-                letterSpacing: '-0.2px',
-              }}>Montree</span>
-            </a>
+          <article className="m-block" ref={addReveal}>
+            <span className="m-label">For the teacher</span>
+            <h2>No more paperwork. No more writing.</h2>
+            <p>Montree identifies the work in every photo, records the observation, and tracks each child across all five curriculum areas. Automatically.</p>
+          </article>
 
-            {/* Single CTA */}
-            <a href="/montree/login-select?signup=true" className="m-cta" style={{
-              fontSize: '0.875rem', fontWeight: 500,
-              padding: '9px 24px', borderRadius: 100,
-              background: 'linear-gradient(135deg, #10b981, #14b8a6)',
-              color: 'white', letterSpacing: '0.01em',
-            }}>
-              Get started
-            </a>
-          </div>
-        </nav>
+          <article className="m-block" ref={addReveal}>
+            <span className="m-label">For parents</span>
+            <h2>Reports that actually say something.</h2>
+            <p>Not templates. Genuine, personalised accounts of what each child is learning and why it matters — written every week.</p>
+          </article>
 
-        {/* ── HERO ── */}
-        <section style={{
-          minHeight: '100vh',
-          display: 'flex', flexDirection: 'column',
-          alignItems: 'center', justifyContent: 'center',
-          padding: '140px 24px 100px',
-          textAlign: 'center',
-          position: 'relative', zIndex: 1,
-        }}>
-          <div ref={addReveal} style={{ maxWidth: 660 }}>
+          <article className="m-block" ref={addReveal}>
+            <span className="m-label">For the principal</span>
+            <h2>A complete view of the school.</h2>
+            <p>Every classroom. Every child. A built-in Montessori expert available at any hour to answer any question.</p>
+          </article>
 
-            {/* Category label */}
-            <div style={{
-              fontSize: 10, letterSpacing: '0.14em', textTransform: 'uppercase',
-              color: 'rgba(52,211,153,0.65)', marginBottom: 36, fontWeight: 400,
-            }}>
-              Montessori classroom management
-            </div>
+        </div>
+      </section>
 
-            {/* Hero headline */}
-            <h1 style={{
-              fontFamily: "'Lora', Georgia, serif",
-              fontSize: 'clamp(3rem, 7.5vw, 5.2rem)',
-              fontWeight: 400, color: '#ffffff',
-              lineHeight: 1.1, letterSpacing: '-1.5px',
-              marginBottom: 28,
-            }}>
-              The magic of Montree.
-            </h1>
+      {/* ── CLOSING CTA ── */}
+      <section className="m-closing" id="cta" ref={addReveal}>
+        <h2>Experience the magic.</h2>
+        <p className="m-closing-sub">One month free. Then $7 per child, per month.<br />One plan. No tiers. No contracts.</p>
+        <button className="m-pill m-pill-lg" onClick={() => setDemoOpen(true)}>
+          Start your free trial
+        </button>
+      </section>
 
-            {/* Subtext */}
-            <p style={{
-              fontSize: '1.05rem',
-              color: 'rgba(255,255,255,0.45)',
-              lineHeight: 1.8, marginBottom: 52,
-            }}>
-              A teacher takes a photo. Montree does the rest.
-            </p>
-
-            {/* Primary CTA */}
-            <button onClick={() => setDemoOpen(true)} className="m-cta" style={{
-              fontSize: '1rem', fontWeight: 500,
-              padding: '16px 40px', borderRadius: 100,
-              background: 'linear-gradient(135deg, #10b981, #14b8a6)',
-              color: 'white', border: 'none', cursor: 'pointer',
-              letterSpacing: '0.01em', marginBottom: 18,
-              boxShadow: '0 8px 32px rgba(16,185,129,0.25)',
-            }}>
-              Experience it free for 30 days
-            </button>
-
-            {/* Micro copy */}
-            <div style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.18)', letterSpacing: '0.06em' }}>
-              One classroom &nbsp;·&nbsp; No credit card
-            </div>
-          </div>
-        </section>
-
-        {/* ── THREE STATEMENTS ── */}
-        <section style={{
-          padding: '40px 24px 180px',
-          position: 'relative', zIndex: 1,
-        }}>
-          <div style={{ maxWidth: 600, margin: '0 auto' }}>
-
-            {[
-              {
-                label: 'For the teacher',
-                headline: 'No more paperwork. No more writing.',
-                body: 'Montree identifies the work in every photo, records the observation, and tracks each child across all five curriculum areas. Automatically.',
-              },
-              {
-                label: 'For parents',
-                headline: 'Reports that actually say something.',
-                body: 'Not templates. Genuine, personalised accounts of what each child is learning and why it matters — written every week.',
-              },
-              {
-                label: 'For the principal',
-                headline: 'A complete view of the school.',
-                body: 'Every classroom. Every child. A built-in Montessori expert available at any hour to answer any question.',
-              },
-            ].map((item, i) => (
-              <div
-                key={i}
-                ref={addReveal}
-                style={{
-                  paddingTop: i === 0 ? 0 : 72,
-                  paddingBottom: 72,
-                  borderBottom: i < 2 ? '1px solid rgba(255,255,255,0.06)' : 'none',
-                }}
-              >
-                {/* Label */}
-                <div style={{
-                  fontSize: 10, letterSpacing: '0.14em', textTransform: 'uppercase',
-                  color: 'rgba(52,211,153,0.65)', marginBottom: 18, fontWeight: 400,
-                }}>
-                  {item.label}
-                </div>
-
-                {/* Serif headline */}
-                <h2 style={{
-                  fontFamily: "'Lora', Georgia, serif",
-                  fontSize: 'clamp(1.6rem, 4vw, 2.2rem)',
-                  fontWeight: 400,
-                  color: 'rgba(255,255,255,0.9)',
-                  lineHeight: 1.25, letterSpacing: '-0.4px',
-                  marginBottom: 18,
-                }}>
-                  {item.headline}
-                </h2>
-
-                {/* Body */}
-                <p style={{
-                  fontSize: '0.95rem',
-                  color: 'rgba(255,255,255,0.38)',
-                  lineHeight: 1.85,
-                  maxWidth: 500,
-                }}>
-                  {item.body}
-                </p>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        {/* ── CLOSING CTA ── */}
-        <section style={{
-          borderTop: '1px solid rgba(255,255,255,0.06)',
-          padding: '130px 24px 140px',
-          textAlign: 'center',
-          position: 'relative', zIndex: 1,
-        }}>
-          <div ref={addReveal} style={{ maxWidth: 520, margin: '0 auto' }}>
-
-            <h2 style={{
-              fontFamily: "'Lora', Georgia, serif",
-              fontSize: 'clamp(2.2rem, 5.5vw, 3.4rem)',
-              fontWeight: 400, color: '#ffffff',
-              letterSpacing: '-1px', lineHeight: 1.12,
-              marginBottom: 22,
-            }}>
-              Experience the magic.
-            </h2>
-
-            <p style={{
-              fontSize: '0.95rem',
-              color: 'rgba(255,255,255,0.38)',
-              lineHeight: 1.85, marginBottom: 44,
-            }}>
-              One month free. Then $7 per child, per month.<br />
-              One plan. No tiers. No contracts.
-            </p>
-
-            <button onClick={() => setDemoOpen(true)} className="m-cta" style={{
-              fontSize: '0.95rem', fontWeight: 500,
-              padding: '15px 38px', borderRadius: 100,
-              background: 'linear-gradient(135deg, #10b981, #14b8a6)',
-              color: 'white', border: 'none', cursor: 'pointer',
-              letterSpacing: '0.01em',
-              boxShadow: '0 8px 32px rgba(16,185,129,0.2)',
-            }}>
-              Start your free trial
-            </button>
-          </div>
-        </section>
-
-        {/* ── FOOTER ── */}
-        <footer style={{
-          borderTop: '1px solid rgba(255,255,255,0.05)',
-          padding: '28px 24px',
-          textAlign: 'center',
-          position: 'relative', zIndex: 1,
-        }}>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 9 }}>
-            <div style={{
-              width: 24, height: 24, borderRadius: 6,
-              background: 'linear-gradient(135deg, #34d399, #14b8a6)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: 12, flexShrink: 0,
-            }}>🌿</div>
-            <span style={{
-              fontSize: '0.78rem',
-              color: 'rgba(255,255,255,0.18)',
-              letterSpacing: '0.05em',
-            }}>
-              Montree &nbsp;·&nbsp; montree.xyz
-            </span>
-          </div>
-        </footer>
-
-      </div>
+      {/* ── FOOTER ── */}
+      <footer className="m-footer">
+        <div className="m-footer-inner">
+          <MontreeLogo size={16} />
+          <span>Montree · montree.xyz</span>
+        </div>
+      </footer>
     </>
   );
 }
