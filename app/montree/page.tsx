@@ -3,7 +3,7 @@
 import { useEffect, useRef } from 'react';
 import MontreeLogo from '@/components/montree/MonteeLogo';
 
-// /montree/page.tsx — Montree landing page
+// /montree/page.tsx — Montree landing page (v2 — deep forest palette)
 
 export default function MontreeLanding() {
   const revealRefs = useRef<HTMLElement[]>([]);
@@ -46,8 +46,8 @@ export default function MontreeLanding() {
         body {
           font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
           font-weight: 400;
-          color: rgba(255,255,255,0.9);
-          background: #0f172a;
+          color: rgba(255,255,255,0.85);
+          background: #06140e;
           -webkit-font-smoothing: antialiased;
           -moz-osx-font-smoothing: grayscale;
           line-height: 1.5;
@@ -55,14 +55,15 @@ export default function MontreeLanding() {
           overflow-x: hidden;
         }
 
-        /* Full-page gradient + radial emerald glow */
+        /* Full-page gradient — deep forest at midnight, dappled jade bloom from top-right */
         body::before {
           content: "";
           position: fixed;
           inset: 0;
           background:
-            radial-gradient(ellipse 900px 700px at 88% 8%, rgba(16,185,129,0.18), rgba(16,185,129,0) 60%),
-            linear-gradient(150deg, #0f172a 0%, #064e3b 55%, #134e4a 100%);
+            radial-gradient(ellipse 1100px 900px at 92% 6%, rgba(39,129,90,0.32), rgba(39,129,90,0) 55%),
+            radial-gradient(ellipse 700px 600px at 88% 10%, rgba(130,217,174,0.14), rgba(130,217,174,0) 60%),
+            linear-gradient(155deg, #0c2419 0%, #0a1f16 38%, #081a12 70%, #06140e 100%);
           z-index: -1;
           pointer-events: none;
         }
@@ -71,7 +72,7 @@ export default function MontreeLanding() {
           font-size: 10px;
           text-transform: uppercase;
           letter-spacing: 0.14em;
-          color: rgba(52,211,153,0.65);
+          color: #E8C96A;
           font-weight: 500;
         }
 
@@ -81,38 +82,48 @@ export default function MontreeLanding() {
           justify-content: center;
           padding: 14px 28px;
           border-radius: 999px;
-          background: linear-gradient(90deg, #10b981 0%, #14b8a6 100%);
+          background: linear-gradient(180deg, #27815a 0%, #1D6B48 100%);
           color: #ffffff;
           text-decoration: none;
           font-size: 0.9375rem;
           font-weight: 500;
           letter-spacing: 0.005em;
-          border: 0;
+          border: 1px solid rgba(130,217,174,0.18);
           cursor: pointer;
-          transition: transform 200ms ease, box-shadow 200ms ease, filter 200ms ease;
-          box-shadow: 0 1px 0 rgba(255,255,255,0.18) inset, 0 8px 24px -8px rgba(16,185,129,0.45);
+          transition: transform 200ms ease, box-shadow 200ms ease, filter 200ms ease, border-color 200ms ease;
+          box-shadow:
+            0 1px 0 rgba(130,217,174,0.22) inset,
+            0 0 0 1px rgba(0,0,0,0.25) inset,
+            0 10px 28px -12px rgba(6,20,14,0.85),
+            0 2px 6px -2px rgba(6,20,14,0.6);
           white-space: nowrap;
           font-family: inherit;
         }
         .m-pill:hover {
           transform: translateY(-1px);
-          box-shadow: 0 1px 0 rgba(255,255,255,0.22) inset, 0 14px 32px -10px rgba(16,185,129,0.55);
-          filter: brightness(1.04);
+          border-color: rgba(130,217,174,0.32);
+          box-shadow:
+            0 1px 0 rgba(130,217,174,0.3) inset,
+            0 0 0 1px rgba(0,0,0,0.25) inset,
+            0 16px 36px -12px rgba(6,20,14,0.9),
+            0 0 0 4px rgba(71,171,126,0.08);
+          filter: brightness(1.06);
         }
         .m-pill:active {
           transform: translateY(0);
-          filter: brightness(0.98);
+          filter: brightness(0.97);
         }
         .m-pill-lg {
           padding: 18px 34px;
           font-size: 1rem;
         }
 
+        /* ── Nav ── */
         .m-nav {
           position: sticky;
           top: 0;
           z-index: 50;
-          background: rgba(15,23,42,0.75);
+          background: rgba(8,26,18,0.72);
           backdrop-filter: saturate(180%) blur(14px);
           -webkit-backdrop-filter: saturate(180%) blur(14px);
           border-bottom: 1px solid rgba(255,255,255,0.06);
@@ -131,12 +142,39 @@ export default function MontreeLanding() {
           gap: 10px;
           text-decoration: none;
         }
+        .m-logo-mark {
+          position: relative;
+          width: 28px;
+          height: 28px;
+          border-radius: 8px;
+          background: linear-gradient(135deg, #1D6B48 0%, #0c2419 100%);
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          border: 1px solid rgba(130,217,174,0.22);
+          box-shadow:
+            0 1px 0 rgba(130,217,174,0.18) inset,
+            0 6px 18px -6px rgba(6,20,14,0.8);
+          flex-shrink: 0;
+        }
+        /* Tiny gold dot — the star from the icon */
+        .m-logo-mark::after {
+          content: "";
+          position: absolute;
+          top: -2px;
+          right: -2px;
+          width: 6px;
+          height: 6px;
+          border-radius: 50%;
+          background: radial-gradient(circle at 35% 35%, #FFF6D6 0%, #E8C96A 55%, #b88f25 100%);
+          box-shadow: 0 0 8px rgba(232,201,106,0.55), 0 0 0 1px rgba(8,26,18,0.6);
+        }
         .m-logo-word {
           font-family: "Lora", Georgia, serif;
           font-weight: 500;
           font-size: 1.125rem;
           letter-spacing: -0.01em;
-          background: linear-gradient(90deg, #34d399 0%, #14b8a6 100%);
+          background: linear-gradient(90deg, #62C396 0%, #47AB7E 100%);
           -webkit-background-clip: text;
           background-clip: text;
           -webkit-text-fill-color: transparent;
@@ -146,6 +184,7 @@ export default function MontreeLanding() {
           font-size: 0.875rem;
         }
 
+        /* ── Hero ── */
         .m-hero {
           min-height: calc(100vh - 70px);
           display: flex;
@@ -176,10 +215,11 @@ export default function MontreeLanding() {
         .m-hero-fineprint {
           margin-top: 22px;
           font-size: 0.78rem;
-          color: rgba(255,255,255,0.25);
+          color: rgba(255,255,255,0.32);
           letter-spacing: 0.02em;
         }
 
+        /* ── Editorial ── */
         .m-editorial {
           padding: 60px 32px 140px;
         }
@@ -204,13 +244,14 @@ export default function MontreeLanding() {
           margin-bottom: 22px;
         }
         .m-block p {
-          color: rgba(255,255,255,0.38);
+          color: rgba(255,255,255,0.40);
           line-height: 1.85;
           font-size: 1.0625rem;
         }
 
+        /* ── Closing CTA ── */
         .m-closing {
-          padding: 160px 32px;
+          padding: 160px 32px 160px;
           text-align: center;
           border-top: 1px solid rgba(255,255,255,0.06);
         }
@@ -231,18 +272,31 @@ export default function MontreeLanding() {
           margin: 0 auto 40px;
         }
 
+        /* ── Footer ── */
         .m-footer {
           padding: 56px 32px 64px;
           text-align: center;
-          color: rgba(255,255,255,0.22);
+          color: rgba(255,255,255,0.28);
           font-size: 0.78rem;
           letter-spacing: 0.02em;
-          border-top: 1px solid rgba(255,255,255,0.04);
+          border-top: 1px solid rgba(255,255,255,0.06);
         }
         .m-footer-inner {
           display: inline-flex;
           align-items: center;
           gap: 8px;
+        }
+        .m-footer-mark {
+          width: 16px;
+          height: 16px;
+          border-radius: 5px;
+          background: linear-gradient(135deg, #1D6B48 0%, #0c2419 100%);
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          border: 1px solid rgba(130,217,174,0.18);
+          opacity: 0.85;
+          flex-shrink: 0;
         }
 
         @media (max-width: 640px) {
@@ -252,7 +306,7 @@ export default function MontreeLanding() {
           .m-hero-sub { margin-bottom: 32px; }
           .m-editorial { padding: 40px 24px 100px; }
           .m-block { padding: 40px 0; }
-          .m-closing { padding: 110px 24px; }
+          .m-closing { padding: 110px 24px 110px; }
           .m-footer { padding: 40px 24px 48px; }
         }
       `}</style>
@@ -261,7 +315,9 @@ export default function MontreeLanding() {
       <nav className="m-nav" aria-label="Primary">
         <div className="m-nav-inner">
           <a className="m-logo" href="/montree" aria-label="Montree home">
-            <MontreeLogo size={28} />
+            <span className="m-logo-mark" aria-hidden="true">
+              <MontreeLogo size={18} showBackground={false} />
+            </span>
             <span className="m-logo-word">Montree</span>
           </a>
           <a className="m-pill" href="/montree/login-select?signup=true">Get started</a>
@@ -318,7 +374,9 @@ export default function MontreeLanding() {
       {/* ── FOOTER ── */}
       <footer className="m-footer">
         <div className="m-footer-inner">
-          <MontreeLogo size={16} />
+          <span className="m-footer-mark" aria-hidden="true">
+            <MontreeLogo size={10} showBackground={false} />
+          </span>
           <span>Montree · montree.xyz</span>
         </div>
       </footer>
