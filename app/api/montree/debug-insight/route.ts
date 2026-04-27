@@ -2,6 +2,8 @@
 // Tests the photo-insight pipeline step by step and reports where it fails
 
 import { NextRequest, NextResponse } from 'next/server';
+
+export const maxDuration = 60;
 import { getSupabase, getPublicUrl } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { anthropic, AI_ENABLED, AI_MODEL, HAIKU_MODEL } from '@/lib/ai/anthropic';

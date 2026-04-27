@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Anthropic from '@anthropic-ai/sdk';
+
+export const maxDuration = 60;
 import { buildSocialMediaGuruContext } from '@/lib/social-media-guru/context-builder';
 import { verifySuperAdminPassword } from '@/lib/verify-super-admin';
 

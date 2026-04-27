@@ -3,6 +3,8 @@
 // Provides child-specific Montessori advice based on deep knowledge
 
 import { NextRequest, NextResponse } from 'next/server';
+
+export const maxDuration = 120;
 import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { verifyChildBelongsToSchool, clearChildAccessCache } from '@/lib/montree/verify-child-access';
