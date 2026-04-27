@@ -1,13 +1,21 @@
 // components/montree/MonteeLogo.tsx
-// SVG logo mark for Montree — a geometric leaf/sprout in emerald-teal gradient
+// Montree sprout logo mark — asymmetric two-leaf sprout on emerald-teal gradient
 
 interface MontreeLogoProps {
   size?: number;
+  /** showBackground: true = full icon with rounded square bg (nav, favicon)
+   *  false = just the white mark, for use on already-coloured surfaces */
+  showBackground?: boolean;
   className?: string;
 }
 
-export default function MontreeLogo({ size = 32, className = '' }: MontreeLogoProps) {
-  const id = `montree-grad-${size}`;
+export default function MontreeLogo({
+  size = 32,
+  showBackground = true,
+  className = '',
+}: MontreeLogoProps) {
+  const gradId = `mg-${size}`;
+
   return (
     <svg
       width={size}
@@ -16,39 +24,46 @@ export default function MontreeLogo({ size = 32, className = '' }: MontreeLogoPr
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
       className={className}
-      aria-label="Montree"
+      aria-hidden="true"
     >
       <defs>
-        <linearGradient id={id} x1="0" y1="0" x2="1" y2="1">
+        <linearGradient id={gradId} x1="0" y1="0" x2="1" y2="1">
           <stop offset="0%" stopColor="#34d399" />
           <stop offset="100%" stopColor="#14b8a6" />
         </linearGradient>
-        <clipPath id={`clip-${size}`}>
-          <rect width="32" height="32" rx="9" />
-        </clipPath>
       </defs>
 
       {/* Rounded square background */}
-      <rect width="32" height="32" rx="9" fill={`url(#${id})`} />
+      {showBackground && (
+        <rect
+          width="32"
+          height="32"
+          rx="8"
+          fill={`url(#${gradId})`}
+        />
+      )}
 
-      {/* Leaf mark — a central stem with two symmetrical leaves */}
-      {/* Stem */}
-      <line
-        x1="16" y1="26"
-        x2="16" y2="13"
-        stroke="rgba(255,255,255,0.85)"
-        strokeWidth="1.8"
+      {/* Stem — rises from base to centre */}
+      <path
+        d="M16 27 C16 27 16 18 16 14"
+        stroke="white"
+        strokeWidth="2"
         strokeLinecap="round"
+        opacity="0.95"
       />
-      {/* Left leaf */}
+
+      {/* Left leaf — larger, lower, arcs left */}
       <path
-        d="M16 19 C13 17 10 13 12 9 C14 9 17 12 16 19Z"
-        fill="rgba(255,255,255,0.9)"
+        d="M16 21 C13.5 19.5 10.5 16 11.5 11 C13.5 10.5 17 14 16 21Z"
+        fill="white"
+        opacity="0.95"
       />
-      {/* Right leaf */}
+
+      {/* Right leaf — smaller, higher, arcs right */}
       <path
-        d="M16 16 C19 14 22 10 20 6 C18 6 15 9 16 16Z"
-        fill="rgba(255,255,255,0.75)"
+        d="M16 17 C18 15.5 20.5 12 19.5 7.5 C17.5 7 15 10 16 17Z"
+        fill="white"
+        opacity="0.78"
       />
     </svg>
   );
