@@ -70,6 +70,7 @@ export interface ThisIsSheetPhoto {
   current_work_name?: string | null;
   current_area?: string | null;
   sonnet_draft?: {
+    _source?: string;  // 'haiku_pass2' for haiku drafts, undefined/other for Sonnet drafts
     proposed_name?: string;
     suggested_area?: string;
     closest_existing_match?: { work_name?: string; similarity?: number } | null;
@@ -676,7 +677,12 @@ export default function ThisIsSheet({
                     marginBottom: 10,
                   }}
                 >
-                  No curriculum match found.
+                  <div style={{ fontWeight: 600 }}>No curriculum match for "{query.trim()}"</div>
+                  {photo?.sonnet_draft?._source === 'haiku_pass2' && (
+                    <div style={{ fontSize: 12, marginTop: 4, color: '#b45309' }}>
+                      💡 Haiku's suggestion may be wrong — clear the search and type the correct work name to find it.
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -998,8 +1004,13 @@ export default function ThisIsSheet({
                       </div>
                     </button>
                   )}
+                  {/* No exact match — offer to add as new custom work.
+                      Goes through addMode (edit form) instead of instant fire-and-close,
+                      so the teacher can confirm/edit the name before committing. This
+                      prevents accidental creation of wrong custom works when the AI's
+                      proposed name is pre-seeded but wrong. */}
                   <button
-                    onClick={handleQuickCreateFromQuery}
+                    onClick={handleEnterAddMode}
                     disabled={submitting}
                     style={{
                       display: 'flex',
@@ -1018,20 +1029,13 @@ export default function ThisIsSheet({
                     <div style={{ fontSize: 22 }}>➕</div>
                     <div style={{ flex: 1 }}>
                       <div style={{ fontSize: 13, color: fuzzyNearMatch ? '#888' : '#8b5cf6', fontWeight: 600 }}>
-                        {submitting ? 'Creating…' : fuzzyNearMatch ? (SHEET_LABELS[locale]?.createNewInstead || SHEET_LABELS.en.createNewInstead) : (SHEET_LABELS[locale]?.addAsNew || SHEET_LABELS.en.addAsNew)}
+                        {fuzzyNearMatch ? (SHEET_LABELS[locale]?.createNewInstead || SHEET_LABELS.en.createNewInstead) : (SHEET_LABELS[locale]?.addAsNew || SHEET_LABELS.en.addAsNew)}
                       </div>
                       <div style={{ fontSize: 15, color: '#222', fontWeight: 600 }}>
                         “{query.trim()}”
                       </div>
                       <div style={{ fontSize: 11, color: '#8b5cf6', marginTop: 2 }}>
-                        {getAreaLabel(newWorkArea, locale)}
-                        {' · '}
-                        <span
-                          onClick={(e) => { e.stopPropagation(); handleEnterAddMode(); }}
-                          style={{ textDecoration: 'underline', cursor: 'pointer' }}
-                        >
-                          {SHEET_LABELS[locale]?.changeArea || SHEET_LABELS.en.changeArea}
-                        </span>
+                        Tap to name and confirm
                       </div>
                     </div>
                   </button>

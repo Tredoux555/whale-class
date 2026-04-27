@@ -1148,11 +1148,14 @@ export default function PhotoAuditPage() {
       }
     }
     // Tier 1b — Sonnet's proposed_name already IS an existing curriculum work
-    // (confidence ≥ 0.8). This catches the case where closest_existing_match
-    // points at a stale Haiku guess but Sonnet renamed the photo to a real work.
+    // (confidence ≥ 0.85). ONLY applies to genuine Sonnet drafts — NOT haiku_pass2.
+    // Haiku_pass2 sources are stored as haiku_drafted (trust threshold 0.85) so if
+    // they're still in the queue the teacher WANTS to review them. Auto-attaching them
+    // here causes photos to vanish silently when the teacher clicks "This is…".
     const proposed = draft?.proposed_name?.trim();
     const draftConf = typeof draft?.confidence === 'number' ? draft.confidence : 0;
-    if (proposed && draftConf >= 0.8) {
+    const isHaikuPass2 = (draft as Record<string, unknown> | null)?._source === 'haiku_pass2';
+    if (proposed && draftConf >= 0.85 && !isHaikuPass2) {
       const resolvedProposed = findWorkByName(proposed, draft?.suggested_area);
       if (resolvedProposed) {
         console.log(`[ThisIsSheet] Tier 1b auto-attach via proposed_name: "${proposed}" ${Math.round(draftConf * 100)}% — skipping sheet`);
