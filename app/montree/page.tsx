@@ -1,89 +1,12 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import MontreeLogo from '@/components/montree/MonteeLogo';
 
 // /montree/page.tsx — Montree landing page
 
-function DemoModal({ open, onClose }: { open: boolean; onClose: () => void }) {
-  const [name, setName] = useState('');
-  const [school, setSchool] = useState('');
-  const [email, setEmail] = useState('');
-  const [sending, setSending] = useState(false);
-  const [sent, setSent] = useState(false);
-  const [error, setError] = useState('');
-
-  if (!open) return null;
-
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    if (!email.includes('@')) { setError('Please enter a valid email'); return; }
-    setSending(true); setError('');
-    try {
-      const res = await fetch('/api/montree/demo-request', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, school, email }),
-      });
-      if (res.ok) { setSent(true); }
-      else { setError('Something went wrong. Please try again.'); }
-    } catch { setError('Connection error. Please try again.'); }
-    setSending(false);
-  }
-
-  return (
-    <div
-      onClick={onClose}
-      style={{ position: 'fixed', inset: 0, zIndex: 100, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(12px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}
-    >
-      <div
-        onClick={(e) => e.stopPropagation()}
-        style={{ background: 'white', borderRadius: 20, padding: '2.5rem', maxWidth: 440, width: '100%', position: 'relative', boxShadow: '0 40px 120px rgba(0,0,0,0.4)' }}
-      >
-        <button onClick={onClose} style={{ position: 'absolute', top: 20, right: 20, background: 'none', border: 'none', fontSize: 18, cursor: 'pointer', color: '#9ca3af', lineHeight: 1 }}>✕</button>
-
-        {sent ? (
-          <div style={{ textAlign: 'center', padding: '1rem 0' }}>
-            <div style={{ width: 52, height: 52, borderRadius: '50%', background: '#f0fdf4', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.25rem', fontSize: 22 }}>✓</div>
-            <h3 style={{ fontFamily: "'Lora', Georgia, serif", fontSize: '1.4rem', color: '#111827', marginBottom: 8, fontWeight: 500 }}>
-              We&apos;ll be in touch.
-            </h3>
-            <p style={{ color: '#6b7280', fontSize: '0.9rem', lineHeight: 1.7 }}>
-              Thank you for reaching out. I&apos;ll write to you within 24 hours to arrange a time.
-            </p>
-            <p style={{ color: '#9ca3af', fontSize: '0.8rem', marginTop: 16 }}>— Tredoux</p>
-          </div>
-        ) : (
-          <>
-            <h3 style={{ fontFamily: "'Lora', Georgia, serif", fontSize: '1.35rem', color: '#111827', marginBottom: 4, fontWeight: 500 }}>
-              Request a Demo
-            </h3>
-            <p style={{ color: '#6b7280', fontSize: '0.88rem', marginBottom: 24, lineHeight: 1.6 }}>
-              15 minutes. I&apos;ll show you what one photo can do for your classroom.
-            </p>
-            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-              <input type="text" placeholder="Your name" value={name} onChange={(e) => setName(e.target.value)}
-                style={{ padding: '11px 14px', borderRadius: 10, border: '1px solid #e5e7eb', fontSize: 14, outline: 'none', background: '#f9fafb', color: '#111827' }} />
-              <input type="text" placeholder="School name" value={school} onChange={(e) => setSchool(e.target.value)}
-                style={{ padding: '11px 14px', borderRadius: 10, border: '1px solid #e5e7eb', fontSize: 14, outline: 'none', background: '#f9fafb', color: '#111827' }} />
-              <input type="email" placeholder="Email address *" required value={email} onChange={(e) => setEmail(e.target.value)}
-                style={{ padding: '11px 14px', borderRadius: 10, border: '1px solid #e5e7eb', fontSize: 14, outline: 'none', background: '#f9fafb', color: '#111827' }} />
-              {error && <p style={{ color: '#ef4444', fontSize: '0.8rem', margin: 0 }}>{error}</p>}
-              <button type="submit" disabled={sending}
-                style={{ padding: '13px 0', borderRadius: 10, background: 'linear-gradient(90deg, #10b981, #14b8a6)', color: 'white', fontSize: 14, fontWeight: 500, border: 'none', cursor: sending ? 'wait' : 'pointer', opacity: sending ? 0.6 : 1, marginTop: 4 }}>
-                {sending ? 'Sending…' : 'Request a Demo'}
-              </button>
-            </form>
-          </>
-        )}
-      </div>
-    </div>
-  );
-}
-
 export default function MontreeLanding() {
   const revealRefs = useRef<HTMLElement[]>([]);
-  const [demoOpen, setDemoOpen] = useState(false);
 
   useEffect(() => {
     const obs = new IntersectionObserver(
@@ -334,8 +257,6 @@ export default function MontreeLanding() {
         }
       `}</style>
 
-      <DemoModal open={demoOpen} onClose={() => setDemoOpen(false)} />
-
       {/* ── NAV ── */}
       <nav className="m-nav" aria-label="Primary">
         <div className="m-nav-inner">
@@ -353,9 +274,9 @@ export default function MontreeLanding() {
           <span className="m-label">Montessori classroom management</span>
           <h1>The magic of Montree.</h1>
           <p className="m-hero-sub">A teacher takes a photo. Montree does the rest.</p>
-          <button className="m-pill m-pill-lg" onClick={() => setDemoOpen(true)}>
+          <a className="m-pill m-pill-lg" href="/montree/login-select?signup=true">
             Experience it free for 30 days
-          </button>
+          </a>
           <p className="m-hero-fineprint">One classroom · No credit card</p>
         </div>
       </section>
@@ -389,9 +310,9 @@ export default function MontreeLanding() {
       <section className="m-closing" id="cta" ref={addReveal}>
         <h2>Experience the magic.</h2>
         <p className="m-closing-sub">One month free. Then $7 per child, per month.<br />One plan. No tiers. No contracts.</p>
-        <button className="m-pill m-pill-lg" onClick={() => setDemoOpen(true)}>
+        <a className="m-pill m-pill-lg" href="/montree/login-select?signup=true">
           Start your free trial
-        </button>
+        </a>
       </section>
 
       {/* ── FOOTER ── */}
