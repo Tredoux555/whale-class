@@ -13,6 +13,7 @@ function UnifiedLoginContent() {
   const { t } = useI18n();
   const redirectTo = searchParams.get('redirect');
   const qrCode = searchParams.get('code'); // QR code deep link support
+  const isSignup = searchParams.get('signup') === 'true';
   const [code, setCode] = useState(qrCode || '');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -30,6 +31,12 @@ function UnifiedLoginContent() {
     // Don't redirect to teacher dashboard just because a teacher session exists
     if (qrCode) return;
 
+    // Signup flow — send new visitors directly to self-serve trial
+    if (isSignup) {
+      router.replace('/montree/try');
+      return;
+    }
+
     const sess = getSession();
     if (sess) {
       router.replace(redirectTo || '/montree/dashboard');
@@ -42,7 +49,7 @@ function UnifiedLoginContent() {
         router.replace(redirectTo || '/montree/dashboard');
       }
     });
-  }, [router, redirectTo, qrCode]);
+  }, [router, redirectTo, qrCode, isSignup]);
 
   // Auto-submit if code came from QR URL param
   useEffect(() => {
@@ -132,6 +139,7 @@ function UnifiedLoginContent() {
           <p className="text-emerald-300/60 text-sm">
             {t('auth.unifiedSubtitle') || 'Enter your code to continue'}
           </p>
+          <p className="text-white/20 text-xs mt-1">montree.xyz</p>
         </div>
 
         {/* Login Card */}
@@ -192,7 +200,7 @@ function UnifiedLoginContent() {
               href="/pricing"
               className="text-white/30 hover:text-white/50 text-xs inline-block transition-colors"
             >
-              View pricing &amp; tiers →
+              30 days free · See pricing →
             </a>
           </div>
         </div>
