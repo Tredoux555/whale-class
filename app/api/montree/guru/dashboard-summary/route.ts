@@ -77,7 +77,7 @@ export async function GET(request: NextRequest) {
         .eq('question_type', 'end_of_day')
         .gte('asked_at', todayISO)
         .limit(1)
-        .single(),
+        .maybeSingle(),
 
       // 3. Cached suggestion (this week)
       supabase
@@ -87,7 +87,7 @@ export async function GET(request: NextRequest) {
         .eq('question_type', 'proactive_suggestion')
         .gte('asked_at', new Date(new Date().setDate(new Date().getDate() - 7)).toISOString())
         .limit(1)
-        .single(),
+        .maybeSingle(),
 
       // 4. Cached weekly review
       supabase
@@ -97,7 +97,7 @@ export async function GET(request: NextRequest) {
         .eq('question_type', 'weekly_review')
         .eq('question', isoWeek)
         .limit(1)
-        .single(),
+        .maybeSingle(),
 
       // 5. Progress analysis (for suggestions)
       analyzeChildProgress(supabase, childId),
