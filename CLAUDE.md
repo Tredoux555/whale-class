@@ -183,6 +183,70 @@ GMass campaigns A/C/D are historical. Campaign C sent 335 blank emails (Session 
 
 ## RECENT STATUS (Apr 27, 2026)
 
+### ⚡ Session 70 — Outreach Follow-Ups + BulkImport Fix + Landing Page Redesign (Apr 27, 2026)
+
+**Commits pushed: `ec3d2334` (BulkImport fix). Landing page redesign handed off to Opus.**
+
+**A. Outreach follow-up emails:**
+
+Drafted replies to 3 hot leads (Copenhagen, Paint Pots UK, Ardtona House UK). All in Gmail drafts. Copenhagen draft went through 6 iterations to nail the tone — final version is confident, warm, uses "the magic of Montree" framing, mentions 9 languages and early adopter benefits without justifying or chasing.
+
+New follow-up template agreed for all 270 `status='sent'` contacts (the full batch):
+```
+Hi,
+
+Just a quick follow up — a few things have changed.
+
+Following user requests we have added nine languages to Montree. I am still personally onboarding schools at this stage, and early adopters still have the opportunity to have features built specifically for their school.
+
+I would love to give you the opportunity to experience the magic of Montree. One month, completely free.
+
+Kind regards,
+Tredoux
+montree.xyz
+```
+Key copy decisions:
+- "Following user requests" (not "popular demand") — implies active user base, creates FOMO
+- "early adopters" (not "early adaptors") — correct term
+- "the magic of Montree" — THE brand tagline, confirmed this session
+- Language personalization: German-speaking schools get "German among them", Spanish get "Spanish among them", etc.
+- 22 drafts created before session was interrupted. 248 remaining.
+
+**B. BulkImport smart date parsing — commit `ec3d2334`:**
+
+User tried to onboard a ghost school for marketing screenshots. Hit "Could not parse date" for all 20 students with DD/MM/YYYY dates. Root cause: default format was YYYY-MM-DD and there was no auto-detection.
+
+**`components/montree/BulkPasteImport.tsx`** — full date logic rewrite:
+- Removed manual format selector entirely
+- Added `smartParseDate()` — tries all common formats, picks the one that gives a sensible age (0-15 years), handles YYYY-MM-DD / DD/MM/YYYY / MM/DD/YYYY / 2-digit years / ambiguous cases
+- Invalid dates now silently skipped (birthday is optional) — no more scary red "Could not parse date" that blocks import
+- Placeholder updated to show multiple format examples
+- Added "Any date format works — we'll figure it out. Birthdays are optional." hint text
+
+**`app/montree/dashboard/page.tsx`** — post-import UX fix:
+- After successful bulk import, page scrolls to top so student grid is immediately visible (was showing empty "Tap to add" state)
+
+**C. Landing page redesign — handed off to Opus:**
+
+User wants `app/montree/page.tsx` completely rewritten with the dark forest green gradient from the login screen. Tagline is "The magic of Montree." Four sections only: Nav, Hero, Three editorial statements (Teacher/Parents/Principal), Closing CTA. No feature grids, no bullet points, no comparison tables.
+
+Full brief at: `docs/LANDING_PAGE_REDESIGN_HANDOFF.md`
+
+**"The magic of Montree" is the confirmed brand tagline.** Use everywhere — follow-up emails, landing page, pricing page, follow-up to hot leads.
+
+**D. Login page still says "View pricing & tiers →":**
+`app/montree/login-select/page.tsx` — update this link text to match new single-plan messaging.
+
+**Next session priorities:**
+1. **Landing page redesign** — Opus to execute from `docs/LANDING_PAGE_REDESIGN_HANDOFF.md`
+2. **Complete follow-up batch** — 248 remaining contacts at `status='sent'` need follow-up drafts using the confirmed template above. Pull next 50 from DB and draft.
+3. **Ghost school screenshots** — onboard "Greenfield Montessori" with 20 generic students (no photos = clean initial avatar grid) for marketing
+4. **Fix login page pricing link** — "View pricing & tiers →" → "30 days free · See pricing →"
+5. **FAMM Argentina follow-up** — past the Apr 28 deadline, follow up now
+6. **Disable `tell_guru_onboarding` for Whale Class** — `UPDATE montree_school_features SET enabled=false WHERE school_id='c6280fae-567c-45ed-ad4d-934eae79aabc' AND feature_key='tell_guru_onboarding';`
+
+---
+
 ### ⚡ Session 69 — Audio Manager + Real-Time Progress Tracking + Pricing Redesign (Apr 27, 2026)
 
 **Two commits pushed to main: `4e99dcf3`, `aa6387f2`.** Plus all the real-time progress + audio manager work which was committed in the prior session batch.
