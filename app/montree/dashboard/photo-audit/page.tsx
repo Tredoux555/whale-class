@@ -2804,45 +2804,24 @@ function AuditPhotoCard({ photo, selected, onToggle, onConfirm, onCorrect, onUse
           </div>
           <p className="text-[11px] font-bold text-amber-900 leading-tight">{photo.work_name}</p>
           <p className="text-[9px] text-amber-700 mt-0.5 italic">Auto-tagged by AI — please verify before confirming.</p>
-          {unifiedTagger ? (
+          <div className="flex gap-1 mt-1.5">
+            <button
+              onClick={onConfirm}
+              disabled={processing}
+              className="flex-1 text-[12px] py-2 rounded bg-amber-600 text-white font-bold disabled:opacity-50"
+              title="AI got it right — confirm"
+            >
+              {processing ? '...' : '✓ Correct'}
+            </button>
             <button
               onClick={onAcceptDraft}
               disabled={processing}
-              className="w-full text-[11px] py-2 mt-1.5 rounded bg-amber-600 text-white font-bold disabled:opacity-50"
-              title="Identify this work"
+              className="flex-1 text-[12px] py-2 rounded bg-white border border-amber-400 text-amber-700 font-bold disabled:opacity-50"
+              title="AI got it wrong — pick the right work"
             >
-              {processing ? '...' : '🏷️ This is…'}
+              ✏️ Wrong
             </button>
-          ) : (
-            <>
-              <div className="flex gap-1 mt-1.5">
-                <button
-                  onClick={onConfirm}
-                  disabled={processing}
-                  className="flex-1 text-[11px] py-1.5 rounded bg-amber-600 text-white font-bold disabled:opacity-50"
-                  title="Confirm this auto-match is correct"
-                >
-                  {processing ? '...' : '✅ Confirm'}
-                </button>
-                <button
-                  onClick={onCorrect}
-                  disabled={processing}
-                  className="flex-1 text-[11px] py-1.5 rounded bg-white border border-amber-400 text-amber-700 font-bold disabled:opacity-50"
-                  title="Pick the correct work"
-                >
-                  ✏️ Fix
-                </button>
-              </div>
-              <button
-                onClick={onTellAI}
-                disabled={processing}
-                className="w-full text-[10px] py-1.5 mt-1 rounded bg-white border border-amber-200 text-amber-600 font-medium disabled:opacity-50 hover:bg-amber-50 transition-colors"
-                title="Describe this work in your own words"
-              >
-                🗣️ Tell AI what it is
-              </button>
-            </>
-          )}
+          </div>
         </div>
       )}
 
