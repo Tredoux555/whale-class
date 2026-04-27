@@ -498,9 +498,12 @@ export default function DashboardPage() {
           existingCount={children.length}
           onImported={() => {
             setShowBulkImport(false);
-            refetchChildren();
             // Clear student search cache so header search picks up new students
             try { sessionStorage.removeItem(`montree_students_${session.classroom?.id}`); } catch {}
+            // Refetch then scroll to top so the student grid is immediately visible
+            refetchChildren().then(() => {
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }).catch(() => {});
           }}
           onClose={() => setShowBulkImport(false)}
         />
