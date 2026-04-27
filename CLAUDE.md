@@ -156,9 +156,9 @@ GMass campaigns A/C/D are historical. Campaign C sent 335 blank emails (Session 
 - **Ace Montessori, India (acemontessorijngr@gmail.com)** — Gave phone number +91 9663373111. Direct contact.
 - **Meraki Montessori, India (management@merakimontessori.in)** — Asked for resume. Tredoux sent.
 - **Village Montessori, SC (info@villagemontessori.com)** — RESURRECTED (Session 47). Previously said "not interested" but came back and asked for resume. Tredoux sent.
-- **Paint Pots Montessori, UK (paintpotsmontessori@outlook.com)** — 🔥 "Can you give me any more details or a demo?" IMMEDIATE demo request. **Draft reply needed with demo offer.**
-- **Ardtona House Montessori, UK (info@ardtonahouse.co.uk)** — 🔥 "Do you offer a free trial?" IMMEDIATE trial interest. **Draft reply needed with 60-day Bloom trial offer.**
-- **Montessori Copenhagen (info@montessori-cph.dk)** — 🔥 "Can you provide more details about the system?" Details request. **Draft reply needed with full Montree overview.**
+- **Paint Pots Montessori, UK (paintpotsmontessori@outlook.com)** — 🔥 "Can you give me any more details or a demo?" Demo request. Reply drafted (Session 71): magic of Montree + 20-min demo offer. AWAITING TREDOUX SEND + RESPONSE.
+- **Ardtona House Montessori, UK (info@ardtonahouse.co.uk)** — 🔥 "Do you offer a free trial?" Trial interest. Reply drafted (Session 71): "Yes — one month free, no credit card" + direct signup link + early adopter hook. AWAITING TREDOUX SEND + RESPONSE.
+- **Montessori Copenhagen (info@montessori-cph.dk)** — 🔥 "Can you provide more details about the system?" Reply drafted (Session 71): full magic overview + 9 languages + early adopter + demo or trial CTA. AWAITING TREDOUX SEND + RESPONSE.
 
 **⚠️ PIVOTED — Declined teaching, Tredoux pivoted to Montree pitch (awaiting reply):**
 - **Remuera NZ (info@remueramontessori.co.nz)** — Fully staffed. Tredoux pivoted to Montree.
@@ -178,6 +178,94 @@ GMass campaigns A/C/D are historical. Campaign C sent 335 blank emails (Session 
 - **Kakuozan Montessori (information@kakuozan-preschool.com)** — "Not Montessori."
 - **Sonnberg Austria (sabine@am-sonnberg.com)** — Position filled. Graceful close. NOT IN DB.
 - **Al Qamar Academy, BestStart Montessori, CHOW Montessori** — No response / dead leads.
+
+---
+
+## RECENT STATUS (Apr 28, 2026)
+
+### ⚡ Session 71 — Landing Page Redesign + Sprout Logo + Demo Alert Banner + Hot Lead Drafts (Apr 28, 2026)
+
+**Commits pushed: `6e3c87e3`, `e19ace45`, `7ddd80ea`, `76617dd8`, `26aeea6b` (landing page + logo iterations), `91f8c92b` (super admin demo alert).**
+
+**A. Landing page full redesign — `app/montree/page.tsx`:**
+
+Complete rewrite. Dark forest green gradient aesthetic (same as login screen). No DemoModal, no feature grids, no bullet points. Four sections only:
+- **Nav** — sticky, frosted glass, sprout logo + "Get started" pill linking to `/montree/login-select?signup=true`
+- **Hero** — "The magic of Montree." tagline. "A teacher takes a photo. Montree does the rest." Both CTAs go directly to self-serve signup (no modal).
+- **Three editorial statements** — Teacher / Parents / Principal, editorial block style with Lora serif headings
+- **Closing CTA** — "Experience the magic." + "One month free. Then $7 per child, per month. One plan. No tiers. No contracts."
+
+CSS approach: `<style jsx global>` block with custom class names (`.m-nav`, `.m-hero`, `.m-block`, `.m-pill`, `.m-editorial`, `.m-closing`). Radial emerald glow + dark gradient via `body::before` pseudo-element. Lora serif from Google Fonts. Intersection Observer scroll-reveal on all sections.
+
+**"The magic of Montree" is confirmed as the brand tagline.** Use everywhere.
+
+**B. Sprout logo — `components/montree/MonteeLogo.tsx`:**
+
+SVG sprout component: asymmetric two leaves on a stem inside a rounded square gradient background (`#34d399 → #14b8a6`). Props: `size` (default 32), `showBackground` (default true), `className`. Used in nav and footer of landing page.
+
+```tsx
+export default function MontreeLogo({ size = 32, showBackground = true, className = '' }) {
+  const gradId = `mg-${size}`;
+  return (
+    <svg width={size} height={size} viewBox="0 0 32 32" fill="none">
+      <defs>
+        <linearGradient id={gradId} x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stopColor="#34d399" />
+          <stop offset="100%" stopColor="#14b8a6" />
+        </linearGradient>
+      </defs>
+      {showBackground && <rect width="32" height="32" rx="8" fill={`url(#${gradId})`} />}
+      <path d="M16 27 C16 27 16 18 16 14" stroke="white" strokeWidth="2" strokeLinecap="round" opacity="0.95"/>
+      <path d="M16 21 C13.5 19.5 10.5 16 11.5 11 C13.5 10.5 17 14 16 21Z" fill="white" opacity="0.95"/>
+      <path d="M16 17 C18 15.5 20.5 12 19.5 7.5 C17.5 7 15 10 16 17Z" fill="white" opacity="0.78"/>
+    </svg>
+  );
+}
+```
+
+Note: `public/icon.svg` (tree-of-circles PWA icon) was NOT changed — user prefers it as-is for the home screen icon.
+
+**C. Demo flow: modal removed, direct self-serve signup:**
+
+Removed `DemoModal` entirely from landing page. Both CTAs now link directly to `/montree/login-select?signup=true`. User's reasoning: "allow them to set up a classroom themselves as it was before with the code login system. it was clean."
+
+**D. Demo request confirmation email — `app/api/montree/demo-request/route.ts` (commit `26aeea6b`):**
+
+Added a warm confirmation email sent to the requester immediately on form submit:
+```
+Subject: Montree
+Dear [First name / school / there],
+Thank you for reaching out. I'll be in touch within 24 hours...
+Kind regards, Tredoux / montree.xyz
+```
+⚠️ **Email delivery is currently unreliable** — `RESEND_FROM_EMAIL` in Railway is set to `onboarding@resend.dev` (Resend test address — only delivers to the Resend account owner). To fix: verify `montree.xyz` domain in Resend → add DNS records → update `RESEND_FROM_EMAIL` in Railway. The DB always saves the lead regardless of email status.
+
+**E. Super admin demo request alert banner — commit `91f8c92b`:**
+
+Added `DemoRequestAlert` component to `app/montree/super-admin/page.tsx`. Fetches `/api/montree/super-admin/demo-requests`, filters to `status='demo_requested'`, renders a green alert banner with school name, contact, email link, and "Mark contacted" button. Clicking "Mark contacted" PATCHes the contact to `status='contacted'` and removes it from the banner.
+
+The backing API route (`app/api/montree/super-admin/demo-requests/route.ts`) was already in place — GET returns all landing-page leads with `pending` count, PATCH updates status.
+
+**🚨 Bug fixed:** The component originally checked `d?.leads` but the API returns `d?.requests`. Fixed to `d?.requests.filter(r => r.status === 'demo_requested')`. Without this fix the banner would never show.
+
+**F. Three hot lead reply drafts — all in Gmail (Session 71):**
+
+Pre-send duplicate checks ran clean for all three domains.
+
+- **Montessori Copenhagen** (`info@montessori-cph.dk`) — Full Montree overview + 9 languages + early adopter + demo or 30-day trial CTA. Gmail draft ID: `r5875732429643975187`
+- **Paint Pots Montessori, UK** (`paintpotsmontessori@outlook.com`) — Magic of Montree + 20-min demo offer. Gmail draft ID: `r-8134738077301193428`
+- **Ardtona House Montessori, UK** (`info@ardtonahouse.co.uk`) — "Yes — one month free, no credit card" + direct signup + early adopter hook. Gmail draft ID: `r6746566790609932769`
+
+All AWAITING TREDOUX SEND.
+
+**Next session priorities:**
+1. **Send the 3 hot lead drafts** — Copenhagen, Paint Pots, Ardtona House. Already in Gmail.
+2. **FAMM Argentina follow-up** — Past the Apr 28 deadline. Draft a follow-up now.
+3. **Complete follow-up batch** — 248 remaining `status='sent'` contacts need the Session 70 follow-up template. Pull next 50 from DB and draft.
+4. **Fix login page pricing link** — `app/montree/login-select/page.tsx`: "View pricing & tiers →" → "30 days free · See pricing →"
+5. **Disable `tell_guru_onboarding` for Whale Class** — `UPDATE montree_school_features SET enabled=false WHERE school_id='c6280fae-567c-45ed-ad4d-934eae79aabc' AND feature_key='tell_guru_onboarding';`
+6. **Fix Resend domain** — Verify `montree.xyz` in Resend, update `RESEND_FROM_EMAIL` in Railway so confirmation emails actually reach leads.
+7. **Ghost school screenshots** — Onboard "Greenfield Montessori" with 20 generic students for marketing.
 
 ---
 
