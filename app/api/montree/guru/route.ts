@@ -833,10 +833,20 @@ export async function POST(request: NextRequest) {
 
           // Not a tool_use response — we have final text. Extract and stream it.
           if (nextResponse.stop_reason !== 'tool_use') {
-            const finalText = nextResponse.content
+            const rawText = nextResponse.content
               .filter((b): b is Extract<typeof b, { type: 'text' }> => b.type === 'text')
               .map(b => b.text)
               .join('\n');
+            // Strip any leaked <function_calls>...</function_calls> XML that the model
+            // occasionally outputs as text after a tool-use round. This happens because
+            // the prior tool_use blocks are visible in the conversation history and some
+            // Sonnet responses reproduce them in text form. Strip cleanly so users never
+            // see raw XML in the chat bubble.
+            const finalText = rawText
+              .replace(/<function_calls>[\s\S]*?<\/function_calls>/g, '')
+              .replace(/<invoke[\s\S]*?<\/invoke>/g, '')
+              .replace(/<parameter[\s\S]*?<\/parameter>/g, '')
+              .trim();
 
             clearTimeout(masterTimeout);
             const { input_tokens = 0, output_tokens = 0 } = nextResponse.usage || {};
