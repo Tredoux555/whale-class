@@ -181,6 +181,84 @@ GMass campaigns A/C/D are historical. Campaign C sent 335 blank emails (Session 
 
 ---
 
+## RECENT STATUS (Apr 27, 2026)
+
+### ⚡ Session 69 — Audio Manager + Real-Time Progress Tracking + Pricing Redesign (Apr 27, 2026)
+
+**Two commits pushed to main: `4e99dcf3`, `aa6387f2`.** Plus all the real-time progress + audio manager work which was committed in the prior session batch.
+
+**A. Audio Manager — same page as Video Manager:**
+
+Extended `app/admin/video-manager/page.tsx`, `app/api/admin/video-manager/route.ts`, and `lib/data.ts` to support audio-only uploads (songs without video) alongside existing video uploads.
+
+**`lib/data.ts`** — Added `mediaType?: 'video' | 'audio'` to `Video` interface. `videoUrl` field used for both (backwards compatible — undefined/missing = video).
+
+**`app/api/admin/video-manager/route.ts`:**
+- POST (signed-URL): reads `mediaType` from body; uses `aud_` prefix + `audio/` storage folder for audio files
+- DELETE: detects `video.mediaType === 'audio'` to use correct `audio/` folder (was always using `videos/` — bug fixed)
+- Stores `mediaType: 'audio'` in Video metadata
+
+**`app/admin/video-manager/page.tsx`** (full rewrite → renamed "🎬 Media Manager"):
+- File input: `accept="video/*,audio/*"`
+- Upload: auto-detects `file.type.startsWith('audio/')` → sets `uploadIsAudio`
+- Filter tabs: All / 🎬 Videos (count) / 🎵 Audio (count)
+- Audio cards: cyan/purple gradient + 🎵 emoji + `<audio controls>` player
+- Upload modal: `<audio>` preview + 🎵 banner for audio; `<video>` for video
+- Stats bar: 6 tiles including separate Video count and Audio count
+
+**B. Real-Time Progress Tracking:**
+
+Previously, Guru only knew what children worked on AFTER Weekly Wrap generation. Now every photo confirmation writes a live progress record to `montree_child_progress` so Guru knows what happened today in real time.
+
+**`app/api/montree/guru/corrections/route.ts`** — Added `upsertProgressObservation()` helper:
+- CONFIRM path: called with `original_work_name`
+- CORRECTION path: called with `corrected_work_name || original_work_name`
+- Fire-and-forget (never blocks the response)
+- Logic: if row exists + `status='presented'` → touch `updated_at` only. If row exists + higher status (practicing/mastered) → no-op (never downgrades teacher decisions). If no row → insert with `status='presented'`.
+- Schema-correct: NO `classroom_id` column (not in `montree_child_progress`), uses `updated_at` not `created_at`
+
+**`app/api/montree/photo-audit/resolve/route.ts`** — Path B (new_custom) fix:
+- Custom work creation path does NOT call corrections route — handled inline
+- Added local copy of `upsertProgressObservation` + fires it after successful photo attachment
+- Now all 3 resolution paths (A=confirm_ai, B=new_custom, C=existing work) write progress
+
+**🚨 4 bugs found and fixed in audit:**
+1. **Wrong status value**: `'presenting'` → `'presented'` (actual enum from migration 081)
+2. **Non-existent column**: Removed `classroom_id` from insert (not on `montree_child_progress`)
+3. **Wrong timestamp**: Was updating `created_at` → corrected to `updated_at`
+4. **Path B gap**: new_custom path never called corrections route → added separate progress upsert
+
+**C. Pricing Redesign — commit `4e99dcf3`:**
+
+Eliminated the Seed free tier. Single plan, 30-day trial, one classroom only.
+
+**`app/pricing/page.tsx`** (full rewrite):
+- Hero: "One plan. 30 days free to try it."
+- Single centered Bloom card with prominent "Trial includes" box:
+  - Full Montree experience
+  - One classroom only
+  - 30 days, then $7/student/month
+  - No credit card required
+- CTA subtitle: "One classroom · 30 days · No credit card"
+- Removed Seed card, removed comparison table
+- 7 FAQs updated including new "What does 'one classroom' mean?" and "Why only one plan?"
+- Bottom banner: "One classroom · 30 days · No credit card · No contracts."
+
+**Rationale:** Freemium fails when the free tier strips the AI — that leaves a worse-than-paper tracker. One plan + clear trial is more honest. The one-classroom trial limitation is stated plainly in 3 places, not buried.
+
+**D. Landing page copy — commit `aa6387f2`:**
+
+`app/montree/page.tsx` line 468: "View pricing and tiers →" → "30 days free · See pricing →"
+
+**Next session priorities:**
+1. **Draft replies to 3 hot leads** — Paint Pots UK (demo request), Ardtona House UK (free trial), Montessori Copenhagen (details). Immediate conversion opportunities.
+2. **Follow up on FAMM Argentina** — No response since Apr 18. Follow up now (past Apr 28 deadline).
+3. **Disable `tell_guru_onboarding` for Whale Class** — Amy's card keeps appearing: `UPDATE montree_school_features SET enabled=false WHERE school_id='c6280fae-567c-45ed-ad4d-934eae79aabc' AND feature_key='tell_guru_onboarding';`
+4. **Gate the 6 Sonnet-hardcoded routes** with `resolveReportModel()`.
+5. **HeyGen videos** — 3-min and 5-min scripts via Builder → Script to Video (8 credits each, 146 credits remaining).
+
+---
+
 ## RECENT STATUS (Apr 26, 2026)
 
 ### ⚡ Session 68 — Curriculum Data Layer Complete: All 9 Locales Fully Wired End-to-End (Apr 26, 2026)
