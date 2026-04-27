@@ -2190,7 +2190,7 @@ export default function PhotoAuditPage() {
           ) : (
             /* Photos selected — show action buttons */
             <div className="flex items-center justify-center gap-2 flex-wrap">
-              <span className="text-xs text-[#A1887F] mr-1">{selectedIds.size} selected</span>
+              <span className="text-xs text-[#A1887F] mr-1">{selectedIds.size} of {filteredPhotos.length} selected</span>
               <button
                 onClick={handleRunHaiku}
                 disabled={haikusRunning || batchProcessing}
@@ -2208,7 +2208,7 @@ export default function PhotoAuditPage() {
                 disabled={haikusRunning || batchProcessing}
                 className="px-4 py-1.5 text-sm rounded-lg bg-emerald-600 text-white font-medium disabled:opacity-50"
               >
-                {batchProcessing ? `Confirming...` : `✓ Batch Confirm`}
+                {batchProcessing ? `Confirming...` : `✓ Confirm ${selectedIds.size}`}
               </button>
               {haikusRunning && (
                 <button
