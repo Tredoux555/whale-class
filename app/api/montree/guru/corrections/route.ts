@@ -145,6 +145,15 @@ export async function POST(request: NextRequest) {
       }
 
       console.log(`[Corrections] Confirmed correct: "${original_work_name}" (classroom ${classroomId})`);
+
+      // Record a real-time progress observation — confirmed photos register immediately
+      // so the Guru knows what this child worked on today without waiting for Weekly Wrap
+      upsertProgressObservation({
+        supabase, childId: child_id, classroomId,
+        workName: original_work_name || null,
+        area: original_area || null,
+      }).catch(err => console.error('[Corrections] Progress upsert (confirm) failed (non-fatal):', err));
+
       return NextResponse.json({ success: true, confirmed: true });
     }
 
@@ -446,6 +455,13 @@ export async function POST(request: NextRequest) {
 
     console.log(`[Corrections] Recorded: "${original_work_name}" → "${corrected_work_name}" (classroom ${classroomId})${photoUrl ? ' [visual memory generated]' : ''}${media_id ? ' [cache invalidated]' : ''}`);
 
+    // Record a real-time progress observation using the CORRECTED work name
+    upsertProgressObservation({
+      supabase, childId: child_id, classroomId,
+      workName: corrected_work_name || original_work_name || null,
+      area: corrected_area || original_area || null,
+    }).catch(err => console.error('[Corrections] Progress upsert (correction) failed (non-fatal):', err));
+
     return NextResponse.json({
       success: true,
       correction_id: correction?.id || null,
@@ -457,6 +473,67 @@ export async function POST(request: NextRequest) {
     console.error('[Corrections] Error:', error);
     return NextResponse.json({ success: false, error: 'Internal error' }, { status: 500 });
   }
+}
+
+// ========================================================
+// Real-Time Progress Observation
+// Called every time a photo is confirmed or corrected so the Guru
+// and Weekly Wrap see current-day work without waiting for reports.
+//
+// Rules:
+//   - No row exists → insert status='presenting' (minimum claim: "I saw this child do this")
+//   - Row exists with status='presenting' → refresh updated_at so it stays current
+//   - Row exists with status='practicing' or 'mastered' → leave completely alone (never downgrade)
+// ========================================================
+
+async function upsertProgressObservation({
+  supabase,
+  childId,
+  classroomId,
+  workName,
+  area,
+}: {
+  supabase: ReturnType<typeof getSupabase>;
+  childId: string;
+  classroomId: string;
+  workName: string | null;
+  area: string | null;
+}) {
+  if (!childId || !workName?.trim()) return;
+  const name = workName.trim();
+
+  const { data: existing } = await supabase
+    .from('montree_child_progress')
+    .select('id, status')
+    .eq('child_id', childId)
+    .eq('work_name', name)
+    .maybeSingle();
+
+  if (existing) {
+    // Only touch 'presenting' rows — refresh timestamp to show it was seen again today
+    // 'practicing' and 'mastered' are teacher decisions and must not be overwritten
+    if (existing.status === 'presenting') {
+      await supabase
+        .from('montree_child_progress')
+        .update({ created_at: new Date().toISOString() })
+        .eq('id', existing.id);
+    }
+    return;
+  }
+
+  // No row yet — insert as 'presenting' (a photo is evidence of at least a presentation)
+  await supabase
+    .from('montree_child_progress')
+    .insert({
+      child_id: childId,
+      classroom_id: classroomId,
+      work_name: name,
+      area: area || null,
+      status: 'presenting',
+      created_at: new Date().toISOString(),
+    });
+
+  console.log(`[Progress] Real-time observation: child=${childId} work="${name}" → presenting`);
 }
 
 // ========================================================
