@@ -14,8 +14,6 @@ interface BulkPasteImportProps {
   onClose: () => void;
 }
 
-type DateFormat = 'YYYY-MM-DD' | 'DD/MM/YYYY' | 'MM/DD/YYYY';
-
 interface ParsedStudent {
   name: string;
   birthday: string | null;
@@ -25,44 +23,71 @@ interface ParsedStudent {
   error: string | null;
 }
 
-function parseDateWithFormat(raw: string, format: DateFormat): Date | null {
+function tryBuildDate(year: number, month: number, day: number): Date | null {
+  if (isNaN(year) || isNaN(month) || isNaN(day)) return null;
+  if (month < 1 || month > 12 || day < 1 || day > 31 || year < 1900 || year > 2100) return null;
+  const date = new Date(year, month - 1, day);
+  if (date.getMonth() !== month - 1 || date.getDate() !== day) return null;
+  return date;
+}
+
+// Smart date parser — tries all common formats, picks the one that gives a sensible age.
+// No format selector needed: teachers just paste whatever format they have.
+function smartParseDate(raw: string): Date | null {
   const trimmed = raw.trim();
   if (!trimmed) return null;
 
-  // Normalize separators: accept - / . and spaces
-  const parts = trimmed.split(/[\-\/\.\s]+/);
+  const parts = trimmed.split(/[-\/.\s]+/);
   if (parts.length < 3) return null;
 
-  let year: number, month: number, day: number;
+  const nums = parts.slice(0, 3).map(p => parseInt(p, 10));
+  if (nums.some(isNaN)) return null;
 
-  if (format === 'YYYY-MM-DD') {
-    year = parseInt(parts[0], 10);
-    month = parseInt(parts[1], 10);
-    day = parseInt(parts[2], 10);
-  } else if (format === 'DD/MM/YYYY') {
-    day = parseInt(parts[0], 10);
-    month = parseInt(parts[1], 10);
-    year = parseInt(parts[2], 10);
+  const [a, b, c] = nums;
+
+  // Build candidate interpretations
+  const candidates: { year: number; month: number; day: number }[] = [];
+
+  if (parts[0].length === 4) {
+    // YYYY-MM-DD
+    candidates.push({ year: a, month: b, day: c });
+  } else if (parts[2].length === 4 || c > 31) {
+    const year = c < 100 ? c + 2000 : c;
+    if (a > 12) {
+      // Must be DD/MM/YYYY
+      candidates.push({ year, month: b, day: a });
+    } else if (b > 12) {
+      // Must be MM/DD/YYYY
+      candidates.push({ year, month: a, day: b });
+    } else {
+      // Ambiguous — try DD/MM first (more common internationally), then MM/DD
+      candidates.push({ year, month: b, day: a });
+      candidates.push({ year, month: a, day: b });
+    }
   } else {
-    // MM/DD/YYYY
-    month = parseInt(parts[0], 10);
-    day = parseInt(parts[1], 10);
-    year = parseInt(parts[2], 10);
+    // 2-digit year or other — try all combinations
+    const year = c < 100 ? c + 2000 : c;
+    candidates.push({ year, month: b, day: a }); // DD/MM/YY
+    candidates.push({ year, month: a, day: b }); // MM/DD/YY
+    if (a > 31) candidates.push({ year: a + 2000, month: b, day: c }); // YY-MM-DD
   }
 
-  if (isNaN(year) || isNaN(month) || isNaN(day)) return null;
+  // Pick first candidate that gives a valid date with a reasonable age (0–15)
+  const now = new Date();
+  for (const { year, month, day } of candidates) {
+    const date = tryBuildDate(year, month, day);
+    if (!date) continue;
+    const age = now.getFullYear() - date.getFullYear();
+    if (age >= 0 && age <= 15) return date;
+  }
 
-  // Handle 2-digit years
-  if (year < 100) year += 2000;
+  // If no candidate gave a sensible age, return the first valid date anyway
+  for (const { year, month, day } of candidates) {
+    const date = tryBuildDate(year, month, day);
+    if (date) return date;
+  }
 
-  // Basic bounds check
-  if (month < 1 || month > 12 || day < 1 || day > 31 || year < 1900 || year > 2100) return null;
-
-  const date = new Date(year, month - 1, day);
-  // Verify the date is valid (catches things like Feb 30)
-  if (date.getMonth() !== month - 1 || date.getDate() !== day) return null;
-
-  return date;
+  return null;
 }
 
 function calculateAge(dob: Date): number {
@@ -90,7 +115,6 @@ export default function BulkPasteImport({ classroomId, existingCount, onImported
   const { t } = useI18n();
   const [namesText, setNamesText] = useState('');
   const [birthdaysText, setBirthdaysText] = useState('');
-  const [dateFormat, setDateFormat] = useState<DateFormat>('YYYY-MM-DD');
   const [importing, setImporting] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
 
@@ -100,7 +124,7 @@ export default function BulkPasteImport({ classroomId, existingCount, onImported
 
     return names.map((name, i) => {
       const raw = birthdays[i] || '';
-      const parsedDate = raw ? parseDateWithFormat(raw, dateFormat) : null;
+      const parsedDate = raw ? smartParseDate(raw) : null;
       const age = parsedDate ? calculateAge(parsedDate) : null;
 
       // Check for duplicate names
@@ -111,13 +135,12 @@ export default function BulkPasteImport({ classroomId, existingCount, onImported
 
       if (!name.trim()) {
         error = t('bulkImport.emptyName');
-      } else if (raw && !parsedDate) {
-        warning = t('bulkImport.invalidDate');
       } else if (isDuplicate) {
         warning = t('bulkImport.duplicateName');
       } else if (age !== null && (age < 0 || age > 10)) {
         warning = t('bulkImport.unusualAge');
       }
+      // Note: unparseable dates are silently skipped — birthdays are optional
 
       return {
         name,
@@ -128,7 +151,7 @@ export default function BulkPasteImport({ classroomId, existingCount, onImported
         error,
       };
     });
-  }, [namesText, birthdaysText, dateFormat, t]);
+  }, [namesText, birthdaysText, t]);
 
   const hasErrors = parsed.some(s => s.error);
   const validCount = parsed.filter(s => !s.error).length;
@@ -207,25 +230,10 @@ export default function BulkPasteImport({ classroomId, existingCount, onImported
         {!showPreview ? (
           /* Input Mode */
           <div className="p-5 space-y-4">
-            {/* Date format selector */}
-            <div className="flex items-center gap-3">
-              <label className="text-emerald-300 text-sm whitespace-nowrap">{t('bulkImport.dateFormat')}:</label>
-              <div className="flex gap-2">
-                {(['YYYY-MM-DD', 'DD/MM/YYYY', 'MM/DD/YYYY'] as DateFormat[]).map(fmt => (
-                  <button
-                    key={fmt}
-                    onClick={() => setDateFormat(fmt)}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-mono transition-colors ${
-                      dateFormat === fmt
-                        ? 'bg-emerald-500 text-white'
-                        : 'bg-white/10 text-emerald-300 hover:bg-white/20'
-                    }`}
-                  >
-                    {fmt}
-                  </button>
-                ))}
-              </div>
-            </div>
+            {/* Date format note */}
+            <p className="text-emerald-400/60 text-xs">
+              Any date format works — we&apos;ll figure it out. Birthdays are optional.
+            </p>
 
             {/* Two textareas side by side */}
             <div className="grid grid-cols-2 gap-4">
@@ -252,7 +260,7 @@ export default function BulkPasteImport({ classroomId, existingCount, onImported
                 <textarea
                   value={birthdaysText}
                   onChange={e => { setBirthdaysText(e.target.value); setShowPreview(false); }}
-                  placeholder={t('bulkImport.birthdaysPlaceholder').replace('{format}', dateFormat === 'YYYY-MM-DD' ? '2020-03-15' : dateFormat === 'DD/MM/YYYY' ? '15/03/2020' : '03/15/2020')}
+                  placeholder={'2020-03-15\n15/03/2020\n03/15/2020\n(any format)'}
                   className="w-full h-48 p-3 bg-black/20 border border-emerald-600 rounded-lg text-white placeholder-emerald-400/40 text-sm font-mono focus:border-emerald-400 focus:outline-none resize-none"
                   spellCheck={false}
                 />
