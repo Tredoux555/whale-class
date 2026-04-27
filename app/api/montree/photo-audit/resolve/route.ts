@@ -37,6 +37,40 @@ import { POST as correctionsPost } from '@/app/api/montree/guru/corrections/rout
 
 const VALID_AREAS = ['practical_life', 'sensorial', 'mathematics', 'language', 'cultural'];
 
+// Upsert a progress observation for a confirmed photo — same logic as in corrections/route.ts.
+// Rules: no row → insert 'presented'; existing 'presented' → refresh updated_at; practicing/mastered → untouched.
+async function upsertProgressObservation({
+  childId, classroomId: _classroomId, workName, area,
+}: {
+  childId: string;
+  classroomId: string;
+  workName: string | null;
+  area: string | null;
+}) {
+  if (!childId || !workName?.trim()) return;
+  const supabase = getSupabase();
+  const name = workName.trim();
+  const { data: existing } = await supabase
+    .from('montree_child_progress')
+    .select('id, status')
+    .eq('child_id', childId)
+    .eq('work_name', name)
+    .maybeSingle();
+  if (existing) {
+    if (existing.status === 'presented') {
+      await supabase
+        .from('montree_child_progress')
+        .update({ updated_at: new Date().toISOString() })
+        .eq('id', existing.id);
+    }
+    return;
+  }
+  await supabase
+    .from('montree_child_progress')
+    .insert({ child_id: childId, work_name: name, area: area || null, status: 'presented' });
+  console.log(`[Progress] Real-time observation (new_custom): child=${childId} work="${name}" → presented`);
+}
+
 type Resolution =
   | { type: 'existing'; work_id: string; work_name: string; area_key: string }
   | { type: 'new_custom'; name: string; area_key: string }
@@ -296,6 +330,10 @@ export async function POST(request: NextRequest) {
           });
         return NextResponse.json({ success: false, error: 'Failed to attach photo' }, { status: 500 });
       }
+
+      // Fire-and-forget progress observation — new custom work confirmation registers immediately
+      upsertProgressObservation({ childId, classroomId, workName: name, area: areaKey })
+        .catch(err => console.error('[PhotoAuditResolve] Progress upsert (new_custom) failed (non-fatal):', err));
 
       // Fire-and-forget Sonnet enrichment (uses cached sonnet_draft.visual_description as seed)
       enrichCustomWorkInBackground({

@@ -510,27 +510,25 @@ async function upsertProgressObservation({
     .maybeSingle();
 
   if (existing) {
-    // Only touch 'presenting' rows — refresh timestamp to show it was seen again today
+    // Only touch 'presented' rows — refresh updated_at to show it was seen again today
     // 'practicing' and 'mastered' are teacher decisions and must not be overwritten
-    if (existing.status === 'presenting') {
+    if (existing.status === 'presented') {
       await supabase
         .from('montree_child_progress')
-        .update({ created_at: new Date().toISOString() })
+        .update({ updated_at: new Date().toISOString() })
         .eq('id', existing.id);
     }
     return;
   }
 
-  // No row yet — insert as 'presenting' (a photo is evidence of at least a presentation)
+  // No row yet — insert as 'presented' (a photo is evidence of at least a presentation)
   await supabase
     .from('montree_child_progress')
     .insert({
       child_id: childId,
-      classroom_id: classroomId,
       work_name: name,
       area: area || null,
-      status: 'presenting',
-      created_at: new Date().toISOString(),
+      status: 'presented',
     });
 
   console.log(`[Progress] Real-time observation: child=${childId} work="${name}" → presenting`);
