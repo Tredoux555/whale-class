@@ -7,10 +7,11 @@ export interface Video {
   title: string;
   category: "song-of-week" | "phonics" | "weekly-phonics-sound" | "stories" | "montessori" | "recipes";
   subcategory?: "practical-life" | "maths" | "sensorial" | "english"; // Only for montessori
-  videoUrl: string;
+  videoUrl: string;        // URL for both video AND audio files (field name kept for backwards compat)
   thumbnailUrl?: string;
   uploadedAt: string;
-  week?: string; // For song of the week
+  week?: string;           // For song of the week
+  mediaType?: 'video' | 'audio'; // undefined/missing = 'video' (backwards compat)
 }
 
 // Helper function to get filesystem paths (only called when needed)

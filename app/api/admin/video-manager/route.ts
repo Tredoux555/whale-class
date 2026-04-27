@@ -47,7 +47,7 @@ export async function POST(request: NextRequest) {
     // Mode 1: Generate signed upload URL (client uploads directly to Supabase)
     if (contentType.includes('application/json')) {
       const body = await request.json();
-      const { title, category, week, fileName: originalName, contentType: fileContentType } = body;
+      const { title, category, week, fileName: originalName, contentType: fileContentType, mediaType } = body;
 
       if (!title || !category || !originalName) {
         return NextResponse.json({
@@ -56,9 +56,12 @@ export async function POST(request: NextRequest) {
         }, { status: 400 });
       }
 
-      const id = `vid_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-      const extension = originalName.split('.').pop() || 'mp4';
-      const storagePath = `videos/${id}.${extension}`;
+      const isAudio = mediaType === 'audio';
+      const idPrefix = isAudio ? 'aud' : 'vid';
+      const id = `${idPrefix}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      const extension = originalName.split('.').pop() || (isAudio ? 'mp3' : 'mp4');
+      const storageFolder = isAudio ? 'audio' : 'videos';
+      const storagePath = `${storageFolder}/${id}.${extension}`;
 
       const supabase = createSupabaseAdmin();
       const { data: signedData, error: signedError } = await supabase.storage
@@ -78,14 +81,15 @@ export async function POST(request: NextRequest) {
         .from(STORAGE_BUCKET)
         .getPublicUrl(storagePath);
 
-      // Save metadata now (video will be available once client uploads)
+      // Save metadata now (file will be available once client uploads)
       const video: Video = {
         id,
         title,
         category,
         videoUrl: urlData.publicUrl,
         uploadedAt: new Date().toISOString(),
-        ...(week && { week })
+        ...(week && { week }),
+        ...(isAudio && { mediaType: 'audio' as const })
       };
       await addVideo(video);
 
@@ -239,14 +243,15 @@ export async function DELETE(request: NextRequest) {
       }, { status: 500 });
     }
 
-    // Try to delete the actual video file from storage (best effort)
+    // Try to delete the actual file from storage (best effort)
     try {
       const supabase = createSupabaseAdmin();
       const fileName = video.videoUrl.split('/').pop();
       if (fileName) {
+        const folder = video.mediaType === 'audio' ? 'audio' : 'videos';
         await supabase.storage
           .from(STORAGE_BUCKET)
-          .remove([`videos/${fileName}`]);
+          .remove([`${folder}/${fileName}`]);
       }
     } catch (storageError) {
       // Continue anyway - metadata is deleted
