@@ -1121,6 +1121,31 @@ export default function PhotoAuditPage() {
     }
   };
 
+  // "✓ Correct" for haiku_drafted cards — teacher says the AI draft is right.
+  // Looks up the proposed name in the loaded curriculum:
+  //   found  → attachToExistingWork (same as Tier 1b but teacher-initiated, no confidence gate)
+  //   not found → opens the sheet so the teacher can type the work name themselves
+  const handleConfirmHaikuDraft = (photo: AuditPhoto) => {
+    if (!photo.child_id) {
+      toast.error('Photo has no child tagged — tag a child first');
+      return;
+    }
+    const draft = photo.sonnet_draft;
+    const proposed = draft?.proposed_name?.trim() || photo.work_name?.trim();
+    if (!proposed) {
+      openThisIsSheet(photo);
+      return;
+    }
+    const resolved = findWorkByName(proposed, draft?.suggested_area);
+    if (resolved) {
+      console.log(`[HaikuConfirm] Teacher-confirmed draft: "${proposed}" → attaching`);
+      attachToExistingWork(photo, resolved.work, resolved.areaKey);
+    } else {
+      // Proposed name not in curriculum — open the sheet so teacher can pick/create
+      openThisIsSheet(photo);
+    }
+  };
+
   // "This is..." — one button, one sheet, three resolution paths (existing / new_custom / confirm_ai).
   // Replaces the old Fix + Accept + AcceptDraftModal tangle.
   //
@@ -2141,6 +2166,7 @@ export default function PhotoAuditPage() {
               rerunResult={rerunResults[photo.id] || null}
               onAcceptResult={() => handleAcceptResult(photo)}
               onAcceptDraft={() => openThisIsSheet(photo)}
+              onConfirmDraft={() => handleConfirmHaikuDraft(photo)}
               onTellAI={() => setTellAiPhoto(photo)}
               onPhotoTap={() => photo.url && setLightboxUrl(photo.url)}
               onSaveNote={(caption) => handleSaveNote(photo.id, caption)}
@@ -2537,7 +2563,7 @@ export default function PhotoAuditPage() {
 }
 
 // ─── AuditPhotoCard ───
-function AuditPhotoCard({ photo, selected, onToggle, onConfirm, onCorrect, onUseAsReference, onTagChildren, onDelete, onMarkAsPaperwork, onToggleDiscussion, rerunResult, onAcceptResult, onAcceptDraft, onTellAI, onPhotoTap, onSaveNote, processing, workStatus, onSetStatus, unifiedTagger, t }: {
+function AuditPhotoCard({ photo, selected, onToggle, onConfirm, onCorrect, onUseAsReference, onTagChildren, onDelete, onMarkAsPaperwork, onToggleDiscussion, rerunResult, onAcceptResult, onAcceptDraft, onConfirmDraft, onTellAI, onPhotoTap, onSaveNote, processing, workStatus, onSetStatus, unifiedTagger, t }: {
   photo: AuditPhoto;
   selected: boolean;
   onToggle: () => void;
@@ -2551,6 +2577,7 @@ function AuditPhotoCard({ photo, selected, onToggle, onConfirm, onCorrect, onUse
   rerunResult: { work_name: string | null; work_id: string | null; area: string | null; confidence: number | null; scenario: string | null; visual_description: string | null; model_used: string | null; loading: boolean; error: string | null } | null;
   onAcceptResult: () => void;
   onAcceptDraft: () => void;
+  onConfirmDraft: () => void;
   onTellAI: () => void;
   onPhotoTap: () => void;
   onSaveNote: (caption: string) => void;
@@ -2731,35 +2758,25 @@ function AuditPhotoCard({ photo, selected, onToggle, onConfirm, onCorrect, onUse
             <p className="text-[9px] text-cyan-600 capitalize">{photo.sonnet_draft.suggested_area.replace(/_/g, ' ')}</p>
           )}
           <p className="text-[9px] text-cyan-700 mt-0.5 italic">Haiku identified this, but has low confidence — ask Sonnet for deeper analysis.</p>
-          {unifiedTagger ? (
+          {/* Always show ✓ Correct + ✏️ Wrong — same pattern as haiku_matched */}
+          <div className="flex gap-1 mt-1.5">
+            <button
+              onClick={onConfirmDraft}
+              disabled={processing}
+              className="flex-1 text-[12px] py-2 rounded bg-cyan-600 text-white font-bold disabled:opacity-50"
+              title="Haiku got it right — confirm"
+            >
+              {processing ? '...' : '✓ Correct'}
+            </button>
             <button
               onClick={onAcceptDraft}
               disabled={processing}
-              className="w-full text-[11px] py-2 mt-1.5 rounded bg-cyan-600 text-white font-bold disabled:opacity-50"
-              title="Identify this work"
+              className="flex-1 text-[12px] py-2 rounded bg-white border border-cyan-400 text-cyan-700 font-bold disabled:opacity-50"
+              title="Haiku got it wrong — pick the right work"
             >
-              {processing ? '...' : '🏷️ This is…'}
+              ✏️ Wrong
             </button>
-          ) : (
-            <div className="flex gap-1 mt-1.5">
-              <button
-                onClick={onAcceptDraft}
-                disabled={processing}
-                className="flex-1 text-[11px] py-1.5 rounded bg-cyan-600 text-white font-bold disabled:opacity-50"
-                title="Resolve with Haiku's suggestion"
-              >
-                {processing ? '...' : '✅ Use this'}
-              </button>
-              <button
-                onClick={onCorrect}
-                disabled={processing}
-                className="flex-1 text-[11px] py-1.5 rounded bg-white border border-cyan-400 text-cyan-700 font-bold disabled:opacity-50"
-                title="Pick a different work"
-              >
-                ✏️ Fix
-              </button>
-            </div>
-          )}
+          </div>
           <button
             onClick={() => {
               // Call Ask Sonnet endpoint — teacher-triggered enrichment
