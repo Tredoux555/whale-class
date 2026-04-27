@@ -29,6 +29,76 @@ type TabType = 'schools' | 'feedback' | 'leads' | 'visitors' | 'guru';
 
 const SESSION_TIMEOUT_MS = 15 * 60 * 1000; // 15 minutes
 
+type DemoLead = { id: string; org_name: string; contact_person: string | null; email: string; created_at: string; status: string };
+
+function DemoRequestAlert({ saToken }: { saToken: string }) {
+  const [leads, setLeads] = useState<DemoLead[]>([]);
+  const [dismissing, setDismissing] = useState<string | null>(null);
+
+  const load = useCallback(() => {
+    if (!saToken) return;
+    fetch('/api/montree/super-admin/demo-requests', {
+      headers: { 'x-super-admin-token': saToken },
+    })
+      .then(r => r.ok ? r.json() : null)
+      .then(d => {
+        if (d?.requests) {
+          // Only show truly new/pending leads
+          setLeads(d.requests.filter((r: DemoLead) => r.status === 'demo_requested'));
+        }
+      })
+      .catch(() => {});
+  }, [saToken]);
+
+  useEffect(() => { load(); }, [load]);
+
+  const markContacted = async (id: string) => {
+    setDismissing(id);
+    await fetch('/api/montree/super-admin/demo-requests', {
+      method: 'PATCH',
+      headers: { 'x-super-admin-token': saToken, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id, status: 'contacted' }),
+    }).catch(() => {});
+    setLeads(prev => prev.filter(l => l.id !== id));
+    setDismissing(null);
+  };
+
+  if (leads.length === 0) return null;
+
+  return (
+    <div className="mb-4 p-4 bg-emerald-500/15 border border-emerald-500/40 rounded-xl">
+      <div className="flex items-center gap-2 mb-3">
+        <span className="text-emerald-400 text-lg">🎯</span>
+        <span className="text-emerald-300 font-semibold text-sm">
+          {leads.length} new demo request{leads.length > 1 ? 's' : ''} from the landing page
+        </span>
+      </div>
+      <div className="space-y-2">
+        {leads.map(lead => (
+          <div key={lead.id} className="flex items-center justify-between bg-black/20 rounded-lg px-3 py-2 gap-3">
+            <div className="min-w-0">
+              <span className="text-white text-sm font-medium">{lead.org_name}</span>
+              {lead.contact_person && <span className="text-emerald-300/70 text-xs ml-2">— {lead.contact_person}</span>}
+              <div>
+                <a href={`mailto:${lead.email}`} className="text-emerald-400 text-xs hover:text-emerald-300 underline">
+                  {lead.email}
+                </a>
+              </div>
+            </div>
+            <button
+              onClick={() => markContacted(lead.id)}
+              disabled={dismissing === lead.id}
+              className="shrink-0 text-xs px-2.5 py-1 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/35 text-emerald-300 border border-emerald-500/30 transition-colors disabled:opacity-50"
+            >
+              {dismissing === lead.id ? '...' : 'Mark contacted'}
+            </button>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export default function SuperAdminPage() {
   const [authenticated, setAuthenticated] = useState(false);
   const [password, setPassword] = useState('');
@@ -428,6 +498,9 @@ export default function SuperAdminPage() {
             ⚠️ Session expiring soon. Move mouse to stay logged in.
           </div>
         )}
+
+        {/* Demo Request Alert */}
+        <DemoRequestAlert saToken={saToken} />
 
         {/* Onboarding System Settings */}
         {onboardingSettings && (
