@@ -465,7 +465,7 @@ export default function MontreeLanding() {
           </p>
           <a href="/pricing"
             style={{ display: 'inline-block', fontSize: '0.875rem', fontWeight: 500, color: '#059669', borderBottom: '1px solid #bbf7d0', paddingBottom: 2 }}>
-            View pricing and tiers →
+            30 days free · See pricing →
           </a>
         </section>
 
