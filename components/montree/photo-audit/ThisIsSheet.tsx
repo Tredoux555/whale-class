@@ -94,7 +94,7 @@ export default function ThisIsSheet({
   photo,
   classroomId,
 }: Props) {
-  const { locale } = useI18n();
+  const { locale, t } = useI18n();
   const [query, setQuery] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [addMode, setAddMode] = useState(false); // user tapped "add as new work"
