@@ -551,6 +551,16 @@ export default function DashboardHeader() {
                     <span>{t('nav.library') || 'Library'}</span>
                   </Link>
                   <Link
+                    href="/montree/dashboard/earnings"
+                    onClick={() => setShowMoreMenu(false)}
+                    className={`flex items-center gap-3 px-4 py-2.5 text-sm transition-colors ${
+                      pathname === '/montree/dashboard/earnings' ? 'bg-emerald-50 text-emerald-700 font-semibold' : 'text-gray-700 hover:bg-gray-50'
+                    }`}
+                  >
+                    <span className="text-base">💰</span>
+                    <span>My Earnings</span>
+                  </Link>
+                  <Link
                     href="/montree/dashboard/students"
                     onClick={() => setShowMoreMenu(false)}
                     className={`flex items-center gap-3 px-4 py-2.5 text-sm transition-colors ${
