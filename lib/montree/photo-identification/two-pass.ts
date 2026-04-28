@@ -179,8 +179,13 @@ export interface TwoPassResult {
 
 /**
  * Build candidate list for Pass 2b re-examination.
- * Prioritizes: Haiku's Pass 2 guess (if has VM) → top VM entries sorted by relevance
- * Returns up to 5 candidates with visual descriptions.
+ * Priority order:
+ *   1. Haiku's Pass 2 guess (if it has visual memory)
+ *   2. Same-area VM entries (area-aware — most confusions happen within the same area)
+ *   3. Other-area VM entries as fillers up to 5 total
+ *
+ * All candidates include LOOKS LIKE + KEY MATERIALS + DISTINGUISH FROM so Haiku
+ * can distinguish similar-looking works (e.g. Sandpaper Letters vs Blue Series).
  */
 function buildPass2bCandidates(
   pass2Result: {
@@ -188,14 +193,15 @@ function buildPass2bCandidates(
   },
   context: IdentificationContext,
 ): Array<{ name: string; area: string | null; looksLike: string }> {
-  const candidates: Array<{ name: string; area: string | null; looksLike: string }> = [];
   const seen = new Set<string>();
+  const targetArea = pass2Result.identification?.area ?? null;
 
   // Priority 1: Haiku's Pass 2 guess (if it has visual memory)
-  if (pass2Result.identification && context.visualMemoryWorkNames.has(pass2Result.identification.workName)) {
+  const priority1: Array<{ name: string; area: string | null; looksLike: string }> = [];
+  if (pass2Result.identification && context.visualMemoryWorkNames.has(pass2Result.identification.workName.toLowerCase())) {
     const vmEntry = extractVisualMemoryEntry(context, pass2Result.identification.workName);
     if (vmEntry) {
-      candidates.push({
+      priority1.push({
         name: pass2Result.identification.workName,
         area: pass2Result.identification.area,
         looksLike: vmEntry,
@@ -204,35 +210,22 @@ function buildPass2bCandidates(
     }
   }
 
-  // Priority 2: Top visual memory entries from context text.
-  // Format from context-loader.ts line 156:
-  //   - "WorkName" (area):
-  //     LOOKS LIKE: description
-  //     KEY MATERIALS: ...
-  //     DISTINGUISH FROM: ...
-  //
-  // We capture ALL three fields so Pass 2b can distinguish similar-looking works
-  // (e.g. Sandpaper Letters vs Blue Series — both involve letters, but KEY MATERIALS
-  // "sandpaper texture" vs "small moveable letters" makes them unmistakable).
+  // Parse all VM entries from context text, collecting full descriptions.
+  // We capture LOOKS LIKE + KEY MATERIALS + DISTINGUISH FROM so Pass 2b has
+  // enough detail to distinguish similar-looking works within the same area.
+  type ParsedEntry = { name: string; area: string | null; looksLike: string; keyMaterials: string; distinguishFrom: string };
+  const allParsed: ParsedEntry[] = [];
   const vmLines = context.visualMemoryContext.split('\n');
-  let currentWork: { name: string; area: string | null; looksLike: string; keyMaterials: string; distinguishFrom: string } | null = null;
+  let currentWork: ParsedEntry | null = null;
 
   const flushCurrentWork = () => {
-    if (currentWork && currentWork.looksLike && !seen.has(currentWork.name.toLowerCase())) {
-      const parts = [`LOOKS LIKE: ${currentWork.looksLike}`];
-      if (currentWork.keyMaterials) parts.push(`KEY MATERIALS: ${currentWork.keyMaterials}`);
-      if (currentWork.distinguishFrom) parts.push(`DISTINGUISH FROM: ${currentWork.distinguishFrom}`);
-      candidates.push({ name: currentWork.name, area: currentWork.area, looksLike: parts.join(' | ') });
-      seen.add(currentWork.name.toLowerCase());
-    }
+    if (currentWork && currentWork.looksLike) allParsed.push({ ...currentWork });
   };
 
   for (const line of vmLines) {
-    // Match the header line: - "WorkName" (area):
     const headerMatch = line.match(/^- "([^"]+)" \(([^)]+)\):/);
     if (headerMatch) {
       flushCurrentWork();
-      if (candidates.length >= 5) break;
       currentWork = { name: headerMatch[1], area: headerMatch[2] || null, looksLike: '', keyMaterials: '', distinguishFrom: '' };
       continue;
     }
@@ -244,10 +237,29 @@ function buildPass2bCandidates(
     const distinguishMatch = line.match(/^\s+DISTINGUISH FROM:\s*(.+)/);
     if (distinguishMatch && !currentWork.distinguishFrom) { currentWork.distinguishFrom = distinguishMatch[1].trim(); }
   }
-  // Don't forget the last entry
-  if (candidates.length < 5) flushCurrentWork();
+  flushCurrentWork();
 
-  return candidates.slice(0, 5);
+  const toCandidate = (e: ParsedEntry) => {
+    const parts = [`LOOKS LIKE: ${e.looksLike}`];
+    if (e.keyMaterials) parts.push(`KEY MATERIALS: ${e.keyMaterials}`);
+    if (e.distinguishFrom) parts.push(`DISTINGUISH FROM: ${e.distinguishFrom}`);
+    return { name: e.name, area: e.area, looksLike: parts.join(' | ') };
+  };
+
+  // Priority 2: same-area entries (most confusions are within-area)
+  const sameArea = allParsed.filter(e => !seen.has(e.name.toLowerCase()) && e.area === targetArea);
+  // Priority 3: other-area entries as fillers
+  const otherArea = allParsed.filter(e => !seen.has(e.name.toLowerCase()) && e.area !== targetArea);
+
+  const candidates = [...priority1];
+  for (const e of [...sameArea, ...otherArea]) {
+    if (candidates.length >= 5) break;
+    if (seen.has(e.name.toLowerCase())) continue;
+    candidates.push(toCandidate(e));
+    seen.add(e.name.toLowerCase());
+  }
+
+  return candidates;
 }
 
 /**

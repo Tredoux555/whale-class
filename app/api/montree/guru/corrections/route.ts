@@ -612,6 +612,8 @@ async function enrichVisualMemoryFromCorrection({
   const hasCachedDescription = !!visualDescription;
   const isRealCorrection = originalWorkName && originalWorkName.trim() &&
     originalWorkName.toLowerCase() !== correctedWorkName.toLowerCase();
+  // Bidirectional confusable pair: captured from Sonnet analysis, written after fingerprint upsert
+  let reverseNegative = '';
 
   if (anthropic && (!hasCachedDescription || isRealCorrection)) {
     const apiAbortController = new AbortController();
@@ -707,6 +709,11 @@ Analyze the photo and call the correction_analysis tool.` },
               });
               console.log(`[VisualMemory] Sonnet correction analysis: negative on "${originalWorkName}" — ${mistakeReason.slice(0, 80)}`);
             }
+            // Bidirectional: also record a reverse negative on the CORRECT work so Haiku
+            // knows that THIS work can be confused with the original guess.
+            if (distinguishing) {
+              reverseNegative = `May look similar to "${originalWorkName || 'unknown'}". ${distinguishing}`.slice(0, 400);
+            }
           }
           break;
         }
@@ -742,6 +749,20 @@ Analyze the photo and call the correction_analysis tool.` },
     mediaId,
     keyMaterials: draftKeyMaterials,
   });
+
+  // 3b. BIDIRECTIONAL confusable pair — write reverse negative on the CORRECT work
+  //     so Haiku also knows that correctedWorkName can be mistaken for originalWorkName.
+  if (isRealCorrection && reverseNegative && originalWorkName) {
+    await appendNegativeExample({
+      supabase,
+      classroomId,
+      workName: correctedWorkName,
+      workKey: correctedWorkId,
+      area: correctedArea,
+      negative: reverseNegative,
+    });
+    console.log(`[VisualMemory] Bidirectional negative on "${correctedWorkName}" (may look like "${originalWorkName}")`);
+  }
 
   // 4. APPEND fallback negative example if Sonnet analysis didn't already handle it
   //    (Sonnet analysis writes a richer negative in step 2 above; this is the safety net)

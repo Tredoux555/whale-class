@@ -87,8 +87,33 @@ export async function POST(request: NextRequest) {
   // Build photo URL (Anthropic needs a publicly fetchable URL)
   const photoUrl = getPublicUrl(MEDIA_BUCKET, media.storage_path);
 
-  // Load curriculum + identification context
-  const curriculum = loadAllCurriculumWorks();
+  // Load curriculum + identification context.
+  // Extend with custom classroom works (same fix as process/route.ts) so Sonnet
+  // matching also benefits from exact names for teacher-created custom works.
+  const curriculum = [...loadAllCurriculumWorks()];
+  if (media.classroom_id) {
+    const { data: classroomWorks } = await supabase
+      .from('montree_classroom_curriculum_works')
+      .select('name, work_key, area:montree_classroom_curriculum_areas!area_id(area_key)')
+      .eq('classroom_id', media.classroom_id)
+      .eq('is_custom', true);
+    if (classroomWorks && classroomWorks.length > 0) {
+      const existingKeys = new Set(curriculum.map(w => w.work_key));
+      for (const cw of classroomWorks) {
+        if (!existingKeys.has(cw.work_key)) {
+          curriculum.push({
+            area_key: (cw.area as { area_key: string } | null)?.area_key || 'unknown',
+            work_key: cw.work_key,
+            name: cw.name,
+            aliases: [],
+            sequence: 999999,
+            category_name: 'Custom',
+            age_range: '3-6',
+          });
+        }
+      }
+    }
+  }
   const context = await loadIdentificationContext(supabase, { classroomId: media.classroom_id });
 
   // Extract Pass 1 visual description from the partial Haiku draft (stored by process route)
