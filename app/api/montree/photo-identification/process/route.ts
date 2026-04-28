@@ -185,7 +185,40 @@ export async function POST(request: NextRequest) {
   // leaves the photo stuck at 'pending' forever because the 'failed' status
   // write at the bottom only runs on controlled failures, not crashes.
   try {
-    const curriculum = loadAllCurriculumWorks();
+    // Start with the static curriculum (329 works across 5 areas)
+    const curriculum = [...loadAllCurriculumWorks()];
+
+    // Extend with custom classroom works so matchToCurriculumV2 finds them
+    // by exact name (score=1.0) instead of garbage word-level matches.
+    // Root cause of Apr 28 regression: Haiku correctly identified custom works
+    // (e.g. "Popsicle Letter Sorting Work") but matchToCurriculumV2 had no
+    // entry for them → weak word match returned "Sorting Grains" instead.
+    if (media.classroom_id) {
+      const { data: classroomWorks } = await supabase
+        .from('montree_classroom_curriculum_works')
+        .select('name, work_key, area:montree_classroom_curriculum_areas!area_id(area_key)')
+        .eq('classroom_id', media.classroom_id)
+        .eq('is_custom', true);
+
+      if (classroomWorks && classroomWorks.length > 0) {
+        const existingKeys = new Set(curriculum.map(w => w.work_key));
+        for (const cw of classroomWorks) {
+          if (!existingKeys.has(cw.work_key)) {
+            curriculum.push({
+              area_key: (cw.area as { area_key: string } | null)?.area_key || 'unknown',
+              work_key: cw.work_key,
+              name: cw.name,
+              aliases: [],
+              sequence: 999999,
+              category_name: 'Custom',
+              age_range: '3-6',
+            });
+          }
+        }
+        console.log(`[PhotoIdentification] Loaded ${classroomWorks.length} custom classroom works into curriculum (total: ${curriculum.length})`);
+      }
+    }
+
     const context = await loadIdentificationContext(supabase, { classroomId: media.classroom_id });
 
     // ----- Step 1: Two-pass Haiku identification -----
