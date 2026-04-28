@@ -188,6 +188,8 @@ export async function GET(request: NextRequest) {
   const dbItMap = new Map<string, string>();
   const dbJaMap = new Map<string, string>();
   const dbKoMap = new Map<string, string>();
+  const dbUkMap = new Map<string, string>();
+  const dbRuMap = new Map<string, string>();
   try {
     // Get child's classroom_id
     const { data: childData } = await supabase
@@ -199,7 +201,7 @@ export async function GET(request: NextRequest) {
     if (childData?.classroom_id) {
       const { data: currWorks } = await supabase
         .from('montree_classroom_curriculum_works')
-        .select('name, name_chinese, name_es, name_de, name_fr, name_pt, name_nl, name_it, name_ja, name_ko')
+        .select('name, name_chinese, name_es, name_de, name_fr, name_pt, name_nl, name_it, name_ja, name_ko, name_uk, name_ru')
         .eq('classroom_id', childData.classroom_id);
 
       for (const w of currWorks || []) {
@@ -213,6 +215,8 @@ export async function GET(request: NextRequest) {
         if (w.name_it) dbItMap.set(key, w.name_it);
         if (w.name_ja) dbJaMap.set(key, w.name_ja);
         if (w.name_ko) dbKoMap.set(key, w.name_ko);
+        if (w.name_uk) dbUkMap.set(key, w.name_uk);
+        if (w.name_ru) dbRuMap.set(key, w.name_ru);
       }
     }
   } catch {
@@ -256,6 +260,10 @@ export async function GET(request: NextRequest) {
       if (jaName) updated = { ...updated, jaName };
       const koName = dbKoMap.get(key);
       if (koName) updated = { ...updated, koName };
+      const ukName = dbUkMap.get(key);
+      if (ukName) updated = { ...updated, ukName };
+      const ruName = dbRuMap.get(key);
+      if (ruName) updated = { ...updated, ruName };
     }
     return updated;
   });

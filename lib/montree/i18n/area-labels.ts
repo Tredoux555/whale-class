@@ -88,6 +88,22 @@ export const AREA_LABELS_KO: Record<string, string> = {
   cultural: '문화',
 };
 
+export const AREA_LABELS_UK: Record<string, string> = {
+  practical_life: 'Практичне Життя',
+  sensorial: 'Сенсорний',
+  mathematics: 'Математика',
+  language: 'Мова',
+  cultural: 'Культура',
+};
+
+export const AREA_LABELS_RU: Record<string, string> = {
+  practical_life: 'Практическая Жизнь',
+  sensorial: 'Сенсорика',
+  mathematics: 'Математика',
+  language: 'Язык',
+  cultural: 'Культура',
+};
+
 /** Map of all locale → area labels. Keyed by locale string. */
 export const AREA_LABELS: Record<string, Record<string, string>> = {
   en: AREA_LABELS_EN,
@@ -100,6 +116,8 @@ export const AREA_LABELS: Record<string, Record<string, string>> = {
   it: AREA_LABELS_IT,
   ja: AREA_LABELS_JA,
   ko: AREA_LABELS_KO,
+  uk: AREA_LABELS_UK,
+  ru: AREA_LABELS_RU,
 };
 
 /** Ordered area keys (Montessori canonical sequence). */

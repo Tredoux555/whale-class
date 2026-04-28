@@ -29,6 +29,8 @@ export interface Assignment {
   itName?: string;
   jaName?: string;
   koName?: string;
+  ukName?: string;
+  ruName?: string;
 }
 
 interface AreaDetail {
@@ -100,6 +102,8 @@ function getWorkDisplayName(work: Assignment, locale: string): string {
     it: work.itName,
     ja: work.jaName,
     ko: work.koName,
+    uk: work.ukName,
+    ru: work.ruName,
   };
   return nameMap[locale] || cleanWorkName(work.work_name);
 }
@@ -439,7 +443,7 @@ export default function FocusWorksSection({
                       <div className="flex gap-2">
                         <button
                           {...(areaIdx === 0 ? { 'data-guide': 'quick-guide-btn' } : {})}
-                          onClick={() => onOpenQuickGuide(focusWork.work_name, { zh: focusWork.chineseName, es: focusWork.spanishName, de: focusWork.deName, fr: focusWork.frName, pt: focusWork.ptName, nl: focusWork.nlName, it: focusWork.itName, ja: focusWork.jaName, ko: focusWork.koName })}
+                          onClick={() => onOpenQuickGuide(focusWork.work_name, { zh: focusWork.chineseName, es: focusWork.spanishName, de: focusWork.deName, fr: focusWork.frName, pt: focusWork.ptName, nl: focusWork.nlName, it: focusWork.itName, ja: focusWork.jaName, ko: focusWork.koName, uk: focusWork.ukName, ru: focusWork.ruName })}
                           className="flex-1 py-2.5 bg-amber-500 text-white font-bold rounded-xl text-sm flex items-center justify-center gap-1 hover:bg-amber-600 active:scale-95"
                         >
                           📖 {t('focusWorks.quickGuide')}

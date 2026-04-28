@@ -53,6 +53,8 @@ interface Assignment {
   itName?: string;
   jaName?: string;
   koName?: string;
+  ukName?: string;
+  ruName?: string;
 }
 
 interface CurriculumWork {
@@ -821,7 +823,7 @@ export default function WeekPage() {
           onOpenQuickGuide={() => {
             if (focusWorks.length > 0) {
               const w = focusWorks[0];
-              openQuickGuide(w.work_name, { zh: w.chineseName, es: w.spanishName, de: w.deName, fr: w.frName, pt: w.ptName, nl: w.nlName, it: w.itName, ja: w.jaName, ko: w.koName });
+              openQuickGuide(w.work_name, { zh: w.chineseName, es: w.spanishName, de: w.deName, fr: w.frName, pt: w.ptName, nl: w.nlName, it: w.itName, ja: w.jaName, ko: w.koName, uk: w.ukName, ru: w.ruName });
             }
           }}
           onCloseQuickGuide={() => {
