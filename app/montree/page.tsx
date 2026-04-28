@@ -397,6 +397,7 @@ export default function MontreeLanding() {
           <span>Montree · montree.xyz</span>
         </div>
       </footer>
+      </div>
     </>
   );
 }
