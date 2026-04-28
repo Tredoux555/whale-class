@@ -10,7 +10,7 @@ import { toast } from 'sonner';
 interface BulkPasteImportProps {
   classroomId: string;
   existingCount: number;
-  onImported: () => void;
+  onImported: (children: Array<{ id: string; name: string }>) => void;
   onClose: () => void;
 }
 
@@ -197,7 +197,7 @@ export default function BulkPasteImport({ classroomId, existingCount, onImported
       }
 
       toast.success(t('bulkImport.success').replace('{count}', data.created.toString()));
-      onImported();
+      onImported(data.children || []);
     } catch {
       toast.error(t('common.networkError'));
     } finally {
