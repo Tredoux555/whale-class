@@ -9,11 +9,17 @@ import LanguageToggle from '@/components/montree/LanguageToggle';
 export default function LibraryWelcomePage() {
   const { t } = useI18n();
   return (
-    <div className="min-h-screen relative overflow-hidden flex flex-col" style={{ background: 'linear-gradient(160deg, #0A2725 0%, #0D3330 40%, #122C2A 70%, #0F1F1E 100%)' }}>
+    <div className="min-h-screen relative overflow-hidden flex flex-col" style={{ background: '#06140e' }}>
 
-      {/* Ambient glow effects */}
-      <div className="absolute top-[-20%] left-[-10%] w-[500px] h-[500px] rounded-full opacity-[0.07]" style={{ background: 'radial-gradient(circle, #34d399, transparent 70%)' }} />
-      <div className="absolute bottom-[-10%] right-[-5%] w-[400px] h-[400px] rounded-full opacity-[0.05]" style={{ background: 'radial-gradient(circle, #fbbf24, transparent 70%)' }} />
+      {/* Background gradient — matches landing page */}
+      <div aria-hidden="true" style={{
+        position: 'fixed', inset: 0, zIndex: 0, pointerEvents: 'none',
+        background: `
+          radial-gradient(ellipse 1000px 800px at 78% 10%, rgba(39,129,90,0.55), rgba(39,129,90,0) 55%),
+          radial-gradient(ellipse 600px 500px at 72% 16%, rgba(130,217,174,0.28), rgba(130,217,174,0) 60%),
+          linear-gradient(155deg, #0c2419 0%, #0a1f16 38%, #081a12 70%, #06140e 100%)
+        `,
+      }} />
 
       {/* Nav */}
       <nav className="relative z-10 px-6 py-5 flex items-center justify-between">
