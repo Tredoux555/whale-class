@@ -376,38 +376,29 @@ export default function DashboardPage() {
         <main className="max-w-6xl mx-auto px-4 pt-3 pb-2 flex flex-col" style={{ height: 'calc(100dvh - 56px)' }}>
 
           {children.length === 0 ? (
-            /* Empty state — bulk import or add manually */
-            importLoading ? (
-              /* Import in progress — show spinner so teacher knows something is happening */
+            /* Empty state — bulk import, or spinner while loading/importing */
+            (importLoading || loading) ? (
+              /* Show spinner while import is in progress OR while children are loading after a hard-navigate */
               <div className="flex flex-col items-center justify-center py-24 gap-4">
                 <div className="w-10 h-10 border-4 border-emerald-200 border-t-emerald-500 rounded-full animate-spin" />
-                <p className="text-gray-500 text-sm font-medium">Adding your students…</p>
+                <p className="text-gray-500 text-sm font-medium">
+                  {importLoading ? 'Adding your students…' : 'Loading your classroom…'}
+                </p>
               </div>
             ) : (
-              <div className="space-y-4">
-                <button
-                  onClick={() => setShowBulkImport(true)}
-                  data-tutorial="student-grid"
-                  className="block w-full bg-white rounded-2xl shadow-md p-10 text-center hover:shadow-lg transition-shadow animate-pulse-ring"
-                >
-                  <span className="text-5xl mb-3 block">📋</span>
-                  <p className="text-gray-800 font-semibold text-lg mb-1">
-                    {t('bulkImport.title')}
-                  </p>
-                  <p className="text-gray-400 text-sm">
-                    {t('bulkImport.subtitle')}
-                  </p>
-                </button>
-                <Link
-                  href="/montree/dashboard/students"
-                  className="block bg-white/60 border-2 border-dashed border-gray-200 hover:border-amber-400 hover:bg-gray-50 rounded-2xl transition-all p-6 text-center"
-                >
-                  <span className="text-2xl text-gray-400 mb-1 block">+</span>
-                  <p className="text-gray-400 text-sm">
-                    {t('dashboard.tapAddFirstStudent')}
-                  </p>
-                </Link>
-              </div>
+              <button
+                onClick={() => setShowBulkImport(true)}
+                data-tutorial="student-grid"
+                className="block w-full bg-white rounded-2xl shadow-md p-10 text-center hover:shadow-lg transition-shadow animate-pulse-ring"
+              >
+                <span className="text-5xl mb-3 block">📋</span>
+                <p className="text-gray-800 font-semibold text-lg mb-1">
+                  {t('bulkImport.title')}
+                </p>
+                <p className="text-gray-400 text-sm">
+                  {t('bulkImport.subtitle')}
+                </p>
+              </button>
             )
           ) : (
             <>
@@ -519,12 +510,11 @@ export default function DashboardPage() {
             try { sessionStorage.removeItem(`montree_students_${session?.classroom?.id}`); } catch {}
             // Refetch children — if this works the spinner clears automatically when children arrive
             refetchChildren();
-            // Hard-navigate after a short delay as a guaranteed fallback.
-            // refetchChildren() is async and can silently fail on first login; this ensures
-            // the student grid always appears even if the in-memory refetch doesn't fire.
+            // Hard-navigate after a delay as a guaranteed fallback.
+            // 3s gives the DB time to finish writing all students before the reload fetches them.
             setTimeout(() => {
               window.location.href = '/montree/dashboard';
-            }, 1200);
+            }, 3000);
           }}
           onClose={() => setShowBulkImport(false)}
         />
