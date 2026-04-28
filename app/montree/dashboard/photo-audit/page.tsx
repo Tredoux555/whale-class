@@ -70,7 +70,7 @@ interface AuditPhoto {
   } | null;
 }
 
-type Zone = 'all' | 'green' | 'amber' | 'red' | 'untagged' | 'weekly_admin' | 'weekly_wrap' | 'discussion';
+type Zone = 'all' | 'green' | 'amber' | 'red' | 'untagged' | 'weekly_admin' | 'weekly_wrap' | 'discussion' | 'get_advice';
 type DateRange = '24h' | '7d' | '30d' | 'all';
 
 // Area picker with cross-area work search + inline add custom work form
@@ -434,6 +434,189 @@ function AreaPickerWithSearch({
           {t('common.cancel')}
         </button>
       </div>
+    </div>
+  );
+}
+
+// ─── Get Advice Tab ───────────────────────────────────────────────────────────
+// Shows confirmed photos grouped by child. One tap → Guru streams Montessori
+// advice on next steps for that child based on what they were observed doing.
+function GetAdviceTab({ photos, classroomId }: { photos: AuditPhoto[]; classroomId: string }) {
+  const { t } = useI18n();
+  const [advice, setAdvice] = useState<Record<string, string>>({});
+  const [adviceLoading, setAdviceLoading] = useState<Record<string, boolean>>({});
+  const [expanded, setExpanded] = useState<Record<string, boolean>>({});
+
+  // Group confirmed photos by child — pick the most recent per child
+  const childGroups = useMemo(() => {
+    const byChild: Record<string, AuditPhoto[]> = {};
+    for (const p of photos) {
+      if (!p.teacher_confirmed || !p.child_id || !p.child_name || !p.work_name) continue;
+      if (!byChild[p.child_id]) byChild[p.child_id] = [];
+      byChild[p.child_id].push(p);
+    }
+    return Object.values(byChild)
+      .map(ps => {
+        const sorted = [...ps].sort(
+          (a, b) => new Date(b.captured_at).getTime() - new Date(a.captured_at).getTime()
+        );
+        return { child_id: sorted[0].child_id, child_name: sorted[0].child_name, photo: sorted[0], allPhotos: sorted };
+      })
+      .sort((a, b) => a.child_name.localeCompare(b.child_name));
+  }, [photos]);
+
+  const handleGetAdvice = async (childId: string, childName: string, workName: string) => {
+    setAdviceLoading(prev => ({ ...prev, [childId]: true }));
+    setAdvice(prev => ({ ...prev, [childId]: '' }));
+    setExpanded(prev => ({ ...prev, [childId]: true }));
+
+    const message = `I observed ${childName} working on "${workName}". Based on this, what would be the ideal next Montessori step for them? What direction should I take this work — what comes next in the sequence, or what related areas should I draw them toward?`;
+
+    try {
+      const res = await fetch('/api/montree/guru', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'same-origin',
+        body: JSON.stringify({
+          childId,
+          message,
+          mode: 'teacher',
+          conversationHistory: [],
+        }),
+      });
+
+      if (!res.ok) throw new Error('Request failed');
+      const reader = res.body?.getReader();
+      if (!reader) throw new Error('No stream');
+
+      const decoder = new TextDecoder();
+      let buffer = '';
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop() || '';
+        for (const line of lines) {
+          if (!line.startsWith('data: ')) continue;
+          try {
+            const event = JSON.parse(line.slice(6));
+            if (event.type === 'text') {
+              setAdvice(prev => ({ ...prev, [childId]: (prev[childId] || '') + event.text }));
+            }
+          } catch {}
+        }
+      }
+    } catch {
+      setAdvice(prev => ({ ...prev, [childId]: 'Could not load advice. Please try again.' }));
+    } finally {
+      setAdviceLoading(prev => ({ ...prev, [childId]: false }));
+    }
+  };
+
+  if (childGroups.length === 0) {
+    return (
+      <div className="text-center py-20 text-[#A1887F]">
+        <p className="text-4xl mb-3">🌱</p>
+        <p className="font-medium text-gray-600 mb-1">No confirmed observations yet</p>
+        <p className="text-sm">Confirm photos in the Confirm tab first — Guru can then advise on next steps for each child.</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="px-3 pt-3 pb-24 space-y-3">
+      <p className="text-xs text-[#A1887F] px-1 pb-1">
+        {childGroups.length} {childGroups.length === 1 ? 'child' : 'children'} with confirmed observations this week
+      </p>
+      {childGroups.map(({ child_id, child_name, photo }) => {
+        const isLoading = !!adviceLoading[child_id];
+        const adviceText = advice[child_id] || '';
+        const isOpen = !!expanded[child_id];
+        const hasAdvice = adviceText.length > 0;
+
+        return (
+          <div key={child_id} className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+            {/* Child row */}
+            <div className="flex items-center gap-3 p-3">
+              {/* Photo thumbnail */}
+              {photo.url && (
+                <div className="w-16 h-16 rounded-xl overflow-hidden shrink-0 bg-gray-100">
+                  <img
+                    src={getThumbnailUrl(photo.url, photo.thumbnail_path)}
+                    alt={child_name}
+                    className="w-full h-full object-cover"
+                    loading="lazy"
+                  />
+                </div>
+              )}
+              {/* Info */}
+              <div className="flex-1 min-w-0">
+                <p className="font-semibold text-gray-800 truncate">{child_name}</p>
+                <p className="text-xs text-[#A1887F] truncate mt-0.5">
+                  {photo.work_name}
+                  {photo.area && <span className="ml-1 opacity-60">· {photo.area}</span>}
+                </p>
+                <p className="text-[10px] text-gray-400 mt-0.5">
+                  {new Date(photo.captured_at).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}
+                </p>
+              </div>
+              {/* Action button */}
+              <button
+                onClick={() => {
+                  if (hasAdvice || isLoading) {
+                    setExpanded(prev => ({ ...prev, [child_id]: !isOpen }));
+                  } else {
+                    handleGetAdvice(child_id, child_name, photo.work_name!);
+                  }
+                }}
+                disabled={isLoading}
+                className={`shrink-0 px-3 py-2 rounded-xl text-sm font-medium transition-all ${
+                  isLoading
+                    ? 'bg-emerald-50 text-emerald-400 cursor-wait'
+                    : hasAdvice
+                    ? 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100'
+                    : 'bg-emerald-500 text-white hover:bg-emerald-600 active:scale-95 shadow-sm'
+                }`}
+              >
+                {isLoading ? (
+                  <span className="flex items-center gap-1.5">
+                    <span className="w-3 h-3 border-2 border-emerald-300 border-t-emerald-600 rounded-full animate-spin inline-block" />
+                    Thinking…
+                  </span>
+                ) : hasAdvice ? (
+                  isOpen ? 'Hide ▲' : 'Advice ▼'
+                ) : (
+                  '✦ Get Advice'
+                )}
+              </button>
+            </div>
+
+            {/* Advice panel — streams in */}
+            {(isOpen || isLoading) && (
+              <div className="border-t border-gray-100 px-4 py-3 bg-emerald-50/40">
+                {adviceText ? (
+                  <div className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">
+                    {adviceText}
+                    {isLoading && <span className="inline-block w-1.5 h-4 bg-emerald-500 ml-0.5 animate-pulse rounded-sm align-middle" />}
+                  </div>
+                ) : isLoading ? (
+                  <p className="text-sm text-[#A1887F] animate-pulse">Guru is thinking…</p>
+                ) : null}
+                {/* Re-ask button after advice loads */}
+                {hasAdvice && !isLoading && (
+                  <button
+                    onClick={() => handleGetAdvice(child_id, child_name, photo.work_name!)}
+                    className="mt-3 text-xs text-emerald-600 hover:text-emerald-800 underline"
+                  >
+                    Ask again
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
+        );
+      })}
     </div>
   );
 }
@@ -1975,6 +2158,7 @@ export default function PhotoAuditPage() {
   }, [zone]);
 
   const isPhotoZone = zone === 'all' || zone === 'green' || zone === 'discussion';
+  const isGetAdviceZone = zone === 'get_advice';
 
   // 3-tab layout: Confirm (needs review, with Today filter chip) + Weekly Wrap (Teacher + Parent
   // sub-views — the unified source of both teacher review and parent reports) +
@@ -1989,6 +2173,7 @@ export default function PhotoAuditPage() {
     { key: 'discussion', label: t('photoAudit.discussionTab'), color: 'bg-blue-100 text-blue-800', count: photos.filter(p => p.discussion_flag).length || null },
     { key: 'weekly_wrap', label: t('photoAudit.weeklyWrapTab'), color: 'bg-violet-100 text-violet-800', count: null },
     { key: 'weekly_admin', label: t('photoAudit.weeklyAdminTab'), color: 'bg-indigo-100 text-indigo-800', count: null },
+    { key: 'get_advice', label: '✦ Get Advice', color: 'bg-emerald-100 text-emerald-800', count: null },
   ];
 
   // ─── JSX ───
@@ -2128,6 +2313,14 @@ export default function PhotoAuditPage() {
       {/* ─── Weekly Admin Docs (Summary + Plan DOCX generation) ─── */}
       {zone === 'weekly_admin' && classroomIdState && (
         <WeeklyAdminTab
+          classroomId={classroomIdState}
+        />
+      )}
+
+      {/* ─── Get Advice (Guru next-steps per child) ─── */}
+      {isGetAdviceZone && classroomIdState && (
+        <GetAdviceTab
+          photos={photos}
           classroomId={classroomIdState}
         />
       )}
