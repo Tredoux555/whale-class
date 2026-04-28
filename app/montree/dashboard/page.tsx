@@ -11,7 +11,7 @@ import { HOME_THEME } from '@/lib/montree/home-theme';
 import { useI18n } from '@/lib/montree/i18n';
 import { toast, Toaster } from 'sonner';
 import { montreeApi } from '@/lib/montree/api';
-import { useMontreeData } from '@/lib/montree/cache';
+import { useMontreeData, setCacheData } from '@/lib/montree/cache';
 import { useFeatures } from '@/hooks/useFeatures';
 import { DashboardSkeleton } from '@/components/montree/Skeletons';
 import { getProxyUrl } from '@/lib/montree/media/proxy-url';
@@ -111,7 +111,6 @@ export default function DashboardPage() {
   const [selectedChildId, setSelectedChildId] = useState<string | null>(null);
   const [guruFirstView, setGuruFirstView] = useState(false);
   const [showBulkImport, setShowBulkImport] = useState(false);
-  const [importLoading, setImportLoading] = useState(false);
 
   // ─── Inline search + section collapse state (must be before early returns) ───
   const [searchQuery, setSearchQuery] = useState('');
@@ -156,15 +155,8 @@ export default function DashboardPage() {
   const childrenUrl = session?.classroom?.id
     ? `/api/montree/children?classroom_id=${session.classroom.id}`
     : null;
-  const { data: childrenData, loading, error: childrenError, refetch: refetchChildren } = useMontreeData<{ children: Child[] }>(childrenUrl);
+  const { data: childrenData, loading, error: childrenError } = useMontreeData<{ children: Child[] }>(childrenUrl);
   const children = childrenData?.children || [];
-
-  // Clear importLoading the moment children actually arrive
-  useEffect(() => {
-    if (children.length > 0 && importLoading) {
-      setImportLoading(false);
-    }
-  }, [children.length, importLoading]);
 
   // Filtered children for search (MUST be after children declaration)
   const filteredChildren = useMemo(() => {
@@ -376,30 +368,20 @@ export default function DashboardPage() {
         <main className="max-w-6xl mx-auto px-4 pt-3 pb-2 flex flex-col" style={{ height: 'calc(100dvh - 56px)' }}>
 
           {children.length === 0 ? (
-            /* Empty state — bulk import, or spinner while loading/importing */
-            (importLoading || loading) ? (
-              /* Show spinner while import is in progress OR while children are loading after a hard-navigate */
-              <div className="flex flex-col items-center justify-center py-24 gap-4">
-                <div className="w-10 h-10 border-4 border-emerald-200 border-t-emerald-500 rounded-full animate-spin" />
-                <p className="text-gray-500 text-sm font-medium">
-                  {importLoading ? 'Adding your students…' : 'Loading your classroom…'}
-                </p>
-              </div>
-            ) : (
-              <button
-                onClick={() => setShowBulkImport(true)}
-                data-tutorial="student-grid"
-                className="block w-full bg-white rounded-2xl shadow-md p-10 text-center hover:shadow-lg transition-shadow animate-pulse-ring"
-              >
-                <span className="text-5xl mb-3 block">📋</span>
-                <p className="text-gray-800 font-semibold text-lg mb-1">
-                  {t('bulkImport.title')}
-                </p>
-                <p className="text-gray-400 text-sm">
-                  {t('bulkImport.subtitle')}
-                </p>
-              </button>
-            )
+            /* Empty state — classroom has no students yet */
+            <button
+              onClick={() => setShowBulkImport(true)}
+              data-tutorial="student-grid"
+              className="block w-full bg-white rounded-2xl shadow-md p-10 text-center hover:shadow-lg transition-shadow animate-pulse-ring"
+            >
+              <span className="text-5xl mb-3 block">📋</span>
+              <p className="text-gray-800 font-semibold text-lg mb-1">
+                {t('bulkImport.title')}
+              </p>
+              <p className="text-gray-400 text-sm">
+                {t('bulkImport.subtitle')}
+              </p>
+            </button>
           ) : (
             <>
               {/* ── Today's Focus strip — hidden until teacher picks children ── */}
@@ -503,18 +485,16 @@ export default function DashboardPage() {
         <BulkPasteImport
           classroomId={session.classroom.id}
           existingCount={children.length}
-          onImported={() => {
+          onImported={(importedChildren) => {
             setShowBulkImport(false);
-            setImportLoading(true);
-            // Clear caches
-            try { sessionStorage.removeItem(`montree_students_${session?.classroom?.id}`); } catch {}
-            // Refetch children — if this works the spinner clears automatically when children arrive
-            refetchChildren();
-            // Hard-navigate after a delay as a guaranteed fallback.
-            // 3s gives the DB time to finish writing all students before the reload fetches them.
-            setTimeout(() => {
-              window.location.href = '/montree/dashboard';
-            }, 3000);
+            // Inject imported students directly into the cache — instant render, no reload needed.
+            // The bulk import API returns the full list of created children synchronously,
+            // so we can trust this data is already committed to the DB.
+            if (childrenUrl && importedChildren.length > 0) {
+              setCacheData(childrenUrl, {
+                children: [...children, ...importedChildren],
+              });
+            }
           }}
           onClose={() => setShowBulkImport(false)}
         />
