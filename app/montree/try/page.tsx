@@ -176,9 +176,10 @@ export default function TryMontreePage() {
         <a
           href="/montree"
           onClick={handleBackClick}
-          className={`inline-flex items-center gap-2 text-slate-400 hover:text-white mb-8 transition-colors ${
+          className={`inline-flex items-center gap-2 hover:text-white mb-8 transition-colors ${
             step === 'creating' || step === 'code' ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'
           }`}
+          style={{ color: 'rgba(255,255,255,0.35)', fontSize: '0.875rem', letterSpacing: '0.01em' }}
         >
           <span>←</span> {t('common.back')}
         </a>
@@ -193,18 +194,28 @@ export default function TryMontreePage() {
             <div className="flex flex-col gap-4">
               <button
                 onClick={() => handleRoleSelect('teacher')}
-                className="w-full px-6 py-5 bg-gradient-to-r from-blue-500 to-cyan-500 text-white font-semibold rounded-2xl shadow-lg shadow-blue-500/30 hover:shadow-xl hover:scale-[1.02] transition-all text-left"
+                className="w-full px-6 py-5 rounded-2xl text-left transition-all hover:scale-[1.01] active:scale-[0.99]"
+                style={{
+                  background: 'linear-gradient(135deg, rgba(39,129,90,0.32) 0%, rgba(12,36,25,0.55) 100%)',
+                  border: '1px solid rgba(130,217,174,0.22)',
+                  boxShadow: '0 1px 0 rgba(130,217,174,0.14) inset, 0 12px 32px -12px rgba(6,20,14,0.8)',
+                }}
               >
-                <span className="text-lg block">👩‍🏫 {t('signup.teacher')}</span>
-                <span className="text-sm text-blue-100/70 font-normal mt-1 block">{t('signup.teacherDesc')}</span>
+                <span className="text-lg font-medium text-white block">👩‍🏫 {t('signup.teacher')}</span>
+                <span className="text-sm font-normal mt-1 block" style={{ color: 'rgba(130,217,174,0.55)' }}>{t('signup.teacherDesc')}</span>
               </button>
 
               <button
                 onClick={() => handleRoleSelect('principal')}
-                className="w-full px-6 py-5 bg-gradient-to-r from-purple-500 to-indigo-500 text-white font-semibold rounded-2xl shadow-lg shadow-purple-500/30 hover:shadow-xl hover:scale-[1.02] transition-all text-left"
+                className="w-full px-6 py-5 rounded-2xl text-left transition-all hover:scale-[1.01] active:scale-[0.99]"
+                style={{
+                  background: 'linear-gradient(135deg, rgba(60,45,10,0.45) 0%, rgba(12,20,10,0.6) 100%)',
+                  border: '1px solid rgba(232,201,106,0.18)',
+                  boxShadow: '0 1px 0 rgba(232,201,106,0.10) inset, 0 12px 32px -12px rgba(6,20,14,0.8)',
+                }}
               >
-                <span className="text-lg block">👔 {t('signup.principal')}</span>
-                <span className="text-sm text-purple-100/70 font-normal mt-1 block">{t('signup.principalDesc')}</span>
+                <span className="text-lg font-medium text-white block">👔 {t('signup.principal')}</span>
+                <span className="text-sm font-normal mt-1 block" style={{ color: 'rgba(232,201,106,0.5)' }}>{t('signup.principalDesc')}</span>
               </button>
 
             </div>
