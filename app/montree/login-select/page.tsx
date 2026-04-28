@@ -118,9 +118,16 @@ function UnifiedLoginContent() {
   };
 
   return (
-    <div className="min-h-dvh bg-gradient-to-br from-slate-900 via-emerald-900 to-teal-900 flex items-center justify-center p-4 relative overflow-hidden">
-      {/* Background glow */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-emerald-500/15 rounded-full blur-3xl pointer-events-none" />
+    <div className="min-h-dvh flex items-center justify-center p-4 relative overflow-hidden" style={{ background: '#06140e' }}>
+      {/* Background gradient — matches landing page */}
+      <div aria-hidden="true" style={{
+        position: 'fixed', inset: 0, zIndex: 0, pointerEvents: 'none',
+        background: `
+          radial-gradient(ellipse 1000px 800px at 78% 10%, rgba(39,129,90,0.55), rgba(39,129,90,0) 55%),
+          radial-gradient(ellipse 600px 500px at 72% 16%, rgba(130,217,174,0.28), rgba(130,217,174,0) 60%),
+          linear-gradient(155deg, #0c2419 0%, #0a1f16 38%, #081a12 70%, #06140e 100%)
+        `,
+      }} />
 
       {/* Language toggle — respects safe area for notch */}
       <div className="absolute right-4 z-10" style={{ top: 'max(16px, env(safe-area-inset-top, 16px))' }}>
@@ -217,7 +224,7 @@ function UnifiedLoginContent() {
 export default function LoginSelectPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-dvh bg-gradient-to-br from-slate-900 via-emerald-900 to-teal-900 flex items-center justify-center">
+      <div className="min-h-dvh flex items-center justify-center" style={{ background: '#06140e' }}>
         <div className="w-8 h-8 border-2 border-emerald-400/30 border-t-emerald-400 rounded-full animate-spin" />
       </div>
     }>
