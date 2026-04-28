@@ -183,6 +183,81 @@ GMass campaigns A/C/D are historical. Campaign C sent 335 blank emails (Session 
 
 ## RECENT STATUS (Apr 28, 2026)
 
+### ⚡ Session 72 — Public Funnel Polish + Teacher Revenue Share Programme (Apr 28, 2026)
+
+**Commits pushed: `3f8572f0` (build fix), `eb6f7950` (try + login-select gradient), `f780ba74` (library gradient), `e945e48f` (try role cards), and teacher campaign commit (pending push).**
+
+**A. Public funnel — uniform dark forest gradient:**
+
+Applied the same fixed-div gradient (radial emerald glow + dark forest linear base, identical to landing page) to all public-facing screens:
+- `app/montree/try/page.tsx` — role picker (was teal Tailwind gradient)
+- `app/montree/login-select/page.tsx` — code login (was teal Tailwind gradient), including Suspense fallback
+- `app/montree/library/page.tsx` — library home (was custom teal linear gradient + two absolute glow divs)
+
+The role picker cards (`try/page.tsx`) were also restyled: Teacher card = deep emerald `rgba(39,129,90,0.32)` with green border; Principal card = dark gold-tint `rgba(60,45,10,0.45)` with amber `rgba(232,201,106,0.18)` border. Matches the brand palette — no more cyan/purple.
+
+**B. Landing page build fix — commit `3f8572f0`:**
+
+Prior session's gradient commit (`76032370`) left an unclosed `<div style={{ position: 'relative', zIndex: 1 }}>` at line 326 with no matching close before the `</>` fragment. Railway build was failing with `Expression expected` at line 400. Fixed by adding `</div>` before `</>`.
+
+**C. Teacher Revenue Share Programme — full build:**
+
+New campaign: teachers who start a trial and bring their school to a paid plan earn **20% of the school's monthly subscription** indefinitely, while employed there.
+
+**Files created/modified:**
+
+| File | Status |
+|------|--------|
+| `app/montree/for-teachers/page.tsx` | NEW — public landing page, dark forest aesthetic, `/montree/for-teachers` |
+| `app/api/montree/teacher/earnings/route.ts` | NEW — GET earnings for authenticated teacher |
+| `app/montree/dashboard/earnings/page.tsx` | NEW — teacher earnings dashboard |
+| `app/api/montree/try/instant/route.ts` | MODIFIED — sets `founding_teacher_id` on school after teacher creation (non-blocking) |
+| `components/montree/DashboardHeader.tsx` | MODIFIED — "💰 My Earnings" added to More menu |
+
+**Attribution logic (confirmed by user):** Teacher inputs school name + email at signup. That timestamp-backed record = proof they were first. No other verification needed.
+
+**🚨 DB MIGRATION STILL PENDING — must run in Supabase SQL Editor:**
+```sql
+ALTER TABLE montree_schools
+  ADD COLUMN IF NOT EXISTS founding_teacher_id UUID REFERENCES montree_teachers(id),
+  ADD COLUMN IF NOT EXISTS revenue_share_pct NUMERIC(5,2) DEFAULT 20.00,
+  ADD COLUMN IF NOT EXISTS revenue_share_active BOOLEAN DEFAULT FALSE;
+
+CREATE TABLE IF NOT EXISTS montree_teacher_earnings (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  teacher_id UUID NOT NULL REFERENCES montree_teachers(id),
+  school_id UUID NOT NULL REFERENCES montree_schools(id),
+  month DATE NOT NULL,
+  school_revenue NUMERIC(10,2) NOT NULL,
+  share_pct NUMERIC(5,2) NOT NULL DEFAULT 20.00,
+  teacher_earnings NUMERIC(10,2) NOT NULL,
+  status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'paid', 'cancelled')),
+  paid_at TIMESTAMPTZ,
+  notes TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE (teacher_id, school_id, month)
+);
+CREATE INDEX IF NOT EXISTS idx_teacher_earnings_teacher_id ON montree_teacher_earnings (teacher_id);
+```
+
+Until migration runs: try/instant logs a silent non-blocking error (signups still work), earnings page shows "not enrolled" for everyone.
+
+**Revenue share formula:** `student_count × $7 × 20% = teacher monthly earnings`
+
+**What's still manual:** Activating revenue share (`UPDATE montree_schools SET revenue_share_active = true ...`) and inserting monthly earnings rows. Phase 2 builds automation. Full details in `docs/TEACHER_CAMPAIGN_HANDOFF.md`.
+
+**Next session priorities:**
+1. **🚨 Run DB migration** — the SQL above in Supabase SQL Editor. Without this the programme doesn't persist.
+2. **Add "For teachers" to landing page nav** — `app/montree/page.tsx` nav, same style as Library link.
+3. **Send the 3 hot lead drafts** — Copenhagen, Paint Pots, Ardtona House. Already in Gmail.
+4. **FAMM Argentina follow-up** — Past the Apr 28 deadline.
+5. **Complete follow-up batch** — 248 remaining `status='sent'` contacts need follow-up template.
+6. **Disable `tell_guru_onboarding` for Whale Class** — `UPDATE montree_school_features SET enabled=false WHERE school_id='c6280fae-567c-45ed-ad4d-934eae79aabc' AND feature_key='tell_guru_onboarding';`
+7. **Fix Resend domain** — verify montree.xyz in Resend, update `RESEND_FROM_EMAIL` in Railway.
+8. **Super admin revenue share tab** — View/manage founding teacher relationships and monthly earnings.
+
+---
+
 ### ⚡ Session 71 — Landing Page Redesign + Sprout Logo + Demo Alert Banner + Hot Lead Drafts (Apr 28, 2026)
 
 **Commits pushed: `6e3c87e3`, `e19ace45`, `7ddd80ea`, `76617dd8`, `26aeea6b` (landing page + logo iterations), `91f8c92b` (super admin demo alert).**

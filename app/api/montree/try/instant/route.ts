@@ -318,6 +318,15 @@ export async function POST(req: NextRequest) {
       }
       steps.push('4-teacher-ok:' + teacher.id);
 
+      // ── Mark this teacher as founding teacher for revenue share (non-blocking) ──
+      supabase
+        .from('montree_schools')
+        .update({ founding_teacher_id: teacher.id, revenue_share_active: false })
+        .eq('id', school.id)
+        .then(({ error }) => {
+          if (error) console.error('[Trial] founding_teacher_id update failed:', error.message);
+        });
+
       // Lead record (non-blocking)
       try {
         await supabase.from('montree_leads').insert({
