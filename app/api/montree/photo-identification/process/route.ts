@@ -38,8 +38,18 @@ import {
 import {
   loadIdentificationContext,
 } from '@/lib/montree/photo-identification/context-loader';
+import {
+  generateSonnetDraft,
+} from '@/lib/montree/photo-identification/sonnet-draft';
 import type { Locale } from '@/lib/montree/i18n/locales';
 import { isValidLocale } from '@/lib/montree/i18n/locales';
+
+// Photos below this confidence get Sonnet enrichment automatically
+// (fire-and-forget after haiku_drafted is written). At 0.70 Haiku is
+// genuinely uncertain — waiting for teacher to click "Ask Sonnet" is
+// unnecessary friction. Above 0.70 but below Gate A (0.85), the teacher
+// can judge from the haiku_drafted card without Sonnet help.
+const AUTO_SONNET_CONFIDENCE_THRESHOLD = 0.70;
 
 // Railway serverless timeout — Haiku two-pass needs 30-45s minimum
 // (Pass 1: 15s + Pass 2: 15s + Pass 2b: 15s). Without this, Railway
@@ -307,15 +317,15 @@ export async function POST(request: NextRequest) {
     }
 
     // ----- Step 2: Store Haiku draft for teacher review -----
-    // Gate A failed — store the Haiku Pass 2 result as a draft for teacher
-    // to optionally enrich via "Ask Sonnet" button in Photo Audit.
-    // This replaces automatic Sonnet generation, making it teacher-triggered.
+    // Gate A failed — store the Haiku Pass 2 result as a draft.
+    // For very uncertain results (confidence < AUTO_SONNET_CONFIDENCE_THRESHOLD),
+    // fire Sonnet enrichment automatically in the background rather than waiting
+    // for the teacher to click "Ask Sonnet".
 
     if (twoPassResult.success && ident) {
       // Store the Haiku Pass 2 result as haiku_drafted.
       // Also persist the Pass 1 visual description in sonnet_draft JSONB
-      // (as a partial draft) so the teacher-triggered Sonnet endpoint can
-      // read it back without re-running Pass 1.
+      // (as a partial draft) so the Sonnet endpoint can read it back.
       const haikuDraftData: Record<string, unknown> = {
         identification_status: 'haiku_drafted',
         identification_confidence: ident.confidence,
@@ -338,6 +348,41 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: 'DB update failed' }, { status: 500 });
       }
 
+      // Auto-Sonnet: if confidence is very low, enrich immediately in the background.
+      // This saves the teacher from having to click "Ask Sonnet" for genuinely uncertain photos.
+      if (ident.confidence < AUTO_SONNET_CONFIDENCE_THRESHOLD) {
+        const sonnetContext = twoPassResult.context;
+        generateSonnetDraft({
+          photoUrl,
+          childName,
+          childAge,
+          curriculum,
+          pass1Description: twoPassResult.visualDescription,
+          haikuGuess: { workName: ident.workName, confidence: ident.confidence },
+          context: sonnetContext,
+          locale,
+        }).then(async (sonnetResult) => {
+          if (sonnetResult.success && sonnetResult.draft) {
+            const { error: sonnetWriteErr } = await supabase
+              .from('montree_media')
+              .update({
+                sonnet_draft: sonnetResult.draft,
+                identification_status: 'sonnet_drafted',
+              })
+              .eq('id', mediaId);
+            if (sonnetWriteErr) {
+              console.error('[PhotoIdentification] Auto-Sonnet write failed (non-fatal):', sonnetWriteErr);
+            } else {
+              console.log(`[PhotoIdentification] Auto-Sonnet complete for media=${mediaId}: "${sonnetResult.draft.proposed_name}" conf=${sonnetResult.draft.confidence}`);
+            }
+          } else {
+            console.error('[PhotoIdentification] Auto-Sonnet generation failed (non-fatal):', sonnetResult.errors);
+          }
+        }).catch(err => {
+          console.error('[PhotoIdentification] Auto-Sonnet threw (non-fatal):', err);
+        });
+      }
+
       return NextResponse.json({
         success: true,
         outcome: 'haiku_drafted',
@@ -345,6 +390,7 @@ export async function POST(request: NextRequest) {
         work_name: ident.workName,
         confidence: ident.confidence,
         visual_description: twoPassResult.visualDescription,
+        auto_sonnet_queued: ident.confidence < AUTO_SONNET_CONFIDENCE_THRESHOLD,
       });
     }
 

@@ -144,8 +144,6 @@ export async function loadIdentificationContext(
         const desc = sanitizeForPrompt(m.visual_description, 300);
         if (!name || !desc) continue;
 
-        visualMemoryWorkNames.add(m.work_name.trim().toLowerCase());
-
         const keyMats = Array.isArray(m.key_materials) && m.key_materials.length > 0
           ? m.key_materials.map((k: string) => sanitizeForPrompt(k, 60)).join(', ')
           : null;
@@ -161,9 +159,21 @@ export async function loadIdentificationContext(
       }
 
       if (verifiedEntries.length > 0) {
-        const capped = verifiedEntries.slice(0, 20);
+        // Cap at 50 (raised from 20 Apr 29 2026 — Whale Class has 65+ eligible entries,
+        // previously 45 were never seen by Pass 2).
+        // visualMemoryWorkNames is populated ONLY for works in the prompt (not all 65)
+        // so Gate A trust ("hasVisualMemoryForMatch") is only granted when Haiku actually
+        // had the description available during matching — logically consistent.
+        const capped = verifiedEntries.slice(0, 50);
         visualMemoryInjectedCount = capped.length;
         visualMemoryContext = `\n\nCLASSROOM-VERIFIED WORKS (teacher has confirmed these — match to these when the description fits):\n\n${capped.join('\n\n')}\n\nThese are teacher-confirmed descriptions of materials in THIS classroom. When the photo description closely matches a verified work's KEY MATERIALS, prefer that match over the generic guide. Pay attention to DISTINGUISH FROM entries to avoid common confusions.`;
+
+        // Register only the works that are actually in the prompt — Gate A should only
+        // trust identifications where Haiku had the visual description available.
+        for (const entry of capped) {
+          const nameMatch = entry.match(/^- "([^"]+)"/);
+          if (nameMatch) visualMemoryWorkNames.add(nameMatch[1].trim().toLowerCase());
+        }
       }
     }
   }
