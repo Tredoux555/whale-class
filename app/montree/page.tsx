@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import MontreeLogo from '@/components/montree/MonteeLogo';
 
 // /montree/page.tsx — Montree landing page (v2 — deep forest palette)
 
@@ -315,9 +314,7 @@ export default function MontreeLanding() {
       <nav className="m-nav" aria-label="Primary">
         <div className="m-nav-inner">
           <a className="m-logo" href="/montree" aria-label="Montree home">
-            <span className="m-logo-mark" aria-hidden="true">
-              <MontreeLogo size={18} showBackground={false} />
-            </span>
+            <span className="m-logo-mark" aria-hidden="true" style={{ fontSize: '15px', lineHeight: 1 }}>🌿</span>
             <span className="m-logo-word">Montree</span>
           </a>
           <a className="m-pill" href="/montree/login-select?signup=true">Get started</a>
@@ -374,9 +371,7 @@ export default function MontreeLanding() {
       {/* ── FOOTER ── */}
       <footer className="m-footer">
         <div className="m-footer-inner">
-          <span className="m-footer-mark" aria-hidden="true">
-            <MontreeLogo size={10} showBackground={false} />
-          </span>
+          <span className="m-footer-mark" aria-hidden="true" style={{ fontSize: '9px', lineHeight: 1 }}>🌿</span>
           <span>Montree · montree.xyz</span>
         </div>
       </footer>
