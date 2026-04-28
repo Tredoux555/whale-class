@@ -7,7 +7,7 @@
 // ---------------------------------------------------------------------------
 
 /** All languages Montree currently supports. Add new languages here ONLY. */
-export const SUPPORTED_LOCALES = ['en', 'zh', 'es', 'de', 'fr', 'pt', 'nl', 'it', 'ja', 'ko'] as const;
+export const SUPPORTED_LOCALES = ['en', 'zh', 'es', 'de', 'fr', 'pt', 'nl', 'it', 'ja', 'ko', 'uk', 'ru'] as const;
 
 export type Locale = (typeof SUPPORTED_LOCALES)[number];
 
@@ -34,6 +34,8 @@ export const LOCALE_TO_INTL: Record<Locale, string> = {
   it: 'it-IT',
   ja: 'ja-JP',
   ko: 'ko-KR',
+  uk: 'uk-UA',
+  ru: 'ru-RU',
 };
 
 /** Get the Intl locale string for date/number formatting. Falls back to en-US. */
@@ -57,6 +59,8 @@ export const LOCALE_DISPLAY_NAMES: Record<Locale, string> = {
   it: 'Italiano',
   ja: '日本語',
   ko: '한국어',
+  uk: 'Українська',
+  ru: 'Русский',
 };
 
 /** Short labels for compact toggle (2-3 chars). */
@@ -71,4 +75,6 @@ export const LOCALE_SHORT_LABELS: Record<Locale, string> = {
   it: 'IT',
   ja: '日本語',
   ko: '한국어',
+  uk: 'УКР',
+  ru: 'РУС',
 };

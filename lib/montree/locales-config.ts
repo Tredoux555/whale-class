@@ -17,7 +17,7 @@ import type { Locale } from '@/lib/montree/i18n/locales';
  * Adding a locale here is the ONLY code change needed to enable it
  * in all INSERT paths and background-translate flows.
  */
-export const ENABLED_LOCALES: Locale[] = ['zh', 'es'];
+export const ENABLED_LOCALES: Locale[] = ['zh', 'es', 'uk', 'ru'];
 
 /**
  * Build locale-specific INSERT fields for montree_classroom_curriculum_works.

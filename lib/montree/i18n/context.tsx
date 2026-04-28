@@ -18,6 +18,8 @@ import { nl } from './nl';
 import { it } from './it';
 import { ja } from './ja';
 import { ko } from './ko';
+import { uk } from './uk';
+import { ru } from './ru';
 import { type Locale, DEFAULT_LOCALE, SUPPORTED_LOCALES, isValidLocale } from './locales';
 
 // Re-export Locale for backward compat (173 files import from barrel → context)
@@ -25,7 +27,7 @@ export type { Locale };
 
 const STORAGE_KEY = 'montree_lang';
 
-const messages: Record<string, Record<string, string>> = { en, zh, es, de, fr, pt, nl, it, ja, ko };
+const messages: Record<string, Record<string, string>> = { en, zh, es, de, fr, pt, nl, it, ja, ko, uk, ru };
 
 // Pre-compiled regex cache for interpolation params (avoids creating new RegExp per t() call)
 const regexCache = new Map<string, RegExp>();

@@ -12,13 +12,15 @@ import { nl } from './nl';
 import { it } from './it';
 import { ja } from './ja';
 import { ko } from './ko';
+import { uk } from './uk';
+import { ru } from './ru';
 import { type Locale, isValidLocale, getIntlLocale } from './locales';
 
 // Re-export for backward compat (some files import Locale from server.ts)
 export type { Locale };
 export { getIntlLocale };
 
-const LOCALE_TO_MESSAGES: Record<string, Record<string, string>> = { en, zh, es, de, fr, pt, nl, it, ja, ko };
+const LOCALE_TO_MESSAGES: Record<string, Record<string, string>> = { en, zh, es, de, fr, pt, nl, it, ja, ko, uk, ru };
 
 /**
  * Create a translator function for server-side use.

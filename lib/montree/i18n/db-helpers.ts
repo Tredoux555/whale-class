@@ -28,6 +28,8 @@ const LOCALE_COLUMN_SUFFIX: Partial<Record<Locale, string>> = {
   it: '_it',
   ja: '_ja',
   ko: '_ko',
+  uk: '_uk',
+  ru: '_ru',
 };
 
 // ---------------------------------------------------------------------------

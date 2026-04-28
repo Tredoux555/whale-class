@@ -147,6 +147,32 @@ export const LOCALE_AI_CONFIG: Record<Locale, LocaleAIConfig> = {
     yourChild: '자녀분',
     dateFormatHint: 'YYYY년 M월 D일',
   },
+  uk: {
+    languageName: 'Ukrainian (Українська)',
+    aiLanguageInstruction:
+      '\n\nLANGUAGE REQUIREMENT: You MUST respond ENTIRELY in Ukrainian (Українська). ' +
+      'Every word of your response must be in Ukrainian. Do not use any English except for ' +
+      'proper nouns (like Montessori work names). Use formal ви register for all content. ' +
+      'Use "ваша дитина" for "your child" in parent-facing content. ' +
+      'Use standard AMI Montessori Ukrainian terminology: ' +
+      'Практичне Життя, Сенсорний, Математика, Мова, Культура.',
+    aiShortDirective: 'українською мовою',
+    yourChild: 'ваша дитина',
+    dateFormatHint: 'D місяць YYYY',
+  },
+  ru: {
+    languageName: 'Russian (Русский)',
+    aiLanguageInstruction:
+      '\n\nLANGUAGE REQUIREMENT: You MUST respond ENTIRELY in Russian (Русский). ' +
+      'Every word of your response must be in Russian. Do not use any English except for ' +
+      'proper nouns (like Montessori work names). Use formal вы register for all content. ' +
+      'Use "ваш ребёнок" for "your child" in parent-facing content. ' +
+      'Use standard AMI Montessori Russian terminology: ' +
+      'Практическая Жизнь, Сенсорика, Математика, Язык, Культура.',
+    aiShortDirective: 'на русском языке',
+    yourChild: 'ваш ребёнок',
+    dateFormatHint: 'D месяц YYYY года',
+  },
 };
 
 /** Get the AI language instruction for a locale. Returns empty string for English. */
