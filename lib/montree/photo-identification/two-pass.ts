@@ -210,48 +210,61 @@ function buildPass2bCandidates(
   //     LOOKS LIKE: description
   //     KEY MATERIALS: ...
   //     DISTINGUISH FROM: ...
+  //
+  // We capture ALL three fields so Pass 2b can distinguish similar-looking works
+  // (e.g. Sandpaper Letters vs Blue Series — both involve letters, but KEY MATERIALS
+  // "sandpaper texture" vs "small moveable letters" makes them unmistakable).
   const vmLines = context.visualMemoryContext.split('\n');
-  let currentWork: { name: string; area: string | null; looksLike: string } | null = null;
+  let currentWork: { name: string; area: string | null; looksLike: string; keyMaterials: string; distinguishFrom: string } | null = null;
+
+  const flushCurrentWork = () => {
+    if (currentWork && currentWork.looksLike && !seen.has(currentWork.name.toLowerCase())) {
+      const parts = [`LOOKS LIKE: ${currentWork.looksLike}`];
+      if (currentWork.keyMaterials) parts.push(`KEY MATERIALS: ${currentWork.keyMaterials}`);
+      if (currentWork.distinguishFrom) parts.push(`DISTINGUISH FROM: ${currentWork.distinguishFrom}`);
+      candidates.push({ name: currentWork.name, area: currentWork.area, looksLike: parts.join(' | ') });
+      seen.add(currentWork.name.toLowerCase());
+    }
+  };
 
   for (const line of vmLines) {
     // Match the header line: - "WorkName" (area):
     const headerMatch = line.match(/^- "([^"]+)" \(([^)]+)\):/);
     if (headerMatch) {
-      // Save previous work if any
-      if (currentWork && currentWork.looksLike && !seen.has(currentWork.name.toLowerCase())) {
-        candidates.push(currentWork);
-        seen.add(currentWork.name.toLowerCase());
-        if (candidates.length >= 5) break;
-      }
-      currentWork = { name: headerMatch[1], area: headerMatch[2] || null, looksLike: '' };
+      flushCurrentWork();
+      if (candidates.length >= 5) break;
+      currentWork = { name: headerMatch[1], area: headerMatch[2] || null, looksLike: '', keyMaterials: '', distinguishFrom: '' };
       continue;
     }
-    // Capture the LOOKS LIKE description for the current work
+    if (!currentWork) continue;
     const looksLikeMatch = line.match(/^\s+LOOKS LIKE:\s*(.+)/);
-    if (looksLikeMatch && currentWork && !currentWork.looksLike) {
-      currentWork.looksLike = looksLikeMatch[1].trim();
-    }
+    if (looksLikeMatch && !currentWork.looksLike) { currentWork.looksLike = looksLikeMatch[1].trim(); continue; }
+    const keyMatsMatch = line.match(/^\s+KEY MATERIALS:\s*(.+)/);
+    if (keyMatsMatch && !currentWork.keyMaterials) { currentWork.keyMaterials = keyMatsMatch[1].trim(); continue; }
+    const distinguishMatch = line.match(/^\s+DISTINGUISH FROM:\s*(.+)/);
+    if (distinguishMatch && !currentWork.distinguishFrom) { currentWork.distinguishFrom = distinguishMatch[1].trim(); }
   }
   // Don't forget the last entry
-  if (currentWork && currentWork.looksLike && !seen.has(currentWork.name.toLowerCase()) && candidates.length < 5) {
-    candidates.push(currentWork);
-  }
+  if (candidates.length < 5) flushCurrentWork();
 
   return candidates.slice(0, 5);
 }
 
 /**
- * Extract a visual memory entry's LOOKS LIKE description from context.
+ * Extract a visual memory entry's full distinguishing description from context.
+ * Returns LOOKS LIKE + KEY MATERIALS + DISTINGUISH FROM so Pass 2b has enough
+ * detail to tell similar-looking works apart (e.g. Sandpaper Letters vs Blue Series).
  */
 function extractVisualMemoryEntry(context: IdentificationContext, workName: string): string {
-  // Format from context-loader.ts: - "WorkName" (area):\n  LOOKS LIKE: description
   const escaped = workName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  const pattern = new RegExp(`- "${escaped}"[^]*?LOOKS LIKE:\\s*([^\\n]+)`, 'i');
+  // Match the block for this work: from the header line to the next header or end
+  const pattern = new RegExp(`- "${escaped}"[^]*?LOOKS LIKE:\\s*([^\\n]+)(?:\\n\\s+KEY MATERIALS:\\s*([^\\n]+))?(?:\\n\\s+DISTINGUISH FROM:\\s*([^\\n]+))?`, 'i');
   const match = context.visualMemoryContext.match(pattern);
-  if (match) {
-    return match[1].trim();
-  }
-  return '';
+  if (!match) return '';
+  const parts = [`LOOKS LIKE: ${match[1].trim()}`];
+  if (match[2]) parts.push(`KEY MATERIALS: ${match[2].trim()}`);
+  if (match[3]) parts.push(`DISTINGUISH FROM: ${match[3].trim()}`);
+  return parts.join(' | ');
 }
 
 // ----- Main entry point -----
@@ -469,8 +482,10 @@ Match this description to the correct Montessori work. Use the visual identifica
         const candidateBlocks = pass2bCandidates
           .map((cand, idx) => {
             const letter = String.fromCharCode(65 + idx); // A, B, C, ...
+            // looksLike may already contain "LOOKS LIKE: ... | KEY MATERIALS: ... | DISTINGUISH FROM: ..."
+            // Format it clearly so Haiku can distinguish similar-looking works
             return `[${letter}] "${cand.name}" (${cand.area || 'unknown'}):
-  LOOKS LIKE: ${cand.looksLike}`;
+  ${cand.looksLike}`;
           })
           .join('\n\n');
 
@@ -516,8 +531,10 @@ Which work is most likely based on the visual evidence? If none match well, you 
             validated.observation,
           );
 
-          // Use Pass 2b result only if it's HIGHER confidence than Pass 2
-          if (validated.confidence > identification.confidence) {
+          // Use Pass 2b result only if it's meaningfully MORE confident than Pass 2
+          // (requires +0.05 margin to prevent marginal overrides — e.g. 0.83 > 0.82
+          // was enough to swap Sandpaper Letters → Blue Series in Apr 28 incident)
+          if (validated.confidence >= identification.confidence + 0.05) {
             const newWorkName = matchResult.bestMatch?.name || validated.work_name;
             const newArea = matchResult.bestMatch?.area_key || (validated.area !== 'unknown' ? validated.area : null);
             const newWorkKey = matchResult.bestMatch?.work_key || null;
