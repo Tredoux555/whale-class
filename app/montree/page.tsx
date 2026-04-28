@@ -50,22 +50,21 @@ export default function MontreeLanding() {
           -webkit-font-smoothing: antialiased;
           -moz-osx-font-smoothing: grayscale;
           line-height: 1.5;
-          position: relative;
           overflow-x: hidden;
         }
 
-        /* Full-page gradient — deep forest at midnight, dappled jade bloom from top-right */
-        body::before {
-          content: "";
+        /* Full-page gradient — rendered as a real DOM element so Next.js doesn't block it */
+        .m-bg {
           position: fixed;
           inset: 0;
           background:
-            radial-gradient(ellipse 1100px 900px at 92% 6%, rgba(39,129,90,0.32), rgba(39,129,90,0) 55%),
-            radial-gradient(ellipse 700px 600px at 88% 10%, rgba(130,217,174,0.14), rgba(130,217,174,0) 60%),
+            radial-gradient(ellipse 1100px 900px at 88% 8%, rgba(39,129,90,0.48), rgba(39,129,90,0) 55%),
+            radial-gradient(ellipse 700px 600px at 82% 14%, rgba(130,217,174,0.24), rgba(130,217,174,0) 60%),
             linear-gradient(155deg, #0c2419 0%, #0a1f16 38%, #081a12 70%, #06140e 100%);
-          z-index: -1;
+          z-index: 0;
           pointer-events: none;
         }
+        .m-bg ~ * { position: relative; z-index: 1; }
 
         .m-label {
           font-size: 10px;
@@ -309,6 +308,22 @@ export default function MontreeLanding() {
           .m-footer { padding: 40px 24px 48px; }
         }
       `}</style>
+
+      {/* ── BACKGROUND GRADIENT — rendered as a real div so Next.js stacking context can't block it ── */}
+      <div aria-hidden="true" style={{
+        position: 'fixed',
+        inset: 0,
+        background: `
+          radial-gradient(ellipse 1000px 800px at 78% 10%, rgba(39,129,90,0.55), rgba(39,129,90,0) 55%),
+          radial-gradient(ellipse 600px 500px at 72% 16%, rgba(130,217,174,0.28), rgba(130,217,174,0) 60%),
+          linear-gradient(155deg, #0c2419 0%, #0a1f16 38%, #081a12 70%, #06140e 100%)
+        `,
+        zIndex: 0,
+        pointerEvents: 'none',
+      }} />
+
+      {/* ── PAGE CONTENT — sits above the fixed gradient div ── */}
+      <div style={{ position: 'relative', zIndex: 1 }}>
 
       {/* ── NAV ── */}
       <nav className="m-nav" aria-label="Primary">
