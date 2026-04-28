@@ -317,7 +317,14 @@ export default function MontreeLanding() {
             <span className="m-logo-mark" aria-hidden="true" style={{ fontSize: '15px', lineHeight: 1 }}>🌿</span>
             <span className="m-logo-word">Montree</span>
           </a>
-          <a className="m-pill" href="/montree/login-select?signup=true">Get started</a>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+            <a href="/montree/library" style={{ fontSize: '0.875rem', color: 'rgba(255,255,255,0.55)', textDecoration: 'none', letterSpacing: '0.01em', transition: 'color 200ms ease' }}
+              onMouseEnter={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.85)' )}
+              onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.55)')}>
+              Library
+            </a>
+            <a className="m-pill" href="/montree/login-select?signup=true">Get started</a>
+          </div>
         </div>
       </nav>
 
