@@ -185,7 +185,7 @@ GMass campaigns A/C/D are historical. Campaign C sent 335 blank emails (Session 
 
 ### ⚡ Session 72 — Public Funnel Polish + Teacher Revenue Share Programme (Apr 28, 2026)
 
-**Commits pushed: `3f8572f0` (build fix), `eb6f7950` (try + login-select gradient), `f780ba74` (library gradient), `e945e48f` (try role cards), and teacher campaign commit (pending push).**
+**Commits pushed: `3f8572f0` (build fix), `eb6f7950` (try + login-select gradient), `f780ba74` (library gradient), `e945e48f` (try role cards), `9db1f142` (bulk import spinner + guaranteed reload fix).**
 
 **A. Public funnel — uniform dark forest gradient:**
 
@@ -216,45 +216,104 @@ New campaign: teachers who start a trial and bring their school to a paid plan e
 
 **Attribution logic (confirmed by user):** Teacher inputs school name + email at signup. That timestamp-backed record = proof they were first. No other verification needed.
 
-**🚨 DB MIGRATION STILL PENDING — must run in Supabase SQL Editor:**
-```sql
-ALTER TABLE montree_schools
-  ADD COLUMN IF NOT EXISTS founding_teacher_id UUID REFERENCES montree_teachers(id),
-  ADD COLUMN IF NOT EXISTS revenue_share_pct NUMERIC(5,2) DEFAULT 20.00,
-  ADD COLUMN IF NOT EXISTS revenue_share_active BOOLEAN DEFAULT FALSE;
-
-CREATE TABLE IF NOT EXISTS montree_teacher_earnings (
-  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  teacher_id UUID NOT NULL REFERENCES montree_teachers(id),
-  school_id UUID NOT NULL REFERENCES montree_schools(id),
-  month DATE NOT NULL,
-  school_revenue NUMERIC(10,2) NOT NULL,
-  share_pct NUMERIC(5,2) NOT NULL DEFAULT 20.00,
-  teacher_earnings NUMERIC(10,2) NOT NULL,
-  status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'paid', 'cancelled')),
-  paid_at TIMESTAMPTZ,
-  notes TEXT,
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  UNIQUE (teacher_id, school_id, month)
-);
-CREATE INDEX IF NOT EXISTS idx_teacher_earnings_teacher_id ON montree_teacher_earnings (teacher_id);
-```
-
-Until migration runs: try/instant logs a silent non-blocking error (signups still work), earnings page shows "not enrolled" for everyone.
+**✅ DB MIGRATION RUN (Apr 28, 2026)** — `montree_schools` columns added (`founding_teacher_id`, `revenue_share_pct`, `revenue_share_active`) + `montree_teacher_earnings` table created + index. Programme is fully live.
 
 **Revenue share formula:** `student_count × $7 × 20% = teacher monthly earnings`
 
 **What's still manual:** Activating revenue share (`UPDATE montree_schools SET revenue_share_active = true ...`) and inserting monthly earnings rows. Phase 2 builds automation. Full details in `docs/TEACHER_CAMPAIGN_HANDOFF.md`.
 
+**D. Bulk import fix — commit `9db1f142`:**
+
+Critical retention bug fixed: after bulk-importing students the dashboard returned to the empty state permanently and clicking the classroom did nothing. Root cause: `refetchChildren()` returns `void`, calling `.then()` on it was silently throwing TypeError. Fix: added `importLoading` state that shows a spinner immediately, clears when children arrive via `useEffect`, and falls back to `window.location.href = '/montree/dashboard'` after 1200ms — guaranteeing the student grid always appears.
+
+**E. Inbound organic signup — Ukrainian teacher:**
+
+A teacher named **Тамі** (`kiverova_tamila@ukr.net`) from **Школа Монтессорі** (Ukraine) signed up organically on Apr 28 at 5:57 PM — found Montree via Google search. First non-English-speaking organic inbound. Super admin panel shows 47 total interested (46 new, 1 contacted). This triggered the decision to add Ukrainian + Russian to the platform.
+
 **Next session priorities:**
-1. **🚨 Run DB migration** — the SQL above in Supabase SQL Editor. Without this the programme doesn't persist.
-2. **Add "For teachers" to landing page nav** — `app/montree/page.tsx` nav, same style as Library link.
-3. **Send the 3 hot lead drafts** — Copenhagen, Paint Pots, Ardtona House. Already in Gmail.
-4. **FAMM Argentina follow-up** — Past the Apr 28 deadline.
-5. **Complete follow-up batch** — 248 remaining `status='sent'` contacts need follow-up template.
-6. **Disable `tell_guru_onboarding` for Whale Class** — `UPDATE montree_school_features SET enabled=false WHERE school_id='c6280fae-567c-45ed-ad4d-934eae79aabc' AND feature_key='tell_guru_onboarding';`
-7. **Fix Resend domain** — verify montree.xyz in Resend, update `RESEND_FROM_EMAIL` in Railway.
-8. **Super admin revenue share tab** — View/manage founding teacher relationships and monthly earnings.
+1. **🚨 #1 PRIORITY — Add Ukrainian + Russian languages** — Full instructions below in Session 73 handoff.
+2. **Welcome Тамі** — provision her school, send a personal message in Ukrainian.
+3. **Send the 3 hot lead Gmail drafts** — Copenhagen (`r5875732429643975187`), Paint Pots UK (`r-8134738077301193428`), Ardtona House UK (`r6746566790609932769`).
+4. **FAMM Argentina follow-up** — Past the Apr 28 deadline. Draft now.
+5. **Add "For teachers" to landing page nav** — `app/montree/page.tsx`, same style as Library link.
+6. **Complete follow-up batch** — 248 remaining `status='sent'` contacts need follow-up template.
+7. **Disable `tell_guru_onboarding` for Whale Class** — `UPDATE montree_school_features SET enabled=false WHERE school_id='c6280fae-567c-45ed-ad4d-934eae79aabc' AND feature_key='tell_guru_onboarding';`
+8. **Fix Resend domain** — verify montree.xyz in Resend, update `RESEND_FROM_EMAIL` in Railway.
+9. **Super admin revenue share tab** — View/manage founding teacher relationships and monthly earnings.
+
+---
+
+### ⚡ Session 73 — Ukrainian + Russian Language Handoff (start here next session)
+
+**Trigger:** Ukrainian teacher Тамі signed up organically. Russian + Ukrainian opens Eastern Europe, Central Asia, and large global diaspora communities — essentially zero competition for Montessori software in these languages.
+
+**The multilingual infrastructure is fully locale-agnostic (Sessions 58–67).** Adding a new language requires zero component or API changes. Only:
+1. Create translation file
+2. Add to `SUPPORTED_LOCALES`
+3. Add area labels
+4. Add AI config
+5. Run batch curriculum scripts
+
+**Step-by-step for Ukrainian (`uk`) and Russian (`ru`):**
+
+**Step 1 — Generate translation files via Haiku batch script:**
+
+Create `scripts/generate-uk.mjs` and `scripts/generate-ru.mjs` — same pattern as `scripts/generate-fr.mjs` (already in codebase). These read `lib/montree/i18n/en.ts`, call Haiku for each key, and write `lib/montree/i18n/uk.ts` and `lib/montree/i18n/ru.ts`. Cost: ~$0.40 per language.
+
+**Ukrainian terminology notes:**
+- Formal `ви` register (not `ти`)
+- AMI Ukrainian Montessori terms: `Практичне Життя`, `Сенсорний`, `Математика`, `Мова`, `Культура`
+
+**Russian terminology notes:**
+- Formal `вы` register
+- AMI Russian terms: `Практическая Жизнь`, `Сенсорика`, `Математика`, `Язык`, `Культура`
+
+**Step 2 — Update `lib/montree/i18n/locales.ts`:**
+```typescript
+export const SUPPORTED_LOCALES = ['en', 'zh', 'es', 'fr', 'pt', 'nl', 'it', 'ja', 'ko', 'uk', 'ru'] as const;
+export type Locale = typeof SUPPORTED_LOCALES[number];
+// Add to LOCALE_DISPLAY_NAMES: uk: 'Українська', ru: 'Русский'
+// Add to LOCALE_SHORT_LABELS: uk: 'УКР', ru: 'РУС'
+// Add to LOCALE_TO_INTL: uk: 'uk-UA', ru: 'ru-RU'
+```
+
+**Step 3 — Update `lib/montree/i18n/area-labels.ts`:**
+```typescript
+export const AREA_LABELS_UK = { practical_life: 'Практичне Життя', sensorial: 'Сенсорний', mathematics: 'Математика', language: 'Мова', cultural: 'Культура' };
+export const AREA_LABELS_RU = { practical_life: 'Практическая Жизнь', sensorial: 'Сенсорика', mathematics: 'Математика', language: 'Язык', cultural: 'Культура' };
+// Add both to AREA_LABELS map-of-maps keyed by 'uk' and 'ru'
+```
+
+**Step 4 — Update `lib/montree/i18n/locale-config.ts`:**
+Add `LOCALE_AI_CONFIG` entries for `uk` and `ru` with language name, system prompt suffix, and Montessori glossary.
+
+**Step 5 — Wire into context + server:**
+- `lib/montree/i18n/context.tsx` — import + add uk/ru to messages map
+- `lib/montree/i18n/server.ts` — import + add to `LOCALE_TO_MESSAGES`
+
+**Step 6 — DB columns for curriculum work names:**
+```sql
+ALTER TABLE montree_classroom_curriculum_works
+  ADD COLUMN IF NOT EXISTS name_uk TEXT,
+  ADD COLUMN IF NOT EXISTS name_ru TEXT,
+  ADD COLUMN IF NOT EXISTS guide_content_uk JSONB,
+  ADD COLUMN IF NOT EXISTS guide_content_ru JSONB;
+```
+
+**Step 7 — Update `lib/montree/i18n/db-helpers.ts`:**
+Add `uk: '_uk'` and `ru: '_ru'` to `LOCALE_COLUMN_SUFFIX`.
+
+**Step 8 — Batch work name + guide translation scripts:**
+Same as `scripts/batch-translate-guides-es.js` pattern. Run for both uk and ru. ~$0.40 each.
+
+**Step 9 — Update `lib/montree/auto-translate.ts`:**
+Add `name_uk` and `name_ru` to the upsert payload so new works auto-translate on creation.
+
+**Reference sessions:** 67 (fr/pt/nl/it/ja/ko — same exact pattern), 68 (curriculum data layer wiring).
+
+**After completing Ukrainian + Russian:**
+- Welcome Тамі in Ukrainian — she's the first organic Ukrainian user
+- Consider adding a Ukrainian-language outreach batch to the campaign (there are Montessori schools throughout Ukraine, Poland diaspora, Canada/US Ukrainian communities)
 
 ---
 
