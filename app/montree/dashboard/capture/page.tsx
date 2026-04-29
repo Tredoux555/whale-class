@@ -1,11 +1,13 @@
 // app/montree/dashboard/capture/page.tsx
 // Native-feeling capture flow: Camera opens instantly → Take photo → Tag child → Upload
+// Dark forest visual treatment — all wiring intact
 'use client';
 
-import React, { useState, useEffect, Suspense } from 'react';
+import React, { useState, useEffect, Suspense, CSSProperties } from 'react';
 import dynamic from 'next/dynamic';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { toast, Toaster } from 'sonner';
+import { ArrowLeft, Check, PartyPopper } from 'lucide-react';
 import { getSession } from '@/lib/montree/auth';
 import { useI18n } from '@/lib/montree/i18n';
 import { getProxyUrl } from '@/lib/montree/media/proxy-url';
@@ -27,6 +29,25 @@ import { useFeatures } from '@/hooks/useFeatures';
 // Tier 5 perf: EventPicker is modal-gated, code-split it.
 const EventPicker = dynamic(() => import('@/components/montree/media/EventPicker'), { ssr: false });
 
+// Dark forest tokens
+const T = {
+  bg: '#0a1a0f',
+  glow: 'radial-gradient(ellipse 1100px 900px at 88% 8%, rgba(39,129,90,0.48), transparent 60%)',
+  emerald: '#34d399',
+  emeraldDeep: '#10b981',
+  emeraldDim: 'rgba(52,211,153,0.65)',
+  emeraldSoft: 'rgba(52,211,153,0.10)',
+  emeraldStrong: 'rgba(52,211,153,0.18)',
+  amber: '#f59e0b',
+  amberSoft: 'rgba(245,158,11,0.18)',
+  amberBorder: 'rgba(245,158,11,0.35)',
+  textPrimary: 'rgba(255,255,255,0.95)',
+  textSecondary: 'rgba(255,255,255,0.65)',
+  textMuted: 'rgba(255,255,255,0.40)',
+  serif: '"Lora", Georgia, serif',
+  sans: '"Inter", -apple-system, BlinkMacSystemFont, sans-serif',
+};
+
 // ============================================
 // TYPES
 // ============================================
@@ -40,34 +61,44 @@ type FlowStep = 'camera' | 'tag-child';
 function ChildAvatarButton({ child, isSelected }: { child: MontreeChild; isSelected: boolean }) {
   const [showFallback, setShowFallback] = useState(!child.photo_url);
 
+  const wrapperStyle: CSSProperties = {
+    width: 40,
+    height: 40,
+    borderRadius: '50%',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexShrink: 0,
+    fontFamily: T.sans,
+    fontSize: 14,
+    fontWeight: 700,
+    background: isSelected ? T.emerald : 'rgba(255,255,255,0.18)',
+    color: isSelected ? '#06281a' : 'rgba(255,255,255,0.85)',
+    transition: 'all 120ms ease',
+    overflow: 'hidden',
+  };
+
   if (!showFallback && child.photo_url) {
     return (
-      <div className={`
-        w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold shrink-0 transition-all
-        ${isSelected
-          ? 'bg-emerald-500 text-white'
-          : 'bg-white/20 text-white/80'
-        }
-      `}>
+      <div style={wrapperStyle}>
         <img
           src={getProxyUrl(child.photo_url)}
           alt={child.name}
-          className="w-full h-full rounded-full object-cover"
           onError={() => setShowFallback(true)}
+          style={{
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+            borderRadius: '50%',
+          }}
         />
       </div>
     );
   }
 
   return (
-    <div className={`
-      w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold shrink-0 transition-all
-      ${isSelected
-        ? 'bg-emerald-500 text-white'
-        : 'bg-white/20 text-white/80'
-      }
-    `}>
-      {child.name.charAt(0)}
+    <div style={wrapperStyle}>
+      {child.name.charAt(0).toUpperCase()}
     </div>
   );
 }
@@ -79,11 +110,31 @@ function ChildAvatarButton({ child, isSelected }: { child: MontreeChild; isSelec
 function CaptureLoading() {
   const { t } = useI18n();
   return (
-    <div className="min-h-screen bg-black flex items-center justify-center">
-      <div className="flex flex-col items-center">
-        <div className="animate-spin rounded-full h-10 w-10 border-4 border-emerald-500 border-t-transparent mb-4" />
-        <p className="text-white/70">{t('common.loading')}</p>
+    <div style={{
+      minHeight: '100vh',
+      background: T.bg,
+      backgroundImage: T.glow,
+      backgroundAttachment: 'fixed',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      fontFamily: T.sans,
+    }}>
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+        <div style={{
+          width: 36,
+          height: 36,
+          border: `4px solid ${T.emeraldDim}`,
+          borderTopColor: 'transparent',
+          borderRadius: '50%',
+          animation: 'cap-spin 0.9s linear infinite',
+          marginBottom: 14,
+        }} />
+        <p style={{ margin: 0, color: T.textSecondary, fontSize: 13 }}>
+          {t('common.loading')}
+        </p>
       </div>
+      <style>{`@keyframes cap-spin { to { transform: rotate(360deg); } }`}</style>
     </div>
   );
 }
@@ -115,7 +166,6 @@ function CaptureContent() {
     preSelectedChildId ? [preSelectedChildId] : []
   );
   const [capturedMedia, setCapturedMedia] = useState<CapturedMedia | null>(null);
-  // Video uploads are now non-blocking via BackgroundTaskStore (no isUploading state needed)
   const [schoolId, setSchoolId] = useState<string>('');
   const [classroomId, setClassroomId] = useState<string>('');
   const [workId, setWorkId] = useState<string | null>(workIdFromUrl);
@@ -191,7 +241,6 @@ function CaptureContent() {
       return;
     }
 
-    // For videos: fire-and-forget upload via BackgroundTaskStore — navigate immediately
     if (isVideo) {
       const videoBlob = 'blob' in (media.data as CapturedVideo)
         ? (media.data as CapturedVideo).blob
@@ -200,7 +249,6 @@ function CaptureContent() {
       toast.success(t('offline.photoSaved') || `${label} saved!`, { duration: 2000 });
       navigateAfterCapture(childIds);
 
-      // Register background task — returns immediately
       const taskId = addTask({
         type: 'video_upload',
         label: t('bgTask.uploadingVideo'),
@@ -208,7 +256,6 @@ function CaptureContent() {
 
       const signal = getTaskSignal(taskId);
 
-      // Async processing — NOT awaited
       (async () => {
         try {
           const result = await uploadVideo(media.data as CapturedVideo, {
@@ -240,8 +287,6 @@ function CaptureContent() {
       return;
     }
 
-    // PHOTOS: Offline-safe queue pattern
-    // Step 1: Compress image (needs live DOM — ~200ms, must await)
     const photo = media.data as CapturedPhoto;
     let compressedBlob: Blob;
     let compressedWidth = photo.width;
@@ -250,7 +295,6 @@ function CaptureContent() {
     console.log('[CAPTURE] Starting compression. Blob size:', photo.blob.size, 'type:', photo.blob.type, 'dimensions:', photo.width, 'x', photo.height);
 
     try {
-      // Add 10s timeout to compression to prevent silent hangs on mobile
       const compressed = await Promise.race([
         compressImage(photo.blob),
         new Promise<never>((_, reject) =>
@@ -266,7 +310,6 @@ function CaptureContent() {
       compressedBlob = photo.blob;
     }
 
-    // Step 2: Save to offline queue (guaranteed local persistence — survives network failure)
     console.log('[CAPTURE] Enqueueing photo. child_id:', idsToTag[0] || '(none)', 'school_id:', schoolId, 'blob size:', compressedBlob.size);
     try {
       await enqueuePhoto(compressedBlob, {
@@ -288,12 +331,10 @@ function CaptureContent() {
       return;
     }
 
-    // Step 3: Navigate IMMEDIATELY — photo is safe locally
     console.log('[CAPTURE] Photo enqueued successfully, showing toast and navigating');
     toast.success(t('offline.photoSaved') || `${label} saved!`, { duration: 2000 });
     navigateAfterCapture(childIds);
 
-    // Step 4: Attempt upload in background (non-blocking)
     syncQueue().catch(e => console.error('[CAPTURE] Background sync failed:', e));
   };
 
@@ -313,27 +354,22 @@ function CaptureContent() {
 
   const handleMediaCapture = (media: CapturedMedia) => {
     console.log('[CAPTURE] handleMediaCapture called. type:', media.type, 'preSelectedChildId:', preSelectedChildId, 'isClassMode:', isClassMode, 'children:', children.length);
-    // If child is pre-selected or class mode, skip tagging — upload directly
     if (preSelectedChildId || isClassMode) {
       doUploadAndAnalyze(media, preSelectedChildId ? [preSelectedChildId] : []);
       return;
     }
 
-    // If children are still loading, save the media and go to tagging screen
-    // (the tagging screen shows a spinner while children load)
     if (loadingChildren) {
       setCapturedMedia(media);
       setStep('tag-child');
       return;
     }
 
-    // If only one child in classroom, auto-tag and upload directly
     if (children.length === 1) {
       doUploadAndAnalyze(media, [children[0].id]);
       return;
     }
 
-    // Multiple children (or zero — let them see the empty state) — show tagging screen
     setCapturedMedia(media);
     setStep('tag-child');
   };
@@ -361,7 +397,6 @@ function CaptureContent() {
 
   const handleSkipTagging = () => {
     if (!capturedMedia) return;
-    // Upload without child tag — will still appear in classroom media
     doUploadAndAnalyze(capturedMedia, []);
   };
 
@@ -388,57 +423,153 @@ function CaptureContent() {
     ? (capturedMedia.data as CapturedPhoto).dataUrl
     : null;
 
+  const hasChildren = children.length > 0;
+  const allSelected = selectedChildIds.length === children.length && hasChildren;
+
   return (
-    <div className="fixed inset-0 bg-black z-50 flex flex-col">
+    <div style={{
+      position: 'fixed',
+      inset: 0,
+      zIndex: 50,
+      background: T.bg,
+      backgroundImage: T.glow,
+      backgroundAttachment: 'fixed',
+      display: 'flex',
+      flexDirection: 'column',
+      fontFamily: T.sans,
+      color: T.textPrimary,
+    }}>
       <Toaster position="top-center" />
 
       {/* Photo preview as background */}
       {photoPreview && (
-        <div className="absolute inset-0 pointer-events-none">
+        <div style={{
+          position: 'absolute',
+          inset: 0,
+          pointerEvents: 'none',
+        }}>
           <img
             src={photoPreview}
             alt="Captured"
-            className="w-full h-full object-cover opacity-30"
+            style={{
+              width: '100%',
+              height: '100%',
+              objectFit: 'cover',
+              opacity: 0.18,
+            }}
           />
+          {/* Vignette overlay so glass surfaces stay legible over preview */}
+          <div style={{
+            position: 'absolute',
+            inset: 0,
+            background: 'linear-gradient(180deg, rgba(10,26,15,0.55), rgba(10,26,15,0.85))',
+          }} />
         </div>
       )}
 
-      {/* Event banner (if event selected) */}
+      {/* Event banner */}
       {selectedEvent && (
-        <div className="relative z-10 mx-4 mt-12 mb-2 px-4 py-3 bg-amber-500/20 border border-amber-400/30 rounded-xl flex items-center gap-3">
-          <span className="text-xl">🎉</span>
-          <div className="flex-1">
-            <span className="text-amber-300 font-medium text-sm">
+        <div style={{
+          position: 'relative',
+          zIndex: 10,
+          margin: '48px 16px 8px',
+          padding: '12px 14px',
+          borderRadius: 14,
+          background: T.amberSoft,
+          border: `1px solid ${T.amberBorder}`,
+          display: 'flex',
+          alignItems: 'center',
+          gap: 12,
+        }}>
+          <PartyPopper size={18} strokeWidth={1.75} color={T.amber} />
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <span style={{
+              color: '#fbbf24',
+              fontSize: 13,
+              fontWeight: 500,
+              fontFamily: T.sans,
+            }}>
               {t('capture.eventBanner').replace('{eventName}', selectedEvent.name)}
             </span>
           </div>
-          <button onClick={() => setShowEventPicker(true)} className="text-amber-400 text-xs underline">
+          <button
+            onClick={() => setShowEventPicker(true)}
+            style={{
+              background: 'transparent',
+              border: 'none',
+              color: T.amber,
+              fontFamily: T.sans,
+              fontSize: 12,
+              fontWeight: 600,
+              textDecoration: 'underline',
+              cursor: 'pointer',
+            }}
+          >
             {t('common.change') || 'Change'}
           </button>
         </div>
       )}
 
-      {/* Header — compact, with back button */}
-      <div className={`relative z-10 px-4 ${selectedEvent ? 'pb-2' : 'pt-10 pb-2'}`}>
+      {/* Header */}
+      <div style={{
+        position: 'relative',
+        zIndex: 10,
+        padding: selectedEvent ? '0 16px 8px' : '40px 16px 8px',
+      }}>
         <button
           onClick={() => router.back()}
-          className="absolute left-3 top-10 w-10 h-10 flex items-center justify-center text-white/70 active:text-white"
           aria-label="Cancel"
+          style={{
+            position: 'absolute',
+            left: 12,
+            top: selectedEvent ? -2 : 38,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: 40,
+            height: 40,
+            borderRadius: 12,
+            background: 'rgba(255,255,255,0.10)',
+            border: '1px solid rgba(255,255,255,0.12)',
+            color: T.textPrimary,
+            cursor: 'pointer',
+            backdropFilter: 'blur(10px)',
+            WebkitBackdropFilter: 'blur(10px)',
+          }}
         >
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M19 12H5" /><path d="m12 19-7-7 7-7" />
-          </svg>
+          <ArrowLeft size={18} strokeWidth={1.75} />
         </button>
-        <h2 className="text-white text-lg font-bold text-center">
+        <h2 style={{
+          margin: 0,
+          fontFamily: T.serif,
+          fontSize: 20,
+          fontWeight: 500,
+          color: T.textPrimary,
+          letterSpacing: -0.2,
+          textAlign: 'center',
+        }}>
           {t('capture.whoIsThis')}
         </h2>
-        <p className="text-white/60 text-xs text-center mt-0.5">
+        <p style={{
+          margin: '4px 0 0',
+          fontFamily: T.sans,
+          fontSize: 12,
+          color: T.textMuted,
+          textAlign: 'center',
+        }}>
           {t('capture.tagChildHint')}
         </p>
       </div>
 
       {/* Select All + Event picker row */}
-      <div className="relative z-10 px-4 py-1.5 flex items-center justify-between">
+      <div style={{
+        position: 'relative',
+        zIndex: 10,
+        padding: '6px 16px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+      }}>
         <button
           onClick={() => {
             if (selectedChildIds.length === children.length) {
@@ -447,28 +578,52 @@ function CaptureContent() {
               setSelectedChildIds(children.map(c => c.id));
             }
           }}
-          className="text-sm font-medium text-emerald-400 active:text-emerald-300"
+          style={{
+            background: 'transparent',
+            border: 'none',
+            color: T.emerald,
+            fontFamily: T.sans,
+            fontSize: 13,
+            fontWeight: 600,
+            cursor: 'pointer',
+            padding: 0,
+          }}
         >
-          {selectedChildIds.length === children.length && children.length > 0
-            ? t('capture.deselectAll')
-            : t('capture.selectAll')}
+          {allSelected ? t('capture.deselectAll') : t('capture.selectAll')}
         </button>
         {!selectedEvent && (
           <button
             onClick={() => setShowEventPicker(true)}
-            className="text-sm font-medium text-amber-400 active:text-amber-300 flex items-center gap-1"
+            style={{
+              background: 'transparent',
+              border: 'none',
+              color: T.amber,
+              fontFamily: T.sans,
+              fontSize: 13,
+              fontWeight: 600,
+              cursor: 'pointer',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 5,
+              padding: 0,
+            }}
           >
-            🎉 {t('events.selectEvent')}
+            <PartyPopper size={13} strokeWidth={1.75} />
+            {t('events.selectEvent')}
           </button>
         )}
       </div>
 
-      {/* Today's Focus strip — morning pre-selected kids, confirmed when photo lands */}
-      <div className="px-3 pt-2 pb-0 relative z-10">
+      {/* Today's Focus strip */}
+      <div style={{
+        position: 'relative',
+        zIndex: 10,
+        padding: '8px 12px 0',
+      }}>
         <TodaysFocusStrip compact />
       </div>
 
-      {/* Daily Language 6 — recommendations for language area observation (feature-gated) */}
+      {/* Daily Language 6 */}
       {isEnabled('daily_language_6') && (
         <DailyLanguageSix
           selectedChildIds={selectedChildIds}
@@ -476,41 +631,78 @@ function CaptureContent() {
         />
       )}
 
-      {/* Child grid — auto-fits screen, never scrolls */}
-      <div className="relative z-10 flex-1 overflow-hidden px-3 py-1">
+      {/* Child grid */}
+      <div style={{
+        position: 'relative',
+        zIndex: 10,
+        flex: 1,
+        overflow: 'hidden',
+        padding: '4px 12px',
+      }}>
         {loadingChildren ? (
-          <div className="flex items-center justify-center h-full">
-            <div className="animate-spin rounded-full h-8 w-8 border-4 border-emerald-500 border-t-transparent" />
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            height: '100%',
+          }}>
+            <div style={{
+              width: 32,
+              height: 32,
+              border: `4px solid ${T.emeraldDim}`,
+              borderTopColor: 'transparent',
+              borderRadius: '50%',
+              animation: 'cap-spin 0.9s linear infinite',
+            }} />
+            <style>{`@keyframes cap-spin { to { transform: rotate(360deg); } }`}</style>
           </div>
         ) : (() => {
           const count = children.length;
-          // Dynamic columns: 4 for ≤24 children, 5 for 25+
           const cols = count <= 24 ? 4 : 5;
           const rows = Math.ceil(count / cols);
           return (
-            <div
-              className="h-full grid gap-2"
-              style={{
-                gridTemplateColumns: `repeat(${cols}, 1fr)`,
-                gridTemplateRows: `repeat(${rows}, 1fr)`,
-              }}
-            >
+            <div style={{
+              height: '100%',
+              display: 'grid',
+              gap: 8,
+              gridTemplateColumns: `repeat(${cols}, 1fr)`,
+              gridTemplateRows: `repeat(${rows}, 1fr)`,
+            }}>
               {children.map(child => {
                 const isSelected = selectedChildIds.includes(child.id);
                 return (
                   <button
                     key={child.id}
                     onClick={() => toggleChild(child.id)}
-                    className={`
-                      flex flex-col items-center justify-center rounded-xl transition-all min-h-0
-                      ${isSelected
-                        ? 'bg-emerald-500/30 ring-2 ring-emerald-400'
-                        : 'bg-white/10 active:bg-white/20'
-                      }
-                    `}
+                    style={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      borderRadius: 14,
+                      background: isSelected
+                        ? 'rgba(52,211,153,0.20)'
+                        : 'rgba(255,255,255,0.08)',
+                      border: `1px solid ${isSelected ? 'rgba(52,211,153,0.55)' : 'rgba(255,255,255,0.10)'}`,
+                      backdropFilter: 'blur(10px)',
+                      WebkitBackdropFilter: 'blur(10px)',
+                      color: isSelected ? T.emerald : T.textSecondary,
+                      cursor: 'pointer',
+                      transition: 'all 120ms ease',
+                      minHeight: 0,
+                      padding: 4,
+                    }}
                   >
                     <ChildAvatarButton child={child} isSelected={isSelected} />
-                    <span className={`text-xs font-medium mt-1 leading-tight ${isSelected ? 'text-emerald-300' : 'text-white/70'}`}>
+                    <span style={{
+                      marginTop: 4,
+                      fontFamily: T.sans,
+                      fontSize: 12,
+                      fontWeight: 500,
+                      color: isSelected ? T.emerald : 'rgba(255,255,255,0.70)',
+                      lineHeight: 1.2,
+                      textAlign: 'center',
+                    }}>
                       {child.name}
                     </span>
                   </button>
@@ -521,29 +713,65 @@ function CaptureContent() {
         })()}
       </div>
 
-      {/* Bottom actions — compact */}
-      <div className="relative z-10 px-4 pb-6 pt-2 flex flex-col gap-1">
+      {/* Bottom actions */}
+      <div style={{
+        position: 'relative',
+        zIndex: 10,
+        padding: '8px 16px 24px',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 4,
+      }}>
         <button
           onClick={handleSaveWithTags}
           disabled={selectedChildIds.length === 0}
-          className={`
-            w-full py-3 rounded-2xl font-bold text-base transition-all
-            ${selectedChildIds.length > 0
-              ? 'bg-emerald-500 text-white active:scale-[0.98]'
-              : 'bg-white/10 text-white/30'
-            }
-          `}
+          style={{
+            width: '100%',
+            padding: '14px',
+            borderRadius: 16,
+            background: selectedChildIds.length > 0
+              ? 'linear-gradient(180deg, #34d399, #10b981)'
+              : 'rgba(255,255,255,0.08)',
+            border: selectedChildIds.length > 0
+              ? '1px solid rgba(52,211,153,0.55)'
+              : '1px solid rgba(255,255,255,0.08)',
+            color: selectedChildIds.length > 0 ? '#06281a' : 'rgba(255,255,255,0.30)',
+            fontFamily: T.sans,
+            fontSize: 15,
+            fontWeight: 700,
+            cursor: selectedChildIds.length > 0 ? 'pointer' : 'not-allowed',
+            display: 'inline-flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 7,
+            transition: 'all 120ms ease',
+            boxShadow: selectedChildIds.length > 0 ? '0 6px 20px rgba(16,185,129,0.30)' : 'none',
+          }}
         >
-          {selectedChildIds.length === 0
-            ? t('capture.selectChild')
-            : selectedChildIds.length === 1
-              ? `✓ ${t('capture.save')}`
-              : `✓ ${t('capture.saveForCount').replace('{count}', String(selectedChildIds.length))}`
-          }
+          {selectedChildIds.length === 0 ? (
+            <>{t('capture.selectChild')}</>
+          ) : (
+            <>
+              <Check size={16} strokeWidth={2.5} />
+              {selectedChildIds.length === 1
+                ? t('capture.save')
+                : t('capture.saveForCount').replace('{count}', String(selectedChildIds.length))}
+            </>
+          )}
         </button>
         <button
           onClick={handleSkipTagging}
-          className="w-full py-2 text-white/50 text-sm font-medium"
+          style={{
+            width: '100%',
+            padding: '10px',
+            background: 'transparent',
+            border: 'none',
+            color: 'rgba(255,255,255,0.50)',
+            fontFamily: T.sans,
+            fontSize: 13,
+            fontWeight: 500,
+            cursor: 'pointer',
+          }}
         >
           {t('capture.skipTagging')}
         </button>
