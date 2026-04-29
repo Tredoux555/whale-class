@@ -10,6 +10,8 @@ import { verifyChildBelongsToSchool } from '@/lib/montree/verify-child-access';
 import { anthropic, AI_ENABLED, HAIKU_MODEL } from '@/lib/ai/anthropic';
 import { analyzeChildProgress } from '@/lib/montree/guru/progress-analyzer';
 
+export const maxDuration = 60;
+
 interface DashboardSummary {
   endOfDay: { nudge: string | null };
   suggestion: { text: string | null; type: string };

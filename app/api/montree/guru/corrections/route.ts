@@ -7,6 +7,8 @@ import { checkRateLimit } from '@/lib/rate-limiter';
 import { invalidateClassroomEmbeddings } from '@/lib/montree/classifier';
 // import { logApiUsage } from '@/lib/montree/api-usage'; // DEFERRED: metering not yet deployed
 
+export const maxDuration = 120;
+
 // POST /api/montree/guru/corrections — Record a teacher correction for self-learning
 // Called when teacher changes work_id in PhotoEditModal (correcting Smart Capture)
 // Now also generates a visual description and stores it in visual memory for future prompts

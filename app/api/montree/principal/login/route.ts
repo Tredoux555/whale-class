@@ -139,7 +139,7 @@ export async function POST(request: NextRequest) {
       .select('*')
       .eq('email', email.trim().toLowerCase())
       .eq('is_active', true)
-      .single();
+      .maybeSingle();
 
     if (principalError || !principal) {
       await logAudit(supabase, {

@@ -60,7 +60,7 @@ export async function validateTeacherSession(
       .from('montree_teachers')
       .select('id, name, school_id, is_active')
       .eq('id', sessionData.teacherId)
-      .single();
+      .maybeSingle();
 
     if (error || !teacher || !teacher.is_active) {
       return null;
@@ -111,7 +111,7 @@ export async function validateParentSession(
       .from('montree_parents')
       .select('id, name, school_id, is_active')
       .eq('id', sessionData.parentId)
-      .single();
+      .maybeSingle();
 
     if (error || !parent || !parent.is_active) {
       return null;
@@ -153,7 +153,7 @@ export async function canAccessChild(
       .from('montree_children')
       .select('classroom_id')
       .eq('id', childId)
-      .single();
+      .maybeSingle();
 
     if (!child) return false;
     return session.classroomIds.includes(child.classroom_id);
@@ -168,7 +168,7 @@ export async function canAccessChild(
         montree_classrooms!inner ( school_id )
       `)
       .eq('id', childId)
-      .single();
+      .maybeSingle();
 
     if (!child) return false;
     const classroomData = child.montree_classrooms as unknown as { school_id: string };
@@ -192,7 +192,7 @@ export async function canAccessClassroom(
       .from('montree_classrooms')
       .select('school_id')
       .eq('id', classroomId)
-      .single();
+      .maybeSingle();
 
     if (!classroom) return false;
     return classroom.school_id === session.schoolId;

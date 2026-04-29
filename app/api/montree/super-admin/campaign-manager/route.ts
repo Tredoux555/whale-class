@@ -141,7 +141,7 @@ export async function PATCH(req: NextRequest) {
       contact_id: contactId,
       action: `status_${status}`,
       details: { notes, previous_status: 'unknown' },
-    }).catch(() => {});
+    }).catch(err => console.error('[campaign-manager] Failed to log action:', err));
   }
 
   return NextResponse.json({ success: true, updated: targetIds.length });

@@ -43,8 +43,8 @@ export async function getChildById(childId: string): Promise<Child | null> {
     .from('montree_children')
     .select('*')
     .eq('id', childId)
-    .single();
-  
+    .maybeSingle();
+
   if (error) return null;
   
   return {
@@ -152,8 +152,8 @@ export async function getWorkProgress(childId: string, workId: string): Promise<
     .select('*')
     .eq('child_id', childId)
     .eq('work_id', workId)
-    .single();
-  
+    .maybeSingle();
+
   if (error) return null;
   
   return {

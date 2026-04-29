@@ -47,7 +47,7 @@ export async function getAdminLoginLogId(supabase: any, sessionToken: string | n
       .eq('session_token', sessionToken)
       .order('login_at', { ascending: false })
       .limit(1)
-      .single();
+      .maybeSingle();
     return data?.id || null;
   } catch {
     return null;

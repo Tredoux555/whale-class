@@ -47,8 +47,8 @@ export async function POST(request: NextRequest) {
     const pdfBuffer = await readFile(pdfPath);
 
     // Clean up temporary files
-    await unlink(dataPath).catch(() => {});
-    await unlink(pdfPath).catch(() => {});
+    await unlink(dataPath).catch(err => console.error('[pdf] Failed to cleanup data file:', err));
+    await unlink(pdfPath).catch(err => console.error('[pdf] Failed to cleanup pdf file:', err));
 
     // Return PDF
     return new NextResponse(pdfBuffer, {
