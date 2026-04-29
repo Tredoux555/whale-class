@@ -1,8 +1,11 @@
 // components/montree/guru/ChatBubble.tsx
 // Single chat message bubble for the Guru conversational thread
+// Dark forest visual treatment — uniform across teacher / parent / admin
+// All wiring intact (props signature, memoization, scroll-to-bottom on stream)
 'use client';
 
 import { useState, useEffect, useRef, memo } from 'react';
+import { ChevronRight, Sparkles } from 'lucide-react';
 import { useI18n } from '@/lib/montree/i18n';
 
 interface ChatBubbleProps {
@@ -10,10 +13,31 @@ interface ChatBubbleProps {
   isUser: boolean;
   timestamp?: string;
   imageUrl?: string;
-  thinking?: string;       // Extended thinking text from AI
-  isThinkingLive?: boolean; // true while thinking is still streaming in
-  isTeacher?: boolean;      // true for teacher theme (warm earth tones), false for parent theme (botanical green)
+  thinking?: string;
+  isThinkingLive?: boolean;
+  /**
+   * Kept for backwards compatibility with consumers — both teacher and
+   * parent themes now render the same dark forest aesthetic. The flag is
+   * still accepted so existing call sites compile and we keep room to
+   * diverge later if needed.
+   */
+  isTeacher?: boolean;
 }
+
+const T = {
+  textPrimary: 'rgba(255,255,255,0.95)',
+  textSecondary: 'rgba(255,255,255,0.65)',
+  textMuted: 'rgba(255,255,255,0.40)',
+  emerald: '#34d399',
+  emeraldStrong: 'rgba(52,211,153,0.18)',
+  emeraldSoft: 'rgba(52,211,153,0.10)',
+  violetSoft: 'rgba(139,92,246,0.10)',
+  violetBorder: 'rgba(139,92,246,0.30)',
+  violet: '#c4b5fd',
+  blur: 'blur(18px) saturate(140%)',
+  serif: '"Lora", Georgia, serif',
+  sans: '"Inter", -apple-system, BlinkMacSystemFont, sans-serif',
+};
 
 function formatRelativeTime(dateStr: string, t: (key: string, params?: Record<string, string | number>) => string): string {
   const date = new Date(dateStr);
@@ -32,50 +56,63 @@ function formatRelativeTime(dateStr: string, t: (key: string, params?: Record<st
   return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
 }
 
-/** Render inline bold (**text**) and bullet points from Guru response */
+function renderInlineBold(text: string) {
+  const parts = text.split(/(\*\*[^*]+\*\*)/g);
+  return parts.map((part, i) => {
+    if (part.startsWith('**') && part.endsWith('**')) {
+      return <strong key={i} style={{ fontWeight: 600 }}>{part.slice(2, -2)}</strong>;
+    }
+    return <span key={i}>{part}</span>;
+  });
+}
+
 function renderMarkdown(text: string) {
   const lines = text.split('\n');
   return lines.map((line, i) => {
-    // Bullet points
     if (line.startsWith('- ') || line.startsWith('* ')) {
       return (
-        <li key={i} className="ml-4 list-disc text-sm leading-relaxed">
+        <li
+          key={i}
+          style={{
+            marginLeft: 18,
+            listStyle: 'disc',
+            fontFamily: T.sans,
+            fontSize: 14,
+            lineHeight: 1.6,
+          }}
+        >
           {renderInlineBold(line.slice(2))}
         </li>
       );
     }
-    // Numbered items
     if (/^\d+\.\s/.test(line)) {
       return (
-        <li key={i} className="ml-4 list-decimal text-sm leading-relaxed">
+        <li
+          key={i}
+          style={{
+            marginLeft: 18,
+            listStyle: 'decimal',
+            fontFamily: T.sans,
+            fontSize: 14,
+            lineHeight: 1.6,
+          }}
+        >
           {renderInlineBold(line.replace(/^\d+\.\s/, ''))}
         </li>
       );
     }
-    // Empty line
     if (line.trim() === '') {
-      return <div key={i} className="h-2" />;
+      return <div key={i} style={{ height: 8 }} />;
     }
-    // Regular text
     return (
-      <p key={i} className="text-sm leading-relaxed">
+      <p key={i} style={{ margin: 0, fontFamily: T.sans, fontSize: 14, lineHeight: 1.6 }}>
         {renderInlineBold(line)}
       </p>
     );
   });
 }
 
-function renderInlineBold(text: string) {
-  const parts = text.split(/(\*\*[^*]+\*\*)/g);
-  return parts.map((part, i) => {
-    if (part.startsWith('**') && part.endsWith('**')) {
-      return <strong key={i} className="font-semibold">{part.slice(2, -2)}</strong>;
-    }
-    return <span key={i}>{part}</span>;
-  });
-}
-
-function ChatBubble({ content, isUser, timestamp, imageUrl, thinking, isThinkingLive, isTeacher = false }: ChatBubbleProps) {
+function ChatBubble({ content, isUser, timestamp, imageUrl, thinking, isThinkingLive }: ChatBubbleProps) {
   const { t } = useI18n();
   const [imgError, setImgError] = useState(false);
   const [thinkingExpanded, setThinkingExpanded] = useState(false);
@@ -83,34 +120,6 @@ function ChatBubble({ content, isUser, timestamp, imageUrl, thinking, isThinking
 
   const showThinking = thinking && thinking.trim().length > 0;
 
-  // Thinking block colors based on theme
-  const thinkingColors = isTeacher
-    ? {
-        liveGradient: 'bg-[rgba(139,92,246,0.08)]',
-        liveBorder: 'border-[rgba(139,92,246,0.25)]',
-        liveDot: 'bg-[#34d399]',
-        liveText: 'text-[#34d399]',
-        liveContent: 'text-white/70',
-        liveCursor: 'bg-[#34d399]/60',
-        collapsedButton: 'text-white/40 hover:text-white/70',
-        collapsedBg: 'bg-[rgba(255,255,255,0.04)]',
-        collapsedBorder: 'border-[rgba(255,255,255,0.10)]',
-        collapsedText: 'text-white/50',
-      }
-    : {
-        liveGradient: 'bg-gradient-to-br from-[#0D3330]/10 to-[#164340]/10',
-        liveBorder: 'border-[#0D3330]/10',
-        liveDot: 'bg-[#0D3330]',
-        liveText: 'text-[#0D3330]/70',
-        liveContent: 'text-[#0D3330]/70',
-        liveCursor: 'bg-[#0D3330]/60',
-        collapsedButton: 'text-[#0D3330]/50 hover:text-[#0D3330]',
-        collapsedBg: 'bg-[#0D3330]/5',
-        collapsedBorder: 'border-[#0D3330]/10',
-        collapsedText: 'text-[#0D3330]/50',
-      };
-
-  // Auto-scroll thinking block as it streams
   useEffect(() => {
     if (isThinkingLive && thinkingRef.current) {
       thinkingRef.current.scrollTop = thinkingRef.current.scrollHeight;
@@ -118,71 +127,165 @@ function ChatBubble({ content, isUser, timestamp, imageUrl, thinking, isThinking
   }, [thinking, isThinkingLive]);
 
   return (
-    <div className={`flex ${isUser ? 'justify-end' : 'justify-start'} mb-3`}>
-      {/* Guru avatar */}
+    <div
+      style={{
+        display: 'flex',
+        justifyContent: isUser ? 'flex-end' : 'flex-start',
+        marginBottom: 12,
+        fontFamily: T.sans,
+      }}
+    >
+      {/* Guru avatar (assistant only) */}
       {!isUser && (
         <div
-          className={!isTeacher ? "flex-shrink-0 w-8 h-8 rounded-full bg-[#0D3330] flex items-center justify-center mr-2 mt-1" : undefined}
-          style={isTeacher ? {
-            flexShrink: 0, width: 28, height: 28, borderRadius: '50%',
-            background: 'linear-gradient(135deg, rgba(52,211,153,0.30), rgba(16,185,129,0.18))',
-            border: '1px solid rgba(52,211,153,0.35)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            marginRight: 8, marginTop: 4,
-          } : undefined}
+          style={{
+            flexShrink: 0,
+            width: 30,
+            height: 30,
+            borderRadius: '50%',
+            background: 'linear-gradient(135deg, rgba(52,211,153,0.32), rgba(16,185,129,0.18))',
+            border: '1px solid rgba(52,211,153,0.40)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            marginRight: 8,
+            marginTop: 4,
+            color: T.emerald,
+          }}
         >
-          {isTeacher
-            ? <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#34d399" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg>
-            : <span className="text-sm">🌿</span>
-          }
+          <Sparkles size={14} strokeWidth={1.75} />
         </div>
       )}
 
-      <div className={`max-w-[85%] ${isUser ? 'order-1' : ''}`}>
-        {/* THINKING BLOCK — visible while live, collapsible after done */}
+      <div style={{ maxWidth: '85%', order: isUser ? 1 : 0 }}>
+        {/* Thinking block (assistant only) */}
         {!isUser && showThinking && (
-          <div className="mb-2">
+          <div style={{ marginBottom: 8 }}>
             {isThinkingLive ? (
-              /* LIVE THINKING — fully visible, auto-scrolling, prominent */
               <div
                 ref={thinkingRef}
-                className={`${thinkingColors.liveGradient} border ${thinkingColors.liveBorder} rounded-2xl rounded-bl-md px-4 py-3 shadow-sm max-h-64 overflow-y-auto`}
+                style={{
+                  background: T.violetSoft,
+                  border: `1px solid ${T.violetBorder}`,
+                  borderRadius: '14px 14px 14px 4px',
+                  padding: '12px 16px',
+                  maxHeight: 256,
+                  overflowY: 'auto',
+                  boxShadow: '0 1px 3px rgba(0,0,0,0.20)',
+                }}
               >
-                <div className="flex items-center gap-2 mb-2">
-                  <span className={`inline-block w-2 h-2 rounded-full ${thinkingColors.liveDot} animate-pulse`} />
-                  <span className={`text-[11px] font-semibold ${thinkingColors.liveText} uppercase tracking-wider`}>
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 8,
+                    marginBottom: 8,
+                  }}
+                >
+                  <span
+                    style={{
+                      display: 'inline-block',
+                      width: 8,
+                      height: 8,
+                      borderRadius: '50%',
+                      background: T.violet,
+                      animation: 'cb-pulse 1.4s ease-in-out infinite',
+                    }}
+                  />
+                  <span
+                    style={{
+                      fontFamily: T.sans,
+                      fontSize: 11,
+                      fontWeight: 700,
+                      color: T.violet,
+                      textTransform: 'uppercase',
+                      letterSpacing: 0.5,
+                    }}
+                  >
                     Thinking
                   </span>
                 </div>
-                <p className={`text-[13px] leading-relaxed ${thinkingColors.liveContent} whitespace-pre-wrap`}>
+                <p
+                  style={{
+                    margin: 0,
+                    fontFamily: T.sans,
+                    fontSize: 13,
+                    lineHeight: 1.6,
+                    color: T.textSecondary,
+                    whiteSpace: 'pre-wrap',
+                  }}
+                >
                   {thinking}
-                  <span className={`inline-block w-1.5 h-4 ${thinkingColors.liveCursor} animate-pulse rounded-sm ml-0.5 align-middle`} />
+                  <span
+                    style={{
+                      display: 'inline-block',
+                      width: 6,
+                      height: 16,
+                      background: 'rgba(196,181,253,0.65)',
+                      borderRadius: 2,
+                      marginLeft: 2,
+                      verticalAlign: 'middle',
+                      animation: 'cb-pulse 1.2s ease-in-out infinite',
+                    }}
+                  />
                 </p>
+                <style>{`@keyframes cb-pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.45; } }`}</style>
               </div>
             ) : (
-              /* COMPLETED THINKING — collapsed with toggle */
               <div>
                 <button
                   onClick={() => setThinkingExpanded(!thinkingExpanded)}
-                  className={`flex items-center gap-1.5 text-[11px] ${thinkingColors.collapsedButton} transition-colors mb-1 ml-1`}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 5,
+                    padding: '3px 8px 3px 4px',
+                    marginBottom: 4,
+                    marginLeft: 4,
+                    background: 'transparent',
+                    border: 'none',
+                    color: T.textMuted,
+                    fontFamily: T.sans,
+                    fontSize: 11,
+                    cursor: 'pointer',
+                    transition: 'color 120ms ease',
+                  }}
+                  onMouseEnter={e => (e.currentTarget.style.color = T.textSecondary)}
+                  onMouseLeave={e => (e.currentTarget.style.color = T.textMuted)}
                 >
-                  <svg
-                    className={`w-3 h-3 transition-transform duration-200 ${thinkingExpanded ? 'rotate-90' : ''}`}
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
+                  <ChevronRight
+                    size={11}
                     strokeWidth={2}
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                  </svg>
+                    style={{
+                      transition: 'transform 200ms ease',
+                      transform: thinkingExpanded ? 'rotate(90deg)' : 'rotate(0deg)',
+                    }}
+                  />
                   <span>{t('guru.viewThinking') || 'View thinking'}</span>
                 </button>
                 {thinkingExpanded && (
                   <div
                     ref={thinkingRef}
-                    className={`${thinkingColors.collapsedBg} border ${thinkingColors.collapsedBorder} rounded-xl px-3 py-2 mb-1 max-h-48 overflow-y-auto`}
+                    style={{
+                      background: 'rgba(255,255,255,0.04)',
+                      border: '1px solid rgba(255,255,255,0.10)',
+                      borderRadius: 12,
+                      padding: '10px 12px',
+                      marginBottom: 4,
+                      maxHeight: 192,
+                      overflowY: 'auto',
+                    }}
                   >
-                    <p className={`text-[12px] leading-relaxed ${thinkingColors.collapsedText} whitespace-pre-wrap`}>
+                    <p
+                      style={{
+                        margin: 0,
+                        fontFamily: T.sans,
+                        fontSize: 12,
+                        lineHeight: 1.6,
+                        color: T.textMuted,
+                        whiteSpace: 'pre-wrap',
+                      }}
+                    >
                       {thinking}
                     </p>
                   </div>
@@ -192,61 +295,83 @@ function ChatBubble({ content, isUser, timestamp, imageUrl, thinking, isThinking
           </div>
         )}
 
+        {/* Message bubble */}
         <div
-          className={!isTeacher ? `rounded-2xl px-4 py-3 ${
-            isUser
-              ? 'bg-[#F5E6D3] text-[#0D3330] rounded-br-md'
-              : 'bg-white border border-[#0D3330]/10 text-[#0D3330] rounded-bl-md shadow-sm'
-          }` : undefined}
-          style={isTeacher ? {
+          style={{
             borderRadius: isUser ? '14px 14px 4px 14px' : '14px 14px 14px 4px',
             padding: '12px 16px',
-            background: isUser ? 'rgba(52,211,153,0.12)' : 'rgba(255,255,255,0.06)',
-            border: `1px solid ${isUser ? 'rgba(52,211,153,0.35)' : 'rgba(255,255,255,0.10)'}`,
-            backdropFilter: 'blur(18px) saturate(140%)',
-            WebkitBackdropFilter: 'blur(18px) saturate(140%)',
-            color: 'rgba(255,255,255,0.95)',
-            fontFamily: '"Inter", -apple-system, BlinkMacSystemFont, sans-serif',
-            fontSize: 14.5,
+            background: isUser ? 'rgba(52,211,153,0.14)' : 'rgba(255,255,255,0.06)',
+            border: `1px solid ${isUser ? 'rgba(52,211,153,0.40)' : 'rgba(255,255,255,0.10)'}`,
+            backdropFilter: T.blur,
+            WebkitBackdropFilter: T.blur,
+            color: T.textPrimary,
+            fontFamily: T.sans,
+            fontSize: 14,
             lineHeight: 1.55,
-          } : undefined}
+          }}
         >
-          {/* Image attachment */}
           {imageUrl && !imgError && (
-            <div className="mb-2">
+            <div style={{ marginBottom: 8 }}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={imageUrl} alt="Attached image" className="max-w-full max-h-48 rounded-lg object-contain" onError={() => setImgError(true)} />
+              <img
+                src={imageUrl}
+                alt="Attached"
+                onError={() => setImgError(true)}
+                style={{
+                  maxWidth: '100%',
+                  maxHeight: 192,
+                  borderRadius: 10,
+                  objectFit: 'contain',
+                  display: 'block',
+                }}
+              />
             </div>
           )}
+
           {isUser ? (
-            <p className="text-sm leading-relaxed">{content}</p>
+            <p style={{ margin: 0, fontFamily: T.sans, fontSize: 14, lineHeight: 1.55 }}>
+              {content}
+            </p>
           ) : content ? (
-            <div className="space-y-0.5">{renderMarkdown(content)}</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              {renderMarkdown(content)}
+            </div>
           ) : isThinkingLive ? (
-            /* Show nothing in the text bubble while thinking is live — the thinking block is visible above */
             <span
-              className={!isTeacher ? "text-[11px] text-[#0D3330]/30 italic" : "text-[11px] italic"}
-              style={isTeacher ? { color: 'rgba(255,255,255,0.35)' } : undefined}
-            >{t('guru.thinkingGenerating') || 'Generating response...'}</span>
+              style={{
+                fontFamily: T.sans,
+                fontSize: 11,
+                color: T.textMuted,
+                fontStyle: 'italic',
+              }}
+            >
+              {t('guru.thinkingGenerating') || 'Generating response...'}
+            </span>
           ) : (
             <span
-              className={!isTeacher ? "inline-block w-2 h-4 bg-[#0D3330]/40 animate-pulse rounded-sm" : "inline-block w-2 h-4 animate-pulse rounded-sm"}
-              style={isTeacher ? { background: 'rgba(255,255,255,0.40)' } : undefined}
+              style={{
+                display: 'inline-block',
+                width: 8,
+                height: 16,
+                background: 'rgba(255,255,255,0.40)',
+                borderRadius: 2,
+                animation: 'cb-pulse 1.2s ease-in-out infinite',
+              }}
             />
           )}
         </div>
 
         {timestamp && (
           <p
-            className={!isTeacher ? `text-[10px] text-[#0D3330]/40 mt-1 ${isUser ? 'text-right' : 'text-left ml-1'}` : undefined}
-            style={isTeacher ? {
-              fontFamily: '"Inter", sans-serif',
+            style={{
+              margin: '4px 0 0',
+              fontFamily: T.sans,
               fontSize: 10,
-              color: 'rgba(255,255,255,0.35)',
-              marginTop: 4,
+              color: T.textMuted,
               textAlign: isUser ? 'right' : 'left',
               paddingLeft: isUser ? 0 : 4,
-            } : undefined}
+              paddingRight: isUser ? 4 : 0,
+            }}
           >
             {formatRelativeTime(timestamp, t)}
           </p>
@@ -256,5 +381,4 @@ function ChatBubble({ content, isUser, timestamp, imageUrl, thinking, isThinking
   );
 }
 
-// PERF: Memoize to prevent re-rendering all previous messages when a new one is added
 export default memo(ChatBubble);
