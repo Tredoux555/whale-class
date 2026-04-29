@@ -74,10 +74,10 @@ function LoadingScreenWrapper() {
 
 function LoadingScreen({ t }: { t: (key: string) => string }) {
   return (
-    <div style={{ minHeight: "100vh", background: T.bg, backgroundImage: T.glow, backgroundAttachment: "fixed" }}>
-      <div className="text-center">
-        <div className="w-16 h-16 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-2xl shadow-lg flex items-center justify-center mx-auto mb-4 animate-pulse">
-          <span className="text-3xl">📊</span>
+    <div style={{ minHeight: "100vh", background: T.bg, backgroundImage: T.glow, backgroundAttachment: "fixed", display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <div style={{ textAlign: "center" }}>
+        <div style={{ width: "4rem", height: "4rem", background: `linear-gradient(to bottom right, #34d399, #14b8a6)`, borderRadius: "0.5rem", boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)", display: "flex", alignItems: "center", justifyContent: "center", marginLeft: "auto", marginRight: "auto", marginBottom: "1rem", animation: "pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite" }}>
+          <span style={{ fontSize: "1.875rem" }}>📊</span>
         </div>
         <p style={{ color: T.textSecondary }}>{t('parentWeeklyReview.loadingReport')}</p>
       </div>
@@ -200,12 +200,12 @@ function ParentWeeklyReviewContent() {
 
   if (error) {
     return (
-      <div style={{ minHeight: "100vh", background: T.bg, backgroundImage: T.glow, backgroundAttachment: "fixed" }}>
-        <div className="text-center max-w-md">
-          <div className="text-6xl mb-4">😕</div>
-          <h2 className="text-xl font-bold text-gray-900 mb-2">{t('parentWeeklyReview.errorTitle')}</h2>
-          <p style={{ color: T.textSecondary }}>{error}</p>
-          <Link href="/montree/parent/dashboard" className="text-emerald-600 hover:underline">
+      <div style={{ minHeight: "100vh", background: T.bg, backgroundImage: T.glow, backgroundAttachment: "fixed", display: "flex", alignItems: "center", justifyContent: "center", padding: "1rem" }}>
+        <div style={{ textAlign: "center", maxWidth: "28rem" }}>
+          <div style={{ fontSize: "3.75rem", marginBottom: "1rem" }}>😕</div>
+          <h2 style={{ fontSize: "1.25rem", fontWeight: "700", color: T.textPrimary, marginBottom: "0.5rem" }}>{t('parentWeeklyReview.errorTitle')}</h2>
+          <p style={{ color: T.textSecondary, marginBottom: "1rem" }}>{error}</p>
+          <Link href="/montree/parent/dashboard" style={{ color: T.emerald, textDecoration: "underline" }}>
             ← {t('common.backToDashboard')}
           </Link>
         </div>
@@ -215,14 +215,14 @@ function ParentWeeklyReviewContent() {
 
   if (!child || !analysis) {
     return (
-      <div style={{ minHeight: "100vh", background: T.bg, backgroundImage: T.glow, backgroundAttachment: "fixed" }}>
-        <div className="text-center max-w-md">
-          <div className="text-6xl mb-4">📊</div>
-          <h2 className="text-xl font-bold text-gray-900 mb-2">{t('parentWeeklyReview.noReportTitle')}</h2>
-          <p style={{ color: T.textSecondary }}>
+      <div style={{ minHeight: "100vh", background: T.bg, backgroundImage: T.glow, backgroundAttachment: "fixed", display: "flex", alignItems: "center", justifyContent: "center", padding: "1rem" }}>
+        <div style={{ textAlign: "center", maxWidth: "28rem" }}>
+          <div style={{ fontSize: "3.75rem", marginBottom: "1rem" }}>📊</div>
+          <h2 style={{ fontSize: "1.25rem", fontWeight: "700", color: T.textPrimary, marginBottom: "0.5rem" }}>{t('parentWeeklyReview.noReportTitle')}</h2>
+          <p style={{ color: T.textSecondary, marginBottom: "1rem" }}>
             {t('parentWeeklyReview.noReportDescription')}
           </p>
-          <Link href="/montree/parent/dashboard" className="text-emerald-600 hover:underline">
+          <Link href="/montree/parent/dashboard" style={{ color: T.emerald, textDecoration: "underline" }}>
             ← {t('common.backToDashboard')}
           </Link>
         </div>
@@ -234,29 +234,31 @@ function ParentWeeklyReviewContent() {
     <div style={{ minHeight: "100vh", background: T.bg, backgroundImage: T.glow, backgroundAttachment: "fixed" }}>
       {/* Header */}
       <header style={{ background: T.card, backdropFilter: T.blur }}>
-        <div className="max-w-2xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
+        <div style={{ maxWidth: "56rem", marginLeft: "auto", marginRight: "auto", paddingLeft: "1rem", paddingRight: "1rem", paddingTop: "1rem", paddingBottom: "1rem" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
             <Link
               href="/montree/parent/dashboard"
-              className="flex items-center gap-2 text-gray-600 hover:text-gray-900"
+              style={{ display: "flex", alignItems: "center", gap: "0.5rem", color: T.emerald, textDecoration: "none", cursor: "pointer" }}
+              onMouseEnter={(e) => { (e.currentTarget as HTMLAnchorElement).style.opacity = "0.8"; }}
+              onMouseLeave={(e) => { (e.currentTarget as HTMLAnchorElement).style.opacity = "1"; }}
             >
               <span>←</span>
-              <span className="text-sm">{t('parentWeeklyReview.dashboard')}</span>
+              <span style={{ fontSize: "0.875rem" }}>{t('parentWeeklyReview.dashboard')}</span>
             </Link>
-            <div className="text-center">
-              <h1 className="text-lg font-bold text-gray-900">{t('parentWeeklyReview.weeklyReport')}</h1>
-              <p className="text-xs text-gray-500">{child.name}</p>
+            <div style={{ textAlign: "center" }}>
+              <h1 style={{ fontSize: "1.125rem", fontWeight: "700", color: T.textPrimary }}>{t('parentWeeklyReview.weeklyReport')}</h1>
+              <p style={{ fontSize: "0.75rem", color: T.textMuted }}>{child.name}</p>
             </div>
-            <div className="w-16" /> {/* Spacer for alignment */}
+            <div style={{ width: "4rem" }} /> {/* Spacer for alignment */}
           </div>
         </div>
       </header>
 
-      <main className="max-w-2xl mx-auto px-4 py-6 space-y-6">
-        
+      <main style={{ maxWidth: "56rem", marginLeft: "auto", marginRight: "auto", paddingLeft: "1rem", paddingRight: "1rem", paddingTop: "1.5rem", paddingBottom: "1.5rem", display: "flex", flexDirection: "column", gap: "1.5rem" }}>
+
         {/* Week Selector */}
         {availableWeeks.length > 1 && (
-          <div className="flex items-center justify-center gap-3">
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "0.75rem" }}>
             <button
               onClick={() => {
                 const currentIndex = availableWeeks.indexOf(selectedWeek);
@@ -265,12 +267,12 @@ function ParentWeeklyReviewContent() {
                 }
               }}
               disabled={availableWeeks.indexOf(selectedWeek) >= availableWeeks.length - 1}
-              style={{ background: T.card, backdropFilter: T.blur }}
+              style={{ background: T.card, backdropFilter: T.blur, padding: "0.75rem 1rem", borderRadius: "0.5rem", border: T.cardBorder, color: T.textSecondary, cursor: "pointer" }}
             >
               ◀
             </button>
-            <div style={{ background: T.card, backdropFilter: T.blur }}>
-              <span className="font-medium text-gray-900">
+            <div style={{ background: T.card, backdropFilter: T.blur, padding: "0.75rem 1.5rem", borderRadius: "0.5rem", border: T.cardBorder }}>
+              <span style={{ fontWeight: "500", color: T.textPrimary }}>
                 {formatWeekRange(analysis.week_start, analysis.week_end)}
               </span>
             </div>
@@ -282,7 +284,7 @@ function ParentWeeklyReviewContent() {
                 }
               }}
               disabled={availableWeeks.indexOf(selectedWeek) <= 0}
-              style={{ background: T.card, backdropFilter: T.blur }}
+              style={{ background: T.card, backdropFilter: T.blur, padding: "0.75rem 1rem", borderRadius: "0.5rem", border: T.cardBorder, color: T.textSecondary, cursor: "pointer" }}
             >
               ▶
             </button>
@@ -290,22 +292,22 @@ function ParentWeeklyReviewContent() {
         )}
 
         {/* Hero Card - Child Photo + Greeting */}
-        <div className="bg-gradient-to-br from-emerald-500 to-teal-600 rounded-3xl p-6 text-white shadow-xl">
-          <div className="flex items-center gap-4 mb-4">
-            <div style={{ background: T.card, backdropFilter: T.blur }}>
+        <div style={{ background: `linear-gradient(to bottom right, ${T.emerald}, #14b8a6)`, borderRadius: "1.5rem", padding: "1.5rem", color: T.textPrimary, boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1)" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "1rem", marginBottom: "1rem" }}>
+            <div style={{ background: T.card, backdropFilter: T.blur, width: "80px", height: "80px", borderRadius: "0.75rem", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
               {child.photo_url ? (
-                <img src={child.photo_url} alt={child.name} className="w-full h-full object-cover" />
+                <img src={child.photo_url} alt={child.name} style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "0.75rem" }} />
               ) : (
-                <span className="text-4xl">👧</span>
+                <span style={{ fontSize: "2.25rem" }}>👧</span>
               )}
             </div>
             <div>
-              <h2 className="text-2xl font-bold">{t('parentWeeklyReview.childWeek' as any).replace('{childName}', child.name)}</h2>
-              <p className="text-emerald-100">{child.classroom_name || t('parentWeeklyReview.myClassroom' as any)}</p>
+              <h2 style={{ fontSize: "1.5rem", fontWeight: "700" }}>{t('parentWeeklyReview.childWeek' as any).replace('{childName}', child.name)}</h2>
+              <p style={{ color: 'rgba(255,255,255,0.7)' }}>{child.classroom_name || t('parentWeeklyReview.myClassroom' as any)}</p>
             </div>
           </div>
-          <div style={{ background: T.card, backdropFilter: T.blur }}>
-            <p className="text-lg leading-relaxed">
+          <div style={{ background: 'rgba(255,255,255,0.1)', backdropFilter: T.blur, padding: "1.25rem", borderRadius: "0.75rem" }}>
+            <p style={{ fontSize: "1.125rem", lineHeight: "1.5" }}>
               {analysis.parent_summary || t('parentWeeklyReview.defaultSummary' as any).replace('{childName}', child.name)}
             </p>
           </div>
@@ -313,27 +315,28 @@ function ParentWeeklyReviewContent() {
 
         {/* Concentration Score */}
         {analysis.concentration_score && (
-          <div style={{ background: T.card, backdropFilter: T.blur }}>
-            <div className="flex items-center gap-3 mb-3">
-              <span className="text-2xl">🎯</span>
-              <h3 className="font-bold text-gray-900">{t('parentWeeklyReview.focusTitle')}</h3>
+          <div style={{ background: T.card, backdropFilter: T.blur, borderRadius: "0.75rem", padding: "1.5rem" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "0.75rem" }}>
+              <span style={{ fontSize: "1.5rem" }}>🎯</span>
+              <h3 style={{ fontWeight: "700", color: T.textPrimary }}>{t('parentWeeklyReview.focusTitle')}</h3>
             </div>
-            <div className="flex items-center gap-4">
-              <div style={{ background: T.card }}>
-                <div 
-                  className={`h-full rounded-full transition-all ${
-                    analysis.concentration_score >= 80 ? 'bg-emerald-500' :
-                    analysis.concentration_score >= 60 ? 'bg-yellow-500' :
-                    'bg-orange-500'
-                  }`}
-                  style={{ width: `${analysis.concentration_score}%` }}
+            <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+              <div style={{ background: 'rgba(0,0,0,0.2)', height: "0.5rem", borderRadius: "9999px", flex: 1, overflow: "hidden" }}>
+                <div
+                  style={{
+                    height: "100%",
+                    borderRadius: "9999px",
+                    transitionDuration: "200ms",
+                    background: analysis.concentration_score >= 80 ? T.emerald : analysis.concentration_score >= 60 ? '#eab308' : '#f97316',
+                    width: `${analysis.concentration_score}%`,
+                  }}
                 />
               </div>
-              <span className="font-bold text-gray-900 min-w-[3rem] text-right">
+              <span style={{ fontWeight: "700", color: T.textPrimary, minWidth: "3rem", textAlign: "right" }}>
                 {analysis.concentration_score}%
               </span>
             </div>
-            <p className="text-sm text-gray-500 mt-2">
+            <p style={{ fontSize: "0.875rem", color: T.textSecondary, marginTop: "0.5rem" }}>
               {analysis.concentration_score >= 80
                 ? t('parentWeeklyReview.focusExcellent')
                 : analysis.concentration_score >= 60
@@ -345,23 +348,23 @@ function ParentWeeklyReviewContent() {
 
         {/* Active Sensitive Periods */}
         {analysis.active_sensitive_periods && analysis.active_sensitive_periods.length > 0 && (
-          <div style={{ background: T.card, backdropFilter: T.blur }}>
-            <div className="flex items-center gap-3 mb-4">
-              <span className="text-2xl">✨</span>
+          <div style={{ background: T.card, backdropFilter: T.blur, borderRadius: "0.75rem", padding: "1.5rem" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "1rem" }}>
+              <span style={{ fontSize: "1.5rem" }}>✨</span>
               <div>
-                <h3 className="font-bold text-gray-900">{t('parentWeeklyReview.sensitivePeriodTitle')}</h3>
-                <p className="text-sm text-gray-500">{t('parentWeeklyReview.sensitivePeriodSubtitle')}</p>
+                <h3 style={{ fontWeight: "700", color: T.textPrimary }}>{t('parentWeeklyReview.sensitivePeriodTitle')}</h3>
+                <p style={{ fontSize: "0.875rem", color: T.textSecondary }}>{t('parentWeeklyReview.sensitivePeriodSubtitle')}</p>
               </div>
             </div>
-            <div className="space-y-3">
+            <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
               {analysis.active_sensitive_periods.map((period) => {
                 const info = getSensitivePeriodInfo(period);
                 return (
-                  <div key={period} className="flex items-start gap-3 p-3 bg-amber-50 rounded-xl border border-amber-100">
-                    <span className="text-2xl">{info.icon}</span>
+                  <div key={period} style={{ display: "flex", alignItems: "flex-start", gap: "0.75rem", padding: "0.75rem", background: 'rgba(245,158,11,0.10)', borderRadius: "0.75rem", border: `1px solid rgba(245,158,11,0.15)` }}>
+                    <span style={{ fontSize: "1.5rem", flexShrink: 0 }}>{info.icon}</span>
                     <div>
-                      <p className="font-medium text-gray-900">{info.name}</p>
-                      <p className="text-sm text-gray-600">{info.description}</p>
+                      <p style={{ fontWeight: "500", color: T.textPrimary }}>{info.name}</p>
+                      <p style={{ fontSize: "0.875rem", color: T.textSecondary }}>{info.description}</p>
                     </div>
                   </div>
                 );
@@ -372,19 +375,19 @@ function ParentWeeklyReviewContent() {
 
         {/* Area Balance */}
         {analysis.area_distribution && Object.keys(analysis.area_distribution).length > 0 && (
-          <div style={{ background: T.card, backdropFilter: T.blur }}>
-            <div className="flex items-center gap-3 mb-4">
-              <span className="text-2xl">📊</span>
-              <h3 className="font-bold text-gray-900">{t('parentWeeklyReview.learningAreasTitle')}</h3>
+          <div style={{ background: T.card, backdropFilter: T.blur, borderRadius: "0.75rem", padding: "1.5rem" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "1rem" }}>
+              <span style={{ fontSize: "1.5rem" }}>📊</span>
+              <h3 style={{ fontWeight: "700", color: T.textPrimary }}>{t('parentWeeklyReview.learningAreasTitle')}</h3>
             </div>
-            <div className="space-y-3">
+            <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
               {Object.entries(analysis.area_distribution)
                 .sort(([,a], [,b]) => b - a)
                 .map(([area, count]) => (
-                <div key={area} className="flex items-center gap-3">
-                  <span className="text-xl w-8">{getAreaIcon(area)}</span>
-                  <span className="flex-1 text-gray-700">{getAreaName(area)}</span>
-                  <span className="text-sm font-medium text-gray-500">
+                <div key={area} style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+                  <span style={{ fontSize: "1.25rem", width: "2rem" }}>{getAreaIcon(area)}</span>
+                  <span style={{ flex: 1, color: T.textSecondary }}>{getAreaName(area)}</span>
+                  <span style={{ fontSize: "0.875rem", fontWeight: "500", color: T.textMuted }}>
                     {count} {count === 1 ? t('parentWeeklyReview.work') : t('parentWeeklyReview.works')}
                   </span>
                 </div>
@@ -395,24 +398,24 @@ function ParentWeeklyReviewContent() {
 
         {/* Home Activities */}
         {homeActivities.length > 0 && (
-          <div style={{ background: T.card, backdropFilter: T.blur }}>
-            <div className="flex items-center gap-3 mb-4">
-              <span className="text-2xl">🏠</span>
+          <div style={{ background: T.card, backdropFilter: T.blur, borderRadius: "0.75rem", padding: "1.5rem" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "1rem" }}>
+              <span style={{ fontSize: "1.5rem" }}>🏠</span>
               <div>
-                <h3 className="font-bold text-gray-900">{t('parentWeeklyReview.homeActivitiesTitle')}</h3>
-                <p className="text-sm text-gray-500">{t('parentWeeklyReview.homeActivitiesSubtitle')}</p>
+                <h3 style={{ fontWeight: "700", color: T.textPrimary }}>{t('parentWeeklyReview.homeActivitiesTitle')}</h3>
+                <p style={{ fontSize: "0.875rem", color: T.textSecondary }}>{t('parentWeeklyReview.homeActivitiesSubtitle')}</p>
               </div>
             </div>
-            <div className="space-y-4">
+            <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
               {homeActivities.map((activity, idx) => (
-                <div key={idx} className="p-4 bg-blue-50 rounded-xl border border-blue-100">
-                  <div className="flex items-start gap-3">
-                    <span className="text-2xl">{activity.icon}</span>
-                    <div className="flex-1">
-                      <h4 className="font-semibold text-gray-900">{activity.title}</h4>
-                      <p className="text-sm text-gray-600 mt-1">{activity.description}</p>
+                <div key={idx} style={{ padding: "1rem", background: 'rgba(59,130,246,0.10)', borderRadius: "0.75rem", border: `1px solid rgba(59,130,246,0.15)` }}>
+                  <div style={{ display: "flex", alignItems: "flex-start", gap: "0.75rem" }}>
+                    <span style={{ fontSize: "1.5rem", flexShrink: 0 }}>{activity.icon}</span>
+                    <div style={{ flex: 1 }}>
+                      <h4 style={{ fontWeight: "600", color: T.textPrimary }}>{activity.title}</h4>
+                      <p style={{ fontSize: "0.875rem", color: T.textSecondary, marginTop: "0.25rem" }}>{activity.description}</p>
                       {activity.materials && (
-                        <p className="text-xs text-blue-600 mt-2">
+                        <p style={{ fontSize: "0.75rem", color: '#3b82f6', marginTop: "0.5rem" }}>
                           <strong>{t('parentWeeklyReview.youllNeed')}:</strong> {activity.materials}
                         </p>
                       )}
@@ -426,21 +429,21 @@ function ParentWeeklyReviewContent() {
 
         {/* Recommended Works */}
         {analysis.recommended_works && analysis.recommended_works.length > 0 && (
-          <div style={{ background: T.card, backdropFilter: T.blur }}>
-            <div className="flex items-center gap-3 mb-4">
-              <span className="text-2xl">🎯</span>
+          <div style={{ background: T.card, backdropFilter: T.blur, borderRadius: "0.75rem", padding: "1.5rem" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "1rem" }}>
+              <span style={{ fontSize: "1.5rem" }}>🎯</span>
               <div>
-                <h3 className="font-bold text-gray-900">{t('parentWeeklyReview.comingUpNextTitle')}</h3>
-                <p className="text-sm text-gray-500">{t('parentWeeklyReview.comingUpNextSubtitle').replace('{childName}', child.name)}</p>
+                <h3 style={{ fontWeight: "700", color: T.textPrimary }}>{t('parentWeeklyReview.comingUpNextTitle')}</h3>
+                <p style={{ fontSize: "0.875rem", color: T.textSecondary }}>{t('parentWeeklyReview.comingUpNextSubtitle').replace('{childName}', child.name)}</p>
               </div>
             </div>
-            <div className="space-y-3">
+            <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
               {analysis.recommended_works.slice(0, 3).map((rec, idx) => (
-                <div key={idx} className="flex items-start gap-3 p-3 bg-purple-50 rounded-xl border border-purple-100">
-                  <span className="text-xl">{getAreaIcon(rec.area)}</span>
+                <div key={idx} style={{ display: "flex", alignItems: "flex-start", gap: "0.75rem", padding: "0.75rem", background: 'rgba(147,51,234,0.10)', borderRadius: "0.75rem", border: `1px solid rgba(147,51,234,0.15)` }}>
+                  <span style={{ fontSize: "1.25rem" }}>{getAreaIcon(rec.area)}</span>
                   <div>
-                    <p className="font-medium text-gray-900">{locale === 'zh' && rec.chineseName ? rec.chineseName : rec.work_name}</p>
-                    <p className="text-sm text-gray-600">{rec.reason}</p>
+                    <p style={{ fontWeight: "500", color: T.textPrimary }}>{locale === 'zh' && rec.chineseName ? rec.chineseName : rec.work_name}</p>
+                    <p style={{ fontSize: "0.875rem", color: T.textSecondary }}>{rec.reason}</p>
                   </div>
                 </div>
               ))}
@@ -449,8 +452,8 @@ function ParentWeeklyReviewContent() {
         )}
 
         {/* Footer */}
-        <div className="text-center py-4">
-          <p className="text-sm text-gray-400">
+        <div style={{ textAlign: "center", paddingTop: "1rem", paddingBottom: "1rem" }}>
+          <p style={{ fontSize: "0.875rem", color: T.textMuted }}>
             {t('parentWeeklyReview.reportGenerated')} {new Date(analysis.created_at).toLocaleDateString(getIntlLocale(locale), {
               month: 'long',
               day: 'numeric',
@@ -459,7 +462,7 @@ function ParentWeeklyReviewContent() {
           </p>
           <Link
             href="/montree/parent/dashboard"
-            className="inline-block mt-3 text-emerald-600 hover:underline"
+            style={{ display: "inline-block", marginTop: "0.75rem", color: T.emerald, textDecoration: "underline", cursor: "pointer" }}
           >
             ← {t('common.backToDashboard')}
           </Link>

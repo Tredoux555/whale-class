@@ -10,7 +10,7 @@ import { MessageCard } from '@/components/montree/messaging/MessageCard';
 import { MessageComposer } from '@/components/montree/messaging/MessageComposer';
 import { InboxHeader } from '@/components/montree/messaging/InboxHeader';
 import { toast, Toaster } from 'sonner';
-import { ArrowLeft, ChevronDown, Camera, Sparkles } from 'lucide-react';
+import { ArrowLeft, ChevronDown, Camera, Sparkles, MessageSquare } from 'lucide-react';
 import { useI18n } from '@/lib/montree/i18n';
 
 // Dark forest tokens
@@ -174,9 +174,9 @@ export default function ParentMessagesPage() {
 
   if (!session || loading) {
     return (
-      <div style={{ minHeight: "100vh", background: T.bg, backgroundImage: T.glow, backgroundAttachment: "fixed" }}>
-        <div className="text-center">
-          <div className="w-12 h-12 border-4 border-emerald-200 border-t-emerald-500 rounded-full animate-spin mx-auto mb-4" />
+      <div style={{ minHeight: "100vh", background: T.bg, backgroundImage: T.glow, backgroundAttachment: "fixed", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <div style={{ textAlign: "center" }}>
+          <div style={{ width: "3rem", height: "3rem", border: `4px solid rgba(52,211,153,0.3)`, borderTopColor: T.emerald, borderRadius: "9999px", animation: "spin 1s linear infinite", marginLeft: "auto", marginRight: "auto", marginBottom: "1rem" }} />
           <p style={{ color: T.textSecondary }}>{t('parentMessages.loading')}</p>
         </div>
       </div>
@@ -191,40 +191,103 @@ export default function ParentMessagesPage() {
       <InboxHeader unreadCount={unreadCount} isTeacher={false} />
 
       {/* Main content */}
-      <div className="max-w-6xl mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div style={{ maxWidth: "72rem", marginLeft: "auto", marginRight: "auto", paddingLeft: "1rem", paddingRight: "1rem", paddingTop: "2rem", paddingBottom: "2rem" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: "2rem", gridAutoFlow: "dense" }}>
           {/* Messages list */}
-          <div className="lg:col-span-2 space-y-6">
+          <div style={{ gridColumn: "span 2", display: "flex", flexDirection: "column", gap: "1.5rem" }}>
             {/* Controls */}
-            <div className="flex items-center justify-between">
-              <div className="flex gap-2 flex-wrap">
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
                 <button
                   onClick={() => setFilter('all')}
-                  className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors duration-200 ${
-                    filter === 'all'
-                      ? 'bg-emerald-500 text-white'
-                      : 'bg-white text-gray-700 border border-gray-200 hover:border-gray-300'
-                  }`}
+                  style={{
+                    paddingLeft: "0.75rem",
+                    paddingRight: "0.75rem",
+                    paddingTop: "0.375rem",
+                    paddingBottom: "0.375rem",
+                    borderRadius: "0.5rem",
+                    fontSize: "0.875rem",
+                    fontWeight: "500",
+                    transitionDuration: "200ms",
+                    transitionProperty: "background-color, border-color",
+                    background: filter === 'all' ? T.emerald : T.card,
+                    backdropFilter: filter === 'all' ? undefined : T.blur,
+                    color: filter === 'all' ? T.textPrimary : T.textSecondary,
+                    border: filter === 'all' ? 'none' : T.cardBorder,
+                    cursor: "pointer",
+                  }}
+                  onMouseEnter={(e) => {
+                    if (filter !== 'all') {
+                      (e.currentTarget as HTMLButtonElement).style.background = 'rgba(255,255,255,0.10)';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (filter !== 'all') {
+                      (e.currentTarget as HTMLButtonElement).style.background = T.card;
+                    }
+                  }}
                 >
                   {t('parentMessages.filterAll')}
                 </button>
                 <button
                   onClick={() => setFilter('from_teacher')}
-                  className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors duration-200 ${
-                    filter === 'from_teacher'
-                      ? 'bg-emerald-500 text-white'
-                      : 'bg-white text-gray-700 border border-gray-200 hover:border-gray-300'
-                  }`}
+                  style={{
+                    paddingLeft: "0.75rem",
+                    paddingRight: "0.75rem",
+                    paddingTop: "0.375rem",
+                    paddingBottom: "0.375rem",
+                    borderRadius: "0.5rem",
+                    fontSize: "0.875rem",
+                    fontWeight: "500",
+                    transitionDuration: "200ms",
+                    transitionProperty: "background-color, border-color",
+                    background: filter === 'from_teacher' ? T.emerald : T.card,
+                    backdropFilter: filter === 'from_teacher' ? undefined : T.blur,
+                    color: filter === 'from_teacher' ? T.textPrimary : T.textSecondary,
+                    border: filter === 'from_teacher' ? 'none' : T.cardBorder,
+                    cursor: "pointer",
+                  }}
+                  onMouseEnter={(e) => {
+                    if (filter !== 'from_teacher') {
+                      (e.currentTarget as HTMLButtonElement).style.background = 'rgba(255,255,255,0.10)';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (filter !== 'from_teacher') {
+                      (e.currentTarget as HTMLButtonElement).style.background = T.card;
+                    }
+                  }}
                 >
                   {t('parentMessages.filterFromTeacher')}
                 </button>
                 <button
                   onClick={() => setFilter('unread')}
-                  className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors duration-200 ${
-                    filter === 'unread'
-                      ? 'bg-emerald-500 text-white'
-                      : 'bg-white text-gray-700 border border-gray-200 hover:border-gray-300'
-                  }`}
+                  style={{
+                    paddingLeft: "0.75rem",
+                    paddingRight: "0.75rem",
+                    paddingTop: "0.375rem",
+                    paddingBottom: "0.375rem",
+                    borderRadius: "0.5rem",
+                    fontSize: "0.875rem",
+                    fontWeight: "500",
+                    transitionDuration: "200ms",
+                    transitionProperty: "background-color, border-color",
+                    background: filter === 'unread' ? T.emerald : T.card,
+                    backdropFilter: filter === 'unread' ? undefined : T.blur,
+                    color: filter === 'unread' ? T.textPrimary : T.textSecondary,
+                    border: filter === 'unread' ? 'none' : T.cardBorder,
+                    cursor: "pointer",
+                  }}
+                  onMouseEnter={(e) => {
+                    if (filter !== 'unread') {
+                      (e.currentTarget as HTMLButtonElement).style.background = 'rgba(255,255,255,0.10)';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (filter !== 'unread') {
+                      (e.currentTarget as HTMLButtonElement).style.background = T.card;
+                    }
+                  }}
                 >
                   {t('parentMessages.filterUnread')} ({unreadCount})
                 </button>
@@ -239,16 +302,40 @@ export default function ParentMessagesPage() {
                   setComposing(true);
                   setSelectedChild(children[0]);
                 }}
-                className="px-4 py-2 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white rounded-lg text-sm font-medium shadow-md transition-all duration-200 flex items-center gap-2"
+                style={{
+                  paddingLeft: "1rem",
+                  paddingRight: "1rem",
+                  paddingTop: "0.5rem",
+                  paddingBottom: "0.5rem",
+                  background: `linear-gradient(to right, ${T.emerald}, #14b8a6)`,
+                  color: T.textPrimary,
+                  borderRadius: "0.5rem",
+                  fontSize: "0.875rem",
+                  fontWeight: "500",
+                  boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+                  transitionDuration: "200ms",
+                  transitionProperty: "all",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "0.5rem",
+                  border: "none",
+                  cursor: "pointer",
+                }}
+                onMouseEnter={(e) => {
+                  (e.currentTarget as HTMLButtonElement).style.background = `linear-gradient(to right, #10b981, #0d9488)`;
+                }}
+                onMouseLeave={(e) => {
+                  (e.currentTarget as HTMLButtonElement).style.background = `linear-gradient(to right, ${T.emerald}, #14b8a6)`;
+                }}
               >
-                <span>✉️</span>
+                <MessageSquare size={16} strokeWidth={1.75} />
                 {t('parentMessages.newMessage')}
               </button>
             </div>
 
             {/* Compose form */}
             {composing && selectedChild && (
-              <div className="animate-slide-up">
+              <div style={{ animation: "slideUp 0.3s ease-out" }}>
                 <MessageComposer
                   childId={selectedChild.id}
                   childName={selectedChild.name}
@@ -266,9 +353,9 @@ export default function ParentMessagesPage() {
 
             {/* Messages grouped by child */}
             {displayGroups.length === 0 ? (
-              <div className="text-center py-12">
-                <div className="text-5xl mb-4">📭</div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              <div style={{ textAlign: "center", paddingTop: "3rem", paddingBottom: "3rem" }}>
+                <div style={{ fontSize: "3rem", marginBottom: "1rem" }}>📭</div>
+                <h3 style={{ fontSize: "1.125rem", fontWeight: "600", color: T.textPrimary, marginBottom: "0.5rem" }}>
                   {filter === 'unread' ? t('parentMessages.allCaughtUp') : t('parentMessages.noMessages')}
                 </h3>
                 <p style={{ color: T.textSecondary }}>
@@ -279,33 +366,33 @@ export default function ParentMessagesPage() {
               </div>
             ) : (
               displayGroups.map(([childId, group]) => (
-                <div key={childId} className="space-y-3">
+                <div key={childId} style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
                   {/* Child header */}
-                  <div style={{ background: T.card, backdropFilter: T.blur }}>
+                  <div style={{ background: T.card, backdropFilter: T.blur, borderRadius: "0.75rem", padding: "1rem", display: "flex", alignItems: "center", gap: "1rem" }}>
                     {group.child.photo_url ? (
                       <img
                         src={group.child.photo_url}
                         alt={group.child.name}
-                        className="w-10 h-10 rounded-full object-cover"
+                        style={{ width: "2.5rem", height: "2.5rem", borderRadius: "9999px", objectFit: "cover" }}
                       />
                     ) : (
-                      <div className="w-10 h-10 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-full flex items-center justify-center text-white font-semibold text-sm">
+                      <div style={{ width: "2.5rem", height: "2.5rem", background: `linear-gradient(to bottom right, #34d399, #14b8a6)`, borderRadius: "9999px", display: "flex", alignItems: "center", justifyContent: "center", color: T.textPrimary, fontWeight: "600", fontSize: "0.875rem" }}>
                         {group.child.name.charAt(0)}
                       </div>
                     )}
-                    <div className="flex-1">
-                      <h3 className="font-semibold text-gray-900">{group.child.name}</h3>
-                      <p className="text-xs text-gray-500">
+                    <div style={{ flex: 1 }}>
+                      <h3 style={{ fontWeight: "600", color: T.textPrimary }}>{group.child.name}</h3>
+                      <p style={{ fontSize: "0.75rem", color: T.textMuted }}>
                         {group.messages.length} {group.messages.length === 1 ? t('parentMessages.message') : t('parentMessages.messages')}
                       </p>
                     </div>
                     {group.messages.some(m => !m.is_read) && (
-                      <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+                      <div style={{ width: "0.625rem", height: "0.625rem", borderRadius: "9999px", background: T.emerald, animation: "pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite" }} />
                     )}
                   </div>
 
                   {/* Messages */}
-                  <div className="space-y-2">
+                  <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
                     {group.messages.map(msg => (
                       <MessageCard
                         key={msg.id}
@@ -326,16 +413,16 @@ export default function ParentMessagesPage() {
           </div>
 
           {/* Right sidebar */}
-          <div className="lg:col-span-1">
+          <div style={{ gridColumn: "span 1", display: "flex", flexDirection: "column", gap: "1.5rem" }}>
             {/* Children list */}
-            <div style={{ background: T.card, backdropFilter: T.blur }}>
-              <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+            <div style={{ background: T.card, backdropFilter: T.blur, borderRadius: "0.75rem", padding: "1.5rem" }}>
+              <h3 style={{ fontWeight: "600", color: T.textPrimary, marginBottom: "1rem", display: "flex", alignItems: "center", gap: "0.5rem" }}>
                 <span>👥</span>
                 {t('parentMessages.yourChildren')}
               </h3>
-              <div className="space-y-2">
+              <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
                 {children.length === 0 ? (
-                  <p className="text-sm text-gray-500 py-4 text-center">{t('parentMessages.noChildrenAdded')}</p>
+                  <p style={{ fontSize: "0.875rem", color: T.textMuted, paddingTop: "1rem", paddingBottom: "1rem", textAlign: "center" }}>{t('parentMessages.noChildrenAdded')}</p>
                 ) : (
                   children.map(child => {
                     const childMessages = grouped[child.id];
@@ -347,24 +434,40 @@ export default function ParentMessagesPage() {
                           setSelectedChild(child);
                           setComposing(true);
                         }}
-                        className="w-full flex items-center gap-3 p-3 rounded-lg bg-emerald-50 hover:bg-emerald-100 transition-colors duration-200 text-left group"
+                        style={{
+                          width: "100%",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "0.75rem",
+                          padding: "0.75rem",
+                          borderRadius: "0.5rem",
+                          background: T.emeraldSoft,
+                          transitionDuration: "200ms",
+                          transitionProperty: "background-color",
+                          textAlign: "left",
+                          border: "none",
+                          cursor: "pointer",
+                          color: T.textPrimary,
+                        }}
+                        onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = 'rgba(52,211,153,0.18)'; }}
+                        onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = T.emeraldSoft; }}
                       >
                         {child.photo_url ? (
                           <img
                             src={child.photo_url}
                             alt={child.name}
-                            className="w-8 h-8 rounded-full object-cover"
+                            style={{ width: "2rem", height: "2rem", borderRadius: "9999px", objectFit: "cover", flexShrink: 0 }}
                           />
                         ) : (
-                          <div className="w-8 h-8 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-full flex items-center justify-center text-white font-semibold text-xs">
+                          <div style={{ width: "2rem", height: "2rem", background: `linear-gradient(to bottom right, #34d399, #14b8a6)`, borderRadius: "9999px", display: "flex", alignItems: "center", justifyContent: "center", color: T.textPrimary, fontWeight: "600", fontSize: "0.75rem", flexShrink: 0 }}>
                             {child.name.charAt(0)}
                           </div>
                         )}
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-gray-900">{child.name}</p>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <p style={{ fontSize: "0.875rem", fontWeight: "500", color: T.textPrimary }}>{child.name}</p>
                         </div>
                         {unread > 0 && (
-                          <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-emerald-500 text-white text-xs font-bold">
+                          <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: "1.25rem", height: "1.25rem", borderRadius: "9999px", background: T.emerald, color: T.textPrimary, fontSize: "0.75rem", fontWeight: "700" }}>
                             {unread}
                           </span>
                         )}
@@ -376,19 +479,19 @@ export default function ParentMessagesPage() {
             </div>
 
             {/* Quick stats */}
-            <div style={{ background: T.card, backdropFilter: T.blur }}>
-              <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+            <div style={{ background: T.card, backdropFilter: T.blur, borderRadius: "0.75rem", padding: "1.5rem" }}>
+              <h3 style={{ fontWeight: "600", color: T.textPrimary, marginBottom: "1rem", display: "flex", alignItems: "center", gap: "0.5rem" }}>
                 <span>📊</span>
                 {t('parentMessages.overview')}
               </h3>
-              <div className="space-y-3">
-                <div className="flex justify-between items-center p-3 bg-emerald-50 rounded-lg border border-emerald-100">
-                  <span className="text-sm text-gray-700">{t('parentMessages.totalMessages')}</span>
-                  <span className="font-bold text-emerald-700 text-lg">{messages.length}</span>
+              <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "0.75rem", background: 'rgba(52,211,153,0.10)', borderRadius: "0.5rem", border: `1px solid rgba(52,211,153,0.15)` }}>
+                  <span style={{ fontSize: "0.875rem", color: T.textSecondary }}>{t('parentMessages.totalMessages')}</span>
+                  <span style={{ fontWeight: "700", color: T.emerald, fontSize: "1.125rem" }}>{messages.length}</span>
                 </div>
-                <div className="flex justify-between items-center p-3 bg-orange-50 rounded-lg border border-orange-100">
-                  <span className="text-sm text-gray-700">{t('parentMessages.unread')}</span>
-                  <span className="font-bold text-orange-700 text-lg">{unreadCount}</span>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "0.75rem", background: 'rgba(245,158,11,0.10)', borderRadius: "0.5rem", border: `1px solid rgba(245,158,11,0.15)` }}>
+                  <span style={{ fontSize: "0.875rem", color: T.textSecondary }}>{t('parentMessages.unread')}</span>
+                  <span style={{ fontWeight: "700", color: '#f59e0b', fontSize: "1.125rem" }}>{unreadCount}</span>
                 </div>
               </div>
             </div>
