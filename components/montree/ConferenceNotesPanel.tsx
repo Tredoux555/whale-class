@@ -1,6 +1,9 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
+import {
+  NotebookPen, ChevronDown, Plus, Pencil, Send, Trash2, Undo2, RotateCcw, Check,
+} from 'lucide-react';
 import { montreeApi } from '@/lib/montree/api';
 import { useI18n } from '@/lib/montree/i18n';
 import { toast } from 'sonner';
@@ -19,16 +22,66 @@ interface ConferenceNote {
   updated_at: string;
 }
 
-const STATUS_CONFIG = {
-  draft: { color: 'bg-gray-50', badge: 'bg-gray-100 text-gray-600', dot: 'bg-gray-400' },
-  shared: { color: 'bg-blue-50', badge: 'bg-blue-100 text-blue-700', dot: 'bg-blue-400' },
-  retracted: { color: 'bg-orange-50', badge: 'bg-orange-100 text-orange-600', dot: 'bg-orange-400' },
-} as const;
-
 interface ChildOption {
   id: string;
   name: string;
 }
+
+// Dark forest tokens
+const T = {
+  card: 'rgba(255,255,255,0.06)',
+  cardBorder: '1px solid rgba(52,211,153,0.15)',
+  cardRadius: 16,
+  blur: 'blur(18px) saturate(140%)',
+  emerald: '#34d399',
+  emeraldStrong: 'rgba(52,211,153,0.18)',
+  emeraldSoft: 'rgba(52,211,153,0.10)',
+  amber: '#f59e0b',
+  blue: '#60a5fa',
+  blueStrong: 'rgba(96,165,250,0.18)',
+  blueSoft: 'rgba(96,165,250,0.08)',
+  blueBorder: 'rgba(96,165,250,0.30)',
+  orange: '#fb923c',
+  orangeStrong: 'rgba(251,146,60,0.18)',
+  orangeSoft: 'rgba(251,146,60,0.08)',
+  orangeBorder: 'rgba(251,146,60,0.30)',
+  red: '#f87171',
+  redStrong: 'rgba(239,68,68,0.18)',
+  textPrimary: 'rgba(255,255,255,0.95)',
+  textSecondary: 'rgba(255,255,255,0.65)',
+  textMuted: 'rgba(255,255,255,0.40)',
+  inputBg: 'rgba(0,0,0,0.30)',
+  inputBorder: 'rgba(52,211,153,0.20)',
+  serif: '"Lora", Georgia, serif',
+  sans: '"Inter", -apple-system, BlinkMacSystemFont, sans-serif',
+};
+
+const STATUS_CONFIG = {
+  draft: {
+    bg: 'rgba(255,255,255,0.04)',
+    border: 'rgba(255,255,255,0.10)',
+    badgeBg: 'rgba(255,255,255,0.08)',
+    badgeBorder: 'rgba(255,255,255,0.16)',
+    text: T.textSecondary,
+    dot: 'rgba(255,255,255,0.45)',
+  },
+  shared: {
+    bg: T.blueSoft,
+    border: T.blueBorder,
+    badgeBg: T.blueStrong,
+    badgeBorder: 'rgba(96,165,250,0.40)',
+    text: T.blue,
+    dot: T.blue,
+  },
+  retracted: {
+    bg: T.orangeSoft,
+    border: T.orangeBorder,
+    badgeBg: T.orangeStrong,
+    badgeBorder: 'rgba(251,146,60,0.40)',
+    text: T.orange,
+    dot: T.orange,
+  },
+} as const;
 
 export default function ConferenceNotesPanel() {
   const { t } = useI18n();
@@ -37,17 +90,14 @@ export default function ConferenceNotesPanel() {
   const [expanded, setExpanded] = useState(false);
   const [showCreate, setShowCreate] = useState(false);
 
-  // Create form state
   const [children, setChildren] = useState<ChildOption[]>([]);
   const [selectedChildId, setSelectedChildId] = useState('');
   const [noteText, setNoteText] = useState('');
   const [creating, setCreating] = useState(false);
 
-  // Edit state
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editText, setEditText] = useState('');
 
-  // Action in progress
   const [actionId, setActionId] = useState<string | null>(null);
   const abortRef = useRef<AbortController | null>(null);
   const childrenAbortRef = useRef<AbortController | null>(null);
@@ -145,7 +195,6 @@ export default function ConferenceNotesPanel() {
   }, [selectedChildId, noteText, creating, t, fetchNotes]);
 
   const handleAction = useCallback(async (noteId: string, action: string, text?: string) => {
-    // Use ref for stale-closure-safe guard
     if (actionRef.current) return;
     actionRef.current = noteId;
     setActionId(noteId);
@@ -179,7 +228,6 @@ export default function ConferenceNotesPanel() {
   }, [t, fetchNotes]);
 
   const handleDelete = useCallback(async (noteId: string) => {
-    // Use ref for stale-closure-safe guard
     if (actionRef.current) return;
     actionRef.current = noteId;
     setActionId(noteId);
@@ -205,9 +253,18 @@ export default function ConferenceNotesPanel() {
 
   if (loading) {
     return (
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-3 animate-pulse">
-        <div className="h-5 bg-gray-100 rounded w-48 mb-2" />
-        <div className="h-8 bg-gray-50 rounded w-full" />
+      <div style={{
+        background: T.card,
+        border: T.cardBorder,
+        borderRadius: T.cardRadius,
+        backdropFilter: T.blur,
+        WebkitBackdropFilter: T.blur,
+        padding: 14,
+        animation: 'cn-pulse 1.6s ease-in-out infinite',
+      }}>
+        <div style={{ height: 16, width: 160, borderRadius: 6, background: 'rgba(52,211,153,0.10)', marginBottom: 8 }} />
+        <div style={{ height: 28, width: '100%', borderRadius: 8, background: 'rgba(52,211,153,0.08)' }} />
+        <style>{`@keyframes cn-pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.55; } }`}</style>
       </div>
     );
   }
@@ -216,77 +273,177 @@ export default function ConferenceNotesPanel() {
   const sharedCount = notes.filter(n => n.status === 'shared').length;
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-      {/* Summary bar — always visible */}
+    <div
+      id="panel-conference_notes"
+      style={{
+        background: T.card,
+        border: T.cardBorder,
+        borderRadius: T.cardRadius,
+        backdropFilter: T.blur,
+        WebkitBackdropFilter: T.blur,
+        overflow: 'hidden',
+        fontFamily: T.sans,
+        color: T.textPrimary,
+      }}
+    >
       <button
         onClick={() => setExpanded(!expanded)}
         aria-expanded={expanded}
         aria-label={t('conferenceNotes.title')}
-        className="w-full flex items-center justify-between px-4 py-3 hover:bg-gray-50 transition-colors"
+        style={{
+          width: '100%',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: '14px 16px',
+          background: 'transparent',
+          border: 'none',
+          cursor: 'pointer',
+          color: T.textPrimary,
+          transition: 'background 140ms ease',
+        }}
+        onMouseEnter={e => (e.currentTarget.style.background = 'rgba(52,211,153,0.06)')}
+        onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
       >
-        <div className="flex items-center gap-3">
-          <span className="text-lg">📋</span>
-          <div className="text-left">
-            <div className="text-sm font-semibold text-gray-700">
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: 34,
+            height: 34,
+            borderRadius: 10,
+            background: T.blueStrong,
+            border: `1px solid ${T.blueBorder}`,
+            color: T.blue,
+          }}>
+            <NotebookPen size={16} strokeWidth={1.75} />
+          </div>
+          <div style={{ textAlign: 'left' }}>
+            <div style={{
+              fontFamily: T.serif,
+              fontSize: 15,
+              fontWeight: 500,
+              color: T.textPrimary,
+              letterSpacing: -0.2,
+            }}>
               {t('conferenceNotes.title')}
             </div>
-            <div className="text-xs text-gray-500">
+            <div style={{
+              fontFamily: T.sans,
+              fontSize: 11,
+              color: T.textMuted,
+              marginTop: 1,
+            }}>
               {notes.length === 0
                 ? t('conferenceNotes.empty')
-                : t('conferenceNotes.summary')
-                    .replace('{total}', String(notes.length))
-                    .replace('{drafts}', String(draftCount))
+                : t('conferenceNotes.summary').replace('{total}', String(notes.length)).replace('{drafts}', String(draftCount))
               }
             </div>
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
           {draftCount > 0 && (
-            <span className="text-xs font-bold px-2 py-1 rounded-full bg-gray-100 text-gray-600">
-              {draftCount} ✏️
+            <span style={pillStyle(T.textSecondary, 'rgba(255,255,255,0.06)', 'rgba(255,255,255,0.12)')}>
+              <Pencil size={9} strokeWidth={1.75} />
+              {draftCount}
             </span>
           )}
           {sharedCount > 0 && (
-            <span className="text-xs font-bold px-2 py-1 rounded-full bg-blue-100 text-blue-700">
-              {sharedCount} ✅
+            <span style={pillStyle(T.blue, T.blueStrong, 'rgba(96,165,250,0.40)')}>
+              <Check size={9} strokeWidth={2.5} />
+              {sharedCount}
             </span>
           )}
-          <span className={`text-gray-400 transition-transform duration-200 text-xs ${expanded ? 'rotate-180' : ''}`}>
-            ▼
-          </span>
+          <ChevronDown
+            size={13}
+            strokeWidth={1.75}
+            color={T.textMuted}
+            style={{
+              marginLeft: 2,
+              transition: 'transform 200ms ease',
+              transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)',
+            }}
+          />
         </div>
       </button>
 
-      {/* Expanded detail */}
+      {/* Expanded */}
       {expanded && (
-        <div className="px-4 pb-4 border-t border-gray-100 pt-3 space-y-3">
-          {/* Add new note button */}
+        <div style={{
+          padding: '12px 16px 14px',
+          borderTop: T.cardBorder,
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 10,
+        }}>
+          {/* Add note button */}
           {!showCreate && (
             <button
               onClick={() => {
                 setShowCreate(true);
                 if (children.length === 0) fetchChildren(selectedChildId);
               }}
-              className="w-full text-center text-sm text-blue-600 hover:text-blue-700 hover:bg-blue-50 py-2 rounded-lg transition-colors border border-dashed border-blue-200"
+              style={{
+                width: '100%',
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 6,
+                padding: '10px',
+                borderRadius: 12,
+                background: T.emeraldSoft,
+                border: `1px dashed ${T.emerald}`,
+                color: T.emerald,
+                fontFamily: T.sans,
+                fontSize: 13,
+                fontWeight: 600,
+                cursor: 'pointer',
+                transition: 'all 120ms ease',
+              }}
             >
-              + {t('conferenceNotes.addNote')}
+              <Plus size={13} strokeWidth={2} />
+              {t('conferenceNotes.addNote')}
             </button>
           )}
 
           {/* Create form */}
           {showCreate && (
-            <div className="bg-gray-50 rounded-lg p-3 space-y-2 border border-gray-100">
+            <div style={{
+              padding: 12,
+              borderRadius: 12,
+              background: 'rgba(255,255,255,0.04)',
+              border: '1px solid rgba(255,255,255,0.08)',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 8,
+            }}>
               <select
                 value={selectedChildId}
                 onChange={e => setSelectedChildId(e.target.value)}
-                className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 bg-white"
+                style={{
+                  width: '100%',
+                  padding: '8px 10px',
+                  borderRadius: 8,
+                  background: T.inputBg,
+                  border: `1px solid ${T.inputBorder}`,
+                  color: T.textPrimary,
+                  fontFamily: T.sans,
+                  fontSize: 13,
+                  outline: 'none',
+                  appearance: 'none',
+                  backgroundImage: `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='rgba(255,255,255,0.40)' stroke-width='2'><polyline points='6 9 12 15 18 9'/></svg>")`,
+                  backgroundRepeat: 'no-repeat',
+                  backgroundPosition: 'right 10px center',
+                  paddingRight: 30,
+                }}
               >
                 {children.length === 0 && (
-                  <option value="">{t('common.loading')}</option>
+                  <option value="" style={{ background: '#0a1a0f' }}>{t('common.loading')}</option>
                 )}
                 {children.map(child => (
-                  <option key={child.id} value={child.id}>{child.name}</option>
+                  <option key={child.id} value={child.id} style={{ background: '#0a1a0f' }}>{child.name}</option>
                 ))}
               </select>
               <textarea
@@ -295,20 +452,58 @@ export default function ConferenceNotesPanel() {
                 placeholder={t('conferenceNotes.placeholder')}
                 maxLength={5000}
                 rows={3}
-                className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 resize-none"
+                style={{
+                  width: '100%',
+                  padding: '10px 12px',
+                  borderRadius: 8,
+                  background: T.inputBg,
+                  border: `1px solid ${T.inputBorder}`,
+                  color: T.textPrimary,
+                  fontFamily: T.sans,
+                  fontSize: 13,
+                  lineHeight: 1.55,
+                  outline: 'none',
+                  resize: 'none',
+                  boxSizing: 'border-box',
+                }}
               />
-              <div className="flex gap-2 justify-end">
+              <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
                 <button
                   onClick={() => { setShowCreate(false); setNoteText(''); }}
-                  className="text-xs px-3 py-1.5 text-gray-500 hover:bg-gray-100 rounded-lg transition-colors"
+                  style={{
+                    padding: '6px 12px',
+                    borderRadius: 8,
+                    background: 'rgba(255,255,255,0.06)',
+                    border: '1px solid rgba(255,255,255,0.10)',
+                    color: T.textSecondary,
+                    fontFamily: T.sans,
+                    fontSize: 12,
+                    fontWeight: 500,
+                    cursor: 'pointer',
+                  }}
                 >
                   {t('common.cancel')}
                 </button>
                 <button
                   onClick={handleCreate}
                   disabled={creating || !noteText.trim() || !selectedChildId}
-                  className="text-xs px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors"
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 4,
+                    padding: '6px 14px',
+                    borderRadius: 8,
+                    background: 'linear-gradient(180deg, #34d399, #10b981)',
+                    border: '1px solid rgba(52,211,153,0.55)',
+                    color: '#06281a',
+                    fontFamily: T.sans,
+                    fontSize: 12,
+                    fontWeight: 700,
+                    cursor: (creating || !noteText.trim() || !selectedChildId) ? 'not-allowed' : 'pointer',
+                    opacity: (creating || !noteText.trim() || !selectedChildId) ? 0.55 : 1,
+                  }}
                 >
+                  <Check size={11} strokeWidth={2.5} />
                   {creating ? '...' : t('common.save')}
                 </button>
               </div>
@@ -317,109 +512,207 @@ export default function ConferenceNotesPanel() {
 
           {/* Notes list */}
           {notes.length === 0 && !showCreate && (
-            <div className="text-center text-xs text-gray-400 py-4">
+            <div style={{
+              textAlign: 'center',
+              padding: '20px 0',
+              fontFamily: T.sans,
+              fontSize: 12,
+              color: T.textMuted,
+            }}>
               {t('conferenceNotes.empty')}
             </div>
           )}
 
           {notes.map(note => {
-            const config = STATUS_CONFIG[note.status];
+            const cfg = STATUS_CONFIG[note.status];
             const isEditing = editingId === note.id;
 
             return (
-              <div key={note.id} className={`${config.color} rounded-lg p-3 space-y-2`}>
-                {/* Header: child name + status badge */}
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <span className={`w-2 h-2 rounded-full ${config.dot}`} />
-                    <span className="text-sm font-medium text-gray-700">{note.child_name}</span>
-                    <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded ${config.badge}`}>
+              <div
+                key={note.id}
+                style={{
+                  padding: 12,
+                  borderRadius: 12,
+                  background: cfg.bg,
+                  border: `1px solid ${cfg.border}`,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: 8,
+                }}
+              >
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0, flexWrap: 'wrap' }}>
+                    <span style={{
+                      width: 7, height: 7, borderRadius: '50%',
+                      background: cfg.dot, flexShrink: 0,
+                    }} />
+                    <span style={{
+                      fontFamily: T.sans,
+                      fontSize: 13,
+                      fontWeight: 600,
+                      color: T.textPrimary,
+                    }}>
+                      {note.child_name}
+                    </span>
+                    <span style={{
+                      fontFamily: T.sans,
+                      fontSize: 10,
+                      fontWeight: 700,
+                      letterSpacing: 0.3,
+                      padding: '2px 8px',
+                      borderRadius: 999,
+                      background: cfg.badgeBg,
+                      border: `1px solid ${cfg.badgeBorder}`,
+                      color: cfg.text,
+                    }}>
                       {t(`conferenceNotes.status.${note.status}`)}
                     </span>
                   </div>
-                  <span className="text-[10px] text-gray-400">
+                  <span style={{
+                    fontFamily: T.sans,
+                    fontSize: 10,
+                    color: T.textMuted,
+                  }}>
                     {new Date(note.updated_at).toLocaleDateString()}
                   </span>
                 </div>
 
-                {/* Note text or edit textarea */}
                 {isEditing ? (
-                  <div className="space-y-2">
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                     <textarea
                       value={editText}
                       onChange={e => setEditText(e.target.value)}
                       maxLength={5000}
                       rows={3}
-                      className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 resize-none"
+                      style={{
+                        width: '100%',
+                        padding: '8px 10px',
+                        borderRadius: 8,
+                        background: T.inputBg,
+                        border: `1px solid ${T.inputBorder}`,
+                        color: T.textPrimary,
+                        fontFamily: T.sans,
+                        fontSize: 13,
+                        lineHeight: 1.55,
+                        outline: 'none',
+                        resize: 'none',
+                        boxSizing: 'border-box',
+                      }}
                     />
-                    <div className="flex gap-2 justify-end">
+                    <div style={{ display: 'flex', gap: 6, justifyContent: 'flex-end' }}>
                       <button
                         onClick={() => setEditingId(null)}
-                        className="text-xs px-2 py-1 text-gray-500 hover:bg-gray-100 rounded transition-colors"
+                        style={{
+                          padding: '4px 10px',
+                          borderRadius: 7,
+                          background: 'rgba(255,255,255,0.06)',
+                          border: '1px solid rgba(255,255,255,0.10)',
+                          color: T.textSecondary,
+                          fontFamily: T.sans,
+                          fontSize: 11,
+                          cursor: 'pointer',
+                        }}
                       >
                         {t('common.cancel')}
                       </button>
                       <button
                         onClick={() => handleAction(note.id, 'edit', editText)}
                         disabled={actionId === note.id || !editText.trim()}
-                        className="text-xs px-2 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 transition-colors"
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: 3,
+                          padding: '4px 10px',
+                          borderRadius: 7,
+                          background: 'linear-gradient(180deg, #34d399, #10b981)',
+                          border: '1px solid rgba(52,211,153,0.55)',
+                          color: '#06281a',
+                          fontFamily: T.sans,
+                          fontSize: 11,
+                          fontWeight: 700,
+                          cursor: (actionId === note.id || !editText.trim()) ? 'not-allowed' : 'pointer',
+                          opacity: (actionId === note.id || !editText.trim()) ? 0.55 : 1,
+                        }}
                       >
+                        <Check size={10} strokeWidth={2.5} />
                         {actionId === note.id ? '...' : t('common.save')}
                       </button>
                     </div>
                   </div>
                 ) : (
-                  <p className="text-sm text-gray-600 whitespace-pre-wrap">{note.note_text}</p>
+                  <p style={{
+                    margin: 0,
+                    fontFamily: T.sans,
+                    fontSize: 13,
+                    lineHeight: 1.55,
+                    color: T.textSecondary,
+                    whiteSpace: 'pre-wrap',
+                  }}>
+                    {note.note_text}
+                  </p>
                 )}
 
-                {/* Action buttons */}
                 {!isEditing && (
-                  <div className="flex items-center gap-2 pt-1">
-                    <span className="text-[10px] text-gray-400 flex-1">
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 8,
+                    paddingTop: 4,
+                  }}>
+                    <span style={{
+                      flex: 1,
+                      fontFamily: T.sans,
+                      fontSize: 10,
+                      color: T.textMuted,
+                    }}>
                       {t('conferenceNotes.by').replace('{name}', note.created_by_name)}
                     </span>
-                    <div className="flex gap-1">
+                    <div style={{ display: 'flex', gap: 4 }}>
                       {note.status === 'draft' && (
                         <>
-                          <button
+                          <ActionBtn
                             onClick={() => { setEditingId(note.id); setEditText(note.note_text); }}
-                            className="text-[11px] px-2 py-1 text-gray-500 hover:bg-gray-100 rounded transition-colors"
-                          >
-                            {t('common.edit')}
-                          </button>
-                          <button
+                            label={t('common.edit')}
+                            color={T.textSecondary}
+                            Icon={Pencil}
+                          />
+                          <ActionBtn
                             onClick={() => handleAction(note.id, 'share')}
                             disabled={actionId === note.id}
-                            className="text-[11px] px-2 py-1 text-blue-600 hover:bg-blue-50 rounded transition-colors disabled:opacity-50"
-                          >
-                            {actionId === note.id ? '...' : t('conferenceNotes.share')}
-                          </button>
-                          <button
+                            label={actionId === note.id ? '...' : t('conferenceNotes.share')}
+                            color={T.blue}
+                            Icon={Send}
+                          />
+                          <ActionBtn
                             onClick={() => handleDelete(note.id)}
                             disabled={actionId === note.id}
-                            className="text-[11px] px-2 py-1 text-red-500 hover:bg-red-50 rounded transition-colors disabled:opacity-50"
-                          >
-                            {actionId === note.id ? '...' : t('common.delete')}
-                          </button>
+                            label={actionId === note.id ? '...' : t('common.delete')}
+                            color={T.red}
+                            Icon={Trash2}
+                          />
                         </>
                       )}
                       {note.status === 'shared' && (
-                        <button
+                        <ActionBtn
                           onClick={() => handleAction(note.id, 'retract')}
                           disabled={actionId === note.id}
-                          className="text-[11px] px-2 py-1 text-orange-600 hover:bg-orange-50 rounded transition-colors disabled:opacity-50"
-                        >
-                          {actionId === note.id ? '...' : t('conferenceNotes.retract')}
-                        </button>
+                          label={actionId === note.id ? '...' : t('conferenceNotes.retract')}
+                          color={T.orange}
+                          Icon={Undo2}
+                        />
                       )}
                       {note.status === 'retracted' && (
-                        <button
+                        <ActionBtn
                           onClick={() => handleAction(note.id, 'unretract')}
                           disabled={actionId === note.id}
-                          className="text-[11px] px-2 py-1 text-gray-500 hover:bg-gray-100 rounded transition-colors disabled:opacity-50"
-                        >
-                          {actionId === note.id ? '...' : t('conferenceNotes.unretract')}
-                        </button>
+                          label={actionId === note.id ? '...' : t('conferenceNotes.unretract')}
+                          color={T.textSecondary}
+                          Icon={RotateCcw}
+                        />
                       )}
                     </div>
                   </div>
@@ -430,5 +723,56 @@ export default function ConferenceNotesPanel() {
         </div>
       )}
     </div>
+  );
+}
+
+function pillStyle(color: string, bg: string, border: string) {
+  return {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: 4,
+    fontFamily: '"Inter", sans-serif',
+    fontSize: 11,
+    fontWeight: 700,
+    padding: '3px 9px',
+    borderRadius: 999,
+    background: bg,
+    border: `1px solid ${border}`,
+    color,
+    letterSpacing: 0.3,
+  } as const;
+}
+
+function ActionBtn({ onClick, disabled, label, color, Icon }: {
+  onClick: () => void;
+  disabled?: boolean;
+  label: string;
+  color: string;
+  Icon: typeof Pencil;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      style={{
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: 3,
+        padding: '4px 8px',
+        borderRadius: 7,
+        background: 'transparent',
+        border: '1px solid rgba(255,255,255,0.10)',
+        color,
+        fontFamily: '"Inter", sans-serif',
+        fontSize: 11,
+        fontWeight: 600,
+        cursor: disabled ? 'not-allowed' : 'pointer',
+        opacity: disabled ? 0.5 : 1,
+        transition: 'all 120ms ease',
+      }}
+    >
+      <Icon size={10} strokeWidth={1.75} />
+      {label}
+    </button>
   );
 }

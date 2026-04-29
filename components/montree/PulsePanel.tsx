@@ -1,6 +1,10 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
+import {
+  Lightbulb, ChevronDown, Star, RotateCw, AlertTriangle, Camera,
+  Sparkles,
+} from 'lucide-react';
 import { montreeApi } from '@/lib/montree/api';
 import { useI18n } from '@/lib/montree/i18n';
 import { toast } from 'sonner';
@@ -24,6 +28,32 @@ interface ChildSummary {
   stale_works: number;
   recent_work: string | null;
 }
+
+// Dark forest tokens
+const T = {
+  card: 'rgba(255,255,255,0.06)',
+  cardBorder: '1px solid rgba(52,211,153,0.15)',
+  cardRadius: 16,
+  blur: 'blur(18px) saturate(140%)',
+  emerald: '#34d399',
+  emeraldStrong: 'rgba(52,211,153,0.18)',
+  emeraldSoft: 'rgba(52,211,153,0.10)',
+  amber: '#f59e0b',
+  amberStrong: 'rgba(245,158,11,0.18)',
+  amberBorder: 'rgba(245,158,11,0.35)',
+  blue: '#60a5fa',
+  blueStrong: 'rgba(96,165,250,0.18)',
+  blueBorder: 'rgba(96,165,250,0.30)',
+  violet: '#c4b5fd',
+  violetStrong: 'rgba(139,92,246,0.18)',
+  violetBorder: 'rgba(139,92,246,0.40)',
+  violetSoft: 'rgba(139,92,246,0.10)',
+  textPrimary: 'rgba(255,255,255,0.95)',
+  textSecondary: 'rgba(255,255,255,0.65)',
+  textMuted: 'rgba(255,255,255,0.40)',
+  serif: '"Lora", Georgia, serif',
+  sans: '"Inter", -apple-system, BlinkMacSystemFont, sans-serif',
+};
 
 export default function PulsePanel() {
   const { t } = useI18n();
@@ -77,7 +107,6 @@ export default function PulsePanel() {
     setChildren([]);
 
     try {
-      // Step 1: Start pulse generation (acquire lock + get children data)
       const res = await montreeApi('/api/montree/pulse', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -86,7 +115,6 @@ export default function PulsePanel() {
       if (!mountedRef.current) return;
 
       if (!res.ok) {
-        const err = await res.json().catch(() => ({ error: 'Unknown error' }));
         if (res.status === 409) {
           toast.error(t('pulse.alreadyInProgress'));
         } else if (res.status === 400) {
@@ -100,11 +128,9 @@ export default function PulsePanel() {
       const data = await res.json();
       if (!mountedRef.current) return;
 
-      // Data contains children summaries — store them
       setChildren(data.children || []);
       setExpanded(true);
 
-      // Step 2: Mark pulse as complete
       const completeRes = await montreeApi('/api/montree/pulse', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
@@ -114,7 +140,6 @@ export default function PulsePanel() {
 
       if (completeRes.ok) {
         toast.success(t('pulse.generated'));
-        // Refresh status
         await fetchStatus();
       } else {
         toast.error(t('pulse.completeFailed'));
@@ -123,7 +148,6 @@ export default function PulsePanel() {
       console.error('[PulsePanel] Generate error:', err);
       if (mountedRef.current) {
         toast.error(t('pulse.generateFailed'));
-        // Try to mark as failed
         montreeApi('/api/montree/pulse', {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
@@ -138,42 +162,95 @@ export default function PulsePanel() {
 
   if (loading) {
     return (
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-3 animate-pulse">
-        <div className="h-5 bg-gray-50 rounded w-36 mb-2" />
-        <div className="h-8 bg-gray-50 rounded w-full" />
+      <div style={{
+        background: T.card,
+        border: T.cardBorder,
+        borderRadius: T.cardRadius,
+        backdropFilter: T.blur,
+        WebkitBackdropFilter: T.blur,
+        padding: 14,
+        animation: 'pp-pulse 1.6s ease-in-out infinite',
+      }}>
+        <div style={{ height: 16, width: 130, borderRadius: 6, background: 'rgba(52,211,153,0.10)', marginBottom: 8 }} />
+        <div style={{ height: 28, width: '100%', borderRadius: 8, background: 'rgba(52,211,153,0.08)' }} />
+        <style>{`@keyframes pp-pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.55; } }`}</style>
       </div>
     );
   }
 
   const hasData = children.length > 0;
-  const lastCompleted = pulseStatus?.completed_at
-    ? new Date(pulseStatus.completed_at)
-    : null;
+  const lastCompleted = pulseStatus?.completed_at ? new Date(pulseStatus.completed_at) : null;
   const isStale = pulseStatus?.status === 'stale';
   const isInProgress = pulseStatus?.status === 'in_progress';
 
-  // Summary stats from children data
   const totalMastered = children.reduce((sum, c) => sum + c.mastered, 0);
   const totalPracticing = children.reduce((sum, c) => sum + c.practicing, 0);
   const totalStaleWorks = children.reduce((sum, c) => sum + c.stale_works, 0);
   const childrenWithStaleWorks = children.filter(c => c.stale_works > 0);
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-      {/* Summary bar — always visible */}
+    <div
+      id="panel-pulse"
+      style={{
+        background: T.card,
+        border: T.cardBorder,
+        borderRadius: T.cardRadius,
+        backdropFilter: T.blur,
+        WebkitBackdropFilter: T.blur,
+        overflow: 'hidden',
+        fontFamily: T.sans,
+        color: T.textPrimary,
+      }}
+    >
       <button
         onClick={() => setExpanded(!expanded)}
         aria-expanded={expanded}
         aria-label={t('pulse.title')}
-        className="w-full flex items-center justify-between px-4 py-3 hover:bg-gray-50 transition-colors"
+        style={{
+          width: '100%',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: '14px 16px',
+          background: 'transparent',
+          border: 'none',
+          cursor: 'pointer',
+          color: T.textPrimary,
+          transition: 'background 140ms ease',
+        }}
+        onMouseEnter={e => (e.currentTarget.style.background = 'rgba(52,211,153,0.06)')}
+        onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
       >
-        <div className="flex items-center gap-3">
-          <span className="text-lg">💡</span>
-          <div className="text-left">
-            <div className="text-sm font-semibold text-gray-800">
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: 34,
+            height: 34,
+            borderRadius: 10,
+            background: T.violetStrong,
+            border: `1px solid ${T.violetBorder}`,
+            color: T.violet,
+          }}>
+            <Lightbulb size={16} strokeWidth={1.75} />
+          </div>
+          <div style={{ textAlign: 'left' }}>
+            <div style={{
+              fontFamily: T.serif,
+              fontSize: 15,
+              fontWeight: 500,
+              color: T.textPrimary,
+              letterSpacing: -0.2,
+            }}>
               {t('pulse.title')}
             </div>
-            <div className="text-xs text-gray-400">
+            <div style={{
+              fontFamily: T.sans,
+              fontSize: 11,
+              color: T.textMuted,
+              marginTop: 1,
+            }}>
               {lastCompleted
                 ? t('pulse.lastGenerated').replace('{time}', formatTimeAgo(lastCompleted, t))
                 : t('pulse.neverGenerated')
@@ -182,27 +259,67 @@ export default function PulsePanel() {
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
           {hasData && (
-            <span className="text-xs font-bold px-2 py-1 rounded-full bg-violet-100 text-violet-700">
+            <span style={{
+              fontFamily: T.sans,
+              fontSize: 11,
+              fontWeight: 700,
+              padding: '3px 10px',
+              borderRadius: 999,
+              background: T.violetStrong,
+              border: `1px solid ${T.violetBorder}`,
+              color: T.violet,
+              letterSpacing: 0.3,
+            }}>
               {children.length} {children.length === 1 ? t('pulse.child') : t('pulse.children')}
             </span>
           )}
-          <span className={`text-gray-400 transition-transform duration-200 text-xs ${expanded ? 'rotate-180' : ''}`}>
-            ▼
-          </span>
+          <ChevronDown
+            size={13}
+            strokeWidth={1.75}
+            color={T.textMuted}
+            style={{
+              marginLeft: 2,
+              transition: 'transform 200ms ease',
+              transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)',
+            }}
+          />
         </div>
       </button>
 
-      {/* Expanded detail */}
       {expanded && (
-        <div className="px-4 pb-4 border-t border-gray-100 pt-3 space-y-3">
-          {/* Generate button */}
+        <div style={{
+          padding: '12px 16px 14px',
+          borderTop: T.cardBorder,
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 12,
+        }}>
+          {/* Generate CTA */}
           <button
             onClick={handleGenerate}
             disabled={generating || isInProgress}
-            className="w-full py-2.5 rounded-xl text-sm font-semibold text-white bg-violet-500 hover:bg-violet-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            style={{
+              width: '100%',
+              padding: '10px 14px',
+              borderRadius: 12,
+              background: T.violetStrong,
+              border: `1px solid ${T.violetBorder}`,
+              color: T.violet,
+              fontFamily: T.sans,
+              fontSize: 13,
+              fontWeight: 700,
+              cursor: (generating || isInProgress) ? 'not-allowed' : 'pointer',
+              opacity: (generating || isInProgress) ? 0.55 : 1,
+              transition: 'all 120ms ease',
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 7,
+            }}
           >
+            <Sparkles size={14} strokeWidth={1.75} />
             {generating
               ? t('pulse.generating')
               : isInProgress
@@ -213,85 +330,144 @@ export default function PulsePanel() {
             }
           </button>
 
-          {/* Generating progress indicator */}
+          {/* Spinner */}
           {generating && (
-            <div className="flex items-center justify-center gap-2 py-2">
-              <div className="w-4 h-4 border-2 border-violet-300 border-t-violet-600 rounded-full animate-spin" />
-              <span className="text-xs text-gray-400">{t('pulse.analyzingChildren')}</span>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 8,
+              padding: '6px 0',
+            }}>
+              <div style={{
+                width: 16,
+                height: 16,
+                border: `2px solid ${T.violetSoft}`,
+                borderTopColor: T.violet,
+                borderRadius: '50%',
+                animation: 'pp-spin 0.9s linear infinite',
+              }} />
+              <span style={{
+                fontFamily: T.sans,
+                fontSize: 11,
+                color: T.textMuted,
+              }}>
+                {t('pulse.analyzingChildren')}
+              </span>
+              <style>{`@keyframes pp-spin { to { transform: rotate(360deg); } }`}</style>
             </div>
           )}
 
-          {/* Results summary */}
+          {/* Results */}
           {hasData && !generating && (
             <>
-              {/* Stats row */}
-              <div className="flex gap-2">
-                <div className="flex-1 bg-[#E8F5E9] rounded-lg px-3 py-2 text-center">
-                  <div className="text-lg font-bold text-emerald-700">{totalMastered}</div>
-                  <div className="text-[10px] text-emerald-600 font-medium">{t('pulse.mastered')}</div>
-                </div>
-                <div className="flex-1 bg-white rounded-lg px-3 py-2 text-center">
-                  <div className="text-lg font-bold text-amber-700">{totalPracticing}</div>
-                  <div className="text-[10px] text-amber-600 font-medium">{t('pulse.practicing')}</div>
-                </div>
+              <div style={{ display: 'flex', gap: 8 }}>
+                <StatTile value={totalMastered} label={t('pulse.mastered')} tint={T.emerald} bg={T.emeraldSoft} border="rgba(52,211,153,0.25)" />
+                <StatTile value={totalPracticing} label={t('pulse.practicing')} tint={T.amber} bg="rgba(245,158,11,0.10)" border="rgba(245,158,11,0.25)" />
                 {totalStaleWorks > 0 && (
-                  <div className="flex-1 bg-violet-50 rounded-lg px-3 py-2 text-center">
-                    <div className="text-lg font-bold text-violet-700">{totalStaleWorks}</div>
-                    <div className="text-[10px] text-violet-600 font-medium">{t('pulse.stale')}</div>
-                  </div>
+                  <StatTile value={totalStaleWorks} label={t('pulse.stale')} tint={T.violet} bg={T.violetSoft} border="rgba(139,92,246,0.25)" />
                 )}
               </div>
 
-              {/* Stale works alert */}
               {childrenWithStaleWorks.length > 0 && (
-                <div className="bg-violet-50 rounded-lg px-3 py-2">
-                  <div className="text-xs font-semibold text-violet-700 mb-1 flex items-center gap-1">
-                    <span className="w-2 h-2 rounded-full bg-violet-400" />
+                <div style={{
+                  padding: '10px 14px',
+                  borderRadius: 12,
+                  background: T.violetSoft,
+                  border: `1px solid ${T.violetBorder}`,
+                }}>
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 6,
+                    marginBottom: 4,
+                    fontFamily: T.sans,
+                    fontSize: 11,
+                    fontWeight: 700,
+                    color: T.violet,
+                    letterSpacing: 0.4,
+                    textTransform: 'uppercase',
+                  }}>
+                    <AlertTriangle size={12} strokeWidth={1.75} />
                     {t('pulse.needsAttention').replace('{count}', String(childrenWithStaleWorks.length))}
                   </div>
-                  <div className="text-xs text-violet-600">
+                  <div style={{
+                    fontFamily: T.sans,
+                    fontSize: 12,
+                    color: T.violet,
+                    opacity: 0.85,
+                  }}>
                     {childrenWithStaleWorks.slice(0, 3).map(c => c.name.split(' ')[0]).join(', ')}
                     {childrenWithStaleWorks.length > 3 && ` +${childrenWithStaleWorks.length - 3}`}
                   </div>
                 </div>
               )}
 
-              {/* Per-child cards */}
-              <div className="space-y-1.5">
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                 {children.map(child => (
-                  <div key={child.id} className="flex items-center justify-between bg-[#FAF5EF] rounded-lg px-3 py-2">
-                    <div className="flex items-center gap-2 min-w-0">
-                      <div className="w-7 h-7 rounded-full bg-violet-200 flex items-center justify-center text-xs font-bold text-violet-700 flex-shrink-0">
-                        {child.name.charAt(0)}
+                  <div
+                    key={child.id}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      gap: 10,
+                      padding: '8px 12px',
+                      borderRadius: 10,
+                      background: 'rgba(255,255,255,0.04)',
+                      border: '1px solid rgba(255,255,255,0.08)',
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
+                      <div style={{
+                        width: 28,
+                        height: 28,
+                        borderRadius: '50%',
+                        background: T.violetStrong,
+                        border: `1px solid ${T.violetBorder}`,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: T.violet,
+                        fontFamily: T.sans,
+                        fontSize: 11,
+                        fontWeight: 700,
+                        flexShrink: 0,
+                      }}>
+                        {child.name.charAt(0).toUpperCase()}
                       </div>
-                      <div className="min-w-0">
-                        <div className="text-sm text-gray-800 font-medium truncate">{child.name.split(' ')[0]}</div>
+                      <div style={{ minWidth: 0 }}>
+                        <div style={{
+                          fontFamily: T.sans,
+                          fontSize: 13,
+                          fontWeight: 600,
+                          color: T.textPrimary,
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap',
+                        }}>
+                          {child.name.split(' ')[0]}
+                        </div>
                         {child.recent_work && (
-                          <div className="text-[10px] text-gray-400 truncate">{child.recent_work}</div>
+                          <div style={{
+                            fontFamily: T.sans,
+                            fontSize: 10,
+                            color: T.textMuted,
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap',
+                            marginTop: 1,
+                          }}>
+                            {child.recent_work}
+                          </div>
                         )}
                       </div>
                     </div>
-                    <div className="flex items-center gap-1.5 flex-shrink-0">
-                      {child.mastered > 0 && (
-                        <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-700 font-medium">
-                          ⭐{child.mastered}
-                        </span>
-                      )}
-                      {child.practicing > 0 && (
-                        <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-blue-100 text-blue-700 font-medium">
-                          🔄{child.practicing}
-                        </span>
-                      )}
-                      {child.stale_works > 0 && (
-                        <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-violet-100 text-violet-700 font-medium">
-                          ⚠️{child.stale_works}
-                        </span>
-                      )}
-                      {child.total_photos > 0 && (
-                        <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-gray-50 text-gray-400 font-medium">
-                          📸{child.total_photos}
-                        </span>
-                      )}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 5, flexShrink: 0, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+                      {child.mastered > 0 && <Mini Icon={Star} count={child.mastered} color={T.emerald} bg={T.emeraldStrong} border="rgba(52,211,153,0.40)" />}
+                      {child.practicing > 0 && <Mini Icon={RotateCw} count={child.practicing} color={T.blue} bg={T.blueStrong} border="rgba(96,165,250,0.40)" />}
+                      {child.stale_works > 0 && <Mini Icon={AlertTriangle} count={child.stale_works} color={T.violet} bg={T.violetStrong} border={T.violetBorder} />}
+                      {child.total_photos > 0 && <Mini Icon={Camera} count={child.total_photos} color={T.textSecondary} bg="rgba(255,255,255,0.06)" border="rgba(255,255,255,0.10)" />}
                     </div>
                   </div>
                 ))}
@@ -301,6 +477,74 @@ export default function PulsePanel() {
         </div>
       )}
     </div>
+  );
+}
+
+function StatTile({ value, label, tint, bg, border }: {
+  value: number;
+  label: string;
+  tint: string;
+  bg: string;
+  border: string;
+}) {
+  return (
+    <div style={{
+      flex: 1,
+      padding: '8px 6px',
+      borderRadius: 10,
+      background: bg,
+      border: `1px solid ${border}`,
+      textAlign: 'center',
+    }}>
+      <div style={{
+        fontFamily: T.serif,
+        fontSize: 16,
+        fontWeight: 500,
+        color: tint,
+        letterSpacing: -0.3,
+        lineHeight: 1.1,
+      }}>
+        {value}
+      </div>
+      <div style={{
+        fontFamily: T.sans,
+        fontSize: 10,
+        fontWeight: 600,
+        color: tint,
+        opacity: 0.85,
+        marginTop: 2,
+        letterSpacing: 0.2,
+      }}>
+        {label}
+      </div>
+    </div>
+  );
+}
+
+function Mini({ Icon, count, color, bg, border }: {
+  Icon: typeof Star;
+  count: number;
+  color: string;
+  bg: string;
+  border: string;
+}) {
+  return (
+    <span style={{
+      display: 'inline-flex',
+      alignItems: 'center',
+      gap: 3,
+      fontFamily: '"Inter", sans-serif',
+      fontSize: 10,
+      fontWeight: 700,
+      padding: '2px 7px',
+      borderRadius: 999,
+      background: bg,
+      border: `1px solid ${border}`,
+      color,
+    }}>
+      <Icon size={9} strokeWidth={1.75} />
+      {count}
+    </span>
   );
 }
 
