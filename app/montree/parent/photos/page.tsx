@@ -3,12 +3,11 @@
 import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { toast, Toaster } from 'sonner';
-import { ArrowLeft, ChevronDown, Camera, Sparkles } from 'lucide-react';
+import { ArrowLeft, Camera } from 'lucide-react';
 import { useI18n, getIntlLocale } from '@/lib/montree/i18n';
 import PhotoLightbox from '@/components/montree/media/PhotoLightbox';
 import { getThumbnailUrl, getThumbnailSrcSet } from '@/lib/montree/media/proxy-url';
 
-// Dark forest tokens
 const T = {
   bg: '#0a1a0f',
   glow: 'radial-gradient(ellipse 1100px 900px at 88% 8%, rgba(39,129,90,0.48), transparent 60%)',
@@ -16,6 +15,7 @@ const T = {
   cardBorder: '1px solid rgba(52,211,153,0.15)',
   blur: 'blur(18px) saturate(140%)',
   emerald: '#34d399',
+  emeraldStrong: 'rgba(52,211,153,0.18)',
   emeraldSoft: 'rgba(52,211,153,0.10)',
   textPrimary: 'rgba(255,255,255,0.95)',
   textSecondary: 'rgba(255,255,255,0.65)',
@@ -23,7 +23,6 @@ const T = {
   serif: '"Lora", Georgia, serif',
   sans: '"Inter", -apple-system, BlinkMacSystemFont, sans-serif',
 };
-
 
 interface Photo {
   id: string;
@@ -55,11 +54,9 @@ function ParentPhotosContent() {
       return;
     }
 
-    // Get child info from session or param
     if (childIdParam) {
       loadPhotos(childIdParam);
     } else {
-      // Try to get from stored selected child
       const selectedChildStr = localStorage.getItem('montree_selected_child');
       if (selectedChildStr) {
         const child = JSON.parse(selectedChildStr);
@@ -102,7 +99,6 @@ function ParentPhotosContent() {
     setSelectedPhoto(photo);
     setFullImageUrl(null);
 
-    // Fetch full-size image
     try {
       const res = await fetch(`/api/montree/media/url?path=${encodeURIComponent(photo.storage_path)}`);
       if (!res.ok) {
@@ -118,84 +114,159 @@ function ParentPhotosContent() {
     }
   };
 
-  // Download a photo by fetching as blob and triggering save
-  const downloadPhoto = async (url: string, name: string) => {
-    try {
-      const res = await fetch(url);
-      const blob = await res.blob();
-      const blobUrl = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = blobUrl;
-      a.download = `${name.replace(/[^a-zA-Z0-9]/g, '_')}.jpg`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(blobUrl);
-    } catch {
-      // Fallback: open in new tab so they can long-press/right-click to save
-      if (url) window.open(url, '_blank');
-    }
-  };
-
-  const formatDate = (dateStr: string) => {
-    return new Date(dateStr).toLocaleDateString(getIntlLocale(locale), {
-      weekday: 'short',
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric'
-    });
-  };
-
   if (loading) {
-    return (
-      <div style={{ minHeight: "100vh", background: T.bg, backgroundImage: T.glow, backgroundAttachment: "fixed" }}>
-        <div className="text-center">
-          <div className="text-4xl mb-4 animate-pulse">📸</div>
-          <p style={{ color: T.textMuted }}>{t('parentPhotos.loadingPhotos')}</p>
-        </div>
-      </div>
-    );
+    return <PhotosSplash />;
   }
 
   return (
-    <div style={{ minHeight: "100vh", background: T.bg, backgroundImage: T.glow, backgroundAttachment: "fixed" }}>
+    <div style={{
+      minHeight: '100vh',
+      background: T.bg,
+      backgroundImage: T.glow,
+      backgroundAttachment: 'fixed',
+      color: T.textPrimary,
+      fontFamily: T.sans,
+    }}>
       <Toaster position="top-center" />
 
       {/* Header */}
-      <header style={{ background: T.card, backdropFilter: T.blur }}>
-        <div className="max-w-4xl mx-auto px-4 py-4 flex items-center gap-3">
+      <header style={{
+        background: 'linear-gradient(180deg, rgba(7,18,12,0.96), rgba(7,18,12,0.90))',
+        borderBottom: T.cardBorder,
+        backdropFilter: 'blur(20px) saturate(140%)',
+        WebkitBackdropFilter: 'blur(20px) saturate(140%)',
+        position: 'sticky',
+        top: 0,
+        zIndex: 10,
+      }}>
+        <div style={{
+          maxWidth: 880,
+          margin: '0 auto',
+          padding: '14px 16px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: 12,
+        }}>
           <button
             onClick={() => router.push('/montree/parent/dashboard')}
-            style={{ background: T.card }}
+            aria-label="Back"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: 38,
+              height: 38,
+              borderRadius: 10,
+              background: 'rgba(255,255,255,0.06)',
+              border: '1px solid rgba(255,255,255,0.10)',
+              color: T.textPrimary,
+              cursor: 'pointer',
+            }}
           >
-            ←
+            <ArrowLeft size={16} strokeWidth={1.75} />
           </button>
-          <div>
-            <h1 className="font-bold text-gray-800">{t('parentPhotos.title')}</h1>
-            <p className="text-sm text-gray-500">{childName ? `${childName}'s ${t('parentPhotos.photos')}` : t('parentPhotos.sharedByTeachers')}</p>
+          <div style={{ minWidth: 0 }}>
+            <h1 style={{
+              margin: 0,
+              fontFamily: T.serif,
+              fontSize: 18,
+              fontWeight: 500,
+              color: T.textPrimary,
+              letterSpacing: -0.2,
+            }}>
+              {t('parentPhotos.title')}
+            </h1>
+            <p style={{
+              margin: '2px 0 0',
+              fontFamily: T.sans,
+              fontSize: 12,
+              color: T.textMuted,
+            }}>
+              {childName ? `${childName}'s ${t('parentPhotos.photos')}` : t('parentPhotos.sharedByTeachers')}
+            </p>
           </div>
         </div>
       </header>
 
-      <main className="max-w-4xl mx-auto p-4">
+      <main style={{ maxWidth: 880, margin: '0 auto', padding: 16 }}>
         {photos.length === 0 ? (
-          <div style={{ background: T.card, backdropFilter: T.blur }}>
-            <div className="text-5xl mb-4">📷</div>
-            <h2 className="text-xl font-bold text-gray-800 mb-2">{t('parentPhotos.noPhotosTitle')}</h2>
-            <p style={{ color: T.textMuted }}>
+          <div style={{
+            background: T.card,
+            border: T.cardBorder,
+            borderRadius: 18,
+            backdropFilter: T.blur,
+            WebkitBackdropFilter: T.blur,
+            padding: '40px 24px',
+            textAlign: 'center',
+          }}>
+            <div style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: 60,
+              height: 60,
+              borderRadius: '50%',
+              background: T.emeraldStrong,
+              border: '1px solid rgba(52,211,153,0.40)',
+              color: T.emerald,
+              marginBottom: 14,
+            }}>
+              <Camera size={26} strokeWidth={1.75} />
+            </div>
+            <h2 style={{
+              margin: '0 0 6px',
+              fontFamily: T.serif,
+              fontSize: 20,
+              fontWeight: 500,
+              color: T.textPrimary,
+              letterSpacing: -0.3,
+            }}>
+              {t('parentPhotos.noPhotosTitle')}
+            </h2>
+            <p style={{
+              margin: 0,
+              fontFamily: T.sans,
+              fontSize: 13,
+              color: T.textMuted,
+              lineHeight: 1.55,
+            }}>
               {t('parentPhotos.noPhotosDescription')}
             </p>
           </div>
         ) : (
           <>
-            {/* Photo Grid */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            {/* Grid */}
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))',
+              gap: 10,
+            }}>
               {photos.map(photo => (
                 <button
                   key={photo.id}
                   onClick={() => handlePhotoClick(photo)}
-                  style={{ background: T.card, backdropFilter: T.blur }}
-                  style={{ contentVisibility: 'auto', containIntrinsicSize: '1px 200px' }}
+                  style={{
+                    aspectRatio: '1 / 1',
+                    overflow: 'hidden',
+                    background: T.card,
+                    border: T.cardBorder,
+                    borderRadius: 14,
+                    backdropFilter: T.blur,
+                    WebkitBackdropFilter: T.blur,
+                    padding: 0,
+                    cursor: 'pointer',
+                    transition: 'transform 140ms ease, border-color 140ms ease',
+                    contentVisibility: 'auto',
+                    containIntrinsicSize: '1px 200px',
+                  }}
+                  onMouseEnter={e => {
+                    e.currentTarget.style.transform = 'translateY(-1px)';
+                    e.currentTarget.style.borderColor = 'rgba(52,211,153,0.40)';
+                  }}
+                  onMouseLeave={e => {
+                    e.currentTarget.style.transform = 'none';
+                    e.currentTarget.style.borderColor = 'rgba(52,211,153,0.15)';
+                  }}
                 >
                   {photo.storage_path ? (
                     <img
@@ -203,7 +274,7 @@ function ParentPhotosContent() {
                       srcSet={getThumbnailSrcSet(photo.storage_path, 400)}
                       sizes="(max-width: 640px) 50vw, 400px"
                       alt={photo.caption || 'Photo'}
-                      className="w-full h-full object-cover"
+                      style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
                       loading="lazy"
                       decoding="async"
                     />
@@ -211,28 +282,46 @@ function ParentPhotosContent() {
                     <img
                       src={photo.thumbnail_url}
                       alt={photo.caption || 'Photo'}
-                      className="w-full h-full object-cover"
+                      style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
                       loading="lazy"
                       decoding="async"
                     />
                   ) : (
-                    <div style={{ background: T.card }}>
-                      <span className="text-3xl">📷</span>
+                    <div style={{
+                      width: '100%',
+                      height: '100%',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      color: T.textMuted,
+                    }}>
+                      <Camera size={28} strokeWidth={1.5} />
                     </div>
                   )}
                 </button>
               ))}
             </div>
 
-            {/* Load More */}
+            {/* Load more */}
             {hasMore && (
-              <div className="mt-6 text-center">
+              <div style={{ marginTop: 24, textAlign: 'center' }}>
                 <button
                   onClick={() => {
                     const childId = childIdParam || JSON.parse(localStorage.getItem('montree_selected_child') || '{}').id;
                     if (childId) loadPhotos(childId, true);
                   }}
-                  style={{ background: T.card, backdropFilter: T.blur }}
+                  style={{
+                    padding: '10px 24px',
+                    borderRadius: 12,
+                    background: T.emeraldStrong,
+                    border: '1px solid rgba(52,211,153,0.45)',
+                    color: T.emerald,
+                    fontFamily: T.sans,
+                    fontSize: 13,
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    transition: 'all 120ms ease',
+                  }}
                 >
                   {t('common.loadMore')}
                 </button>
@@ -242,7 +331,7 @@ function ParentPhotosContent() {
         )}
       </main>
 
-      {/* Photo Lightbox — fullscreen zoom + download + navigation */}
+      {/* Lightbox */}
       <PhotoLightbox
         isOpen={!!selectedPhoto}
         onClose={() => setSelectedPhoto(null)}
@@ -262,14 +351,39 @@ function ParentPhotosContent() {
   );
 }
 
-// Wrap in Suspense for useSearchParams
-function PhotosLoadingFallback() {
+function PhotosSplash() {
   const { t } = useI18n();
   return (
-    <div style={{ minHeight: "100vh", background: T.bg, backgroundImage: T.glow, backgroundAttachment: "fixed" }}>
-      <div className="text-center">
-        <div className="text-4xl mb-4 animate-pulse">📸</div>
-        <p style={{ color: T.textMuted }}>{t('parentPhotos.loadingPhotos')}</p>
+    <div style={{
+      minHeight: '100vh',
+      background: T.bg,
+      backgroundImage: T.glow,
+      backgroundAttachment: 'fixed',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      fontFamily: T.sans,
+    }}>
+      <div style={{ textAlign: 'center' }}>
+        <div style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          width: 56,
+          height: 56,
+          borderRadius: '50%',
+          background: T.emeraldStrong,
+          border: '1px solid rgba(52,211,153,0.40)',
+          color: T.emerald,
+          marginBottom: 12,
+          animation: 'pp-pulse 1.6s ease-in-out infinite',
+        }}>
+          <Camera size={24} strokeWidth={1.75} />
+        </div>
+        <p style={{ margin: 0, color: T.textMuted, fontSize: 13 }}>
+          {t('parentPhotos.loadingPhotos')}
+        </p>
+        <style>{`@keyframes pp-pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.55; } }`}</style>
       </div>
     </div>
   );
@@ -277,7 +391,7 @@ function PhotosLoadingFallback() {
 
 export default function ParentPhotosPage() {
   return (
-    <Suspense fallback={<PhotosLoadingFallback />}>
+    <Suspense fallback={<PhotosSplash />}>
       <ParentPhotosContent />
     </Suspense>
   );

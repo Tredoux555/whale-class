@@ -5,10 +5,9 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { toast, Toaster } from 'sonner';
 import { AREA_CONFIG } from '@/lib/montree/types';
 import AreaBadge, { normalizeArea } from '@/components/montree/shared/AreaBadge';
-import { ArrowLeft, ChevronDown, Camera, Sparkles } from 'lucide-react';
+import { ArrowLeft, Star, Calendar, Sprout, Check } from 'lucide-react';
 import { useI18n, getIntlLocale } from '@/lib/montree/i18n';
 
-// Dark forest tokens
 const T = {
   bg: '#0a1a0f',
   glow: 'radial-gradient(ellipse 1100px 900px at 88% 8%, rgba(39,129,90,0.48), transparent 60%)',
@@ -16,7 +15,11 @@ const T = {
   cardBorder: '1px solid rgba(52,211,153,0.15)',
   blur: 'blur(18px) saturate(140%)',
   emerald: '#34d399',
+  emeraldStrong: 'rgba(52,211,153,0.18)',
   emeraldSoft: 'rgba(52,211,153,0.10)',
+  amber: '#f59e0b',
+  amberStrong: 'rgba(245,158,11,0.18)',
+  amberBorder: 'rgba(245,158,11,0.35)',
   textPrimary: 'rgba(255,255,255,0.95)',
   textSecondary: 'rgba(255,255,255,0.65)',
   textMuted: 'rgba(255,255,255,0.40)',
@@ -24,6 +27,13 @@ const T = {
   sans: '"Inter", -apple-system, BlinkMacSystemFont, sans-serif',
 };
 
+const AREA_DOT_RGB: Record<string, string> = {
+  practical_life: '236, 72, 153',
+  sensorial: '20, 184, 166',
+  mathematics: '168, 85, 247',
+  language: '74, 222, 128',
+  cultural: '249, 115, 22',
+};
 
 interface Milestone {
   id: string;
@@ -40,11 +50,6 @@ interface TimelineGroup {
   label: string;
   items: Milestone[];
 }
-
-const getAreaClasses = (area: string) => {
-  const config = AREA_CONFIG[normalizeArea(area)];
-  return config ? `${config.bg} ${config.text}` : 'bg-gray-100 text-gray-700';
-};
 
 function ParentMilestonesContent() {
   const router = useRouter();
@@ -64,7 +69,6 @@ function ParentMilestonesContent() {
       return;
     }
 
-    // Get child info from session or param
     if (childIdParam) {
       loadMilestones(childIdParam);
     } else {
@@ -110,86 +114,295 @@ function ParentMilestonesContent() {
 
   if (loading) {
     return (
-      <div style={{ minHeight: "100vh", background: T.bg, backgroundImage: T.glow, backgroundAttachment: "fixed" }}>
-        <div className="text-center">
-          <div className="text-4xl mb-4 animate-pulse">⭐</div>
-          <p style={{ color: T.textMuted }}>{t('parentMilestones.loading')}</p>
+      <div style={{
+        minHeight: '100vh',
+        background: T.bg,
+        backgroundImage: T.glow,
+        backgroundAttachment: 'fixed',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        fontFamily: T.sans,
+      }}>
+        <div style={{ textAlign: 'center' }}>
+          <div style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: 56,
+            height: 56,
+            borderRadius: '50%',
+            background: T.amberStrong,
+            border: `1px solid ${T.amberBorder}`,
+            color: T.amber,
+            marginBottom: 12,
+            animation: 'pm-pulse 1.6s ease-in-out infinite',
+          }}>
+            <Star size={24} strokeWidth={1.75} />
+          </div>
+          <p style={{ margin: 0, color: T.textMuted, fontSize: 13, fontFamily: T.sans }}>
+            {t('parentMilestones.loading')}
+          </p>
+          <style>{`@keyframes pm-pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.55; } }`}</style>
         </div>
       </div>
     );
   }
 
   return (
-    <div style={{ minHeight: "100vh", background: T.bg, backgroundImage: T.glow, backgroundAttachment: "fixed" }}>
+    <div style={{
+      minHeight: '100vh',
+      background: T.bg,
+      backgroundImage: T.glow,
+      backgroundAttachment: 'fixed',
+      color: T.textPrimary,
+      fontFamily: T.sans,
+    }}>
       <Toaster position="top-center" />
 
       {/* Header */}
-      <header style={{ background: T.card, backdropFilter: T.blur }}>
-        <div className="max-w-4xl mx-auto px-4 py-4 flex items-center gap-3">
+      <header style={{
+        background: 'linear-gradient(180deg, rgba(7,18,12,0.96), rgba(7,18,12,0.90))',
+        borderBottom: T.cardBorder,
+        backdropFilter: 'blur(20px) saturate(140%)',
+        WebkitBackdropFilter: 'blur(20px) saturate(140%)',
+        position: 'sticky',
+        top: 0,
+        zIndex: 10,
+      }}>
+        <div style={{
+          maxWidth: 880,
+          margin: '0 auto',
+          padding: '14px 16px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: 12,
+        }}>
           <button
             onClick={() => router.push('/montree/parent/dashboard')}
-            style={{ background: T.card }}
+            aria-label="Back"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: 38,
+              height: 38,
+              borderRadius: 10,
+              background: 'rgba(255,255,255,0.06)',
+              border: '1px solid rgba(255,255,255,0.10)',
+              color: T.textPrimary,
+              cursor: 'pointer',
+            }}
           >
-            ←
+            <ArrowLeft size={16} strokeWidth={1.75} />
           </button>
-          <div className="flex-1">
-            <h1 className="font-bold text-gray-800">{t('parentMilestones.title')}</h1>
-            <p className="text-sm text-gray-500">{childName ? `${childName}'s ${t('parentMilestones.achievements')}` : t('parentMilestones.journeySubtitle')}</p>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <h1 style={{
+              margin: 0,
+              fontFamily: T.serif,
+              fontSize: 18,
+              fontWeight: 500,
+              color: T.textPrimary,
+              letterSpacing: -0.2,
+            }}>
+              {t('parentMilestones.title')}
+            </h1>
+            <p style={{
+              margin: '2px 0 0',
+              fontFamily: T.sans,
+              fontSize: 12,
+              color: T.textMuted,
+            }}>
+              {childName ? `${childName}'s ${t('parentMilestones.achievements')}` : t('parentMilestones.journeySubtitle')}
+            </p>
           </div>
-          <div className="bg-amber-100 text-amber-700 px-3 py-1.5 rounded-full text-sm font-medium">
-            ⭐ {totalMilestones}
+          <div style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 5,
+            padding: '5px 12px',
+            borderRadius: 999,
+            background: T.amberStrong,
+            border: `1px solid ${T.amberBorder}`,
+            color: T.amber,
+            fontFamily: T.sans,
+            fontSize: 12,
+            fontWeight: 700,
+            letterSpacing: 0.3,
+          }}>
+            <Star size={11} strokeWidth={1.75} />
+            {totalMilestones}
           </div>
         </div>
       </header>
 
-      <main className="max-w-4xl mx-auto p-4">
+      <main style={{ maxWidth: 880, margin: '0 auto', padding: 16 }}>
         {timeline.length === 0 ? (
-          <div style={{ background: T.card, backdropFilter: T.blur }}>
-            <div className="text-5xl mb-4">🌱</div>
-            <h2 className="text-xl font-bold text-gray-800 mb-2">{t('parentMilestones.growingTitle')}</h2>
-            <p style={{ color: T.textMuted }}>
+          <div style={{
+            background: T.card,
+            border: T.cardBorder,
+            borderRadius: 18,
+            backdropFilter: T.blur,
+            WebkitBackdropFilter: T.blur,
+            padding: '40px 24px',
+            textAlign: 'center',
+          }}>
+            <div style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: 60,
+              height: 60,
+              borderRadius: '50%',
+              background: T.emeraldStrong,
+              border: '1px solid rgba(52,211,153,0.40)',
+              color: T.emerald,
+              marginBottom: 14,
+            }}>
+              <Sprout size={26} strokeWidth={1.75} />
+            </div>
+            <h2 style={{
+              margin: '0 0 6px',
+              fontFamily: T.serif,
+              fontSize: 20,
+              fontWeight: 500,
+              color: T.textPrimary,
+              letterSpacing: -0.3,
+            }}>
+              {t('parentMilestones.growingTitle')}
+            </h2>
+            <p style={{
+              margin: 0,
+              fontFamily: T.sans,
+              fontSize: 13,
+              color: T.textMuted,
+              lineHeight: 1.55,
+            }}>
               {t('parentMilestones.noMilestonesYet').replace('{childName}', childName || t('common.yourChild'))}
             </p>
           </div>
         ) : (
-          <div className="space-y-6">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
             {timeline.map(group => (
-              <div key={group.month} style={{ background: T.card, backdropFilter: T.blur }}>
-                {/* Month Header */}
-                <h2 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
-                  <span className="w-8 h-8 bg-emerald-100 rounded-full flex items-center justify-center text-emerald-600">
-                    📅
+              <div
+                key={group.month}
+                style={{
+                  background: T.card,
+                  border: T.cardBorder,
+                  borderRadius: 18,
+                  backdropFilter: T.blur,
+                  WebkitBackdropFilter: T.blur,
+                  padding: 18,
+                }}
+              >
+                <h2 style={{
+                  margin: '0 0 14px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 9,
+                  fontFamily: T.serif,
+                  fontSize: 17,
+                  fontWeight: 500,
+                  color: T.textPrimary,
+                  letterSpacing: -0.2,
+                }}>
+                  <span style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    width: 30,
+                    height: 30,
+                    borderRadius: '50%',
+                    background: T.emeraldStrong,
+                    border: '1px solid rgba(52,211,153,0.30)',
+                    color: T.emerald,
+                  }}>
+                    <Calendar size={14} strokeWidth={1.75} />
                   </span>
                   {group.label}
                 </h2>
 
-                {/* Milestones List */}
-                <div className="space-y-3">
-                  {group.items.map(milestone => (
-                    <div
-                      key={milestone.id}
-                      className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl"
-                    >
-                      {/* Icon */}
-                      <div className="w-10 h-10 bg-amber-100 rounded-full flex items-center justify-center text-lg">
-                        {milestone.icon}
-                      </div>
-
-                      {/* Content */}
-                      <div className="flex-1 min-w-0">
-                        <p className="font-medium text-gray-800 truncate">{milestone.title}</p>
-                        <div className="flex items-center gap-2 mt-1">
-                          <span className={`px-2 py-0.5 rounded-full text-xs font-medium inline-flex items-center gap-1 ${getAreaClasses(milestone.area)}`}>
-                            <AreaBadge area={milestone.area} size="xs" /> {milestone.area_label}
-                          </span>
-                          <span className="text-xs text-gray-400">{formatDate(milestone.date)}</span>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  {group.items.map(milestone => {
+                    const rgb = AREA_DOT_RGB[normalizeArea(milestone.area)] || '255,255,255';
+                    return (
+                      <div
+                        key={milestone.id}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 12,
+                          padding: 12,
+                          borderRadius: 14,
+                          background: 'rgba(255,255,255,0.04)',
+                          border: '1px solid rgba(255,255,255,0.08)',
+                        }}
+                      >
+                        <div style={{
+                          width: 38,
+                          height: 38,
+                          borderRadius: '50%',
+                          background: T.amberStrong,
+                          border: `1px solid ${T.amberBorder}`,
+                          color: T.amber,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          flexShrink: 0,
+                        }}>
+                          <Star size={16} strokeWidth={1.75} />
                         </div>
-                      </div>
 
-                      {/* Decoration */}
-                      <span className="text-emerald-500">✓</span>
-                    </div>
-                  ))}
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <p style={{
+                            margin: 0,
+                            fontFamily: T.sans,
+                            fontSize: 14,
+                            fontWeight: 500,
+                            color: T.textPrimary,
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap',
+                          }}>
+                            {milestone.title}
+                          </p>
+                          <div style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 8,
+                            marginTop: 4,
+                          }}>
+                            <span style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: 5,
+                              padding: '2px 9px',
+                              borderRadius: 999,
+                              background: `rgba(${rgb}, 0.15)`,
+                              border: `1px solid rgba(${rgb}, 0.35)`,
+                              color: `rgb(${rgb})`,
+                              fontFamily: T.sans,
+                              fontSize: 11,
+                              fontWeight: 600,
+                              letterSpacing: 0.2,
+                            }}>
+                              <AreaBadge area={milestone.area} size="xs" />
+                              {milestone.area_label}
+                            </span>
+                            <span style={{
+                              fontFamily: T.sans,
+                              fontSize: 11,
+                              color: T.textMuted,
+                            }}>
+                              {formatDate(milestone.date)}
+                            </span>
+                          </div>
+                        </div>
+
+                        <Check size={16} strokeWidth={2.5} color={T.emerald} style={{ flexShrink: 0 }} />
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             ))}
@@ -200,14 +413,39 @@ function ParentMilestonesContent() {
   );
 }
 
-// Wrap in Suspense for useSearchParams
 function MilestonesLoadingFallback() {
   const { t } = useI18n();
   return (
-    <div style={{ minHeight: "100vh", background: T.bg, backgroundImage: T.glow, backgroundAttachment: "fixed" }}>
-      <div className="text-center">
-        <div className="text-4xl mb-4 animate-pulse">⭐</div>
-        <p style={{ color: T.textMuted }}>{t('parentMilestones.loading')}</p>
+    <div style={{
+      minHeight: '100vh',
+      background: T.bg,
+      backgroundImage: T.glow,
+      backgroundAttachment: 'fixed',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      fontFamily: T.sans,
+    }}>
+      <div style={{ textAlign: 'center' }}>
+        <div style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          width: 56,
+          height: 56,
+          borderRadius: '50%',
+          background: T.amberStrong,
+          border: `1px solid ${T.amberBorder}`,
+          color: T.amber,
+          marginBottom: 12,
+          animation: 'pm-pulse 1.6s ease-in-out infinite',
+        }}>
+          <Star size={24} strokeWidth={1.75} />
+        </div>
+        <p style={{ margin: 0, color: T.textMuted, fontSize: 13 }}>
+          {t('parentMilestones.loading')}
+        </p>
+        <style>{`@keyframes pm-pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.55; } }`}</style>
       </div>
     </div>
   );
