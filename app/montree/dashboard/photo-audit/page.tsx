@@ -901,8 +901,8 @@ export default function PhotoAuditPage() {
 
   // Fetch photos when zone/date/page changes
   const fetchPhotos = useCallback(async () => {
-    // Pending Review tab manages its own fetching via PendingReviewPanel.
-    if (zone === 'pending_review') {
+    // Non-photo tabs manage their own data — skip photo fetch to avoid count flicker.
+    if (zone === 'pending_review' || zone === 'weekly_wrap' || zone === 'weekly_admin' || zone === 'get_advice') {
       setLoading(false);
       return;
     }
