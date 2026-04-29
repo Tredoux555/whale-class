@@ -46,7 +46,7 @@ export async function POST(req: NextRequest) {
           subject: `🎯 Demo Request: ${school || email}`,
           text: `New demo request from montree.xyz!\n\nName: ${name || 'Not provided'}\nSchool: ${school || 'Not provided'}\nEmail: ${email}\n\nTime: ${new Date().toISOString()}`,
         }),
-      }).catch(() => {});
+      }).catch(err => console.error('[demo-request] Failed to send notification email:', err));
 
       // Confirmation to requester
       const firstName = name ? name.split(' ')[0] : null;
@@ -59,7 +59,7 @@ export async function POST(req: NextRequest) {
           subject: 'Montree',
           text: `Dear ${firstName || school || 'there'},\n\nThank you for reaching out. I'll be in touch within 24 hours to arrange a time to show you what Montree can do.\n\nKind regards,\nTredoux\nmontree.xyz`,
         }),
-      }).catch(() => {});
+      }).catch(err => console.error('[demo-request] Failed to send confirmation email:', err));
     }
 
     return NextResponse.json({ success: true });

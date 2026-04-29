@@ -29,10 +29,9 @@ export async function getChildById(childId: string): Promise<Child | null> {
     .from('children')
     .select('*')
     .eq('id', childId)
-    .single();
+    .maybeSingle();
 
   if (error) {
-    if (error.code === 'PGRST116') return null;
     throw new Error(`Failed to get child: ${error.message}`);
   }
   return data;

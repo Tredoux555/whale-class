@@ -47,7 +47,7 @@ function DemoRequestAlert({ saToken }: { saToken: string }) {
           setLeads(d.requests.filter((r: DemoLead) => r.status === 'demo_requested'));
         }
       })
-      .catch(() => {});
+      .catch(err => console.error('[SuperAdmin] Failed to load demo leads:', err));
   }, [saToken]);
 
   useEffect(() => { load(); }, [load]);
@@ -58,7 +58,7 @@ function DemoRequestAlert({ saToken }: { saToken: string }) {
       method: 'PATCH',
       headers: { 'x-super-admin-token': saToken, 'Content-Type': 'application/json' },
       body: JSON.stringify({ id, status: 'contacted' }),
-    }).catch(() => {});
+    }).catch(err => console.error('[SuperAdmin] Failed to mark lead contacted:', err));
     setLeads(prev => prev.filter(l => l.id !== id));
     setDismissing(null);
   };
