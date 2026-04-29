@@ -35,7 +35,7 @@ Design tokens are locked:
 | `app/montree/dashboard/photo-audit/page.tsx` | ✅ Full dark forest redesign — commit `4f89c0ad` |
 | `app/montree/dashboard/guru/page.tsx` | ✅ Dark forest redesign — commit `aadd1b71` |
 | `app/montree/dashboard/curriculum/page.tsx` | ✅ Full dark forest conversion — commit `d86890d9` |
-| `app/montree/dashboard/[childId]/gallery/page.tsx` | ⏳ Needs Claude Design bundle |
+| `app/montree/dashboard/[childId]/gallery/page.tsx` | ✅ Full dark forest conversion — commit `4514bcb0` |
 
 ### Photo Audit dark forest details (commit `4f89c0ad`)
 - Page wrapper: dark `#0a1a0f` + radial emerald glow, `backgroundAttachment: fixed`
@@ -75,6 +75,22 @@ Design tokens are locked:
 - Full Details button: emerald gradient (same as other CTAs)
 - Tags: dark glass pill for age, dark amber for control-of-error
 - Empty state: dark glass card with Lora heading + emerald gradient CTA button
+
+### Gallery dark forest details (commit `4514bcb0`)
+- Photo card wrapper: `rgba(255,255,255,0.06)` glass, `rgba(52,211,153,0.15)` border, radius 14, `blur(18px) saturate(140%)`
+- No-photo placeholder: `rgba(255,255,255,0.04)` bg, emerald spinning border
+- Work tag button: hover → `rgba(52,211,153,0.08)` bg, work name `rgba(255,255,255,0.90)` Inter 500
+- Area dot placeholder: `rgba(255,255,255,0.20)` circle (when no area assigned)
+- Caption text: `rgba(255,255,255,0.70)` present, `rgba(255,255,255,0.35)` italic placeholder
+- Cancel button in caption edit: `rgba(255,255,255,0.08)` dark glass
+- Lesson notes border-top: `rgba(52,211,153,0.10)`, label `rgba(255,255,255,0.45)`, textarea dark glass `rgba(255,255,255,0.04)` + `rgba(255,255,255,0.10)` border
+- Expanded details: `rgba(52,211,153,0.10)` border-top, timestamp/captured-by `rgba(255,255,255,0.45)`, tags dark glass pill `rgba(255,255,255,0.08)`
+- Area picker modal: `rgba(7,18,12,0.97)` frosted sheet, `rgba(52,211,153,0.18)` border, 18px radius; area row buttons dark glass + emerald hover
+- Special events picker modal: same frosted sheet; create button = emerald gradient CTA; existing events = amber glass `rgba(245,158,11,0.07)` + amber border
+- Child tag editor modal: violet-tinted glass `rgba(139,92,246,0.12)` for tagged rows, violet checkbox, violet Save button
+- View controls: select button inline style emerald active state
+- Report preview modal: `rgba(7,18,12,0.97)` wrapper, emerald gradient header glow, Edit Photos = emerald glass button; body transparent; report header card dark glass with dark gradient header; progress summary emerald glass border-left; Recommendations = amber glass `rgba(245,158,11,0.07)`; Closing = dark glass card; Footer = dark glass close + emerald gradient Publish
+- Last Report modal: same dark glass wrapper; stat tiles — works (white glass), photos (blue glass `rgba(96,165,250,0.08)`), mastered (emerald glass); work cards dark glass `rgba(255,255,255,0.05)`; why-it-matters = emerald glass
 
 ### A. Child Detail v2 (bundle already in hand — `child-detail-bundle (1).md`)
 
@@ -153,7 +169,7 @@ Quick Guide, Full Details, Welcome, BulkPasteImport
 | Photo Audit | `app/montree/dashboard/photo-audit/page.tsx` | ✅ Done — `4f89c0ad` |
 | Guru Chat | `app/montree/dashboard/guru/page.tsx` | ✅ Done — `aadd1b71` |
 | Curriculum | `app/montree/dashboard/curriculum/page.tsx` | ✅ Done — `d86890d9` |
-| Gallery | `app/montree/dashboard/[childId]/gallery/page.tsx` | ⏳ Needs Claude Design bundle |
+| Gallery | `app/montree/dashboard/[childId]/gallery/page.tsx` | ✅ Done — `4514bcb0` |
 
 ---
 
