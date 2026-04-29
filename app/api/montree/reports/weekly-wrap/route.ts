@@ -690,18 +690,15 @@ export async function POST(request: NextRequest) {
                 }) + '\n'));
 
                 // Surface the per-child replan outcome (game plan + shelf advance).
-                // Only emitted when the report itself succeeded — replan only ran in
-                // that branch. Replan can succeed=true even when the report's success=true,
-                // but if replan errored we still send the event with replanned=false + error.
-                if (r.success) {
-                  controller.enqueue(encoder.encode(JSON.stringify({
-                    type: 'replan_done',
-                    child_name: (r as any).child_name,
-                    replanned: (r as any).replanned || false,
-                    works: (r as any).replan_works || [],
-                    error: (r as any).replan_error,
-                  }) + '\n'));
-                }
+                // Replan runs in Stage 0 (before reports), so it always has a result
+                // regardless of whether the report itself succeeded or failed.
+                controller.enqueue(encoder.encode(JSON.stringify({
+                  type: 'replan_done',
+                  child_name: (r as any).child_name,
+                  replanned: (r as any).replanned || false,
+                  works: (r as any).replan_works || [],
+                  error: (r as any).replan_error,
+                }) + '\n'));
               }
             }
 
