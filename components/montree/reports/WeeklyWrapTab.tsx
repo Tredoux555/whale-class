@@ -431,11 +431,14 @@ export default function WeeklyWrapTab({ classroomId, view: externalView }: Weekl
   const [wheelPickerWorks, setWheelPickerWorks] = useState<PickerWork[]>([]);
   const [curriculumCache, setCurriculumCache] = useState<Record<string, PickerWork[]>>({});
 
-  const STATUS_CONFIG: Record<string, { label: string; bg: string; text: string }> = {
-    not_started: { label: '○', bg: 'bg-gray-200', text: 'text-gray-600' },
-    presented: { label: t('status.presented'), bg: 'bg-amber-300', text: 'text-amber-800' },
-    practicing: { label: t('status.practicing'), bg: 'bg-blue-400', text: 'text-blue-800' },
-    mastered: { label: t('status.mastered'), bg: 'bg-emerald-400', text: 'text-emerald-800' },
+  // Status pill tokens — dark forest (locked palette: presented=amber, practicing=emerald,
+  // mastered=white-glass, not_started=neutral). Old Tailwind props kept as identical
+  // strings so any code path still reading bg/text works; new border/color drive inline styles.
+  const STATUS_CONFIG: Record<string, { label: string; bg: string; border: string; color: string; text: string }> = {
+    not_started: { label: '○', bg: 'rgba(255,255,255,0.06)', border: 'rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.40)', text: 'rgba(255,255,255,0.40)' },
+    presented:   { label: t('status.presented'),  bg: 'rgba(245,158,11,0.18)',  border: 'rgba(245,158,11,0.35)',  color: '#f59e0b', text: '#f59e0b' },
+    practicing:  { label: t('status.practicing'), bg: 'rgba(52,211,153,0.18)',  border: 'rgba(52,211,153,0.35)',  color: '#34d399', text: '#34d399' },
+    mastered:    { label: t('status.mastered'),   bg: 'rgba(255,255,255,0.10)', border: 'rgba(255,255,255,0.20)', color: 'rgba(255,255,255,0.85)', text: 'rgba(255,255,255,0.85)' },
   };
 
   const getShelfForChild = (r: ReportResult) => {
@@ -1144,7 +1147,13 @@ export default function WeeklyWrapTab({ classroomId, view: externalView }: Weekl
 
                 {/* ── Expanded details ── */}
                 {isExpanded && (
-                  <div className="px-4 pb-4 pl-[52px] space-y-3 border-t border-gray-50">
+                  <div style={{
+                    padding: '0 16px 16px 52px',
+                    borderTop: '1px solid rgba(255,255,255,0.06)',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: 12,
+                  }}>
                     {/* ── Guru Weekly Summary ── */}
                     {(() => {
                       const activeAreas = areaEntries.map(e => getAreaLabel(e.area));
@@ -1167,41 +1176,140 @@ export default function WeeklyWrapTab({ classroomId, view: externalView }: Weekl
                       }
 
                       return guruSummary ? (
-                        <div className="mt-2 bg-gradient-to-r from-violet-50 to-indigo-50 rounded-xl p-3 border border-violet-100">
-                          <p className="text-[10px] font-semibold text-violet-500 uppercase tracking-wider mb-1">
+                        <div style={{
+                          marginTop: 8,
+                          padding: 12,
+                          borderRadius: 12,
+                          background: 'linear-gradient(135deg, rgba(139,92,246,0.10), rgba(96,165,250,0.10))',
+                          border: '1px solid rgba(139,92,246,0.25)',
+                        }}>
+                          <p style={{
+                            margin: '0 0 4px',
+                            fontFamily: '"Inter", sans-serif',
+                            fontSize: 10,
+                            fontWeight: 700,
+                            color: '#c4b5fd',
+                            textTransform: 'uppercase',
+                            letterSpacing: 0.6,
+                          }}>
                             {t('weeklyWrap.thisWeekObservation')}
                           </p>
-                          <p className="text-xs text-gray-700 leading-relaxed">{guruSummary}</p>
+                          <p style={{
+                            margin: 0,
+                            fontFamily: '"Inter", sans-serif',
+                            fontSize: 12,
+                            lineHeight: 1.6,
+                            color: 'rgba(255,255,255,0.85)',
+                          }}>
+                            {guruSummary}
+                          </p>
                         </div>
                       ) : null;
                     })()}
 
                     {/* ── Developmental Guidance ── */}
                     {r.teacher_guidance && (
-                      <div className="mt-2 bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl p-3 border border-emerald-100">
-                        <p className="text-[10px] font-semibold text-emerald-600 uppercase tracking-wider mb-1">
+                      <div style={{
+                        marginTop: 8,
+                        padding: 12,
+                        borderRadius: 12,
+                        background: 'linear-gradient(135deg, rgba(52,211,153,0.10), rgba(20,184,166,0.10))',
+                        border: '1px solid rgba(52,211,153,0.25)',
+                      }}>
+                        <p style={{
+                          margin: '0 0 4px',
+                          fontFamily: '"Inter", sans-serif',
+                          fontSize: 10,
+                          fontWeight: 700,
+                          color: '#34d399',
+                          textTransform: 'uppercase',
+                          letterSpacing: 0.6,
+                        }}>
                           {t('weeklyWrap.developmentalGuidance')}
                         </p>
-                        <p className="text-xs text-gray-700 leading-relaxed">{r.teacher_guidance}</p>
+                        <p style={{
+                          margin: 0,
+                          fontFamily: '"Inter", sans-serif',
+                          fontSize: 12,
+                          lineHeight: 1.6,
+                          color: 'rgba(255,255,255,0.85)',
+                        }}>
+                          {r.teacher_guidance}
+                        </p>
                       </div>
                     )}
 
                     {/* Works as chips */}
                     {areaEntries.length > 0 && (
-                      <div className="space-y-2">
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                         {areaEntries.map(({ area, works }) => (
                           <div key={area}>
-                            <div className="flex items-center gap-1.5 mb-1">
+                            <div style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: 6,
+                              marginBottom: 4,
+                            }}>
                               <AreaBadge area={area} size="sm" />
-                              <span className="text-xs font-medium text-gray-600">{getAreaLabel(area)}</span>
+                              <span style={{
+                                fontFamily: '"Inter", sans-serif',
+                                fontSize: 11,
+                                fontWeight: 600,
+                                color: 'rgba(255,255,255,0.65)',
+                              }}>
+                                {getAreaLabel(area)}
+                              </span>
                             </div>
-                            <div className="flex flex-wrap gap-1 pl-6">
+                            <div style={{
+                              display: 'flex',
+                              flexWrap: 'wrap',
+                              gap: 4,
+                              paddingLeft: 24,
+                            }}>
                               {works.map(w => (
-                                <span key={w.name} className="inline-flex items-center gap-0.5 bg-gray-50 border border-gray-200 rounded-full px-2 py-0.5 text-[11px] text-gray-700">
+                                <span
+                                  key={w.name}
+                                  style={{
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: 2,
+                                    padding: '2px 8px',
+                                    borderRadius: 999,
+                                    background: 'rgba(255,255,255,0.04)',
+                                    border: '1px solid rgba(255,255,255,0.10)',
+                                    fontFamily: '"Inter", sans-serif',
+                                    fontSize: 11,
+                                    color: 'rgba(255,255,255,0.85)',
+                                  }}
+                                >
                                   {w.display}
                                   <button
                                     onClick={(e) => { e.stopPropagation(); handleRemoveWork(r.child_id, w.name, w.area); }}
-                                    className="w-3.5 h-3.5 rounded-full flex items-center justify-center text-gray-300 hover:text-red-500 hover:bg-red-50 ml-0.5"
+                                    style={{
+                                      width: 14,
+                                      height: 14,
+                                      borderRadius: '50%',
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      justifyContent: 'center',
+                                      background: 'transparent',
+                                      border: 'none',
+                                      color: 'rgba(255,255,255,0.40)',
+                                      cursor: 'pointer',
+                                      marginLeft: 2,
+                                      fontSize: 12,
+                                      lineHeight: 1,
+                                      padding: 0,
+                                      transition: 'all 120ms ease',
+                                    }}
+                                    onMouseEnter={(e) => {
+                                      e.currentTarget.style.background = 'rgba(239,68,68,0.18)';
+                                      e.currentTarget.style.color = '#f87171';
+                                    }}
+                                    onMouseLeave={(e) => {
+                                      e.currentTarget.style.background = 'transparent';
+                                      e.currentTarget.style.color = 'rgba(255,255,255,0.40)';
+                                    }}
                                   >×</button>
                                 </span>
                               ))}
@@ -1211,7 +1319,7 @@ export default function WeeklyWrapTab({ classroomId, view: externalView }: Weekl
                       </div>
                     )}
 
-                    {/* Flags — deduplicate: if red flag mentions an area, skip yellow for same area */}
+                    {/* Flags */}
                     {r.flags.length > 0 && (() => {
                       const AREA_KEYWORDS = ['practical life', 'sensorial', 'mathematics', 'language', 'cultural'];
                       const redAreas = new Set<string>();
@@ -1229,13 +1337,42 @@ export default function WeeklyWrapTab({ classroomId, view: externalView }: Weekl
                         return !AREA_KEYWORDS.some(kw => redAreas.has(kw) && lower.includes(kw));
                       });
                       return deduped.length > 0 ? (
-                        <div className="space-y-1">
-                          {deduped.map((f, i) => (
-                            <div key={`${f.level}-${i}-${f.issue.slice(0, 30)}`} className="flex items-start gap-1.5 text-[11px] bg-amber-50 rounded-lg p-2">
-                              <span>{f.level === 'red' ? '🔴' : '🟡'}</span>
-                              <p className="text-gray-700 leading-relaxed">{cleanUUIDs(f.issue)}</p>
-                            </div>
-                          ))}
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                          {deduped.map((f, i) => {
+                            const isRed = f.level === 'red';
+                            return (
+                              <div
+                                key={`${f.level}-${i}-${f.issue.slice(0, 30)}`}
+                                style={{
+                                  display: 'flex',
+                                  alignItems: 'flex-start',
+                                  gap: 8,
+                                  padding: '8px 10px',
+                                  borderRadius: 10,
+                                  background: isRed ? 'rgba(239,68,68,0.10)' : 'rgba(245,158,11,0.10)',
+                                  border: `1px solid ${isRed ? 'rgba(239,68,68,0.30)' : 'rgba(245,158,11,0.30)'}`,
+                                }}
+                              >
+                                <span style={{
+                                  width: 8,
+                                  height: 8,
+                                  borderRadius: '50%',
+                                  background: isRed ? '#f87171' : '#f59e0b',
+                                  flexShrink: 0,
+                                  marginTop: 5,
+                                }} />
+                                <p style={{
+                                  margin: 0,
+                                  fontFamily: '"Inter", sans-serif',
+                                  fontSize: 11,
+                                  lineHeight: 1.55,
+                                  color: 'rgba(255,255,255,0.85)',
+                                }}>
+                                  {cleanUUIDs(f.issue)}
+                                </p>
+                              </div>
+                            );
+                          })}
                         </div>
                       ) : null;
                     })()}
@@ -1244,34 +1381,79 @@ export default function WeeklyWrapTab({ classroomId, view: externalView }: Weekl
                     {(() => {
                       const shelf = getShelfForChild(r);
                       return (
-                        <div className="bg-white rounded-2xl p-3 shadow-sm border border-gray-100">
-                          <h3 className="font-bold text-gray-800 text-xs mb-2">
+                        <div style={{
+                          padding: 12,
+                          borderRadius: 14,
+                          background: 'rgba(255,255,255,0.06)',
+                          border: '1px solid rgba(52,211,153,0.15)',
+                          backdropFilter: 'blur(12px) saturate(140%)',
+                          WebkitBackdropFilter: 'blur(12px) saturate(140%)',
+                        }}>
+                          <h3 style={{
+                            margin: '0 0 8px',
+                            fontFamily: '"Lora", Georgia, serif',
+                            fontSize: 12,
+                            fontWeight: 500,
+                            color: 'rgba(255,255,255,0.95)',
+                            letterSpacing: -0.1,
+                          }}>
                             {t('weeklyWrap.nextWeekFocus')}
                           </h3>
-                          <div className="space-y-1.5">
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                             {shelf.map((item, idx) => {
                               const statusCfg = STATUS_CONFIG[item.status] || STATUS_CONFIG.not_started;
                               return (
                                 <div
                                   key={`${r.child_id}-shelf-${item.area}`}
-                                  className="flex items-center gap-2.5 p-2 rounded-xl bg-gray-50"
+                                  style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: 10,
+                                    padding: 8,
+                                    borderRadius: 10,
+                                    background: 'rgba(255,255,255,0.04)',
+                                    border: '1px solid rgba(255,255,255,0.08)',
+                                  }}
                                 >
                                   <button
                                     onClick={(e) => { e.stopPropagation(); openShelfPicker(r.child_id, idx, item.area, item.work); }}
-                                    className="flex-shrink-0"
+                                    style={{ flexShrink: 0, background: 'transparent', border: 'none', padding: 0, cursor: 'pointer' }}
                                   >
                                     <AreaBadge area={item.area} size="md" />
                                   </button>
                                   <button
-                                    className="flex-1 text-left min-w-0"
                                     onClick={(e) => { e.stopPropagation(); openShelfPicker(r.child_id, idx, item.area, item.work); }}
+                                    style={{
+                                      flex: 1,
+                                      textAlign: 'left',
+                                      minWidth: 0,
+                                      background: 'transparent',
+                                      border: 'none',
+                                      padding: 0,
+                                      cursor: 'pointer',
+                                    }}
                                   >
                                     {item.work ? (
-                                      <p className="font-medium text-gray-800 text-xs truncate">
+                                      <p style={{
+                                        margin: 0,
+                                        fontFamily: '"Inter", sans-serif',
+                                        fontSize: 12,
+                                        fontWeight: 500,
+                                        color: 'rgba(255,255,255,0.95)',
+                                        overflow: 'hidden',
+                                        textOverflow: 'ellipsis',
+                                        whiteSpace: 'nowrap',
+                                      }}>
                                         {(locale === 'zh' && item.work_zh) ? item.work_zh : item.work}
                                       </p>
                                     ) : (
-                                      <p className="font-medium text-gray-400 text-xs italic">
+                                      <p style={{
+                                        margin: 0,
+                                        fontFamily: '"Inter", sans-serif',
+                                        fontSize: 12,
+                                        fontStyle: 'italic',
+                                        color: 'rgba(255,255,255,0.40)',
+                                      }}>
                                         {t('weeklyWrap.tapToSelect')}
                                       </p>
                                     )}
@@ -1279,12 +1461,35 @@ export default function WeeklyWrapTab({ classroomId, view: externalView }: Weekl
                                   {item.work ? (
                                     <button
                                       onClick={(e) => { e.stopPropagation(); handleShelfStatusCycle(r.child_id, idx); }}
-                                      className={`px-2 py-0.5 rounded-full text-[10px] font-semibold transition-all active:scale-90 ${statusCfg.bg} ${statusCfg.text}`}
+                                      style={{
+                                        padding: '2px 9px',
+                                        borderRadius: 999,
+                                        background: statusCfg.bg,
+                                        border: `1px solid ${statusCfg.border}`,
+                                        color: statusCfg.color,
+                                        fontFamily: '"Inter", sans-serif',
+                                        fontSize: 10,
+                                        fontWeight: 700,
+                                        letterSpacing: 0.3,
+                                        cursor: 'pointer',
+                                        transition: 'all 120ms ease',
+                                      }}
                                     >
                                       {statusCfg.label}
                                     </button>
                                   ) : (
-                                    <span className="w-5 h-5 rounded-full bg-gray-200 flex items-center justify-center text-gray-400 text-[10px]">○</span>
+                                    <span style={{
+                                      width: 20,
+                                      height: 20,
+                                      borderRadius: '50%',
+                                      background: 'rgba(255,255,255,0.06)',
+                                      border: '1px solid rgba(255,255,255,0.12)',
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      justifyContent: 'center',
+                                      color: 'rgba(255,255,255,0.40)',
+                                      fontSize: 10,
+                                    }}>○</span>
                                   )}
                                 </div>
                               );
@@ -1305,23 +1510,42 @@ export default function WeeklyWrapTab({ classroomId, view: externalView }: Weekl
       {subView === 'parents' && reports.length > 0 && (
         <div>
           {/* Parent invite info banner */}
-          <div className="px-4 py-2 bg-emerald-50/60 border-b">
-            <p className="text-[11px] text-emerald-700">
+          <div style={{
+            padding: '8px 16px',
+            background: 'rgba(52,211,153,0.10)',
+            borderBottom: '1px solid rgba(52,211,153,0.20)',
+          }}>
+            <p style={{
+              margin: 0,
+              fontFamily: '"Inter", sans-serif',
+              fontSize: 11,
+              color: '#34d399',
+            }}>
               {t('weeklyWrap.parentInviteInfo')}
             </p>
           </div>
 
           {!previewChild ? (
             /* ── Child List — click to preview ── */
-            <div className="divide-y divide-gray-100">
-              {sortedReports.map(r => {
+            <div>
+              {sortedReports.map((r, idx) => {
                 const firstName = r.child_name.split(' ')[0];
                 const hasNarrative = !!r.parent_narrative;
                 const photoCount = r.photo_count || r.parent_photos.length;
                 const isSelected = selectedIds.has(r.child_id);
 
                 return (
-                  <div key={r.child_id} className={`flex items-center gap-2 px-4 py-2.5 ${isSelected ? 'bg-blue-50/40' : 'bg-white'}`}>
+                  <div
+                    key={r.child_id}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 8,
+                      padding: '10px 16px',
+                      background: isSelected ? 'rgba(96,165,250,0.10)' : 'transparent',
+                      borderTop: idx === 0 ? 'none' : '1px solid rgba(255,255,255,0.06)',
+                    }}
+                  >
                     {/* Checkbox */}
                     <button
                       onClick={() => setSelectedIds(prev => {
@@ -1329,7 +1553,22 @@ export default function WeeklyWrapTab({ classroomId, view: externalView }: Weekl
                         if (next.has(r.child_id)) next.delete(r.child_id); else next.add(r.child_id);
                         return next;
                       })}
-                      className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 text-[10px] transition-colors ${isSelected ? 'bg-blue-600 border-blue-600 text-white' : 'border-gray-300 hover:border-gray-400'}`}
+                      style={{
+                        width: 20,
+                        height: 20,
+                        borderRadius: 5,
+                        border: `2px solid ${isSelected ? '#60a5fa' : 'rgba(255,255,255,0.30)'}`,
+                        background: isSelected ? '#60a5fa' : 'transparent',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        flexShrink: 0,
+                        cursor: 'pointer',
+                        color: isSelected ? '#0a1a0f' : 'transparent',
+                        fontSize: 11,
+                        fontWeight: 700,
+                        transition: 'all 120ms ease',
+                      }}
                     >
                       {isSelected && '✓'}
                     </button>
@@ -1337,31 +1576,96 @@ export default function WeeklyWrapTab({ classroomId, view: externalView }: Weekl
                     {/* Click to preview */}
                     <button
                       onClick={() => setPreviewChild(r.child_id)}
-                      className="flex-1 flex items-center gap-2.5 text-left min-w-0"
+                      style={{
+                        flex: 1,
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 10,
+                        textAlign: 'left',
+                        minWidth: 0,
+                        background: 'transparent',
+                        border: 'none',
+                        padding: 0,
+                        cursor: 'pointer',
+                      }}
                     >
-                      <div className="w-9 h-9 rounded-full bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
+                      <div style={{
+                        width: 36,
+                        height: 36,
+                        borderRadius: '50%',
+                        background: 'linear-gradient(135deg, #34d399, #10b981)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: '#06281a',
+                        fontFamily: '"Inter", sans-serif',
+                        fontSize: 14,
+                        fontWeight: 700,
+                        flexShrink: 0,
+                      }}>
                         {firstName.charAt(0)}
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="font-semibold text-gray-900 text-sm truncate">{r.child_name}</p>
-                        <p className="text-[10px] text-gray-400">
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <p style={{
+                          margin: 0,
+                          fontFamily: '"Inter", sans-serif',
+                          fontSize: 13,
+                          fontWeight: 600,
+                          color: 'rgba(255,255,255,0.95)',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap',
+                        }}>
+                          {r.child_name}
+                        </p>
+                        <p style={{
+                          margin: '2px 0 0',
+                          fontFamily: '"Inter", sans-serif',
+                          fontSize: 10,
+                          color: 'rgba(255,255,255,0.40)',
+                        }}>
                           {hasNarrative
                             ? t('weeklyWrap.photoCount', { count: photoCount })
                             : t('weeklyWrap.notGenerated')}
                         </p>
                       </div>
-                      <div className="flex items-center gap-1.5 flex-shrink-0">
+                      <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 6,
+                        flexShrink: 0,
+                      }}>
                         {hasNarrative && (
-                          <span className="text-[10px] text-emerald-700 bg-emerald-100 rounded-full px-2 py-0.5">
+                          <span style={{
+                            fontFamily: '"Inter", sans-serif',
+                            fontSize: 10,
+                            fontWeight: 700,
+                            color: '#34d399',
+                            background: 'rgba(52,211,153,0.18)',
+                            border: '1px solid rgba(52,211,153,0.35)',
+                            borderRadius: 999,
+                            padding: '2px 8px',
+                            letterSpacing: 0.3,
+                          }}>
                             {t('weeklyWrap.ready')}
                           </span>
                         )}
                         {r.parent_status === 'sent' && (
-                          <span className="text-[10px] text-blue-700 bg-blue-100 rounded-full px-2 py-0.5">
+                          <span style={{
+                            fontFamily: '"Inter", sans-serif',
+                            fontSize: 10,
+                            fontWeight: 700,
+                            color: '#60a5fa',
+                            background: 'rgba(96,165,250,0.18)',
+                            border: '1px solid rgba(96,165,250,0.35)',
+                            borderRadius: 999,
+                            padding: '2px 8px',
+                            letterSpacing: 0.3,
+                          }}>
                             {t('weeklyWrap.sent')}
                           </span>
                         )}
-                        <span className="text-gray-300 text-xs">›</span>
+                        <span style={{ color: 'rgba(255,255,255,0.30)', fontSize: 14 }}>›</span>
                       </div>
                     </button>
                     {/* Invite parent — subtle key icon */}
@@ -1371,10 +1675,33 @@ export default function WeeklyWrapTab({ classroomId, view: externalView }: Weekl
                         setInviteChildId(r.child_id);
                         setInviteChildName(r.child_name);
                       }}
-                      className="w-7 h-7 flex items-center justify-center text-gray-300 hover:text-amber-500 hover:bg-amber-50 rounded-full flex-shrink-0 transition-colors"
                       title={t('weeklyWrap.inviteParent')}
+                      style={{
+                        width: 28,
+                        height: 28,
+                        borderRadius: '50%',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        background: 'transparent',
+                        border: '1px solid rgba(255,255,255,0.10)',
+                        color: 'rgba(255,255,255,0.40)',
+                        cursor: 'pointer',
+                        flexShrink: 0,
+                        transition: 'all 120ms ease',
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.background = 'rgba(245,158,11,0.18)';
+                        e.currentTarget.style.borderColor = 'rgba(245,158,11,0.40)';
+                        e.currentTarget.style.color = '#f59e0b';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.background = 'transparent';
+                        e.currentTarget.style.borderColor = 'rgba(255,255,255,0.10)';
+                        e.currentTarget.style.color = 'rgba(255,255,255,0.40)';
+                      }}
                     >
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                         <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4" />
                       </svg>
                     </button>
@@ -1388,14 +1715,38 @@ export default function WeeklyWrapTab({ classroomId, view: externalView }: Weekl
               const r = reports.find(x => x.child_id === previewChild);
               if (!r) {
                 return (
-                  <div className="bg-white">
+                  <div>
                     <button
                       onClick={() => setPreviewChild(null)}
-                      className="flex items-center gap-1.5 px-4 py-2.5 text-sm text-emerald-600 font-medium hover:bg-emerald-50/50 w-full text-left border-b"
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 6,
+                        padding: '10px 16px',
+                        width: '100%',
+                        textAlign: 'left',
+                        background: 'transparent',
+                        border: 'none',
+                        borderBottom: '1px solid rgba(52,211,153,0.15)',
+                        color: '#34d399',
+                        fontFamily: '"Inter", sans-serif',
+                        fontSize: 13,
+                        fontWeight: 600,
+                        cursor: 'pointer',
+                      }}
                     >
                       <span>←</span> {t('weeklyWrap.backToList')}
                     </button>
-                    <p className="text-center py-12 text-gray-400 text-sm">{t('weeklyWrap.reportUnavailable')}</p>
+                    <p style={{
+                      textAlign: 'center',
+                      padding: '48px 0',
+                      color: 'rgba(255,255,255,0.40)',
+                      fontFamily: '"Inter", sans-serif',
+                      fontSize: 13,
+                      margin: 0,
+                    }}>
+                      {t('weeklyWrap.reportUnavailable')}
+                    </p>
                   </div>
                 );
               }
@@ -1405,26 +1756,73 @@ export default function WeeklyWrapTab({ classroomId, view: externalView }: Weekl
               const isEditing = editingNarrative === r.child_id;
 
               return (
-                <div className="bg-white">
+                <div>
                   {/* Back button */}
                   <button
                     onClick={() => { setPreviewChild(null); setEditingNarrative(null); }}
-                    className="flex items-center gap-1.5 px-4 py-2.5 text-sm text-emerald-600 font-medium hover:bg-emerald-50/50 w-full text-left border-b"
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 6,
+                      padding: '10px 16px',
+                      width: '100%',
+                      textAlign: 'left',
+                      background: 'transparent',
+                      border: 'none',
+                      borderBottom: '1px solid rgba(52,211,153,0.15)',
+                      color: '#34d399',
+                      fontFamily: '"Inter", sans-serif',
+                      fontSize: 13,
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                    }}
                   >
                     <span>←</span> {t('weeklyWrap.backToList')}
                   </button>
 
-                  {/* Child Header — elegant, warm */}
-                  <div className="px-5 pt-6 pb-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 rounded-full bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center text-white font-bold text-lg flex-shrink-0 shadow-md">
+                  {/* Child Header */}
+                  <div style={{ padding: '24px 20px 16px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                      <div style={{
+                        width: 48,
+                        height: 48,
+                        borderRadius: '50%',
+                        background: 'linear-gradient(135deg, #34d399, #10b981)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: '#06281a',
+                        fontFamily: '"Inter", sans-serif',
+                        fontSize: 18,
+                        fontWeight: 700,
+                        flexShrink: 0,
+                        boxShadow: '0 4px 14px rgba(16,185,129,0.30)',
+                      }}>
                         {firstName.charAt(0)}
                       </div>
-                      <div className="flex-1">
-                        <h2 className="font-bold text-gray-900 text-lg">{r.child_name}</h2>
-                        <p className="text-xs text-gray-400">
+                      <div style={{ flex: 1 }}>
+                        <h2 style={{
+                          margin: 0,
+                          fontFamily: '"Lora", Georgia, serif',
+                          fontSize: 18,
+                          fontWeight: 500,
+                          color: 'rgba(255,255,255,0.95)',
+                          letterSpacing: -0.3,
+                        }}>
+                          {r.child_name}
+                        </h2>
+                        <p style={{
+                          margin: '2px 0 0',
+                          fontFamily: '"Inter", sans-serif',
+                          fontSize: 12,
+                          color: 'rgba(255,255,255,0.40)',
+                        }}>
                           {weekDisplay}
-                          {r.parent_status === 'sent' && <span className="ml-2 text-emerald-600 font-medium">{t('weeklyWrap.sentCheck')}</span>}
+                          {r.parent_status === 'sent' && (
+                            <span style={{ marginLeft: 8, color: '#34d399', fontWeight: 600 }}>
+                              {t('weeklyWrap.sentCheck')}
+                            </span>
+                          )}
                         </p>
                       </div>
                       {narrative && (
@@ -1438,7 +1836,18 @@ export default function WeeklyWrapTab({ classroomId, view: externalView }: Weekl
                               }
                             }
                           }}
-                          className="text-xs text-emerald-600 font-medium px-3 py-1.5 rounded-full border border-emerald-200 hover:bg-emerald-50 transition-colors"
+                          style={{
+                            padding: '6px 14px',
+                            borderRadius: 999,
+                            background: 'rgba(52,211,153,0.10)',
+                            border: '1px solid rgba(52,211,153,0.35)',
+                            color: '#34d399',
+                            fontFamily: '"Inter", sans-serif',
+                            fontSize: 11,
+                            fontWeight: 600,
+                            cursor: 'pointer',
+                            transition: 'all 120ms ease',
+                          }}
                         >
                           {isEditing ? t('common.done') : t('common.edit')}
                         </button>
@@ -1446,30 +1855,70 @@ export default function WeeklyWrapTab({ classroomId, view: externalView }: Weekl
                     </div>
                   </div>
 
-                  {/* Narrative Introduction */}
-                  <div className="px-5 pb-4">
+                  {/* Narrative */}
+                  <div style={{ padding: '0 20px 16px' }}>
                     {narrative ? (
                       isEditing ? (
                         <textarea
                           value={narrativeEdits[r.child_id] ?? narrative}
                           onChange={e => setNarrativeEdits(prev => ({ ...prev, [r.child_id]: e.target.value }))}
-                          className="w-full border border-gray-200 rounded-xl p-4 text-[15px] text-gray-700 leading-relaxed focus:outline-none focus:ring-2 focus:ring-emerald-400 min-h-[120px] resize-y"
+                          style={{
+                            width: '100%',
+                            padding: 16,
+                            borderRadius: 14,
+                            background: 'rgba(0,0,0,0.30)',
+                            border: '1px solid rgba(52,211,153,0.20)',
+                            color: 'rgba(255,255,255,0.95)',
+                            fontFamily: '"Inter", sans-serif',
+                            fontSize: 15,
+                            lineHeight: 1.65,
+                            outline: 'none',
+                            minHeight: 120,
+                            resize: 'vertical',
+                            boxSizing: 'border-box',
+                          }}
                         />
                       ) : (
-                        <div className="bg-emerald-50/50 rounded-2xl p-5 border border-emerald-100">
-                          <p className="text-[15px] text-gray-700 leading-[1.8] tracking-wide">{narrative}</p>
+                        <div style={{
+                          padding: 20,
+                          borderRadius: 16,
+                          background: 'rgba(52,211,153,0.08)',
+                          border: '1px solid rgba(52,211,153,0.20)',
+                        }}>
+                          <p style={{
+                            margin: 0,
+                            fontFamily: '"Inter", sans-serif',
+                            fontSize: 15,
+                            lineHeight: 1.8,
+                            letterSpacing: 0.2,
+                            color: 'rgba(255,255,255,0.92)',
+                          }}>
+                            {narrative}
+                          </p>
                         </div>
                       )
                     ) : (
-                      <div className="bg-gray-50 rounded-2xl p-5 border border-dashed border-gray-200">
-                        <p className="text-sm text-gray-400 italic text-center">
+                      <div style={{
+                        padding: 20,
+                        borderRadius: 16,
+                        background: 'rgba(255,255,255,0.04)',
+                        border: '1px dashed rgba(255,255,255,0.15)',
+                        textAlign: 'center',
+                      }}>
+                        <p style={{
+                          margin: 0,
+                          fontFamily: '"Inter", sans-serif',
+                          fontSize: 13,
+                          fontStyle: 'italic',
+                          color: 'rgba(255,255,255,0.40)',
+                        }}>
                           {t('weeklyWrap.clickGenerate')}
                         </p>
                       </div>
                     )}
                   </div>
 
-                  {/* Photos — grouped by curriculum area in shelf order */}
+                  {/* Photos */}
                   <ParentPhotosGrouped
                     photos={photos}
                     parentWorks={r.parent_works}
@@ -1486,17 +1935,52 @@ export default function WeeklyWrapTab({ classroomId, view: externalView }: Weekl
         </div>
       )}
 
-      {/* Sticky bottom: Send All (only when viewing child list, not single preview) */}
+      {/* Sticky bottom: Send All */}
       {subView === 'parents' && readyToSend > 0 && !previewChild && (
-        <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-3 z-20">
-          <div className="max-w-3xl mx-auto flex items-center justify-between">
-            <p className="text-xs text-gray-500">
+        <div style={{
+          position: 'fixed',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          background: 'linear-gradient(180deg, rgba(7,18,12,0.85), rgba(7,18,12,0.97))',
+          borderTop: '1px solid rgba(52,211,153,0.20)',
+          padding: 12,
+          zIndex: 20,
+          backdropFilter: 'blur(20px) saturate(140%)',
+          WebkitBackdropFilter: 'blur(20px) saturate(140%)',
+        }}>
+          <div style={{
+            maxWidth: 768,
+            margin: '0 auto',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: 12,
+          }}>
+            <p style={{
+              margin: 0,
+              fontFamily: '"Inter", sans-serif',
+              fontSize: 11,
+              color: 'rgba(255,255,255,0.65)',
+            }}>
               {t('weeklyWrap.reportsReady', { count: readyToSend })}
             </p>
             <button
               onClick={handleSendAll}
               disabled={sending || sent}
-              className="px-4 py-2 bg-emerald-600 text-white text-sm font-semibold rounded-lg hover:bg-emerald-700 disabled:opacity-50"
+              style={{
+                padding: '8px 16px',
+                borderRadius: 10,
+                background: 'linear-gradient(180deg, #34d399, #10b981)',
+                border: '1px solid rgba(52,211,153,0.55)',
+                color: '#06281a',
+                fontFamily: '"Inter", sans-serif',
+                fontSize: 13,
+                fontWeight: 700,
+                cursor: (sending || sent) ? 'not-allowed' : 'pointer',
+                opacity: (sending || sent) ? 0.55 : 1,
+                boxShadow: (sending || sent) ? 'none' : '0 4px 14px rgba(16,185,129,0.30)',
+              }}
             >
               {sending
                 ? t('weeklyWrap.sending')
