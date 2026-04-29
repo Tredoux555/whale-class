@@ -75,24 +75,33 @@ function StudentAvatarIcon({ child, isSelected }: { child: Child; isSelected: bo
 
 function StudentAvatarCard({ child }: { child: Child }) {
   const [showFallback, setShowFallback] = useState(!child.photo_url);
-
-  if (!showFallback && child.photo_url) {
-    return (
-      <div className="w-12 h-12 rounded-full bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center text-white font-bold text-lg overflow-hidden shadow-md shrink-0">
+  const size = 58;
+  return (
+    <div style={{
+      width: size, height: size, borderRadius: '50%',
+      position: 'relative', flexShrink: 0,
+      background: 'rgba(16,185,129,0.15)',
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      overflow: 'visible',
+      boxShadow: '0 0 20px 6px rgba(52,211,153,0.30)',
+    }}>
+      {!showFallback && child.photo_url ? (
         <img
           src={getProxyUrl(child.photo_url)}
-          className="w-full h-full object-cover"
           alt=""
           loading="lazy"
           onError={() => setShowFallback(true)}
+          style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover', display: 'block' }}
         />
-      </div>
-    );
-  }
-
-  return (
-    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center text-white font-bold text-lg overflow-hidden shadow-md shrink-0">
-      {child.name.charAt(0)}
+      ) : (
+        <span style={{
+          fontFamily: "'Lora', Georgia, serif", fontWeight: 500,
+          fontSize: size * 0.46, color: '#fff', lineHeight: 1,
+          textShadow: '0 0 14px rgba(167,243,208,0.35)',
+        }}>
+          {child.name.charAt(0).toUpperCase()}
+        </span>
+      )}
     </div>
   );
 }
@@ -277,7 +286,13 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className={`min-h-screen ${isParent ? HOME_THEME.pageBgGradient : 'bg-gradient-to-br from-emerald-50 via-white to-teal-50'}`}>
+    <div className={`min-h-screen ${isParent ? HOME_THEME.pageBgGradient : ''}`}
+      style={!isParent ? { background: '#0a1a0f', color: '#fff' } : {}}>
+      {/* Off-centre radial glow — matches landing page */}
+      {!isParent && <>
+        <div aria-hidden="true" style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 0, background: 'radial-gradient(ellipse 1100px 900px at 88% 8%, rgba(39,129,90,0.48), rgba(39,129,90,0.18) 30%, transparent 60%)' }}/>
+        <div aria-hidden="true" style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 0, opacity: 0.04, backgroundImage: 'url("data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'160\' height=\'160\'><filter id=\'n\'><feTurbulence type=\'fractalNoise\' baseFrequency=\'0.9\' numOctaves=\'2\' stitchTiles=\'stitch\'/></filter><rect width=\'160\' height=\'160\' filter=\'url(%23n)\' opacity=\'0.7\'/></svg>")' }}/>
+      </>}
       <Toaster position="top-center" />
 
       {/* HOME PARENT "TODAY" VIEW — concern-first dashboard */}
@@ -391,28 +406,28 @@ export default function DashboardPage() {
 
               {/* ── Search Bar ── */}
               <div className="mb-2">
-                <div className="relative">
-                  <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-sm pointer-events-none">🔍</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, height: 44, padding: '0 14px', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(52,211,153,0.20)', borderRadius: 999, backdropFilter: 'blur(18px) saturate(140%)', WebkitBackdropFilter: 'blur(18px) saturate(140%)', position: 'relative' }}>
+                  <span style={{ color: 'rgba(255,255,255,0.35)', fontSize: 14, pointerEvents: 'none' }}>🔍</span>
                   <input
                     ref={searchInputRef}
                     type="text"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder={t('nav.searchStudents') || 'Jump to student...'}
-                    className="w-full bg-white rounded-xl border border-gray-200 shadow-sm pl-10 pr-9 py-2.5 text-sm text-gray-800 placeholder-gray-400 outline-none focus:border-emerald-300 focus:ring-2 focus:ring-emerald-100 transition-all"
                     autoComplete="off"
+                    style={{ flex: 1, minWidth: 0, background: 'transparent', border: 0, outline: 'none', color: '#fff', fontFamily: 'Inter, system-ui, sans-serif', fontSize: 14 }}
                   />
                   {searchQuery && (
                     <button
                       onClick={handleSearchClear}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 text-sm"
+                      style={{ background: 'none', border: 0, color: 'rgba(255,255,255,0.4)', cursor: 'pointer', fontSize: 14 }}
                     >
                       ✕
                     </button>
                   )}
                 </div>
                 {/* Student count */}
-                <p className="text-xs text-gray-400 mt-1.5 ml-1">
+                <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)', marginTop: 6, marginLeft: 4 }}>
                   {searchQuery
                     ? `${filteredChildren.length} of ${children.length} ${t('common.students')}`
                     : `${children.length} ${t('common.students')}`
@@ -430,10 +445,11 @@ export default function DashboardPage() {
                 return (
                   <div
                     data-tutorial="student-grid"
-                    className="flex-1 grid gap-2 overflow-hidden"
+                    className="flex-1 grid"
                     style={{
                       gridTemplateColumns: `repeat(${cols}, 1fr)`,
                       gridTemplateRows: `repeat(${rows}, 1fr)`,
+                      rowGap: 28, columnGap: 8,
                     }}
                   >
                     {filteredChildren.map((child, index) => (
@@ -442,10 +458,11 @@ export default function DashboardPage() {
                         href={`/montree/dashboard/${child.id}`}
                         data-tutorial="student-card"
                         {...(index === 0 ? { 'data-guide': 'first-child' } : {})}
-                        className="bg-white rounded-2xl shadow-sm hover:shadow-lg active:scale-95 transition-all flex flex-col items-center justify-center border border-gray-100 min-h-0"
+                        className="active:scale-95 transition-all flex flex-col items-center justify-center min-h-0"
+                        style={{ background: 'transparent', border: 0, gap: 10, padding: '8px 4px', borderRadius: 12 }}
                       >
                         <StudentAvatarCard child={child} />
-                        <p className="text-xs font-semibold text-gray-800 truncate w-full text-center mt-1 px-1">
+                        <p style={{ fontSize: 12, fontWeight: 500, color: 'rgba(255,255,255,0.78)', textAlign: 'center', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', width: '100%', margin: 0, fontFamily: 'Inter, system-ui, sans-serif' }}>
                           {child.name.split(' ')[0]}
                         </p>
                       </Link>
