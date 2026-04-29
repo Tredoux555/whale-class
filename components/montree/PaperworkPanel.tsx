@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { ChevronDown, Check, X, ArrowRight, Pencil } from 'lucide-react';
 import { montreeApi } from '@/lib/montree/api';
 import { useI18n } from '@/lib/montree/i18n';
 import { toast } from 'sonner';
@@ -22,6 +23,33 @@ interface PaperworkData {
   total: number;
   children: PaperworkChild[];
 }
+
+// Dark forest tokens
+const T = {
+  card: 'rgba(255,255,255,0.06)',
+  cardHover: 'rgba(255,255,255,0.09)',
+  cardBorder: '1px solid rgba(52,211,153,0.15)',
+  cardRadius: 16,
+  blur: 'blur(18px) saturate(140%)',
+  emerald: '#34d399',
+  emeraldSoft: 'rgba(52,211,153,0.10)',
+  emeraldStrong: 'rgba(52,211,153,0.18)',
+  amber: '#f59e0b',
+  amberSoft: 'rgba(245,158,11,0.10)',
+  amberStrong: 'rgba(245,158,11,0.18)',
+  amberBorder: 'rgba(245,158,11,0.35)',
+  red: '#f87171',
+  redSoft: 'rgba(239,68,68,0.10)',
+  redStrong: 'rgba(239,68,68,0.18)',
+  redBorder: 'rgba(239,68,68,0.40)',
+  textPrimary: 'rgba(255,255,255,0.95)',
+  textSecondary: 'rgba(255,255,255,0.65)',
+  textMuted: 'rgba(255,255,255,0.40)',
+  inputBg: 'rgba(0,0,0,0.30)',
+  inputBorder: 'rgba(52,211,153,0.25)',
+  serif: '"Lora", Georgia, serif',
+  sans: '"Inter", -apple-system, BlinkMacSystemFont, sans-serif',
+};
 
 export default function PaperworkPanel() {
   const { t } = useI18n();
@@ -165,18 +193,39 @@ export default function PaperworkPanel() {
   if (loading) {
     return (
       <div style={{
-        background: 'white',
-        borderRadius: 16,
-        border: '1px solid #e5e7eb',
+        background: T.card,
+        border: T.cardBorder,
+        borderRadius: T.cardRadius,
+        backdropFilter: T.blur,
+        WebkitBackdropFilter: T.blur,
         padding: '16px 20px',
+        display: 'flex',
+        alignItems: 'center',
+        gap: 12,
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <div style={{ width: 36, height: 36, borderRadius: 10, background: '#f0fdf4' }} className="animate-pulse" />
-          <div style={{ flex: 1 }}>
-            <div style={{ height: 14, width: 120, background: '#f0fdf4', borderRadius: 6 }} className="animate-pulse" />
-            <div style={{ height: 10, width: 180, background: '#f0fdf4', borderRadius: 4, marginTop: 6 }} className="animate-pulse" />
-          </div>
+        <div style={{
+          width: 36, height: 36, borderRadius: 10,
+          background: 'rgba(52,211,153,0.10)',
+          animation: 'pp-pulse 1.6s ease-in-out infinite',
+        }} />
+        <div style={{ flex: 1 }}>
+          <div style={{
+            height: 14, width: 120, borderRadius: 6,
+            background: 'rgba(52,211,153,0.10)',
+            animation: 'pp-pulse 1.6s ease-in-out infinite',
+          }} />
+          <div style={{
+            height: 10, width: 180, borderRadius: 4, marginTop: 6,
+            background: 'rgba(52,211,153,0.08)',
+            animation: 'pp-pulse 1.6s ease-in-out infinite',
+          }} />
         </div>
+        <style>{`
+          @keyframes pp-pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.55; }
+          }
+        `}</style>
       </div>
     );
   }
@@ -191,10 +240,14 @@ export default function PaperworkPanel() {
 
   return (
     <div style={{
-      background: 'white',
-      borderRadius: 16,
-      border: '1px solid #e5e7eb',
+      background: T.card,
+      border: T.cardBorder,
+      borderRadius: T.cardRadius,
+      backdropFilter: T.blur,
+      WebkitBackdropFilter: T.blur,
       overflow: 'hidden',
+      fontFamily: T.sans,
+      color: T.textPrimary,
     }}>
       {/* ── Summary Header ── */}
       <button
@@ -204,23 +257,24 @@ export default function PaperworkPanel() {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          padding: '14px 20px',
+          padding: '14px 18px',
           border: 'none',
           background: 'transparent',
           cursor: 'pointer',
-          transition: 'background 0.2s',
+          color: T.textPrimary,
+          transition: 'background 140ms ease',
         }}
-        onMouseEnter={e => (e.currentTarget.style.background = '#f0fdf4')}
+        onMouseEnter={e => (e.currentTarget.style.background = 'rgba(52,211,153,0.06)')}
         onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           {/* Circular progress ring */}
           <div style={{ position: 'relative', width: 40, height: 40 }}>
             <svg width="40" height="40" viewBox="0 0 40 40" style={{ transform: 'rotate(-90deg)' }}>
-              <circle cx="20" cy="20" r="16" fill="none" stroke="#e5e7eb" strokeWidth="3.5" />
+              <circle cx="20" cy="20" r="16" fill="none" stroke="rgba(255,255,255,0.10)" strokeWidth="3.5" />
               <circle
                 cx="20" cy="20" r="16" fill="none"
-                stroke={progressPct >= 80 ? '#4ade80' : progressPct >= 50 ? '#fbbf24' : '#F5B7B1'}
+                stroke={progressPct >= 80 ? T.emerald : progressPct >= 50 ? T.amber : T.red}
                 strokeWidth="3.5"
                 strokeLinecap="round"
                 strokeDasharray={`${progressPct * 1.005} 100.5`}
@@ -233,9 +287,10 @@ export default function PaperworkPanel() {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
+              fontFamily: T.sans,
               fontSize: 11,
               fontWeight: 700,
-              color: '#374151',
+              color: T.textPrimary,
               fontVariantNumeric: 'tabular-nums',
             }}>
               {on_track}
@@ -243,19 +298,35 @@ export default function PaperworkPanel() {
           </div>
 
           <div style={{ textAlign: 'left' }}>
-            <div style={{ fontSize: 14, fontWeight: 600, color: '#1f2937', letterSpacing: -0.2 }}>
+            <div style={{
+              fontFamily: T.serif,
+              fontSize: 15,
+              fontWeight: 500,
+              color: T.textPrimary,
+              letterSpacing: -0.2,
+            }}>
               {t('paperwork.title')}
             </div>
-            <div style={{ fontSize: 12, color: '#6b7280', marginTop: 1, display: 'flex', alignItems: 'center', gap: 6 }}>
+            <div style={{
+              fontFamily: T.sans,
+              fontSize: 12,
+              color: T.textMuted,
+              marginTop: 2,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 6,
+            }}>
               <span>Week {target_week} of {max_week}</span>
               {upToDate.length === total && (
                 <span style={{
                   fontSize: 10,
-                  fontWeight: 600,
-                  color: '#2E7D32',
-                  background: 'rgba(76, 175, 80, 0.1)',
+                  fontWeight: 700,
+                  letterSpacing: 0.3,
+                  color: T.emerald,
+                  background: T.emeraldStrong,
+                  border: '1px solid rgba(52,211,153,0.35)',
                   padding: '1px 8px',
-                  borderRadius: 10,
+                  borderRadius: 999,
                 }}>
                   All up to date
                 </span>
@@ -265,44 +336,54 @@ export default function PaperworkPanel() {
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          {/* Friendly summary pill */}
           {upToDate.length < total && (
             <span style={{
-              fontSize: 12,
-              fontWeight: 500,
-              color: behind.length > 0 ? '#BF360C' : '#F57F17',
-              background: behind.length > 0 ? 'rgba(255, 138, 101, 0.12)' : 'rgba(255, 183, 77, 0.15)',
+              fontFamily: T.sans,
+              fontSize: 11,
+              fontWeight: 600,
+              letterSpacing: 0.2,
+              color: behind.length > 0 ? T.red : T.amber,
+              background: behind.length > 0 ? T.redStrong : T.amberStrong,
+              border: `1px solid ${behind.length > 0 ? T.redBorder : T.amberBorder}`,
               padding: '3px 10px',
-              borderRadius: 10,
+              borderRadius: 999,
             }}>
               {total - on_track} need{total - on_track === 1 ? 's' : ''} a catch-up
             </span>
           )}
-          <span style={{
-            color: '#9ca3af',
-            transition: 'transform 0.25s ease',
-            transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)',
-            fontSize: 12,
-          }}>
-            ▼
-          </span>
+          <ChevronDown
+            size={14}
+            strokeWidth={1.75}
+            color={T.textMuted}
+            style={{
+              transition: 'transform 220ms ease',
+              transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)',
+            }}
+          />
         </div>
       </button>
 
       {/* ── Expanded Detail ── */}
       {expanded && (
         <div style={{
-          padding: '0 20px 20px',
-          borderTop: '1px solid #f3f4f6',
+          padding: '0 18px 18px',
+          borderTop: `1px solid ${T.cardBorder}`,
         }}>
           {/* Target week adjuster */}
           <div style={{
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            padding: '12px 0 16px',
+            padding: '12px 0 14px',
           }}>
-            <span style={{ fontSize: 12, color: '#6b7280', fontWeight: 500 }}>
+            <span style={{
+              fontFamily: T.sans,
+              fontSize: 11,
+              fontWeight: 700,
+              color: T.textMuted,
+              letterSpacing: 0.5,
+              textTransform: 'uppercase',
+            }}>
               School week
             </span>
             {editingTarget ? (
@@ -313,45 +394,52 @@ export default function PaperworkPanel() {
                   max={max_week}
                   value={targetInput}
                   onChange={e => setTargetInput(Math.max(1, Math.min(max_week, parseInt(e.target.value) || 1)))}
-                  style={{
-                    width: 52,
-                    textAlign: 'center',
-                    fontSize: 13,
-                    fontWeight: 600,
-                    border: '1.5px solid #d1d5db',
-                    borderRadius: 8,
-                    padding: '4px 6px',
-                    background: 'white',
-                    color: '#1f2937',
-                    outline: 'none',
-                  }}
                   autoFocus
                   onKeyDown={e => {
                     if (e.key === 'Enter') handleSetTargetWeek(targetInput);
                     if (e.key === 'Escape') setEditingTarget(false);
                   }}
+                  style={{
+                    width: 56,
+                    textAlign: 'center',
+                    fontFamily: T.sans,
+                    fontSize: 13,
+                    fontWeight: 600,
+                    border: `1.5px solid ${T.inputBorder}`,
+                    borderRadius: 8,
+                    padding: '5px 6px',
+                    background: T.inputBg,
+                    color: T.textPrimary,
+                    outline: 'none',
+                  }}
                 />
                 <button
                   onClick={() => handleSetTargetWeek(targetInput)}
                   style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 4,
+                    fontFamily: T.sans,
                     fontSize: 12,
-                    fontWeight: 600,
-                    color: 'white',
-                    background: '#059669',
-                    border: 'none',
+                    fontWeight: 700,
+                    color: '#06281a',
+                    background: 'linear-gradient(180deg, #34d399, #10b981)',
+                    border: '1px solid rgba(52,211,153,0.55)',
                     borderRadius: 8,
-                    padding: '4px 10px',
+                    padding: '5px 12px',
                     cursor: 'pointer',
                   }}
                 >
+                  <Check size={11} strokeWidth={2.5} />
                   Set
                 </button>
                 <button
                   onClick={() => setEditingTarget(false)}
                   style={{
+                    fontFamily: T.sans,
                     fontSize: 12,
-                    color: '#9ca3af',
-                    background: 'none',
+                    color: T.textMuted,
+                    background: 'transparent',
                     border: 'none',
                     cursor: 'pointer',
                     padding: '4px 6px',
@@ -367,31 +455,30 @@ export default function PaperworkPanel() {
                   display: 'flex',
                   alignItems: 'center',
                   gap: 6,
+                  fontFamily: T.sans,
                   fontSize: 13,
                   fontWeight: 600,
-                  color: '#374151',
-                  background: '#f3f4f6',
-                  border: '1px solid #d1d5db',
+                  color: T.textPrimary,
+                  background: 'rgba(255,255,255,0.06)',
+                  border: '1px solid rgba(255,255,255,0.10)',
                   borderRadius: 8,
-                  padding: '4px 12px',
+                  padding: '5px 12px',
                   cursor: 'pointer',
-                  transition: 'all 0.15s',
+                  transition: 'all 120ms ease',
                 }}
-                onMouseEnter={e => { e.currentTarget.style.background = '#e5e7eb'; }}
-                onMouseLeave={e => { e.currentTarget.style.background = '#f3f4f6'; }}
               >
                 Week {target_week}
-                <span style={{ fontSize: 10, color: '#A1887F' }}>Edit</span>
+                <Pencil size={10} strokeWidth={1.75} color={T.textMuted} />
               </button>
             )}
           </div>
 
-          {/* ── Needs Catch-Up (3+ weeks behind) — shown FIRST ── */}
+          {/* ── Needs Catch-Up ── */}
           {behind.length > 0 && (
             <Section
               label={`Needs catch-up (${behind.length})`}
-              color="#BF360C"
-              bgColor="rgba(255, 138, 101, 0.06)"
+              dotColor={T.red}
+              bgColor={T.redSoft}
               defaultOpen
             >
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
@@ -415,12 +502,12 @@ export default function PaperworkPanel() {
             </Section>
           )}
 
-          {/* ── Almost There (slightly behind — 1-2 weeks) ── */}
+          {/* ── Almost There ── */}
           {needsAttention.length > 0 && (
             <Section
               label={`Almost there (${needsAttention.length})`}
-              color="#E65100"
-              bgColor="rgba(255, 167, 38, 0.06)"
+              dotColor={T.amber}
+              bgColor={T.amberSoft}
               defaultOpen
             >
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
@@ -448,8 +535,8 @@ export default function PaperworkPanel() {
           {upToDate.length > 0 && (
             <Section
               label={`Up to date (${upToDate.length})`}
-              color="#2E7D32"
-              bgColor="rgba(76, 175, 80, 0.06)"
+              dotColor={T.emerald}
+              bgColor={T.emeraldSoft}
               defaultOpen={false}
             >
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: 6 }}>
@@ -479,9 +566,9 @@ export default function PaperworkPanel() {
 }
 
 /* ── Collapsible Section ── */
-function Section({ label, color, bgColor, defaultOpen, children }: {
+function Section({ label, dotColor, bgColor, defaultOpen, children }: {
   label: string;
-  color: string;
+  dotColor: string;
   bgColor: string;
   defaultOpen?: boolean;
   children: React.ReactNode;
@@ -494,30 +581,35 @@ function Section({ label, color, bgColor, defaultOpen, children }: {
         style={{
           display: 'flex',
           alignItems: 'center',
-          gap: 6,
+          gap: 8,
+          fontFamily: T.sans,
           fontSize: 11,
-          fontWeight: 600,
-          color,
-          background: 'none',
+          fontWeight: 700,
+          color: T.textSecondary,
+          background: 'transparent',
           border: 'none',
           cursor: 'pointer',
-          padding: '4px 0',
+          padding: '6px 0',
           textTransform: 'uppercase',
           letterSpacing: 0.5,
           width: '100%',
         }}
       >
         <span style={{
-          width: 6, height: 6, borderRadius: '50%',
-          background: color, opacity: 0.7, flexShrink: 0,
+          width: 7, height: 7, borderRadius: '50%',
+          background: dotColor, flexShrink: 0,
+          boxShadow: `0 0 0 2px rgba(${dotColor === T.red ? '239,68,68' : dotColor === T.amber ? '245,158,11' : '52,211,153'},0.18)`,
         }} />
-        {label}
-        <span style={{
-          fontSize: 9,
-          transition: 'transform 0.2s',
-          transform: open ? 'rotate(180deg)' : 'rotate(0deg)',
-          marginLeft: 2,
-        }}>▼</span>
+        <span style={{ flex: 1, textAlign: 'left' }}>{label}</span>
+        <ChevronDown
+          size={11}
+          strokeWidth={2}
+          color={T.textMuted}
+          style={{
+            transition: 'transform 200ms ease',
+            transform: open ? 'rotate(180deg)' : 'rotate(0deg)',
+          }}
+        />
       </button>
       {open && (
         <div style={{
@@ -525,6 +617,7 @@ function Section({ label, color, bgColor, defaultOpen, children }: {
           background: bgColor,
           borderRadius: 12,
           padding: 8,
+          border: '1px solid rgba(255,255,255,0.04)',
         }}>
           {children}
         </div>
@@ -534,7 +627,7 @@ function Section({ label, color, bgColor, defaultOpen, children }: {
 }
 
 /* ── Compact card for up-to-date children (grid layout) ── */
-function CompactChildCard({ child, maxWeek, targetWeek, advancing, editingChild, editWeek, onAdvance, onStartEdit, onCancelEdit, onSetWeek, onEditWeekChange }: {
+function CompactChildCard({ child, maxWeek, advancing, editingChild, editWeek, onAdvance, onStartEdit, onCancelEdit, onSetWeek, onEditWeekChange }: {
   child: PaperworkChild;
   maxWeek: number;
   targetWeek: number;
@@ -556,11 +649,20 @@ function CompactChildCard({ child, maxWeek, targetWeek, advancing, editingChild,
       alignItems: 'center',
       justifyContent: 'space-between',
       padding: '8px 10px',
-      background: 'white',
+      background: 'rgba(255,255,255,0.04)',
       borderRadius: 10,
-      border: '1px solid rgba(76, 175, 80, 0.12)',
+      border: '1px solid rgba(52,211,153,0.18)',
     }}>
-      <span style={{ fontSize: 13, fontWeight: 500, color: '#1f2937', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', marginRight: 8 }}>
+      <span style={{
+        fontFamily: T.sans,
+        fontSize: 13,
+        fontWeight: 500,
+        color: T.textPrimary,
+        whiteSpace: 'nowrap',
+        overflow: 'hidden',
+        textOverflow: 'ellipsis',
+        marginRight: 8,
+      }}>
         {child.name}
       </span>
       {isEditing ? (
@@ -576,11 +678,12 @@ function CompactChildCard({ child, maxWeek, targetWeek, advancing, editingChild,
           <button
             onClick={() => onStartEdit(child.id, child.current_week)}
             style={{
+              fontFamily: T.sans,
               fontSize: 11,
-              fontWeight: 600,
-              color: '#2E7D32',
-              background: 'rgba(76, 175, 80, 0.1)',
-              border: 'none',
+              fontWeight: 700,
+              color: T.emerald,
+              background: T.emeraldStrong,
+              border: '1px solid rgba(52,211,153,0.30)',
               borderRadius: 6,
               padding: '2px 8px',
               cursor: 'pointer',
@@ -593,18 +696,21 @@ function CompactChildCard({ child, maxWeek, targetWeek, advancing, editingChild,
             <button
               onClick={() => onAdvance(child.id)}
               disabled={!!isAdvancing}
+              aria-label="Advance"
               style={{
-                fontSize: 14,
-                color: '#81C784',
-                background: 'none',
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: 24,
+                height: 22,
+                color: T.emerald,
+                background: 'transparent',
                 border: 'none',
                 cursor: isAdvancing ? 'default' : 'pointer',
                 opacity: isAdvancing ? 0.4 : 1,
-                padding: '0 2px',
-                lineHeight: 1,
               }}
             >
-              {isAdvancing ? '...' : '→'}
+              {isAdvancing ? '...' : <ArrowRight size={13} strokeWidth={2} />}
             </button>
           )}
         </div>
@@ -633,8 +739,9 @@ function ChildRow({ child, maxWeek, targetWeek, advancing, editingChild, editWee
   const weeksToGo = targetWeek - child.current_week;
 
   const isSlightly = child.status === 'slightly_behind';
-  const barColor = isSlightly ? '#FFB74D' : '#EF9A9A';
-  const borderColor = isSlightly ? 'rgba(255, 167, 38, 0.15)' : 'rgba(239, 154, 154, 0.2)';
+  const barColor = isSlightly ? T.amber : T.red;
+  const borderColor = isSlightly ? 'rgba(245,158,11,0.30)' : 'rgba(239,68,68,0.30)';
+  const trackBg = isSlightly ? 'rgba(245,158,11,0.10)' : 'rgba(239,68,68,0.10)';
 
   return (
     <div style={{
@@ -642,25 +749,37 @@ function ChildRow({ child, maxWeek, targetWeek, advancing, editingChild, editWee
       alignItems: 'center',
       gap: 10,
       padding: '10px 12px',
-      background: 'white',
+      background: 'rgba(255,255,255,0.04)',
       borderRadius: 10,
       border: `1px solid ${borderColor}`,
     }}>
-      {/* Name + progress */}
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
-          <span style={{ fontSize: 13, fontWeight: 500, color: '#1f2937', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+        <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
+          <span style={{
+            fontFamily: T.sans,
+            fontSize: 13,
+            fontWeight: 500,
+            color: T.textPrimary,
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+          }}>
             {child.name}
           </span>
-          <span style={{ fontSize: 10, color: '#9ca3af', whiteSpace: 'nowrap', flexShrink: 0 }}>
+          <span style={{
+            fontFamily: T.sans,
+            fontSize: 10,
+            color: T.textMuted,
+            whiteSpace: 'nowrap',
+            flexShrink: 0,
+          }}>
             {weeksToGo} week{weeksToGo !== 1 ? 's' : ''} to go
           </span>
         </div>
-        {/* Progress bar */}
         <div style={{
           marginTop: 6,
           height: 5,
-          background: '#f3f4f6',
+          background: trackBg,
           borderRadius: 3,
           overflow: 'hidden',
         }}>
@@ -674,7 +793,6 @@ function ChildRow({ child, maxWeek, targetWeek, advancing, editingChild, editWee
         </div>
       </div>
 
-      {/* Week + actions */}
       {isEditing ? (
         <InlineEditor
           week={editWeek}
@@ -688,16 +806,17 @@ function ChildRow({ child, maxWeek, targetWeek, advancing, editingChild, editWee
           <button
             onClick={() => onStartEdit(child.id, child.current_week)}
             style={{
+              fontFamily: T.sans,
               fontSize: 12,
               fontWeight: 700,
-              color: '#374151',
-              background: '#f3f4f6',
-              border: '1px solid #d1d5db',
+              color: T.textPrimary,
+              background: 'rgba(255,255,255,0.06)',
+              border: '1px solid rgba(255,255,255,0.10)',
               borderRadius: 8,
-              padding: '3px 10px',
+              padding: '4px 10px',
               cursor: 'pointer',
               fontVariantNumeric: 'tabular-nums',
-              transition: 'all 0.15s',
+              transition: 'all 120ms ease',
             }}
           >
             W{child.current_week}
@@ -706,21 +825,24 @@ function ChildRow({ child, maxWeek, targetWeek, advancing, editingChild, editWee
             <button
               onClick={() => onAdvance(child.id)}
               disabled={!!isAdvancing}
+              aria-label="Advance"
               style={{
-                fontSize: 16,
-                color: '#6b7280',
-                background: 'none',
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: 28,
+                height: 26,
+                color: T.textSecondary,
+                background: 'transparent',
                 border: 'none',
                 cursor: isAdvancing ? 'default' : 'pointer',
                 opacity: isAdvancing ? 0.4 : 1,
-                padding: '0 2px',
-                lineHeight: 1,
-                transition: 'color 0.15s',
+                transition: 'color 120ms ease',
               }}
-              onMouseEnter={e => { if (!isAdvancing) e.currentTarget.style.color = '#374151'; }}
-              onMouseLeave={e => { e.currentTarget.style.color = '#6b7280'; }}
+              onMouseEnter={e => { if (!isAdvancing) e.currentTarget.style.color = T.textPrimary; }}
+              onMouseLeave={e => { e.currentTarget.style.color = T.textSecondary; }}
             >
-              {isAdvancing ? '...' : '→'}
+              {isAdvancing ? '...' : <ArrowRight size={15} strokeWidth={2} />}
             </button>
           )}
         </div>
@@ -745,51 +867,62 @@ function InlineEditor({ week, maxWeek, onChange, onConfirm, onCancel }: {
         max={maxWeek}
         value={week}
         onChange={e => onChange(Math.max(1, Math.min(maxWeek, parseInt(e.target.value) || 1)))}
-        style={{
-          width: 48,
-          textAlign: 'center',
-          fontSize: 12,
-          fontWeight: 600,
-          border: '1.5px solid #d1d5db',
-          borderRadius: 8,
-          padding: '3px 4px',
-          background: 'white',
-          color: '#1f2937',
-          outline: 'none',
-        }}
         autoFocus
         onKeyDown={e => {
           if (e.key === 'Enter') onConfirm();
           if (e.key === 'Escape') onCancel();
         }}
+        style={{
+          width: 50,
+          textAlign: 'center',
+          fontFamily: T.sans,
+          fontSize: 12,
+          fontWeight: 600,
+          border: `1.5px solid ${T.inputBorder}`,
+          borderRadius: 8,
+          padding: '4px',
+          background: T.inputBg,
+          color: T.textPrimary,
+          outline: 'none',
+        }}
       />
       <button
         onClick={onConfirm}
+        aria-label="Confirm"
         style={{
-          fontSize: 11,
-          fontWeight: 600,
-          color: 'white',
-          background: '#059669',
-          border: 'none',
+          display: 'inline-flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          width: 24,
+          height: 24,
+          fontFamily: T.sans,
+          color: '#06281a',
+          background: 'linear-gradient(180deg, #34d399, #10b981)',
+          border: '1px solid rgba(52,211,153,0.55)',
           borderRadius: 6,
-          padding: '3px 8px',
+          padding: 0,
           cursor: 'pointer',
         }}
       >
-        ✓
+        <Check size={12} strokeWidth={2.5} />
       </button>
       <button
         onClick={onCancel}
+        aria-label="Cancel"
         style={{
-          fontSize: 11,
-          color: '#9ca3af',
-          background: 'none',
+          display: 'inline-flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          width: 22,
+          height: 22,
+          color: T.textMuted,
+          background: 'transparent',
           border: 'none',
           cursor: 'pointer',
-          padding: '3px 4px',
+          padding: 0,
         }}
       >
-        ✕
+        <X size={12} strokeWidth={1.75} />
       </button>
     </div>
   );
