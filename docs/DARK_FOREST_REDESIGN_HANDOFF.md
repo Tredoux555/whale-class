@@ -72,15 +72,28 @@ Design tokens are locked:
 
 ---
 
-## ✅ PHASE 2 COMPLETE — START PHASE 3 NEXT SESSION
+## ✅ PHASES 3 + 4 + EXTRAS COMPLETE — Apr 29, 2026 overnight session
 
-**Phase 2 is done.** All 4 inner screens (Photo Audit, Guru, Curriculum, Gallery) are fully converted.
+**Phase 3 ✅ shipped** — all 8 inner screens (Notes, Classroom Overview, Language Semester, Weekly Admin Docs, Focus List, Capture, Progress, Classroom Setup).
+**Phase 4 ✅ shipped** — Quick Guide modal, Full Details modal, Welcome modal, BulkPasteImport modal.
+**Bonus shipped** — every dashboard intelligence panel (Daily Brief, Attendance, Stale Works, Evidence, Pulse, Conference Notes, Paperwork, Birthday Banner, Shelf Autopilot), the Skeletons loading states, and high-visibility sub-components (TodaysFocusStrip, GuruContextBubble, WeeklyAdminCard, GuruDashboardCards, ConcernCardsGrid, WeeklyWrapCard).
 
-**Next session starts here:**
-1. Pick a Phase 3 screen from the queue below
-2. Open a fresh Opus chat, paste the design prompt template + screen description
-3. Get the JSX bundle back as a `.md` file
-4. Bring it here to implement
+**Workflow note:** This batch was done by a single Claude (this one) playing both design + implementation roles. The locked tokens at the top of this doc were tight enough that Opus-style design passes were not necessary for these screens. If you want to keep the two-step workflow for any remaining surfaces, it still works exactly as documented above.
+
+**17 commits pushed** between `4edb75c4` and `c0ab48ec`. See `git log --oneline` for the full list.
+
+### Still light-themed (next pass candidates, in rough priority)
+- `components/montree/guru/GuruChatThread.tsx` + `ChatBubble.tsx` (Guru chat across teacher / parent / admin)
+- `components/montree/reports/WeeklyWrapTab.tsx` + `WeeklyAdminTab.tsx` (child-detail tabs)
+- `components/montree/child/ChildWeeklyAdmin.tsx` + `BigMicPanel.tsx` + `ChildGuruChat.tsx`
+- `components/montree/guru/PhotoInsightButton.tsx` (large + complex, careful surgery)
+- `components/montree/photo-audit/PendingReviewPanel.tsx`
+- `components/montree/reports/BatchNarrativesCard.tsx`
+- `components/montree/media/MediaDetailModal.tsx` + `PhotoDetailView.tsx`
+- `components/montree/messaging/MessageCard.tsx`
+- `components/montree/voice-observation/ExtractionCard.tsx`
+- `components/montree/progress/AreaHistoryModal.tsx`
+- Any super-admin / library / public marketing pages still on light Tailwind
 
 **Also pending (no design pass needed — code changes only):**
 See "Child Detail v2" section below — the bundle is already in hand, structural code changes needed.
