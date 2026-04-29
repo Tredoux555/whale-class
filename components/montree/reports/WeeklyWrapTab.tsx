@@ -1,8 +1,9 @@
 // WeeklyWrapTab — embedded in Photo Audit page as third tab
 // Teacher Review: clean list with expand. Parent Reports: child list → click to preview one.
+// Dark forest visual treatment — all wiring intact
 'use client';
 
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback, CSSProperties } from 'react';
 import { montreeApi } from '@/lib/montree/api';
 import { useI18n } from '@/lib/montree/i18n';
 import { getSession } from '@/lib/montree/auth';
@@ -11,6 +12,7 @@ import { getAreaLabel as getAreaLabelI18n, AREA_LABELS_EN } from '@/lib/montree/
 import { getIntlLocale } from '@/lib/montree/i18n/locales';
 import WorkWheelPicker from '@/components/montree/WorkWheelPicker';
 import InviteParentModal from '@/components/montree/InviteParentModal';
+import { ChevronLeft, ChevronRight, Loader2, AlertCircle } from 'lucide-react';
 
 // ─── Types ────────────────────────────────────────────────────
 
@@ -73,13 +75,34 @@ interface ReportResult {
 
 // ─── Constants ────────────────────────────────────────────────
 
+// Dark forest tokens
+const T = {
+  card: 'rgba(255,255,255,0.06)',
+  cardBorder: '1px solid rgba(52,211,153,0.15)',
+  emerald: '#34d399',
+  emeraldStrong: 'rgba(52,211,153,0.18)',
+  emeraldSoft: 'rgba(52,211,153,0.10)',
+  violet: '#c4b5fd',
+  violetSoft: 'rgba(139,92,246,0.18)',
+  red: '#f87171',
+  redSoft: 'rgba(239,68,68,0.10)',
+  redBorder: 'rgba(239,68,68,0.30)',
+  blue: '#60a5fa',
+  textPrimary: 'rgba(255,255,255,0.95)',
+  textSecondary: 'rgba(255,255,255,0.65)',
+  textMuted: 'rgba(255,255,255,0.40)',
+  blur: 'blur(16px) saturate(140%)',
+  sans: '"Inter", -apple-system, BlinkMacSystemFont, sans-serif',
+  serif: '"Lora", Georgia, serif',
+};
+
 // AREA_LABELS_ZH and AREA_LABELS_EN imported from @/lib/montree/i18n/area-labels
-const AREA_COLORS: Record<string, { bg: string; text: string }> = {
-  practical_life: { bg: 'bg-orange-50', text: 'text-orange-700' },
-  sensorial: { bg: 'bg-pink-50', text: 'text-pink-700' },
-  mathematics: { bg: 'bg-blue-50', text: 'text-blue-700' },
-  language: { bg: 'bg-emerald-50', text: 'text-emerald-700' },
-  cultural: { bg: 'bg-purple-50', text: 'text-purple-700' },
+const AREA_COLORS: Record<string, { bg: string; text: string; rgb: string }> = {
+  practical_life: { bg: 'rgba(236,72,153,0.15)', text: 'rgb(236, 72, 153)', rgb: '236, 72, 153' },
+  sensorial: { bg: 'rgba(20,184,166,0.15)', text: 'rgb(20, 184, 166)', rgb: '20, 184, 166' },
+  mathematics: { bg: 'rgba(168,85,247,0.15)', text: 'rgb(168, 85, 247)', rgb: '168, 85, 247' },
+  language: { bg: 'rgba(74,222,128,0.15)', text: 'rgb(74, 222, 128)', rgb: '74, 222, 128' },
+  cultural: { bg: 'rgba(249,115,22,0.15)', text: 'rgb(249, 115, 22)', rgb: '249, 115, 22' },
 };
 const AREA_ORDER = ['practical_life', 'sensorial', 'mathematics', 'language', 'cultural'];
 const STATUS_FLOW = ['not_started', 'presented', 'practicing', 'mastered'] as const;
@@ -149,8 +172,15 @@ function ParentPhotosGrouped({ photos, parentWorks, childId, firstName, locale, 
   const { t } = useI18n();
   if (photos.length === 0) {
     return (
-      <div className="px-5 pb-6">
-        <p className="text-sm text-gray-300 italic text-center py-6">
+      <div style={{ padding: '0 20px 24px' }}>
+        <p style={{
+          fontSize: 14,
+          color: T.textSecondary,
+          fontStyle: 'italic',
+          textAlign: 'center',
+          padding: '24px 0',
+          fontFamily: T.sans,
+        }}>
           {t('weeklyWrap.noPhotos', { name: firstName })}
         </p>
       </div>
@@ -183,12 +213,19 @@ function ParentPhotosGrouped({ photos, parentWorks, childId, firstName, locale, 
   const orderedKeys = [...AREA_ORDER, 'other'].filter(k => grouped[k].length > 0);
 
   return (
-    <div className="px-5 pb-6 space-y-6">
-      <p className="text-xs text-gray-400 font-medium uppercase tracking-wider">
+    <div style={{ padding: '0 20px 24px', display: 'flex', flexDirection: 'column', gap: 24 }}>
+      <p style={{
+        fontSize: 11,
+        color: T.textMuted,
+        fontWeight: 600,
+        textTransform: 'uppercase',
+        letterSpacing: 1.2,
+        fontFamily: T.sans,
+      }}>
         {t('weeklyWrap.learningMoments', { name: firstName })}
       </p>
       {orderedKeys.map(areaKey => {
-        const areaColor = AREA_COLORS[areaKey] || { bg: 'bg-gray-100', text: 'text-gray-600' };
+        const areaColor = AREA_COLORS[areaKey] || { bg: 'rgba(255,255,255,0.05)', text: 'rgba(255,255,255,0.60)', rgb: '255,255,255' };
         const areaLabel = areaKey === 'other'
           ? t('weeklyWrap.other')
           : getAreaLabel(areaKey);
@@ -196,15 +233,23 @@ function ParentPhotosGrouped({ photos, parentWorks, childId, firstName, locale, 
         return (
           <div key={areaKey}>
             {/* Area section header */}
-            <div className="flex items-center gap-2 mb-3">
-              <span className={`text-xs px-2.5 py-1 rounded-full font-semibold ${areaColor.bg} ${areaColor.text}`}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
+              <span style={{
+                fontSize: 12,
+                padding: '6px 12px',
+                borderRadius: 999,
+                fontWeight: 600,
+                fontFamily: T.sans,
+                backgroundColor: areaColor.bg,
+                color: areaColor.text,
+              }}>
                 {areaLabel}
               </span>
-              <div className="flex-1 h-px bg-gray-100" />
+              <div style={{ flex: 1, height: '1px', background: 'rgba(255,255,255,0.08)' }} />
             </div>
 
             {/* Photos in this area */}
-            <div className="space-y-4">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
               {grouped[areaKey].map(({ photo, matchedWork }) => {
                 const workDisplay = locale === 'zh'
                   ? (matchedWork?.name_zh || photo.work_name_zh || photo.work_name || '')
@@ -217,32 +262,96 @@ function ParentPhotosGrouped({ photos, parentWorks, childId, firstName, locale, 
                   : matchedWork?.why_it_matters;
 
                 return (
-                  <div key={photo.id} className="rounded-2xl overflow-hidden border border-gray-100 shadow-sm group relative">
-                    <div className="relative">
+                  <div
+                    key={photo.id}
+                    style={{
+                      borderRadius: 16,
+                      overflow: 'hidden',
+                      border: T.cardBorder,
+                      boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
+                      position: 'relative',
+                      group: true,
+                    } as any}
+                  >
+                    <div style={{ position: 'relative' }}>
                       <img
                         src={photo.url}
                         alt={workDisplay || 'Learning moment photo'}
-                        className="w-full aspect-[4/3] object-cover bg-gray-100"
+                        style={{
+                          width: '100%',
+                          aspectRatio: '4/3',
+                          objectFit: 'cover',
+                          backgroundColor: 'rgba(255,255,255,0.05)',
+                          display: 'block',
+                        }}
                         loading="lazy"
                       />
                       <button
                         onClick={() => handleRemovePhoto(childId, photo.id)}
-                        className="absolute top-3 right-3 w-7 h-7 bg-black/40 backdrop-blur-sm rounded-full flex items-center justify-center text-white text-xs opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
+                        style={{
+                          position: 'absolute',
+                          top: 12,
+                          right: 12,
+                          width: 28,
+                          height: 28,
+                          background: 'rgba(0,0,0,0.40)',
+                          backdropFilter: 'blur(4px)',
+                          WebkitBackdropFilter: 'blur(4px)',
+                          borderRadius: '50%',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          color: 'white',
+                          fontSize: 12,
+                          opacity: 0,
+                          transition: 'opacity 200ms ease',
+                          border: 'none',
+                          cursor: 'pointer',
+                          boxShadow: '0 4px 8px rgba(0,0,0,0.3)',
+                        }}
+                        onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.opacity = '1'; }}
+                        onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.opacity = '0'; }}
                       >✕</button>
                     </div>
 
                     {(photo.work_name || matchedWork) && (
-                      <div className="px-4 py-3 bg-white">
-                        <h4 className="font-semibold text-gray-800 text-sm leading-snug">
+                      <div style={{
+                        padding: '12px 16px',
+                        background: T.card,
+                        borderTop: T.cardBorder,
+                      }}>
+                        <h4 style={{
+                          fontWeight: 600,
+                          color: T.textPrimary,
+                          fontSize: 14,
+                          lineHeight: 1.4,
+                          margin: 0,
+                          fontFamily: T.sans,
+                        }}>
                           {workDisplay}
                         </h4>
                         {descDisplay && (
-                          <p className="text-sm text-gray-600 leading-relaxed mt-2">
+                          <p style={{
+                            fontSize: 13,
+                            color: T.textSecondary,
+                            lineHeight: 1.5,
+                            marginTop: 8,
+                            margin: 0,
+                            fontFamily: T.sans,
+                          }}>
                             {descDisplay}
                           </p>
                         )}
                         {whyDisplay && (
-                          <p className="text-xs text-gray-500 leading-relaxed mt-1.5 italic">
+                          <p style={{
+                            fontSize: 12,
+                            color: T.textMuted,
+                            lineHeight: 1.4,
+                            marginTop: 6,
+                            fontStyle: 'italic',
+                            margin: 0,
+                            fontFamily: T.sans,
+                          }}>
                             {whyDisplay}
                           </p>
                         )}
@@ -657,29 +766,93 @@ export default function WeeklyWrapTab({ classroomId, view: externalView }: Weekl
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-20">
-        <div className="animate-spin w-6 h-6 border-2 border-emerald-500 border-t-transparent rounded-full" />
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '80px 0',
+      }}>
+        <Loader2 size={24} strokeWidth={1.75} color={T.emerald} style={{ animation: 'spin 1s linear infinite' }} />
       </div>
     );
   }
 
   return (
-    <div className="pb-24">
+    <div style={{ paddingBottom: 96, color: T.textPrimary, fontFamily: T.sans }}>
+      <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
+
       {/* Week nav + controls */}
-      <div className="flex items-center justify-between px-4 py-3 bg-white border-b">
-        <div className="flex items-center gap-2">
-          <button onClick={() => setWeekStart(shiftWeek(weekStart, -1))} className="px-2 py-1 text-gray-500 hover:bg-gray-100 rounded text-sm">◀</button>
-          <span className="text-sm font-medium text-gray-700 min-w-[140px] text-center">{weekDisplay}</span>
-          <button onClick={() => setWeekStart(shiftWeek(weekStart, 1))} className="px-2 py-1 text-gray-500 hover:bg-gray-100 rounded text-sm">▶</button>
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        padding: '12px 16px',
+        background: 'rgba(7,18,12,0.55)',
+        borderBottom: '1px solid rgba(52,211,153,0.15)',
+        backdropFilter: 'blur(12px)',
+        WebkitBackdropFilter: 'blur(12px)',
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <button
+            onClick={() => setWeekStart(shiftWeek(weekStart, -1))}
+            style={{
+              padding: '6px 10px',
+              borderRadius: 8,
+              background: 'rgba(255,255,255,0.06)',
+              border: '1px solid rgba(255,255,255,0.10)',
+              color: T.textPrimary,
+              cursor: 'pointer',
+              fontSize: 12,
+              fontFamily: T.sans,
+            }}
+          >
+            <ChevronLeft size={14} strokeWidth={1.75} />
+          </button>
+          <span style={{
+            fontSize: 13,
+            fontWeight: 500,
+            color: T.textPrimary,
+            minWidth: 140,
+            textAlign: 'center',
+            fontFamily: T.sans,
+          }}>
+            {weekDisplay}
+          </span>
+          <button
+            onClick={() => setWeekStart(shiftWeek(weekStart, 1))}
+            style={{
+              padding: '6px 10px',
+              borderRadius: 8,
+              background: 'rgba(255,255,255,0.06)',
+              border: '1px solid rgba(255,255,255,0.10)',
+              color: T.textPrimary,
+              cursor: 'pointer',
+              fontSize: 12,
+              fontFamily: T.sans,
+            }}
+          >
+            <ChevronRight size={14} strokeWidth={1.75} />
+          </button>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           {/* Generate selected OR all */}
           {selectedIds.size > 0 ? (
             <button
               onClick={() => handleGenerate(Array.from(selectedIds))}
               disabled={generating}
-              className="px-3 py-1.5 rounded-lg bg-blue-600 text-white text-xs font-semibold hover:bg-blue-700 disabled:opacity-50"
+              style={{
+                padding: '8px 14px',
+                borderRadius: 10,
+                background: T.blue,
+                color: '#0a0a0a',
+                fontSize: 12,
+                fontWeight: 600,
+                cursor: generating ? 'not-allowed' : 'pointer',
+                opacity: generating ? 0.55 : 1,
+                border: 'none',
+                fontFamily: T.sans,
+              }}
             >
               {generating
                 ? `${genDone}/${genTotal}`
@@ -689,7 +862,18 @@ export default function WeeklyWrapTab({ classroomId, view: externalView }: Weekl
             <button
               onClick={() => handleGenerate()}
               disabled={generating}
-              className="px-3 py-1.5 rounded-lg bg-emerald-600 text-white text-xs font-semibold hover:bg-emerald-700 disabled:opacity-50"
+              style={{
+                padding: '8px 14px',
+                borderRadius: 10,
+                background: T.emerald,
+                color: '#06281a',
+                fontSize: 12,
+                fontWeight: 600,
+                cursor: generating ? 'not-allowed' : 'pointer',
+                opacity: generating ? 0.55 : 1,
+                border: 'none',
+                fontFamily: T.sans,
+              }}
             >
               {generating
                 ? `${genProgress || '...'} ${genDone}/${genTotal}`
@@ -703,28 +887,69 @@ export default function WeeklyWrapTab({ classroomId, view: externalView }: Weekl
 
       {/* Sub-view toggle — only shown when view is NOT externally controlled */}
       {!externalView && (
-        <div className="flex gap-1 px-4 py-2 bg-gray-50 border-b">
+        <div style={{
+          display: 'flex',
+          gap: 8,
+          padding: '10px 16px',
+          background: 'rgba(7,18,12,0.40)',
+          borderBottom: '1px solid rgba(52,211,153,0.15)',
+        }}>
           <button
             onClick={() => setSubView('teacher')}
-            className={`px-4 py-1.5 rounded-full text-xs font-medium transition-colors ${subView === 'teacher' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+            style={{
+              padding: '8px 16px',
+              borderRadius: 999,
+              fontSize: 12,
+              fontWeight: 600,
+              fontFamily: T.sans,
+              background: subView === 'teacher' ? 'rgba(255,255,255,0.10)' : 'transparent',
+              color: subView === 'teacher' ? T.emerald : T.textSecondary,
+              border: subView === 'teacher' ? `1px solid rgba(52,211,153,0.30)` : '1px solid transparent',
+              cursor: 'pointer',
+              transition: 'all 120ms ease',
+            }}
           >
             {t('weeklyWrap.teacherReview')}
-            {/* flaggedCount badge removed — looked like system errors */}
           </button>
           <button
             onClick={() => setSubView('parents')}
-            className={`px-4 py-1.5 rounded-full text-xs font-medium transition-colors ${subView === 'parents' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+            style={{
+              padding: '8px 16px',
+              borderRadius: 999,
+              fontSize: 12,
+              fontWeight: 600,
+              fontFamily: T.sans,
+              background: subView === 'parents' ? 'rgba(255,255,255,0.10)' : 'transparent',
+              color: subView === 'parents' ? T.emerald : T.textSecondary,
+              border: subView === 'parents' ? `1px solid rgba(52,211,153,0.30)` : '1px solid transparent',
+              cursor: 'pointer',
+              transition: 'all 120ms ease',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 6,
+            }}
           >
             {t('weeklyWrap.parentReports')}
-            {readyToSend > 0 && <span className="ml-1.5 text-emerald-600">{readyToSend}</span>}
+            {readyToSend > 0 && <span style={{ color: T.emerald, fontSize: 11 }}>{readyToSend}</span>}
           </button>
         </div>
       )}
 
       {/* Selection bar — always visible when reports exist */}
       {reports.length > 0 && (
-        <div className="flex items-center justify-between bg-blue-50/60 px-4 py-1.5 border-b">
-          <span className="text-[11px] text-blue-600">
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          background: 'rgba(96,165,250,0.08)',
+          padding: '8px 16px',
+          borderBottom: '1px solid rgba(96,165,250,0.15)',
+        }}>
+          <span style={{
+            fontSize: 11,
+            color: T.blue,
+            fontFamily: T.sans,
+          }}>
             {selectedIds.size > 0
               ? t('weeklyWrap.selectedCount', { count: selectedIds.size })
               : t('weeklyWrap.selectPrompt')}
@@ -734,7 +959,15 @@ export default function WeeklyWrapTab({ classroomId, view: externalView }: Weekl
               if (selectedIds.size === reports.length) setSelectedIds(new Set());
               else setSelectedIds(new Set(reports.map(r => r.child_id)));
             }}
-            className="text-[11px] text-blue-600 font-semibold"
+            style={{
+              fontSize: 11,
+              color: T.blue,
+              fontWeight: 600,
+              fontFamily: T.sans,
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+            }}
           >
             {selectedIds.size === reports.length
               ? t('weeklyWrap.deselectAll')
@@ -744,19 +977,35 @@ export default function WeeklyWrapTab({ classroomId, view: externalView }: Weekl
       )}
 
       {error && (
-        <div className="mx-4 mt-3 p-3 bg-red-50 text-red-700 text-sm rounded-lg">{error}</div>
+        <div style={{
+          margin: '12px 16px 0',
+          padding: '10px 14px',
+          background: T.redSoft,
+          border: `1px solid ${T.redBorder}`,
+          color: T.red,
+          fontSize: 13,
+          borderRadius: 12,
+          fontFamily: T.sans,
+        }}>
+          {error}
+        </div>
       )}
 
       {reports.length === 0 && !loading && (
-        <div className="text-center py-16 text-gray-400">
-          <p className="text-lg mb-2">{t('weeklyWrap.noReports')}</p>
-          <p className="text-sm">{t('weeklyWrap.clickGenerateToStart')}</p>
+        <div style={{
+          textAlign: 'center',
+          padding: '64px 16px',
+          color: T.textMuted,
+          fontFamily: T.sans,
+        }}>
+          <p style={{ fontSize: 18, marginBottom: 8, margin: 0, marginBottom: 8 }}>{t('weeklyWrap.noReports')}</p>
+          <p style={{ fontSize: 13, margin: 0 }}>{t('weeklyWrap.clickGenerateToStart')}</p>
         </div>
       )}
 
       {/* ═══ TEACHER REVIEW — clean list, click to expand ═══ */}
       {subView === 'teacher' && reports.length > 0 && (
-        <div className="divide-y divide-gray-100">
+        <div>
           {sortedReports.map(r => {
             const firstName = r.child_name.split(' ')[0];
             const isExpanded = expandedChild === r.child_id;
@@ -767,9 +1016,20 @@ export default function WeeklyWrapTab({ classroomId, view: externalView }: Weekl
             const hasReport = !!r.parent_narrative;
 
             return (
-              <div key={r.child_id} className={`bg-white ${isSelected ? 'bg-blue-50/40' : ''}`}>
+              <div
+                key={r.child_id}
+                style={{
+                  background: isSelected ? 'rgba(96,165,250,0.08)' : T.card,
+                  borderBottom: '1px solid rgba(52,211,153,0.10)',
+                }}
+              >
                 {/* ── Row: checkbox + avatar + name + stats + chevron ── */}
-                <div className="flex items-center gap-2 px-4 py-2.5">
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 8,
+                  padding: '10px 16px',
+                }}>
                   {/* Checkbox */}
                   <button
                     onClick={() => setSelectedIds(prev => {
@@ -777,7 +1037,22 @@ export default function WeeklyWrapTab({ classroomId, view: externalView }: Weekl
                       if (next.has(r.child_id)) next.delete(r.child_id); else next.add(r.child_id);
                       return next;
                     })}
-                    className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 text-[10px] transition-colors ${isSelected ? 'bg-blue-600 border-blue-600 text-white' : 'border-gray-300 hover:border-gray-400'}`}
+                    style={{
+                      width: 20,
+                      height: 20,
+                      borderRadius: 6,
+                      border: `2px solid ${isSelected ? T.blue : 'rgba(255,255,255,0.20)'}`,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      flexShrink: 0,
+                      fontSize: 10,
+                      transition: 'all 120ms ease',
+                      background: isSelected ? T.blue : 'transparent',
+                      color: isSelected ? '#0a0a0a' : 'transparent',
+                      cursor: 'pointer',
+                      fontFamily: T.sans,
+                    }}
                   >
                     {isSelected && '✓'}
                   </button>
@@ -785,27 +1060,84 @@ export default function WeeklyWrapTab({ classroomId, view: externalView }: Weekl
                   {/* Click area for expand/collapse */}
                   <button
                     onClick={() => setExpandedChild(isExpanded ? null : r.child_id)}
-                    className="flex-1 flex items-center gap-2.5 text-left min-w-0"
+                    style={{
+                      flex: 1,
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 10,
+                      textAlign: 'left',
+                      minWidth: 0,
+                      background: 'none',
+                      border: 'none',
+                      color: 'inherit',
+                      cursor: 'pointer',
+                      fontFamily: T.sans,
+                    }}
                   >
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-xs flex-shrink-0 bg-gradient-to-br from-emerald-500 to-teal-600`}>
+                    <div style={{
+                      width: 32,
+                      height: 32,
+                      borderRadius: '50%',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      color: 'white',
+                      fontWeight: 'bold',
+                      fontSize: 12,
+                      flexShrink: 0,
+                      background: `linear-gradient(135deg, ${T.emerald}, #0d9488)`,
+                    }}>
                       {firstName.charAt(0)}
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="font-semibold text-gray-900 text-sm truncate">{r.child_name}</p>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <p style={{
+                        fontWeight: 600,
+                        color: T.textPrimary,
+                        fontSize: 14,
+                        margin: 0,
+                        textOverflow: 'ellipsis',
+                        overflow: 'hidden',
+                        whiteSpace: 'nowrap',
+                        fontFamily: T.sans,
+                      }}>
+                        {r.child_name}
+                      </p>
                     </div>
 
                     {/* Status pills */}
-                    <div className="flex items-center gap-1.5 flex-shrink-0">
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
                       {totalWorks > 0 && (
-                        <span className="text-[10px] text-gray-400 bg-gray-100 rounded-full px-2 py-0.5">
+                        <span style={{
+                          fontSize: 10,
+                          color: T.textMuted,
+                          background: 'rgba(255,255,255,0.06)',
+                          borderRadius: 999,
+                          padding: '2px 8px',
+                          fontFamily: T.sans,
+                        }}>
                           {totalWorks} {t('weeklyWrap.worksCount')}
                         </span>
                       )}
-                      {/* Flag badges removed — too ambiguous, looked like system errors */}
                       {hasReport && (
-                        <span className="text-[10px] text-emerald-700 bg-emerald-100 rounded-full px-1.5 py-0.5">✓</span>
+                        <span style={{
+                          fontSize: 10,
+                          color: T.emerald,
+                          background: 'rgba(52,211,153,0.15)',
+                          borderRadius: 999,
+                          padding: '2px 6px',
+                          fontFamily: T.sans,
+                        }}>
+                          ✓
+                        </span>
                       )}
-                      <span className={`text-gray-300 text-xs transition-transform ${isExpanded ? 'rotate-180' : ''}`}>▼</span>
+                      <span style={{
+                        color: T.textMuted,
+                        fontSize: 12,
+                        transition: 'transform 200ms ease',
+                        transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)',
+                      }}>
+                        ▼
+                      </span>
                     </div>
                   </button>
                 </div>

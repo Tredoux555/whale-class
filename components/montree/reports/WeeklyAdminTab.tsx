@@ -1,14 +1,16 @@
 // components/montree/reports/WeeklyAdminTab.tsx
 // Embeddable Weekly Admin Docs tab for Photo Audit
 // Extracted from app/montree/dashboard/weekly-admin-docs/page.tsx
+// Dark forest visual treatment — all wiring intact
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, CSSProperties } from 'react';
 import { montreeApi } from '@/lib/montree/api';
 import { useI18n } from '@/lib/montree/i18n';
 import { getAreaLabel } from '@/lib/montree/i18n/area-labels';
 import { useFeatures } from '@/hooks/useFeatures';
 import { sortChildrenByCustomOrder } from '@/lib/montree/weekly-admin/child-order';
+import { ChevronLeft, ChevronRight, FileText, ClipboardList, Sparkles, Download, Save, AlertTriangle } from 'lucide-react';
 
 const AREAS = [
   { key: 'practical_life', label: 'Practical Life', zh: '日常' },
@@ -17,6 +19,103 @@ const AREAS = [
   { key: 'language', label: 'Language', zh: '语言' },
   { key: 'cultural', label: 'Cultural', zh: '文化' },
 ] as const;
+
+// Dark forest tokens
+const T = {
+  card: 'rgba(255,255,255,0.06)',
+  cardBorder: '1px solid rgba(52,211,153,0.15)',
+  cardRadius: 18,
+  blur: 'blur(18px) saturate(140%)',
+  emerald: '#34d399',
+  emeraldDeep: '#10b981',
+  emeraldStrong: 'rgba(52,211,153,0.18)',
+  amber: '#f59e0b',
+  amberSoft: 'rgba(245,158,11,0.18)',
+  amberBorder: 'rgba(245,158,11,0.35)',
+  violet: '#c4b5fd',
+  violetSoft: 'rgba(139,92,246,0.18)',
+  violetBorder: 'rgba(139,92,246,0.45)',
+  red: '#f87171',
+  redSoft: 'rgba(239,68,68,0.10)',
+  redBorder: 'rgba(239,68,68,0.30)',
+  textPrimary: 'rgba(255,255,255,0.95)',
+  textSecondary: 'rgba(255,255,255,0.65)',
+  textMuted: 'rgba(255,255,255,0.40)',
+  inputBg: 'rgba(0,0,0,0.25)',
+  inputBorder: 'rgba(52,211,153,0.18)',
+  serif: '"Lora", Georgia, serif',
+  sans: '"Inter", -apple-system, BlinkMacSystemFont, sans-serif',
+  mono: '"SF Mono", Menlo, Consolas, monospace',
+};
+
+const ctaPrimary: CSSProperties = {
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  gap: 6,
+  padding: '8px 14px',
+  borderRadius: 10,
+  background: 'linear-gradient(180deg, #34d399, #10b981)',
+  border: '1px solid rgba(52,211,153,0.55)',
+  color: '#06281a',
+  fontFamily: T.sans,
+  fontSize: 12,
+  fontWeight: 700,
+  letterSpacing: 0.1,
+  cursor: 'pointer',
+  whiteSpace: 'nowrap',
+  boxShadow: '0 4px 14px rgba(16,185,129,0.25)',
+};
+
+const ctaViolet: CSSProperties = {
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  gap: 6,
+  padding: '8px 14px',
+  borderRadius: 10,
+  background: T.violetSoft,
+  border: `1px solid ${T.violetBorder}`,
+  color: T.violet,
+  fontFamily: T.sans,
+  fontSize: 12,
+  fontWeight: 600,
+  cursor: 'pointer',
+  whiteSpace: 'nowrap',
+};
+
+const ctaAmber: CSSProperties = {
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  gap: 6,
+  padding: '8px 14px',
+  borderRadius: 10,
+  background: T.amberSoft,
+  border: `1px solid ${T.amberBorder}`,
+  color: T.amber,
+  fontFamily: T.sans,
+  fontSize: 12,
+  fontWeight: 600,
+  cursor: 'pointer',
+  whiteSpace: 'nowrap',
+};
+
+const ghostBtn: CSSProperties = {
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  gap: 5,
+  padding: '6px 10px',
+  borderRadius: 8,
+  background: 'rgba(255,255,255,0.06)',
+  border: '1px solid rgba(255,255,255,0.10)',
+  color: T.textPrimary,
+  fontFamily: T.sans,
+  fontSize: 12,
+  fontWeight: 500,
+  cursor: 'pointer',
+};
 
 interface Child {
   id: string;
@@ -454,17 +553,58 @@ export default function WeeklyAdminTab({ classroomId }: WeeklyAdminTabProps) {
   }
 
   return (
-    <div className="pb-20">
+    <div style={{ paddingBottom: 80, color: T.textPrimary, fontFamily: T.sans }}>
+      <style>{`.wat-textarea::placeholder, .wat-input::placeholder { color: rgba(255,255,255,0.30); }`}</style>
+
       {/* Week selector + tabs + actions */}
-      <div className="px-4 py-3 bg-white border-b">
+      <div style={{
+        padding: '12px 16px',
+        background: 'rgba(7,18,12,0.55)',
+        borderBottom: '1px solid rgba(52,211,153,0.15)',
+        backdropFilter: 'blur(12px)',
+        WebkitBackdropFilter: 'blur(12px)',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 12,
+      }}>
         {/* Week navigation */}
-        <div className="flex items-center gap-3 mb-3">
-          <span className="text-sm text-gray-600 font-medium">{t('weeklyAdmin.week')}:</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <label style={{
+            fontFamily: T.sans,
+            fontSize: 12,
+            fontWeight: 600,
+            color: T.textSecondary,
+            letterSpacing: 0.3,
+            textTransform: 'uppercase',
+          }}>
+            {t('weeklyAdmin.week')}:
+          </label>
           <button
             onClick={() => setWeekStart(shiftWeek(weekStart, -1))}
-            className="px-2 py-1 text-gray-600 hover:bg-gray-100 rounded"
-          >◀</button>
-          <span className="text-sm font-mono font-medium min-w-[130px] text-center">{weekStart}</span>
+            aria-label="Previous week"
+            style={{
+              ...ghostBtn,
+              width: 28,
+              height: 28,
+              padding: 0,
+            }}
+          >
+            <ChevronLeft size={14} strokeWidth={1.75} />
+          </button>
+          <span style={{
+            minWidth: 130,
+            textAlign: 'center',
+            fontFamily: T.mono,
+            fontSize: 13,
+            fontWeight: 500,
+            color: T.textPrimary,
+            padding: '5px 12px',
+            borderRadius: 8,
+            background: 'rgba(255,255,255,0.05)',
+            border: '1px solid rgba(255,255,255,0.08)',
+          }}>
+            {weekStart}
+          </span>
           <button
             onClick={() => {
               const next = shiftWeek(weekStart, 1);
@@ -472,55 +612,100 @@ export default function WeeklyAdminTab({ classroomId }: WeeklyAdminTabProps) {
               if (next <= maxWeek) setWeekStart(next);
             }}
             disabled={weekStart >= (activeTab === 'plan' ? shiftWeek(getCurrentMonday(), 1) : getCurrentMonday())}
-            className="px-2 py-1 text-gray-600 hover:bg-gray-100 rounded disabled:opacity-30"
-          >▶</button>
+            aria-label="Next week"
+            style={{
+              ...ghostBtn,
+              width: 28,
+              height: 28,
+              padding: 0,
+              opacity: weekStart >= (activeTab === 'plan' ? shiftWeek(getCurrentMonday(), 1) : getCurrentMonday()) ? 0.30 : 1,
+              cursor: weekStart >= (activeTab === 'plan' ? shiftWeek(getCurrentMonday(), 1) : getCurrentMonday()) ? 'not-allowed' : 'pointer',
+            }}
+          >
+            <ChevronRight size={14} strokeWidth={1.75} />
+          </button>
         </div>
 
         {/* Tab selector + action buttons */}
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => setActiveTab('summary')}
-            className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
-              activeTab === 'summary' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600'
-            }`}
-          >
-            {t('weeklyAdmin.summaryTab')}
-          </button>
-          <button
-            onClick={() => setActiveTab('plan')}
-            className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
-              activeTab === 'plan' ? 'bg-purple-600 text-white' : 'bg-gray-100 text-gray-600'
-            }`}
-          >
-            {t('weeklyAdmin.planTab')}
-          </button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+          {[
+            { id: 'summary' as const, label: t('weeklyAdmin.summaryTab'), icon: FileText },
+            { id: 'plan' as const, label: t('weeklyAdmin.planTab'), icon: ClipboardList },
+          ].map(opt => {
+            const active = activeTab === opt.id;
+            const Icon = opt.icon;
+            const isViolet = opt.id === 'plan';
+            return (
+              <button
+                key={opt.id}
+                onClick={() => setActiveTab(opt.id)}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 6,
+                  padding: '8px 14px',
+                  borderRadius: 10,
+                  background: active
+                    ? (isViolet ? T.violetSoft : T.emeraldStrong)
+                    : 'rgba(255,255,255,0.06)',
+                  border: `1px solid ${active
+                    ? (isViolet ? T.violetBorder : 'rgba(52,211,153,0.45)')
+                    : 'rgba(255,255,255,0.10)'}`,
+                  color: active
+                    ? (isViolet ? T.violet : T.emerald)
+                    : T.textSecondary,
+                  fontFamily: T.sans,
+                  fontSize: 13,
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  transition: 'all 120ms ease',
+                }}
+              >
+                <Icon size={14} strokeWidth={1.75} />
+                {opt.label}
+              </button>
+            );
+          })}
 
-          <div className="flex-1" />
+          <div style={{ flex: 1 }} />
 
           <button
             onClick={handleAutoFill}
             disabled={autoFilling}
-            className="px-3 py-1.5 bg-amber-500 text-white text-xs rounded-full disabled:opacity-50 font-medium"
+            style={{
+              ...ctaAmber,
+              opacity: autoFilling ? 0.55 : 1,
+              cursor: autoFilling ? 'not-allowed' : 'pointer',
+            }}
           >
+            <Sparkles size={12} strokeWidth={1.75} />
             {autoFilling ? '...' : t('weeklyAdmin.autoFill')}
           </button>
 
           <button
             onClick={() => handleGenerate(activeTab)}
             disabled={generating !== null}
-            className={`px-3 py-1.5 text-white text-xs rounded-full disabled:opacity-50 font-medium ${
-              activeTab === 'summary' ? 'bg-blue-600' : 'bg-purple-600'
-            }`}
+            style={{
+              ...(activeTab === 'plan' ? ctaViolet : ctaPrimary),
+              opacity: generating !== null ? 0.55 : 1,
+              cursor: generating !== null ? 'not-allowed' : 'pointer',
+            }}
           >
+            <Download size={12} strokeWidth={2} />
             {generating === activeTab ? t('weeklyAdmin.generating') : t('weeklyAdmin.generate')}
           </button>
 
           <button
             onClick={() => saveNotes(false)}
             disabled={saving}
-            className="px-3 py-1.5 bg-emerald-600 text-white text-xs rounded-full disabled:opacity-50 font-medium"
+            style={{
+              ...ctaPrimary,
+              opacity: saving ? 0.55 : 1,
+              cursor: saving ? 'not-allowed' : 'pointer',
+            }}
           >
-            {saving ? '...' : t('common.save')}
+            <Save size={12} strokeWidth={2} />
+            {saving ? t('common.loading') : t('common.save')}
           </button>
         </div>
       </div>
@@ -535,15 +720,47 @@ export default function WeeklyAdminTab({ classroomId }: WeeklyAdminTabProps) {
         if (loading || autoFilling) return null;
         if (staleChildren.length === 0) return null;
         return (
-          <div className="mx-4 mt-3 px-3 py-2 bg-amber-50 border border-amber-200 rounded-lg flex items-center gap-3">
-            <span className="text-amber-800 text-xs flex-1">
+          <div style={{
+            margin: '12px 16px 0',
+            padding: '10px 14px',
+            background: T.amberSoft,
+            border: `1px solid ${T.amberBorder}`,
+            borderRadius: 12,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 12,
+          }}>
+            <AlertTriangle size={15} strokeWidth={1.75} color={T.amber} style={{ flexShrink: 0 }} />
+            <span style={{
+              flex: 1,
+              fontFamily: T.sans,
+              fontSize: 12,
+              color: T.amber,
+              lineHeight: 1.4,
+            }}>
               {t('weeklyAdmin.staleBanner')}
             </span>
             <button
               onClick={handleAutoFill}
               disabled={autoFilling}
-              className="px-3 py-1 bg-amber-600 text-white text-xs rounded-full disabled:opacity-50 font-medium whitespace-nowrap"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 5,
+                padding: '6px 12px',
+                background: T.amber,
+                border: 'none',
+                borderRadius: 999,
+                color: '#1a1206',
+                fontFamily: T.sans,
+                fontSize: 11,
+                fontWeight: 700,
+                cursor: autoFilling ? 'not-allowed' : 'pointer',
+                opacity: autoFilling ? 0.55 : 1,
+                whiteSpace: 'nowrap',
+              }}
             >
+              <Sparkles size={11} strokeWidth={1.75} />
               {t('weeklyAdmin.refreshAutoFill')}
             </button>
           </div>
@@ -552,33 +769,90 @@ export default function WeeklyAdminTab({ classroomId }: WeeklyAdminTabProps) {
 
       {/* Messages */}
       {error && (
-        <div className="mx-4 mt-3 px-3 py-2 bg-red-50 border border-red-200 text-red-700 text-xs rounded-lg">
+        <div style={{
+          margin: '12px 16px 0',
+          padding: '10px 14px',
+          background: T.redSoft,
+          border: `1px solid ${T.redBorder}`,
+          color: T.red,
+          fontFamily: T.sans,
+          fontSize: 13,
+          borderRadius: 12,
+        }}>
           {error}
         </div>
       )}
       {success && (
-        <div className="mx-4 mt-3 px-3 py-2 bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs rounded-lg">
+        <div style={{
+          margin: '12px 16px 0',
+          padding: '10px 14px',
+          background: T.emeraldStrong,
+          border: '1px solid rgba(52,211,153,0.40)',
+          color: T.emerald,
+          fontFamily: T.sans,
+          fontSize: 13,
+          borderRadius: 12,
+        }}>
           {success}
         </div>
       )}
 
       {/* Loading */}
       {loading && (
-        <div className="flex justify-center py-12">
-          <div className="text-gray-400 text-sm">{t('common.loading')}</div>
+        <div style={{
+          display: 'flex',
+          justifyContent: 'center',
+          padding: '60px 0',
+          color: T.textMuted,
+          fontFamily: T.sans,
+          fontSize: 13,
+        }}>
+          {t('common.loading')}
         </div>
       )}
 
       {/* Children Cards */}
       {!loading && (
-        <div className="px-4 py-4 space-y-4">
+        <div style={{
+          padding: '20px 16px',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 14,
+        }}>
           {children.length === 0 && (
-            <div className="text-center text-gray-400 py-8 text-sm">{t('weeklyAdmin.noChildren')}</div>
+            <div style={{
+              textAlign: 'center',
+              color: T.textMuted,
+              fontFamily: T.sans,
+              fontSize: 14,
+              padding: '40px 0',
+            }}>
+              {t('weeklyAdmin.noChildren')}
+            </div>
           )}
 
           {children.map((child) => (
-            <div key={child.id} className="bg-white rounded-xl border p-4">
-              <h3 className="font-semibold text-sm mb-2">{child.name}</h3>
+            <div
+              key={child.id}
+              style={{
+                background: T.card,
+                border: T.cardBorder,
+                borderRadius: T.cardRadius,
+                backdropFilter: T.blur,
+                WebkitBackdropFilter: T.blur,
+                padding: 16,
+              }}
+            >
+              <h3 style={{
+                margin: '0 0 12px',
+                fontFamily: T.serif,
+                fontSize: 17,
+                fontWeight: 500,
+                color: T.textPrimary,
+                letterSpacing: -0.2,
+              }}>
+                {child.name}
+              </h3>
 
               {activeTab === 'summary' ? (
                 <SummaryCard
@@ -619,15 +893,38 @@ function SummaryCard({
 
   return (
     <div>
-      <label className="text-xs text-gray-500 font-medium block mb-1">
+      <label style={{
+        fontFamily: T.sans,
+        fontSize: 11,
+        fontWeight: 700,
+        color: T.textMuted,
+        letterSpacing: 0.5,
+        textTransform: 'uppercase',
+        display: 'block',
+        marginBottom: 6,
+      }}>
         {t('weeklyAdmin.thisWeekActivities')}
       </label>
       <textarea
+        className="wat-textarea"
         value={displayValue}
         onChange={(e) => onUpdate(childId, displayField, e.target.value)}
         placeholder={t('weeklyAdmin.summaryPlaceholder')}
-        className="w-full px-3 py-2 border rounded-lg text-xs resize-none"
         rows={5}
+        style={{
+          width: '100%',
+          padding: '10px 12px',
+          borderRadius: 12,
+          background: T.inputBg,
+          border: `1px solid ${T.inputBorder}`,
+          color: T.textPrimary,
+          fontFamily: T.sans,
+          fontSize: 13,
+          lineHeight: 1.5,
+          outline: 'none',
+          resize: 'vertical',
+          boxSizing: 'border-box',
+        }}
       />
     </div>
   );
@@ -652,53 +949,124 @@ function PlanCard({
   const LOCALE_FIELD: Record<string, 'chinese_text' | 'english_text'> = { zh: 'chinese_text' };
   const displayField = LOCALE_FIELD[locale] || 'english_text';
 
+  const labelStyle: CSSProperties = {
+    fontFamily: T.sans,
+    fontSize: 11,
+    fontWeight: 700,
+    color: T.textMuted,
+    letterSpacing: 0.5,
+    textTransform: 'uppercase',
+  };
+
   return (
-    <div className="space-y-3">
-      <div className="grid grid-cols-5 gap-2">
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(5, 1fr)',
+        gap: 8,
+      }}>
         {AREAS.map((area) => {
           const areaNote = notes[area.key] || { english_text: '', chinese_text: '' };
           const displayValue = areaNote[displayField] || areaNote.english_text || '';
           const areaLabel = getAreaLabel(area.key, locale);
           return (
             <div key={area.key}>
-              <div className="text-[10px] font-semibold text-gray-500 mb-1 text-center">
+              <div style={{
+                ...labelStyle,
+                fontSize: 10,
+                textAlign: 'center',
+                marginBottom: 4,
+              }}>
                 {areaLabel}
               </div>
               <input
+                className="wat-input"
                 type="text"
                 value={displayValue}
                 onChange={(e) => onUpdate(childId, area.key, displayField, e.target.value)}
                 placeholder={areaLabel}
-                className="w-full px-2 py-1.5 border rounded text-xs"
+                style={{
+                  width: '100%',
+                  padding: '7px 10px',
+                  borderRadius: 8,
+                  background: T.inputBg,
+                  border: `1px solid ${T.inputBorder}`,
+                  color: T.textPrimary,
+                  fontFamily: T.sans,
+                  fontSize: 12,
+                  lineHeight: 1.4,
+                  outline: 'none',
+                  boxSizing: 'border-box',
+                }}
               />
             </div>
           );
         })}
       </div>
 
-      <div className="grid grid-cols-2 gap-3">
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(2, 1fr)',
+        gap: 12,
+      }}>
         <div>
-          <label className="text-xs text-gray-500 font-medium block mb-1">
-            {t('weeklyAdmin.chineseNote')}
+          <label style={{
+            ...labelStyle,
+            display: 'block',
+            marginBottom: 5,
+          }}>
+            {t('weeklyAdmin.developmentalNote')}
           </label>
           <textarea
+            className="wat-textarea"
             value={chineseNote.chinese_text}
             onChange={(e) => onUpdate(childId, '_chinese', 'chinese_text', e.target.value)}
-            placeholder={t('weeklyAdmin.chineseNotePlaceholder')}
-            className="w-full px-2 py-1.5 border rounded text-xs resize-none"
+            placeholder={t('weeklyAdmin.developmentalNotePlaceholder')}
             rows={3}
+            style={{
+              width: '100%',
+              padding: '8px 10px',
+              borderRadius: 10,
+              background: T.inputBg,
+              border: `1px solid ${T.inputBorder}`,
+              color: T.textPrimary,
+              fontFamily: T.sans,
+              fontSize: 12,
+              lineHeight: 1.5,
+              outline: 'none',
+              resize: 'vertical',
+              boxSizing: 'border-box',
+            }}
           />
         </div>
         <div>
-          <label className="text-xs text-gray-500 font-medium block mb-1">
-            {t('weeklyAdmin.additionalNotes')}
+          <label style={{
+            ...labelStyle,
+            display: 'block',
+            marginBottom: 5,
+          }}>
+            {t('weeklyAdmin.notes')}
           </label>
           <textarea
+            className="wat-textarea"
             value={notesEntry.english_text}
             onChange={(e) => onUpdate(childId, '_notes', 'english_text', e.target.value)}
             placeholder={t('weeklyAdmin.notesPlaceholder')}
-            className="w-full px-2 py-1.5 border rounded text-xs resize-none"
             rows={3}
+            style={{
+              width: '100%',
+              padding: '8px 10px',
+              borderRadius: 10,
+              background: T.inputBg,
+              border: `1px solid ${T.inputBorder}`,
+              color: T.textPrimary,
+              fontFamily: T.sans,
+              fontSize: 12,
+              lineHeight: 1.5,
+              outline: 'none',
+              resize: 'vertical',
+              boxSizing: 'border-box',
+            }}
           />
         </div>
       </div>
