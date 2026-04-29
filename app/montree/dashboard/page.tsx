@@ -76,35 +76,23 @@ function StudentAvatarIcon({ child, isSelected }: { child: Child; isSelected: bo
 function StudentAvatarCard({ child }: { child: Child }) {
   const [showFallback, setShowFallback] = useState(!child.photo_url);
 
-  return (
-    <div style={{
-      width: 48, height: 48, borderRadius: '50%',
-      position: 'relative', flexShrink: 0,
-      background: 'rgba(16,185,129,0.15)',
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
-      overflow: 'visible',
-      boxShadow: '0 0 20px 6px rgba(52,211,153,0.30)',
-    }}>
-      {!showFallback && child.photo_url ? (
+  if (!showFallback && child.photo_url) {
+    return (
+      <div className="w-12 h-12 rounded-full bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center text-white font-bold text-lg overflow-hidden shadow-md shrink-0">
         <img
           src={getProxyUrl(child.photo_url)}
+          className="w-full h-full object-cover"
           alt=""
           loading="lazy"
           onError={() => setShowFallback(true)}
-          style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover', display: 'block' }}
         />
-      ) : (
-        <span style={{
-          fontFamily: "'Lora', Georgia, serif",
-          fontWeight: 500,
-          fontSize: 22,
-          color: 'rgba(255,255,255,0.90)',
-          lineHeight: 1,
-          userSelect: 'none',
-        }}>
-          {child.name.charAt(0).toUpperCase()}
-        </span>
-      )}
+      </div>
+    );
+  }
+
+  return (
+    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center text-white font-bold text-lg overflow-hidden shadow-md shrink-0">
+      {child.name.charAt(0)}
     </div>
   );
 }
@@ -442,15 +430,10 @@ export default function DashboardPage() {
                 return (
                   <div
                     data-tutorial="student-grid"
-                    className="flex-1 grid gap-2 overflow-hidden rounded-2xl p-2"
+                    className="flex-1 grid gap-2 overflow-hidden"
                     style={{
                       gridTemplateColumns: `repeat(${cols}, 1fr)`,
                       gridTemplateRows: `repeat(${rows}, 1fr)`,
-                      background: `
-                        radial-gradient(ellipse 80% 60% at 85% 5%, rgba(39,129,90,0.45), rgba(39,129,90,0) 55%),
-                        radial-gradient(ellipse 50% 40% at 80% 12%, rgba(130,217,174,0.20), rgba(130,217,174,0) 60%),
-                        linear-gradient(155deg, #0c2419 0%, #0a1f16 38%, #081a12 70%, #06140e 100%)
-                      `,
                     }}
                   >
                     {filteredChildren.map((child, index) => (
@@ -459,11 +442,10 @@ export default function DashboardPage() {
                         href={`/montree/dashboard/${child.id}`}
                         data-tutorial="student-card"
                         {...(index === 0 ? { 'data-guide': 'first-child' } : {})}
-                        className="rounded-2xl active:scale-95 transition-all flex flex-col items-center justify-center gap-2 min-h-0 py-3"
-                        style={{ background: 'rgba(10,26,15,0.6)', border: '1px solid rgba(52,211,153,0.10)' }}
+                        className="bg-white rounded-2xl shadow-sm hover:shadow-lg active:scale-95 transition-all flex flex-col items-center justify-center border border-gray-100 min-h-0"
                       >
                         <StudentAvatarCard child={child} />
-                        <p className="text-xs font-semibold truncate w-full text-center px-1" style={{ color: 'rgba(255,255,255,0.80)' }}>
+                        <p className="text-xs font-semibold text-gray-800 truncate w-full text-center mt-1 px-1">
                           {child.name.split(' ')[0]}
                         </p>
                       </Link>
