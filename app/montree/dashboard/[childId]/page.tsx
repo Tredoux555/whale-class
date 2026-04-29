@@ -8,7 +8,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import dynamic from 'next/dynamic';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Images, Mic as MicIcon, Printer, ChevronDown, ClipboardList } from 'lucide-react';
+import { Images, Mic as MicIcon, Printer, ChevronDown, ClipboardList, Sparkles, TrendingUp } from 'lucide-react';
 import { toast, Toaster } from 'sonner';
 import { getSession, isHomeschoolParent } from '@/lib/montree/auth';
 import { AREA_CONFIG } from '@/lib/montree/types';
@@ -81,6 +81,7 @@ export default function WeekPage() {
 
   const [focusWorks, setFocusWorks] = useState<Assignment[]>([]);
   const [extraWorks, setExtraWorks] = useState<Assignment[]>([]);
+  const [progressStats, setProgressStats] = useState<{ mastered: number; practicing: number }>({ mastered: 0, practicing: 0 });
   const [loading, setLoading] = useState(true);
   const [expandedIndex, setExpandedIndex] = useState<string | null>(null);
   const [notes, setNotes] = useState<Record<string, string>>({});
@@ -216,6 +217,13 @@ export default function WeekPage() {
       })
       .then(data => {
         const allProgress: Assignment[] = data.progress || [];
+
+        // Compute global stats from all works (not just focus shelf)
+        setProgressStats({
+          mastered:   allProgress.filter((p: Assignment) => p.status === 'mastered' || p.status === 'completed').length,
+          practicing: allProgress.filter((p: Assignment) => p.status === 'practicing').length,
+        });
+
         const areaOrder = ['practical_life', 'sensorial', 'mathematics', 'language', 'cultural'];
         const focus: Assignment[] = [];
         const extras: Assignment[] = [];
@@ -768,6 +776,83 @@ export default function WeekPage() {
         onShelfFilled={fetchAssignments}
       />
       </div>
+
+      {/* Stats row — mastered / practicing tiles */}
+      {(progressStats.mastered > 0 || progressStats.practicing > 0) && (
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(2, 1fr)',
+          gap: 12,
+        }}>
+          {/* Mastered */}
+          <div style={{
+            display: 'flex', alignItems: 'center', gap: 14,
+            padding: '18px 20px',
+            background: 'rgba(255,255,255,0.06)',
+            border: '1px solid rgba(52,211,153,0.15)',
+            borderRadius: 18,
+            backdropFilter: 'blur(18px) saturate(140%)',
+            WebkitBackdropFilter: 'blur(18px) saturate(140%)',
+          }}>
+            <div style={{
+              width: 42, height: 42, flexShrink: 0, borderRadius: 12,
+              background: 'rgba(255,255,255,0.08)',
+              border: '1px solid rgba(255,255,255,0.18)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              color: 'rgba(255,255,255,0.80)',
+            }}>
+              <Sparkles size={19} strokeWidth={1.75} />
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column' }}>
+              <span style={{
+                fontFamily: "'Lora', Georgia, serif",
+                fontSize: 28, fontWeight: 500,
+                color: 'rgba(255,255,255,0.95)', lineHeight: 1, letterSpacing: -0.5,
+              }}>{progressStats.mastered}</span>
+              <span style={{
+                fontFamily: "'Inter', -apple-system, system-ui, sans-serif",
+                fontSize: 11, color: 'rgba(255,255,255,0.55)',
+                fontWeight: 500, marginTop: 4,
+                letterSpacing: 0.3, textTransform: 'uppercase' as const,
+              }}>{t('status.mastered')}</span>
+            </div>
+          </div>
+
+          {/* Practicing */}
+          <div style={{
+            display: 'flex', alignItems: 'center', gap: 14,
+            padding: '18px 20px',
+            background: 'rgba(255,255,255,0.06)',
+            border: '1px solid rgba(52,211,153,0.15)',
+            borderRadius: 18,
+            backdropFilter: 'blur(18px) saturate(140%)',
+            WebkitBackdropFilter: 'blur(18px) saturate(140%)',
+          }}>
+            <div style={{
+              width: 42, height: 42, flexShrink: 0, borderRadius: 12,
+              background: 'rgba(52,211,153,0.15)',
+              border: '1px solid rgba(52,211,153,0.30)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              color: '#34d399',
+            }}>
+              <TrendingUp size={19} strokeWidth={1.75} />
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column' }}>
+              <span style={{
+                fontFamily: "'Lora', Georgia, serif",
+                fontSize: 28, fontWeight: 500,
+                color: 'rgba(255,255,255,0.95)', lineHeight: 1, letterSpacing: -0.5,
+              }}>{progressStats.practicing}</span>
+              <span style={{
+                fontFamily: "'Inter', -apple-system, system-ui, sans-serif",
+                fontSize: 11, color: 'rgba(255,255,255,0.55)',
+                fontWeight: 500, marginTop: 4,
+                letterSpacing: 0.3, textTransform: 'uppercase' as const,
+              }}>{t('status.practicing')}</span>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Weekly Admin — collapsed by default, Whale Class only (government doc copy-paste) */}
       {!isHomeschoolParent(session) && session?.classroom?.id === '945c846d-fb33-4370-8a95-a29b7767af54' && (

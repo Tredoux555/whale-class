@@ -3,7 +3,6 @@
 import { useState, useEffect, useCallback, useRef, CSSProperties } from 'react';
 import { ChevronDown, BookOpen, Check, Plus, X, Mic, Square } from 'lucide-react';
 import { AreaConfig } from '@/components/montree/curriculum/types';
-import AreaBadge from '@/components/montree/shared/AreaBadge';
 import GuruWorkGuide from '@/components/montree/guru/GuruWorkGuide';
 import TeachingInstructions from '@/components/montree/guru/TeachingInstructions';
 import ChildVoiceNote from '@/components/montree/voice-notes/ChildVoiceNote';
@@ -90,6 +89,29 @@ const SANS  = "'Inter', -apple-system, system-ui, sans-serif";
 const SERIF = "'Lora', 'Iowan Old Style', Georgia, serif";
 
 const AREAS = ['practical_life', 'sensorial', 'mathematics', 'language', 'cultural'];
+
+// Area dot colors — dark forest palette (matches Claude Design mockup)
+const AREA_DOT_RGB: Record<string, string> = {
+  practical_life: '236, 72, 153',   // pink
+  sensorial:      '20, 184, 166',   // teal
+  mathematics:    '168, 85, 247',   // purple
+  language:       '74, 222, 128',   // green
+  cultural:       '249, 115, 22',   // orange
+};
+
+// Inline area circle — replaces AreaBadge (no Tailwind, matches dark forest aesthetic)
+function AreaDot({ area, size = 36 }: { area: string; size?: number }) {
+  const rgb = AREA_DOT_RGB[area] || '255,255,255';
+  return (
+    <div style={{
+      width: size, height: size, flexShrink: 0,
+      borderRadius: '50%',
+      background: `rgba(${rgb}, 0.22)`,
+      border: `1px solid rgba(${rgb}, 0.40)`,
+      boxShadow: `0 0 0 1px rgba(${rgb}, 0.05) inset, 0 4px 12px rgba(${rgb}, 0.10)`,
+    }} />
+  );
+}
 
 // ─── GAME PLAN VISIBILITY ───────────────────────────────────────────────────
 // Set to true to re-enable the game plan card (nudge, work chips, direction,
@@ -405,7 +427,7 @@ export default function FocusWorksSection({
                   }}
                   title={t('focusWorks.tapToChange')}
                 >
-                  <AreaBadge area={area} size="lg" />
+                  <AreaDot area={area} />
                 </button>
 
                 {/* Work name or empty state — tap to expand */}
