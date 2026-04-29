@@ -1,9 +1,14 @@
 // Weekly Admin Documents — Generate pixel-perfect Summary & Plan .docx files
 // Teachers input English + Chinese notes per child, then generate & download.
+// Dark forest visual treatment — all wiring intact
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, CSSProperties } from 'react';
 import { useRouter } from 'next/navigation';
+import {
+  ArrowLeft, ChevronLeft, ChevronRight, Sparkles,
+  Download, Save, FileText, ClipboardList, AlertTriangle,
+} from 'lucide-react';
 import { getSession, isHomeschoolParent, type MontreeSession } from '@/lib/montree/auth';
 import { montreeApi } from '@/lib/montree/api';
 import { useI18n } from '@/lib/montree/i18n';
@@ -29,10 +34,111 @@ interface NoteData {
   chinese_text: string;
 }
 
-// Summary: one overall note per child (area=null)
-// Plan: per-area English work names + overall Chinese note + additional notes
-type SummaryNotes = Record<string, NoteData>; // childId -> note
-type PlanNotes = Record<string, Record<string, NoteData>>; // childId -> area|'_chinese'|'_notes' -> note
+type SummaryNotes = Record<string, NoteData>;
+type PlanNotes = Record<string, Record<string, NoteData>>;
+
+// Dark forest tokens
+const T = {
+  bg: '#0a1a0f',
+  glow: 'radial-gradient(ellipse 1100px 900px at 88% 8%, rgba(39,129,90,0.48), transparent 60%)',
+  toolbarBg: 'linear-gradient(180deg, rgba(7,18,12,0.96), rgba(7,18,12,0.90))',
+  toolbarBorder: '1px solid rgba(52,211,153,0.15)',
+  card: 'rgba(255,255,255,0.06)',
+  cardBorder: '1px solid rgba(52,211,153,0.15)',
+  cardRadius: 18,
+  blur: 'blur(18px) saturate(140%)',
+  emerald: '#34d399',
+  emeraldDeep: '#10b981',
+  emeraldDim: 'rgba(52,211,153,0.65)',
+  emeraldSoft: 'rgba(52,211,153,0.10)',
+  emeraldStrong: 'rgba(52,211,153,0.18)',
+  violet: '#c4b5fd',
+  violetSoft: 'rgba(139,92,246,0.18)',
+  violetBorder: 'rgba(139,92,246,0.45)',
+  amber: '#f59e0b',
+  amberSoft: 'rgba(245,158,11,0.18)',
+  amberBorder: 'rgba(245,158,11,0.35)',
+  red: '#f87171',
+  redSoft: 'rgba(239,68,68,0.10)',
+  redBorder: 'rgba(239,68,68,0.30)',
+  textPrimary: 'rgba(255,255,255,0.95)',
+  textSecondary: 'rgba(255,255,255,0.65)',
+  textMuted: 'rgba(255,255,255,0.40)',
+  inputBg: 'rgba(0,0,0,0.25)',
+  inputBorder: 'rgba(52,211,153,0.18)',
+  serif: '"Lora", Georgia, serif',
+  sans: '"Inter", -apple-system, BlinkMacSystemFont, sans-serif',
+  mono: '"SF Mono", Menlo, Consolas, monospace',
+};
+
+const ctaPrimary: CSSProperties = {
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  gap: 6,
+  padding: '8px 14px',
+  borderRadius: 10,
+  background: 'linear-gradient(180deg, #34d399, #10b981)',
+  border: '1px solid rgba(52,211,153,0.55)',
+  color: '#06281a',
+  fontFamily: T.sans,
+  fontSize: 12,
+  fontWeight: 700,
+  letterSpacing: 0.1,
+  cursor: 'pointer',
+  whiteSpace: 'nowrap',
+  boxShadow: '0 4px 14px rgba(16,185,129,0.25)',
+};
+
+const ctaViolet: CSSProperties = {
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  gap: 6,
+  padding: '8px 14px',
+  borderRadius: 10,
+  background: T.violetSoft,
+  border: `1px solid ${T.violetBorder}`,
+  color: T.violet,
+  fontFamily: T.sans,
+  fontSize: 12,
+  fontWeight: 600,
+  cursor: 'pointer',
+  whiteSpace: 'nowrap',
+};
+
+const ctaAmber: CSSProperties = {
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  gap: 6,
+  padding: '8px 14px',
+  borderRadius: 10,
+  background: T.amberSoft,
+  border: `1px solid ${T.amberBorder}`,
+  color: T.amber,
+  fontFamily: T.sans,
+  fontSize: 12,
+  fontWeight: 600,
+  cursor: 'pointer',
+  whiteSpace: 'nowrap',
+};
+
+const ghostBtn: CSSProperties = {
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  gap: 5,
+  padding: '6px 10px',
+  borderRadius: 8,
+  background: 'rgba(255,255,255,0.06)',
+  border: '1px solid rgba(255,255,255,0.10)',
+  color: T.textPrimary,
+  fontFamily: T.sans,
+  fontSize: 12,
+  fontWeight: 500,
+  cursor: 'pointer',
+};
 
 export default function WeeklyAdminDocsPage() {
   const router = useRouter();
@@ -43,44 +149,28 @@ export default function WeeklyAdminDocsPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [autoFilling, setAutoFilling] = useState(false);
-  const [generating, setGenerating] = useState<string | null>(null); // 'summary' | 'plan' | null
+  const [generating, setGenerating] = useState<string | null>(null);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
-  // Week selection
   const [weekStart, setWeekStart] = useState(() => getCurrentMonday());
 
-  // Tab: 'summary' or 'plan'
   const [activeTab, setActiveTab] = useState<'summary' | 'plan'>('summary');
 
-  // Notes state
   const [summaryNotes, setSummaryNotes] = useState<SummaryNotes>({});
   const [planNotes, setPlanNotes] = useState<PlanNotes>({});
 
-  // Staleness detection — see CLAUDE.md Session 29/30.
-  // staleChildren = children whose expected work set (what Auto-fill would
-  // produce right now) contains works not present in their saved summary
-  // note. The server computes this via semantic diff.
   const [staleChildren, setStaleChildren] = useState<Array<{
     child_id: string;
     child_name: string;
     missing_works: string[];
   }>>([]);
 
-  // ─── Init ──────────────────────────────────────────────────
-
   const abortRef = useRef<AbortController | null>(null);
   const mountedRef = useRef(true);
   const weekRef = useRef(weekStart);
   weekRef.current = weekStart;
 
-  // Unmount cleanup MUST live in its own empty-deps useEffect. If colocated
-  // with the session useEffect below, the cleanup fires on every deps change
-  // (e.g. when `isEnabled` reference changes after the features refetch on
-  // window focus), setting mountedRef.current=false while the component is
-  // still mounted — which then traps handleAutoFill at "..." forever because
-  // its finally guard `if (mountedRef.current) setAutoFilling(false)` never
-  // runs. See CLAUDE.md Session 31 root-cause note.
   useEffect(() => {
     return () => { mountedRef.current = false; };
   }, []);
@@ -95,23 +185,17 @@ export default function WeeklyAdminDocsPage() {
       router.push('/montree/dashboard');
       return;
     }
-    // Gate: redirect if feature not enabled (wait for features to load first)
     if (!featuresLoading && !isEnabled('weekly_admin_docs')) {
       router.push('/montree/dashboard');
       return;
     }
     setSession(sess);
-    // isEnabled intentionally omitted — its reference changes on FeaturesProvider window-focus
-    // refetch (deps [features]), which would re-fire this effect mid-session and bounce the
-    // teacher back to the dashboard. featuresLoading + the inline isEnabled call cover the gate.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router, featuresLoading]);
 
-  // Fetch children + existing notes when session or week changes
   const fetchData = useCallback(async () => {
     if (!session?.classroom?.id) return;
 
-    // Cancel any in-flight request
     abortRef.current?.abort();
     const controller = new AbortController();
     abortRef.current = controller;
@@ -133,12 +217,10 @@ export default function WeeklyAdminDocsPage() {
       if (controller.signal.aborted) return;
 
       if (childrenData.children) {
-        // Custom classroom order (matches physical seating arrangement)
         const sorted = sortChildrenByCustomOrder(childrenData.children as Child[]);
         setChildren(sorted);
       }
 
-      // Parse notes into state
       const sNotes: SummaryNotes = {};
       const pNotes: PlanNotes = {};
 
@@ -178,7 +260,6 @@ export default function WeeklyAdminDocsPage() {
       setStaleChildren(notesData.stale_children || []);
       setLoading(false);
 
-      // Auto-fill ONLY when no saved notes exist (first visit for this week)
       if (!hasAnyNotes && !controller.signal.aborted) {
         handleAutoFill();
       }
@@ -193,18 +274,11 @@ export default function WeeklyAdminDocsPage() {
   }, [session?.classroom?.id, weekStart]);
 
   useEffect(() => {
-    // Wait for features to load and verify enabled before fetching data
     if (featuresLoading || !isEnabled('weekly_admin_docs')) return;
     fetchData();
     return () => { abortRef.current?.abort(); };
-    // isEnabled intentionally omitted — its reference changes on FeaturesProvider window-focus
-    // refetch (deps [features]), which previously re-fired this effect and triggered fetchData
-    // every time the user returned to the tab — causing the "Loading..." flicker every ~30s.
-    // featuresLoading + the inline isEnabled call still gate against false-positive runs.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fetchData, featuresLoading]);
-
-  // ─── Save Notes (reusable — silent=true skips UI feedback) ─
 
   const saveNotes = async (silent = false): Promise<boolean> => {
     if (!session?.classroom?.id) return false;
@@ -219,7 +293,6 @@ export default function WeeklyAdminDocsPage() {
         chinese_text: string | null;
       }> = [];
 
-      // Collect summary notes
       for (const child of children) {
         const sn = summaryNotes[child.id];
         if (sn && (sn.english_text || sn.chinese_text)) {
@@ -233,11 +306,9 @@ export default function WeeklyAdminDocsPage() {
         }
       }
 
-      // Collect plan notes
       for (const child of children) {
         const pn = planNotes[child.id];
         if (pn) {
-          // Per-area English work names
           for (const area of AREAS) {
             const an = pn[area.key];
             if (an && an.english_text) {
@@ -250,7 +321,6 @@ export default function WeeklyAdminDocsPage() {
               });
             }
           }
-          // Overall Chinese developmental note (area=null)
           const chNote = pn['_chinese'];
           if (chNote && chNote.chinese_text) {
             notes.push({
@@ -261,7 +331,6 @@ export default function WeeklyAdminDocsPage() {
               chinese_text: chNote.chinese_text || null,
             });
           }
-          // Additional notes text (area='notes')
           const notesEntry = pn['_notes'];
           if (notesEntry && notesEntry.english_text) {
             notes.push({
@@ -308,14 +377,11 @@ export default function WeeklyAdminDocsPage() {
 
   const handleSave = () => saveNotes(false);
 
-  // ─── Generate & Download ───────────────────────────────────
-
   const handleGenerate = async (docType: 'summary' | 'plan') => {
     if (!session?.classroom?.id) return;
     setGenerating(docType);
     setError('');
 
-    // Auto-save current notes to DB before generating (prevents empty DOCX)
     const saved = await saveNotes(true);
     if (!saved) {
       // If nothing to save, still try generate (DB may have notes from earlier)
@@ -340,7 +406,6 @@ export default function WeeklyAdminDocsPage() {
         return;
       }
 
-      // Download blob as .docx
       const blob = await res.blob();
       const filename = docType === 'summary'
         ? `Weekly_Summary_${weekStart}.docx`
@@ -364,11 +429,9 @@ export default function WeeklyAdminDocsPage() {
     }
   };
 
-  // ─── Auto-fill from Data ──────────────────────────────────
-
   const handleAutoFill = async () => {
     if (!session?.classroom?.id) return;
-    const requestedWeek = weekStart;  // Capture at call time
+    const requestedWeek = weekStart;
     setAutoFilling(true);
     setError('');
     setSuccess('');
@@ -395,7 +458,6 @@ export default function WeeklyAdminDocsPage() {
 
       let filledCount = 0;
 
-      // Build new state snapshots before setting (single update, no flash)
       const newSummary: SummaryNotes = {};
       for (const suggestion of data.children) {
         if (suggestion.summaryEnglish || suggestion.summaryChinese) filledCount++;
@@ -418,7 +480,6 @@ export default function WeeklyAdminDocsPage() {
         }
       }
 
-      // Merge with existing (preserve teacher edits for fields auto-fill doesn't cover)
       setSummaryNotes((prev) => ({ ...prev, ...newSummary }));
       setPlanNotes((prev) => {
         const merged = { ...prev };
@@ -428,9 +489,6 @@ export default function WeeklyAdminDocsPage() {
         return merged;
       });
 
-      // Hide the stale banner immediately — the on-screen notes now reflect
-      // what Auto-fill just produced, so there's no diff until the teacher
-      // next touches + saves + the server recomputes on the next GET.
       setStaleChildren([]);
 
       setSuccess(`${t('weeklyAdmin.autoFilled')} (${filledCount})`);
@@ -441,8 +499,6 @@ export default function WeeklyAdminDocsPage() {
       if (mountedRef.current) setAutoFilling(false);
     }
   };
-
-  // ─── Note Update Helpers ───────────────────────────────────
 
   const updateSummaryNote = (childId: string, field: 'english_text' | 'chinese_text', value: string) => {
     setSummaryNotes((prev) => ({
@@ -467,152 +523,364 @@ export default function WeeklyAdminDocsPage() {
     }));
   };
 
-  // ─── Render ────────────────────────────────────────────────
-
   if (!session) return null;
 
-  // Feature gate removed — weekly admin docs always accessible for teachers
+  const isMaxWeek = weekStart >= (activeTab === 'plan' ? shiftWeek(getCurrentMonday(), 1) : getCurrentMonday());
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20">
-      {/* Header */}
-      <div className="sticky top-0 z-10 bg-white border-b px-4 py-3 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <button onClick={() => router.push('/montree/dashboard')} className="text-gray-500 text-xl">
-            ←
-          </button>
-          <h1 className="text-lg font-semibold">{t('weeklyAdmin.title')}</h1>
-        </div>
-        <div className="flex items-center gap-2">
+    <div style={{
+      minHeight: '100vh',
+      background: T.bg,
+      backgroundImage: T.glow,
+      backgroundAttachment: 'fixed',
+      paddingBottom: 80,
+      color: T.textPrimary,
+      fontFamily: T.sans,
+    }}>
+      <style>{`.wad-textarea::placeholder, .wad-input::placeholder { color: rgba(255,255,255,0.30); }`}</style>
+
+      {/* Sticky header */}
+      <div style={{
+        position: 'sticky',
+        top: 0,
+        zIndex: 10,
+        background: T.toolbarBg,
+        backdropFilter: 'blur(20px) saturate(140%)',
+        WebkitBackdropFilter: 'blur(20px) saturate(140%)',
+        borderBottom: T.toolbarBorder,
+        padding: '12px 16px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        gap: 12,
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
           <button
-            onClick={handleSave}
-            disabled={saving}
-            className="px-3 py-1.5 bg-emerald-600 text-white text-sm rounded-lg disabled:opacity-50"
+            onClick={() => router.push('/montree/dashboard')}
+            aria-label={t('common.back')}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: 36,
+              height: 36,
+              borderRadius: 10,
+              background: 'rgba(255,255,255,0.06)',
+              border: '1px solid rgba(255,255,255,0.10)',
+              color: T.textPrimary,
+              cursor: 'pointer',
+            }}
           >
-            {saving ? t('common.loading') : t('common.save')}
+            <ArrowLeft size={16} strokeWidth={1.75} />
           </button>
+          <h1 style={{
+            margin: 0,
+            fontFamily: T.serif,
+            fontSize: 18,
+            fontWeight: 500,
+            color: T.textPrimary,
+            letterSpacing: -0.2,
+          }}>
+            {t('weeklyAdmin.title')}
+          </h1>
         </div>
+        <button
+          onClick={handleSave}
+          disabled={saving}
+          style={{
+            ...ctaPrimary,
+            opacity: saving ? 0.55 : 1,
+            cursor: saving ? 'not-allowed' : 'pointer',
+          }}
+        >
+          <Save size={12} strokeWidth={2} />
+          {saving ? t('common.loading') : t('common.save')}
+        </button>
       </div>
 
-      {/* Week Selector */}
-      <div className="px-4 py-3 bg-white border-b flex items-center gap-3">
-        <label className="text-sm text-gray-600 font-medium">{t('weeklyAdmin.week')}:</label>
+      {/* Week selector */}
+      <div style={{
+        padding: '12px 16px',
+        background: 'rgba(7,18,12,0.55)',
+        borderBottom: T.toolbarBorder,
+        backdropFilter: 'blur(12px)',
+        WebkitBackdropFilter: 'blur(12px)',
+        display: 'flex',
+        alignItems: 'center',
+        gap: 12,
+      }}>
+        <label style={{
+          fontFamily: T.sans,
+          fontSize: 12,
+          fontWeight: 600,
+          color: T.textSecondary,
+          letterSpacing: 0.3,
+          textTransform: 'uppercase',
+        }}>
+          {t('weeklyAdmin.week')}:
+        </label>
         <button
           onClick={() => setWeekStart(shiftWeek(weekStart, -1))}
-          className="px-2 py-1 text-gray-600 hover:bg-gray-100 rounded"
+          aria-label="Previous week"
+          style={{
+            ...ghostBtn,
+            width: 28,
+            height: 28,
+            padding: 0,
+          }}
         >
-          ◀
+          <ChevronLeft size={14} strokeWidth={1.75} />
         </button>
-        <span className="text-sm font-mono font-medium min-w-[130px] text-center">{weekStart}</span>
+        <span style={{
+          minWidth: 130,
+          textAlign: 'center',
+          fontFamily: T.mono,
+          fontSize: 13,
+          fontWeight: 500,
+          color: T.textPrimary,
+          padding: '5px 12px',
+          borderRadius: 8,
+          background: 'rgba(255,255,255,0.05)',
+          border: '1px solid rgba(255,255,255,0.08)',
+        }}>
+          {weekStart}
+        </span>
         <button
           onClick={() => {
             const next = shiftWeek(weekStart, 1);
             const maxWeek = activeTab === 'plan' ? shiftWeek(getCurrentMonday(), 1) : getCurrentMonday();
             if (next <= maxWeek) setWeekStart(next);
           }}
-          disabled={weekStart >= (activeTab === 'plan' ? shiftWeek(getCurrentMonday(), 1) : getCurrentMonday())}
-          className="px-2 py-1 text-gray-600 hover:bg-gray-100 rounded disabled:opacity-30"
+          disabled={isMaxWeek}
+          aria-label="Next week"
+          style={{
+            ...ghostBtn,
+            width: 28,
+            height: 28,
+            padding: 0,
+            opacity: isMaxWeek ? 0.30 : 1,
+            cursor: isMaxWeek ? 'not-allowed' : 'pointer',
+          }}
         >
-          ▶
+          <ChevronRight size={14} strokeWidth={1.75} />
         </button>
       </div>
 
-      {/* Tab Selector */}
-      <div className="px-4 py-2 bg-white border-b flex gap-2">
-        <button
-          onClick={() => setActiveTab('summary')}
-          className={`px-4 py-2 rounded-lg text-sm font-medium ${
-            activeTab === 'summary' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700'
-          }`}
-        >
-          {t('weeklyAdmin.summaryTab')}
-        </button>
-        <button
-          onClick={() => setActiveTab('plan')}
-          className={`px-4 py-2 rounded-lg text-sm font-medium ${
-            activeTab === 'plan' ? 'bg-purple-600 text-white' : 'bg-gray-100 text-gray-700'
-          }`}
-        >
-          {t('weeklyAdmin.planTab')}
-        </button>
+      {/* Tabs + actions */}
+      <div style={{
+        padding: '10px 16px',
+        background: 'rgba(7,18,12,0.40)',
+        borderBottom: T.toolbarBorder,
+        display: 'flex',
+        alignItems: 'center',
+        gap: 8,
+        flexWrap: 'wrap',
+      }}>
+        {[
+          { id: 'summary' as const, label: t('weeklyAdmin.summaryTab'), icon: FileText },
+          { id: 'plan' as const, label: t('weeklyAdmin.planTab'), icon: ClipboardList },
+        ].map(opt => {
+          const active = activeTab === opt.id;
+          const Icon = opt.icon;
+          const isViolet = opt.id === 'plan';
+          return (
+            <button
+              key={opt.id}
+              onClick={() => setActiveTab(opt.id)}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 6,
+                padding: '8px 14px',
+                borderRadius: 10,
+                background: active
+                  ? (isViolet ? T.violetSoft : T.emeraldStrong)
+                  : 'rgba(255,255,255,0.06)',
+                border: `1px solid ${active
+                  ? (isViolet ? T.violetBorder : 'rgba(52,211,153,0.45)')
+                  : 'rgba(255,255,255,0.10)'}`,
+                color: active
+                  ? (isViolet ? T.violet : T.emerald)
+                  : T.textSecondary,
+                fontFamily: T.sans,
+                fontSize: 13,
+                fontWeight: 600,
+                cursor: 'pointer',
+                transition: 'all 120ms ease',
+              }}
+            >
+              <Icon size={14} strokeWidth={1.75} />
+              {opt.label}
+            </button>
+          );
+        })}
 
-        <div className="flex-1" />
+        <div style={{ flex: 1 }} />
 
-        {/* Auto-fill button */}
         <button
           onClick={handleAutoFill}
           disabled={autoFilling}
-          className="px-3 py-2 bg-amber-500 text-white text-sm rounded-lg disabled:opacity-50"
+          style={{
+            ...ctaAmber,
+            opacity: autoFilling ? 0.55 : 1,
+            cursor: autoFilling ? 'not-allowed' : 'pointer',
+          }}
         >
+          <Sparkles size={12} strokeWidth={1.75} />
           {autoFilling ? '...' : t('weeklyAdmin.autoFill')}
         </button>
 
-        {/* Generate buttons */}
         <button
           onClick={() => handleGenerate(activeTab)}
           disabled={generating !== null}
-          className={`px-3 py-2 text-white text-sm rounded-lg disabled:opacity-50 ${
-            activeTab === 'summary' ? 'bg-blue-600' : 'bg-purple-600'
-          }`}
+          style={{
+            ...(activeTab === 'plan' ? ctaViolet : ctaPrimary),
+            opacity: generating !== null ? 0.55 : 1,
+            cursor: generating !== null ? 'not-allowed' : 'pointer',
+          }}
         >
+          <Download size={12} strokeWidth={2} />
           {generating === activeTab ? t('weeklyAdmin.generating') : t('weeklyAdmin.generate')}
         </button>
       </div>
 
       {/* Messages */}
       {error && (
-        <div className="mx-4 mt-3 px-3 py-2 bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg">
+        <div style={{
+          margin: '12px 16px 0',
+          padding: '10px 14px',
+          background: T.redSoft,
+          border: `1px solid ${T.redBorder}`,
+          color: T.red,
+          fontFamily: T.sans,
+          fontSize: 13,
+          borderRadius: 12,
+        }}>
           {error}
         </div>
       )}
       {success && (
-        <div className="mx-4 mt-3 px-3 py-2 bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm rounded-lg">
+        <div style={{
+          margin: '12px 16px 0',
+          padding: '10px 14px',
+          background: T.emeraldStrong,
+          border: '1px solid rgba(52,211,153,0.40)',
+          color: T.emerald,
+          fontFamily: T.sans,
+          fontSize: 13,
+          borderRadius: 12,
+        }}>
           {success}
         </div>
       )}
 
-      {/* Stale-notes banner — server-side semantic diff fired at least one
-          child whose expected work set (what Auto-fill would produce now)
-          contains works missing from their saved summary note. DOCX
-          generation reads only from saved notes, so missing works yield a
-          stale Weekly Summary. Tapping "Refresh Auto-fill" reruns the same
-          handleAutoFill the manual button uses. See CLAUDE.md Session 29/30. */}
+      {/* Stale-notes banner */}
       {(() => {
         if (loading || autoFilling) return null;
         if (staleChildren.length === 0) return null;
         return (
-          <div className="mx-4 mt-3 px-3 py-2 bg-amber-50 border border-amber-200 rounded-lg flex items-center gap-3">
-            <span className="text-amber-800 text-xs flex-1">
+          <div style={{
+            margin: '12px 16px 0',
+            padding: '10px 14px',
+            background: T.amberSoft,
+            border: `1px solid ${T.amberBorder}`,
+            borderRadius: 12,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 12,
+          }}>
+            <AlertTriangle size={15} strokeWidth={1.75} color={T.amber} style={{ flexShrink: 0 }} />
+            <span style={{
+              flex: 1,
+              fontFamily: T.sans,
+              fontSize: 12,
+              color: T.amber,
+              lineHeight: 1.4,
+            }}>
               {t('weeklyAdmin.staleBanner')}
             </span>
             <button
               onClick={handleAutoFill}
               disabled={autoFilling}
-              className="px-3 py-1 bg-amber-600 text-white text-xs rounded-full disabled:opacity-50 font-medium whitespace-nowrap"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 5,
+                padding: '6px 12px',
+                background: T.amber,
+                border: 'none',
+                borderRadius: 999,
+                color: '#1a1206',
+                fontFamily: T.sans,
+                fontSize: 11,
+                fontWeight: 700,
+                cursor: autoFilling ? 'not-allowed' : 'pointer',
+                opacity: autoFilling ? 0.55 : 1,
+                whiteSpace: 'nowrap',
+              }}
             >
+              <Sparkles size={11} strokeWidth={1.75} />
               {t('weeklyAdmin.refreshAutoFill')}
             </button>
           </div>
         );
       })()}
 
-      {/* Loading */}
       {loading && (
-        <div className="flex justify-center py-12">
-          <div className="text-gray-400">{t('common.loading')}</div>
+        <div style={{
+          display: 'flex',
+          justifyContent: 'center',
+          padding: '60px 0',
+          color: T.textMuted,
+          fontFamily: T.sans,
+          fontSize: 13,
+        }}>
+          {t('common.loading')}
         </div>
       )}
 
-      {/* Children Cards */}
+      {/* Children cards */}
       {!loading && (
-        <div className="px-4 py-4 space-y-4">
+        <div style={{
+          padding: '20px 16px',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 14,
+        }}>
           {children.length === 0 && (
-            <div className="text-center text-gray-400 py-8">{t('weeklyAdmin.noChildren')}</div>
+            <div style={{
+              textAlign: 'center',
+              color: T.textMuted,
+              fontFamily: T.sans,
+              fontSize: 14,
+              padding: '40px 0',
+            }}>
+              {t('weeklyAdmin.noChildren')}
+            </div>
           )}
 
           {children.map((child) => (
-            <div key={child.id} className="bg-white rounded-xl border p-4">
-              <h3 className="font-semibold text-base mb-3">{child.name}</h3>
+            <div
+              key={child.id}
+              style={{
+                background: T.card,
+                border: T.cardBorder,
+                borderRadius: T.cardRadius,
+                backdropFilter: T.blur,
+                WebkitBackdropFilter: T.blur,
+                padding: 16,
+              }}
+            >
+              <h3 style={{
+                margin: '0 0 12px',
+                fontFamily: T.serif,
+                fontSize: 17,
+                fontWeight: 500,
+                color: T.textPrimary,
+                letterSpacing: -0.2,
+              }}>
+                {child.name}
+              </h3>
 
               {activeTab === 'summary' ? (
                 <SummaryCard
@@ -648,7 +916,6 @@ function SummaryCard({
 }) {
   const { t, locale } = useI18n();
 
-  // Show the locale-appropriate content in one box
   const DISPLAY_FIELD_MAP: Record<string, 'english_text' | 'chinese_text'> = {
     en: 'english_text',
     zh: 'chinese_text',
@@ -665,8 +932,20 @@ function SummaryCard({
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-1">
-        <label className="text-xs text-gray-500 font-medium">
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        marginBottom: 6,
+      }}>
+        <label style={{
+          fontFamily: T.sans,
+          fontSize: 11,
+          fontWeight: 700,
+          color: T.textMuted,
+          letterSpacing: 0.5,
+          textTransform: 'uppercase',
+        }}>
           {t('weeklyAdmin.thisWeekActivities')}
         </label>
         <VoiceDictate
@@ -676,11 +955,25 @@ function SummaryCard({
         />
       </div>
       <textarea
+        className="wad-textarea"
         value={displayValue}
         onChange={(e) => onUpdate(childId, displayField, e.target.value)}
         placeholder={placeholder}
-        className="w-full px-3 py-2 border rounded-lg text-sm resize-none"
         rows={5}
+        style={{
+          width: '100%',
+          padding: '10px 12px',
+          borderRadius: 12,
+          background: T.inputBg,
+          border: `1px solid ${T.inputBorder}`,
+          color: T.textPrimary,
+          fontFamily: T.sans,
+          fontSize: 13,
+          lineHeight: 1.5,
+          outline: 'none',
+          resize: 'vertical',
+          boxSizing: 'border-box',
+        }}
       />
     </div>
   );
@@ -701,29 +994,59 @@ function PlanCard({
   const chineseNote = notes['_chinese'] || { english_text: '', chinese_text: '' };
   const notesEntry = notes['_notes'] || { english_text: '', chinese_text: '' };
 
-  // Show localized work names based on current locale
   const LOCALE_FIELD: Record<string, 'chinese_text' | 'english_text'> = { zh: 'chinese_text' };
   const displayField = LOCALE_FIELD[locale] || 'english_text';
 
+  const labelStyle: CSSProperties = {
+    fontFamily: T.sans,
+    fontSize: 11,
+    fontWeight: 700,
+    color: T.textMuted,
+    letterSpacing: 0.5,
+    textTransform: 'uppercase',
+  };
+
   return (
-    <div className="space-y-3">
-      {/* Per-area work names (localized based on current locale) */}
-      <div className="grid grid-cols-5 gap-2">
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+      {/* Per-area work names */}
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(5, 1fr)',
+        gap: 8,
+      }}>
         {AREAS.map((area) => {
           const areaNote = notes[area.key] || { english_text: '', chinese_text: '' };
           const displayValue = areaNote[displayField] || areaNote.english_text || '';
           const areaLabel = getAreaLabel(area.key, locale);
           return (
             <div key={area.key}>
-              <div className="text-[10px] font-semibold text-gray-500 mb-1 text-center">
+              <div style={{
+                ...labelStyle,
+                fontSize: 10,
+                textAlign: 'center',
+                marginBottom: 4,
+              }}>
                 {areaLabel}
               </div>
               <input
+                className="wad-input"
                 type="text"
                 value={displayValue}
                 onChange={(e) => onUpdate(childId, area.key, displayField, e.target.value)}
                 placeholder={areaLabel}
-                className="w-full px-2 py-1.5 border rounded text-xs"
+                style={{
+                  width: '100%',
+                  padding: '7px 10px',
+                  borderRadius: 8,
+                  background: T.inputBg,
+                  border: `1px solid ${T.inputBorder}`,
+                  color: T.textPrimary,
+                  fontFamily: T.sans,
+                  fontSize: 12,
+                  lineHeight: 1.4,
+                  outline: 'none',
+                  boxSizing: 'border-box',
+                }}
               />
             </div>
           );
@@ -731,10 +1054,19 @@ function PlanCard({
       </div>
 
       {/* Developmental note + additional notes */}
-      <div className="grid grid-cols-2 gap-3">
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(2, 1fr)',
+        gap: 12,
+      }}>
         <div>
-          <div className="flex items-center justify-between mb-1">
-            <label className="text-xs text-gray-500 font-medium">
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            marginBottom: 5,
+          }}>
+            <label style={labelStyle}>
               {t('weeklyAdmin.developmentalNote')}
             </label>
             <VoiceDictate
@@ -744,16 +1076,35 @@ function PlanCard({
             />
           </div>
           <textarea
+            className="wad-textarea"
             value={chineseNote.chinese_text}
             onChange={(e) => onUpdate(childId, '_chinese', 'chinese_text', e.target.value)}
             placeholder={t('weeklyAdmin.developmentalNotePlaceholder')}
-            className="w-full px-2 py-1.5 border rounded text-xs resize-none"
             rows={3}
+            style={{
+              width: '100%',
+              padding: '8px 10px',
+              borderRadius: 10,
+              background: T.inputBg,
+              border: `1px solid ${T.inputBorder}`,
+              color: T.textPrimary,
+              fontFamily: T.sans,
+              fontSize: 12,
+              lineHeight: 1.5,
+              outline: 'none',
+              resize: 'vertical',
+              boxSizing: 'border-box',
+            }}
           />
         </div>
         <div>
-          <div className="flex items-center justify-between mb-1">
-            <label className="text-xs text-gray-500 font-medium">
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            marginBottom: 5,
+          }}>
+            <label style={labelStyle}>
               {t('weeklyAdmin.notes')}
             </label>
             <VoiceDictate
@@ -763,11 +1114,25 @@ function PlanCard({
             />
           </div>
           <textarea
+            className="wad-textarea"
             value={notesEntry.english_text}
             onChange={(e) => onUpdate(childId, '_notes', 'english_text', e.target.value)}
             placeholder={t('weeklyAdmin.notesPlaceholder')}
-            className="w-full px-2 py-1.5 border rounded text-xs resize-none"
             rows={3}
+            style={{
+              width: '100%',
+              padding: '8px 10px',
+              borderRadius: 10,
+              background: T.inputBg,
+              border: `1px solid ${T.inputBorder}`,
+              color: T.textPrimary,
+              fontFamily: T.sans,
+              fontSize: 12,
+              lineHeight: 1.5,
+              outline: 'none',
+              resize: 'vertical',
+              boxSizing: 'border-box',
+            }}
           />
         </div>
       </div>
@@ -779,7 +1144,6 @@ function PlanCard({
 
 function getCurrentMonday(): string {
   const now = new Date();
-  // Beijing time: UTC+8
   const beijing = new Date(now.getTime() + 8 * 60 * 60 * 1000);
   const day = beijing.getUTCDay();
   const diff = day === 0 ? -6 : 1 - day;
