@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { Check, X, RefreshCw, Mail, Lock } from 'lucide-react';
 
 interface DemoRequest {
   id: string;
@@ -13,6 +14,27 @@ interface DemoRequest {
   country: string | null;
   website: string | null;
 }
+
+const T = {
+  bg: '#0a1a0f',
+  glow: 'radial-gradient(ellipse 1100px 900px at 88% 8%, rgba(39,129,90,0.48), transparent 60%)',
+  card: 'rgba(255,255,255,0.06)',
+  cardBorder: '1px solid rgba(52,211,153,0.15)',
+  blur: 'blur(18px) saturate(140%)',
+  emerald: '#34d399',
+  emeraldStrong: 'rgba(52,211,153,0.18)',
+  emeraldSoft: 'rgba(52,211,153,0.10)',
+  amber: '#f59e0b',
+  amberStrong: 'rgba(245,158,11,0.18)',
+  amberBorder: 'rgba(245,158,11,0.35)',
+  textPrimary: 'rgba(255,255,255,0.95)',
+  textSecondary: 'rgba(255,255,255,0.65)',
+  textMuted: 'rgba(255,255,255,0.40)',
+  inputBg: 'rgba(0,0,0,0.30)',
+  inputBorder: 'rgba(52,211,153,0.20)',
+  serif: '"Lora", Georgia, serif',
+  sans: '"Inter", -apple-system, BlinkMacSystemFont, sans-serif',
+};
 
 export default function DemoRequestsPage() {
   const [password, setPassword] = useState('');
@@ -74,15 +96,91 @@ export default function DemoRequestsPage() {
 
   if (!authed) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
-        <form onSubmit={handleLogin} className="bg-white rounded-2xl shadow-lg p-8 w-full max-w-sm">
-          <h1 className="text-xl font-bold text-gray-800 mb-4">Demo Requests</h1>
+      <div style={{
+        minHeight: '100vh',
+        background: T.bg,
+        backgroundImage: T.glow,
+        backgroundAttachment: 'fixed',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: 16,
+        fontFamily: T.sans,
+      }}>
+        <form
+          onSubmit={handleLogin}
+          style={{
+            background: T.card,
+            border: T.cardBorder,
+            borderRadius: 18,
+            backdropFilter: T.blur,
+            WebkitBackdropFilter: T.blur,
+            padding: 32,
+            width: '100%',
+            maxWidth: 380,
+            boxShadow: '0 18px 40px rgba(0,0,0,0.45)',
+            color: T.textPrimary,
+          }}
+        >
+          <div style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: 44,
+            height: 44,
+            borderRadius: 12,
+            background: T.emeraldStrong,
+            border: '1px solid rgba(52,211,153,0.40)',
+            color: T.emerald,
+            marginBottom: 14,
+          }}>
+            <Lock size={18} strokeWidth={1.75} />
+          </div>
+          <h1 style={{
+            margin: '0 0 16px',
+            fontFamily: T.serif,
+            fontSize: 22,
+            fontWeight: 500,
+            color: T.textPrimary,
+            letterSpacing: -0.3,
+          }}>
+            Demo Requests
+          </h1>
           <input
-            type="password" placeholder="Super admin password" value={password}
+            type="password"
+            placeholder="Super admin password"
+            value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full px-4 py-3 border rounded-lg text-sm mb-3"
+            style={{
+              width: '100%',
+              padding: '12px 14px',
+              borderRadius: 12,
+              background: T.inputBg,
+              border: `1px solid ${T.inputBorder}`,
+              color: T.textPrimary,
+              fontFamily: T.sans,
+              fontSize: 13,
+              outline: 'none',
+              marginBottom: 12,
+              boxSizing: 'border-box',
+            }}
           />
-          <button type="submit" className="w-full py-3 bg-emerald-700 text-white rounded-lg font-semibold text-sm">
+          <button
+            type="submit"
+            style={{
+              width: '100%',
+              padding: '12px',
+              borderRadius: 12,
+              background: 'linear-gradient(180deg, #34d399, #10b981)',
+              border: '1px solid rgba(52,211,153,0.55)',
+              color: '#06281a',
+              fontFamily: T.sans,
+              fontSize: 13,
+              fontWeight: 700,
+              cursor: 'pointer',
+              boxShadow: '0 4px 14px rgba(16,185,129,0.30)',
+            }}
+          >
             Log in
           </button>
         </form>
@@ -94,67 +192,223 @@ export default function DemoRequestsPage() {
   const handled = requests.filter(r => r.status !== 'demo_requested');
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4 sm:p-8">
-      <div className="max-w-3xl mx-auto">
+    <div style={{
+      minHeight: '100vh',
+      background: T.bg,
+      backgroundImage: T.glow,
+      backgroundAttachment: 'fixed',
+      padding: 16,
+      color: T.textPrimary,
+      fontFamily: T.sans,
+    }}>
+      <div style={{ maxWidth: 768, margin: '0 auto' }}>
         {/* Header */}
-        <div className="flex items-center justify-between mb-6">
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          marginBottom: 24,
+        }}>
           <div>
-            <h1 className="text-2xl font-bold text-gray-800">Demo Requests</h1>
-            <p className="text-sm text-gray-500">From montree.xyz landing page</p>
+            <h1 style={{
+              margin: 0,
+              fontFamily: T.serif,
+              fontSize: 26,
+              fontWeight: 500,
+              color: T.textPrimary,
+              letterSpacing: -0.4,
+            }}>
+              Demo Requests
+            </h1>
+            <p style={{
+              margin: '4px 0 0',
+              fontFamily: T.sans,
+              fontSize: 13,
+              color: T.textMuted,
+            }}>
+              From montree.xyz landing page
+            </p>
           </div>
-          <button onClick={fetchData} disabled={loading} className="px-4 py-2 bg-white border rounded-lg text-sm text-gray-600 hover:bg-gray-50">
+          <button
+            onClick={fetchData}
+            disabled={loading}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 6,
+              padding: '8px 14px',
+              borderRadius: 10,
+              background: 'rgba(255,255,255,0.06)',
+              border: '1px solid rgba(255,255,255,0.10)',
+              color: T.textPrimary,
+              fontFamily: T.sans,
+              fontSize: 12,
+              fontWeight: 600,
+              cursor: loading ? 'wait' : 'pointer',
+              opacity: loading ? 0.55 : 1,
+            }}
+          >
+            <RefreshCw size={12} strokeWidth={1.75} style={loading ? { animation: 'dr-spin 0.9s linear infinite' } : {}} />
             {loading ? '...' : 'Refresh'}
           </button>
+          <style>{`@keyframes dr-spin { to { transform: rotate(360deg); } }`}</style>
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-3 gap-3 mb-6">
-          <div className="bg-white rounded-xl p-4 text-center border">
-            <div className="text-2xl font-bold text-gray-800">{stats.total}</div>
-            <div className="text-xs text-gray-500 uppercase tracking-wider">Total</div>
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(3, 1fr)',
+          gap: 12,
+          marginBottom: 24,
+        }}>
+          <div style={{
+            padding: 16,
+            borderRadius: 14,
+            background: T.card,
+            border: T.cardBorder,
+            backdropFilter: T.blur,
+            WebkitBackdropFilter: T.blur,
+            textAlign: 'center',
+          }}>
+            <div style={{ fontFamily: T.serif, fontSize: 26, fontWeight: 500, color: T.textPrimary }}>{stats.total}</div>
+            <div style={{ fontFamily: T.sans, fontSize: 10, fontWeight: 700, color: T.textMuted, textTransform: 'uppercase', letterSpacing: 0.6 }}>Total</div>
           </div>
-          <div className="bg-amber-50 rounded-xl p-4 text-center border border-amber-200">
-            <div className="text-2xl font-bold text-amber-700">{stats.pending}</div>
-            <div className="text-xs text-amber-600 uppercase tracking-wider">Action needed</div>
+          <div style={{
+            padding: 16,
+            borderRadius: 14,
+            background: T.amberStrong,
+            border: `1px solid ${T.amberBorder}`,
+            backdropFilter: T.blur,
+            WebkitBackdropFilter: T.blur,
+            textAlign: 'center',
+          }}>
+            <div style={{ fontFamily: T.serif, fontSize: 26, fontWeight: 500, color: T.amber }}>{stats.pending}</div>
+            <div style={{ fontFamily: T.sans, fontSize: 10, fontWeight: 700, color: T.amber, textTransform: 'uppercase', letterSpacing: 0.6 }}>Action needed</div>
           </div>
-          <div className="bg-emerald-50 rounded-xl p-4 text-center border border-emerald-200">
-            <div className="text-2xl font-bold text-emerald-700">{stats.contacted}</div>
-            <div className="text-xs text-emerald-600 uppercase tracking-wider">Contacted</div>
+          <div style={{
+            padding: 16,
+            borderRadius: 14,
+            background: T.emeraldStrong,
+            border: '1px solid rgba(52,211,153,0.40)',
+            backdropFilter: T.blur,
+            WebkitBackdropFilter: T.blur,
+            textAlign: 'center',
+          }}>
+            <div style={{ fontFamily: T.serif, fontSize: 26, fontWeight: 500, color: T.emerald }}>{stats.contacted}</div>
+            <div style={{ fontFamily: T.sans, fontSize: 10, fontWeight: 700, color: T.emerald, textTransform: 'uppercase', letterSpacing: 0.6 }}>Contacted</div>
           </div>
         </div>
 
-        {/* Pending — Action List */}
+        {/* Pending */}
         {pending.length > 0 && (
-          <div className="mb-8">
-            <h2 className="text-sm font-bold text-amber-700 uppercase tracking-wider mb-3">
+          <div style={{ marginBottom: 32 }}>
+            <h2 style={{
+              margin: '0 0 12px',
+              fontFamily: T.sans,
+              fontSize: 11,
+              fontWeight: 700,
+              color: T.amber,
+              textTransform: 'uppercase',
+              letterSpacing: 0.6,
+            }}>
               Action Required ({pending.length})
             </h2>
-            <div className="space-y-2">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {pending.map((r) => (
-                <div key={r.id} className="bg-white rounded-xl p-4 border border-amber-200 shadow-sm">
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="flex-1 min-w-0">
-                      <div className="font-semibold text-gray-800 truncate">
+                <div
+                  key={r.id}
+                  style={{
+                    padding: 16,
+                    borderRadius: 14,
+                    background: T.card,
+                    border: `1px solid ${T.amberBorder}`,
+                    backdropFilter: T.blur,
+                    WebkitBackdropFilter: T.blur,
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{
+                        fontFamily: T.sans,
+                        fontSize: 14,
+                        fontWeight: 600,
+                        color: T.textPrimary,
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                      }}>
                         {r.org_name !== 'Unknown School' ? r.org_name : r.email}
                       </div>
-                      <div className="text-sm text-gray-500 mt-0.5">
-                        {r.contact_person && <span>{r.contact_person} · </span>}
-                        <a href={`mailto:${r.email}`} className="text-emerald-600 hover:underline">{r.email}</a>
+                      <div style={{
+                        marginTop: 3,
+                        fontFamily: T.sans,
+                        fontSize: 13,
+                        color: T.textSecondary,
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 4,
+                        flexWrap: 'wrap',
+                      }}>
+                        {r.contact_person && <span>{r.contact_person} ·</span>}
+                        <a href={`mailto:${r.email}`} style={{ color: T.emerald, textDecoration: 'none' }}>
+                          <Mail size={11} strokeWidth={1.75} style={{ display: 'inline', marginRight: 4 }} />
+                          {r.email}
+                        </a>
                       </div>
-                      <div className="text-xs text-gray-400 mt-1">{timeAgo(r.created_at)}</div>
-                      {r.notes && <div className="text-xs text-gray-500 mt-1 italic">{r.notes}</div>}
+                      <div style={{ marginTop: 4, fontFamily: T.sans, fontSize: 11, color: T.textMuted }}>
+                        {timeAgo(r.created_at)}
+                      </div>
+                      {r.notes && (
+                        <div style={{
+                          marginTop: 4,
+                          fontFamily: T.sans,
+                          fontSize: 11,
+                          color: T.textMuted,
+                          fontStyle: 'italic',
+                        }}>
+                          {r.notes}
+                        </div>
+                      )}
                     </div>
-                    <div className="flex gap-2 shrink-0">
+                    <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
                       <button
                         onClick={() => handleStatusChange(r.id, 'contacted')}
-                        className="px-3 py-1.5 bg-emerald-600 text-white rounded-lg text-xs font-semibold hover:bg-emerald-700"
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: 4,
+                          padding: '6px 12px',
+                          borderRadius: 8,
+                          background: 'linear-gradient(180deg, #34d399, #10b981)',
+                          border: '1px solid rgba(52,211,153,0.55)',
+                          color: '#06281a',
+                          fontFamily: T.sans,
+                          fontSize: 11,
+                          fontWeight: 700,
+                          cursor: 'pointer',
+                        }}
                       >
+                        <Check size={11} strokeWidth={2.5} />
                         Mark Contacted
                       </button>
                       <button
                         onClick={() => handleStatusChange(r.id, 'not_interested')}
-                        className="px-3 py-1.5 bg-gray-100 text-gray-500 rounded-lg text-xs font-semibold hover:bg-gray-200"
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: 4,
+                          padding: '6px 12px',
+                          borderRadius: 8,
+                          background: 'rgba(255,255,255,0.06)',
+                          border: '1px solid rgba(255,255,255,0.10)',
+                          color: T.textSecondary,
+                          fontFamily: T.sans,
+                          fontSize: 11,
+                          fontWeight: 600,
+                          cursor: 'pointer',
+                        }}
                       >
+                        <X size={11} strokeWidth={2.5} />
                         Dismiss
                       </button>
                     </div>
@@ -165,30 +419,89 @@ export default function DemoRequestsPage() {
           </div>
         )}
 
-        {/* Empty state */}
+        {/* Empty */}
         {pending.length === 0 && (
-          <div className="bg-white rounded-xl p-8 text-center border mb-8">
-            <div className="text-3xl mb-3">✓</div>
-            <div className="text-gray-500">No pending demo requests. All caught up!</div>
+          <div style={{
+            padding: 32,
+            textAlign: 'center',
+            background: T.card,
+            border: T.cardBorder,
+            borderRadius: 14,
+            backdropFilter: T.blur,
+            WebkitBackdropFilter: T.blur,
+            marginBottom: 32,
+          }}>
+            <div style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: 44,
+              height: 44,
+              borderRadius: '50%',
+              background: T.emeraldStrong,
+              border: '1px solid rgba(52,211,153,0.40)',
+              color: T.emerald,
+              marginBottom: 12,
+            }}>
+              <Check size={20} strokeWidth={2.5} />
+            </div>
+            <div style={{ fontFamily: T.sans, fontSize: 13, color: T.textSecondary }}>
+              No pending demo requests. All caught up!
+            </div>
           </div>
         )}
 
         {/* Handled */}
         {handled.length > 0 && (
           <div>
-            <h2 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-3">
+            <h2 style={{
+              margin: '0 0 12px',
+              fontFamily: T.sans,
+              fontSize: 11,
+              fontWeight: 700,
+              color: T.textMuted,
+              textTransform: 'uppercase',
+              letterSpacing: 0.6,
+            }}>
               History ({handled.length})
             </h2>
-            <div className="space-y-1">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
               {handled.map((r) => (
-                <div key={r.id} className="bg-white rounded-lg px-4 py-3 border flex items-center justify-between text-sm">
-                  <div className="flex items-center gap-3 min-w-0">
-                    <span className={`inline-block w-2 h-2 rounded-full shrink-0 ${r.status === 'contacted' ? 'bg-emerald-500' : 'bg-gray-300'}`} />
-                    <span className="truncate text-gray-600">
+                <div
+                  key={r.id}
+                  style={{
+                    padding: '10px 14px',
+                    borderRadius: 10,
+                    background: T.card,
+                    border: T.cardBorder,
+                    backdropFilter: T.blur,
+                    WebkitBackdropFilter: T.blur,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    fontSize: 13,
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
+                    <span style={{
+                      width: 8,
+                      height: 8,
+                      borderRadius: '50%',
+                      flexShrink: 0,
+                      background: r.status === 'contacted' ? T.emerald : 'rgba(255,255,255,0.30)',
+                    }} />
+                    <span style={{
+                      color: T.textSecondary,
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
+                    }}>
                       {r.org_name !== 'Unknown School' ? r.org_name : r.email}
                     </span>
                   </div>
-                  <span className="text-xs text-gray-400 shrink-0">{timeAgo(r.created_at)}</span>
+                  <span style={{ flexShrink: 0, fontSize: 11, color: T.textMuted }}>
+                    {timeAgo(r.created_at)}
+                  </span>
                 </div>
               ))}
             </div>
