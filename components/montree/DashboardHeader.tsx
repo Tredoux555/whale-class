@@ -1,73 +1,205 @@
 // components/montree/DashboardHeader.tsx
-// Persistent top header shown on ALL dashboard screens
-// Contains: Montree logo, Language toggle, Inbox, Curriculum, Guru, Student Search, Logout
+// Persistent top header shown on ALL dashboard screens — dark forest aesthetic
 'use client';
 
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
+import {
+  Camera, Mic, Square, MoreHorizontal, ChevronDown,
+  Bell, FileText, Target, Search, Sparkles, BookOpen,
+  LayoutGrid, CalendarDays, Images, FolderOpen, TrendingUp,
+  Users, BookMarked, Globe, BarChart2, Settings2, LogOut,
+} from 'lucide-react';
 import { getSession, clearSession, isHomeschoolParent, type MontreeSession } from '@/lib/montree/auth';
 import { HOME_THEME } from '@/lib/montree/home-theme';
 import { useI18n } from '@/lib/montree/i18n';
 import { montreeApi } from '@/lib/montree/api';
 import InboxButton from './InboxButton';
 import LanguageToggle from './LanguageToggle';
+import MontreeLogo from './MontreeLogo';
 import { toast } from 'sonner';
 import { useFeatures } from '@/hooks/useFeatures';
 
-interface StudentOption {
-  id: string;
-  name: string;
-  photo_url?: string;
+// ── Design tokens ──────────────────────────────────────────────────────────────
+const C = {
+  glassBtn:     'rgba(255,255,255,0.10)',
+  glassBtnHvr:  'rgba(255,255,255,0.18)',
+  border:       'rgba(52,211,153,0.15)',
+  divider:      'rgba(52,211,153,0.10)',
+  emerald:      '#34d399',
+  emeraldSoft:  'rgba(52,211,153,0.08)',
+  red:          'rgba(239,68,68,0.75)',
+  textMd:       'rgba(255,255,255,0.85)',
+  textLo:       'rgba(255,255,255,0.75)',
+  textMute:     'rgba(255,255,255,0.50)',
+  textDanger:   'rgba(239,100,100,0.8)',
+  menuBg:       'rgba(8,20,12,0.95)',
+};
+const SERIF = "'Lora', 'Iowan Old Style', Georgia, serif";
+const SANS  = "'Inter', -apple-system, system-ui, sans-serif";
+
+// ── Types ─────────────────────────────────────────────────────────────────────
+interface StudentOption { id: string; name: string; photo_url?: string; }
+interface TeacherOption  { id: string; name: string; role: string; login_code: string; }
+
+// ── Glass icon button ─────────────────────────────────────────────────────────
+function IconBtn({
+  children, onClick, title, active = false, recording = false,
+}: {
+  children: React.ReactNode;
+  onClick?: () => void;
+  title?: string;
+  active?: boolean;
+  recording?: boolean;
+}) {
+  const [hover, setHover] = useState(false);
+  const bg = recording ? C.red : (hover || active ? C.glassBtnHvr : C.glassBtn);
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      title={title}
+      aria-label={title}
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => setHover(false)}
+      style={{
+        display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+        height: 36, padding: '8px 10px',
+        background: bg, border: 0, borderRadius: 10, color: '#fff',
+        cursor: 'pointer', position: 'relative', flexShrink: 0,
+        transition: 'background 140ms ease', fontFamily: SANS,
+      }}
+    >
+      {recording && (
+        <span aria-hidden="true" style={{
+          position: 'absolute', inset: -3, borderRadius: 13,
+          border: '2px solid rgba(239,68,68,0.55)',
+          animation: 'montree-pulse-ring 1.4s ease-out infinite',
+          pointerEvents: 'none',
+        }} />
+      )}
+      {children}
+    </button>
+  );
 }
 
-interface TeacherOption {
-  id: string;
-  name: string;
-  role: string;
-  login_code: string;
+// ── Menu row ──────────────────────────────────────────────────────────────────
+function MenuRow({
+  icon: Icon, label, active, danger, onClick,
+}: {
+  icon: React.ElementType;
+  label: string;
+  active?: boolean;
+  danger?: boolean;
+  onClick?: () => void;
+}) {
+  const [hover, setHover] = useState(false);
+  const color     = danger ? C.textDanger : (active ? C.emerald : C.textLo);
+  const iconColor = danger ? C.textDanger : (active ? C.emerald : C.textMute);
+  const bg        = (hover || active) ? C.emeraldSoft : 'transparent';
+  return (
+    <button
+      type="button"
+      role="menuitem"
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => setHover(false)}
+      onClick={onClick}
+      style={{
+        width: '100%', display: 'flex', alignItems: 'center', gap: 10,
+        padding: '9px 10px', background: bg, border: 0, borderRadius: 8,
+        color, fontSize: 13, fontWeight: 500, cursor: 'pointer', textAlign: 'left',
+        fontFamily: SANS, transition: 'background 120ms ease, color 120ms ease',
+      }}
+    >
+      <Icon size={16} strokeWidth={1.75} color={iconColor} />
+      <span>{label}</span>
+    </button>
+  );
 }
 
+// ── Divider ───────────────────────────────────────────────────────────────────
+const Divider = () => (
+  <div role="separator" style={{ height: 1, margin: '6px 4px', background: C.divider }} />
+);
+
+// ── Menu panel ────────────────────────────────────────────────────────────────
+const MENU_PANEL_STYLE: React.CSSProperties = {
+  position: 'absolute', top: 'calc(100% + 8px)', right: 0,
+  width: 248, padding: 6,
+  background: C.menuBg,
+  border: `1px solid ${C.border}`,
+  borderRadius: 14,
+  backdropFilter: 'blur(24px) saturate(140%)',
+  WebkitBackdropFilter: 'blur(24px) saturate(140%)',
+  boxShadow: '0 8px 40px rgba(0,0,0,0.5)',
+  zIndex: 60,
+  maxHeight: 'calc(100vh - 80px)',
+  overflowY: 'auto',
+};
+
+// ── Main component ────────────────────────────────────────────────────────────
 export default function DashboardHeader() {
-  const router = useRouter();
+  const router   = useRouter();
   const pathname = usePathname();
   const { t, locale } = useI18n();
   const [session, setSession] = useState<MontreeSession | null>(null);
   const { isEnabled } = useFeatures();
-  const [showMoreMenu, setShowMoreMenu] = useState(false);
+
+  const [showMoreMenu,    setShowMoreMenu]    = useState(false);
   const moreMenuRef = useRef<HTMLDivElement>(null);
 
-  // ── Quick Voice Note state ──
-  const [isRecording, setIsRecording] = useState(false);
-  const [showChildPicker, setShowChildPicker] = useState(false);
-  const [recordingBlob, setRecordingBlob] = useState<Blob | null>(null);
+  // Voice note state
+  const [isRecording,      setIsRecording]      = useState(false);
+  const [showChildPicker,  setShowChildPicker]  = useState(false);
+  const [recordingBlob,    setRecordingBlob]    = useState<Blob | null>(null);
   const [recordingSeconds, setRecordingSeconds] = useState(0);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-  const chunksRef = useRef<Blob[]>([]);
-  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const childPickerRef = useRef<HTMLDivElement>(null);
+  const chunksRef        = useRef<Blob[]>([]);
+  const timerRef         = useRef<ReturnType<typeof setInterval> | null>(null);
+  const childPickerRef   = useRef<HTMLDivElement>(null);
 
   // Teacher selector state
-  const [teachers, setTeachers] = useState<TeacherOption[]>([]);
-  const [showTeacherMenu, setShowTeacherMenu] = useState(false);
+  const [teachers,       setTeachers]       = useState<TeacherOption[]>([]);
+  const [showTeacherMenu,setShowTeacherMenu] = useState(false);
   const [showAddTeacher, setShowAddTeacher] = useState(false);
   const [newTeacherName, setNewTeacherName] = useState('');
-  const [addingTeacher, setAddingTeacher] = useState(false);
+  const [addingTeacher,  setAddingTeacher]  = useState(false);
   const teacherMenuRef = useRef<HTMLDivElement>(null);
 
   // Student search state
-  const [students, setStudents] = useState<StudentOption[]>([]);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [showDropdown, setShowDropdown] = useState(false);
-  const [highlightIndex, setHighlightIndex] = useState(-1);
+  const [students,        setStudents]       = useState<StudentOption[]>([]);
+  const [searchQuery,     setSearchQuery]    = useState('');
+  const [showDropdown,    setShowDropdown]   = useState(false);
+  const [highlightIndex,  setHighlightIndex] = useState(-1);
   const searchRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const inputRef  = useRef<HTMLInputElement>(null);
 
-  // Extract childId from URL when on a child's page (e.g. /montree/dashboard/[childId]/...)
-  // This ensures the Guru link carries the current child context
+  // Extract childId from URL for Guru link context
   const childIdFromPath = useMemo(() => {
     const match = pathname.match(/\/montree\/dashboard\/([a-f0-9-]{36})/);
     return match ? match[1] : null;
+  }, [pathname]);
+
+  // Derive active page from pathname for menu highlighting
+  const activePage = useMemo(() => {
+    if (pathname === '/montree/dashboard/notes')              return 'notes';
+    if (pathname === '/montree/dashboard/focus')              return 'focus-list';
+    if (pathname?.startsWith('/montree/dashboard/photo-audit')) return 'photo-audit';
+    if (pathname === '/montree/dashboard/guru')               return 'guru';
+    if (pathname === '/montree/dashboard/curriculum')         return 'curriculum';
+    if (pathname === '/montree/dashboard/classroom-overview') return 'class-overview';
+    if (pathname === '/montree/dashboard/weekly-admin-docs')  return 'weekly-plan';
+    if (pathname === '/montree/dashboard/albums')             return 'albums';
+    if (pathname?.startsWith('/montree/library'))             return 'library';
+    if (pathname === '/montree/dashboard/earnings')           return 'earnings';
+    if (pathname === '/montree/dashboard/students')           return 'manage-students';
+    if (pathname === '/montree/dashboard/raz')                return 'raz-reading';
+    if (pathname === '/montree/dashboard/language-tracker')   return 'language-tracker';
+    if (pathname === '/montree/dashboard/progress-overview')  return 'class-progress';
+    if (pathname === '/montree/dashboard/classroom-builder')  return 'classroom-setup';
+    if (pathname === '/montree/dashboard/language-semester')  return 'language-semester';
+    return null;
   }, [pathname]);
 
   useEffect(() => {
@@ -76,42 +208,35 @@ export default function DashboardHeader() {
     setSession(sess);
   }, []);
 
-  // Fetch students for search bar (cached in sessionStorage, 5 min TTL)
+  // Fetch students (cached, 5 min TTL)
   useEffect(() => {
     if (!session?.classroom?.id) return;
     if (isHomeschoolParent(session)) return;
-
     const cacheKey = `montree_students_${session.classroom.id}`;
     try {
       const cached = sessionStorage.getItem(cacheKey);
       if (cached) {
         const { list, ts } = JSON.parse(cached);
-        if (Date.now() - ts < 5 * 60 * 1000) {
-          setStudents(list);
-          return;
-        }
+        if (Date.now() - ts < 5 * 60 * 1000) { setStudents(list); return; }
       }
     } catch {}
-
     const controller = new AbortController();
     montreeApi(`/api/montree/children?classroom_id=${session.classroom.id}`, { signal: controller.signal })
-      .then((res) => res.json())
+      .then(res => res.json())
       .then((data: { children?: StudentOption[] }) => {
         if (controller.signal.aborted) return;
         const list = (data.children || []).sort((a, b) => a.name.localeCompare(b.name));
         setStudents(list);
         try { sessionStorage.setItem(cacheKey, JSON.stringify({ list, ts: Date.now() })); } catch {}
-      })
-      .catch(() => {});
+      }).catch(() => {});
     return () => controller.abort();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session?.classroom?.id]);
 
-  // Fetch teachers for this classroom
+  // Fetch teachers (cached, 5 min TTL)
   useEffect(() => {
     if (!session?.classroom?.id) return;
     if (isHomeschoolParent(session)) return;
-
     const cacheKey = `montree_teachers_${session.classroom.id}`;
     try {
       const cached = sessionStorage.getItem(cacheKey);
@@ -120,57 +245,48 @@ export default function DashboardHeader() {
         if (Date.now() - ts < 5 * 60 * 1000) { setTeachers(list); return; }
       }
     } catch {}
-
     const controller = new AbortController();
     montreeApi(`/api/montree/classroom/teachers?classroom_id=${session.classroom.id}`, { signal: controller.signal })
-      .then((res) => res.json())
+      .then(res => res.json())
       .then((data: { teachers?: TeacherOption[] }) => {
         if (controller.signal.aborted) return;
         const list = data.teachers || [];
         setTeachers(list);
         try { sessionStorage.setItem(cacheKey, JSON.stringify({ list, ts: Date.now() })); } catch {}
-      })
-      .catch(() => {});
+      }).catch(() => {});
     return () => controller.abort();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session?.classroom?.id]);
 
-  // Close dropdowns when clicking outside
+  // Close dropdowns on outside click
   useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (searchRef.current && !searchRef.current.contains(e.target as Node)) {
-        setShowDropdown(false);
-      }
-      if (teacherMenuRef.current && !teacherMenuRef.current.contains(e.target as Node)) {
-        setShowTeacherMenu(false);
-        setShowAddTeacher(false);
-      }
-      if (moreMenuRef.current && !moreMenuRef.current.contains(e.target as Node)) {
-        setShowMoreMenu(false);
-      }
+    const handle = (e: MouseEvent) => {
+      if (searchRef.current     && !searchRef.current.contains(e.target as Node))     setShowDropdown(false);
+      if (teacherMenuRef.current && !teacherMenuRef.current.contains(e.target as Node)) { setShowTeacherMenu(false); setShowAddTeacher(false); }
+      if (moreMenuRef.current   && !moreMenuRef.current.contains(e.target as Node))   setShowMoreMenu(false);
     };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener('mousedown', handle);
+    return () => document.removeEventListener('mousedown', handle);
   }, []);
 
-  // PERF: Memoize filtered students to avoid re-filtering on every render
   const filtered = useMemo(() => {
     if (!searchQuery.trim()) return students;
     const q = searchQuery.toLowerCase();
     return students.filter(s => s.name.toLowerCase().includes(q));
   }, [searchQuery, students]);
 
-  // ── Quick Voice Note handlers ──
+  // ── Voice recording handlers ──────────────────────────────────────────────
   const startRecording = useCallback(async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const recorder = new MediaRecorder(stream, { mimeType: MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm' : 'audio/mp4' });
+      const stream   = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const recorder = new MediaRecorder(stream, {
+        mimeType: MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm' : 'audio/mp4',
+      });
       chunksRef.current = [];
       recorder.ondataavailable = (e) => { if (e.data.size > 0) chunksRef.current.push(e.data); };
       recorder.onstop = () => {
         stream.getTracks().forEach(t => t.stop());
-        const blob = new Blob(chunksRef.current, { type: recorder.mimeType });
-        setRecordingBlob(blob);
+        setRecordingBlob(new Blob(chunksRef.current, { type: recorder.mimeType }));
         setShowChildPicker(true);
         setIsRecording(false);
         if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null; }
@@ -183,12 +299,11 @@ export default function DashboardHeader() {
     } catch {
       toast.error(t('dashboard.micAccessError'));
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [locale]);
 
   const stopRecording = useCallback(() => {
-    if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
-      mediaRecorderRef.current.stop();
-    }
+    if (mediaRecorderRef.current?.state === 'recording') mediaRecorderRef.current.stop();
   }, []);
 
   const saveVoiceNote = useCallback(async (childId: string | null) => {
@@ -197,30 +312,16 @@ export default function DashboardHeader() {
     setRecordingBlob(null);
     setRecordingSeconds(0);
     if (!blob || !session?.classroom?.id) return;
-
     toast.success(t('dashboard.savingMessage'), { duration: 1500 });
-
-    // Fire-and-forget: transcribe + save in background
     (async () => {
       try {
-        // Step 1: Whisper transcription
         const formData = new FormData();
         formData.append('audio', blob, 'voice-note.webm');
-        const transcribeRes = await montreeApi('/api/montree/guru/transcribe', {
-          method: 'POST',
-          body: formData,
-        });
-        if (!transcribeRes.ok) {
-          throw new Error(`Transcription API failed: ${transcribeRes.status}`);
-        }
+        const transcribeRes = await montreeApi('/api/montree/guru/transcribe', { method: 'POST', body: formData });
+        if (!transcribeRes.ok) throw new Error(`Transcription failed: ${transcribeRes.status}`);
         const transcribeData = await transcribeRes.json();
         const text = transcribeData.text || transcribeData.transcription || '';
-        if (!text.trim()) {
-          console.warn('[VoiceNote] Empty transcription — skipping save');
-          return;
-        }
-
-        // Step 2: Save to teacher notes
+        if (!text.trim()) return;
         await montreeApi('/api/montree/teacher-notes', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -239,35 +340,28 @@ export default function DashboardHeader() {
     })();
   }, [recordingBlob, session?.classroom?.id, locale]);
 
-  // Close child picker on outside click
   useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
+    const handle = (e: MouseEvent) => {
       if (childPickerRef.current && !childPickerRef.current.contains(e.target as Node)) {
-        // Save without child tag
         if (showChildPicker && recordingBlob) saveVoiceNote(null);
       }
     };
-    if (showChildPicker) document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    if (showChildPicker) document.addEventListener('mousedown', handle);
+    return () => document.removeEventListener('mousedown', handle);
   }, [showChildPicker, recordingBlob, saveVoiceNote]);
 
   const handleAddTeacher = useCallback(async () => {
     if (!newTeacherName.trim() || !session?.classroom?.id || addingTeacher) return;
     setAddingTeacher(true);
     try {
-      const res = await montreeApi('/api/montree/classroom/teachers', {
+      const res  = await montreeApi('/api/montree/classroom/teachers', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ classroom_id: session.classroom.id, name: newTeacherName.trim() }),
       });
       const data = await res.json();
-      if (!res.ok) {
-        console.error('Failed to add teacher:', data.error);
-        toast.error(t('teachers.addFailed'));
-        return;
-      }
+      if (!res.ok) { toast.error(t('teachers.addFailed')); return; }
       toast.success(t('teachers.added'));
-      // Refresh teacher list
       setTeachers(prev => [...prev, data.teacher]);
       try { sessionStorage.removeItem(`montree_teachers_${session.classroom?.id}`); } catch {}
       setNewTeacherName('');
@@ -288,480 +382,393 @@ export default function DashboardHeader() {
 
   const handleSearchKeyDown = useCallback((e: React.KeyboardEvent) => {
     if (!showDropdown || filtered.length === 0) return;
-    if (e.key === 'ArrowDown') {
-      e.preventDefault();
-      setHighlightIndex(prev => (prev + 1) % filtered.length);
-    } else if (e.key === 'ArrowUp') {
-      e.preventDefault();
-      setHighlightIndex(prev => (prev - 1 + filtered.length) % filtered.length);
-    } else if (e.key === 'Enter' && highlightIndex >= 0 && highlightIndex < filtered.length) {
-      e.preventDefault();
-      handleStudentSelect(filtered[highlightIndex]);
-    } else if (e.key === 'Escape') {
-      setShowDropdown(false);
-      inputRef.current?.blur();
-    }
+    if (e.key === 'ArrowDown')  { e.preventDefault(); setHighlightIndex(prev => (prev + 1) % filtered.length); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); setHighlightIndex(prev => (prev - 1 + filtered.length) % filtered.length); }
+    else if (e.key === 'Enter' && highlightIndex >= 0) { e.preventDefault(); handleStudentSelect(filtered[highlightIndex]); }
+    else if (e.key === 'Escape') { setShowDropdown(false); inputRef.current?.blur(); }
   }, [showDropdown, filtered, highlightIndex, handleStudentSelect]);
 
-  // Don't render until we have a session (avoid flash)
   if (!session?.teacher?.id) return null;
 
-  const isHome = isHomeschoolParent(session);
-  // Hide header search on main dashboard (has its own inline search now)
+  const isHome         = isHomeschoolParent(session);
   const isDashboardHome = pathname === '/montree/dashboard';
   const showStudentSearch = !isHome && !isDashboardHome && students.length > 0;
 
-  return (
-    <header className={`${isHome ? HOME_THEME.headerBg : 'bg-gradient-to-r from-emerald-500 to-teal-600'} text-white shadow-lg sticky top-0 z-50 pt-[env(safe-area-inset-top)] print:hidden`}>
-      <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
-        {/* Left: Logo + classroom + teacher selector */}
-        <div className="flex items-center gap-2 min-w-0 flex-shrink">
-          <Link href="/montree/dashboard" data-guide="nav-home" className="flex items-center gap-2 hover:opacity-90 transition-opacity min-w-0 flex-shrink">
-            <span className="text-xl sm:text-2xl flex-shrink-0">🌳</span>
+  // ── Parent portal — original HOME_THEME header (unchanged) ───────────────
+  if (isHome) {
+    return (
+      <header className={`${HOME_THEME.headerBg} text-white shadow-lg sticky top-0 z-50 pt-[env(safe-area-inset-top)] print:hidden`}>
+        <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+          <Link href="/montree/dashboard" className="flex items-center gap-2 hover:opacity-90 transition-opacity">
+            <span className="text-xl sm:text-2xl">🌳</span>
             <span className="font-bold text-base sm:text-lg truncate">{session.classroom?.name || t('app.name')}</span>
           </Link>
+          <LanguageToggle />
+        </div>
+      </header>
+    );
+  }
 
-          {/* Teacher selector — teachers only, when multiple teachers exist or to add new ones */}
-          {!isHome && (
-            <div ref={teacherMenuRef} className="relative flex-shrink-0">
+  // ── Teacher dark forest header ─────────────────────────────────────────────
+  return (
+    <>
+      <style>{`
+        @keyframes montree-pulse-ring {
+          0%   { transform: scale(1);    opacity: 0.8; }
+          70%  { transform: scale(1.15); opacity: 0;   }
+          100% { transform: scale(1.15); opacity: 0;   }
+        }
+      `}</style>
+
+      <header
+        className="print:hidden"
+        style={{
+          position: 'sticky', top: 0, zIndex: 50,
+          background: 'linear-gradient(180deg, rgba(7,18,12,0.96) 0%, rgba(7,18,12,0.90) 100%)',
+          borderBottom: `1px solid ${C.border}`,
+          backdropFilter: 'blur(20px) saturate(140%)',
+          WebkitBackdropFilter: 'blur(20px) saturate(140%)',
+          color: '#fff',
+          paddingTop: 'env(safe-area-inset-top)',
+          fontFamily: SANS,
+        }}
+      >
+        {/* ── Main row ── */}
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: 12,
+          padding: '10px 18px', maxWidth: 1152, margin: '0 auto',
+        }}>
+
+          {/* Left: logo + name + teacher pill */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, flex: 1, minWidth: 0 }}>
+            <Link href="/montree/dashboard" data-guide="nav-home" style={{ display: 'flex', alignItems: 'center', gap: 8, textDecoration: 'none', flexShrink: 0 }}>
+              <MontreeLogo size={28} />
+              <span style={{
+                fontFamily: SERIF, fontWeight: 500, fontSize: 17, color: '#fff',
+                letterSpacing: 0.3, overflow: 'hidden', textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap', maxWidth: 160,
+              }}>{session.classroom?.name || t('app.name')}</span>
+            </Link>
+
+            {/* Teacher selector */}
+            <div ref={teacherMenuRef} style={{ position: 'relative', flexShrink: 0 }}>
               <button
                 onClick={() => { setShowTeacherMenu(!showTeacherMenu); setShowAddTeacher(false); }}
-                className="flex items-center gap-1 px-2 py-1 bg-white/15 hover:bg-white/25 rounded-lg text-xs sm:text-sm transition-colors"
+                onMouseEnter={e => (e.currentTarget.style.background = C.glassBtnHvr)}
+                onMouseLeave={e => (e.currentTarget.style.background = C.glassBtn)}
+                style={{
+                  display: 'inline-flex', alignItems: 'center', gap: 4,
+                  height: 28, padding: '0 8px 0 10px',
+                  background: C.glassBtn, border: 0, borderRadius: 8,
+                  color: C.textMd, fontFamily: SANS, fontSize: 12, fontWeight: 500,
+                  cursor: 'pointer', transition: 'background 140ms ease',
+                }}
               >
-                <span className="truncate max-w-[80px] sm:max-w-[120px]">{session.teacher?.name || t('teachers.teacher')}</span>
-                <span className="text-white/60">▾</span>
+                <span style={{ maxWidth: 100, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {session.teacher?.name || t('teachers.teacher')}
+                </span>
+                <ChevronDown size={13} strokeWidth={1.75} style={{ opacity: 0.7 }} />
               </button>
 
               {showTeacherMenu && (
-                <div className="absolute top-full left-0 mt-1 bg-white rounded-lg shadow-xl overflow-hidden z-[60] min-w-[200px]">
-                  {/* Teacher list */}
-                  {teachers.map((teacher) => (
-                    <div
-                      key={teacher.id}
-                      className={`flex items-center justify-between px-3 py-2.5 text-sm ${
-                        teacher.id === session.teacher?.id
-                          ? 'bg-emerald-50 text-emerald-700 font-semibold'
-                          : 'text-gray-700 hover:bg-gray-50'
-                      }`}
-                    >
-                      <span className="truncate">{teacher.name}</span>
+                <div style={{
+                  position: 'absolute', top: 'calc(100% + 6px)', left: 0,
+                  minWidth: 200, padding: 6,
+                  background: C.menuBg, border: `1px solid ${C.border}`,
+                  borderRadius: 12,
+                  backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)',
+                  boxShadow: '0 8px 32px rgba(0,0,0,0.5)', zIndex: 60, fontFamily: SANS,
+                }}>
+                  {teachers.map(teacher => (
+                    <div key={teacher.id} style={{
+                      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                      padding: '9px 10px', borderRadius: 8, fontSize: 13, fontWeight: 500,
+                      color: teacher.id === session.teacher?.id ? C.emerald : C.textLo,
+                      background: teacher.id === session.teacher?.id ? C.emeraldSoft : 'transparent',
+                    }}>
+                      <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{teacher.name}</span>
                       {teacher.id === session.teacher?.id && (
-                        <span className="text-emerald-600 text-xs ml-2 flex-shrink-0">{t('teachers.you')}</span>
+                        <span style={{ fontSize: 11, color: C.emerald, opacity: 0.8, marginLeft: 8, flexShrink: 0 }}>{t('teachers.you')}</span>
                       )}
                     </div>
                   ))}
-
-                  {/* Divider */}
-                  {teachers.length > 0 && <div className="border-t border-gray-100" />}
-
-                  {/* Add teacher */}
+                  {teachers.length > 0 && <Divider />}
                   {!showAddTeacher ? (
                     <button
-                      onClick={(e) => { e.stopPropagation(); setShowAddTeacher(true); }}
-                      className="w-full flex items-center gap-2 px-3 py-2.5 text-sm text-emerald-600 hover:bg-emerald-50 transition-colors"
-                    >
-                      <span>+</span>
-                      <span>{t('teachers.addTeacher')}</span>
+                      onClick={e => { e.stopPropagation(); setShowAddTeacher(true); }}
+                      onMouseEnter={e => (e.currentTarget.style.background = C.emeraldSoft)}
+                      onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+                      style={{
+                        width: '100%', display: 'flex', alignItems: 'center', gap: 8,
+                        padding: '9px 10px', background: 'transparent', border: 0, borderRadius: 8,
+                        color: C.emerald, fontSize: 13, fontWeight: 500, cursor: 'pointer',
+                        fontFamily: SANS, transition: 'background 120ms ease',
+                      }}>
+                      <span>+</span><span>{t('teachers.addTeacher')}</span>
                     </button>
                   ) : (
-                    <div className="p-3 space-y-2" onClick={(e) => e.stopPropagation()}>
+                    <div style={{ padding: '8px 10px' }} onClick={e => e.stopPropagation()}>
                       <input
-                        type="text"
-                        value={newTeacherName}
-                        onChange={(e) => setNewTeacherName(e.target.value)}
-                        onKeyDown={(e) => { if (e.key === 'Enter') handleAddTeacher(); if (e.key === 'Escape') setShowAddTeacher(false); }}
+                        type="text" value={newTeacherName}
+                        onChange={e => setNewTeacherName(e.target.value)}
+                        onKeyDown={e => { if (e.key === 'Enter') handleAddTeacher(); if (e.key === 'Escape') setShowAddTeacher(false); }}
                         placeholder={t('teachers.namePlaceholder')}
-                        className="w-full px-2 py-1.5 border border-gray-200 rounded text-sm text-gray-800 placeholder-gray-400 focus:border-emerald-400 focus:outline-none"
-                        autoFocus
-                        maxLength={100}
+                        autoFocus maxLength={100}
+                        style={{
+                          width: '100%', padding: '6px 10px', marginBottom: 8,
+                          background: 'rgba(255,255,255,0.08)', border: `1px solid ${C.border}`,
+                          borderRadius: 7, color: '#fff', fontSize: 13,
+                          fontFamily: SANS, outline: 'none', boxSizing: 'border-box',
+                        }}
                       />
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => setShowAddTeacher(false)}
-                          className="flex-1 px-2 py-1 text-xs text-gray-500 hover:text-gray-700"
-                        >
-                          {t('common.cancel')}
-                        </button>
-                        <button
-                          onClick={handleAddTeacher}
-                          disabled={!newTeacherName.trim() || addingTeacher}
-                          className="flex-1 px-2 py-1 text-xs bg-emerald-500 text-white rounded hover:bg-emerald-600 disabled:bg-emerald-300 disabled:cursor-not-allowed"
-                        >
-                          {addingTeacher ? t('common.adding') : t('common.add')}
-                        </button>
+                      <div style={{ display: 'flex', gap: 6 }}>
+                        <button onClick={() => setShowAddTeacher(false)} style={{
+                          flex: 1, padding: '5px 0', background: 'transparent',
+                          border: `1px solid ${C.divider}`, borderRadius: 6,
+                          color: C.textMute, fontSize: 12, cursor: 'pointer', fontFamily: SANS,
+                        }}>{t('common.cancel')}</button>
+                        <button onClick={handleAddTeacher} disabled={!newTeacherName.trim() || addingTeacher} style={{
+                          flex: 1, padding: '5px 0',
+                          background: 'rgba(52,211,153,0.15)', border: `1px solid ${C.border}`,
+                          borderRadius: 6, color: C.emerald, fontSize: 12, cursor: 'pointer',
+                          fontFamily: SANS, opacity: !newTeacherName.trim() || addingTeacher ? 0.45 : 1,
+                        }}>{addingTeacher ? t('common.adding') : t('common.add')}</button>
                       </div>
                     </div>
                   )}
                 </div>
               )}
             </div>
-          )}
-        </div>
+          </div>
 
-        {/* Right: Action icons — daily drivers always visible, rest in "More" dropdown */}
-        <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
-          {/* Language toggle — always visible */}
-          <LanguageToggle />
+          {/* Right: language + camera + mic + more */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+            <LanguageToggle />
 
-          {/* === SINGLE DAILY DRIVER — Capture only, everything else in More menu === */}
-          <Link
-            href="/montree/dashboard/capture"
-            data-guide="nav-capture"
-            className={`px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-lg transition-colors font-medium flex-shrink-0 ${
-              pathname === '/montree/dashboard/capture' ? 'bg-white/40 ring-2 ring-white/50' : 'bg-white/20 hover:bg-white/30'
-            }`}
-            title={t('capture.takePhoto')}
-          >
-            📸
-          </Link>
-
-          {/* 🎙 Quick Voice Note — daily driver */}
-          {!isHome && (
-            <button
-              onClick={isRecording ? stopRecording : startRecording}
-              className={`px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-lg transition-colors font-medium flex-shrink-0 ${
-                isRecording ? 'bg-red-500 ring-2 ring-red-300 animate-pulse' : 'bg-white/20 hover:bg-white/30'
-              }`}
-              title={isRecording ? t('dashboard.stopRecording') : t('dashboard.quickVoiceNote')}
+            <IconBtn
+              title={t('capture.takePhoto')}
+              active={pathname === '/montree/dashboard/capture'}
+              onClick={() => router.push('/montree/dashboard/capture')}
             >
-              {isRecording ? '⏹' : '🎙'}
-            </button>
-          )}
+              <Camera size={18} strokeWidth={1.75} color="#fff" />
+            </IconBtn>
 
-          {/* === MORE MENU — everything else === */}
-          {!isHome && (
-            <div ref={moreMenuRef} className="relative flex-shrink-0">
-              <button
-                onClick={() => setShowMoreMenu(!showMoreMenu)}
-                className={`px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-lg transition-colors font-medium flex-shrink-0 ${
-                  showMoreMenu ? 'bg-white/40 ring-2 ring-white/50' : 'bg-white/20 hover:bg-white/30'
-                }`}
-                title={t('nav.more') || 'More tools'}
+            <IconBtn
+              title={isRecording ? t('dashboard.stopRecording') : t('dashboard.quickVoiceNote')}
+              onClick={isRecording ? stopRecording : startRecording}
+              recording={isRecording}
+            >
+              {isRecording
+                ? <Square size={18} strokeWidth={1.75} color="#fff" fill="#fff" />
+                : <Mic    size={18} strokeWidth={1.75} color="#fff" />}
+            </IconBtn>
+
+            {/* More menu */}
+            <div ref={moreMenuRef} style={{ position: 'relative' }}>
+              <IconBtn
+                title={t('nav.more') || 'More'}
+                active={showMoreMenu}
+                onClick={() => setShowMoreMenu(v => !v)}
               >
-                ⋯
-              </button>
+                <MoreHorizontal size={18} strokeWidth={1.75} color="#fff" />
+              </IconBtn>
 
               {showMoreMenu && (
-                <div className="absolute top-full right-0 mt-2 bg-white rounded-xl shadow-2xl border border-gray-100 overflow-y-auto z-[60] min-w-[200px] py-1 max-h-[calc(100vh-80px)]">
-                  {/* Inbox (moved from daily-driver bar) */}
-                  <div className="px-4 py-2" onClick={() => setShowMoreMenu(false)}>
+                <div role="menu" style={MENU_PANEL_STYLE}>
+                  {/* Inbox */}
+                  <div style={{ padding: '4px 10px 8px' }} onClick={() => setShowMoreMenu(false)}>
                     <InboxButton
                       conversationId={session.teacher.id}
                       userName={session.teacher.name || 'Teacher'}
                       data-tutorial="inbox-button"
                     />
                   </div>
-                  <div className="border-t border-gray-100 my-1" />
-                  <Link
-                    href="/montree/dashboard/notes"
-                    data-guide="nav-notes"
-                    onClick={() => setShowMoreMenu(false)}
-                    className={`flex items-center gap-3 px-4 py-2.5 text-sm transition-colors ${
-                      pathname === '/montree/dashboard/notes' ? 'bg-emerald-50 text-emerald-700 font-semibold' : 'text-gray-700 hover:bg-gray-50'
-                    }`}
-                  >
-                    <span className="text-base">📝</span>
-                    <span>{t('nav.notes')}</span>
-                  </Link>
-                  <Link
-                    href="/montree/dashboard/focus"
-                    onClick={() => setShowMoreMenu(false)}
-                    className={`flex items-center gap-3 px-4 py-2.5 text-sm transition-colors ${
-                      pathname === '/montree/dashboard/focus' ? 'bg-emerald-50 text-emerald-700 font-semibold' : 'text-gray-700 hover:bg-gray-50'
-                    }`}
-                  >
-                    <span className="text-base">🎯</span>
-                    <span>{t('dashboard.focusList')}</span>
-                  </Link>
-                  <Link
-                    href="/montree/dashboard/photo-audit"
-                    data-guide="nav-setup"
-                    onClick={() => setShowMoreMenu(false)}
-                    className={`flex items-center gap-3 px-4 py-2.5 text-sm transition-colors ${
-                      pathname?.startsWith('/montree/dashboard/photo-audit') ? 'bg-emerald-50 text-emerald-700 font-semibold' : 'text-gray-700 hover:bg-gray-50'
-                    }`}
-                  >
-                    <span className="text-base">🔍</span>
-                    <span>{t('audit.title')}</span>
-                  </Link>
-                  <Link
-                    href={childIdFromPath ? `/montree/dashboard/guru?child=${childIdFromPath}` : '/montree/dashboard/guru'}
-                    data-tutorial="guru-link"
-                    data-guide="nav-guru"
-                    onClick={() => setShowMoreMenu(false)}
-                    className={`flex items-center gap-3 px-4 py-2.5 text-sm transition-colors ${
-                      pathname === '/montree/dashboard/guru' ? 'bg-emerald-50 text-emerald-700 font-semibold' : 'text-gray-700 hover:bg-gray-50'
-                    }`}
-                  >
-                    <span className="text-base">🧠</span>
-                    <span>{t('nav.guru')}</span>
-                  </Link>
-                  <Link
-                    href="/montree/dashboard/curriculum"
-                    data-guide="nav-curriculum"
-                    onClick={() => setShowMoreMenu(false)}
-                    className={`flex items-center gap-3 px-4 py-2.5 text-sm transition-colors ${
-                      pathname === '/montree/dashboard/curriculum' ? 'bg-emerald-50 text-emerald-700 font-semibold' : 'text-gray-700 hover:bg-gray-50'
-                    }`}
-                  >
-                    <span className="text-base">📚</span>
-                    <span>{t('nav.curriculum')}</span>
-                  </Link>
-                  <Link
-                    href="/montree/dashboard/classroom-overview"
-                    data-guide="nav-overview"
-                    onClick={() => setShowMoreMenu(false)}
-                    className={`flex items-center gap-3 px-4 py-2.5 text-sm transition-colors ${
-                      pathname === '/montree/dashboard/classroom-overview' ? 'bg-emerald-50 text-emerald-700 font-semibold' : 'text-gray-700 hover:bg-gray-50'
-                    }`}
-                  >
-                    <span className="text-base">📋</span>
-                    <span>{t('nav.classroomOverview')}</span>
-                  </Link>
+                  <Divider />
+
+                  {/* Group 1 — daily tools */}
+                  <MenuRow icon={FileText}  label={t('nav.notes')}          active={activePage === 'notes'}       onClick={() => { setShowMoreMenu(false); router.push('/montree/dashboard/notes'); }} />
+                  <MenuRow icon={Target}    label={t('dashboard.focusList')} active={activePage === 'focus-list'}  onClick={() => { setShowMoreMenu(false); router.push('/montree/dashboard/focus'); }} />
+                  <MenuRow icon={Search}    label={t('audit.title')}         active={activePage === 'photo-audit'} onClick={() => { setShowMoreMenu(false); router.push('/montree/dashboard/photo-audit'); }} />
+                  <MenuRow icon={Sparkles}  label={t('nav.guru')}            active={activePage === 'guru'}        onClick={() => { setShowMoreMenu(false); router.push(childIdFromPath ? `/montree/dashboard/guru?child=${childIdFromPath}` : '/montree/dashboard/guru'); }} />
+                  <Divider />
+
+                  {/* Group 2 — curriculum & content */}
+                  <MenuRow icon={BookOpen}    label={t('nav.curriculum')}        active={activePage === 'curriculum'}    onClick={() => { setShowMoreMenu(false); router.push('/montree/dashboard/curriculum'); }} />
+                  <MenuRow icon={LayoutGrid}  label={t('nav.classroomOverview')} active={activePage === 'class-overview'} onClick={() => { setShowMoreMenu(false); router.push('/montree/dashboard/classroom-overview'); }} />
                   {isEnabled('weekly_admin_docs') && (
-                    <Link
-                      href="/montree/dashboard/weekly-admin-docs"
-                      onClick={() => setShowMoreMenu(false)}
-                      className={`flex items-center gap-3 px-4 py-2.5 text-sm transition-colors ${
-                        pathname === '/montree/dashboard/weekly-admin-docs' ? 'bg-emerald-50 text-emerald-700 font-semibold' : 'text-gray-700 hover:bg-gray-50'
-                      }`}
-                    >
-                      <span className="text-base">📄</span>
-                      <span>{t('dashboard.weeklyPlan')}</span>
-                    </Link>
+                    <MenuRow icon={CalendarDays} label={t('dashboard.weeklyPlan')} active={activePage === 'weekly-plan'} onClick={() => { setShowMoreMenu(false); router.push('/montree/dashboard/weekly-admin-docs'); }} />
                   )}
-                  <Link
-                    href="/montree/dashboard/albums"
-                    onClick={() => setShowMoreMenu(false)}
-                    className={`flex items-center gap-3 px-4 py-2.5 text-sm transition-colors ${
-                      pathname === '/montree/dashboard/albums' ? 'bg-emerald-50 text-emerald-700 font-semibold' : 'text-gray-700 hover:bg-gray-50'
-                    }`}
-                  >
-                    <span className="text-base">🖼️</span>
-                    <span>{t('albums.title')}</span>
-                  </Link>
-                  <Link
-                    href="/montree/library"
-                    onClick={() => setShowMoreMenu(false)}
-                    className={`flex items-center gap-3 px-4 py-2.5 text-sm transition-colors ${
-                      pathname?.startsWith('/montree/library') ? 'bg-emerald-50 text-emerald-700 font-semibold' : 'text-gray-700 hover:bg-gray-50'
-                    }`}
-                  >
-                    <span className="text-base">🗂️</span>
-                    <span>{t('nav.library') || 'Library'}</span>
-                  </Link>
-                  <Link
-                    href="/montree/dashboard/earnings"
-                    onClick={() => setShowMoreMenu(false)}
-                    className={`flex items-center gap-3 px-4 py-2.5 text-sm transition-colors ${
-                      pathname === '/montree/dashboard/earnings' ? 'bg-emerald-50 text-emerald-700 font-semibold' : 'text-gray-700 hover:bg-gray-50'
-                    }`}
-                  >
-                    <span className="text-base">💰</span>
-                    <span>My Earnings</span>
-                  </Link>
-                  <Link
-                    href="/montree/dashboard/students"
-                    onClick={() => setShowMoreMenu(false)}
-                    className={`flex items-center gap-3 px-4 py-2.5 text-sm transition-colors ${
-                      pathname === '/montree/dashboard/students' ? 'bg-emerald-50 text-emerald-700 font-semibold' : 'text-gray-700 hover:bg-gray-50'
-                    }`}
-                  >
-                    <span className="text-base">✏️</span>
-                    <span>{t('students.manageStudents') || 'Manage Students'}</span>
-                  </Link>
+                  <MenuRow icon={Images}      label={t('albums.title')}           active={activePage === 'albums'}   onClick={() => { setShowMoreMenu(false); router.push('/montree/dashboard/albums'); }} />
+                  <MenuRow icon={FolderOpen}  label={t('nav.library') || 'Library'} active={activePage === 'library'} onClick={() => { setShowMoreMenu(false); router.push('/montree/library'); }} />
+                  <Divider />
+
+                  {/* Group 3 — progress & reports */}
+                  <MenuRow icon={TrendingUp}  label="My Earnings"                           active={activePage === 'earnings'}         onClick={() => { setShowMoreMenu(false); router.push('/montree/dashboard/earnings'); }} />
+                  <MenuRow icon={Users}       label={t('students.manageStudents') || 'Manage Students'} active={activePage === 'manage-students'} onClick={() => { setShowMoreMenu(false); router.push('/montree/dashboard/students'); }} />
                   {isEnabled('raz_reading_tracker') && (
-                    <Link
-                      href="/montree/dashboard/raz"
-                      data-guide="nav-raz"
-                      onClick={() => setShowMoreMenu(false)}
-                      className={`flex items-center gap-3 px-4 py-2.5 text-sm transition-colors ${
-                        pathname === '/montree/dashboard/raz' ? 'bg-emerald-50 text-emerald-700 font-semibold' : 'text-gray-700 hover:bg-gray-50'
-                      }`}
-                    >
-                      <span className="text-base">📖</span>
-                      <span>{t('nav.razReadingTracker')}</span>
-                    </Link>
+                    <MenuRow icon={BookMarked} label={t('nav.razReadingTracker')} active={activePage === 'raz-reading'} onClick={() => { setShowMoreMenu(false); router.push('/montree/dashboard/raz'); }} />
                   )}
                   {isEnabled('english_corner') && (
-                    <Link
-                      href="/montree/dashboard/language-tracker"
-                      onClick={() => setShowMoreMenu(false)}
-                      className={`flex items-center gap-3 px-4 py-2.5 text-sm transition-colors ${
-                        pathname === '/montree/dashboard/language-tracker' ? 'bg-emerald-50 text-emerald-700 font-semibold' : 'text-gray-700 hover:bg-gray-50'
-                      }`}
-                    >
-                      <span className="text-base">🇬🇧</span>
-                      <span>{t('dashboard.englishCorner')}</span>
-                    </Link>
+                    <MenuRow icon={Globe} label={t('dashboard.englishCorner')} active={activePage === 'language-tracker'} onClick={() => { setShowMoreMenu(false); router.push('/montree/dashboard/language-tracker'); }} />
                   )}
-
-                  <Link
-                    href="/montree/dashboard/language-semester"
-                    onClick={() => setShowMoreMenu(false)}
-                    className={`flex items-center gap-3 px-4 py-2.5 text-sm transition-colors ${
-                      pathname === '/montree/dashboard/language-semester' ? 'bg-emerald-50 text-emerald-700 font-semibold' : 'text-gray-700 hover:bg-gray-50'
-                    }`}
-                  >
-                    <span className="text-base">📄</span>
-                    <span>{t('dashboard.languageSemester')}</span>
-                  </Link>
-
-                  <Link
-                    href="/montree/dashboard/progress-overview"
-                    onClick={() => setShowMoreMenu(false)}
-                    className={`flex items-center gap-3 px-4 py-2.5 text-sm transition-colors ${
-                      pathname === '/montree/dashboard/progress-overview' ? 'bg-emerald-50 text-emerald-700 font-semibold' : 'text-gray-700 hover:bg-gray-50'
-                    }`}
-                  >
-                    <span className="text-base">📊</span>
-                    <span>{locale === 'zh' ? '班级进度总览' : 'Class Progress'}</span>
-                  </Link>
-
+                  <MenuRow icon={BarChart2}   label={locale === 'zh' ? '班级进度总览' : 'Class Progress'} active={activePage === 'class-progress'} onClick={() => { setShowMoreMenu(false); router.push('/montree/dashboard/progress-overview'); }} />
+                  <MenuRow icon={CalendarDays} label={t('dashboard.languageSemester')} active={activePage === 'language-semester'} onClick={() => { setShowMoreMenu(false); router.push('/montree/dashboard/language-semester'); }} />
                   {isEnabled('paperwork_tracker') && (
-                    <Link
-                      href="/montree/dashboard/paperwork"
-                      onClick={() => setShowMoreMenu(false)}
-                      className={`flex items-center gap-3 px-4 py-2.5 text-sm transition-colors text-gray-700 hover:bg-gray-50`}
-                    >
-                      <span className="text-base">📋</span>
-                      <span>{t('dashboard.paperworkTracker')}</span>
-                    </Link>
+                    <MenuRow icon={FileText} label={t('dashboard.paperworkTracker')} onClick={() => { setShowMoreMenu(false); router.push('/montree/dashboard/paperwork'); }} />
                   )}
+                  <Divider />
 
-                  {/* Divider */}
-                  <div className="border-t border-gray-100 my-1" />
-
-                  <Link
-                    href="/montree/dashboard/classroom-builder"
-                    onClick={() => setShowMoreMenu(false)}
-                    className={`flex items-center gap-3 px-4 py-2.5 text-sm transition-colors ${
-                      pathname === '/montree/dashboard/classroom-builder' ? 'bg-emerald-50 text-emerald-700 font-semibold' : 'text-gray-500 hover:bg-gray-50'
-                    }`}
-                  >
-                    <span className="text-base">🏗️</span>
-                    <span>{t('nav.classroomBuilder') || 'Classroom Setup'}</span>
-                  </Link>
-
-                  {/* Divider before logout */}
-                  <div className="border-t border-gray-100 my-1" />
-
-                  <button
-                    onClick={() => { setShowMoreMenu(false); clearSession(); router.push('/montree/login'); }}
-                    className="flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors w-full text-left"
-                  >
-                    <span className="text-base">🚪</span>
-                    <span>{t('auth.logout')}</span>
-                  </button>
+                  {/* Group 4 — settings + logout */}
+                  <MenuRow icon={Settings2} label={t('nav.classroomBuilder') || 'Classroom Setup'} active={activePage === 'classroom-setup'} onClick={() => { setShowMoreMenu(false); router.push('/montree/dashboard/classroom-builder'); }} />
+                  <Divider />
+                  <MenuRow icon={LogOut} label={t('auth.logout')} danger onClick={() => { setShowMoreMenu(false); clearSession(); router.push('/montree/login'); }} />
                 </div>
               )}
             </div>
-          )}
-        </div>
-      </div>
-
-      {/* Recording indicator bar — shows when mic is active */}
-      {isRecording && (
-        <div className="bg-red-500/90 text-white text-center py-1.5 text-sm font-medium flex items-center justify-center gap-2">
-          <span className="inline-block w-2.5 h-2.5 bg-white rounded-full animate-pulse" />
-          <span>{t('dashboard.recording')} {recordingSeconds}s</span>
-          <button onClick={stopRecording} className="ml-3 px-2 py-0.5 bg-white/25 rounded text-xs hover:bg-white/40">
-            {t('dashboard.done')}
-          </button>
-        </div>
-      )}
-
-      {/* Child picker — appears after recording stops */}
-      {showChildPicker && recordingBlob && (
-        <div ref={childPickerRef} className="bg-white shadow-lg border-t border-gray-100 px-4 py-3">
-          <p className="text-sm text-gray-600 mb-2 font-medium">{t('dashboard.tagChild')}</p>
-          <div className="flex flex-wrap gap-1.5 mb-2">
-            {students.map(s => (
-              <button
-                key={s.id}
-                onClick={() => saveVoiceNote(s.id)}
-                className="px-2.5 py-1 bg-emerald-50 text-emerald-700 rounded-full text-xs font-medium hover:bg-emerald-100 transition-colors"
-              >
-                {s.name}
-              </button>
-            ))}
           </div>
-          <button
-            onClick={() => saveVoiceNote(null)}
-            className="text-xs text-gray-400 hover:text-gray-600"
-          >
-            {t('dashboard.skipTag')}
-          </button>
         </div>
-      )}
 
-      {/* Student search bar — below icons, teachers only */}
-      {showStudentSearch && (
-        <div className="max-w-6xl mx-auto px-4 pb-2">
-          <div ref={searchRef} className="relative max-w-xs ml-auto">
-            <div className="flex items-center bg-white/15 rounded-lg overflow-hidden">
-              <span className="pl-3 text-white/70 text-sm">🔍</span>
-              <input
-                ref={inputRef}
-                type="text"
-                value={searchQuery}
-                onChange={(e) => {
-                  setSearchQuery(e.target.value);
-                  setShowDropdown(true);
-                  setHighlightIndex(-1);
-                }}
-                onFocus={() => setShowDropdown(true)}
-                onKeyDown={handleSearchKeyDown}
-                placeholder={t('nav.searchStudents') || 'Jump to student...'}
-                className="w-full bg-transparent text-white placeholder-white/50 text-sm px-2 py-1.5 outline-none"
-                autoComplete="off"
-              />
-              {searchQuery && (
-                <button
-                  onClick={() => { setSearchQuery(''); setShowDropdown(false); }}
-                  className="pr-3 text-white/50 hover:text-white text-sm"
-                >
-                  ✕
-                </button>
+        {/* Recording indicator bar */}
+        {isRecording && (
+          <div style={{
+            background: 'rgba(239,68,68,0.85)', color: '#fff',
+            textAlign: 'center', padding: '6px 0', fontSize: 13, fontWeight: 500,
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+            fontFamily: SANS,
+          }}>
+            <span style={{
+              width: 8, height: 8, borderRadius: '50%', background: '#fff', display: 'inline-block',
+              animation: 'montree-pulse-ring 1.4s ease-out infinite',
+            }} />
+            <span>{t('dashboard.recording')} {recordingSeconds}s</span>
+            <button onClick={stopRecording} style={{
+              marginLeft: 8, padding: '2px 10px', background: 'rgba(255,255,255,0.25)',
+              border: 0, borderRadius: 5, color: '#fff', fontSize: 12,
+              cursor: 'pointer', fontFamily: SANS,
+            }}>{t('dashboard.done')}</button>
+          </div>
+        )}
+
+        {/* Child picker after recording */}
+        {showChildPicker && recordingBlob && (
+          <div ref={childPickerRef} style={{
+            background: 'rgba(8,20,12,0.97)', borderTop: `1px solid ${C.border}`,
+            padding: '12px 18px', fontFamily: SANS,
+          }}>
+            <p style={{ fontSize: 13, color: C.textMute, marginBottom: 8, fontWeight: 500 }}>
+              {t('dashboard.tagChild')}
+            </p>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 8 }}>
+              {students.map(s => (
+                <button key={s.id} onClick={() => saveVoiceNote(s.id)} style={{
+                  padding: '4px 12px', background: C.emeraldSoft,
+                  border: `1px solid ${C.border}`, borderRadius: 20,
+                  color: C.emerald, fontSize: 12, fontWeight: 500,
+                  cursor: 'pointer', fontFamily: SANS,
+                }}>{s.name}</button>
+              ))}
+            </div>
+            <button onClick={() => saveVoiceNote(null)} style={{
+              background: 'none', border: 0, color: C.textMute,
+              fontSize: 12, cursor: 'pointer', fontFamily: SANS,
+            }}>{t('dashboard.skipTag')}</button>
+          </div>
+        )}
+
+        {/* Student search bar — on sub-pages only */}
+        {showStudentSearch && (
+          <div style={{ padding: '0 18px 10px', maxWidth: 1152, margin: '0 auto' }}>
+            <div ref={searchRef} style={{ position: 'relative', maxWidth: 280, marginLeft: 'auto' }}>
+              <div style={{
+                display: 'flex', alignItems: 'center',
+                background: 'rgba(255,255,255,0.08)', borderRadius: 10,
+                border: `1px solid ${C.border}`, overflow: 'hidden',
+              }}>
+                <Search size={14} strokeWidth={1.75} color={C.textMute} style={{ marginLeft: 10, flexShrink: 0 }} />
+                <input
+                  ref={inputRef}
+                  type="text"
+                  value={searchQuery}
+                  onChange={e => { setSearchQuery(e.target.value); setShowDropdown(true); setHighlightIndex(-1); }}
+                  onFocus={() => setShowDropdown(true)}
+                  onKeyDown={handleSearchKeyDown}
+                  placeholder={t('nav.searchStudents') || 'Jump to student...'}
+                  autoComplete="off"
+                  style={{
+                    flex: 1, background: 'transparent', color: '#fff',
+                    border: 0, outline: 0, fontSize: 13, padding: '7px 8px',
+                    fontFamily: SANS,
+                  }}
+                />
+                {searchQuery && (
+                  <button onClick={() => { setSearchQuery(''); setShowDropdown(false); }} style={{
+                    padding: '0 10px', background: 'none', border: 0,
+                    color: C.textMute, cursor: 'pointer', fontSize: 14,
+                  }}>✕</button>
+                )}
+              </div>
+
+              {/* Search results */}
+              {showDropdown && filtered.length > 0 && (
+                <div style={{
+                  position: 'absolute', top: 'calc(100% + 6px)', left: 0, right: 0,
+                  background: 'rgba(8,20,12,0.97)', border: `1px solid ${C.border}`,
+                  borderRadius: 10, overflow: 'hidden', zIndex: 60,
+                  boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
+                  maxHeight: 256, overflowY: 'auto',
+                }}>
+                  {filtered.map((student, idx) => (
+                    <button key={student.id} onClick={() => handleStudentSelect(student)}
+                      onMouseEnter={e => (e.currentTarget.style.background = C.emeraldSoft)}
+                      onMouseLeave={e => (e.currentTarget.style.background = idx === highlightIndex ? C.emeraldSoft : 'transparent')}
+                      style={{
+                        width: '100%', display: 'flex', alignItems: 'center', gap: 10,
+                        padding: '9px 12px',
+                        background: idx === highlightIndex ? C.emeraldSoft : 'transparent',
+                        border: 0, cursor: 'pointer', textAlign: 'left', fontFamily: SANS,
+                        transition: 'background 100ms ease',
+                      }}>
+                      {student.photo_url ? (
+                        <img src={student.photo_url} alt="" loading="lazy" style={{ width: 28, height: 28, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
+                      ) : (
+                        <span style={{
+                          width: 28, height: 28, borderRadius: '50%', flexShrink: 0,
+                          background: C.emeraldSoft, border: `1px solid ${C.border}`,
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          fontSize: 12, fontWeight: 600, color: C.emerald,
+                        }}>{student.name.charAt(0).toUpperCase()}</span>
+                      )}
+                      <span style={{
+                        fontSize: 13,
+                        fontWeight: student.id === childIdFromPath ? 600 : 500,
+                        color: student.id === childIdFromPath ? C.emerald : C.textLo,
+                      }}>{student.name}</span>
+                      {student.id === childIdFromPath && (
+                        <span style={{ marginLeft: 'auto', fontSize: 11, color: C.emerald, opacity: 0.7 }}>
+                          {t('nav.currentStudent') || 'current'}
+                        </span>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {showDropdown && searchQuery.trim() && filtered.length === 0 && (
+                <div style={{
+                  position: 'absolute', top: 'calc(100% + 6px)', left: 0, right: 0,
+                  background: 'rgba(8,20,12,0.97)', border: `1px solid ${C.border}`,
+                  borderRadius: 10, padding: 12, zIndex: 60,
+                  boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
+                }}>
+                  <p style={{ fontSize: 13, color: C.textMute, textAlign: 'center', margin: 0, fontFamily: SANS }}>
+                    {t('nav.noStudentsFound') || 'No students found'}
+                  </p>
+                </div>
               )}
             </div>
-
-            {/* Dropdown */}
-            {showDropdown && filtered.length > 0 && (
-              <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-lg shadow-xl overflow-hidden z-[60] max-h-64 overflow-y-auto">
-                {filtered.map((student, idx) => (
-                  <button
-                    key={student.id}
-                    onClick={() => handleStudentSelect(student)}
-                    className={`w-full flex items-center gap-3 px-3 py-2.5 text-left text-gray-800 text-sm transition-colors ${
-                      idx === highlightIndex ? 'bg-emerald-50' : 'hover:bg-gray-50'
-                    } ${student.id === childIdFromPath ? 'font-semibold text-emerald-700' : ''}`}
-                  >
-                    {student.photo_url ? (
-                      <img src={student.photo_url} alt="" loading="lazy" decoding="async" className="w-7 h-7 rounded-full object-cover flex-shrink-0" />
-                    ) : (
-                      <span className="w-7 h-7 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center text-xs font-bold flex-shrink-0">
-                        {student.name.charAt(0).toUpperCase()}
-                      </span>
-                    )}
-                    <span>{student.name}</span>
-                    {student.id === childIdFromPath && (
-                      <span className="ml-auto text-emerald-600 text-xs">{t('nav.currentStudent') || 'current'}</span>
-                    )}
-                  </button>
-                ))}
-              </div>
-            )}
-
-            {/* No results */}
-            {showDropdown && searchQuery.trim() && filtered.length === 0 && (
-              <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-lg shadow-xl p-3 z-[60]">
-                <p className="text-gray-400 text-sm text-center">{t('nav.noStudentsFound') || 'No students found'}</p>
-              </div>
-            )}
           </div>
-        </div>
-      )}
-    </header>
+        )}
+      </header>
+    </>
   );
 }
