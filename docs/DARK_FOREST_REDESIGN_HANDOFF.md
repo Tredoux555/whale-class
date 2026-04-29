@@ -29,21 +29,43 @@ Design tokens are locked:
 | `components/montree/child/FocusWorksSection.tsx` | ✅ Full dark forest conversion — AreaDot circles, status badges, dark glass rows |
 | `app/montree/dashboard/[childId]/page.tsx` | ✅ Dark glass action bar, stats tiles (Mastered/Practicing), `progressStats` computed from full progress API |
 
+### Phase 2 — Inner Screens
+| File | Status |
+|------|--------|
+| `app/montree/dashboard/photo-audit/page.tsx` | ✅ Full dark forest redesign — commit `4f89c0ad` |
+| `app/montree/dashboard/guru/page.tsx` | ⏳ Needs Claude Design bundle |
+| `app/montree/dashboard/curriculum/page.tsx` | ⏳ Needs Claude Design bundle |
+| `app/montree/dashboard/[childId]/gallery/page.tsx` | ⏳ Needs Claude Design bundle |
+
+### Photo Audit dark forest details (commit `4f89c0ad`)
+- Page wrapper: dark `#0a1a0f` + radial emerald glow, `backgroundAttachment: fixed`
+- Sticky header: frosted `rgba(7,18,12,0.97)` + emerald bottom border + `backdropFilter: blur(20px)`
+- Zone tabs: emerald active state, ghost inactive
+- Photo grid cards (`AuditPhotoCard`): glass `rgba(255,255,255,0.06)` + `borderRadius: 18` + `backdropFilter: blur(18px) saturate(140%)` + **zone accent top border** (2px colored strip: green=emerald, amber=amber, red=red, untagged=white/15%)
+- Sonnet draft section: dark violet glass `rgba(139,92,246,0.08)`
+- Haiku draft section: dark cyan glass `rgba(20,184,166,0.07)`
+- Haiku auto-match section: dark amber glass `rgba(245,158,11,0.07)`
+- Confirm button: emerald gradient `linear-gradient(180deg, #34d399, #10b981)`, dark text `#06281a`
+- All modals (AreaPicker, crop, child tagger, teach AI, describe result): dark `rgba(7,18,12,0.95)` + `backdropFilter: blur(20px)` + emerald border
+- Floating action bar: frosted dark + emerald top border + blur
+- GetAdviceTab: dark glass child cards
+
 ### Recent commits
 - `2a52240c` — layout.tsx + [childId]/layout.tsx dark theme
 - `81cba5ce` — FocusWorksSection full dark forest conversion
 - `46b2a6fa` — Fix MontreeLogo import typo (was breaking Railway build)
 - `bcd0c4e4` — AreaDot colored circles + stats tiles on child page
+- `4f89c0ad` — Photo audit dark forest redesign — dark glass cards, tabs, modals
 
 ---
 
-## 🚨 IMMEDIATE NEXT TASK — Bundle v2 Implementation
+## 🚨 IMMEDIATE NEXT TASK — Child Detail v2 + Next Phase 2 Screen
 
-The user uploaded `child-detail-bundle (1).md` — this is v2 of the Child Detail mock from Claude Design. It supersedes the v1 bundle.
+### A. Child Detail v2 (bundle already in hand — `child-detail-bundle (1).md`)
 
 **Key structural differences vs what's currently in the codebase:**
 
-### 1. Multi-expand (BREAKING CHANGE to FocusWorksSection props)
+#### 1. Multi-expand (BREAKING CHANGE to FocusWorksSection props)
 The mock uses `Set<number>` to track open rows — multiple rows can be open simultaneously.
 Currently the codebase uses `expandedIndex: string | null` (accordion — one at a time).
 
@@ -54,55 +76,64 @@ Currently the codebase uses `expandedIndex: string | null` (accordion — one at
 - Update the `isExpanded` check inside FocusWorksSection: `expandedAreas.has(area)` instead of `expandedIndex === area`
 - Update the toggle: `toggleArea(area)` adds/removes from Set instead of replacing
 
-### 2. Each work row = its own glass card (VISUAL CHANGE)
-The mock renders each row as a separate `<Glass>` card with `borderRadius: 18` and `overflow: hidden`.
-Currently all rows live inside ONE shared glass container.
+#### 2. Each work row = its own glass card (VISUAL CHANGE)
+- The outer wrapper loses its glass styling → becomes just a flex column with gap 12
+- Each area row gets its own glass card wrapper: `background: isExpanded ? C.cardHover : C.glass`, border, borderRadius 18, overflow hidden, backdropFilter
 
-**Required changes in `FocusWorksSection.tsx`:**
-- The outer `<div style={{ background: C.glass, border: ..., borderRadius: 18 }}>` wrapper becomes just a `<div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>` (no glass styling)
-- Each area row gets wrapped in its own `<div style={{ background: isExpanded ? C.cardHover : C.glass, border: T.cardBorder, borderRadius: 18, overflow: 'hidden', backdropFilter: T.blur }}>`
+#### 3. Section heading moves OUTSIDE the card
+- Remove `<h2>` from inside FocusWorksSection
+- Add above `<FocusWorksSection>` in page.tsx: Lora 500, 30px, with "{focusWorks.length} works in rotation" subtitle
 
-### 3. Section heading moves OUTSIDE the card (VISUAL CHANGE)
-The mock has "This Week's Focus" heading as a standalone `<h2>` ABOVE the row cards, not inside a container card.
+#### 4. Stats tiles — third tile (Photos)
+- Change grid to `gridTemplateColumns: 'repeat(3, 1fr)'`
+- Add amber Camera tile for this week's photo count
+- Import `Camera` from lucide-react
 
-**Required changes:**
-- In `FocusWorksSection.tsx`: remove the section title `<h2>` from inside the component (it currently lives in the game plan header block)
-- In `app/montree/dashboard/[childId]/page.tsx`: add the heading above `<FocusWorksSection>`:
-  ```tsx
-  <div style={{ marginBottom: 22, display: 'flex', alignItems: 'baseline', justifyContent: 'space-between' }}>
-    <h2 style={{ fontFamily: "'Lora', Georgia, serif", fontSize: 30, fontWeight: 500, color: 'rgba(255,255,255,0.95)', letterSpacing: -0.4, margin: 0 }}>
-      {t('focusWorks.title')}
-    </h2>
-    <span style={{ fontFamily: "'Inter', ...", fontSize: 13, color: 'rgba(255,255,255,0.65)' }}>
-      {focusWorks.length} works in rotation
-    </span>
-  </div>
-  ```
+### B. Next Phase 2 Screen — Send to Claude Design
 
-### 4. Stats tiles — third tile (Photos) not yet wired
-The v2 mock has 3 stat tiles: Mastered / Practicing / **This Week's Photos**.
-Currently only Mastered + Practicing are implemented (2-col grid).
+Use this prompt for **Guru Chat**:
 
-To add Photos tile:
-- Need a photo count — either fetch `/api/montree/children/${childId}/photo-count?week=current` (check if this endpoint exists) or add a `photoCount` to the progress API response.
-- Import `Camera` from lucide-react in page.tsx
-- Change the grid to `gridTemplateColumns: 'repeat(3, 1fr)'`
-- Add the amber tile with Camera icon
+---
+```
+You are Claude Design. I need a dark forest redesign of the Montree Guru Chat screen.
+
+DESIGN SYSTEM (locked — do not deviate):
+- bg: #0a1a0f, glow: radial-gradient(ellipse 1100px 900px at 88% 8%, rgba(39,129,90,0.48), transparent 60%)
+- Glass card: rgba(255,255,255,0.06), border: 1px solid rgba(52,211,153,0.15), borderRadius: 18px, backdropFilter: blur(18px) saturate(140%)
+- Emerald accent: #34d399
+- Headings: Lora 500 (serif), Body: Inter
+- Inline styles only — no Tailwind
+- All icons: Lucide React strokeWidth={1.75}
+
+SCREEN: Guru Chat
+The Guru Chat screen is an AI advisor chat interface for Montessori teachers. It has:
+- A sticky header with "Ask the Guru" title and child context (child name, avatar)
+- A scrollable message thread: user messages (right-aligned, emerald bubble) and AI messages (left-aligned, glass card with subtle emerald left border)
+- A bottom input bar: textarea + send button, frosted glass, sticky to bottom
+- Optional "Quick prompt" suggestion chips above the input (e.g. "What should I introduce next?", "Write a progress note")
+- AI messages may contain structured content (bold headings, bullet lists) — style these elegantly in dark forest
+- Loading state: pulsing emerald dots while AI responds
+
+Output a self-contained JSX component `GuruChat` showing the full visual design. Use realistic placeholder content. Export design tokens as a `T` object at the top.
+```
+---
+
+## Phase 3 Screens (Future)
+Notes, Classroom Overview, Focus List, Capture, Progress, Language Semester, Weekly Admin Docs, Classroom Setup
+
+## Phase 4 Modals (Future)
+Quick Guide, Full Details, Welcome, BulkPasteImport
 
 ---
 
-## Phase 2 Screens (Not Started)
+## Phase 2 Screens Status
 
-After the child detail fixes above, these screens need the same dark forest treatment:
-
-| Screen | File |
-|--------|------|
-| Photo Audit | `app/montree/dashboard/photo-audit/page.tsx` |
-| Guru Chat | `app/montree/dashboard/guru/page.tsx` |
-| Curriculum | `app/montree/dashboard/curriculum/page.tsx` |
-| Gallery | `app/montree/dashboard/[childId]/gallery/page.tsx` |
-
-**Process for each:** Send `Child-Detail-brief.md` (already in codebase uploads) + relevant screen brief to Claude Design → get JSX bundle → implement here.
+| Screen | File | Status |
+|--------|------|--------|
+| Photo Audit | `app/montree/dashboard/photo-audit/page.tsx` | ✅ Done — `4f89c0ad` |
+| Guru Chat | `app/montree/dashboard/guru/page.tsx` | ⏳ Send prompt above to Claude Design |
+| Curriculum | `app/montree/dashboard/curriculum/page.tsx` | ⏳ Needs Claude Design bundle |
+| Gallery | `app/montree/dashboard/[childId]/gallery/page.tsx` | ⏳ Needs Claude Design bundle |
 
 ---
 
