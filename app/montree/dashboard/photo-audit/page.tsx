@@ -222,10 +222,10 @@ function AreaPickerWithSearch({
     <div className="fixed inset-0 z-30 bg-black/50 flex items-center justify-center p-4"
       onClick={onClose}
     >
-      <div className="bg-white rounded-xl p-5 w-full max-w-sm max-h-[85vh] flex flex-col"
+      <div style={{ background: 'rgba(7,18,12,0.97)', backdropFilter: 'blur(20px)', border: '1px solid rgba(52,211,153,0.18)', borderRadius: 18, padding: 20, width: '100%', maxWidth: 380, maxHeight: '85vh', display: 'flex', flexDirection: 'column' }}
         onClick={e => e.stopPropagation()}
       >
-        <h3 className="text-lg font-semibold mb-3">
+        <h3 style={{ fontFamily: "'Lora', Georgia, serif", fontSize: 18, fontWeight: 500, color: 'rgba(255,255,255,0.95)', margin: '0 0 14px', letterSpacing: -0.2 }}>
           {showAddForm ? (t('audit.addCustomWork') || 'Add Custom Work') : t('audit.pickArea')}
         </h3>
 
@@ -234,24 +234,24 @@ function AreaPickerWithSearch({
           <div className="overflow-y-auto flex-1 min-h-0 space-y-3">
             {/* Work name */}
             <div>
-              <label className="text-xs font-medium text-[#A1887F] mb-1 block">{t('audit.workName') || 'Work Name'}</label>
+              <label style={{ fontSize: 11, fontWeight: 500, color: 'rgba(255,255,255,0.45)', marginBottom: 4, display: 'block' }}>{t('audit.workName') || 'Work Name'}</label>
               <input
                 type="text"
                 value={addWorkName}
                 onChange={e => setAddWorkName(e.target.value)}
                 maxLength={255}
-                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400"
+                style={{ width: '100%', padding: '8px 12px', borderRadius: 8, border: '1px solid rgba(52,211,153,0.18)', background: 'rgba(0,0,0,0.25)', color: 'rgba(255,255,255,0.85)', fontFamily: "'Inter', sans-serif", fontSize: 13, outline: 'none', boxSizing: 'border-box' }}
                 autoFocus
               />
             </div>
 
             {/* Area selector */}
             <div>
-              <label className="text-xs font-medium text-[#A1887F] mb-1 block">{t('audit.area') || 'Area'}</label>
+              <label style={{ fontSize: 11, fontWeight: 500, color: 'rgba(255,255,255,0.45)', marginBottom: 4, display: 'block' }}>{t('audit.area') || 'Area'}</label>
               <select
                 value={addWorkArea}
                 onChange={e => setAddWorkArea(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-emerald-400"
+                style={{ width: '100%', padding: '8px 12px', borderRadius: 8, border: '1px solid rgba(52,211,153,0.18)', background: 'rgba(0,0,0,0.25)', color: 'rgba(255,255,255,0.85)', fontFamily: "'Inter', sans-serif", fontSize: 13, outline: 'none', boxSizing: 'border-box' }}
               >
                 {areas.map(a => (
                   <option key={a.key} value={a.key}>{a.label}</option>
@@ -275,37 +275,37 @@ function AreaPickerWithSearch({
                 maxLength={500}
                 rows={2}
                 placeholder={t('audit.descriptionPlaceholder') || "e.g., 'Children learn to blend st sound using objects'"}
-                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm resize-none focus:outline-none focus:ring-2 focus:ring-emerald-400"
+                style={{ width: '100%', padding: '8px 12px', borderRadius: 8, border: '1px solid rgba(52,211,153,0.18)', background: 'rgba(0,0,0,0.25)', color: 'rgba(255,255,255,0.85)', fontFamily: "'Inter', sans-serif", fontSize: 13, outline: 'none', resize: 'none', boxSizing: 'border-box' }}
               />
-              <div className="text-xs text-[#A1887F] text-right mt-0.5">{addWorkDesc.length}/500</div>
+              <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.30)', textAlign: 'right', marginTop: 3 }}>{addWorkDesc.length}/500</div>
             </div>
 
             {/* Preview results (editable) */}
             {showPreview && (
-              <div className="border border-emerald-200 rounded-lg p-3 bg-emerald-50/50">
+              <div style={{ border: '1px solid rgba(52,211,153,0.22)', borderRadius: 10, padding: 12, background: 'rgba(52,211,153,0.05)' }}>
                 {previewLoading ? (
-                  <div className="flex items-center justify-center py-4 gap-2">
-                    <span className="animate-spin text-lg">⏳</span>
-                    <span className="text-sm text-[#A1887F]">{t('audit.generatingPreview') || 'Generating AI descriptions...'}</span>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px 0', gap: 8 }}>
+                    <span className="animate-spin" style={{ fontSize: 16 }}>⏳</span>
+                    <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.45)' }}>{t('audit.generatingPreview') || 'Generating AI descriptions...'}</span>
                   </div>
                 ) : previewData ? (
-                  <div className="space-y-2 text-sm">
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8, fontSize: 12 }}>
                     <div>
-                      <span className="font-medium text-gray-600">{t('audit.previewDescription') || 'Description:'}</span>
-                      <p className="text-gray-800 mt-0.5">{previewData.description}</p>
+                      <span style={{ fontWeight: 600, color: 'rgba(255,255,255,0.55)' }}>{t('audit.previewDescription') || 'Description:'}</span>
+                      <p style={{ color: 'rgba(255,255,255,0.80)', marginTop: 2, margin: '2px 0 0' }}>{previewData.description}</p>
                     </div>
                     <div>
-                      <span className="font-medium text-gray-600">{t('audit.previewParent') || 'For parents:'}</span>
-                      <p className="text-gray-800 mt-0.5">{previewData.parent_description}</p>
+                      <span style={{ fontWeight: 600, color: 'rgba(255,255,255,0.55)' }}>{t('audit.previewParent') || 'For parents:'}</span>
+                      <p style={{ color: 'rgba(255,255,255,0.80)', margin: '2px 0 0' }}>{previewData.parent_description}</p>
                     </div>
                     <div>
-                      <span className="font-medium text-gray-600">{t('audit.previewWhyMatters') || 'Why it matters:'}</span>
-                      <p className="text-gray-800 mt-0.5">{previewData.why_it_matters}</p>
+                      <span style={{ fontWeight: 600, color: 'rgba(255,255,255,0.55)' }}>{t('audit.previewWhyMatters') || 'Why it matters:'}</span>
+                      <p style={{ color: 'rgba(255,255,255,0.80)', margin: '2px 0 0' }}>{previewData.why_it_matters}</p>
                     </div>
                     {previewData.materials?.length > 0 && (
                       <div>
-                        <span className="font-medium text-gray-600">{t('audit.previewMaterials') || 'Materials:'}</span>
-                        <p className="text-gray-800 mt-0.5">{previewData.materials.join(', ')}</p>
+                        <span style={{ fontWeight: 600, color: 'rgba(255,255,255,0.55)' }}>{t('audit.previewMaterials') || 'Materials:'}</span>
+                        <p style={{ color: 'rgba(255,255,255,0.80)', margin: '2px 0 0' }}>{previewData.materials.join(', ')}</p>
                       </div>
                     )}
                   </div>
@@ -318,7 +318,7 @@ function AreaPickerWithSearch({
               <button
                 onClick={handleSaveWork}
                 disabled={!addWorkName.trim() || addSaving}
-                className="w-full py-2.5 rounded-lg font-medium text-white text-sm bg-emerald-500 hover:bg-emerald-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                style={{ width: '100%', padding: '10px 0', borderRadius: 10, background: 'linear-gradient(180deg, #34d399, #10b981)', border: '1px solid rgba(52,211,153,0.55)', color: '#06281a', fontSize: 13, fontWeight: 600, cursor: !addWorkName.trim() || addSaving ? 'not-allowed' : 'pointer', opacity: !addWorkName.trim() || addSaving ? 0.5 : 1 }}
               >
                 {addSaving ? (t('common.saving') || 'Saving...') : (previewData ? (t('audit.saveWithDescriptions') || 'Save with these descriptions') : (t('common.save') || 'Save'))}
               </button>
@@ -326,14 +326,14 @@ function AreaPickerWithSearch({
                 <button
                   onClick={handlePreview}
                   disabled={!addWorkName.trim() || previewLoading || addSaving}
-                  className="w-full py-2 text-sm text-emerald-600 hover:text-emerald-700 font-medium"
+                  style={{ width: '100%', padding: '8px 0', fontSize: 13, color: '#34d399', background: 'none', border: 'none', cursor: !addWorkName.trim() || previewLoading || addSaving ? 'not-allowed' : 'pointer', opacity: !addWorkName.trim() || previewLoading || addSaving ? 0.5 : 1, fontWeight: 500 }}
                 >
                   {t('audit.previewAI') || 'Preview AI Descriptions'}
                 </button>
               )}
               <button
                 onClick={() => { previewAbortRef.current?.abort(); setShowAddForm(false); setShowPreview(false); setPreviewData(null); }}
-                className="w-full py-2 text-sm text-[#A1887F]"
+                style={{ width: '100%', padding: '8px 0', fontSize: 13, color: 'rgba(255,255,255,0.40)', background: 'none', border: 'none', cursor: 'pointer' }}
               >
                 {t('common.back') || 'Back'}
               </button>
@@ -343,20 +343,20 @@ function AreaPickerWithSearch({
         /* === SEARCH + AREA PICKER === */
         <>
         {/* Search input */}
-        <div className="relative mb-3">
-          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#A1887F] text-sm">🔍</span>
+        <div style={{ position: 'relative', marginBottom: 12 }}>
+          <span style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', fontSize: 13, color: 'rgba(255,255,255,0.35)' }}>🔍</span>
           <input
             ref={inputRef}
             type="text"
             value={query}
             onChange={e => setQuery(e.target.value)}
             placeholder={t('audit.searchWorks') || 'Search works across all areas...'}
-            className="w-full pl-9 pr-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:border-transparent"
+            style={{ width: '100%', paddingLeft: 36, paddingRight: 36, paddingTop: 10, paddingBottom: 10, borderRadius: 10, border: '1px solid rgba(52,211,153,0.18)', background: 'rgba(0,0,0,0.25)', color: 'rgba(255,255,255,0.85)', fontFamily: "'Inter', sans-serif", fontSize: 13, outline: 'none', boxSizing: 'border-box' }}
             autoComplete="off"
           />
           {query && (
             <button onClick={() => setQuery('')}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-[#A1887F] hover:text-gray-600 text-sm">
+              style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', fontSize: 13, color: 'rgba(255,255,255,0.35)', background: 'none', border: 'none', cursor: 'pointer' }}>
               ✕
             </button>
           )}
@@ -370,22 +370,21 @@ function AreaPickerWithSearch({
                 <button
                   key={`${r.areaKey}-${r.work.name}-${i}`}
                   onClick={() => onSelectWork(r.work, r.areaKey)}
-                  className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg hover:bg-gray-50 text-left transition-colors"
+                  style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '8px 10px', borderRadius: 10, background: 'rgba(255,255,255,0.04)', border: '1px solid transparent', textAlign: 'left', cursor: 'pointer' }}
                 >
-                  <span className="w-6 h-6 rounded-full flex items-center justify-center text-white text-[10px] font-bold flex-shrink-0"
-                    style={{ backgroundColor: r.areaColor }}>
+                  <span style={{ width: 24, height: 24, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: 10, fontWeight: 700, flexShrink: 0, backgroundColor: r.areaColor }}>
                     {r.areaKey[0].toUpperCase()}
                   </span>
-                  <div className="min-w-0 flex-1">
-                    <div className="text-sm font-medium text-gray-800 truncate">{r.work.name}</div>
-                    <div className="text-xs text-[#A1887F]">{r.areaLabel}</div>
+                  <div style={{ minWidth: 0, flex: 1 }}>
+                    <div style={{ fontSize: 13, fontWeight: 500, color: 'rgba(255,255,255,0.88)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.work.name}</div>
+                    <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.40)' }}>{r.areaLabel}</div>
                   </div>
                 </button>
               ))}
               {/* "Add custom work" link below search results */}
               <button
                 onClick={() => openAddForm()}
-                className="w-full text-center py-2 text-sm text-emerald-600 hover:text-emerald-700 font-medium"
+                style={{ width: '100%', textAlign: 'center', padding: '8px 0', fontSize: 13, color: '#34d399', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 500 }}
               >
                 + {t('audit.addCustomWorkLink') || 'Add a custom work'}
               </button>
@@ -395,10 +394,10 @@ function AreaPickerWithSearch({
           {/* Zero results — prominent add button */}
           {showSearch && searchResults.length === 0 && (
             <div className="text-center py-4">
-              <p className="text-sm text-[#A1887F] mb-3">{t('common.noResults') || 'No works found'}</p>
+              <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.40)', marginBottom: 12 }}>{t('common.noResults') || 'No works found'}</p>
               <button
                 onClick={() => openAddForm(query.trim())}
-                className="w-full py-3 rounded-lg font-medium text-white text-sm bg-emerald-500 hover:bg-emerald-600 transition-colors"
+                style={{ width: '100%', padding: '12px 0', borderRadius: 10, background: 'linear-gradient(180deg, #34d399, #10b981)', border: '1px solid rgba(52,211,153,0.55)', color: '#06281a', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}
               >
                 ➕ {t('audit.addQueryAsWork') || `Add '${query.trim()}' as a custom work`}
               </button>
@@ -412,13 +411,12 @@ function AreaPickerWithSearch({
                 <button
                   key={a.key}
                   onClick={() => onSelectArea(a.key)}
-                  className="flex items-center gap-3 px-4 py-3 rounded-lg border hover:bg-gray-50 text-left"
+                  style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 14px', borderRadius: 12, border: '1px solid rgba(52,211,153,0.12)', background: 'rgba(255,255,255,0.04)', textAlign: 'left', cursor: 'pointer' }}
                 >
-                  <span className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold"
-                    style={{ backgroundColor: a.color }}>
+                  <span style={{ width: 30, height: 30, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: 12, fontWeight: 700, backgroundColor: a.color }}>
                     {a.key[0].toUpperCase()}
                   </span>
-                  <span className="font-medium">{a.label}</span>
+                  <span style={{ fontWeight: 500, fontSize: 14, color: 'rgba(255,255,255,0.85)' }}>{a.label}</span>
                 </button>
               ))}
             </div>
@@ -429,7 +427,7 @@ function AreaPickerWithSearch({
 
         <button
           onClick={() => { previewAbortRef.current?.abort(); onClose(); }}
-          className="mt-3 w-full py-2 text-sm text-[#A1887F]"
+          style={{ marginTop: 12, width: '100%', padding: '8px 0', fontSize: 13, color: 'rgba(255,255,255,0.40)', background: 'none', border: 'none', cursor: 'pointer' }}
         >
           {t('common.cancel')}
         </button>
@@ -516,17 +514,17 @@ function GetAdviceTab({ photos, classroomId }: { photos: AuditPhoto[]; classroom
 
   if (childGroups.length === 0) {
     return (
-      <div className="text-center py-20 text-[#A1887F]">
-        <p className="text-4xl mb-3">🌱</p>
-        <p className="font-medium text-gray-600 mb-1">No confirmed observations yet</p>
-        <p className="text-sm">Confirm photos in the Confirm tab first — Guru can then advise on next steps for each child.</p>
+      <div style={{ textAlign: 'center', padding: '80px 24px', color: 'rgba(255,255,255,0.45)' }}>
+        <p style={{ fontSize: 32, marginBottom: 12 }}>🌱</p>
+        <p style={{ fontWeight: 500, color: 'rgba(255,255,255,0.65)', marginBottom: 4 }}>No confirmed observations yet</p>
+        <p style={{ fontSize: 13 }}>Confirm photos in the Confirm tab first — Guru can then advise on next steps for each child.</p>
       </div>
     );
   }
 
   return (
-    <div className="px-3 pt-3 pb-24 space-y-3">
-      <p className="text-xs text-[#A1887F] px-1 pb-1">
+    <div style={{ padding: '12px 14px 96px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+      <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)', padding: '0 4px 4px' }}>
         {childGroups.length} {childGroups.length === 1 ? 'child' : 'children'} with confirmed observations this week
       </p>
       {childGroups.map(({ child_id, child_name, photo }) => {
@@ -536,12 +534,12 @@ function GetAdviceTab({ photos, classroomId }: { photos: AuditPhoto[]; classroom
         const hasAdvice = adviceText.length > 0;
 
         return (
-          <div key={child_id} className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+          <div key={child_id} style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(52,211,153,0.15)', borderRadius: 18, overflow: 'hidden', backdropFilter: 'blur(18px)', WebkitBackdropFilter: 'blur(18px)' }}>
             {/* Child row */}
-            <div className="flex items-center gap-3 p-3">
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: 12 }}>
               {/* Photo thumbnail */}
               {photo.url && (
-                <div className="w-16 h-16 rounded-xl overflow-hidden shrink-0 bg-gray-100">
+                <div style={{ width: 60, height: 60, borderRadius: 12, overflow: 'hidden', flexShrink: 0, background: 'rgba(0,0,0,0.20)' }}>
                   <img
                     src={getThumbnailUrl(photo.url, photo.thumbnail_path)}
                     alt={child_name}
@@ -551,13 +549,13 @@ function GetAdviceTab({ photos, classroomId }: { photos: AuditPhoto[]; classroom
                 </div>
               )}
               {/* Info */}
-              <div className="flex-1 min-w-0">
-                <p className="font-semibold text-gray-800 truncate">{child_name}</p>
-                <p className="text-xs text-[#A1887F] truncate mt-0.5">
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <p style={{ fontWeight: 600, color: 'rgba(255,255,255,0.90)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', margin: 0 }}>{child_name}</p>
+                <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.45)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', margin: '2px 0 0' }}>
                   {photo.work_name}
-                  {photo.area && <span className="ml-1 opacity-60">· {photo.area}</span>}
+                  {photo.area && <span style={{ opacity: 0.60 }}> · {photo.area}</span>}
                 </p>
-                <p className="text-[10px] text-gray-400 mt-0.5">
+                <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.30)', margin: '2px 0 0' }}>
                   {new Date(photo.captured_at).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}
                 </p>
               </div>
@@ -571,17 +569,11 @@ function GetAdviceTab({ photos, classroomId }: { photos: AuditPhoto[]; classroom
                   }
                 }}
                 disabled={isLoading}
-                className={`shrink-0 px-3 py-2 rounded-xl text-sm font-medium transition-all ${
-                  isLoading
-                    ? 'bg-emerald-50 text-emerald-400 cursor-wait'
-                    : hasAdvice
-                    ? 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100'
-                    : 'bg-emerald-500 text-white hover:bg-emerald-600 active:scale-95 shadow-sm'
-                }`}
+                style={{ flexShrink: 0, padding: '8px 12px', borderRadius: 10, fontSize: 13, fontWeight: 500, cursor: isLoading ? 'wait' : 'pointer', background: isLoading ? 'rgba(52,211,153,0.08)' : hasAdvice ? 'rgba(52,211,153,0.10)' : 'rgba(52,211,153,0.18)', border: `1px solid ${hasAdvice || isLoading ? 'rgba(52,211,153,0.25)' : 'rgba(52,211,153,0.50)'}`, color: isLoading ? 'rgba(52,211,153,0.50)' : hasAdvice ? '#34d399' : '#34d399', transition: 'all 120ms ease' }}
               >
                 {isLoading ? (
-                  <span className="flex items-center gap-1.5">
-                    <span className="w-3 h-3 border-2 border-emerald-300 border-t-emerald-600 rounded-full animate-spin inline-block" />
+                  <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <span className="animate-spin" style={{ width: 12, height: 12, borderRadius: '50%', border: '2px solid rgba(52,211,153,0.20)', borderTopColor: '#34d399', display: 'inline-block' }} />
                     Thinking…
                   </span>
                 ) : hasAdvice ? (
@@ -594,14 +586,14 @@ function GetAdviceTab({ photos, classroomId }: { photos: AuditPhoto[]; classroom
 
             {/* Advice panel — streams in */}
             {(isOpen || isLoading) && (
-              <div className="border-t border-gray-100 px-4 py-3 bg-emerald-50/40">
+              <div style={{ borderTop: '1px solid rgba(52,211,153,0.10)', padding: '12px 16px', background: 'rgba(52,211,153,0.04)' }}>
                 {adviceText ? (
-                  <div className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">
+                  <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.80)', lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>
                     {adviceText}
-                    {isLoading && <span className="inline-block w-1.5 h-4 bg-emerald-500 ml-0.5 animate-pulse rounded-sm align-middle" />}
+                    {isLoading && <span style={{ display: 'inline-block', width: 6, height: 16, background: '#34d399', marginLeft: 2, borderRadius: 2, verticalAlign: 'middle' }} className="animate-pulse" />}
                   </div>
                 ) : isLoading ? (
-                  <p className="text-sm text-[#A1887F] animate-pulse">Guru is thinking…</p>
+                  <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.40)' }} className="animate-pulse">Guru is thinking…</p>
                 ) : null}
                 {/* Re-ask button after advice loads */}
                 {hasAdvice && !isLoading && (
@@ -2178,22 +2170,18 @@ export default function PhotoAuditPage() {
 
   // ─── JSX ───
   return (
-    <div className="min-h-screen bg-gray-50 pb-24">
+    <div style={{ minHeight: '100vh', background: '#0a1a0f', backgroundImage: 'radial-gradient(ellipse 1100px 900px at 88% 8%, rgba(39,129,90,0.48), transparent 60%)', backgroundAttachment: 'fixed', paddingBottom: 96, color: 'rgba(255,255,255,0.95)', fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif" }}>
       {/* Header */}
-      <div className="sticky top-0 z-10 bg-white border-b border-gray-200 px-4 py-3">
+      <div style={{ position: 'sticky', top: 0, zIndex: 10, background: 'linear-gradient(180deg, rgba(7,18,12,0.97), rgba(7,18,12,0.92))', borderBottom: '1px solid rgba(52,211,153,0.12)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', padding: '12px 16px' }}>
         <div className="flex items-center justify-between gap-2">
-          <h1 className="text-lg font-semibold">{t('photoAudit.wrapUpHeader')}</h1>
+          <h1 style={{ fontFamily: "'Lora', Georgia, serif", fontSize: 20, fontWeight: 500, color: 'rgba(255,255,255,0.95)', margin: 0, letterSpacing: -0.3 }}>{t('photoAudit.wrapUpHeader')}</h1>
           <div className="flex items-center gap-2">
             <button
               type="button"
               onClick={handleSyncQueue}
               disabled={syncingQueue}
               title={t('photoAudit.syncButtonTitle')}
-              className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-sm font-medium border transition-all ${
-                syncingQueue
-                  ? 'bg-amber-50 border-amber-200 text-amber-700 cursor-wait'
-                  : 'bg-white border-gray-300 text-gray-700 hover:bg-amber-50 hover:border-amber-300 hover:text-amber-700'
-              }`}
+              style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '5px 10px', borderRadius: 8, background: syncingQueue ? 'rgba(245,158,11,0.12)' : 'rgba(255,255,255,0.06)', border: `1px solid ${syncingQueue ? 'rgba(245,158,11,0.35)' : 'rgba(255,255,255,0.12)'}`, color: syncingQueue ? '#f59e0b' : 'rgba(255,255,255,0.70)', fontFamily: "'Inter', sans-serif", fontSize: 13, fontWeight: 500, cursor: syncingQueue ? 'wait' : 'pointer', transition: 'all 120ms ease' }}
             >
               <svg
                 className={`w-4 h-4 ${syncingQueue ? 'animate-spin' : ''}`}
@@ -2215,11 +2203,7 @@ export default function PhotoAuditPage() {
                 type="button"
                 onClick={() => setTodayFilter(v => !v)}
                 title={t('photoAudit.todayFilterTitle')}
-                className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-sm font-medium border transition-all ${
-                  todayFilter
-                    ? 'bg-emerald-100 border-emerald-300 text-emerald-800'
-                    : 'bg-white border-gray-300 text-gray-700 hover:bg-emerald-50 hover:border-emerald-300 hover:text-emerald-700'
-                }`}
+                style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '5px 10px', borderRadius: 8, background: todayFilter ? 'rgba(52,211,153,0.12)' : 'rgba(255,255,255,0.06)', border: `1px solid ${todayFilter ? 'rgba(52,211,153,0.45)' : 'rgba(255,255,255,0.12)'}`, color: todayFilter ? '#34d399' : 'rgba(255,255,255,0.70)', fontFamily: "'Inter', sans-serif", fontSize: 13, fontWeight: 500, cursor: 'pointer', transition: 'all 120ms ease' }}
               >
                 {t('photoAudit.today')}
               </button>
@@ -2228,7 +2212,7 @@ export default function PhotoAuditPage() {
               <select
                 value={dateRange}
                 onChange={e => setDateRange(e.target.value as DateRange)}
-                className="text-sm border rounded px-2 py-1"
+                style={{ background: 'rgba(0,0,0,0.30)', border: '1px solid rgba(52,211,153,0.20)', borderRadius: 8, color: 'rgba(255,255,255,0.70)', fontFamily: "'Inter', sans-serif", fontSize: 13, padding: '4px 8px', outline: 'none' }}
               >
                 <option value="7d">{t('audit.last7d')}</option>
                 <option value="30d">{t('audit.last30d')}</option>
@@ -2240,31 +2224,28 @@ export default function PhotoAuditPage() {
 
         {/* Smart Learning progress bar — only on photo review */}
         {isPhotoZone && smartLearningStats && smartLearningStats.total > 0 && (
-          <div className="mt-2">
-            <div className="flex items-center justify-between text-xs text-[#A1887F] mb-0.5">
+          <div style={{ marginTop: 8 }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: 11, color: 'rgba(255,255,255,0.45)', marginBottom: 3 }}>
               <span>🧠 {t('audit.smartLearning')}</span>
               <span>{smartLearningStats.described}/{smartLearningStats.total} ({Math.round((smartLearningStats.described / smartLearningStats.total) * 100)}%)</span>
             </div>
-            <div className="w-full bg-gray-200 rounded-full h-1.5">
+            <div style={{ width: '100%', background: 'rgba(255,255,255,0.08)', borderRadius: 999, height: 4 }}>
               <div
-                className="bg-amber-500 rounded-full h-1.5 transition-all duration-500"
-                style={{ width: `${Math.round((smartLearningStats.described / smartLearningStats.total) * 100)}%` }}
+                style={{ background: 'rgba(245,158,11,0.85)', borderRadius: 999, height: 4, transition: 'width 500ms ease', width: `${Math.round((smartLearningStats.described / smartLearningStats.total) * 100)}%` }}
               />
             </div>
           </div>
         )}
 
         {/* 4 tabs — same line, same style */}
-        <div className="flex gap-2 mt-3 overflow-x-auto pb-1">
+        <div style={{ display: 'flex', gap: 8, marginTop: 10, overflowX: 'auto', paddingBottom: 2 }}>
           {ZONE_TABS.map((tab) => {
             const isActive = zone === tab.key;
             return (
               <button
                 key={tab.key}
-                onClick={() => setZone(tab.key)}
-                className={`px-3 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-all ${
-                  isActive ? tab.color + ' ring-2 ring-offset-1 ring-current' : 'bg-[#F5E6D3]/40 text-[#A1887F] hover:text-gray-600'
-                }`}
+                onClick={() => setZone(tab.key as Zone)}
+                style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '7px 14px', borderRadius: 999, background: isActive ? 'rgba(52,211,153,0.10)' : 'rgba(255,255,255,0.04)', border: `1px solid ${isActive ? 'rgba(52,211,153,0.55)' : 'rgba(255,255,255,0.10)'}`, color: isActive ? '#34d399' : 'rgba(255,255,255,0.55)', fontFamily: "'Inter', sans-serif", fontSize: 13, fontWeight: 500, cursor: 'pointer', whiteSpace: 'nowrap', transition: 'all 120ms ease' }}
               >
                 {tab.label}{tab.count !== null ? ` (${tab.count})` : ''}
               </button>
@@ -2274,30 +2255,29 @@ export default function PhotoAuditPage() {
 
         {/* Reclassify progress bar (shown during batch processing) */}
         {reclassifying && (
-          <div className="mt-2 p-2 bg-amber-50 rounded-lg border border-amber-200">
-            <div className="flex items-center justify-between text-xs text-amber-700 mb-1">
-              <span className="font-medium">
+          <div style={{ marginTop: 8, padding: 10, background: 'rgba(245,158,11,0.06)', borderRadius: 10, border: '1px solid rgba(245,158,11,0.20)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+              <span style={{ fontSize: 12, fontWeight: 500, color: '#f59e0b' }}>
                 {t('audit.reclassifyProgress') || 'Reclassifying'} {reclassifyProgress.current}/{reclassifyProgress.total}...
               </span>
               <button
                 onClick={() => { reclassifyCancelledRef.current = true; }}
-                className="px-2 py-0.5 rounded text-xs bg-white text-gray-600 border hover:bg-[#F5E6D3]"
+                style={{ padding: '2px 8px', borderRadius: 6, fontSize: 11, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.60)', cursor: 'pointer' }}
               >
                 {t('audit.reclassifyCancel') || 'Cancel'}
               </button>
             </div>
-            <div className="w-full bg-amber-100 rounded-full h-2">
+            <div style={{ width: '100%', background: 'rgba(245,158,11,0.12)', borderRadius: 999, height: 6 }}>
               <div
-                className="bg-amber-500 rounded-full h-2 transition-all duration-300"
-                style={{ width: `${reclassifyProgress.total > 0 ? Math.round((reclassifyProgress.current / reclassifyProgress.total) * 100) : 0}%` }}
+                style={{ background: 'rgba(245,158,11,0.70)', borderRadius: 999, height: 6, transition: 'width 300ms ease', width: `${reclassifyProgress.total > 0 ? Math.round((reclassifyProgress.current / reclassifyProgress.total) * 100) : 0}%` }}
               />
             </div>
-            <div className="flex gap-3 mt-1 text-[10px] text-[#A1887F]">
-              <span className="text-emerald-600">{reclassifyProgress.green} identified</span>
-              <span className="text-amber-600">{reclassifyProgress.amber} review</span>
-              <span className="text-red-600">{reclassifyProgress.red} unknown</span>
-              {reclassifyProgress.custom > 0 && <span className="text-blue-600">{reclassifyProgress.custom} custom</span>}
-              {reclassifyProgress.errors > 0 && <span className="text-[#A1887F]">{reclassifyProgress.errors} errors</span>}
+            <div style={{ display: 'flex', gap: 12, marginTop: 4, fontSize: 10 }}>
+              <span style={{ color: '#34d399' }}>{reclassifyProgress.green} identified</span>
+              <span style={{ color: '#f59e0b' }}>{reclassifyProgress.amber} review</span>
+              <span style={{ color: 'rgba(239,68,68,0.85)' }}>{reclassifyProgress.red} unknown</span>
+              {reclassifyProgress.custom > 0 && <span style={{ color: 'rgba(96,165,250,0.85)' }}>{reclassifyProgress.custom} custom</span>}
+              {reclassifyProgress.errors > 0 && <span style={{ color: 'rgba(255,255,255,0.40)' }}>{reclassifyProgress.errors} errors</span>}
             </div>
           </div>
         )}
@@ -2327,22 +2307,22 @@ export default function PhotoAuditPage() {
 
       {/* Loading state */}
       {isPhotoZone && loading && (
-        <div className="flex items-center justify-center py-20">
-          <div className="animate-spin h-8 w-8 border-4 border-emerald-500 border-t-transparent rounded-full" />
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '80px 0' }}>
+          <div className="animate-spin" style={{ width: 32, height: 32, borderRadius: '50%', border: '3px solid rgba(52,211,153,0.20)', borderTopColor: '#34d399' }} />
         </div>
       )}
 
       {/* Empty state */}
       {isPhotoZone && !loading && filteredPhotos.length === 0 && (
-        <div className="text-center py-20 text-[#A1887F]">
-          <p className="text-4xl mb-2">📷</p>
-          <p>{t('audit.noPhotos')}</p>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 14, padding: '80px 24px', textAlign: 'center' }}>
+          <div style={{ width: 60, height: 60, borderRadius: 16, background: 'rgba(52,211,153,0.10)', border: '1px solid rgba(52,211,153,0.22)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 26 }}>📷</div>
+          <div style={{ fontFamily: "'Lora', Georgia, serif", fontSize: 20, fontWeight: 500, color: 'rgba(255,255,255,0.90)', letterSpacing: -0.2 }}>{t('audit.noPhotos')}</div>
         </div>
       )}
 
       {/* Photo grid */}
       {isPhotoZone && !loading && filteredPhotos.length > 0 && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3">
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 14, padding: 16 }}>
           {pagedPhotos.map(photo => (
             <AuditPhotoCard
               key={photo.id}
@@ -2375,21 +2355,21 @@ export default function PhotoAuditPage() {
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="flex items-center justify-center gap-4 py-4">
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 16, padding: '16px 0' }}>
           <button
             disabled={page === 0}
             onClick={() => setPage(p => p - 1)}
-            className="px-3 py-1 rounded border disabled:opacity-30"
+            style={{ padding: '6px 14px', borderRadius: 8, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(52,211,153,0.15)', color: 'rgba(255,255,255,0.65)', fontSize: 14, cursor: page === 0 ? 'not-allowed' : 'pointer', opacity: page === 0 ? 0.35 : 1 }}
           >
             ←
           </button>
-          <span className="text-sm text-[#A1887F]">
+          <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.45)' }}>
             {page + 1} / {totalPages}
           </span>
           <button
             disabled={page >= totalPages - 1}
             onClick={() => setPage(p => p + 1)}
-            className="px-3 py-1 rounded border disabled:opacity-30"
+            style={{ padding: '6px 14px', borderRadius: 8, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(52,211,153,0.15)', color: 'rgba(255,255,255,0.65)', fontSize: 14, cursor: page >= totalPages - 1 ? 'not-allowed' : 'pointer', opacity: page >= totalPages - 1 ? 0.35 : 1 }}
           >
             →
           </button>
@@ -2398,13 +2378,13 @@ export default function PhotoAuditPage() {
 
       {/* Floating action bar (photo audit only) */}
       {isPhotoZone && filteredPhotos.length > 0 && !loading && (
-        <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-4 py-3 z-20">
+        <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, background: 'linear-gradient(180deg, rgba(7,18,12,0.92), rgba(7,18,12,0.97))', borderTop: '1px solid rgba(52,211,153,0.12)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', padding: '12px 16px', zIndex: 20 }}>
           {selectedIds.size === 0 ? (
             /* No selection — just Select All */
             <div className="flex items-center justify-center">
               <button
                 onClick={selectAllVisible}
-                className="px-4 py-1.5 text-sm rounded border text-gray-600"
+                style={{ padding: '7px 16px', borderRadius: 8, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(52,211,153,0.20)', color: 'rgba(255,255,255,0.70)', fontSize: 13, cursor: 'pointer' }}
               >
                 {t('audit.selectAll')} ({filteredPhotos.length})
               </button>
@@ -2412,11 +2392,11 @@ export default function PhotoAuditPage() {
           ) : (
             /* Photos selected — show action buttons */
             <div className="flex items-center justify-center gap-2 flex-wrap">
-              <span className="text-xs text-[#A1887F] mr-1">{selectedIds.size} of {filteredPhotos.length} selected</span>
+              <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.45)', marginRight: 4 }}>{selectedIds.size} of {filteredPhotos.length} selected</span>
               <button
                 onClick={handleRunHaiku}
                 disabled={haikusRunning || batchProcessing}
-                className="px-4 py-1.5 text-sm rounded-lg bg-indigo-600 text-white font-medium disabled:opacity-50"
+                style={{ padding: '7px 14px', borderRadius: 8, background: 'rgba(99,102,241,0.20)', border: '1px solid rgba(99,102,241,0.40)', color: 'rgba(165,180,252,0.90)', fontSize: 13, fontWeight: 500, cursor: haikusRunning || batchProcessing ? 'not-allowed' : 'pointer', opacity: haikusRunning || batchProcessing ? 0.5 : 1 }}
               >
                 {haikusRunning ? (
                   <span className="flex items-center gap-1.5">
@@ -2428,21 +2408,21 @@ export default function PhotoAuditPage() {
               <button
                 onClick={handleBatchConfirm}
                 disabled={haikusRunning || batchProcessing}
-                className="px-4 py-1.5 text-sm rounded-lg bg-emerald-600 text-white font-medium disabled:opacity-50"
+                style={{ padding: '7px 14px', borderRadius: 8, background: 'linear-gradient(180deg, #34d399, #10b981)', border: '1px solid rgba(52,211,153,0.55)', color: '#06281a', fontSize: 13, fontWeight: 600, cursor: haikusRunning || batchProcessing ? 'not-allowed' : 'pointer', opacity: haikusRunning || batchProcessing ? 0.5 : 1 }}
               >
                 {batchProcessing ? `Confirming...` : `✓ Confirm ${selectedIds.size}`}
               </button>
               {haikusRunning && (
                 <button
                   onClick={() => { haikuCancelledRef.current = true; }}
-                  className="px-3 py-1.5 text-sm rounded-lg border border-[#D4C5B0] text-gray-600"
+                  style={{ padding: '7px 12px', borderRadius: 8, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.60)', fontSize: 13, cursor: 'pointer' }}
                 >
                   Cancel
                 </button>
               )}
               <button
                 onClick={clearSelection}
-                className="px-3 py-1.5 text-sm rounded-lg border border-[#D4C5B0] text-[#A1887F]"
+                style={{ padding: '7px 12px', borderRadius: 8, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.10)', color: 'rgba(255,255,255,0.50)', fontSize: 13, cursor: 'pointer' }}
               >
                 Deselect
               </button>
@@ -2474,7 +2454,7 @@ export default function PhotoAuditPage() {
           <div className="fixed top-3 left-3 z-[60]">
             <button
               onClick={() => setPickerArea('')}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-white/95 backdrop-blur-sm rounded-full shadow-lg text-sm font-medium text-gray-800 hover:bg-gray-50 active:bg-gray-200 transition-colors border border-gray-200"
+              style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 14px', background: 'rgba(7,18,12,0.90)', backdropFilter: 'blur(12px)', borderRadius: 999, border: '1px solid rgba(52,211,153,0.25)', color: 'rgba(255,255,255,0.85)', fontFamily: "'Inter', sans-serif", fontSize: 13, fontWeight: 500, cursor: 'pointer' }}
             >
               <span>←</span>
               <span>{t('audit.changeArea')}</span>
@@ -2560,10 +2540,10 @@ export default function PhotoAuditPage() {
       {cropChoicePhoto && (
         <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4"
           onClick={() => setCropChoicePhoto(null)}>
-          <div className="bg-white rounded-xl max-w-sm w-full p-5"
+          <div style={{ background: 'rgba(7,18,12,0.95)', backdropFilter: 'blur(20px)', border: '1px solid rgba(52,211,153,0.20)', borderRadius: 18, maxWidth: 380, width: '100%', padding: 20 }}
             onClick={e => e.stopPropagation()}>
-            <h3 className="text-base font-semibold mb-2">🧠 {t('audit.teachAI')}</h3>
-            <p className="text-sm text-[#A1887F] mb-4">{cropChoicePhoto.work_name}</p>
+            <h3 style={{ fontFamily: "'Lora', Georgia, serif", fontSize: 16, fontWeight: 500, color: 'rgba(255,255,255,0.95)', margin: '0 0 8px' }}>🧠 {t('audit.teachAI')}</h3>
+            <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.50)', marginBottom: 14 }}>{cropChoicePhoto.work_name}</p>
 
             {cropChoicePhoto.url && (
               <img src={cropChoicePhoto.url} alt={cropChoicePhoto.work_name || ''}
@@ -2574,19 +2554,19 @@ export default function PhotoAuditPage() {
             <div className="space-y-2">
               <button
                 onClick={handleCropAndTeach}
-                className="w-full py-3 rounded-lg bg-blue-600 text-white font-medium text-sm"
+                style={{ width: '100%', padding: '12px 0', borderRadius: 10, background: 'rgba(99,102,241,0.18)', border: '1px solid rgba(99,102,241,0.40)', color: 'rgba(165,180,252,0.90)', fontWeight: 500, fontSize: 13, cursor: 'pointer' }}
               >
                 ✂️ {t('audit.cropAndTeach')}
               </button>
               <button
                 onClick={handleUseFullPhoto}
-                className="w-full py-3 rounded-lg border border-[#D4C5B0] text-gray-800 font-medium text-sm"
+                style={{ width: '100%', padding: '12px 0', borderRadius: 10, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.75)', fontWeight: 500, fontSize: 13, cursor: 'pointer' }}
               >
                 🖼️ {t('audit.useFullPhoto')}
               </button>
               <button
                 onClick={() => setCropChoicePhoto(null)}
-                className="w-full py-2 text-sm text-[#A1887F]"
+                style={{ width: '100%', padding: '8px 0', fontSize: 13, color: 'rgba(255,255,255,0.35)', background: 'none', border: 'none', cursor: 'pointer' }}
               >
                 {t('common.cancel')}
               </button>
@@ -2611,9 +2591,9 @@ export default function PhotoAuditPage() {
       {/* Crop uploading overlay */}
       {cropUploading && (
         <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center">
-          <div className="bg-white rounded-xl p-6 flex flex-col items-center gap-3">
-            <div className="animate-spin w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full" />
-            <p className="text-sm text-gray-600">{t('audit.uploadingCrop')}</p>
+          <div style={{ background: 'rgba(7,18,12,0.95)', backdropFilter: 'blur(20px)', border: '1px solid rgba(52,211,153,0.20)', borderRadius: 18, padding: 24, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
+            <div className="animate-spin" style={{ width: 32, height: 32, borderRadius: '50%', border: '3px solid rgba(52,211,153,0.20)', borderTopColor: '#34d399' }} />
+            <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.55)', margin: 0 }}>{t('audit.uploadingCrop')}</p>
           </div>
         </div>
       )}
@@ -2622,10 +2602,10 @@ export default function PhotoAuditPage() {
       {taggingPhoto && (
         <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4"
           onClick={() => setTaggingPhoto(null)}>
-          <div className="bg-white rounded-xl max-w-sm w-full max-h-[85vh] flex flex-col p-5"
+          <div style={{ background: 'rgba(7,18,12,0.95)', backdropFilter: 'blur(20px)', border: '1px solid rgba(52,211,153,0.18)', borderRadius: 18, maxWidth: 380, width: '100%', maxHeight: '85vh', display: 'flex', flexDirection: 'column', padding: 20 }}
             onClick={e => e.stopPropagation()}>
-            <h3 className="text-base font-semibold mb-1">👶 {t('audit.tagChildren')}</h3>
-            <p className="text-xs text-[#A1887F] mb-3 truncate">{taggingPhoto.work_name || t('audit.untaggedWork')}</p>
+            <h3 style={{ fontFamily: "'Lora', Georgia, serif", fontSize: 16, fontWeight: 500, color: 'rgba(255,255,255,0.95)', margin: '0 0 5px' }}>👶 {t('audit.tagChildren')}</h3>
+            <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.40)', marginBottom: 12, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{taggingPhoto.work_name || t('audit.untaggedWork')}</p>
 
             {/* Thumbnail */}
             {taggingPhoto.url && (
@@ -2640,16 +2620,12 @@ export default function PhotoAuditPage() {
                   <button
                     key={child.id}
                     onClick={() => handleToggleChild(child.id)}
-                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-colors ${
-                      checked ? 'bg-emerald-50 border border-emerald-200' : 'bg-gray-50 border border-transparent hover:bg-gray-200'
-                    }`}
+                    style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 12, padding: '8px 10px', borderRadius: 10, textAlign: 'left', cursor: 'pointer', background: checked ? 'rgba(52,211,153,0.10)' : 'rgba(255,255,255,0.04)', border: `1px solid ${checked ? 'rgba(52,211,153,0.35)' : 'rgba(255,255,255,0.08)'}`, transition: 'all 100ms ease' }}
                   >
-                    <span className={`w-5 h-5 rounded border-2 flex items-center justify-center text-xs ${
-                      checked ? 'bg-emerald-500 border-emerald-500 text-white' : 'border-[#D4C5B0]'
-                    }`}>
+                    <span style={{ width: 18, height: 18, borderRadius: 5, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, background: checked ? 'rgba(52,211,153,0.25)' : 'transparent', border: `1.5px solid ${checked ? 'rgba(52,211,153,0.70)' : 'rgba(255,255,255,0.25)'}`, color: '#34d399', flexShrink: 0 }}>
                       {checked && '✓'}
                     </span>
-                    <span className="text-sm font-medium">{child.name}</span>
+                    <span style={{ fontSize: 13, fontWeight: 500, color: 'rgba(255,255,255,0.85)' }}>{child.name}</span>
                   </button>
                 );
               })}
@@ -2659,17 +2635,17 @@ export default function PhotoAuditPage() {
             </div>
 
             {/* Actions */}
-            <div className="flex gap-2 mt-3 pt-3 border-t">
+            <div style={{ display: 'flex', gap: 8, marginTop: 12, paddingTop: 12, borderTop: '1px solid rgba(52,211,153,0.10)' }}>
               <button
                 onClick={handleSaveChildTags}
                 disabled={taggingSaving}
-                className="flex-1 py-2.5 rounded-lg bg-emerald-600 text-white font-medium text-sm disabled:opacity-50"
+                style={{ flex: 1, padding: '10px 0', borderRadius: 10, background: 'linear-gradient(180deg, #34d399, #10b981)', border: '1px solid rgba(52,211,153,0.55)', color: '#06281a', fontWeight: 600, fontSize: 13, cursor: taggingSaving ? 'wait' : 'pointer', opacity: taggingSaving ? 0.6 : 1 }}
               >
                 {taggingSaving ? '...' : t('common.save')}
               </button>
               <button
                 onClick={() => setTaggingPhoto(null)}
-                className="flex-1 py-2.5 rounded-lg border text-gray-600 font-medium text-sm"
+                style={{ flex: 1, padding: '10px 0', borderRadius: 10, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.60)', fontWeight: 500, fontSize: 13, cursor: 'pointer' }}
               >
                 {t('common.cancel')}
               </button>
@@ -2682,12 +2658,12 @@ export default function PhotoAuditPage() {
       {describingPhoto && (
         <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4"
           onClick={handleCancelReference}>
-          <div className="bg-white rounded-xl max-w-md w-full max-h-[85vh] overflow-y-auto p-4"
+          <div style={{ background: 'rgba(7,18,12,0.95)', backdropFilter: 'blur(20px)', border: '1px solid rgba(52,211,153,0.18)', borderRadius: 18, maxWidth: 460, width: '100%', maxHeight: '85vh', overflowY: 'auto', padding: 16 }}
             onClick={e => e.stopPropagation()}>
-            <h3 className="text-base font-semibold mb-3">
+            <h3 style={{ fontFamily: "'Lora', Georgia, serif", fontSize: 16, fontWeight: 500, color: 'rgba(255,255,255,0.95)', margin: '0 0 12px' }}>
               🧠 {t('audit.teachAI')}
             </h3>
-            <p className="text-sm text-[#A1887F] mb-2">{describingPhoto.work_name}</p>
+            <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.45)', marginBottom: 8 }}>{describingPhoto.work_name}</p>
 
             {/* Photo preview — show crop if available, else original */}
             {(croppedReferenceUrl || describingPhoto.url) && (
@@ -2697,44 +2673,44 @@ export default function PhotoAuditPage() {
             )}
 
             {describeLoading && (
-              <div className="flex items-center justify-center py-8">
-                <div className="animate-spin w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full" />
-                <span className="ml-3 text-sm text-[#A1887F]">{t('audit.describing')}</span>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '32px 0' }}>
+                <div className="animate-spin" style={{ width: 28, height: 28, borderRadius: '50%', border: '3px solid rgba(52,211,153,0.20)', borderTopColor: '#34d399' }} />
+                <span style={{ marginLeft: 12, fontSize: 13, color: 'rgba(255,255,255,0.45)' }}>{t('audit.describing')}</span>
               </div>
             )}
 
             {describeResult && (
-              <div className="space-y-3">
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                 <div>
-                  <label className="text-xs font-medium text-[#A1887F] uppercase">{t('audit.visualDescription')}</label>
-                  <p className="text-sm mt-0.5 bg-gray-50 rounded p-2">{describeResult.visual_description}</p>
+                  <label style={{ fontSize: 10, fontWeight: 600, color: 'rgba(255,255,255,0.40)', textTransform: 'uppercase', letterSpacing: 0.5, display: 'block', marginBottom: 4 }}>{t('audit.visualDescription')}</label>
+                  <p style={{ fontSize: 12, marginTop: 0, background: 'rgba(0,0,0,0.20)', borderRadius: 8, padding: '8px 10px', color: 'rgba(255,255,255,0.80)', lineHeight: 1.5 }}>{describeResult.visual_description}</p>
                 </div>
                 <div>
-                  <label className="text-xs font-medium text-[#A1887F] uppercase">{t('audit.parentDescription')}</label>
-                  <p className="text-sm mt-0.5 bg-gray-50 rounded p-2">{describeResult.parent_description}</p>
+                  <label style={{ fontSize: 10, fontWeight: 600, color: 'rgba(255,255,255,0.40)', textTransform: 'uppercase', letterSpacing: 0.5, display: 'block', marginBottom: 4 }}>{t('audit.parentDescription')}</label>
+                  <p style={{ fontSize: 12, marginTop: 0, background: 'rgba(0,0,0,0.20)', borderRadius: 8, padding: '8px 10px', color: 'rgba(255,255,255,0.80)', lineHeight: 1.5 }}>{describeResult.parent_description}</p>
                 </div>
                 <div>
-                  <label className="text-xs font-medium text-[#A1887F] uppercase">{t('audit.whyItMatters')}</label>
-                  <p className="text-sm mt-0.5 bg-gray-50 rounded p-2">{describeResult.why_it_matters}</p>
+                  <label style={{ fontSize: 10, fontWeight: 600, color: 'rgba(255,255,255,0.40)', textTransform: 'uppercase', letterSpacing: 0.5, display: 'block', marginBottom: 4 }}>{t('audit.whyItMatters')}</label>
+                  <p style={{ fontSize: 12, marginTop: 0, background: 'rgba(0,0,0,0.20)', borderRadius: 8, padding: '8px 10px', color: 'rgba(255,255,255,0.80)', lineHeight: 1.5 }}>{describeResult.why_it_matters}</p>
                 </div>
                 {describeResult.key_materials.length > 0 && (
                   <div>
-                    <label className="text-xs font-medium text-[#A1887F] uppercase">{t('audit.keyMaterials')}</label>
-                    <p className="text-sm mt-0.5 bg-gray-50 rounded p-2">{describeResult.key_materials.join(', ')}</p>
+                    <label style={{ fontSize: 10, fontWeight: 600, color: 'rgba(255,255,255,0.40)', textTransform: 'uppercase', letterSpacing: 0.5, display: 'block', marginBottom: 4 }}>{t('audit.keyMaterials')}</label>
+                    <p style={{ fontSize: 12, marginTop: 0, background: 'rgba(0,0,0,0.20)', borderRadius: 8, padding: '8px 10px', color: 'rgba(255,255,255,0.80)', lineHeight: 1.5 }}>{describeResult.key_materials.join(', ')}</p>
                   </div>
                 )}
 
-                <div className="flex gap-2 pt-2">
+                <div style={{ display: 'flex', gap: 8, paddingTop: 8 }}>
                   <button
                     onClick={handleConfirmReference}
                     disabled={describeSaving}
-                    className="flex-1 py-2 rounded-lg bg-blue-600 text-white font-medium text-sm disabled:opacity-50"
+                    style={{ flex: 1, padding: '10px 0', borderRadius: 10, background: 'rgba(99,102,241,0.18)', border: '1px solid rgba(99,102,241,0.40)', color: 'rgba(165,180,252,0.90)', fontSize: 13, fontWeight: 500, cursor: describeSaving ? 'wait' : 'pointer', opacity: describeSaving ? 0.5 : 1 }}
                   >
                     {describeSaving ? '...' : t('audit.saveReference')}
                   </button>
                   <button
                     onClick={handleCancelReference}
-                    className="flex-1 py-2 rounded-lg border text-gray-600 font-medium text-sm"
+                    style={{ flex: 1, padding: '10px 0', borderRadius: 10, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.55)', fontSize: 13, fontWeight: 500, cursor: 'pointer' }}
                   >
                     {t('common.cancel')}
                   </button>
@@ -2744,7 +2720,7 @@ export default function PhotoAuditPage() {
 
             {!describeLoading && !describeResult && (
               <button onClick={handleCancelReference}
-                className="w-full py-2 text-sm text-[#A1887F] mt-4">
+                style={{ width: '100%', padding: '8px 0', fontSize: 13, color: 'rgba(255,255,255,0.35)', background: 'none', border: 'none', cursor: 'pointer', marginTop: 16 }}>
                 {t('common.cancel')}
               </button>
             )}
@@ -2800,48 +2776,49 @@ function AuditPhotoCard({ photo, selected, onToggle, onConfirm, onCorrect, onUse
 
   // Cleanup timer on unmount
   useEffect(() => () => { if (saveTimerRef.current) clearTimeout(saveTimerRef.current); }, []);
-  const zoneColors: Record<string, string> = {
-    green: 'border-emerald-400',
-    amber: 'border-amber-400',
-    red: 'border-red-400',
-    untagged: 'border-[#D4C5B0]',
-  };
 
-  const zoneBadge: Record<string, string> = {
-    green: 'bg-emerald-500',
-    amber: 'bg-amber-500',
-    red: 'bg-red-500',
-    untagged: 'bg-gray-400',
+  // zone accent colors for the top border strip
+  const zoneAccent: Record<string, string> = {
+    green: 'rgba(52,211,153,0.60)',
+    amber: 'rgba(245,158,11,0.55)',
+    red: 'rgba(239,68,68,0.55)',
+    untagged: 'rgba(255,255,255,0.15)',
   };
 
   return (
     <div
-      className={`relative rounded-lg overflow-hidden border-2 ${
-        selected ? 'ring-2 ring-blue-500 ring-offset-1' : ''
-      } ${zoneColors[photo.zone] || 'border-gray-200'}`}
-      style={{ contentVisibility: 'auto', containIntrinsicSize: '1px 320px' }}
+      style={{
+        position: 'relative', borderRadius: 18, overflow: 'hidden',
+        background: selected ? 'rgba(52,211,153,0.07)' : 'rgba(255,255,255,0.06)',
+        border: `1px solid ${selected ? 'rgba(52,211,153,0.50)' : 'rgba(52,211,153,0.15)'}`,
+        backdropFilter: 'blur(18px) saturate(140%)', WebkitBackdropFilter: 'blur(18px) saturate(140%)',
+        boxShadow: selected ? '0 0 0 2px rgba(52,211,153,0.25)' : 'none',
+        transition: 'border-color 150ms ease, background 150ms ease',
+        contentVisibility: 'auto', containIntrinsicSize: '1px 320px',
+        borderTop: `2px solid ${zoneAccent[photo.zone] || 'rgba(255,255,255,0.15)'}`,
+      }}
     >
       {/* Selection checkbox */}
       <button
         onClick={onToggle}
-        className="absolute top-1.5 left-1.5 z-10 w-6 h-6 rounded border-2 bg-white/80 flex items-center justify-center"
+        style={{ position: 'absolute', top: 10, left: 10, zIndex: 10, width: 24, height: 24, borderRadius: 6, background: selected ? 'rgba(52,211,153,0.25)' : 'rgba(7,18,12,0.65)', border: `1px solid ${selected ? 'rgba(52,211,153,0.70)' : 'rgba(255,255,255,0.25)'}`, backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'all 120ms ease' }}
       >
-        {selected && <span className="text-blue-600 text-sm font-bold">✓</span>}
+        {selected && <span style={{ color: '#34d399', fontSize: 13, fontWeight: 700 }}>✓</span>}
       </button>
 
       {/* Zone badge */}
-      <div className={`absolute top-1.5 right-1.5 z-10 w-3 h-3 rounded-full ${zoneBadge[photo.zone]}`} />
+      <div style={{ position: 'absolute', top: 10, right: 10, zIndex: 10, width: 10, height: 10, borderRadius: '50%', background: photo.zone === 'green' ? '#34d399' : photo.zone === 'amber' ? '#f59e0b' : photo.zone === 'red' ? '#ef4444' : 'rgba(255,255,255,0.30)', boxShadow: '0 0 6px rgba(0,0,0,0.40)' }} />
 
       {/* Confirmed overlay — shown in "Today (All)" view so teachers can spot
           already-resolved photos at a glance while scanning the day's captures. */}
       {photo.teacher_confirmed === true && (
-        <div className="absolute top-1.5 left-9 z-10 px-1.5 py-0.5 rounded bg-emerald-500 text-white text-[9px] font-bold shadow">
+        <div style={{ position: 'absolute', top: 10, left: 40, zIndex: 10, padding: '2px 8px', borderRadius: 999, background: 'rgba(52,211,153,0.85)', color: '#06281a', fontSize: 9, fontWeight: 700, letterSpacing: 0.5, backdropFilter: 'blur(6px)' }}>
           ✓ CONFIRMED
         </div>
       )}
 
       {/* Photo — tap to view full size */}
-      <div className="aspect-square bg-gray-200 cursor-pointer" onClick={onPhotoTap}>
+      <div style={{ aspectRatio: '4/3', background: 'rgba(0,0,0,0.30)', cursor: 'pointer' }} onClick={onPhotoTap}>
         {photo.url ? (
           <img
             src={photo.thumbnail_path ? getThumbnailUrl(photo.thumbnail_path, 480) : photo.url}
@@ -2853,90 +2830,59 @@ function AuditPhotoCard({ photo, selected, onToggle, onConfirm, onCorrect, onUse
             decoding="async"
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center text-gray-300 text-3xl">📷</div>
+          <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 28, color: 'rgba(255,255,255,0.20)' }}>📷</div>
         )}
       </div>
 
       {/* Sonnet draft — rich AI proposal for unidentified photos */}
       {photo.sonnet_draft && photo.identification_status === 'sonnet_drafted' && (
-        <div className="p-2 bg-violet-50 border-t-2 border-violet-300">
-          <div className="flex items-center gap-1 mb-1">
-            <span className="text-[9px] font-bold text-violet-700 uppercase tracking-wide">✨ AI Draft</span>
+        <div style={{ padding: '10px 12px', background: 'rgba(139,92,246,0.08)', borderTop: '1px solid rgba(139,92,246,0.25)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
+            <span style={{ fontSize: 9, fontWeight: 700, color: 'rgba(196,181,253,0.90)', letterSpacing: 0.5, textTransform: 'uppercase' }}>✨ AI Draft</span>
             {typeof photo.sonnet_draft.confidence === 'number' && (
-              <span className="text-[9px] text-violet-500">· {Math.round(photo.sonnet_draft.confidence * 100)}%</span>
+              <span style={{ fontSize: 9, color: 'rgba(196,181,253,0.60)' }}>· {Math.round(photo.sonnet_draft.confidence * 100)}%</span>
             )}
           </div>
           {photo.sonnet_draft.proposed_name && (
-            <p className="text-[11px] font-bold text-violet-900 leading-tight">{photo.sonnet_draft.proposed_name}</p>
+            <p style={{ fontSize: 12, fontWeight: 600, color: 'rgba(233,213,255,0.95)', lineHeight: 1.3, margin: '0 0 3px' }}>{photo.sonnet_draft.proposed_name}</p>
           )}
           {photo.sonnet_draft.suggested_area && (
-            <p className="text-[9px] text-violet-600 capitalize">{photo.sonnet_draft.suggested_area.replace(/_/g, ' ')}</p>
+            <p style={{ fontSize: 9, color: 'rgba(196,181,253,0.70)', textTransform: 'capitalize', margin: 0 }}>{photo.sonnet_draft.suggested_area.replace(/_/g, ' ')}</p>
           )}
           {photo.sonnet_draft.visual_description && (
-            <p className="text-[9px] text-violet-700 leading-snug mt-1 line-clamp-3">{photo.sonnet_draft.visual_description}</p>
+            <p style={{ fontSize: 9, color: 'rgba(233,213,255,0.75)', lineHeight: 1.4, marginTop: 5, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical' }}>{photo.sonnet_draft.visual_description}</p>
           )}
           {photo.sonnet_draft.key_materials && photo.sonnet_draft.key_materials.length > 0 && (
-            <p className="text-[9px] text-violet-600 mt-1"><span className="font-semibold">Materials:</span> {photo.sonnet_draft.key_materials.slice(0, 4).join(', ')}</p>
-          )}
-          {photo.sonnet_draft.parent_description && (
-            <p className="text-[9px] text-violet-700 leading-snug mt-1 line-clamp-3 italic">"{photo.sonnet_draft.parent_description}"</p>
-          )}
-          {photo.sonnet_draft.why_it_matters && (
-            <p className="text-[9px] text-violet-600 leading-snug mt-1 line-clamp-2"><span className="font-semibold">Why:</span> {photo.sonnet_draft.why_it_matters}</p>
+            <p style={{ fontSize: 9, color: 'rgba(196,181,253,0.70)', marginTop: 4 }}><span style={{ fontWeight: 600 }}>Materials:</span> {photo.sonnet_draft.key_materials.slice(0, 4).join(', ')}</p>
           )}
           {photo.sonnet_draft.closest_existing_match?.work_name && (
-            <p className="text-[9px] text-amber-700 mt-1">
-              ≈ Similar to <span className="font-semibold">{photo.sonnet_draft.closest_existing_match.work_name}</span>
+            <p style={{ fontSize: 9, color: 'rgba(245,158,11,0.80)', marginTop: 4 }}>
+              ≈ Similar to <span style={{ fontWeight: 600 }}>{photo.sonnet_draft.closest_existing_match.work_name}</span>
               {typeof photo.sonnet_draft.closest_existing_match.similarity === 'number' && (
-                <span className="text-amber-500"> ({Math.round(photo.sonnet_draft.closest_existing_match.similarity * 100)}%)</span>
+                <span style={{ opacity: 0.70 }}> ({Math.round(photo.sonnet_draft.closest_existing_match.similarity * 100)}%)</span>
               )}
             </p>
           )}
           {unifiedTagger ? (
-            <div className="flex gap-1 mt-1.5">
-              <button
-                onClick={onConfirmDraft}
-                disabled={processing}
-                className="flex-1 text-[11px] py-2 rounded bg-emerald-600 text-white font-bold disabled:opacity-50"
-                title="Sonnet got it right — confirm and attach"
-              >
+            <div style={{ display: 'flex', gap: 6, marginTop: 8 }}>
+              <button onClick={onConfirmDraft} disabled={processing} style={{ flex: 1, fontSize: 11, padding: '8px 0', borderRadius: 8, background: 'linear-gradient(180deg, #34d399, #10b981)', border: '1px solid rgba(52,211,153,0.55)', color: '#06281a', fontWeight: 600, cursor: processing ? 'wait' : 'pointer', opacity: processing ? 0.5 : 1 }}>
                 {processing ? '...' : '✓ Correct'}
               </button>
-              <button
-                onClick={onAcceptDraft}
-                disabled={processing}
-                className="flex-1 text-[11px] py-2 rounded bg-violet-600 text-white font-bold disabled:opacity-50"
-                title="Identify this work"
-              >
+              <button onClick={onAcceptDraft} disabled={processing} style={{ flex: 1, fontSize: 11, padding: '8px 0', borderRadius: 8, background: 'rgba(139,92,246,0.20)', border: '1px solid rgba(139,92,246,0.40)', color: 'rgba(196,181,253,0.90)', fontWeight: 600, cursor: processing ? 'wait' : 'pointer', opacity: processing ? 0.5 : 1 }}>
                 {processing ? '...' : '🏷️ This is…'}
               </button>
             </div>
           ) : (
             <>
-              <div className="flex gap-1 mt-1.5">
-                <button
-                  onClick={onConfirmDraft}
-                  disabled={processing}
-                  className="flex-1 text-[12px] py-2 rounded bg-emerald-600 text-white font-bold disabled:opacity-50"
-                  title="Sonnet got it right — confirm and attach"
-                >
+              <div style={{ display: 'flex', gap: 6, marginTop: 8 }}>
+                <button onClick={onConfirmDraft} disabled={processing} style={{ flex: 1, fontSize: 12, padding: '8px 0', borderRadius: 8, background: 'linear-gradient(180deg, #34d399, #10b981)', border: '1px solid rgba(52,211,153,0.55)', color: '#06281a', fontWeight: 600, cursor: processing ? 'wait' : 'pointer', opacity: processing ? 0.5 : 1 }}>
                   {processing ? '...' : '✓ Correct'}
                 </button>
-                <button
-                  onClick={onCorrect}
-                  disabled={processing}
-                  className="flex-1 text-[12px] py-2 rounded bg-white border border-violet-400 text-violet-700 font-bold disabled:opacity-50"
-                  title="Pick a different work from your curriculum"
-                >
+                <button onClick={onCorrect} disabled={processing} style={{ flex: 1, fontSize: 12, padding: '8px 0', borderRadius: 8, background: 'rgba(139,92,246,0.10)', border: '1px solid rgba(139,92,246,0.35)', color: 'rgba(196,181,253,0.85)', fontWeight: 600, cursor: processing ? 'wait' : 'pointer', opacity: processing ? 0.5 : 1 }}>
                   ✏️ Fix
                 </button>
               </div>
-              <button
-                onClick={onTellAI}
-                disabled={processing}
-                className="w-full text-[10px] py-1.5 mt-1 rounded bg-white border border-violet-200 text-violet-600 font-medium disabled:opacity-50 hover:bg-violet-50 transition-colors"
-                title="Describe this work in your own words"
-              >
+              <button onClick={onTellAI} disabled={processing} style={{ width: '100%', fontSize: 10, padding: '6px 0', marginTop: 4, borderRadius: 8, background: 'rgba(139,92,246,0.08)', border: '1px solid rgba(139,92,246,0.22)', color: 'rgba(196,181,253,0.70)', fontWeight: 500, cursor: processing ? 'wait' : 'pointer', opacity: processing ? 0.5 : 1 }}>
                 🗣️ Tell AI what it is
               </button>
             </>
@@ -2947,36 +2893,26 @@ function AuditPhotoCard({ photo, selected, onToggle, onConfirm, onCorrect, onUse
       {/* Haiku draft — Gate A failed; Haiku result available for optional Sonnet enrichment.
           Teacher can click "Ask Sonnet" to enrich with full analysis, or "This is..." to resolve. */}
       {photo.identification_status === 'haiku_drafted' && photo.identification_confidence !== null && (
-        <div className="p-2 bg-cyan-50 border-t-2 border-cyan-300">
-          <div className="flex items-center gap-1 mb-1">
-            <span className="text-[9px] font-bold text-cyan-700 uppercase tracking-wide">🧠 Haiku Draft</span>
+        <div style={{ padding: '10px 12px', background: 'rgba(20,184,166,0.07)', borderTop: '1px solid rgba(20,184,166,0.25)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
+            <span style={{ fontSize: 9, fontWeight: 700, color: 'rgba(94,234,212,0.90)', letterSpacing: 0.5, textTransform: 'uppercase' }}>🧠 Haiku Draft</span>
             {typeof photo.identification_confidence === 'number' && (
-              <span className="text-[9px] text-cyan-600">· {Math.round(photo.identification_confidence * 100)}%</span>
+              <span style={{ fontSize: 9, color: 'rgba(94,234,212,0.60)' }}>· {Math.round(photo.identification_confidence * 100)}%</span>
             )}
           </div>
           {(photo.work_name || photo.sonnet_draft?.proposed_name) && (
-            <p className="text-[11px] font-bold text-cyan-900 leading-tight">{photo.work_name || photo.sonnet_draft?.proposed_name}</p>
+            <p style={{ fontSize: 12, fontWeight: 600, color: 'rgba(204,251,241,0.95)', lineHeight: 1.3, margin: '0 0 3px' }}>{photo.work_name || photo.sonnet_draft?.proposed_name}</p>
           )}
           {photo.sonnet_draft?.suggested_area && (
-            <p className="text-[9px] text-cyan-600 capitalize">{photo.sonnet_draft.suggested_area.replace(/_/g, ' ')}</p>
+            <p style={{ fontSize: 9, color: 'rgba(94,234,212,0.65)', textTransform: 'capitalize', margin: 0 }}>{photo.sonnet_draft.suggested_area.replace(/_/g, ' ')}</p>
           )}
-          <p className="text-[9px] text-cyan-700 mt-0.5 italic">Haiku identified this, but has low confidence — ask Sonnet for deeper analysis.</p>
+          <p style={{ fontSize: 9, color: 'rgba(94,234,212,0.65)', marginTop: 4, fontStyle: 'italic' }}>Haiku identified this, but has low confidence — ask Sonnet for deeper analysis.</p>
           {/* Always show ✓ Correct + ✏️ Wrong — same pattern as haiku_matched */}
-          <div className="flex gap-1 mt-1.5">
-            <button
-              onClick={onConfirmDraft}
-              disabled={processing}
-              className="flex-1 text-[12px] py-2 rounded bg-cyan-600 text-white font-bold disabled:opacity-50"
-              title="Haiku got it right — confirm"
-            >
+          <div style={{ display: 'flex', gap: 6, marginTop: 8 }}>
+            <button onClick={onConfirmDraft} disabled={processing} style={{ flex: 1, fontSize: 12, padding: '8px 0', borderRadius: 8, background: 'rgba(20,184,166,0.20)', border: '1px solid rgba(20,184,166,0.40)', color: 'rgba(94,234,212,0.90)', fontWeight: 600, cursor: processing ? 'wait' : 'pointer', opacity: processing ? 0.5 : 1 }}>
               {processing ? '...' : '✓ Correct'}
             </button>
-            <button
-              onClick={onAcceptDraft}
-              disabled={processing}
-              className="flex-1 text-[12px] py-2 rounded bg-white border border-cyan-400 text-cyan-700 font-bold disabled:opacity-50"
-              title="Haiku got it wrong — pick the right work"
-            >
+            <button onClick={onAcceptDraft} disabled={processing} style={{ flex: 1, fontSize: 12, padding: '8px 0', borderRadius: 8, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(20,184,166,0.28)', color: 'rgba(94,234,212,0.80)', fontWeight: 600, cursor: processing ? 'wait' : 'pointer', opacity: processing ? 0.5 : 1 }}>
               ✏️ Wrong
             </button>
           </div>
@@ -3006,7 +2942,7 @@ function AuditPhotoCard({ photo, selected, onToggle, onConfirm, onCorrect, onUse
               );
             }}
             disabled={processing}
-            className="w-full text-[10px] py-1.5 mt-1 rounded bg-white border border-cyan-200 text-cyan-600 font-medium disabled:opacity-50 hover:bg-cyan-50 transition-colors"
+            style={{ width: '100%', fontSize: 10, padding: '6px 0', marginTop: 4, borderRadius: 8, background: 'rgba(20,184,166,0.08)', border: '1px solid rgba(20,184,166,0.22)', color: 'rgba(94,234,212,0.70)', fontWeight: 500, cursor: processing ? 'wait' : 'pointer', opacity: processing ? 0.5 : 1 }}
             title="Call Sonnet for richer analysis"
           >
             🧠 Ask Sonnet
@@ -3018,30 +2954,20 @@ function AuditPhotoCard({ photo, selected, onToggle, onConfirm, onCorrect, onUse
           Sonnet review. Rendered as a distinct amber card so teachers can
           spot + verify auto-tags instead of eye-passing them as confirmed. */}
       {photo.identification_status === 'haiku_matched' && photo.work_name && (
-        <div className="p-2 bg-amber-50 border-t-2 border-amber-300">
-          <div className="flex items-center gap-1 mb-1">
-            <span className="text-[9px] font-bold text-amber-700 uppercase tracking-wide">🤖 Haiku Auto-Match</span>
+        <div style={{ padding: '10px 12px', background: 'rgba(245,158,11,0.07)', borderTop: '1px solid rgba(245,158,11,0.25)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
+            <span style={{ fontSize: 9, fontWeight: 700, color: 'rgba(253,230,138,0.90)', letterSpacing: 0.5, textTransform: 'uppercase' }}>🤖 Haiku Auto-Match</span>
             {typeof photo.identification_confidence === 'number' && (
-              <span className="text-[9px] text-amber-600">· {Math.round(photo.identification_confidence * 100)}%</span>
+              <span style={{ fontSize: 9, color: 'rgba(253,230,138,0.60)' }}>· {Math.round(photo.identification_confidence * 100)}%</span>
             )}
           </div>
-          <p className="text-[11px] font-bold text-amber-900 leading-tight">{photo.work_name}</p>
-          <p className="text-[9px] text-amber-700 mt-0.5 italic">Auto-tagged by AI — please verify before confirming.</p>
-          <div className="flex gap-1 mt-1.5">
-            <button
-              onClick={onConfirm}
-              disabled={processing}
-              className="flex-1 text-[12px] py-2 rounded bg-amber-600 text-white font-bold disabled:opacity-50"
-              title="AI got it right — confirm"
-            >
+          <p style={{ fontSize: 12, fontWeight: 600, color: 'rgba(254,243,199,0.95)', lineHeight: 1.3, margin: '0 0 4px' }}>{photo.work_name}</p>
+          <p style={{ fontSize: 9, color: 'rgba(253,230,138,0.65)', fontStyle: 'italic', margin: 0 }}>Auto-tagged by AI — please verify before confirming.</p>
+          <div style={{ display: 'flex', gap: 6, marginTop: 8 }}>
+            <button onClick={onConfirm} disabled={processing} style={{ flex: 1, fontSize: 12, padding: '8px 0', borderRadius: 8, background: 'rgba(245,158,11,0.20)', border: '1px solid rgba(245,158,11,0.40)', color: 'rgba(253,230,138,0.90)', fontWeight: 600, cursor: processing ? 'wait' : 'pointer', opacity: processing ? 0.5 : 1 }}>
               {processing ? '...' : '✓ Correct'}
             </button>
-            <button
-              onClick={onAcceptDraft}
-              disabled={processing}
-              className="flex-1 text-[12px] py-2 rounded bg-white border border-amber-400 text-amber-700 font-bold disabled:opacity-50"
-              title="AI got it wrong — pick the right work"
-            >
+            <button onClick={onAcceptDraft} disabled={processing} style={{ flex: 1, fontSize: 12, padding: '8px 0', borderRadius: 8, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(245,158,11,0.28)', color: 'rgba(253,230,138,0.80)', fontWeight: 600, cursor: processing ? 'wait' : 'pointer', opacity: processing ? 0.5 : 1 }}>
               ✏️ Wrong
             </button>
           </div>
@@ -3049,80 +2975,73 @@ function AuditPhotoCard({ photo, selected, onToggle, onConfirm, onCorrect, onUse
       )}
 
       {/* Info + actions */}
-      <div className="p-2 bg-white">
-        <p className="text-xs font-medium truncate">{photo.work_name || photo.sonnet_draft?.proposed_name || t('audit.untaggedWork')}</p>
+      <div style={{ padding: '10px 12px 10px', background: 'rgba(0,0,0,0.18)' }}>
+        <p style={{ fontSize: 12, fontWeight: 500, color: 'rgba(255,255,255,0.90)', margin: '0 0 3px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{photo.work_name || photo.sonnet_draft?.proposed_name || t('audit.untaggedWork')}</p>
         {/* Multi-child display with tag button */}
         <button
           onClick={onTagChildren}
-          className="flex items-center gap-1 mt-0.5 text-[10px] text-[#A1887F] hover:text-blue-600 transition-colors group w-full text-left"
+          style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 10, color: 'rgba(255,255,255,0.45)', cursor: 'pointer', background: 'none', border: 'none', padding: 0, width: '100%', textAlign: 'left' }}
           title={t('audit.tagChildren')}
         >
-          <span className="truncate flex-1">
+          <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
             {photo.child_names && photo.child_names.length > 0
               ? photo.child_names.join(', ')
               : photo.child_name || t('audit.noChildrenTagged')}
           </span>
-          <span className="opacity-0 group-hover:opacity-100 text-blue-500 flex-shrink-0">👶+</span>
+          <span style={{ flexShrink: 0, opacity: 0.5 }}>👶+</span>
         </button>
         {photo.confidence !== null && (
-          <p className="text-[10px] text-[#A1887F]">
+          <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.35)', margin: 0 }}>
             {Math.round(photo.confidence * 100)}%
           </p>
         )}
         {/* Re-run classification result display */}
         {rerunResult && !rerunResult.loading && !rerunResult.error && (
-          <div className="mt-1 p-1.5 rounded bg-indigo-50 border border-indigo-200">
-            <p className="text-[9px] font-semibold text-indigo-600 mb-0.5">
+          <div style={{ marginTop: 6, padding: '8px 10px', borderRadius: 8, background: 'rgba(99,102,241,0.10)', border: '1px solid rgba(99,102,241,0.25)' }}>
+            <p style={{ fontSize: 9, fontWeight: 600, color: 'rgba(165,180,252,0.85)', marginBottom: 4 }}>
               Haiku Result
-              {rerunResult.model_used && <span className="font-normal text-indigo-400 ml-1">({rerunResult.model_used.includes('haiku') ? 'Haiku' : 'Sonnet'})</span>}
+              {rerunResult.model_used && <span style={{ fontWeight: 400, color: 'rgba(165,180,252,0.50)', marginLeft: 4 }}>({rerunResult.model_used.includes('haiku') ? 'Haiku' : 'Sonnet'})</span>}
             </p>
-            {/* Pass 1: What Haiku "sees" — visual description */}
             {rerunResult.visual_description && (
-              <div className="mb-1.5 p-1 rounded bg-violet-50 border border-violet-200/50">
-                <p className="text-[8px] font-semibold text-violet-500 mb-0.5">👁 Pass 1 — What AI Sees:</p>
-                <p className="text-[9px] text-violet-700 leading-snug">{rerunResult.visual_description}</p>
+              <div style={{ marginBottom: 6, padding: '6px 8px', borderRadius: 6, background: 'rgba(139,92,246,0.10)', border: '1px solid rgba(139,92,246,0.20)' }}>
+                <p style={{ fontSize: 8, fontWeight: 600, color: 'rgba(196,181,253,0.70)', marginBottom: 3 }}>👁 Pass 1 — What AI Sees:</p>
+                <p style={{ fontSize: 9, color: 'rgba(233,213,255,0.75)', lineHeight: 1.4, margin: 0 }}>{rerunResult.visual_description}</p>
               </div>
             )}
-            {/* Pass 2: Match result */}
             {rerunResult.work_name ? (
               <>
-                <p className="text-[10px] font-medium text-indigo-800 truncate">{rerunResult.work_name}</p>
-                <p className="text-[9px] text-indigo-500">
-                  {rerunResult.area && <span className="capitalize">{rerunResult.area.replace(/_/g, ' ')}</span>}
+                <p style={{ fontSize: 10, fontWeight: 500, color: 'rgba(165,180,252,0.90)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', margin: 0 }}>{rerunResult.work_name}</p>
+                <p style={{ fontSize: 9, color: 'rgba(165,180,252,0.55)', margin: '2px 0 0' }}>
+                  {rerunResult.area && <span style={{ textTransform: 'capitalize' }}>{rerunResult.area.replace(/_/g, ' ')}</span>}
                   {rerunResult.confidence !== null && <span> · {Math.round(rerunResult.confidence * 100)}%</span>}
                 </p>
                 {rerunResult.work_id && (
-                  <button
-                    onClick={onAcceptResult}
-                    disabled={processing}
-                    className="mt-1 w-full text-[10px] py-1 rounded bg-indigo-600 text-white font-medium disabled:opacity-50"
-                  >
+                  <button onClick={onAcceptResult} disabled={processing} style={{ marginTop: 6, width: '100%', fontSize: 10, padding: '5px 0', borderRadius: 6, background: 'rgba(99,102,241,0.20)', border: '1px solid rgba(99,102,241,0.40)', color: 'rgba(165,180,252,0.90)', fontWeight: 500, cursor: processing ? 'wait' : 'pointer', opacity: processing ? 0.5 : 1 }}>
                     {processing ? '...' : '✓ Accept this match'}
                   </button>
                 )}
               </>
             ) : (
-              <p className="text-[10px] text-indigo-500 italic">
+              <p style={{ fontSize: 10, color: 'rgba(165,180,252,0.60)', fontStyle: 'italic', margin: 0 }}>
                 No match found
                 {rerunResult.confidence !== null && ` (${Math.round(rerunResult.confidence * 100)}%)`}
-                {rerunResult.scenario && <span className="block text-[8px] text-indigo-400 mt-0.5">scenario: {rerunResult.scenario}</span>}
+                {rerunResult.scenario && <span style={{ display: 'block', fontSize: 8, color: 'rgba(165,180,252,0.40)', marginTop: 2 }}>scenario: {rerunResult.scenario}</span>}
               </p>
             )}
           </div>
         )}
         {rerunResult?.loading && (
-          <div className="mt-1 p-1.5 rounded bg-indigo-50 border border-indigo-200">
-            <p className="text-[10px] text-indigo-600 animate-pulse">{t('audit.rerunRunning')}</p>
+          <div style={{ marginTop: 6, padding: '8px 10px', borderRadius: 8, background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.20)' }}>
+            <p style={{ fontSize: 10, color: 'rgba(165,180,252,0.70)', margin: 0 }} className="animate-pulse">{t('audit.rerunRunning')}</p>
           </div>
         )}
         {rerunResult?.error && (
-          <div className="mt-1 p-1.5 rounded bg-red-50 border border-red-200">
-            <p className="text-[10px] text-red-500">{rerunResult.error}</p>
-            {/* In test mode, show Pass 1 description even when matching failed */}
+          <div style={{ marginTop: 6, padding: '8px 10px', borderRadius: 8, background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.20)' }}>
+            <p style={{ fontSize: 10, color: 'rgba(252,165,165,0.80)', margin: 0 }}>{rerunResult.error}</p>
             {rerunResult.visual_description && (
-              <div className="mt-1 p-1 rounded bg-violet-50 border border-violet-200/50">
-                <p className="text-[8px] font-semibold text-violet-500 mb-0.5">👁 Pass 1 — What AI Sees:</p>
-                <p className="text-[9px] text-violet-700 leading-snug">{rerunResult.visual_description}</p>
+              <div style={{ marginTop: 6, padding: '6px 8px', borderRadius: 6, background: 'rgba(139,92,246,0.10)', border: '1px solid rgba(139,92,246,0.20)' }}>
+                <p style={{ fontSize: 8, fontWeight: 600, color: 'rgba(196,181,253,0.70)', marginBottom: 3 }}>👁 Pass 1 — What AI Sees:</p>
+                <p style={{ fontSize: 9, color: 'rgba(233,213,255,0.75)', lineHeight: 1.4, margin: 0 }}>{rerunResult.visual_description}</p>
               </div>
             )}
           </div>
@@ -3135,41 +3054,37 @@ function AuditPhotoCard({ photo, selected, onToggle, onConfirm, onCorrect, onUse
             <button
               onClick={onAcceptDraft}
               disabled={processing}
-              className="w-full text-[10px] py-2 mt-1.5 rounded bg-gray-700 text-white font-bold disabled:opacity-50"
+              style={{ width: '100%', fontSize: 10, padding: '8px 0', marginTop: 8, borderRadius: 8, background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.75)', fontWeight: 600, cursor: processing ? 'wait' : 'pointer', opacity: processing ? 0.5 : 1 }}
               title="Identify this work"
             >
               {processing ? '...' : '🏷️ This is…'}
             </button>
           ) : (
-            <div className="flex gap-1 mt-1.5">
+            <div style={{ display: 'flex', gap: 6, marginTop: 8 }}>
               <button
                 onClick={onCorrect}
                 disabled={processing}
-                className="flex-1 text-[10px] py-1.5 rounded bg-gray-200 text-gray-600 font-medium disabled:opacity-50"
+                style={{ flex: 1, fontSize: 10, padding: '7px 0', borderRadius: 8, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.60)', fontWeight: 500, cursor: processing ? 'wait' : 'pointer', opacity: processing ? 0.5 : 1 }}
               >
                 ✏️ {t('audit.fix')}
               </button>
               <button
                 onClick={onTellAI}
                 disabled={processing}
-                className="flex-1 text-[10px] py-1.5 rounded bg-violet-50 text-violet-600 font-medium disabled:opacity-50"
+                style={{ flex: 1, fontSize: 10, padding: '7px 0', borderRadius: 8, background: 'rgba(139,92,246,0.08)', border: '1px solid rgba(139,92,246,0.22)', color: 'rgba(196,181,253,0.70)', fontWeight: 500, cursor: processing ? 'wait' : 'pointer', opacity: processing ? 0.5 : 1 }}
               >
-                🗣️ Tell AI what it is
+                🗣️ Tell AI
               </button>
             </div>
           )
         )}
         {/* Utility actions — Confirm and Teach hidden (auto-handled on resolve/fix).
             Kept in code for reinstatement. Only delete remains visible. */}
-        <div className="flex gap-1 mt-1 justify-end">
+        <div style={{ display: 'flex', gap: 4, marginTop: 8, justifyContent: 'flex-end' }}>
           <button
             onClick={onToggleDiscussion}
             disabled={processing}
-            className={`text-[10px] py-1 px-1.5 rounded font-medium disabled:opacity-50 ${
-              photo.discussion_flag
-                ? 'bg-blue-200 text-blue-800 ring-1 ring-blue-400'
-                : 'bg-blue-50 text-blue-600'
-            }`}
+            style={{ fontSize: 10, padding: '4px 7px', borderRadius: 6, background: photo.discussion_flag ? 'rgba(96,165,250,0.18)' : 'rgba(96,165,250,0.07)', border: `1px solid ${photo.discussion_flag ? 'rgba(96,165,250,0.45)' : 'rgba(96,165,250,0.18)'}`, cursor: processing ? 'wait' : 'pointer', opacity: processing ? 0.5 : 1 }}
             title={photo.discussion_flag ? 'Remove from discussion' : 'Flag for team discussion'}
           >
             💬
@@ -3177,7 +3092,7 @@ function AuditPhotoCard({ photo, selected, onToggle, onConfirm, onCorrect, onUse
           <button
             onClick={onMarkAsPaperwork}
             disabled={processing}
-            className="text-[10px] py-1 px-1.5 rounded bg-amber-50 text-amber-600 font-medium disabled:opacity-50"
+            style={{ fontSize: 10, padding: '4px 7px', borderRadius: 6, background: 'rgba(245,158,11,0.07)', border: '1px solid rgba(245,158,11,0.18)', cursor: processing ? 'wait' : 'pointer', opacity: processing ? 0.5 : 1 }}
             title="Mark as paperwork page — AI will read the week number"
           >
             📋
@@ -3185,7 +3100,7 @@ function AuditPhotoCard({ photo, selected, onToggle, onConfirm, onCorrect, onUse
           <button
             onClick={onDelete}
             disabled={processing}
-            className="text-[10px] py-1 px-1.5 rounded bg-red-50 text-red-500 font-medium disabled:opacity-50"
+            style={{ fontSize: 10, padding: '4px 7px', borderRadius: 6, background: 'rgba(239,68,68,0.07)', border: '1px solid rgba(239,68,68,0.18)', cursor: processing ? 'wait' : 'pointer', opacity: processing ? 0.5 : 1 }}
             title={t('audit.deletePhoto')}
           >
             🗑️
@@ -3204,11 +3119,11 @@ function AuditPhotoCard({ photo, selected, onToggle, onConfirm, onCorrect, onUse
             value={noteText}
             onChange={e => handleNoteChange(e.target.value)}
             placeholder={t('audit.addNote')}
-            className="w-full text-[10px] p-1.5 rounded border border-gray-200 bg-gray-50 resize-none focus:outline-none focus:ring-1 focus:ring-blue-400 focus:border-blue-400 placeholder:text-gray-300"
+            style={{ width: '100%', fontSize: 10, padding: '6px 8px', borderRadius: 8, border: '1px solid rgba(52,211,153,0.12)', background: 'rgba(0,0,0,0.20)', color: 'rgba(255,255,255,0.75)', resize: 'none', outline: 'none', fontFamily: "'Inter', sans-serif", boxSizing: 'border-box' }}
             rows={2}
           />
-          {noteSaving && <span className="absolute top-0.5 right-1 text-[8px] text-[#A1887F]">{t('audit.saving')}</span>}
-          {noteSaved && !noteSaving && <span className="absolute top-0.5 right-1 text-[8px] text-emerald-500">✓</span>}
+          {noteSaving && <span style={{ position: 'absolute', top: 2, right: 4, fontSize: 8, color: 'rgba(255,255,255,0.35)' }}>{t('audit.saving')}</span>}
+          {noteSaved && !noteSaving && <span style={{ position: 'absolute', top: 2, right: 4, fontSize: 8, color: '#34d399' }}>✓</span>}
         </div>
       </div>
     </div>
