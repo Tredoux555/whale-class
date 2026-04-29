@@ -1,12 +1,14 @@
 // components/montree/guru/GuruDashboardCards.tsx
-// Consolidated dashboard guru cards — replaces 4 separate components
-// (EndOfDayNudge, GuruSuggestionCard, WeeklyReview, GuruDailyBriefing)
+// Consolidated dashboard guru cards
 // Single API call to /api/montree/guru/dashboard-summary
+// Dark forest visual treatment — all wiring intact
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, ReactNode } from 'react';
+import {
+  Sprout, Sunrise, Moon, X, ChevronDown, BarChart3, Sparkles,
+} from 'lucide-react';
 import { useI18n } from '@/lib/montree/i18n';
-import { HOME_THEME } from '@/lib/montree/home-theme';
 
 interface GuruDashboardCardsProps {
   childId: string;
@@ -19,6 +21,25 @@ interface DashboardData {
   weeklyReview: { available: boolean; review: string | null };
 }
 
+const T = {
+  card: 'rgba(255,255,255,0.06)',
+  cardBorder: 'rgba(52,211,153,0.15)',
+  cardRadius: 18,
+  blur: 'blur(18px) saturate(140%)',
+  emerald: '#34d399',
+  emeraldStrong: 'rgba(52,211,153,0.18)',
+  emeraldSoft: 'rgba(52,211,153,0.10)',
+  amber: '#f59e0b',
+  amberSoft: 'rgba(245,158,11,0.10)',
+  amberBorder: 'rgba(245,158,11,0.30)',
+  red: '#f87171',
+  textPrimary: 'rgba(255,255,255,0.95)',
+  textSecondary: 'rgba(255,255,255,0.65)',
+  textMuted: 'rgba(255,255,255,0.40)',
+  serif: '"Lora", Georgia, serif',
+  sans: '"Inter", -apple-system, BlinkMacSystemFont, sans-serif',
+};
+
 export default function GuruDashboardCards({ childId, childName }: GuruDashboardCardsProps) {
   const { t } = useI18n();
   const [data, setData] = useState<DashboardData | null>(null);
@@ -27,14 +48,12 @@ export default function GuruDashboardCards({ childId, childName }: GuruDashboard
   const [dismissedSuggestion, setDismissedSuggestion] = useState(false);
   const [weeklyExpanded, setWeeklyExpanded] = useState(false);
 
-  // Daily plan state (on-demand, not auto-fired)
   const [plan, setPlan] = useState<string | null>(null);
   const [planLoading, setPlanLoading] = useState(false);
   const [planExpanded, setPlanExpanded] = useState(false);
   const [planError, setPlanError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Check if suggestion already dismissed this week
     const dismissKey = `guru_suggestion_dismissed_${childId}`;
     const dismissedWeek = localStorage.getItem(dismissKey);
     const currentWeek = getISOWeek();
@@ -85,132 +104,418 @@ export default function GuruDashboardCards({ childId, childName }: GuruDashboard
     localStorage.setItem(`guru_suggestion_dismissed_${childId}`, getISOWeek());
   };
 
-  // Simple markdown bold renderer
-  const renderInlineBold = (text: string) => {
+  // Markdown helpers
+  const renderInlineBold = (text: string): ReactNode[] => {
     const parts = text.split(/(\*\*[^*]+\*\*)/g);
     return parts.map((part, i) => {
       if (part.startsWith('**') && part.endsWith('**')) {
-        return <strong key={i} className="font-semibold text-[#0D3330]">{part.slice(2, -2)}</strong>;
+        return <strong key={i} style={{ color: T.textPrimary, fontWeight: 600 }}>{part.slice(2, -2)}</strong>;
       }
       return <span key={i}>{part}</span>;
     });
   };
 
-  // Simple markdown renderer for daily plan
   const renderPlan = (text: string) => {
     return text.split('\n').map((line, i) => {
-      if (line.startsWith('## ')) return <h2 key={i} className="text-xl font-bold text-[#0D3330] mt-4 mb-2">{line.replace('## ', '')}</h2>;
-      if (line.startsWith('### ')) return <h3 key={i} className="text-lg font-semibold text-[#0D3330] mt-3 mb-1">{line.replace('### ', '')}</h3>;
-      if (line.startsWith('#### ')) return <h4 key={i} className="text-base font-semibold text-[#164340] mt-2 mb-1">{line.replace('#### ', '')}</h4>;
-      if (line.startsWith('**') && line.endsWith('**')) return <p key={i} className="font-semibold text-[#0D3330] mt-1">{line.replace(/\*\*/g, '')}</p>;
-      if (line.startsWith('- ') || line.startsWith('* ')) return <li key={i} className="ml-4 text-[#0D3330]/80 text-sm">{renderInlineBold(line.slice(2))}</li>;
-      if (/^\d+\.\s/.test(line)) return <li key={i} className="ml-4 text-[#0D3330]/80 text-sm list-decimal">{renderInlineBold(line.replace(/^\d+\.\s/, ''))}</li>;
-      if (line.trim() === '') return <div key={i} className="h-2" />;
-      return <p key={i} className="text-[#0D3330]/80 text-sm">{renderInlineBold(line)}</p>;
+      if (line.startsWith('## ')) return (
+        <h2 key={i} style={{ margin: '16px 0 8px', fontFamily: T.serif, fontSize: 19, fontWeight: 500, color: T.textPrimary, letterSpacing: -0.2 }}>
+          {line.replace('## ', '')}
+        </h2>
+      );
+      if (line.startsWith('### ')) return (
+        <h3 key={i} style={{ margin: '12px 0 4px', fontFamily: T.serif, fontSize: 16, fontWeight: 500, color: T.textPrimary, letterSpacing: -0.2 }}>
+          {line.replace('### ', '')}
+        </h3>
+      );
+      if (line.startsWith('#### ')) return (
+        <h4 key={i} style={{ margin: '8px 0 4px', fontFamily: T.sans, fontSize: 14, fontWeight: 600, color: T.textSecondary }}>
+          {line.replace('#### ', '')}
+        </h4>
+      );
+      if (line.startsWith('**') && line.endsWith('**')) return (
+        <p key={i} style={{ margin: '4px 0', fontFamily: T.sans, fontSize: 13, fontWeight: 600, color: T.textPrimary }}>
+          {line.replace(/\*\*/g, '')}
+        </p>
+      );
+      if (line.startsWith('- ') || line.startsWith('* ')) return (
+        <li key={i} style={{ marginLeft: 16, fontFamily: T.sans, fontSize: 13, color: T.textSecondary, lineHeight: 1.55 }}>
+          {renderInlineBold(line.slice(2))}
+        </li>
+      );
+      if (/^\d+\.\s/.test(line)) return (
+        <li key={i} style={{ marginLeft: 16, fontFamily: T.sans, fontSize: 13, color: T.textSecondary, listStyle: 'decimal', lineHeight: 1.55 }}>
+          {renderInlineBold(line.replace(/^\d+\.\s/, ''))}
+        </li>
+      );
+      if (line.trim() === '') return <div key={i} style={{ height: 6 }} />;
+      return (
+        <p key={i} style={{ margin: '2px 0', fontFamily: T.sans, fontSize: 13, color: T.textSecondary, lineHeight: 1.55 }}>
+          {renderInlineBold(line)}
+        </p>
+      );
     });
   };
 
   if (loading) return null;
 
   return (
-    <div className="space-y-4">
-      {/* TODAY'S PLAN — on-demand, not auto-fired */}
-      <div className={`${HOME_THEME.cardBg} border ${HOME_THEME.border} rounded-2xl shadow-md overflow-hidden`}>
-        <div className="bg-gradient-to-r from-[#0D3330] to-[#164340] px-5 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <span className="text-2xl">🌿</span>
-              <div>
-                <h3 className="text-white font-bold text-lg">{t('guru.todayPlan')}</h3>
-                <p className="text-white/70 text-xs">{t('guru.montessoriGuideFor').replace('{name}', childName)}</p>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 14, fontFamily: T.sans, color: T.textPrimary }}>
+      {/* TODAY'S PLAN */}
+      <div style={{
+        background: T.card,
+        border: `1px solid ${T.cardBorder}`,
+        borderRadius: T.cardRadius,
+        backdropFilter: T.blur,
+        WebkitBackdropFilter: T.blur,
+        overflow: 'hidden',
+      }}>
+        <div style={{
+          padding: '14px 18px',
+          background: 'linear-gradient(180deg, rgba(52,211,153,0.18), rgba(52,211,153,0.08))',
+          borderBottom: `1px solid ${T.cardBorder}`,
+        }}>
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: 12,
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 11, minWidth: 0 }}>
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: 36,
+                height: 36,
+                borderRadius: 10,
+                background: T.emeraldStrong,
+                border: '1px solid rgba(52,211,153,0.40)',
+                color: T.emerald,
+                flexShrink: 0,
+              }}>
+                <Sprout size={17} strokeWidth={1.75} />
+              </div>
+              <div style={{ minWidth: 0 }}>
+                <h3 style={{
+                  margin: 0,
+                  fontFamily: T.serif,
+                  fontSize: 17,
+                  fontWeight: 500,
+                  color: T.textPrimary,
+                  letterSpacing: -0.2,
+                }}>
+                  {t('guru.todayPlan')}
+                </h3>
+                <p style={{
+                  margin: '2px 0 0',
+                  fontSize: 11,
+                  color: T.textMuted,
+                }}>
+                  {t('guru.montessoriGuideFor').replace('{name}', childName)}
+                </p>
               </div>
             </div>
             {!plan && !planLoading && (
-              <button onClick={fetchDailyPlan} className="px-4 py-2 bg-white/20 hover:bg-white/30 text-white text-sm font-medium rounded-lg transition-colors">
+              <button
+                onClick={fetchDailyPlan}
+                style={{
+                  padding: '8px 14px',
+                  borderRadius: 10,
+                  background: T.emeraldStrong,
+                  border: '1px solid rgba(52,211,153,0.45)',
+                  color: T.emerald,
+                  fontFamily: T.sans,
+                  fontSize: 12,
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  whiteSpace: 'nowrap',
+                  flexShrink: 0,
+                }}
+              >
                 {t('guru.generatePlan')}
               </button>
             )}
             {plan && (
-              <button onClick={() => setPlanExpanded(!planExpanded)} className="px-3 py-1 bg-white/20 hover:bg-white/30 text-white text-sm rounded-lg transition-colors">
+              <button
+                onClick={() => setPlanExpanded(!planExpanded)}
+                style={{
+                  padding: '6px 12px',
+                  borderRadius: 9,
+                  background: 'rgba(255,255,255,0.06)',
+                  border: '1px solid rgba(255,255,255,0.10)',
+                  color: T.textPrimary,
+                  fontFamily: T.sans,
+                  fontSize: 12,
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  flexShrink: 0,
+                }}
+              >
                 {planExpanded ? t('guru.collapse') : t('guru.expand')}
               </button>
             )}
           </div>
         </div>
         {planLoading && (
-          <div className="px-5 py-8 text-center">
-            <div className="animate-pulse text-3xl mb-3">🌱</div>
-            <p className="text-[#0D3330]/60 text-sm">{t('guru.preparingPlan').replace('{name}', childName)}</p>
+          <div style={{
+            padding: '32px 16px',
+            textAlign: 'center',
+          }}>
+            <div style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: 40,
+              height: 40,
+              borderRadius: '50%',
+              background: T.emeraldStrong,
+              border: '1px solid rgba(52,211,153,0.40)',
+              marginBottom: 10,
+              animation: 'gd-bounce 1.4s ease-in-out infinite',
+              color: T.emerald,
+            }}>
+              <Sprout size={18} strokeWidth={1.75} />
+            </div>
+            <p style={{ margin: 0, fontSize: 13, color: T.textMuted }}>
+              {t('guru.preparingPlan').replace('{name}', childName)}
+            </p>
+            <style>{`@keyframes gd-bounce { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }`}</style>
           </div>
         )}
         {planError && (
-          <div className="px-5 py-4">
-            <p className="text-red-600 text-sm">{planError}</p>
-            <button onClick={fetchDailyPlan} className="text-[#0D3330] underline text-sm mt-1">{t('common.tryAgain')}</button>
+          <div style={{ padding: '16px 18px' }}>
+            <p style={{ margin: 0, color: T.red, fontSize: 13 }}>{planError}</p>
+            <button
+              onClick={fetchDailyPlan}
+              style={{
+                marginTop: 4,
+                background: 'transparent',
+                border: 'none',
+                color: T.emerald,
+                fontFamily: T.sans,
+                fontSize: 12,
+                fontWeight: 600,
+                textDecoration: 'underline',
+                cursor: 'pointer',
+                padding: 0,
+              }}
+            >
+              {t('common.tryAgain')}
+            </button>
           </div>
         )}
-        {plan && planExpanded && <div className="px-5 py-4 max-h-[60vh] overflow-y-auto">{renderPlan(plan)}</div>}
-        {plan && !planExpanded && <div className="px-5 py-3"><p className="text-[#0D3330]/60 text-sm">✅ {t('guru.planReadyExpand')}</p></div>}
+        {plan && planExpanded && (
+          <div style={{
+            padding: '14px 18px',
+            maxHeight: '60vh',
+            overflowY: 'auto',
+          }}>
+            {renderPlan(plan)}
+          </div>
+        )}
+        {plan && !planExpanded && (
+          <div style={{ padding: '12px 18px' }}>
+            <p style={{
+              margin: 0,
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 6,
+              fontSize: 12,
+              color: T.emerald,
+            }}>
+              <Sparkles size={12} strokeWidth={1.75} />
+              {t('guru.planReadyExpand')}
+            </p>
+          </div>
+        )}
       </div>
 
-      {/* END-OF-DAY NUDGE — from summary, dismissible */}
+      {/* END-OF-DAY NUDGE */}
       {data?.endOfDay.nudge && !dismissedNudge && (
-        <div className={`${HOME_THEME.cardBg} border ${HOME_THEME.border} rounded-2xl p-4 relative`}>
+        <div style={{
+          position: 'relative',
+          background: T.card,
+          border: `1px solid ${T.cardBorder}`,
+          borderRadius: T.cardRadius,
+          backdropFilter: T.blur,
+          WebkitBackdropFilter: T.blur,
+          padding: 16,
+        }}>
           <button
             onClick={() => setDismissedNudge(true)}
-            className="absolute top-3 right-3 w-6 h-6 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-400 text-xs"
             aria-label="Dismiss"
-          >✕</button>
-          <div className="flex items-start gap-3 pr-6">
-            <span className="text-xl flex-shrink-0">🌅</span>
+            style={{
+              position: 'absolute',
+              top: 10,
+              right: 10,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: 24,
+              height: 24,
+              borderRadius: '50%',
+              background: 'rgba(255,255,255,0.06)',
+              border: '1px solid rgba(255,255,255,0.10)',
+              color: T.textMuted,
+              cursor: 'pointer',
+            }}
+          >
+            <X size={11} strokeWidth={1.75} />
+          </button>
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, paddingRight: 26 }}>
+            <Sunrise size={20} strokeWidth={1.75} color="#fbbf24" style={{ flexShrink: 0, marginTop: 2 }} />
             <div>
-              <h4 className={`text-sm font-semibold ${HOME_THEME.headingText} mb-1`}>{childName} {t('guru.day')}</h4>
-              <p className={`text-sm leading-relaxed ${HOME_THEME.textPrimary}`}>{data.endOfDay.nudge}</p>
+              <h4 style={{
+                margin: '0 0 4px',
+                fontFamily: T.serif,
+                fontSize: 14,
+                fontWeight: 500,
+                color: T.textPrimary,
+              }}>
+                {childName} {t('guru.day')}
+              </h4>
+              <p style={{
+                margin: 0,
+                fontSize: 13,
+                lineHeight: 1.55,
+                color: T.textSecondary,
+              }}>
+                {data.endOfDay.nudge}
+              </p>
             </div>
           </div>
         </div>
       )}
 
-      {/* SUGGESTION — from summary, dismissible */}
+      {/* SUGGESTION */}
       {data?.suggestion.text && !dismissedSuggestion && (
-        <div className={`${HOME_THEME.cardBg} border border-amber-200 rounded-2xl p-4 relative`}>
+        <div style={{
+          position: 'relative',
+          background: T.amberSoft,
+          border: `1px solid ${T.amberBorder}`,
+          borderRadius: T.cardRadius,
+          backdropFilter: T.blur,
+          WebkitBackdropFilter: T.blur,
+          padding: 16,
+        }}>
           <button
             onClick={handleDismissSuggestion}
-            className="absolute top-3 right-3 w-6 h-6 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-400 text-xs"
             aria-label="Dismiss"
-          >✕</button>
-          <div className="flex items-start gap-3 pr-6">
-            <span className="text-xl flex-shrink-0">{data.suggestion.type === 'inactive' ? '💤' : '🌱'}</span>
+            style={{
+              position: 'absolute',
+              top: 10,
+              right: 10,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: 24,
+              height: 24,
+              borderRadius: '50%',
+              background: 'rgba(255,255,255,0.06)',
+              border: '1px solid rgba(255,255,255,0.10)',
+              color: T.textMuted,
+              cursor: 'pointer',
+            }}
+          >
+            <X size={11} strokeWidth={1.75} />
+          </button>
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, paddingRight: 26 }}>
+            {data.suggestion.type === 'inactive'
+              ? <Moon size={20} strokeWidth={1.75} color={T.amber} style={{ flexShrink: 0, marginTop: 2 }} />
+              : <Sprout size={20} strokeWidth={1.75} color={T.amber} style={{ flexShrink: 0, marginTop: 2 }} />}
             <div>
-              <h4 className={`text-sm font-semibold ${HOME_THEME.headingText} mb-1`}>
-                {data.suggestion.type === 'inactive' ? t('guru.missing').replace('{name}', childName) : t('guru.gentleNudgeAbout').replace('{name}', childName)}
+              <h4 style={{
+                margin: '0 0 4px',
+                fontFamily: T.serif,
+                fontSize: 14,
+                fontWeight: 500,
+                color: T.textPrimary,
+              }}>
+                {data.suggestion.type === 'inactive'
+                  ? t('guru.missing').replace('{name}', childName)
+                  : t('guru.gentleNudgeAbout').replace('{name}', childName)}
               </h4>
-              <p className={`text-sm leading-relaxed ${HOME_THEME.textPrimary}`}>{data.suggestion.text}</p>
+              <p style={{
+                margin: 0,
+                fontSize: 13,
+                lineHeight: 1.55,
+                color: T.textPrimary,
+              }}>
+                {data.suggestion.text}
+              </p>
             </div>
           </div>
         </div>
       )}
 
-      {/* WEEKLY REVIEW — from summary, collapsible */}
+      {/* WEEKLY REVIEW */}
       {data?.weeklyReview.available && data.weeklyReview.review && (
-        <div className={`${HOME_THEME.cardBg} border ${HOME_THEME.border} rounded-2xl overflow-hidden`}>
+        <div style={{
+          background: T.card,
+          border: `1px solid ${T.cardBorder}`,
+          borderRadius: T.cardRadius,
+          backdropFilter: T.blur,
+          WebkitBackdropFilter: T.blur,
+          overflow: 'hidden',
+        }}>
           <button
             onClick={() => setWeeklyExpanded(!weeklyExpanded)}
-            className="w-full px-4 py-3 flex items-center justify-between hover:bg-[#F5E6D3]/30 transition-colors"
+            style={{
+              width: '100%',
+              padding: '12px 16px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              background: 'transparent',
+              border: 'none',
+              cursor: 'pointer',
+              color: T.textPrimary,
+              fontFamily: T.sans,
+              transition: 'background 140ms ease',
+            }}
+            onMouseEnter={e => (e.currentTarget.style.background = 'rgba(52,211,153,0.06)')}
+            onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
           >
-            <div className="flex items-center gap-2">
-              <span className="text-lg">📊</span>
-              <span className={`text-sm font-semibold ${HOME_THEME.headingText}`}>{childName} {t('guru.weekInReview')}</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <BarChart3 size={15} strokeWidth={1.75} color={T.emerald} />
+              <span style={{
+                fontFamily: T.serif,
+                fontSize: 14,
+                fontWeight: 500,
+                color: T.textPrimary,
+              }}>
+                {childName} {t('guru.weekInReview')}
+              </span>
             </div>
-            <span className={`text-sm ${HOME_THEME.subtleText} transition-transform ${weeklyExpanded ? 'rotate-180' : ''}`}>▼</span>
+            <ChevronDown
+              size={13}
+              strokeWidth={1.75}
+              color={T.textMuted}
+              style={{
+                transition: 'transform 200ms ease',
+                transform: weeklyExpanded ? 'rotate(180deg)' : 'rotate(0deg)',
+              }}
+            />
           </button>
           {weeklyExpanded && (
-            <div className={`px-4 pb-4 border-t ${HOME_THEME.border}`}>
-              <div className="pt-3">
-                {data.weeklyReview.review.split('\n\n').map((p, i) => (
-                  <p key={i} className={`text-sm ${HOME_THEME.headingText}/80 leading-relaxed ${i > 0 ? 'mt-3' : ''}`}>{p}</p>
-                ))}
-              </div>
+            <div style={{
+              padding: '0 16px 16px',
+              borderTop: `1px solid ${T.cardBorder}`,
+              paddingTop: 12,
+            }}>
+              {data.weeklyReview.review.split('\n\n').map((p, i) => (
+                <p
+                  key={i}
+                  style={{
+                    margin: i === 0 ? 0 : '12px 0 0',
+                    fontSize: 13,
+                    lineHeight: 1.6,
+                    color: T.textSecondary,
+                  }}
+                >
+                  {p}
+                </p>
+              ))}
             </div>
           )}
         </div>
