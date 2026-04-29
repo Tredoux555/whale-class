@@ -4,8 +4,12 @@
 // Dashboard card for batch-generating Sonnet-written parent narratives
 // "Generate Weekly Updates" calls /api/montree/reports/batch-narratives for the whole classroom
 // Shows progress, cost, and per-child results
+// Dark forest visual treatment — all wiring intact
 
 import { useState, useCallback, useRef, useEffect } from 'react';
+import {
+  Sparkles, Check, Camera, ChevronDown, ChevronUp, AlertCircle, Loader2,
+} from 'lucide-react';
 import { montreeApi } from '@/lib/montree/api';
 import { useI18n } from '@/lib/montree/i18n';
 import { getIntlLocale } from '@/lib/montree/i18n/locales';
@@ -30,6 +34,24 @@ interface NarrativeResult {
   error?: string;
 }
 
+const T = {
+  card: 'rgba(255,255,255,0.06)',
+  cardBorder: 'rgba(52,211,153,0.20)',
+  cardRadius: 14,
+  blur: 'blur(16px) saturate(140%)',
+  emerald: '#34d399',
+  emeraldStrong: 'rgba(52,211,153,0.18)',
+  emeraldSoft: 'rgba(52,211,153,0.10)',
+  red: '#f87171',
+  redSoft: 'rgba(239,68,68,0.10)',
+  redBorder: 'rgba(239,68,68,0.30)',
+  textPrimary: 'rgba(255,255,255,0.95)',
+  textSecondary: 'rgba(255,255,255,0.65)',
+  textMuted: 'rgba(255,255,255,0.40)',
+  serif: '"Lora", Georgia, serif',
+  sans: '"Inter", -apple-system, BlinkMacSystemFont, sans-serif',
+};
+
 export default function BatchNarrativesCard({ classroomId, children }: Props) {
   const { t, locale } = useI18n();
 
@@ -51,7 +73,6 @@ export default function BatchNarrativesCard({ classroomId, children }: Props) {
     };
   }, []);
 
-  // Get current week dates
   const getWeekDates = () => {
     const now = new Date();
     const dayOfWeek = now.getDay();
@@ -143,16 +164,56 @@ export default function BatchNarrativesCard({ classroomId, children }: Props) {
   })();
 
   return (
-    <div className="bg-white rounded-xl border border-emerald-200 p-4 mb-4 shadow-sm">
+    <div style={{
+      background: T.card,
+      border: `1px solid ${T.cardBorder}`,
+      borderRadius: T.cardRadius,
+      padding: 16,
+      marginBottom: 16,
+      backdropFilter: T.blur,
+      WebkitBackdropFilter: T.blur,
+      fontFamily: T.sans,
+      color: T.textPrimary,
+    }}>
       {/* Header */}
-      <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center gap-2">
-          <span className="text-xl">✨</span>
-          <div>
-            <h3 className="font-semibold text-gray-800 text-sm">
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        marginBottom: 12,
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 11, minWidth: 0 }}>
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: 34,
+            height: 34,
+            borderRadius: 10,
+            background: T.emeraldStrong,
+            border: '1px solid rgba(52,211,153,0.40)',
+            color: T.emerald,
+            flexShrink: 0,
+          }}>
+            <Sparkles size={16} strokeWidth={1.75} />
+          </div>
+          <div style={{ minWidth: 0 }}>
+            <h3 style={{
+              margin: 0,
+              fontFamily: T.serif,
+              fontSize: 14,
+              fontWeight: 500,
+              color: T.textPrimary,
+              letterSpacing: -0.1,
+            }}>
               {t('batchNarratives.title')}
             </h3>
-            <p className="text-xs text-gray-500">
+            <p style={{
+              margin: '2px 0 0',
+              fontFamily: T.sans,
+              fontSize: 11,
+              color: T.textMuted,
+            }}>
               {weekLabel} · {children.length} {t('batchNarratives.childrenLabel')}
             </p>
           </div>
@@ -161,87 +222,237 @@ export default function BatchNarrativesCard({ classroomId, children }: Props) {
         {!generating ? (
           <button
             onClick={() => handleGenerate(false)}
-            className="px-3 py-1.5 rounded-lg text-sm font-medium bg-emerald-500 text-white hover:bg-emerald-600 active:scale-95 transition-all"
+            style={{
+              padding: '7px 14px',
+              borderRadius: 9,
+              background: 'linear-gradient(180deg, #34d399, #10b981)',
+              border: '1px solid rgba(52,211,153,0.55)',
+              color: '#06281a',
+              fontFamily: T.sans,
+              fontSize: 12,
+              fontWeight: 700,
+              cursor: 'pointer',
+              boxShadow: '0 4px 14px rgba(16,185,129,0.25)',
+              flexShrink: 0,
+            }}
           >
             {t('batchNarratives.generateButton')}
           </button>
         ) : (
           <button
             onClick={handleCancel}
-            className="px-3 py-1.5 rounded-lg text-sm font-medium bg-red-100 text-red-600 hover:bg-red-200 transition-all"
+            style={{
+              padding: '7px 14px',
+              borderRadius: 9,
+              background: T.redSoft,
+              border: `1px solid ${T.redBorder}`,
+              color: T.red,
+              fontFamily: T.sans,
+              fontSize: 12,
+              fontWeight: 700,
+              cursor: 'pointer',
+              flexShrink: 0,
+            }}
           >
             {t('batchNarratives.cancelButton')}
           </button>
         )}
       </div>
 
-      {/* Generating indicator */}
+      {/* Generating */}
       {generating && (
-        <div className="mb-3">
-          <div className="flex items-center gap-2 text-xs text-emerald-600 mb-2">
-            <div className="w-4 h-4 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
-            <span>{t('batchNarratives.generatingMessage')}</span>
+        <div style={{ marginBottom: 12 }}>
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 8,
+            marginBottom: 8,
+            color: T.emerald,
+          }}>
+            <Loader2 size={14} strokeWidth={2} style={{ animation: 'bnc-spin 0.9s linear infinite' }} />
+            <span style={{ fontFamily: T.sans, fontSize: 11 }}>
+              {t('batchNarratives.generatingMessage')}
+            </span>
+            <style>{`@keyframes bnc-spin { to { transform: rotate(360deg); } }`}</style>
           </div>
-          <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-            <div className="h-full bg-emerald-500 rounded-full animate-pulse w-2/3" />
+          <div style={{
+            height: 6,
+            background: 'rgba(255,255,255,0.08)',
+            borderRadius: 999,
+            overflow: 'hidden',
+          }}>
+            <div style={{
+              height: '100%',
+              width: '66%',
+              background: 'linear-gradient(90deg, #34d399, #10b981)',
+              borderRadius: 999,
+              animation: 'bnc-pulse 1.4s ease-in-out infinite',
+            }} />
+            <style>{`@keyframes bnc-pulse { 0%,100% { opacity: 0.6; } 50% { opacity: 1; } }`}</style>
           </div>
         </div>
       )}
 
       {/* Results */}
       {stats && !generating && (
-        <div className="space-y-2">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           {/* Summary */}
-          <div className="text-sm bg-emerald-50 rounded-lg p-3">
-            <div className="flex items-center justify-between">
-              <span className="text-emerald-700 font-medium">
-                ✅ {t('batchNarratives.generatedCount', { count: stats.generated })}
+          <div style={{
+            padding: 12,
+            borderRadius: 12,
+            background: T.emeraldSoft,
+            border: '1px solid rgba(52,211,153,0.25)',
+          }}>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: 8,
+            }}>
+              <span style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 6,
+                fontFamily: T.sans,
+                fontSize: 13,
+                fontWeight: 600,
+                color: T.emerald,
+              }}>
+                <Check size={13} strokeWidth={2.5} />
+                {t('batchNarratives.generatedCount', { count: stats.generated })}
                 {stats.skipped > 0 && (
-                  <span className="text-gray-500 font-normal"> · {stats.skipped} {t('batchNarratives.skippedLabel')}</span>
+                  <span style={{
+                    color: T.textMuted,
+                    fontWeight: 400,
+                    marginLeft: 6,
+                  }}>
+                    · {stats.skipped} {t('batchNarratives.skippedLabel')}
+                  </span>
                 )}
               </span>
               <button
                 onClick={() => setExpanded(!expanded)}
-                className="text-xs text-emerald-600 hover:text-emerald-800"
+                style={{
+                  background: 'transparent',
+                  border: 'none',
+                  color: T.emerald,
+                  fontFamily: T.sans,
+                  fontSize: 11,
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  padding: 0,
+                }}
               >
                 {expanded ? t('batchNarratives.hideButton') : t('batchNarratives.detailsButton')}
               </button>
             </div>
-            <div className="mt-1 text-xs text-emerald-600">
-              📸 {t('batchNarratives.photoCount', { count: totalPhotos })}
+            <div style={{
+              marginTop: 6,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 6,
+              fontFamily: T.sans,
+              fontSize: 11,
+              color: T.emerald,
+              opacity: 0.85,
+            }}>
+              <Camera size={11} strokeWidth={1.75} />
+              {t('batchNarratives.photoCount', { count: totalPhotos })}
               {stats.cost_usd > 0 && (
-                <span className="ml-2">· ${stats.cost_usd.toFixed(3)} AI cost</span>
+                <span style={{ color: T.textMuted, marginLeft: 6 }}>
+                  · ${stats.cost_usd.toFixed(3)} AI cost
+                </span>
               )}
             </div>
           </div>
 
-          {/* Per-child narrative preview */}
+          {/* Per-child preview */}
           {expanded && successResults.length > 0 && (
-            <div className="space-y-1 max-h-80 overflow-y-auto">
-              {successResults.map(r => (
-                <div key={r.child_id}>
-                  <button
-                    onClick={() => setPreviewChild(previewChild === r.child_id ? null : r.child_id)}
-                    className="w-full flex items-center justify-between text-xs bg-gray-50 hover:bg-gray-100 rounded-lg px-3 py-2 transition-colors"
-                  >
-                    <span className="font-medium text-gray-700">{r.child_name}</span>
-                    <div className="flex items-center gap-2 text-gray-500">
-                      <span>📸 {r.photo_count}</span>
-                      <span className="text-emerald-500">{previewChild === r.child_id ? '▲' : '▼'}</span>
-                    </div>
-                  </button>
-                  {previewChild === r.child_id && r.narrative && (
-                    <div className="mx-2 mb-2 p-3 bg-emerald-50 rounded-lg border-l-3 border-emerald-400">
-                      <p className="text-xs text-gray-700 leading-relaxed italic">
-                        &ldquo;{r.narrative}&rdquo;
-                      </p>
-                    </div>
-                  )}
-                </div>
-              ))}
+            <div style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 4,
+              maxHeight: 320,
+              overflowY: 'auto',
+              paddingRight: 4,
+            }}>
+              {successResults.map(r => {
+                const isOpen = previewChild === r.child_id;
+                return (
+                  <div key={r.child_id}>
+                    <button
+                      onClick={() => setPreviewChild(isOpen ? null : r.child_id)}
+                      style={{
+                        width: '100%',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        padding: '8px 12px',
+                        borderRadius: 10,
+                        background: 'rgba(255,255,255,0.04)',
+                        border: '1px solid rgba(255,255,255,0.08)',
+                        color: T.textPrimary,
+                        cursor: 'pointer',
+                        transition: 'background 120ms ease',
+                      }}
+                      onMouseEnter={e => (e.currentTarget.style.background = 'rgba(52,211,153,0.06)')}
+                      onMouseLeave={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.04)')}
+                    >
+                      <span style={{
+                        fontFamily: T.sans,
+                        fontSize: 12,
+                        fontWeight: 600,
+                      }}>
+                        {r.child_name}
+                      </span>
+                      <span style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: 8,
+                        fontFamily: T.sans,
+                        fontSize: 11,
+                        color: T.textMuted,
+                      }}>
+                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3 }}>
+                          <Camera size={10} strokeWidth={1.75} />
+                          {r.photo_count}
+                        </span>
+                        {isOpen
+                          ? <ChevronUp size={12} strokeWidth={1.75} color={T.emerald} />
+                          : <ChevronDown size={12} strokeWidth={1.75} color={T.emerald} />}
+                      </span>
+                    </button>
+                    {isOpen && r.narrative && (
+                      <div style={{
+                        margin: '6px 6px 4px',
+                        padding: 12,
+                        borderRadius: 10,
+                        background: T.emeraldSoft,
+                        borderLeft: `3px solid ${T.emerald}`,
+                      }}>
+                        <p style={{
+                          margin: 0,
+                          fontFamily: T.sans,
+                          fontSize: 12,
+                          lineHeight: 1.55,
+                          color: T.textSecondary,
+                          fontStyle: 'italic',
+                        }}>
+                          &ldquo;{r.narrative}&rdquo;
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
 
               {skippedResults.length > 0 && (
-                <div className="text-xs text-gray-400 px-3 py-1">
+                <div style={{
+                  padding: '4px 12px',
+                  fontFamily: T.sans,
+                  fontSize: 11,
+                  color: T.textMuted,
+                }}>
                   {t('batchNarratives.skippedSection')}: {skippedResults.map(r => r.child_name).join(', ')}
                 </div>
               )}
@@ -250,20 +461,52 @@ export default function BatchNarrativesCard({ classroomId, children }: Props) {
 
           {/* Failed */}
           {failedResults.length > 0 && (
-            <div className="text-sm text-red-600 bg-red-50 rounded-lg p-2">
+            <div style={{
+              padding: 10,
+              borderRadius: 10,
+              background: T.redSoft,
+              border: `1px solid ${T.redBorder}`,
+              color: T.red,
+              fontFamily: T.sans,
+              fontSize: 12,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8,
+            }}>
+              <AlertCircle size={13} strokeWidth={1.75} />
               {t('batchNarratives.failedLabel')}: {failedResults.map(r => r.child_name).join(', ')}
             </div>
           )}
 
-          {/* Actions */}
-          <div className="flex items-center justify-between pt-1">
-            <p className="text-xs text-gray-400">
+          {/* Footer */}
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            paddingTop: 4,
+          }}>
+            <p style={{
+              margin: 0,
+              fontFamily: T.sans,
+              fontSize: 10,
+              color: T.textMuted,
+            }}>
               {t('batchNarratives.helpText')}
             </p>
             {stats.generated > 0 && (
               <button
                 onClick={() => handleGenerate(true)}
-                className="text-xs text-emerald-600 hover:text-emerald-800 underline"
+                style={{
+                  background: 'transparent',
+                  border: 'none',
+                  color: T.emerald,
+                  fontFamily: T.sans,
+                  fontSize: 11,
+                  fontWeight: 600,
+                  textDecoration: 'underline',
+                  cursor: 'pointer',
+                  padding: 0,
+                }}
               >
                 {t('batchNarratives.regenerateButton')}
               </button>
