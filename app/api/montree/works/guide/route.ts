@@ -1,13 +1,16 @@
 // /api/montree/works/guide/route.ts
 // GET quick guide for a work by name
 // Checks classroom curriculum first, then master Brain DB, then static JSON
-// Supports locale=zh for Chinese translation of guide content
+// Supports any non-English locale for translation of guide content (via LOCALE_AI_CONFIG)
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { anthropic, AI_MODEL } from '@/lib/ai/anthropic';
 import { findCurriculumWorkByName } from '@/lib/montree/curriculum-loader';
+import { SUPPORTED_LOCALES, DEFAULT_LOCALE, type Locale } from '@/lib/montree/i18n/locales';
+import { LOCALE_AI_CONFIG, getLanguageName } from '@/lib/montree/i18n/locale-config';
+import { buildLocalizedColumnList, getLocalizedColumn } from '@/lib/montree/i18n/db-helpers';
 
 // Escape special SQL wildcard characters for safe ILIKE usage
 function escapeIlike(str: string): string {
@@ -32,10 +35,13 @@ export async function GET(request: NextRequest) {
     let guideData: Record<string, unknown> | null = null;
 
     // 1. Try classroom curriculum first (if classroom_id provided)
+    // guide_content_<locale> columns are auto-derived from SUPPORTED_LOCALES —
+    // adding a new locale to locales.ts extends this SELECT automatically.
+    // (There is no English `guide_content` column — only locale-suffixed ones.)
     if (classroomId) {
       const { data, error: classroomError } = await supabase
         .from('montree_classroom_curriculum_works')
-        .select('name, quick_guide, video_search_terms, parent_description, direct_aims, materials, presentation_steps, control_of_error, why_it_matters, guide_content_zh, guide_content_es, guide_content_fr, guide_content_pt, guide_content_nl, guide_content_it, guide_content_ja, guide_content_ko, guide_content_de, guide_content_uk, guide_content_ru')
+        .select(`name, quick_guide, video_search_terms, parent_description, direct_aims, materials, presentation_steps, control_of_error, why_it_matters, ${buildLocalizedColumnList('guide_content')}`)
         .eq('classroom_id', classroomId)
         .ilike('name', `%${escapeIlike(workName)}%`)
         .limit(1)
@@ -117,23 +123,12 @@ export async function GET(request: NextRequest) {
     };
 
     // 5. Translate if locale is non-English and we have content
-    const SUPPORTED_GUIDE_LOCALES: Record<string, { col: string; fn?: (r: typeof result) => Promise<Record<string, unknown>> }> = {
-      zh: { col: 'guide_content_zh', fn: translateGuideToZh },
-      es: { col: 'guide_content_es', fn: translateGuideToEs },
-      fr: { col: 'guide_content_fr' },
-      pt: { col: 'guide_content_pt' },
-      nl: { col: 'guide_content_nl' },
-      it: { col: 'guide_content_it' },
-      ja: { col: 'guide_content_ja' },
-      ko: { col: 'guide_content_ko' },
-      de: { col: 'guide_content_de' },
-      uk: { col: 'guide_content_uk' },
-      ru: { col: 'guide_content_ru' },
-    };
-    const localeConfig = SUPPORTED_GUIDE_LOCALES[locale];
-    if (localeConfig && (result.quick_guide || result.presentation_steps)) {
-      const cacheColumn = localeConfig.col;
-      const translateFn = localeConfig.fn || (locale === 'zh' ? translateGuideToZh : translateGuideToEs);
+    // SUPPORTED_GUIDE_LOCALES is auto-derived: every non-English locale gets a
+    // `guide_content_<locale>` cache column and uses the unified translator.
+    const isSupportedNonEnglish =
+      locale !== DEFAULT_LOCALE && (SUPPORTED_LOCALES as readonly string[]).includes(locale);
+    if (isSupportedNonEnglish && (result.quick_guide || result.presentation_steps)) {
+      const cacheColumn = getLocalizedColumn('guide_content', locale);
       const langLabel = locale;
 
       // 5a. Check DB cache first
@@ -162,7 +157,7 @@ export async function GET(request: NextRequest) {
       // 5b. No cache — translate via Sonnet and cache the result
       if (anthropic) {
         try {
-          const translated = await translateFn(result);
+          const translated = await translateGuide(result, locale as Locale);
           // Fire-and-forget: cache translation to DB
           if (classroomId) {
             supabase
@@ -186,11 +181,12 @@ export async function GET(request: NextRequest) {
 
     // 6. Pre-generate translations in the background (fire-and-forget)
     //    So the NEXT zh/es request is instant from cache, even for custom works.
+    //    We only pre-cache the two highest-traffic locales; other languages translate
+    //    on-demand and cache their result on the first hit.
     if (classroomId && anthropic && (result.quick_guide || result.presentation_steps)) {
-      // Pre-generate both Chinese and Spanish caches
       const bgJobs: Array<{ column: string; fn: (g: Record<string, unknown>) => Promise<Record<string, unknown>>; label: string }> = [
-        { column: 'guide_content_zh', fn: translateGuideToZh, label: 'zh' },
-        { column: 'guide_content_es', fn: translateGuideToEs, label: 'es' },
+        { column: 'guide_content_zh', fn: (g) => translateGuide(g as typeof result, 'zh'), label: 'zh' },
+        { column: 'guide_content_es', fn: (g) => translateGuide(g as typeof result, 'es'), label: 'es' },
       ];
 
       for (const job of bgJobs) {
@@ -231,9 +227,15 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// Translate guide content to Spanish using Sonnet
-async function translateGuideToEs(guide: Record<string, unknown>): Promise<Record<string, unknown>> {
+// Locale-agnostic guide translator. Pulls language name + AMI Montessori
+// terminology guidance from LOCALE_AI_CONFIG. Adding a new locale to
+// SUPPORTED_LOCALES + LOCALE_AI_CONFIG automatically enables guide translation.
+async function translateGuide(
+  guide: Record<string, unknown>,
+  locale: Locale,
+): Promise<Record<string, unknown>> {
   if (!anthropic) return guide;
+  if (locale === DEFAULT_LOCALE) return guide;
 
   const toTranslate: Record<string, unknown> = {};
   if (guide.quick_guide) toTranslate.quick_guide = guide.quick_guide;
@@ -248,19 +250,30 @@ async function translateGuideToEs(guide: Record<string, unknown>): Promise<Recor
 
   if (Object.keys(toTranslate).length === 0) return guide;
 
+  const aiConfig = LOCALE_AI_CONFIG[locale];
+  const languageName = getLanguageName(locale);
+  // Strip the leading "\n\nLANGUAGE REQUIREMENT: " prefix and the "Every word"
+  // boilerplate — what remains is the locale-specific terminology guidance,
+  // which is the part that matters for guide translation.
+  const terminologyGuidance = aiConfig?.aiLanguageInstruction
+    ?.replace(/\n\nLANGUAGE REQUIREMENT: You MUST respond ENTIRELY in [^.]+\.\s*/g, '')
+    ?.replace(/Every word of your response must be in [^.]+\.\s*/g, '')
+    ?.replace(/Do not use any English except for proper nouns \(like Montessori work names\)\.\s*/g, '')
+    ?.trim() || '';
+
   const response = await anthropic.messages.create({
     model: AI_MODEL,
     max_tokens: 2048,
     messages: [{
       role: 'user',
-      content: `Translate the following Montessori work guide content from English to natural Argentine Spanish / Latin American Spanish.
+      content: `Translate the following Montessori work guide content from English to ${languageName}.
 Use warm, accessible language appropriate for parents and teachers in a Montessori school.
 Keep the EXACT same JSON structure. Translate all text values naturally and accurately.
 For presentation_steps, translate the "title", "description", and "tip" fields.
 For arrays like direct_aims and materials, translate each string element.
 Return ONLY valid JSON, no markdown fences, no explanation.
-
-${JSON.stringify(toTranslate)}`
+${terminologyGuidance ? `\n${terminologyGuidance}\n` : ''}
+${JSON.stringify(toTranslate)}`,
     }],
   });
 
@@ -270,57 +283,7 @@ ${JSON.stringify(toTranslate)}`
     const translated = JSON.parse(cleaned);
     return { ...guide, ...translated };
   } catch {
-    console.error('[Guide API] Failed to parse Spanish translation JSON');
-    return guide;
-  }
-}
-
-// Translate guide content to Chinese using Sonnet
-async function translateGuideToZh(guide: Record<string, unknown>): Promise<Record<string, unknown>> {
-  if (!anthropic) return guide;
-
-  // Build a JSON payload of translatable fields
-  const toTranslate: Record<string, unknown> = {};
-  if (guide.quick_guide) toTranslate.quick_guide = guide.quick_guide;
-  if (guide.parent_description) toTranslate.parent_description = guide.parent_description;
-  if (guide.control_of_error) toTranslate.control_of_error = guide.control_of_error;
-  if (guide.why_it_matters) toTranslate.why_it_matters = guide.why_it_matters;
-  if (Array.isArray(guide.direct_aims) && guide.direct_aims.length > 0) toTranslate.direct_aims = guide.direct_aims;
-  if (Array.isArray(guide.materials) && guide.materials.length > 0) toTranslate.materials = guide.materials;
-  if (Array.isArray(guide.presentation_steps) && (guide.presentation_steps as Array<unknown>).length > 0) {
-    toTranslate.presentation_steps = guide.presentation_steps;
-  }
-
-  if (Object.keys(toTranslate).length === 0) return guide;
-
-  const response = await anthropic.messages.create({
-    model: AI_MODEL,
-    max_tokens: 2048,
-    messages: [{
-      role: 'user',
-      content: `Translate the following Montessori work guide content from English to simplified Chinese (中文).
-Keep the EXACT same JSON structure. Translate all text values naturally and accurately.
-For presentation_steps, translate the "title", "description", and "tip" fields.
-For arrays like direct_aims and materials, translate each string element.
-Return ONLY valid JSON, no markdown fences, no explanation.
-
-${JSON.stringify(toTranslate)}`
-    }],
-  });
-
-  try {
-    const text = response.content[0].type === 'text' ? response.content[0].text : '';
-    // Clean any markdown fences
-    const cleaned = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
-    const translated = JSON.parse(cleaned);
-
-    // Merge translated fields back, keeping untranslated fields as-is
-    return {
-      ...guide,
-      ...translated,
-    };
-  } catch {
-    console.error('Failed to parse translation JSON');
+    console.error(`[Guide API] Failed to parse ${locale} translation JSON`);
     return guide;
   }
 }

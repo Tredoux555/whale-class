@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { getSupabase } from '@/lib/supabase-client';
+import { buildLocalizedSelect } from '@/lib/montree/i18n/db-helpers';
 
 // GET /api/montree/works — returns all curriculum works for the teacher's classroom
 // Used by PhotoEditModal for manual work assignment
@@ -17,10 +18,12 @@ export async function GET(request: NextRequest) {
     }
 
     // Fetch all active works from classroom curriculum with area info
+    // Localized columns are auto-derived from SUPPORTED_LOCALES — adding a new
+    // language to locales.ts automatically extends this SELECT.
     const { data, error } = await supabase
       .from('montree_classroom_curriculum_works')
       .select(`
-        id, work_key, name, name_chinese, name_es, name_de, name_fr, name_pt, name_nl, name_it, name_ja, name_ko, name_uk, name_ru, description, area_id, sequence,
+        id, work_key, ${buildLocalizedSelect('name')}, description, area_id, sequence,
         area:montree_classroom_curriculum_areas!area_id (
           id, area_key, name, name_chinese, icon, color
         )

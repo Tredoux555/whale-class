@@ -6,6 +6,7 @@ import { createClient } from '@supabase/supabase-js';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { verifyChildBelongsToSchool } from '@/lib/montree/verify-child-access';
 import { enrichWithChineseNames } from '@/lib/montree/curriculum-loader';
+import { buildLocalizedSelect } from '@/lib/montree/i18n/db-helpers';
 
 // Empty response shape — used as fallback so client always gets valid data
 const EMPTY_RESPONSE = {
@@ -199,13 +200,20 @@ export async function GET(request: NextRequest) {
       .maybeSingle();
 
     if (childData?.classroom_id) {
+      // SELECT auto-derives locale columns from SUPPORTED_LOCALES — adding a
+      // new locale to locales.ts extends this query with no edit here.
       const { data: currWorks } = await supabase
         .from('montree_classroom_curriculum_works')
-        .select('name, name_chinese, name_es, name_de, name_fr, name_pt, name_nl, name_it, name_ja, name_ko, name_uk, name_ru')
+        .select(buildLocalizedSelect('name'))
         .eq('classroom_id', childData.classroom_id);
 
-      for (const w of currWorks || []) {
-        const key = w.name.toLowerCase().trim();
+      // Row type is dynamic because the SELECT is built at runtime, so we
+      // cast to a permissive local shape. Each `name_<locale>` column is
+      // optional and read defensively.
+      type LocalizedWorkRow = { name: string } & Record<string, string | null | undefined>;
+      for (const w of (currWorks || []) as LocalizedWorkRow[]) {
+        const key = (w.name || '').toLowerCase().trim();
+        if (!key) continue;
         if (w.name_chinese) dbChineseMap.set(key, w.name_chinese);
         if (w.name_es) dbSpanishMap.set(key, w.name_es);
         if (w.name_de) dbDeMap.set(key, w.name_de);
