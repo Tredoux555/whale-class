@@ -146,6 +146,7 @@ function ParentPhotosGrouped({ photos, parentWorks, childId, firstName, locale, 
   getAreaLabel: (area: string) => string;
   handleRemovePhoto: (childId: string, photoId: string) => void;
 }) {
+  const { t } = useI18n();
   if (photos.length === 0) {
     return (
       <div className="px-5 pb-6">
