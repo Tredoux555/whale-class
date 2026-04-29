@@ -4,9 +4,35 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { toast, Toaster } from 'sonner';
+import { LogOut, ChevronDown, Sparkles } from 'lucide-react';
 import { useI18n, getIntlLocale } from '@/lib/montree/i18n';
 import LanguageToggle from '@/components/montree/LanguageToggle';
 import PhotoLightbox from '@/components/montree/media/PhotoLightbox';
+
+// Dark forest tokens
+const T = {
+  bg: '#0a1a0f',
+  glow: 'radial-gradient(ellipse 1100px 900px at 88% 8%, rgba(39,129,90,0.48), transparent 60%)',
+  card: 'rgba(255,255,255,0.06)',
+  cardBorder: '1px solid rgba(52,211,153,0.15)',
+  cardRadius: 18,
+  blur: 'blur(18px) saturate(140%)',
+  emerald: '#34d399',
+  emeraldDeep: '#10b981',
+  emeraldStrong: 'rgba(52,211,153,0.18)',
+  emeraldSoft: 'rgba(52,211,153,0.10)',
+  amber: '#f59e0b',
+  amberSoft: 'rgba(245,158,11,0.18)',
+  violetSoft: 'rgba(139,92,246,0.18)',
+  violetBorder: 'rgba(139,92,246,0.40)',
+  redSoft: 'rgba(239,68,68,0.18)',
+  redBorder: 'rgba(239,68,68,0.45)',
+  textPrimary: 'rgba(255,255,255,0.95)',
+  textSecondary: 'rgba(255,255,255,0.65)',
+  textMuted: 'rgba(255,255,255,0.40)',
+  serif: '"Lora", Georgia, serif',
+  sans: '"Inter", -apple-system, BlinkMacSystemFont, sans-serif',
+};
 
 // --- Types ---
 
@@ -284,31 +310,90 @@ export default function ParentDashboardPage() {
   // --- Loading State ---
   if (loading) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-12 h-12 rounded-full bg-emerald-100 animate-pulse mx-auto mb-4" />
-          <p className="text-gray-400 text-sm">{t('common.loading')}</p>
+      <div style={{
+        minHeight: '100vh',
+        background: T.bg,
+        backgroundImage: T.glow,
+        backgroundAttachment: 'fixed',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        fontFamily: T.sans,
+        color: T.textSecondary,
+      }}>
+        <div style={{ textAlign: 'center' }}>
+          <div style={{
+            width: 48,
+            height: 48,
+            borderRadius: 12,
+            background: T.emeraldSoft,
+            animation: 'cg-pulse 1.6s ease-in-out infinite',
+            margin: '0 auto 16px',
+          }} />
+          <p style={{ fontSize: 14, color: T.textMuted }}>{t('common.loading')}</p>
         </div>
+        <style>{`
+          @keyframes cg-pulse {
+            0%, 100% { opacity: 0.55; }
+            50% { opacity: 1; }
+          }
+        `}</style>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-white">
+    <div style={{
+      minHeight: '100vh',
+      background: T.bg,
+      backgroundImage: T.glow,
+      backgroundAttachment: 'fixed',
+      color: T.textPrimary,
+      fontFamily: T.sans,
+    }}>
       <Toaster position="top-center" />
 
       {/* ═══ Sticky Header ═══ */}
-      <header className="sticky top-0 z-20 bg-white/95 backdrop-blur-sm border-b border-gray-100">
-        <div className="max-w-lg mx-auto px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className="text-lg">🌳</span>
-            <span className="font-semibold text-gray-800 text-sm">Montree</span>
+      <header style={{
+        position: 'sticky',
+        top: 0,
+        zIndex: 20,
+        background: T.card,
+        backdropFilter: T.blur,
+        borderBottom: '1px solid rgba(255,255,255,0.05)',
+      }}>
+        <div style={{
+          maxWidth: 512,
+          margin: '0 auto',
+          padding: '12px 20px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <Sparkles size={20} color={T.emerald} strokeWidth={1.75} />
+            <span style={{ fontFamily: T.serif, fontSize: 16, fontWeight: 600, color: T.textPrimary }}>
+              Montree
+            </span>
           </div>
-          <div className="flex items-center gap-3">
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
             <LanguageToggle />
             <button
               onClick={handleLogout}
-              className="text-gray-400 hover:text-gray-600 text-sm transition-colors"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 6,
+                fontSize: 13,
+                fontWeight: 500,
+                color: T.textMuted,
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                transition: 'color 140ms ease',
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.color = T.textSecondary}
+              onMouseLeave={(e) => e.currentTarget.style.color = T.textMuted}
             >
               {t('parent.dashboard.signOut')}
             </button>
@@ -316,25 +401,46 @@ export default function ParentDashboardPage() {
         </div>
       </header>
 
-      <main className="max-w-lg mx-auto">
+      <main style={{ maxWidth: 512, margin: '0 auto' }}>
 
         {/* ═══ Multi-child Selector ═══ */}
         {children.length > 1 && (
-          <div className="px-5 pt-4 pb-2">
-            <div className="flex gap-2 overflow-x-auto">
+          <div style={{ padding: '20px 20px 8px' }}>
+            <div style={{ display: 'flex', gap: 12, overflowX: 'auto', paddingBottom: 8 }}>
               {children.map(child => (
                 <button
                   key={child.id}
                   onClick={() => handleSelectChild(child)}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all ${
-                    selectedChild?.id === child.id
-                      ? 'bg-emerald-600 text-white shadow-md'
-                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                  }`}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 10,
+                    padding: '10px 16px',
+                    borderRadius: 24,
+                    fontSize: 13,
+                    fontWeight: 600,
+                    border: 'none',
+                    cursor: 'pointer',
+                    whiteSpace: 'nowrap',
+                    transition: 'all 140ms ease',
+                    background: selectedChild?.id === child.id ? T.emerald : T.card,
+                    color: selectedChild?.id === child.id ? '#0a1a0f' : T.textPrimary,
+                  }}
                 >
-                  <span className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center text-xs font-bold">
+                  <div style={{
+                    width: 24,
+                    height: 24,
+                    borderRadius: 8,
+                    background: selectedChild?.id === child.id ? 'rgba(0,0,0,0.15)' : 'rgba(255,255,255,0.10)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: 10,
+                    fontWeight: 700,
+                    color: 'inherit',
+                  }}>
                     {child.name.charAt(0)}
-                  </span>
+                  </div>
                   {child.nickname || child.name}
                 </button>
               ))}
@@ -345,21 +451,46 @@ export default function ParentDashboardPage() {
         {selectedChild ? (
           <>
             {/* ═══ Child Hero ═══ */}
-            <div className="px-5 pt-8 pb-6">
-              <div className="flex items-center gap-4">
-                <div className="w-20 h-20 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white text-3xl font-bold shadow-lg shadow-emerald-200">
+            <div style={{ padding: '32px 20px 24px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
+                <div style={{
+                  width: 80,
+                  height: 80,
+                  borderRadius: '50%',
+                  background: `linear-gradient(135deg, ${T.emerald}, ${T.emeraldDeep})`,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: T.textPrimary,
+                  fontSize: 32,
+                  fontWeight: 700,
+                  flexShrink: 0,
+                  boxShadow: `0 20px 48px rgba(52,211,153,0.25)`,
+                }}>
                   {selectedChild.photo_url ? (
-                    <img src={selectedChild.photo_url} className="w-full h-full rounded-full object-cover" alt="" />
+                    <img
+                      src={selectedChild.photo_url}
+                      style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }}
+                      alt=""
+                    />
                   ) : (
                     firstName.charAt(0)
                   )}
                 </div>
                 <div>
-                  <h1 className="text-3xl font-bold text-gray-900">
+                  <h1 style={{
+                    margin: 0,
+                    fontSize: 32,
+                    fontWeight: 700,
+                    fontFamily: T.serif,
+                    color: T.textPrimary,
+                    letterSpacing: -0.4,
+                    lineHeight: 1.1,
+                  }}>
                     {firstName}
                   </h1>
                   {latestReport && (
-                    <p className="text-gray-400 text-sm mt-1">
+                    <p style={{ fontSize: 13, color: T.textMuted, marginTop: 8 }}>
                       {formatWeekRange(latestReport)}
                     </p>
                   )}
@@ -369,32 +500,65 @@ export default function ParentDashboardPage() {
 
             {/* ═══ Latest Report Inline ═══ */}
             {loadingReport ? (
-              <div className="px-5 py-12">
-                <div className="animate-pulse space-y-4">
-                  <div className="h-4 bg-gray-100 rounded w-3/4" />
-                  <div className="h-4 bg-gray-100 rounded w-5/6" />
-                  <div className="h-4 bg-gray-100 rounded w-2/3" />
-                  <div className="h-48 bg-gray-100 rounded-xl mt-6" />
+              <div style={{ padding: '48px 20px' }}>
+                <div style={{ animation: 'cg-pulse 1.6s ease-in-out infinite', space: '16px' }}>
+                  <div style={{ height: 16, background: T.card, borderRadius: 8, marginBottom: 12, width: '75%' }} />
+                  <div style={{ height: 16, background: T.card, borderRadius: 8, marginBottom: 12, width: '85%' }} />
+                  <div style={{ height: 16, background: T.card, borderRadius: 8, marginBottom: 24, width: '65%' }} />
+                  <div style={{ height: 192, background: T.card, borderRadius: 12 }} />
                 </div>
               </div>
             ) : latestReport ? (
               <>
                 {/* Quick stats pills */}
                 {allWorks.length > 0 && (
-                  <div className="px-5 pb-4">
-                    <div className="flex gap-2 flex-wrap">
+                  <div style={{ padding: '0 20px 16px' }}>
+                    <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
                       {masteredCount > 0 && (
-                        <span className="inline-flex items-center gap-1.5 bg-emerald-50 text-emerald-700 px-3 py-1.5 rounded-full text-sm font-medium">
+                        <span style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: 8,
+                          background: T.emeraldSoft,
+                          color: T.emerald,
+                          padding: '8px 12px',
+                          borderRadius: 999,
+                          fontSize: 12,
+                          fontWeight: 600,
+                          border: '1px solid rgba(52,211,153,0.20)',
+                        }}>
                           ⭐ {masteredCount} {t('parentDashboard.mastered')}
                         </span>
                       )}
                       {practicingCount > 0 && (
-                        <span className="inline-flex items-center gap-1.5 bg-blue-50 text-blue-700 px-3 py-1.5 rounded-full text-sm font-medium">
+                        <span style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: 8,
+                          background: 'rgba(96,165,250,0.12)',
+                          color: '#60a5fa',
+                          padding: '8px 12px',
+                          borderRadius: 999,
+                          fontSize: 12,
+                          fontWeight: 600,
+                          border: '1px solid rgba(96,165,250,0.20)',
+                        }}>
                           🔄 {practicingCount} {t('parentDashboard.practicing')}
                         </span>
                       )}
                       {presentedCount > 0 && (
-                        <span className="inline-flex items-center gap-1.5 bg-amber-50 text-amber-700 px-3 py-1.5 rounded-full text-sm font-medium">
+                        <span style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: 8,
+                          background: T.amberSoft,
+                          color: T.amber,
+                          padding: '8px 12px',
+                          borderRadius: 999,
+                          fontSize: 12,
+                          fontWeight: 600,
+                          border: '1px solid rgba(245,158,11,0.20)',
+                        }}>
                           🌱 {presentedCount} {t('parentDashboard.new')}
                         </span>
                       )}
@@ -404,9 +568,19 @@ export default function ParentDashboardPage() {
 
                 {/* Narrative */}
                 {(latestReport.narrative?.summary || latestReport.parent_summary) && (
-                  <div className="px-5 pb-6">
-                    <div className="border-l-4 border-emerald-400 bg-emerald-50/50 rounded-r-xl px-5 py-4">
-                      <p className="text-gray-800 text-[15px] leading-relaxed">
+                  <div style={{ padding: '0 20px 24px' }}>
+                    <div style={{
+                      borderLeft: `4px solid ${T.emerald}`,
+                      background: T.emeraldSoft,
+                      borderRadius: `0 ${T.cardRadius}px ${T.cardRadius}px 0`,
+                      padding: '20px 20px',
+                    }}>
+                      <p style={{
+                        fontSize: 15,
+                        lineHeight: 1.6,
+                        color: T.textPrimary,
+                        margin: 0,
+                      }}>
                         {latestReport.narrative?.summary || latestReport.parent_summary}
                       </p>
                     </div>
@@ -415,73 +589,161 @@ export default function ParentDashboardPage() {
 
                 {/* Photo divider */}
                 {photoWorks.length > 0 && (
-                  <div className="px-5 pb-3">
-                    <p className="text-gray-400 text-xs font-medium uppercase tracking-wider">
+                  <div style={{ padding: '0 20px 12px' }}>
+                    <p style={{
+                      fontSize: 11,
+                      fontWeight: 600,
+                      textTransform: 'uppercase',
+                      letterSpacing: 0.5,
+                      color: T.textMuted,
+                      margin: 0,
+                    }}>
                       {t('parentDashboard.thisWeekMoments', { count: photoWorks.length })}
                     </p>
                   </div>
                 )}
 
                 {/* Photo cards */}
-                <div className="space-y-0">
+                <div>
                   {photoWorks.map((work, index) => {
                     const displayName = locale === 'zh' && work.chineseName ? work.chineseName : work.work_name;
                     const areaConf = getAreaConfig(work.area);
-                    const statusInfo = getStatusInfo(work.status);
 
                     return (
-                      <div key={`${work.work_name}-${index}`} className="border-b border-gray-100">
+                      <div key={`${work.work_name}-${index}`} style={{
+                        borderBottom: '1px solid rgba(255,255,255,0.05)',
+                      }}>
                         <button
                           onClick={() => { setLightboxIndex(index); setLightboxOpen(true); }}
-                          className="w-full block"
+                          style={{
+                            width: '100%',
+                            display: 'block',
+                            background: 'none',
+                            border: 'none',
+                            cursor: 'pointer',
+                            padding: 0,
+                          }}
                         >
                           <img
                             src={work.photo_url!}
                             alt={displayName}
-                            className="w-full aspect-[4/3] object-cover"
+                            style={{
+                              width: '100%',
+                              aspectRatio: '4/3',
+                              objectFit: 'cover',
+                              display: 'block',
+                            }}
                             loading={index < 3 ? 'eager' : 'lazy'}
                           />
                         </button>
-                        <div className="px-5 py-4 space-y-3">
-                          <div className="flex items-start gap-3">
-                            <div
-                              className="w-8 h-8 rounded-lg flex items-center justify-center text-white text-sm font-bold flex-shrink-0 mt-0.5"
-                              style={{ backgroundColor: areaConf.color }}
-                            >
+                        <div style={{ padding: '16px 20px', space: '12px' }}>
+                          <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+                            <div style={{
+                              width: 32,
+                              height: 32,
+                              borderRadius: 8,
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              color: T.textPrimary,
+                              fontSize: 13,
+                              fontWeight: 700,
+                              flexShrink: 0,
+                              marginTop: 4,
+                              backgroundColor: areaConf.color,
+                            }}>
                               {areaConf.emoji}
                             </div>
-                            <div className="flex-1 min-w-0">
-                              <h3 className="font-bold text-gray-900 text-lg leading-tight">{displayName}</h3>
-                              <div className="flex items-center gap-2 mt-1">
-                                <span className="text-xs text-gray-500">{getAreaLabel(work.area)}</span>
-                                <span className="text-gray-300">·</span>
-                                <span className={`text-xs font-medium ${statusInfo.color}`}>
-                                  {statusInfo.icon} {statusInfo.label}
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <h3 style={{
+                                fontSize: 18,
+                                fontWeight: 700,
+                                fontFamily: T.serif,
+                                color: T.textPrimary,
+                                margin: 0,
+                                lineHeight: 1.2,
+                              }}>
+                                {displayName}
+                              </h3>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 6 }}>
+                                <span style={{ fontSize: 12, color: T.textMuted }}>{getAreaLabel(work.area)}</span>
+                                <span style={{ color: T.textMuted, fontSize: 11 }}>·</span>
+                                <span style={{ fontSize: 12, fontWeight: 600, color: T.amber }}>
+                                  {getStatusInfo(work.status).label}
                                 </span>
                               </div>
                             </div>
                           </div>
                           {work.parent_description && (
-                            <p className="text-gray-700 text-[15px] leading-relaxed">{work.parent_description}</p>
+                            <p style={{
+                              fontSize: 15,
+                              lineHeight: 1.6,
+                              color: T.textPrimary,
+                              margin: 0,
+                            }}>
+                              {work.parent_description}
+                            </p>
                           )}
                           {work.why_it_matters && (
-                            <div className="bg-gray-50 rounded-xl px-4 py-3">
-                              <p className="text-xs font-semibold text-gray-500 mb-1">
+                            <div style={{
+                              background: T.card,
+                              borderRadius: 12,
+                              padding: '12px 16px',
+                              borderLeft: `3px solid ${T.emerald}`,
+                            }}>
+                              <p style={{
+                                fontSize: 11,
+                                fontWeight: 600,
+                                color: T.textMuted,
+                                margin: '0 0 6px 0',
+                                textTransform: 'uppercase',
+                                letterSpacing: 0.3,
+                              }}>
                                 {t('parentDashboard.whyItMatters')}
                               </p>
-                              <p className="text-gray-700 text-sm leading-relaxed">{work.why_it_matters}</p>
+                              <p style={{
+                                fontSize: 13,
+                                lineHeight: 1.5,
+                                color: T.textSecondary,
+                                margin: 0,
+                              }}>
+                                {work.why_it_matters}
+                              </p>
                             </div>
                           )}
                           {work.photo_caption && (
-                            <div className="bg-blue-50 rounded-xl px-4 py-3">
-                              <p className="text-xs font-semibold text-blue-600 mb-1">
+                            <div style={{
+                              background: 'rgba(96,165,250,0.10)',
+                              borderRadius: 12,
+                              padding: '12px 16px',
+                              borderLeft: '3px solid rgba(96,165,250,0.50)',
+                            }}>
+                              <p style={{
+                                fontSize: 11,
+                                fontWeight: 600,
+                                color: '#60a5fa',
+                                margin: '0 0 6px 0',
+                                textTransform: 'uppercase',
+                                letterSpacing: 0.3,
+                              }}>
                                 {t('parentDashboard.teachersNote')}
                               </p>
-                              <p className="text-blue-800 text-sm leading-relaxed">{work.photo_caption}</p>
+                              <p style={{
+                                fontSize: 13,
+                                lineHeight: 1.5,
+                                color: 'rgba(96,165,250,0.85)',
+                                margin: 0,
+                              }}>
+                                {work.photo_caption}
+                              </p>
                             </div>
                           )}
                           {!work.parent_description && !work.why_it_matters && !work.photo_caption && (
-                            <p className="text-gray-400 text-sm">
+                            <p style={{
+                              fontSize: 13,
+                              color: T.textMuted,
+                              margin: 0,
+                            }}>
                               {t('parentDashboard.exploredActivity', { name: firstName, area: getAreaLabel(work.area).toLowerCase() })}
                             </p>
                           )}
@@ -497,18 +759,42 @@ export default function ParentDashboardPage() {
                   const extraPhotos = latestReport.all_photos!.filter(p => !usedUrls.has(p.url));
                   if (extraPhotos.length === 0) return null;
                   return (
-                    <div className="px-5 py-6 border-t border-gray-100">
-                      <p className="text-gray-400 text-xs font-medium uppercase tracking-wider mb-3">
+                    <div style={{ padding: '24px 20px', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+                      <p style={{
+                        fontSize: 11,
+                        fontWeight: 600,
+                        textTransform: 'uppercase',
+                        letterSpacing: 0.5,
+                        color: T.textMuted,
+                        margin: '0 0 12px 0',
+                      }}>
                         {t('parentDashboard.moreMoments')}
                       </p>
-                      <div className="grid grid-cols-2 gap-2">
+                      <div style={{
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(2, 1fr)',
+                        gap: 8,
+                      }}>
                         {extraPhotos.map((photo, i) => (
                           <button
                             key={photo.id || i}
                             onClick={() => { setLightboxIndex(photoWorks.length + i); setLightboxOpen(true); }}
-                            className="aspect-square rounded-xl overflow-hidden"
+                            style={{
+                              aspectRatio: '1',
+                              borderRadius: 12,
+                              overflow: 'hidden',
+                              background: 'none',
+                              border: 'none',
+                              cursor: 'pointer',
+                              padding: 0,
+                            }}
                           >
-                            <img src={photo.url} alt={photo.caption || 'Activity'} className="w-full h-full object-cover" loading="lazy" />
+                            <img
+                              src={photo.url}
+                              alt={photo.caption || 'Activity'}
+                              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                              loading="lazy"
+                            />
                           </button>
                         ))}
                       </div>
@@ -518,14 +804,31 @@ export default function ParentDashboardPage() {
 
                 {/* Try this at home */}
                 {latestReport.recommendations && latestReport.recommendations.length > 0 && (
-                  <div className="px-5 py-6 border-t border-gray-100">
-                    <h2 className="font-bold text-gray-800 text-sm mb-3">
+                  <div style={{ padding: '24px 20px', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+                    <h2 style={{
+                      fontSize: 13,
+                      fontWeight: 700,
+                      color: T.textPrimary,
+                      margin: '0 0 12px 0',
+                      textTransform: 'uppercase',
+                      letterSpacing: 0.3,
+                    }}>
                       {t('parentDashboard.tryThisAtHome')}
                     </h2>
-                    <div className="space-y-2">
+                    <div>
                       {latestReport.recommendations.map((item, i) => (
-                        <p key={i} className="text-gray-600 text-sm leading-relaxed pl-4 relative">
-                          <span className="absolute left-0 text-emerald-400">•</span>
+                        <p
+                          key={i}
+                          style={{
+                            fontSize: 13,
+                            lineHeight: 1.6,
+                            color: T.textSecondary,
+                            paddingLeft: 16,
+                            position: 'relative',
+                            marginBottom: i < latestReport.recommendations!.length - 1 ? 8 : 0,
+                          }}
+                        >
+                          <span style={{ position: 'absolute', left: 0, color: T.emerald }}>•</span>
                           {item}
                         </p>
                       ))}
@@ -535,16 +838,27 @@ export default function ParentDashboardPage() {
 
                 {/* Closing */}
                 {latestReport.closing && (
-                  <div className="px-5 py-6 border-t border-gray-100 text-center">
-                    <p className="text-gray-600 leading-relaxed">{latestReport.closing}</p>
+                  <div style={{
+                    padding: '24px 20px',
+                    borderTop: '1px solid rgba(255,255,255,0.05)',
+                    textAlign: 'center',
+                  }}>
+                    <p style={{
+                      fontSize: 13,
+                      lineHeight: 1.6,
+                      color: T.textSecondary,
+                      margin: 0,
+                    }}>
+                      {latestReport.closing}
+                    </p>
                   </div>
                 )}
 
                 {/* No activities */}
                 {allWorks.length === 0 && !latestReport.narrative?.summary && !latestReport.parent_summary && (
-                  <div className="px-5 py-16 text-center">
-                    <p className="text-4xl mb-3">📋</p>
-                    <p className="text-gray-400">
+                  <div style={{ padding: '64px 20px', textAlign: 'center' }}>
+                    <p style={{ fontSize: 32, marginBottom: 12 }}>📋</p>
+                    <p style={{ color: T.textMuted, fontSize: 14 }}>
                       {t('parentDashboard.noActivitiesThisWeek')}
                     </p>
                   </div>
@@ -552,14 +866,32 @@ export default function ParentDashboardPage() {
               </>
             ) : reports.length === 0 ? (
               /* No reports at all */
-              <div className="px-5 py-20 text-center">
-                <div className="w-16 h-16 rounded-full bg-emerald-50 flex items-center justify-center mx-auto mb-4">
-                  <span className="text-2xl">🌱</span>
+              <div style={{ padding: '80px 20px', textAlign: 'center' }}>
+                <div style={{
+                  width: 64,
+                  height: 64,
+                  borderRadius: '50%',
+                  background: T.emeraldSoft,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  margin: '0 auto 16px',
+                }}>
+                  <span style={{ fontSize: 24 }}>🌱</span>
                 </div>
-                <p className="text-gray-500 font-medium">
+                <p style={{
+                  fontSize: 15,
+                  fontWeight: 600,
+                  color: T.textSecondary,
+                  margin: '0 0 8px 0',
+                }}>
                   {t('parentDashboard.firstReportOnWay')}
                 </p>
-                <p className="text-gray-400 text-sm mt-2">
+                <p style={{
+                  fontSize: 13,
+                  color: T.textMuted,
+                  margin: 0,
+                }}>
                   {t('parentDashboard.checkBackSoon')}
                 </p>
               </div>
@@ -567,41 +899,94 @@ export default function ParentDashboardPage() {
 
             {/* ═══ Past Reports — Collapsed ═══ */}
             {pastReports.length > 0 && (
-              <div className="px-5 py-6 border-t border-gray-100">
+              <div style={{ padding: '24px 20px', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
                 <button
                   onClick={() => setPastReportsOpen(!pastReportsOpen)}
-                  className="w-full flex items-center justify-between py-2 group"
+                  style={{
+                    width: '100%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    padding: '8px 0',
+                    background: 'none',
+                    border: 'none',
+                    cursor: 'pointer',
+                    transition: 'all 140ms ease',
+                  }}
                 >
-                  <span className="text-sm font-semibold text-gray-500 group-hover:text-gray-700 transition-colors">
+                  <span style={{
+                    fontSize: 13,
+                    fontWeight: 600,
+                    color: T.textMuted,
+                    transition: 'color 140ms ease',
+                  }}>
                     {t('parentDashboard.pastReports', { count: pastReports.length })}
                   </span>
-                  <svg
-                    className={`w-4 h-4 text-gray-400 transition-transform duration-200 ${pastReportsOpen ? 'rotate-180' : ''}`}
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth={2}
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-                  </svg>
+                  <ChevronDown
+                    size={16}
+                    strokeWidth={1.75}
+                    style={{
+                      color: T.textMuted,
+                      transition: 'transform 140ms ease',
+                      transform: pastReportsOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+                    }}
+                  />
                 </button>
                 {pastReportsOpen && (
-                  <div className="mt-2 space-y-2">
+                  <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 8 }}>
                     {pastReports.map(report => (
                       <Link
                         key={report.id}
                         href={`/montree/parent/report/${report.id}`}
-                        className="flex items-center justify-between px-4 py-3 rounded-xl bg-gray-50 hover:bg-emerald-50 transition-colors group"
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          padding: '12px 16px',
+                          borderRadius: 12,
+                          background: T.card,
+                          border: T.cardBorder,
+                          textDecoration: 'none',
+                          transition: 'all 140ms ease',
+                          cursor: 'pointer',
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.background = T.emeraldSoft;
+                          e.currentTarget.style.borderColor = 'rgba(52,211,153,0.30)';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.background = T.card;
+                          e.currentTarget.style.borderColor = 'rgba(52,211,153,0.15)';
+                        }}
                       >
                         <div>
-                          <span className="text-sm font-medium text-gray-700 group-hover:text-emerald-700 transition-colors">
+                          <span style={{
+                            fontSize: 13,
+                            fontWeight: 600,
+                            color: T.textPrimary,
+                            transition: 'color 140ms ease',
+                          }}>
                             {formatWeekShort(report)}
                           </span>
                           {report.parent_summary && (
-                            <p className="text-xs text-gray-400 mt-0.5 line-clamp-1">{report.parent_summary}</p>
+                            <p style={{
+                              fontSize: 11,
+                              color: T.textMuted,
+                              marginTop: 4,
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              whiteSpace: 'nowrap',
+                            }}>
+                              {report.parent_summary}
+                            </p>
                           )}
                         </div>
-                        <span className="text-gray-300 group-hover:text-emerald-500 transition-colors">→</span>
+                        <span style={{
+                          color: T.textMuted,
+                          transition: 'color 140ms ease',
+                        }}>
+                          →
+                        </span>
                       </Link>
                     ))}
                   </div>
@@ -610,17 +995,34 @@ export default function ParentDashboardPage() {
             )}
 
             {/* ═══ Footer ═══ */}
-            <div className="text-center text-xs text-gray-300 py-8">
+            <div style={{
+              textAlign: 'center',
+              fontSize: 12,
+              color: T.textMuted,
+              padding: '32px 20px',
+            }}>
               Montree
             </div>
           </>
         ) : (
           /* No Child Selected (multi-child only) */
-          <div className="px-5 py-20 text-center">
-            <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-4">
-              <span className="text-2xl">👆</span>
+          <div style={{ padding: '80px 20px', textAlign: 'center' }}>
+            <div style={{
+              width: 64,
+              height: 64,
+              borderRadius: '50%',
+              background: T.card,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              margin: '0 auto 16px',
+              border: T.cardBorder,
+            }}>
+              <span style={{ fontSize: 24 }}>👆</span>
             </div>
-            <p className="text-gray-500">{t('parent.dashboard.selectChild')}</p>
+            <p style={{ color: T.textSecondary, fontSize: 14, margin: 0 }}>
+              {t('parent.dashboard.selectChild')}
+            </p>
           </div>
         )}
       </main>
@@ -647,6 +1049,13 @@ export default function ParentDashboardPage() {
           />
         );
       })()}
+
+      <style>{`
+        @keyframes cg-pulse {
+          0%, 100% { opacity: 0.55; }
+          50% { opacity: 1; }
+        }
+      `}</style>
     </div>
   );
 }

@@ -5,7 +5,25 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { toast, Toaster } from 'sonner';
 import { AREA_CONFIG } from '@/lib/montree/types';
 import AreaBadge, { normalizeArea } from '@/components/montree/shared/AreaBadge';
+import { ArrowLeft, ChevronDown, Camera, Sparkles } from 'lucide-react';
 import { useI18n, getIntlLocale } from '@/lib/montree/i18n';
+
+// Dark forest tokens
+const T = {
+  bg: '#0a1a0f',
+  glow: 'radial-gradient(ellipse 1100px 900px at 88% 8%, rgba(39,129,90,0.48), transparent 60%)',
+  card: 'rgba(255,255,255,0.06)',
+  cardBorder: '1px solid rgba(52,211,153,0.15)',
+  blur: 'blur(18px) saturate(140%)',
+  emerald: '#34d399',
+  emeraldSoft: 'rgba(52,211,153,0.10)',
+  textPrimary: 'rgba(255,255,255,0.95)',
+  textSecondary: 'rgba(255,255,255,0.65)',
+  textMuted: 'rgba(255,255,255,0.40)',
+  serif: '"Lora", Georgia, serif',
+  sans: '"Inter", -apple-system, BlinkMacSystemFont, sans-serif',
+};
+
 
 interface Milestone {
   id: string;
@@ -92,25 +110,25 @@ function ParentMilestonesContent() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-100 flex items-center justify-center">
+      <div style={{ minHeight: "100vh", background: T.bg, backgroundImage: T.glow, backgroundAttachment: "fixed" }}>
         <div className="text-center">
           <div className="text-4xl mb-4 animate-pulse">⭐</div>
-          <p className="text-gray-600">{t('parentMilestones.loading')}</p>
+          <p style={{ color: T.textMuted }}>{t('parentMilestones.loading')}</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-100">
+    <div style={{ minHeight: "100vh", background: T.bg, backgroundImage: T.glow, backgroundAttachment: "fixed" }}>
       <Toaster position="top-center" />
 
       {/* Header */}
-      <header className="bg-white shadow-sm sticky top-0 z-40">
+      <header style={{ background: T.card, backdropFilter: T.blur }}>
         <div className="max-w-4xl mx-auto px-4 py-4 flex items-center gap-3">
           <button
             onClick={() => router.push('/montree/parent/dashboard')}
-            className="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center hover:bg-gray-200"
+            style={{ background: T.card }}
           >
             ←
           </button>
@@ -126,17 +144,17 @@ function ParentMilestonesContent() {
 
       <main className="max-w-4xl mx-auto p-4">
         {timeline.length === 0 ? (
-          <div className="bg-white rounded-2xl p-8 text-center shadow-sm">
+          <div style={{ background: T.card, backdropFilter: T.blur }}>
             <div className="text-5xl mb-4">🌱</div>
             <h2 className="text-xl font-bold text-gray-800 mb-2">{t('parentMilestones.growingTitle')}</h2>
-            <p className="text-gray-500">
+            <p style={{ color: T.textMuted }}>
               {t('parentMilestones.noMilestonesYet').replace('{childName}', childName || t('common.yourChild'))}
             </p>
           </div>
         ) : (
           <div className="space-y-6">
             {timeline.map(group => (
-              <div key={group.month} className="bg-white rounded-2xl p-4 shadow-sm">
+              <div key={group.month} style={{ background: T.card, backdropFilter: T.blur }}>
                 {/* Month Header */}
                 <h2 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
                   <span className="w-8 h-8 bg-emerald-100 rounded-full flex items-center justify-center text-emerald-600">
@@ -186,10 +204,10 @@ function ParentMilestonesContent() {
 function MilestonesLoadingFallback() {
   const { t } = useI18n();
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-100 flex items-center justify-center">
+    <div style={{ minHeight: "100vh", background: T.bg, backgroundImage: T.glow, backgroundAttachment: "fixed" }}>
       <div className="text-center">
         <div className="text-4xl mb-4 animate-pulse">⭐</div>
-        <p className="text-gray-600">{t('parentMilestones.loading')}</p>
+        <p style={{ color: T.textMuted }}>{t('parentMilestones.loading')}</p>
       </div>
     </div>
   );

@@ -6,9 +6,27 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
+import { ArrowLeft, ChevronDown, Camera, Sparkles } from 'lucide-react';
 import { useI18n, getIntlLocale } from '@/lib/montree/i18n';
 import LanguageToggle from '@/components/montree/LanguageToggle';
 import PhotoLightbox from '@/components/montree/media/PhotoLightbox';
+
+// Dark forest tokens
+const T = {
+  bg: '#0a1a0f',
+  glow: 'radial-gradient(ellipse 1100px 900px at 88% 8%, rgba(39,129,90,0.48), transparent 60%)',
+  card: 'rgba(255,255,255,0.06)',
+  cardBorder: '1px solid rgba(52,211,153,0.15)',
+  blur: 'blur(18px) saturate(140%)',
+  emerald: '#34d399',
+  emeraldSoft: 'rgba(52,211,153,0.10)',
+  textPrimary: 'rgba(255,255,255,0.95)',
+  textSecondary: 'rgba(255,255,255,0.65)',
+  textMuted: 'rgba(255,255,255,0.40)',
+  serif: '"Lora", Georgia, serif',
+  sans: '"Inter", -apple-system, BlinkMacSystemFont, sans-serif',
+};
+
 
 // --- Types ---
 
@@ -205,18 +223,18 @@ export default function ParentReportPage() {
   // --- Loading ---
   if (loading) {
     return (
-      <div className="min-h-screen bg-white">
+      <div style={{ minHeight: "100vh", background: T.bg, backgroundImage: T.glow, backgroundAttachment: "fixed" }}>
         <div className="max-w-lg mx-auto p-6">
           <div className="animate-pulse space-y-6 mt-12">
-            <div className="h-8 bg-gray-100 rounded-lg w-3/4" />
-            <div className="h-4 bg-gray-100 rounded w-1/2" />
+            <div style={{ background: T.card }} />
+            <div style={{ background: T.card }} />
             <div className="space-y-3">
-              <div className="h-4 bg-gray-100 rounded" />
-              <div className="h-4 bg-gray-100 rounded w-5/6" />
-              <div className="h-4 bg-gray-100 rounded w-4/6" />
+              <div style={{ background: T.card }} />
+              <div style={{ background: T.card }} />
+              <div style={{ background: T.card }} />
             </div>
-            <div className="h-64 bg-gray-100 rounded-xl" />
-            <div className="h-4 bg-gray-100 rounded w-3/4" />
+            <div style={{ background: T.card }} />
+            <div style={{ background: T.card }} />
           </div>
         </div>
       </div>
@@ -226,7 +244,7 @@ export default function ParentReportPage() {
   // --- Error ---
   if (error || !report) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
+      <div style={{ minHeight: "100vh", background: T.bg, backgroundImage: T.glow, backgroundAttachment: "fixed" }}>
         <div className="text-center p-8">
           <p className="text-red-500 mb-4">{error || t('parentReport.notFound')}</p>
           <Link href="/montree/parent/dashboard" className="text-emerald-600 hover:underline">
@@ -239,10 +257,10 @@ export default function ParentReportPage() {
 
   // --- Main Render ---
   return (
-    <div className="min-h-screen bg-white">
+    <div style={{ minHeight: "100vh", background: T.bg, backgroundImage: T.glow, backgroundAttachment: "fixed" }}>
 
       {/* ═══ Sticky Header ═══ */}
-      <header className="sticky top-0 z-20 bg-white/95 backdrop-blur-sm border-b border-gray-100">
+      <header style={{ background: T.card, backdropFilter: T.blur }}>
         <div className="max-w-lg mx-auto px-4 py-3 flex items-center justify-between">
           <Link href="/montree/parent/dashboard" className="text-emerald-600 text-sm flex items-center gap-1 font-medium">
             ← {t('parentReport.back')}
@@ -264,7 +282,7 @@ export default function ParentReportPage() {
               <h1 className="text-2xl font-bold text-gray-900">
                 {t('parentReport.childWeekTitle', { name: firstName })}
               </h1>
-              <p className="text-gray-500 text-sm mt-0.5">{formatWeekDisplay()}</p>
+              <p style={{ color: T.textSecondary }}>{formatWeekDisplay()}</p>
             </div>
           </div>
 
@@ -292,13 +310,13 @@ export default function ParentReportPage() {
           {/* ═══ AI Narrative Summary ═══ */}
           {report.narrative?.summary ? (
             <div className="border-l-4 border-emerald-400 bg-emerald-50/50 rounded-r-xl px-5 py-4 mb-2">
-              <p className="text-gray-800 text-[15px] leading-relaxed">
+              <p style={{ color: T.textSecondary }}>
                 {report.narrative.summary}
               </p>
             </div>
           ) : report.parent_summary ? (
             <div className="border-l-4 border-emerald-400 bg-emerald-50/50 rounded-r-xl px-5 py-4 mb-2">
-              <p className="text-gray-800 text-[15px] leading-relaxed">
+              <p style={{ color: T.textSecondary }}>
                 {report.parent_summary}
               </p>
             </div>
@@ -308,7 +326,7 @@ export default function ParentReportPage() {
         {/* ═══ Divider ═══ */}
         {photoWorks.length > 0 && (
           <div className="px-5 pb-3">
-            <p className="text-gray-400 text-xs font-medium uppercase tracking-wider">
+            <p style={{ color: T.textSecondary }}>
               {t('parentReport.photoSectionHeader', { count: photoWorks.length })}
             </p>
           </div>
@@ -352,7 +370,7 @@ export default function ParentReportPage() {
                       </h3>
                       <div className="flex items-center gap-2 mt-1">
                         <span className="text-xs text-gray-500">{getAreaLabel(work.area)}</span>
-                        <span className="text-gray-300">·</span>
+                        <span style={{ color: T.textMuted }}>·</span>
                         <span className={`text-xs font-medium ${statusInfo.color}`}>
                           {statusInfo.icon} {statusInfo.label}
                         </span>
@@ -362,7 +380,7 @@ export default function ParentReportPage() {
 
                   {/* Parent description — what the work is and why it matters */}
                   {work.parent_description && (
-                    <p className="text-gray-700 text-[15px] leading-relaxed">
+                    <p style={{ color: T.textSecondary }}>
                       {work.parent_description}
                     </p>
                   )}
@@ -373,7 +391,7 @@ export default function ParentReportPage() {
                       <p className="text-xs font-semibold text-gray-500 mb-1">
                         {t('parentReport.whyItMatters')}
                       </p>
-                      <p className="text-gray-700 text-sm leading-relaxed">
+                      <p style={{ color: T.textSecondary }}>
                         {work.why_it_matters}
                       </p>
                     </div>
@@ -393,7 +411,7 @@ export default function ParentReportPage() {
 
                   {/* Fallback if no descriptions at all */}
                   {!work.parent_description && !work.why_it_matters && !work.photo_caption && (
-                    <p className="text-gray-400 text-sm">
+                    <p style={{ color: T.textSecondary }}>
                       {t('parentReport.fallbackDescription', { name: firstName, area: getAreaLabel(work.area).toLowerCase() })}
                     </p>
                   )}
@@ -410,7 +428,7 @@ export default function ParentReportPage() {
           if (extraPhotos.length === 0) return null;
           return (
             <div className="px-5 py-6 border-t border-gray-100">
-              <p className="text-gray-400 text-xs font-medium uppercase tracking-wider mb-3">
+              <p style={{ color: T.textSecondary }}>
                 {t('parentReport.moreMoments')}
               </p>
               <div className="grid grid-cols-2 gap-2">
@@ -445,7 +463,7 @@ export default function ParentReportPage() {
             </h2>
             <div className="space-y-2">
               {report.recommendations.map((item, i) => (
-                <p key={i} className="text-gray-600 text-sm leading-relaxed pl-4 relative">
+                <p key={i} style={{ color: T.textSecondary }}>
                   <span className="absolute left-0 text-emerald-400">•</span>
                   {item}
                 </p>
@@ -457,7 +475,7 @@ export default function ParentReportPage() {
         {/* ═══ Closing ═══ */}
         {report.closing && (
           <div className="px-5 py-6 border-t border-gray-100 text-center">
-            <p className="text-gray-600 leading-relaxed">{report.closing}</p>
+            <p style={{ color: T.textSecondary }}>{report.closing}</p>
           </div>
         )}
 
@@ -465,7 +483,7 @@ export default function ParentReportPage() {
         {allWorks.length === 0 && (
           <div className="px-5 py-16 text-center">
             <p className="text-4xl mb-3">📋</p>
-            <p className="text-gray-400">
+            <p style={{ color: T.textMuted }}>
               {t('parentReport.noActivities')}
             </p>
           </div>
