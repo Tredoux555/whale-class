@@ -383,17 +383,66 @@ export default function DashboardPage() {
         <main className="max-w-6xl mx-auto px-4 pt-3 pb-2 flex flex-col" style={{ height: 'calc(100dvh - 56px)' }}>
 
           {children.length === 0 ? (
-            /* Empty state — classroom has no students yet */
+            /* Empty state — classroom has no students yet (dark forest) */
             <button
               onClick={() => setShowBulkImport(true)}
               data-tutorial="student-grid"
-              className="block w-full bg-white rounded-2xl shadow-md p-10 text-center hover:shadow-lg transition-shadow animate-pulse-ring"
+              style={{
+                display: 'block',
+                width: '100%',
+                padding: 40,
+                textAlign: 'center',
+                background: 'rgba(255,255,255,0.06)',
+                border: '1px solid rgba(52,211,153,0.20)',
+                borderRadius: 22,
+                backdropFilter: 'blur(18px) saturate(140%)',
+                WebkitBackdropFilter: 'blur(18px) saturate(140%)',
+                color: 'rgba(255,255,255,0.95)',
+                cursor: 'pointer',
+                boxShadow: '0 8px 32px rgba(0,0,0,0.30)',
+                transition: 'all 160ms ease',
+                fontFamily: '"Inter", -apple-system, sans-serif',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'rgba(52,211,153,0.10)';
+                e.currentTarget.style.borderColor = 'rgba(52,211,153,0.40)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'rgba(255,255,255,0.06)';
+                e.currentTarget.style.borderColor = 'rgba(52,211,153,0.20)';
+              }}
             >
-              <span className="text-5xl mb-3 block">📋</span>
-              <p className="text-gray-800 font-semibold text-lg mb-1">
+              <div style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: 64,
+                height: 64,
+                borderRadius: '50%',
+                background: 'rgba(52,211,153,0.18)',
+                border: '1px solid rgba(52,211,153,0.40)',
+                color: '#34d399',
+                marginBottom: 16,
+              }}>
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><path d="M9 11H1l8-8 8 8h-8v8a4 4 0 0 0 4 4h6"/><path d="M16 8h6"/></svg>
+              </div>
+              <p style={{
+                margin: '0 0 6px',
+                fontFamily: '"Lora", Georgia, serif',
+                fontSize: 22,
+                fontWeight: 500,
+                color: 'rgba(255,255,255,0.95)',
+                letterSpacing: -0.3,
+              }}>
                 {t('bulkImport.title')}
               </p>
-              <p className="text-gray-400 text-sm">
+              <p style={{
+                margin: 0,
+                fontFamily: '"Inter", sans-serif',
+                fontSize: 13,
+                color: 'rgba(255,255,255,0.55)',
+                lineHeight: 1.5,
+              }}>
                 {t('bulkImport.subtitle')}
               </p>
             </button>
