@@ -1,5 +1,26 @@
 // app/api/montree/photo-identification/process/route.ts
 //
+// ╔══════════════════════════════════════════════════════════════════════╗
+// ║  ⚠ LOAD-BEARING — DO NOT CHANGE WITHOUT READING ALL OF THIS ⚠      ║
+// ║                                                                      ║
+// ║  Two constants below (`maxDuration = 120` and HAIKU_TRUST_CONFIDENCE) ║
+// ║  are the only thing standing between a working photo pipeline and    ║
+// ║  every photo silently stuck at 'pending' forever.                    ║
+// ║                                                                      ║
+// ║  • maxDuration = 120  →  Railway kills any route taking longer than  ║
+// ║    its `maxDuration` seconds. Default is ~15s. Two-pass Haiku needs  ║
+// ║    30-45s + buffer. If this is set lower (or removed by a refactor   ║
+// ║    that doesn't realise it's load-bearing), every photo will fail to ║
+// ║    identify and stay in pending. There is NO retry. There is NO      ║
+// ║    alert. Teacher will see "Pending" forever and not know why.       ║
+// ║    This bug took Apr 22-28 2026 to diagnose. Do not move it.         ║
+// ║                                                                      ║
+// ║  • HAIKU_TRUST_CONFIDENCE = 0.85  →  Below this, photos fall to      ║
+// ║    haiku_drafted (teacher review) instead of auto-tagging. Raised    ║
+// ║    from 0.75 in Apr 9 incident where Sandpaper Letters was auto-     ║
+// ║    tagged as Metal Insets. Tune ONLY from Railway [GateA] logs.      ║
+// ╚══════════════════════════════════════════════════════════════════════╝
+//
 // Background photo identification route — the new "take and tag" pipeline.
 //
 // Called by:
@@ -278,12 +299,41 @@ export async function POST(request: NextRequest) {
     if (haikuTrusted && ident && media.classroom_id) {
       const workId = await resolveClassroomWorkId(supabase, media.classroom_id, ident.workName);
       if (workId) {
+        // AUDIT FIX (Apr 30, 2026): persist Haiku's raw work name + the matchScore
+        // alongside the auto-match outcome. Without this we lose visibility into
+        // every case where the fuzzy matcher distorted Haiku's output.
+        // Stored in sonnet_draft.haiku_telemetry (a JSONB sub-field) so we don't
+        // need a schema migration to add columns. Grep '[PhotoIdentification]
+        // raw_vs_matched' in Railway logs for divergence cases.
+        const matchedDifferently = ident.haikuWorkName.toLowerCase() !== ident.workName.toLowerCase();
+        if (matchedDifferently) {
+          console.log('[PhotoIdentification] raw_vs_matched ' + JSON.stringify({
+            mediaId,
+            haikuRaw: ident.haikuWorkName,
+            matched: ident.workName,
+            matchScore: ident.matchScore,
+            confidence: ident.confidence,
+            outcome: 'auto_matched',
+          }));
+        }
         const { error: updateErr } = await supabase
           .from('montree_media')
           .update({
             work_id: workId,
             identification_status: 'haiku_matched',
             identification_confidence: ident.confidence,
+            // Persist telemetry into sonnet_draft so the audit UI / future tuning
+            // can show what Haiku actually said vs what we matched it to.
+            sonnet_draft: {
+              _source: 'haiku_pass2_matched',
+              visual_description: twoPassResult.visualDescription,
+              proposed_name: ident.workName,
+              haiku_work_name: ident.haikuWorkName,
+              match_score: ident.matchScore,
+              confidence: ident.confidence,
+              area: ident.area,
+              auto_matched: true,
+            },
           })
           .eq('id', mediaId);
 
