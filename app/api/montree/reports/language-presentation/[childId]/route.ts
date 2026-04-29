@@ -18,6 +18,7 @@ import { getSupabase } from '@/lib/supabase-client';
 import { getProxyUrl } from '@/lib/montree/media/proxy-url';
 import { anthropic, AI_MODEL, AI_ENABLED } from '@/lib/ai/anthropic';
 import { updateChildSettings } from '@/lib/montree/guru/settings-helper';
+import { resolveReportModel } from '@/lib/montree/reports/resolve-model';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 120; // Sonnet can take 30-60s for 50+ photos
@@ -230,7 +231,8 @@ async function aggregateLanguagePhotos(
 async function curateWithSonnet(
   childName: string,
   photos: Array<MediaRow & { work_name: string }>,
-  workNameMap: Map<string, WorkRow>
+  workNameMap: Map<string, WorkRow>,
+  model: string = AI_MODEL,
 ): Promise<CurateToolInput> {
   if (!AI_ENABLED || !anthropic) {
     throw new Error('AI not configured (ANTHROPIC_API_KEY missing)');
@@ -273,7 +275,7 @@ ${JSON.stringify(manifest, null, 2)}
 Please curate these into a presentation plan using the curate_language_presentation tool.`;
 
   const response = await anthropic.messages.create({
-    model: AI_MODEL,
+    model,
     max_tokens: 4096,
     system: systemPrompt,
     tools: [CURATE_TOOL],
@@ -296,7 +298,8 @@ function buildSlidePlan(
   dateFrom: string,
   dateTo: string,
   photos: Array<MediaRow & { work_name: string }>,
-  curation: CurateToolInput
+  curation: CurateToolInput,
+  modelUsed: string = AI_MODEL,
 ): PresentationPlan {
   const photoById = new Map(photos.map((p) => [p.id, p]));
   const captionByPhotoId = new Map(curation.photo_captions.map((c) => [c.photo_id, c.caption]));
@@ -395,7 +398,7 @@ function buildSlidePlan(
     photo_count: photos.length,
     slides,
     generated_at: new Date().toISOString(),
-    model: AI_MODEL,
+    model: modelUsed,
   };
 }
 
@@ -454,6 +457,16 @@ export async function POST(
 
   const supabase = getSupabase();
 
+  // TIER GATE: this route is Sonnet-quality output (parent-facing presentation),
+  // so we require a paid AI tier. Free schools get 402 + a clear message.
+  const aiTier = await resolveReportModel(supabase, auth.schoolId);
+  if (aiTier.tier === 'free' || !aiTier.model) {
+    return NextResponse.json(
+      { error: 'Language Presentation requires an active AI tier' },
+      { status: 402 }
+    );
+  }
+
   const { data: rawChild } = await supabase
     .from('montree_children')
     .select('id, name, classroom_id, settings')
@@ -490,7 +503,7 @@ export async function POST(
 
   let curation: CurateToolInput;
   try {
-    curation = await curateWithSonnet(child.name, workingSet, workNameMap);
+    curation = await curateWithSonnet(child.name, workingSet, workNameMap, aiTier.model);
   } catch (err) {
     console.error('[LanguagePresentation] Sonnet curation failed:', err);
     return NextResponse.json(
@@ -499,7 +512,7 @@ export async function POST(
     );
   }
 
-  const plan = buildSlidePlan(childId, child.name, dateFrom, dateTo, workingSet, curation);
+  const plan = buildSlidePlan(childId, child.name, dateFrom, dateTo, workingSet, curation, aiTier.model);
 
   try {
     await updateChildSettings(childId, { language_presentation: plan });
