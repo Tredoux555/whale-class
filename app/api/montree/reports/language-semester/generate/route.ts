@@ -27,6 +27,7 @@ import { verifyChildBelongsToSchool } from '@/lib/montree/verify-child-access';
 import { getSupabase } from '@/lib/supabase-client';
 import { anthropic, AI_MODEL, AI_ENABLED } from '@/lib/ai/anthropic';
 import { logApiUsage, checkAiBudget } from '@/lib/montree/api-usage';
+import { resolveReportModel } from '@/lib/montree/reports/resolve-model';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 300;
@@ -137,6 +138,7 @@ async function generateShortAcademicReport(
   childName: string,
   progress: ProgressRow[],
   schoolId?: string,
+  model: string = AI_MODEL,
 ): Promise<string> {
   if (!AI_ENABLED || !anthropic) {
     throw new Error('AI not configured (ANTHROPIC_API_KEY missing)');
@@ -157,7 +159,7 @@ ${workSummary || '(no recorded works)'}
 Write the monthly academic report paragraph.`;
 
   const response = await anthropic.messages.create({
-    model: AI_MODEL,
+    model,
     max_tokens: 200,
     system: systemPrompt,
     tools: [ACADEMIC_REPORT_TOOL],
@@ -169,7 +171,7 @@ Write the monthly academic report paragraph.`;
     logApiUsage({
       schoolId,
       endpoint: '/api/montree/reports/language-semester/generate',
-      model: AI_MODEL,
+      model,
       inputTokens: response.usage.input_tokens,
       outputTokens: response.usage.output_tokens,
     });
@@ -239,11 +241,16 @@ RULES:
 - Write beautifully — every sentence worth framing`;
 }
 
-async function callSonnet(systemPrompt: string, userMessage: string, schoolId?: string): Promise<SonnetReport> {
+async function callSonnet(
+  systemPrompt: string,
+  userMessage: string,
+  schoolId?: string,
+  model: string = AI_MODEL,
+): Promise<SonnetReport> {
   if (!anthropic) throw new Error('AI not configured');
 
   const response = await anthropic.messages.create({
-    model: AI_MODEL,
+    model,
     max_tokens: 600,
     system: systemPrompt,
     tools: [REPORT_TOOL],
@@ -256,7 +263,7 @@ async function callSonnet(systemPrompt: string, userMessage: string, schoolId?: 
     logApiUsage({
       schoolId,
       endpoint: '/api/montree/reports/language-semester/generate',
-      model: AI_MODEL,
+      model,
       inputTokens: response.usage.input_tokens,
       outputTokens: response.usage.output_tokens,
     });
@@ -374,6 +381,7 @@ async function generateReport(
   isGraduating: boolean,
   schoolId?: string,
   months: number = 6,
+  model: string = AI_MODEL,
 ): Promise<SonnetReport | { paragraph: string }> {
   if (!AI_ENABLED || !anthropic) {
     throw new Error('AI not configured (ANTHROPIC_API_KEY missing)');
@@ -381,7 +389,7 @@ async function generateReport(
 
   // 1M: short academic paragraph
   if (months === 1) {
-    const paragraph = await generateShortAcademicReport(childName, progress, schoolId);
+    const paragraph = await generateShortAcademicReport(childName, progress, schoolId, model);
     return { paragraph };
   }
 
@@ -406,7 +414,7 @@ ${closingHint}
 
 Write the report letter.`;
 
-  const raw = await callSonnet(systemPrompt, userMessage, schoolId);
+  const raw = await callSonnet(systemPrompt, userMessage, schoolId, model);
   // Post-processing enforces all constraints — no retry needed
   return postProcess(raw, childName, workNames);
 }
@@ -630,6 +638,16 @@ export async function POST(request: NextRequest) {
 
   const supabase = getSupabase();
 
+  // TIER GATE: this route generates parent-facing semester reports —
+  // require an active AI tier (Haiku or Sonnet). Free schools get 402.
+  const aiTier = await resolveReportModel(supabase, auth.schoolId);
+  if (aiTier.tier === 'free' || !aiTier.model) {
+    return NextResponse.json(
+      { error: 'Language Semester reports require an active AI tier' },
+      { status: 402 }
+    );
+  }
+
   // Check AI budget before generating reports
   const budgetStatus = await checkAiBudget(auth.schoolId);
   if (budgetStatus.blocked) {
@@ -685,7 +703,7 @@ export async function POST(request: NextRequest) {
     try {
       const progress = await loadLanguageProgress(supabase, child.id, child.classroom_id, months);
       const isGraduating = graduatingIds.has(child.id);
-      const report = await generateReport(child.name, progress, isGraduating, auth.schoolId, months);
+      const report = await generateReport(child.name, progress, isGraduating, auth.schoolId, months, aiTier.model);
       if (textMode) {
         textResults.push({ child_id: child.id, name: child.name, progress, report });
       } else if (months === 6) {
