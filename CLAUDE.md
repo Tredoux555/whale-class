@@ -185,7 +185,9 @@ GMass campaigns A/C/D are historical. Campaign C sent 335 blank emails (Session 
 
 ### ⚡ Session 76 — Audit & Optimise Sweep: 17 perf/cost fixes shipped (Apr 30, 2026)
 
-**Commits pushed: `80921de6`, `5ef016b2`, `68ea89e2`, `149e5760` — all on main, all deployed.**
+**Commits pushed: `80921de6`, `5ef016b2`, `68ea89e2`, `149e5760`, `9f81dc97` (Turbopack fix) — all on main.**
+
+⚠ **Turbopack constraint discovered during this sweep:** `next/dynamic(import, { … })` requires the options arg to be an **inline object literal** at the call site. Hoisting it into a `const dynamicOpts = { ssr: false, loading: X }` breaks the build with "next/dynamic options must be an object literal." The shared `loading` *component* can still be a reference — just keep the surrounding `{ }` inline. See `app/montree/dashboard/photo-audit/page.tsx`.
 
 System-wide health check ran three parallel audits (frontend perf / AI cost / API+DB) producing 17 actionable findings. All shipped today.
 
