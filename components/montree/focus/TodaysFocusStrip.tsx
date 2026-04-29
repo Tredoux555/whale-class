@@ -2,15 +2,13 @@
 // Horizontal avatar strip of today's focus children.
 // Green ring + ✓ when a tagged photo has been captured for them today.
 // Tap anywhere on the strip → jump to the Focus List page to manage.
-//
-// Hides itself entirely when no children are on today's list — the strip is
-// surface clutter if the teacher hasn't picked anyone yet. They can always
-// reach the picker via the dashboard menu → Focus List.
+// Dark forest visual treatment — all wiring intact
 
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
+import { Target, Check } from 'lucide-react';
 import { montreeApi } from '@/lib/montree/api';
 import { useI18n } from '@/lib/montree/i18n';
 
@@ -29,6 +27,19 @@ interface FocusData {
   confirmed_count: number;
 }
 
+const T = {
+  card: 'rgba(255,255,255,0.06)',
+  cardBorder: 'rgba(52,211,153,0.15)',
+  blur: 'blur(14px) saturate(140%)',
+  emerald: '#34d399',
+  emeraldStrong: 'rgba(52,211,153,0.18)',
+  textPrimary: 'rgba(255,255,255,0.95)',
+  textSecondary: 'rgba(255,255,255,0.65)',
+  textMuted: 'rgba(255,255,255,0.40)',
+  serif: '"Lora", Georgia, serif',
+  sans: '"Inter", -apple-system, BlinkMacSystemFont, sans-serif',
+};
+
 function Avatar({ name, photoUrl, size = 40 }: { name: string; photoUrl: string | null; size?: number }) {
   const [fallback, setFallback] = useState(!photoUrl);
   const initial = name.charAt(0).toUpperCase();
@@ -38,19 +49,30 @@ function Avatar({ name, photoUrl, size = 40 }: { name: string; photoUrl: string 
         src={photoUrl}
         alt={name}
         onError={() => setFallback(true)}
-        className="rounded-full object-cover"
-        style={{ width: size, height: size }}
+        style={{
+          width: size,
+          height: size,
+          borderRadius: '50%',
+          objectFit: 'cover',
+          display: 'block',
+        }}
       />
     );
   }
   return (
     <div
-      className="rounded-full flex items-center justify-center text-white font-semibold"
       style={{
         width: size,
         height: size,
+        borderRadius: '50%',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: 'linear-gradient(135deg, #34d399, #059669)',
+        color: '#06281a',
+        fontFamily: T.sans,
         fontSize: size * 0.4,
-        background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
+        fontWeight: 700,
       }}
     >
       {initial}
@@ -59,7 +81,7 @@ function Avatar({ name, photoUrl, size = 40 }: { name: string; photoUrl: string 
 }
 
 export default function TodaysFocusStrip({ compact = false }: { compact?: boolean }) {
-  const { t, locale } = useI18n();
+  const { t } = useI18n();
   const [data, setData] = useState<FocusData | null>(null);
   const mountedRef = useRef(true);
 
@@ -87,47 +109,121 @@ export default function TodaysFocusStrip({ compact = false }: { compact?: boolea
     };
   }, []);
 
-  // Hide when no data or empty list — nothing useful to show
   if (!data || data.children.length === 0) return null;
 
-  const title = t('todaysFocus.title');
-  const manage = t('todaysFocus.manageButton');
+  const avatarSize = compact ? 38 : 44;
+  const tileWidth = compact ? 50 : 60;
 
   return (
     <Link
       href="/montree/dashboard/focus"
-      className={
-        'block bg-white rounded-2xl shadow-sm border border-slate-100 ' +
-        (compact ? 'p-2.5' : 'p-3')
-      }
+      style={{
+        display: 'block',
+        textDecoration: 'none',
+        background: T.card,
+        border: `1px solid ${T.cardBorder}`,
+        borderRadius: 16,
+        padding: compact ? 10 : 12,
+        backdropFilter: T.blur,
+        WebkitBackdropFilter: T.blur,
+        color: T.textPrimary,
+        transition: 'background 140ms ease',
+      }}
     >
-      <div className="flex items-center justify-between mb-2">
-        <div className="text-sm font-semibold text-slate-700">
-          {title} · {data.confirmed_count}/{data.total}
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        marginBottom: 8,
+      }}>
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 7,
+          fontFamily: T.sans,
+          fontSize: 13,
+          fontWeight: 600,
+          color: T.textSecondary,
+        }}>
+          <Target size={13} strokeWidth={1.75} color={T.emerald} />
+          <span>{t('todaysFocus.title')}</span>
+          <span style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            padding: '1px 7px',
+            borderRadius: 999,
+            background: T.emeraldStrong,
+            border: '1px solid rgba(52,211,153,0.30)',
+            color: T.emerald,
+            fontSize: 10,
+            fontWeight: 700,
+          }}>
+            {data.confirmed_count}/{data.total}
+          </span>
         </div>
-        <div className="text-[11px] text-indigo-600 font-medium">{manage}</div>
+        <div style={{
+          fontFamily: T.sans,
+          fontSize: 11,
+          fontWeight: 600,
+          color: T.emerald,
+        }}>
+          {t('todaysFocus.manageButton')}
+        </div>
       </div>
-      <div className="flex gap-2 overflow-x-auto pb-1">
-        {data.children.map((c) => (
+      <div style={{
+        display: 'flex',
+        gap: 8,
+        overflowX: 'auto',
+        paddingBottom: 4,
+      }}>
+        {data.children.map(c => (
           <div
             key={c.id}
-            className="flex flex-col items-center flex-shrink-0"
-            style={{ width: compact ? 48 : 56 }}
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              flexShrink: 0,
+              width: tileWidth,
+            }}
           >
-            <div
-              className={
-                'relative rounded-full ' +
-                (c.confirmed ? 'ring-2 ring-emerald-500' : 'ring-2 ring-slate-200')
-              }
-            >
-              <Avatar name={c.name} photoUrl={c.photo_url} size={compact ? 38 : 44} />
+            <div style={{
+              position: 'relative',
+              borderRadius: '50%',
+              padding: 2,
+              background: c.confirmed ? T.emerald : 'rgba(255,255,255,0.16)',
+            }}>
+              <Avatar name={c.name} photoUrl={c.photo_url} size={avatarSize} />
               {c.confirmed && (
-                <div className="absolute -bottom-1 -right-1 bg-emerald-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-[10px]">
-                  ✓
+                <div style={{
+                  position: 'absolute',
+                  bottom: -2,
+                  right: -2,
+                  width: 16,
+                  height: 16,
+                  borderRadius: '50%',
+                  background: T.emerald,
+                  color: '#06281a',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  border: '2px solid #0a1a0f',
+                }}>
+                  <Check size={9} strokeWidth={3} />
                 </div>
               )}
             </div>
-            <div className="text-[11px] text-slate-600 mt-1 truncate w-full text-center">
+            <div style={{
+              marginTop: 5,
+              fontFamily: T.sans,
+              fontSize: 10,
+              color: T.textSecondary,
+              width: '100%',
+              textAlign: 'center',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
+            }}>
               {c.name}
             </div>
           </div>
