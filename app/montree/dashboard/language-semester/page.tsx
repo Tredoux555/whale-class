@@ -1,10 +1,15 @@
 // app/montree/dashboard/language-semester/page.tsx
 // "Language Semester Report" — select children, mark graduating vs returning,
 // Sonnet writes the official school PPTX report for each one.
+// Dark forest visual treatment — all wiring intact
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, CSSProperties } from 'react';
 import { useRouter } from 'next/navigation';
+import {
+  ArrowLeft, Check, Copy, Sparkles, FileText, Calendar,
+  GraduationCap, RotateCcw, Download, BookOpen,
+} from 'lucide-react';
 import { getSession, recoverSession, type MontreeSession } from '@/lib/montree/auth';
 import { getProxyUrl } from '@/lib/montree/media/proxy-url';
 import { useI18n } from '@/lib/montree/i18n/context';
@@ -23,9 +28,7 @@ interface WorkRow {
 interface ChildTextResult {
   name: string;
   works: WorkRow[];
-  // 1M fields
   paragraph?: string;
-  // 6M fields
   opening?: string;
   circle?: string;
   closing?: string;
@@ -35,6 +38,92 @@ interface TextResponse {
   children: ChildTextResult[];
   errors: Array<{ child_id: string; name: string; error: string }>;
 }
+
+// Dark forest tokens
+const T = {
+  bg: '#0a1a0f',
+  glow: 'radial-gradient(ellipse 1100px 900px at 88% 8%, rgba(39,129,90,0.48), transparent 60%)',
+  card: 'rgba(255,255,255,0.06)',
+  cardHover: 'rgba(255,255,255,0.09)',
+  cardBorder: '1px solid rgba(52,211,153,0.15)',
+  cardRadius: 18,
+  blur: 'blur(18px) saturate(140%)',
+  emerald: '#34d399',
+  emeraldDeep: '#10b981',
+  emeraldDim: 'rgba(52,211,153,0.65)',
+  emeraldSoft: 'rgba(52,211,153,0.10)',
+  emeraldStrong: 'rgba(52,211,153,0.18)',
+  amber: '#f59e0b',
+  amberSoft: 'rgba(245,158,11,0.18)',
+  amberBorder: 'rgba(245,158,11,0.35)',
+  blue: '#60a5fa',
+  blueSoft: 'rgba(96,165,250,0.15)',
+  blueBorder: 'rgba(96,165,250,0.35)',
+  red: '#f87171',
+  redSoft: 'rgba(239,68,68,0.10)',
+  redBorder: 'rgba(239,68,68,0.30)',
+  textPrimary: 'rgba(255,255,255,0.95)',
+  textSecondary: 'rgba(255,255,255,0.65)',
+  textMuted: 'rgba(255,255,255,0.40)',
+  textPlaceholder: 'rgba(255,255,255,0.35)',
+  serif: '"Lora", Georgia, serif',
+  sans: '"Inter", -apple-system, BlinkMacSystemFont, sans-serif',
+  mono: '"SF Mono", Menlo, Consolas, monospace',
+};
+
+const ctaPrimary: CSSProperties = {
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  gap: 7,
+  padding: '12px 18px',
+  borderRadius: 12,
+  background: 'linear-gradient(180deg, #34d399, #10b981)',
+  border: '1px solid rgba(52,211,153,0.55)',
+  color: '#06281a',
+  fontFamily: T.sans,
+  fontSize: 14,
+  fontWeight: 600,
+  letterSpacing: 0.1,
+  cursor: 'pointer',
+  whiteSpace: 'nowrap',
+  boxShadow: '0 4px 14px rgba(16,185,129,0.25)',
+  transition: 'all 120ms ease',
+};
+
+const ctaSecondary: CSSProperties = {
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  gap: 7,
+  padding: '12px 18px',
+  borderRadius: 12,
+  background: 'rgba(139,92,246,0.18)',
+  border: '1px solid rgba(139,92,246,0.45)',
+  color: '#c4b5fd',
+  fontFamily: T.sans,
+  fontSize: 14,
+  fontWeight: 600,
+  letterSpacing: 0.1,
+  cursor: 'pointer',
+  whiteSpace: 'nowrap',
+  transition: 'all 120ms ease',
+};
+
+const ghostBtn: CSSProperties = {
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: 6,
+  padding: '7px 12px',
+  borderRadius: 10,
+  background: 'rgba(255,255,255,0.06)',
+  border: '1px solid rgba(255,255,255,0.10)',
+  color: T.textPrimary,
+  fontFamily: T.sans,
+  fontSize: 13,
+  fontWeight: 500,
+  cursor: 'pointer',
+};
 
 // ── CopyBlock ──────────────────────────────────────────────────────────────
 function CopyBlock({ label, text }: { label: string; text: string }) {
@@ -46,22 +135,62 @@ function CopyBlock({ label, text }: { label: string; text: string }) {
       setCopied(true);
       setTimeout(() => setCopied(false), 1800);
     } catch {
-      // fallback: select all in textarea
+      // fallback noop
     }
   };
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-1">
-        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{label}</p>
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        marginBottom: 6,
+      }}>
+        <p style={{
+          margin: 0,
+          fontFamily: T.sans,
+          fontSize: 11,
+          fontWeight: 700,
+          color: T.textMuted,
+          letterSpacing: 0.6,
+          textTransform: 'uppercase',
+        }}>
+          {label}
+        </p>
         <button
           onClick={copy}
-          className="text-xs text-violet-600 hover:text-violet-800 font-medium transition-colors"
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 5,
+            padding: '4px 10px',
+            borderRadius: 8,
+            background: copied ? T.emeraldStrong : 'rgba(255,255,255,0.05)',
+            border: `1px solid ${copied ? 'rgba(52,211,153,0.40)' : 'rgba(255,255,255,0.10)'}`,
+            color: copied ? T.emerald : T.textSecondary,
+            fontFamily: T.sans,
+            fontSize: 11,
+            fontWeight: 600,
+            cursor: 'pointer',
+            transition: 'all 120ms ease',
+          }}
         >
-          {copied ? '✓ Copied' : 'Copy'}
+          {copied ? <Check size={11} strokeWidth={2.5} /> : <Copy size={11} strokeWidth={1.75} />}
+          {copied ? 'Copied' : 'Copy'}
         </button>
       </div>
-      <div className="bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-800 whitespace-pre-wrap leading-relaxed font-mono">
+      <div style={{
+        background: 'rgba(0,0,0,0.30)',
+        border: `1px solid rgba(52,211,153,0.18)`,
+        borderRadius: 12,
+        padding: '14px 16px',
+        fontFamily: T.mono,
+        fontSize: 13,
+        lineHeight: 1.65,
+        color: T.textPrimary,
+        whiteSpace: 'pre-wrap',
+      }}>
         {text}
       </div>
     </div>
@@ -76,12 +205,11 @@ const DEFAULT_GRADUATING = new Set([
 
 export default function LanguageSemesterPage() {
   const router = useRouter();
-  const { locale, t } = useI18n();
+  const { t } = useI18n();
   const [session, setSession] = useState<MontreeSession | null>(null);
   const [children, setChildren] = useState<Child[]>([]);
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState<Set<string>>(new Set());
-  // Track which children are marked as graduating — keyed by child ID
   const [graduating, setGraduating] = useState<Set<string>>(new Set());
   const [generating, setGenerating] = useState(false);
   const [gettingText, setGettingText] = useState(false);
@@ -114,7 +242,6 @@ export default function LanguageSemesterPage() {
       const data = await res.json();
       const kids: Child[] = data.children || [];
       setChildren(kids);
-      // Pre-fill graduating set from defaults (match by name)
       const gradIds = new Set<string>();
       for (const c of kids) {
         if (DEFAULT_GRADUATING.has(c.name)) gradIds.add(c.id);
@@ -147,7 +274,7 @@ export default function LanguageSemesterPage() {
   };
 
   const toggleGraduating = (id: string, e: React.MouseEvent) => {
-    e.stopPropagation(); // Don't toggle the checkbox
+    e.stopPropagation();
     const next = new Set(graduating);
     if (next.has(id)) next.delete(id);
     else next.add(id);
@@ -239,7 +366,6 @@ export default function LanguageSemesterPage() {
       const data: TextResponse = await res.json();
       setTextResult(data);
       setProgress('');
-      // Scroll to results
       setTimeout(() => textResultRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
@@ -254,53 +380,210 @@ export default function LanguageSemesterPage() {
 
   if (!session) return null;
 
+  // Status colour map per locked dark forest tokens
+  const statusStyle = (status: string): CSSProperties => {
+    if (status === 'MD') {
+      return {
+        background: 'rgba(255,255,255,0.10)',
+        border: '1px solid rgba(255,255,255,0.20)',
+        color: 'rgba(255,255,255,0.85)',
+      };
+    }
+    if (status === 'Pr') {
+      return {
+        background: T.emeraldStrong,
+        border: '1px solid rgba(52,211,153,0.35)',
+        color: T.emerald,
+      };
+    }
+    return {
+      background: T.amberSoft,
+      border: `1px solid ${T.amberBorder}`,
+      color: T.amber,
+    };
+  };
+
   return (
-    <div className="min-h-screen bg-gray-50">
-      <main className="max-w-3xl mx-auto px-4 py-6 pt-20">
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold text-gray-900 mb-1">
-            {t('languageSemester.pageTitle')}
-          </h1>
-          <p className="text-sm text-gray-600">
-            {t('languageSemester.pageDescription')}
-          </p>
+    <div style={{
+      minHeight: '100vh',
+      background: T.bg,
+      backgroundImage: T.glow,
+      backgroundAttachment: 'fixed',
+      color: T.textPrimary,
+      fontFamily: T.sans,
+    }}>
+      <main style={{
+        maxWidth: 760,
+        margin: '0 auto',
+        padding: '36px 20px 80px',
+      }}>
+        {/* Heading */}
+        <div style={{
+          display: 'flex',
+          alignItems: 'flex-start',
+          gap: 14,
+          marginBottom: 22,
+        }}>
+          <button
+            onClick={() => router.back()}
+            aria-label={t('common.back')}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: 40,
+              height: 40,
+              borderRadius: 12,
+              background: 'rgba(255,255,255,0.06)',
+              border: '1px solid rgba(255,255,255,0.10)',
+              color: T.textPrimary,
+              cursor: 'pointer',
+              flexShrink: 0,
+            }}
+          >
+            <ArrowLeft size={18} strokeWidth={1.75} />
+          </button>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <h1 style={{
+              margin: '0 0 4px',
+              fontFamily: T.serif,
+              fontSize: 28,
+              fontWeight: 500,
+              color: T.textPrimary,
+              letterSpacing: -0.4,
+              lineHeight: 1.15,
+            }}>
+              {t('languageSemester.pageTitle')}
+            </h1>
+            <p style={{
+              margin: 0,
+              fontFamily: T.sans,
+              fontSize: 13,
+              color: T.textMuted,
+              lineHeight: 1.5,
+            }}>
+              {t('languageSemester.pageDescription')}
+            </p>
+          </div>
         </div>
 
         {/* Time period selector */}
-        <div className="flex gap-2 mb-5">
+        <div style={{
+          display: 'flex',
+          gap: 10,
+          marginBottom: 18,
+        }}>
           {([
-            { m: 1, label: '1M', sub: 'Monthly Academic' },
-            { m: 6, label: '6M', sub: 'Parent Semester Report' },
-          ] as const).map(({ m, label, sub }) => (
-            <button
-              key={m}
-              onClick={() => setMonths(m)}
-              className={`flex-1 py-2.5 px-3 rounded-lg text-sm font-semibold transition-colors text-left ${
-                months === m
-                  ? 'bg-violet-600 text-white shadow-sm'
-                  : 'bg-white border border-gray-200 text-gray-600 hover:border-violet-300 hover:text-violet-700'
-              }`}
-            >
-              <span className="block text-base">{label}</span>
-              <span className={`block text-xs font-normal mt-0.5 ${months === m ? 'text-violet-200' : 'text-gray-400'}`}>{sub}</span>
-            </button>
-          ))}
+            { m: 1 as const, label: '1M', sub: 'Monthly Academic', icon: FileText },
+            { m: 6 as const, label: '6M', sub: 'Parent Semester Report', icon: Calendar },
+          ]).map(({ m, label, sub, icon: Icon }) => {
+            const active = months === m;
+            return (
+              <button
+                key={m}
+                onClick={() => setMonths(m)}
+                style={{
+                  flex: 1,
+                  padding: '14px 16px',
+                  borderRadius: 14,
+                  background: active
+                    ? 'linear-gradient(135deg, rgba(52,211,153,0.18), rgba(52,211,153,0.10))'
+                    : T.card,
+                  border: `1px solid ${active ? 'rgba(52,211,153,0.55)' : 'rgba(52,211,153,0.15)'}`,
+                  backdropFilter: T.blur,
+                  WebkitBackdropFilter: T.blur,
+                  color: active ? T.textPrimary : T.textSecondary,
+                  fontFamily: T.sans,
+                  cursor: 'pointer',
+                  textAlign: 'left',
+                  transition: 'all 140ms ease',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 12,
+                }}
+              >
+                <div style={{
+                  width: 34,
+                  height: 34,
+                  borderRadius: 10,
+                  background: active ? T.emeraldStrong : 'rgba(255,255,255,0.06)',
+                  border: `1px solid ${active ? 'rgba(52,211,153,0.40)' : 'rgba(255,255,255,0.10)'}`,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: active ? T.emerald : T.textMuted,
+                  flexShrink: 0,
+                }}>
+                  <Icon size={16} strokeWidth={1.75} />
+                </div>
+                <div style={{ minWidth: 0 }}>
+                  <div style={{
+                    fontFamily: T.serif,
+                    fontSize: 17,
+                    fontWeight: 500,
+                    color: active ? T.textPrimary : T.textSecondary,
+                    letterSpacing: -0.2,
+                  }}>
+                    {label}
+                  </div>
+                  <div style={{
+                    fontFamily: T.sans,
+                    fontSize: 11,
+                    color: active ? T.emeraldDim : T.textMuted,
+                    fontWeight: 500,
+                    marginTop: 2,
+                  }}>
+                    {sub}
+                  </div>
+                </div>
+              </button>
+            );
+          })}
         </div>
 
         {loading ? (
-          <div className="text-center py-16 text-gray-400">Loading...</div>
+          <div style={{
+            textAlign: 'center',
+            padding: '80px 0',
+            color: T.textMuted,
+            fontSize: 14,
+          }}>
+            Loading…
+          </div>
         ) : (
           <>
             {/* Summary bar */}
-            <div className="flex items-center justify-between bg-white rounded-lg border border-gray-200 px-4 py-3 mb-1">
-              <span className="text-sm text-gray-700">
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              padding: '12px 16px',
+              background: T.card,
+              border: T.cardBorder,
+              borderRadius: 12,
+              marginBottom: months === 6 ? 4 : 12,
+            }}>
+              <span style={{
+                fontFamily: T.sans,
+                fontSize: 13,
+                color: T.textSecondary,
+              }}>
                 {selected.size > 0
                   ? t('languageSemester.selectionCount', { selected: selected.size, total: children.length })
                   : t('languageSemester.selectChildren')}
               </span>
               <button
                 onClick={toggleAll}
-                className="text-xs font-semibold text-emerald-700 hover:text-emerald-800"
+                style={{
+                  background: 'transparent',
+                  border: 'none',
+                  color: T.emerald,
+                  fontFamily: T.sans,
+                  fontSize: 12,
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  padding: 0,
+                }}
               >
                 {selected.size === children.length
                   ? t('languageSemester.deselectAll')
@@ -308,71 +591,160 @@ export default function LanguageSemesterPage() {
               </button>
             </div>
 
-            {/* Graduating / Returning legend — only shown for 6M (1M is academic, no grad distinction) */}
+            {/* Graduating / Returning legend — only shown for 6M */}
             {months === 6 && (
-              <div className="flex items-center gap-4 px-4 py-2 mb-3 text-xs text-gray-500">
-                <span className="flex items-center gap-1">
-                  <span className="inline-block w-2.5 h-2.5 rounded-full bg-amber-400" />
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 16,
+                padding: '8px 16px 14px',
+                fontSize: 11,
+                color: T.textMuted,
+                flexWrap: 'wrap',
+              }}>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                  <span style={{
+                    display: 'inline-block',
+                    width: 10,
+                    height: 10,
+                    borderRadius: '50%',
+                    background: T.amber,
+                  }} />
                   {t('languageSemester.graduatingLabel', { count: gradCount })}
                 </span>
-                <span className="flex items-center gap-1">
-                  <span className="inline-block w-2.5 h-2.5 rounded-full bg-sky-400" />
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                  <span style={{
+                    display: 'inline-block',
+                    width: 10,
+                    height: 10,
+                    borderRadius: '50%',
+                    background: T.blue,
+                  }} />
                   {t('languageSemester.returningLabel', { count: retCount })}
                 </span>
-                <span className="text-gray-400 ml-auto">
+                <span style={{ marginLeft: 'auto', fontStyle: 'italic', color: T.textMuted }}>
                   {t('languageSemester.toggleHint')}
                 </span>
               </div>
             )}
 
-            <div className="bg-white rounded-lg border border-gray-200 divide-y divide-gray-100 mb-4">
-              {children.map((c) => {
+            {/* Children list */}
+            <div style={{
+              background: T.card,
+              border: T.cardBorder,
+              borderRadius: 14,
+              overflow: 'hidden',
+              backdropFilter: T.blur,
+              WebkitBackdropFilter: T.blur,
+              marginBottom: 14,
+            }}>
+              {children.map((c, idx) => {
                 const checked = selected.has(c.id);
                 const isGrad = graduating.has(c.id);
                 return (
                   <button
                     key={c.id}
                     onClick={() => toggle(c.id)}
-                    className={`w-full flex items-center gap-3 px-4 py-3 text-left transition-colors ${
-                      checked ? 'bg-emerald-50' : 'hover:bg-gray-50'
-                    }`}
+                    style={{
+                      width: '100%',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 12,
+                      padding: '12px 16px',
+                      background: checked ? T.emeraldSoft : 'transparent',
+                      border: 'none',
+                      borderTop: idx === 0 ? 'none' : '1px solid rgba(255,255,255,0.06)',
+                      color: T.textPrimary,
+                      cursor: 'pointer',
+                      textAlign: 'left',
+                      transition: 'background 140ms ease',
+                    }}
                   >
                     {/* Checkbox */}
-                    <div
-                      className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 transition-colors ${
-                        checked ? 'bg-emerald-600 border-emerald-600' : 'border-gray-300'
-                      }`}
-                    >
-                      {checked && (
-                        <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                        </svg>
-                      )}
+                    <div style={{
+                      width: 22,
+                      height: 22,
+                      borderRadius: 6,
+                      border: `2px solid ${checked ? T.emerald : 'rgba(255,255,255,0.25)'}`,
+                      background: checked ? T.emerald : 'transparent',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      flexShrink: 0,
+                      transition: 'all 120ms ease',
+                    }}>
+                      {checked && <Check size={13} strokeWidth={3} color="#06281a" />}
                     </div>
+
                     {/* Avatar */}
                     {c.photo_url ? (
                       <img
                         src={getProxyUrl(c.photo_url)}
                         alt={c.name}
-                        className="w-9 h-9 rounded-full object-cover flex-shrink-0"
+                        style={{
+                          width: 36,
+                          height: 36,
+                          borderRadius: '50%',
+                          objectFit: 'cover',
+                          flexShrink: 0,
+                          border: '1px solid rgba(52,211,153,0.20)',
+                        }}
                       />
                     ) : (
-                      <div className="w-9 h-9 rounded-full bg-gradient-to-br from-emerald-200 to-emerald-400 flex items-center justify-center flex-shrink-0 text-white text-sm font-semibold">
+                      <div style={{
+                        width: 36,
+                        height: 36,
+                        borderRadius: '50%',
+                        background: 'linear-gradient(135deg, #34d399, #059669)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: '#06281a',
+                        fontFamily: T.sans,
+                        fontSize: 13,
+                        fontWeight: 700,
+                        flexShrink: 0,
+                      }}>
                         {c.name.charAt(0).toUpperCase()}
                       </div>
                     )}
+
                     {/* Name */}
-                    <span className="text-sm font-medium text-gray-900 flex-1">{c.name}</span>
-                    {/* Graduating / Returning badge — only relevant for 6M parent report */}
+                    <span style={{
+                      flex: 1,
+                      fontFamily: T.sans,
+                      fontSize: 14,
+                      fontWeight: 500,
+                      color: T.textPrimary,
+                    }}>
+                      {c.name}
+                    </span>
+
+                    {/* Graduating / Returning badge */}
                     {months === 6 && (
                       <span
                         onClick={(e) => toggleGraduating(c.id, e)}
-                        className={`px-2.5 py-1 rounded-full text-xs font-semibold cursor-pointer transition-colors flex-shrink-0 ${
-                          isGrad
-                            ? 'bg-amber-100 text-amber-700 hover:bg-amber-200'
-                            : 'bg-sky-100 text-sky-700 hover:bg-sky-200'
-                        }`}
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: 5,
+                          padding: '4px 10px',
+                          borderRadius: 999,
+                          background: isGrad ? T.amberSoft : T.blueSoft,
+                          border: `1px solid ${isGrad ? T.amberBorder : T.blueBorder}`,
+                          color: isGrad ? T.amber : T.blue,
+                          fontFamily: T.sans,
+                          fontSize: 11,
+                          fontWeight: 600,
+                          letterSpacing: 0.3,
+                          cursor: 'pointer',
+                          flexShrink: 0,
+                          transition: 'all 120ms ease',
+                        }}
                       >
+                        {isGrad
+                          ? <GraduationCap size={11} strokeWidth={1.75} />
+                          : <RotateCcw size={11} strokeWidth={1.75} />}
                         {isGrad
                           ? t('languageSemester.graduatingBadge')
                           : t('languageSemester.returningBadge')}
@@ -384,32 +756,64 @@ export default function LanguageSemesterPage() {
             </div>
 
             {error && (
-              <div className="mb-3 p-3 bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg">
+              <div style={{
+                marginBottom: 12,
+                padding: '12px 14px',
+                background: T.redSoft,
+                border: `1px solid ${T.redBorder}`,
+                color: T.red,
+                fontFamily: T.sans,
+                fontSize: 13,
+                borderRadius: 12,
+              }}>
                 {error}
               </div>
             )}
 
             {progress && !error && (
-              <div className="mb-3 p-3 bg-blue-50 border border-blue-200 text-blue-700 text-sm rounded-lg">
+              <div style={{
+                marginBottom: 12,
+                padding: '12px 14px',
+                background: T.blueSoft,
+                border: `1px solid ${T.blueBorder}`,
+                color: T.blue,
+                fontFamily: T.sans,
+                fontSize: 13,
+                borderRadius: 12,
+              }}>
                 {progress}
               </div>
             )}
 
-            {/* Action buttons — 1M: text only; 6M: text + PPTX */}
-            <div className="flex gap-3">
+            {/* Action buttons */}
+            <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
               <button
                 onClick={handleGetText}
                 disabled={selected.size === 0 || generating || gettingText}
-                className={`py-3 rounded-xl bg-violet-600 text-white font-semibold hover:bg-violet-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors ${months === 1 ? 'flex-1' : 'flex-1'}`}
+                style={{
+                  ...ctaSecondary,
+                  flex: 1,
+                  minWidth: 220,
+                  opacity: (selected.size === 0 || generating || gettingText) ? 0.45 : 1,
+                  cursor: (selected.size === 0 || generating || gettingText) ? 'not-allowed' : 'pointer',
+                }}
               >
+                <Sparkles size={15} strokeWidth={1.75} />
                 {gettingText ? 'Getting text…' : `Get Text (${selected.size})`}
               </button>
               {months === 6 && (
                 <button
                   onClick={handleGenerate}
                   disabled={selected.size === 0 || generating || gettingText}
-                  className="flex-1 py-3 rounded-xl bg-emerald-600 text-white font-semibold hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  style={{
+                    ...ctaPrimary,
+                    flex: 1,
+                    minWidth: 220,
+                    opacity: (selected.size === 0 || generating || gettingText) ? 0.45 : 1,
+                    cursor: (selected.size === 0 || generating || gettingText) ? 'not-allowed' : 'pointer',
+                  }}
                 >
+                  <Download size={15} strokeWidth={2} />
                   {generating
                     ? t('languageSemester.generatingWait')
                     : t('languageSemester.generateDownload', { count: selected.size })}
@@ -417,42 +821,132 @@ export default function LanguageSemesterPage() {
               )}
             </div>
 
-            <p className="text-xs text-gray-500 text-center mt-4">
+            <p style={{
+              textAlign: 'center',
+              marginTop: 16,
+              fontFamily: T.sans,
+              fontSize: 11,
+              color: T.textMuted,
+            }}>
               {t('languageSemester.timeEstimate')}
             </p>
 
             {/* Text results panel */}
             {textResult && (
-              <div ref={textResultRef} className="mt-6 space-y-6">
+              <div ref={textResultRef} style={{ marginTop: 28, display: 'flex', flexDirection: 'column', gap: 18 }}>
                 {textResult.errors.length > 0 && (
-                  <div className="p-3 bg-amber-50 border border-amber-200 text-amber-700 text-sm rounded-lg">
+                  <div style={{
+                    padding: '12px 14px',
+                    background: T.amberSoft,
+                    border: `1px solid ${T.amberBorder}`,
+                    color: T.amber,
+                    fontFamily: T.sans,
+                    fontSize: 13,
+                    borderRadius: 12,
+                  }}>
                     {textResult.errors.length} child{textResult.errors.length > 1 ? 'ren' : ''} failed:{' '}
                     {textResult.errors.map(e => e.name).join(', ')}
                   </div>
                 )}
                 {textResult.children.map((child) => (
-                  <div key={child.name} className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+                  <div
+                    key={child.name}
+                    style={{
+                      background: T.card,
+                      border: T.cardBorder,
+                      borderRadius: T.cardRadius,
+                      backdropFilter: T.blur,
+                      WebkitBackdropFilter: T.blur,
+                      overflow: 'hidden',
+                    }}
+                  >
                     {/* Child header */}
-                    <div className="bg-violet-50 border-b border-violet-100 px-4 py-3">
-                      <h2 className="font-bold text-violet-900 text-lg">{child.name}</h2>
+                    <div style={{
+                      padding: '14px 18px',
+                      borderBottom: T.cardBorder,
+                      background: 'linear-gradient(180deg, rgba(139,92,246,0.10), rgba(139,92,246,0.04))',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 10,
+                    }}>
+                      <BookOpen size={17} strokeWidth={1.75} color="#c4b5fd" />
+                      <h2 style={{
+                        margin: 0,
+                        fontFamily: T.serif,
+                        fontSize: 18,
+                        fontWeight: 500,
+                        color: T.textPrimary,
+                        letterSpacing: -0.2,
+                      }}>
+                        {child.name}
+                      </h2>
                     </div>
 
-                    <div className="p-4 space-y-4">
+                    <div style={{
+                      padding: 16,
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: 16,
+                    }}>
                       {/* Works table */}
                       <div>
-                        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Language Works</p>
-                        <div className="rounded-lg border border-gray-100 overflow-hidden">
+                        <p style={{
+                          margin: '0 0 8px',
+                          fontFamily: T.sans,
+                          fontSize: 11,
+                          fontWeight: 700,
+                          color: T.textMuted,
+                          letterSpacing: 0.6,
+                          textTransform: 'uppercase',
+                        }}>
+                          Language Works
+                        </p>
+                        <div style={{
+                          background: 'rgba(255,255,255,0.03)',
+                          border: '1px solid rgba(255,255,255,0.08)',
+                          borderRadius: 12,
+                          overflow: 'hidden',
+                        }}>
                           {child.works.length === 0 ? (
-                            <p className="text-sm text-gray-400 px-3 py-2 italic">No language works recorded</p>
+                            <p style={{
+                              margin: 0,
+                              padding: '12px 14px',
+                              fontFamily: T.sans,
+                              fontSize: 13,
+                              color: T.textMuted,
+                              fontStyle: 'italic',
+                            }}>
+                              No language works recorded
+                            </p>
                           ) : (
                             child.works.map((w, i) => (
-                              <div key={i} className={`flex items-center justify-between px-3 py-2 text-sm ${i % 2 === 0 ? 'bg-gray-50' : 'bg-white'}`}>
-                                <span className="text-gray-800">{w.name}</span>
-                                <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${
-                                  w.status === 'MD' ? 'bg-emerald-100 text-emerald-700' :
-                                  w.status === 'Pr' ? 'bg-blue-100 text-blue-700' :
-                                  'bg-gray-100 text-gray-600'
-                                }`}>
+                              <div
+                                key={i}
+                                style={{
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'space-between',
+                                  padding: '10px 14px',
+                                  background: i % 2 === 0 ? 'rgba(255,255,255,0.03)' : 'transparent',
+                                  borderTop: i === 0 ? 'none' : '1px solid rgba(255,255,255,0.04)',
+                                }}
+                              >
+                                <span style={{
+                                  fontFamily: T.sans,
+                                  fontSize: 13,
+                                  color: T.textPrimary,
+                                }}>
+                                  {w.name}
+                                </span>
+                                <span style={{
+                                  ...statusStyle(w.status),
+                                  padding: '3px 10px',
+                                  borderRadius: 999,
+                                  fontFamily: T.sans,
+                                  fontSize: 11,
+                                  fontWeight: 700,
+                                  letterSpacing: 0.3,
+                                }}>
                                   {w.status}
                                 </span>
                               </div>
@@ -461,12 +955,10 @@ export default function LanguageSemesterPage() {
                         </div>
                       </div>
 
-                      {/* Report text — branched by period */}
+                      {/* Report text */}
                       {months === 1 ? (
-                        /* 1M: single paragraph academic report */
                         <CopyBlock label="Monthly Academic Report" text={child.paragraph ?? ''} />
                       ) : (
-                        /* 6M: three-part parent letter — combined into one copyable block */
                         <CopyBlock
                           label="Parent Letter"
                           text={[child.opening, child.circle, child.closing].filter(Boolean).join('\n\n')}
