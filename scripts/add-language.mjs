@@ -1,107 +1,186 @@
 #!/usr/bin/env node
 // scripts/add-language.mjs
-// Onboarding guide for adding a new language to Montree.
+//
+// Scaffold a new language for Montree. Updates every infrastructure file so the
+// only remaining work is filling in the actual translations + DB columns.
 //
 // Usage:
-//   node scripts/add-language.mjs <locale>
+//   node scripts/add-language.mjs <code> <native-name> <short-label> <intl-locale>
 //
 // Example:
-//   node scripts/add-language.mjs fr
+//   node scripts/add-language.mjs sv "Svenska" "SV" "sv-SE"
 //
-// This script prints the exact steps needed — including the ALTER TABLE SQL
-// to run in Supabase SQL Editor and which files to create/edit.
+// What this does:
+//   1. Adds <code> to SUPPORTED_LOCALES in lib/montree/i18n/locales.ts
+//   2. Adds entries to LOCALE_TO_INTL, LOCALE_DISPLAY_NAMES, LOCALE_SHORT_LABELS
+//   3. Adds an AREA_LABELS_<UPPER> stub in lib/montree/i18n/area-labels.ts
+//   4. Adds a LOCALE_AI_CONFIG stub in lib/montree/i18n/locale-config.ts
+//   5. Creates lib/montree/i18n/<code>.ts as a copy of en.ts (English placeholder
+//      until real translations are dropped in)
+//   6. Wires the new locale into context.tsx and server.ts
+//
+// What this does NOT do (manual follow-up):
+//   - Translate the strings in <code>.ts (run a translation pass)
+//   - Add `name_<code>` / `parent_description_<code>` / `why_it_matters_<code>` /
+//     `guide_content_<code>` columns to montree_classroom_curriculum_works in the DB
+//     (the column suffix mapping is auto-derived, but the columns must exist)
+//   - Translate area labels (the AREA_LABELS_<UPPER> entries are stubbed in English)
+//   - Translate AI config strings (aiLanguageInstruction etc. are stubbed)
 
-const locale = process.argv[2];
+import { readFileSync, writeFileSync, existsSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+import { dirname, join } from 'node:path';
 
-if (!locale || locale === 'en') {
-  console.error('Usage: node scripts/add-language.mjs <locale>');
-  console.error('Example: node scripts/add-language.mjs fr');
-  console.error('\nLocale must be a non-English BCP 47 language code (e.g. fr, de, ja, pt, ar).');
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const ROOT = join(__dirname, '..');
+
+// ---------- Args ----------
+const [, , code, nativeName, shortLabel, intlLocale] = process.argv;
+if (!code || !nativeName || !shortLabel || !intlLocale) {
+  console.error('Usage: node scripts/add-language.mjs <code> <native-name> <short-label> <intl-locale>');
+  console.error('Example: node scripts/add-language.mjs sv "Svenska" "SV" "sv-SE"');
   process.exit(1);
 }
+if (!/^[a-z]{2}$/.test(code)) {
+  console.error(`✖ Locale code "${code}" should be 2 lowercase letters (e.g. "sv")`);
+  process.exit(1);
+}
+const upper = code.toUpperCase();
 
-const name = `name_${locale}`;
-const parentDesc = `parent_description_${locale}`;
-const whyItMatters = `why_it_matters_${locale}`;
+console.log(`\nScaffolding language: ${nativeName} (${code})\n`);
 
-console.log(`
-╔══════════════════════════════════════════════════════════╗
-║  Add Language: ${locale.toUpperCase().padEnd(43)}║
-╚══════════════════════════════════════════════════════════╝
+function read(rel) {
+  return readFileSync(join(ROOT, rel), 'utf8');
+}
+function write(rel, contents) {
+  writeFileSync(join(ROOT, rel), contents);
+}
+function patch(rel, transform) {
+  const src = read(rel);
+  const next = transform(src);
+  if (src === next) {
+    console.log(`  ⚠  ${rel}: no changes (already wired or pattern not found)`);
+    return false;
+  }
+  write(rel, next);
+  console.log(`  ✓  ${rel}`);
+  return true;
+}
 
-Adding a new language to Montree requires 5 steps.
-Steps 1–4 are one-time setup. Step 5 batch-translates all
-existing curriculum works for every classroom in the DB.
+// ---------- 1. lib/montree/i18n/locales.ts ----------
+patch('lib/montree/i18n/locales.ts', (src) => {
+  if (src.includes(`'${code}'`)) return src; // already there
+  let next = src.replace(
+    /(SUPPORTED_LOCALES\s*=\s*\[)([^\]]+)(\])/,
+    (_, open, body, close) => `${open}${body.trimEnd()}, '${code}'${close}`
+  );
+  next = next.replace(
+    /(LOCALE_TO_INTL[^{]*\{[\s\S]*?ru:\s*['"][^'"]+['"],?)/,
+    (m) => `${m}\n  ${code}: '${intlLocale}',`
+  );
+  next = next.replace(
+    /(LOCALE_DISPLAY_NAMES[^{]*\{[\s\S]*?ru:\s*['"][^'"]+['"],?)/,
+    (m) => `${m}\n  ${code}: '${nativeName}',`
+  );
+  next = next.replace(
+    /(LOCALE_SHORT_LABELS[^{]*\{[\s\S]*?ru:\s*['"][^'"]+['"],?)/,
+    (m) => `${m}\n  ${code}: '${shortLabel}',`
+  );
+  return next;
+});
 
-────────────────────────────────────────────────────────────
-STEP 1 — Run this SQL in Supabase SQL Editor
-────────────────────────────────────────────────────────────
+// ---------- 2. lib/montree/i18n/area-labels.ts ----------
+patch('lib/montree/i18n/area-labels.ts', (src) => {
+  if (src.includes(`AREA_LABELS_${upper}`)) return src;
+  const stub = `\nexport const AREA_LABELS_${upper}: Record<string, string> = {
+  practical_life: 'Practical Life',
+  sensorial: 'Sensorial',
+  mathematics: 'Mathematics',
+  language: 'Language',
+  cultural: 'Cultural',
+};\n`;
+  let next = src + stub;
+  next = next.replace(
+    /(AREA_LABELS\s*:\s*Record<[^>]+>\s*=\s*\{[\s\S]*?ru:\s*AREA_LABELS_RU,?)/,
+    (m) => `${m}\n  ${code}: AREA_LABELS_${upper},`
+  );
+  return next;
+});
 
-ALTER TABLE montree_classroom_curriculum_works
-  ADD COLUMN IF NOT EXISTS ${name} TEXT,
-  ADD COLUMN IF NOT EXISTS ${parentDesc} TEXT,
-  ADD COLUMN IF NOT EXISTS ${whyItMatters} TEXT;
+// ---------- 3. lib/montree/i18n/locale-config.ts ----------
+patch('lib/montree/i18n/locale-config.ts', (src) => {
+  if (new RegExp(`^\\s*${code}\\s*:\\s*\\{`, 'm').test(src)) return src;
+  const stub = `  ${code}: {
+    languageName: '${nativeName} (TODO: add English label)',
+    aiLanguageInstruction:
+      '\\n\\nLANGUAGE REQUIREMENT: You MUST respond ENTIRELY in ${nativeName}. ' +
+      'Every word of your response must be in ${nativeName}. Do not use any English except for ' +
+      'proper nouns (like Montessori work names). ' +
+      'TODO: add formal register guidance, "your child" phrasing, AMI Montessori terminology.',
+    aiShortDirective: 'in ${nativeName}',
+    yourChild: 'TODO',
+    dateFormatHint: 'TODO',
+  },\n`;
+  return src.replace(
+    /(export const LOCALE_AI_CONFIG[\s\S]*?ru:\s*\{[\s\S]*?\},)\s*\n\};/,
+    (_m, before) => `${before}\n${stub}};`
+  );
+});
 
-────────────────────────────────────────────────────────────
-STEP 2 — Add '${locale}' to ENABLED_LOCALES (one line change)
-────────────────────────────────────────────────────────────
+// ---------- 4. lib/montree/i18n/<code>.ts (translation file) ----------
+const targetTranslation = `lib/montree/i18n/${code}.ts`;
+if (existsSync(join(ROOT, targetTranslation))) {
+  console.log(`  ⚠  ${targetTranslation}: already exists, skipping`);
+} else {
+  const enSrc = read('lib/montree/i18n/en.ts');
+  const stub = `// Auto-scaffolded by scripts/add-language.mjs.
+// TODO: replace these English strings with ${nativeName} translations.
+// Run a Haiku translation script (see scripts/generate-fr.mjs as reference).
 
-File: lib/montree/locales-config.ts
+${enSrc.replace(/export const en\s*=/, `export const ${code} =`)}\n`;
+  write(targetTranslation, stub);
+  console.log(`  ✓  ${targetTranslation} (English placeholder — translate before shipping)`);
+}
 
-  export const ENABLED_LOCALES: Locale[] = ['zh', 'es', '${locale}'];
+// ---------- 5. lib/montree/i18n/context.tsx ----------
+patch('lib/montree/i18n/context.tsx', (src) => {
+  if (src.includes(`from './${code}'`)) return src;
+  let next = src.replace(
+    /(import\s*\{\s*ru\s*\}\s*from\s*['"]\.\/ru['"];)/,
+    (m) => `${m}\nimport { ${code} } from './${code}';`
+  );
+  next = next.replace(
+    /(messages[^=]*=\s*\{[^}]*ru)\s*\}/,
+    (_m, before) => `${before}, ${code} }`
+  );
+  return next;
+});
 
-Also add '${locale}' to SUPPORTED_LOCALES in:
-  lib/montree/i18n/locales.ts
+// ---------- 6. lib/montree/i18n/server.ts ----------
+patch('lib/montree/i18n/server.ts', (src) => {
+  if (src.includes(`from './${code}'`)) return src;
+  let next = src.replace(
+    /(import\s*\{\s*ru\s*\}\s*from\s*['"]\.\/ru['"];)/,
+    (m) => `${m}\nimport { ${code} } from './${code}';`
+  );
+  next = next.replace(
+    /(LOCALE_TO_MESSAGES[^=]*=\s*\{[^}]*ru)\s*\}/,
+    (_m, before) => `${before}, ${code} }`
+  );
+  return next;
+});
 
-────────────────────────────────────────────────────────────
-STEP 3 — Create the UI translation file
-────────────────────────────────────────────────────────────
-
-  cp lib/montree/i18n/en.ts lib/montree/i18n/${locale}.ts
-
-Then translate all ~3,713 keys in ${locale}.ts.
-(Tip: use the same two-pass Haiku batch pipeline as es.ts —
- see docs/MULTILINGUAL_AUDIT_HANDOFF.md for the approach.)
-
-────────────────────────────────────────────────────────────
-STEP 4 — Wire up the locale metadata (3 files, ~5 min each)
-────────────────────────────────────────────────────────────
-
-  lib/montree/i18n/area-labels.ts
-    → Add ${locale} entries to AREA_LABELS map
-
-  lib/montree/i18n/locale-config.ts
-    → Add LOCALE_AI_CONFIG['${locale}'] entry with:
-        languageName, aiShortDirective, systemPromptSuffix, glossary
-
-  lib/montree/i18n/locales.ts
-    → Add LOCALE_TO_INTL['${locale}'] BCP 47 date format
-    → Add LOCALE_DISPLAY_NAMES['${locale}'] native name
-    → Add LOCALE_SHORT_LABELS['${locale}'] compact label
-
-────────────────────────────────────────────────────────────
-STEP 5 — Batch-translate all existing curriculum works
-────────────────────────────────────────────────────────────
-
-After completing Steps 1–4, call the batch-translate API
-for every existing classroom. The API already accepts any
-locale via the target_locale body param:
-
-  POST /api/montree/curriculum/batch-translate
-  { "classroom_id": "<id>", "target_locale": "${locale}" }
-
-Or use the admin script (once built for your school):
-  node scripts/run-batch-translate.mjs ${locale}
-
-────────────────────────────────────────────────────────────
-WHAT YOU GET FOR FREE (no additional code changes)
-────────────────────────────────────────────────────────────
-
-✓ All 5 INSERT write paths automatically include ${name}: null
-✓ All new classrooms get ${locale} batch-translated on setup
-✓ add-custom-work fires translateAllLocales() for ${locale}
-✓ batch-translate API route accepts target_locale: '${locale}'
-✓ All UI components resolve locale via t() / resolveLocalized()
-
-────────────────────────────────────────────────────────────
-`);
+// ---------- Done ----------
+console.log(`\n✓ Scaffolding for "${code}" complete.\n`);
+console.log('Next steps:');
+console.log(`  1. Translate lib/montree/i18n/${code}.ts (currently English placeholder)`);
+console.log(`  2. Translate AREA_LABELS_${upper} in lib/montree/i18n/area-labels.ts`);
+console.log(`  3. Fill in LOCALE_AI_CONFIG.${code} TODOs in lib/montree/i18n/locale-config.ts`);
+console.log(`  4. Run DB migration to add columns:`);
+console.log(`       ALTER TABLE montree_classroom_curriculum_works`);
+console.log(`         ADD COLUMN IF NOT EXISTS name_${code} TEXT,`);
+console.log(`         ADD COLUMN IF NOT EXISTS parent_description_${code} TEXT,`);
+console.log(`         ADD COLUMN IF NOT EXISTS why_it_matters_${code} TEXT,`);
+console.log(`         ADD COLUMN IF NOT EXISTS guide_content_${code} JSONB;`);
+console.log(`  5. Run translation script for curriculum work names + guides`);
+console.log(`  6. Verify: node scripts/check-i18n-completeness.mjs\n`);

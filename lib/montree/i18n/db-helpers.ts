@@ -7,7 +7,7 @@
 // When a new language is added, add the column + add the suffix mapping here. No code changes elsewhere.
 
 import type { Locale } from './locales';
-import { DEFAULT_LOCALE } from './locales';
+import { DEFAULT_LOCALE, SUPPORTED_LOCALES } from './locales';
 
 // ---------------------------------------------------------------------------
 // Column suffix mapping
@@ -16,21 +16,19 @@ import { DEFAULT_LOCALE } from './locales';
 /**
  * Maps locale to the DB column suffix for translated fields.
  * English has no suffix — it's the base column.
- * New languages: add column to DB + add suffix here.
+ *
+ * Convention: every non-English locale follows `${field}_${locale}`.
+ * To add a new language, just add it to SUPPORTED_LOCALES in locales.ts and
+ * the mapping is auto-derived below — no need to edit this map.
  */
-const LOCALE_COLUMN_SUFFIX: Partial<Record<Locale, string>> = {
-  zh: '_zh',
-  es: '_es',
-  de: '_de',
-  fr: '_fr',
-  pt: '_pt',
-  nl: '_nl',
-  it: '_it',
-  ja: '_ja',
-  ko: '_ko',
-  uk: '_uk',
-  ru: '_ru',
-};
+export const LOCALE_COLUMN_SUFFIX: Partial<Record<Locale, string>> = (() => {
+  const map: Partial<Record<Locale, string>> = {};
+  for (const locale of SUPPORTED_LOCALES) {
+    if (locale === DEFAULT_LOCALE) continue; // English has no suffix
+    map[locale] = `_${locale}`;
+  }
+  return map;
+})();
 
 // ---------------------------------------------------------------------------
 // Work name resolution
@@ -119,4 +117,50 @@ export function getLocalizedColumn(field: string, locale: string): string {
   if (suffix) return `${field}${suffix}`;
 
   return field;
+}
+
+// ---------------------------------------------------------------------------
+// SELECT-list builders — auto-derive locale columns for Supabase queries
+// ---------------------------------------------------------------------------
+
+/**
+ * Build the comma-separated list of localized column names for a given base
+ * field, covering every non-English supported locale.
+ *
+ * Example:
+ *   buildLocalizedColumnList('name')
+ *   // → "name_zh, name_es, name_de, name_fr, name_pt, name_nl, name_it, name_ja, name_ko, name_uk, name_ru"
+ *
+ * Use this to keep API SELECT lists in sync with SUPPORTED_LOCALES — when a
+ * new locale is added to locales.ts, every call site picks it up automatically.
+ */
+export function buildLocalizedColumnList(baseField: string): string {
+  return SUPPORTED_LOCALES
+    .filter((l) => l !== DEFAULT_LOCALE)
+    .map((l) => `${baseField}${LOCALE_COLUMN_SUFFIX[l]}`)
+    .join(', ');
+}
+
+/**
+ * Build a SELECT fragment for a base field that includes the English column,
+ * the legacy Chinese dual-column (`name_chinese`) when applicable, and every
+ * locale-suffixed column.
+ *
+ * Example:
+ *   buildLocalizedSelect('name')
+ *   // → "name, name_chinese, name_zh, name_es, name_de, ..."
+ *
+ *   buildLocalizedSelect('parent_description')
+ *   // → "parent_description, parent_description_zh, parent_description_es, ..."
+ *
+ * Drop directly into Supabase `.select()`:
+ *   .select(`id, ${buildLocalizedSelect('name')}`)
+ */
+export function buildLocalizedSelect(baseField: string): string {
+  const localized = buildLocalizedColumnList(baseField);
+  // Legacy: 'name' has the dual-column name_chinese alongside name_zh
+  if (baseField === 'name') {
+    return `${baseField}, name_chinese, ${localized}`;
+  }
+  return `${baseField}, ${localized}`;
 }

@@ -38,17 +38,38 @@ function lookupGlossary(workName: string, locale: Locale): string | null {
 }
 
 // ---------------------------------------------------------------------------
-// System prompts per locale (keyed by locale, English is source — never a target)
+// System prompts per locale
 // ---------------------------------------------------------------------------
+//
+// Adding a new language does NOT require an entry here — the fallback below
+// derives a perfectly serviceable prompt from LOCALE_AI_CONFIG (language name +
+// AMI terminology + "your child" register). Add an override here only if you
+// want hand-tuned native-language polish for a high-traffic locale.
 
-const SYSTEM_PROMPTS: Record<string, string> = {
+const SYSTEM_PROMPTS_OVERRIDES: Partial<Record<Locale, string>> = {
   zh: '你是一位专业的蒙台梭利教育翻译。将英文翻译为简体中文，保持温暖、专业的语气，适合家长阅读。翻译必须自然流畅，不是机械翻译。用"您的孩子"而不是"你的孩子"。',
-  es: 'Eres un traductor profesional de educación Montessori. Traduce del inglés al español, manteniendo un tono cálido y profesional, adecuado para que lo lean los padres. La traducción debe ser natural y fluida, no mecánica. Usa "su hijo/a" para "your child".',
+  es: 'Eres un traductor profesional de educación Montessori. Traduce del inglés al español argentino (rioplatense), manteniendo un tono cálido y profesional, adecuado para que lo lean los padres. Usá voseo ("vos tenés", no "tú tienes"). La traducción debe ser natural y fluida, no mecánica. Usá "su hijo/a" para "your child".',
 };
 
 function getSystemPrompt(locale: Locale): string {
-  return SYSTEM_PROMPTS[locale] ||
-    `You are a professional Montessori education translator. Translate from English into ${getLanguageName(locale)}. Keep a warm, professional tone suitable for parents. The translation must be natural and fluent, not mechanical.`;
+  const override = SYSTEM_PROMPTS_OVERRIDES[locale];
+  if (override) return override;
+
+  // Generic fallback — pulls language name and AMI Montessori terminology
+  // from LOCALE_AI_CONFIG so any newly-added locale gets sensible guidance
+  // without a hand-tuned prompt.
+  const langName = getLanguageName(locale);
+  const cfg = LOCALE_AI_CONFIG[locale];
+  const terminology = cfg?.aiLanguageInstruction
+    ?.replace(/\n\nLANGUAGE REQUIREMENT: You MUST respond ENTIRELY in [^.]+\.\s*/g, '')
+    ?.replace(/Every word of your response must be in [^.]+\.\s*/g, '')
+    ?.replace(/Do not use any English except for proper nouns \(like Montessori work names\)\.\s*/g, '')
+    ?.trim() || '';
+  return [
+    `You are a professional Montessori education translator. Translate from English into ${langName}.`,
+    `Keep a warm, professional tone suitable for parents. The translation must be natural and fluent, not mechanical.`,
+    terminology,
+  ].filter(Boolean).join(' ');
 }
 
 // ---------------------------------------------------------------------------
