@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
+import { Cake, X } from 'lucide-react';
 
 interface BirthdayChild {
   id: string;
@@ -45,8 +46,6 @@ export default function BirthdayBanner() {
   if (dismissed || birthdays.length === 0) return null;
 
   const formatMessage = (b: BirthdayChild): string => {
-    // turning_age from API is current age; on their birthday they'll turn turning_age + 1
-    // But if days_until === 0 (today IS their birthday), they've already turned
     const age = b.days_until === 0 ? b.turning_age : b.turning_age + 1;
     if (b.days_until === 0) return `Happy Birthday ${b.name}! Turning ${age} today!`;
     if (b.days_until === 1) return `${b.name} turns ${age} tomorrow!`;
@@ -54,28 +53,68 @@ export default function BirthdayBanner() {
   };
 
   return (
-    <div className="mx-3 mb-3 rounded-xl bg-gradient-to-r from-pink-50 via-rose-50 to-orange-50 border border-pink-200/60 shadow-sm overflow-hidden">
-      <div className="flex items-start justify-between px-4 py-3">
-        <div className="flex items-start gap-2.5 flex-1 min-w-0">
-          <span className="text-xl flex-shrink-0 mt-0.5">🎂</span>
-          <div className="space-y-0.5 min-w-0">
-            {birthdays.map(b => (
-              <p key={b.id} className="text-sm font-medium text-gray-800 truncate">
-                {formatMessage(b)}
-              </p>
-            ))}
-          </div>
+    <div style={{
+      margin: '0 12px 12px',
+      padding: '12px 14px',
+      borderRadius: 14,
+      background: 'linear-gradient(135deg, rgba(236,72,153,0.16), rgba(245,158,11,0.10))',
+      border: '1px solid rgba(236,72,153,0.30)',
+      backdropFilter: 'blur(14px) saturate(140%)',
+      WebkitBackdropFilter: 'blur(14px) saturate(140%)',
+      boxShadow: '0 6px 16px rgba(0,0,0,0.20)',
+      display: 'flex',
+      alignItems: 'flex-start',
+      justifyContent: 'space-between',
+      gap: 10,
+      fontFamily: '"Inter", -apple-system, sans-serif',
+    }}>
+      <div style={{
+        display: 'flex',
+        alignItems: 'flex-start',
+        gap: 10,
+        flex: 1,
+        minWidth: 0,
+      }}>
+        <Cake size={18} strokeWidth={1.75} color="#f9a8d4" style={{ flexShrink: 0, marginTop: 1 }} />
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 2, minWidth: 0 }}>
+          {birthdays.map(b => (
+            <p
+              key={b.id}
+              style={{
+                margin: 0,
+                fontSize: 13,
+                fontWeight: 500,
+                color: 'rgba(255,255,255,0.95)',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              {formatMessage(b)}
+            </p>
+          ))}
         </div>
-        <button
-          onClick={handleDismiss}
-          className="ml-3 mt-0.5 flex-shrink-0 text-gray-400 hover:text-gray-600 transition-colors p-0.5"
-          aria-label="Dismiss"
-        >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-          </svg>
-        </button>
       </div>
+      <button
+        onClick={handleDismiss}
+        aria-label="Dismiss"
+        style={{
+          flexShrink: 0,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          width: 24,
+          height: 24,
+          borderRadius: 8,
+          background: 'rgba(255,255,255,0.06)',
+          border: '1px solid rgba(255,255,255,0.10)',
+          color: 'rgba(255,255,255,0.55)',
+          cursor: 'pointer',
+          transition: 'all 120ms ease',
+        }}
+      >
+        <X size={12} strokeWidth={1.75} />
+      </button>
     </div>
   );
 }
