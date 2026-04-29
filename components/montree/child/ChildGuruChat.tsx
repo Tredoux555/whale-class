@@ -5,8 +5,10 @@
 // Voice-first: mic button is primary. Text input as fallback.
 // Ephemeral: chat clears between page visits. Actions persist to DB.
 // Uses Haiku via SSE streaming from /api/montree/children/[childId]/guru
+// Dark forest visual treatment — all wiring intact
 
 import { useState, useRef, useEffect, useCallback } from 'react';
+import { Brain, ChevronDown, Mic, Square, ArrowUp, Check, X } from 'lucide-react';
 import { montreeApi } from '@/lib/montree/api';
 import { useI18n } from '@/lib/montree/i18n';
 
@@ -21,8 +23,30 @@ interface Message {
 interface Props {
   childId: string;
   childName: string;
-  onAction?: () => void; // Called after tool actions so parent can refresh data
+  onAction?: () => void;
 }
+
+const T = {
+  sheet: 'rgba(7,18,12,0.97)',
+  sheetBorder: 'rgba(52,211,153,0.18)',
+  card: 'rgba(255,255,255,0.06)',
+  cardBorder: 'rgba(52,211,153,0.15)',
+  blur: 'blur(20px) saturate(140%)',
+  emerald: '#34d399',
+  emeraldDeep: '#10b981',
+  emeraldStrong: 'rgba(52,211,153,0.18)',
+  emeraldSoft: 'rgba(52,211,153,0.10)',
+  red: '#f87171',
+  redSoft: 'rgba(239,68,68,0.18)',
+  redBorder: 'rgba(239,68,68,0.45)',
+  textPrimary: 'rgba(255,255,255,0.95)',
+  textSecondary: 'rgba(255,255,255,0.65)',
+  textMuted: 'rgba(255,255,255,0.40)',
+  inputBg: 'rgba(0,0,0,0.30)',
+  inputBorder: 'rgba(52,211,153,0.20)',
+  serif: '"Lora", Georgia, serif',
+  sans: '"Inter", -apple-system, BlinkMacSystemFont, sans-serif',
+};
 
 export default function ChildGuruChat({ childId, childName, onAction }: Props) {
   const { t, locale } = useI18n();
@@ -41,7 +65,6 @@ export default function ChildGuruChat({ childId, childName, onAction }: Props) {
 
   const [historyLoaded, setHistoryLoaded] = useState(false);
 
-  // Load chat history from DB on first open
   useEffect(() => {
     if (!isOpen || historyLoaded) return;
     setHistoryLoaded(true);
@@ -60,19 +83,16 @@ export default function ChildGuruChat({ childId, childName, onAction }: Props) {
       .catch(() => { /* silent — empty chat is fine */ });
   }, [isOpen, historyLoaded, childId]);
 
-  // Auto-scroll to bottom
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  // Focus input when opening
   useEffect(() => {
     if (isOpen && inputRef.current) {
       setTimeout(() => inputRef.current?.focus(), 100);
     }
   }, [isOpen]);
 
-  // Cleanup on unmount
   useEffect(() => {
     return () => {
       abortRef.current?.abort();
@@ -83,7 +103,6 @@ export default function ChildGuruChat({ childId, childName, onAction }: Props) {
     };
   }, []);
 
-  // Build history for context (last 10 messages, alternating user/assistant)
   const getHistory = useCallback(() => {
     return messages
       .filter(m => !m.isStreaming)
@@ -91,7 +110,6 @@ export default function ChildGuruChat({ childId, childName, onAction }: Props) {
       .map(m => ({ role: m.role, content: m.content }));
   }, [messages]);
 
-  // --- Send message ---
   const sendMessage = useCallback(async (text: string) => {
     if (!text.trim() || isLoading) return;
 
@@ -113,7 +131,6 @@ export default function ChildGuruChat({ childId, childName, onAction }: Props) {
     setInput('');
     setIsLoading(true);
 
-    // Abort any previous request
     abortRef.current?.abort();
     const controller = new AbortController();
     abortRef.current = controller;
@@ -185,14 +202,12 @@ export default function ChildGuruChat({ childId, childName, onAction }: Props) {
         }
       }
 
-      // Ensure streaming flag is cleared
       setMessages(prev => prev.map(m =>
         m.id === assistantMsg.id ? { ...m, isStreaming: false } : m
       ));
 
-      // If tools executed, tell the parent page to refresh its data
       if (hadAction && onAction) {
-        setTimeout(() => onAction(), 300); // Small delay for DB writes to settle
+        setTimeout(() => onAction(), 300);
       }
     } catch (err) {
       if ((err as Error)?.name === 'AbortError') return;
@@ -205,9 +220,9 @@ export default function ChildGuruChat({ childId, childName, onAction }: Props) {
     } finally {
       setIsLoading(false);
     }
-  }, [childId, isLoading, getHistory]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [childId, isLoading, getHistory, locale, onAction]);
 
-  // --- Voice recording ---
   const startRecording = useCallback(async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -223,13 +238,11 @@ export default function ChildGuruChat({ childId, childName, onAction }: Props) {
       };
 
       mediaRecorder.onstop = async () => {
-        // Stop all tracks
         stream.getTracks().forEach(t => t.stop());
 
         const blob = new Blob(audioChunksRef.current, { type: mediaRecorder.mimeType || 'audio/webm' });
-        if (blob.size < 100) return; // Too short, discard
+        if (blob.size < 100) return;
 
-        // Transcribe via Whisper
         setIsLoading(true);
         try {
           const formData = new FormData();
@@ -256,11 +269,10 @@ export default function ChildGuruChat({ childId, childName, onAction }: Props) {
       };
 
       mediaRecorderRef.current = mediaRecorder;
-      mediaRecorder.start(1000); // Collect chunks every second
+      mediaRecorder.start(1000);
       setIsRecording(true);
       setRecordingSeconds(0);
 
-      // Timer
       recordingTimerRef.current = setInterval(() => {
         setRecordingSeconds(s => s + 1);
       }, 1000);
@@ -280,7 +292,6 @@ export default function ChildGuruChat({ childId, childName, onAction }: Props) {
     }
   }, []);
 
-  // --- Key handler ---
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
@@ -288,7 +299,6 @@ export default function ChildGuruChat({ childId, childName, onAction }: Props) {
     }
   };
 
-  // --- Tool name display ---
   const toolLabel = (name: string): string => {
     const labels: Record<string, string> = {
       set_focus_work: t('childGuru.shelfUpdated'),
@@ -303,71 +313,200 @@ export default function ChildGuruChat({ childId, childName, onAction }: Props) {
     return labels[name] || name;
   };
 
-  // --- Render ---
+  // ─── Closed state — floating action button ───────────────────────────
   if (!isOpen) {
     return (
       <button
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-6 right-6 w-14 h-14 bg-emerald-500 text-white rounded-full shadow-lg hover:bg-emerald-600 active:scale-90 transition-all flex items-center justify-center z-50"
         title={t('childGuru.aiAssistant')}
+        style={{
+          position: 'fixed',
+          bottom: 24,
+          right: 24,
+          width: 56,
+          height: 56,
+          borderRadius: '50%',
+          background: 'linear-gradient(135deg, #34d399, #059669)',
+          border: '1px solid rgba(52,211,153,0.55)',
+          color: '#06281a',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          cursor: 'pointer',
+          boxShadow: '0 10px 30px rgba(16,185,129,0.40)',
+          zIndex: 50,
+          transition: 'all 140ms ease',
+        }}
       >
-        <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
-        </svg>
+        <Brain size={22} strokeWidth={1.75} />
       </button>
     );
   }
 
   return (
-    <div className="fixed bottom-6 right-6 w-[360px] max-w-[calc(100vw-2rem)] h-[480px] max-h-[calc(100vh-6rem)] bg-white rounded-2xl shadow-2xl border border-gray-200 flex flex-col z-50 overflow-hidden">
+    <div style={{
+      position: 'fixed',
+      bottom: 24,
+      right: 24,
+      width: 360,
+      maxWidth: 'calc(100vw - 32px)',
+      height: 480,
+      maxHeight: 'calc(100vh - 96px)',
+      background: T.sheet,
+      border: `1px solid ${T.sheetBorder}`,
+      borderRadius: 18,
+      backdropFilter: T.blur,
+      WebkitBackdropFilter: T.blur,
+      boxShadow: '0 24px 60px rgba(0,0,0,0.55)',
+      display: 'flex',
+      flexDirection: 'column',
+      overflow: 'hidden',
+      zIndex: 50,
+      fontFamily: T.sans,
+      color: T.textPrimary,
+    }}>
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 bg-emerald-500 text-white rounded-t-2xl flex-shrink-0">
-        <div className="flex items-center gap-2">
-          <span className="text-lg">🧠</span>
-          <span className="font-semibold text-sm">{childName}</span>
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        padding: '12px 16px',
+        background: 'linear-gradient(180deg, rgba(52,211,153,0.18), rgba(52,211,153,0.06))',
+        borderBottom: `1px solid ${T.sheetBorder}`,
+        flexShrink: 0,
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: 28,
+            height: 28,
+            borderRadius: 8,
+            background: T.emeraldStrong,
+            border: '1px solid rgba(52,211,153,0.40)',
+            color: T.emerald,
+          }}>
+            <Brain size={14} strokeWidth={1.75} />
+          </div>
+          <span style={{
+            fontFamily: T.serif,
+            fontSize: 14,
+            fontWeight: 500,
+            color: T.textPrimary,
+            letterSpacing: -0.1,
+          }}>
+            {childName}
+          </span>
         </div>
         <button
           onClick={() => setIsOpen(false)}
-          className="p-1 hover:bg-emerald-600 rounded-full transition-colors"
+          aria-label="Collapse"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: 28,
+            height: 28,
+            borderRadius: 8,
+            background: 'rgba(255,255,255,0.06)',
+            border: '1px solid rgba(255,255,255,0.10)',
+            color: T.textPrimary,
+            cursor: 'pointer',
+            transition: 'all 120ms ease',
+          }}
         >
-          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-          </svg>
+          <ChevronDown size={14} strokeWidth={1.75} />
         </button>
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3">
+      <div style={{
+        flex: 1,
+        overflowY: 'auto',
+        padding: '12px 16px',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 10,
+      }}>
         {messages.length === 0 && (
-          <div className="text-center text-gray-400 text-sm py-8">
-            <p className="text-2xl mb-2">🧠</p>
-            <p>{t('childGuru.askAboutChild', { name: childName })}</p>
-            <p className="text-xs mt-1 text-gray-300">
+          <div style={{
+            textAlign: 'center',
+            padding: '32px 12px 12px',
+            color: T.textMuted,
+            fontFamily: T.sans,
+            fontSize: 13,
+          }}>
+            <div style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: 44,
+              height: 44,
+              borderRadius: '50%',
+              background: T.emeraldStrong,
+              border: '1px solid rgba(52,211,153,0.35)',
+              color: T.emerald,
+              marginBottom: 10,
+            }}>
+              <Brain size={20} strokeWidth={1.75} />
+            </div>
+            <p style={{ margin: 0, fontSize: 13, color: T.textSecondary }}>
+              {t('childGuru.askAboutChild', { name: childName })}
+            </p>
+            <p style={{ margin: '4px 0 0', fontSize: 11, color: T.textMuted }}>
               {t('childGuru.voiceOrText')}
             </p>
           </div>
         )}
 
         {messages.map((msg) => (
-          <div key={msg.id} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-            <div className={`max-w-[85%] ${
-              msg.role === 'user'
-                ? 'bg-emerald-500 text-white rounded-2xl rounded-br-md px-3 py-2'
-                : 'bg-gray-100 text-gray-800 rounded-2xl rounded-bl-md px-3 py-2'
-            }`}>
+          <div
+            key={msg.id}
+            style={{
+              display: 'flex',
+              justifyContent: msg.role === 'user' ? 'flex-end' : 'flex-start',
+            }}
+          >
+            <div style={{
+              maxWidth: '85%',
+              borderRadius: msg.role === 'user' ? '14px 14px 4px 14px' : '14px 14px 14px 4px',
+              padding: '10px 12px',
+              background: msg.role === 'user' ? 'rgba(52,211,153,0.18)' : 'rgba(255,255,255,0.06)',
+              border: `1px solid ${msg.role === 'user' ? 'rgba(52,211,153,0.40)' : 'rgba(255,255,255,0.10)'}`,
+              backdropFilter: 'blur(14px) saturate(140%)',
+              WebkitBackdropFilter: 'blur(14px) saturate(140%)',
+              color: T.textPrimary,
+            }}>
               {/* Action badges */}
               {msg.actions && msg.actions.length > 0 && (
-                <div className="flex flex-wrap gap-1 mb-1.5">
+                <div style={{
+                  display: 'flex',
+                  flexWrap: 'wrap',
+                  gap: 4,
+                  marginBottom: 6,
+                }}>
                   {msg.actions.map((action, i) => (
                     <span
                       key={i}
-                      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium ${
-                        action.success
-                          ? 'bg-emerald-200 text-emerald-800'
-                          : 'bg-red-200 text-red-800'
-                      }`}
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: 3,
+                        padding: '2px 7px',
+                        borderRadius: 999,
+                        background: action.success ? T.emeraldStrong : T.redSoft,
+                        border: `1px solid ${action.success ? 'rgba(52,211,153,0.40)' : T.redBorder}`,
+                        color: action.success ? T.emerald : T.red,
+                        fontFamily: T.sans,
+                        fontSize: 10,
+                        fontWeight: 600,
+                      }}
                     >
-                      {action.success ? '✓' : '✗'} {toolLabel(action.tool)}
+                      {action.success
+                        ? <Check size={9} strokeWidth={2.5} />
+                        : <X size={9} strokeWidth={2.5} />}
+                      {toolLabel(action.tool)}
                     </span>
                   ))}
                 </div>
@@ -375,16 +514,32 @@ export default function ChildGuruChat({ childId, childName, onAction }: Props) {
 
               {/* Message text */}
               {msg.content && (
-                <p className="text-sm leading-relaxed whitespace-pre-wrap">{msg.content}</p>
+                <p style={{
+                  margin: 0,
+                  fontFamily: T.sans,
+                  fontSize: 13,
+                  lineHeight: 1.55,
+                  color: T.textPrimary,
+                  whiteSpace: 'pre-wrap',
+                }}>
+                  {msg.content}
+                </p>
               )}
 
               {/* Streaming indicator */}
               {msg.isStreaming && !msg.content && msg.actions?.length === 0 && (
-                <div className="flex items-center gap-1.5">
-                  <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" />
-                  <span className="text-xs text-gray-400">
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <span style={{
+                    width: 8,
+                    height: 8,
+                    borderRadius: '50%',
+                    background: T.emerald,
+                    animation: 'cgc-pulse 1.4s ease-in-out infinite',
+                  }} />
+                  <span style={{ fontFamily: T.sans, fontSize: 11, color: T.textMuted }}>
                     {t('childGuru.thinking')}
                   </span>
+                  <style>{`@keyframes cgc-pulse { 0%,100% { opacity: 0.45; } 50% { opacity: 1; } }`}</style>
                 </div>
               )}
             </div>
@@ -394,25 +549,51 @@ export default function ChildGuruChat({ childId, childName, onAction }: Props) {
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Input area */}
-      <div className="flex-shrink-0 border-t border-gray-100 px-3 py-2 bg-gray-50 rounded-b-2xl">
-        <div className="flex items-end gap-2">
-          {/* Mic button */}
+      {/* Composer */}
+      <div style={{
+        flexShrink: 0,
+        borderTop: `1px solid ${T.cardBorder}`,
+        padding: '10px 12px',
+        background: 'linear-gradient(180deg, rgba(7,18,12,0) 0%, rgba(7,18,12,0.55) 100%)',
+      }}>
+        <div style={{
+          display: 'flex',
+          alignItems: 'flex-end',
+          gap: 8,
+        }}>
+          {/* Mic */}
           <button
             onClick={isRecording ? stopRecording : startRecording}
             disabled={isLoading && !isRecording}
-            className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center transition-all ${
-              isRecording
-                ? 'bg-red-500 text-white animate-pulse'
-                : 'bg-gray-200 text-gray-600 hover:bg-gray-300 active:scale-90'
-            } disabled:opacity-40`}
+            aria-label={isRecording ? 'Stop recording' : 'Start recording'}
+            style={{
+              flexShrink: 0,
+              width: 38,
+              height: 38,
+              borderRadius: '50%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              background: isRecording ? T.redSoft : 'rgba(255,255,255,0.06)',
+              border: `1px solid ${isRecording ? T.redBorder : 'rgba(255,255,255,0.12)'}`,
+              color: isRecording ? T.red : T.textPrimary,
+              cursor: (isLoading && !isRecording) ? 'not-allowed' : 'pointer',
+              opacity: (isLoading && !isRecording) ? 0.4 : 1,
+              transition: 'all 120ms ease',
+              animation: isRecording ? 'cgc-pulse 1.4s ease-in-out infinite' : 'none',
+            }}
           >
             {isRecording ? (
-              <span className="text-xs font-bold">{recordingSeconds}s</span>
+              <span style={{
+                fontFamily: T.sans,
+                fontSize: 11,
+                fontWeight: 700,
+                color: T.red,
+              }}>
+                {recordingSeconds}s
+              </span>
             ) : (
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
-              </svg>
+              <Mic size={15} strokeWidth={1.75} />
             )}
           </button>
 
@@ -425,18 +606,49 @@ export default function ChildGuruChat({ childId, childName, onAction }: Props) {
             placeholder={t('childGuru.typeOrSpeak')}
             disabled={isLoading || isRecording}
             rows={1}
-            className="flex-1 px-3 py-2 text-sm bg-white border border-gray-200 rounded-xl resize-none focus:ring-2 focus:ring-emerald-400 focus:outline-none disabled:opacity-50 max-h-20"
+            style={{
+              flex: 1,
+              padding: '8px 12px',
+              borderRadius: 14,
+              background: T.inputBg,
+              border: `1px solid ${T.inputBorder}`,
+              color: T.textPrimary,
+              fontFamily: T.sans,
+              fontSize: 13,
+              lineHeight: 1.5,
+              outline: 'none',
+              resize: 'none',
+              maxHeight: 80,
+              opacity: (isLoading || isRecording) ? 0.5 : 1,
+              boxSizing: 'border-box',
+            }}
           />
+          <style>{`textarea::placeholder { color: rgba(255,255,255,0.30); }`}</style>
 
-          {/* Send button */}
+          {/* Send */}
           <button
             onClick={() => sendMessage(input)}
             disabled={!input.trim() || isLoading}
-            className="flex-shrink-0 w-10 h-10 bg-emerald-500 text-white rounded-full flex items-center justify-center hover:bg-emerald-600 active:scale-90 transition-all disabled:opacity-40 disabled:hover:bg-emerald-500"
+            aria-label="Send"
+            style={{
+              flexShrink: 0,
+              width: 38,
+              height: 38,
+              borderRadius: '50%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              background: (!input.trim() || isLoading)
+                ? 'rgba(52,211,153,0.20)'
+                : 'linear-gradient(180deg, #34d399, #10b981)',
+              border: `1px solid ${(!input.trim() || isLoading) ? 'rgba(52,211,153,0.20)' : 'rgba(52,211,153,0.55)'}`,
+              color: (!input.trim() || isLoading) ? 'rgba(52,211,153,0.50)' : '#06281a',
+              cursor: (!input.trim() || isLoading) ? 'not-allowed' : 'pointer',
+              boxShadow: (!input.trim() || isLoading) ? 'none' : '0 4px 14px rgba(16,185,129,0.30)',
+              transition: 'all 120ms ease',
+            }}
           >
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 19V5m0 0l-7 7m7-7l7 7" />
-            </svg>
+            <ArrowUp size={15} strokeWidth={2.25} />
           </button>
         </div>
       </div>
