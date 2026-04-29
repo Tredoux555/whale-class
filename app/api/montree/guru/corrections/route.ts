@@ -549,6 +549,45 @@ async function upsertProgressObservation({
 //   4. Log a NEGATIVE example on the original (wrong) work — appended to its
 //      negative_descriptions[] array. Pass 2 already renders these as
 //      "DISTINGUISH FROM" blocks so future calls avoid the same confusion.
+
+// MOAT-POISONING GATE (Apr 30, 2026 audit fix).
+// Sonnet sometimes generates plausible-but-wrong reasoning when asked WHY two
+// works were confused. If we persist that reasoning into negative_descriptions[],
+// it sits in the moat forever and biases future identifications. This function
+// rejects negatives that don't reference at least one concrete material noun
+// OR one of the corrected work's declared key_materials. The positive fingerprint
+// on the corrected work is the more important learning signal — losing the
+// occasional negative example is much cheaper than letting hallucinated
+// distinguishing logic corrupt the corpus.
+const MATERIAL_NOUNS = [
+  'wooden', 'wood', 'metal', 'plastic', 'fabric', 'cloth', 'paper', 'cardboard',
+  'sandpaper', 'glass', 'ceramic', 'rubber', 'felt', 'leather', 'cork', 'bamboo',
+  'beads', 'cylinders', 'tablets', 'cards', 'frames', 'tray', 'mat', 'bowl',
+  'pitcher', 'pegs', 'sticks', 'rods', 'cubes', 'prisms', 'spheres', 'circles',
+  'squares', 'triangles', 'rectangles', 'letters', 'numbers', 'numerals',
+  'sandpaper letter', 'sandpaper number', 'red', 'blue', 'yellow', 'pink',
+  'green', 'orange', 'purple', 'black', 'white', 'gray', 'rough', 'smooth',
+  'rigid', 'soft', 'hard', 'thick', 'thin', 'large', 'small',
+];
+
+function isCoherentNegative(negative: string, knownMaterials: string[]): boolean {
+  const text = negative.toLowerCase();
+  // Floor: a real material reference takes more than a generic phrase.
+  if (text.length < 60) return false;
+
+  // 1. Direct hit on a known key_material from the corrected work
+  for (const m of knownMaterials) {
+    const ml = m.toLowerCase().trim();
+    if (ml.length >= 3 && text.includes(ml)) return true;
+  }
+  // 2. Direct hit on any standard Montessori material noun
+  for (const noun of MATERIAL_NOUNS) {
+    if (text.includes(noun)) return true;
+  }
+  // 3. No concrete material referenced — Sonnet is generalising. Reject.
+  return false;
+}
+
 async function enrichVisualMemoryFromCorrection({
   supabase,
   classroomId,
@@ -700,7 +739,21 @@ Analyze the photo and call the correction_analysis tool.` },
             if (mistakeReason) negParts.push(mistakeReason);
             if (distinguishing) negParts.push(`To distinguish: ${distinguishing}`);
             const richNegative = `NOT "${correctedWorkName}" — ${negParts.join(' ')}`.slice(0, 400);
-            if (originalWorkName) {
+
+            // AUDIT FIX (Apr 30, 2026): MOAT-POISONING GATE.
+            // Sonnet can hallucinate the reason for confusion. If it writes
+            // a generic, materials-free reasoning into the negative_descriptions
+            // array, that bad reasoning sits in the visual memory forever and
+            // biases future identifications.
+            //
+            // Coherence check before persisting: the negative text MUST reference
+            // at least one concrete material noun OR one of the corrected work's
+            // declared key_materials. Otherwise we skip the negative example
+            // (the positive fingerprint on the corrected work is the more
+            // important signal anyway).
+            const coherent = isCoherentNegative(richNegative, draftKeyMaterials);
+
+            if (coherent && originalWorkName) {
               await appendNegativeExample({
                 supabase,
                 classroomId,
@@ -710,10 +763,12 @@ Analyze the photo and call the correction_analysis tool.` },
                 negative: richNegative,
               });
               console.log(`[VisualMemory] Sonnet correction analysis: negative on "${originalWorkName}" — ${mistakeReason.slice(0, 80)}`);
+            } else if (!coherent) {
+              console.warn(`[VisualMemory] SKIPPED moat-poisoning negative on "${originalWorkName || '?'}" — Sonnet reasoning lacked concrete material references. raw="${richNegative.slice(0, 120)}"`);
             }
             // Bidirectional: also record a reverse negative on the CORRECT work so Haiku
-            // knows that THIS work can be confused with the original guess.
-            if (distinguishing) {
+            // knows that THIS work can be confused with the original guess. Same gate.
+            if (distinguishing && coherent) {
               reverseNegative = `May look similar to "${originalWorkName || 'unknown'}". ${distinguishing}`.slice(0, 400);
             }
           }
