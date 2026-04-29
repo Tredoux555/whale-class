@@ -10,11 +10,16 @@
 // On Master tab, tapping a child adds them to today's focus list. When a photo
 // is later captured tagged with that child, the media-upload route auto-confirms
 // the row (confirmed_via='photo' | 'group_photo'). Manual confirm is a PATCH.
+// Dark forest visual treatment — all wiring intact
 
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react'; // useRef for mount guard
+import { useState, useEffect, useCallback, useRef, CSSProperties } from 'react';
 import Link from 'next/link';
+import {
+  Camera, BarChart3, Files, Languages, Check,
+  Target, ClipboardCheck, ListChecks, ArrowRight, Sparkles,
+} from 'lucide-react';
 import { montreeApi } from '@/lib/montree/api';
 import { useI18n } from '@/lib/montree/i18n';
 import PaperworkPanel from '@/components/montree/PaperworkPanel';
@@ -72,6 +77,32 @@ interface TrackerData {
   visitedCount: number;
 }
 
+// Dark forest tokens
+const T = {
+  bg: '#0a1a0f',
+  glow: 'radial-gradient(ellipse 1100px 900px at 88% 8%, rgba(39,129,90,0.48), transparent 60%)',
+  card: 'rgba(255,255,255,0.06)',
+  cardHover: 'rgba(255,255,255,0.09)',
+  cardBorder: '1px solid rgba(52,211,153,0.15)',
+  cardRadius: 18,
+  blur: 'blur(18px) saturate(140%)',
+  emerald: '#34d399',
+  emeraldDeep: '#10b981',
+  emeraldDim: 'rgba(52,211,153,0.65)',
+  emeraldSoft: 'rgba(52,211,153,0.10)',
+  emeraldStrong: 'rgba(52,211,153,0.18)',
+  amber: '#f59e0b',
+  amberSoft: 'rgba(245,158,11,0.18)',
+  amberBorder: 'rgba(245,158,11,0.35)',
+  red: '#f87171',
+  redSoft: 'rgba(239,68,68,0.10)',
+  textPrimary: 'rgba(255,255,255,0.95)',
+  textSecondary: 'rgba(255,255,255,0.65)',
+  textMuted: 'rgba(255,255,255,0.40)',
+  serif: '"Lora", Georgia, serif',
+  sans: '"Inter", -apple-system, BlinkMacSystemFont, sans-serif',
+};
+
 function ChildAvatar({ name, photoUrl, size = 40 }: { name: string; photoUrl: string | null; size?: number }) {
   const [fallback, setFallback] = useState(!photoUrl);
   const initial = name.charAt(0).toUpperCase();
@@ -81,19 +112,31 @@ function ChildAvatar({ name, photoUrl, size = 40 }: { name: string; photoUrl: st
         src={photoUrl}
         alt={name}
         onError={() => setFallback(true)}
-        className="rounded-full object-cover"
-        style={{ width: size, height: size }}
+        style={{
+          width: size,
+          height: size,
+          borderRadius: '50%',
+          objectFit: 'cover',
+          flexShrink: 0,
+        }}
       />
     );
   }
   return (
     <div
-      className="rounded-full flex items-center justify-center text-white font-semibold"
       style={{
         width: size,
         height: size,
+        borderRadius: '50%',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: 'linear-gradient(135deg, #34d399, #059669)',
+        color: '#06281a',
+        fontFamily: T.sans,
         fontSize: size * 0.4,
-        background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
+        fontWeight: 700,
+        flexShrink: 0,
       }}
     >
       {initial}
@@ -101,8 +144,26 @@ function ChildAvatar({ name, photoUrl, size = 40 }: { name: string; photoUrl: st
   );
 }
 
+const ctaPrimary: CSSProperties = {
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  gap: 7,
+  padding: '11px 16px',
+  borderRadius: 12,
+  background: T.emeraldStrong,
+  border: '1px solid rgba(52,211,153,0.45)',
+  color: T.emerald,
+  fontFamily: T.sans,
+  fontSize: 13,
+  fontWeight: 600,
+  cursor: 'pointer',
+  transition: 'all 120ms ease',
+  width: '100%',
+};
+
 export default function FocusPage() {
-  const { t, locale } = useI18n();
+  const { t } = useI18n();
   const [tab, setTab] = useState<Tab>('master');
 
   const [master, setMaster] = useState<MasterData | null>(null);
@@ -181,7 +242,6 @@ export default function FocusPage() {
 
   const addAll = async () => {
     if (!master || mutating) return;
-    // Add the top 10 most neglected who aren't already on the list.
     const top = master.children
       .filter(c => !focusedIds.has(c.id))
       .slice(0, 10)
@@ -222,37 +282,141 @@ export default function FocusPage() {
   };
 
   return (
-    <div className="min-h-screen" style={{ background: '#f8fafc' }}>
-      <div className="max-w-4xl mx-auto p-4 pb-24 pt-20">
-        <div className="mb-4">
-          <h1 className="text-2xl font-bold text-slate-900">{LABELS.title}</h1>
-          <p className="text-sm text-slate-500 mt-1">{LABELS.subtitle}</p>
+    <div style={{
+      minHeight: '100vh',
+      background: T.bg,
+      backgroundImage: T.glow,
+      backgroundAttachment: 'fixed',
+      color: T.textPrimary,
+      fontFamily: T.sans,
+    }}>
+      <div style={{
+        maxWidth: 920,
+        margin: '0 auto',
+        padding: '36px 16px 96px',
+      }}>
+        <div style={{ marginBottom: 18 }}>
+          <h1 style={{
+            margin: 0,
+            fontFamily: T.serif,
+            fontSize: 28,
+            fontWeight: 500,
+            color: T.textPrimary,
+            letterSpacing: -0.4,
+            lineHeight: 1.15,
+          }}>
+            {LABELS.title}
+          </h1>
+          <p style={{
+            margin: '6px 0 0',
+            fontFamily: T.sans,
+            fontSize: 13,
+            color: T.textMuted,
+            lineHeight: 1.5,
+          }}>
+            {LABELS.subtitle}
+          </p>
         </div>
 
-        {/* Today's focus strip — visible across all tabs */}
+        {/* Today's focus strip */}
         {focus && focus.children.length > 0 && (
-          <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-3 mb-4">
-            <div className="flex items-center justify-between mb-2">
-              <div className="text-sm font-semibold text-slate-700">
-                {LABELS.todaysFocus} · {focus.confirmed_count}/{focus.total}
+          <div style={{
+            background: T.card,
+            border: T.cardBorder,
+            borderRadius: T.cardRadius,
+            backdropFilter: T.blur,
+            WebkitBackdropFilter: T.blur,
+            padding: '12px 14px',
+            marginBottom: 16,
+          }}>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              marginBottom: 10,
+            }}>
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8,
+                fontFamily: T.sans,
+                fontSize: 13,
+                fontWeight: 600,
+                color: T.textSecondary,
+              }}>
+                <Target size={14} strokeWidth={1.75} color={T.emerald} />
+                <span>
+                  {LABELS.todaysFocus}
+                </span>
+                <span style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  padding: '2px 8px',
+                  borderRadius: 999,
+                  background: T.emeraldStrong,
+                  border: '1px solid rgba(52,211,153,0.30)',
+                  color: T.emerald,
+                  fontSize: 11,
+                  fontWeight: 700,
+                }}>
+                  {focus.confirmed_count}/{focus.total}
+                </span>
               </div>
             </div>
-            <div className="flex gap-2 overflow-x-auto pb-1">
+            <div style={{
+              display: 'flex',
+              gap: 10,
+              overflowX: 'auto',
+              paddingBottom: 4,
+            }}>
               {focus.children.map(c => (
                 <div
                   key={c.id}
-                  className="flex flex-col items-center flex-shrink-0"
-                  style={{ width: 56 }}
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    flexShrink: 0,
+                    width: 60,
+                  }}
                 >
-                  <div className={'relative rounded-full ' + (c.confirmed ? 'ring-2 ring-emerald-500' : 'ring-2 ring-slate-200')}>
+                  <div style={{
+                    position: 'relative',
+                    borderRadius: '50%',
+                    padding: 2,
+                    background: c.confirmed ? T.emerald : 'rgba(255,255,255,0.18)',
+                  }}>
                     <ChildAvatar name={c.name} photoUrl={c.photo_url} size={44} />
                     {c.confirmed && (
-                      <div className="absolute -bottom-1 -right-1 bg-emerald-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-[10px]">
-                        ✓
+                      <div style={{
+                        position: 'absolute',
+                        bottom: -2,
+                        right: -2,
+                        width: 18,
+                        height: 18,
+                        borderRadius: '50%',
+                        background: T.emerald,
+                        color: '#06281a',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        border: '2px solid #0a1a0f',
+                      }}>
+                        <Check size={10} strokeWidth={3} />
                       </div>
                     )}
                   </div>
-                  <div className="text-[11px] text-slate-600 mt-1 truncate w-full text-center">
+                  <div style={{
+                    marginTop: 6,
+                    fontFamily: T.sans,
+                    fontSize: 11,
+                    color: T.textSecondary,
+                    width: '100%',
+                    textAlign: 'center',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                  }}>
                     {c.name}
                   </div>
                 </div>
@@ -262,118 +426,252 @@ export default function FocusPage() {
         )}
 
         {/* Tabs */}
-        <div className="flex gap-1 mb-4 bg-white rounded-xl p-1 border border-slate-100 shadow-sm">
-          {(['master', 'paperwork', 'bingo'] as Tab[]).map(k => (
-            <button
-              key={k}
-              onClick={() => setTab(k)}
-              className={'flex-1 py-2 rounded-lg text-sm font-medium transition-colors ' + (
-                tab === k
-                  ? 'bg-indigo-600 text-white'
-                  : 'text-slate-600 hover:bg-slate-50'
-              )}
-            >
-              {k === 'master' ? LABELS.tabMaster : k === 'paperwork' ? LABELS.tabPaperwork : LABELS.tabBingo}
-            </button>
-          ))}
+        <div style={{
+          display: 'flex',
+          gap: 4,
+          marginBottom: 16,
+          padding: 4,
+          borderRadius: 14,
+          background: T.card,
+          border: T.cardBorder,
+          backdropFilter: T.blur,
+          WebkitBackdropFilter: T.blur,
+        }}>
+          {([
+            { k: 'master' as Tab, label: LABELS.tabMaster, icon: ListChecks },
+            { k: 'paperwork' as Tab, label: LABELS.tabPaperwork, icon: ClipboardCheck },
+            { k: 'bingo' as Tab, label: LABELS.tabBingo, icon: Languages },
+          ]).map(opt => {
+            const Icon = opt.icon;
+            const active = tab === opt.k;
+            return (
+              <button
+                key={opt.k}
+                onClick={() => setTab(opt.k)}
+                style={{
+                  flex: 1,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 7,
+                  padding: '9px 12px',
+                  borderRadius: 10,
+                  background: active ? T.emeraldStrong : 'transparent',
+                  border: `1px solid ${active ? 'rgba(52,211,153,0.45)' : 'transparent'}`,
+                  color: active ? T.emerald : T.textSecondary,
+                  fontFamily: T.sans,
+                  fontSize: 13,
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  transition: 'all 120ms ease',
+                }}
+              >
+                <Icon size={14} strokeWidth={1.75} />
+                {opt.label}
+              </button>
+            );
+          })}
         </div>
 
         {/* ── Master tab ── */}
         {tab === 'master' && (
           <div>
             {loadingMaster && (
-              <div className="text-center py-12 text-slate-400">{LABELS.loading}</div>
+              <div style={{
+                textAlign: 'center',
+                padding: '60px 0',
+                color: T.textMuted,
+                fontFamily: T.sans,
+                fontSize: 13,
+              }}>
+                {LABELS.loading}
+              </div>
             )}
 
             {!loadingMaster && master && (
               <>
-                {/* Quick add top-10 */}
                 {focus && focus.total < 10 && master.children.length > 0 && (
-                  <div className="mb-3">
+                  <div style={{ marginBottom: 12 }}>
                     <button
                       onClick={addAll}
                       disabled={mutating === 'bulk'}
-                      className="w-full py-2.5 rounded-xl bg-indigo-50 text-indigo-700 text-sm font-medium border border-indigo-100 hover:bg-indigo-100 disabled:opacity-50"
+                      style={{
+                        ...ctaPrimary,
+                        opacity: mutating === 'bulk' ? 0.5 : 1,
+                        cursor: mutating === 'bulk' ? 'not-allowed' : 'pointer',
+                      }}
                     >
-                      + {LABELS.pickTop10}
+                      <Sparkles size={14} strokeWidth={1.75} />
+                      {LABELS.pickTop10}
                     </button>
                   </div>
                 )}
 
-                <div className="space-y-2">
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                   {master.children.map((c, idx) => {
                     const isOnFocus = focusedIds.has(c.id);
                     const isConfirmed = confirmedIds.has(c.id);
                     const topThree = idx < 3;
+
+                    let cardBg = T.card;
+                    let cardBorder = T.cardBorder;
+                    if (isConfirmed) {
+                      cardBg = T.emeraldSoft;
+                      cardBorder = '1px solid rgba(52,211,153,0.45)';
+                    } else if (isOnFocus) {
+                      cardBg = T.emeraldStrong;
+                      cardBorder = '1px solid rgba(52,211,153,0.55)';
+                    } else if (topThree) {
+                      cardBg = 'rgba(245,158,11,0.07)';
+                      cardBorder = `1px solid ${T.amberBorder}`;
+                    }
 
                     return (
                       <button
                         key={c.id}
                         onClick={() => toggleFocus(c.id)}
                         disabled={mutating === c.id}
-                        className={'w-full text-left bg-white rounded-xl border transition-all active:scale-[0.99] ' + (
-                          isConfirmed
-                            ? 'border-emerald-200 bg-emerald-50/30'
-                            : isOnFocus
-                              ? 'border-indigo-300 ring-1 ring-indigo-200'
-                              : topThree
-                                ? 'border-amber-200'
-                                : 'border-slate-100'
-                        )}
+                        style={{
+                          width: '100%',
+                          textAlign: 'left',
+                          padding: 0,
+                          background: cardBg,
+                          border: cardBorder,
+                          borderRadius: 14,
+                          backdropFilter: T.blur,
+                          WebkitBackdropFilter: T.blur,
+                          cursor: mutating === c.id ? 'wait' : 'pointer',
+                          transition: 'all 120ms ease',
+                          opacity: mutating === c.id ? 0.7 : 1,
+                          color: T.textPrimary,
+                          fontFamily: T.sans,
+                        }}
                       >
-                        <div className="flex items-center gap-3 p-3">
+                        <div style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 12,
+                          padding: 12,
+                        }}>
                           {/* Rank */}
-                          <div
-                            className={'flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ' + (
-                              topThree
-                                ? 'bg-amber-500 text-white'
-                                : 'bg-slate-100 text-slate-500'
-                            )}
-                          >
+                          <div style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            flexShrink: 0,
+                            width: 26,
+                            height: 26,
+                            borderRadius: '50%',
+                            background: topThree ? T.amber : 'rgba(255,255,255,0.08)',
+                            border: topThree ? '1px solid rgba(245,158,11,0.55)' : '1px solid rgba(255,255,255,0.10)',
+                            color: topThree ? '#1a1206' : T.textMuted,
+                            fontFamily: T.sans,
+                            fontSize: 12,
+                            fontWeight: 700,
+                          }}>
                             {idx + 1}
                           </div>
 
                           <ChildAvatar name={c.name} photoUrl={c.photo_url} size={44} />
 
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2">
-                              <div className="font-semibold text-slate-900 truncate">{c.name}</div>
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                              <div style={{
+                                fontFamily: T.sans,
+                                fontSize: 14,
+                                fontWeight: 600,
+                                color: T.textPrimary,
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                whiteSpace: 'nowrap',
+                              }}>
+                                {c.name}
+                              </div>
                               {isConfirmed && (
-                                <span className="text-[10px] bg-emerald-500 text-white px-1.5 py-0.5 rounded-full font-semibold">
+                                <span style={{
+                                  fontFamily: T.sans,
+                                  fontSize: 10,
+                                  fontWeight: 700,
+                                  letterSpacing: 0.3,
+                                  padding: '2px 8px',
+                                  borderRadius: 999,
+                                  background: T.emerald,
+                                  color: '#06281a',
+                                }}>
                                   {LABELS.confirmed}
                                 </span>
                               )}
                               {isOnFocus && !isConfirmed && (
-                                <span className="text-[10px] bg-indigo-500 text-white px-1.5 py-0.5 rounded-full font-semibold">
+                                <span style={{
+                                  fontFamily: T.sans,
+                                  fontSize: 10,
+                                  fontWeight: 700,
+                                  letterSpacing: 0.3,
+                                  padding: '2px 8px',
+                                  borderRadius: 999,
+                                  background: T.emeraldStrong,
+                                  border: '1px solid rgba(52,211,153,0.45)',
+                                  color: T.emerald,
+                                }}>
                                   {LABELS.onFocus}
                                 </span>
                               )}
                             </div>
-                            <div className="flex flex-wrap gap-x-2 gap-y-0.5 text-[11px] text-slate-500 mt-0.5">
-                              <span title="days since photo">
-                                📸 {c.days_since_photo >= 365 ? '∞' : c.days_since_photo}{LABELS.daysSincePhoto}
+                            <div style={{
+                              display: 'flex',
+                              flexWrap: 'wrap',
+                              gap: '4px 12px',
+                              marginTop: 4,
+                              fontFamily: T.sans,
+                              fontSize: 11,
+                              color: T.textMuted,
+                            }}>
+                              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }} title="days since photo">
+                                <Camera size={11} strokeWidth={1.75} />
+                                {c.days_since_photo >= 365 ? '∞' : c.days_since_photo}{LABELS.daysSincePhoto}
                               </span>
-                              <span title="days since progress update">
-                                📊 {c.days_since_progress >= 365 ? '∞' : c.days_since_progress}{LABELS.daysSinceProgress}
+                              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }} title="days since progress update">
+                                <BarChart3 size={11} strokeWidth={1.75} />
+                                {c.days_since_progress >= 365 ? '∞' : c.days_since_progress}{LABELS.daysSinceProgress}
                               </span>
                               {c.paperwork_weeks_behind > 0 && (
-                                <span className="text-rose-600 font-semibold">
-                                  📋 {c.paperwork_weeks_behind} {LABELS.paperworkBehind}
+                                <span style={{
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: 4,
+                                  color: T.red,
+                                  fontWeight: 600,
+                                }}>
+                                  <Files size={11} strokeWidth={1.75} />
+                                  {c.paperwork_weeks_behind} {LABELS.paperworkBehind}
                                 </span>
                               )}
                               {c.no_language_this_week && (
-                                <span className="text-amber-700 font-semibold">
-                                  🇬🇧 {LABELS.noLanguage}
+                                <span style={{
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: 4,
+                                  color: T.amber,
+                                  fontWeight: 600,
+                                }}>
+                                  <Languages size={11} strokeWidth={1.75} />
+                                  {LABELS.noLanguage}
                                 </span>
                               )}
                             </div>
                           </div>
 
-                          {/* Score badge */}
-                          <div className="flex-shrink-0 text-right">
-                            <div className={'text-lg font-bold ' + (topThree ? 'text-amber-600' : 'text-slate-400')}>
-                              {c.score}
-                            </div>
+                          {/* Score */}
+                          <div style={{
+                            flexShrink: 0,
+                            textAlign: 'right',
+                            fontFamily: T.serif,
+                            fontSize: 22,
+                            fontWeight: 500,
+                            color: topThree ? T.amber : T.textMuted,
+                            letterSpacing: -0.5,
+                          }}>
+                            {c.score}
                           </div>
                         </div>
                       </button>
@@ -394,18 +692,69 @@ export default function FocusPage() {
         {tab === 'bingo' && (
           <div>
             {loadingBingo && (
-              <div className="text-center py-12 text-slate-400">{LABELS.loading}</div>
+              <div style={{
+                textAlign: 'center',
+                padding: '60px 0',
+                color: T.textMuted,
+                fontFamily: T.sans,
+                fontSize: 13,
+              }}>
+                {LABELS.loading}
+              </div>
             )}
             {!loadingBingo && bingo && (
-              <div className="bg-white rounded-2xl border border-slate-100 p-4">
-                <div className="text-sm font-semibold text-slate-700 mb-3">
-                  {LABELS.bingoTitle} · {bingo.notYet.length}/{bingo.totalChildren}
+              <div style={{
+                background: T.card,
+                border: T.cardBorder,
+                borderRadius: T.cardRadius,
+                backdropFilter: T.blur,
+                WebkitBackdropFilter: T.blur,
+                padding: 16,
+              }}>
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 8,
+                  marginBottom: 14,
+                  fontFamily: T.sans,
+                  fontSize: 13,
+                  fontWeight: 600,
+                  color: T.textSecondary,
+                }}>
+                  <Languages size={14} strokeWidth={1.75} color={T.emerald} />
+                  <span>{LABELS.bingoTitle}</span>
+                  <span style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    padding: '2px 8px',
+                    borderRadius: 999,
+                    background: T.emeraldStrong,
+                    border: '1px solid rgba(52,211,153,0.30)',
+                    color: T.emerald,
+                    fontSize: 11,
+                    fontWeight: 700,
+                  }}>
+                    {bingo.notYet.length}/{bingo.totalChildren}
+                  </span>
                 </div>
 
                 {bingo.notYet.length === 0 ? (
-                  <div className="text-center py-8 text-emerald-700 font-medium">{LABELS.allDone}</div>
+                  <div style={{
+                    textAlign: 'center',
+                    padding: '32px 16px',
+                    color: T.emerald,
+                    fontFamily: T.serif,
+                    fontSize: 17,
+                    fontWeight: 500,
+                  }}>
+                    {LABELS.allDone}
+                  </div>
                 ) : (
-                  <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+                  <div style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fit, minmax(110px, 1fr))',
+                    gap: 8,
+                  }}>
                     {bingo.notYet.map(c => {
                       const isOnFocus = focusedIds.has(c.id);
                       return (
@@ -413,18 +762,44 @@ export default function FocusPage() {
                           key={c.id}
                           onClick={() => toggleFocus(c.id)}
                           disabled={mutating === c.id}
-                          className={'flex flex-col items-center gap-1 p-2 rounded-xl border transition-colors ' + (
-                            isOnFocus
-                              ? 'border-indigo-300 bg-indigo-50'
-                              : 'border-slate-100 bg-white hover:bg-slate-50'
-                          )}
+                          style={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            gap: 6,
+                            padding: '12px 8px',
+                            borderRadius: 12,
+                            background: isOnFocus ? T.emeraldStrong : 'rgba(255,255,255,0.04)',
+                            border: `1px solid ${isOnFocus ? 'rgba(52,211,153,0.45)' : 'rgba(255,255,255,0.08)'}`,
+                            color: T.textPrimary,
+                            fontFamily: T.sans,
+                            cursor: mutating === c.id ? 'wait' : 'pointer',
+                            transition: 'all 120ms ease',
+                            opacity: mutating === c.id ? 0.7 : 1,
+                          }}
                         >
                           <ChildAvatar name={c.name} photoUrl={c.photo_url} size={44} />
-                          <div className="text-xs font-medium text-slate-700 truncate w-full text-center">
+                          <div style={{
+                            fontSize: 12,
+                            fontWeight: 500,
+                            color: T.textPrimary,
+                            width: '100%',
+                            textAlign: 'center',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap',
+                          }}>
                             {c.name}
                           </div>
                           {isOnFocus && (
-                            <div className="text-[10px] text-indigo-600">{LABELS.onFocus}</div>
+                            <div style={{
+                              fontSize: 10,
+                              fontWeight: 700,
+                              color: T.emerald,
+                              letterSpacing: 0.3,
+                            }}>
+                              {LABELS.onFocus}
+                            </div>
                           )}
                         </button>
                       );
@@ -434,9 +809,23 @@ export default function FocusPage() {
 
                 <Link
                   href="/montree/dashboard/language-tracker"
-                  className="block mt-4 text-center text-sm text-indigo-600 hover:text-indigo-800"
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: 6,
+                    marginTop: 16,
+                    padding: '10px',
+                    fontFamily: T.sans,
+                    fontSize: 13,
+                    fontWeight: 600,
+                    color: T.emerald,
+                    textDecoration: 'none',
+                    transition: 'opacity 120ms ease',
+                  }}
                 >
                   {t('focus.openEnglishCorner')}
+                  <ArrowRight size={13} strokeWidth={1.75} />
                 </Link>
               </div>
             )}
