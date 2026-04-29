@@ -2,9 +2,14 @@
 // Classroom-level teacher notes — always visible at top of dashboard
 // Features: text notes, edit/delete, voice recording with auto-transcribe + auto-save
 // NON-BLOCKING: Record → stop → immediately return to idle → transcribe in background → auto-save
+// Dark forest visual treatment — all wiring intact
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, CSSProperties } from 'react';
+import {
+  NotebookPen, Mic, Square, Check, Pencil,
+  Tag, Users, Trash2,
+} from 'lucide-react';
 import { useI18n } from '@/lib/montree/i18n';
 import { montreeApi } from '@/lib/montree/api';
 import { toast } from 'sonner';
@@ -13,7 +18,6 @@ import {
   getTaskSignal,
   completeTask,
   failTask,
-  deliverTranscript,
 } from '@/lib/montree/background-task-store';
 
 interface Child {
@@ -40,6 +44,54 @@ interface Note {
 }
 
 type MicState = 'idle' | 'recording';
+
+// Dark forest tokens
+const T = {
+  card: 'rgba(255,255,255,0.06)',
+  cardHover: 'rgba(255,255,255,0.09)',
+  cardBorder: '1px solid rgba(52,211,153,0.15)',
+  cardRadius: 18,
+  blur: 'blur(18px) saturate(140%)',
+  divider: 'rgba(52,211,153,0.10)',
+  emerald: '#34d399',
+  emeraldDeep: '#10b981',
+  emeraldSoft: 'rgba(52,211,153,0.10)',
+  emeraldStrong: 'rgba(52,211,153,0.18)',
+  amber: '#f59e0b',
+  amberSoft: 'rgba(245,158,11,0.18)',
+  amberBorder: 'rgba(245,158,11,0.35)',
+  red: '#f87171',
+  redSoft: 'rgba(239,68,68,0.18)',
+  redBorder: 'rgba(239,68,68,0.45)',
+  textPrimary: 'rgba(255,255,255,0.95)',
+  textSecondary: 'rgba(255,255,255,0.65)',
+  textMuted: 'rgba(255,255,255,0.40)',
+  textPlaceholder: 'rgba(255,255,255,0.35)',
+  inputBg: 'rgba(0,0,0,0.25)',
+  inputBorder: 'rgba(52,211,153,0.18)',
+  serif: '"Lora", Georgia, serif',
+  sans: '"Inter", -apple-system, BlinkMacSystemFont, sans-serif',
+};
+
+const ctaStyle: CSSProperties = {
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  gap: 6,
+  padding: '9px 14px',
+  borderRadius: 10,
+  background: 'linear-gradient(180deg, #34d399, #10b981)',
+  border: '1px solid rgba(52,211,153,0.55)',
+  color: '#06281a',
+  fontFamily: T.sans,
+  fontSize: 13,
+  fontWeight: 600,
+  letterSpacing: 0.1,
+  cursor: 'pointer',
+  whiteSpace: 'nowrap',
+  boxShadow: '0 4px 14px rgba(16,185,129,0.25)',
+  transition: 'transform 120ms ease, box-shadow 120ms ease',
+};
 
 export default function TeacherNotes({ classroomId, teacherId, teacherName, children = [] }: TeacherNotesProps) {
   const { t } = useI18n();
@@ -103,11 +155,9 @@ export default function TeacherNotes({ classroomId, teacherId, teacherName, chil
       });
 
       if (res.ok) {
-        // Refresh notes list to show the new auto-saved note
         fetchNotes();
       } else {
         console.error('[teacher-notes] Auto-save failed:', res.status);
-        // On failure, put the transcript in the textarea so teacher can manually save
         setContent(prev => prev ? `${prev}\n${transcript}` : transcript);
         toast.error(t('teacherNotes.autoSaveFailed'));
       }
@@ -120,19 +170,17 @@ export default function TeacherNotes({ classroomId, teacherId, teacherName, chil
 
   // Fire-and-forget background transcription + auto-save
   const processInBackground = useCallback((blob: Blob) => {
-    // Register task in background store — returns immediately
     const taskId = addTask({
       type: 'voice_note',
       label: t('bgTask.transcribing'),
-      childId: null as unknown as string, // classroom-level note, no child
+      childId: null as unknown as string,
       childName: undefined,
-      onTranscript: null, // We handle transcript delivery ourselves via auto-save
+      onTranscript: null,
       onComplete: null,
     });
 
     const signal = getTaskSignal(taskId);
 
-    // Async processing — NOT awaited
     (async () => {
       try {
         const formData = new FormData();
@@ -163,14 +211,13 @@ export default function TeacherNotes({ classroomId, teacherId, teacherName, chil
           return;
         }
 
-        // Auto-save the transcribed note
         await autoSaveVoiceNote(transcript);
 
         completeTask(taskId, {
           message: `✓ ${t('teacherNotes.voiceNoteSaved')}`,
         });
       } catch (err) {
-        if (signal?.aborted) return; // Task was cancelled
+        if (signal?.aborted) return;
         console.error('[teacher-notes] Background transcription error:', err);
         const errorMsg = err instanceof Error ? err.message : t('bgTask.voiceNoteFailed');
         failTask(taskId, errorMsg);
@@ -217,9 +264,8 @@ export default function TeacherNotes({ classroomId, teacherId, teacherName, chil
         if (chunks.length === 0) return;
 
         const blob = new Blob(chunks, { type: recorder.mimeType || 'audio/webm' });
-        if (blob.size < 100) return; // Too short — silent discard
+        if (blob.size < 100) return;
 
-        // Fire-and-forget: process in background, return mic to idle immediately
         processInBackground(blob);
       };
 
@@ -228,14 +274,13 @@ export default function TeacherNotes({ classroomId, teacherId, teacherName, chil
     } catch {
       toast.error(t('teacherNotes.micNotSupported'));
     }
-  }, [processInBackground]);
+  }, [processInBackground, t]);
 
-  // Stop recording → triggers onstop → fires processInBackground → returns to idle
   const stopRecording = useCallback(() => {
     if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
       mediaRecorderRef.current.stop();
     }
-    setMicState('idle'); // Return to idle IMMEDIATELY — no waiting
+    setMicState('idle');
   }, []);
 
   const handleSave = useCallback(async () => {
@@ -267,9 +312,8 @@ export default function TeacherNotes({ classroomId, teacherId, teacherName, chil
     } finally {
       setSaving(false);
     }
-  }, [content, saving, classroomId, fetchNotes, t]);
+  }, [content, saving, classroomId, selectedChildId, fetchNotes, t]);
 
-  // Edit handlers
   const handleStartEdit = useCallback((note: Note) => {
     setEditingNoteId(note.id);
     setEditContent(note.content);
@@ -296,7 +340,6 @@ export default function TeacherNotes({ classroomId, teacherId, teacherName, chil
 
       if (res.ok) {
         toast.success(t('teacherNotes.updated'));
-        // Update the note in local state without refetching
         setNotes(prev => prev.map(n =>
           n.id === editingNoteId ? { ...n, content: editContent.trim() } : n
         ));
@@ -324,7 +367,6 @@ export default function TeacherNotes({ classroomId, teacherId, teacherName, chil
       if (res.ok) {
         toast.success(t('teacherNotes.deleted'));
         setNotes(prev => prev.filter(n => n.id !== noteId));
-        // Clear edit state if deleting the note being edited
         if (editingNoteId === noteId) {
           setEditingNoteId(null);
           setEditContent('');
@@ -351,179 +393,487 @@ export default function TeacherNotes({ classroomId, teacherId, teacherName, chil
     return d.toLocaleDateString();
   };
 
+  const recording = micState === 'recording';
+  const selectedChildName = selectedChildId
+    ? children.find(c => c.id === selectedChildId)?.name || ''
+    : '';
+
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-      {/* Header — prominent, always visible */}
-      <div className="px-4 py-3 border-b border-gray-100 flex items-center gap-2">
-        <span className="text-lg">📝</span>
-        <span className="font-semibold text-gray-800 text-sm">{t('teacherNotes.title')}</span>
+    <div style={{
+      background: T.card,
+      border: T.cardBorder,
+      borderRadius: T.cardRadius,
+      backdropFilter: T.blur,
+      WebkitBackdropFilter: T.blur,
+      overflow: 'hidden',
+      fontFamily: T.sans,
+    }}>
+      <style>{`
+        .mt-pulse-ring {
+          position: absolute; inset: -4px;
+          border-radius: 14px;
+          border: 1px solid rgba(239,68,68,0.55);
+          animation: mt-pulse 1.4s ease-out infinite;
+          pointer-events: none;
+        }
+        @keyframes mt-pulse {
+          0%   { transform: scale(0.9); opacity: 0.9; }
+          100% { transform: scale(1.35); opacity: 0; }
+        }
+        .mt-notes-list::-webkit-scrollbar { width: 8px; }
+        .mt-notes-list::-webkit-scrollbar-track { background: transparent; }
+        .mt-notes-list::-webkit-scrollbar-thumb { background: rgba(52,211,153,0.18); border-radius: 4px; }
+        .mt-notes-textarea::placeholder, .mt-notes-input::placeholder { color: rgba(255,255,255,0.35); }
+      `}</style>
+
+      {/* Header */}
+      <div style={{
+        padding: '14px 18px',
+        borderBottom: T.cardBorder,
+        display: 'flex',
+        alignItems: 'center',
+        gap: 10,
+      }}>
+        <NotebookPen size={16} strokeWidth={1.75} color={T.emerald} />
+        <span style={{
+          fontFamily: T.serif,
+          fontSize: 16,
+          fontWeight: 500,
+          color: T.textPrimary,
+          letterSpacing: -0.1,
+          flex: 1,
+        }}>
+          {t('teacherNotes.title')}
+        </span>
         {notes.length > 0 && (
-          <span className="bg-emerald-100 text-emerald-700 text-xs px-2 py-0.5 rounded-full font-medium">
+          <span style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            padding: '3px 10px',
+            borderRadius: 999,
+            background: T.emeraldStrong,
+            border: '1px solid rgba(52,211,153,0.30)',
+            color: T.emerald,
+            fontSize: 11,
+            fontWeight: 600,
+            letterSpacing: 0.3,
+          }}>
             {notes.length}
           </span>
         )}
       </div>
 
-      <div className="px-4 py-3 space-y-3">
+      <div style={{
+        padding: 16,
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 14,
+      }}>
         {/* Child selector — pill row */}
         {children.length > 0 && (
-          <div className="flex items-center gap-1.5 flex-wrap">
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 6,
+            flexWrap: 'wrap',
+          }}>
             <button
               onClick={() => setSelectedChildId(null)}
-              className={`px-2.5 py-1 rounded-full text-xs font-medium transition-colors ${
-                selectedChildId === null
-                  ? 'bg-emerald-500 text-white'
-                  : 'bg-gray-50 text-gray-400 hover:bg-gray-100'
-              }`}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 5,
+                padding: '6px 12px',
+                borderRadius: 999,
+                background: selectedChildId === null ? T.emerald : 'rgba(255,255,255,0.06)',
+                border: `1px solid ${selectedChildId === null ? 'rgba(52,211,153,0.65)' : 'rgba(255,255,255,0.10)'}`,
+                color: selectedChildId === null ? '#06281a' : T.textSecondary,
+                fontFamily: T.sans,
+                fontSize: 12,
+                fontWeight: 600,
+                cursor: 'pointer',
+                whiteSpace: 'nowrap',
+                transition: 'all 120ms ease',
+              }}
             >
-              📋 {t('teacherNotes.classNote')}
+              <Users size={11} strokeWidth={1.75} />
+              {t('teacherNotes.classNote')}
             </button>
-            {children.map((child) => (
-              <button
-                key={child.id}
-                onClick={() => setSelectedChildId(child.id)}
-                className={`px-2.5 py-1 rounded-full text-xs font-medium transition-colors ${
-                  selectedChildId === child.id
-                    ? 'bg-emerald-500 text-white'
-                    : 'bg-gray-50 text-gray-400 hover:bg-gray-100'
-                }`}
-              >
-                {child.name}
-              </button>
-            ))}
+            {children.map((child) => {
+              const active = selectedChildId === child.id;
+              return (
+                <button
+                  key={child.id}
+                  onClick={() => setSelectedChildId(child.id)}
+                  style={{
+                    padding: '6px 12px',
+                    borderRadius: 999,
+                    background: active ? T.emerald : 'rgba(255,255,255,0.06)',
+                    border: `1px solid ${active ? 'rgba(52,211,153,0.65)' : 'rgba(255,255,255,0.10)'}`,
+                    color: active ? '#06281a' : T.textSecondary,
+                    fontFamily: T.sans,
+                    fontSize: 12,
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    whiteSpace: 'nowrap',
+                    transition: 'all 120ms ease',
+                  }}
+                >
+                  {child.name}
+                </button>
+              );
+            })}
           </div>
         )}
 
-        {/* Input area — compact inline row */}
-        <div className="flex items-center gap-2">
+        {/* Input row */}
+        <div style={{
+          display: 'flex',
+          alignItems: 'flex-start',
+          gap: 8,
+        }}>
           <textarea
+            className="mt-notes-textarea"
             value={content}
             onChange={(e) => setContent(e.target.value)}
             placeholder={selectedChildId
-              ? t('teacherNotes.childNotePlaceholder', { name: children.find(c => c.id === selectedChildId)?.name || '' })
+              ? t('teacherNotes.childNotePlaceholder', { name: selectedChildName })
               : t('teacherNotes.placeholder')
             }
-            className="flex-1 h-10 min-h-[40px] max-h-24 p-2.5 border border-gray-200 rounded-lg text-sm text-gray-800 placeholder-gray-400 focus:border-emerald-400 focus:outline-none resize-y"
             maxLength={5000}
+            rows={2}
             onKeyDown={(e) => {
               if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
                 handleSave();
               }
             }}
+            style={{
+              flex: 1,
+              minHeight: 44,
+              maxHeight: 120,
+              padding: '11px 14px',
+              borderRadius: 12,
+              background: T.inputBg,
+              border: `1px solid ${T.inputBorder}`,
+              color: T.textPrimary,
+              fontFamily: T.sans,
+              fontSize: 13,
+              lineHeight: 1.5,
+              outline: 'none',
+              resize: 'vertical',
+              boxSizing: 'border-box',
+            }}
           />
 
-          {/* Voice record button */}
-          {micState === 'recording' ? (
+          {/* Voice button */}
+          <div style={{ position: 'relative', flexShrink: 0 }}>
             <button
-              onClick={stopRecording}
-              className="px-3 py-2 bg-red-500 text-white rounded-lg text-xs font-medium hover:bg-red-600 transition-colors animate-pulse flex-shrink-0"
+              onClick={recording ? stopRecording : startRecording}
+              aria-label={recording ? t('teacherNotes.stop') : t('teacherNotes.recordVoice')}
+              title={recording ? t('teacherNotes.stop') : t('teacherNotes.recordVoice')}
+              style={{
+                position: 'relative',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: 40,
+                height: 44,
+                borderRadius: 12,
+                background: recording ? T.redSoft : 'rgba(255,255,255,0.06)',
+                border: `1px solid ${recording ? T.redBorder : 'rgba(255,255,255,0.12)'}`,
+                color: recording ? T.red : T.textPrimary,
+                cursor: 'pointer',
+                transition: 'all 120ms ease',
+              }}
             >
-              ⏹ {t('teacherNotes.stop')}
+              {recording
+                ? <Square size={15} strokeWidth={2} fill="currentColor" />
+                : <Mic size={16} strokeWidth={1.75} />}
+              {recording && <span className="mt-pulse-ring" />}
             </button>
-          ) : (
-            <button
-              onClick={startRecording}
-              className="px-3 py-2 bg-gray-50 text-gray-600 rounded-lg text-xs font-medium hover:bg-gray-100 transition-colors flex-shrink-0"
-              title={t('teacherNotes.recordVoice')}
-            >
-              🎙️
-            </button>
-          )}
+          </div>
 
           {/* Save button */}
           <button
             onClick={handleSave}
             disabled={!content.trim() || saving}
-            className="px-3 py-2 bg-emerald-500 text-white rounded-lg text-xs font-medium hover:bg-emerald-600 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors flex-shrink-0"
+            style={{
+              ...ctaStyle,
+              height: 44,
+              padding: '0 16px',
+              opacity: (!content.trim() || saving) ? 0.45 : 1,
+              cursor: (!content.trim() || saving) ? 'not-allowed' : 'pointer',
+            }}
           >
+            <Check size={14} strokeWidth={2.25} />
             {saving ? '...' : t('teacherNotes.save')}
           </button>
         </div>
 
         {/* Notes list */}
         {loading ? (
-          <div className="text-center py-2 text-gray-400 text-sm">...</div>
+          <div style={{
+            textAlign: 'center',
+            padding: '14px 0',
+            color: T.textMuted,
+            fontSize: 13,
+          }}>
+            ...
+          </div>
         ) : notes.length === 0 ? (
-          <p className="text-center py-2 text-gray-400 text-xs">{t('teacherNotes.empty')}</p>
+          <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 10,
+            padding: '24px 12px',
+            textAlign: 'center',
+          }}>
+            <div style={{
+              width: 48,
+              height: 48,
+              borderRadius: '50%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              background: T.card,
+              border: T.cardBorder,
+            }}>
+              <NotebookPen size={20} strokeWidth={1.75} color={T.textMuted} />
+            </div>
+            <p style={{
+              margin: 0,
+              fontFamily: T.sans,
+              fontSize: 13,
+              color: T.textMuted,
+            }}>
+              {t('teacherNotes.empty')}
+            </p>
+          </div>
         ) : (
-          <div className="space-y-2 max-h-60 overflow-y-auto">
-            {notes.map((note) => (
-              <div key={note.id} className="bg-gray-50 rounded-lg p-3 group">
-                {editingNoteId === note.id ? (
-                  /* Edit mode */
-                  <div className="space-y-2">
-                    <textarea
-                      value={editContent}
-                      onChange={(e) => setEditContent(e.target.value)}
-                      className="w-full p-2.5 border border-emerald-300 rounded-lg text-sm text-gray-800 focus:border-emerald-400 focus:outline-none resize-y min-h-[60px]"
-                      maxLength={5000}
-                      autoFocus
-                    />
-                    <div className="flex items-center gap-2 justify-end">
-                      <button
-                        onClick={handleCancelEdit}
-                        className="px-3 py-1 text-xs text-gray-400 hover:text-gray-800 transition-colors"
-                      >
-                        {t('common.cancel')}
-                      </button>
-                      <button
-                        onClick={handleSaveEdit}
-                        disabled={!editContent.trim() || editSaving}
-                        className="px-3 py-1 bg-emerald-500 text-white rounded-lg text-xs font-medium hover:bg-emerald-600 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
-                      >
-                        {editSaving ? '...' : t('common.save')}
-                      </button>
+          <div
+            className="mt-notes-list"
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 8,
+              maxHeight: 360,
+              overflowY: 'auto',
+              paddingRight: 4,
+              marginRight: -4,
+            }}
+          >
+            {notes.map((note) => {
+              const editing = editingNoteId === note.id;
+              const ownsNote = note.teacher_id === teacherId;
+              return (
+                <div
+                  key={note.id}
+                  style={{
+                    background: 'rgba(255,255,255,0.04)',
+                    border: '1px solid rgba(255,255,255,0.08)',
+                    borderRadius: 14,
+                    padding: '12px 14px',
+                  }}
+                >
+                  {editing ? (
+                    <div style={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: 10,
+                    }}>
+                      <textarea
+                        className="mt-notes-textarea"
+                        value={editContent}
+                        onChange={(e) => setEditContent(e.target.value)}
+                        autoFocus
+                        rows={3}
+                        maxLength={5000}
+                        style={{
+                          width: '100%',
+                          minHeight: 60,
+                          padding: '10px 12px',
+                          borderRadius: 10,
+                          background: T.inputBg,
+                          border: `1px solid rgba(52,211,153,0.30)`,
+                          color: T.textPrimary,
+                          fontFamily: T.sans,
+                          fontSize: 13,
+                          lineHeight: 1.5,
+                          outline: 'none',
+                          resize: 'vertical',
+                          boxSizing: 'border-box',
+                        }}
+                      />
+                      <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'flex-end',
+                        gap: 8,
+                      }}>
+                        <button
+                          onClick={handleCancelEdit}
+                          style={{
+                            padding: '7px 14px',
+                            borderRadius: 8,
+                            background: 'rgba(255,255,255,0.06)',
+                            border: '1px solid rgba(255,255,255,0.10)',
+                            color: T.textSecondary,
+                            fontFamily: T.sans,
+                            fontSize: 12,
+                            fontWeight: 500,
+                            cursor: 'pointer',
+                          }}
+                        >
+                          {t('common.cancel')}
+                        </button>
+                        <button
+                          onClick={handleSaveEdit}
+                          disabled={!editContent.trim() || editSaving}
+                          style={{
+                            ...ctaStyle,
+                            padding: '7px 14px',
+                            fontSize: 12,
+                            opacity: (!editContent.trim() || editSaving) ? 0.45 : 1,
+                            cursor: (!editContent.trim() || editSaving) ? 'not-allowed' : 'pointer',
+                          }}
+                        >
+                          <Check size={12} strokeWidth={2.5} />
+                          {editSaving ? '...' : t('common.save')}
+                        </button>
+                      </div>
                     </div>
-                  </div>
-                ) : (
-                  /* View mode */
-                  <>
-                    <div className="flex items-start justify-between gap-2">
-                      <p className="text-sm text-gray-800 whitespace-pre-wrap flex-1">{note.content}</p>
-                      {note.teacher_id === teacherId && (
-                        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
-                          <button
-                            onClick={() => handleStartEdit(note)}
-                            className="text-gray-400 hover:text-emerald-500 text-xs p-1"
-                            title={t('common.edit')}
-                          >
-                            ✏️
-                          </button>
-                          <button
-                            onClick={() => handleDelete(note.id)}
-                            className="text-gray-400 hover:text-red-400 text-xs p-1"
-                            title={t('common.delete')}
-                          >
-                            ✕
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                    <div className="mt-1.5 flex items-center gap-2 text-xs text-gray-400 flex-wrap">
-                      <span className="font-medium text-gray-600">{note.teacher_name}</span>
-                      <span>·</span>
-                      <span>{formatTime(note.created_at)}</span>
-                      {note.child_name ? (
-                        <>
-                          <span>·</span>
-                          <span className="bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded-full font-medium">
-                            👶 {note.child_name}
+                  ) : (
+                    <>
+                      <div style={{
+                        display: 'flex',
+                        alignItems: 'flex-start',
+                        gap: 10,
+                      }}>
+                        <p style={{
+                          margin: 0,
+                          flex: 1,
+                          fontFamily: T.sans,
+                          fontSize: 13,
+                          lineHeight: 1.55,
+                          color: T.textPrimary,
+                          whiteSpace: 'pre-wrap',
+                        }}>
+                          {note.content}
+                        </p>
+                        {ownsNote && (
+                          <div style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 4,
+                            flexShrink: 0,
+                          }}>
+                            <button
+                              onClick={() => handleStartEdit(note)}
+                              aria-label={t('common.edit')}
+                              title={t('common.edit')}
+                              style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                width: 28,
+                                height: 28,
+                                borderRadius: 8,
+                                background: 'transparent',
+                                border: '1px solid rgba(255,255,255,0.10)',
+                                color: T.textMuted,
+                                cursor: 'pointer',
+                                transition: 'all 120ms ease',
+                              }}
+                            >
+                              <Pencil size={12} strokeWidth={1.75} />
+                            </button>
+                            <button
+                              onClick={() => handleDelete(note.id)}
+                              aria-label={t('common.delete')}
+                              title={t('common.delete')}
+                              style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                width: 28,
+                                height: 28,
+                                borderRadius: 8,
+                                background: 'transparent',
+                                border: '1px solid rgba(255,255,255,0.10)',
+                                color: T.textMuted,
+                                cursor: 'pointer',
+                                transition: 'all 120ms ease',
+                              }}
+                            >
+                              <Trash2 size={12} strokeWidth={1.75} />
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                      <div style={{
+                        marginTop: 10,
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 8,
+                        flexWrap: 'wrap',
+                        fontFamily: T.sans,
+                        fontSize: 11,
+                        color: T.textMuted,
+                      }}>
+                        <span style={{
+                          fontWeight: 600,
+                          color: T.textSecondary,
+                          letterSpacing: 0.2,
+                        }}>
+                          {note.teacher_name}
+                        </span>
+                        <span style={{ color: 'rgba(255,255,255,0.20)' }}>·</span>
+                        <span>{formatTime(note.created_at)}</span>
+                        <span style={{ color: 'rgba(255,255,255,0.20)' }}>·</span>
+                        {note.child_name ? (
+                          <span style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: 4,
+                            padding: '3px 9px',
+                            borderRadius: 999,
+                            background: T.amberSoft,
+                            border: `1px solid ${T.amberBorder}`,
+                            color: T.amber,
+                            fontSize: 10,
+                            fontWeight: 600,
+                            letterSpacing: 0.3,
+                          }}>
+                            <Tag size={10} strokeWidth={1.75} />
+                            {note.child_name}
                           </span>
-                        </>
-                      ) : (
-                        <>
-                          <span>·</span>
-                          <span className="bg-emerald-50 text-emerald-600 px-1.5 py-0.5 rounded-full font-medium">
-                            📋 {t('teacherNotes.classNote')}
+                        ) : (
+                          <span style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: 4,
+                            padding: '3px 9px',
+                            borderRadius: 999,
+                            background: T.emeraldStrong,
+                            border: '1px solid rgba(52,211,153,0.30)',
+                            color: T.emerald,
+                            fontSize: 10,
+                            fontWeight: 600,
+                            letterSpacing: 0.3,
+                          }}>
+                            <Users size={10} strokeWidth={1.75} />
+                            {t('teacherNotes.classNote')}
                           </span>
-                        </>
-                      )}
-                    </div>
-                  </>
-                )}
-              </div>
-            ))}
+                        )}
+                      </div>
+                    </>
+                  )}
+                </div>
+              );
+            })}
           </div>
         )}
       </div>
