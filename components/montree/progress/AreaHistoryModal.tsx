@@ -1,27 +1,14 @@
 // components/montree/progress/AreaHistoryModal.tsx
 // Full-screen area history modal — shows work timeline with photos and teacher notes
+// Dark forest visual treatment — all wiring intact
 'use client';
 
 import { useState, useEffect } from 'react';
+import {
+  X, Sparkles, Star, RotateCw, ClipboardList, Inbox,
+} from 'lucide-react';
 import { useI18n, getIntlLocale } from '@/lib/montree/i18n';
 import { getAreaLabel } from '@/lib/montree/i18n/area-labels';
-
-// Area display config — name resolved at render time via getAreaLabel()
-const AREA_STYLES: Record<string, { emoji: string; gradient: string; bg: string; text: string }> = {
-  practical_life: { emoji: '🧹', gradient: 'from-emerald-500 to-emerald-600', bg: 'bg-emerald-50', text: 'text-emerald-700' },
-  sensorial: { emoji: '👁', gradient: 'from-amber-500 to-amber-600', bg: 'bg-amber-50', text: 'text-amber-700' },
-  mathematics: { emoji: '🔢', gradient: 'from-indigo-500 to-indigo-600', bg: 'bg-indigo-50', text: 'text-indigo-700' },
-  language: { emoji: '📚', gradient: 'from-rose-500 to-rose-600', bg: 'bg-rose-50', text: 'text-rose-700' },
-  cultural: { emoji: '🌍', gradient: 'from-violet-500 to-violet-600', bg: 'bg-violet-50', text: 'text-violet-700' },
-};
-
-// Status styling config — labels come from i18n at render time
-const STATUS_STYLES: Record<string, { icon: string; bg: string; text: string }> = {
-  mastered: { icon: '⭐', bg: 'bg-emerald-100', text: 'text-emerald-700' },
-  completed: { icon: '⭐', bg: 'bg-emerald-100', text: 'text-emerald-700' },
-  practicing: { icon: '🔄', bg: 'bg-blue-100', text: 'text-blue-700' },
-  presented: { icon: '📋', bg: 'bg-amber-100', text: 'text-amber-700' },
-};
 
 interface ProgressItem {
   id: string;
@@ -52,11 +39,13 @@ interface MediaItem {
   area?: string;
 }
 
+type StatusType = 'mastered' | 'practicing' | 'presented' | 'not_started';
+
 interface WorkEntry {
   work_name: string;
   chineseName?: string;
   status: string;
-  statusStyle: { icon: string; bg: string; text: string };
+  statusType: StatusType;
   date: string;
   photo?: MediaItem;
   notes: { text: string; date: string }[];
@@ -70,13 +59,69 @@ interface AreaHistoryModalProps {
   childName: string;
 }
 
+const T = {
+  scrim: 'rgba(2,8,5,0.92)',
+  card: 'rgba(255,255,255,0.06)',
+  cardBorder: 'rgba(52,211,153,0.15)',
+  cardRadius: 16,
+  blur: 'blur(14px) saturate(140%)',
+  emerald: '#34d399',
+  emeraldStrong: 'rgba(52,211,153,0.18)',
+  amber: '#f59e0b',
+  amberSoft: 'rgba(245,158,11,0.10)',
+  amberBorder: 'rgba(245,158,11,0.30)',
+  textPrimary: 'rgba(255,255,255,0.95)',
+  textSecondary: 'rgba(255,255,255,0.65)',
+  textMuted: 'rgba(255,255,255,0.40)',
+  textFaint: 'rgba(255,255,255,0.30)',
+  serif: '"Lora", Georgia, serif',
+  sans: '"Inter", -apple-system, BlinkMacSystemFont, sans-serif',
+};
+
+// Area dot palette + tinted gradient header bg
+const AREA_TINT_RGB: Record<string, string> = {
+  practical_life: '236, 72, 153',
+  sensorial: '20, 184, 166',
+  mathematics: '168, 85, 247',
+  language: '74, 222, 128',
+  cultural: '249, 115, 22',
+};
+
+// Status pill styles per locked tokens
+const STATUS_PILLS: Record<StatusType, { bg: string; border: string; color: string; Icon: typeof Star }> = {
+  mastered: {
+    bg: 'rgba(255,255,255,0.10)',
+    border: 'rgba(255,255,255,0.20)',
+    color: 'rgba(255,255,255,0.85)',
+    Icon: Star,
+  },
+  practicing: {
+    bg: T.emeraldStrong,
+    border: 'rgba(52,211,153,0.35)',
+    color: T.emerald,
+    Icon: RotateCw,
+  },
+  presented: {
+    bg: 'rgba(245,158,11,0.18)',
+    border: 'rgba(245,158,11,0.35)',
+    color: T.amber,
+    Icon: ClipboardList,
+  },
+  not_started: {
+    bg: 'rgba(255,255,255,0.06)',
+    border: 'rgba(255,255,255,0.12)',
+    color: T.textMuted,
+    Icon: ClipboardList,
+  },
+};
+
 export default function AreaHistoryModal({ isOpen, onClose, area, childId, childName }: AreaHistoryModalProps) {
   const [loading, setLoading] = useState(true);
   const [entries, setEntries] = useState<{ label: string; works: WorkEntry[] }[]>([]);
   const { t, locale } = useI18n();
 
-  const config = AREA_STYLES[area] || AREA_STYLES.practical_life;
   const areaDisplayName = getAreaLabel(area, locale);
+  const tintRgb = AREA_TINT_RGB[area] || '74, 222, 128';
 
   const statusLabel = (s: string) => {
     if (s === 'mastered' || s === 'completed') return t('progress.mastered' as any);
@@ -93,7 +138,6 @@ export default function AreaHistoryModal({ isOpen, onClose, area, childId, child
     const fetchData = async () => {
       setLoading(true);
       try {
-        // Fetch progress, sessions, and media in parallel
         const [progressRes, sessionsRes, mediaRes] = await Promise.all([
           fetch(`/api/montree/progress?child_id=${childId}&include_observations=true`),
           fetch(`/api/montree/sessions?child_id=${childId}&limit=200`),
@@ -112,7 +156,6 @@ export default function AreaHistoryModal({ isOpen, onClose, area, childId, child
         );
         const media: MediaItem[] = mediaData.media || [];
 
-        // Build photo map: work_name → best photo
         const photoMap = new Map<string, MediaItem>();
         for (const m of media) {
           if (m.work_name && !photoMap.has(m.work_name.toLowerCase())) {
@@ -120,7 +163,6 @@ export default function AreaHistoryModal({ isOpen, onClose, area, childId, child
           }
         }
 
-        // Build notes map: work_name → notes[]
         const notesMap = new Map<string, { text: string; date: string }[]>();
         for (const s of sessions) {
           const key = s.work_name?.toLowerCase();
@@ -129,7 +171,6 @@ export default function AreaHistoryModal({ isOpen, onClose, area, childId, child
           notesMap.get(key)!.push({ text: s.notes, date: s.observed_at });
         }
 
-        // Build work entries from progress items
         const workEntries: WorkEntry[] = [];
         const seen = new Set<string>();
 
@@ -142,26 +183,35 @@ export default function AreaHistoryModal({ isOpen, onClose, area, childId, child
             ? p.status === 3 ? 'mastered' : p.status === 2 ? 'practicing' : p.status === 1 ? 'presented' : 'not_started'
             : String(p.status);
 
-          const style = STATUS_STYLES[s] || { icon: '○', bg: 'bg-gray-100', text: 'text-gray-600' };
+          const statusType: StatusType =
+            s === 'mastered' || s === 'completed' ? 'mastered'
+              : s === 'practicing' ? 'practicing'
+                : s === 'presented' ? 'presented'
+                  : 'not_started';
+
           const date = p.mastered_at || p.presented_at || p.updated_at;
           const photo = photoMap.get(key);
           const notes = notesMap.get(key) || [];
 
-          // Also include notes from child_progress if they exist
           if (p.notes && !notes.some(n => n.text === p.notes)) {
             notes.push({ text: p.notes, date: p.updated_at });
           }
 
-          // Sort notes newest first
           notes.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
-          workEntries.push({ work_name: p.work_name, chineseName: (p as any).chineseName, status: s, statusStyle: style, date, photo, notes });
+          workEntries.push({
+            work_name: p.work_name,
+            chineseName: (p as any).chineseName,
+            status: s,
+            statusType,
+            date,
+            photo,
+            notes,
+          });
         }
 
-        // Sort by most recent date
         workEntries.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
-        // Group by month
         const monthMap = new Map<string, WorkEntry[]>();
         for (const entry of workEntries) {
           const d = new Date(entry.date);
@@ -181,7 +231,7 @@ export default function AreaHistoryModal({ isOpen, onClose, area, childId, child
     };
 
     fetchData();
-  }, [isOpen, childId, area]);
+  }, [isOpen, childId, area, locale]);
 
   if (!isOpen) return null;
 
@@ -191,116 +241,373 @@ export default function AreaHistoryModal({ isOpen, onClose, area, childId, child
   };
 
   return (
-    <div className="fixed inset-0 z-[60] bg-black/90 flex flex-col" onClick={onClose}>
+    <div
+      onClick={onClose}
+      style={{
+        position: 'fixed',
+        inset: 0,
+        zIndex: 60,
+        background: T.scrim,
+        backdropFilter: 'blur(6px)',
+        WebkitBackdropFilter: 'blur(6px)',
+        display: 'flex',
+        flexDirection: 'column',
+        fontFamily: T.sans,
+        color: T.textPrimary,
+      }}
+    >
       {/* Header */}
       <div
-        className={`bg-gradient-to-r ${config.gradient} pt-[max(1rem,env(safe-area-inset-top))] px-4 pb-4`}
-        onClick={e => e.stopPropagation()}
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          background: `linear-gradient(180deg, rgba(${tintRgb}, 0.32), rgba(${tintRgb}, 0.12))`,
+          borderBottom: `1px solid rgba(${tintRgb}, 0.30)`,
+          paddingTop: 'max(20px, env(safe-area-inset-top))',
+          paddingLeft: 16,
+          paddingRight: 16,
+          paddingBottom: 18,
+          backdropFilter: 'blur(14px) saturate(140%)',
+          WebkitBackdropFilter: 'blur(14px) saturate(140%)',
+        }}
       >
-        <div className="flex items-center justify-between text-white">
-          <button onClick={onClose} className="p-2 -ml-2">
-            <span className="text-2xl">✕</span>
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          color: '#fff',
+        }}>
+          <button
+            onClick={onClose}
+            aria-label="Close"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: 36,
+              height: 36,
+              borderRadius: 10,
+              background: 'rgba(0,0,0,0.32)',
+              border: '1px solid rgba(255,255,255,0.18)',
+              color: 'rgba(255,255,255,0.95)',
+              cursor: 'pointer',
+            }}
+          >
+            <X size={16} strokeWidth={1.75} />
           </button>
-          <div className="text-center">
-            <span className="text-3xl">{config.emoji}</span>
-            <h2 className="font-bold text-lg">{areaDisplayName}</h2>
-            <p className="text-white/70 text-sm">{t('areaHistory.journey', { name: childName })}</p>
+          <div style={{ textAlign: 'center', minWidth: 0 }}>
+            <div style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: 40,
+              height: 40,
+              borderRadius: 12,
+              background: `rgba(${tintRgb}, 0.30)`,
+              border: `1px solid rgba(${tintRgb}, 0.55)`,
+              marginBottom: 6,
+            }}>
+              <span style={{
+                width: 18,
+                height: 18,
+                borderRadius: '50%',
+                background: `rgb(${tintRgb})`,
+                opacity: 0.85,
+                boxShadow: `0 0 12px rgba(${tintRgb}, 0.55)`,
+              }} />
+            </div>
+            <h2 style={{
+              margin: 0,
+              fontFamily: T.serif,
+              fontSize: 18,
+              fontWeight: 500,
+              color: T.textPrimary,
+              letterSpacing: -0.2,
+            }}>
+              {areaDisplayName}
+            </h2>
+            <p style={{
+              margin: '2px 0 0',
+              fontFamily: T.sans,
+              fontSize: 12,
+              color: 'rgba(255,255,255,0.65)',
+            }}>
+              {t('areaHistory.journey', { name: childName })}
+            </p>
           </div>
-          <div className="w-10" />
+          <div style={{ width: 36 }} />
         </div>
       </div>
 
-      {/* Scrollable Content */}
-      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-6" onClick={e => e.stopPropagation()}>
+      {/* Scrollable content */}
+      <div
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          flex: 1,
+          overflowY: 'auto',
+          padding: '20px 16px',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 24,
+        }}
+      >
         {loading ? (
-          <div className="flex items-center justify-center h-40">
-            <div className="text-white/60 text-center">
-              <div className="text-3xl mb-2 animate-pulse">{config.emoji}</div>
-              <p>{t('common.loading' as any)}</p>
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            height: 160,
+          }}>
+            <div style={{ textAlign: 'center', color: T.textSecondary }}>
+              <div style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: 44,
+                height: 44,
+                borderRadius: '50%',
+                background: T.emeraldStrong,
+                border: '1px solid rgba(52,211,153,0.35)',
+                color: T.emerald,
+                marginBottom: 10,
+                animation: 'ahm-pulse 1.6s ease-in-out infinite',
+              }}>
+                <Sparkles size={18} strokeWidth={1.75} />
+              </div>
+              <p style={{ margin: 0, fontSize: 13 }}>{t('common.loading' as any)}</p>
+              <style>{`@keyframes ahm-pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.55; } }`}</style>
             </div>
           </div>
         ) : entries.length === 0 ? (
-          <div className="flex items-center justify-center h-40">
-            <div className="text-white/60 text-center">
-              <div className="text-4xl mb-3">📭</div>
-              <p className="font-medium">{t('progress.noActivity' as any) || 'No activity recorded yet'}</p>
-              <p className="text-sm mt-1">{areaDisplayName}</p>
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            height: 200,
+          }}>
+            <div style={{ textAlign: 'center', color: T.textSecondary }}>
+              <div style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: 56,
+                height: 56,
+                borderRadius: '50%',
+                background: T.card,
+                border: `1px solid ${T.cardBorder}`,
+                color: T.textMuted,
+                marginBottom: 12,
+              }}>
+                <Inbox size={22} strokeWidth={1.75} />
+              </div>
+              <p style={{
+                margin: 0,
+                fontFamily: T.serif,
+                fontSize: 16,
+                fontWeight: 500,
+                color: T.textSecondary,
+              }}>
+                {t('progress.noActivity' as any) || 'No activity recorded yet'}
+              </p>
+              <p style={{
+                margin: '4px 0 0',
+                fontFamily: T.sans,
+                fontSize: 12,
+                color: T.textMuted,
+              }}>
+                {areaDisplayName}
+              </p>
             </div>
           </div>
         ) : (
           entries.map((group) => (
             <div key={group.label}>
-              {/* Month header */}
-              <h3 className="text-white/50 text-xs font-bold uppercase tracking-wider mb-3">
+              <h3 style={{
+                margin: '0 0 12px',
+                fontFamily: T.sans,
+                fontSize: 11,
+                fontWeight: 700,
+                color: T.textFaint,
+                textTransform: 'uppercase',
+                letterSpacing: 0.6,
+              }}>
                 {group.label}
               </h3>
 
-              <div className="space-y-3">
-                {group.works.map((work) => (
-                  <div key={work.work_name} className="bg-white rounded-2xl overflow-hidden shadow-sm">
-                    {/* Status + date header */}
-                    <div className="px-4 pt-3 pb-2 flex items-center justify-between">
-                      <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold ${work.statusStyle.bg} ${work.statusStyle.text}`}>
-                        {work.statusStyle.icon} {statusLabel(work.status)}
-                      </span>
-                      <span className="text-xs text-gray-400">{fmtDate(work.date)}</span>
-                    </div>
-
-                    {/* Work name */}
-                    <div className="px-4 pb-2">
-                      <h4 className="font-bold text-gray-800">{locale === 'zh' && work.chineseName ? work.chineseName : work.work_name}</h4>
-                    </div>
-
-                    {/* Photo */}
-                    {work.photo && (
-                      <div className="px-4 pb-3">
-                        <div className="aspect-[4/3] rounded-xl overflow-hidden bg-gray-100">
-                          <img
-                            src={getPhotoUrl(work.photo.thumbnail_path || work.photo.storage_path)}
-                            alt={work.work_name}
-                            className="w-full h-full object-cover"
-                            loading="lazy"
-                          />
-                        </div>
-                        {work.photo.caption && (
-                          <p className="text-xs text-gray-400 italic text-center mt-1">{work.photo.caption}</p>
-                        )}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                {group.works.map((work) => {
+                  const cfg = STATUS_PILLS[work.statusType];
+                  const StatusIcon = cfg.Icon;
+                  return (
+                    <div
+                      key={work.work_name}
+                      style={{
+                        background: T.card,
+                        border: `1px solid ${T.cardBorder}`,
+                        borderRadius: T.cardRadius,
+                        backdropFilter: T.blur,
+                        WebkitBackdropFilter: T.blur,
+                        overflow: 'hidden',
+                      }}
+                    >
+                      <div style={{
+                        padding: '12px 16px 8px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                      }}>
+                        <span style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: 5,
+                          padding: '3px 10px',
+                          borderRadius: 999,
+                          background: cfg.bg,
+                          border: `1px solid ${cfg.border}`,
+                          color: cfg.color,
+                          fontFamily: T.sans,
+                          fontSize: 11,
+                          fontWeight: 700,
+                          letterSpacing: 0.3,
+                        }}>
+                          <StatusIcon size={11} strokeWidth={1.75} />
+                          {statusLabel(work.status)}
+                        </span>
+                        <span style={{
+                          fontFamily: T.sans,
+                          fontSize: 11,
+                          color: T.textMuted,
+                        }}>
+                          {fmtDate(work.date)}
+                        </span>
                       </div>
-                    )}
 
-                    {/* Teacher notes */}
-                    {work.notes.length > 0 && (
-                      <div className="px-4 pb-4 space-y-2">
-                        {work.notes.map((note, idx) => (
-                          <div key={idx} className="bg-amber-50 rounded-lg px-3 py-2 border border-amber-100">
-                            <p className="text-sm text-gray-700 leading-relaxed">{note.text}</p>
-                            <p className="text-xs text-gray-400 mt-1">{fmtDate(note.date)}</p>
+                      <div style={{ padding: '0 16px 8px' }}>
+                        <h4 style={{
+                          margin: 0,
+                          fontFamily: T.serif,
+                          fontSize: 15,
+                          fontWeight: 500,
+                          color: T.textPrimary,
+                          letterSpacing: -0.1,
+                        }}>
+                          {locale === 'zh' && work.chineseName ? work.chineseName : work.work_name}
+                        </h4>
+                      </div>
+
+                      {work.photo && (
+                        <div style={{ padding: '0 16px 12px' }}>
+                          <div style={{
+                            aspectRatio: '4 / 3',
+                            borderRadius: 12,
+                            overflow: 'hidden',
+                            background: 'rgba(255,255,255,0.04)',
+                            border: '1px solid rgba(255,255,255,0.08)',
+                          }}>
+                            <img
+                              src={getPhotoUrl(work.photo.thumbnail_path || work.photo.storage_path)}
+                              alt={work.work_name}
+                              loading="lazy"
+                              style={{
+                                width: '100%',
+                                height: '100%',
+                                objectFit: 'cover',
+                                display: 'block',
+                              }}
+                            />
                           </div>
-                        ))}
-                      </div>
-                    )}
+                          {work.photo.caption && (
+                            <p style={{
+                              margin: '6px 0 0',
+                              textAlign: 'center',
+                              fontFamily: T.sans,
+                              fontSize: 11,
+                              color: T.textMuted,
+                              fontStyle: 'italic',
+                            }}>
+                              {work.photo.caption}
+                            </p>
+                          )}
+                        </div>
+                      )}
 
-                    {/* No photo, no notes — minimal card */}
-                    {!work.photo && work.notes.length === 0 && (
-                      <div className="px-4 pb-3">
-                        <p className="text-xs text-gray-400 italic">No photos or notes yet</p>
-                      </div>
-                    )}
-                  </div>
-                ))}
+                      {work.notes.length > 0 && (
+                        <div style={{
+                          padding: '0 16px 16px',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: 8,
+                        }}>
+                          {work.notes.map((note, idx) => (
+                            <div
+                              key={idx}
+                              style={{
+                                padding: '8px 12px',
+                                borderRadius: 10,
+                                background: T.amberSoft,
+                                border: `1px solid ${T.amberBorder}`,
+                              }}
+                            >
+                              <p style={{
+                                margin: 0,
+                                fontFamily: T.sans,
+                                fontSize: 13,
+                                lineHeight: 1.55,
+                                color: T.textPrimary,
+                              }}>
+                                {note.text}
+                              </p>
+                              <p style={{
+                                margin: '4px 0 0',
+                                fontFamily: T.sans,
+                                fontSize: 10,
+                                color: T.textMuted,
+                              }}>
+                                {fmtDate(note.date)}
+                              </p>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {!work.photo && work.notes.length === 0 && (
+                        <div style={{ padding: '0 16px 12px' }}>
+                          <p style={{
+                            margin: 0,
+                            fontFamily: T.sans,
+                            fontSize: 11,
+                            color: T.textMuted,
+                            fontStyle: 'italic',
+                          }}>
+                            No photos or notes yet
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             </div>
           ))
         )}
 
-        {/* End marker */}
         {!loading && entries.length > 0 && (
-          <p className="text-center text-white/30 text-xs py-4">── End of history ──</p>
+          <p style={{
+            textAlign: 'center',
+            fontFamily: T.sans,
+            fontSize: 11,
+            color: T.textFaint,
+            padding: '16px 0',
+            margin: 0,
+          }}>
+            ── End of history ──
+          </p>
         )}
       </div>
 
-      {/* Bottom safe area */}
-      <div className="pb-[max(0.5rem,env(safe-area-inset-bottom))]" onClick={e => e.stopPropagation()} />
+      <div
+        onClick={(e) => e.stopPropagation()}
+        style={{ paddingBottom: 'max(8px, env(safe-area-inset-bottom))' }}
+      />
     </div>
   );
 }
