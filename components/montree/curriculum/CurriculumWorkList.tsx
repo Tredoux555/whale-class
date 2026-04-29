@@ -66,12 +66,12 @@ export default function CurriculumWorkList({
   }, [highlightedWorkId]);
 
   return (
-    <div className="bg-white rounded-2xl p-4 shadow-sm">
+    <div style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(52,211,153,0.15)', borderRadius: 18, padding: 16, backdropFilter: 'blur(18px) saturate(140%)', WebkitBackdropFilter: 'blur(18px) saturate(140%)' }}>
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-bold text-gray-800 capitalize flex items-center gap-2">
+        <h3 className="text-lg font-bold capitalize flex items-center gap-2" style={{ fontFamily: '"Lora", Georgia, serif', fontWeight: 500, color: 'rgba(255,255,255,0.95)', fontSize: 18 }}>
           <AreaBadge area={selectedArea} size="md" /> {t(('area.' + selectedArea) as any)}
         </h3>
-        <span className="text-xs text-gray-400 flex items-center gap-1">
+        <span className="flex items-center gap-1" style={{ fontFamily: '"Inter", sans-serif', fontSize: 11, color: 'rgba(255,255,255,0.35)' }}>
           {reordering && <span className="animate-spin">⏳</span>}
           ↕️ {t('curriculum.dragToReorder')}
         </span>
@@ -95,43 +95,50 @@ export default function CurriculumWorkList({
               onDragLeave={onDragLeave}
               onDrop={(e) => onDrop(e, work)}
               onDragEnd={onDragEnd}
-              className={`bg-gray-50 rounded-xl overflow-hidden transition-all
-                ${isDragging ? 'opacity-50 scale-95' : ''}
-                ${isDragOver ? 'ring-2 ring-blue-500 ring-offset-2' : ''}
-                ${isHighlighted ? 'ring-2 ring-emerald-500 ring-offset-2 bg-emerald-50 animate-pulse' : ''}`}
+              style={{
+                background: isHighlighted ? 'rgba(52,211,153,0.10)' : isExpanded ? 'rgba(255,255,255,0.06)' : 'rgba(255,255,255,0.04)',
+                border: `1px solid ${isDragOver ? 'rgba(52,211,153,0.55)' : isHighlighted ? 'rgba(52,211,153,0.40)' : 'rgba(255,255,255,0.08)'}`,
+                borderRadius: 14,
+                overflow: 'hidden',
+                transition: 'all 140ms ease',
+                opacity: isDragging ? 0.5 : 1,
+                transform: isDragging ? 'scale(0.97)' : 'none',
+                outline: isDragOver ? '2px solid rgba(52,211,153,0.30)' : 'none',
+              }}
             >
               {/* Work Header */}
               <div className="flex items-center gap-2 p-3">
                 {/* Drag Handle */}
-                <div className="cursor-grab active:cursor-grabbing text-gray-400 hover:text-gray-600 px-1">
+                <div className="cursor-grab active:cursor-grabbing px-1" style={{ color: 'rgba(255,255,255,0.30)', fontSize: 16 }}>
                   ⋮⋮
                 </div>
                 <button
                   onClick={() => setExpandedWork(isExpanded ? null : work.id)}
-                  className="flex-1 flex items-center gap-3 text-left hover:bg-gray-100 rounded-lg transition-colors"
+                  className="flex-1 flex items-center gap-3 text-left rounded-lg transition-colors"
+                  style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: '4px 0' }}
                 >
                   {/* Photo thumbnail or color bar */}
                   {work.photo_url ? (
-                    <img src={work.photo_url} alt="" className="w-10 h-10 rounded-lg object-cover flex-shrink-0 border border-gray-200" />
+                    <img src={work.photo_url} alt="" style={{ width: 40, height: 40, borderRadius: 10, objectFit: 'cover', flexShrink: 0, border: '1px solid rgba(52,211,153,0.20)' }} />
                   ) : (
                     <div className={`w-2 h-8 rounded-full bg-gradient-to-b ${AREA_COLORS[selectedArea]}`} />
                   )}
                   <div className="flex-1 min-w-0">
-                    <p className="font-medium text-gray-800">{locale === 'zh' && work.name_chinese ? work.name_chinese : work.name}</p>
+                    <p style={{ fontFamily: '"Inter", sans-serif', fontWeight: 500, color: 'rgba(255,255,255,0.90)', margin: 0, fontSize: 14 }}>{locale === 'zh' && work.name_chinese ? work.name_chinese : work.name}</p>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="text-xs text-gray-400">{work.age_range || '3-6'}</span>
-                    <span className={`text-gray-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`}>▼</span>
+                    <span style={{ fontFamily: '"Inter", sans-serif', fontSize: 11, color: 'rgba(255,255,255,0.35)' }}>{work.age_range || '3-6'}</span>
+                    <span style={{ color: 'rgba(255,255,255,0.35)', fontSize: 12, transition: 'transform 140ms ease', display: 'inline-block', transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)' }}>▼</span>
                   </div>
                 </button>
                 {/* Edit button */}
                 <button onClick={() => onEditWork(work)}
-                  className="w-8 h-8 bg-blue-100 text-blue-600 rounded-lg flex items-center justify-center hover:bg-blue-200">
+                  style={{ width: 32, height: 32, background: 'rgba(96,165,250,0.12)', border: '1px solid rgba(96,165,250,0.25)', borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: 14 }}>
                   ✏️
                 </button>
                 {/* Delete button */}
                 <button onClick={() => onDeleteWork(work)}
-                  className="w-8 h-8 bg-gray-100 text-gray-500 rounded-lg flex items-center justify-center hover:bg-red-100 hover:text-red-600"
+                  style={{ width: 32, height: 32, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.10)', borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: 14 }}
                   title={t('curriculum.deleteWork')}>
                   🗑️
                 </button>
@@ -234,32 +241,37 @@ function ExpandedWorkDetails({
   };
 
   return (
-    <div className="px-4 pb-4 pt-2 border-t border-gray-200 space-y-3">
+    <div className="space-y-3" style={{ padding: '12px 16px 16px', borderTop: '1px solid rgba(52,211,153,0.12)' }}>
       {/* Photo section */}
       <div className="flex items-start gap-3">
         {currentPhotoUrl ? (
           <div className="relative group">
-            <img src={currentPhotoUrl} alt={work.name} className="w-32 h-24 object-cover rounded-xl border border-gray-200" />
+            <img src={currentPhotoUrl} alt={work.name} style={{ width: 128, height: 96, objectFit: 'cover', borderRadius: 12, border: '1px solid rgba(52,211,153,0.20)' }} />
             <button
               onClick={handleRemovePhoto}
-              className="absolute top-1 right-1 w-6 h-6 bg-red-500 text-white rounded-full text-xs flex items-center justify-center sm:opacity-0 sm:group-hover:opacity-100 transition-opacity shadow-sm"
+              className="absolute top-1 right-1 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity"
+              style={{ width: 24, height: 24, background: '#ef4444', color: 'white', borderRadius: '50%', fontSize: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', border: 'none', cursor: 'pointer', boxShadow: '0 2px 6px rgba(0,0,0,0.4)' }}
               title={t('curriculum.removePhoto')}
             >
               ×
             </button>
-            <label className="absolute bottom-1 right-1 w-6 h-6 bg-white/90 text-gray-600 rounded-full text-xs flex items-center justify-center cursor-pointer sm:opacity-0 sm:group-hover:opacity-100 transition-opacity shadow-sm hover:bg-white" title={t('curriculum.changePhoto')}>
+            <label
+              className="absolute bottom-1 right-1 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity"
+              style={{ width: 24, height: 24, background: 'rgba(255,255,255,0.85)', color: '#333', borderRadius: '50%', fontSize: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 2px 6px rgba(0,0,0,0.3)' }}
+              title={t('curriculum.changePhoto')}
+            >
               📷
               <input ref={fileInputRef} type="file" accept="image/*" onChange={handlePhotoUpload} className="hidden" />
             </label>
           </div>
         ) : (
-          <label className={`flex flex-col items-center justify-center w-32 h-24 border-2 border-dashed rounded-xl cursor-pointer transition-colors ${uploading ? 'border-emerald-300 bg-emerald-50' : 'border-gray-200 hover:border-emerald-400 hover:bg-emerald-50/50'}`}>
+          <label style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', width: 128, height: 96, border: `2px dashed ${uploading ? 'rgba(52,211,153,0.50)' : 'rgba(52,211,153,0.25)'}`, borderRadius: 12, cursor: 'pointer', background: uploading ? 'rgba(52,211,153,0.06)' : 'transparent', transition: 'all 140ms ease' }}>
             {uploading ? (
-              <span className="text-sm text-emerald-600 animate-pulse">{t('curriculum.uploading')}</span>
+              <span className="animate-pulse" style={{ fontFamily: '"Inter", sans-serif', fontSize: 12, color: '#34d399' }}>{t('curriculum.uploading')}</span>
             ) : (
               <>
-                <span className="text-xl">📷</span>
-                <span className="text-xs text-gray-400 mt-1">{t('curriculum.addPhoto')}</span>
+                <span style={{ fontSize: 20 }}>📷</span>
+                <span style={{ fontFamily: '"Inter", sans-serif', fontSize: 11, color: 'rgba(255,255,255,0.40)', marginTop: 4 }}>{t('curriculum.addPhoto')}</span>
               </>
             )}
             <input ref={fileInputRef} type="file" accept="image/*" onChange={handlePhotoUpload} className="hidden" disabled={uploading} />
@@ -269,23 +281,23 @@ function ExpandedWorkDetails({
         <div className="flex-1 min-w-0">
           {/* QUICK GUIDE */}
           {(locale === 'zh' ? work.quick_guide_zh : work.quick_guide) && (
-            <div className="bg-gradient-to-r from-amber-50 to-yellow-50 p-3 rounded-xl border border-amber-200">
+            <div style={{ background: 'rgba(245,158,11,0.07)', border: '1px solid rgba(245,158,11,0.22)', borderRadius: 12, padding: 12 }}>
               <div className="flex items-center justify-between mb-1">
-                <p className="font-bold text-amber-800 text-sm flex items-center gap-1">
+                <p style={{ fontFamily: '"Inter", sans-serif', fontWeight: 700, color: '#f59e0b', fontSize: 12, margin: 0, display: 'flex', alignItems: 'center', gap: 4 }}>
                   ⚡ {t('curriculum.quickGuide')}
                 </p>
                 <a
                   href={`https://youtube.com/results?search_query=${encodeURIComponent('montessori ' + work.name + ' presentation')}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-1 px-2 py-1 bg-red-500 text-white text-xs font-bold rounded-lg hover:bg-red-600 transition-colors"
+                  style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '4px 8px', background: '#ef4444', color: 'white', fontSize: 11, fontWeight: 700, borderRadius: 8, textDecoration: 'none' }}
                 >
                   🎬 {t('curriculum.video')}
                 </a>
               </div>
-              <div className="text-xs text-amber-900 space-y-0.5">
+              <div style={{ fontFamily: '"Inter", sans-serif', fontSize: 12, color: 'rgba(255,255,255,0.75)' }}>
                 {(locale === 'zh' ? work.quick_guide_zh : work.quick_guide)?.split('\n').map((line, i) => (
-                  <p key={i} className="leading-relaxed">{line}</p>
+                  <p key={i} style={{ lineHeight: 1.55, margin: '2px 0' }}>{line}</p>
                 ))}
               </div>
             </div>
@@ -299,7 +311,7 @@ function ExpandedWorkDetails({
           href={`https://youtube.com/results?search_query=${encodeURIComponent('montessori ' + work.name + ' presentation')}`}
           target="_blank"
           rel="noopener noreferrer"
-          className="flex items-center justify-center gap-2 px-4 py-3 bg-red-500 text-white font-bold rounded-xl hover:bg-red-600 transition-colors"
+          style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '12px 16px', background: '#ef4444', color: 'white', fontFamily: '"Inter", sans-serif', fontWeight: 700, fontSize: 14, borderRadius: 12, textDecoration: 'none' }}
         >
           🎬 {t('curriculum.watchPresentationVideo')}
         </a>
@@ -309,7 +321,8 @@ function ExpandedWorkDetails({
       {onOpenFullDetails && (
         <button
           onClick={() => onOpenFullDetails(work.name, work.name_chinese)}
-          className="w-full py-3 bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-bold rounded-xl flex items-center justify-center gap-2 hover:from-emerald-600 hover:to-teal-700 active:scale-[0.98] transition-all shadow-sm"
+          className="w-full active:scale-[0.98] transition-all"
+          style={{ padding: '12px 16px', background: 'linear-gradient(180deg, #34d399, #10b981)', border: '1px solid rgba(52,211,153,0.55)', borderRadius: 12, color: '#06281a', fontFamily: '"Inter", sans-serif', fontWeight: 700, fontSize: 14, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, boxShadow: '0 4px 14px rgba(16,185,129,0.25)' }}
         >
           📚 {t('curriculum.fullDetails')}
         </button>
@@ -317,28 +330,28 @@ function ExpandedWorkDetails({
 
       {/* Teacher Notes (if any) */}
       {work.teacher_notes && (
-        <div className="bg-yellow-50 p-3 rounded-lg border border-yellow-200">
-          <p className="font-semibold text-yellow-700 text-xs mb-1">📝 {t('curriculum.teacherNotes')}</p>
-          <p className="text-sm text-yellow-800">{work.teacher_notes}</p>
+        <div style={{ background: 'rgba(245,158,11,0.07)', border: '1px solid rgba(245,158,11,0.20)', borderRadius: 10, padding: 12 }}>
+          <p style={{ fontFamily: '"Inter", sans-serif', fontWeight: 600, color: '#f59e0b', fontSize: 11, marginBottom: 4, marginTop: 0 }}>📝 {t('curriculum.teacherNotes')}</p>
+          <p style={{ fontFamily: '"Inter", sans-serif', fontSize: 13, color: 'rgba(255,255,255,0.80)', margin: 0 }}>{work.teacher_notes}</p>
         </div>
       )}
 
       {/* Parent Description */}
       {work.parent_description && (
-        <div className="bg-emerald-50 p-3 rounded-lg">
-          <p className="font-semibold text-emerald-700 text-xs mb-1">👨‍👩‍👧 {t('curriculum.forParents')}</p>
-          <p className="text-sm text-emerald-800">{locale === 'zh' && work.parent_description_zh ? work.parent_description_zh : work.parent_description}</p>
+        <div style={{ background: 'rgba(52,211,153,0.07)', border: '1px solid rgba(52,211,153,0.18)', borderRadius: 10, padding: 12 }}>
+          <p style={{ fontFamily: '"Inter", sans-serif', fontWeight: 600, color: '#34d399', fontSize: 11, marginBottom: 4, marginTop: 0 }}>👨‍👩‍👧 {t('curriculum.forParents')}</p>
+          <p style={{ fontFamily: '"Inter", sans-serif', fontSize: 13, color: 'rgba(255,255,255,0.75)', margin: 0 }}>{locale === 'zh' && work.parent_description_zh ? work.parent_description_zh : work.parent_description}</p>
         </div>
       )}
 
       {/* Details Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {(locale === 'zh' ? work.direct_aims_zh : work.direct_aims)?.length > 0 && (
           <div>
-            <p className="font-semibold text-gray-700 mb-1">🎯 {t('curriculum.directAims')}</p>
-            <ul className="text-gray-600 space-y-0.5">
+            <p style={{ fontFamily: '"Inter", sans-serif', fontWeight: 600, color: 'rgba(255,255,255,0.65)', fontSize: 12, marginBottom: 4, marginTop: 0 }}>🎯 {t('curriculum.directAims')}</p>
+            <ul style={{ margin: 0, padding: 0, listStyle: 'none' }}>
               {(locale === 'zh' ? work.direct_aims_zh : work.direct_aims)?.map((aim: string, i: number) => (
-                <li key={i} className="text-xs">• {aim}</li>
+                <li key={i} style={{ fontFamily: '"Inter", sans-serif', fontSize: 12, color: 'rgba(255,255,255,0.55)', lineHeight: 1.5, marginBottom: 2 }}>• {aim}</li>
               ))}
             </ul>
           </div>
@@ -346,10 +359,10 @@ function ExpandedWorkDetails({
 
         {(locale === 'zh' ? work.indirect_aims_zh : work.indirect_aims)?.length > 0 && (
           <div>
-            <p className="font-semibold text-gray-700 mb-1">🌱 {t('curriculum.indirectAims')}</p>
-            <ul className="text-gray-600 space-y-0.5">
+            <p style={{ fontFamily: '"Inter", sans-serif', fontWeight: 600, color: 'rgba(255,255,255,0.65)', fontSize: 12, marginBottom: 4, marginTop: 0 }}>🌱 {t('curriculum.indirectAims')}</p>
+            <ul style={{ margin: 0, padding: 0, listStyle: 'none' }}>
               {(locale === 'zh' ? work.indirect_aims_zh : work.indirect_aims)?.map((aim: string, i: number) => (
-                <li key={i} className="text-xs">• {aim}</li>
+                <li key={i} style={{ fontFamily: '"Inter", sans-serif', fontSize: 12, color: 'rgba(255,255,255,0.55)', lineHeight: 1.5, marginBottom: 2 }}>• {aim}</li>
               ))}
             </ul>
           </div>
@@ -357,10 +370,10 @@ function ExpandedWorkDetails({
 
         {(locale === 'zh' ? work.materials_zh : work.materials)?.length > 0 && (
           <div>
-            <p className="font-semibold text-gray-700 mb-1">🧰 {t('curriculum.materials')}</p>
-            <ul className="text-gray-600 space-y-0.5">
+            <p style={{ fontFamily: '"Inter", sans-serif', fontWeight: 600, color: 'rgba(255,255,255,0.65)', fontSize: 12, marginBottom: 4, marginTop: 0 }}>🧰 {t('curriculum.materials')}</p>
+            <ul style={{ margin: 0, padding: 0, listStyle: 'none' }}>
               {(locale === 'zh' ? work.materials_zh : work.materials)?.map((item: string, i: number) => (
-                <li key={i} className="text-xs">• {item}</li>
+                <li key={i} style={{ fontFamily: '"Inter", sans-serif', fontSize: 12, color: 'rgba(255,255,255,0.55)', lineHeight: 1.5, marginBottom: 2 }}>• {item}</li>
               ))}
             </ul>
           </div>
@@ -368,10 +381,10 @@ function ExpandedWorkDetails({
 
         {work.prerequisites?.length > 0 && (
           <div>
-            <p className="font-semibold text-gray-700 mb-1">✅ {t('curriculum.prerequisites')}</p>
-            <ul className="text-gray-600 space-y-0.5">
+            <p style={{ fontFamily: '"Inter", sans-serif', fontWeight: 600, color: 'rgba(255,255,255,0.65)', fontSize: 12, marginBottom: 4, marginTop: 0 }}>✅ {t('curriculum.prerequisites')}</p>
+            <ul style={{ margin: 0, padding: 0, listStyle: 'none' }}>
               {work.prerequisites.map((item: string, i: number) => (
-                <li key={i} className="text-xs">• {item}</li>
+                <li key={i} style={{ fontFamily: '"Inter", sans-serif', fontSize: 12, color: 'rgba(255,255,255,0.55)', lineHeight: 1.5, marginBottom: 2 }}>• {item}</li>
               ))}
             </ul>
           </div>
@@ -379,21 +392,21 @@ function ExpandedWorkDetails({
       </div>
 
       {work.why_it_matters && (
-        <div className="bg-blue-50 p-3 rounded-lg">
-          <p className="font-semibold text-blue-700 text-xs mb-1">💡 {t('curriculum.whyItMatters')}</p>
-          <p className="text-sm text-blue-800">{locale === 'zh' && work.why_it_matters_zh ? work.why_it_matters_zh : work.why_it_matters}</p>
+        <div style={{ background: 'rgba(96,165,250,0.07)', border: '1px solid rgba(96,165,250,0.18)', borderRadius: 10, padding: 12 }}>
+          <p style={{ fontFamily: '"Inter", sans-serif', fontWeight: 600, color: 'rgba(147,197,253,0.90)', fontSize: 11, marginBottom: 4, marginTop: 0 }}>💡 {t('curriculum.whyItMatters')}</p>
+          <p style={{ fontFamily: '"Inter", sans-serif', fontSize: 13, color: 'rgba(255,255,255,0.75)', margin: 0 }}>{locale === 'zh' && work.why_it_matters_zh ? work.why_it_matters_zh : work.why_it_matters}</p>
         </div>
       )}
 
       {/* Tags */}
       <div className="flex flex-wrap gap-2">
         {work.age_range && (
-          <span className="text-xs px-2 py-1 bg-gray-200 text-gray-700 rounded-full">
+          <span style={{ fontFamily: '"Inter", sans-serif', fontSize: 11, padding: '4px 10px', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 999, color: 'rgba(255,255,255,0.55)' }}>
             {t('curriculum.age')}: {work.age_range}
           </span>
         )}
         {(locale === 'zh' ? work.control_of_error_zh : work.control_of_error) && (
-          <span className="text-xs px-2 py-1 bg-amber-100 text-amber-700 rounded-full">
+          <span style={{ fontFamily: '"Inter", sans-serif', fontSize: 11, padding: '4px 10px', background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.25)', borderRadius: 999, color: '#f59e0b' }}>
             {t('curriculum.control')}: {locale === 'zh' ? work.control_of_error_zh : work.control_of_error}
           </span>
         )}

@@ -177,16 +177,30 @@ export default function CurriculumPage() {
     setFullDetailsLoading(false);
   };
 
+  // Area accent colours for dark forest cards
+  const AREA_RGB: Record<string, string> = {
+    practical_life: '236, 72, 153',
+    sensorial: '20, 184, 166',
+    mathematics: '168, 85, 247',
+    language: '74, 222, 128',
+    cultural: '249, 115, 22',
+  };
+
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-50 flex items-center justify-center">
-        <div className="animate-bounce text-5xl">📚</div>
+      <div style={{ minHeight: '100vh', background: '#0a1a0f', backgroundImage: 'radial-gradient(ellipse 1100px 900px at 88% 8%, rgba(39,129,90,0.48), transparent 60%)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ textAlign: 'center' }}>
+          <div className="animate-pulse" style={{ width: 48, height: 48, borderRadius: 14, background: 'rgba(52,211,153,0.10)', border: '1px solid rgba(52,211,153,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 10px' }}>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#34d399" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg>
+          </div>
+          <p style={{ fontFamily: '"Inter", -apple-system, sans-serif', fontSize: 13, color: 'rgba(255,255,255,0.45)' }}>Loading Curriculum…</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50">
+    <div style={{ minHeight: '100vh', background: '#0a1a0f', backgroundImage: 'radial-gradient(ellipse 1100px 900px at 88% 8%, rgba(39,129,90,0.48), transparent 60%)', backgroundAttachment: 'fixed' }}>
       <Toaster position="top-center" richColors />
 
       {/* Contextual Tip Bubble */}
@@ -195,11 +209,11 @@ export default function CurriculumPage() {
       )}
 
       {/* Page sub-header — main nav is in DashboardHeader */}
-      <div className="bg-white border-b border-gray-100 px-4 py-3">
+      <div style={{ background: 'rgba(7,18,12,0.95)', borderBottom: '1px solid rgba(52,211,153,0.12)', padding: '12px 16px', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', position: 'sticky', top: 0, zIndex: 10 }}>
         <div className="max-w-4xl mx-auto flex items-center justify-between">
           <div>
-            <h1 className="text-lg font-bold text-gray-800">📚 {t('curriculum.title')}</h1>
-            <p className="text-gray-400 text-sm">{curriculum.length} {t('curriculum.worksAvailable')}</p>
+            <h1 style={{ fontFamily: '"Lora", Georgia, serif', fontSize: 20, fontWeight: 500, color: 'rgba(255,255,255,0.95)', margin: 0, letterSpacing: -0.3 }}>{t('curriculum.title')}</h1>
+            <p style={{ fontFamily: '"Inter", -apple-system, sans-serif', fontSize: 12, color: 'rgba(255,255,255,0.40)', margin: '2px 0 0' }}>{curriculum.length} {t('curriculum.worksAvailable')}</p>
           </div>
           <div className="flex items-center gap-2">
             <WorkSearchBar
@@ -218,7 +232,7 @@ export default function CurriculumPage() {
             />
             <button
               onClick={() => setShowDuplicates(true)}
-              className="flex items-center gap-1.5 px-3 py-2 bg-amber-50 hover:bg-amber-100 text-amber-700 rounded-xl text-sm font-medium transition-colors border border-amber-200"
+              style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 12px', background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.25)', borderRadius: 12, color: '#f59e0b', fontFamily: '"Inter", sans-serif', fontSize: 13, fontWeight: 500, cursor: 'pointer' }}
             >
               <span>🔗</span>
               <span className="hidden sm:inline">Duplicates</span>
@@ -226,7 +240,7 @@ export default function CurriculumPage() {
             <Link
               data-tutorial="browse-guide-link"
               href="/montree/dashboard/curriculum/browse"
-              className="flex items-center gap-1.5 px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-sm font-medium transition-colors"
+              style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 12px', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(52,211,153,0.15)', borderRadius: 12, color: 'rgba(255,255,255,0.70)', fontFamily: '"Inter", sans-serif', fontSize: 13, fontWeight: 500, textDecoration: 'none' }}
             >
               <span>🔍</span>
               <span className="hidden sm:inline">{t('curriculum.browseGuide')}</span>
@@ -235,9 +249,9 @@ export default function CurriculumPage() {
               <button
                 data-tutorial="curriculum-add-button"
                 onClick={() => setShowAddModal(true)}
-                className="flex items-center gap-2 px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl font-medium transition-colors"
+                style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 16px', background: 'linear-gradient(180deg, #34d399, #10b981)', border: '1px solid rgba(52,211,153,0.55)', borderRadius: 12, color: '#06281a', fontFamily: '"Inter", sans-serif', fontSize: 13, fontWeight: 600, cursor: 'pointer', boxShadow: '0 4px 14px rgba(16,185,129,0.25)' }}
               >
-                <span className="text-lg">➕</span>
+                <span>➕</span>
                 <span className="hidden sm:inline">{t('weekview.addWork')}</span>
               </button>
             )}
@@ -247,13 +261,12 @@ export default function CurriculumPage() {
 
       <main className="max-w-4xl mx-auto px-4 py-6">
         {curriculum.length === 0 ? (
-          <div className="bg-white rounded-2xl p-8 text-center shadow-sm">
+          <div style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(52,211,153,0.15)', borderRadius: 18, padding: '32px 24px', textAlign: 'center', backdropFilter: 'blur(18px) saturate(140%)', WebkitBackdropFilter: 'blur(18px) saturate(140%)' }}>
             <span className="text-5xl mb-4 block">📚</span>
-            <h2 className="text-xl font-bold text-gray-800 mb-2">{t('curriculum.noCurriculum')}</h2>
-            <p className="text-gray-400 mb-6">{t('curriculum.noCurriculumDesc')}</p>
+            <h2 style={{ fontFamily: '"Lora", Georgia, serif', fontSize: 22, fontWeight: 500, color: 'rgba(255,255,255,0.95)', marginBottom: 8 }}>{t('curriculum.noCurriculum')}</h2>
+            <p style={{ fontFamily: '"Inter", sans-serif', fontSize: 14, color: 'rgba(255,255,255,0.45)', marginBottom: 24 }}>{t('curriculum.noCurriculumDesc')}</p>
             <button onClick={handleImportCurriculum} disabled={importing}
-              className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white px-8 py-4 rounded-xl font-bold
-                shadow-lg hover:shadow-xl transition-all disabled:opacity-50">
+              style={{ background: 'linear-gradient(180deg, #34d399, #10b981)', border: '1px solid rgba(52,211,153,0.55)', borderRadius: 14, padding: '14px 32px', color: '#06281a', fontFamily: '"Inter", sans-serif', fontWeight: 700, fontSize: 15, cursor: 'pointer', boxShadow: '0 4px 20px rgba(16,185,129,0.30)', opacity: importing ? 0.5 : 1 }}>
               {importing ? t('curriculum.importing') : `📥 ${t('curriculum.importMaster')}`}
             </button>
           </div>
@@ -261,26 +274,41 @@ export default function CurriculumPage() {
           <>
             {/* Import/Re-import button */}
             <div className="mb-4 flex justify-between items-center">
-              <p className="text-sm text-gray-400">{t('curriculum.tapToEdit')}</p>
+              <p style={{ fontFamily: '"Inter", sans-serif', fontSize: 13, color: 'rgba(255,255,255,0.35)' }}>{t('curriculum.tapToEdit')}</p>
               <button onClick={handleImportCurriculum} disabled={importing}
-                className="text-sm px-4 py-2 bg-amber-100 text-amber-800 rounded-xl hover:bg-amber-200 disabled:opacity-50">
+                style={{ fontSize: 13, padding: '7px 14px', background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.25)', borderRadius: 12, color: '#f59e0b', fontFamily: '"Inter", sans-serif', cursor: 'pointer', opacity: importing ? 0.5 : 1 }}>
                 {importing ? t('curriculum.importing') : `📥 ${t('curriculum.reimportMaster')}`}
               </button>
             </div>
 
             {/* Area Cards */}
             <div data-tutorial="area-cards" className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-6">
-              {Object.entries(byArea).map(([area, works]) => (
-                <button key={area} onClick={() => setSelectedArea(selectedArea === area ? null : area)}
-                  className={`bg-white rounded-2xl p-4 shadow-sm hover:shadow-lg transition-all text-left
-                    ${selectedArea === area ? 'ring-2 ring-emerald-500' : ''}`}>
-                  <div className="mb-2">
-                    <AreaBadge area={area} size="lg" />
-                  </div>
-                  <p className="font-semibold text-gray-800 capitalize">{t(('area.' + area) as any)}</p>
-                  <p className="text-sm text-gray-400">{works.length} {t('curriculum.works')}</p>
-                </button>
-              ))}
+              {Object.entries(byArea).map(([area, works]) => {
+                const rgb = AREA_RGB[area] || '52, 211, 153';
+                const isSelected = selectedArea === area;
+                return (
+                  <button key={area} onClick={() => setSelectedArea(isSelected ? null : area)}
+                    style={{
+                      background: isSelected ? `rgba(${rgb}, 0.12)` : 'rgba(255,255,255,0.06)',
+                      border: `1px solid ${isSelected ? `rgba(${rgb}, 0.50)` : 'rgba(52,211,153,0.15)'}`,
+                      borderRadius: 18,
+                      padding: '16px',
+                      backdropFilter: 'blur(18px) saturate(140%)',
+                      WebkitBackdropFilter: 'blur(18px) saturate(140%)',
+                      textAlign: 'left',
+                      cursor: 'pointer',
+                      transition: 'all 140ms ease',
+                      boxShadow: isSelected ? `0 0 0 1px rgba(${rgb}, 0.20)` : 'none',
+                    }}>
+                    <div className="mb-2 flex items-center gap-2">
+                      <span style={{ display: 'inline-block', width: 10, height: 10, borderRadius: '50%', background: `rgb(${rgb})`, flexShrink: 0 }} />
+                      <AreaBadge area={area} size="lg" />
+                    </div>
+                    <p style={{ fontFamily: '"Inter", sans-serif', fontWeight: 600, color: 'rgba(255,255,255,0.90)', margin: '0 0 2px', fontSize: 14 }}>{t(('area.' + area) as any)}</p>
+                    <p style={{ fontFamily: '"Inter", sans-serif', fontSize: 12, color: 'rgba(255,255,255,0.40)', margin: 0 }}>{works.length} {t('curriculum.works')}</p>
+                  </button>
+                );
+              })}
             </div>
 
             {/* Teaching Tools Section */}
@@ -341,7 +369,8 @@ export default function CurriculumPage() {
       {curriculum.length > 0 && (
         <button
           onClick={() => setShowAddModal(true)}
-          className="fixed bottom-20 right-4 w-14 h-14 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-full shadow-lg hover:shadow-xl transition-all flex items-center justify-center text-2xl z-30 sm:hidden active:scale-95"
+          className="fixed bottom-20 right-4 sm:hidden z-30 active:scale-95"
+          style={{ width: 56, height: 56, background: 'linear-gradient(180deg, #34d399, #10b981)', border: '1px solid rgba(52,211,153,0.55)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, boxShadow: '0 4px 20px rgba(16,185,129,0.35)', cursor: 'pointer' }}
         >
           ➕
         </button>
