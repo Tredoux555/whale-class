@@ -12,8 +12,10 @@
 // Photos are loaded from /api/montree/audit/photos?zone=pending_review.
 // Process action calls /api/montree/photo-identification/batch (POST).
 // Delete action calls /api/montree/photo-identification/batch (DELETE).
+// Dark forest visual treatment — all wiring intact
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import { Search, Trash2, Sparkles, Check } from 'lucide-react';
 import { useI18n } from '@/lib/montree/i18n';
 import { montreeApi } from '@/lib/montree/api';
 
@@ -29,13 +31,27 @@ interface PendingPhoto {
 }
 
 interface PendingReviewPanelProps {
-  /** When set, only that child's pending photos load. Omit for classroom-wide. */
   childId?: string;
-  /** Optional callback after a successful batch action so the parent can refresh other tabs. */
   onProcessed?: (count: number) => void;
-  /** Compact mode for embedding in the child gallery (smaller header). */
   compact?: boolean;
 }
+
+const T = {
+  amber: '#f59e0b',
+  amberSoft: 'rgba(245,158,11,0.10)',
+  amberStrong: 'rgba(245,158,11,0.18)',
+  amberBorder: 'rgba(245,158,11,0.35)',
+  emerald: '#34d399',
+  emeraldStrong: 'rgba(52,211,153,0.18)',
+  red: '#f87171',
+  redSoft: 'rgba(239,68,68,0.10)',
+  redBorder: 'rgba(239,68,68,0.35)',
+  textPrimary: 'rgba(255,255,255,0.95)',
+  textSecondary: 'rgba(255,255,255,0.65)',
+  textMuted: 'rgba(255,255,255,0.40)',
+  serif: '"Lora", Georgia, serif',
+  sans: '"Inter", -apple-system, BlinkMacSystemFont, sans-serif',
+};
 
 export default function PendingReviewPanel({ childId, onProcessed, compact = false }: PendingReviewPanelProps) {
   const { t } = useI18n();
@@ -138,17 +154,32 @@ export default function PendingReviewPanel({ childId, onProcessed, compact = fal
 
   if (loading && photos.length === 0) {
     return (
-      <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
+      <div style={{
+        padding: 16,
+        borderRadius: 12,
+        background: T.amberSoft,
+        border: `1px solid ${T.amberBorder}`,
+        color: T.amber,
+        fontFamily: T.sans,
+        fontSize: 13,
+      }}>
         {t('pendingReview.loading')}
       </div>
     );
   }
 
   if (!loading && photos.length === 0) {
-    // Render nothing in compact mode when empty (don't clutter child page).
     if (compact) return null;
     return (
-      <div className="rounded-xl border border-slate-200 bg-white p-4 text-sm text-slate-500">
+      <div style={{
+        padding: 16,
+        borderRadius: 12,
+        background: 'rgba(255,255,255,0.06)',
+        border: '1px solid rgba(52,211,153,0.15)',
+        color: T.textMuted,
+        fontFamily: T.sans,
+        fontSize: 13,
+      }}>
         {t('pendingReview.emptyState')}
       </div>
     );
@@ -157,22 +188,81 @@ export default function PendingReviewPanel({ childId, onProcessed, compact = fal
   const allSelected = selected.size > 0 && selected.size === photos.length;
 
   return (
-    <div className="rounded-xl border border-amber-300 bg-gradient-to-br from-amber-50 to-yellow-50 overflow-hidden">
-      <div className="flex items-center justify-between p-3 sm:p-4 border-b border-amber-200">
-        <div className="flex items-center gap-2 min-w-0">
-          <span className="text-2xl flex-shrink-0">🧐</span>
-          <div className="min-w-0">
-            <div className={`font-semibold text-amber-900 ${compact ? 'text-sm' : 'text-base'}`}>
-              {t('pendingReview.title')} <span className="text-amber-700 font-normal">· {t('pendingReview.photosWaiting', { count: photos.length })}</span>
+    <div style={{
+      borderRadius: 14,
+      background: T.amberSoft,
+      border: `1px solid ${T.amberBorder}`,
+      backdropFilter: 'blur(14px) saturate(140%)',
+      WebkitBackdropFilter: 'blur(14px) saturate(140%)',
+      overflow: 'hidden',
+      fontFamily: T.sans,
+      color: T.textPrimary,
+    }}>
+      {/* Header */}
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        gap: 10,
+        padding: compact ? 12 : 14,
+        borderBottom: `1px solid ${T.amberBorder}`,
+        background: 'linear-gradient(180deg, rgba(245,158,11,0.10), rgba(245,158,11,0.04))',
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: 32,
+            height: 32,
+            borderRadius: 9,
+            background: T.amberStrong,
+            border: `1px solid ${T.amberBorder}`,
+            color: T.amber,
+            flexShrink: 0,
+          }}>
+            <Search size={15} strokeWidth={1.75} />
+          </div>
+          <div style={{ minWidth: 0 }}>
+            <div style={{
+              fontFamily: T.serif,
+              fontSize: compact ? 13 : 15,
+              fontWeight: 500,
+              color: T.textPrimary,
+              letterSpacing: -0.1,
+            }}>
+              {t('pendingReview.title')}
+              <span style={{ color: T.textMuted, fontWeight: 400, fontFamily: T.sans, fontSize: 12 }}>
+                {' · '}{t('pendingReview.photosWaiting', { count: photos.length })}
+              </span>
             </div>
             {!compact && (
-              <div className="text-xs text-amber-700 mt-0.5">{t('pendingReview.subtitle')}</div>
+              <div style={{
+                fontFamily: T.sans,
+                fontSize: 11,
+                color: T.amber,
+                opacity: 0.85,
+                marginTop: 2,
+              }}>
+                {t('pendingReview.subtitle')}
+              </div>
             )}
           </div>
         </div>
         <button
           onClick={() => setCollapsed(c => !c)}
-          className="text-xs px-2 py-1 rounded text-amber-800 hover:bg-amber-100 flex-shrink-0"
+          style={{
+            padding: '5px 10px',
+            borderRadius: 8,
+            background: 'rgba(255,255,255,0.06)',
+            border: '1px solid rgba(255,255,255,0.10)',
+            color: T.amber,
+            fontFamily: T.sans,
+            fontSize: 11,
+            fontWeight: 600,
+            cursor: 'pointer',
+            flexShrink: 0,
+          }}
         >
           {collapsed ? t('pendingReview.show') : t('pendingReview.hide')}
         </button>
@@ -180,66 +270,188 @@ export default function PendingReviewPanel({ childId, onProcessed, compact = fal
 
       {!collapsed && (
         <>
-          <div className="flex flex-wrap gap-2 items-center justify-between p-3 bg-amber-100/50 border-b border-amber-200">
+          {/* Action bar */}
+          <div style={{
+            padding: 12,
+            background: 'rgba(245,158,11,0.06)',
+            borderBottom: `1px solid ${T.amberBorder}`,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: 8,
+            flexWrap: 'wrap',
+          }}>
             <button
               onClick={toggleAll}
-              className="text-xs sm:text-sm px-3 py-1.5 rounded-md bg-white border border-amber-300 text-amber-900 hover:bg-amber-50"
+              style={{
+                padding: '6px 12px',
+                borderRadius: 8,
+                background: 'rgba(255,255,255,0.06)',
+                border: `1px solid ${T.amberBorder}`,
+                color: T.amber,
+                fontFamily: T.sans,
+                fontSize: 12,
+                fontWeight: 600,
+                cursor: 'pointer',
+              }}
             >
               {allSelected ? t('pendingReview.deselect') : t('pendingReview.selectAll')} ({selected.size}/{photos.length})
             </button>
-            <div className="flex gap-2">
+            <div style={{ display: 'flex', gap: 8 }}>
               <button
                 onClick={() => runBatch('delete')}
                 disabled={selected.size === 0 || busy !== null}
-                className="text-xs sm:text-sm px-3 py-1.5 rounded-md bg-white border border-rose-300 text-rose-700 hover:bg-rose-50 disabled:opacity-40 disabled:cursor-not-allowed"
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 5,
+                  padding: '6px 12px',
+                  borderRadius: 8,
+                  background: T.redSoft,
+                  border: `1px solid ${T.redBorder}`,
+                  color: T.red,
+                  fontFamily: T.sans,
+                  fontSize: 12,
+                  fontWeight: 600,
+                  cursor: (selected.size === 0 || busy !== null) ? 'not-allowed' : 'pointer',
+                  opacity: (selected.size === 0 || busy !== null) ? 0.40 : 1,
+                }}
               >
-                {busy === 'delete' ? t('pendingReview.deleting') : `🗑 ${t('pendingReview.deleteSelected')}`}
+                <Trash2 size={11} strokeWidth={1.75} />
+                {busy === 'delete' ? t('pendingReview.deleting') : t('pendingReview.deleteSelected')}
               </button>
               <button
                 onClick={() => runBatch('process')}
                 disabled={selected.size === 0 || busy !== null}
-                className="text-xs sm:text-sm px-3 py-1.5 rounded-md bg-emerald-600 text-white hover:bg-emerald-700 disabled:opacity-40 disabled:cursor-not-allowed font-semibold"
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 5,
+                  padding: '6px 14px',
+                  borderRadius: 8,
+                  background: 'linear-gradient(180deg, #34d399, #10b981)',
+                  border: '1px solid rgba(52,211,153,0.55)',
+                  color: '#06281a',
+                  fontFamily: T.sans,
+                  fontSize: 12,
+                  fontWeight: 700,
+                  cursor: (selected.size === 0 || busy !== null) ? 'not-allowed' : 'pointer',
+                  opacity: (selected.size === 0 || busy !== null) ? 0.40 : 1,
+                  boxShadow: (selected.size === 0 || busy !== null) ? 'none' : '0 4px 14px rgba(16,185,129,0.25)',
+                }}
               >
-                {busy === 'process' ? t('pendingReview.processing') : `✨ ${t('pendingReview.processSelected')}`}
+                <Sparkles size={11} strokeWidth={1.75} />
+                {busy === 'process' ? t('pendingReview.processing') : t('pendingReview.processSelected')}
               </button>
             </div>
           </div>
 
           {error && (
-            <div className="px-3 py-2 text-xs text-rose-700 bg-rose-50 border-b border-rose-200">
+            <div style={{
+              padding: '8px 12px',
+              fontFamily: T.sans,
+              fontSize: 11,
+              color: T.red,
+              background: T.redSoft,
+              borderBottom: `1px solid ${T.redBorder}`,
+            }}>
               {error}
             </div>
           )}
 
           {progress && busy === 'process' && (
-            <div className="px-3 py-2 text-xs text-amber-800 bg-amber-100 border-b border-amber-200">
+            <div style={{
+              padding: '8px 12px',
+              fontFamily: T.sans,
+              fontSize: 11,
+              color: T.amber,
+              background: T.amberStrong,
+              borderBottom: `1px solid ${T.amberBorder}`,
+            }}>
               {t('pendingReview.processing')} {progress.done}/{progress.total}
             </div>
           )}
 
-          <div className="p-3 grid gap-3" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))' }}>
+          {/* Grid */}
+          <div style={{
+            padding: 12,
+            display: 'grid',
+            gap: 10,
+            gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
+          }}>
             {photos.map(p => {
               const isSel = selected.has(p.id);
               return (
                 <button
                   key={p.id}
                   onClick={() => toggleOne(p.id)}
-                  className={`relative aspect-square rounded-lg overflow-hidden border-2 transition-all ${
-                    isSel ? 'border-emerald-500 ring-2 ring-emerald-300' : 'border-slate-200 hover:border-amber-400'
-                  }`}
+                  style={{
+                    position: 'relative',
+                    aspectRatio: '1 / 1',
+                    borderRadius: 10,
+                    overflow: 'hidden',
+                    border: `2px solid ${isSel ? T.emerald : 'rgba(255,255,255,0.10)'}`,
+                    boxShadow: isSel ? `0 0 0 3px rgba(52,211,153,0.20)` : 'none',
+                    background: 'rgba(0,0,0,0.30)',
+                    cursor: 'pointer',
+                    transition: 'all 140ms ease',
+                    padding: 0,
+                  }}
                 >
                   {p.url ? (
-                    <img src={p.url} alt="" className="w-full h-full object-cover" loading="lazy" />
+                    <img
+                      src={p.url}
+                      alt=""
+                      loading="lazy"
+                      style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                    />
                   ) : (
-                    <div className="w-full h-full bg-slate-100 flex items-center justify-center text-xs text-slate-400">
+                    <div style={{
+                      width: '100%',
+                      height: '100%',
+                      background: 'rgba(255,255,255,0.04)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      color: T.textMuted,
+                      fontFamily: T.sans,
+                      fontSize: 11,
+                    }}>
                       no image
                     </div>
                   )}
-                  <div className="absolute top-1 left-1 w-6 h-6 rounded-full bg-white/90 border border-slate-300 flex items-center justify-center text-xs font-bold">
-                    {isSel ? '✓' : ''}
+                  <div style={{
+                    position: 'absolute',
+                    top: 6,
+                    left: 6,
+                    width: 24,
+                    height: 24,
+                    borderRadius: '50%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    background: isSel ? T.emerald : 'rgba(7,18,12,0.70)',
+                    border: `1.5px solid ${isSel ? T.emerald : 'rgba(255,255,255,0.55)'}`,
+                    color: isSel ? '#06281a' : 'transparent',
+                    backdropFilter: 'blur(6px)',
+                  }}>
+                    {isSel && <Check size={12} strokeWidth={3} />}
                   </div>
                   {!childId && p.child_name && (
-                    <div className="absolute bottom-0 left-0 right-0 px-1.5 py-0.5 bg-black/60 text-white text-[10px] truncate">
+                    <div style={{
+                      position: 'absolute',
+                      bottom: 0,
+                      left: 0,
+                      right: 0,
+                      padding: '3px 6px',
+                      background: 'rgba(0,0,0,0.65)',
+                      color: '#fff',
+                      fontFamily: T.sans,
+                      fontSize: 10,
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
+                    }}>
                       {p.child_name}
                     </div>
                   )}

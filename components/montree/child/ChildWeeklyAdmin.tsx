@@ -4,14 +4,16 @@
 // Per-child weekly admin with per-area breakdowns for government docs
 // Replaces GuruWeeklySummary — always renders (shows generate button even with no data)
 // Sections: Plan Row, Per-Area Details, Full Summary, This/Next/OneLiner, Advice
+// Dark forest visual treatment — all wiring intact
 
 import { useState, useCallback, useEffect, useRef } from 'react';
+import {
+  Loader2, Copy, Check, NotebookPen, ChevronDown, ChevronRight,
+} from 'lucide-react';
 import { montreeApi } from '@/lib/montree/api';
 import { useI18n } from '@/lib/montree/i18n';
 import { getAreaLabel } from '@/lib/montree/i18n/area-labels';
 import { getIntlLocale } from '@/lib/montree/i18n/locales';
-
-// ---- Types ----
 
 interface AreaDetail {
   work: string;
@@ -22,7 +24,6 @@ interface AreaDetail {
 interface Props {
   childId: string;
   childName: string;
-  // From child settings (passed by parent page):
   planRow: Record<string, string> | null;
   areaDetails: Record<string, AreaDetail> | null;
   fullSummary: string | null;
@@ -33,19 +34,38 @@ interface Props {
   updatedAt: string | null;
   onGenerated?: () => void;
 }
-// ---- Area Config ----
-
-const AREA_CONFIG: Record<string, { label: string; labelZh: string; color: string; icon: string }> = {
-  practical_life: { label: 'Practical', labelZh: '日常', color: '#10B981', icon: '🧹' },
-  sensorial: { label: 'Sensorial', labelZh: '感官', color: '#F59E0B', icon: '👁️' },
-  mathematics: { label: 'Math', labelZh: '数学', color: '#6366F1', icon: '🔢' },
-  language: { label: 'Language', labelZh: '语言', color: '#EC4899', icon: '📚' },
-  cultural: { label: 'Culture', labelZh: '科文', color: '#8B5CF6', icon: '🌍' },
-};
 
 const AREAS = ['practical_life', 'sensorial', 'mathematics', 'language', 'cultural'];
 
-// ---- Copy Helper ----
+const AREA_DOT_RGB: Record<string, string> = {
+  practical_life: '236, 72, 153',
+  sensorial: '20, 184, 166',
+  mathematics: '168, 85, 247',
+  language: '74, 222, 128',
+  cultural: '249, 115, 22',
+};
+
+const T = {
+  cardBg: 'rgba(255,255,255,0.06)',
+  cardBorder: 'rgba(52,211,153,0.15)',
+  cardRadius: 12,
+  emerald: '#34d399',
+  emeraldStrong: 'rgba(52,211,153,0.18)',
+  emeraldSoft: 'rgba(52,211,153,0.10)',
+  violet: '#c4b5fd',
+  violetStrong: 'rgba(139,92,246,0.18)',
+  violetBorder: 'rgba(139,92,246,0.30)',
+  violetSoft: 'rgba(139,92,246,0.10)',
+  indigo: '#a5b4fc',
+  red: '#f87171',
+  redSoft: 'rgba(239,68,68,0.10)',
+  redBorder: 'rgba(239,68,68,0.30)',
+  textPrimary: 'rgba(255,255,255,0.95)',
+  textSecondary: 'rgba(255,255,255,0.65)',
+  textMuted: 'rgba(255,255,255,0.40)',
+  serif: '"Lora", Georgia, serif',
+  sans: '"Inter", -apple-system, BlinkMacSystemFont, sans-serif',
+};
 
 function CopyBtn({ text, label }: { text: string; label: string }) {
   const [copied, setCopied] = useState(false);
@@ -70,18 +90,27 @@ function CopyBtn({ text, label }: { text: string; label: string }) {
   return (
     <button
       onClick={handleCopy}
-      className={`px-2 py-0.5 rounded text-xs font-medium transition-all ${
-        copied
-          ? 'bg-emerald-100 text-emerald-700'
-          : 'bg-white/80 text-violet-600 hover:bg-violet-50 border border-violet-200'
-      }`}
       title={`Copy ${label}`}
+      style={{
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: 4,
+        padding: '3px 8px',
+        borderRadius: 6,
+        background: copied ? T.emeraldStrong : 'rgba(255,255,255,0.06)',
+        border: `1px solid ${copied ? 'rgba(52,211,153,0.40)' : 'rgba(255,255,255,0.10)'}`,
+        color: copied ? T.emerald : T.violet,
+        fontFamily: T.sans,
+        fontSize: 11,
+        fontWeight: 600,
+        cursor: 'pointer',
+        transition: 'all 120ms ease',
+      }}
     >
-      {copied ? '✓' : '📋'}
+      {copied ? <Check size={10} strokeWidth={2.5} /> : <Copy size={10} strokeWidth={1.75} />}
     </button>
   );
 }
-// ---- Main Component ----
 
 export default function ChildWeeklyAdmin({
   childId,
@@ -102,7 +131,6 @@ export default function ChildWeeklyAdmin({
     return map[locale || 'en'] || en;
   };
 
-  // Local state (overrides props on generate)
   const [planRow, setPlanRow] = useState(initialPlanRow);
   const [areaDetails, setAreaDetails] = useState(initialAreaDetails);
   const [fullSummary, setFullSummary] = useState(initialFullSummary);
@@ -112,7 +140,6 @@ export default function ChildWeeklyAdmin({
   const [advice, setAdvice] = useState(initialAdvice);
   const [updatedAt, setUpdatedAt] = useState(initialUpdatedAt);
 
-  // Sync local state when props change (e.g. parent refetches after childId change)
   useEffect(() => {
     setPlanRow(initialPlanRow);
     setAreaDetails(initialAreaDetails);
@@ -132,9 +159,6 @@ export default function ChildWeeklyAdmin({
 
   const hasData = planRow || areaDetails || fullSummary || thisWeek;
 
-  // ---- Generate ----
-
-  // Abort on unmount
   useEffect(() => {
     return () => { abortRef.current?.abort(); };
   }, []);
@@ -173,15 +197,12 @@ export default function ChildWeeklyAdmin({
       setGenerating(false);
     }
   }, [childId, locale, t, onGenerated]);
-  // ---- Copy Plan Row as table line ----
 
   const copyPlanRow = useCallback(() => {
     if (!planRow) return '';
     const cols = AREAS.map(a => planRow[a] || '-');
     return `${childName} | ${cols.join(' | ')} | ${planRow.notes || ''}`;
   }, [planRow, childName]);
-
-  // ---- Format time ----
 
   const formatDate = (dateStr: string) => {
     try {
@@ -199,15 +220,18 @@ export default function ChildWeeklyAdmin({
     } catch { return ''; }
   };
 
-  // ---- Render ----
-
   return (
-    <div className="p-4">
-      {/* Header — Generate/Regenerate */}
-      <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center gap-2">
+    <div style={{ padding: 16, fontFamily: T.sans, color: T.textPrimary }}>
+      {/* Header */}
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        marginBottom: 12,
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           {updatedAt && (
-            <span className="text-xs text-violet-400">
+            <span style={{ fontFamily: T.sans, fontSize: 11, color: T.violet, opacity: 0.7 }}>
               {formatDate(updatedAt)}
             </span>
           )}
@@ -215,55 +239,126 @@ export default function ChildWeeklyAdmin({
         <button
           onClick={handleGenerate}
           disabled={generating}
-          className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
-            generating
-              ? 'bg-gray-200 text-gray-500 cursor-wait'
-              : 'bg-emerald-500 text-white hover:bg-emerald-600 active:scale-95'
-          }`}
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 6,
+            padding: '7px 14px',
+            borderRadius: 9,
+            background: generating
+              ? 'rgba(255,255,255,0.06)'
+              : 'linear-gradient(180deg, #34d399, #10b981)',
+            border: `1px solid ${generating ? 'rgba(255,255,255,0.10)' : 'rgba(52,211,153,0.55)'}`,
+            color: generating ? T.textMuted : '#06281a',
+            fontFamily: T.sans,
+            fontSize: 12,
+            fontWeight: 700,
+            cursor: generating ? 'wait' : 'pointer',
+            boxShadow: generating ? 'none' : '0 4px 14px rgba(16,185,129,0.25)',
+          }}
         >
           {generating ? (
-            <span className="flex items-center gap-1">
-              <span className="animate-spin">⏳</span>
+            <>
+              <Loader2 size={12} strokeWidth={2} style={{ animation: 'cwa-spin 0.9s linear infinite' }} />
               {t('childAdmin.generating')}
-            </span>
-          ) : hasData ? t('childAdmin.regenerate') : t('childAdmin.generate')}
+              <style>{`@keyframes cwa-spin { to { transform: rotate(360deg); } }`}</style>
+            </>
+          ) : (
+            <>{hasData ? t('childAdmin.regenerate') : t('childAdmin.generate')}</>
+          )}
         </button>
       </div>
 
       {/* Error */}
       {error && (
-        <div className="text-sm text-red-600 bg-red-50 rounded-lg p-2 mb-3">{error}</div>
+        <div style={{
+          padding: '8px 12px',
+          marginBottom: 12,
+          borderRadius: 10,
+          background: T.redSoft,
+          border: `1px solid ${T.redBorder}`,
+          color: T.red,
+          fontFamily: T.sans,
+          fontSize: 12,
+        }}>
+          {error}
+        </div>
       )}
-      {/* No data prompt */}
+
+      {/* No data */}
       {!hasData && !generating && (
-        <p className="text-sm text-violet-500 italic">
+        <p style={{
+          fontFamily: T.sans,
+          fontSize: 13,
+          color: T.violet,
+          opacity: 0.75,
+          fontStyle: 'italic',
+          margin: 0,
+        }}>
           {t('childAdmin.noData')}
         </p>
       )}
 
-      {/* ---- Section A: Plan Row ---- */}
+      {/* Plan Row */}
       {planRow && (
-        <div className="mb-3">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-semibold text-violet-700 uppercase">
+        <div style={{ marginBottom: 12 }}>
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            marginBottom: 8,
+          }}>
+            <span style={{
+              fontFamily: T.sans,
+              fontSize: 11,
+              fontWeight: 700,
+              color: T.violet,
+              letterSpacing: 0.5,
+              textTransform: 'uppercase',
+            }}>
               {t('childAdmin.planRow')}
             </span>
             <CopyBtn text={copyPlanRow()} label="Plan Row" />
           </div>
-          <div className="grid grid-cols-5 gap-1">
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(5, 1fr)',
+            gap: 4,
+          }}>
             {AREAS.map(area => {
-              const cfg = AREA_CONFIG[area];
               const work = planRow[area] || '-';
+              const rgb = AREA_DOT_RGB[area];
               return (
                 <div
                   key={area}
-                  className="bg-white rounded-lg p-2 text-center border"
-                  style={{ borderColor: cfg.color + '40' }}
+                  style={{
+                    background: 'rgba(255,255,255,0.04)',
+                    border: `1px solid rgba(${rgb}, 0.30)`,
+                    borderRadius: 8,
+                    padding: 8,
+                    textAlign: 'center',
+                  }}
                 >
-                  <div className="text-xs font-medium" style={{ color: cfg.color }}>
+                  <div style={{
+                    fontFamily: T.sans,
+                    fontSize: 10,
+                    fontWeight: 700,
+                    color: `rgb(${rgb})`,
+                    letterSpacing: 0.3,
+                  }}>
                     {getAreaLabel(area, locale)}
                   </div>
-                  <div className="text-xs text-gray-700 mt-0.5 line-clamp-2">
+                  <div style={{
+                    marginTop: 3,
+                    fontFamily: T.sans,
+                    fontSize: 11,
+                    color: T.textSecondary,
+                    lineHeight: 1.35,
+                    display: '-webkit-box',
+                    WebkitLineClamp: 2,
+                    WebkitBoxOrient: 'vertical',
+                    overflow: 'hidden',
+                  }}>
                     {work}
                   </div>
                 </div>
@@ -271,90 +366,248 @@ export default function ChildWeeklyAdmin({
             })}
           </div>
           {planRow.notes && (
-            <div className="mt-1.5 text-xs text-gray-600 italic bg-white/60 rounded px-2 py-1">
+            <div style={{
+              marginTop: 6,
+              padding: '5px 10px',
+              fontFamily: T.sans,
+              fontSize: 11,
+              fontStyle: 'italic',
+              color: T.textSecondary,
+              background: 'rgba(255,255,255,0.04)',
+              borderRadius: 8,
+            }}>
               {planRow.notes}
             </div>
           )}
         </div>
       )}
-      {/* Section B (Per-Area Details) removed — now shown inline in FocusWorksSection */}
 
-      {/* ---- Section C: Full Summary (for Chinese doc) ---- */}
+      {/* Full Summary */}
       {fullSummary && (
-        <div className="mb-3 border border-violet-100 rounded-lg overflow-hidden">
+        <div style={{
+          marginBottom: 12,
+          border: `1px solid ${T.violetBorder}`,
+          borderRadius: 10,
+          overflow: 'hidden',
+        }}>
           <button
             onClick={() => setShowFullSummary(!showFullSummary)}
-            className="w-full flex items-center justify-between p-2.5 bg-violet-50/50 hover:bg-violet-50 transition-colors"
+            style={{
+              width: '100%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              padding: '10px 12px',
+              background: T.violetSoft,
+              border: 'none',
+              cursor: 'pointer',
+              color: T.violet,
+              fontFamily: T.sans,
+              transition: 'background 140ms ease',
+            }}
+            onMouseEnter={e => (e.currentTarget.style.background = 'rgba(139,92,246,0.16)')}
+            onMouseLeave={e => (e.currentTarget.style.background = T.violetSoft)}
           >
-            <span className="text-sm font-medium text-violet-700">
-              📝 {t('childAdmin.fullSummary')}
+            <span style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 6,
+              fontSize: 13,
+              fontWeight: 600,
+            }}>
+              <NotebookPen size={13} strokeWidth={1.75} />
+              {t('childAdmin.fullSummary')}
             </span>
-            <div className="flex items-center gap-1">
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
               <CopyBtn text={fullSummary} label="Full Summary" />
-              <span className="text-gray-400 text-xs">{showFullSummary ? '▲' : '▼'}</span>
-            </div>
+              <ChevronDown
+                size={12}
+                strokeWidth={1.75}
+                color={T.textMuted}
+                style={{
+                  transition: 'transform 200ms ease',
+                  transform: showFullSummary ? 'rotate(180deg)' : 'rotate(0deg)',
+                }}
+              />
+            </span>
           </button>
           {showFullSummary && (
-            <div className="p-3 text-sm text-gray-700 whitespace-pre-wrap leading-relaxed bg-white">
+            <div style={{
+              padding: 12,
+              background: 'rgba(0,0,0,0.20)',
+              fontFamily: T.sans,
+              fontSize: 13,
+              lineHeight: 1.6,
+              color: T.textSecondary,
+              whiteSpace: 'pre-wrap',
+            }}>
               {fullSummary}
             </div>
           )}
         </div>
       )}
 
-      {/* ---- Section D: This Week / Next Week / One-Liner ---- */}
+      {/* This Week / Next Week / One-Liner */}
       {(thisWeek || nextWeek || oneLiner) && (
-        <div className="mb-3 space-y-2">
+        <div style={{
+          marginBottom: 12,
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 10,
+        }}>
           {thisWeek && (
-            <div className="flex items-start gap-2">
-              <div className="flex-1">
-                <div className="text-xs font-semibold text-violet-600 mb-0.5">{t('childAdmin.thisWeek').toUpperCase()}</div>
-                <p className="text-gray-700 text-sm leading-relaxed">{thisWeek}</p>
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
+              <div style={{ flex: 1 }}>
+                <div style={{
+                  fontFamily: T.sans,
+                  fontSize: 10,
+                  fontWeight: 700,
+                  color: T.violet,
+                  letterSpacing: 0.4,
+                  marginBottom: 2,
+                  textTransform: 'uppercase',
+                }}>
+                  {t('childAdmin.thisWeek')}
+                </div>
+                <p style={{
+                  margin: 0,
+                  fontFamily: T.sans,
+                  fontSize: 13,
+                  lineHeight: 1.55,
+                  color: T.textSecondary,
+                }}>
+                  {thisWeek}
+                </p>
               </div>
               <CopyBtn text={thisWeek} label="This Week" />
             </div>
           )}
           {nextWeek && (
-            <div className="flex items-start gap-2">
-              <div className="flex-1">
-                <div className="text-xs font-semibold text-indigo-600 mb-0.5">{t('childAdmin.nextWeek').toUpperCase()}</div>
-                <p className="text-gray-700 text-sm leading-relaxed">{nextWeek}</p>
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
+              <div style={{ flex: 1 }}>
+                <div style={{
+                  fontFamily: T.sans,
+                  fontSize: 10,
+                  fontWeight: 700,
+                  color: T.indigo,
+                  letterSpacing: 0.4,
+                  marginBottom: 2,
+                  textTransform: 'uppercase',
+                }}>
+                  {t('childAdmin.nextWeek')}
+                </div>
+                <p style={{
+                  margin: 0,
+                  fontFamily: T.sans,
+                  fontSize: 13,
+                  lineHeight: 1.55,
+                  color: T.textSecondary,
+                }}>
+                  {nextWeek}
+                </p>
               </div>
               <CopyBtn text={nextWeek} label="Next Week" />
             </div>
           )}
           {oneLiner && (
-            <div className="flex items-start gap-2">
-              <div className="flex-1">
-                <div className="text-xs font-semibold text-purple-600 mb-0.5">{t('childAdmin.oneLiner').toUpperCase()}</div>
-                <p className="text-gray-800 text-sm font-medium">{oneLiner}</p>
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
+              <div style={{ flex: 1 }}>
+                <div style={{
+                  fontFamily: T.sans,
+                  fontSize: 10,
+                  fontWeight: 700,
+                  color: T.violet,
+                  letterSpacing: 0.4,
+                  marginBottom: 2,
+                  textTransform: 'uppercase',
+                }}>
+                  {t('childAdmin.oneLiner')}
+                </div>
+                <p style={{
+                  margin: 0,
+                  fontFamily: T.sans,
+                  fontSize: 13,
+                  fontWeight: 600,
+                  color: T.textPrimary,
+                }}>
+                  {oneLiner}
+                </p>
               </div>
               <CopyBtn text={oneLiner} label="One-Liner" />
             </div>
           )}
         </div>
       )}
-      {/* ---- Section E: Guru Advice (expandable) ---- */}
+
+      {/* Advice */}
       {advice && (
-        <div className="pt-3 border-t border-violet-200/50">
+        <div style={{
+          paddingTop: 12,
+          borderTop: `1px solid ${T.violetBorder}`,
+        }}>
           <button
             onClick={() => setShowAdvice(!showAdvice)}
-            className="flex items-center gap-1.5 text-xs font-semibold text-violet-700 hover:text-violet-900 transition-colors w-full text-left"
+            style={{
+              width: '100%',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 6,
+              fontFamily: T.sans,
+              fontSize: 11,
+              fontWeight: 700,
+              color: T.violet,
+              background: 'transparent',
+              border: 'none',
+              cursor: 'pointer',
+              padding: 0,
+              textAlign: 'left',
+              textTransform: 'uppercase',
+              letterSpacing: 0.4,
+            }}
           >
-            <span>{showAdvice ? '▼' : '▶'}</span>
+            <ChevronRight
+              size={11}
+              strokeWidth={2}
+              style={{
+                transition: 'transform 200ms ease',
+                transform: showAdvice ? 'rotate(90deg)' : 'rotate(0deg)',
+              }}
+            />
             <span>{t('childAdmin.advice')}</span>
             {!showAdvice && (
-              <span className="text-violet-400 font-normal ml-1 truncate flex-1">
+              <span style={{
+                color: T.textMuted,
+                fontWeight: 400,
+                marginLeft: 4,
+                flex: 1,
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+                textTransform: 'none',
+                letterSpacing: 0,
+              }}>
                 — {advice.slice(0, 60)}...
               </span>
             )}
           </button>
           {showAdvice && (
-            <div className="mt-2 bg-white/60 rounded-xl p-3 border border-violet-100">
-              <div className="text-gray-700 text-sm leading-relaxed whitespace-pre-line">
+            <div style={{
+              marginTop: 10,
+              padding: 12,
+              borderRadius: 10,
+              background: 'rgba(255,255,255,0.04)',
+              border: `1px solid ${T.violetBorder}`,
+            }}>
+              <div style={{
+                fontFamily: T.sans,
+                fontSize: 13,
+                lineHeight: 1.6,
+                color: T.textSecondary,
+                whiteSpace: 'pre-line',
+              }}>
                 {advice}
               </div>
-              <div className="mt-2 flex justify-end">
+              <div style={{ marginTop: 8, display: 'flex', justifyContent: 'flex-end' }}>
                 <CopyBtn text={advice} label="Advice" />
               </div>
             </div>
