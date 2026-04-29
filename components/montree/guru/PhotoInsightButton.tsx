@@ -5,8 +5,10 @@
 // Uses global photo-insight-store so processing survives navigation between children
 // Shows toast results + scenario-based CTAs for work ingestion
 // Scenarios: A (unknown work), B (not in classroom), C (not on shelf), D (happy path)
+// Dark forest visual treatment — all wiring intact
 
 import { useState, useCallback, useRef, useEffect, useSyncExternalStore } from 'react';
+import { Sparkles, RotateCw, AlertTriangle, Check, X, Plus, BookOpen, Eye, Loader2, AlertCircle } from 'lucide-react';
 import { useI18n } from '@/lib/montree/i18n';
 import AreaBadge from '@/components/montree/shared/AreaBadge';
 import { montreeApi } from '@/lib/montree/api';
@@ -23,6 +25,32 @@ import {
   type CustomWorkProposal,
 } from '@/lib/montree/photo-insight-store';
 import { getChineseNameForWork } from '@/lib/montree/curriculum-loader';
+
+const T = {
+  bg: '#0a1a0f',
+  card: 'rgba(255,255,255,0.06)',
+  cardBorder: '1px solid rgba(52,211,153,0.15)',
+  emerald: '#34d399',
+  emeraldDeep: '#10b981',
+  emeraldStrong: 'rgba(52,211,153,0.18)',
+  emeraldSoft: 'rgba(52,211,153,0.10)',
+  amber: '#f59e0b',
+  amberSoft: 'rgba(245,158,11,0.10)',
+  amberStrong: 'rgba(245,158,11,0.18)',
+  amberBorder: 'rgba(245,158,11,0.35)',
+  violetSoft: 'rgba(139,92,246,0.10)',
+  violetBorder: 'rgba(139,92,246,0.35)',
+  violet: '#c4b5fd',
+  red: '#f87171',
+  redSoft: 'rgba(239,68,68,0.10)',
+  redBorder: 'rgba(239,68,68,0.35)',
+  textPrimary: 'rgba(255,255,255,0.95)',
+  textSecondary: 'rgba(255,255,255,0.65)',
+  textMuted: 'rgba(255,255,255,0.40)',
+  blur: 'blur(18px) saturate(140%)',
+  serif: '"Lora", Georgia, serif',
+  sans: '"Inter", -apple-system, BlinkMacSystemFont, sans-serif',
+};
 
 interface PhotoInsightButtonProps {
   childId: string;
@@ -383,157 +411,406 @@ export default function PhotoInsightButton({
     : null;
 
   return (
-    <div className="mt-2 space-y-1">
+    <div style={{ marginTop: 8, display: 'flex', flexDirection: 'column', gap: 4 }}>
       {!result && (
         <>
           {error ? (
             errorType === 'auth_error' ? (
-              <span className="inline-flex items-center gap-1 text-xs text-red-500">
-                <span>🔒</span>
+              <div
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 6,
+                  fontSize: 12,
+                  color: T.red,
+                  fontFamily: T.sans,
+                }}
+              >
+                <AlertCircle size={14} strokeWidth={1.75} />
                 <span>{t('photoInsight.sessionExpired')}</span>
-              </span>
+              </div>
             ) : (
-            <button
-              onClick={handleRetry}
-              className="inline-flex items-center gap-1 text-xs text-amber-600 hover:text-amber-700 transition-colors"
-              title={t('common.tryAgain')}
-            >
-              <span>🔄</span>
-              <span>
-                {errorType === 'rate_limit'
-                  ? t('photoInsight.rateLimited')
-                  : errorType === 'timeout'
-                  ? t('photoInsight.timeout')
-                  : errorType === 'network'
-                  ? t('photoInsight.networkError')
-                  : t('common.tryAgain')}
-              </span>
-            </button>
+              <button
+                onClick={handleRetry}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 6,
+                  fontSize: 12,
+                  color: T.amber,
+                  fontFamily: T.sans,
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  padding: 0,
+                  transition: 'color 120ms ease',
+                }}
+                title={t('common.tryAgain')}
+                onMouseEnter={e => (e.currentTarget.style.color = '#fcd34d')}
+                onMouseLeave={e => (e.currentTarget.style.color = T.amber)}
+              >
+                <RotateCw size={14} strokeWidth={1.75} />
+                <span>
+                  {errorType === 'rate_limit'
+                    ? t('photoInsight.rateLimited')
+                    : errorType === 'timeout'
+                    ? t('photoInsight.timeout')
+                    : errorType === 'network'
+                    ? t('photoInsight.networkError')
+                    : t('common.tryAgain')}
+                </span>
+              </button>
             )
           ) : (
             <button
               onClick={handleClick}
-              className="inline-flex items-center gap-1 text-xs text-emerald-600 hover:text-emerald-700 transition-colors"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 6,
+                fontSize: 12,
+                color: T.emerald,
+                fontFamily: T.sans,
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                padding: 0,
+                transition: 'color 120ms ease',
+              }}
               title={t('guru.whatDoesGuruSee')}
+              onMouseEnter={e => (e.currentTarget.style.color = '#6ee7b7')}
+              onMouseLeave={e => (e.currentTarget.style.color = T.emerald)}
             >
               {analyzing ? (
                 <>
-                  <span className="animate-spin text-xs">⏳</span>
+                  <Loader2 size={14} strokeWidth={1.75} style={{ animation: 'spin 1.5s linear infinite' }} />
                   <span>{retrying ? t('photoInsight.retrying') : t('photoInsight.analyzing')}</span>
                 </>
               ) : (
                 <>
-                  <span>🌿</span>
+                  <Sparkles size={14} strokeWidth={1.75} />
                   <span>{t('guru.whatDoesGuruSee')}</span>
                 </>
               )}
+              <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
             </button>
           )}
         </>
       )}
 
       {result && (
-        <div className="space-y-1.5">
-          {/* Work tag + area badge */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+          {/* Work tag + area badge + status */}
           {result.work_name && (
-            <div className="flex items-center gap-2 flex-wrap">
-              {result.area && <AreaBadge area={result.area} size="xs" />}
-              {result.area && (
-                <span className="text-xs text-gray-500">
-                  {t(`area.${result.area}`)}
+            <div
+              style={{
+                padding: '10px 12px',
+                background: T.card,
+                border: T.cardBorder,
+                borderRadius: 12,
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 8,
+                fontFamily: T.sans,
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                {result.area && <AreaBadge area={result.area} size="xs" />}
+                {result.area && (
+                  <span style={{ fontSize: 11, color: T.textMuted }}>
+                    {t(`area.${result.area}`)}
+                  </span>
+                )}
+                <span
+                  style={{
+                    fontSize: 13,
+                    fontWeight: 500,
+                    color: T.textPrimary,
+                    fontFamily: T.sans,
+                  }}
+                >
+                  {locale !== 'en' ? (getChineseNameForWork(result.work_name) || result.work_name) : result.work_name}
                 </span>
-              )}
-              <span className="text-sm font-semibold text-gray-800">
-                {locale !== 'en' ? (getChineseNameForWork(result.work_name) || result.work_name) : result.work_name}
-              </span>
-              {statusInfo && (
-                <span className={`text-xs px-1.5 py-0.5 rounded-full font-medium ${
-                  result.mastery_evidence === 'mastered'
-                    ? 'bg-emerald-100 text-emerald-700'
-                    : result.mastery_evidence === 'practicing'
-                    ? 'bg-amber-100 text-amber-700'
-                    : 'bg-blue-100 text-blue-700'
-                }`}>
-                  {statusInfo.emoji} {statusInfo.labels[locale || 'en'] || statusInfo.labels.en}
-                </span>
-              )}
+                {statusInfo && (
+                  <div
+                    style={{
+                      fontSize: 11,
+                      padding: '3px 8px',
+                      borderRadius: 12,
+                      fontWeight: 500,
+                      background:
+                        result.mastery_evidence === 'mastered'
+                          ? 'rgba(255,255,255,0.10)'
+                          : result.mastery_evidence === 'practicing'
+                          ? T.amberStrong
+                          : T.emeraldStrong,
+                      color:
+                        result.mastery_evidence === 'mastered'
+                          ? 'rgba(255,255,255,0.85)'
+                          : result.mastery_evidence === 'practicing'
+                          ? T.amber
+                          : T.emerald,
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 4,
+                    }}
+                  >
+                    <span>{statusInfo.emoji}</span>
+                    <span>{statusInfo.labels[locale || 'en'] || statusInfo.labels.en}</span>
+                  </div>
+                )}
+              </div>
             </div>
           )}
 
           {/* Brief observation */}
-          <p className="text-xs text-gray-600 leading-relaxed">
-            <span className="text-emerald-600">🌿</span> {result.insight}
+          <p
+            style={{
+              fontSize: 12,
+              color: T.textSecondary,
+              lineHeight: 1.5,
+              margin: 0,
+              fontFamily: T.sans,
+              display: 'flex',
+              alignItems: 'flex-start',
+              gap: 6,
+            }}
+          >
+            <Sparkles size={13} strokeWidth={1.75} style={{ marginTop: 2, flexShrink: 0, color: T.emerald }} />
+            <span>{result.insight}</span>
           </p>
 
           {/* GREEN zone: Auto-updated with high confidence */}
           {result.auto_updated && (
-            <p className="text-xs text-emerald-600 italic">
-              {t('photoInsight.highConfidenceAutoUpdated')}
+            <p
+              style={{
+                fontSize: 11,
+                color: T.emerald,
+                fontStyle: 'italic',
+                margin: 0,
+                fontFamily: T.sans,
+              }}
+            >
+              ✓ {t('photoInsight.highConfidenceAutoUpdated')}
             </p>
           )}
 
           {/* AMBER zone: Needs teacher confirmation */}
           {!ctaDone && result.needs_confirmation && entry?.status !== 'confirmed' && entry?.status !== 'rejected' && (
-            <div className="flex items-center gap-2 mt-1">
-              <p className="text-xs text-amber-600 italic">{t('photoInsight.pendingConfirmation')}</p>
-              <button
-                onClick={handleConfirm}
-                disabled={ctaLoading}
-                className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200 transition-colors disabled:opacity-50"
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <p
+                style={{
+                  fontSize: 11,
+                  color: T.amber,
+                  fontStyle: 'italic',
+                  margin: 0,
+                  fontFamily: T.sans,
+                }}
               >
-                {ctaLoading ? <span className="animate-spin">⏳</span> : <span>✓</span>}
-                <span>{t('photoInsight.confirmMatch')}</span>
-              </button>
-              <button
-                onClick={handleReject}
-                disabled={ctaLoading}
-                className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-md bg-red-50 text-red-700 hover:bg-red-100 border border-red-200 transition-colors disabled:opacity-50"
-              >
-                <span>✗</span>
-                <span>{t('photoInsight.wrongMatch')}</span>
-              </button>
+                {t('photoInsight.pendingConfirmation')}
+              </p>
+              <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                <button
+                  onClick={handleConfirm}
+                  disabled={ctaLoading}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 5,
+                    fontSize: 11,
+                    padding: '6px 10px',
+                    borderRadius: 8,
+                    background: T.emeraldStrong,
+                    color: T.emerald,
+                    border: `1px solid ${T.emerald}`,
+                    fontFamily: T.sans,
+                    fontWeight: 500,
+                    cursor: ctaLoading ? 'not-allowed' : 'pointer',
+                    opacity: ctaLoading ? 0.6 : 1,
+                    transition: 'all 120ms ease',
+                  }}
+                  onMouseEnter={e => !ctaLoading && (e.currentTarget.style.background = 'rgba(52,211,153,0.25)')}
+                  onMouseLeave={e => !ctaLoading && (e.currentTarget.style.background = T.emeraldStrong)}
+                >
+                  {ctaLoading ? (
+                    <Loader2 size={11} strokeWidth={1.75} style={{ animation: 'spin 1.5s linear infinite' }} />
+                  ) : (
+                    <Check size={11} strokeWidth={2} />
+                  )}
+                  <span>{t('photoInsight.confirmMatch')}</span>
+                </button>
+                <button
+                  onClick={handleReject}
+                  disabled={ctaLoading}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 5,
+                    fontSize: 11,
+                    padding: '6px 10px',
+                    borderRadius: 8,
+                    background: T.redSoft,
+                    color: T.red,
+                    border: `1px solid ${T.redBorder}`,
+                    fontFamily: T.sans,
+                    fontWeight: 500,
+                    cursor: ctaLoading ? 'not-allowed' : 'pointer',
+                    opacity: ctaLoading ? 0.6 : 1,
+                    transition: 'all 120ms ease',
+                  }}
+                  onMouseEnter={e => !ctaLoading && (e.currentTarget.style.background = 'rgba(239,68,68,0.20)')}
+                  onMouseLeave={e => !ctaLoading && (e.currentTarget.style.background = T.redSoft)}
+                >
+                  <X size={11} strokeWidth={2} />
+                  <span>{t('photoInsight.wrongMatch')}</span>
+                </button>
+              </div>
+              <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
             </div>
           )}
 
           {/* Teacher confirmed */}
           {entry?.status === 'confirmed' && (
-            <p className="text-xs text-emerald-600 italic">
-              ✓ {t('photoInsight.confirmed')}
+            <p
+              style={{
+                fontSize: 11,
+                color: T.emerald,
+                fontStyle: 'italic',
+                margin: 0,
+                fontFamily: T.sans,
+                display: 'flex',
+                alignItems: 'center',
+                gap: 4,
+              }}
+            >
+              <Check size={12} strokeWidth={2} />
+              {t('photoInsight.confirmed')}
             </p>
           )}
 
           {/* Scenario A: Amber proposal card OR fallback (candidates + teach button) */}
           {!ctaDone && result.scenario === 'A' && (
-            <div className="space-y-1.5">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
               {/* Show amber proposal card when proposal exists and not dismissed */}
               {result.custom_work_proposal && !proposalDismissed ? (
-                <div className="rounded-lg border border-amber-300 bg-amber-50 p-2.5 space-y-2">
-                  <p className="text-xs font-medium text-amber-800">{t('photoInsight.suggestedWork')}</p>
-                  <div>
-                    <p className="text-sm font-bold text-amber-900">{result.custom_work_proposal.name}</p>
-                    <p className="text-xs text-amber-700 mt-0.5">{result.custom_work_proposal.description}</p>
+                <div
+                  style={{
+                    borderRadius: 12,
+                    border: `1px solid ${T.amberBorder}`,
+                    background: T.amberSoft,
+                    padding: 12,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: 10,
+                    fontFamily: T.sans,
+                    backdropFilter: T.blur,
+                    WebkitBackdropFilter: T.blur,
+                  }}
+                >
+                  <p
+                    style={{
+                      margin: 0,
+                      fontSize: 11,
+                      fontWeight: 600,
+                      color: T.amber,
+                      textTransform: 'uppercase',
+                      letterSpacing: 0.5,
+                    }}
+                  >
+                    {t('photoInsight.suggestedWork')}
+                  </p>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                    <p
+                      style={{
+                        margin: 0,
+                        fontSize: 13,
+                        fontWeight: 600,
+                        color: T.textPrimary,
+                      }}
+                    >
+                      {result.custom_work_proposal.name}
+                    </p>
+                    <p
+                      style={{
+                        margin: 0,
+                        fontSize: 12,
+                        color: T.textSecondary,
+                        lineHeight: 1.5,
+                      }}
+                    >
+                      {result.custom_work_proposal.description}
+                    </p>
                     {result.custom_work_proposal.materials.length > 0 && (
-                      <p className="text-xs text-amber-600 mt-0.5">
-                        📦 {result.custom_work_proposal.materials.join(', ')}
+                      <p
+                        style={{
+                          margin: 0,
+                          fontSize: 11,
+                          color: T.textMuted,
+                          display: 'flex',
+                          alignItems: 'flex-start',
+                          gap: 6,
+                        }}
+                      >
+                        <span style={{ marginTop: 2 }}>📦</span>
+                        <span>{result.custom_work_proposal.materials.join(', ')}</span>
                       </p>
                     )}
                   </div>
-                  <div className="flex flex-wrap gap-1.5">
+                  <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
                     <button
                       onClick={handleAddCustomWork}
                       disabled={ctaLoading}
-                      className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-md bg-emerald-600 text-white hover:bg-emerald-700 transition-colors disabled:opacity-50"
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: 5,
+                        fontSize: 11,
+                        padding: '6px 12px',
+                        borderRadius: 8,
+                        background: T.emeraldDeep,
+                        color: '#fff',
+                        border: 'none',
+                        fontFamily: T.sans,
+                        fontWeight: 600,
+                        cursor: ctaLoading ? 'not-allowed' : 'pointer',
+                        opacity: ctaLoading ? 0.6 : 1,
+                        transition: 'all 120ms ease',
+                      }}
+                      onMouseEnter={e => !ctaLoading && (e.currentTarget.style.background = 'rgba(16,185,129,0.90)')}
+                      onMouseLeave={e => !ctaLoading && (e.currentTarget.style.background = T.emeraldDeep)}
                     >
                       {ctaLoading ? (
-                        <span className="animate-spin">⏳</span>
+                        <Loader2 size={11} strokeWidth={1.75} style={{ animation: 'spin 1.5s linear infinite' }} />
                       ) : (
-                        <span>✅</span>
+                        <Check size={11} strokeWidth={2} />
                       )}
                       <span>{t('photoInsight.addAsNewWork')}</span>
                     </button>
                     <button
                       onClick={handleDismissProposal}
-                      className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-md bg-gray-100 text-gray-600 hover:bg-gray-200 border border-gray-200 transition-colors"
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: 5,
+                        fontSize: 11,
+                        padding: '6px 12px',
+                        borderRadius: 8,
+                        background: 'rgba(255,255,255,0.06)',
+                        color: T.textMuted,
+                        border: '1px solid rgba(255,255,255,0.10)',
+                        fontFamily: T.sans,
+                        fontWeight: 500,
+                        cursor: 'pointer',
+                        transition: 'all 120ms ease',
+                      }}
+                      onMouseEnter={e => {
+                        e.currentTarget.style.background = 'rgba(255,255,255,0.10)';
+                        e.currentTarget.style.color = T.textSecondary;
+                      }}
+                      onMouseLeave={e => {
+                        e.currentTarget.style.background = 'rgba(255,255,255,0.06)';
+                        e.currentTarget.style.color = T.textMuted;
+                      }}
                     >
                       <span>{t('photoInsight.notThisOne')}</span>
                     </button>
@@ -541,7 +818,6 @@ export default function PhotoInsightButton({
                   {onTeachWork && (
                     <button
                       onClick={() => {
-                        // Open Teach modal pre-filled with proposal data
                         if (onTeachWork && result.custom_work_proposal) {
                           onTeachWork({
                             workName: result.custom_work_proposal.name,
@@ -550,19 +826,40 @@ export default function PhotoInsightButton({
                           });
                         }
                       }}
-                      className="text-xs text-amber-600 hover:text-amber-700 underline"
+                      style={{
+                        fontSize: 11,
+                        color: T.amber,
+                        background: 'none',
+                        border: 'none',
+                        cursor: 'pointer',
+                        padding: 0,
+                        fontFamily: T.sans,
+                        textDecoration: 'underline',
+                        transition: 'color 120ms ease',
+                      }}
+                      onMouseEnter={e => (e.currentTarget.style.color = '#fcd34d')}
+                      onMouseLeave={e => (e.currentTarget.style.color = T.amber)}
                     >
                       {t('photoInsight.editBeforeAdding')}
                     </button>
                   )}
+                  <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
                 </div>
               ) : (
                 /* Fallback: original Scenario A UI — candidates + teach button */
                 <>
                   {result.candidates && result.candidates.length > 0 && (
-                    <div>
-                      <p className="text-xs text-gray-500 mb-1">{t('photoInsight.didYouMean')}</p>
-                      <div className="flex flex-wrap gap-1.5">
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                      <p
+                        style={{
+                          margin: 0,
+                          fontSize: 11,
+                          color: T.textMuted,
+                        }}
+                      >
+                        {t('photoInsight.didYouMean')}
+                      </p>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
                         {result.candidates.map((c) => (
                           <button
                             key={`${c.name}-${c.area}`}
@@ -591,7 +888,28 @@ export default function PhotoInsightButton({
                                 onTeachWork({ workName: c.name, area: c.area, mediaId });
                               }
                             }}
-                            className="inline-flex items-center gap-1 text-xs px-2 py-1 rounded-full bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-200 transition-colors"
+                            style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: 5,
+                              fontSize: 11,
+                              padding: '6px 10px',
+                              borderRadius: 20,
+                              background: 'rgba(255,255,255,0.06)',
+                              color: T.textSecondary,
+                              border: '1px solid rgba(255,255,255,0.10)',
+                              fontFamily: T.sans,
+                              cursor: 'pointer',
+                              transition: 'all 120ms ease',
+                            }}
+                            onMouseEnter={e => {
+                              e.currentTarget.style.background = 'rgba(255,255,255,0.10)';
+                              e.currentTarget.style.color = T.textPrimary;
+                            }}
+                            onMouseLeave={e => {
+                              e.currentTarget.style.background = 'rgba(255,255,255,0.06)';
+                              e.currentTarget.style.color = T.textSecondary;
+                            }}
                           >
                             <AreaBadge area={c.area} size="xs" />
                             <span>{c.name}</span>
@@ -603,9 +921,25 @@ export default function PhotoInsightButton({
                   {onTeachWork && (
                     <button
                       onClick={handleTeachWork}
-                      className="inline-flex items-center gap-1 text-xs px-2 py-1 rounded-md bg-amber-50 text-amber-700 hover:bg-amber-100 border border-amber-200 transition-colors"
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: 5,
+                        fontSize: 11,
+                        padding: '6px 10px',
+                        borderRadius: 8,
+                        background: T.amberSoft,
+                        color: T.amber,
+                        border: `1px solid ${T.amberBorder}`,
+                        fontFamily: T.sans,
+                        fontWeight: 500,
+                        cursor: 'pointer',
+                        transition: 'all 120ms ease',
+                      }}
+                      onMouseEnter={e => (e.currentTarget.style.background = T.amberStrong)}
+                      onMouseLeave={e => (e.currentTarget.style.background = T.amberSoft)}
                     >
-                      <span>📚</span>
+                      <BookOpen size={11} strokeWidth={1.75} />
                       <span>{t('photoInsight.teachGuruWork')}</span>
                     </button>
                   )}
@@ -618,14 +952,32 @@ export default function PhotoInsightButton({
             <button
               onClick={handleAddToClassroom}
               disabled={ctaLoading}
-              className="inline-flex items-center gap-1 text-xs px-2 py-1 rounded-md bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 transition-colors disabled:opacity-50"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 5,
+                fontSize: 11,
+                padding: '6px 12px',
+                borderRadius: 8,
+                background: 'rgba(59,130,246,0.18)',
+                color: '#60a5fa',
+                border: '1px solid rgba(59,130,246,0.35)',
+                fontFamily: T.sans,
+                fontWeight: 500,
+                cursor: ctaLoading ? 'not-allowed' : 'pointer',
+                opacity: ctaLoading ? 0.6 : 1,
+                transition: 'all 120ms ease',
+              }}
+              onMouseEnter={e => !ctaLoading && (e.currentTarget.style.background = 'rgba(59,130,246,0.25)')}
+              onMouseLeave={e => !ctaLoading && (e.currentTarget.style.background = 'rgba(59,130,246,0.18)')}
             >
               {ctaLoading ? (
-                <span className="animate-spin">⏳</span>
+                <Loader2 size={11} strokeWidth={1.75} style={{ animation: 'spin 1.5s linear infinite' }} />
               ) : (
-                <span>➕</span>
+                <Plus size={11} strokeWidth={2} />
               )}
               <span>{t('photoInsight.addToClassroom')}</span>
+              <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
             </button>
           )}
 
@@ -633,27 +985,60 @@ export default function PhotoInsightButton({
             <button
               onClick={handleAddToShelf}
               disabled={ctaLoading}
-              className="inline-flex items-center gap-1 text-xs px-2 py-1 rounded-md bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200 transition-colors disabled:opacity-50"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 5,
+                fontSize: 11,
+                padding: '6px 12px',
+                borderRadius: 8,
+                background: T.emeraldStrong,
+                color: T.emerald,
+                border: `1px solid ${T.emerald}`,
+                fontFamily: T.sans,
+                fontWeight: 500,
+                cursor: ctaLoading ? 'not-allowed' : 'pointer',
+                opacity: ctaLoading ? 0.6 : 1,
+                transition: 'all 120ms ease',
+              }}
+              onMouseEnter={e => !ctaLoading && (e.currentTarget.style.background = 'rgba(52,211,153,0.25)')}
+              onMouseLeave={e => !ctaLoading && (e.currentTarget.style.background = T.emeraldStrong)}
             >
               {ctaLoading ? (
-                <span className="animate-spin">⏳</span>
+                <Loader2 size={11} strokeWidth={1.75} style={{ animation: 'spin 1.5s linear infinite' }} />
               ) : (
-                <span>📋</span>
+                <Eye size={11} strokeWidth={1.75} />
               )}
               <span>{t('photoInsight.addToShelf')}</span>
+              <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
             </button>
           )}
 
           {/* Scenario D low-confidence: subtle "Did you mean?" with alternatives */}
           {!ctaDone && result.scenario === 'D' && result.match_score != null && result.match_score < 0.75 &&
             result.candidates && result.candidates.length > 1 && (
-            <div>
-              <p className="text-xs text-gray-400">{t('photoInsight.didYouMean')}</p>
-              <div className="flex flex-wrap gap-1 mt-0.5">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              <p
+                style={{
+                  margin: 0,
+                  fontSize: 11,
+                  color: T.textMuted,
+                }}
+              >
+                {t('photoInsight.didYouMean')}
+              </p>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
                 {result.candidates.slice(1).map((c) => (
                   <span
                     key={`${c.name}-${c.area}`}
-                    className="text-xs text-gray-500 px-1.5 py-0.5 rounded bg-gray-50 border border-gray-100"
+                    style={{
+                      fontSize: 10,
+                      color: T.textMuted,
+                      padding: '4px 8px',
+                      borderRadius: 6,
+                      background: 'rgba(255,255,255,0.04)',
+                      border: '1px solid rgba(255,255,255,0.08)',
+                    }}
                   >
                     {c.name} ({Math.round(c.score * 100)}%)
                   </span>
@@ -663,14 +1048,38 @@ export default function PhotoInsightButton({
           )}
 
           {ctaError && (
-            <p className="text-xs text-red-600 italic">
-              ⚠ {ctaError}
+            <p
+              style={{
+                margin: 0,
+                fontSize: 11,
+                color: T.red,
+                fontStyle: 'italic',
+                fontFamily: T.sans,
+                display: 'flex',
+                alignItems: 'flex-start',
+                gap: 5,
+              }}
+            >
+              <AlertTriangle size={11} strokeWidth={1.75} style={{ marginTop: 1, flexShrink: 0 }} />
+              <span>{ctaError}</span>
             </p>
           )}
 
           {ctaDone && (
-            <p className="text-xs text-emerald-600 italic">
-              ✓ {t('photoInsight.actionComplete')}
+            <p
+              style={{
+                margin: 0,
+                fontSize: 11,
+                color: T.emerald,
+                fontStyle: 'italic',
+                fontFamily: T.sans,
+                display: 'flex',
+                alignItems: 'center',
+                gap: 4,
+              }}
+            >
+              <Check size={12} strokeWidth={2} />
+              {t('photoInsight.actionComplete')}
             </p>
           )}
         </div>
