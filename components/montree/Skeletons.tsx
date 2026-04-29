@@ -1,43 +1,79 @@
 // components/montree/Skeletons.tsx
 // Reusable skeleton loading components for instant perceived performance.
 // Shows content shapes instead of blank screens while data loads.
+// Dark forest visual treatment — all shapes preserved
 'use client';
 
 import React from 'react';
+
+// Dark forest tokens
+const SK = {
+  bone: 'rgba(52,211,153,0.10)',
+  cardBorder: 'rgba(52,211,153,0.15)',
+  cardBg: 'rgba(255,255,255,0.04)',
+};
+
+const STYLE_TAG = (
+  <style>{`
+    @keyframes mt-skel-pulse {
+      0%, 100% { opacity: 0.55; }
+      50% { opacity: 1; }
+    }
+    .mt-bone { animation: mt-skel-pulse 1.6s ease-in-out infinite; }
+  `}</style>
+);
 
 // --- Base Skeleton Primitive ---
 
 function Bone({ className = '', style }: { className?: string; style?: React.CSSProperties }) {
   return (
     <div
-      className={`animate-pulse bg-gray-200 rounded-lg ${className}`}
-      style={style}
+      className={`mt-bone ${className}`}
+      style={{
+        background: SK.bone,
+        borderRadius: 8,
+        ...style,
+      }}
     />
   );
 }
+
+const cardStyle: React.CSSProperties = {
+  background: SK.cardBg,
+  border: `1px solid ${SK.cardBorder}`,
+  borderRadius: 16,
+  padding: 14,
+};
 
 // --- Dashboard: Student Grid ---
 
 export function DashboardSkeleton() {
   return (
-    <div className="p-4 max-w-lg mx-auto space-y-6">
-      {/* Header area */}
-      <div className="flex items-center justify-between">
-        <Bone className="h-8 w-48" />
-        <Bone className="h-8 w-8 rounded-full" />
+    <div style={{ padding: 16, maxWidth: 480, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 24 }}>
+      {STYLE_TAG}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <Bone style={{ height: 32, width: 192 }} />
+        <Bone style={{ height: 32, width: 32, borderRadius: '50%' }} />
       </div>
-      {/* Student count */}
-      <Bone className="h-5 w-32" />
-      {/* Student grid */}
-      <div className="grid grid-cols-2 gap-3">
+      <Bone style={{ height: 20, width: 128 }} />
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
         {Array.from({ length: 6 }).map((_, i) => (
-          <div key={i} className="rounded-2xl border border-gray-100 p-4 space-y-3">
-            <div className="flex items-center gap-3">
-              <Bone className="w-12 h-12 rounded-full" />
-              <Bone className="h-5 w-20" />
+          <div
+            key={i}
+            style={{
+              ...cardStyle,
+              padding: 16,
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 12,
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <Bone style={{ width: 48, height: 48, borderRadius: '50%' }} />
+              <Bone style={{ height: 20, width: 80 }} />
             </div>
-            <Bone className="h-3 w-full" />
-            <Bone className="h-3 w-3/4" />
+            <Bone style={{ height: 12, width: '100%' }} />
+            <Bone style={{ height: 12, width: '75%' }} />
           </div>
         ))}
       </div>
@@ -49,31 +85,29 @@ export function DashboardSkeleton() {
 
 export function WeekViewSkeleton() {
   return (
-    <div className="p-4 max-w-lg mx-auto space-y-4">
-      {/* Child header */}
-      <div className="flex items-center gap-3">
-        <Bone className="w-14 h-14 rounded-full" />
-        <div className="space-y-2 flex-1">
-          <Bone className="h-6 w-32" />
-          <Bone className="h-4 w-24" />
+    <div style={{ padding: 16, maxWidth: 480, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 16 }}>
+      {STYLE_TAG}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+        <Bone style={{ width: 56, height: 56, borderRadius: '50%' }} />
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8, flex: 1 }}>
+          <Bone style={{ height: 24, width: 128 }} />
+          <Bone style={{ height: 16, width: 96 }} />
         </div>
       </div>
-      {/* Tabs */}
-      <div className="flex gap-2">
-        {['Week', 'Progress', 'Gallery', 'Reports'].map(t => (
-          <Bone key={t} className="h-9 w-20 rounded-full" />
+      <div style={{ display: 'flex', gap: 8 }}>
+        {[0, 1, 2, 3].map(i => (
+          <Bone key={i} style={{ height: 36, width: 80, borderRadius: 999 }} />
         ))}
       </div>
-      {/* Focus works */}
       {Array.from({ length: 4 }).map((_, i) => (
-        <div key={i} className="rounded-xl border border-gray-100 p-4 space-y-2">
-          <div className="flex items-center gap-3">
-            <Bone className="w-8 h-8 rounded-full" />
-            <Bone className="h-5 flex-1" />
+        <div key={i} style={{ ...cardStyle, padding: 16, display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <Bone style={{ width: 32, height: 32, borderRadius: '50%' }} />
+            <Bone style={{ height: 20, flex: 1 }} />
           </div>
-          <div className="flex gap-2">
-            <Bone className="h-7 w-20 rounded-full" />
-            <Bone className="h-7 w-16 rounded-full" />
+          <div style={{ display: 'flex', gap: 8 }}>
+            <Bone style={{ height: 28, width: 80, borderRadius: 999 }} />
+            <Bone style={{ height: 28, width: 64, borderRadius: 999 }} />
           </div>
         </div>
       ))}
@@ -85,9 +119,10 @@ export function WeekViewSkeleton() {
 
 export function GallerySkeleton({ count = 9 }: { count?: number }) {
   return (
-    <div className="grid gap-2 grid-cols-3">
+    <div style={{ display: 'grid', gap: 8, gridTemplateColumns: 'repeat(3, 1fr)' }}>
+      {STYLE_TAG}
       {Array.from({ length: count }).map((_, i) => (
-        <Bone key={i} className="aspect-square rounded-xl" />
+        <Bone key={i} style={{ aspectRatio: '1 / 1', borderRadius: 14 }} />
       ))}
     </div>
   );
@@ -97,30 +132,38 @@ export function GallerySkeleton({ count = 9 }: { count?: number }) {
 
 export function ProgressSkeleton() {
   return (
-    <div className="p-4 max-w-lg mx-auto space-y-6">
-      {/* Hero stats */}
-      <div className="grid grid-cols-3 gap-3">
+    <div style={{ padding: 16, maxWidth: 480, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 24 }}>
+      {STYLE_TAG}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
         {Array.from({ length: 3 }).map((_, i) => (
-          <div key={i} className="rounded-xl bg-gray-50 p-4 text-center space-y-2">
-            <Bone className="h-8 w-12 mx-auto" />
-            <Bone className="h-4 w-16 mx-auto" />
+          <div
+            key={i}
+            style={{
+              ...cardStyle,
+              padding: 16,
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: 8,
+            }}
+          >
+            <Bone style={{ height: 32, width: 48 }} />
+            <Bone style={{ height: 16, width: 64 }} />
           </div>
         ))}
       </div>
-      {/* Area bars */}
       {Array.from({ length: 5 }).map((_, i) => (
-        <div key={i} className="space-y-1">
-          <div className="flex justify-between">
-            <Bone className="h-4 w-24" />
-            <Bone className="h-4 w-8" />
+        <div key={i} style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+            <Bone style={{ height: 16, width: 96 }} />
+            <Bone style={{ height: 16, width: 32 }} />
           </div>
-          <Bone className="h-3 w-full rounded-full" />
+          <Bone style={{ height: 12, width: '100%', borderRadius: 999 }} />
         </div>
       ))}
-      {/* Photo strip */}
-      <div className="flex gap-2 overflow-hidden">
+      <div style={{ display: 'flex', gap: 8, overflow: 'hidden' }}>
         {Array.from({ length: 5 }).map((_, i) => (
-          <Bone key={i} className="w-20 h-20 rounded-lg flex-shrink-0" />
+          <Bone key={i} style={{ width: 80, height: 80, borderRadius: 12, flexShrink: 0 }} />
         ))}
       </div>
     </div>
@@ -131,20 +174,28 @@ export function ProgressSkeleton() {
 
 export function RAZSkeleton() {
   return (
-    <div className="p-4 max-w-lg mx-auto space-y-3">
-      {/* Header + date */}
-      <div className="flex items-center justify-between">
-        <Bone className="h-7 w-40" />
-        <Bone className="h-9 w-36 rounded-lg" />
+    <div style={{ padding: 16, maxWidth: 480, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 12 }}>
+      {STYLE_TAG}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <Bone style={{ height: 28, width: 160 }} />
+        <Bone style={{ height: 36, width: 144, borderRadius: 10 }} />
       </div>
-      {/* Student cards */}
       {Array.from({ length: 8 }).map((_, i) => (
-        <div key={i} className="rounded-xl border border-gray-100 p-3 flex items-center gap-3">
-          <Bone className="w-10 h-10 rounded-full" />
-          <Bone className="h-5 w-24 flex-1" />
-          <div className="flex gap-1">
-            <Bone className="h-8 w-16 rounded-lg" />
-            <Bone className="h-8 w-16 rounded-lg" />
+        <div
+          key={i}
+          style={{
+            ...cardStyle,
+            padding: 12,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 12,
+          }}
+        >
+          <Bone style={{ width: 40, height: 40, borderRadius: '50%' }} />
+          <Bone style={{ height: 20, width: 96, flex: 1 }} />
+          <div style={{ display: 'flex', gap: 4 }}>
+            <Bone style={{ height: 32, width: 64, borderRadius: 10 }} />
+            <Bone style={{ height: 32, width: 64, borderRadius: 10 }} />
           </div>
         </div>
       ))}
@@ -156,17 +207,17 @@ export function RAZSkeleton() {
 
 export function CurriculumSkeleton() {
   return (
-    <div className="p-4 max-w-lg mx-auto space-y-4">
-      <Bone className="h-7 w-48" />
-      {/* Area cards */}
+    <div style={{ padding: 16, maxWidth: 480, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 16 }}>
+      {STYLE_TAG}
+      <Bone style={{ height: 28, width: 192 }} />
       {Array.from({ length: 5 }).map((_, i) => (
-        <div key={i} className="rounded-xl border border-gray-100 p-4 space-y-3">
-          <div className="flex items-center gap-3">
-            <Bone className="w-10 h-10 rounded-full" />
-            <Bone className="h-5 w-32" />
+        <div key={i} style={{ ...cardStyle, padding: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <Bone style={{ width: 40, height: 40, borderRadius: '50%' }} />
+            <Bone style={{ height: 20, width: 128 }} />
           </div>
-          <Bone className="h-3 w-full rounded-full" />
-          <Bone className="h-4 w-20" />
+          <Bone style={{ height: 12, width: '100%', borderRadius: 999 }} />
+          <Bone style={{ height: 16, width: 80 }} />
         </div>
       ))}
     </div>
@@ -177,13 +228,14 @@ export function CurriculumSkeleton() {
 
 export function ListSkeleton({ rows = 5 }: { rows?: number }) {
   return (
-    <div className="space-y-3">
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+      {STYLE_TAG}
       {Array.from({ length: rows }).map((_, i) => (
-        <div key={i} className="flex items-center gap-3 p-3">
-          <Bone className="w-10 h-10 rounded-full" />
-          <div className="flex-1 space-y-2">
-            <Bone className="h-4 w-3/4" />
-            <Bone className="h-3 w-1/2" />
+        <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: 12 }}>
+          <Bone style={{ width: 40, height: 40, borderRadius: '50%' }} />
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <Bone style={{ height: 16, width: '75%' }} />
+            <Bone style={{ height: 12, width: '50%' }} />
           </div>
         </div>
       ))}
