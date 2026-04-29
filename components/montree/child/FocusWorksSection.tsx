@@ -42,8 +42,8 @@ interface AreaDetail {
 export interface FocusWorksSectionProps {
   focusWorks: Assignment[];
   extraWorks: Assignment[];
-  expandedIndex: string | null;
-  setExpandedIndex: (key: string | null) => void;
+  expandedAreas: Set<string>;
+  toggleArea: (area: string) => void;
   notes: Record<string, string>;
   setNotes: React.Dispatch<React.SetStateAction<Record<string, string>>>;
   savingNote: string | null;
@@ -161,8 +161,8 @@ function cleanWorkName(raw: string): string {
 export default function FocusWorksSection({
   focusWorks,
   extraWorks,
-  expandedIndex,
-  setExpandedIndex,
+  expandedAreas,
+  toggleArea,
   notes,
   setNotes,
   savingNote,
@@ -311,10 +311,10 @@ export default function FocusWorksSection({
 
   // Fetch evidence when any work card is expanded
   useEffect(() => {
-    if (expandedIndex && !evidenceLoaded) {
+    if (expandedAreas.size > 0 && !evidenceLoaded) {
       fetchEvidence();
     }
-  }, [expandedIndex, evidenceLoaded, fetchEvidence]);
+  }, [expandedAreas, evidenceLoaded, fetchEvidence]);
 
   // Copy text to clipboard
   const copyText = async (text: string) => {
@@ -334,57 +334,11 @@ export default function FocusWorksSection({
 
   return (
     <div style={{
-      background: C.glass,
-      border: `1px solid ${C.border}`,
-      borderRadius: 18,
-      overflow: 'hidden',
-      backdropFilter: 'blur(18px) saturate(140%)',
-      WebkitBackdropFilter: 'blur(18px) saturate(140%)',
+      display: 'flex',
+      flexDirection: 'column',
+      gap: 12,
       fontFamily: SANS,
     }}>
-      {/* Game Plan integrated header — or plain title */}
-      {SHOW_GAME_PLAN && gamePlan ? (
-        <div style={{ padding: '16px 16px 0', marginBottom: 12 }}>
-          <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <p style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#f59e0b', margin: '0 0 2px' }}>{t('focusWorks.gamePlan')}</p>
-              <p style={{ fontSize: 13, color: C.textPrimary, lineHeight: 1.5, margin: 0 }}>{planNudge}</p>
-              {planDirection && (
-                <p style={{ fontSize: 11, color: '#f59e0b', fontWeight: 500, margin: '4px 0 0' }}>{planDirection}</p>
-              )}
-            </div>
-          </div>
-          {planWorks.length > 0 && (
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 10 }}>
-              {planWorks.map((work, wi) => (
-                <span key={wi} style={{ padding: '4px 10px', fontSize: 11, background: C.emeraldSoft, color: C.emerald, borderRadius: 8, border: `1px solid ${C.border}`, fontWeight: 500 }}>
-                  {work}
-                </span>
-              ))}
-              {hasEmptySlots && !shelfFilled && (
-                <button
-                  onClick={handleFillShelf}
-                  disabled={fillingShelf}
-                  style={{ padding: '4px 10px', fontSize: 11, background: 'rgba(245,158,11,0.18)', color: '#f59e0b', borderRadius: 8, border: '1px solid rgba(245,158,11,0.28)', fontWeight: 500, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, opacity: fillingShelf ? 0.5 : 1 }}
-                >
-                  {fillingShelf ? <div style={{ width: 10, height: 10, border: '2px solid rgba(245,158,11,0.3)', borderTopColor: '#f59e0b', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} /> : '↓'}
-                  {t('focusWorks.fillShelf')}
-                </button>
-              )}
-              {shelfFilled && (
-                <span style={{ padding: '4px 10px', fontSize: 11, color: C.emerald, fontWeight: 500 }}>✓ {t('focusWorks.done')}</span>
-              )}
-            </div>
-          )}
-          <div style={{ borderTop: `1px solid ${C.border}`, marginTop: 12 }} />
-        </div>
-      ) : (
-        <div style={{ padding: '16px 16px 12px' }}>
-          <h2 style={{ fontFamily: SERIF, fontWeight: 500, fontSize: 16, color: '#fff', margin: 0 }}>{t('focusWorks.title')}</h2>
-        </div>
-      )}
-
-      <div style={{ display: 'flex', flexDirection: 'column' }}>
         {AREAS.map((area, areaIdx) => {
           // Find the focus work for this area
           const focusWork = focusWorks.find(w => normalizeArea(w.area) === area);
@@ -394,12 +348,23 @@ export default function FocusWorksSection({
           const status = focusWork
             ? (statusConfig[focusWork.status] || statusConfig.not_started)
             : statusConfig.not_started;
-          const isExpanded = expandedIndex === area;
+          const isExpanded = expandedAreas.has(area);
           const guruDetail = guruAreaDetails?.[area] || null;
           const isLast = areaIdx === AREAS.length - 1;
 
           return (
-            <div key={`area-${area}`}>
+            <div
+              key={`area-${area}`}
+              style={{
+                background: isExpanded ? 'rgba(255,255,255,0.09)' : C.glass,
+                border: `1px solid ${C.border}`,
+                borderRadius: 18,
+                overflow: 'hidden',
+                backdropFilter: 'blur(18px) saturate(140%)',
+                WebkitBackdropFilter: 'blur(18px) saturate(140%)',
+                transition: 'background 160ms ease',
+              }}
+            >
               {/* Area row — always visible */}
               <div
                 {...(areaIdx === 0 ? { 'data-guide': 'first-work-row' } : {})}
@@ -408,8 +373,7 @@ export default function FocusWorksSection({
                   alignItems: 'center',
                   gap: 12,
                   padding: '10px 16px',
-                  background: isExpanded ? C.rowExpanded : 'transparent',
-                  borderTop: areaIdx === 0 ? 'none' : `1px solid rgba(52,211,153,0.08)`,
+                  background: 'transparent',
                   transition: 'background 140ms ease',
                 }}
               >
@@ -433,7 +397,7 @@ export default function FocusWorksSection({
                 {/* Work name or empty state — tap to expand */}
                 <button
                   {...(areaIdx === 0 ? { 'data-guide': 'first-work-name' } : {})}
-                  onClick={() => setExpandedIndex(isExpanded ? null : area)}
+                  onClick={() => toggleArea(area)}
                   style={{ flex: 1, textAlign: 'left', background: 'none', border: 0, padding: 0, cursor: 'pointer' }}
                 >
                   {focusWork ? (
@@ -469,7 +433,7 @@ export default function FocusWorksSection({
 
                 {/* Expand chevron */}
                 <button
-                  onClick={() => setExpandedIndex(isExpanded ? null : area)}
+                  onClick={() => toggleArea(area)}
                   style={{ background: 'none', border: 0, padding: 2, cursor: 'pointer', color: C.textMuted, flexShrink: 0 }}
                 >
                   <ChevronDown
@@ -668,7 +632,6 @@ export default function FocusWorksSection({
             </div>
           );
         })}
-      </div>
 
       {/* Game Plan footer — refresh button */}
       {SHOW_GAME_PLAN && gamePlan && (
@@ -696,8 +659,6 @@ export default function FocusWorksSection({
         </div>
       )}
 
-      {/* Bottom padding */}
-      <div style={{ height: 6 }} />
     </div>
   );
 }

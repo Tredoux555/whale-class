@@ -181,6 +181,68 @@ GMass campaigns A/C/D are historical. Campaign C sent 335 blank emails (Session 
 
 ---
 
+## RECENT STATUS (Apr 29, 2026)
+
+### ⚡ Session 74 — Replan Pipeline Fix + Photo-Audit Crash Fix + Language Monthly Summary (Apr 29, 2026)
+
+**Commits pushed: `2e94aadc` (photo-audit crash fix), `0dfbdd04` (replan Stage 0 + school_id fix), `c8b46ad6` (streaming replan event fix).**
+
+**A. Photo-audit page crash fix — commit `2e94aadc`:**
+
+`ReferenceError: t is not defined` in `components/montree/super-admin/WeeklyAdminTab.tsx`. The `SummaryCard` component destructured only `locale` from `useI18n()` but used `t()` for translations. Fixed: `const { locale } = useI18n()` → `const { t, locale } = useI18n()`.
+
+**B. Replan pipeline fix — CRITICAL — commits `0dfbdd04`, `c8b46ad6`:**
+
+**Root cause:** `replanChildInProcess()` was at Stage 6 (END of `processChild()`) in `app/api/montree/reports/weekly-wrap/route.ts`, after expensive Sonnet teacher + parent report generation. With 20 children × 2 Sonnet calls, later batches timed out before reaching replan. Only 11 of 20 children completed. All focus works were stale (Apr 21), all game plans had `source=onboard` (Apr 25 — never updated by replan).
+
+**Fix — Move replan to Stage 0 (BEFORE report generation):**
+- Replan now runs FIRST in `processChild()`, before the try/catch for report generation
+- If reports fail or timeout, replan has already completed — plans always update
+- Early return on DB upsert failures now includes replan results (replan already ran)
+- Catch block includes replan results
+- `school_id` ReferenceError fixed at lines 709 and 745: bare `school_id` → `classroom.school_id`
+- Streaming `replan_done` event no longer gated on `r.success` — always emitted
+
+**🚨 Architectural rule:** Replan MUST be Stage 0 in processChild(). It is the most important operation — plans updating weekly is the core product value. Sonnet reports are nice-to-have; fresh plans are must-have. Never move replan after report generation again.
+
+**Two consecutive clean audit passes confirmed the fix.**
+
+**C. Language Monthly Summary — `Whale_Class_April_Language_Summary.docx`:**
+
+Generated a Language-area-only monthly summary for all 20 Whale Class children. Each child gets a neutral, professional 2-3 sentence summary covering: what Language works they did in April (from confirmed photos), mastery/practicing/presented status (from `montree_child_progress`), and a "Next, we can look at [work]" recommendation based on Montessori Language progression gap analysis.
+
+**Data pipeline:**
+1. Fetch Language curriculum area ID → 97 Language works
+2. Fetch April confirmed photos (372) → filter to Language works only
+3. Fetch `montree_child_progress` where `area=language` (611 rows)
+4. For each child: count photo sessions per work, classify mastery/practicing/presented, find next gap in progression sequence
+
+**Recommendation algorithm:** Full Montessori Language progression array (93 works ordered developmentally: Sound Games → Sandpaper Letters → CVC → Moveable Alphabet → Blue/Green Series → Reading → Grammar → Composition). Finds the child's highest point in the sequence, then recommends the next untouched work (gap-filling from earlier stages if nothing forward). User reviewed and approved the gap-filling approach over the forward-only approach.
+
+**DNS workaround:** Local DNS resolution was failing for Supabase (`dmfncjjtsoxrnvcdnvjq.supabase.co`). Resolved via Google DNS (`8.8.8.8`) to get IP `172.64.149.246`, then used `curl --resolve` flag for all data fetches. The docx generation ran locally on the Mac using cached JSON files from `/tmp/`.
+
+**Script location:** Not committed — one-off generation. Data cached at `/tmp/lang_works.json`, `/tmp/children.json`, `/tmp/media.json`, `/tmp/progress.json`.
+
+**Files changed (2 files, 3 commits):**
+- `components/montree/super-admin/WeeklyAdminTab.tsx` — added `t` to useI18n destructure
+- `app/api/montree/reports/weekly-wrap/route.ts` — replan moved to Stage 0, school_id fix, streaming event fix
+
+**🚨 Railway deploy needed:** User must hit "Relaunch to update" on Railway to deploy all 3 commits.
+
+**Next session priorities:**
+1. **🚨 Deploy to Railway** — 3 commits waiting: photo-audit fix, replan Stage 0, streaming fix.
+2. **Deep triple audit photo recognition pipeline** — User explicitly requested: "we've also been having serious issues with the photo recognition pipeline. can you deep triple audit that and give me an analysis and proposed plan to improve it, make it better." NOT YET STARTED.
+3. **🚨 Add Ukrainian + Russian languages** — Full instructions in Session 73 handoff below. Organic Ukrainian teacher Тамі signed up Apr 28.
+4. **Welcome Тамі** — provision her school, send a personal message in Ukrainian.
+5. **Send the 3 hot lead Gmail drafts** — Copenhagen (`r5875732429643975187`), Paint Pots UK (`r-8134738077301193428`), Ardtona House UK (`r6746566790609932769`).
+6. **FAMM Argentina follow-up** — Past the Apr 28 deadline. Draft now.
+7. **Complete follow-up batch** — 248 remaining `status='sent'` contacts need follow-up template.
+8. **Disable `tell_guru_onboarding` for Whale Class** — `UPDATE montree_school_features SET enabled=false WHERE school_id='c6280fae-567c-45ed-ad4d-934eae79aabc' AND feature_key='tell_guru_onboarding';`
+9. **Fix Resend domain** — verify montree.xyz in Resend, update `RESEND_FROM_EMAIL` in Railway.
+10. **Gate the 6 Sonnet-hardcoded routes** with `resolveReportModel()`.
+
+---
+
 ## RECENT STATUS (Apr 28, 2026)
 
 ### ⚡ Session 72 — Public Funnel Polish + Teacher Revenue Share Programme (Apr 28, 2026)
