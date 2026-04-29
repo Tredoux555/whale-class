@@ -17,7 +17,10 @@ import { drainStuckQueue } from '@/lib/montree/offline';
 
 // Tier 3 perf: code-split heavy modals/tabs (~4k lines) — only downloaded when actually rendered.
 // `loading` fallback prevents the blank-gap flash users saw while chunks downloaded.
-const dynamicLoadingFallback = () => (
+// IMPORTANT: Turbopack requires next/dynamic options to be an INLINE object literal —
+// hoisting them into a variable triggers "options must be an object literal" build errors.
+// The fallback component reference IS allowed inside the literal; just keep the literal at the call site.
+const DynamicLoading = () => (
   <div style={{
     minHeight: 220,
     display: 'grid',
@@ -27,14 +30,13 @@ const dynamicLoadingFallback = () => (
     letterSpacing: 0.3,
   }}>Loading…</div>
 );
-const dynamicOpts = { ssr: false, loading: dynamicLoadingFallback };
-const WorkWheelPicker = dynamic(() => import('@/components/montree/WorkWheelPicker'), dynamicOpts);
-const PhotoCropModal = dynamic(() => import('@/components/montree/media/PhotoCropModal'), dynamicOpts);
-const WeeklyWrapTab = dynamic(() => import('@/components/montree/reports/WeeklyWrapTab'), dynamicOpts);
-const WeeklyAdminTab = dynamic(() => import('@/components/montree/reports/WeeklyAdminTab'), dynamicOpts);
-const ThisIsSheet = dynamic(() => import('@/components/montree/photo-audit/ThisIsSheet'), dynamicOpts);
-const TellAiSheet = dynamic(() => import('@/components/montree/photo-audit/TellAiSheet'), dynamicOpts);
-const VoiceDictate = dynamic(() => import('@/components/montree/voice/VoiceDictate'), dynamicOpts);
+const WorkWheelPicker = dynamic(() => import('@/components/montree/WorkWheelPicker'), { ssr: false, loading: DynamicLoading });
+const PhotoCropModal = dynamic(() => import('@/components/montree/media/PhotoCropModal'), { ssr: false, loading: DynamicLoading });
+const WeeklyWrapTab = dynamic(() => import('@/components/montree/reports/WeeklyWrapTab'), { ssr: false, loading: DynamicLoading });
+const WeeklyAdminTab = dynamic(() => import('@/components/montree/reports/WeeklyAdminTab'), { ssr: false, loading: DynamicLoading });
+const ThisIsSheet = dynamic(() => import('@/components/montree/photo-audit/ThisIsSheet'), { ssr: false, loading: DynamicLoading });
+const TellAiSheet = dynamic(() => import('@/components/montree/photo-audit/TellAiSheet'), { ssr: false, loading: DynamicLoading });
+const VoiceDictate = dynamic(() => import('@/components/montree/voice/VoiceDictate'), { ssr: false, loading: DynamicLoading });
 
 const AREAS = [
   { key: 'practical_life', label: 'Practical Life', color: '#10b981' },
