@@ -1,10 +1,14 @@
 // /montree/dashboard/[childId]/progress/page.tsx
 // Child Progress Portfolio — hero stats, area bars, photos, timeline
 // Layout handles auth + header + tabs
+// Dark forest visual treatment — all wiring intact
 'use client';
 
-import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo, CSSProperties } from 'react';
 import { useParams } from 'next/navigation';
+import {
+  Camera, Star, RotateCw, ClipboardList, NotebookPen, Eye,
+} from 'lucide-react';
 import { getSession, isHomeschoolParent } from '@/lib/montree/auth';
 import { useI18n, getIntlLocale } from '@/lib/montree/i18n';
 import { AREA_CONFIG } from '@/lib/montree/types';
@@ -46,16 +50,81 @@ interface MediaItem {
   area?: string;
 }
 
+type TimelineEventType = 'mastery' | 'practicing' | 'presented' | 'observation' | 'note';
+
 interface TimelineEvent {
   id: string;
-  type: 'mastery' | 'practicing' | 'presented' | 'observation' | 'note';
+  type: TimelineEventType;
   date: string;
   title: string;
   chineseTitle?: string;
   subtitle?: string;
   area?: string;
-  icon: string;
 }
+
+// Dark forest tokens
+const T = {
+  card: 'rgba(255,255,255,0.06)',
+  cardBorder: '1px solid rgba(52,211,153,0.15)',
+  cardRadius: 18,
+  blur: 'blur(18px) saturate(140%)',
+  emerald: '#34d399',
+  emeraldStrong: 'rgba(52,211,153,0.18)',
+  amber: '#f59e0b',
+  amberSoft: 'rgba(245,158,11,0.18)',
+  amberBorder: 'rgba(245,158,11,0.35)',
+  textPrimary: 'rgba(255,255,255,0.95)',
+  textSecondary: 'rgba(255,255,255,0.65)',
+  textMuted: 'rgba(255,255,255,0.40)',
+  serif: '"Lora", Georgia, serif',
+  sans: '"Inter", -apple-system, BlinkMacSystemFont, sans-serif',
+};
+
+// Area dot palette (matches dark forest tokens)
+const AREA_DOT_RGB: Record<string, string> = {
+  practical_life: '236, 72, 153',   // pink
+  sensorial: '20, 184, 166',        // teal
+  mathematics: '168, 85, 247',      // purple
+  language: '74, 222, 128',         // green
+  cultural: '249, 115, 22',         // orange
+};
+
+// Map timeline event type → icon component + tint
+const TIMELINE_ICON: Record<TimelineEventType, { Icon: typeof Star; tint: string }> = {
+  mastery:     { Icon: Star, tint: '#fbbf24' },
+  practicing:  { Icon: RotateCw, tint: '#34d399' },
+  presented:   { Icon: ClipboardList, tint: '#f59e0b' },
+  note:        { Icon: NotebookPen, tint: '#c4b5fd' },
+  observation: { Icon: Eye, tint: '#60a5fa' },
+};
+
+const cardStyle: CSSProperties = {
+  background: T.card,
+  border: T.cardBorder,
+  borderRadius: T.cardRadius,
+  backdropFilter: T.blur,
+  WebkitBackdropFilter: T.blur,
+  padding: 18,
+};
+
+const sectionTitle: CSSProperties = {
+  margin: '0 0 14px',
+  fontFamily: T.serif,
+  fontSize: 17,
+  fontWeight: 500,
+  color: T.textPrimary,
+  letterSpacing: -0.2,
+};
+
+const monthLabel: CSSProperties = {
+  fontFamily: T.sans,
+  fontSize: 11,
+  fontWeight: 700,
+  color: T.textMuted,
+  letterSpacing: 0.6,
+  textTransform: 'uppercase',
+  marginBottom: 12,
+};
 
 export default function ProgressPage() {
   const params = useParams();
@@ -73,15 +142,16 @@ export default function ProgressPage() {
   const [photoViewerUrl, setPhotoViewerUrl] = useState<string | null>(null);
   const [teachModalData, setTeachModalData] = useState<{ workName: string; area: string | null; mediaId: string } | null>(null);
 
+  // selectedArea isn't currently filtered via UI on this page but kept for parity
+  void setSelectedArea;
+
   // Supabase URL for media
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
   const getPhotoUrl = (path: string) => path ? `${supabaseUrl}/storage/v1/object/public/montree-media/${path}` : '';
 
-  // Debounced fetchAll to prevent multiple SmartCaptures from triggering simultaneous refreshes
   const debouncedFetchRef = useRef<NodeJS.Timeout | null>(null);
   const fetchAllRef = useRef<() => Promise<void>>();
 
-  // Fetch all data — extracted as useCallback so PhotoInsightButton can trigger refresh
   const fetchAll = useCallback(async () => {
     if (!childId) return;
     setLoading(true);
@@ -101,12 +171,10 @@ export default function ProgressPage() {
         mediaRes.json(), progressRes.json(),
       ]);
 
-      // Media
       setMedia((mediaData.media || []).filter((m: MediaItem) =>
         m.media_type === 'photo' || m.media_type === 'image' || !m.media_type
       ));
 
-      // Build timeline
       const events: TimelineEvent[] = [];
       const progress: ProgressItem[] = progressData.progress || [];
       const observations: Observation[] = progressData.observations || [];
@@ -120,19 +188,19 @@ export default function ProgressPage() {
           events.push({
             id: `m-${p.id}`, type: 'mastery',
             date: p.mastered_at || p.updated_at,
-            title: p.work_name, chineseTitle: p.chineseName, area: p.area, icon: '⭐',
+            title: p.work_name, chineseTitle: p.chineseName, area: p.area,
           });
         } else if (s === 'practicing') {
           events.push({
             id: `pr-${p.id}`, type: 'practicing',
             date: p.updated_at,
-            title: p.work_name, chineseTitle: p.chineseName, area: p.area, icon: '🔄',
+            title: p.work_name, chineseTitle: p.chineseName, area: p.area,
           });
         } else if (s === 'presented') {
           events.push({
             id: `ps-${p.id}`, type: 'presented',
             date: p.presented_at || p.updated_at,
-            title: p.work_name, chineseTitle: p.chineseName, area: p.area, icon: '📋',
+            title: p.work_name, chineseTitle: p.chineseName, area: p.area,
           });
         }
 
@@ -141,7 +209,7 @@ export default function ProgressPage() {
             id: `n-${p.id}`, type: 'note',
             date: p.updated_at,
             title: p.work_name, chineseTitle: p.chineseName, subtitle: p.notes,
-            area: p.area, icon: '📝',
+            area: p.area,
           });
         }
       }
@@ -152,18 +220,16 @@ export default function ProgressPage() {
           date: o.observed_at,
           title: t('progress.observation'),
           subtitle: o.behavior_description,
-          icon: '👁',
         });
       }
 
-      // Teacher notes from work_sessions (saved via Week tab)
       const workNotes: { id: string; work_name: string; chineseName?: string; area: string; notes: string; observed_at: string }[] = progressData.workNotes || [];
       for (const wn of workNotes) {
         events.push({
           id: `wn-${wn.id}`, type: 'note',
           date: wn.observed_at,
           title: wn.work_name, chineseTitle: wn.chineseName, subtitle: wn.notes,
-          area: wn.area, icon: '📝',
+          area: wn.area,
         });
       }
 
@@ -175,19 +241,16 @@ export default function ProgressPage() {
     setLoading(false);
   }, [childId, t]);
 
-  // Always keep fetchAllRef pointing to the latest fetchAll function
   fetchAllRef.current = fetchAll;
 
-  // Debounced fetchAll to throttle multiple SmartCapture auto-updates
-  // Uses ref pattern to ensure latest fetchAll is always called, even if childId changes
   const debouncedFetchAll = useCallback(() => {
     if (debouncedFetchRef.current) {
       clearTimeout(debouncedFetchRef.current);
     }
     debouncedFetchRef.current = setTimeout(() => {
-      fetchAllRef.current?.(); // Always calls latest version
-    }, 500); // Wait 500ms for multiple SmartCaptures to complete before refreshing
-  }, []); // Empty deps — stable reference, reads from ref
+      fetchAllRef.current?.();
+    }, 500);
+  }, []);
 
   useEffect(() => {
     fetchAll();
@@ -198,7 +261,6 @@ export default function ProgressPage() {
     };
   }, [fetchAll]);
 
-  // Filtered + grouped timeline (memoized to avoid re-computation on unrelated state changes)
   const grouped = useMemo(() => {
     const filtered = selectedArea
       ? timeline.filter(e => e.area === selectedArea)
@@ -216,45 +278,101 @@ export default function ProgressPage() {
     return result;
   }, [timeline, selectedArea, locale]);
 
-  // Format date
   const fmtDate = (iso: string) => {
     const d = new Date(iso);
     return d.toLocaleDateString(getIntlLocale(locale), { month: 'short', day: 'numeric' });
   };
 
-  // Loading state
   if (loading) {
     return <ProgressSkeleton />;
   }
 
   return (
-    <div className="space-y-4 pb-8">
+    <div style={{
+      display: 'flex',
+      flexDirection: 'column',
+      gap: 14,
+      paddingBottom: 32,
+      fontFamily: T.sans,
+      color: T.textPrimary,
+    }}>
 
       {/* Contextual Tip Bubble */}
       {session && isHomeschoolParent(session) && (
         <GuruContextBubble pageKey="progress" role="parent" />
       )}
 
-      {/* ── Recent Photos — primary content of Review tab ── */}
+      {/* ── Recent Photos ── */}
       {media.length > 0 ? (
-        <div className="bg-white rounded-2xl p-5 shadow-sm">
-          <h2 className="text-base font-bold text-gray-800 mb-3">{t('review.reviewPhotos' as any)}</h2>
-          <div ref={photosRef} className="flex gap-3 overflow-x-auto pb-2 -mx-1 px-1 snap-x">
+        <div style={cardStyle}>
+          <h2 style={sectionTitle}>{t('review.reviewPhotos' as any)}</h2>
+          <div
+            ref={photosRef}
+            style={{
+              display: 'flex',
+              gap: 12,
+              overflowX: 'auto',
+              paddingBottom: 6,
+              margin: '0 -4px',
+              padding: '0 4px',
+              scrollSnapType: 'x mandatory',
+            }}
+          >
             {media.map((m) => (
-              <div key={m.id} className="flex-shrink-0 snap-start">
+              <div
+                key={m.id}
+                style={{
+                  flexShrink: 0,
+                  scrollSnapAlign: 'start',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  gap: 4,
+                }}
+              >
                 <button
                   onClick={() => setPhotoViewerUrl(getPhotoUrl(m.storage_path))}
+                  style={{
+                    background: 'transparent',
+                    border: 'none',
+                    padding: 0,
+                    cursor: 'pointer',
+                  }}
                 >
-                  <div className="w-24 h-24 rounded-xl overflow-hidden bg-gray-100">
+                  <div style={{
+                    width: 96,
+                    height: 96,
+                    borderRadius: 14,
+                    overflow: 'hidden',
+                    background: 'rgba(255,255,255,0.04)',
+                    border: '1px solid rgba(255,255,255,0.08)',
+                  }}>
                     <img
                       src={getPhotoUrl(m.thumbnail_path || m.storage_path)}
                       alt={m.caption || 'Photo'}
-                      className="w-full h-full object-cover"
                       loading="lazy"
+                      style={{
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'cover',
+                        display: 'block',
+                      }}
                     />
                   </div>
                   {m.work_name && (
-                    <p className="text-[10px] text-gray-500 mt-1 w-24 truncate text-center">{m.work_name}</p>
+                    <p style={{
+                      margin: '4px 0 0',
+                      width: 96,
+                      fontFamily: T.sans,
+                      fontSize: 10,
+                      color: T.textMuted,
+                      textAlign: 'center',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
+                    }}>
+                      {m.work_name}
+                    </p>
                   )}
                 </button>
                 <PhotoInsightButton
@@ -271,61 +389,174 @@ export default function ProgressPage() {
           </div>
         </div>
       ) : (
-        <div className="bg-white rounded-2xl p-8 shadow-sm text-center">
-          <div className="text-4xl mb-3">📷</div>
-          <h2 className="text-base font-bold text-gray-800 mb-1">{t('review.noPhotos' as any)}</h2>
-          <p className="text-sm text-gray-500">{t('review.takePhotos' as any)}</p>
+        <div style={{
+          ...cardStyle,
+          padding: '40px 24px',
+          textAlign: 'center',
+        }}>
+          <div style={{
+            width: 56,
+            height: 56,
+            margin: '0 auto 12px',
+            borderRadius: '50%',
+            background: T.card,
+            border: T.cardBorder,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}>
+            <Camera size={22} strokeWidth={1.75} color={T.textMuted} />
+          </div>
+          <h2 style={{
+            ...sectionTitle,
+            margin: '0 0 6px',
+            textAlign: 'center',
+          }}>
+            {t('review.noPhotos' as any)}
+          </h2>
+          <p style={{
+            margin: 0,
+            fontFamily: T.sans,
+            fontSize: 13,
+            color: T.textMuted,
+          }}>
+            {t('review.takePhotos' as any)}
+          </p>
         </div>
       )}
 
       {/* ── Timeline ── */}
-      <div className="bg-white rounded-2xl p-5 shadow-sm">
-        <h2 className="text-base font-bold text-gray-800 mb-4">
+      <div style={cardStyle}>
+        <h2 style={sectionTitle}>
           {t('progress.timeline')}
           {selectedArea && (
-            <span className="text-sm font-normal text-gray-400 ml-2">
+            <span style={{
+              marginLeft: 8,
+              fontFamily: T.sans,
+              fontSize: 13,
+              fontWeight: 400,
+              color: T.textMuted,
+            }}>
               ({areaName(selectedArea)})
             </span>
           )}
         </h2>
 
         {grouped.length === 0 && (
-          <p className="text-gray-400 text-sm text-center py-6">{t('progress.noActivity')}</p>
+          <p style={{
+            textAlign: 'center',
+            padding: '24px 0',
+            color: T.textMuted,
+            fontFamily: T.sans,
+            fontSize: 13,
+          }}>
+            {t('progress.noActivity')}
+          </p>
         )}
 
-        {grouped.map(({ label, events }) => (
-          <div key={label} className="mb-5 last:mb-0">
-            <div className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-3">{label}</div>
-            <div className="space-y-3">
+        {grouped.map(({ label, events }, gi) => (
+          <div
+            key={label}
+            style={{ marginBottom: gi === grouped.length - 1 ? 0 : 22 }}
+          >
+            <div style={monthLabel}>{label}</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               {events.map((event) => {
-                const areaConf = event.area ? AREA_CONFIG[event.area] : null;
+                const cfg = TIMELINE_ICON[event.type];
+                const Icon = cfg.Icon;
+                const rgb = event.area ? AREA_DOT_RGB[event.area] : null;
+                const titlePrefix =
+                  event.type === 'mastery' ? `${t('progress.mastered')} ` :
+                  event.type === 'practicing' ? `${t('progress.practicing')} ` :
+                  event.type === 'presented' ? `${t('progress.presented')} ` : '';
                 return (
-                  <div key={event.id} className="flex gap-3 items-start">
+                  <div
+                    key={event.id}
+                    style={{
+                      display: 'flex',
+                      gap: 12,
+                      alignItems: 'flex-start',
+                    }}
+                  >
                     {/* Icon */}
-                    <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center text-sm">
-                      {event.icon}
+                    <div style={{
+                      flexShrink: 0,
+                      width: 32,
+                      height: 32,
+                      borderRadius: 10,
+                      background: 'rgba(255,255,255,0.04)',
+                      border: '1px solid rgba(255,255,255,0.08)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      color: cfg.tint,
+                    }}>
+                      <Icon size={15} strokeWidth={1.75} />
                     </div>
 
                     {/* Content */}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <span className="font-medium text-gray-800 text-sm truncate">
-                          {event.type === 'mastery' && `⭐ ${t('progress.mastered')} `}
-                          {event.type === 'practicing' && `${t('progress.practicing')} `}
-                          {event.type === 'presented' && `${t('progress.presented')} `}
-                          {event.type === 'note' && '📝 '}
-                          {event.type === 'observation' && ''}
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 6,
+                      }}>
+                        <span style={{
+                          fontFamily: T.sans,
+                          fontSize: 13,
+                          fontWeight: 500,
+                          color: T.textPrimary,
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap',
+                        }}>
+                          {titlePrefix}
                           {locale === 'zh' && event.chineseTitle ? event.chineseTitle : event.title}
                         </span>
                       </div>
                       {event.subtitle && (
-                        <p className="text-xs text-gray-500 mt-0.5 line-clamp-2">{event.subtitle}</p>
+                        <p style={{
+                          margin: '2px 0 0',
+                          fontFamily: T.sans,
+                          fontSize: 12,
+                          color: T.textSecondary,
+                          lineHeight: 1.5,
+                          display: '-webkit-box',
+                          WebkitLineClamp: 2,
+                          WebkitBoxOrient: 'vertical',
+                          overflow: 'hidden',
+                        }}>
+                          {event.subtitle}
+                        </p>
                       )}
-                      <div className="flex items-center gap-2 mt-1">
-                        <span className="text-[10px] text-gray-400">{fmtDate(event.date)}</span>
-                        {areaConf && (
-                          <span className={`text-[10px] font-medium ${areaConf.text} ${areaConf.bg} px-1.5 py-0.5 rounded-full`}>
-                            {event.area ? areaName(event.area) : areaConf.name}
+                      <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 8,
+                        marginTop: 4,
+                      }}>
+                        <span style={{
+                          fontFamily: T.sans,
+                          fontSize: 10,
+                          color: T.textMuted,
+                          letterSpacing: 0.3,
+                        }}>
+                          {fmtDate(event.date)}
+                        </span>
+                        {rgb && event.area && (
+                          <span style={{
+                            display: 'inline-block',
+                            padding: '2px 8px',
+                            borderRadius: 999,
+                            background: `rgba(${rgb}, 0.15)`,
+                            border: `1px solid rgba(${rgb}, 0.30)`,
+                            color: `rgb(${rgb})`,
+                            fontFamily: T.sans,
+                            fontSize: 10,
+                            fontWeight: 600,
+                            letterSpacing: 0.3,
+                          }}>
+                            {areaName(event.area)}
                           </span>
                         )}
                       </div>
@@ -338,7 +569,6 @@ export default function ProgressPage() {
         ))}
       </div>
 
-      {/* ── Photo Viewer Overlay ── */}
       {/* ── Teach Guru Work Modal ── */}
       {teachModalData && session?.classroom?.id && (
         <TeachGuruWorkModal
@@ -350,7 +580,6 @@ export default function ProgressPage() {
           classroomId={session?.classroom?.id || ''}
           childId={childId}
           onWorkSaved={(work) => {
-            // Update the photo-insight-store so the gallery/review shows the corrected work
             if (teachModalData) {
               updateEntryAfterCorrection(teachModalData.mediaId, childId, work.name, work.area);
             }
@@ -360,7 +589,7 @@ export default function ProgressPage() {
         />
       )}
 
-      {/* Photo Lightbox — fullscreen zoom + download + navigation */}
+      {/* Photo Lightbox */}
       <PhotoLightbox
         isOpen={!!photoViewerUrl}
         onClose={() => setPhotoViewerUrl(null)}
