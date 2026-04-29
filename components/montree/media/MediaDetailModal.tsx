@@ -1,8 +1,12 @@
 // components/montree/media/MediaDetailModal.tsx
 // Modal for viewing, editing, and deleting photos
+// Dark forest visual treatment — all wiring intact
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import {
+  X, Calendar, User, Camera, Trash2, Check,
+} from 'lucide-react';
 import { toast } from 'sonner';
 import type { MontreeMedia, MontreeChild } from '@/lib/montree/media/types';
 import { useI18n } from '@/lib/montree/i18n';
@@ -15,6 +19,28 @@ interface MediaDetailModalProps {
   onUpdate: (media: MontreeMedia) => void;
   onDelete: (id: string) => void;
 }
+
+const T = {
+  scrim: 'rgba(2,8,5,0.80)',
+  sheet: 'rgba(7,18,12,0.97)',
+  sheetBorder: 'rgba(52,211,153,0.18)',
+  blur: 'blur(20px) saturate(140%)',
+  emerald: '#34d399',
+  emeraldStrong: 'rgba(52,211,153,0.18)',
+  blue: '#60a5fa',
+  blueSoft: 'rgba(96,165,250,0.10)',
+  blueBorder: 'rgba(96,165,250,0.30)',
+  red: '#f87171',
+  redSoft: 'rgba(239,68,68,0.18)',
+  redBorder: 'rgba(239,68,68,0.45)',
+  textPrimary: 'rgba(255,255,255,0.95)',
+  textSecondary: 'rgba(255,255,255,0.65)',
+  textMuted: 'rgba(255,255,255,0.40)',
+  inputBg: 'rgba(0,0,0,0.30)',
+  inputBorder: 'rgba(52,211,153,0.20)',
+  serif: '"Lora", Georgia, serif',
+  sans: '"Inter", -apple-system, BlinkMacSystemFont, sans-serif',
+};
 
 export default function MediaDetailModal({
   media,
@@ -30,18 +56,15 @@ export default function MediaDetailModal({
   const [deleting, setDeleting] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
-  // Editable fields
   const [caption, setCaption] = useState('');
   const [selectedChildId, setSelectedChildId] = useState<string | null>(null);
 
-  // Load image URL and set initial values
   useEffect(() => {
     if (!media) return;
 
     setCaption(media.caption || '');
     setSelectedChildId(media.child_id);
 
-    // Fetch full-size image URL
     const fetchUrl = async () => {
       setLoading(true);
       try {
@@ -141,102 +164,293 @@ export default function MediaDetailModal({
     : null;
 
   return (
-    <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+    <div style={{
+      position: 'fixed',
+      inset: 0,
+      zIndex: 50,
+      background: T.scrim,
+      backdropFilter: 'blur(6px)',
+      WebkitBackdropFilter: 'blur(6px)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: 16,
+      fontFamily: T.sans,
+    }}>
+      <div style={{
+        background: T.sheet,
+        border: `1px solid ${T.sheetBorder}`,
+        borderRadius: 18,
+        maxWidth: 640,
+        width: '100%',
+        maxHeight: '90vh',
+        overflow: 'hidden',
+        display: 'flex',
+        flexDirection: 'column',
+        backdropFilter: T.blur,
+        WebkitBackdropFilter: T.blur,
+        boxShadow: '0 24px 60px rgba(0,0,0,0.55)',
+        color: T.textPrimary,
+      }}>
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b">
-          <h2 className="text-lg font-bold text-gray-800">{t('media.photoDetails')}</h2>
+        <div style={{
+          padding: '14px 16px',
+          borderBottom: `1px solid ${T.sheetBorder}`,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+        }}>
+          <h2 style={{
+            margin: 0,
+            fontFamily: T.serif,
+            fontSize: 16,
+            fontWeight: 500,
+            color: T.textPrimary,
+            letterSpacing: -0.2,
+          }}>
+            {t('media.photoDetails')}
+          </h2>
           <button
             onClick={onClose}
-            className="w-10 h-10 flex items-center justify-center text-gray-500 hover:bg-gray-100 rounded-full"
+            aria-label="Close"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: 34,
+              height: 34,
+              borderRadius: 10,
+              background: 'rgba(255,255,255,0.06)',
+              border: '1px solid rgba(255,255,255,0.10)',
+              color: T.textPrimary,
+              cursor: 'pointer',
+            }}
           >
-            ✕
+            <X size={15} strokeWidth={1.75} />
           </button>
         </div>
 
         {/* Image */}
-        <div className="bg-gray-100 aspect-video relative overflow-hidden">
+        <div style={{
+          background: '#000',
+          aspectRatio: '16 / 9',
+          position: 'relative',
+          overflow: 'hidden',
+        }}>
           {loading ? (
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="w-8 h-8 border-2 border-gray-300 border-t-blue-500 rounded-full animate-spin" />
+            <div style={{
+              position: 'absolute',
+              inset: 0,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}>
+              <div style={{
+                width: 28,
+                height: 28,
+                border: `2px solid rgba(52,211,153,0.40)`,
+                borderTopColor: T.emerald,
+                borderRadius: '50%',
+                animation: 'mdm-spin 0.9s linear infinite',
+              }} />
+              <style>{`@keyframes mdm-spin { to { transform: rotate(360deg); } }`}</style>
             </div>
           ) : imageUrl ? (
             <img
               src={imageUrl}
               alt={media.caption || 'Photo'}
-              className="absolute inset-0 w-full h-full object-contain"
+              style={{
+                position: 'absolute',
+                inset: 0,
+                width: '100%',
+                height: '100%',
+                objectFit: 'contain',
+                display: 'block',
+              }}
             />
           ) : (
-            <div className="absolute inset-0 flex items-center justify-center text-gray-400">
-              <span className="text-4xl">📷</span>
+            <div style={{
+              position: 'absolute',
+              inset: 0,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: T.textMuted,
+            }}>
+              <Camera size={32} strokeWidth={1.5} />
             </div>
           )}
         </div>
 
         {/* Content */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-4">
-          {/* Date */}
-          <div className="text-sm text-gray-500">
-            📅 {formatDate(media.captured_at)}
+        <div style={{
+          flex: 1,
+          overflowY: 'auto',
+          padding: 16,
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 14,
+        }}>
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 8,
+            fontFamily: T.sans,
+            fontSize: 12,
+            color: T.textMuted,
+          }}>
+            <Calendar size={13} strokeWidth={1.75} />
+            {formatDate(media.captured_at)}
           </div>
 
-          {/* Caption */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label style={{
+              display: 'block',
+              marginBottom: 6,
+              fontFamily: T.sans,
+              fontSize: 11,
+              fontWeight: 700,
+              color: T.textSecondary,
+              letterSpacing: 0.4,
+              textTransform: 'uppercase',
+            }}>
               {t('media.caption')}
             </label>
             <textarea
               value={caption}
               onChange={(e) => setCaption(e.target.value)}
               placeholder={t('media.addCaption')}
-              className="w-full p-3 border rounded-xl text-sm resize-none focus:ring-2 focus:ring-blue-300 focus:border-blue-300"
               rows={2}
+              style={{
+                width: '100%',
+                padding: '10px 12px',
+                borderRadius: 12,
+                background: T.inputBg,
+                border: `1px solid ${T.inputBorder}`,
+                color: T.textPrimary,
+                fontFamily: T.sans,
+                fontSize: 13,
+                lineHeight: 1.55,
+                outline: 'none',
+                resize: 'none',
+                boxSizing: 'border-box',
+              }}
             />
           </div>
 
-          {/* Child Assignment */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label style={{
+              display: 'block',
+              marginBottom: 6,
+              fontFamily: T.sans,
+              fontSize: 11,
+              fontWeight: 700,
+              color: T.textSecondary,
+              letterSpacing: 0.4,
+              textTransform: 'uppercase',
+            }}>
               {t('media.assignToChild')}
             </label>
             <select
               value={selectedChildId || ''}
               onChange={(e) => setSelectedChildId(e.target.value || null)}
-              className="w-full p-3 border rounded-xl text-sm focus:ring-2 focus:ring-blue-300 focus:border-blue-300"
+              style={{
+                width: '100%',
+                padding: '10px 12px',
+                borderRadius: 12,
+                background: T.inputBg,
+                border: `1px solid ${T.inputBorder}`,
+                color: T.textPrimary,
+                fontFamily: T.sans,
+                fontSize: 13,
+                outline: 'none',
+                appearance: 'none',
+                backgroundImage: `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='rgba(255,255,255,0.40)' stroke-width='2'><polyline points='6 9 12 15 18 9'/></svg>")`,
+                backgroundRepeat: 'no-repeat',
+                backgroundPosition: 'right 12px center',
+                paddingRight: 32,
+              }}
             >
-              <option value="">{t('media.unassignedGroupPhoto')}</option>
+              <option value="" style={{ background: '#0a1a0f' }}>{t('media.unassignedGroupPhoto')}</option>
               {children.map((child) => (
-                <option key={child.id} value={child.id}>
+                <option key={child.id} value={child.id} style={{ background: '#0a1a0f' }}>
                   {child.name}
                 </option>
               ))}
             </select>
           </div>
 
-          {/* Current child indicator */}
           {childName && (
-            <div className="flex items-center gap-2 p-3 bg-blue-50 rounded-xl">
-              <span className="text-blue-600">👤</span>
-              <span className="text-sm text-blue-800">{t('media.assignedTo').replace('{name}', childName)}</span>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 9,
+              padding: 12,
+              borderRadius: 12,
+              background: T.blueSoft,
+              border: `1px solid ${T.blueBorder}`,
+            }}>
+              <User size={14} strokeWidth={1.75} color={T.blue} />
+              <span style={{
+                fontFamily: T.sans,
+                fontSize: 13,
+                color: T.blue,
+              }}>
+                {t('media.assignedTo').replace('{name}', childName)}
+              </span>
             </div>
           )}
         </div>
 
         {/* Actions */}
-        <div className="p-4 border-t bg-gray-50 flex gap-3">
+        <div style={{
+          padding: 14,
+          borderTop: `1px solid ${T.sheetBorder}`,
+          background: 'rgba(0,0,0,0.20)',
+          display: 'flex',
+          gap: 10,
+        }}>
           {showDeleteConfirm ? (
             <>
               <button
                 onClick={() => setShowDeleteConfirm(false)}
-                className="flex-1 px-4 py-3 bg-gray-200 text-gray-700 rounded-xl font-medium hover:bg-gray-300"
+                style={{
+                  flex: 1,
+                  padding: '11px 14px',
+                  borderRadius: 12,
+                  background: 'rgba(255,255,255,0.06)',
+                  border: '1px solid rgba(255,255,255,0.10)',
+                  color: T.textPrimary,
+                  fontFamily: T.sans,
+                  fontSize: 13,
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                }}
               >
                 {t('common.cancel')}
               </button>
               <button
                 onClick={handleDelete}
                 disabled={deleting}
-                className="flex-1 px-4 py-3 bg-red-500 text-white rounded-xl font-medium hover:bg-red-600 disabled:opacity-50"
+                style={{
+                  flex: 1,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 7,
+                  padding: '11px 14px',
+                  borderRadius: 12,
+                  background: T.redSoft,
+                  border: `1px solid ${T.redBorder}`,
+                  color: T.red,
+                  fontFamily: T.sans,
+                  fontSize: 13,
+                  fontWeight: 700,
+                  cursor: deleting ? 'wait' : 'pointer',
+                  opacity: deleting ? 0.55 : 1,
+                }}
               >
+                <Trash2 size={13} strokeWidth={1.75} />
                 {deleting ? t('common.deleting') : t('media.confirmDelete')}
               </button>
             </>
@@ -244,21 +458,64 @@ export default function MediaDetailModal({
             <>
               <button
                 onClick={() => setShowDeleteConfirm(true)}
-                className="px-4 py-3 bg-red-100 text-red-600 rounded-xl font-medium hover:bg-red-200"
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 7,
+                  padding: '11px 14px',
+                  borderRadius: 12,
+                  background: T.redSoft,
+                  border: `1px solid ${T.redBorder}`,
+                  color: T.red,
+                  fontFamily: T.sans,
+                  fontSize: 13,
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                }}
               >
-                🗑️ {t('common.delete')}
+                <Trash2 size={13} strokeWidth={1.75} />
+                {t('common.delete')}
               </button>
               <button
                 onClick={onClose}
-                className="flex-1 px-4 py-3 bg-gray-200 text-gray-700 rounded-xl font-medium hover:bg-gray-300"
+                style={{
+                  flex: 1,
+                  padding: '11px 14px',
+                  borderRadius: 12,
+                  background: 'rgba(255,255,255,0.06)',
+                  border: '1px solid rgba(255,255,255,0.10)',
+                  color: T.textPrimary,
+                  fontFamily: T.sans,
+                  fontSize: 13,
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                }}
               >
                 {t('common.cancel')}
               </button>
               <button
                 onClick={handleSave}
                 disabled={saving}
-                className="flex-1 px-4 py-3 bg-blue-500 text-white rounded-xl font-medium hover:bg-blue-600 disabled:opacity-50"
+                style={{
+                  flex: 1,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 7,
+                  padding: '11px 14px',
+                  borderRadius: 12,
+                  background: 'linear-gradient(180deg, #34d399, #10b981)',
+                  border: '1px solid rgba(52,211,153,0.55)',
+                  color: '#06281a',
+                  fontFamily: T.sans,
+                  fontSize: 13,
+                  fontWeight: 700,
+                  cursor: saving ? 'wait' : 'pointer',
+                  opacity: saving ? 0.55 : 1,
+                  boxShadow: saving ? 'none' : '0 4px 14px rgba(16,185,129,0.25)',
+                }}
               >
+                <Check size={13} strokeWidth={2.5} />
                 {saving ? t('common.saving') : t('media.saveChanges')}
               </button>
             </>
