@@ -5,7 +5,15 @@
 
 ## The Workflow
 
-**Claude Design** (separate Claude instance) does visual design → exports JSX bundles as .md files → user brings them back → **this Claude** implements into the real codebase.
+**Design pass** → exports JSX bundles as .md files → user brings them back → **this Claude** implements into the real codebase.
+
+**⚠️ Claude Design quota note (Apr 29, 2026):** The dedicated Claude Design instance (separate project) hit its usage limit. Going forward, use a **fresh regular Claude.ai conversation (Opus)** instead — same model, same output quality. The design tokens are fully locked and documented below, so paste the token block + screen prompt into any Opus chat and you get an equivalent bundle. The separation was workflow hygiene, not a technical requirement.
+
+**How to run a design pass without Claude Design:**
+1. Open a new Claude.ai chat (Opus model)
+2. Paste the full token spec below + the screen-specific prompt from the Phase 3 section
+3. Get the JSX bundle back (ask it to output as a self-contained component with a `T` tokens object at the top)
+4. Save as `.md` and bring back here to implement
 
 Design tokens are locked:
 - bg `#0a1a0f`, glow `radial-gradient(ellipse 1100px 900px at 88% 8%, rgba(39,129,90,0.48), transparent 60%)`
@@ -154,8 +162,50 @@ Output a self-contained JSX component `Gallery` showing the full visual design. 
 ```
 ---
 
-## Phase 3 Screens (Future)
-Notes, Classroom Overview, Focus List, Capture, Progress, Language Semester, Weekly Admin Docs, Classroom Setup
+## Phase 3 Screens
+
+Use the prompt template below for each screen. Open a fresh Opus chat, paste the DESIGN SYSTEM block + the screen-specific description, get a JSX bundle back.
+
+**Screen queue (priority order):**
+1. Notes (`app/montree/dashboard/notes/page.tsx`)
+2. Classroom Overview (`app/montree/dashboard/classroom-overview/page.tsx`)
+3. Language Semester (`app/montree/dashboard/language-semester/page.tsx`)
+4. Weekly Admin Docs (`app/montree/dashboard/weekly-admin-docs/page.tsx`)
+5. Focus List (`app/montree/dashboard/focus/page.tsx`)
+6. Capture (`app/montree/dashboard/capture/page.tsx`)
+7. Progress (`app/montree/dashboard/[childId]/progress/page.tsx`)
+8. Classroom Setup (`app/montree/dashboard/classroom-setup/page.tsx`)
+
+### Design prompt template (paste into a fresh Opus chat)
+
+```
+You are doing a dark forest visual redesign of a Montessori app screen.
+
+DESIGN SYSTEM (locked — do not deviate):
+- bg: #0a1a0f, glow: radial-gradient(ellipse 1100px 900px at 88% 8%, rgba(39,129,90,0.48), transparent 60%)
+- Glass card: rgba(255,255,255,0.06), border: 1px solid rgba(52,211,153,0.15), borderRadius: 18px, backdropFilter: blur(18px) saturate(140%)
+- Emerald accent: #34d399, CTA gradient: linear-gradient(180deg, #34d399, #10b981), CTA text: #06281a
+- Headings: Lora 500 (serif), Body: Inter
+- Inline styles only — no Tailwind
+- All icons: Lucide React strokeWidth={1.75}
+- Area dots (no emoji): practical_life=rgb(236,72,153) pink, sensorial=rgb(20,184,166) teal, math=rgb(168,85,247) purple, language=rgb(74,222,128) green, cultural=rgb(249,115,22) orange
+- Status badges: Presented = amber rgba(245,158,11,0.18)/#f59e0b, Practicing = emerald rgba(52,211,153,0.15)/#34d399, Mastered = white glass rgba(255,255,255,0.10)/rgba(255,255,255,0.85)
+- Frosted modal/sheet: rgba(7,18,12,0.97) + blur(24px) + rgba(52,211,153,0.18) border
+
+SCREEN: [INSERT DESCRIPTION]
+
+Output a self-contained JSX component showing the full visual design. Export design tokens as a `T` object at the top. Use realistic placeholder data. No business logic needed — visual design only.
+```
+
+### Screen descriptions
+
+**Notes:** Teacher notes list. Sticky header with "New Note" emerald CTA. Notes are glass cards with: child avatar/name tag (if tagged), timestamp, note text, area dot. Filter bar: All / by Child / by Area. Empty state with Lora heading.
+
+**Classroom Overview:** Grid of all children (avatar + name). Each child tile: photo count this week, mastered count, a coloured ring indicating "on track" vs "needs attention". Top stats bar: total children, photos this week, avg mastered. Sticky header with week selector.
+
+**Language Semester:** Report generation screen. Child selector dropdown at top. Three copy blocks (Opening / Circle / Closing) as dark glass cards with a combined "Copy Parent Letter" emerald CTA. Work list showing language progress with status badges. Generate button = emerald gradient.
+
+**Weekly Admin Docs:** Document generator. Cards for each doc type (Weekly Summary, Conference Notes, etc.) with icon, title, status badge (generated / pending). "Generate All" emerald CTA. Individual generate per card. Generated docs show as downloadable dark glass cards.
 
 ## Phase 4 Modals (Future)
 Quick Guide, Full Details, Welcome, BulkPasteImport
@@ -173,11 +223,7 @@ Quick Guide, Full Details, Welcome, BulkPasteImport
 
 ---
 
-## Phase 3 Screens (Future)
-Notes, Classroom Overview, Focus List, Capture, Progress, Language Semester, Weekly Admin Docs, Classroom Setup
 
-## Phase 4 Modals (Future)
-Quick Guide, Full Details, Welcome, BulkPasteImport
 
 ---
 
