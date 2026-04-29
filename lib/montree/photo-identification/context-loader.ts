@@ -89,7 +89,7 @@ export async function loadIdentificationContext(
       .eq('classroom_id', classroomId)
       .order('description_confidence', { ascending: false })
       .order('updated_at', { ascending: false })
-      .limit(100),
+      .limit(200), // raised from 100 (Apr 30 audit) so the adaptive char budget below has headroom
   ]);
 
   // ----- Corrections -----
@@ -159,12 +159,27 @@ export async function loadIdentificationContext(
       }
 
       if (verifiedEntries.length > 0) {
-        // Cap at 50 (raised from 20 Apr 29 2026 — Whale Class has 65+ eligible entries,
-        // previously 45 were never seen by Pass 2).
-        // visualMemoryWorkNames is populated ONLY for works in the prompt (not all 65)
-        // so Gate A trust ("hasVisualMemoryForMatch") is only granted when Haiku actually
-        // had the description available during matching — logically consistent.
-        const capped = verifiedEntries.slice(0, 50);
+        // AUDIT FIX (Apr 30, 2026): adaptive cap.
+        // Old: hard slice at 50 entries. Whale Class has 65+ eligible entries
+        // and 15 high-quality ones were silently dropped every Pass 2 call.
+        // New: pack as many entries as fit in a 50KB char budget (~12K tokens),
+        // up to a 100-entry sanity ceiling. Entries are already sorted by
+        // (description_confidence DESC, updated_at DESC) by the SELECT, so
+        // we naturally fill the budget with the highest-quality recent entries.
+        // For small classrooms (<50 entries), nothing changes — they all fit.
+        // For large classrooms (Whale, future schools), more signal reaches Pass 2.
+        // visualMemoryWorkNames is populated ONLY for works actually in the prompt
+        // so Gate A trust ("hasVisualMemoryForMatch") stays logically consistent.
+        const VM_CHAR_BUDGET = 50_000;   // ~12.5K tokens
+        const VM_HARD_CEILING = 100;
+        const capped: string[] = [];
+        let runningChars = 0;
+        for (const entry of verifiedEntries) {
+          if (capped.length >= VM_HARD_CEILING) break;
+          if (runningChars + entry.length > VM_CHAR_BUDGET && capped.length >= 30) break;
+          capped.push(entry);
+          runningChars += entry.length;
+        }
         visualMemoryInjectedCount = capped.length;
         visualMemoryContext = `\n\nCLASSROOM-VERIFIED WORKS (teacher has confirmed these — match to these when the description fits):\n\n${capped.join('\n\n')}\n\nThese are teacher-confirmed descriptions of materials in THIS classroom. When the photo description closely matches a verified work's KEY MATERIALS, prefer that match over the generic guide. Pay attention to DISTINGUISH FROM entries to avoid common confusions.`;
 
