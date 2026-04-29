@@ -64,10 +64,30 @@ Design tokens are locked:
 - `46b2a6fa` — Fix MontreeLogo import typo (was breaking Railway build)
 - `bcd0c4e4` — AreaDot colored circles + stats tiles on child page
 - `4f89c0ad` — Photo audit dark forest redesign — dark glass cards, tabs, modals
+- `aadd1b71` — Guru Chat dark forest redesign
+- `d86890d9` — Curriculum dark forest redesign (page + TeachingToolsSection + CurriculumWorkList)
+- `4514bcb0` — Gallery dark forest redesign (photo cards, modals, report preview, last report)
+- `5171525b` — Handoff doc: Gallery ✅ details added
+- `53dab6cf` — Handoff doc: Phase 3 prompts + Claude Design workflow update
 
 ---
 
-## 🚨 IMMEDIATE NEXT TASK — Child Detail v2 + Next Phase 2 Screen
+## ✅ PHASE 2 COMPLETE — START PHASE 3 NEXT SESSION
+
+**Phase 2 is done.** All 4 inner screens (Photo Audit, Guru, Curriculum, Gallery) are fully converted.
+
+**Next session starts here:**
+1. Pick a Phase 3 screen from the queue below
+2. Open a fresh Opus chat, paste the design prompt template + screen description
+3. Get the JSX bundle back as a `.md` file
+4. Bring it here to implement
+
+**Also pending (no design pass needed — code changes only):**
+See "Child Detail v2" section below — the bundle is already in hand, structural code changes needed.
+
+---
+
+## Child Detail v2 + Phase 3 Details
 
 ### Curriculum dark forest details (commit `d86890d9`)
 - Page wrapper: dark `#0a1a0f` + radial emerald glow, `backgroundAttachment: fixed`
