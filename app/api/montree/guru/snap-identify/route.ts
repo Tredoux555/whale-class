@@ -14,6 +14,7 @@ import { getAILanguageInstruction } from '@/lib/montree/i18n/locale-config';
 import { loadAllCurriculumWorks, type CurriculumWork } from '@/lib/montree/curriculum-loader';
 import { getActiveSensitivePeriods } from '@/lib/montree/guru/knowledge/sensitive-periods';
 import { checkRateLimit } from '@/lib/rate-limiter';
+import { resolveReportModel } from '@/lib/montree/reports/resolve-model';
 
 // ──────────────────────────────────────────────
 // Module-level caches (loaded once, never changes)
@@ -235,6 +236,16 @@ export async function POST(request: NextRequest) {
     }
 
     const supabase = getSupabase();
+
+    // TIER GATE: snap-identify is a vision-Sonnet teacher tool; gate on AI tier.
+    const aiTier = await resolveReportModel(supabase, auth.schoolId);
+    if (aiTier.tier === 'free' || !aiTier.model) {
+      return NextResponse.json(
+        { success: false, error: 'Snap Identify requires an active AI tier' },
+        { status: 402 }
+      );
+    }
+
     const now = new Date();
 
     // ── Step 1: Upload photo to storage ──
@@ -501,7 +512,7 @@ RULES:
     };
 
     const message = await anthropic.messages.create({
-      model: AI_MODEL,
+      model: aiTier.model,
       max_tokens: 3500,
       system: systemPrompt,
       tools: [toolSchema],

@@ -9,6 +9,7 @@ import { verifyChildBelongsToSchool } from '@/lib/montree/verify-child-access';
 import { anthropic, AI_ENABLED, AI_MODEL } from '@/lib/ai/anthropic';
 import { buildChildContext } from '@/lib/montree/guru/context-builder';
 import { checkRateLimit } from '@/lib/rate-limiter';
+import { resolveReportModel } from '@/lib/montree/reports/resolve-model';
 
 // Escape special SQL wildcard characters for safe ILIKE usage
 function escapeIlike(str: string): string {
@@ -24,6 +25,17 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { success: false, error: 'AI features not enabled' },
         { status: 503 }
+      );
+    }
+
+    // TIER GATE: teaching-instructions is a Sonnet-quality teacher tool.
+    // Free tier gets 402; Core/Premium uses tier-appropriate model.
+    const supabase = getSupabase();
+    const aiTier = await resolveReportModel(supabase, auth.schoolId);
+    if (aiTier.tier === 'free' || !aiTier.model) {
+      return NextResponse.json(
+        { success: false, error: 'Teaching instructions require an active AI tier' },
+        { status: 402 }
       );
     }
 
@@ -68,8 +80,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, error: 'Access denied' }, { status: 403 });
     }
 
-    // Rate limit: 10/min per teacher
-    const supabase = getSupabase();
+    // Rate limit: 10/min per teacher (supabase already declared above for tier gate)
     const ip = request.headers.get('x-forwarded-for') || 'unknown';
     const rateCheck = await checkRateLimit(supabase, ip, 'teaching-instructions', 10, 1);
     if (!rateCheck.allowed) {
@@ -214,9 +225,9 @@ FORMAT:
 Keep it warm, practical, and actionable. Write for a teacher who knows Montessori basics but wants child-specific guidance.
 Use markdown formatting (headers, bold, numbered lists).`;
 
-    // Call Sonnet with 30s timeout
+    // Call AI with 30s timeout. Model is tier-aware (resolved above).
     const apiPromise = anthropic.messages.create({
-      model: AI_MODEL,
+      model: aiTier.model,
       max_tokens: 2048,
       system: systemPrompt,
       messages: [{ role: 'user', content: `Please create personalized teaching instructions for presenting "${work_name}" to ${childContext.name}.` }],
