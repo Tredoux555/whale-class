@@ -2893,29 +2893,39 @@ function AuditPhotoCard({ photo, selected, onToggle, onConfirm, onCorrect, onUse
             </p>
           )}
           {unifiedTagger ? (
-            <button
-              onClick={onAcceptDraft}
-              disabled={processing}
-              className="w-full text-[11px] py-2 mt-1.5 rounded bg-violet-600 text-white font-bold disabled:opacity-50"
-              title="Identify this work"
-            >
-              {processing ? '...' : '🏷️ This is…'}
-            </button>
+            <div className="flex gap-1 mt-1.5">
+              <button
+                onClick={onConfirmDraft}
+                disabled={processing}
+                className="flex-1 text-[11px] py-2 rounded bg-emerald-600 text-white font-bold disabled:opacity-50"
+                title="Sonnet got it right — confirm and attach"
+              >
+                {processing ? '...' : '✓ Correct'}
+              </button>
+              <button
+                onClick={onAcceptDraft}
+                disabled={processing}
+                className="flex-1 text-[11px] py-2 rounded bg-violet-600 text-white font-bold disabled:opacity-50"
+                title="Identify this work"
+              >
+                {processing ? '...' : '🏷️ This is…'}
+              </button>
+            </div>
           ) : (
             <>
               <div className="flex gap-1 mt-1.5">
                 <button
-                  onClick={onAcceptDraft}
+                  onClick={onConfirmDraft}
                   disabled={processing}
-                  className="flex-1 text-[11px] py-1.5 rounded bg-violet-600 text-white font-bold disabled:opacity-50"
-                  title="Review, edit, and add this draft to your curriculum"
+                  className="flex-1 text-[12px] py-2 rounded bg-emerald-600 text-white font-bold disabled:opacity-50"
+                  title="Sonnet got it right — confirm and attach"
                 >
-                  {processing ? '...' : '✅ Accept'}
+                  {processing ? '...' : '✓ Correct'}
                 </button>
                 <button
                   onClick={onCorrect}
                   disabled={processing}
-                  className="flex-1 text-[11px] py-1.5 rounded bg-white border border-violet-400 text-violet-700 font-bold disabled:opacity-50"
+                  className="flex-1 text-[12px] py-2 rounded bg-white border border-violet-400 text-violet-700 font-bold disabled:opacity-50"
                   title="Pick a different work from your curriculum"
                 >
                   ✏️ Fix
