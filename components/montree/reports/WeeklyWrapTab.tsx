@@ -708,7 +708,7 @@ export default function WeeklyWrapTab({ classroomId, view: externalView }: Weekl
             className={`px-4 py-1.5 rounded-full text-xs font-medium transition-colors ${subView === 'teacher' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
           >
             {t('weeklyWrap.teacherReview')}
-            {flaggedCount > 0 && <span className="ml-1.5 text-amber-600">{flaggedCount}</span>}
+            {/* flaggedCount badge removed — looked like system errors */}
           </button>
           <button
             onClick={() => setSubView('parents')}
@@ -786,7 +786,7 @@ export default function WeeklyWrapTab({ classroomId, view: externalView }: Weekl
                     onClick={() => setExpandedChild(isExpanded ? null : r.child_id)}
                     className="flex-1 flex items-center gap-2.5 text-left min-w-0"
                   >
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-xs flex-shrink-0 ${hasFlagIssue ? 'bg-gradient-to-br from-amber-400 to-amber-500' : 'bg-gradient-to-br from-emerald-500 to-teal-600'}`}>
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-xs flex-shrink-0 bg-gradient-to-br from-emerald-500 to-teal-600`}>
                       {firstName.charAt(0)}
                     </div>
                     <div className="flex-1 min-w-0">
@@ -800,11 +800,7 @@ export default function WeeklyWrapTab({ classroomId, view: externalView }: Weekl
                           {totalWorks} {t('weeklyWrap.worksCount')}
                         </span>
                       )}
-                      {hasFlagIssue && (
-                        <span className="text-[10px] text-amber-700 bg-amber-100 rounded-full px-2 py-0.5">
-                          ⚠ {r.flags_count}
-                        </span>
-                      )}
+                      {/* Flag badges removed — too ambiguous, looked like system errors */}
                       {hasReport && (
                         <span className="text-[10px] text-emerald-700 bg-emerald-100 rounded-full px-1.5 py-0.5">✓</span>
                       )}

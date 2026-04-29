@@ -11,7 +11,7 @@ const sb = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY
 );
-const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY, timeout: 60_000 });
 
 const CID = "51e7adb6-cd18-4e03-b707-eceb0a1d2e69"; // Whale Class
 
@@ -105,7 +105,7 @@ async function main() {
         if (upErr) throw new Error(upErr.message);
       }, 3, 2000);
       ok++;
-      if (ok % 20 === 0 || i === works.length - 1) console.log(`${ok}/${works.length} done`);
+      if (ok % 10 === 0 || i === works.length - 1) console.log(`${ok}/${works.length} done`);
     } catch (e) {
       fail++;
       fails.push(works[i].name);
