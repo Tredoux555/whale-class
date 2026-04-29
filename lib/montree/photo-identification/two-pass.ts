@@ -376,6 +376,14 @@ Just describe the physical scene in 2-4 sentences. Lead with the PRIMARY work th
           break;
         }
       }
+      // AUDIT FIX (Apr 30, 2026): cap Pass 1 output at 600 chars before passing
+      // to Pass 2. Defends against an unbounded Haiku ramble blowing the Pass 2
+      // token budget or generally corrupting the prompt. 600 chars ≈ 4 sentences,
+      // which matches the prompt instruction. Anything longer is signal that
+      // Haiku misunderstood the task.
+      if (visualDescription.length > 600) {
+        visualDescription = visualDescription.slice(0, 600).trim() + '…';
+      }
     } catch (err) {
       const isAbort = err instanceof Error && (err.name === 'AbortError' || err.message?.includes('abort'));
       errors.push(`Pass 1 ${isAbort ? 'timed out' : 'failed'}: ${err instanceof Error ? err.message : String(err)}`);
