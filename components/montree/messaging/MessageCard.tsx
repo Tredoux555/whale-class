@@ -1,9 +1,11 @@
 // /components/montree/messaging/MessageCard.tsx
 // Individual message card for inbox display
+// Dark forest visual treatment — all wiring intact
 
 'use client';
 
 import { useState } from 'react';
+import { CornerUpLeft, User } from 'lucide-react';
 import { useI18n } from '@/lib/montree/i18n';
 import { getIntlLocale } from '@/lib/montree/i18n/locales';
 
@@ -25,12 +27,30 @@ interface MessageCardProps {
   isTeacher?: boolean;
 }
 
+const T = {
+  cardBg: 'rgba(255,255,255,0.06)',
+  cardBgUnread: 'rgba(52,211,153,0.08)',
+  cardBorder: 'rgba(255,255,255,0.10)',
+  cardBorderUnread: 'rgba(52,211,153,0.30)',
+  cardRadius: 14,
+  blur: 'blur(14px) saturate(140%)',
+  emerald: '#34d399',
+  emeraldStrong: 'rgba(52,211,153,0.18)',
+  blue: '#60a5fa',
+  blueStrong: 'rgba(96,165,250,0.18)',
+  blueBorder: 'rgba(96,165,250,0.40)',
+  textPrimary: 'rgba(255,255,255,0.95)',
+  textSecondary: 'rgba(255,255,255,0.65)',
+  textMuted: 'rgba(255,255,255,0.40)',
+  serif: '"Lora", Georgia, serif',
+  sans: '"Inter", -apple-system, BlinkMacSystemFont, sans-serif',
+};
+
 export function MessageCard({
   message,
   childName,
   onRead,
   onReply,
-  isTeacher,
 }: MessageCardProps) {
   const { t, locale } = useI18n();
   const [isExpanded, setIsExpanded] = useState(false);
@@ -68,104 +88,194 @@ export function MessageCard({
     .toUpperCase();
 
   const isFromTeacher = message.sender_type === 'teacher';
-  const badgeColor = isFromTeacher
-    ? 'bg-emerald-100 text-emerald-700'
-    : 'bg-sky-100 text-sky-700';
-  const avatarColor = isFromTeacher
-    ? 'bg-gradient-to-br from-emerald-400 to-teal-500'
-    : 'bg-gradient-to-br from-sky-400 to-blue-500';
+  const badgeBg = isFromTeacher ? T.emeraldStrong : T.blueStrong;
+  const badgeBorder = isFromTeacher ? 'rgba(52,211,153,0.40)' : T.blueBorder;
+  const badgeColor = isFromTeacher ? T.emerald : T.blue;
+  const avatarBg = isFromTeacher
+    ? 'linear-gradient(135deg, #34d399, #10b981)'
+    : 'linear-gradient(135deg, #60a5fa, #3b82f6)';
 
   return (
     <div
       onClick={handleCardClick}
-      className={`
-        transition-all duration-200 cursor-pointer
-        border rounded-xl p-4
-        ${
-          message.is_read
-            ? 'border-gray-200 bg-white hover:border-gray-300'
-            : 'border-emerald-200 bg-emerald-50/50 hover:border-emerald-300'
-        }
-        ${isExpanded ? 'ring-2 ring-emerald-500/20' : ''}
-      `}
+      style={{
+        cursor: 'pointer',
+        padding: 16,
+        borderRadius: T.cardRadius,
+        background: message.is_read ? T.cardBg : T.cardBgUnread,
+        border: `1px solid ${message.is_read ? T.cardBorder : T.cardBorderUnread}`,
+        backdropFilter: T.blur,
+        WebkitBackdropFilter: T.blur,
+        boxShadow: isExpanded ? `0 0 0 2px rgba(52,211,153,0.20)` : 'none',
+        transition: 'all 200ms ease',
+        fontFamily: T.sans,
+        color: T.textPrimary,
+      }}
     >
-      {/* Header */}
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex items-start gap-3 min-w-0 flex-1">
-          {/* Avatar */}
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
+        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, minWidth: 0, flex: 1 }}>
           <div
-            className={`
-              flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center
-              text-white text-sm font-semibold shadow-sm
-              ${avatarColor}
-            `}
+            style={{
+              flexShrink: 0,
+              width: 40,
+              height: 40,
+              borderRadius: '50%',
+              background: avatarBg,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: '#06281a',
+              fontFamily: T.sans,
+              fontSize: 13,
+              fontWeight: 700,
+              boxShadow: '0 4px 12px rgba(0,0,0,0.20)',
+            }}
           >
-            {senderInitials}
+            {senderInitials || <User size={16} strokeWidth={1.75} />}
           </div>
 
-          {/* Sender info */}
-          <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className="font-semibold text-gray-900 text-sm">
+          <div style={{ minWidth: 0, flex: 1 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+              <span style={{
+                fontFamily: T.sans,
+                fontSize: 13,
+                fontWeight: 600,
+                color: T.textPrimary,
+              }}>
                 {message.sender_name}
               </span>
-              <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${badgeColor}`}>
+              <span style={{
+                fontFamily: T.sans,
+                fontSize: 10,
+                fontWeight: 700,
+                padding: '2px 8px',
+                borderRadius: 999,
+                background: badgeBg,
+                border: `1px solid ${badgeBorder}`,
+                color: badgeColor,
+                letterSpacing: 0.3,
+              }}>
                 {isFromTeacher ? t('messaging.teacher') : t('messaging.parent')}
               </span>
             </div>
-            <p className="text-xs text-gray-500 mt-0.5">
+            <p style={{
+              margin: '3px 0 0',
+              fontFamily: T.sans,
+              fontSize: 11,
+              color: T.textMuted,
+            }}>
               {formatDate(message.created_at)}
             </p>
           </div>
         </div>
 
-        {/* Unread indicator */}
         {!message.is_read && (
-          <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 flex-shrink-0 mt-2" />
+          <span style={{
+            width: 10,
+            height: 10,
+            borderRadius: '50%',
+            background: T.emerald,
+            flexShrink: 0,
+            marginTop: 6,
+            boxShadow: '0 0 0 3px rgba(52,211,153,0.25)',
+          }} />
         )}
       </div>
 
-      {/* Subject and preview */}
-      <div className="mt-3 ml-13">
+      <div style={{ marginTop: 12, marginLeft: 52 }}>
         {message.subject && (
-          <p className="text-sm font-medium text-gray-900">
+          <p style={{
+            margin: 0,
+            fontFamily: T.sans,
+            fontSize: 13,
+            fontWeight: 600,
+            color: T.textPrimary,
+          }}>
             {message.subject}
           </p>
         )}
-        <p className={`text-sm leading-relaxed mt-1 line-clamp-2 ${
-          message.subject ? 'text-gray-600' : 'text-gray-900'
-        }`}>
+        <p style={{
+          margin: message.subject ? '4px 0 0' : 0,
+          fontFamily: T.sans,
+          fontSize: 13,
+          lineHeight: 1.55,
+          color: message.subject ? T.textSecondary : T.textPrimary,
+          display: '-webkit-box',
+          WebkitLineClamp: 2,
+          WebkitBoxOrient: 'vertical',
+          overflow: 'hidden',
+        }}>
           {message.message_text}
         </p>
       </div>
 
-      {/* Expanded content */}
       {isExpanded && (
-        <div className="mt-4 pt-4 border-t border-gray-200 space-y-3 animate-slide-up">
-          {/* Full message */}
-          <div>
-            <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">
-              {message.message_text}
-            </p>
+        <div style={{
+          marginTop: 16,
+          paddingTop: 16,
+          borderTop: '1px solid rgba(255,255,255,0.08)',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 12,
+        }}>
+          <p style={{
+            margin: 0,
+            fontFamily: T.sans,
+            fontSize: 13.5,
+            lineHeight: 1.6,
+            color: T.textPrimary,
+            whiteSpace: 'pre-wrap',
+          }}>
+            {message.message_text}
+          </p>
+
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 8,
+            padding: '8px 12px',
+            borderRadius: 10,
+            background: 'rgba(255,255,255,0.04)',
+            border: '1px solid rgba(255,255,255,0.08)',
+          }}>
+            <User size={13} strokeWidth={1.75} color={T.emerald} />
+            <span style={{
+              fontFamily: T.sans,
+              fontSize: 12,
+              fontWeight: 600,
+              color: T.textPrimary,
+            }}>
+              {childName}
+            </span>
           </div>
 
-          {/* Child context */}
-          <div className="flex items-center gap-2 px-3 py-2 bg-gray-50 rounded-lg">
-            <span className="text-2xl">👶</span>
-            <span className="text-sm text-gray-700 font-medium">{childName}</span>
-          </div>
-
-          {/* Action buttons */}
-          <div className="flex gap-2 pt-2">
+          <div style={{ display: 'flex', gap: 8, paddingTop: 4 }}>
             {onReply && (
               <button
                 onClick={(e) => {
                   e.stopPropagation();
                   onReply(message);
                 }}
-                className="flex-1 px-3 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-sm font-medium rounded-lg transition-colors duration-200"
+                style={{
+                  flex: 1,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 6,
+                  padding: '8px 14px',
+                  borderRadius: 10,
+                  background: T.emeraldStrong,
+                  border: '1px solid rgba(52,211,153,0.40)',
+                  color: T.emerald,
+                  fontFamily: T.sans,
+                  fontSize: 12,
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  transition: 'all 120ms ease',
+                }}
               >
-                ↩️ {t('messaging.reply')}
+                <CornerUpLeft size={12} strokeWidth={1.75} />
+                {t('messaging.reply')}
               </button>
             )}
           </div>
