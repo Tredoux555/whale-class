@@ -33,7 +33,7 @@ Design tokens are locked:
 | File | Status |
 |------|--------|
 | `app/montree/dashboard/photo-audit/page.tsx` | ✅ Full dark forest redesign — commit `4f89c0ad` |
-| `app/montree/dashboard/guru/page.tsx` | ⏳ Needs Claude Design bundle |
+| `app/montree/dashboard/guru/page.tsx` | ✅ Dark forest redesign — commit `aadd1b71` |
 | `app/montree/dashboard/curriculum/page.tsx` | ⏳ Needs Claude Design bundle |
 | `app/montree/dashboard/[childId]/gallery/page.tsx` | ⏳ Needs Claude Design bundle |
 
@@ -91,11 +91,11 @@ Currently the codebase uses `expandedIndex: string | null` (accordion — one at
 
 ### B. Next Phase 2 Screen — Send to Claude Design
 
-Use this prompt for **Guru Chat**:
+Use this prompt for **Curriculum**:
 
 ---
 ```
-You are Claude Design. I need a dark forest redesign of the Montree Guru Chat screen.
+You are Claude Design. I need a dark forest redesign of the Montree Curriculum screen.
 
 DESIGN SYSTEM (locked — do not deviate):
 - bg: #0a1a0f, glow: radial-gradient(ellipse 1100px 900px at 88% 8%, rgba(39,129,90,0.48), transparent 60%)
@@ -104,17 +104,17 @@ DESIGN SYSTEM (locked — do not deviate):
 - Headings: Lora 500 (serif), Body: Inter
 - Inline styles only — no Tailwind
 - All icons: Lucide React strokeWidth={1.75}
+- Area dots (no emoji): practical_life=rgb(236,72,153) pink, sensorial=rgb(20,184,166) teal, math=rgb(168,85,247) purple, language=rgb(74,222,128) green, cultural=rgb(249,115,22) orange
 
-SCREEN: Guru Chat
-The Guru Chat screen is an AI advisor chat interface for Montessori teachers. It has:
-- A sticky header with "Ask the Guru" title and child context (child name, avatar)
-- A scrollable message thread: user messages (right-aligned, emerald bubble) and AI messages (left-aligned, glass card with subtle emerald left border)
-- A bottom input bar: textarea + send button, frosted glass, sticky to bottom
-- Optional "Quick prompt" suggestion chips above the input (e.g. "What should I introduce next?", "Write a progress note")
-- AI messages may contain structured content (bold headings, bullet lists) — style these elegantly in dark forest
-- Loading state: pulsing emerald dots while AI responds
+SCREEN: Curriculum
+The Curriculum screen shows 5 Montessori curriculum area cards. Each area card (Practical Life, Sensorial, Mathematics, Language, Cultural) contains:
+- Area name + colored dot + work count badge
+- A collapsed/expanded state — tap to expand and see a list of works
+- Each work row shows: work name, status badge (Presented/Practicing/Mastered), and a quick-guide button
+- Status badges: Presented = amber rgba(245,158,11,0.18)/#f59e0b, Practicing = emerald rgba(52,211,153,0.15)/#34d399, Mastered = white glass rgba(255,255,255,0.10)/rgba(255,255,255,0.85)
+- A "Teaching Tools" section below the area cards with 3-4 tool buttons (e.g. "Teach the AI", "Batch Describe", "Smart Learning")
 
-Output a self-contained JSX component `GuruChat` showing the full visual design. Use realistic placeholder content. Export design tokens as a `T` object at the top.
+Output a self-contained JSX component `Curriculum` showing the full visual design. Show one area expanded and others collapsed. Use realistic Montessori work names as placeholder content. Export design tokens as a `T` object at the top.
 ```
 ---
 
