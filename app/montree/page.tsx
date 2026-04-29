@@ -298,6 +298,7 @@ export default function MontreeLanding() {
         }
 
         @media (max-width: 640px) {
+          .m-nav-link { display: none; }
           .m-nav-inner { padding: 14px 20px; }
           .m-hero { padding: 80px 24px 100px; }
           .m-hero .m-label { margin-bottom: 28px; }
@@ -333,17 +334,17 @@ export default function MontreeLanding() {
             <span className="m-logo-word">Montree</span>
           </a>
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-            <a href="/montree/library" style={{ fontSize: '0.875rem', color: 'rgba(255,255,255,0.55)', textDecoration: 'none', letterSpacing: '0.01em', transition: 'color 200ms ease' }}
+            <a className="m-nav-link" href="/montree/library" style={{ fontSize: '0.875rem', color: 'rgba(255,255,255,0.55)', textDecoration: 'none', letterSpacing: '0.01em', transition: 'color 200ms ease' }}
               onMouseEnter={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.85)' )}
               onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.55)')}>
               Library
             </a>
-            <a href="/montree/for-teachers" style={{ fontSize: '0.875rem', color: 'rgba(255,255,255,0.55)', textDecoration: 'none', letterSpacing: '0.01em', transition: 'color 200ms ease' }}
+            <a className="m-nav-link" href="/montree/for-teachers" style={{ fontSize: '0.875rem', color: 'rgba(255,255,255,0.55)', textDecoration: 'none', letterSpacing: '0.01em', transition: 'color 200ms ease' }}
               onMouseEnter={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.85)' )}
               onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.55)')}>
               For teachers
             </a>
-            <a href="/montree/login-select" style={{ fontSize: '0.875rem', color: 'rgba(255,255,255,0.55)', textDecoration: 'none', letterSpacing: '0.01em', transition: 'color 200ms ease' }}
+            <a className="m-nav-link" href="/montree/login-select" style={{ fontSize: '0.875rem', color: 'rgba(255,255,255,0.55)', textDecoration: 'none', letterSpacing: '0.01em', transition: 'color 200ms ease' }}
               onMouseEnter={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.85)' )}
               onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.55)')}>
               Log in
