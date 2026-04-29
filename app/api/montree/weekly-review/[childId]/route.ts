@@ -10,6 +10,7 @@ import { verifyChildBelongsToSchool } from '@/lib/montree/verify-child-access';
 import { checkRateLimit } from '@/lib/rate-limiter';
 import { getSupabase } from '@/lib/supabase-client';
 import { anthropic, AI_MODEL } from '@/lib/ai/anthropic';
+import { resolveReportModel } from '@/lib/montree/reports/resolve-model';
 import {
   loadAllCurriculumWorks,
   enrichWithChineseNames,
@@ -441,6 +442,15 @@ export async function POST(
       return NextResponse.json({ error: 'AI not configured' }, { status: 503 });
     }
 
+    // TIER GATE: weekly-review generates parent/teacher narratives.
+    const aiTier = await resolveReportModel(supabase, auth.schoolId);
+    if (aiTier.tier === 'free' || !aiTier.model) {
+      return NextResponse.json(
+        { error: 'Weekly Review requires an active AI tier' },
+        { status: 402 }
+      );
+    }
+
     const body = await request.json();
     const type = body.type as 'teacher' | 'parent';
     const locale = (['en', 'zh'].includes(body.locale) ? body.locale : 'en') as string;
@@ -472,7 +482,7 @@ export async function POST(
       : buildParentPrompt(data.child.name, curriculumContext, locale);
 
     const response = await anthropic.messages.create({
-      model: AI_MODEL,
+      model: aiTier.model,
       max_tokens: 2048,
       messages: [{ role: 'user', content: prompt }],
     });
@@ -535,6 +545,15 @@ export async function PATCH(
       return NextResponse.json({ error: 'AI not configured' }, { status: 503 });
     }
 
+    // TIER GATE: refinement is the same Sonnet-quality tool — gate identically.
+    const aiTier = await resolveReportModel(supabase, auth.schoolId);
+    if (aiTier.tier === 'free' || !aiTier.model) {
+      return NextResponse.json(
+        { error: 'Weekly Review refinement requires an active AI tier' },
+        { status: 402 }
+      );
+    }
+
     const body = await request.json();
     const { type, feedback, current_report, locale: reqLocale } = body;
     const locale = (['en', 'zh'].includes(reqLocale) ? reqLocale : 'en') as string;
@@ -552,7 +571,7 @@ export async function PATCH(
     const prompt = buildRefinementPrompt(type, current_report, feedback, locale);
 
     const response = await anthropic.messages.create({
-      model: AI_MODEL,
+      model: aiTier.model,
       max_tokens: 2048,
       messages: [{ role: 'user', content: prompt }],
     });

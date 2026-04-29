@@ -5,6 +5,7 @@ import { getSupabase } from '@/lib/supabase-client';
 import { anthropic, HAIKU_MODEL, AI_MODEL } from '@/lib/ai/anthropic';
 import { checkRateLimit } from '@/lib/rate-limiter';
 import { invalidateClassroomEmbeddings } from '@/lib/montree/classifier';
+import { resolveReportModel } from '@/lib/montree/reports/resolve-model';
 // import { logApiUsage } from '@/lib/montree/api-usage'; // DEFERRED: metering not yet deployed
 
 export const maxDuration = 120;
@@ -339,12 +340,18 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Step 5: Enrich visual memory for the corrected work + log negative on the original
-    // This is the KEY self-learning loop. Two paths:
+    // Step 5: Enrich visual memory for the corrected work + log negative on the original.
+    // This is the KEY self-learning loop ("the moat"). Two paths:
     //   (a) corrected work — APPEND a rich visual fingerprint (preferring cached Sonnet draft)
     //   (b) original work — APPEND a negative example ("looks like X but is Y") so Pass 2
     //       distinguishes them next time via the DISTINGUISH FROM block.
-    if (corrected_work_name && photoUrl && anthropic) {
+    //
+    // TIER GATE: Sonnet enrichment is the moat-builder — only run for paid tiers.
+    // Free schools still save the correction itself (work assignment, photo update),
+    // they just don't accrue moat data. Their Pass 2 will keep using whatever's already
+    // there. This is the right behaviour: moat compounds for paying customers.
+    const aiTier = await resolveReportModel(supabase, auth.schoolId);
+    if (corrected_work_name && photoUrl && anthropic && aiTier.tier !== 'free') {
       parallelTasks.push(
         enrichVisualMemoryFromCorrection({
           supabase,
@@ -361,6 +368,8 @@ export async function POST(request: NextRequest) {
           console.error('[Corrections] Visual memory enrichment failed (non-fatal):', err);
         })
       );
+    } else if (aiTier.tier === 'free' && corrected_work_name) {
+      console.log('[Corrections] Skipping Sonnet enrichment for free-tier school — correction itself still saved');
     }
 
     // Step 6: Feed into brain learning system

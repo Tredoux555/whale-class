@@ -6,6 +6,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { anthropic, AI_ENABLED, AI_MODEL } from '@/lib/ai/anthropic';
+import { resolveReportModel } from '@/lib/montree/reports/resolve-model';
 
 const GENERATE_CONTENT_TOOL = {
   name: 'generate_work_content' as const,
@@ -73,6 +74,16 @@ export async function POST(request: NextRequest) {
 
     // Check for duplicate work in classroom
     const supabase = getSupabase();
+
+    // TIER GATE: generating curriculum content is a Sonnet-quality teacher tool.
+    const aiTier = await resolveReportModel(supabase, auth.schoolId);
+    if (aiTier.tier === 'free' || !aiTier.model) {
+      return NextResponse.json(
+        { success: false, error: 'Generating work content requires an active AI tier' },
+        { status: 402 }
+      );
+    }
+
     let duplicateWarning: string | null = null;
 
     if (auth.classroomId) {
@@ -127,10 +138,10 @@ Generate comprehensive, professional content for this Montessori work. Be specif
 - Aims: What the child explicitly learns
 - Presentation steps: Detailed ordered steps for showing the child${teacherContext}`;
 
-    // Call Sonnet with tool_use for structured output
+    // Call AI with tool_use for structured output. Model is tier-aware.
     let timeoutHandle: ReturnType<typeof setTimeout> | undefined;
     const apiPromise = anthropic.messages.create({
-      model: AI_MODEL,
+      model: aiTier.model,
       max_tokens: 1200,
       system: systemPrompt,
       tools: [GENERATE_CONTENT_TOOL],
