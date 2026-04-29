@@ -102,11 +102,15 @@ export async function GET(request: NextRequest) {
 
     // 4. Return data or fallback
     if (!guideData) {
+      // Short cache so we don't keep retrying the 3-tier lookup (classroom →
+      // master Brain → static JSON) for works that genuinely have no guide.
       return NextResponse.json({
         name: workName,
         quick_guide: null,
         video_search_term: `${workName} Montessori presentation`,
         message: 'Guide not found - check curriculum page'
+      }, {
+        headers: { 'Cache-Control': 'private, max-age=600, stale-while-revalidate=1800' }
       });
     }
 

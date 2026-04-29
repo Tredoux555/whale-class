@@ -131,19 +131,21 @@ export async function GET(req: NextRequest) {
         };
       })(),
 
-      // 2. Stale Works — from the SQL view
+      // 2. Stale Works — from the SQL view (parallel with dismissals query)
       (async () => {
-        const { data, error } = await supabase
-          .from('montree_stale_works_view')
-          .select('child_id, work_name, days_stale')
-          .in('child_id', childIds);
+        const [staleRes, dismissalsRes] = await Promise.all([
+          supabase
+            .from('montree_stale_works_view')
+            .select('child_id, work_name, days_stale')
+            .in('child_id', childIds),
+          supabase
+            .from('montree_stale_work_dismissals')
+            .select('child_id, work_name')
+            .in('child_id', childIds),
+        ]);
+        const { data, error } = staleRes;
         if (error) throw error;
-
-        // Exclude dismissed works
-        const { data: dismissals } = await supabase
-          .from('montree_stale_work_dismissals')
-          .select('child_id, work_name')
-          .in('child_id', childIds);
+        const { data: dismissals } = dismissalsRes;
         const dismissedKeys = new Set(
           (dismissals || []).map((d: { child_id: string; work_name: string }) => `${d.child_id}:${d.work_name}`)
         );
