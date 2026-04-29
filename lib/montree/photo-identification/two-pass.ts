@@ -348,12 +348,14 @@ export async function runTwoPassIdentification(input: TwoPassInput): Promise<Two
         max_tokens: 300,
         system: `You are observing a Montessori classroom photo. Describe ONLY what you physically see.
 
-Start with what the child's hands are ACTIVELY touching or working with — this is the PRIMARY work. Then describe other materials nearby as secondary context.
+Start with what the child's hands are ACTIVELY touching or working with — this is the PRIMARY work. Then describe other materials on the SAME work surface as secondary context.
+
+⚠️ CRITICAL: Describe ONLY materials on the child's immediate work surface (the table or mat directly in front of them). COMPLETELY IGNORE everything visible in the background — shelves, walls, other children's mats, posters, cards hanging or stored nearby. Background materials are irrelevant and will cause wrong identifications.
 
 Focus on:
 1. HANDS & PRIMARY WORK: What is the child doing with their hands RIGHT NOW? (writing, tracing, stacking, sorting, pouring, threading, matching, etc.) What is the MAIN surface or tool their hands are on? Describe its material, color, and size.
 2. MATERIAL COMPOSITION: What are the objects MADE OF? Be very specific: wood, metal, fabric/cloth, plastic, paper/cardboard, sandpaper, glass, ceramic? Are pieces RIGID (hard, stiff) or SOFT (foldable, flexible)?
-3. SECONDARY OBJECTS: What other objects/tools are nearby on the table or mat but NOT being directly used? (these are accessories, not the main work)
+3. SECONDARY OBJECTS: What other objects/tools are on the SAME TABLE OR MAT but NOT being directly used? (accessories only — ignore anything not on the child's work surface)
 4. SETUP: How are materials arranged? (in a frame, on a tray, in a box, on a mat, in pairs, in a sequence, etc.)
 5. KEY DETAILS: Any closures (buttons, zippers, bows, laces, snaps)? Any colors/patterns? Any numbers/letters? If letters or words visible, specify: are they individual LETTERS on boards, or WORDS/SENTENCES on cards/strips? If colored pieces, specify: are they hard/rigid TABLETS or soft FABRIC swatches?
 
