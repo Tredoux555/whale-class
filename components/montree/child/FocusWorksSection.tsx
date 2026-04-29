@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, CSSProperties } from 'react';
+import { ChevronDown, BookOpen, Check, Plus, X, Mic, Square } from 'lucide-react';
 import { AreaConfig } from '@/components/montree/curriculum/types';
 import AreaBadge from '@/components/montree/shared/AreaBadge';
 import GuruWorkGuide from '@/components/montree/guru/GuruWorkGuide';
@@ -63,16 +64,30 @@ export interface FocusWorksSectionProps {
   onShelfFilled?: () => void;
 }
 
-// Status config with translated labels
-function getStatusConfig(t: (key: string) => string): Record<string, { label: string; bg: string; text: string }> {
+// Status config with translated labels — dark forest inline styles
+function getStatusConfig(t: (key: string) => string): Record<string, { label: string; style: CSSProperties }> {
   return {
-    not_started: { label: '○', bg: 'bg-gray-200', text: 'text-gray-600' },
-    presented: { label: t('status.presented'), bg: 'bg-amber-300', text: 'text-amber-800' },
-    practicing: { label: t('status.practicing'), bg: 'bg-blue-400', text: 'text-blue-800' },
-    mastered: { label: t('status.mastered'), bg: 'bg-emerald-400', text: 'text-emerald-800' },
-    completed: { label: t('status.mastered'), bg: 'bg-emerald-400', text: 'text-emerald-800' }, // Legacy alias
+    not_started: { label: '○', style: { background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.35)', border: '1px solid rgba(255,255,255,0.12)' } },
+    presented:   { label: t('status.presented'), style: { background: 'rgba(245,158,11,0.18)', color: '#f59e0b', border: '1px solid rgba(245,158,11,0.28)' } },
+    practicing:  { label: t('status.practicing'), style: { background: 'rgba(52,211,153,0.15)', color: '#34d399', border: '1px solid rgba(52,211,153,0.28)' } },
+    mastered:    { label: t('status.mastered'), style: { background: 'rgba(255,255,255,0.10)', color: 'rgba(255,255,255,0.82)', border: '1px solid rgba(255,255,255,0.20)' } },
+    completed:   { label: t('status.mastered'), style: { background: 'rgba(255,255,255,0.10)', color: 'rgba(255,255,255,0.82)', border: '1px solid rgba(255,255,255,0.20)' } },
   };
 }
+
+// Dark forest design tokens
+const C = {
+  border:      'rgba(52,211,153,0.15)',
+  emerald:     '#34d399',
+  emeraldSoft: 'rgba(52,211,153,0.08)',
+  rowNormal:   'rgba(255,255,255,0.04)',
+  rowExpanded: 'rgba(52,211,153,0.07)',
+  textPrimary: 'rgba(255,255,255,0.85)',
+  textMuted:   'rgba(255,255,255,0.45)',
+  glass:       'rgba(255,255,255,0.06)',
+};
+const SANS  = "'Inter', -apple-system, system-ui, sans-serif";
+const SERIF = "'Lora', 'Iowan Old Style', Georgia, serif";
 
 const AREAS = ['practical_life', 'sensorial', 'mathematics', 'language', 'cultural'];
 
@@ -296,62 +311,58 @@ export default function FocusWorksSection({
   };
 
   return (
-    <div className={`rounded-2xl p-4 shadow-sm ${SHOW_GAME_PLAN && gamePlan ? 'bg-gradient-to-b from-amber-50 to-white border border-amber-200/60' : 'bg-white'}`}>
+    <div style={{
+      background: C.glass,
+      border: `1px solid ${C.border}`,
+      borderRadius: 18,
+      overflow: 'hidden',
+      backdropFilter: 'blur(18px) saturate(140%)',
+      WebkitBackdropFilter: 'blur(18px) saturate(140%)',
+      fontFamily: SANS,
+    }}>
       {/* Game Plan integrated header — or plain title */}
       {SHOW_GAME_PLAN && gamePlan ? (
-        <div className="mb-4 space-y-2.5">
-          {/* Game Plan label + nudge */}
-          <div className="flex items-start gap-2.5">
-            <span className="text-lg mt-0.5">🧭</span>
-            <div className="flex-1 min-w-0">
-              <p className="text-xs font-bold uppercase tracking-wide text-amber-600">{t('focusWorks.gamePlan')}</p>
-              <p className="text-sm text-gray-700 leading-relaxed">{planNudge}</p>
+        <div style={{ padding: '16px 16px 0', marginBottom: 12 }}>
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <p style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#f59e0b', margin: '0 0 2px' }}>{t('focusWorks.gamePlan')}</p>
+              <p style={{ fontSize: 13, color: C.textPrimary, lineHeight: 1.5, margin: 0 }}>{planNudge}</p>
               {planDirection && (
-                <p className="text-[11px] text-amber-600 font-medium mt-1">{planDirection}</p>
+                <p style={{ fontSize: 11, color: '#f59e0b', fontWeight: 500, margin: '4px 0 0' }}>{planDirection}</p>
               )}
             </div>
           </div>
-
-          {/* Works chips + fill shelf button */}
           {planWorks.length > 0 && (
-            <div className="flex flex-wrap items-center gap-1.5">
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 10 }}>
               {planWorks.map((work, wi) => (
-                <span
-                  key={wi}
-                  className="px-2.5 py-1 text-xs bg-emerald-50 text-emerald-700 rounded-lg border border-emerald-100 font-medium"
-                >
+                <span key={wi} style={{ padding: '4px 10px', fontSize: 11, background: C.emeraldSoft, color: C.emerald, borderRadius: 8, border: `1px solid ${C.border}`, fontWeight: 500 }}>
                   {work}
                 </span>
               ))}
-              {/* Fill shelf button — only when empty slots exist */}
               {hasEmptySlots && !shelfFilled && (
                 <button
                   onClick={handleFillShelf}
                   disabled={fillingShelf}
-                  className="px-2.5 py-1 text-xs bg-amber-500 text-white rounded-lg font-medium hover:bg-amber-600 active:scale-95 transition-all disabled:opacity-50 flex items-center gap-1"
+                  style={{ padding: '4px 10px', fontSize: 11, background: 'rgba(245,158,11,0.18)', color: '#f59e0b', borderRadius: 8, border: '1px solid rgba(245,158,11,0.28)', fontWeight: 500, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, opacity: fillingShelf ? 0.5 : 1 }}
                 >
-                  {fillingShelf ? (
-                    <div className="w-3 h-3 border-2 border-white/40 border-t-white rounded-full animate-spin" />
-                  ) : (
-                    '↓'
-                  )}
+                  {fillingShelf ? <div style={{ width: 10, height: 10, border: '2px solid rgba(245,158,11,0.3)', borderTopColor: '#f59e0b', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} /> : '↓'}
                   {t('focusWorks.fillShelf')}
                 </button>
               )}
               {shelfFilled && (
-                <span className="px-2.5 py-1 text-xs text-emerald-600 font-medium">✓ {t('focusWorks.done')}</span>
+                <span style={{ padding: '4px 10px', fontSize: 11, color: C.emerald, fontWeight: 500 }}>✓ {t('focusWorks.done')}</span>
               )}
             </div>
           )}
-
-          {/* Divider */}
-          <div className="border-t border-amber-200/40" />
+          <div style={{ borderTop: `1px solid ${C.border}`, marginTop: 12 }} />
         </div>
       ) : (
-        <h2 className="font-bold text-gray-800 mb-3">{t('focusWorks.title')}</h2>
+        <div style={{ padding: '16px 16px 12px' }}>
+          <h2 style={{ fontFamily: SERIF, fontWeight: 500, fontSize: 16, color: '#fff', margin: 0 }}>{t('focusWorks.title')}</h2>
+        </div>
       )}
 
-      <div className="space-y-2">
+      <div style={{ display: 'flex', flexDirection: 'column' }}>
         {AREAS.map((area, areaIdx) => {
           // Find the focus work for this area
           const focusWork = focusWorks.find(w => normalizeArea(w.area) === area);
@@ -363,27 +374,31 @@ export default function FocusWorksSection({
             : statusConfig.not_started;
           const isExpanded = expandedIndex === area;
           const guruDetail = guruAreaDetails?.[area] || null;
+          const isLast = areaIdx === AREAS.length - 1;
 
           return (
-            <div key={`area-${area}`} className="space-y-1">
+            <div key={`area-${area}`}>
               {/* Area row — always visible */}
               <div
                 {...(areaIdx === 0 ? { 'data-guide': 'first-work-row' } : {})}
-                className={`flex items-center gap-3 p-2.5 rounded-xl transition-colors ${isExpanded ? 'bg-emerald-50' : 'bg-gray-50'}`}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 12,
+                  padding: '10px 16px',
+                  background: isExpanded ? C.rowExpanded : 'transparent',
+                  borderTop: areaIdx === 0 ? 'none' : `1px solid rgba(52,211,153,0.08)`,
+                  transition: 'background 140ms ease',
+                }}
               >
                 {/* Area badge — tap to swap focus work */}
                 <button
                   {...(areaIdx === 0 ? { 'data-guide': 'area-badge-first' } : {})}
-                  className="active:scale-90 transition-transform"
+                  style={{ background: 'none', border: 0, padding: 0, cursor: 'pointer', flexShrink: 0 }}
                   onClick={() => onOpenWheelPicker(area, focusWork?.work_name)}
-                  onContextMenu={(e) => {
-                    e.preventDefault();
-                    onOpenWheelPicker(area, focusWork?.work_name);
-                  }}
+                  onContextMenu={(e) => { e.preventDefault(); onOpenWheelPicker(area, focusWork?.work_name); }}
                   onTouchStart={(e) => {
-                    const timer = setTimeout(() => {
-                      onOpenWheelPicker(area, focusWork?.work_name);
-                    }, 500);
+                    const timer = setTimeout(() => onOpenWheelPicker(area, focusWork?.work_name), 500);
                     const clear = () => clearTimeout(timer);
                     e.currentTarget.addEventListener('touchend', clear, { once: true });
                     e.currentTarget.addEventListener('touchmove', clear, { once: true });
@@ -397,16 +412,16 @@ export default function FocusWorksSection({
                 <button
                   {...(areaIdx === 0 ? { 'data-guide': 'first-work-name' } : {})}
                   onClick={() => setExpandedIndex(isExpanded ? null : area)}
-                  className="flex-1 text-left"
+                  style={{ flex: 1, textAlign: 'left', background: 'none', border: 0, padding: 0, cursor: 'pointer' }}
                 >
                   {focusWork ? (
-                    <p className="font-medium text-gray-800 text-sm">
+                    <span style={{ fontWeight: 500, color: C.textPrimary, fontSize: 14 }}>
                       {getWorkDisplayName(focusWork, locale)}
-                    </p>
+                    </span>
                   ) : (
-                    <p className="font-medium text-gray-400 text-sm italic">
+                    <span style={{ fontWeight: 500, color: C.textMuted, fontSize: 14, fontStyle: 'italic' }}>
                       {t('focusWorks.noWorkInArea')}
-                    </p>
+                    </span>
                   )}
                 </button>
 
@@ -415,40 +430,75 @@ export default function FocusWorksSection({
                   <button
                     {...(areaIdx === 0 ? { 'data-tutorial': 'status-badge-first' } : {})}
                     onClick={() => onCycleStatus(focusWork, true)}
-                    className={`px-2.5 py-1 rounded-full text-xs font-semibold transition-all active:scale-90 ${status.bg} ${status.text}`}
+                    style={{
+                      ...status.style,
+                      padding: '3px 10px',
+                      borderRadius: 20,
+                      fontSize: 11,
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                      flexShrink: 0,
+                      fontFamily: SANS,
+                    }}
                   >
                     {status.label}
                   </button>
                 )}
 
-                {/* Expand arrow */}
+                {/* Expand chevron */}
                 <button
                   onClick={() => setExpandedIndex(isExpanded ? null : area)}
-                  className={`text-gray-400 text-sm transition-transform ${isExpanded ? 'rotate-180' : ''}`}
+                  style={{ background: 'none', border: 0, padding: 2, cursor: 'pointer', color: C.textMuted, flexShrink: 0 }}
                 >
-                  ▼
+                  <ChevronDown
+                    size={16}
+                    strokeWidth={1.75}
+                    style={{ transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 200ms ease' }}
+                  />
                 </button>
               </div>
 
               {/* Expanded content */}
               {isExpanded && (
-                <div className="mt-1 ml-7 p-3 bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl border border-emerald-100 space-y-3">
-
+                <div style={{
+                  margin: '0 12px 10px',
+                  padding: 14,
+                  background: 'rgba(8,20,12,0.55)',
+                  borderRadius: 14,
+                  border: `1px solid ${C.border}`,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: 10,
+                }}>
                   {/* Guru Advice — hidden to reduce clutter, code preserved */}
 
                   {/* Work controls — only if focus work exists */}
                   {focusWork ? (
                     <>
-                      {/* Quick Guide button — Capture removed, main nav capture is sufficient */}
-                      <div className="flex gap-2">
-                        <button
-                          {...(areaIdx === 0 ? { 'data-guide': 'quick-guide-btn' } : {})}
-                          onClick={() => onOpenQuickGuide(focusWork.work_name, { zh: focusWork.chineseName, es: focusWork.spanishName, de: focusWork.deName, fr: focusWork.frName, pt: focusWork.ptName, nl: focusWork.nlName, it: focusWork.itName, ja: focusWork.jaName, ko: focusWork.koName, uk: focusWork.ukName, ru: focusWork.ruName })}
-                          className="flex-1 py-2.5 bg-amber-500 text-white font-bold rounded-xl text-sm flex items-center justify-center gap-1 hover:bg-amber-600 active:scale-95"
-                        >
-                          📖 {t('focusWorks.quickGuide')}
-                        </button>
-                      </div>
+                      {/* Quick Guide button */}
+                      <button
+                        {...(areaIdx === 0 ? { 'data-guide': 'quick-guide-btn' } : {})}
+                        onClick={() => onOpenQuickGuide(focusWork.work_name, { zh: focusWork.chineseName, es: focusWork.spanishName, de: focusWork.deName, fr: focusWork.frName, pt: focusWork.ptName, nl: focusWork.nlName, it: focusWork.itName, ja: focusWork.jaName, ko: focusWork.koName, uk: focusWork.ukName, ru: focusWork.ruName })}
+                        style={{
+                          width: '100%',
+                          padding: '9px 16px',
+                          background: 'transparent',
+                          border: `1px solid ${C.emerald}`,
+                          borderRadius: 10,
+                          color: C.emerald,
+                          fontSize: 13,
+                          fontWeight: 600,
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: 6,
+                          fontFamily: SANS,
+                        }}
+                      >
+                        <BookOpen size={15} strokeWidth={1.75} />
+                        {t('focusWorks.quickGuide')}
+                      </button>
 
                       {/* Evidence strength indicator */}
                       {evidenceMap[focusWork.work_name] && (
@@ -464,18 +514,32 @@ export default function FocusWorksSection({
                         <GuruWorkGuide workName={focusWork.work_name} childId={childId} />
                       )}
 
-                      {/* Notes */}
-                      <div {...(areaIdx === 0 ? { 'data-guide': 'notes-area' } : {})} className="relative">
+                      {/* Observation textarea + mic + save */}
+                      <div
+                        {...(areaIdx === 0 ? { 'data-guide': 'notes-area' } : {})}
+                        style={{ position: 'relative' }}
+                      >
                         <textarea
                           value={notes[focusWork.work_name] || ''}
                           onChange={(e) => setNotes(prev => ({ ...prev, [focusWork.work_name]: e.target.value }))}
                           placeholder={t('focusWorks.addObservation')}
-                          className="w-full p-3 pb-10 rounded-lg text-sm resize-none focus:ring-2 focus:ring-amber-400 focus:outline-none
-                            bg-gradient-to-b from-amber-100 to-amber-50 border-0 shadow-md
-                            text-amber-900 placeholder-amber-400"
                           rows={2}
+                          style={{
+                            width: '100%',
+                            boxSizing: 'border-box',
+                            padding: '10px 12px 40px',
+                            borderRadius: 10,
+                            background: 'rgba(255,255,255,0.05)',
+                            border: '1px solid rgba(52,211,153,0.18)',
+                            color: C.textPrimary,
+                            fontSize: 13,
+                            lineHeight: 1.5,
+                            resize: 'none',
+                            outline: 'none',
+                            fontFamily: SANS,
+                          }}
                         />
-                        <div className="absolute bottom-2 right-2 flex items-center gap-1.5">
+                        <div style={{ position: 'absolute', bottom: 8, right: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
                           {!isParent && (
                             <ChildVoiceNote
                               childId={childId}
@@ -489,10 +553,25 @@ export default function FocusWorksSection({
                           <button
                             onClick={() => onSaveNote(focusWork)}
                             disabled={!notes[focusWork.work_name]?.trim() || savingNote === focusWork.work_name}
-                            className="px-2.5 py-1 bg-amber-500 text-white text-xs font-semibold rounded-lg
-                              disabled:opacity-50 hover:bg-amber-600 active:scale-95 shadow-sm"
+                            style={{
+                              padding: '5px 12px',
+                              borderRadius: 8,
+                              background: 'linear-gradient(135deg, #34d399, #059669)',
+                              color: '#fff',
+                              fontSize: 12,
+                              fontWeight: 600,
+                              border: 0,
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: 4,
+                              opacity: (!notes[focusWork.work_name]?.trim() || savingNote === focusWork.work_name) ? 0.45 : 1,
+                              transition: 'opacity 140ms ease',
+                              fontFamily: SANS,
+                            }}
                           >
-                            {savingNote === focusWork.work_name ? '...' : smartNoteProcessing === focusWork.work_name ? '🧠' : '📌 ' + t('focusWorks.save')}
+                            <Check size={12} strokeWidth={2.5} />
+                            {savingNote === focusWork.work_name ? '...' : smartNoteProcessing === focusWork.work_name ? '…' : t('focusWorks.save')}
                           </button>
                         </div>
                       </div>
@@ -503,9 +582,24 @@ export default function FocusWorksSection({
                     /* No focus work — show add button */
                     <button
                       onClick={() => onOpenWheelPicker(area)}
-                      className="w-full py-3 bg-emerald-100 text-emerald-700 font-medium rounded-xl text-sm hover:bg-emerald-200 active:scale-95 transition-all flex items-center justify-center gap-2"
+                      style={{
+                        width: '100%',
+                        padding: '10px 0',
+                        background: C.emeraldSoft,
+                        border: `1px solid ${C.border}`,
+                        borderRadius: 10,
+                        color: C.emerald,
+                        fontSize: 13,
+                        fontWeight: 500,
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: 6,
+                        fontFamily: SANS,
+                      }}
                     >
-                      <span className="text-lg">+</span>
+                      <Plus size={15} strokeWidth={2} />
                       {t('focusWorks.addOne')}
                     </button>
                   )}
@@ -514,27 +608,35 @@ export default function FocusWorksSection({
 
               {/* Extra works for this area — shown when expanded */}
               {isExpanded && areaExtras.length > 0 && (
-                <div className="ml-8 space-y-1">
+                <div style={{ margin: '0 12px 10px', display: 'flex', flexDirection: 'column', gap: 4 }}>
                   {areaExtras.map((extra) => {
                     const extraStatus = statusConfig[extra.status] || statusConfig.not_started;
                     return (
-                      <div key={`extra-${extra.area}-${extra.work_name}`} className="flex items-center gap-2 p-2 rounded-lg bg-gray-50/60">
-                        <span className="text-xs text-gray-400">└</span>
-                        <span className="flex-1 text-sm text-gray-600">
+                      <div key={`extra-${extra.area}-${extra.work_name}`} style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 8,
+                        padding: '6px 10px',
+                        borderRadius: 8,
+                        background: 'rgba(255,255,255,0.03)',
+                        border: '1px solid rgba(255,255,255,0.07)',
+                      }}>
+                        <span style={{ fontSize: 11, color: C.textMuted }}>└</span>
+                        <span style={{ flex: 1, fontSize: 13, color: 'rgba(255,255,255,0.65)' }}>
                           {getWorkDisplayName(extra, locale)}
                         </span>
                         <button
                           onClick={() => onCycleStatus(extra, false)}
-                          className={`px-2 py-0.5 rounded-full ${extraStatus.bg} ${extraStatus.text} font-semibold text-xs active:scale-90`}
+                          style={{ ...extraStatus.style, padding: '2px 8px', borderRadius: 20, fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: SANS }}
                         >
                           {extraStatus.label}
                         </button>
                         <button
                           onClick={() => onRemoveExtra(extra)}
-                          className="text-gray-400 hover:text-red-500 text-xs p-1"
+                          style={{ background: 'none', border: 0, padding: 4, cursor: 'pointer', color: C.textMuted }}
                           title={t('common.remove')}
                         >
-                          ✕
+                          <X size={13} strokeWidth={1.75} />
                         </button>
                       </div>
                     );
@@ -548,8 +650,8 @@ export default function FocusWorksSection({
 
       {/* Game Plan footer — refresh button */}
       {SHOW_GAME_PLAN && gamePlan && (
-        <div className="mt-3 flex items-center justify-between pt-2 border-t border-amber-100">
-          <p className="text-[10px] text-gray-400">
+        <div style={{ margin: '4px 16px 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: 10, borderTop: `1px solid ${C.border}` }}>
+          <p style={{ fontSize: 10, color: C.textMuted, margin: 0 }}>
             {planDaysSinceUpdate === 0
               ? t('focusWorks.updatedToday')
               : t('focusWorks.daysAgo', { count: planDaysSinceUpdate })
@@ -558,12 +660,12 @@ export default function FocusWorksSection({
           <button
             onClick={handleRefreshPlan}
             disabled={refreshingPlan}
-            className="flex items-center gap-1 px-2.5 py-1 text-[11px] font-medium text-amber-600 hover:text-amber-700 transition-colors disabled:opacity-50"
+            style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '4px 10px', fontSize: 11, fontWeight: 500, color: '#f59e0b', background: 'none', border: 0, cursor: 'pointer', opacity: refreshingPlan ? 0.5 : 1, fontFamily: SANS }}
           >
             {refreshingPlan ? (
-              <div className="w-3 h-3 border-2 border-amber-300 border-t-amber-600 rounded-full animate-spin" />
+              <div style={{ width: 10, height: 10, border: '2px solid rgba(245,158,11,0.3)', borderTopColor: '#f59e0b', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
             ) : (
-              <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
               </svg>
             )}
@@ -571,6 +673,9 @@ export default function FocusWorksSection({
           </button>
         </div>
       )}
+
+      {/* Bottom padding */}
+      <div style={{ height: 6 }} />
     </div>
   );
 }
@@ -585,14 +690,21 @@ function CopyButton({ text, onCopy }: { text: string; onCopy: (text: string) => 
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
       }}
-      className={`px-2 py-0.5 rounded text-xs font-medium transition-all ${
-        copied
-          ? 'bg-emerald-100 text-emerald-700'
-          : 'bg-white/80 text-violet-600 hover:bg-violet-50 border border-violet-200'
-      }`}
+      style={{
+        padding: '2px 8px',
+        borderRadius: 6,
+        fontSize: 11,
+        fontWeight: 500,
+        cursor: 'pointer',
+        border: `1px solid ${copied ? 'rgba(52,211,153,0.30)' : 'rgba(255,255,255,0.15)'}`,
+        background: copied ? 'rgba(52,211,153,0.12)' : 'rgba(255,255,255,0.07)',
+        color: copied ? '#34d399' : 'rgba(255,255,255,0.60)',
+        transition: 'all 140ms ease',
+        fontFamily: "'Inter', -apple-system, system-ui, sans-serif",
+      }}
       title="Copy"
     >
-      {copied ? '✓' : '📋'}
+      {copied ? '✓' : '⎘'}
     </button>
   );
 }
