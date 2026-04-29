@@ -442,10 +442,15 @@ export default function DashboardPage() {
                 return (
                   <div
                     data-tutorial="student-grid"
-                    className="flex-1 grid gap-2 overflow-hidden"
+                    className="flex-1 grid gap-2 overflow-hidden rounded-2xl p-2"
                     style={{
                       gridTemplateColumns: `repeat(${cols}, 1fr)`,
                       gridTemplateRows: `repeat(${rows}, 1fr)`,
+                      background: `
+                        radial-gradient(ellipse 80% 60% at 85% 5%, rgba(39,129,90,0.45), rgba(39,129,90,0) 55%),
+                        radial-gradient(ellipse 50% 40% at 80% 12%, rgba(130,217,174,0.20), rgba(130,217,174,0) 60%),
+                        linear-gradient(155deg, #0c2419 0%, #0a1f16 38%, #081a12 70%, #06140e 100%)
+                      `,
                     }}
                   >
                     {filteredChildren.map((child, index) => (
