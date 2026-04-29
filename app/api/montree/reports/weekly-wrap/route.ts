@@ -257,8 +257,36 @@ export async function POST(request: NextRequest) {
 
     // ─── Helper: process a single child ───
     async function processChild(child: typeof children[0]) {
+          // ─── Stage 0: Replan FIRST — advance game plan + focus shelf ─────
+          // Runs before report generation so that even if Sonnet calls timeout
+          // or fail, the child's weekly plan is always refreshed. Replan uses
+          // Haiku (fast, cheap) and must never be blocked by report generation.
+          let replanResult: { replanned: boolean; works: string[]; error?: string } = {
+            replanned: false,
+            works: [],
+          };
+          if (anthropic && aiTier.model) {
+            try {
+              replanResult = await replanChildInProcess({
+                childId: child.id,
+                childName: child.name,
+                classroomId: classroom_id,
+                schoolId: classroom.school_id,
+                locale,
+                anthropic,
+                model: aiTier.model,
+                supabase,
+              });
+            } catch (replanErr) {
+              const msg = replanErr instanceof Error ? replanErr.message : 'unknown';
+              console.error(`[WeeklyWrap] Replan threw for ${child.name}:`, replanErr);
+              replanResult = { replanned: false, works: [], error: `wrap: ${msg}` };
+            }
+          } else {
+            replanResult = { replanned: false, works: [], error: 'wrap: anthropic/model unavailable' };
+          }
+
           try {
-            // NOTE: No early-return skip here. Replan (Stage 6) must always run.
             // Report generation is individually gated by skipTeacherReports / skipParentReports
             // and the existingXxxReports maps.
 
@@ -548,8 +576,8 @@ export async function POST(request: NextRequest) {
             const keyInsight = (teacherReportContent as any)?.key_insight || '';
             const flagsCount = (analysis.red_flags.length + analysis.yellow_flags.length);
 
-            // If any upsert silently failed, surface it as a real failure so the stream event
-            // can show the actual DB error instead of masking it with success=true.
+            // If any upsert silently failed, surface it but still return replan result.
+            // Replan already ran (Stage 0) — don't let upsert failures hide it.
             if (upsertFailures.length > 0) {
               return {
                 child_id: child.id,
@@ -558,36 +586,10 @@ export async function POST(request: NextRequest) {
                 photo_count: enrichedPhotos.length,
                 error: `DB upsert failed — ${upsertFailures.join('; ')}`,
                 tokens_used: totalTokens.input > 0 ? totalTokens : undefined,
+                replanned: replanResult.replanned,
+                replan_works: replanResult.works,
+                replan_error: replanResult.error,
               };
-            }
-
-            // ─── Stage 6: Wrap up the week — refresh game plan + advance focus shelf ───
-            // Tier-aware (uses aiTier.model). Failure here MUST NOT fail the report —
-            // the upserts above already succeeded. Replan failure is logged + surfaced
-            // via NDJSON so the UI can show what didn't roll over.
-            let replanResult: { replanned: boolean; works: string[]; error?: string } = {
-              replanned: false,
-              works: [],
-            };
-            if (anthropic && aiTier.model) {
-              try {
-                replanResult = await replanChildInProcess({
-                  childId: child.id,
-                  childName: child.name,
-                  classroomId: classroom_id,
-                  schoolId: classroom.school_id,
-                  locale,
-                  anthropic,
-                  model: aiTier.model,
-                  supabase,
-                });
-              } catch (replanErr) {
-                const msg = replanErr instanceof Error ? replanErr.message : 'unknown';
-                console.error(`[WeeklyWrap] Replan threw for ${child.name}:`, replanErr);
-                replanResult = { replanned: false, works: [], error: `wrap: ${msg}` };
-              }
-            } else {
-              replanResult = { replanned: false, works: [], error: 'wrap: anthropic/model unavailable' };
             }
 
             return {
@@ -611,6 +613,10 @@ export async function POST(request: NextRequest) {
               success: false,
               photo_count: 0,
               error: err instanceof Error ? err.message : 'Unknown error',
+              // Replan ran in Stage 0 (before this try block) — preserve its outcome
+              replanned: replanResult.replanned,
+              replan_works: replanResult.works,
+              replan_error: replanResult.error,
             };
           }
     } // end processChild
@@ -706,7 +712,7 @@ export async function POST(request: NextRequest) {
             }) + '\n'));
 
             // Fire-and-forget: generate next week's English schedule
-            generateAndSaveEnglishSchedule(classroom_id, school_id)
+            generateAndSaveEnglishSchedule(classroom_id, classroom.school_id)
               .catch(err => console.error('[WeeklyWrap] English schedule generation failed:', err));
 
             controller.close();
@@ -742,7 +748,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Fire-and-forget: generate next week's English schedule
-    generateAndSaveEnglishSchedule(classroom_id, school_id)
+    generateAndSaveEnglishSchedule(classroom_id, classroom.school_id)
       .catch(err => console.error('[WeeklyWrap] English schedule generation failed:', err));
 
     return NextResponse.json({ ...buildSummary(results), results });
