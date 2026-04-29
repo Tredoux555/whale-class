@@ -7,7 +7,7 @@ import { montreeApi } from '@/lib/montree/api';
 import { useI18n } from '@/lib/montree/i18n';
 import { getSession } from '@/lib/montree/auth';
 import AreaBadge, { normalizeArea } from '@/components/montree/shared/AreaBadge';
-import { getAreaLabel as getAreaLabelI18n } from '@/lib/montree/i18n/area-labels';
+import { getAreaLabel as getAreaLabelI18n, AREA_LABELS_EN } from '@/lib/montree/i18n/area-labels';
 import { getIntlLocale } from '@/lib/montree/i18n/locales';
 import WorkWheelPicker from '@/components/montree/WorkWheelPicker';
 import InviteParentModal from '@/components/montree/InviteParentModal';
