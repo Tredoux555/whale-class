@@ -3,9 +3,27 @@
 import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { toast, Toaster } from 'sonner';
+import { ArrowLeft, ChevronDown, Camera, Sparkles } from 'lucide-react';
 import { useI18n, getIntlLocale } from '@/lib/montree/i18n';
 import PhotoLightbox from '@/components/montree/media/PhotoLightbox';
 import { getThumbnailUrl, getThumbnailSrcSet } from '@/lib/montree/media/proxy-url';
+
+// Dark forest tokens
+const T = {
+  bg: '#0a1a0f',
+  glow: 'radial-gradient(ellipse 1100px 900px at 88% 8%, rgba(39,129,90,0.48), transparent 60%)',
+  card: 'rgba(255,255,255,0.06)',
+  cardBorder: '1px solid rgba(52,211,153,0.15)',
+  blur: 'blur(18px) saturate(140%)',
+  emerald: '#34d399',
+  emeraldSoft: 'rgba(52,211,153,0.10)',
+  textPrimary: 'rgba(255,255,255,0.95)',
+  textSecondary: 'rgba(255,255,255,0.65)',
+  textMuted: 'rgba(255,255,255,0.40)',
+  serif: '"Lora", Georgia, serif',
+  sans: '"Inter", -apple-system, BlinkMacSystemFont, sans-serif',
+};
+
 
 interface Photo {
   id: string;
@@ -130,25 +148,25 @@ function ParentPhotosContent() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-100 flex items-center justify-center">
+      <div style={{ minHeight: "100vh", background: T.bg, backgroundImage: T.glow, backgroundAttachment: "fixed" }}>
         <div className="text-center">
           <div className="text-4xl mb-4 animate-pulse">📸</div>
-          <p className="text-gray-600">{t('parentPhotos.loadingPhotos')}</p>
+          <p style={{ color: T.textMuted }}>{t('parentPhotos.loadingPhotos')}</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-100">
+    <div style={{ minHeight: "100vh", background: T.bg, backgroundImage: T.glow, backgroundAttachment: "fixed" }}>
       <Toaster position="top-center" />
 
       {/* Header */}
-      <header className="bg-white shadow-sm sticky top-0 z-40">
+      <header style={{ background: T.card, backdropFilter: T.blur }}>
         <div className="max-w-4xl mx-auto px-4 py-4 flex items-center gap-3">
           <button
             onClick={() => router.push('/montree/parent/dashboard')}
-            className="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center hover:bg-gray-200"
+            style={{ background: T.card }}
           >
             ←
           </button>
@@ -161,10 +179,10 @@ function ParentPhotosContent() {
 
       <main className="max-w-4xl mx-auto p-4">
         {photos.length === 0 ? (
-          <div className="bg-white rounded-2xl p-8 text-center shadow-sm">
+          <div style={{ background: T.card, backdropFilter: T.blur }}>
             <div className="text-5xl mb-4">📷</div>
             <h2 className="text-xl font-bold text-gray-800 mb-2">{t('parentPhotos.noPhotosTitle')}</h2>
-            <p className="text-gray-500">
+            <p style={{ color: T.textMuted }}>
               {t('parentPhotos.noPhotosDescription')}
             </p>
           </div>
@@ -176,7 +194,7 @@ function ParentPhotosContent() {
                 <button
                   key={photo.id}
                   onClick={() => handlePhotoClick(photo)}
-                  className="aspect-square bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-shadow"
+                  style={{ background: T.card, backdropFilter: T.blur }}
                   style={{ contentVisibility: 'auto', containIntrinsicSize: '1px 200px' }}
                 >
                   {photo.storage_path ? (
@@ -198,7 +216,7 @@ function ParentPhotosContent() {
                       decoding="async"
                     />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-gray-100">
+                    <div style={{ background: T.card }}>
                       <span className="text-3xl">📷</span>
                     </div>
                   )}
@@ -214,7 +232,7 @@ function ParentPhotosContent() {
                     const childId = childIdParam || JSON.parse(localStorage.getItem('montree_selected_child') || '{}').id;
                     if (childId) loadPhotos(childId, true);
                   }}
-                  className="px-6 py-3 bg-white text-emerald-600 rounded-xl font-medium hover:bg-emerald-50 transition"
+                  style={{ background: T.card, backdropFilter: T.blur }}
                 >
                   {t('common.loadMore')}
                 </button>
@@ -248,10 +266,10 @@ function ParentPhotosContent() {
 function PhotosLoadingFallback() {
   const { t } = useI18n();
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-100 flex items-center justify-center">
+    <div style={{ minHeight: "100vh", background: T.bg, backgroundImage: T.glow, backgroundAttachment: "fixed" }}>
       <div className="text-center">
         <div className="text-4xl mb-4 animate-pulse">📸</div>
-        <p className="text-gray-600">{t('parentPhotos.loadingPhotos')}</p>
+        <p style={{ color: T.textMuted }}>{t('parentPhotos.loadingPhotos')}</p>
       </div>
     </div>
   );

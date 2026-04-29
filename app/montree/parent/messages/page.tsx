@@ -10,7 +10,25 @@ import { MessageCard } from '@/components/montree/messaging/MessageCard';
 import { MessageComposer } from '@/components/montree/messaging/MessageComposer';
 import { InboxHeader } from '@/components/montree/messaging/InboxHeader';
 import { toast, Toaster } from 'sonner';
+import { ArrowLeft, ChevronDown, Camera, Sparkles } from 'lucide-react';
 import { useI18n } from '@/lib/montree/i18n';
+
+// Dark forest tokens
+const T = {
+  bg: '#0a1a0f',
+  glow: 'radial-gradient(ellipse 1100px 900px at 88% 8%, rgba(39,129,90,0.48), transparent 60%)',
+  card: 'rgba(255,255,255,0.06)',
+  cardBorder: '1px solid rgba(52,211,153,0.15)',
+  blur: 'blur(18px) saturate(140%)',
+  emerald: '#34d399',
+  emeraldSoft: 'rgba(52,211,153,0.10)',
+  textPrimary: 'rgba(255,255,255,0.95)',
+  textSecondary: 'rgba(255,255,255,0.65)',
+  textMuted: 'rgba(255,255,255,0.40)',
+  serif: '"Lora", Georgia, serif',
+  sans: '"Inter", -apple-system, BlinkMacSystemFont, sans-serif',
+};
+
 
 interface Message {
   id: string;
@@ -156,17 +174,17 @@ export default function ParentMessagesPage() {
 
   if (!session || loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50 flex items-center justify-center">
+      <div style={{ minHeight: "100vh", background: T.bg, backgroundImage: T.glow, backgroundAttachment: "fixed" }}>
         <div className="text-center">
           <div className="w-12 h-12 border-4 border-emerald-200 border-t-emerald-500 rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-gray-600 font-medium">{t('parentMessages.loading')}</p>
+          <p style={{ color: T.textSecondary }}>{t('parentMessages.loading')}</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50">
+    <div style={{ minHeight: "100vh", background: T.bg, backgroundImage: T.glow, backgroundAttachment: "fixed" }}>
       <Toaster position="top-right" />
 
       {/* Header */}
@@ -253,7 +271,7 @@ export default function ParentMessagesPage() {
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">
                   {filter === 'unread' ? t('parentMessages.allCaughtUp') : t('parentMessages.noMessages')}
                 </h3>
-                <p className="text-gray-600 mb-6">
+                <p style={{ color: T.textSecondary }}>
                   {filter === 'unread'
                     ? t('parentMessages.allRead')
                     : t('parentMessages.noMessagesDescription')}
@@ -263,7 +281,7 @@ export default function ParentMessagesPage() {
               displayGroups.map(([childId, group]) => (
                 <div key={childId} className="space-y-3">
                   {/* Child header */}
-                  <div className="flex items-center gap-3 px-4 py-2 bg-white rounded-lg border border-gray-200">
+                  <div style={{ background: T.card, backdropFilter: T.blur }}>
                     {group.child.photo_url ? (
                       <img
                         src={group.child.photo_url}
@@ -310,7 +328,7 @@ export default function ParentMessagesPage() {
           {/* Right sidebar */}
           <div className="lg:col-span-1">
             {/* Children list */}
-            <div className="bg-white rounded-xl border border-gray-200 p-5 mb-6 shadow-sm">
+            <div style={{ background: T.card, backdropFilter: T.blur }}>
               <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
                 <span>👥</span>
                 {t('parentMessages.yourChildren')}
@@ -358,7 +376,7 @@ export default function ParentMessagesPage() {
             </div>
 
             {/* Quick stats */}
-            <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
+            <div style={{ background: T.card, backdropFilter: T.blur }}>
               <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
                 <span>📊</span>
                 {t('parentMessages.overview')}
