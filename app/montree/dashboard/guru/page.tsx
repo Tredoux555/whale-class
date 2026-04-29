@@ -123,8 +123,20 @@ function GuruContent() {
   const guruEmoji = isParent ? HOME_THEME.guruIcon : HOME_THEME.guruIconTeacher;
 
   if (pageLoading) {
+    if (!isParent) {
+      return (
+        <div style={{ height: '100dvh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#0a1a0f', backgroundImage: 'radial-gradient(ellipse 1100px 900px at 88% 8%, rgba(39,129,90,0.48), transparent 60%)' }}>
+          <div style={{ textAlign: 'center' }}>
+            <div className="animate-pulse" style={{ width: 48, height: 48, borderRadius: 14, background: 'rgba(52,211,153,0.10)', border: '1px solid rgba(52,211,153,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 10px' }}>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#34d399" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg>
+            </div>
+            <p style={{ fontFamily: '"Inter", -apple-system, sans-serif', fontSize: 13, color: 'rgba(255,255,255,0.45)' }}>Loading Guru…</p>
+          </div>
+        </div>
+      );
+    }
     return (
-      <div className={`h-dvh flex items-center justify-center ${isParent ? HOME_THEME.pageBg : 'bg-gradient-to-br from-violet-50 to-indigo-50'}`}>
+      <div className={`h-dvh flex items-center justify-center ${HOME_THEME.pageBg}`}>
         <div className="animate-bounce text-4xl">{guruEmoji}</div>
       </div>
     );
@@ -175,7 +187,16 @@ function GuruContent() {
 
       {/* Child selector (show if multiple children) */}
       {children.length > 1 && (
-        <div className={`border-b px-4 py-2 ${isParent ? 'bg-white border-[#0D3330]/10' : 'bg-[#FFFDF8] border-[#D4C5B0]'}`}>
+        <div
+          className={isParent ? `border-b px-4 py-2 bg-white border-[#0D3330]/10` : undefined}
+          style={!isParent ? {
+            borderBottom: '1px solid rgba(52,211,153,0.12)',
+            padding: '8px 16px',
+            background: 'rgba(7,18,12,0.92)',
+            backdropFilter: 'blur(20px)',
+            WebkitBackdropFilter: 'blur(20px)',
+          } : undefined}
+        >
           <select
             value={activeChild?.id || ''}
             onChange={(e) => {
@@ -191,11 +212,17 @@ function GuruContent() {
                 }
               }
             }}
-            className={`w-full p-2 rounded-lg border text-sm ${
-              isParent
-                ? 'border-[#0D3330]/15 bg-[#FFFDF8] text-[#0D3330] focus:ring-1 focus:ring-[#0D3330]/20'
-                : 'border-[#D4C5B0] bg-[#FFFDF8] text-[#3E2723] focus:ring-2 focus:ring-violet-500'
-            }`}
+            className={isParent ? `w-full p-2 rounded-lg border text-sm border-[#0D3330]/15 bg-[#FFFDF8] text-[#0D3330] focus:ring-1 focus:ring-[#0D3330]/20` : undefined}
+            style={!isParent ? {
+              width: '100%', padding: '8px 10px',
+              borderRadius: 10,
+              background: 'rgba(255,255,255,0.06)',
+              border: '1px solid rgba(52,211,153,0.20)',
+              color: 'rgba(255,255,255,0.85)',
+              fontFamily: '"Inter", -apple-system, sans-serif',
+              fontSize: 13,
+              outline: 'none',
+            } : undefined}
           >
             {!isParent && (
               <option value="whole_class">👥 {t('guru.wholeClass')}</option>
@@ -234,8 +261,10 @@ function GuruContent() {
 export default function GuruPage() {
   return (
     <Suspense fallback={
-      <div className="h-dvh bg-gradient-to-br from-violet-50 to-indigo-50 flex items-center justify-center">
-        <div className="animate-bounce text-4xl">🌿</div>
+      <div style={{ height: '100dvh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#0a1a0f' }}>
+        <div style={{ width: 40, height: 40, borderRadius: 12, background: 'rgba(52,211,153,0.10)', border: '1px solid rgba(52,211,153,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#34d399" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg>
+        </div>
       </div>
     }>
       <GuruContent />

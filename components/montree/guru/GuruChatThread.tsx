@@ -632,11 +632,23 @@ export default function GuruChatThread({
 
   // Loading state
   if (state === 'loading') {
+    if (isTeacher) {
+      return (
+        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ textAlign: 'center' }}>
+            <div className="animate-pulse" style={{ width: 42, height: 42, borderRadius: 14, background: 'rgba(52,211,153,0.10)', border: '1px solid rgba(52,211,153,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 10px' }}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#34d399" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg>
+            </div>
+            <p style={{ fontFamily: '"Inter", -apple-system, sans-serif', fontSize: 13, color: 'rgba(255,255,255,0.45)' }}>{t('common.loading')}</p>
+          </div>
+        </div>
+      );
+    }
     return (
-      <div className={`flex-1 flex items-center justify-center ${isTeacher ? 'bg-gradient-to-br from-violet-50 to-indigo-50' : HOME_THEME.pageBg}`}>
+      <div className={`flex-1 flex items-center justify-center ${HOME_THEME.pageBg}`}>
         <div className="text-center">
           <div className="animate-pulse text-4xl mb-2">{themeClasses.guruIcon}</div>
-          <p className={`text-sm ${isTeacher ? 'text-violet-600/60' : HOME_THEME.subtleText}`}>{t('common.loading')}</p>
+          <p className={`text-sm ${HOME_THEME.subtleText}`}>{t('common.loading')}</p>
         </div>
       </div>
     );
@@ -657,13 +669,37 @@ export default function GuruChatThread({
   return (
     <div className="flex flex-col h-full">
       {/* Chat header with concern pills */}
-      <div className={`${themeClasses.headerGradient} px-4 py-3`}>
+      <div
+        className={!isTeacher ? `${themeClasses.headerGradient} px-4 py-3` : undefined}
+        style={isTeacher ? {
+          background: 'linear-gradient(180deg, rgba(7,18,12,0.97), rgba(7,18,12,0.92))',
+          borderBottom: '1px solid rgba(52,211,153,0.12)',
+          backdropFilter: 'blur(20px)',
+          WebkitBackdropFilter: 'blur(20px)',
+          padding: '12px 16px',
+        } : undefined}
+      >
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
-            <span className="text-lg">{themeClasses.guruIcon}</span>
+          <div
+            className={!isTeacher ? "w-10 h-10 rounded-full bg-white/20 flex items-center justify-center" : undefined}
+            style={isTeacher ? {
+              width: 36, height: 36, borderRadius: '50%',
+              background: 'rgba(52,211,153,0.15)',
+              border: '1px solid rgba(52,211,153,0.35)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              flexShrink: 0,
+            } : undefined}
+          >
+            {isTeacher
+              ? <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#34d399" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg>
+              : <span className="text-lg">{themeClasses.guruIcon}</span>
+            }
           </div>
           <div className="flex-1 min-w-0">
-            <h2 className="text-white font-bold text-base">
+            <h2
+              className={!isTeacher ? "text-white font-bold text-base" : undefined}
+              style={isTeacher ? { fontFamily: '"Lora", Georgia, serif', fontSize: 17, fontWeight: 500, color: 'rgba(255,255,255,0.95)', margin: 0 } : undefined}
+            >
               {isTeacher ? `${firstName} — ${t('guru.guruAdvisor')}` : `${firstName} ${t('guru.guide')}`}
             </h2>
             {!isTeacher && concerns.length > 0 && (
@@ -678,7 +714,7 @@ export default function GuruChatThread({
       {/* Messages area */}
       <div
         ref={scrollRef}
-        className={`flex-1 overflow-y-auto px-4 py-4 ${themeClasses.bgClass}`}
+        className={`flex-1 overflow-y-auto px-4 py-4${!isTeacher ? ` ${themeClasses.bgClass}` : ''}`}
       >
         {messages.map(msg => (
           <ChatBubble
@@ -695,18 +731,54 @@ export default function GuruChatThread({
 
         {/* Thinking indicator — shows while waiting for first SSE event (before thinking or text arrives) */}
         {sending && !isStreaming && (
-          <div className="flex items-center gap-2 mb-3">
-            <div className={`w-8 h-8 rounded-full ${isTeacher ? 'bg-violet-600' : 'bg-[#0D3330]'} flex items-center justify-center`}>
-              <span className="text-sm">{themeClasses.guruIcon}</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+            {/* avatar */}
+            <div
+              className={!isTeacher ? `w-8 h-8 rounded-full bg-[#0D3330] flex items-center justify-center` : undefined}
+              style={isTeacher ? {
+                width: 28, height: 28, borderRadius: '50%',
+                background: 'linear-gradient(135deg, rgba(52,211,153,0.30), rgba(16,185,129,0.18))',
+                border: '1px solid rgba(52,211,153,0.35)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                flexShrink: 0,
+              } : undefined}
+            >
+              {isTeacher
+                ? <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#34d399" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg>
+                : <span className="text-sm">{themeClasses.guruIcon}</span>
+              }
             </div>
-            <div className={`bg-white border ${isTeacher ? 'border-violet-200' : 'border-[#0D3330]/10'} rounded-2xl rounded-bl-md px-4 py-3 shadow-sm`}>
-              <div className="flex items-center gap-2">
-                <div className="flex gap-1">
-                  <div className={`w-1.5 h-1.5 rounded-full ${isTeacher ? 'bg-violet-400' : 'bg-[#0D3330]/30'} animate-pulse`} />
-                  <div className={`w-1.5 h-1.5 rounded-full ${isTeacher ? 'bg-violet-400' : 'bg-[#0D3330]/30'} animate-pulse`} style={{ animationDelay: '150ms' }} />
-                  <div className={`w-1.5 h-1.5 rounded-full ${isTeacher ? 'bg-violet-400' : 'bg-[#0D3330]/30'} animate-pulse`} style={{ animationDelay: '300ms' }} />
+            {/* bubble */}
+            <div
+              className={!isTeacher ? `bg-white border border-[#0D3330]/10 rounded-2xl rounded-bl-md px-4 py-3 shadow-sm` : undefined}
+              style={isTeacher ? {
+                background: 'rgba(255,255,255,0.06)',
+                border: '1px solid rgba(255,255,255,0.10)',
+                backdropFilter: 'blur(18px) saturate(140%)',
+                WebkitBackdropFilter: 'blur(18px) saturate(140%)',
+                borderRadius: '14px 14px 14px 4px',
+                padding: '12px 16px',
+              } : undefined}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <div style={{ display: 'flex', gap: 6 }}>
+                  {[0, 1, 2].map((i) => (
+                    <span
+                      key={i}
+                      className={!isTeacher ? `w-1.5 h-1.5 rounded-full bg-[#0D3330]/30 animate-pulse` : 'animate-pulse'}
+                      style={isTeacher ? {
+                        width: 7, height: 7, borderRadius: '50%',
+                        background: '#34d399',
+                        display: 'inline-block',
+                        animationDelay: `${i * 150}ms`,
+                      } : { animationDelay: `${i * 150}ms` }}
+                    />
+                  ))}
                 </div>
-                <span className={`text-xs ${isTeacher ? 'text-violet-600' : 'text-[#0D3330]/40'} transition-opacity duration-300`}>
+                <span
+                  className={!isTeacher ? `text-xs text-[#0D3330]/40 transition-opacity duration-300` : undefined}
+                  style={isTeacher ? { fontFamily: '"Inter", sans-serif', fontSize: 12, color: 'rgba(255,255,255,0.50)' } : undefined}
+                >
                   {thinkingPhase === 0
                     ? (t('guru.thinking') || 'Thinking...')
                     : thinkingPhase === 1
@@ -720,7 +792,14 @@ export default function GuruChatThread({
       </div>
 
       {/* Input area — fixed at bottom */}
-      <div className={`border-t ${isTeacher ? 'border-gray-200' : 'border-[#0D3330]/10'} bg-white px-3 py-3`}>
+      <div
+        className={!isTeacher ? `border-t border-[#0D3330]/10 bg-white px-3 py-3` : undefined}
+        style={isTeacher ? {
+          background: 'linear-gradient(180deg, rgba(10,26,15,0) 0%, rgba(10,26,15,0.85) 30%, rgba(10,26,15,0.95) 100%)',
+          borderTop: '1px solid rgba(52,211,153,0.12)',
+          padding: '16px 16px 20px',
+        } : undefined}
+      >
         {/* Image preview */}
         {pendingImage && (
           <div className="mb-2 flex items-center gap-2">
@@ -746,7 +825,19 @@ export default function GuruChatThread({
           </div>
         )}
 
-        <div className="flex items-end gap-2">
+        <div
+          className={!isTeacher ? "flex items-end gap-2" : undefined}
+          style={isTeacher ? {
+            display: 'flex', alignItems: 'flex-end', gap: 10,
+            padding: '10px 12px',
+            background: 'rgba(255,255,255,0.06)',
+            border: '1px solid rgba(52,211,153,0.15)',
+            borderRadius: 22,
+            backdropFilter: 'blur(18px) saturate(140%)',
+            WebkitBackdropFilter: 'blur(18px) saturate(140%)',
+            boxShadow: '0 8px 32px rgba(0,0,0,0.35)',
+          } : undefined}
+        >
           {/* Image upload button */}
           <input
             ref={imageInputRef}
@@ -758,9 +849,17 @@ export default function GuruChatThread({
           <button
             onClick={() => imageInputRef.current?.click()}
             disabled={sending || !!pendingImage}
-            className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center transition-all active:scale-90 disabled:opacity-30 ${
-              isTeacher ? 'text-violet-500 hover:bg-violet-50' : 'text-[#0D3330]/60 hover:bg-white/10'
-            }`}
+            className={!isTeacher ? `flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center transition-all active:scale-90 disabled:opacity-30 text-[#0D3330]/60 hover:bg-white/10` : undefined}
+            style={isTeacher ? {
+              flexShrink: 0, width: 38, height: 38, borderRadius: '50%',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              background: 'transparent',
+              border: '1px solid rgba(52,211,153,0.25)',
+              color: '#34d399',
+              cursor: (sending || !!pendingImage) ? 'not-allowed' : 'pointer',
+              opacity: (sending || !!pendingImage) ? 0.3 : 1,
+              fontSize: 17,
+            } : undefined}
             title={t('guru.uploadImage') || 'Upload image'}
           >
             📷
@@ -781,12 +880,17 @@ export default function GuruChatThread({
               onKeyDown={handleKeyDown}
               placeholder={isWholeClassMode ? t('guru.wholeClassPlaceholder') : isTeacher ? t('guru.teacherAskPlaceholder') : t('guru.askPlaceholder').replace('{name}', firstName)}
               rows={1}
-              className={`w-full px-4 py-2.5 rounded-2xl border text-sm resize-none focus:outline-none ${
-                isTeacher
-                  ? 'border-gray-200 bg-white text-gray-800 placeholder:text-gray-800/40 focus:border-violet-300 focus:ring-1 focus:ring-violet-200'
-                  : 'border-[#0D3330]/15 bg-white text-[#0D3330] placeholder:text-[#0D3330]/40 focus:border-[#0D3330]/30 focus:ring-1 focus:ring-[#0D3330]/10'
-              }`}
-              style={{ maxHeight: '120px' }}
+              className={!isTeacher ? `w-full px-4 py-2.5 rounded-2xl border text-sm resize-none focus:outline-none border-[#0D3330]/15 bg-white text-[#0D3330] placeholder:text-[#0D3330]/40 focus:border-[#0D3330]/30 focus:ring-1 focus:ring-[#0D3330]/10` : undefined}
+              style={isTeacher ? {
+                flex: 1, width: '100%',
+                resize: 'none', outline: 'none', border: 'none',
+                background: 'transparent',
+                color: 'rgba(255,255,255,0.95)',
+                fontFamily: '"Inter", -apple-system, BlinkMacSystemFont, sans-serif',
+                fontSize: 14.5, lineHeight: 1.5,
+                maxHeight: 160,
+                padding: '9px 4px',
+              } : { maxHeight: '120px' }}
             />
           </div>
 
@@ -794,13 +898,21 @@ export default function GuruChatThread({
           <button
             onClick={handleSend}
             disabled={!inputText.trim() || sending}
-            className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center transition-all active:scale-90 disabled:opacity-30 disabled:cursor-not-allowed ${
-              isTeacher ? 'bg-violet-600 hover:bg-violet-700' : HOME_THEME.primaryBtn
-            }`}
+            className={!isTeacher ? `flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center transition-all active:scale-90 disabled:opacity-30 disabled:cursor-not-allowed ${HOME_THEME.primaryBtn}` : undefined}
+            style={isTeacher ? {
+              flexShrink: 0, width: 38, height: 38, borderRadius: '50%',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              background: (!inputText.trim() || sending) ? 'rgba(52,211,153,0.20)' : 'linear-gradient(180deg, #34d399, #10b981)',
+              border: `1px solid ${(!inputText.trim() || sending) ? 'rgba(52,211,153,0.20)' : 'rgba(52,211,153,0.55)'}`,
+              color: (!inputText.trim() || sending) ? 'rgba(52,211,153,0.50)' : '#06281a',
+              cursor: (!inputText.trim() || sending) ? 'not-allowed' : 'pointer',
+              boxShadow: (!inputText.trim() || sending) ? 'none' : '0 4px 14px rgba(16,185,129,0.30)',
+            } : undefined}
           >
-            <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-            </svg>
+            {isTeacher
+              ? <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round"><path d="m5 12 7-7 7 7"/><path d="M12 19V5"/></svg>
+              : <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" /></svg>
+            }
           </button>
         </div>
       </div>

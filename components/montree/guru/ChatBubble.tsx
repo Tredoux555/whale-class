@@ -86,16 +86,16 @@ function ChatBubble({ content, isUser, timestamp, imageUrl, thinking, isThinking
   // Thinking block colors based on theme
   const thinkingColors = isTeacher
     ? {
-        liveGradient: 'bg-gradient-to-br from-violet-50 to-indigo-50',
-        liveBorder: 'border-violet-200/50',
-        liveDot: 'bg-violet-500',
-        liveText: 'text-violet-600',
-        liveContent: 'text-violet-900/70',
-        liveCursor: 'bg-violet-400/60',
-        collapsedButton: 'text-violet-500/70 hover:text-violet-600',
-        collapsedBg: 'bg-violet-50/50',
-        collapsedBorder: 'border-violet-200/30',
-        collapsedText: 'text-violet-900/50',
+        liveGradient: 'bg-[rgba(139,92,246,0.08)]',
+        liveBorder: 'border-[rgba(139,92,246,0.25)]',
+        liveDot: 'bg-[#34d399]',
+        liveText: 'text-[#34d399]',
+        liveContent: 'text-white/70',
+        liveCursor: 'bg-[#34d399]/60',
+        collapsedButton: 'text-white/40 hover:text-white/70',
+        collapsedBg: 'bg-[rgba(255,255,255,0.04)]',
+        collapsedBorder: 'border-[rgba(255,255,255,0.10)]',
+        collapsedText: 'text-white/50',
       }
     : {
         liveGradient: 'bg-gradient-to-br from-[#0D3330]/10 to-[#164340]/10',
@@ -121,8 +121,20 @@ function ChatBubble({ content, isUser, timestamp, imageUrl, thinking, isThinking
     <div className={`flex ${isUser ? 'justify-end' : 'justify-start'} mb-3`}>
       {/* Guru avatar */}
       {!isUser && (
-        <div className="flex-shrink-0 w-8 h-8 rounded-full bg-[#0D3330] flex items-center justify-center mr-2 mt-1">
-          <span className="text-sm">🌿</span>
+        <div
+          className={!isTeacher ? "flex-shrink-0 w-8 h-8 rounded-full bg-[#0D3330] flex items-center justify-center mr-2 mt-1" : undefined}
+          style={isTeacher ? {
+            flexShrink: 0, width: 28, height: 28, borderRadius: '50%',
+            background: 'linear-gradient(135deg, rgba(52,211,153,0.30), rgba(16,185,129,0.18))',
+            border: '1px solid rgba(52,211,153,0.35)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            marginRight: 8, marginTop: 4,
+          } : undefined}
+        >
+          {isTeacher
+            ? <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#34d399" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg>
+            : <span className="text-sm">🌿</span>
+          }
         </div>
       )}
 
@@ -181,11 +193,23 @@ function ChatBubble({ content, isUser, timestamp, imageUrl, thinking, isThinking
         )}
 
         <div
-          className={`rounded-2xl px-4 py-3 ${
+          className={!isTeacher ? `rounded-2xl px-4 py-3 ${
             isUser
               ? 'bg-[#F5E6D3] text-[#0D3330] rounded-br-md'
               : 'bg-white border border-[#0D3330]/10 text-[#0D3330] rounded-bl-md shadow-sm'
-          }`}
+          }` : undefined}
+          style={isTeacher ? {
+            borderRadius: isUser ? '14px 14px 4px 14px' : '14px 14px 14px 4px',
+            padding: '12px 16px',
+            background: isUser ? 'rgba(52,211,153,0.12)' : 'rgba(255,255,255,0.06)',
+            border: `1px solid ${isUser ? 'rgba(52,211,153,0.35)' : 'rgba(255,255,255,0.10)'}`,
+            backdropFilter: 'blur(18px) saturate(140%)',
+            WebkitBackdropFilter: 'blur(18px) saturate(140%)',
+            color: 'rgba(255,255,255,0.95)',
+            fontFamily: '"Inter", -apple-system, BlinkMacSystemFont, sans-serif',
+            fontSize: 14.5,
+            lineHeight: 1.55,
+          } : undefined}
         >
           {/* Image attachment */}
           {imageUrl && !imgError && (
@@ -200,14 +224,30 @@ function ChatBubble({ content, isUser, timestamp, imageUrl, thinking, isThinking
             <div className="space-y-0.5">{renderMarkdown(content)}</div>
           ) : isThinkingLive ? (
             /* Show nothing in the text bubble while thinking is live — the thinking block is visible above */
-            <span className="text-[11px] text-[#0D3330]/30 italic">{t('guru.thinkingGenerating') || 'Generating response...'}</span>
+            <span
+              className={!isTeacher ? "text-[11px] text-[#0D3330]/30 italic" : "text-[11px] italic"}
+              style={isTeacher ? { color: 'rgba(255,255,255,0.35)' } : undefined}
+            >{t('guru.thinkingGenerating') || 'Generating response...'}</span>
           ) : (
-            <span className="inline-block w-2 h-4 bg-[#0D3330]/40 animate-pulse rounded-sm" />
+            <span
+              className={!isTeacher ? "inline-block w-2 h-4 bg-[#0D3330]/40 animate-pulse rounded-sm" : "inline-block w-2 h-4 animate-pulse rounded-sm"}
+              style={isTeacher ? { background: 'rgba(255,255,255,0.40)' } : undefined}
+            />
           )}
         </div>
 
         {timestamp && (
-          <p className={`text-[10px] text-[#0D3330]/40 mt-1 ${isUser ? 'text-right' : 'text-left ml-1'}`}>
+          <p
+            className={!isTeacher ? `text-[10px] text-[#0D3330]/40 mt-1 ${isUser ? 'text-right' : 'text-left ml-1'}` : undefined}
+            style={isTeacher ? {
+              fontFamily: '"Inter", sans-serif',
+              fontSize: 10,
+              color: 'rgba(255,255,255,0.35)',
+              marginTop: 4,
+              textAlign: isUser ? 'right' : 'left',
+              paddingLeft: isUser ? 0 : 4,
+            } : undefined}
+          >
             {formatRelativeTime(timestamp, t)}
           </p>
         )}
