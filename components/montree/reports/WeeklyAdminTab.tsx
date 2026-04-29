@@ -612,7 +612,7 @@ function SummaryCard({
   notes: NoteData;
   onUpdate: (childId: string, field: 'english_text' | 'chinese_text', value: string) => void;
 }) {
-  const { locale } = useI18n();
+  const { t, locale } = useI18n();
   const LOCALE_FIELD: Record<string, 'chinese_text' | 'english_text'> = { zh: 'chinese_text' };
   const displayField = LOCALE_FIELD[locale] || 'english_text';
   const displayValue = notes[displayField] || '';
