@@ -2,8 +2,26 @@
 // Service Worker for Montree PWA
 // Provides offline caching and background sync
 
-const CACHE_NAME = 'montree-v1';
+// Bumped to v2 (Apr 30, 2026) — old caches purged on activate so we don't keep
+// serving the v1 stale-HTML behaviour to existing PWA installs.
+const CACHE_NAME = 'montree-v2';
 const OFFLINE_URL = '/montree/offline';
+
+// Only cache immutable assets — static files that change with build hashes.
+// HTML pages always go to the network so dashboards can't get stuck on a stale
+// shell while live API calls fail (the bug we hit Apr 30, 2026).
+const IMMUTABLE_EXT = /\.(js|css|woff2?|ttf|otf|eot|png|jpe?g|gif|svg|ico|webp|map)$/i;
+function isCacheable(url) {
+  try {
+    const u = new URL(url);
+    if (u.pathname.startsWith('/_next/static/')) return true;
+    if (u.pathname.startsWith('/montree-icons/')) return true;
+    if (IMMUTABLE_EXT.test(u.pathname)) return true;
+    return false;
+  } catch {
+    return false;
+  }
+}
 
 // Assets to cache immediately on install
 const PRECACHE_ASSETS = [
@@ -58,8 +76,10 @@ self.addEventListener('fetch', (event) => {
   event.respondWith(
     fetch(event.request)
       .then((response) => {
-        // Clone and cache successful responses
-        if (response.status === 200) {
+        // Cache only immutable static assets. HTML pages must always go to the
+        // network so we never serve a stale shell while APIs fail (Apr 30, 2026
+        // incident). Navigation requests still get an offline-page fallback below.
+        if (response.status === 200 && isCacheable(event.request.url)) {
           const responseClone = response.clone();
           caches.open(CACHE_NAME).then((cache) => {
             cache.put(event.request, responseClone);
