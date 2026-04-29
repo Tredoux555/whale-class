@@ -224,17 +224,17 @@ export default function ParentReportPage() {
   if (loading) {
     return (
       <div style={{ minHeight: "100vh", background: T.bg, backgroundImage: T.glow, backgroundAttachment: "fixed" }}>
-        <div className="max-w-lg mx-auto p-6">
-          <div className="animate-pulse space-y-6 mt-12">
-            <div style={{ background: T.card }} />
-            <div style={{ background: T.card }} />
-            <div className="space-y-3">
-              <div style={{ background: T.card }} />
-              <div style={{ background: T.card }} />
-              <div style={{ background: T.card }} />
+        <div style={{ maxWidth: "32rem", marginLeft: "auto", marginRight: "auto", padding: "1.5rem" }}>
+          <div style={{ animation: "pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite", display: "flex", flexDirection: "column", gap: "1.5rem", marginTop: "3rem" }}>
+            <div style={{ background: T.card, borderRadius: "0.75rem", height: "2rem" }} />
+            <div style={{ background: T.card, borderRadius: "0.75rem", height: "2rem" }} />
+            <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
+              <div style={{ background: T.card, borderRadius: "0.75rem", height: "1.5rem" }} />
+              <div style={{ background: T.card, borderRadius: "0.75rem", height: "1.5rem" }} />
+              <div style={{ background: T.card, borderRadius: "0.75rem", height: "1.5rem" }} />
             </div>
-            <div style={{ background: T.card }} />
-            <div style={{ background: T.card }} />
+            <div style={{ background: T.card, borderRadius: "0.75rem", height: "2rem" }} />
+            <div style={{ background: T.card, borderRadius: "0.75rem", height: "2rem" }} />
           </div>
         </div>
       </div>
@@ -244,10 +244,10 @@ export default function ParentReportPage() {
   // --- Error ---
   if (error || !report) {
     return (
-      <div style={{ minHeight: "100vh", background: T.bg, backgroundImage: T.glow, backgroundAttachment: "fixed" }}>
-        <div className="text-center p-8">
-          <p className="text-red-500 mb-4">{error || t('parentReport.notFound')}</p>
-          <Link href="/montree/parent/dashboard" className="text-emerald-600 hover:underline">
+      <div style={{ minHeight: "100vh", background: T.bg, backgroundImage: T.glow, backgroundAttachment: "fixed", display: "flex", alignItems: "center", justifyContent: "center", padding: "2rem" }}>
+        <div style={{ textAlign: "center" }}>
+          <p style={{ color: '#f87171', marginBottom: "1rem" }}>{error || t('parentReport.notFound')}</p>
+          <Link href="/montree/parent/dashboard" style={{ color: T.emerald, textDecoration: "underline", cursor: "pointer" }}>
             ← {t('common.backToDashboard')}
           </Link>
         </div>
@@ -260,26 +260,26 @@ export default function ParentReportPage() {
     <div style={{ minHeight: "100vh", background: T.bg, backgroundImage: T.glow, backgroundAttachment: "fixed" }}>
 
       {/* ═══ Sticky Header ═══ */}
-      <header style={{ background: T.card, backdropFilter: T.blur }}>
-        <div className="max-w-lg mx-auto px-4 py-3 flex items-center justify-between">
-          <Link href="/montree/parent/dashboard" className="text-emerald-600 text-sm flex items-center gap-1 font-medium">
+      <header style={{ background: T.card, backdropFilter: T.blur, position: "sticky", top: 0, zIndex: 10 }}>
+        <div style={{ maxWidth: "32rem", marginLeft: "auto", marginRight: "auto", paddingLeft: "1rem", paddingRight: "1rem", paddingTop: "0.75rem", paddingBottom: "0.75rem", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <Link href="/montree/parent/dashboard" style={{ color: T.emerald, fontSize: "0.875rem", display: "flex", alignItems: "center", gap: "0.25rem", fontWeight: "500", textDecoration: "none", cursor: "pointer" }}>
             ← {t('parentReport.back')}
           </Link>
           <LanguageToggle />
         </div>
       </header>
 
-      <main className="max-w-lg mx-auto">
+      <main style={{ maxWidth: "32rem", marginLeft: "auto", marginRight: "auto" }}>
 
         {/* ═══ Hero Section ═══ */}
-        <div className="px-5 pt-8 pb-6">
+        <div style={{ paddingLeft: "1.25rem", paddingRight: "1.25rem", paddingTop: "2rem", paddingBottom: "1.5rem" }}>
           {/* Child initial + name */}
-          <div className="flex items-center gap-4 mb-5">
-            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white text-2xl font-bold shadow-lg">
+          <div style={{ display: "flex", alignItems: "center", gap: "1rem", marginBottom: "1.25rem" }}>
+            <div style={{ width: "4rem", height: "4rem", borderRadius: "9999px", background: `linear-gradient(to bottom right, ${T.emerald}, #14b8a6)`, display: "flex", alignItems: "center", justifyContent: "center", color: T.textPrimary, fontSize: "1.5rem", fontWeight: "700", boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)" }}>
               {firstName.charAt(0)}
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">
+              <h1 style={{ fontSize: "1.5rem", fontWeight: "700", color: T.textPrimary }}>
                 {t('parentReport.childWeekTitle', { name: firstName })}
               </h1>
               <p style={{ color: T.textSecondary }}>{formatWeekDisplay()}</p>
@@ -288,19 +288,19 @@ export default function ParentReportPage() {
 
           {/* Quick stats row */}
           {allWorks.length > 0 && (
-            <div className="flex gap-3 mb-6">
+            <div style={{ display: "flex", gap: "0.75rem", marginBottom: "1.5rem", flexWrap: "wrap" }}>
               {masteredCount > 0 && (
-                <div className="flex items-center gap-1.5 bg-emerald-50 text-emerald-700 px-3 py-1.5 rounded-full text-sm font-medium">
+                <div style={{ display: "flex", alignItems: "center", gap: "0.375rem", background: 'rgba(52,211,153,0.15)', color: T.emerald, paddingLeft: "0.75rem", paddingRight: "0.75rem", paddingTop: "0.375rem", paddingBottom: "0.375rem", borderRadius: "9999px", fontSize: "0.875rem", fontWeight: "500" }}>
                   <span>⭐</span> {masteredCount} {t('parentReport.statsMastered')}
                 </div>
               )}
               {practicingCount > 0 && (
-                <div className="flex items-center gap-1.5 bg-blue-50 text-blue-700 px-3 py-1.5 rounded-full text-sm font-medium">
+                <div style={{ display: "flex", alignItems: "center", gap: "0.375rem", background: 'rgba(59,130,246,0.15)', color: '#3b82f6', paddingLeft: "0.75rem", paddingRight: "0.75rem", paddingTop: "0.375rem", paddingBottom: "0.375rem", borderRadius: "9999px", fontSize: "0.875rem", fontWeight: "500" }}>
                   <span>🔄</span> {practicingCount} {t('parentReport.statsPracticing')}
                 </div>
               )}
               {presentedCount > 0 && (
-                <div className="flex items-center gap-1.5 bg-amber-50 text-amber-700 px-3 py-1.5 rounded-full text-sm font-medium">
+                <div style={{ display: "flex", alignItems: "center", gap: "0.375rem", background: 'rgba(245,158,11,0.15)', color: '#f59e0b', paddingLeft: "0.75rem", paddingRight: "0.75rem", paddingTop: "0.375rem", paddingBottom: "0.375rem", borderRadius: "9999px", fontSize: "0.875rem", fontWeight: "500" }}>
                   <span>🌱</span> {presentedCount} {t('parentReport.statsNew')}
                 </div>
               )}
@@ -309,13 +309,13 @@ export default function ParentReportPage() {
 
           {/* ═══ AI Narrative Summary ═══ */}
           {report.narrative?.summary ? (
-            <div className="border-l-4 border-emerald-400 bg-emerald-50/50 rounded-r-xl px-5 py-4 mb-2">
+            <div style={{ borderLeft: `4px solid ${T.emerald}`, background: 'rgba(52,211,153,0.10)', borderRadius: "0 0.75rem 0.75rem 0", paddingLeft: "1.25rem", paddingRight: "1.25rem", paddingTop: "1rem", paddingBottom: "1rem", marginBottom: "0.5rem" }}>
               <p style={{ color: T.textSecondary }}>
                 {report.narrative.summary}
               </p>
             </div>
           ) : report.parent_summary ? (
-            <div className="border-l-4 border-emerald-400 bg-emerald-50/50 rounded-r-xl px-5 py-4 mb-2">
+            <div style={{ borderLeft: `4px solid ${T.emerald}`, background: 'rgba(52,211,153,0.10)', borderRadius: "0 0.75rem 0.75rem 0", paddingLeft: "1.25rem", paddingRight: "1.25rem", paddingTop: "1rem", paddingBottom: "1rem", marginBottom: "0.5rem" }}>
               <p style={{ color: T.textSecondary }}>
                 {report.parent_summary}
               </p>
@@ -325,53 +325,65 @@ export default function ParentReportPage() {
 
         {/* ═══ Divider ═══ */}
         {photoWorks.length > 0 && (
-          <div className="px-5 pb-3">
-            <p style={{ color: T.textSecondary }}>
+          <div style={{ paddingLeft: "1.25rem", paddingRight: "1.25rem", paddingBottom: "0.75rem" }}>
+            <p style={{ color: T.textSecondary, fontSize: "0.875rem" }}>
               {t('parentReport.photoSectionHeader', { count: photoWorks.length })}
             </p>
           </div>
         )}
 
         {/* ═══ Photo Cards — Linear Scroll ═══ */}
-        <div className="space-y-0">
+        <div>
           {photoWorks.map((work, index) => {
             const displayName = locale === 'zh' && work.chineseName ? work.chineseName : work.work_name;
             const areaConf = getAreaConfig(work.area);
             const statusInfo = getStatusInfo(work.status);
 
             return (
-              <div key={`${work.work_name}-${index}`} className="border-b border-gray-100">
+              <div key={`${work.work_name}-${index}`} style={{ borderBottom: `1px solid ${T.cardBorder}` }}>
                 {/* Big photo — full width */}
                 <button
                   onClick={() => { setLightboxIndex(index); setLightboxOpen(true); }}
-                  className="w-full block"
+                  style={{ width: "100%", display: "block", background: "none", border: "none", cursor: "pointer", padding: 0 }}
                 >
                   <img
                     src={work.photo_url!}
                     alt={displayName}
-                    className="w-full aspect-[4/3] object-cover"
+                    style={{ width: "100%", aspectRatio: "4/3", objectFit: "cover" }}
                     loading={index < 3 ? 'eager' : 'lazy'}
                   />
                 </button>
 
                 {/* Work info — below photo */}
-                <div className="px-5 py-4 space-y-3">
+                <div style={{ paddingLeft: "1.25rem", paddingRight: "1.25rem", paddingTop: "1rem", paddingBottom: "1rem", display: "flex", flexDirection: "column", gap: "0.75rem" }}>
                   {/* Area badge + Work name + Status */}
-                  <div className="flex items-start gap-3">
+                  <div style={{ display: "flex", alignItems: "flex-start", gap: "0.75rem" }}>
                     <div
-                      className="w-8 h-8 rounded-lg flex items-center justify-center text-white text-sm font-bold flex-shrink-0 mt-0.5"
-                      style={{ backgroundColor: areaConf.color }}
+                      style={{
+                        width: "2rem",
+                        height: "2rem",
+                        borderRadius: "0.5rem",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        color: T.textPrimary,
+                        fontSize: "0.875rem",
+                        fontWeight: "700",
+                        flexShrink: 0,
+                        marginTop: "0.125rem",
+                        backgroundColor: areaConf.color,
+                      }}
                     >
                       {areaConf.emoji}
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-bold text-gray-900 text-lg leading-tight">
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <h3 style={{ fontWeight: "700", color: T.textPrimary, fontSize: "1.125rem", lineHeight: "1.25" }}>
                         {displayName}
                       </h3>
-                      <div className="flex items-center gap-2 mt-1">
-                        <span className="text-xs text-gray-500">{getAreaLabel(work.area)}</span>
+                      <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginTop: "0.25rem" }}>
+                        <span style={{ fontSize: "0.75rem", color: T.textMuted }}>{getAreaLabel(work.area)}</span>
                         <span style={{ color: T.textMuted }}>·</span>
-                        <span className={`text-xs font-medium ${statusInfo.color}`}>
+                        <span style={{ fontSize: "0.75rem", fontWeight: "500", color: statusInfo.color }}>
                           {statusInfo.icon} {statusInfo.label}
                         </span>
                       </div>
@@ -380,18 +392,18 @@ export default function ParentReportPage() {
 
                   {/* Parent description — what the work is and why it matters */}
                   {work.parent_description && (
-                    <p style={{ color: T.textSecondary }}>
+                    <p style={{ color: T.textSecondary, fontSize: "0.875rem" }}>
                       {work.parent_description}
                     </p>
                   )}
 
                   {/* Why it matters — developmental insight */}
                   {work.why_it_matters && (
-                    <div className="bg-gray-50 rounded-xl px-4 py-3">
-                      <p className="text-xs font-semibold text-gray-500 mb-1">
+                    <div style={{ background: 'rgba(255,255,255,0.05)', borderRadius: "0.75rem", paddingLeft: "1rem", paddingRight: "1rem", paddingTop: "0.75rem", paddingBottom: "0.75rem" }}>
+                      <p style={{ fontSize: "0.75rem", fontWeight: "600", color: T.textMuted, marginBottom: "0.25rem" }}>
                         {t('parentReport.whyItMatters')}
                       </p>
-                      <p style={{ color: T.textSecondary }}>
+                      <p style={{ color: T.textSecondary, fontSize: "0.875rem" }}>
                         {work.why_it_matters}
                       </p>
                     </div>
@@ -399,11 +411,11 @@ export default function ParentReportPage() {
 
                   {/* Teacher's note */}
                   {work.photo_caption && (
-                    <div className="bg-blue-50 rounded-xl px-4 py-3">
-                      <p className="text-xs font-semibold text-blue-600 mb-1">
+                    <div style={{ background: 'rgba(59,130,246,0.10)', borderRadius: "0.75rem", paddingLeft: "1rem", paddingRight: "1rem", paddingTop: "0.75rem", paddingBottom: "0.75rem" }}>
+                      <p style={{ fontSize: "0.75rem", fontWeight: "600", color: '#3b82f6', marginBottom: "0.25rem" }}>
                         {t('parentReport.teachersNote')}
                       </p>
-                      <p className="text-blue-800 text-sm leading-relaxed">
+                      <p style={{ color: '#93c5fd', fontSize: "0.875rem", lineHeight: "1.5" }}>
                         {work.photo_caption}
                       </p>
                     </div>
@@ -411,7 +423,7 @@ export default function ParentReportPage() {
 
                   {/* Fallback if no descriptions at all */}
                   {!work.parent_description && !work.why_it_matters && !work.photo_caption && (
-                    <p style={{ color: T.textSecondary }}>
+                    <p style={{ color: T.textSecondary, fontSize: "0.875rem" }}>
                       {t('parentReport.fallbackDescription', { name: firstName, area: getAreaLabel(work.area).toLowerCase() })}
                     </p>
                   )}
@@ -427,11 +439,11 @@ export default function ParentReportPage() {
           const extraPhotos = report.all_photos.filter(p => !usedUrls.has(p.url));
           if (extraPhotos.length === 0) return null;
           return (
-            <div className="px-5 py-6 border-t border-gray-100">
-              <p style={{ color: T.textSecondary }}>
+            <div style={{ paddingLeft: "1.25rem", paddingRight: "1.25rem", paddingTop: "1.5rem", paddingBottom: "1.5rem", borderTop: `1px solid ${T.cardBorder}` }}>
+              <p style={{ color: T.textSecondary, fontSize: "0.875rem", marginBottom: "1rem" }}>
                 {t('parentReport.moreMoments')}
               </p>
-              <div className="grid grid-cols-2 gap-2">
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "0.5rem" }}>
                 {extraPhotos.map((photo, i) => (
                   <button
                     key={photo.id || i}
@@ -440,12 +452,12 @@ export default function ParentReportPage() {
                       setLightboxIndex(photoWorks.length + i);
                       setLightboxOpen(true);
                     }}
-                    className="aspect-square rounded-xl overflow-hidden"
+                    style={{ aspectRatio: "1/1", borderRadius: "0.75rem", overflow: "hidden", background: "none", border: "none", cursor: "pointer", padding: 0 }}
                   >
                     <img
                       src={photo.url}
                       alt={photo.caption || photo.work_name || 'Activity'}
-                      className="w-full h-full object-cover"
+                      style={{ width: "100%", height: "100%", objectFit: "cover" }}
                       loading="lazy"
                     />
                   </button>
@@ -457,14 +469,14 @@ export default function ParentReportPage() {
 
         {/* ═══ Try This at Home ═══ */}
         {report.recommendations && report.recommendations.length > 0 && (
-          <div className="px-5 py-6 border-t border-gray-100">
-            <h2 className="font-bold text-gray-800 text-sm mb-3">
+          <div style={{ paddingLeft: "1.25rem", paddingRight: "1.25rem", paddingTop: "1.5rem", paddingBottom: "1.5rem", borderTop: `1px solid ${T.cardBorder}` }}>
+            <h2 style={{ fontWeight: "700", color: T.textPrimary, fontSize: "0.875rem", marginBottom: "0.75rem" }}>
               {t('parentReport.tryThisAtHome')}
             </h2>
-            <div className="space-y-2">
+            <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
               {report.recommendations.map((item, i) => (
-                <p key={i} style={{ color: T.textSecondary }}>
-                  <span className="absolute left-0 text-emerald-400">•</span>
+                <p key={i} style={{ color: T.textSecondary, fontSize: "0.875rem", position: "relative", paddingLeft: "1rem" }}>
+                  <span style={{ position: "absolute", left: 0, color: T.emerald }}>•</span>
                   {item}
                 </p>
               ))}
@@ -474,23 +486,23 @@ export default function ParentReportPage() {
 
         {/* ═══ Closing ═══ */}
         {report.closing && (
-          <div className="px-5 py-6 border-t border-gray-100 text-center">
-            <p style={{ color: T.textSecondary }}>{report.closing}</p>
+          <div style={{ paddingLeft: "1.25rem", paddingRight: "1.25rem", paddingTop: "1.5rem", paddingBottom: "1.5rem", borderTop: `1px solid ${T.cardBorder}`, textAlign: "center" }}>
+            <p style={{ color: T.textSecondary, fontSize: "0.875rem" }}>{report.closing}</p>
           </div>
         )}
 
         {/* ═══ No Activities ═══ */}
         {allWorks.length === 0 && (
-          <div className="px-5 py-16 text-center">
-            <p className="text-4xl mb-3">📋</p>
-            <p style={{ color: T.textMuted }}>
+          <div style={{ paddingLeft: "1.25rem", paddingRight: "1.25rem", paddingTop: "4rem", paddingBottom: "4rem", textAlign: "center" }}>
+            <p style={{ fontSize: "2.25rem", marginBottom: "0.75rem" }}>📋</p>
+            <p style={{ color: T.textMuted, fontSize: "0.875rem" }}>
               {t('parentReport.noActivities')}
             </p>
           </div>
         )}
 
         {/* ═══ Footer ═══ */}
-        <div className="text-center text-xs text-gray-300 py-8 border-t border-gray-50">
+        <div style={{ textAlign: "center", fontSize: "0.75rem", color: T.textMuted, paddingTop: "2rem", paddingBottom: "2rem", borderTop: `1px solid ${T.cardBorder}` }}>
           {new Date(report.created_at).toLocaleDateString(getIntlLocale(locale), {
             month: 'long', day: 'numeric', year: 'numeric',
           })}
