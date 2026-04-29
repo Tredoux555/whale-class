@@ -5,8 +5,22 @@
 import { useState, useEffect } from 'react';
 import { useRouter, usePathname, useParams } from 'next/navigation';
 import Link from 'next/link';
+import { ArrowLeft } from 'lucide-react';
 import { getSession, type MontreeSession } from '@/lib/montree/auth';
 import { useI18n } from '@/lib/montree/i18n';
+
+// ── Dark forest tokens ────────────────────────────────────────────────────────
+const C = {
+  border:      'rgba(52,211,153,0.15)',
+  emerald:     '#34d399',
+  emeraldSoft: 'rgba(52,211,153,0.08)',
+  glassBtn:    'rgba(255,255,255,0.10)',
+  glassBtnHvr: 'rgba(255,255,255,0.18)',
+  textMd:      'rgba(255,255,255,0.85)',
+  textMute:    'rgba(255,255,255,0.50)',
+};
+const SERIF = "'Lora', 'Iowan Old Style', Georgia, serif";
+const SANS  = "'Inter', -apple-system, system-ui, sans-serif";
 
 interface ChildInfo {
   id: string;
@@ -15,109 +29,154 @@ interface ChildInfo {
 }
 
 export default function ChildLayout({ children }: { children: React.ReactNode }) {
-  const router = useRouter();
+  const router   = useRouter();
   const pathname = usePathname();
-  const params = useParams();
-  const childId = params.childId as string;
+  const params   = useParams();
+  const childId  = params.childId as string;
 
   const { t } = useI18n();
   const [session, setSession] = useState<MontreeSession | null>(null);
-  const [child, setChild] = useState<ChildInfo | null>(null);
+  const [child,   setChild]   = useState<ChildInfo | null>(null);
 
-  // Check auth + fetch child in parallel
   useEffect(() => {
     const sess = getSession();
-    if (!sess) {
-      router.push('/montree/login');
-      return;
-    }
+    if (!sess) { router.push('/montree/login'); return; }
     setSession(sess);
 
-    // Fetch child info immediately (don't wait for state update)
     if (childId && sess.school?.id) {
       fetch(`/api/montree/children/${childId}`, {
-        headers: {
-          'x-school-id': sess.school.id,
-        }
+        headers: { 'x-school-id': sess.school.id },
       })
         .then(r => r.ok ? r.json() : null)
-        .then(data => {
-          if (data?.child) setChild(data.child);
-        })
-        .catch(() => {}); // Silently fail - we have fallbacks
+        .then(data => { if (data?.child) setChild(data.child); })
+        .catch(() => {});
     }
   }, [childId, router]);
 
-  // Determine active tab — Gallery now handles reports too
   const getActiveTab = () => {
-    if (pathname.endsWith('/gallery')) return 'gallery';
-    if (pathname.endsWith('/reports')) return 'gallery'; // Reports consolidated into Gallery
-    if (pathname.endsWith('/progress')) return 'progress';
-    if (pathname.endsWith('/profile')) return 'profile';
+    if (pathname.endsWith('/gallery'))      return 'gallery';
+    if (pathname.endsWith('/reports'))      return 'gallery';
+    if (pathname.endsWith('/progress'))     return 'progress';
+    if (pathname.endsWith('/profile'))      return 'profile';
     if (pathname.endsWith('/observations')) return 'observations';
     return 'week';
   };
   const activeTab = getActiveTab();
 
-  // Review tab restored Apr 14: teacher wants to see per-child photos
-  // and preview the parent report from the child's profile.
   const tabs: { id: string; label: string; href: string }[] = [
     { id: 'gallery', label: `📸 ${t('nav.gallery' as any) || 'Review'}`, href: `/montree/dashboard/${childId}/gallery` },
   ];
 
-  // Don't show loading spinner - render immediately with fallbacks
   if (!session) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-50 flex items-center justify-center">
-        <div className="animate-bounce text-4xl">🌳</div>
+      <div style={{
+        minHeight: '100vh', background: '#0a1a0f',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+      }}>
+        <div className="animate-bounce" style={{ fontSize: 40 }}>🌳</div>
       </div>
     );
   }
 
-  const displayName = child?.name || t('common.student' as any);
-  const displayInitial = child?.name?.charAt(0) || '👤';
+  const displayName    = child?.name || t('common.student' as any);
+  const displayInitial = child?.name?.charAt(0)?.toUpperCase() || '?';
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-emerald-50 to-teal-50">
-      {/* Child sub-header — main nav is in DashboardHeader above */}
-      <header className="bg-gradient-to-r from-emerald-600 to-teal-700 text-white z-40">
-        <div className="max-w-4xl mx-auto px-4 py-2">
-          <div className="flex items-center gap-3">
+    <div style={{ minHeight: '100vh', background: '#0a1a0f', color: '#fff', fontFamily: SANS }}>
+
+      {/* Fixed off-centre emerald glow */}
+      <div aria-hidden="true" style={{
+        position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 0,
+        background: 'radial-gradient(ellipse 1100px 900px at 88% 8%, rgba(39,129,90,0.32), rgba(39,129,90,0.12) 30%, transparent 60%)',
+      }} />
+
+      {/* Child sub-header */}
+      <header style={{
+        background: 'linear-gradient(180deg, rgba(7,18,12,0.96) 0%, rgba(7,18,12,0.90) 100%)',
+        borderBottom: `1px solid ${C.border}`,
+        backdropFilter: 'blur(20px) saturate(140%)',
+        WebkitBackdropFilter: 'blur(20px) saturate(140%)',
+        position: 'sticky', top: 0, zIndex: 40,
+        fontFamily: SANS,
+      }}>
+        <div style={{ maxWidth: 896, margin: '0 auto', padding: '10px 16px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+
+            {/* Back button */}
             <Link
               href="/montree/dashboard"
-              className="w-9 h-9 bg-white/20 rounded-xl flex items-center justify-center hover:bg-white/30"
+              style={{
+                width: 36, height: 36,
+                background: C.glassBtn,
+                borderRadius: 10, border: 0,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                color: '#fff', textDecoration: 'none', flexShrink: 0,
+                transition: 'background 140ms ease',
+              }}
+              onMouseEnter={e => ((e.currentTarget as HTMLElement).style.background = C.glassBtnHvr)}
+              onMouseLeave={e => ((e.currentTarget as HTMLElement).style.background = C.glassBtn)}
             >
-              ←
+              <ArrowLeft size={18} strokeWidth={1.75} />
             </Link>
 
-            <div className="w-9 h-9 bg-white/20 rounded-full flex items-center justify-center text-base font-bold overflow-hidden">
+            {/* Child avatar — bioluminescent */}
+            <div style={{
+              width: 36, height: 36, borderRadius: '50%', flexShrink: 0,
+              background: 'rgba(16,185,129,0.15)',
+              boxShadow: '0 0 16px 4px rgba(52,211,153,0.28)',
+              overflow: 'hidden',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}>
               {child?.photo_url ? (
-                <img src={child.photo_url} className="w-full h-full object-cover" alt="" />
-              ) : displayInitial}
+                <img src={child.photo_url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="" />
+              ) : (
+                <span style={{
+                  fontFamily: SERIF, fontWeight: 500,
+                  fontSize: 15, color: '#fff',
+                  textShadow: '0 0 10px rgba(167,243,208,0.35)',
+                }}>{displayInitial}</span>
+              )}
             </div>
 
+            {/* Name + classroom */}
             <div>
-              <h1 className="text-base font-bold">{displayName}</h1>
-              <p className="text-emerald-100 text-xs">{session.classroom?.name}</p>
+              <h1 style={{
+                fontFamily: SERIF, fontWeight: 500,
+                fontSize: 16, color: '#fff', margin: 0, lineHeight: 1.2,
+              }}>{displayName}</h1>
+              <p style={{
+                fontSize: 11, color: C.textMute,
+                margin: 0, marginTop: 1, fontFamily: SANS,
+              }}>{session.classroom?.name}</p>
             </div>
           </div>
         </div>
       </header>
 
-      {/* Tab Bar - Hidden when only one or zero tabs (Review tab removed, Photo Audit is the review flow) */}
+      {/* Tab bar — only when multiple tabs */}
       {tabs.length > 1 && (
-        <div className="bg-white border-b z-30 shadow-sm">
-          <div className="flex w-full">
+        <div style={{
+          background: 'rgba(8,20,12,0.90)',
+          borderBottom: `1px solid ${C.border}`,
+          backdropFilter: 'blur(12px)',
+          WebkitBackdropFilter: 'blur(12px)',
+          position: 'sticky', top: 57, zIndex: 30,
+        }}>
+          <div style={{ display: 'flex', width: '100%' }}>
             {tabs.map(tab => (
               <Link
                 key={tab.id}
                 href={tab.href}
                 data-guide={`tab-${tab.id}`}
-                className={`flex-1 py-3 font-medium text-center text-xs sm:text-sm truncate px-1 ${
-                  activeTab === tab.id
-                    ? 'bg-emerald-100 text-emerald-700 border-b-2 border-emerald-500'
-                    : 'text-gray-500 hover:bg-gray-50'
-                }`}
+                style={{
+                  flex: 1, padding: '10px 4px', textAlign: 'center',
+                  fontSize: 13, fontWeight: 500, textDecoration: 'none',
+                  color: activeTab === tab.id ? C.emerald : C.textMute,
+                  background: activeTab === tab.id ? C.emeraldSoft : 'transparent',
+                  borderBottom: activeTab === tab.id ? `2px solid ${C.emerald}` : '2px solid transparent',
+                  transition: 'color 140ms ease, background 140ms ease',
+                  fontFamily: SANS,
+                }}
               >
                 {tab.label}
               </Link>
@@ -127,7 +186,7 @@ export default function ChildLayout({ children }: { children: React.ReactNode })
       )}
 
       {/* Content */}
-      <main className="max-w-4xl mx-auto px-4 py-4">
+      <main style={{ maxWidth: 896, margin: '0 auto', padding: '16px', position: 'relative', zIndex: 1 }}>
         {children}
       </main>
     </div>
