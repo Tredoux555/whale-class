@@ -183,6 +183,80 @@ GMass campaigns A/C/D are historical. Campaign C sent 335 blank emails (Session 
 
 ## RECENT STATUS (Apr 30, 2026)
 
+### ⚡ Session 76 — Audit & Optimise Sweep: 17 perf/cost fixes shipped (Apr 30, 2026)
+
+**Commits pushed: `80921de6`, `5ef016b2`, `68ea89e2`, `149e5760` — all on main, all deployed.**
+
+System-wide health check ran three parallel audits (frontend perf / AI cost / API+DB) producing 17 actionable findings. All shipped today.
+
+**Top perf wins:**
+- **`lib/montree/i18n/context.tsx`** — Provider value now wrapped in `useMemo`. The 173 files importing the i18n barrel only re-render when locale actually changes, not on every parent state update. Single biggest perceived-speed win in the codebase.
+- **`public/montree-sw.js`** — Cache only immutable assets (JS, CSS, fonts, images, `/_next/static/`). HTML pages always go to network. `CACHE_NAME` bumped to `montree-v2` so existing PWA installs purge their v1 cache on activate. **Fixes the Apr 30 stale-dashboard incident.**
+- **`components/montree/DashboardHeader.tsx`** — wrapped in `memo()`. No props, so shallow-equals always returns true → header skips re-render on every parent state change.
+- **`app/montree/dashboard/photo-audit/page.tsx`** — all 7 `dynamic()` imports now have a `loading` fallback. No more blank-gap flash while chunks download.
+- **`app/api/montree/intelligence/daily-brief/route.ts`** — section 2 (stale works) now parallelizes its two queries (view + dismissals) via `Promise.all`. Top-level was already parallel across 6 sections.
+- **`app/api/montree/works/guide/route.ts`** — "guide not found" 404-fallback path now sends short `Cache-Control` so the 3-tier lookup (classroom → master Brain → static JSON) doesn't repeat for works without guides.
+
+**AI cost / tier-gating sweep — 7 routes, all tier-gated:**
+
+The Free/Core/Premium tier system from Session 57 was bypassed by 7 routes that hardcoded Sonnet. All now call `resolveReportModel()`:
+
+| Route | Behaviour for Free tier |
+|------|-------------------------|
+| `lib/montree/reports/ai-generator.ts` | Accepts optional `model` param, threads through to `messages.create` and the `ai_model` metadata field. Falls back to AI_MODEL when omitted (back-compat). |
+| `app/api/montree/reports/language-presentation/[childId]/route.ts` | 402 |
+| `app/api/montree/reports/language-semester/generate/route.ts` (3 Sonnet calls) | 402 |
+| `app/api/montree/guru/teaching-instructions/route.ts` | 402 |
+| `app/api/montree/guru/snap-identify/route.ts` | 402 |
+| `app/api/montree/weekly-review/[childId]/route.ts` (POST + PATCH) | 402 |
+| `app/api/montree/guru/corrections/route.ts` (Sonnet enrichment only) | Correction still saves; just skip the moat-builder Sonnet call. Free schools don't accrue visual-memory moat data — paying customers do. This is the intended product behaviour. |
+| `app/api/montree/guru/generate-work-content/route.ts` | 402 |
+
+**Cost impact:** at 10 schools on Core tier, expected savings ~$300-400/month from no longer paying Sonnet rates on routes that should run Haiku.
+
+**Verified-then-deferred (not in this commit, flagged for next session):**
+- **Weekly-wrap teacher+parent batching** — `app/api/montree/reports/weekly-wrap/route.ts`. Teacher report + parent narrative currently run sequentially per child. They could go parallel via `Promise.all` to halve wall-clock time per child. Refactor is more invasive than it looks (interleaved token totals, separate upserts, separate skip flags). Worth doing in a dedicated session with full attention. ⚠ **Replan must stay Stage 0** — don't break that ordering.
+- **Photo-audit `select('*')` claim** — investigated, the actual code already uses explicit column lists with `Promise.all` + `.limit(500)`. No work needed; agent's claim was inferred wrong.
+- **`negative_descriptions[]` cap** — already capped at 8 FIFO via `.slice(-MAX_NEGATIVES)` in `corrections/route.ts`. The audit recommended 15; existing 8 is tighter and better. No change.
+
+**Audit reference docs in repo:**
+- `docs/AI_COST_AUDIT.md` — verified line numbers for hardcoded-Sonnet routes (written by the cost-audit agent during Session 76)
+- `HANDOFF_LATEST.md` — sweep progress tracker (now ✓ complete)
+
+**🚨 Architectural notes for future sessions:**
+- **Service worker MUST stay immutables-only.** If a future change adds HTML to the cache, you'll re-introduce the stale-shell-when-API-fails bug. The pattern lives in `public/montree-sw.js` `isCacheable()`.
+- **Every new Sonnet-calling route MUST tier-gate via `resolveReportModel()`** at the top after auth. Pattern: resolve → 402 if free → pass `aiTier.model` into `messages.create({ model, … })`.
+- **`enrichVisualMemoryFromCorrection()` is Free-tier-skipped on purpose.** This is the moat-builder; it should only accrue for paying schools. The correction itself (work assignment, photo update, brain learning) still runs.
+- **`I18nProvider` value MUST stay memoized.** If a future change rebuilds the value on every render again, you reintroduce a tree-wide re-render storm.
+
+**Files changed (Session 76 — 4 commits):**
+- `lib/montree/i18n/context.tsx`
+- `public/montree-sw.js`
+- `lib/montree/reports/ai-generator.ts`
+- `components/montree/DashboardHeader.tsx`
+- `app/montree/dashboard/photo-audit/page.tsx`
+- `app/api/montree/works/guide/route.ts`
+- `app/api/montree/intelligence/daily-brief/route.ts`
+- `app/api/montree/reports/language-presentation/[childId]/route.ts`
+- `app/api/montree/reports/language-semester/generate/route.ts`
+- `app/api/montree/guru/teaching-instructions/route.ts`
+- `app/api/montree/guru/snap-identify/route.ts`
+- `app/api/montree/weekly-review/[childId]/route.ts`
+- `app/api/montree/guru/corrections/route.ts`
+- `app/api/montree/guru/generate-work-content/route.ts`
+
+**Next session priorities:**
+1. **🚨 Verify all 4 commits deployed cleanly on Railway.** Visit dashboard, photo-audit, weekly-wrap, language-presentation. Confirm no hydration errors, no 500s.
+2. **Test the tier gates.** Set Whale Class to Free in super-admin, try generating a Language Presentation → expect 402. Set back to Premium → confirm it works.
+3. **Per-locale parent narratives** — the 6 routes still Chinese-only from Session 75 handoff. Bigger scope.
+4. **Phase 10 — Super-admin dark forest** — 31 of 32 pages still need conversion.
+5. **Weekly-wrap teacher+parent parallelization** — the deferred perf win, ~30-60s/child saved.
+6. **Send the 3 hot lead Gmail drafts** — Copenhagen, Paint Pots UK, Ardtona House UK.
+7. **FAMM Argentina follow-up** — past Apr 28 deadline.
+8. **Welcome Тамі** in Ukrainian — first organic Ukrainian signup.
+
+---
+
 ### ⚡ Session 75 — Dark Forest Phases 3-9+11 + Photo Pipeline Hardening + i18n Auto-Derived SELECTs (Apr 30, 2026)
 
 **Commits pushed: `022bef0f` (i18n refactor). Dark forest + photo pipeline hardening committed earlier in session (see prior commit log).**
