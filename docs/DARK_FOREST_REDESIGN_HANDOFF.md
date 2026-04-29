@@ -72,28 +72,47 @@ Design tokens are locked:
 
 ---
 
-## ✅ PHASES 3 + 4 + EXTRAS COMPLETE — Apr 29, 2026 overnight session
+## ✅ PHASES 3–9 + 11 COMPLETE · PHASE 10 IN PROGRESS — Apr 29–30, 2026
 
-**Phase 3 ✅ shipped** — all 8 inner screens (Notes, Classroom Overview, Language Semester, Weekly Admin Docs, Focus List, Capture, Progress, Classroom Setup).
-**Phase 4 ✅ shipped** — Quick Guide modal, Full Details modal, Welcome modal, BulkPasteImport modal.
-**Bonus shipped** — every dashboard intelligence panel (Daily Brief, Attendance, Stale Works, Evidence, Pulse, Conference Notes, Paperwork, Birthday Banner, Shelf Autopilot), the Skeletons loading states, and high-visibility sub-components (TodaysFocusStrip, GuruContextBubble, WeeklyAdminCard, GuruDashboardCards, ConcernCardsGrid, WeeklyWrapCard).
+### Done
 
-**Workflow note:** This batch was done by a single Claude (this one) playing both design + implementation roles. The locked tokens at the top of this doc were tight enough that Opus-style design passes were not necessary for these screens. If you want to keep the two-step workflow for any remaining surfaces, it still works exactly as documented above.
+**Phase 3 ✅** — all 8 inner screens (Notes, Classroom Overview, Language Semester, Weekly Admin Docs, Focus List, Capture, Progress, Classroom Setup)
+**Phase 4 ✅** — Quick Guide, Full Details, Welcome, BulkPasteImport
+**Phase 5 ✅** — Guru chat surface (ChatBubble, GuruChatThread, ChildGuruChat) — unified parent/teacher path to one dark forest theme
+**Phase 6 ✅** — Child-detail tabs (WeeklyWrapTab, WeeklyAdminTab, ChildWeeklyAdmin, BigMicPanel)
+**Phase 7 ✅** — Photo + capture deep surface (PhotoInsightButton, PendingReviewPanel, MediaDetailModal, PhotoDetailView, AreaHistoryModal)
+**Phase 8 ✅** — Reports + comms (BatchNarrativesCard, MessageCard, ExtractionCard)
+**Phase 9 ✅** — Parent portal (all 8 pages: dashboard, login, signup, messages, milestones, photos, weekly-review, report)
+**Phase 11 ✅** — Public marketing pages — verified already done in Sessions 71/72 (landing, login-select, try, library, for-teachers, download, pricing). No re-work.
 
-**17 commits pushed** between `4edb75c4` and `c0ab48ec`. See `git log --oneline` for the full list.
+**Bonus shipped** — every dashboard intelligence panel (Daily Brief, Attendance, Stale Works, Evidence, Pulse, Conference Notes, Paperwork, Birthday Banner, Shelf Autopilot), the Skeletons loading states, all high-visibility sub-components (TodaysFocusStrip, GuruContextBubble, WeeklyAdminCard, GuruDashboardCards, ConcernCardsGrid, WeeklyWrapCard).
 
-### Still light-themed (next pass candidates, in rough priority)
-- `components/montree/guru/GuruChatThread.tsx` + `ChatBubble.tsx` (Guru chat across teacher / parent / admin)
-- `components/montree/reports/WeeklyWrapTab.tsx` + `WeeklyAdminTab.tsx` (child-detail tabs)
-- `components/montree/child/ChildWeeklyAdmin.tsx` + `BigMicPanel.tsx` + `ChildGuruChat.tsx`
-- `components/montree/guru/PhotoInsightButton.tsx` (large + complex, careful surgery)
-- `components/montree/photo-audit/PendingReviewPanel.tsx`
-- `components/montree/reports/BatchNarrativesCard.tsx`
-- `components/montree/media/MediaDetailModal.tsx` + `PhotoDetailView.tsx`
-- `components/montree/messaging/MessageCard.tsx`
-- `components/montree/voice-observation/ExtractionCard.tsx`
-- `components/montree/progress/AreaHistoryModal.tsx`
-- Any super-admin / library / public marketing pages still on light Tailwind
+### Phase 10 — Super-admin (in progress)
+
+The super-admin section has 32 pages totalling ~7,000 lines. The most-trafficked one is converted; the rest are queued.
+
+✅ Done:
+- `app/montree/super-admin/marketing/demo-requests/page.tsx`
+
+⏳ Queue (31 pages):
+- `app/montree/super-admin/page.tsx` *(main hub — highest priority for next session)*
+- `app/montree/super-admin/marketing/page.tsx` + `layout.tsx`
+- `app/montree/super-admin/marketing/campaign-manager/page.tsx`
+- `app/montree/super-admin/marketing/outreach-hub/page.tsx`
+- `app/montree/super-admin/marketing/outreach-campaign/page.tsx`
+- `app/montree/super-admin/marketing/outreach/page.tsx`
+- `app/montree/super-admin/marketing/master-campaign/page.tsx`
+- `app/montree/super-admin/marketing/prospects/page.tsx`
+- `app/montree/super-admin/marketing/cold-email/page.tsx`
+- `app/montree/super-admin/marketing/{nerve-center,sales-playbook,playbook,pitch,objections,launch-hq,growth,landing,links,studio,warroom,content}/page.tsx`
+- `app/montree/super-admin/social-manager/{page,calendar,credentials,guru,tracker,vault}/page.tsx`
+- `app/montree/super-admin/community/page.tsx`
+- `app/montree/super-admin/api-usage/page.tsx`
+- `app/montree/super-admin/job-tracker/page.tsx`
+
+These are internal-only pages (only Tredoux uses them). User-facing app is 100% dark forest as of Phase 9.
+
+**Pattern for next session:** read each file, define the locked `T` token object at top, replace every `className=` with `style={{...}}` using T tokens, swap emoji for lucide icons. Reference any of the 50+ already-converted files. Sub-agent delegation worked for parent/Guru-chat/PhotoInsightButton — same prompt template can carry through the super-admin batch in 3–4 parallel agent calls.
 
 **Also pending (no design pass needed — code changes only):**
 See "Child Detail v2" section below — the bundle is already in hand, structural code changes needed.
