@@ -8,6 +8,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import dynamic from 'next/dynamic';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { Images, Mic as MicIcon, Printer, ChevronDown, ClipboardList } from 'lucide-react';
 import { toast, Toaster } from 'sonner';
 import { getSession, isHomeschoolParent } from '@/lib/montree/auth';
 import { AREA_CONFIG } from '@/lib/montree/types';
@@ -641,8 +642,17 @@ export default function WeekPage() {
     return <WeekViewSkeleton />;
   }
 
+  const btnBase: React.CSSProperties = {
+    display: 'inline-flex', alignItems: 'center', gap: 6,
+    padding: '7px 12px', borderRadius: 10, border: '1px solid rgba(52,211,153,0.15)',
+    background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.75)',
+    fontSize: 13, fontWeight: 500, cursor: 'pointer', textDecoration: 'none',
+    transition: 'background 140ms ease, color 140ms ease',
+    fontFamily: "'Inter', -apple-system, system-ui, sans-serif",
+  };
+
   return (
-    <div className="space-y-4">
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
       <Toaster position="top-center" richColors />
 
       {/* Contextual Tip Bubble */}
@@ -650,17 +660,24 @@ export default function WeekPage() {
         <GuruContextBubble pageKey="weekView" role="parent" />
       )}
 
-      {/* Jump to Student Selector + Find Work Search Row */}
-      <div className="flex items-center gap-3">
-        {/* Student selector — left side */}
-        <div className="flex-shrink-0">
+      {/* Student selector + Find Work search row */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+        {/* Student selector */}
+        <div style={{ flexShrink: 0 }}>
           <select
             value={childId}
             onChange={(e) => router.push(`/montree/dashboard/${e.target.value}`)}
-            className="px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white text-gray-700 hover:border-emerald-400 transition-colors"
+            style={{
+              padding: '7px 12px', borderRadius: 10,
+              background: 'rgba(255,255,255,0.06)',
+              border: '1px solid rgba(52,211,153,0.15)',
+              color: 'rgba(255,255,255,0.85)', fontSize: 13,
+              fontFamily: "'Inter', -apple-system, system-ui, sans-serif",
+              cursor: 'pointer', outline: 'none',
+            }}
           >
             {session?.classroom?.children?.map((child: Child) => (
-              <option key={child.id} value={child.id}>
+              <option key={child.id} value={child.id} style={{ background: '#0a1a0f' }}>
                 {child.name}
               </option>
             ))}
@@ -668,7 +685,7 @@ export default function WeekPage() {
         </div>
 
         {/* Find Work search — fills remaining space */}
-        <div data-tutorial="work-search-bar" className="flex-1">
+        <div data-tutorial="work-search-bar" style={{ flex: 1 }}>
           <WorkSearchBar
             curriculum={curriculum}
             onSelectWork={(work, areaKey) => {
@@ -681,20 +698,26 @@ export default function WeekPage() {
         </div>
       </div>
 
-      {/* Minimal action bar — Weekly Review + print labels (teacher only) */}
+      {/* Action bar — Gallery, Present, Print (teacher only) */}
       {!isHomeschoolParent(session) && (
-        <div className="flex justify-end items-center gap-2">
+        <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 8 }}>
           <Link
             href={`/montree/dashboard/${childId}/gallery`}
-            className="px-3 py-2 text-gray-600 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg text-sm transition-colors"
+            style={btnBase}
+            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(52,211,153,0.08)'; (e.currentTarget as HTMLElement).style.color = '#34d399'; }}
+            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.06)'; (e.currentTarget as HTMLElement).style.color = 'rgba(255,255,255,0.75)'; }}
           >
-            📸 {t('childPage.gallery')}
+            <Images size={15} strokeWidth={1.75} />
+            {t('childPage.gallery')}
           </Link>
           <Link
             href={`/montree/dashboard/${childId}/language-presentation`}
-            className="px-3 py-2 text-gray-600 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg text-sm transition-colors"
+            style={btnBase}
+            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(52,211,153,0.08)'; (e.currentTarget as HTMLElement).style.color = '#34d399'; }}
+            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.06)'; (e.currentTarget as HTMLElement).style.color = 'rgba(255,255,255,0.75)'; }}
           >
-            🎙️ {t('childPage.present')}
+            <MicIcon size={15} strokeWidth={1.75} />
+            {t('childPage.present')}
           </Link>
           <PrintButton childId={childId} schoolId={session?.school?.id} />
         </div>
@@ -865,22 +888,55 @@ export default function WeekPage() {
 // Collapsible wrapper for ChildWeeklyAdmin — collapsed by default at bottom of page
 function WeeklyAdminCollapsible(props: React.ComponentProps<typeof ChildWeeklyAdmin>) {
   const [isOpen, setIsOpen] = useState(false);
+  const [hovered, setHovered] = useState(false);
   const { t } = useI18n();
 
+  const SANS = "'Inter', -apple-system, system-ui, sans-serif";
+
   return (
-    <div className="bg-gradient-to-r from-violet-50 to-indigo-50 border border-violet-200 rounded-2xl overflow-hidden">
+    <div style={{
+      background: 'rgba(255,255,255,0.06)',
+      border: '1px solid rgba(52,211,153,0.15)',
+      borderRadius: 18,
+      overflow: 'hidden',
+      backdropFilter: 'blur(18px) saturate(140%)',
+      WebkitBackdropFilter: 'blur(18px) saturate(140%)',
+    }}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex items-center justify-between p-3 hover:bg-violet-100/50 transition-colors"
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
+        style={{
+          width: '100%',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: '12px 16px',
+          background: hovered ? 'rgba(52,211,153,0.08)' : 'transparent',
+          border: 0,
+          cursor: 'pointer',
+          transition: 'background 140ms ease',
+          fontFamily: SANS,
+        }}
       >
-        <div className="flex items-center gap-2">
-          <span className="text-lg">📋</span>
-          <span className="font-semibold text-violet-800 text-sm">{t('childAdmin.title')}</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <ClipboardList size={16} strokeWidth={1.75} style={{ color: '#34d399', flexShrink: 0 }} />
+          <span style={{ fontWeight: 600, color: 'rgba(255,255,255,0.85)', fontSize: 13 }}>
+            {t('childAdmin.title')}
+          </span>
         </div>
-        <span className="text-violet-400 text-sm">{isOpen ? '▲' : '▼'}</span>
+        <ChevronDown
+          size={16}
+          strokeWidth={1.75}
+          style={{
+            color: 'rgba(255,255,255,0.40)',
+            transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+            transition: 'transform 200ms ease',
+          }}
+        />
       </button>
       {isOpen && (
-        <div className="px-0">
+        <div>
           <ChildWeeklyAdmin {...props} />
         </div>
       )}
