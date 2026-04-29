@@ -865,8 +865,7 @@ export default function GalleryPage() {
     return (
       <div
         key={photo.id}
-        className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden"
-        style={{ contentVisibility: 'auto', containIntrinsicSize: '1px 420px' }}
+        style={{ contentVisibility: 'auto', containIntrinsicSize: '1px 420px', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(52,211,153,0.15)', borderRadius: 14, overflow: 'hidden', backdropFilter: 'blur(18px) saturate(140%)', WebkitBackdropFilter: 'blur(18px) saturate(140%)' }}
       >
         {/* Photo */}
         <div className="relative group">
@@ -925,8 +924,8 @@ export default function GalleryPage() {
                 />
               )
             ) : (
-              <div className="w-full aspect-[4/3] bg-gray-100 flex items-center justify-center">
-                <div className="w-6 h-6 border-2 border-gray-300 border-t-emerald-500 rounded-full animate-spin" />
+              <div className="w-full aspect-[4/3] flex items-center justify-center" style={{ background: 'rgba(255,255,255,0.04)' }}>
+                <div className="w-6 h-6 border-2 rounded-full animate-spin" style={{ borderColor: 'rgba(255,255,255,0.15)', borderTopColor: '#34d399' }} />
               </div>
             )}
           </button>
@@ -1006,18 +1005,21 @@ export default function GalleryPage() {
               {photo.area ? (
                 <AreaBadge area={photo.area} size="sm" />
               ) : (
-                <div className="w-6 h-6 rounded-full bg-gray-300 flex items-center justify-center text-white text-xs">?</div>
+                <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs" style={{ background: 'rgba(255,255,255,0.20)', color: 'rgba(255,255,255,0.60)' }}>?</div>
               )}
             </button>
             {/* Tappable work name — opens work picker within current area */}
             <button
               onClick={() => openWorkPicker(photo)}
-              className="flex items-center gap-2 flex-1 min-w-0 px-2 py-1.5 rounded-lg hover:bg-gray-50 transition-colors text-left group/tag"
+              className="flex items-center gap-2 flex-1 min-w-0 rounded-lg transition-colors text-left group/tag"
+              style={{ padding: '6px 8px' }}
+              onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = 'rgba(52,211,153,0.08)'; }}
+              onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = 'transparent'; }}
             >
-              <span className="font-semibold text-gray-800 text-sm truncate flex-1">
+              <span className="text-sm truncate flex-1" style={{ fontFamily: '"Inter", sans-serif', fontWeight: 500, color: 'rgba(255,255,255,0.90)' }}>
                 {photo.work_name || t('gallery.untagged')}
               </span>
-              <span className="text-gray-400 text-xs opacity-0 group-hover/tag:opacity-100 transition-opacity">
+              <span className="text-xs opacity-0 group-hover/tag:opacity-100 transition-opacity" style={{ color: 'rgba(255,255,255,0.35)' }}>
                 {t('gallery.tapToChange')}
               </span>
             </button>
@@ -1042,7 +1044,8 @@ export default function GalleryPage() {
                 />
                 <button
                   onClick={() => setEditingCaption(null)}
-                  className="flex-1 px-3 py-1.5 text-sm text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200"
+                  className="flex-1 rounded-lg"
+                  style={{ padding: '6px 12px', fontSize: 14, color: 'rgba(255,255,255,0.60)', background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.10)' }}
                 >
                   {t('common.cancel')}
                 </button>
@@ -1064,11 +1067,11 @@ export default function GalleryPage() {
               className="w-full text-left"
             >
               {photo.caption ? (
-                <p className="text-sm text-gray-600 leading-relaxed line-clamp-2 hover:text-gray-800 transition-colors">
+                <p className="text-sm leading-relaxed line-clamp-2" style={{ color: 'rgba(255,255,255,0.70)', fontFamily: '"Inter", sans-serif' }}>
                   {photo.caption}
                 </p>
               ) : (
-                <p className="text-sm text-gray-400 italic hover:text-gray-600 transition-colors">
+                <p className="text-sm italic" style={{ color: 'rgba(255,255,255,0.35)', fontFamily: '"Inter", sans-serif' }}>
                   {t('gallery.tapToAddDescription')}
                 </p>
               )}
@@ -1076,9 +1079,9 @@ export default function GalleryPage() {
           )}
 
           {/* Lesson Notes — observation textarea */}
-          <div className="pt-1 border-t border-gray-50">
+          <div className="pt-1" style={{ borderTop: '1px solid rgba(52,211,153,0.10)' }}>
             <div className="flex items-center justify-between mb-1">
-              <p className="text-xs font-medium text-gray-500">{t('gallery.lessonNotes')}</p>
+              <p className="text-xs font-medium" style={{ color: 'rgba(255,255,255,0.45)', fontFamily: '"Inter", sans-serif' }}>{t('gallery.lessonNotes')}</p>
               <VoiceDictate
                 size="sm"
                 onAppend={(text) => {
@@ -1097,7 +1100,8 @@ export default function GalleryPage() {
               onChange={(e) => setNotesDraft(prev => ({ ...prev, [photo.id]: e.target.value }))}
               placeholder={t('gallery.notePlaceholder')}
               rows={2}
-              className="w-full text-sm border border-gray-200 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-emerald-400 resize-none"
+              className="w-full text-sm rounded-lg resize-none focus:outline-none"
+              style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.10)', color: 'rgba(255,255,255,0.80)', fontFamily: '"Inter", sans-serif', padding: '6px 8px' }}
             />
             {notesDraft[photo.id]?.trim() && (
               <button
@@ -1112,15 +1116,15 @@ export default function GalleryPage() {
 
           {/* Expanded details */}
           {isExpanded && (
-            <div className="pt-2 border-t border-gray-100 space-y-2">
-              <p className="text-xs text-gray-500">{formatDateTime(photo.captured_at)}</p>
+            <div className="pt-2 space-y-2" style={{ borderTop: '1px solid rgba(52,211,153,0.10)' }}>
+              <p className="text-xs" style={{ color: 'rgba(255,255,255,0.45)', fontFamily: '"Inter", sans-serif' }}>{formatDateTime(photo.captured_at)}</p>
               {photo.captured_by && (
-                <p className="text-xs text-gray-500">{t('gallery.capturedBy')} {photo.captured_by}</p>
+                <p className="text-xs" style={{ color: 'rgba(255,255,255,0.45)', fontFamily: '"Inter", sans-serif' }}>{t('gallery.capturedBy')} {photo.captured_by}</p>
               )}
               {photo.tags && photo.tags.length > 0 && (
                 <div className="flex flex-wrap gap-1">
                   {photo.tags.map(tag => (
-                    <span key={tag} className="px-2 py-0.5 bg-gray-100 text-gray-600 rounded-full text-xs">{tag}</span>
+                    <span key={tag} className="px-2 rounded-full text-xs" style={{ padding: '2px 8px', background: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.60)', border: '1px solid rgba(255,255,255,0.12)' }}>{tag}</span>
                   ))}
                 </div>
               )}
@@ -1137,10 +1141,10 @@ export default function GalleryPage() {
       <div className="space-y-4 pb-8">
         <div className="grid grid-cols-2 gap-3">
           {[1, 2, 3, 4, 5, 6].map(i => (
-            <div key={i} className="bg-white rounded-xl p-3 shadow-sm animate-pulse">
-              <div className="aspect-[4/3] bg-gray-200 rounded-lg mb-3" />
-              <div className="h-4 bg-gray-200 rounded w-3/4 mb-2" />
-              <div className="h-3 bg-gray-200 rounded w-1/2" />
+            <div key={i} className="animate-pulse" style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(52,211,153,0.12)', borderRadius: 14, padding: 12 }}>
+              <div style={{ aspectRatio: '4/3', background: 'rgba(255,255,255,0.06)', borderRadius: 10, marginBottom: 12 }} />
+              <div style={{ height: 14, background: 'rgba(255,255,255,0.06)', borderRadius: 6, width: '75%', marginBottom: 8 }} />
+              <div style={{ height: 11, background: 'rgba(255,255,255,0.04)', borderRadius: 6, width: '50%' }} />
             </div>
           ))}
         </div>
@@ -1166,11 +1170,11 @@ export default function GalleryPage() {
           will see before the Weekly Wrap send.
           ══════════════════════════════════════════════ */}
       {session && !isHomeschoolParent(session) && (
-        <div className="bg-white rounded-2xl p-4 shadow-sm">
+        <div style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(52,211,153,0.15)', borderRadius: 18, padding: 16, backdropFilter: 'blur(18px) saturate(140%)', WebkitBackdropFilter: 'blur(18px) saturate(140%)' }}>
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="text-sm font-bold text-gray-800">📤 {t('reports.parentReport')}</h3>
-              <p className="text-xs text-gray-400">
+              <h3 style={{ fontFamily: '"Inter", sans-serif', fontSize: 13, fontWeight: 700, color: 'rgba(255,255,255,0.90)', margin: '0 0 2px' }}>📤 {t('reports.parentReport')}</h3>
+              <p style={{ fontFamily: '"Inter", sans-serif', fontSize: 11, color: 'rgba(255,255,255,0.40)', margin: 0 }}>
                 {lastReportDate
                   ? `${t('reports.lastSent')}: ${new Date(lastReportDate).toLocaleDateString()}`
                   : (t('reports.noReportsSentYet'))}
@@ -1181,7 +1185,8 @@ export default function GalleryPage() {
                 <button
                   onClick={fetchLastReport}
                   disabled={loadingLastReport}
-                  className="flex items-center gap-1 px-3 py-2 rounded-xl font-medium bg-gray-200 text-gray-700 hover:bg-gray-300 active:scale-95 transition-all disabled:opacity-50 text-xs"
+                  className="active:scale-95 transition-all disabled:opacity-50"
+                  style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '7px 12px', background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 12, color: 'rgba(255,255,255,0.70)', fontFamily: '"Inter", sans-serif', fontSize: 12, fontWeight: 500, cursor: 'pointer' }}
                 >
                   {loadingLastReport ? '⏳' : '📄'} {t('reports.lastReport')}
                 </button>
@@ -1189,7 +1194,8 @@ export default function GalleryPage() {
               <button
                 onClick={handleOpenReportPreview}
                 disabled={reportLoading}
-                className="flex items-center gap-1 px-3 py-2 rounded-xl font-medium bg-emerald-500 text-white hover:bg-emerald-600 active:scale-95 transition-all disabled:opacity-50 text-xs"
+                className="active:scale-95 transition-all disabled:opacity-50"
+                style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '7px 12px', background: 'linear-gradient(180deg, #34d399, #10b981)', border: '1px solid rgba(52,211,153,0.55)', borderRadius: 12, color: '#06281a', fontFamily: '"Inter", sans-serif', fontSize: 12, fontWeight: 700, cursor: 'pointer' }}
               >
                 {reportLoading ? '⏳' : '👁️'} {t('reports.previewReport')}
               </button>
@@ -1197,7 +1203,7 @@ export default function GalleryPage() {
           </div>
           <button
             onClick={() => setInviteModalOpen(true)}
-            className="mt-2 w-full text-center text-xs text-blue-600 hover:text-blue-800 transition-colors"
+            style={{ marginTop: 8, width: '100%', textAlign: 'center', fontSize: 11, color: 'rgba(147,197,253,0.80)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: '"Inter", sans-serif' }}
           >
             ✉️ {t('reports.inviteParent')}
           </button>
@@ -1209,22 +1215,15 @@ export default function GalleryPage() {
           ══════════════════════════════════════════════ */}
       <div className="flex items-center justify-between">
         <div className="flex gap-2">
-          <button
-            onClick={() => setSelectedArea(null)}
-            className="px-3 py-2 rounded-lg text-sm font-medium transition-colors bg-emerald-500 text-white"
-          >
-            {t('review.allPhotos')}
-          </button>
+          {/* spacer — area chips below handle the "All" filter */}
         </div>
 
         <div className="flex items-center gap-2">
-          <span className="text-xs text-gray-500">{filteredPhotos.length} {t('gallery.photosTotal')}</span>
+          <span style={{ fontFamily: '"Inter", sans-serif', fontSize: 11, color: 'rgba(255,255,255,0.35)' }}>{filteredPhotos.length} {t('gallery.photosTotal')}</span>
           {filteredPhotos.length > 0 && (
             <button
               onClick={() => { setSelectionMode(!selectionMode); setSelectedIds(new Set()); }}
-              className={`px-3 py-2 rounded-lg font-medium transition-colors text-xs ${
-                selectionMode ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-              }`}
+              style={{ padding: '7px 12px', borderRadius: 10, fontFamily: '"Inter", sans-serif', fontSize: 12, fontWeight: 600, cursor: 'pointer', transition: 'all 120ms ease', background: selectionMode ? 'rgba(52,211,153,0.15)' : 'rgba(255,255,255,0.08)', border: `1px solid ${selectionMode ? 'rgba(52,211,153,0.40)' : 'rgba(255,255,255,0.12)'}`, color: selectionMode ? '#34d399' : 'rgba(255,255,255,0.60)' }}
             >
               {selectionMode ? `✓ ${t('gallery.select')}` : t('gallery.select')}
             </button>
@@ -1233,44 +1232,46 @@ export default function GalleryPage() {
       </div>
 
       {/* Area filter chips */}
-      {(
-        <div className="flex gap-2 overflow-x-auto pb-1">
-          <button
-            onClick={() => setSelectedArea(null)}
-            className={`px-3 py-1.5 rounded-lg whitespace-nowrap text-sm font-medium transition-colors border-2 ${
-              !selectedArea ? 'bg-emerald-500 text-white border-emerald-500' : 'bg-gray-100 text-gray-700 hover:bg-gray-200 border-transparent'
-            }`}
-          >
-            {t('common.all')}
-          </button>
-          {AREA_ORDER.map(area => {
-            const config = AREA_CONFIG[area];
-            const count = photosByArea[area]?.length || 0;
-            if (count === 0) return null;
-            const isActive = selectedArea === area;
-            return (
-              <button
-                key={area}
-                onClick={() => setSelectedArea(isActive ? null : area)}
-                className={`px-3 py-1.5 rounded-lg whitespace-nowrap text-sm font-medium transition-colors flex items-center gap-1.5 border-2 ${
-                  isActive
-                    ? 'bg-emerald-100 text-emerald-800 border-emerald-400'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200 border-transparent'
-                }`}
-              >
-                <AreaBadge area={area} size="xs" />
-                <span>{config.name}</span>
-                <span className="text-xs opacity-60">({count})</span>
-              </button>
-            );
-          })}
-        </div>
-      )}
+      <div className="flex gap-2 overflow-x-auto pb-1">
+        <button
+          onClick={() => setSelectedArea(null)}
+          style={{
+            padding: '7px 14px', borderRadius: 999, whiteSpace: 'nowrap', fontFamily: '"Inter", sans-serif', fontSize: 13, fontWeight: 600, cursor: 'pointer', transition: 'all 120ms ease', border: `1px solid ${!selectedArea ? 'rgba(52,211,153,0.55)' : 'rgba(52,211,153,0.15)'}`,
+            background: !selectedArea ? 'rgba(52,211,153,0.12)' : 'rgba(255,255,255,0.06)',
+            color: !selectedArea ? '#34d399' : 'rgba(255,255,255,0.60)',
+            backdropFilter: 'blur(18px)', WebkitBackdropFilter: 'blur(18px)',
+          }}
+        >
+          {t('common.all')}
+        </button>
+        {AREA_ORDER.map(area => {
+          const config = AREA_CONFIG[area];
+          const count = photosByArea[area]?.length || 0;
+          if (count === 0) return null;
+          const isActive = selectedArea === area;
+          return (
+            <button
+              key={area}
+              onClick={() => setSelectedArea(isActive ? null : area)}
+              style={{
+                padding: '7px 14px', borderRadius: 999, whiteSpace: 'nowrap', fontFamily: '"Inter", sans-serif', fontSize: 13, fontWeight: 600, cursor: 'pointer', transition: 'all 120ms ease', display: 'flex', alignItems: 'center', gap: 6, border: `1px solid ${isActive ? 'rgba(52,211,153,0.50)' : 'rgba(52,211,153,0.15)'}`,
+                background: isActive ? 'rgba(52,211,153,0.10)' : 'rgba(255,255,255,0.06)',
+                color: isActive ? '#34d399' : 'rgba(255,255,255,0.60)',
+                backdropFilter: 'blur(18px)', WebkitBackdropFilter: 'blur(18px)',
+              }}
+            >
+              <AreaBadge area={area} size="xs" />
+              <span>{config.name}</span>
+              <span style={{ opacity: 0.55, fontSize: 11 }}>({count})</span>
+            </button>
+          );
+        })}
+      </div>
 
       {/* Selection toolbar */}
       {selectionMode && selectedIds.size > 0 && (
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 flex items-center justify-between">
-          <span className="text-sm font-medium text-blue-900">
+        <div style={{ background: 'rgba(52,211,153,0.08)', border: '1px solid rgba(52,211,153,0.25)', borderRadius: 12, padding: '10px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <span style={{ fontFamily: '"Inter", sans-serif', fontSize: 13, fontWeight: 600, color: '#34d399' }}>
             {selectedIds.size} {selectedIds.size !== 1 ? t('gallery.photosSelected') : t('gallery.photoSelected')}
           </span>
           <div className="flex gap-2">
@@ -1282,13 +1283,13 @@ export default function GalleryPage() {
                   setSelectedIds(new Set(filteredPhotos.map(p => p.id)));
                 }
               }}
-              className="text-sm px-3 py-1 bg-blue-200 text-blue-800 rounded hover:bg-blue-300"
+              style={{ fontSize: 12, padding: '5px 12px', background: 'rgba(52,211,153,0.12)', border: '1px solid rgba(52,211,153,0.30)', borderRadius: 8, color: '#34d399', fontFamily: '"Inter", sans-serif', cursor: 'pointer' }}
             >
               {selectedIds.size === filteredPhotos.length ? t('gallery.deselectAll') : t('gallery.selectAll')}
             </button>
             <button
               onClick={() => setShowBulkDeleteConfirm(true)}
-              className="text-sm px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600"
+              style={{ fontSize: 12, padding: '5px 12px', background: 'rgba(239,68,68,0.80)', border: 'none', borderRadius: 8, color: 'white', fontFamily: '"Inter", sans-serif', cursor: 'pointer' }}
             >
               {t('gallery.deleteSelected')}
             </button>
@@ -1300,14 +1301,14 @@ export default function GalleryPage() {
           PHOTO GRID
           ══════════════════════════════════════════════ */}
       {filteredPhotos.length === 0 ? (
-        <div className="bg-white rounded-2xl p-8 shadow-sm text-center">
+        <div style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(52,211,153,0.15)', borderRadius: 18, padding: '32px 24px', textAlign: 'center', backdropFilter: 'blur(18px) saturate(140%)', WebkitBackdropFilter: 'blur(18px) saturate(140%)' }}>
           <div className="text-4xl mb-3">📷</div>
-          <h2 className="text-base font-bold text-gray-800 mb-1">
+          <h2 style={{ fontFamily: '"Lora", Georgia, serif', fontSize: 18, fontWeight: 500, color: 'rgba(255,255,255,0.90)', marginBottom: 6 }}>
             {selectedArea
               ? t('review.noPhotosInArea')
               : t('review.noPhotos')}
           </h2>
-          <p className="text-sm text-gray-500">
+          <p style={{ fontFamily: '"Inter", sans-serif', fontSize: 13, color: 'rgba(255,255,255,0.45)' }}>
             {t('review.takePhotos')}
           </p>
         </div>
@@ -1317,13 +1318,13 @@ export default function GalleryPage() {
           {timelineGroups.map(([dateKey, datePhotos]) => (
               <div key={dateKey}>
                 <div className="flex items-center gap-3 mb-3 px-1">
-                  <div className="w-2 h-2 rounded-full bg-emerald-500" />
-                  <h3 className="font-bold text-gray-800 text-sm">
+                  <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#34d399', flexShrink: 0 }} />
+                  <h3 style={{ fontFamily: '"Inter", sans-serif', fontWeight: 700, color: 'rgba(255,255,255,0.85)', fontSize: 13 }}>
                     {new Date(dateKey + 'T12:00:00').toLocaleDateString(getIntlLocale(locale), {
                       weekday: 'long', month: 'long', day: 'numeric', year: 'numeric',
                     })}
                   </h3>
-                  <span className="text-xs bg-gray-100 px-2 py-1 rounded-full text-gray-600 font-medium">
+                  <span style={{ fontFamily: '"Inter", sans-serif', fontSize: 11, padding: '3px 9px', background: 'rgba(52,211,153,0.12)', border: '1px solid rgba(52,211,153,0.25)', borderRadius: 999, color: '#34d399', fontWeight: 600 }}>
                     {datePhotos.length}
                   </span>
                 </div>
@@ -1342,18 +1343,20 @@ export default function GalleryPage() {
       {/* Area Picker (for untagged photos) */}
       {showAreaPicker && (
         <div
-          className="fixed inset-0 bg-black/60 z-50 flex items-end justify-center"
+          className="fixed inset-0 z-50 flex items-end justify-center"
+          style={{ background: 'rgba(0,0,0,0.70)' }}
           onClick={() => { setShowAreaPicker(false); setAreaPickerPhotoId(null); }}
         >
           <div
-            className="bg-white rounded-t-2xl w-full max-w-lg pb-[max(1rem,env(safe-area-inset-bottom))] pt-4 px-4"
+            className="w-full max-w-lg"
+            style={{ background: 'rgba(7,18,12,0.97)', border: '1px solid rgba(52,211,153,0.18)', borderRadius: '18px 18px 0 0', backdropFilter: 'blur(24px) saturate(140%)', WebkitBackdropFilter: 'blur(24px) saturate(140%)', paddingTop: 16, paddingLeft: 16, paddingRight: 16, paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }}
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between mb-4">
-              <h3 className="font-bold text-lg">{t('gallery.chooseArea')}</h3>
+              <h3 style={{ fontFamily: '"Lora", serif', fontWeight: 500, fontSize: 18, color: 'rgba(255,255,255,0.95)' }}>{t('gallery.chooseArea')}</h3>
               <button
                 onClick={() => { setShowAreaPicker(false); setAreaPickerPhotoId(null); }}
-                className="p-2 text-gray-500"
+                style={{ padding: 8, color: 'rgba(255,255,255,0.45)', fontSize: 16 }}
               >
                 ✕
               </button>
@@ -1365,10 +1368,13 @@ export default function GalleryPage() {
                   <button
                     key={area}
                     onClick={() => handleAreaSelected(area)}
-                    className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-50 transition-colors text-left"
+                    className="flex items-center gap-3 rounded-xl transition-colors text-left"
+                    style={{ padding: '12px 16px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}
+                    onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = 'rgba(52,211,153,0.08)'; }}
+                    onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = 'rgba(255,255,255,0.04)'; }}
                   >
                     <AreaBadge area={area} size="md" />
-                    <span className="font-medium text-gray-800">{config.name}</span>
+                    <span style={{ fontFamily: '"Inter", sans-serif', fontWeight: 500, color: 'rgba(255,255,255,0.90)', fontSize: 14 }}>{config.name}</span>
                   </button>
                 );
               })}
@@ -1380,18 +1386,20 @@ export default function GalleryPage() {
       {/* Special Events — Custom Event Picker */}
       {showSpecialEventsPicker && (
         <div
-          className="fixed inset-0 bg-black/60 z-50 flex items-end justify-center"
+          className="fixed inset-0 z-50 flex items-end justify-center"
+          style={{ background: 'rgba(0,0,0,0.70)' }}
           onClick={() => { setShowSpecialEventsPicker(false); setSpecialEventsPhotoId(null); setCustomEventName(''); }}
         >
           <div
-            className="bg-white rounded-t-2xl w-full max-w-lg pb-[max(1rem,env(safe-area-inset-bottom))] pt-4 px-4 max-h-[70vh] flex flex-col"
+            className="w-full max-w-lg flex flex-col"
+            style={{ background: 'rgba(7,18,12,0.97)', border: '1px solid rgba(52,211,153,0.18)', borderRadius: '18px 18px 0 0', backdropFilter: 'blur(24px) saturate(140%)', WebkitBackdropFilter: 'blur(24px) saturate(140%)', paddingTop: 16, paddingLeft: 16, paddingRight: 16, paddingBottom: 'max(1rem, env(safe-area-inset-bottom))', maxHeight: '70vh' }}
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between mb-3">
-              <h3 className="font-bold text-lg">🎉 {t('gallery.tagSpecialEvent')}</h3>
+              <h3 style={{ fontFamily: '"Lora", serif', fontWeight: 500, fontSize: 18, color: 'rgba(255,255,255,0.95)' }}>🎉 {t('gallery.tagSpecialEvent')}</h3>
               <button
                 onClick={() => { setShowSpecialEventsPicker(false); setSpecialEventsPhotoId(null); setCustomEventName(''); }}
-                className="p-2 text-gray-500"
+                style={{ padding: 8, color: 'rgba(255,255,255,0.45)', fontSize: 16 }}
               >
                 ✕
               </button>
@@ -1404,7 +1412,8 @@ export default function GalleryPage() {
                 value={customEventName}
                 onChange={(e) => setCustomEventName(e.target.value)}
                 placeholder={t('gallery.eventNamePlaceholder')}
-                className="flex-1 px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-300"
+                className="flex-1 rounded-lg text-sm focus:outline-none"
+                style={{ padding: '8px 12px', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.90)', fontFamily: '"Inter", sans-serif' }}
                 maxLength={200}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' && customEventName.trim()) {
@@ -1416,7 +1425,8 @@ export default function GalleryPage() {
               <button
                 disabled={!customEventName.trim() || creatingEvent}
                 onClick={() => handleSpecialEventTag(customEventName.trim())}
-                className="px-4 py-2 bg-rose-500 text-white rounded-lg text-sm font-medium disabled:opacity-50 whitespace-nowrap"
+                className="rounded-lg text-sm font-medium disabled:opacity-50 whitespace-nowrap"
+                style={{ padding: '8px 16px', background: 'linear-gradient(180deg, #34d399, #10b981)', color: '#06281a', fontFamily: '"Inter", sans-serif', fontWeight: 600 }}
               >
                 {creatingEvent ? '...' : t('gallery.createAndTag')}
               </button>
@@ -1425,7 +1435,7 @@ export default function GalleryPage() {
             {/* Existing special events from this classroom */}
             <div className="overflow-y-auto flex-1 -mx-1">
               {loadingSpecialEvents ? (
-                <div className="text-center py-4 text-sm text-gray-400">{t('common.loading')}</div>
+                <div className="text-center py-4 text-sm" style={{ color: 'rgba(255,255,255,0.35)' }}>{t('common.loading')}</div>
               ) : existingSpecialEvents.length > 0 ? (
                 <div className="space-y-1 px-1">
                   {existingSpecialEvents.map(event => (
@@ -1433,20 +1443,23 @@ export default function GalleryPage() {
                       key={event.id}
                       disabled={creatingEvent}
                       onClick={() => handleSpecialEventTag(event.name)}
-                      className="w-full flex items-center gap-3 px-3 py-3 rounded-xl bg-rose-50 hover:bg-rose-100 transition-colors text-left disabled:opacity-50"
+                      className="w-full flex items-center gap-3 rounded-xl transition-colors text-left disabled:opacity-50"
+                      style={{ padding: '10px 12px', background: 'rgba(245,158,11,0.07)', border: '1px solid rgba(245,158,11,0.15)' }}
+                      onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = 'rgba(245,158,11,0.13)'; }}
+                      onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = 'rgba(245,158,11,0.07)'; }}
                     >
                       <span className="text-lg">🎉</span>
-                      <span className="font-medium text-gray-800 text-sm">{event.name}</span>
+                      <span className="text-sm" style={{ fontFamily: '"Inter", sans-serif', fontWeight: 500, color: 'rgba(255,255,255,0.90)' }}>{event.name}</span>
                     </button>
                   ))}
                 </div>
               ) : (
-                <div className="text-center py-4 text-sm text-gray-400">{t('gallery.noEventsYet')}</div>
+                <div className="text-center py-4 text-sm" style={{ color: 'rgba(255,255,255,0.35)' }}>{t('gallery.noEventsYet')}</div>
               )}
             </div>
 
             {creatingEvent && (
-              <div className="text-center py-2 text-sm text-gray-500 mt-2">{t('gallery.taggingPhoto')}</div>
+              <div className="text-center py-2 mt-2 text-sm" style={{ color: 'rgba(255,255,255,0.45)' }}>{t('gallery.taggingPhoto')}</div>
             )}
           </div>
         </div>
@@ -1610,10 +1623,10 @@ export default function GalleryPage() {
                   <div className="w-6 h-6 rounded-full flex items-center justify-center text-white text-[10px] font-bold flex-shrink-0" style={{ backgroundColor: areaConf.color }}>
                     {areaConf.emoji.length <= 2 ? areaConf.emoji : t(areaConf.labelKey).charAt(0)}
                   </div>
-                  <span className="font-semibold text-gray-800 text-sm truncate flex-1">{displayName}</span>
+                  <span className="text-sm truncate flex-1" style={{ fontFamily: '"Inter", sans-serif', fontWeight: 600, color: 'rgba(255,255,255,0.90)' }}>{displayName}</span>
                   <ReportStatusBadge status={item.status} t={t} />
                 </div>
-                {item.parent_description && <p className="text-gray-600 text-sm leading-relaxed">{item.parent_description}</p>}
+                {item.parent_description && <p className="text-sm leading-relaxed" style={{ color: 'rgba(255,255,255,0.70)', fontFamily: '"Inter", sans-serif' }}>{item.parent_description}</p>}
                 {item.why_it_matters && (
                   <button onClick={() => setPreviewExpandedCard(isExpanded ? null : cardKey)} className="w-full text-left">
                     <div className={`bg-emerald-50 border border-emerald-100 rounded-xl px-3 py-2.5 transition-all ${isExpanded ? '' : 'cursor-pointer hover:bg-emerald-100/50'}`}>
@@ -1626,7 +1639,7 @@ export default function GalleryPage() {
                   </button>
                 )}
                 {!item.parent_description && !item.why_it_matters && (
-                  <p className="text-gray-400 text-xs">
+                  <p className="text-xs" style={{ color: 'rgba(255,255,255,0.35)', fontFamily: '"Inter", sans-serif' }}>
                     {t('gallery.fallbackDescription', { area: getPreviewAreaLabel(item.area).toLowerCase() })}
                   </p>
                 )}
@@ -1636,41 +1649,42 @@ export default function GalleryPage() {
         };
 
         return (
-        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
-          <div className="bg-white w-full max-w-2xl max-h-[90vh] rounded-2xl overflow-hidden flex flex-col">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.75)' }}>
+          <div className="w-full max-w-2xl max-h-[90vh] rounded-2xl overflow-hidden flex flex-col" style={{ background: 'rgba(7,18,12,0.97)', border: '1px solid rgba(52,211,153,0.20)', backdropFilter: 'blur(24px) saturate(140%)', WebkitBackdropFilter: 'blur(24px) saturate(140%)' }}>
             {/* Modal Header */}
-            <div className="p-4 border-b bg-gradient-to-r from-emerald-500 to-teal-600 text-white">
+            <div className="p-4" style={{ borderBottom: '1px solid rgba(52,211,153,0.15)', background: 'linear-gradient(180deg, rgba(39,129,90,0.35) 0%, rgba(10,26,15,0.00) 100%)' }}>
               <div className="flex items-center justify-between mb-3">
                 <div>
-                  <h3 className="font-bold text-lg">📋 {t('reports.reportPreview')}</h3>
-                  <p className="text-emerald-100 text-sm">{t('reports.thisIsWhatParentsSee')}</p>
+                  <h3 style={{ fontFamily: '"Lora", serif', fontWeight: 500, fontSize: 18, color: 'rgba(255,255,255,0.95)', margin: 0 }}>📋 {t('reports.reportPreview')}</h3>
+                  <p style={{ fontFamily: '"Inter", sans-serif', fontSize: 13, color: 'rgba(52,211,153,0.70)', margin: '2px 0 0' }}>{t('reports.thisIsWhatParentsSee')}</p>
                 </div>
-                <button onClick={() => setShowReportPreview(false)} className="text-white/80 hover:text-white text-2xl">×</button>
+                <button onClick={() => setShowReportPreview(false)} style={{ color: 'rgba(255,255,255,0.45)', fontSize: 22, background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}>×</button>
               </div>
               <button
                 onClick={() => setShowPhotoModal(true)}
-                className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg font-medium bg-emerald-600 text-white hover:bg-emerald-700 active:scale-95 transition-all text-sm"
+                className="w-full flex items-center justify-center gap-2 rounded-lg active:scale-95 transition-all"
+                style={{ padding: '8px 12px', background: 'rgba(52,211,153,0.15)', border: '1px solid rgba(52,211,153,0.30)', color: '#34d399', fontFamily: '"Inter", sans-serif', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}
               >
                 ✏️ {t('reports.editPhotos')}
               </button>
             </div>
 
             {/* Modal Body */}
-            <div className="flex-1 overflow-y-auto bg-gradient-to-br from-emerald-50 to-teal-50">
+            <div className="flex-1 overflow-y-auto" style={{ background: 'transparent' }}>
               <div className="p-4 space-y-4">
 
               {/* Report Header */}
-              <div className="bg-white rounded-2xl overflow-hidden shadow-sm">
-                <div className="bg-gradient-to-r from-emerald-600 to-teal-600 text-white px-5 py-5">
+              <div style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(52,211,153,0.15)', borderRadius: 18, overflow: 'hidden' }}>
+                <div style={{ background: 'linear-gradient(135deg, rgba(16,73,45,0.80), rgba(7,18,12,0.60))', padding: '20px' }}>
                   <div className="flex items-center gap-4">
                     <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center text-xl font-bold">
                       {reportChildName.charAt(0)}
                     </div>
                     <div className="flex-1">
-                      <h2 className="text-xl font-bold">
+                      <h2 style={{ fontFamily: '"Lora", serif', fontWeight: 500, fontSize: 20, color: 'rgba(255,255,255,0.95)', margin: '0 0 4px' }}>
                         {t('gallery.learningReport', { name: reportChildName })}
                       </h2>
-                      <p className="text-emerald-100 text-sm">
+                      <p style={{ fontFamily: '"Inter", sans-serif', fontSize: 13, color: 'rgba(52,211,153,0.75)', margin: 0 }}>
                         {reportItems.length - excludedWorks.size} {t('reports.activitiesToShare')}
                         {excludedWorks.size > 0 && (
                           <span className="text-red-200 ml-1">({t('gallery.removedCount', { count: String(excludedWorks.size) })})</span>
@@ -1703,8 +1717,8 @@ export default function GalleryPage() {
                 </div>
 
                 {/* Inspiring progress summary */}
-                <div className="px-5 py-4 border-l-4 border-emerald-400 bg-emerald-50 mx-4 mt-4 mb-2 rounded-r-xl">
-                  <p className="text-gray-700 leading-relaxed text-[15px]">
+                <div style={{ margin: '12px 16px 8px', paddingLeft: 12, borderLeft: '3px solid rgba(52,211,153,0.50)', background: 'rgba(52,211,153,0.06)', borderRadius: '0 12px 12px 0', padding: '12px 12px 12px 16px' }}>
+                  <p style={{ fontFamily: '"Inter", sans-serif', fontSize: 15, color: 'rgba(255,255,255,0.80)', lineHeight: 1.6, margin: 0 }}>
                     {(() => {
                       const areasCount = Object.values(previewWorksByArea).filter(a => a.length > 0).length;
                       const parts = [t('gallery.progressSummary', { name: reportChildName, count: String(includedItems.length) })];
@@ -1722,7 +1736,7 @@ export default function GalleryPage() {
                   return (
                     <div className="px-5 py-3 pb-4">
                       {masteredItems.slice(0, 3).map((item, i) => (
-                        <p key={i} className="text-gray-600 text-sm leading-relaxed mb-1">
+                        <p key={i} className="text-sm leading-relaxed mb-1" style={{ color: 'rgba(255,255,255,0.70)', fontFamily: '"Inter", sans-serif' }}>
                           ⭐ {locale === 'zh' && item.chineseName ? item.chineseName : item.work_name} ({t('gallery.mastered')})
                         </p>
                       ))}
@@ -1736,9 +1750,8 @@ export default function GalleryPage() {
                 <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1">
                   <button
                     onClick={() => setPreviewSelectedArea(null)}
-                    className={`px-3 py-1.5 rounded-lg whitespace-nowrap text-sm font-medium transition-colors border-2 flex-shrink-0 ${
-                      !previewSelectedArea ? 'bg-emerald-500 text-white border-emerald-500' : 'bg-gray-100 text-gray-700 hover:bg-gray-200 border-transparent'
-                    }`}
+                    className="whitespace-nowrap flex-shrink-0"
+                    style={{ padding: '6px 12px', borderRadius: 999, fontFamily: '"Inter", sans-serif', fontSize: 12, fontWeight: 600, cursor: 'pointer', background: !previewSelectedArea ? 'rgba(52,211,153,0.12)' : 'rgba(255,255,255,0.06)', border: `1px solid ${!previewSelectedArea ? 'rgba(52,211,153,0.50)' : 'rgba(52,211,153,0.12)'}`, color: !previewSelectedArea ? '#34d399' : 'rgba(255,255,255,0.55)' }}
                   >
                     {t('common.all')}
                   </button>
@@ -1751,9 +1764,8 @@ export default function GalleryPage() {
                       <button
                         key={area}
                         onClick={() => setPreviewSelectedArea(isActive ? null : area)}
-                        className={`px-3 py-1.5 rounded-lg whitespace-nowrap text-sm font-medium transition-colors flex items-center gap-1.5 border-2 flex-shrink-0 ${
-                          isActive ? 'bg-emerald-100 text-emerald-800 border-emerald-400' : 'bg-gray-100 text-gray-700 hover:bg-gray-200 border-transparent'
-                        }`}
+                        className="whitespace-nowrap flex-shrink-0 flex items-center gap-1.5"
+                        style={{ padding: '6px 12px', borderRadius: 999, fontFamily: '"Inter", sans-serif', fontSize: 12, fontWeight: 600, cursor: 'pointer', background: isActive ? 'rgba(52,211,153,0.10)' : 'rgba(255,255,255,0.06)', border: `1px solid ${isActive ? 'rgba(52,211,153,0.45)' : 'rgba(52,211,153,0.12)'}`, color: isActive ? '#34d399' : 'rgba(255,255,255,0.55)' }}
                       >
                         <div className="w-5 h-5 rounded-full flex items-center justify-center text-white text-[9px]" style={{ backgroundColor: config.color }}>{config.emoji}</div>
                         <span>{t(config.labelKey)}</span>
@@ -1766,9 +1778,9 @@ export default function GalleryPage() {
 
               {/* Work Cards */}
               {previewFiltered.length === 0 ? (
-                <div className="bg-white rounded-2xl p-8 shadow-sm text-center">
+                <div style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(52,211,153,0.12)', borderRadius: 18, padding: '32px 24px', textAlign: 'center' }}>
                   <div className="text-4xl mb-3">📋</div>
-                  <p className="text-gray-500 text-sm">
+                  <p style={{ fontFamily: '"Inter", sans-serif', fontSize: 13, color: 'rgba(255,255,255,0.45)' }}>
                     {previewSelectedArea
                       ? t('gallery.noActivitiesInArea')
                       : t('gallery.noActivitiesThisWeek')}
@@ -1789,8 +1801,8 @@ export default function GalleryPage() {
                         <div className="flex items-center gap-2 mb-3 px-1">
                           <div className="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold" style={{ backgroundColor: config.color }}>{config.emoji}</div>
                           <div className="flex-1 min-w-0">
-                            <p className="font-bold text-gray-800 text-sm">{t(config.labelKey)}</p>
-                            <p className="text-xs text-gray-500">{areaWorks.length === 1 ? t('gallery.activity', { count: '1' }) : t('gallery.activities', { count: String(areaWorks.length) })}</p>
+                            <p className="text-sm" style={{ fontFamily: '"Inter", sans-serif', fontWeight: 700, color: 'rgba(255,255,255,0.90)', margin: 0 }}>{t(config.labelKey)}</p>
+                            <p className="text-xs" style={{ color: 'rgba(255,255,255,0.40)', margin: 0 }}>{areaWorks.length === 1 ? t('gallery.activity', { count: '1' }) : t('gallery.activities', { count: String(areaWorks.length) })}</p>
                           </div>
                         </div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -1806,10 +1818,10 @@ export default function GalleryPage() {
               {!previewSelectedArea && reportUnassigned.length > 0 && (
                 <div className="space-y-3">
                   <div className="flex items-center gap-2 mb-3 px-1">
-                    <div className="w-7 h-7 rounded-full bg-gray-300 flex items-center justify-center text-white text-xs font-bold">📸</div>
+                    <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold" style={{ background: 'rgba(255,255,255,0.15)' }}>📸</div>
                     <div>
-                      <p className="font-bold text-gray-800 text-sm">{t('gallery.moreMoments')}</p>
-                      <p className="text-xs text-gray-500">{reportUnassigned.length} {t('gallery.photos')}</p>
+                      <p className="text-sm" style={{ fontFamily: '"Inter", sans-serif', fontWeight: 700, color: 'rgba(255,255,255,0.90)', margin: 0 }}>{t('gallery.moreMoments')}</p>
+                      <p className="text-xs" style={{ color: 'rgba(255,255,255,0.40)', margin: 0 }}>{reportUnassigned.length} {t('gallery.photos')}</p>
                     </div>
                   </div>
                   <div className="grid grid-cols-2 gap-2">
@@ -1831,14 +1843,14 @@ export default function GalleryPage() {
 
               {/* Recommendations */}
               {includedItems.filter(i => i.status === 'mastered' || i.status === 'practicing').length > 0 && (
-                <div className="bg-amber-50 border border-amber-200 rounded-2xl p-5 shadow-sm">
-                  <h4 className="font-bold text-amber-800 mb-3 flex items-center gap-2 text-sm">
+                <div style={{ background: 'rgba(245,158,11,0.07)', border: '1px solid rgba(245,158,11,0.22)', borderRadius: 18, padding: 20 }}>
+                  <h4 style={{ fontFamily: '"Inter", sans-serif', fontWeight: 600, fontSize: 13, color: '#f59e0b', marginBottom: 10, display: 'flex', alignItems: 'center', gap: 6 }}>
                     💡 {t('gallery.tryThisAtHome')}
                   </h4>
                   <div className="space-y-2">
                     {includedItems.filter(i => i.status === 'mastered' || i.status === 'practicing').slice(0, 3).map((item, i) => (
-                      <p key={i} className="text-amber-900 text-sm leading-relaxed flex items-start gap-2">
-                        <span className="text-amber-500 mt-0.5 flex-shrink-0">•</span>
+                      <p key={i} className="text-sm leading-relaxed flex items-start gap-2" style={{ color: 'rgba(255,255,255,0.75)', fontFamily: '"Inter", sans-serif' }}>
+                        <span className="mt-0.5 flex-shrink-0" style={{ color: '#f59e0b' }}>•</span>
                         <span>
                           {t('gallery.homeRecommendation', { name: reportChildName, work: (locale === 'zh' && item.chineseName) ? item.chineseName : item.work_name })}
                         </span>
@@ -1849,14 +1861,14 @@ export default function GalleryPage() {
               )}
 
               {/* Closing */}
-              <div className="bg-white rounded-2xl p-5 shadow-sm text-center">
-                <p className="text-gray-600 leading-relaxed">
+              <div style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(52,211,153,0.12)', borderRadius: 18, padding: 20, textAlign: 'center' }}>
+                <p style={{ fontFamily: '"Inter", sans-serif', fontSize: 14, color: 'rgba(255,255,255,0.65)', lineHeight: 1.6, margin: 0 }}>
                   {t('gallery.closingMessage', { name: reportChildName })}
                   {' '}🌿
                 </p>
               </div>
 
-              <div className="text-center text-xs text-gray-400 py-2">
+              <div className="text-center py-2" style={{ fontFamily: '"Inter", sans-serif', fontSize: 11, color: 'rgba(255,255,255,0.30)' }}>
                 {new Date().toLocaleDateString(getIntlLocale(locale), { month: 'long', day: 'numeric', year: 'numeric' })}
                 {' · Montree'}
               </div>
@@ -1865,17 +1877,19 @@ export default function GalleryPage() {
             </div>
 
             {/* Modal Footer */}
-            <div className="p-4 border-t bg-gray-50 flex gap-3">
+            <div className="flex gap-3" style={{ padding: 16, borderTop: '1px solid rgba(52,211,153,0.12)', background: 'rgba(7,18,12,0.60)' }}>
               <button
                 onClick={() => setShowReportPreview(false)}
-                className="flex-1 py-3 rounded-xl font-medium bg-gray-200 text-gray-700 hover:bg-gray-300"
+                className="flex-1 rounded-xl"
+                style={{ padding: '12px 0', fontFamily: '"Inter", sans-serif', fontWeight: 600, background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.60)', cursor: 'pointer' }}
               >
                 {t('common.close')}
               </button>
               <button
                 onClick={sendReport}
                 disabled={sending || includedItems.length === 0}
-                className="flex-1 py-3 rounded-xl font-medium bg-emerald-500 text-white hover:bg-emerald-600 disabled:opacity-50"
+                className="flex-1 rounded-xl disabled:opacity-50"
+                style={{ padding: '12px 0', fontFamily: '"Inter", sans-serif', fontWeight: 700, background: 'linear-gradient(180deg, #34d399, #10b981)', color: '#06281a', border: 'none', cursor: 'pointer' }}
               >
                 {sending ? `⏳ ${t('reports.publishing')}` : includedItems.length === 0 ? t('gallery.noActivitiesToSend') : `✅ ${t('reports.publishReport')}`}
               </button>
@@ -1897,85 +1911,85 @@ export default function GalleryPage() {
 
       {/* Last Sent Report Modal */}
       {showLastReport && lastReport && (
-        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
-          <div className="bg-white w-full max-w-2xl max-h-[90vh] rounded-2xl overflow-hidden flex flex-col">
-            <div className="p-4 border-b bg-gradient-to-r from-blue-500 to-indigo-600 text-white">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.75)' }}>
+          <div className="w-full max-w-2xl max-h-[90vh] rounded-2xl overflow-hidden flex flex-col" style={{ background: 'rgba(7,18,12,0.97)', border: '1px solid rgba(52,211,153,0.20)', backdropFilter: 'blur(24px) saturate(140%)', WebkitBackdropFilter: 'blur(24px) saturate(140%)' }}>
+            <div className="p-4" style={{ borderBottom: '1px solid rgba(52,211,153,0.15)', background: 'linear-gradient(180deg, rgba(39,129,90,0.30) 0%, transparent 100%)' }}>
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="font-bold text-lg">📄 {t('reports.lastSentReport')}</h3>
-                  <p className="text-blue-100 text-sm">
+                  <h3 style={{ fontFamily: '"Lora", serif', fontWeight: 500, fontSize: 18, color: 'rgba(255,255,255,0.95)', margin: 0 }}>📄 {t('reports.lastSentReport')}</h3>
+                  <p style={{ fontFamily: '"Inter", sans-serif', fontSize: 13, color: 'rgba(52,211,153,0.70)', margin: '2px 0 0' }}>
                     {t('reports.sentOn')} {new Date(lastReport.sent_at || lastReport.published_at || lastReport.created_at).toLocaleDateString()}
                   </p>
                 </div>
-                <button onClick={() => setShowLastReport(false)} className="text-white/80 hover:text-white text-2xl">×</button>
+                <button onClick={() => setShowLastReport(false)} style={{ color: 'rgba(255,255,255,0.45)', fontSize: 22, background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}>×</button>
               </div>
             </div>
             <div className="flex-1 overflow-y-auto p-4 space-y-4">
               {lastReport.content ? (
                 <>
-                  <div className="text-center pb-4 border-b">
-                    <div className="w-16 h-16 rounded-full bg-blue-100 mx-auto mb-2 flex items-center justify-center text-2xl">
+                  <div className="text-center pb-4" style={{ borderBottom: '1px solid rgba(52,211,153,0.12)' }}>
+                    <div className="w-16 h-16 rounded-full mx-auto mb-2 flex items-center justify-center text-2xl font-bold" style={{ background: 'rgba(52,211,153,0.15)', color: '#34d399', border: '1px solid rgba(52,211,153,0.30)' }}>
                       {lastReport.content.child?.name?.charAt(0) || reportChildName.charAt(0) || '?'}
                     </div>
-                    <h2 className="text-xl font-bold text-gray-800">
-                      {lastReport.content.child?.name || reportChildName}'s {t('reports.progress')}
+                    <h2 style={{ fontFamily: '"Lora", serif', fontWeight: 500, fontSize: 20, color: 'rgba(255,255,255,0.95)', margin: '0 0 4px' }}>
+                      {lastReport.content.child?.name || reportChildName}&apos;s {t('reports.progress')}
                     </h2>
-                    <p className="text-gray-500 text-sm">
+                    <p style={{ fontFamily: '"Inter", sans-serif', fontSize: 13, color: 'rgba(255,255,255,0.45)', margin: 0 }}>
                       {t('reports.weekOf')} {new Date(lastReport.week_start).toLocaleDateString()}
                     </p>
                   </div>
                   {lastReport.content.summary && (
                     <div className="grid grid-cols-3 gap-2">
-                      <div className="bg-gray-50 rounded-xl p-3 text-center">
+                      <div className="rounded-xl p-3 text-center" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.10)' }}>
                         <span className="text-lg">📚</span>
-                        <p className="text-xl font-bold text-gray-700">{lastReport.content.summary.works_this_week || 0}</p>
-                        <p className="text-xs text-gray-500">{t('reports.works')}</p>
+                        <p className="text-xl font-bold" style={{ color: 'rgba(255,255,255,0.90)' }}>{lastReport.content.summary.works_this_week || 0}</p>
+                        <p className="text-xs" style={{ color: 'rgba(255,255,255,0.40)' }}>{t('reports.works')}</p>
                       </div>
-                      <div className="bg-blue-50 rounded-xl p-3 text-center">
+                      <div className="rounded-xl p-3 text-center" style={{ background: 'rgba(96,165,250,0.08)', border: '1px solid rgba(96,165,250,0.15)' }}>
                         <span className="text-lg">📸</span>
-                        <p className="text-xl font-bold text-blue-600">{lastReport.content.summary.photos_this_week || 0}</p>
-                        <p className="text-xs text-gray-500">{t('reports.photos')}</p>
+                        <p className="text-xl font-bold" style={{ color: 'rgba(147,197,253,0.90)' }}>{lastReport.content.summary.photos_this_week || 0}</p>
+                        <p className="text-xs" style={{ color: 'rgba(255,255,255,0.40)' }}>{t('reports.photos')}</p>
                       </div>
-                      <div className="bg-emerald-50 rounded-xl p-3 text-center">
+                      <div className="rounded-xl p-3 text-center" style={{ background: 'rgba(52,211,153,0.08)', border: '1px solid rgba(52,211,153,0.18)' }}>
                         <span className="text-lg">⭐</span>
-                        <p className="text-xl font-bold text-emerald-600">{lastReport.content.summary.overall_progress?.mastered || 0}</p>
-                        <p className="text-xs text-gray-500">{t('reports.mastered')}</p>
+                        <p className="text-xl font-bold" style={{ color: '#34d399' }}>{lastReport.content.summary.overall_progress?.mastered || 0}</p>
+                        <p className="text-xs" style={{ color: 'rgba(255,255,255,0.40)' }}>{t('reports.mastered')}</p>
                       </div>
                     </div>
                   )}
                   {lastReport.content.works && lastReport.content.works.length > 0 && (
                     <div className="space-y-4">
                       {lastReport.content.works.map((work, i) => (
-                        <div key={`work-${work.name || i}`} className="bg-gray-50 rounded-xl p-4 space-y-3">
+                        <div key={`work-${work.name || i}`} className="rounded-xl p-4 space-y-3" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
                           <div className="flex items-center gap-2">
                             <ReportStatusBadge status={work.status} t={t} />
-                            <h4 className="font-bold text-gray-800">{locale === 'zh' && work.chineseName ? work.chineseName : work.name}</h4>
+                            <h4 style={{ fontFamily: '"Inter", sans-serif', fontWeight: 700, color: 'rgba(255,255,255,0.90)', margin: 0 }}>{locale === 'zh' && work.chineseName ? work.chineseName : work.name}</h4>
                           </div>
                           {work.photo_url && (
                             <div className="relative -mx-4 my-3">
                               <button
                                 onClick={() => { setReportLightboxSrc(work.photo_url!); setReportLightboxOpen(true); }}
-                                className="aspect-[4/3] w-full overflow-hidden rounded-lg shadow-lg block cursor-zoom-in"
+                                className="aspect-[4/3] w-full overflow-hidden rounded-lg block cursor-zoom-in"
                               >
                                 <img src={work.photo_url} alt={work.name} loading="lazy" decoding="async" className="w-full h-full object-cover" />
                               </button>
                               {work.photo_caption && (
-                                <p className="mt-2 px-4 text-sm text-gray-600 italic text-center">{work.photo_caption}</p>
+                                <p className="mt-2 px-4 text-sm italic text-center" style={{ color: 'rgba(255,255,255,0.55)' }}>{work.photo_caption}</p>
                               )}
                             </div>
                           )}
                           {work.parent_description ? (
                             <div className="space-y-2">
-                              <p className="text-gray-700 text-sm leading-relaxed">{work.parent_description}</p>
+                              <p className="text-sm leading-relaxed" style={{ color: 'rgba(255,255,255,0.75)' }}>{work.parent_description}</p>
                               {work.why_it_matters && (
-                                <div className="bg-emerald-50 rounded-lg p-3 border border-emerald-100">
-                                  <p className="text-xs font-semibold text-emerald-700 mb-1">💡 {t('reports.whyItMatters')}</p>
-                                  <p className="text-sm text-emerald-800">{work.why_it_matters}</p>
+                                <div className="rounded-lg p-3" style={{ background: 'rgba(52,211,153,0.07)', border: '1px solid rgba(52,211,153,0.18)' }}>
+                                  <p className="text-xs font-semibold mb-1" style={{ color: '#34d399' }}>💡 {t('reports.whyItMatters')}</p>
+                                  <p className="text-sm" style={{ color: 'rgba(255,255,255,0.70)' }}>{work.why_it_matters}</p>
                                 </div>
                               )}
                             </div>
                           ) : (
-                            <p className="text-gray-400 text-sm italic">{t('reports.noDescriptionAvailable')}</p>
+                            <p className="text-sm italic" style={{ color: 'rgba(255,255,255,0.35)' }}>{t('reports.noDescriptionAvailable')}</p>
                           )}
                         </div>
                       ))}
@@ -1983,13 +1997,13 @@ export default function GalleryPage() {
                   )}
                 </>
               ) : (
-                <div className="text-center py-8 text-gray-500">
+                <div className="text-center py-8" style={{ color: 'rgba(255,255,255,0.45)' }}>
                   <p>{t('reports.contentNotAvailable')}</p>
                 </div>
               )}
             </div>
-            <div className="p-4 border-t bg-gray-50">
-              <button onClick={() => setShowLastReport(false)} className="w-full py-3 rounded-xl font-medium bg-gray-200 text-gray-700 hover:bg-gray-300">
+            <div className="p-4" style={{ borderTop: '1px solid rgba(52,211,153,0.12)', background: 'rgba(7,18,12,0.60)' }}>
+              <button onClick={() => setShowLastReport(false)} className="w-full rounded-xl" style={{ padding: '12px 0', fontFamily: '"Inter", sans-serif', fontWeight: 600, background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.60)', cursor: 'pointer' }}>
                 {t('common.close')}
               </button>
             </div>
@@ -2044,16 +2058,18 @@ export default function GalleryPage() {
           onClick={() => setChildTagPhotoId(null)}
         >
           <div
-            className="bg-white rounded-2xl shadow-xl w-full max-w-sm max-h-[70vh] flex flex-col"
+            className="w-full max-w-sm max-h-[70vh] flex flex-col"
+            style={{ background: 'rgba(7,18,12,0.97)', border: '1px solid rgba(52,211,153,0.18)', borderRadius: 18, backdropFilter: 'blur(24px) saturate(140%)', WebkitBackdropFilter: 'blur(24px) saturate(140%)' }}
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
-              <h3 className="font-semibold text-gray-800">
+            <div className="flex items-center justify-between" style={{ padding: '12px 16px', borderBottom: '1px solid rgba(52,211,153,0.12)' }}>
+              <h3 style={{ fontFamily: '"Lora", serif', fontWeight: 500, fontSize: 16, color: 'rgba(255,255,255,0.95)', margin: 0 }}>
                 {'👤 ' + t('gallery.editTaggedChildren')}
               </h3>
               <button
                 onClick={() => setChildTagPhotoId(null)}
-                className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 text-gray-400"
+                className="w-8 h-8 flex items-center justify-center rounded-full"
+                style={{ color: 'rgba(255,255,255,0.45)', background: 'none', border: 'none', cursor: 'pointer' }}
               >
                 ✕
               </button>
@@ -2062,7 +2078,7 @@ export default function GalleryPage() {
             <div className="flex-1 overflow-y-auto p-3">
               {loadingChildTags ? (
                 <div className="flex items-center justify-center py-8">
-                  <div className="w-6 h-6 border-2 border-gray-300 border-t-violet-500 rounded-full animate-spin" />
+                  <div className="w-6 h-6 border-2 rounded-full animate-spin" style={{ borderColor: 'rgba(139,92,246,0.20)', borderTopColor: 'rgba(139,92,246,0.80)' }} />
                 </div>
               ) : (
                 <div className="space-y-1">
@@ -2073,22 +2089,17 @@ export default function GalleryPage() {
                       <button
                         key={child.id}
                         onClick={() => toggleChildTag(child.id)}
-                        className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors ${
-                          isTagged
-                            ? 'bg-violet-50 border border-violet-200'
-                            : 'hover:bg-gray-50 border border-transparent'
-                        }`}
+                        className="w-full flex items-center gap-3 rounded-xl transition-colors"
+                        style={{ padding: '10px 12px', background: isTagged ? 'rgba(139,92,246,0.12)' : 'rgba(255,255,255,0.04)', border: `1px solid ${isTagged ? 'rgba(139,92,246,0.30)' : 'rgba(255,255,255,0.07)'}` }}
                       >
-                        <div className={`w-5 h-5 rounded flex items-center justify-center border-2 transition-colors ${
-                          isTagged ? 'bg-violet-500 border-violet-500 text-white' : 'border-gray-300'
-                        }`}>
+                        <div className="w-5 h-5 rounded flex items-center justify-center border-2 transition-colors" style={{ background: isTagged ? 'rgba(139,92,246,0.80)' : 'transparent', borderColor: isTagged ? 'rgba(139,92,246,0.80)' : 'rgba(255,255,255,0.30)', color: 'white' }}>
                           {isTagged && <span className="text-xs">✓</span>}
                         </div>
-                        <span className={`text-sm font-medium ${isTagged ? 'text-violet-700' : 'text-gray-700'}`}>
+                        <span className="text-sm font-medium" style={{ fontFamily: '"Inter", sans-serif', color: isTagged ? 'rgba(167,139,250,0.95)' : 'rgba(255,255,255,0.80)' }}>
                           {child.name}
                         </span>
                         {isCurrent && (
-                          <span className="ml-auto text-xs text-gray-400">
+                          <span className="ml-auto text-xs" style={{ color: 'rgba(255,255,255,0.35)' }}>
                             {t('gallery.current')}
                           </span>
                         )}
@@ -2099,17 +2110,19 @@ export default function GalleryPage() {
               )}
             </div>
 
-            <div className="px-4 py-3 border-t border-gray-100 flex gap-2">
+            <div className="flex gap-2" style={{ padding: '12px 16px', borderTop: '1px solid rgba(52,211,153,0.12)' }}>
               <button
                 onClick={() => setChildTagPhotoId(null)}
-                className="flex-1 px-4 py-2 text-sm text-gray-600 bg-gray-100 rounded-xl hover:bg-gray-200 transition-colors"
+                className="flex-1 rounded-xl transition-colors"
+                style={{ padding: '8px 16px', fontSize: 13, fontFamily: '"Inter", sans-serif', color: 'rgba(255,255,255,0.60)', background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.10)', cursor: 'pointer' }}
               >
                 {t('common.cancel')}
               </button>
               <button
                 onClick={saveChildTags}
                 disabled={savingChildTags}
-                className="flex-1 px-4 py-2 text-sm text-white bg-violet-500 rounded-xl hover:bg-violet-600 disabled:opacity-50 transition-colors"
+                className="flex-1 rounded-xl disabled:opacity-50 transition-colors"
+                style={{ padding: '8px 16px', fontSize: 13, fontFamily: '"Inter", sans-serif', color: 'white', background: 'rgba(139,92,246,0.75)', border: '1px solid rgba(139,92,246,0.40)', cursor: 'pointer' }}
               >
                 {savingChildTags ? '...' : t('common.save')}
               </button>

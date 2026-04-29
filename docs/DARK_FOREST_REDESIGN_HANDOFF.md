@@ -34,7 +34,7 @@ Design tokens are locked:
 |------|--------|
 | `app/montree/dashboard/photo-audit/page.tsx` | ✅ Full dark forest redesign — commit `4f89c0ad` |
 | `app/montree/dashboard/guru/page.tsx` | ✅ Dark forest redesign — commit `aadd1b71` |
-| `app/montree/dashboard/curriculum/page.tsx` | ⏳ Needs Claude Design bundle |
+| `app/montree/dashboard/curriculum/page.tsx` | ✅ Full dark forest conversion — commit `d86890d9` |
 | `app/montree/dashboard/[childId]/gallery/page.tsx` | ⏳ Needs Claude Design bundle |
 
 ### Photo Audit dark forest details (commit `4f89c0ad`)
@@ -60,6 +60,21 @@ Design tokens are locked:
 ---
 
 ## 🚨 IMMEDIATE NEXT TASK — Child Detail v2 + Next Phase 2 Screen
+
+### Curriculum dark forest details (commit `d86890d9`)
+- Page wrapper: dark `#0a1a0f` + radial emerald glow, `backgroundAttachment: fixed`
+- Sticky sub-header: frosted `rgba(7,18,12,0.95)` + emerald bottom border + `backdropFilter: blur(20px)`
+- H1: Lora 500, 20px; subtitle: Inter, rgba(255,255,255,0.40)
+- Header buttons: Duplicates = dark amber glass `rgba(245,158,11,0.10)`; Browse = dark glass; Add = emerald gradient
+- Area cards: `rgba(255,255,255,0.06)` glass, border `rgba(52,211,153,0.15)`; selected = area-color tinted bg + brighter border with per-area RGB dots (practical_life=236,72,153 pink; sensorial=20,184,166 teal; math=168,85,247 purple; language=74,222,128 green; cultural=249,115,22 orange)
+- Teaching Tools divider: emerald dim `rgba(52,211,153,0.15)` lines; card = dark glass + violet icon background
+- Work list container: dark glass; work rows = `rgba(255,255,255,0.04)` with `rgba(255,255,255,0.08)` border; expanded = slightly brighter; drag-over = emerald ring
+- QuickGuide section: dark amber glass `rgba(245,158,11,0.07)` + `rgba(245,158,11,0.22)` border
+- Teacher notes: dark amber glass; Parent description: dark emerald glass; Why it matters: dark blue glass `rgba(96,165,250,0.07)`
+- Photo upload label: dashed `rgba(52,211,153,0.25)` border
+- Full Details button: emerald gradient (same as other CTAs)
+- Tags: dark glass pill for age, dark amber for control-of-error
+- Empty state: dark glass card with Lora heading + emerald gradient CTA button
 
 ### A. Child Detail v2 (bundle already in hand — `child-detail-bundle (1).md`)
 
@@ -91,11 +106,11 @@ Currently the codebase uses `expandedIndex: string | null` (accordion — one at
 
 ### B. Next Phase 2 Screen — Send to Claude Design
 
-Use this prompt for **Curriculum**:
+Use this prompt for **Gallery**:
 
 ---
 ```
-You are Claude Design. I need a dark forest redesign of the Montree Curriculum screen.
+You are Claude Design. I need a dark forest redesign of the Montree Gallery screen.
 
 DESIGN SYSTEM (locked — do not deviate):
 - bg: #0a1a0f, glow: radial-gradient(ellipse 1100px 900px at 88% 8%, rgba(39,129,90,0.48), transparent 60%)
@@ -105,16 +120,21 @@ DESIGN SYSTEM (locked — do not deviate):
 - Inline styles only — no Tailwind
 - All icons: Lucide React strokeWidth={1.75}
 - Area dots (no emoji): practical_life=rgb(236,72,153) pink, sensorial=rgb(20,184,166) teal, math=rgb(168,85,247) purple, language=rgb(74,222,128) green, cultural=rgb(249,115,22) orange
-
-SCREEN: Curriculum
-The Curriculum screen shows 5 Montessori curriculum area cards. Each area card (Practical Life, Sensorial, Mathematics, Language, Cultural) contains:
-- Area name + colored dot + work count badge
-- A collapsed/expanded state — tap to expand and see a list of works
-- Each work row shows: work name, status badge (Presented/Practicing/Mastered), and a quick-guide button
 - Status badges: Presented = amber rgba(245,158,11,0.18)/#f59e0b, Practicing = emerald rgba(52,211,153,0.15)/#34d399, Mastered = white glass rgba(255,255,255,0.10)/rgba(255,255,255,0.85)
-- A "Teaching Tools" section below the area cards with 3-4 tool buttons (e.g. "Teach the AI", "Batch Describe", "Smart Learning")
 
-Output a self-contained JSX component `Curriculum` showing the full visual design. Show one area expanded and others collapsed. Use realistic Montessori work names as placeholder content. Export design tokens as a `T` object at the top.
+SCREEN: Child Gallery
+The Gallery screen shows a child's confirmed photos in a masonry/grid layout. Key UI elements:
+- Sticky sub-header: child name + back button + photo count
+- Filter bar: tabs for All / by Area (Practical Life, Sensorial, etc.) + a "Select for Report" mode toggle
+- Photo grid: 2-col masonry grid of photo cards. Each card has:
+  - The photo (rounded corners, no border by default)
+  - A colored area-dot badge at top-left corner (e.g. pink for Practical Life)
+  - Work name label at bottom (semi-transparent dark overlay)
+  - In "Select for Report" mode: a checkmark overlay when selected (emerald circle)
+- Empty state: sparkle icon + "No photos yet this week"
+- Bottom action bar (visible in Select mode): "X photos selected · Generate Report" — emerald gradient button
+
+Output a self-contained JSX component `Gallery` showing the full visual design. Show a mix of area photos with 2-3 selected. Export design tokens as a `T` object at the top.
 ```
 ---
 
@@ -131,8 +151,8 @@ Quick Guide, Full Details, Welcome, BulkPasteImport
 | Screen | File | Status |
 |--------|------|--------|
 | Photo Audit | `app/montree/dashboard/photo-audit/page.tsx` | ✅ Done — `4f89c0ad` |
-| Guru Chat | `app/montree/dashboard/guru/page.tsx` | ⏳ Send prompt above to Claude Design |
-| Curriculum | `app/montree/dashboard/curriculum/page.tsx` | ⏳ Needs Claude Design bundle |
+| Guru Chat | `app/montree/dashboard/guru/page.tsx` | ✅ Done — `aadd1b71` |
+| Curriculum | `app/montree/dashboard/curriculum/page.tsx` | ✅ Done — `d86890d9` |
 | Gallery | `app/montree/dashboard/[childId]/gallery/page.tsx` | ⏳ Needs Claude Design bundle |
 
 ---
