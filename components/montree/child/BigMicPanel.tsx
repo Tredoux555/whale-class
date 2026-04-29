@@ -6,18 +6,41 @@
 // Talk to it like a living-room smart speaker — it controls everything:
 // observations, shelf changes, game plan, progress updates.
 // Auto-links observations to photos taken in the last 90s.
+// Dark forest visual treatment — all wiring intact
 
 import { useState, useRef, useCallback, useEffect } from 'react';
+import { Mic, Square, Loader2, Sprout, Send } from 'lucide-react';
 import { useI18n } from '@/lib/montree/i18n';
 import { montreeApi } from '@/lib/montree/api';
 
 interface Props {
   childId: string;
   childName: string;
-  onAction?: () => void; // Parent refresh after tool executes
+  onAction?: () => void;
 }
 
 type Stage = 'idle' | 'recording' | 'transcribing' | 'thinking' | 'done' | 'error';
+
+const T = {
+  card: 'rgba(255,255,255,0.06)',
+  cardBorder: 'rgba(52,211,153,0.20)',
+  cardRadius: 22,
+  blur: 'blur(20px) saturate(140%)',
+  emerald: '#34d399',
+  emeraldDeep: '#10b981',
+  emeraldStrong: 'rgba(52,211,153,0.18)',
+  emeraldSoft: 'rgba(52,211,153,0.10)',
+  red: '#f87171',
+  redSoft: 'rgba(239,68,68,0.18)',
+  redBorder: 'rgba(239,68,68,0.45)',
+  textPrimary: 'rgba(255,255,255,0.95)',
+  textSecondary: 'rgba(255,255,255,0.65)',
+  textMuted: 'rgba(255,255,255,0.40)',
+  inputBg: 'rgba(0,0,0,0.30)',
+  inputBorder: 'rgba(52,211,153,0.20)',
+  serif: '"Lora", Georgia, serif',
+  sans: '"Inter", -apple-system, BlinkMacSystemFont, sans-serif',
+};
 
 export default function BigMicPanel({ childId, childName, onAction }: Props) {
   const { locale, t } = useI18n();
@@ -112,8 +135,6 @@ export default function BigMicPanel({ childId, childName, onAction }: Props) {
         onActionTimerRef.current = setTimeout(() => onAction(), 300);
       }
 
-      // Auto-clear response after 8s so panel returns to idle mic.
-      // Tracked in a ref so a new recording or unmount cancels it.
       if (autoClearRef.current) clearTimeout(autoClearRef.current);
       autoClearRef.current = setTimeout(() => {
         setStage('idle');
@@ -126,11 +147,9 @@ export default function BigMicPanel({ childId, childName, onAction }: Props) {
       setError(t('bigMic.connectionError'));
       setStage('error');
     }
-  }, [childId, locale, onAction]);
+  }, [childId, locale, onAction, t]);
 
   const startRecording = useCallback(async () => {
-    // Cancel any pending auto-clear from a previous response so it
-    // doesn't wipe state mid-recording.
     if (autoClearRef.current) {
       clearTimeout(autoClearRef.current);
       autoClearRef.current = null;
@@ -216,7 +235,7 @@ export default function BigMicPanel({ childId, childName, onAction }: Props) {
       setError(t('bigMic.micAccessDenied'));
       setStage('error');
     }
-  }, [locale, sendToGuru]);
+  }, [sendToGuru, t]);
 
   const stopRecording = useCallback(() => {
     if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
@@ -237,7 +256,6 @@ export default function BigMicPanel({ childId, childName, onAction }: Props) {
     await sendToGuru(text);
   };
 
-  // --- Status text ---
   const statusText = (() => {
     switch (stage) {
       case 'recording': return `${t('bigMic.listening')}... ${formatTime(recordingTime)}`;
@@ -249,70 +267,150 @@ export default function BigMicPanel({ childId, childName, onAction }: Props) {
   })();
 
   const title = t('bigMic.title', { name: childName });
-
   const subtitle = t('bigMic.subtitle');
 
   const micBusy = stage === 'transcribing' || stage === 'thinking';
   const micActive = stage === 'recording';
 
+  // Mic button visual state
+  let micBg: string;
+  let micBorder: string;
+  let micColor: string;
+  let micShadow: string;
+  if (micActive) {
+    micBg = T.redSoft;
+    micBorder = T.redBorder;
+    micColor = T.red;
+    micShadow = '0 8px 24px rgba(239,68,68,0.40)';
+  } else if (micBusy) {
+    micBg = 'rgba(255,255,255,0.08)';
+    micBorder = 'rgba(255,255,255,0.16)';
+    micColor = T.textMuted;
+    micShadow = 'none';
+  } else {
+    micBg = 'linear-gradient(135deg, #34d399, #059669)';
+    micBorder = 'rgba(52,211,153,0.55)';
+    micColor = '#06281a';
+    micShadow = '0 12px 32px rgba(16,185,129,0.40)';
+  }
+
   return (
-    <div className="rounded-3xl bg-gradient-to-br from-emerald-50 via-white to-emerald-50 border-2 border-emerald-200 p-6 shadow-sm">
-      <div className="text-center">
-        {/* Sprout icon */}
-        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-emerald-100 mb-4 text-3xl">
-          🌱
+    <div style={{
+      borderRadius: T.cardRadius,
+      background: 'linear-gradient(135deg, rgba(52,211,153,0.10), rgba(255,255,255,0.04) 60%, rgba(52,211,153,0.08))',
+      border: `1px solid ${T.cardBorder}`,
+      padding: 24,
+      backdropFilter: T.blur,
+      WebkitBackdropFilter: T.blur,
+      boxShadow: '0 12px 32px rgba(0,0,0,0.30)',
+      fontFamily: T.sans,
+      color: T.textPrimary,
+      backgroundImage: 'radial-gradient(ellipse 480px 240px at 50% -10%, rgba(52,211,153,0.18), transparent 60%)',
+    }}>
+      <div style={{ textAlign: 'center' }}>
+        {/* Sprout */}
+        <div style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          width: 60,
+          height: 60,
+          borderRadius: '50%',
+          background: T.emeraldStrong,
+          border: '1px solid rgba(52,211,153,0.35)',
+          color: T.emerald,
+          marginBottom: 16,
+        }}>
+          <Sprout size={26} strokeWidth={1.75} />
         </div>
 
         {/* Title */}
-        <h3 className="text-xl font-bold text-gray-900 mb-2">{title}</h3>
+        <h3 style={{
+          margin: '0 0 6px',
+          fontFamily: T.serif,
+          fontSize: 22,
+          fontWeight: 500,
+          color: T.textPrimary,
+          letterSpacing: -0.4,
+        }}>
+          {title}
+        </h3>
 
         {/* Subtitle */}
-        <p className="text-sm text-gray-600 mb-6 max-w-xs mx-auto leading-relaxed">
+        <p style={{
+          margin: '0 auto 22px',
+          maxWidth: 340,
+          fontFamily: T.sans,
+          fontSize: 13,
+          color: T.textSecondary,
+          lineHeight: 1.55,
+        }}>
           {subtitle}
         </p>
 
-        {/* Big mic button */}
-        <div className="flex items-center justify-center mb-3">
+        {/* Big mic */}
+        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 14 }}>
           <button
             onClick={handleMicTap}
             disabled={micBusy}
-            className={`
-              w-20 h-20 rounded-full shadow-lg flex items-center justify-center transition-all
-              ${micActive
-                ? 'bg-red-500 hover:bg-red-600 animate-pulse'
-                : micBusy
-                  ? 'bg-gray-300 cursor-wait'
-                  : 'bg-emerald-500 hover:bg-emerald-600 active:scale-95'
-              }
-              text-white
-            `}
             title={micActive ? 'Stop' : 'Talk'}
+            style={{
+              width: 84,
+              height: 84,
+              borderRadius: '50%',
+              background: micBg,
+              border: `1px solid ${micBorder}`,
+              color: micColor,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: micBusy ? 'wait' : 'pointer',
+              boxShadow: micShadow,
+              transition: 'all 160ms ease',
+              animation: micActive ? 'bmp-pulse 1.4s ease-in-out infinite' : 'none',
+            }}
           >
             {micBusy ? (
-              <svg className="w-8 h-8 animate-spin" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
-              </svg>
+              <Loader2 size={32} strokeWidth={2} style={{ animation: 'bmp-spin 0.9s linear infinite' }} />
             ) : micActive ? (
-              <svg className="w-7 h-7" fill="currentColor" viewBox="0 0 24 24">
-                <rect x="6" y="6" width="12" height="12" rx="2" />
-              </svg>
+              <Square size={28} strokeWidth={2} fill="currentColor" />
             ) : (
-              <svg className="w-9 h-9" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M19 11a7 7 0 01-14 0m7 7v3m-4 0h8M12 3a3 3 0 00-3 3v5a3 3 0 106 0V6a3 3 0 00-3-3z" />
-              </svg>
+              <Mic size={36} strokeWidth={1.75} />
             )}
+            <style>{`
+              @keyframes bmp-pulse {
+                0%, 100% { box-shadow: 0 8px 24px rgba(239,68,68,0.40); }
+                50% { box-shadow: 0 8px 36px rgba(239,68,68,0.65); }
+              }
+              @keyframes bmp-spin { to { transform: rotate(360deg); } }
+            `}</style>
           </button>
         </div>
 
         {/* Status */}
-        <p className={`text-sm mb-2 ${stage === 'error' ? 'text-red-600' : 'text-gray-500'}`}>
+        <p style={{
+          margin: '0 0 8px',
+          fontFamily: T.sans,
+          fontSize: 13,
+          color: stage === 'error' ? T.red : T.textMuted,
+        }}>
           {statusText}
         </p>
 
-        {/* Response bubble */}
+        {/* Response */}
         {response && (
-          <div className="mt-4 text-sm text-gray-700 leading-relaxed px-2 max-w-sm mx-auto">
+          <div style={{
+            margin: '14px auto 0',
+            maxWidth: 380,
+            padding: '12px 16px',
+            background: 'rgba(255,255,255,0.04)',
+            border: '1px solid rgba(255,255,255,0.08)',
+            borderRadius: 14,
+            fontFamily: T.sans,
+            fontSize: 13,
+            lineHeight: 1.55,
+            color: T.textSecondary,
+          }}>
             {response}
           </div>
         )}
@@ -321,14 +419,31 @@ export default function BigMicPanel({ childId, childName, onAction }: Props) {
         {!showTyping && stage !== 'recording' && !micBusy && !response && (
           <button
             onClick={() => setShowTyping(true)}
-            className="text-sm text-emerald-600 hover:text-emerald-700 underline mt-2"
+            style={{
+              marginTop: 8,
+              background: 'transparent',
+              border: 'none',
+              color: T.emerald,
+              fontFamily: T.sans,
+              fontSize: 13,
+              fontWeight: 600,
+              textDecoration: 'underline',
+              cursor: 'pointer',
+              padding: 0,
+            }}
           >
             {t('bigMic.orTypeInstead')}
           </button>
         )}
 
         {showTyping && (
-          <div className="mt-4 flex gap-2 max-w-sm mx-auto">
+          <div style={{
+            marginTop: 16,
+            display: 'flex',
+            gap: 8,
+            maxWidth: 380,
+            margin: '16px auto 0',
+          }}>
             <input
               type="text"
               value={typedText}
@@ -336,18 +451,45 @@ export default function BigMicPanel({ childId, childName, onAction }: Props) {
               onKeyDown={(e) => { if (e.key === 'Enter') handleTypedSubmit(); }}
               placeholder={t('bigMic.typeMessage')}
               autoFocus
-              className="flex-1 px-3 py-2 text-sm rounded-lg border border-emerald-200 focus:outline-none focus:border-emerald-400"
+              style={{
+                flex: 1,
+                padding: '10px 14px',
+                borderRadius: 12,
+                background: T.inputBg,
+                border: `1px solid ${T.inputBorder}`,
+                color: T.textPrimary,
+                fontFamily: T.sans,
+                fontSize: 13,
+                outline: 'none',
+              }}
             />
             <button
               onClick={handleTypedSubmit}
               disabled={!typedText.trim()}
-              className="px-4 py-2 text-sm rounded-lg bg-emerald-500 text-white hover:bg-emerald-600 disabled:opacity-50"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 6,
+                padding: '8px 16px',
+                borderRadius: 12,
+                background: 'linear-gradient(180deg, #34d399, #10b981)',
+                border: '1px solid rgba(52,211,153,0.55)',
+                color: '#06281a',
+                fontFamily: T.sans,
+                fontSize: 13,
+                fontWeight: 700,
+                cursor: !typedText.trim() ? 'not-allowed' : 'pointer',
+                opacity: !typedText.trim() ? 0.5 : 1,
+                boxShadow: !typedText.trim() ? 'none' : '0 4px 14px rgba(16,185,129,0.30)',
+              }}
             >
+              <Send size={13} strokeWidth={2} />
               {t('bigMic.send')}
             </button>
           </div>
         )}
       </div>
+      <style>{`input::placeholder { color: rgba(255,255,255,0.30); }`}</style>
     </div>
   );
 }
