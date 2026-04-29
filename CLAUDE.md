@@ -181,6 +181,95 @@ GMass campaigns A/C/D are historical. Campaign C sent 335 blank emails (Session 
 
 ---
 
+## RECENT STATUS (Apr 30, 2026)
+
+### ⚡ Session 75 — Dark Forest Phases 3-9+11 + Photo Pipeline Hardening + i18n Auto-Derived SELECTs (Apr 30, 2026)
+
+**Commits pushed: `022bef0f` (i18n refactor). Dark forest + photo pipeline hardening committed earlier in session (see prior commit log).**
+
+**A. Dark forest redesign — Phases 3-9 + 11 COMPLETE.** Phase 10 (Super-admin) deferred — 31 of 32 pages still need conversion. Full list of 50+ converted files in `docs/DARK_FOREST_REDESIGN_HANDOFF.md`. Tokens locked: bg `#0a1a0f`, emerald `#34d399`, glass cards, blur 18px, Lora serif headings, Inter body, lucide icons at strokeWidth={1.75}. Inline styles only. Empty-state dashboard button fixed (was still light Tailwind).
+
+**B. Photo identification pipeline hardening:**
+
+- **`lib/montree/photo-identification/two-pass.ts`** — Pass 1 visual description now capped at 600 chars (was unbounded — Sonnet calls were occasionally outputting 2-3KB descriptions that bloated `montree_media.sonnet_draft` and slowed Pass 2 prompt assembly).
+- **`app/api/montree/photo-identification/process/route.ts`** — Added CRITICAL banner at top documenting `maxDuration=120` and `HAIKU_TRUST_CONFIDENCE=0.85` as load-bearing values. On `haiku_matched` path, persists Haiku raw work name + match_score to `sonnet_draft` JSONB so future audits can see when fuzzy matching diverged from the literal Haiku output. Logs `[PhotoIdentification] raw_vs_matched` when matched name diverges from raw.
+- **`app/api/montree/guru/corrections/route.ts`** — Added `isCoherentNegative()` helper and `MATERIAL_NOUNS` whitelist (wooden, metal, sandpaper, fabric, etc.). Negative-example accumulation in `montree_visual_memory.negative_descriptions[]` now skips fragments that don't reference any material noun (avoids polluting visual memory with "object on tray" or similar generic phrases). Bidirectional reverse-negative (when teacher fixes A→B, the original A's `negative_descriptions[]` gets B's description as a counter-example) gated by the same coherence check.
+- **`lib/montree/photo-identification/context-loader.ts`** — Replaced fixed 50-entry slice with adaptive 50KB char budget + 100-entry hard ceiling. SELECT limit raised 100 → 200. Whale Class has 65+ eligible visual memory entries; the old slice was silently dropping 15 high-quality ones every Pass 2 call. Entries are pre-sorted (description_confidence DESC, updated_at DESC) so the budget naturally fills with highest-quality recent entries. Small classrooms (<50 entries) see no change. `visualMemoryWorkNames` is populated ONLY for works actually in the prompt — Gate A trust ("hasVisualMemoryForMatch") stays logically consistent.
+
+**🚨 Architectural rule:** `maxDuration=120` on `/api/montree/photo-identification/process/route.ts` is load-bearing. Railway's default 15s would kill the two-pass Haiku pipeline mid-flight. Don't remove. Same for `HAIKU_TRUST_CONFIDENCE=0.85` — the Pass 2b discriminator only fires below this threshold, and lowering it would burn Sonnet budget on trivially-confident matches.
+
+**C. i18n efficiency refactor — commit `022bef0f`:**
+
+The codebase had 11 hardcoded `name_es, name_de, …` SELECT lists across the API routes. Adding a 13th language meant editing each one in lockstep. Same problem for `guide_content_<locale>`. Plus a quietly broken bug in `works/guide/route.ts`: any non-`zh`/`es` locale silently fell back to the Spanish translator, caching Spanish content in German/French/Portuguese/Dutch/Italian/Japanese/Korean/Ukrainian/Russian columns.
+
+**Fix — auto-derive everything from `SUPPORTED_LOCALES`:**
+
+| File | Change |
+|------|--------|
+| `lib/montree/i18n/db-helpers.ts` | `LOCALE_COLUMN_SUFFIX` is now auto-derived from `SUPPORTED_LOCALES` (no per-locale entry to add). Two new exported helpers: `buildLocalizedColumnList(baseField)` and `buildLocalizedSelect(baseField)`. |
+| `app/api/montree/works/route.ts` | SELECT uses `${buildLocalizedSelect('name')}`. |
+| `app/api/montree/works/guide/route.ts` | SELECT uses `buildLocalizedColumnList('guide_content')`. The dual `translateGuideToZh` / `translateGuideToEs` functions replaced with one locale-agnostic `translateGuide(guide, locale)` that pulls language name + AMI Montessori terminology from `LOCALE_AI_CONFIG`. **Fixes the silent Spanish-fallback bug.** |
+| `app/api/montree/progress/route.ts` | SELECT uses `buildLocalizedSelect('name')`. |
+| `lib/montree/auto-translate.ts` | `SYSTEM_PROMPTS` renamed to `SYSTEM_PROMPTS_OVERRIDES` and is now optional. Fallback synthesises a sensible prompt from `LOCALE_AI_CONFIG`. |
+| `scripts/check-i18n-completeness.mjs` | NEW. CI-friendly validator. Walks `SUPPORTED_LOCALES`, verifies every locale has translation file + area labels + AI config + intl mapping + display names + short labels + is wired into `context.tsx` + `server.ts`. Plus key-parity check (warns <85%, fails <50%). All 12 locales currently pass at 98–100%. |
+| `scripts/add-language.mjs` | NEW. One-command scaffolder. `node scripts/add-language.mjs <code> "<native-name>" "<short>" "<intl>"` updates `locales.ts`, `area-labels.ts`, `locale-config.ts`, `context.tsx`, `server.ts`, and creates an English placeholder `<code>.ts` ready for a translation pass. |
+
+**"Drop a language in" workflow now:**
+1. `node scripts/add-language.mjs sv "Svenska" "SV" "sv-SE"`
+2. Translate `lib/montree/i18n/sv.ts` (Haiku batch — see `scripts/generate-fr.mjs` pattern)
+3. Translate `AREA_LABELS_SV` + `LOCALE_AI_CONFIG.sv` TODOs
+4. DB migration: add `name_sv`, `parent_description_sv`, `why_it_matters_sv`, `guide_content_sv` columns
+5. Batch-translate curriculum (see `scripts/batch-translate-guides-es.js` pattern)
+6. `node scripts/check-i18n-completeness.mjs` — verify
+
+**Zero edits to API SELECT lists.** That was the goal.
+
+**🚨 Known remaining gaps (NOT in scope this session, flagged for future PR):**
+
+The following routes still SELECT only `_zh` columns and assume `locale !== 'en'` means Chinese — parent narratives for Spanish/German/etc. silently render in English (or Chinese):
+- `app/api/montree/reports/weekly-wrap/route.ts`
+- `app/api/montree/reports/preview/route.ts`
+- `app/api/montree/reports/send/route.ts`
+- `app/api/montree/reports/batch-narratives/route.ts`
+- `app/api/montree/reports/weekly-wrap/review/route.ts`
+- `app/api/montree/weekly-admin-docs/auto-fill/route.ts`
+
+Fixing requires per-locale parent description maps + per-locale narrative templates. Significant scope — plan a dedicated session.
+
+**D. DNS / Montree-system check (parallel agent, code-side audit):**
+
+User reported `DNS_PROBE_FINISHED_NXDOMAIN` on `montree.xyz` with Astrill VPN on (Germany Frankfurt 10G). Agent verified the deployment is clean from the codebase side: `next.config.mjs` has the correct apex `montree.xyz → /montree` 302 redirect, `railway.json` has `healthcheckPath: '/api/health'`, no stale `teacherpotato.xyz` references, no basePath/assetPrefix/rewrite that would break the apex. Recent commits to deployment-affecting files are clean.
+
+**Verdict: code-side OK. Issue is network-layer (Astrill DNS filtering or TTL caching).** Recovery procedure for user:
+1. Visit `https://montree.xyz/api/health` from cellular (no VPN) → if 200, confirms VPN is the cause
+2. If still fails: check Railway dashboard for unlinked custom domain or stalled deploy
+3. Disconnect VPN, clear Chrome DNS cache (`chrome://net-internals/#dns`), unregister service worker
+
+**Files changed (Session 75 — i18n only, dark forest + photo committed earlier):**
+- `lib/montree/i18n/db-helpers.ts` — auto-derived `LOCALE_COLUMN_SUFFIX` + new helpers
+- `app/api/montree/works/route.ts` — uses `buildLocalizedSelect('name')`
+- `app/api/montree/works/guide/route.ts` — unified translator, helper-driven SELECT
+- `app/api/montree/progress/route.ts` — uses `buildLocalizedSelect('name')`
+- `lib/montree/auto-translate.ts` — `SYSTEM_PROMPTS_OVERRIDES` optional + LOCALE_AI_CONFIG fallback
+- `scripts/check-i18n-completeness.mjs` — NEW validator
+- `scripts/add-language.mjs` — NEW scaffolder
+
+**Handoff doc:** `docs/I18N_REFACTOR_HANDOFF.md` — full file-by-file change list, "drop a language in" workflow, known gaps, verification done, next-session priorities.
+
+**Next session priorities:**
+1. **🚨 Deploy verification** — Verify production after Railway deploys `022bef0f`. Visit progress page, works picker, guide modals across en/zh/es minimum.
+2. **🚨 Deploy Session 74 commits** — `2e94aadc`, `0dfbdd04`, `c8b46ad6` (replan Stage 0, photo-audit crash, streaming event fix) still need Railway relaunch.
+3. **Per-locale parent narratives** — Tackle the 6 Chinese-only routes listed above. This is the next big multilingual gap.
+4. **Phase 10 — Super-admin dark forest** — 31 of 32 pages still need conversion. Deferred from this session.
+5. **Disable `tell_guru_onboarding` for Whale Class** — `UPDATE montree_school_features SET enabled=false WHERE school_id='c6280fae-567c-45ed-ad4d-934eae79aabc' AND feature_key='tell_guru_onboarding';`
+6. **Send the 3 hot lead Gmail drafts** — Copenhagen (`r5875732429643975187`), Paint Pots UK (`r-8134738077301193428`), Ardtona House UK (`r6746566790609932769`).
+7. **FAMM Argentina follow-up** — past Apr 28 deadline. Draft now.
+8. **Welcome Тамі** in Ukrainian — first organic Ukrainian signup.
+9. **Fix Resend domain** — verify montree.xyz in Resend, update `RESEND_FROM_EMAIL` in Railway.
+10. **Gate the 6 Sonnet-hardcoded routes** with `resolveReportModel()`.
+
+---
+
 ## RECENT STATUS (Apr 29, 2026)
 
 ### ⚡ Session 74 — Replan Pipeline Fix + Photo-Audit Crash Fix + Language Monthly Summary (Apr 29, 2026)
