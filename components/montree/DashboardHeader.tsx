@@ -17,7 +17,7 @@ import { useI18n } from '@/lib/montree/i18n';
 import { montreeApi } from '@/lib/montree/api';
 import InboxButton from './InboxButton';
 import LanguageToggle from './LanguageToggle';
-import MontreeLogo from './MontreeLogo';
+import MontreeLogo from './MonteeLogo';
 import { toast } from 'sonner';
 import { useFeatures } from '@/hooks/useFeatures';
 
