@@ -2,7 +2,7 @@
 // Persistent top header shown on ALL dashboard screens — dark forest aesthetic
 'use client';
 
-import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo, memo } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import {
@@ -139,7 +139,7 @@ const MENU_PANEL_STYLE: React.CSSProperties = {
 };
 
 // ── Main component ────────────────────────────────────────────────────────────
-export default function DashboardHeader() {
+function DashboardHeader() {
   const router   = useRouter();
   const pathname = usePathname();
   const { t, locale } = useI18n();
@@ -772,3 +772,7 @@ export default function DashboardHeader() {
     </>
   );
 }
+
+// memo() so the header doesn't re-render on every parent state change.
+// It takes no props, so shallow-equals always returns true.
+export default memo(DashboardHeader);

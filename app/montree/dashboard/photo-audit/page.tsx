@@ -16,13 +16,25 @@ import { getThumbnailUrl, getThumbnailSrcSet } from '@/lib/montree/media/proxy-u
 import { drainStuckQueue } from '@/lib/montree/offline';
 
 // Tier 3 perf: code-split heavy modals/tabs (~4k lines) — only downloaded when actually rendered.
-const WorkWheelPicker = dynamic(() => import('@/components/montree/WorkWheelPicker'), { ssr: false });
-const PhotoCropModal = dynamic(() => import('@/components/montree/media/PhotoCropModal'), { ssr: false });
-const WeeklyWrapTab = dynamic(() => import('@/components/montree/reports/WeeklyWrapTab'), { ssr: false });
-const WeeklyAdminTab = dynamic(() => import('@/components/montree/reports/WeeklyAdminTab'), { ssr: false });
-const ThisIsSheet = dynamic(() => import('@/components/montree/photo-audit/ThisIsSheet'), { ssr: false });
-const TellAiSheet = dynamic(() => import('@/components/montree/photo-audit/TellAiSheet'), { ssr: false });
-const VoiceDictate = dynamic(() => import('@/components/montree/voice/VoiceDictate'), { ssr: false });
+// `loading` fallback prevents the blank-gap flash users saw while chunks downloaded.
+const dynamicLoadingFallback = () => (
+  <div style={{
+    minHeight: 220,
+    display: 'grid',
+    placeItems: 'center',
+    color: 'rgba(255,255,255,0.55)',
+    fontSize: 13,
+    letterSpacing: 0.3,
+  }}>Loading…</div>
+);
+const dynamicOpts = { ssr: false, loading: dynamicLoadingFallback };
+const WorkWheelPicker = dynamic(() => import('@/components/montree/WorkWheelPicker'), dynamicOpts);
+const PhotoCropModal = dynamic(() => import('@/components/montree/media/PhotoCropModal'), dynamicOpts);
+const WeeklyWrapTab = dynamic(() => import('@/components/montree/reports/WeeklyWrapTab'), dynamicOpts);
+const WeeklyAdminTab = dynamic(() => import('@/components/montree/reports/WeeklyAdminTab'), dynamicOpts);
+const ThisIsSheet = dynamic(() => import('@/components/montree/photo-audit/ThisIsSheet'), dynamicOpts);
+const TellAiSheet = dynamic(() => import('@/components/montree/photo-audit/TellAiSheet'), dynamicOpts);
+const VoiceDictate = dynamic(() => import('@/components/montree/voice/VoiceDictate'), dynamicOpts);
 
 const AREAS = [
   { key: 'practical_life', label: 'Practical Life', color: '#10b981' },
