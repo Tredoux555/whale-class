@@ -37,6 +37,13 @@ export interface EnhanceInput {
   week_end: string;
   translations: Record<string, WorkTranslation>;
   locale?: string;
+  /**
+   * Optional model override. When the caller has resolved the school's AI tier
+   * (Free/Core/Premium), pass `aiTier.model` here so Core schools use Haiku
+   * instead of Sonnet. If omitted, falls back to AI_MODEL (Sonnet) for
+   * backward compatibility.
+   */
+  model?: string;
 }
 
 export interface EnhanceResult {
@@ -114,9 +121,10 @@ export async function enhanceReportWithAI(input: EnhanceInput): Promise<EnhanceR
     const systemPrompt = buildSystemPrompt(input.locale);
     const userPrompt = buildUserPrompt(input);
 
-    // Call Claude API
+    // Call Claude API. Model is tier-aware when the caller passes one in.
+    const effectiveModel = input.model || AI_MODEL;
     const response = await anthropic.messages.create({
-      model: AI_MODEL,
+      model: effectiveModel,
       max_tokens: MAX_TOKENS,
       system: systemPrompt,
       messages: [
@@ -150,8 +158,9 @@ export async function enhanceReportWithAI(input: EnhanceInput): Promise<EnhanceR
       warnings.push(`AI enhanced ${parseResult.data.highlights.length} of ${input.report.highlights.length} activities`);
     }
 
-    // Merge AI content with existing report
-    const enhancedContent = mergeWithOriginal(input.report, parseResult.data);
+    // Merge AI content with existing report. Pass through the effective model
+    // so the report's `ai_model` metadata reflects the actual model used.
+    const enhancedContent = mergeWithOriginal(input.report, parseResult.data, effectiveModel);
 
     const timing = Date.now() - startTime;
 
@@ -382,8 +391,9 @@ function parseAIResponse(responseText: string, childName: string): ParseResult {
 // ============================================
 
 function mergeWithOriginal(
-  original: ReportContent, 
-  aiOutput: AIOutputStructure
+  original: ReportContent,
+  aiOutput: AIOutputStructure,
+  modelUsed: string = AI_MODEL
 ): ReportContent {
   // Create a map of AI highlights by media_id
   const aiHighlightsMap = new Map(
@@ -414,7 +424,7 @@ function mergeWithOriginal(
     parent_message: aiOutput.parent_message,
     milestones: aiOutput.milestones.length > 0 ? aiOutput.milestones : original.milestones,
     generated_with_ai: true,
-    ai_model: AI_MODEL,
+    ai_model: modelUsed,
     generation_timestamp: new Date().toISOString(),
   };
 }

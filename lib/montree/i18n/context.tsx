@@ -6,6 +6,7 @@ import {
   useState,
   useEffect,
   useCallback,
+  useMemo,
   ReactNode,
 } from 'react';
 import { en, type TranslationKey } from './en';
@@ -92,8 +93,12 @@ export function I18nProvider({ children }: { children: ReactNode }) {
     [locale],
   );
 
+  // Memoized so consumers only re-render when locale (or t/setLocale) actually changes,
+  // not on every parent render. With 173 files importing via the barrel, this matters.
+  const value = useMemo(() => ({ locale, setLocale, t }), [locale, setLocale, t]);
+
   return (
-    <I18nContext.Provider value={{ locale, setLocale, t }}>
+    <I18nContext.Provider value={value}>
       {children}
     </I18nContext.Provider>
   );
