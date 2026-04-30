@@ -8,7 +8,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import dynamic from 'next/dynamic';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Images, ChevronDown, ClipboardList } from 'lucide-react';
+import { Images, ChevronDown, ClipboardList, Camera, Mic, Square } from 'lucide-react';
 import { toast, Toaster } from 'sonner';
 import { getSession, isHomeschoolParent } from '@/lib/montree/auth';
 import { AREA_CONFIG } from '@/lib/montree/types';
@@ -151,6 +151,69 @@ export default function WeekPage() {
 
   // CRITICAL: Block refetch while saving to prevent race conditions
   const [isSaving, setIsSaving] = useState(false);
+
+  // Quick voice note — auto-tagged to this child (no child picker needed)
+  const [isRecording, setIsRecording] = useState(false);
+  const [recordingSeconds, setRecordingSeconds] = useState(0);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const chunksRef = useRef<Blob[]>([]);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const startRecording = useCallback(async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const recorder = new MediaRecorder(stream, {
+        mimeType: MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm' : 'audio/mp4',
+      });
+      chunksRef.current = [];
+      recorder.ondataavailable = (e) => { if (e.data.size > 0) chunksRef.current.push(e.data); };
+      recorder.onstop = () => {
+        stream.getTracks().forEach(tr => tr.stop());
+        const blob = new Blob(chunksRef.current, { type: recorder.mimeType });
+        setIsRecording(false);
+        if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null; }
+        // Auto-save tagged to this child
+        toast.success(t('dashboard.savingMessage'), { duration: 1500 });
+        (async () => {
+          try {
+            const formData = new FormData();
+            formData.append('audio', blob, 'voice-note.webm');
+            const transcribeRes = await montreeApi('/api/montree/guru/transcribe', { method: 'POST', body: formData });
+            if (!transcribeRes.ok) throw new Error(`Transcription failed: ${transcribeRes.status}`);
+            const transcribeData = await transcribeRes.json();
+            const text = transcribeData.text || transcribeData.transcription || '';
+            if (!text.trim()) { toast.error(t('dashboard.saveFailed')); return; }
+            await montreeApi('/api/montree/teacher-notes', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                classroom_id: session?.classroom?.id,
+                content: text.trim(),
+                transcription: text.trim(),
+                child_id: childId,
+              }),
+            });
+            toast.success(t('dashboard.noteSaved'), { duration: 2000 });
+          } catch (err) {
+            console.error('[VoiceNote] Save failed:', err);
+            toast.error(t('dashboard.saveFailed'));
+          }
+        })();
+      };
+      mediaRecorderRef.current = recorder;
+      recorder.start();
+      setIsRecording(true);
+      setRecordingSeconds(0);
+      timerRef.current = setInterval(() => setRecordingSeconds(s => s + 1), 1000);
+    } catch {
+      toast.error(t('dashboard.micAccessError'));
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [childId, session?.classroom?.id, locale]);
+
+  const stopRecording = useCallback(() => {
+    if (mediaRecorderRef.current?.state === 'recording') mediaRecorderRef.current.stop();
+  }, []);
 
   // Wheel picker state
   const [wheelPickerOpen, setWheelPickerOpen] = useState(false);
@@ -652,6 +715,14 @@ export default function WeekPage() {
     return <WeekViewSkeleton />;
   }
 
+  const iconBtnBase: React.CSSProperties = {
+    display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+    width: 34, height: 34, borderRadius: 10, border: '1px solid rgba(52,211,153,0.15)',
+    background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.75)',
+    cursor: 'pointer', textDecoration: 'none',
+    transition: 'background 140ms ease, color 140ms ease',
+  };
+
   const btnBase: React.CSSProperties = {
     display: 'inline-flex', alignItems: 'center', gap: 6,
     padding: '7px 12px', borderRadius: 10, border: '1px solid rgba(52,211,153,0.15)',
@@ -708,9 +779,37 @@ export default function WeekPage() {
         </div>
       </div>
 
-      {/* Action bar — Gallery (teacher only) */}
+      {/* Action bar — Camera, Mic, Gallery (teacher only) */}
       {!isHomeschoolParent(session) && (
         <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 8 }}>
+          {/* Camera — auto-tags this child */}
+          <Link
+            href={`/montree/dashboard/capture?child=${childId}`}
+            style={iconBtnBase}
+            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(52,211,153,0.12)'; (e.currentTarget as HTMLElement).style.color = '#34d399'; }}
+            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.06)'; (e.currentTarget as HTMLElement).style.color = 'rgba(255,255,255,0.75)'; }}
+            title={t('capture.takePhoto')}
+          >
+            <Camera size={16} strokeWidth={1.75} />
+          </Link>
+
+          {/* Mic — auto-tagged voice note */}
+          <button
+            onClick={isRecording ? stopRecording : startRecording}
+            style={{
+              ...iconBtnBase,
+              ...(isRecording ? { background: 'rgba(239,68,68,0.2)', borderColor: 'rgba(239,68,68,0.4)', color: '#f87171' } : {}),
+            }}
+            onMouseEnter={e => { if (!isRecording) { (e.currentTarget as HTMLElement).style.background = 'rgba(52,211,153,0.12)'; (e.currentTarget as HTMLElement).style.color = '#34d399'; } }}
+            onMouseLeave={e => { if (!isRecording) { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.06)'; (e.currentTarget as HTMLElement).style.color = 'rgba(255,255,255,0.75)'; } }}
+            title={isRecording ? `${t('dashboard.stopRecording')} (${recordingSeconds}s)` : t('dashboard.quickVoiceNote')}
+          >
+            {isRecording
+              ? <Square size={14} strokeWidth={1.75} fill="currentColor" />
+              : <Mic size={16} strokeWidth={1.75} />}
+          </button>
+
+          {/* Gallery */}
           <Link
             href={`/montree/dashboard/${childId}/gallery`}
             style={btnBase}
@@ -720,6 +819,27 @@ export default function WeekPage() {
             <Images size={15} strokeWidth={1.75} />
             {t('childPage.gallery')}
           </Link>
+        </div>
+      )}
+
+      {/* Recording indicator */}
+      {isRecording && (
+        <div style={{
+          background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.3)',
+          borderRadius: 10, padding: '8px 14px', display: 'flex', alignItems: 'center',
+          justifyContent: 'center', gap: 8, fontSize: 13, color: '#f87171',
+          fontFamily: "'Inter', -apple-system, system-ui, sans-serif",
+        }}>
+          <span style={{
+            width: 8, height: 8, borderRadius: '50%', background: '#f87171',
+            animation: 'montree-pulse-ring 1.4s ease-out infinite',
+          }} />
+          <span>{t('dashboard.recording')} {recordingSeconds}s</span>
+          <button onClick={stopRecording} style={{
+            marginLeft: 4, padding: '2px 10px', background: 'rgba(248,113,113,0.2)',
+            border: '1px solid rgba(248,113,113,0.3)', borderRadius: 6, color: '#f87171',
+            fontSize: 12, cursor: 'pointer', fontFamily: "'Inter', -apple-system, system-ui, sans-serif",
+          }}>{t('dashboard.done')}</button>
         </div>
       )}
 
