@@ -1,0 +1,45 @@
+#!/usr/bin/env bash
+# Pre-commit hook — blocks commits that introduce i18n drift.
+#
+# Triggers ONLY when files in lib/montree/i18n/ are part of the commit, so it
+# costs nothing on unrelated commits. When triggered, it runs the strict
+# completeness check; if en.ts has gained keys not yet present in every other
+# language file, the commit is blocked and the dev is told how to auto-fill.
+#
+# Install once per machine:
+#   npm run hooks:install
+# (which runs `git config core.hooksPath .githooks`)
+#
+# Bypass in emergencies: git commit --no-verify
+
+set -e
+
+# Only fire if i18n files are touching this commit.
+if ! git diff --cached --name-only | grep -qE '^lib/montree/i18n/'; then
+  exit 0
+fi
+
+echo "[pre-commit] i18n files staged — running strict completeness check…"
+
+if ! node scripts/check-i18n-completeness.mjs --strict; then
+  cat <<'EOF'
+
+✖ i18n drift detected.
+
+en.ts has translation keys that are missing in one or more other language
+files. Production users of those languages will see English fallback strings.
+
+To fix:
+  ANTHROPIC_API_KEY=... npm run i18n:fill-ui
+  git add lib/montree/i18n/*.ts
+  git commit --amend --no-edit
+
+Or, to skip this check (NOT recommended):
+  git commit --no-verify
+
+EOF
+  exit 1
+fi
+
+echo "[pre-commit] ✓ all 12 locales in sync"
+exit 0
