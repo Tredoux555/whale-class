@@ -183,9 +183,101 @@ GMass campaigns A/C/D are historical. Campaign C sent 335 blank emails (Session 
 
 ## RECENT STATUS (Apr 30, 2026)
 
+### ⚡ Session 78 — Curriculum Translation Library + Apply-On-Seed Pipeline + Frontend Locale Fix (Apr 30, 2026)
+
+**Two commits pushed to main: `37cd5fa4` (pipeline build, 16 files, +1,296 lines), `e5b50539` (CurriculumWorkList locale fix, 1 file).**
+
+**The problem:** Schools were signing up in their language but the curriculum data was English-only. UI strings translated correctly across all 12 locales (Session 77 confirmed 100% key parity) but `montree_classroom_curriculum_works` rows had no locale columns populated for new classrooms. Whale Class had every translation paid-for and sitting in its own classroom rows — trapped, unreadable to any other school. Trial signup never called any translation pipeline. Principal setup only translated 4 of 11 non-English locales because `ENABLED_LOCALES = ['zh','es','uk','ru']` while `SUPPORTED_LOCALES` had 12.
+
+**The architecture (commit `37cd5fa4`):**
+
+A global translation library keyed by `(work_key, locale)` + an apply-on-seed pipeline. The Whale Class translations get lifted into a shared library every classroom can read from for free. New classroom seeding copies from the library at seed time. No AI calls per new school for the standard 329 works. Custom works fan out via `translateAllLocales()` to all 11 non-English locales at ~$0.011/work.
+
+| Layer | What | File |
+|------|------|------|
+| Global library | Translation lookup table, ~3,948 rows (329 works × 12 locales) | `migrations/180_create_curriculum_translations_global.sql` |
+| School locales | `primary_locale` + `secondary_locales[]` on `montree_schools` (CHECK-constrained) | `migrations/181_add_school_primary_locale.sql` |
+| Postgres function | `apply_global_translations(classroom_id)` — per-locale UPDATE FROM JOIN with COALESCE so it preserves teacher edits. SECURITY DEFINER. | `migrations/182_apply_global_translations_function.sql` |
+| TypeScript wrapper | Thin RPC wrapper, fire-and-forget pattern | `lib/montree/curriculum/apply-global-translations.ts` |
+| School locale resolver | `getSchoolLocales()` — scaffolded for future report routing, NOT used for custom-work translation | `lib/montree/i18n/school-locale.ts` |
+| One-time extraction | Whale Class → global library, filters `is_custom = false` AND `work_key NOT LIKE 'custom_%'` | `scripts/seed-global-translations.mjs` |
+| Backfill all | Runs RPC against every existing classroom, idempotent | `scripts/backfill-all-classroom-translations.mjs` |
+
+**`ENABLED_LOCALES` auto-derived from `SUPPORTED_LOCALES`** in `lib/montree/locales-config.ts`. Was hand-edited list of 4 (`zh,es,uk,ru`), now `SUPPORTED_LOCALES.filter(l => l !== DEFAULT_LOCALE)` = 11. **Adding a 13th language no longer requires editing this file.** Drop the locale into `SUPPORTED_LOCALES` and every translation pipeline picks it up.
+
+**6 seeding routes wired to call `applyGlobalTranslations()` fire-and-forget after curriculum seed:**
+- `app/api/montree/try/instant/route.ts` — THE BROKEN PATH, now fixed. Also captures locale via new `resolvePrimaryLocale(req, body)` helper (body field → Accept-Language → 'en') and writes to `school.primary_locale`.
+- `app/montree/try/page.tsx` — sends `locale: useI18n().locale` in trial signup POST body.
+- `app/api/montree/principal/setup/route.ts` and `setup-stream/route.ts` — global translation copy fires BEFORE the existing `batchTranslateAllLocales()` (which becomes a safety net for any locale gaps in the global table).
+- `app/api/montree/admin/reseed-curriculum/route.ts`, `backfill-curriculum/route.ts`, `backfill-guides/route.ts` — apply call after the existing logic.
+
+**Live deployment sequence (this session, in order, all confirmed working):**
+1. Migration 180 in Supabase SQL Editor → table created, 8 columns verified.
+2. Migration 181 in Supabase SQL Editor → school columns added, Whale Class set bilingual `en+zh`.
+3. Manual `UPDATE`s for two existing schools' `primary_locale`:
+   - `1b463b14-...` (Школа Монтессорі / Tamі) → `uk`
+   - `de76832d-...` (Chen school) → `de`
+4. Migration 182 in Supabase SQL Editor → function created.
+5. **Bonus column-add ALTER TABLE in Supabase** (was missing from the original plan but caught at function-test time) — added 36 missing locale columns on `montree_classroom_curriculum_works`. The 9 newer locales (de/fr/pt/nl/it/ja/ko/uk/ru) had `name_*` and `guide_content_*` columns from prior sessions but were missing `parent_description_*` and `why_it_matters_*`. Without this, `apply_global_translations()` errored at first reference. SQL ran idempotently with `ADD COLUMN IF NOT EXISTS`.
+6. `node scripts/seed-global-translations.mjs` → upserted 3,948 rows. Filtered out 90 custom works correctly (419 - 329 = 90).
+7. `node scripts/backfill-all-classroom-translations.mjs` → 26,983 cells across 8 classrooms (Whale Class: 3,619, six × "My Classroom": 3,619 each, Blue Jay: 1,650 — Blue Jay had partial pre-existing translations preserved by COALESCE).
+8. Code deployed to Railway via auto-deploy on `37cd5fa4`.
+
+**The frontend bug + hot fix (commit `e5b50539`):**
+
+After deployment, Miss Chen 2 still showed English Cylinder Block names with the Spanish UI. DB query confirmed `name_es: "Bloque de Cilindros 1"` was correctly populated. Root cause: `components/montree/curriculum/CurriculumWorkList.tsx` hardcoded `locale === 'zh' ? work.name_chinese : work.name` in three places (work name, parent description, why it matters). Fixed to use `getLocalizedWorkName()` and `getLocalizedField()` from `db-helpers.ts`. After Railway redeploy + hard refresh, Spanish work names rendered correctly. **Live verified.**
+
+**🚨 ARCHITECTURAL NOTE FOR FUTURE SESSIONS — TYPE B SWEEP NEEDED:**
+
+Session 68's multilingual audit classified DB-column-read ternaries as "TYPE B — leave alone." That was correct when only Chinese existed as a non-English locale. With 11 non-English locales, **every TYPE B `=== 'zh'` read leaves English visible for 10 of those locales.** `CurriculumWorkList.tsx` is fixed; other components likely have the same bug:
+- `components/montree/child/FocusWorksSection.tsx`
+- `components/montree/photo-audit/ThisIsSheet.tsx`
+- `components/montree/curriculum/EditWorkModal.tsx`
+- `components/montree/super-admin/*`
+- Game plan card, weekly wrap parent narratives, anywhere a work name renders.
+
+Fix pattern is mechanical: `import { getLocalizedWorkName, getLocalizedField }` then replace ternaries with helper calls. A grep-driven sweep would be one focused session.
+
+**What's still NOT translated for non-Chinese locales (deferred):**
+
+| Field | Why English | Fix scope |
+|------|-------------|-----------|
+| `quick_guide` (inline curriculum row) | Only `quick_guide_zh` exists; others go through on-demand Sonnet → `guide_content_<locale>` | Pre-fill or read from JSONB summary |
+| `direct_aims`, `indirect_aims`, `materials` (arrays) | Only `_zh` array versions exist | Add JSONB columns + extend `autoTranslateWork()` for arrays |
+| `control_of_error` (text) | `control_of_error_zh` exists; other locales missing | Add columns + extend translator |
+
+**Cost analysis (revised post-deployment):**
+- Per new classroom seeding: $0 (global table copy)
+- Per custom work: ~$0.011 (Haiku, all 11 locales)
+- Adding a 13th language: ~$1–2 (existing batch scripts via Anthropic key)
+- At 1,000 schools/year × 5 customs each: ~$55/year total. Versus the ~$5,000/year the original "Sonnet upfront" approach would have cost.
+
+**Production state after this session:**
+- `montree_curriculum_translations`: 3,948 rows
+- All 8 production classrooms have every locale column populated
+- `ENABLED_LOCALES` is now 11 non-English locales (was 4)
+- Custom works auto-translate into all 11 going forward
+- Trial signup captures locale and writes to `school.primary_locale`
+
+**Architectural plan with full audit trail:** `docs/CURRICULUM_TRANSLATION_HANDOFF.md`. Three audit passes (internal consistency → vs actual code → re-audit) found and corrected several material errors in the original draft including wrong migration numbers (170/171 → 180/181/182), a fictional `generate-work-content` route (Phase 5 was rebuilt around the actual `add-custom-work` flow), and a suboptimal Promise.all batch (replaced with Postgres function).
+
+**Session-specific handoff:** `docs/handoffs/SESSION_78_HANDOFF.md` — file-by-file change list, deployment sequence, verification status, deferred items.
+
+**Next session priorities:**
+1. **🚨 TYPE B sweep across components** — replace `locale === 'zh' ? work.x_zh : work.x` with `getLocalizedField()` / `getLocalizedWorkName()` everywhere a work name or description is rendered. Highest-priority files listed above.
+2. **Translate arrays + `control_of_error`** — add per-locale JSONB columns, extend `autoTranslateWork()`, re-extract Whale Class into global table, backfill all classrooms.
+3. **Validate "adding a 13th language" workflow** — pick one (Hindi or Vietnamese) and run through the documented data-only path end-to-end.
+4. **Send 3 hot lead Gmail drafts** (carry-over) — Copenhagen, Paint Pots UK, Ardtona House UK.
+5. **FAMM Argentina follow-up** (carry-over) — past Apr 28 deadline.
+6. **Welcome Тамі in Ukrainian** (carry-over).
+7. **Resend domain verification** (carry-over) — verify `montree.xyz` in Resend.
+8. **Test trial signup locale capture** — open private window, set UI to Russian, sign up a fake school, confirm new classroom has all locale columns populated.
+
+---
+
 ### ⚡ Session 77 — i18n Completeness Sweep + Drift Defence + Mobile Polish (Apr 30, 2026)
 
-**Two commits already on main: `fa6d3722` (i18n completeness), `5255a2e5` (automation hooks). Third commit pending push: SW v3 + compact lang toggle + stats row removal.**
+**All three commits pushed to main: `fa6d3722` (i18n completeness), `5255a2e5` (automation hooks), `26266747` (mobile polish: SW v3 + compact lang toggle + stats row removal). Railway redeployed.**
 
 **Trigger:** User opened Ukrainian dashboard on mobile, saw "Golden Bead Multiplication" in English, "PHOTOS" stats label in English, and empty area dots (no letter). Audit revealed three classes of drift, plus mobile polish issues.
 
@@ -275,23 +367,29 @@ Commit `5255a2e5`:
 - `scripts/check-i18n-completeness.mjs` (--strict mode added)
 - `package.json` (i18n:* + hooks:install)
 
-Commit pending push:
-- `public/montree-sw.js` (v3)
-- `components/montree/LanguageToggle.tsx`
-- `components/montree/DashboardHeader.tsx`
-- `app/montree/dashboard/[childId]/page.tsx`
+Commit `26266747`:
+- `public/montree-sw.js` (cache bumped to v3)
+- `components/montree/LanguageToggle.tsx` (compact short labels)
+- `components/montree/DashboardHeader.tsx` (classroom name maxWidth 'min(40vw, 200px)')
+- `app/montree/dashboard/[childId]/page.tsx` (stats row removed)
 - `docs/handoffs/SESSION_77_HANDOFF.md` (new)
+- `CLAUDE.md` (this entry)
 
 **Handoff doc:** `docs/handoffs/SESSION_77_HANDOFF.md` — full file-by-file change list + verification steps + cost breakdown.
 
+**Verification status:**
+- ✅ Pre-commit hook installed locally (`npm run hooks:install` ran successfully).
+- ✅ All three commits pushed to `origin/main` (push log: `93213235..26266747 main -> main`, then `Everything up-to-date`).
+- ⏳ Railway redeploy triggered automatically on push.
+- ⏳ User to verify on phone: close+reopen Montree PWA, switch to Українська, confirm "Множення з Золотими Бісеринками" with **Ма** in dot, no "Engdish" header overlap, no stats row.
+
 **Next session priorities:**
-1. **🚨 Verify on production** after Railway deploys all 3 commits. PWA users may need to close+reopen for SW v3 to activate. Confirm: Ukrainian "Множення з Золотими Бісеринками" renders, focus dots show **Пр/Се/Ма/Мо/Ку** (Ukrainian) or **P/L/S/M/C** (English), header fits cleanly on mobile, stats row gone.
-2. **Run `npm run hooks:install`** on the Mac to activate the pre-commit hook.
-3. **Optional: Wire weekly Railway cron** — set `CRON_SECRET` env var, schedule daily `GET /api/montree/super-admin/i18n-sync` for monitoring, weekly `POST { mode: 'fix' }` for auto-repair (or alert + manual approval via super-admin UI).
-4. **Optional: Super-admin "Sync translations" button** — UI affordance to POST `{ mode: 'fix' }` from the dashboard. ~30-min task.
-5. **Send the 3 hot lead Gmail drafts** — Copenhagen, Paint Pots UK, Ardtona House UK.
-6. **FAMM Argentina follow-up** — past Apr 28 deadline.
-7. **Welcome Тамі** in Ukrainian — first organic Ukrainian signup.
+1. **Confirm production looks right.** If anything still shows English fallback after PWA reactivate, debug from there.
+2. **Optional: Wire weekly Railway cron** — set `CRON_SECRET` env var, schedule daily `GET /api/montree/super-admin/i18n-sync` for monitoring, weekly `POST { mode: 'fix' }` for auto-repair (or alert + manual approval via super-admin UI).
+3. **Optional: Super-admin "Sync translations" button** — UI affordance to POST `{ mode: 'fix' }` from the dashboard. ~30-min task.
+4. **Send the 3 hot lead Gmail drafts** — Copenhagen, Paint Pots UK, Ardtona House UK.
+5. **FAMM Argentina follow-up** — past Apr 28 deadline.
+6. **Welcome Тамі** in Ukrainian — first organic Ukrainian signup.
 
 ---
 
@@ -2113,6 +2211,12 @@ Both local and production connect to the SAME Supabase database.
 ## Migrations Run (production)
 
 All migrations through 169 have been run. Key ones: 147 (smart learning columns), 148 (classroom onboarding), 152-154 (teacher OS foundation), 155 (teacher OS foundation DDL), 156 (visitor tracking), 157 (teacher notes child_id), 158 (paperwork_current_week), 159 (teacher_confirmed media), 160 (dashboard feature gates + Whale Class enabled), 161 (enable weekly_admin_docs for Whale Class), 164 (cropped_storage_path on montree_media — run Apr 7 via Supabase SQL editor), 169 (guide_content_zh JSONB on montree_classroom_curriculum_works — run Apr 11). **Migration 166 (`montree_global_works_staging`) still pending** from prior session. The Apr 7 self-learning loop SQL also added safety-net columns to `montree_visual_memory` (negative_descriptions, key_materials, description_confidence, source, source_media_id, photo_url, updated_at) — all `IF NOT EXISTS`, idempotent. **Apr 12**: `story_message_history.is_from_admin BOOLEAN DEFAULT FALSE` added via Supabase SQL Editor (migration `20260118_story_session_linking.sql` was in git but never run).
+
+**Session 78 (Apr 30, 2026) — curriculum translation pipeline migrations run via Supabase SQL Editor:**
+- `180_create_curriculum_translations_global.sql` — global translation library table (8 columns, ~3,948 rows after seed).
+- `181_add_school_primary_locale.sql` — `primary_locale` + `secondary_locales[]` on `montree_schools`. Whale Class set to `en+[zh]`. Two existing schools manually updated post-migration: Школа Монтессорі (Tamі) → `uk`, Chen school → `de`.
+- `182_apply_global_translations_function.sql` — `apply_global_translations(uuid)` Postgres function (11 per-locale UPDATE blocks, COALESCE-safe, SECURITY DEFINER, GRANT EXECUTE to anon/authenticated/service_role).
+- **Bonus column-add ALTER TABLE** (not in a numbered migration file — run inline) — added 36 missing locale columns to `montree_classroom_curriculum_works`: `parent_description_<locale>` and `why_it_matters_<locale>` for de/fr/pt/nl/it/ja/ko/uk/ru. The 9 newer locales had `name_*` and `guide_content_*` columns from prior sessions but were missing the description columns. Idempotent via `ADD COLUMN IF NOT EXISTS`.
 
 ---
 
