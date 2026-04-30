@@ -131,6 +131,54 @@ export const AREA_KEYS = [
 
 export type AreaKey = (typeof AREA_KEYS)[number];
 
+// ---------------------------------------------------------------------------
+// Area letter prefixes (for the colored dot icons in focus lists)
+//
+// One letter per area where possible (P/L/S/M/C in English). When a language
+// has a collision (e.g. German Sensorial=Sinnesmaterial vs Sprache=S, or
+// Ukrainian Математика vs Мова both → М), we use a 2-letter abbreviation.
+// ---------------------------------------------------------------------------
+export const AREA_PREFIXES_EN: Record<string, string> = { practical_life: 'P', sensorial: 'S', mathematics: 'M', language: 'L', cultural: 'C' };
+export const AREA_PREFIXES_ZH: Record<string, string> = { practical_life: '日', sensorial: '感', mathematics: '数', language: '语', cultural: '文' };
+export const AREA_PREFIXES_ES: Record<string, string> = { practical_life: 'V', sensorial: 'S', mathematics: 'M', language: 'L', cultural: 'C' };
+// German: Sinnesmaterial + Sprache both start with S → 2-letter codes throughout
+export const AREA_PREFIXES_DE: Record<string, string> = { practical_life: 'Pr', sensorial: 'Si', mathematics: 'Ma', language: 'Sp', cultural: 'Ku' };
+export const AREA_PREFIXES_FR: Record<string, string> = { practical_life: 'V', sensorial: 'S', mathematics: 'M', language: 'L', cultural: 'C' };
+export const AREA_PREFIXES_PT: Record<string, string> = { practical_life: 'V', sensorial: 'S', mathematics: 'M', language: 'L', cultural: 'C' };
+export const AREA_PREFIXES_NL: Record<string, string> = { practical_life: 'P', sensorial: 'Z', mathematics: 'W', language: 'T', cultural: 'C' };
+export const AREA_PREFIXES_IT: Record<string, string> = { practical_life: 'V', sensorial: 'S', mathematics: 'M', language: 'L', cultural: 'C' };
+export const AREA_PREFIXES_JA: Record<string, string> = { practical_life: '日', sensorial: '感', mathematics: '算', language: '言', cultural: '文' };
+export const AREA_PREFIXES_KO: Record<string, string> = { practical_life: '일', sensorial: '감', mathematics: '수', language: '언', cultural: '문' };
+// Ukrainian: Математика + Мова both start with М → 2-letter codes throughout
+export const AREA_PREFIXES_UK: Record<string, string> = { practical_life: 'Пр', sensorial: 'Се', mathematics: 'Ма', language: 'Мо', cultural: 'Ку' };
+export const AREA_PREFIXES_RU: Record<string, string> = { practical_life: 'П', sensorial: 'С', mathematics: 'М', language: 'Я', cultural: 'К' };
+
+export const AREA_PREFIXES: Record<string, Record<string, string>> = {
+  en: AREA_PREFIXES_EN,
+  zh: AREA_PREFIXES_ZH,
+  es: AREA_PREFIXES_ES,
+  de: AREA_PREFIXES_DE,
+  fr: AREA_PREFIXES_FR,
+  pt: AREA_PREFIXES_PT,
+  nl: AREA_PREFIXES_NL,
+  it: AREA_PREFIXES_IT,
+  ja: AREA_PREFIXES_JA,
+  ko: AREA_PREFIXES_KO,
+  uk: AREA_PREFIXES_UK,
+  ru: AREA_PREFIXES_RU,
+};
+
+/**
+ * Get the localized one- or two-letter area prefix for icon display.
+ * Falls back to English, then to '?' if no mapping exists.
+ */
+export function getAreaPrefix(area: string, locale: string): string {
+  const map = AREA_PREFIXES[locale] || AREA_PREFIXES_EN;
+  // Normalize 'math' alias used in some legacy paths.
+  const key = area === 'math' ? 'mathematics' : area;
+  return map[key] ?? AREA_PREFIXES_EN[key] ?? '?';
+}
+
 /**
  * Get the localized area label.
  * Falls back to English, then to the raw area key if no translation exists.
