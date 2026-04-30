@@ -11,7 +11,13 @@
     "cap:sync": "npx cap sync",
     "cap:ios": "npm run build:native && npx cap sync ios && npx cap open ios",
     "cap:android": "npm run build:native && npx cap sync android && npx cap open android",
-    "validate:curriculum": "npx ts-node --esm scripts/validate-curriculum.ts"
+    "validate:curriculum": "npx ts-node --esm scripts/validate-curriculum.ts",
+    "i18n:check": "node scripts/check-i18n-completeness.mjs",
+    "i18n:check:strict": "node scripts/check-i18n-completeness.mjs --strict",
+    "i18n:fill-ui": "node scripts/fill-missing-i18n-keys.mjs",
+    "i18n:fix-names": "node scripts/sync-curriculum-translations.mjs",
+    "i18n:sync": "npm run i18n:fill-ui && npm run i18n:fix-names && node scripts/fix-bleedthrough.mjs && npm run i18n:check:strict",
+    "hooks:install": "git config core.hooksPath .githooks && echo '✓ Hooks enabled — pre-commit will check i18n drift'"
   },
   "dependencies": {
     "@alloc/quick-lru": "^5.2.0",

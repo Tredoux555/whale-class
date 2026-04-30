@@ -103,33 +103,52 @@ for (const locale of locales) {
 }
 
 // ---------- Translation key parity (en is the reference) ----------
-function countTopLevelKeys(src) {
-  // Heuristic: count translation keys in the exported object literal.
-  // Translation keys are written as `'foo.bar': '…'` or `'foo.bar': "…"`.
-  // We strip comments first to avoid false positives, then count keys.
-  if (!src) return 0;
+//
+// The default mode warns at <85% and fails at <50%. Pass --strict to require
+// 100% key-set parity (used by the pre-commit hook so new keys added to
+// en.ts can never ship without translations).
+
+const STRICT = process.argv.includes('--strict');
+
+function extractKeys(src) {
+  if (!src) return new Set();
   const cleaned = src
     .replace(/\/\/[^\n]*/g, '')
     .replace(/\/\*[\s\S]*?\*\//g, '');
-  // Match a quoted key followed by a colon, e.g. 'app.name': or "app.name":
-  const matches = cleaned.match(/^\s*['"][a-zA-Z0-9_.-]+['"]\s*:/gm) || [];
-  return matches.length;
+  const out = new Set();
+  for (const line of cleaned.split('\n')) {
+    const m = line.match(/^\s*['"`]([a-zA-Z][\w.-]*)['"`]\s*:/);
+    if (m) out.add(m[1]);
+  }
+  return out;
 }
 
 const enSrc = read('lib/montree/i18n/en.ts') || '';
-const enKeyCount = countTopLevelKeys(enSrc);
+const enKeys = extractKeys(enSrc);
+const enKeyCount = enKeys.size;
 
-console.log(`English reference: ~${enKeyCount} top-level translation keys\n`);
+console.log(`English reference: ${enKeyCount} translation keys${STRICT ? ' (strict mode)' : ''}\n`);
 
 for (const locale of locales) {
   if (locale === 'en') continue;
   if (!checks[locale]?.translationFile) continue;
   const src = read(`lib/montree/i18n/${locale}.ts`);
-  const count = countTopLevelKeys(src);
+  const localeKeys = extractKeys(src);
+  const missing = [...enKeys].filter((k) => !localeKeys.has(k));
+  const count = localeKeys.size;
   const ratio = enKeyCount === 0 ? 1 : count / enKeyCount;
-  const flag = ratio < 0.85 ? '⚠ ' : '  ';
-  console.log(`${flag}${locale}: ~${count} keys (${(ratio * 100).toFixed(0)}% of en)`);
-  if (ratio < 0.5) {
+  const flag = missing.length > 0 ? '⚠ ' : '  ';
+  console.log(
+    `${flag}${locale}: ${count} keys (${(ratio * 100).toFixed(0)}% of en)` +
+      (missing.length > 0 ? `, ${missing.length} missing` : '')
+  );
+  if (STRICT) {
+    if (missing.length > 0) {
+      errors.push(
+        `${locale}: ${missing.length} keys in en.ts not yet translated (first 3: ${missing.slice(0, 3).join(', ')})`
+      );
+    }
+  } else if (ratio < 0.5) {
     errors.push(
       `${locale}: only ${(ratio * 100).toFixed(0)}% of en keys — translation file looks incomplete`
     );
