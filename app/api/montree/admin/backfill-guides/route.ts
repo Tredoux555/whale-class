@@ -7,6 +7,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { loadAllCurriculumWorks } from '@/lib/montree/curriculum-loader';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
+import { applyGlobalTranslations } from '@/lib/montree/curriculum/apply-global-translations';
 
 export async function GET(request: NextRequest) {
   try {
@@ -113,6 +114,23 @@ export async function GET(request: NextRequest) {
         errors.push(`${work.name}: update failed`);
       } else {
         updated++;
+      }
+    }
+
+    // Fire-and-forget: also fill any empty locale columns from the global library.
+    // COALESCE inside the SQL function preserves any teacher-edited translations.
+    // Skips classrooms with all locale columns already populated.
+    if (classroomId) {
+      applyGlobalTranslations(classroomId).catch(err => {
+        console.error('[Backfill-guides] applyGlobalTranslations failed:', err instanceof Error ? err.message : err);
+      });
+    } else {
+      // "all" mode: fan out across every classroom we just touched
+      const uniqueClassrooms = Array.from(new Set(existingWorks.map(w => w.classroom_id)));
+      for (const cid of uniqueClassrooms) {
+        applyGlobalTranslations(cid as string).catch(err => {
+          console.error('[Backfill-guides] applyGlobalTranslations failed:', err instanceof Error ? err.message : err);
+        });
       }
     }
 

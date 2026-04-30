@@ -6,6 +6,7 @@ import { loadAllCurriculumWorks, loadCurriculumAreas } from '@/lib/montree/curri
 import { legacySha256 } from '@/lib/montree/password';
 import { batchTranslateAllLocales } from '@/lib/montree/insert-curriculum-work';
 import { buildLocaleInsertFields } from '@/lib/montree/locales-config';
+import { applyGlobalTranslations } from '@/lib/montree/curriculum/apply-global-translations';
 
 function generateLoginCode(): string {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -153,8 +154,14 @@ export async function POST(request: NextRequest) {
             emoji: '✅'
           });
 
-          // Fire-and-forget: batch translate all seeded works to all enabled locales
-          // This runs in the background — does NOT block the setup stream
+          // Fire-and-forget: copy global translations into the new classroom.
+          // Free — no AI calls. Standard works pulled from the global library.
+          applyGlobalTranslations(createdClassroom.id).catch(err => {
+            console.error(`[Setup] applyGlobalTranslations failed for ${classroom.name}:`, err instanceof Error ? err.message : err);
+          });
+
+          // Fire-and-forget safety net: batch translate any locales the global
+          // table didn't cover. Runs in the background — does NOT block the setup stream.
           batchTranslateAllLocales(createdClassroom.id).catch(err => {
             console.error(`[Setup] Background translation failed for ${classroom.name}:`, err instanceof Error ? err.message : err);
           });

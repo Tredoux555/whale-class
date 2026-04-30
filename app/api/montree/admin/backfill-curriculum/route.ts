@@ -5,6 +5,7 @@ import { getSupabase } from '@/lib/supabase-client';
 import { CURRICULUM } from '@/lib/montree/curriculum-data';
 import { buildLocaleInsertFields } from '@/lib/montree/locales-config';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
+import { applyGlobalTranslations } from '@/lib/montree/curriculum/apply-global-translations';
 
 // Build curriculum records for a classroom
 function buildCurriculumRecords(classroomId: string) {
@@ -86,6 +87,11 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: 'Processing error' }, { status: 500 });
       }
 
+      // Fire-and-forget: copy global translations into the newly backfilled classroom.
+      applyGlobalTranslations(classroomId).catch(err => {
+        console.error('[Backfill] applyGlobalTranslations failed:', err instanceof Error ? err.message : err);
+      });
+
       return NextResponse.json({
         success: true,
         classroomId,
@@ -126,6 +132,10 @@ export async function POST(request: NextRequest) {
           results.push({ classroom: classroom.name, error: 'Processing error' });
         } else {
           results.push({ classroom: classroom.name, worksAssigned: records.length });
+          // Fire-and-forget: copy global translations into this classroom too.
+          applyGlobalTranslations(classroom.id).catch(err => {
+            console.error('[Backfill] applyGlobalTranslations failed:', err instanceof Error ? err.message : err);
+          });
         }
       }
 
@@ -159,6 +169,10 @@ export async function POST(request: NextRequest) {
         results.push({ classroom: classroom.name, error: 'Processing error' });
       } else {
         results.push({ classroom: classroom.name, worksAssigned: records.length });
+        // Fire-and-forget: copy global translations into this classroom too.
+        applyGlobalTranslations(classroom.id).catch(err => {
+          console.error('[Backfill] applyGlobalTranslations failed:', err instanceof Error ? err.message : err);
+        });
       }
     }
 

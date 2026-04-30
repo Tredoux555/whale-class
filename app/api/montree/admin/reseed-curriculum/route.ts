@@ -5,6 +5,7 @@ import { getSupabase } from '@/lib/supabase-client';
 import { loadAllCurriculumWorks, loadCurriculumAreas } from '@/lib/montree/curriculum-loader';
 import { buildLocaleInsertFields } from '@/lib/montree/locales-config';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
+import { applyGlobalTranslations } from '@/lib/montree/curriculum/apply-global-translations';
 
 // GET version for easy browser access
 export async function GET(request: NextRequest) {
@@ -146,6 +147,12 @@ async function handleReseed(classroomId: string | null, schoolId: string) {
       }
     }
 
+
+    // Fire-and-forget: copy global translations into the freshly-reseeded classroom.
+    // Free — no AI calls. Standard works pulled from the global library.
+    applyGlobalTranslations(classroomId).catch(err => {
+      console.error('[Reseed] applyGlobalTranslations failed:', err instanceof Error ? err.message : err);
+    });
 
     // Verify by getting a sample
     const { data: sampleWorks } = await supabase
