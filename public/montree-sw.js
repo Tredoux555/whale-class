@@ -2,9 +2,11 @@
 // Service Worker for Montree PWA
 // Provides offline caching and background sync
 
-// Bumped to v2 (Apr 30, 2026) — old caches purged on activate so we don't keep
-// serving the v1 stale-HTML behaviour to existing PWA installs.
-const CACHE_NAME = 'montree-v2';
+// Bumped to v3 (Apr 30, 2026 — second time this day) — i18n completeness +
+// area-letter changes shipped, but PWA installs were still serving the v2
+// JS bundle (cached) so the new AreaDot + UI translations never appeared.
+// Bumping the version forces activate → purges old cache → serves fresh JS.
+const CACHE_NAME = 'montree-v3';
 const OFFLINE_URL = '/montree/offline';
 
 // Only cache immutable assets — static files that change with build hashes.
