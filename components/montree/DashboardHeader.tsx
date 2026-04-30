@@ -200,6 +200,7 @@ function DashboardHeader() {
     if (pathname === '/montree/dashboard/classroom-builder')  return 'classroom-setup';
     if (pathname === '/montree/dashboard/language-semester')  return 'language-semester';
     if (pathname?.includes('/language-presentation'))        return 'language-presentation';
+    if (pathname === '/montree/dashboard/menu-setup')        return 'menu-setup';
     return null;
   }, [pathname]);
 
@@ -589,34 +590,52 @@ function DashboardHeader() {
                   </div>
                   <Divider />
 
-                  {/* Group 1 — daily tools */}
-                  <MenuRow icon={FileText}  label={t('nav.notes')}          active={activePage === 'notes'}       onClick={() => { setShowMoreMenu(false); router.push('/montree/dashboard/notes'); }} />
-                  <MenuRow icon={Target}    label={t('dashboard.focusList')} active={activePage === 'focus-list'}  onClick={() => { setShowMoreMenu(false); router.push('/montree/dashboard/focus'); }} />
-                  <MenuRow icon={Search}    label={t('audit.title')}         active={activePage === 'photo-audit'} onClick={() => { setShowMoreMenu(false); router.push('/montree/dashboard/photo-audit'); }} />
-                  <MenuRow icon={Sparkles}  label={t('nav.guru')}            active={activePage === 'guru'}        onClick={() => { setShowMoreMenu(false); router.push(childIdFromPath ? `/montree/dashboard/guru?child=${childIdFromPath}` : '/montree/dashboard/guru'); }} />
-                  <Divider />
-
-                  {/* Group 2 — curriculum & content */}
-                  <MenuRow icon={BookOpen}    label={t('nav.curriculum')}        active={activePage === 'curriculum'}    onClick={() => { setShowMoreMenu(false); router.push('/montree/dashboard/curriculum'); }} />
-                  <MenuRow icon={LayoutGrid}  label={t('nav.classroomOverview')} active={activePage === 'class-overview'} onClick={() => { setShowMoreMenu(false); router.push('/montree/dashboard/classroom-overview'); }} />
+                  {/* Menu items — all gated by menu_* feature flags */}
+                  {isEnabled('menu_notes') && (
+                    <MenuRow icon={FileText}  label={t('nav.notes')}          active={activePage === 'notes'}       onClick={() => { setShowMoreMenu(false); router.push('/montree/dashboard/notes'); }} />
+                  )}
+                  {isEnabled('menu_focus_list') && (
+                    <MenuRow icon={Target}    label={t('dashboard.focusList')} active={activePage === 'focus-list'}  onClick={() => { setShowMoreMenu(false); router.push('/montree/dashboard/focus'); }} />
+                  )}
+                  {isEnabled('menu_photo_audit') && (
+                    <MenuRow icon={Search}    label={t('audit.title')}         active={activePage === 'photo-audit'} onClick={() => { setShowMoreMenu(false); router.push('/montree/dashboard/photo-audit'); }} />
+                  )}
+                  {isEnabled('menu_guru') && (
+                    <MenuRow icon={Sparkles}  label={t('nav.guru')}            active={activePage === 'guru'}        onClick={() => { setShowMoreMenu(false); router.push(childIdFromPath ? `/montree/dashboard/guru?child=${childIdFromPath}` : '/montree/dashboard/guru'); }} />
+                  )}
+                  {isEnabled('menu_curriculum') && (
+                    <MenuRow icon={BookOpen}    label={t('nav.curriculum')}        active={activePage === 'curriculum'}    onClick={() => { setShowMoreMenu(false); router.push('/montree/dashboard/curriculum'); }} />
+                  )}
+                  {isEnabled('menu_classroom_overview') && (
+                    <MenuRow icon={LayoutGrid}  label={t('nav.classroomOverview')} active={activePage === 'class-overview'} onClick={() => { setShowMoreMenu(false); router.push('/montree/dashboard/classroom-overview'); }} />
+                  )}
                   {isEnabled('weekly_admin_docs') && (
                     <MenuRow icon={CalendarDays} label={t('dashboard.weeklyPlan')} active={activePage === 'weekly-plan'} onClick={() => { setShowMoreMenu(false); router.push('/montree/dashboard/weekly-admin-docs'); }} />
                   )}
-                  <MenuRow icon={Images}      label={t('albums.title')}           active={activePage === 'albums'}   onClick={() => { setShowMoreMenu(false); router.push('/montree/dashboard/albums'); }} />
-                  <MenuRow icon={FolderOpen}  label={t('nav.library') || 'Library'} active={activePage === 'library'} onClick={() => { setShowMoreMenu(false); router.push('/montree/library'); }} />
-                  <Divider />
-
-                  {/* Group 3 — progress & reports */}
-                  <MenuRow icon={TrendingUp}  label="My Earnings"                           active={activePage === 'earnings'}         onClick={() => { setShowMoreMenu(false); router.push('/montree/dashboard/earnings'); }} />
-                  <MenuRow icon={Users}       label={t('students.manageStudents') || 'Manage Students'} active={activePage === 'manage-students'} onClick={() => { setShowMoreMenu(false); router.push('/montree/dashboard/students'); }} />
+                  {isEnabled('menu_photo_albums') && (
+                    <MenuRow icon={Images}      label={t('albums.title')}           active={activePage === 'albums'}   onClick={() => { setShowMoreMenu(false); router.push('/montree/dashboard/albums'); }} />
+                  )}
+                  {isEnabled('menu_library') && (
+                    <MenuRow icon={FolderOpen}  label={t('nav.library') || 'Library'} active={activePage === 'library'} onClick={() => { setShowMoreMenu(false); router.push('/montree/library'); }} />
+                  )}
+                  {isEnabled('menu_earnings') && (
+                    <MenuRow icon={TrendingUp}  label="My Earnings"                           active={activePage === 'earnings'}         onClick={() => { setShowMoreMenu(false); router.push('/montree/dashboard/earnings'); }} />
+                  )}
+                  {isEnabled('menu_manage_students') && (
+                    <MenuRow icon={Users}       label={t('students.manageStudents') || 'Manage Students'} active={activePage === 'manage-students'} onClick={() => { setShowMoreMenu(false); router.push('/montree/dashboard/students'); }} />
+                  )}
                   {isEnabled('raz_reading_tracker') && (
                     <MenuRow icon={BookMarked} label={t('nav.razReadingTracker')} active={activePage === 'raz-reading'} onClick={() => { setShowMoreMenu(false); router.push('/montree/dashboard/raz'); }} />
                   )}
                   {isEnabled('english_corner') && (
                     <MenuRow icon={Globe} label={t('dashboard.englishCorner')} active={activePage === 'language-tracker'} onClick={() => { setShowMoreMenu(false); router.push('/montree/dashboard/language-tracker'); }} />
                   )}
-                  <MenuRow icon={BarChart2}   label={locale === 'zh' ? '班级进度总览' : 'Class Progress'} active={activePage === 'class-progress'} onClick={() => { setShowMoreMenu(false); router.push('/montree/dashboard/progress-overview'); }} />
-                  <MenuRow icon={CalendarDays} label={t('dashboard.languageSemester')} active={activePage === 'language-semester'} onClick={() => { setShowMoreMenu(false); router.push('/montree/dashboard/language-semester'); }} />
+                  {isEnabled('menu_class_progress') && (
+                    <MenuRow icon={BarChart2}   label={locale === 'zh' ? '班级进度总览' : 'Class Progress'} active={activePage === 'class-progress'} onClick={() => { setShowMoreMenu(false); router.push('/montree/dashboard/progress-overview'); }} />
+                  )}
+                  {isEnabled('menu_language_semester') && (
+                    <MenuRow icon={CalendarDays} label={t('dashboard.languageSemester')} active={activePage === 'language-semester'} onClick={() => { setShowMoreMenu(false); router.push('/montree/dashboard/language-semester'); }} />
+                  )}
                   {isEnabled('language_presentation') && childIdFromPath && (
                     <MenuRow icon={Mic} label={t('childPage.present')} active={activePage === 'language-presentation'} onClick={() => { setShowMoreMenu(false); router.push(`/montree/dashboard/${childIdFromPath}/language-presentation`); }} />
                   )}
@@ -625,8 +644,11 @@ function DashboardHeader() {
                   )}
                   <Divider />
 
-                  {/* Group 4 — settings + logout */}
-                  <MenuRow icon={Settings2} label={t('nav.classroomBuilder') || 'Classroom Setup'} active={activePage === 'classroom-setup'} onClick={() => { setShowMoreMenu(false); router.push('/montree/dashboard/classroom-builder'); }} />
+                  {/* Settings + Menu Setup + Logout — always visible */}
+                  {isEnabled('menu_classroom_setup') && (
+                    <MenuRow icon={Settings2} label={t('nav.classroomBuilder') || 'Classroom Setup'} active={activePage === 'classroom-setup'} onClick={() => { setShowMoreMenu(false); router.push('/montree/dashboard/classroom-builder'); }} />
+                  )}
+                  <MenuRow icon={Settings2} label="Menu Setup" active={activePage === 'menu-setup'} onClick={() => { setShowMoreMenu(false); router.push('/montree/dashboard/menu-setup'); }} />
                   <Divider />
                   <MenuRow icon={LogOut} label={t('auth.logout')} danger onClick={() => { setShowMoreMenu(false); clearSession(); router.push('/montree/login'); }} />
                 </div>

@@ -46,7 +46,21 @@ export type FeatureKey =
   // Photo audit UX
   | 'unified_photo_tagger'
   // Language presentation (semester presentation tool — once/twice per year)
-  | 'language_presentation';
+  | 'language_presentation'
+  // Menu items — all gated so schools can customise their menu
+  | 'menu_notes'
+  | 'menu_focus_list'
+  | 'menu_photo_audit'
+  | 'menu_guru'
+  | 'menu_curriculum'
+  | 'menu_classroom_overview'
+  | 'menu_photo_albums'
+  | 'menu_library'
+  | 'menu_earnings'
+  | 'menu_manage_students'
+  | 'menu_class_progress'
+  | 'menu_language_semester'
+  | 'menu_classroom_setup';
 
 export interface MontreeFeature {
   feature_key: FeatureKey;
