@@ -199,6 +199,7 @@ function DashboardHeader() {
     if (pathname === '/montree/dashboard/progress-overview')  return 'class-progress';
     if (pathname === '/montree/dashboard/classroom-builder')  return 'classroom-setup';
     if (pathname === '/montree/dashboard/language-semester')  return 'language-semester';
+    if (pathname?.includes('/language-presentation'))        return 'language-presentation';
     return null;
   }, [pathname]);
 
@@ -616,6 +617,9 @@ function DashboardHeader() {
                   )}
                   <MenuRow icon={BarChart2}   label={locale === 'zh' ? '班级进度总览' : 'Class Progress'} active={activePage === 'class-progress'} onClick={() => { setShowMoreMenu(false); router.push('/montree/dashboard/progress-overview'); }} />
                   <MenuRow icon={CalendarDays} label={t('dashboard.languageSemester')} active={activePage === 'language-semester'} onClick={() => { setShowMoreMenu(false); router.push('/montree/dashboard/language-semester'); }} />
+                  {isEnabled('language_presentation') && childIdFromPath && (
+                    <MenuRow icon={Mic} label={t('childPage.present')} active={activePage === 'language-presentation'} onClick={() => { setShowMoreMenu(false); router.push(`/montree/dashboard/${childIdFromPath}/language-presentation`); }} />
+                  )}
                   {isEnabled('paperwork_tracker') && (
                     <MenuRow icon={FileText} label={t('dashboard.paperworkTracker')} onClick={() => { setShowMoreMenu(false); router.push('/montree/dashboard/paperwork'); }} />
                   )}

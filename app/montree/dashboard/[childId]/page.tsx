@@ -8,7 +8,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import dynamic from 'next/dynamic';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Images, Mic as MicIcon, Printer, ChevronDown, ClipboardList } from 'lucide-react';
+import { Images, ChevronDown, ClipboardList } from 'lucide-react';
 import { toast, Toaster } from 'sonner';
 import { getSession, isHomeschoolParent } from '@/lib/montree/auth';
 import { AREA_CONFIG } from '@/lib/montree/types';
@@ -33,7 +33,7 @@ const FullDetailsModal = dynamic(() => import('@/components/montree/child/FullDe
 const WorkPickerModal = dynamic(() => import('@/components/montree/child/WorkPickerModal'), { ssr: false });
 const WeekViewGuide = dynamic(() => import('@/components/montree/onboarding/WeekViewGuide'), { ssr: false });
 const ChildWeeklyAdmin = dynamic(() => import('@/components/montree/child/ChildWeeklyAdmin'), { ssr: false });
-const PrintButton = dynamic(() => import('@/components/montree/child/PrintButton'), { ssr: false });
+// PrintButton removed Session 78 — print moved to three-dot menu as feature-gated item
 const TellGuruCard = dynamic(() => import('@/components/montree/onboarding/TellGuruCard'), { ssr: false });
 // ChildVoiceNote now lives inline in FocusWorksSection (next to Save button)
 
@@ -708,7 +708,7 @@ export default function WeekPage() {
         </div>
       </div>
 
-      {/* Action bar — Gallery, Present, Print (teacher only) */}
+      {/* Action bar — Gallery (teacher only) */}
       {!isHomeschoolParent(session) && (
         <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 8 }}>
           <Link
@@ -720,16 +720,6 @@ export default function WeekPage() {
             <Images size={15} strokeWidth={1.75} />
             {t('childPage.gallery')}
           </Link>
-          <Link
-            href={`/montree/dashboard/${childId}/language-presentation`}
-            style={btnBase}
-            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(52,211,153,0.08)'; (e.currentTarget as HTMLElement).style.color = '#34d399'; }}
-            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.06)'; (e.currentTarget as HTMLElement).style.color = 'rgba(255,255,255,0.75)'; }}
-          >
-            <MicIcon size={15} strokeWidth={1.75} />
-            {t('childPage.present')}
-          </Link>
-          <PrintButton childId={childId} schoolId={session?.school?.id} />
         </div>
       )}
 

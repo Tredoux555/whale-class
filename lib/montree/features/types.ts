@@ -44,7 +44,9 @@ export type FeatureKey =
   | 'ai_tier_haiku'
   | 'ai_tier_sonnet'
   // Photo audit UX
-  | 'unified_photo_tagger';
+  | 'unified_photo_tagger'
+  // Language presentation (semester presentation tool — once/twice per year)
+  | 'language_presentation';
 
 export interface MontreeFeature {
   feature_key: FeatureKey;
