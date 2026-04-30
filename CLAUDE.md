@@ -183,6 +183,118 @@ GMass campaigns A/C/D are historical. Campaign C sent 335 blank emails (Session 
 
 ## RECENT STATUS (Apr 30, 2026)
 
+### ⚡ Session 77 — i18n Completeness Sweep + Drift Defence + Mobile Polish (Apr 30, 2026)
+
+**Two commits already on main: `fa6d3722` (i18n completeness), `5255a2e5` (automation hooks). Third commit pending push: SW v3 + compact lang toggle + stats row removal.**
+
+**Trigger:** User opened Ukrainian dashboard on mobile, saw "Golden Bead Multiplication" in English, "PHOTOS" stats label in English, and empty area dots (no letter). Audit revealed three classes of drift, plus mobile polish issues.
+
+**A. UI translation files — 9 languages × 93 missing keys filled:**
+Spanish + Chinese were already at 100%. The other 9 languages (`de/fr/pt/nl/it/ja/ko/uk/ru`) were each missing the same 93 keys added to `en.ts` after the original scaffolding ran. Things like `summary.askGuruPrompt`, `weeklyWrap.nextWeekFocus`, `parentDashboard.thisWeekMoments`. Production users of those locales saw English fallback. **All 12 locales now at 100% UI key parity (3735/3735 each).**
+
+**B. Curriculum work names — full sweep across Whale Class:**
+- `uk`: 42 untranslated (English text in `name_uk` column) → fixed (Golden Bead Multiplication → Множення з Золотими Бісеринками, Introduction to Golden Beads → Введення до Золотих Бісеринок, etc.)
+- `ru`: 20 untranslated → fixed
+- `zh`: 20 empty → filled
+- `es/de/fr/nl/it`: 2-3 each → fixed (most were "Bingo"/"Collage" loanwords — KNOWN_LOANWORDS list now skips these)
+- `ko`: 1 → fixed
+- Latin-i homoglyph cleanup pass: Haiku used U+0069 in 4 Ukrainian strings → replaced with U+0456 і
+- **Final: 419/419 work names translated for every non-English language.**
+
+**C. `guide_content_<locale>` confirmed complete:**
+384/419 across all non-English. The 35-work "gap" is works that don't have an English `quick_guide` — nothing to translate from.
+
+**D. Area letter icons in focus list — `FocusWorksSection.AreaDot`:**
+Previously empty colored circles. Now show localized one- or two-letter prefix matching the curriculum overview cards. New `AREA_PREFIXES` map in `lib/montree/i18n/area-labels.ts` with per-locale codes:
+- en/es/fr/it/pt: P/L/S/M/C-style 1-letter (V for Vida/Vie/Vita)
+- zh/ja/ko: single Hanzi/Hangul (日/感/数/语/文 etc.)
+- nl: P/Z/W/T/C
+- ru: П/С/М/Я/К (Я is Язык — no collision)
+- **de: Pr/Si/Ma/Sp/Ku — 2-letter** (Sinnesmaterial vs Sprache both = S)
+- **uk: Пр/Се/Ма/Мо/Ку — 2-letter** (Математика vs Мова both = М)
+
+`getAreaPrefix(area, locale)` is the canonical helper. Font auto-scales (50% for 1-char, 36% for 2-char).
+
+**E. Drift defence — three layers added:**
+
+1. **Pre-commit hook** (`.githooks/pre-commit`, native — no Husky):
+   - Fires only when `lib/montree/i18n/*` files are staged.
+   - Runs `scripts/check-i18n-completeness.mjs --strict`.
+   - Blocks commits where `en.ts` has any key not in every other language file.
+   - Bypass: `git commit --no-verify`.
+   - Install: `npm run hooks:install` (one-time per machine, runs `git config core.hooksPath .githooks`).
+
+2. **npm scripts** (added to `package.json`):
+   - `i18n:check` / `i18n:check:strict` — validator (strict = fail on any missing key)
+   - `i18n:fill-ui` — Haiku batch translator for missing UI keys
+   - `i18n:fix-names` — Haiku translator for untranslated curriculum names (default scope: active classrooms with children; `--all` for full backfill, `--dry-run` to report only)
+   - `i18n:sync` — full pipeline: fill-ui + fix-names + bleedthrough + check
+   - `hooks:install` — wires git hooks
+
+3. **Admin API route** `/api/montree/super-admin/i18n-sync`:
+   - GET = read-only drift report (no Haiku spend)
+   - POST default = dry-run check
+   - POST `{ mode: 'fix' }` = translate
+   - POST `{ mode: 'fix', allClassrooms: true }` = full backfill
+   - POST `{ mode: 'fix', classroomId: '...' }` = single classroom
+   - Auth: super-admin session OR `x-cron-secret` header (for Railway cron with `CRON_SECRET` env var)
+
+**F. Service worker cache bumped — `montree-v2 → montree-v3`:**
+Code shipped fine to Railway but PWA users were still serving the cached v2 JS bundle (no AreaDot changes visible). v3 forces activate-side purge. Same pattern as Session 76's stale-dashboard fix. **PWA users may need to close + reopen the app for v3 to activate.**
+
+**G. Mobile header overlap fix:**
+- `LanguageToggle.tsx` rewritten: visible pill now shows `LOCALE_SHORT_LABELS` (EN/ZH/УКР — 2-3 chars) instead of full names ("English"/"Українська" — 7-10 chars). Hidden native `<select>` still provides the full-name OS picker on tap. Saves 40-60px horizontal.
+- `DashboardHeader.tsx` classroom name `maxWidth: 160` → `maxWidth: 'min(40vw, 200px)'` — tighter on narrow viewports.
+
+**H. Stats tile row removed from child page:**
+`app/montree/dashboard/[childId]/page.tsx` — the 3-column "MASTERED / PRACTICING / Photos" tile row below the focus list. User flagged as redundant — focus list status badges already convey the same info. Also cleaned up unused `Sparkles`/`TrendingUp`/`Camera` imports + `progressStats`/`photoCount` state.
+
+**🚨 Architectural notes:**
+- **`getAreaPrefix(area, locale)` is the canonical area-letter helper.** Use it any time you render a colored area dot.
+- **Pre-commit hook stays passive** unless `lib/montree/i18n/*` files are in the commit — zero friction on unrelated commits.
+- **`auto-translate.ts` `translateAllLocales(input)`** already covers new-work creation across `ENABLED_LOCALES` — day-to-day new works should never re-introduce drift.
+- **Service worker bumps require user-side reactivation** — close+reopen the PWA, or hard-refresh on web.
+- **KNOWN_LOANWORDS list** in `sync-curriculum-translations.mjs` (Bingo, Collage, Origami, Yoga, Sudoku, Tangram, Mandala) — skip flagging these as drift.
+
+**Cost:** ~$3-4 in Haiku calls total. Future drift defence is passive — only spends when actual drift is detected.
+
+**Files changed across all 3 commits:**
+
+Commit `fa6d3722`:
+- `components/montree/child/FocusWorksSection.tsx` — AreaDot renders prefix
+- `lib/montree/i18n/area-labels.ts` — AREA_PREFIXES + getAreaPrefix()
+- `lib/montree/i18n/{de,fr,pt,nl,it,ja,ko,uk,ru}.ts` — 93 new keys each
+- `scripts/fill-missing-i18n-keys.mjs` (new)
+- `scripts/fix-untranslated-work-names.mjs` (new)
+- `scripts/fix-bleedthrough.mjs` (new)
+
+Commit `5255a2e5`:
+- `.githooks/pre-commit` (new)
+- `app/api/montree/super-admin/i18n-sync/route.ts` (new)
+- `scripts/sync-curriculum-translations.mjs` (new)
+- `scripts/check-i18n-completeness.mjs` (--strict mode added)
+- `package.json` (i18n:* + hooks:install)
+
+Commit pending push:
+- `public/montree-sw.js` (v3)
+- `components/montree/LanguageToggle.tsx`
+- `components/montree/DashboardHeader.tsx`
+- `app/montree/dashboard/[childId]/page.tsx`
+- `docs/handoffs/SESSION_77_HANDOFF.md` (new)
+
+**Handoff doc:** `docs/handoffs/SESSION_77_HANDOFF.md` — full file-by-file change list + verification steps + cost breakdown.
+
+**Next session priorities:**
+1. **🚨 Verify on production** after Railway deploys all 3 commits. PWA users may need to close+reopen for SW v3 to activate. Confirm: Ukrainian "Множення з Золотими Бісеринками" renders, focus dots show **Пр/Се/Ма/Мо/Ку** (Ukrainian) or **P/L/S/M/C** (English), header fits cleanly on mobile, stats row gone.
+2. **Run `npm run hooks:install`** on the Mac to activate the pre-commit hook.
+3. **Optional: Wire weekly Railway cron** — set `CRON_SECRET` env var, schedule daily `GET /api/montree/super-admin/i18n-sync` for monitoring, weekly `POST { mode: 'fix' }` for auto-repair (or alert + manual approval via super-admin UI).
+4. **Optional: Super-admin "Sync translations" button** — UI affordance to POST `{ mode: 'fix' }` from the dashboard. ~30-min task.
+5. **Send the 3 hot lead Gmail drafts** — Copenhagen, Paint Pots UK, Ardtona House UK.
+6. **FAMM Argentina follow-up** — past Apr 28 deadline.
+7. **Welcome Тамі** in Ukrainian — first organic Ukrainian signup.
+
+---
+
 ### ⚡ Session 76 — Audit & Optimise Sweep: 17 perf/cost fixes shipped (Apr 30, 2026)
 
 **Commits pushed: `80921de6`, `5ef016b2`, `68ea89e2`, `149e5760`, `9f81dc97` (Turbopack fix) — all on main.**

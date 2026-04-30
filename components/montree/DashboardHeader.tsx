@@ -446,7 +446,10 @@ function DashboardHeader() {
               <span style={{
                 fontFamily: SERIF, fontWeight: 500, fontSize: 17, color: '#fff',
                 letterSpacing: 0.3, overflow: 'hidden', textOverflow: 'ellipsis',
-                whiteSpace: 'nowrap', maxWidth: 160,
+                whiteSpace: 'nowrap',
+                // Mobile: tight cap so the toggle / icons can't overlap.
+                // Desktop: roomier — see CSS below.
+                maxWidth: 'min(40vw, 200px)',
               }}>{session.classroom?.name || t('app.name')}</span>
             </Link>
 
