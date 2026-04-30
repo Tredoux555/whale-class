@@ -86,36 +86,7 @@ export default function LibraryWelcomePage() {
               </svg>
             </Link>
 
-            {/* Path 2: English Corner — rose/pink accent */}
-            <Link
-              href="/montree/library/english-corner"
-              className="group relative flex items-center gap-5 w-full p-6 rounded-2xl border transition-all duration-300 hover:scale-[1.01] active:scale-[0.99]"
-              style={{
-                background: 'linear-gradient(135deg, rgba(244, 114, 182, 0.08), rgba(236, 72, 153, 0.04))',
-                borderColor: 'rgba(244, 114, 182, 0.15)',
-              }}
-            >
-              {/* Hover glow */}
-              <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" style={{ background: 'linear-gradient(135deg, rgba(244, 114, 182, 0.12), rgba(236, 72, 153, 0.06))' }} />
-
-              <div className="relative z-10 w-14 h-14 rounded-xl flex items-center justify-center shrink-0 transition-colors duration-300" style={{ background: 'rgba(244, 114, 182, 0.15)' }}>
-                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-pink-400">
-                  <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
-                  <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
-                </svg>
-              </div>
-              <div className="relative z-10 flex-1 text-left">
-                <div className="text-white font-semibold text-lg">{t('library.englishLanguageCorner')}</div>
-                <div className="text-pink-200/40 text-sm mt-0.5">
-                  {t('library.englishLanguageDescription')}
-                </div>
-              </div>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="relative z-10 text-pink-400/30 group-hover:text-pink-400 group-hover:translate-x-1 transition-all shrink-0">
-                <path d="M5 12h14M12 5l7 7-7 7" />
-              </svg>
-            </Link>
-
-            {/* Path 3: Picture Bank — blue accent */}
+            {/* Picture Bank — blue accent */}
             <Link
               href="/montree/library/photo-bank"
               className="group relative flex items-center gap-5 w-full p-6 rounded-2xl border transition-all duration-300 hover:scale-[1.01] active:scale-[0.99]"
@@ -145,86 +116,6 @@ export default function LibraryWelcomePage() {
               </svg>
             </Link>
 
-            {/* Path 4: Home Curriculum Guides — emerald accent */}
-            <a
-              href="/tools/practical-life-curriculum.html"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="group relative flex items-center gap-5 w-full p-6 rounded-2xl border transition-all duration-300 hover:scale-[1.01] active:scale-[0.99]"
-              style={{
-                background: 'linear-gradient(135deg, rgba(52, 211, 153, 0.08), rgba(16, 185, 129, 0.04))',
-                borderColor: 'rgba(52, 211, 153, 0.15)',
-              }}
-            >
-              {/* Hover glow */}
-              <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" style={{ background: 'linear-gradient(135deg, rgba(52, 211, 153, 0.12), rgba(16, 185, 129, 0.06))' }} />
-
-              <div className="relative z-10 w-14 h-14 rounded-xl flex items-center justify-center shrink-0 transition-colors duration-300" style={{ background: 'rgba(52, 211, 153, 0.15)' }}>
-                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-emerald-400">
-                  <path d="M12 20h9" />
-                  <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
-                </svg>
-              </div>
-              <div className="relative z-10 flex-1 text-left">
-                <div className="text-white font-semibold text-lg">Home Curriculum Guides</div>
-                <div className="text-emerald-200/40 text-sm mt-0.5">
-                  100 works per area — built for parents, no materials needed
-                </div>
-                <div className="flex flex-wrap gap-2 mt-3">
-                  {[
-                    { name: 'Practical Life', href: '/tools/practical-life-curriculum.html', color: '#40916c' },
-                    { name: 'Sensorial', href: '/tools/sensorial-curriculum.html', color: '#d4883e' },
-                    { name: 'Language', href: '/tools/language-curriculum.html', color: '#c0566e' },
-                    { name: 'Mathematics', href: '/tools/mathematics-curriculum.html', color: '#2e7dba' },
-                    { name: 'Cultural', href: '/tools/cultural-curriculum.html', color: '#8b6bb5' },
-                  ].map((area) => (
-                    <a
-                      key={area.name}
-                      href={area.href}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      onClick={(e) => e.stopPropagation()}
-                      className="px-3 py-1 rounded-full text-xs font-medium text-white/90 hover:scale-105 transition-transform"
-                      style={{ background: area.color }}
-                    >
-                      {area.name}
-                    </a>
-                  ))}
-                </div>
-              </div>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="relative z-10 text-emerald-400/30 group-hover:text-emerald-400 group-hover:translate-x-1 transition-all shrink-0">
-                <path d="M5 12h14M12 5l7 7-7 7" />
-              </svg>
-            </a>
-
-            {/* Path 5: Browse — cool teal accent */}
-            <Link
-              href="/montree/library/browse"
-              className="group relative flex items-center gap-5 w-full p-6 rounded-2xl border transition-all duration-300 hover:scale-[1.01] active:scale-[0.99]"
-              style={{
-                background: 'linear-gradient(135deg, rgba(94, 234, 212, 0.06), rgba(45, 212, 191, 0.03))',
-                borderColor: 'rgba(94, 234, 212, 0.12)',
-              }}
-            >
-              {/* Hover glow */}
-              <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" style={{ background: 'linear-gradient(135deg, rgba(94, 234, 212, 0.10), rgba(45, 212, 191, 0.05))' }} />
-
-              <div className="relative z-10 w-14 h-14 rounded-xl flex items-center justify-center shrink-0 transition-colors duration-300" style={{ background: 'rgba(94, 234, 212, 0.12)' }}>
-                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-teal-300">
-                  <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
-                  <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
-                </svg>
-              </div>
-              <div className="relative z-10 flex-1 text-left">
-                <div className="text-white font-semibold text-lg">{t('library.browseLibrary')}</div>
-                <div className="text-teal-200/40 text-sm mt-0.5">
-                  {t('library.browseDescription')}
-                </div>
-              </div>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="relative z-10 text-teal-300/30 group-hover:text-teal-300 group-hover:translate-x-1 transition-all shrink-0">
-                <path d="M5 12h14M12 5l7 7-7 7" />
-              </svg>
-            </Link>
           </div>
         </div>
       </div>
