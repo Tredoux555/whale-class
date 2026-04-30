@@ -231,7 +231,9 @@ The Free/Core/Premium tier system from Session 57 was bypassed by 7 routes that 
 - **`enrichVisualMemoryFromCorrection()` is Free-tier-skipped on purpose.** This is the moat-builder; it should only accrue for paying schools. The correction itself (work assignment, photo update, brain learning) still runs.
 - **`I18nProvider` value MUST stay memoized.** If a future change rebuilds the value on every render again, you reintroduce a tree-wide re-render storm.
 
-**Files changed (Session 76 — 4 commits):**
+**Files changed (Session 76 — 4 sweep commits + Turbopack fix + 6 cleanup commits):**
+
+Sweep:
 - `lib/montree/i18n/context.tsx`
 - `public/montree-sw.js`
 - `lib/montree/reports/ai-generator.ts`
@@ -246,6 +248,15 @@ The Free/Core/Premium tier system from Session 57 was bypassed by 7 routes that 
 - `app/api/montree/weekly-review/[childId]/route.ts`
 - `app/api/montree/guru/corrections/route.ts`
 - `app/api/montree/guru/generate-work-content/route.ts`
+
+Root folder cleanup (6 commits, ending at `99b34723`):
+- 90 → 42 root entries. All artifacts moved to discoverable locations.
+- `docs/handoffs/` ← 8 stale .md plans/handoffs
+- `docs/outreach/` ← 10 .xlsx + 1 .docx (Apr16 backup preserved in `archive/`)
+- `docs/marketing/` ← HeyGen scripts, promo .docx, montree-pitch.html, montree-video-scripts.html, root logo .png/.svg, montree-tree-icon.png, report-format-prototype.html, etc.
+- `docs/artifacts/` ← 10 generated reports + classroom PDFs + Language_Semester_Reports/ + phonics-images.zip
+- `scripts/legacy/` ← 14 orphaned root scripts (verified zero code references)
+- Deleted: document_1.docx + document_2.docx (identical AutoSave dumps), .test_write, .DS_Store, Excel .~lock files
 
 **Next session priorities:**
 1. **🚨 Verify all 4 commits deployed cleanly on Railway.** Visit dashboard, photo-audit, weekly-wrap, language-presentation. Confirm no hydration errors, no 500s.
