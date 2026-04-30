@@ -3,6 +3,7 @@
 
 import { useEffect, useState, useRef } from 'react';
 import { useI18n } from '@/lib/montree/i18n';
+import { getLocalizedWorkName, getLocalizedField } from '@/lib/montree/i18n/db-helpers';
 import { Work, AREA_COLORS } from './types';
 import AreaBadge from '../shared/AreaBadge';
 import { toast } from 'sonner';
@@ -124,7 +125,7 @@ export default function CurriculumWorkList({
                     <div className={`w-2 h-8 rounded-full bg-gradient-to-b ${AREA_COLORS[selectedArea]}`} />
                   )}
                   <div className="flex-1 min-w-0">
-                    <p style={{ fontFamily: '"Inter", sans-serif', fontWeight: 500, color: 'rgba(255,255,255,0.90)', margin: 0, fontSize: 14 }}>{locale === 'zh' && work.name_chinese ? work.name_chinese : work.name}</p>
+                    <p style={{ fontFamily: '"Inter", sans-serif', fontWeight: 500, color: 'rgba(255,255,255,0.90)', margin: 0, fontSize: 14 }}>{getLocalizedWorkName(work, locale)}</p>
                   </div>
                   <div className="flex items-center gap-2">
                     <span style={{ fontFamily: '"Inter", sans-serif', fontSize: 11, color: 'rgba(255,255,255,0.35)' }}>{work.age_range || '3-6'}</span>
@@ -340,7 +341,7 @@ function ExpandedWorkDetails({
       {work.parent_description && (
         <div style={{ background: 'rgba(52,211,153,0.07)', border: '1px solid rgba(52,211,153,0.18)', borderRadius: 10, padding: 12 }}>
           <p style={{ fontFamily: '"Inter", sans-serif', fontWeight: 600, color: '#34d399', fontSize: 11, marginBottom: 4, marginTop: 0 }}>👨‍👩‍👧 {t('curriculum.forParents')}</p>
-          <p style={{ fontFamily: '"Inter", sans-serif', fontSize: 13, color: 'rgba(255,255,255,0.75)', margin: 0 }}>{locale === 'zh' && work.parent_description_zh ? work.parent_description_zh : work.parent_description}</p>
+          <p style={{ fontFamily: '"Inter", sans-serif', fontSize: 13, color: 'rgba(255,255,255,0.75)', margin: 0 }}>{getLocalizedField(work, 'parent_description', locale)}</p>
         </div>
       )}
 
@@ -394,7 +395,7 @@ function ExpandedWorkDetails({
       {work.why_it_matters && (
         <div style={{ background: 'rgba(96,165,250,0.07)', border: '1px solid rgba(96,165,250,0.18)', borderRadius: 10, padding: 12 }}>
           <p style={{ fontFamily: '"Inter", sans-serif', fontWeight: 600, color: 'rgba(147,197,253,0.90)', fontSize: 11, marginBottom: 4, marginTop: 0 }}>💡 {t('curriculum.whyItMatters')}</p>
-          <p style={{ fontFamily: '"Inter", sans-serif', fontSize: 13, color: 'rgba(255,255,255,0.75)', margin: 0 }}>{locale === 'zh' && work.why_it_matters_zh ? work.why_it_matters_zh : work.why_it_matters}</p>
+          <p style={{ fontFamily: '"Inter", sans-serif', fontSize: 13, color: 'rgba(255,255,255,0.75)', margin: 0 }}>{getLocalizedField(work, 'why_it_matters', locale)}</p>
         </div>
       )}
 
