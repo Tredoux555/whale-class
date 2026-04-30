@@ -23,11 +23,13 @@ interface MenuItem {
 }
 
 const MENU_ITEMS: MenuItem[] = [
+  // Essentials — default on for new schools
   { key: 'menu_notes',              label: 'Notes',              description: 'Teacher notes and voice observations',          icon: FileText,    defaultOn: true },
-  { key: 'menu_guru',               label: 'Guru',               description: 'AI teaching assistant',                         icon: Sparkles,    defaultOn: true },
   { key: 'menu_curriculum',         label: 'Curriculum',         description: 'Browse curriculum works by area',               icon: BookOpen,    defaultOn: true },
+  { key: 'menu_guru',               label: 'Guru',               description: 'AI teaching assistant',                         icon: Sparkles,    defaultOn: true },
+  { key: 'menu_photo_audit',        label: 'Wrap Up',            description: 'Review and confirm weekly photos',              icon: Search,      defaultOn: true },
   { key: 'menu_manage_students',    label: 'Manage Students',    description: 'Add, edit, and remove students',                icon: Users,       defaultOn: true },
-  { key: 'menu_photo_audit',        label: 'Wrap Up',            description: 'Review and confirm weekly photos',              icon: Search,      defaultOn: false },
+  // Extras — default off
   { key: 'menu_classroom_overview', label: 'Classroom Overview', description: 'See all students at a glance',                 icon: LayoutGrid,  defaultOn: false },
   { key: 'menu_focus_list',         label: 'Focus List',         description: 'Classroom-wide focus works view',               icon: Target,      defaultOn: false },
   { key: 'menu_photo_albums',       label: 'Photo Albums',       description: 'Organised photo collections',                   icon: Images,      defaultOn: false },
