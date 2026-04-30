@@ -7,6 +7,27 @@ import { getSupabase } from '@/lib/supabase-client';
 import { loadAllCurriculumWorks, loadCurriculumAreas } from '@/lib/montree/curriculum-loader';
 import { createMontreeToken, setMontreeAuthCookie } from '@/lib/montree/server-auth';
 import { getLocationFromRequest } from '@/lib/ip-geolocation';
+import { applyGlobalTranslations } from '@/lib/montree/curriculum/apply-global-translations';
+import { isValidLocale, DEFAULT_LOCALE, type Locale } from '@/lib/montree/i18n/locales';
+
+/**
+ * Resolve the primary locale for a new school at signup.
+ * Priority: request body `locale` field → Accept-Language header → 'en'.
+ */
+function resolvePrimaryLocale(req: NextRequest, bodyLocale: unknown): Locale {
+  // 1. Explicit body field — set by the trial signup form from useI18n().locale
+  if (typeof bodyLocale === 'string' && isValidLocale(bodyLocale)) {
+    return bodyLocale as Locale;
+  }
+  // 2. Accept-Language header — first valid locale tag
+  const accept = req.headers.get('accept-language') || '';
+  for (const part of accept.split(',')) {
+    const tag = part.split(';')[0].trim().split('-')[0].toLowerCase();
+    if (isValidLocale(tag)) return tag as Locale;
+  }
+  // 3. Default
+  return DEFAULT_LOCALE;
+}
 
 /**
  * Seed full Montessori curriculum for a new classroom
@@ -110,7 +131,10 @@ export async function POST(req: NextRequest) {
   try {
     steps.push('1-init');
     const supabase = getSupabase();
-    const { role, name, schoolName, email } = await req.json();
+    const body = await req.json();
+    const { role, name, schoolName, email, locale: bodyLocale } = body;
+    const primaryLocale = resolvePrimaryLocale(req, bodyLocale);
+    steps.push(`1-locale:${primaryLocale}`);
 
     if (!role || !['teacher', 'principal', 'homeschool_parent'].includes(role)) {
       return NextResponse.json({ error: 'Invalid role' }, { status: 400 });
@@ -141,6 +165,7 @@ export async function POST(req: NextRequest) {
         is_active: true,
         trial_ends_at: trialEndsAt.toISOString(),
         max_students: role === 'homeschool_parent' ? 10 : 30,
+        primary_locale: primaryLocale,
       })
       .select()
       .single();
@@ -205,6 +230,16 @@ export async function POST(req: NextRequest) {
         const seedResult = await seedCurriculumForClassroom(supabase, classroom.id as string);
         if (seedResult.success) {
           steps.push(`3b-curriculum-ok:${seedResult.worksCount}`);
+          // ── Step 2c: Copy global translations into the new classroom (free, instant) ──
+          // Fire-and-forget so the trial-signup response returns fast. Within ~1s
+          // every locale column is populated from the global translation library,
+          // so when the teacher switches to their language they see no English.
+          applyGlobalTranslations(classroom.id as string)
+            .then(updated => steps.push(`3c-translations-ok:${updated}`))
+            .catch(err => {
+              console.error('[Trial] applyGlobalTranslations failed:', err);
+              steps.push('3c-translations-fail');
+            });
         } else {
           steps.push('3b-curriculum-fail');
         }

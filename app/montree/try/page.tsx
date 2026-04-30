@@ -43,7 +43,7 @@ interface TrialResponse {
 
 export default function TryMontreePage() {
   const router = useRouter();
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const [step, setStep] = useState<'role' | 'details' | 'creating' | 'code'>('role');
   const [selectedRole, setSelectedRole] = useState<'teacher' | 'principal' | null>(null);
   const [userName, setUserName] = useState('');
@@ -82,6 +82,7 @@ export default function TryMontreePage() {
           name: userName.trim(),
           schoolName: schoolName.trim(),
           email: userEmail.trim(),
+          locale, // Capture the user's UI locale → school.primary_locale at signup
         })
       });
 

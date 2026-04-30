@@ -1,23 +1,36 @@
 // lib/montree/locales-config.ts
 // Single source of truth for which non-English locales are production-active.
 //
+// ENABLED_LOCALES is now AUTO-DERIVED from SUPPORTED_LOCALES — adding a locale to
+// SUPPORTED_LOCALES in lib/montree/i18n/locales.ts is the only code change needed
+// to enable it in every INSERT path, background translate flow, and custom-work
+// fan-out.
+//
 // To add a new language:
-//   1. Add the locale to ENABLED_LOCALES below
+//   1. Add the locale to SUPPORTED_LOCALES in lib/montree/i18n/locales.ts
 //   2. Run: node scripts/add-language.mjs <locale>
 //      (prints ALTER TABLE SQL + batch-translate instructions)
-//   3. That's it — all write paths and background-translate flows pick it up automatically.
+//   3. Add a matching UPDATE block to apply_global_translations() in
+//      migrations/182_apply_global_translations_function.sql (the file is
+//      grep-friendly — every locale is a near-identical block).
+//   4. Translate Whale Class into the new language, then re-run
+//      scripts/seed-global-translations.mjs and
+//      scripts/backfill-all-classroom-translations.mjs to fan it out.
 
 import type { Locale } from '@/lib/montree/i18n/locales';
+import { SUPPORTED_LOCALES, DEFAULT_LOCALE } from '@/lib/montree/i18n/locales';
 
 /**
  * Non-English locales active in production.
- * These locales have DB columns (name_zh, name_es, …) and get
- * background translation whenever curriculum is seeded.
+ * Auto-derived from SUPPORTED_LOCALES — never hand-edited.
  *
- * Adding a locale here is the ONLY code change needed to enable it
- * in all INSERT paths and background-translate flows.
+ * Used by every INSERT path, batchTranslateAllLocales, translateAllLocales,
+ * and the custom-work fan-out. Expanding SUPPORTED_LOCALES in locales.ts
+ * automatically expands this list with no further code change.
  */
-export const ENABLED_LOCALES: Locale[] = ['zh', 'es', 'uk', 'ru'];
+export const ENABLED_LOCALES: Locale[] = SUPPORTED_LOCALES.filter(
+  (l): l is Exclude<Locale, typeof DEFAULT_LOCALE> => l !== DEFAULT_LOCALE
+);
 
 /**
  * Build locale-specific INSERT fields for montree_classroom_curriculum_works.
