@@ -9,7 +9,7 @@ import ChildVoiceNote from '@/components/montree/voice-notes/ChildVoiceNote';
 import EvidenceStrengthBadge from '@/components/montree/EvidenceStrengthBadge';
 import { montreeApi } from '@/lib/montree/api';
 import { useI18n } from '@/lib/montree/i18n';
-import { getAreaLabel } from '@/lib/montree/i18n/area-labels';
+import { getAreaLabel, getAreaPrefix } from '@/lib/montree/i18n/area-labels';
 import { GamePlan } from '@/components/montree/child/GamePlanCard';
 import { resolveLocalized, resolveLocalizedArray } from '@/lib/montree/i18n/localized-types';
 
@@ -99,9 +99,13 @@ const AREA_DOT_RGB: Record<string, string> = {
   cultural:       '249, 115, 22',   // orange
 };
 
-// Inline area circle — replaces AreaBadge (no Tailwind, matches dark forest aesthetic)
-function AreaDot({ area, size = 36 }: { area: string; size?: number }) {
+// Inline area circle with localized letter prefix — matches the curriculum
+// overview cards (P/L/S/M/C in English, localized for other languages).
+function AreaDot({ area, size = 36, locale = 'en' }: { area: string; size?: number; locale?: string }) {
   const rgb = AREA_DOT_RGB[area] || '255,255,255';
+  const prefix = getAreaPrefix(area, locale);
+  // 2-character labels (de, uk) need a smaller font so they fit cleanly.
+  const fontSize = prefix.length > 1 ? Math.round(size * 0.36) : Math.round(size * 0.5);
   return (
     <div style={{
       width: size, height: size, flexShrink: 0,
@@ -109,7 +113,17 @@ function AreaDot({ area, size = 36 }: { area: string; size?: number }) {
       background: `rgba(${rgb}, 0.22)`,
       border: `1px solid rgba(${rgb}, 0.40)`,
       boxShadow: `0 0 0 1px rgba(${rgb}, 0.05) inset, 0 4px 12px rgba(${rgb}, 0.10)`,
-    }} />
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      color: `rgba(${rgb}, 0.95)`,
+      fontFamily: SANS,
+      fontSize,
+      fontWeight: 600,
+      letterSpacing: prefix.length > 1 ? '-0.02em' : '0',
+      lineHeight: 1,
+      userSelect: 'none',
+    }}>
+      {prefix}
+    </div>
   );
 }
 
@@ -391,7 +405,7 @@ export default function FocusWorksSection({
                   }}
                   title={t('focusWorks.tapToChange')}
                 >
-                  <AreaDot area={area} />
+                  <AreaDot area={area} locale={locale} />
                 </button>
 
                 {/* Work name or empty state — tap to expand */}
