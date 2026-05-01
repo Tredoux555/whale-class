@@ -235,6 +235,35 @@ export default function DashboardPage() {
 
   const isParent = session ? isHomeschoolParent(session) : false;
 
+  // Smart Voice Onboarding trigger:
+  // After children load, if any students lack a mental profile AND tell_guru_onboarding
+  // is enabled, redirect to the voice onboarding orchestrator.
+  // Teacher-only — parents/principals never see this.
+  useEffect(() => {
+    if (loading || !session || isParent) return;
+    if (children.length === 0) return;
+    if (!isEnabled('tell_guru_onboarding')) return;
+    // Honour an explicit "skip" param so the user can reach the dashboard if needed
+    if (searchParams.get('skipOnboarding') === '1') return;
+
+    const ctrl = new AbortController();
+    fetch('/api/montree/onboarding/voice/status', { signal: ctrl.signal })
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        if (!data?.success) return;
+        const pending: Array<{ id: string }> = data.pending || [];
+        if (pending.length > 0) {
+          router.replace('/montree/dashboard/voice-onboarding');
+        }
+      })
+      .catch(err => {
+        if (err?.name !== 'AbortError') {
+          console.error('[Dashboard] Voice onboarding status check failed:', err);
+        }
+      });
+    return () => ctrl.abort();
+  }, [loading, session, isParent, children.length, isEnabled, router, searchParams]);
+
   if (!session || loading) {
     return <DashboardSkeleton />;
   }
@@ -560,6 +589,13 @@ export default function DashboardPage() {
               setCacheData(childrenUrl, {
                 children: [...children, ...importedChildren],
               });
+            }
+            // Drive new students into smart voice onboarding immediately —
+            // the dashboard trigger will pick up any pending children and redirect.
+            // Calling router.replace explicitly here gives a smoother handoff than
+            // waiting for the effect to fire.
+            if (importedChildren.length > 0 && isEnabled('tell_guru_onboarding')) {
+              router.replace('/montree/dashboard/voice-onboarding');
             }
           }}
           onClose={() => setShowBulkImport(false)}

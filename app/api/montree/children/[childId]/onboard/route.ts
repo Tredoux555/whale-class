@@ -149,6 +149,8 @@ export async function POST(
     // Call Sonnet with tool_use for structured extraction
     console.log(`[Onboard] Extracting profile for ${childName} (${childId}) from ${transcript.length} char transcript`);
 
+    const summaryLanguageInstruction = getAILanguageInstruction(locale);
+
     const response = await anthropic.messages.create({
       model: AI_MODEL,
       max_tokens: 2000,
@@ -174,7 +176,7 @@ For temperament traits, infer from behavioral descriptions. "Quiet" suggests low
 
 If the teacher didn't mention anything about a field, leave it null. Only fill in what you can reasonably infer.
 
-Create a warm summary that confirms back to the teacher what you understood.`,
+Create a warm summary that confirms back to the teacher what you understood. The summary should focus on what the teacher actually said about this specific child — strengths, weaknesses, current works, interests, personality — rendered back to them clearly and concisely. Mirror the teacher's own thoughts but more organized than how they said it.${summaryLanguageInstruction ? `\n\n${summaryLanguageInstruction} Write the SUMMARY field in this language. All other structured fields stay in English (they are stored values, not user-facing text).` : ''}`,
       }],
     });
 
