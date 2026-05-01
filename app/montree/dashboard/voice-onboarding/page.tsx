@@ -32,7 +32,19 @@ type Stage =
   | 'custom_work_adding'
   | 'transition'
   | 'complete'
-  | 'error_permission';
+  | 'error_permission'
+  | 'debug_error';
+
+interface DebugError {
+  step: string;
+  url?: string;
+  status?: number;
+  statusText?: string;
+  body?: string;
+  jsError?: string;
+  transcriptLength?: number;
+  audioSize?: number;
+}
 
 interface PendingChild {
   id: string;
@@ -74,6 +86,7 @@ export default function VoiceOnboardingPage() {
   const [unmatchedQueue, setUnmatchedQueue] = useState<UnmatchedWork[]>([]);
   const [currentUnmatchedIndex, setCurrentUnmatchedIndex] = useState(0);
   const [errorMsg, setErrorMsg] = useState('');
+  const [debugError, setDebugError] = useState<DebugError | null>(null);
 
   // Refs (audio + timer + abort)
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -215,12 +228,30 @@ export default function VoiceOnboardingPage() {
       console.log('[VoiceOnboarding] Uploading audio for transcription:', { size: blob.size, type: blob.type });
       const form = new FormData();
       form.append('audio', blob, 'recording.webm');
-      const tRes = await fetch('/api/montree/voice-notes/transcribe', { method: 'POST', body: form });
+      let tRes: Response;
+      try {
+        tRes = await fetch('/api/montree/voice-notes/transcribe', { method: 'POST', body: form });
+      } catch (fetchErr) {
+        setDebugError({
+          step: 'TRANSCRIBE — fetch threw',
+          url: '/api/montree/voice-notes/transcribe',
+          jsError: fetchErr instanceof Error ? `${fetchErr.name}: ${fetchErr.message}` : String(fetchErr),
+          audioSize: blob.size,
+        });
+        setStage('debug_error');
+        return;
+      }
       if (!tRes.ok) {
-        const errBody = await tRes.text().catch(() => '');
-        console.error('[VoiceOnboarding] Transcribe failed', { status: tRes.status, body: errBody });
-        setErrorMsg(`${t('voiceOnboarding.error.uploadFailed')} (${tRes.status})`);
-        setStage('idle');
+        const errBody = await tRes.text().catch(() => '(could not read body)');
+        setDebugError({
+          step: 'TRANSCRIBE — server returned error',
+          url: '/api/montree/voice-notes/transcribe',
+          status: tRes.status,
+          statusText: tRes.statusText,
+          body: errBody,
+          audioSize: blob.size,
+        });
+        setStage('debug_error');
         return;
       }
       const tData = await tRes.json();
@@ -253,17 +284,27 @@ export default function VoiceOnboardingPage() {
         });
         console.log('[VoiceOnboarding] ←onboard response', { ok: oRes.ok, status: oRes.status, statusText: oRes.statusText });
       } catch (fetchErr) {
-        console.error('[VoiceOnboarding] Onboard fetch threw:', fetchErr);
-        setErrorMsg(`Onboard request failed: ${fetchErr instanceof Error ? fetchErr.message : String(fetchErr)}`);
-        setStage('idle');
+        setDebugError({
+          step: 'ONBOARD — fetch threw',
+          url: onboardUrl,
+          jsError: fetchErr instanceof Error ? `${fetchErr.name}: ${fetchErr.message}` : String(fetchErr),
+          transcriptLength: text.length,
+        });
+        setStage('debug_error');
         return;
       }
 
       if (!oRes.ok) {
-        const errBody = await oRes.text().catch(() => '');
-        console.error('[VoiceOnboarding] Onboard failed', { status: oRes.status, body: errBody });
-        setErrorMsg(`${t('voiceOnboarding.error.processingFailed')} (HTTP ${oRes.status}): ${errBody.slice(0, 200) || oRes.statusText}`);
-        setStage('idle');
+        const errBody = await oRes.text().catch(() => '(could not read body)');
+        setDebugError({
+          step: 'ONBOARD — server returned error',
+          url: onboardUrl,
+          status: oRes.status,
+          statusText: oRes.statusText,
+          body: errBody,
+          transcriptLength: text.length,
+        });
+        setStage('debug_error');
         return;
       }
 
@@ -295,9 +336,11 @@ export default function VoiceOnboardingPage() {
 
       setStage('review');
     } catch (err) {
-      console.error('[VoiceOnboarding] Pipeline error:', err);
-      setErrorMsg(t('voiceOnboarding.error.processingFailed'));
-      setStage('idle');
+      setDebugError({
+        step: 'PIPELINE — unexpected exception',
+        jsError: err instanceof Error ? `${err.name}: ${err.message}\n${err.stack?.slice(0, 500) || ''}` : String(err),
+      });
+      setStage('debug_error');
     }
   };
 
@@ -426,6 +469,66 @@ export default function VoiceOnboardingPage() {
           <button onClick={() => setStage('idle')} style={{ ...primaryButtonStyle, marginTop: 24 }}>
             {t('voiceOnboarding.review.tryAgain')}
           </button>
+        </div>
+      );
+    }
+
+    if (stage === 'debug_error' && debugError) {
+      return (
+        <div style={{
+          maxWidth: 720,
+          width: '100%',
+          padding: '40px 28px',
+          textAlign: 'left',
+        }}>
+          <div style={{
+            background: 'rgba(239, 68, 68, 0.08)',
+            border: '1px solid rgba(239, 68, 68, 0.4)',
+            borderRadius: 14,
+            padding: '24px 28px',
+          }}>
+            <h2 style={{ ...titleStyle, fontSize: 22, color: '#fca5a5', marginBottom: 16 }}>
+              Something failed during onboarding
+            </h2>
+            <p style={{ ...bodyStyle, fontSize: 14, color: 'rgba(255,255,255,0.7)', marginBottom: 20 }}>
+              Screenshot this whole panel and send it to Tredoux. It tells us exactly where things broke.
+            </p>
+            <DebugRow label="Step" value={debugError.step} />
+            {debugError.url && <DebugRow label="URL" value={debugError.url} mono />}
+            {debugError.status !== undefined && (
+              <DebugRow
+                label="HTTP Status"
+                value={`${debugError.status} ${debugError.statusText || ''}`}
+                highlight
+              />
+            )}
+            {debugError.body && (
+              <DebugRow label="Server response" value={debugError.body.slice(0, 1000)} mono pre />
+            )}
+            {debugError.jsError && (
+              <DebugRow label="JS error" value={debugError.jsError} mono pre />
+            )}
+            {debugError.audioSize !== undefined && (
+              <DebugRow label="Audio size" value={`${debugError.audioSize} bytes`} />
+            )}
+            {debugError.transcriptLength !== undefined && (
+              <DebugRow label="Transcript length" value={`${debugError.transcriptLength} chars`} />
+            )}
+          </div>
+          <div style={{ display: 'flex', gap: 12, marginTop: 24, justifyContent: 'center' }}>
+            <button
+              onClick={() => { setDebugError(null); setStage('idle'); }}
+              style={primaryButtonStyle}
+            >
+              Try recording again
+            </button>
+            <button
+              onClick={() => router.replace('/montree/dashboard?skipOnboarding=1')}
+              style={secondaryButtonStyle}
+            >
+              Back to dashboard
+            </button>
+          </div>
         </div>
       );
     }
@@ -752,6 +855,51 @@ function CustomWorkCatchPanel({
         <button onClick={onSkip} style={secondaryButtonStyle}>
           {t('voiceOnboarding.customWork.skipForNow')}
         </button>
+      </div>
+    </div>
+  );
+}
+
+// ─── Debug row for the inline error screen ───
+function DebugRow({
+  label,
+  value,
+  mono,
+  pre,
+  highlight,
+}: {
+  label: string;
+  value: string;
+  mono?: boolean;
+  pre?: boolean;
+  highlight?: boolean;
+}) {
+  return (
+    <div style={{ marginTop: 14 }}>
+      <div style={{
+        fontSize: 11,
+        textTransform: 'uppercase',
+        letterSpacing: 1.4,
+        color: 'rgba(255,255,255,0.5)',
+        marginBottom: 4,
+      }}>
+        {label}
+      </div>
+      <div style={{
+        fontFamily: mono ? 'ui-monospace, SFMono-Regular, Menlo, monospace' : "'Inter', sans-serif",
+        fontSize: highlight ? 18 : 13,
+        fontWeight: highlight ? 600 : 400,
+        color: highlight ? '#fca5a5' : 'rgba(255,255,255,0.92)',
+        background: 'rgba(0,0,0,0.25)',
+        border: '1px solid rgba(255,255,255,0.08)',
+        borderRadius: 8,
+        padding: '8px 12px',
+        whiteSpace: pre ? 'pre-wrap' : 'normal',
+        wordBreak: 'break-word',
+        maxHeight: pre ? 220 : 'auto',
+        overflow: 'auto',
+      }}>
+        {value}
       </div>
     </div>
   );
