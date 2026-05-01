@@ -201,11 +201,16 @@ async function processLanguage(lang, enEntries, enValues) {
     newLines.push(`  '${k}': '${escapeForSingleQuote(value)}',`);
   }
 
-  // Find the closing `};` — must be the LAST occurrence at indent 0.
+  // Find the closing `};` or `} as const;` — must be the LAST occurrence at indent 0.
   const lines = source.split('\n');
   let closingIdx = -1;
   for (let i = lines.length - 1; i >= 0; i--) {
-    if (/^\s*\}\s*;?\s*$/.test(lines[i]) || lines[i].trim() === '};') {
+    const trimmed = lines[i].trim();
+    if (
+      /^\}\s*;?\s*$/.test(trimmed) ||
+      trimmed === '};' ||
+      /^\}\s+as\s+const\s*;?\s*$/.test(trimmed)
+    ) {
       closingIdx = i; break;
     }
   }
