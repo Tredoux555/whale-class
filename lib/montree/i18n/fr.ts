@@ -3819,4 +3819,7 @@ export const fr: Record<string, string> = {
   'voiceOnboarding.error.tooShort': 'Je n\'ai pas bien compris au sujet de {name} — pouvez-vous réessayer ?',
   'voiceOnboarding.error.uploadFailed': 'Impossible de contacter le serveur. Réessayer ?',
   'voiceOnboarding.error.processingFailed': 'Une erreur s\'est produite. Réessayer ?',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'voiceOnboarding.recording.promptTime': 'Depuis combien de temps sont-ils en classe',
 };

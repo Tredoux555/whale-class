@@ -4224,4 +4224,7 @@ export const zh = {
   'voiceOnboarding.error.tooShort': '我没有充分捕捉关于{name}的信息——再试一次？',
   'voiceOnboarding.error.uploadFailed': '无法连接到服务器。再试一次？',
   'voiceOnboarding.error.processingFailed': '出了点问题。再试一次？',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'voiceOnboarding.recording.promptTime': '他们在教室里待了多长时间',
 } as const;

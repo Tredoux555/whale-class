@@ -3819,4 +3819,7 @@ export const ko: Record<string, string> = {
   'voiceOnboarding.error.tooShort': '{name}에 대해 충분히 듣지 못했어요. 다시 한 번 시도해요?',
   'voiceOnboarding.error.uploadFailed': '서버에 연결할 수 없어요. 다시 시도해요?',
   'voiceOnboarding.error.processingFailed': '문제가 발생했어요. 다시 시도해요?',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'voiceOnboarding.recording.promptTime': '자녀분이 교실에 있었던 시간',
 };

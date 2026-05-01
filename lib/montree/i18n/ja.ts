@@ -3819,4 +3819,7 @@ export const ja: Record<string, string> = {
   'voiceOnboarding.error.tooShort': '{name}についての情報が足りませんでした。もう一度試してみませんか？',
   'voiceOnboarding.error.uploadFailed': 'サーバーに接続できませんでした。もう一度試してみませんか？',
   'voiceOnboarding.error.processingFailed': 'エラーが発生しました。もう一度試してみませんか？',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'voiceOnboarding.recording.promptTime': 'お子さまが教室にいる期間',
 };

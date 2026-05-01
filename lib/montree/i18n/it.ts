@@ -3819,4 +3819,7 @@ export const it: Record<string, string> = {
   'voiceOnboarding.error.tooShort': 'Non ho colto abbastanza su {name} — vuole riprovare?',
   'voiceOnboarding.error.uploadFailed': 'Non riesco a raggiungere il server. Riprovare?',
   'voiceOnboarding.error.processingFailed': 'Qualcosa è andato storto. Riprovare?',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'voiceOnboarding.recording.promptTime': 'Da quanto tempo sono in aula',
 };
