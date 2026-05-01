@@ -95,6 +95,14 @@ export default function VoiceOnboardingPage() {
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const audioBlobRef = useRef<Blob | null>(null); // kept around for retry-upload
 
+  // Web Speech API (live transcription) — shows text on screen as the teacher speaks.
+  // Hybrid pipeline: live text via SpeechRecognition for instant feedback; we still
+  // upload audio to Whisper as a backup for accuracy and accent handling.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const recognitionRef = useRef<any>(null);
+  const liveFinalRef = useRef<string>(''); // accumulates final results across pauses
+  const [liveText, setLiveText] = useState(''); // final + interim, displayed live
+
   // Load pending children
   const loadPending = useCallback(async () => {
     try {
@@ -153,6 +161,16 @@ export default function VoiceOnboardingPage() {
     return `${m}:${sec.toString().padStart(2, '0')}`;
   };
 
+  // Web Speech API locale mapping (browser SpeechRecognition lang codes)
+  const speechLang = (() => {
+    const m: Record<string, string> = {
+      en: 'en-US', zh: 'zh-CN', es: 'es-ES', de: 'de-DE', fr: 'fr-FR',
+      pt: 'pt-BR', nl: 'nl-NL', it: 'it-IT', ja: 'ja-JP', ko: 'ko-KR',
+      uk: 'uk-UA', ru: 'ru-RU',
+    };
+    return m[locale] || 'en-US';
+  })();
+
   // ─── Recording ───
   const startRecording = useCallback(async () => {
     try {
@@ -173,6 +191,8 @@ export default function VoiceOnboardingPage() {
       const recorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
       mediaRecorderRef.current = recorder;
       chunksRef.current = [];
+      liveFinalRef.current = '';
+      setLiveText('');
 
       recorder.ondataavailable = e => { if (e.data.size > 0) chunksRef.current.push(e.data); };
       recorder.onstop = async () => {
@@ -180,11 +200,21 @@ export default function VoiceOnboardingPage() {
         streamRef.current = null;
         if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null; }
 
+        // Stop live recognition too
+        if (recognitionRef.current) {
+          try { recognitionRef.current.stop(); } catch { /* noop */ }
+          recognitionRef.current = null;
+        }
+
         const chunks = chunksRef.current;
         chunksRef.current = [];
-        console.log('[VoiceOnboarding] Recording stopped:', { chunks: chunks.length, mimeType: recorder.mimeType });
+        console.log('[VoiceOnboarding] Recording stopped:', {
+          chunks: chunks.length,
+          liveTranscriptLength: liveFinalRef.current.length,
+          mimeType: recorder.mimeType,
+        });
+
         if (chunks.length === 0) {
-          console.warn('[VoiceOnboarding] No audio chunks captured');
           setErrorMsg('No audio captured. Try again.');
           setStage('idle');
           return;
@@ -192,25 +222,72 @@ export default function VoiceOnboardingPage() {
 
         const blob = new Blob(chunks, { type: recorder.mimeType || 'audio/webm' });
         if (blob.size < 100) {
-          console.warn('[VoiceOnboarding] Audio too short:', blob.size);
           setErrorMsg('Recording too short. Try again.');
           setStage('idle');
           return;
         }
 
         audioBlobRef.current = blob;
-        await transcribeAndProcess(blob);
+        await transcribeAndProcess(blob, liveFinalRef.current);
       };
 
       recorder.start(1000);
       setStage('recording');
       setRecordingTime(0);
       timerRef.current = setInterval(() => setRecordingTime(prev => prev + 1), 1000);
+
+      // Start Web Speech API for LIVE transcription (best-effort; not all browsers support)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const win = window as any;
+      const SR = win.SpeechRecognition || win.webkitSpeechRecognition;
+      if (SR) {
+        try {
+          const recognition = new SR();
+          recognition.continuous = true;
+          recognition.interimResults = true;
+          recognition.lang = speechLang;
+
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          recognition.onresult = (event: any) => {
+            let interim = '';
+            for (let i = event.resultIndex; i < event.results.length; i++) {
+              const transcriptPart = event.results[i][0].transcript;
+              if (event.results[i].isFinal) {
+                liveFinalRef.current += transcriptPart;
+              } else {
+                interim += transcriptPart;
+              }
+            }
+            setLiveText(liveFinalRef.current + interim);
+          };
+
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          recognition.onerror = (e: any) => {
+            console.warn('[VoiceOnboarding] SpeechRecognition error (non-fatal):', e?.error);
+          };
+
+          recognition.onend = () => {
+            // If user is still recording, the API auto-stopped (it does this on long silences).
+            // Only restart if the recorder is still active.
+            if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
+              try { recognition.start(); } catch { /* already running */ }
+            }
+          };
+
+          recognition.start();
+          recognitionRef.current = recognition;
+        } catch (err) {
+          // Silent fail — Whisper backup will still capture audio
+          console.warn('[VoiceOnboarding] SpeechRecognition unavailable; falling back to Whisper:', err);
+        }
+      } else {
+        console.log('[VoiceOnboarding] No SpeechRecognition support; using Whisper only');
+      }
     } catch (err) {
       console.error('[VoiceOnboarding] Mic permission/start error:', err);
       setStage('error_permission');
     }
-  }, []);
+  }, [speechLang]);
 
   const stopRecording = useCallback(() => {
     if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
@@ -219,13 +296,20 @@ export default function VoiceOnboardingPage() {
   }, []);
 
   // ─── Transcribe + Process pipeline ───
-  const transcribeAndProcess = async (blob: Blob) => {
-    setStage('transcribing');
+  // text-first design: if Web Speech API gave us a usable live transcript, we use that
+  // and skip Whisper entirely (faster, free). Whisper is the fallback for browsers without
+  // SpeechRecognition support or when the live transcript is too thin.
+  const transcribeAndProcess = async (blob: Blob, liveTranscript: string) => {
     setErrorMsg('');
+    let text = (liveTranscript || '').trim();
 
-    try {
-      // Step A: Whisper
-      console.log('[VoiceOnboarding] Uploading audio for transcription:', { size: blob.size, type: blob.type });
+    // If live transcript is solid (≥40 chars), skip Whisper entirely
+    if (text.length >= 40) {
+      console.log('[VoiceOnboarding] Using live transcript (skipping Whisper):', { length: text.length });
+    } else {
+      // Fall back to Whisper
+      setStage('transcribing');
+      console.log('[VoiceOnboarding] Live transcript too short; uploading to Whisper:', { liveLength: text.length, audioSize: blob.size });
       const form = new FormData();
       form.append('audio', blob, 'recording.webm');
       let tRes: Response;
@@ -255,31 +339,35 @@ export default function VoiceOnboardingPage() {
         return;
       }
       const tData = await tRes.json();
-      const text = (tData.transcript || '').trim();
-      console.log('[VoiceOnboarding] Transcript received:', { length: text.length, preview: text.slice(0, 80) });
+      text = (tData.transcript || '').trim();
+      console.log('[VoiceOnboarding] Whisper transcript received:', { length: text.length, preview: text.slice(0, 80) });
+    }
 
-      if (!text || text.length < 20) {
-        setErrorMsg(t('voiceOnboarding.error.tooShort', { name: firstName }));
-        setStage('idle');
-        return;
-      }
-      setTranscript(text);
+    if (!text || text.length < 20) {
+      setErrorMsg(t('voiceOnboarding.error.tooShort', { name: firstName }));
+      setStage('idle');
+      return;
+    }
+    setTranscript(text);
+
+    try {
 
       // Step B: Sonnet onboard (profile extraction + game plan)
       setStage('processing');
       if (!currentChild) { setStage('idle'); return; }
 
       const onboardUrl = `/api/montree/children/${currentChild.id}/onboard`;
-      console.log('[VoiceOnboarding] →POST', onboardUrl, { transcriptLength: text.length, classroomId, locale });
+      console.log('[VoiceOnboarding] →POST', onboardUrl, { transcriptLength: text.length, classroomId });
       let oRes: Response;
       try {
+        // Body shape mirrors TellGuruCard exactly (which is known-working).
+        // No `locale` field — /onboard reads locale from URL/Accept-Language headers.
         oRes = await montreeApi(onboardUrl, {
           method: 'POST',
           timeout: 120000,
           body: JSON.stringify({
             transcript: text,
             classroom_id: classroomId,
-            locale,
           }),
         });
         console.log('[VoiceOnboarding] ←onboard response', { ok: oRes.ok, status: oRes.status, statusText: oRes.statusText });
@@ -606,10 +694,9 @@ export default function VoiceOnboardingPage() {
             <p style={promptHeadingStyle}>{t('voiceOnboarding.recording.promptHeading')}</p>
             <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
               <li style={promptItemStyle}>· {t('voiceOnboarding.recording.promptTime')}</li>
-              <li style={promptItemStyle}>· {t('voiceOnboarding.recording.promptStrengths')}</li>
-              <li style={promptItemStyle}>· {t('voiceOnboarding.recording.promptInterests')}</li>
-              <li style={promptItemStyle}>· {t('voiceOnboarding.recording.promptFocus')}</li>
-              <li style={promptItemStyle}>· {t('voiceOnboarding.recording.promptWorks')}</li>
+              <li style={promptItemStyle}>· {t('voiceOnboarding.recording.promptFocusArea')}</li>
+              <li style={promptItemStyle}>· {t('voiceOnboarding.recording.promptBehavior')}</li>
+              <li style={promptItemStyle}>· {t('voiceOnboarding.recording.promptInterestedWork')}</li>
             </ul>
           </div>
 
@@ -655,13 +742,40 @@ export default function VoiceOnboardingPage() {
               <button onClick={stopRecording} style={stopButtonStyle} aria-label="Stop">
                 <div style={{ width: 28, height: 28, background: 'white', borderRadius: 4 }} />
               </button>
-              <p style={{ ...bodyStyle, marginTop: 16, fontSize: 13, fontStyle: 'italic', color: '#a7f3d0' }}>
-                {recordingTime < 15
-                  ? t('voiceOnboarding.recording.encourageEarly')
-                  : recordingTime < 60
-                    ? t('voiceOnboarding.recording.encourageMid')
-                    : t('voiceOnboarding.recording.encourageLate')}
-              </p>
+
+              {/* Live transcript — appears as the teacher speaks (Web Speech API) */}
+              {liveText ? (
+                <div style={{
+                  marginTop: 28,
+                  padding: '20px 24px',
+                  background: 'rgba(167,243,208,0.06)',
+                  border: '1px solid rgba(167,243,208,0.18)',
+                  borderRadius: 16,
+                  maxWidth: 600,
+                  width: '100%',
+                  textAlign: 'left',
+                  maxHeight: 240,
+                  overflowY: 'auto',
+                }}>
+                  <p style={{
+                    ...bodyStyle,
+                    fontSize: 17,
+                    lineHeight: 1.5,
+                    color: '#e6fff4',
+                    margin: 0,
+                  }}>
+                    {liveText}
+                  </p>
+                </div>
+              ) : (
+                <p style={{ ...bodyStyle, marginTop: 16, fontSize: 13, fontStyle: 'italic', color: '#a7f3d0' }}>
+                  {recordingTime < 15
+                    ? t('voiceOnboarding.recording.encourageEarly')
+                    : recordingTime < 60
+                      ? t('voiceOnboarding.recording.encourageMid')
+                      : t('voiceOnboarding.recording.encourageLate')}
+                </p>
+              )}
             </>
           )}
 

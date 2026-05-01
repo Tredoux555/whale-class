@@ -3822,4 +3822,9 @@ export const de: Record<string, string> = {
 
   // ─── Auto-filled missing keys (from Apr 30 audit) ───
   'voiceOnboarding.recording.promptTime': 'Wie lange sie sich im Klassenzimmer befinden',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'voiceOnboarding.recording.promptFocusArea': 'Auf welchen Bereich konzentrieren sie sich derzeit am meisten?',
+  'voiceOnboarding.recording.promptBehavior': 'Welche Verhaltensmerkmale sind bemerkenswert?',
+  'voiceOnboarding.recording.promptInterestedWork': 'Ein Werk in jedem Bereich, das sie am meisten interessiert, und wie sie damit vorankommt',
 };

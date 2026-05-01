@@ -4227,4 +4227,9 @@ export const zh = {
 
   // ─── Auto-filled missing keys (from Apr 30 audit) ───
   'voiceOnboarding.recording.promptTime': '他们在教室里待了多长时间',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'voiceOnboarding.recording.promptFocusArea': '他们目前最关注的领域是什么',
+  'voiceOnboarding.recording.promptBehavior': '值得注意的任何行为特征',
+  'voiceOnboarding.recording.promptInterestedWork': '他们最感兴趣的每个领域中的一项工作，以及他们在这方面的进展',
 } as const;

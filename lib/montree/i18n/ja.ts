@@ -3822,4 +3822,9 @@ export const ja: Record<string, string> = {
 
   // ─── Auto-filled missing keys (from Apr 30 audit) ───
   'voiceOnboarding.recording.promptTime': 'お子さまが教室にいる期間',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'voiceOnboarding.recording.promptFocusArea': 'お子さまが現在最も集中している分野はどちらですか',
+  'voiceOnboarding.recording.promptBehavior': '注目すべき行動上の特徴がありますか',
+  'voiceOnboarding.recording.promptInterestedWork': '各分野でお子さまが最も興味のある活動と、その進捗状況についてお聞かせください',
 };
