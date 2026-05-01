@@ -169,10 +169,21 @@ export default function VoiceOnboardingPage() {
 
         const chunks = chunksRef.current;
         chunksRef.current = [];
-        if (chunks.length === 0) { setStage('idle'); return; }
+        console.log('[VoiceOnboarding] Recording stopped:', { chunks: chunks.length, mimeType: recorder.mimeType });
+        if (chunks.length === 0) {
+          console.warn('[VoiceOnboarding] No audio chunks captured');
+          setErrorMsg('No audio captured. Try again.');
+          setStage('idle');
+          return;
+        }
 
         const blob = new Blob(chunks, { type: recorder.mimeType || 'audio/webm' });
-        if (blob.size < 100) { setStage('idle'); return; }
+        if (blob.size < 100) {
+          console.warn('[VoiceOnboarding] Audio too short:', blob.size);
+          setErrorMsg('Recording too short. Try again.');
+          setStage('idle');
+          return;
+        }
 
         audioBlobRef.current = blob;
         await transcribeAndProcess(blob);
@@ -201,16 +212,20 @@ export default function VoiceOnboardingPage() {
 
     try {
       // Step A: Whisper
+      console.log('[VoiceOnboarding] Uploading audio for transcription:', { size: blob.size, type: blob.type });
       const form = new FormData();
       form.append('audio', blob, 'recording.webm');
       const tRes = await fetch('/api/montree/voice-notes/transcribe', { method: 'POST', body: form });
       if (!tRes.ok) {
-        setErrorMsg(t('voiceOnboarding.error.uploadFailed'));
+        const errBody = await tRes.text().catch(() => '');
+        console.error('[VoiceOnboarding] Transcribe failed', { status: tRes.status, body: errBody });
+        setErrorMsg(`${t('voiceOnboarding.error.uploadFailed')} (${tRes.status})`);
         setStage('idle');
         return;
       }
       const tData = await tRes.json();
       const text = (tData.transcript || '').trim();
+      console.log('[VoiceOnboarding] Transcript received:', { length: text.length, preview: text.slice(0, 80) });
 
       if (!text || text.length < 20) {
         setErrorMsg(t('voiceOnboarding.error.tooShort', { name: firstName }));
@@ -234,7 +249,9 @@ export default function VoiceOnboardingPage() {
       });
 
       if (!oRes.ok) {
-        setErrorMsg(t('voiceOnboarding.error.processingFailed'));
+        const errBody = await oRes.text().catch(() => '');
+        console.error('[VoiceOnboarding] Onboard failed', { status: oRes.status, body: errBody });
+        setErrorMsg(`${t('voiceOnboarding.error.processingFailed')} (${oRes.status})`);
         setStage('idle');
         return;
       }
@@ -491,9 +508,21 @@ export default function VoiceOnboardingPage() {
                 {t('voiceOnboarding.recording.tapToStart')}
               </p>
               {errorMsg && (
-                <p style={{ ...bodyStyle, marginTop: 16, fontSize: 14, color: '#fca5a5' }}>
-                  {errorMsg}
-                </p>
+                <div style={{
+                  marginTop: 24,
+                  padding: '14px 20px',
+                  background: 'rgba(239, 68, 68, 0.14)',
+                  border: '1px solid rgba(239, 68, 68, 0.45)',
+                  borderRadius: 14,
+                  maxWidth: 460,
+                }}>
+                  <p style={{ ...bodyStyle, fontSize: 15, color: '#fca5a5', margin: 0, lineHeight: 1.5 }}>
+                    ⚠️ {errorMsg}
+                  </p>
+                  <p style={{ ...bodyStyle, marginTop: 6, fontSize: 12, color: 'rgba(252,165,165,0.7)' }}>
+                    Open browser console for details. If this keeps happening, check Railway runtime logs.
+                  </p>
+                </div>
               )}
             </>
           )}
@@ -750,6 +779,8 @@ const pageStyle: React.CSSProperties = {
   overflow: 'hidden',
   display: 'flex',
   flexDirection: 'column',
+  alignItems: 'center', // horizontally centre all content blocks
+  justifyContent: 'center', // vertically centre when content is short
 };
 
 const centerStyle: React.CSSProperties = {
