@@ -3822,4 +3822,9 @@ export const ko: Record<string, string> = {
 
   // ─── Auto-filled missing keys (from Apr 30 audit) ───
   'voiceOnboarding.recording.promptTime': '자녀분이 교실에 있었던 시간',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'voiceOnboarding.recording.promptFocusArea': '현재 자녀분이 가장 집중하고 계신 영역은 어느 것인가요?',
+  'voiceOnboarding.recording.promptBehavior': '주목할 만한 행동 특성이 있으신가요?',
+  'voiceOnboarding.recording.promptInterestedWork': '자녀분이 가장 관심 있는 각 영역의 작업 하나씩을 말씀해 주시고, 그 작업을 어떻게 진행하고 계신지 알려주세요.',
 };

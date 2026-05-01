@@ -3819,4 +3819,9 @@ export const uk: Record<string, string> = {
 
   // ─── Auto-filled missing keys (from Apr 30 audit) ───
   'voiceOnboarding.recording.promptTime': 'Як довго вони перебувають у класі',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'voiceOnboarding.recording.promptFocusArea': 'На якій сфері вони найбільше зосереджені прямо зараз',
+  'voiceOnboarding.recording.promptBehavior': 'Будь-які поведінкові особливості, гідні уваги',
+  'voiceOnboarding.recording.promptInterestedWork': 'Одна робота в кожній сфері, яка їх найбільше цікавить, і як у них з нею йде',
 };
