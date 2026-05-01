@@ -238,20 +238,31 @@ export default function VoiceOnboardingPage() {
       setStage('processing');
       if (!currentChild) { setStage('idle'); return; }
 
-      const oRes = await montreeApi(`/api/montree/children/${currentChild.id}/onboard`, {
-        method: 'POST',
-        timeout: 120000,
-        body: JSON.stringify({
-          transcript: text,
-          classroom_id: classroomId,
-          locale,
-        }),
-      });
+      const onboardUrl = `/api/montree/children/${currentChild.id}/onboard`;
+      console.log('[VoiceOnboarding] →POST', onboardUrl, { transcriptLength: text.length, classroomId, locale });
+      let oRes: Response;
+      try {
+        oRes = await montreeApi(onboardUrl, {
+          method: 'POST',
+          timeout: 120000,
+          body: JSON.stringify({
+            transcript: text,
+            classroom_id: classroomId,
+            locale,
+          }),
+        });
+        console.log('[VoiceOnboarding] ←onboard response', { ok: oRes.ok, status: oRes.status, statusText: oRes.statusText });
+      } catch (fetchErr) {
+        console.error('[VoiceOnboarding] Onboard fetch threw:', fetchErr);
+        setErrorMsg(`Onboard request failed: ${fetchErr instanceof Error ? fetchErr.message : String(fetchErr)}`);
+        setStage('idle');
+        return;
+      }
 
       if (!oRes.ok) {
         const errBody = await oRes.text().catch(() => '');
         console.error('[VoiceOnboarding] Onboard failed', { status: oRes.status, body: errBody });
-        setErrorMsg(`${t('voiceOnboarding.error.processingFailed')} (${oRes.status})`);
+        setErrorMsg(`${t('voiceOnboarding.error.processingFailed')} (HTTP ${oRes.status}): ${errBody.slice(0, 200) || oRes.statusText}`);
         setStage('idle');
         return;
       }
