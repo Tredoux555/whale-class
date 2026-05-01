@@ -4005,6 +4005,7 @@ export const en = {
   'voiceOnboarding.welcome.cta': 'I\'m ready',
   'voiceOnboarding.recording.titleAbout': 'Tell me about {name}',
   'voiceOnboarding.recording.promptHeading': 'Talk about',
+  'voiceOnboarding.recording.promptTime': 'How long they\'ve been in the classroom',
   'voiceOnboarding.recording.promptStrengths': 'Their strengths and weaknesses',
   'voiceOnboarding.recording.promptInterests': 'What they enjoy and what they don\'t',
   'voiceOnboarding.recording.promptFocus': 'Their current focus in each area',

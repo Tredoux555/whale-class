@@ -3816,4 +3816,7 @@ export const ru: Record<string, string> = {
   'voiceOnboarding.error.tooShort': 'Я недостаточно разобрал про {name} — попробуйте ещё раз?',
   'voiceOnboarding.error.uploadFailed': 'Не удалось подключиться к серверу. Попробовать снова?',
   'voiceOnboarding.error.processingFailed': 'Что-то пошло не так. Попробовать снова?',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'voiceOnboarding.recording.promptTime': 'Как долго они находятся в классе',
 };

@@ -605,6 +605,7 @@ export default function VoiceOnboardingPage() {
           <div style={promptsStyle}>
             <p style={promptHeadingStyle}>{t('voiceOnboarding.recording.promptHeading')}</p>
             <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+              <li style={promptItemStyle}>· {t('voiceOnboarding.recording.promptTime')}</li>
               <li style={promptItemStyle}>· {t('voiceOnboarding.recording.promptStrengths')}</li>
               <li style={promptItemStyle}>· {t('voiceOnboarding.recording.promptInterests')}</li>
               <li style={promptItemStyle}>· {t('voiceOnboarding.recording.promptFocus')}</li>

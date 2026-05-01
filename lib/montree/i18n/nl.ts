@@ -3819,4 +3819,7 @@ export const nl: Record<string, string> = {
   'voiceOnboarding.error.tooShort': 'Ik kon niet genoeg over {name} verstaan — wilt u het opnieuw proberen?',
   'voiceOnboarding.error.uploadFailed': 'Kon de server niet bereiken. Wilt u het opnieuw proberen?',
   'voiceOnboarding.error.processingFailed': 'Er ging iets mis. Wilt u het opnieuw proberen?',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'voiceOnboarding.recording.promptTime': 'Hoe lang zij in het klaslokaal zijn',
 };
