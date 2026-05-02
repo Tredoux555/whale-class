@@ -518,11 +518,11 @@ export default function SchoolsTab({
                                   for the first day of a new calendar month. */}
                               <span
                                 title="API spend this month (resets the 1st of each month)"
-                                className={`text-xs font-mono ${spent > 5 ? 'text-red-400' : spent > 1 ? 'text-amber-400' : spent > 0 ? 'text-slate-400' : 'text-slate-600'}`}
+                                className={`text-xs font-mono ${spent > 5 ? 'text-red-400' : spent > 1 ? 'text-amber-400' : spent > 0 ? 'text-slate-300' : 'text-slate-500'}`}
                               >
                                 ${spent < 0.01 && spent > 0 ? spent.toFixed(4) : spent.toFixed(2)}
                               </span>
-                              <span className="text-slate-600 text-[10px]">{calls} {calls === 1 ? 'call' : 'calls'}</span>
+                              <span className="text-slate-500 text-[10px]">{calls} {calls === 1 ? 'call' : 'calls'}</span>
                             </div>
                           );
                         })()}
