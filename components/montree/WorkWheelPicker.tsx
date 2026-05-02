@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 import { AREA_CONFIG } from '@/lib/montree/types';
 import { getClassroomId } from '@/lib/montree/auth';
 import { useI18n } from '@/lib/montree/i18n';
+import { getAreaPrefix, getAreaLabel } from '@/lib/montree/i18n/area-labels';
 
 interface Work {
   id: string;
@@ -31,19 +32,24 @@ interface WorkWheelPickerProps {
   onWorkAdded?: () => void;
 }
 
-const STATUS_COLORS: Record<string, string> = {
-  mastered: '#10b981',
-  completed: '#10b981',
-  practicing: '#3b82f6',
-  presented: '#f59e0b',
-};
-
 // Brand emerald — used for all primary actions, selections, and accents in this picker.
-// The per-area colors (areaConfig.color) are kept ONLY for the small area icon at top
-// so teachers can still recognise the area at a glance, but buttons and selection
-// highlights all use the brand colour for visual consistency with the rest of the app.
+// The per-area colors (areaConfig.color) are kept ONLY as a subtle accent on the small
+// area icon at top (border tint) so teachers can still recognise the area at a glance,
+// but buttons, status dots, and selection highlights all use brand colours for visual
+// consistency with the rest of the app.
 const BRAND_EMERALD = '#34d399';
 const BRAND_EMERALD_DARK = '#1D6B48';
+const BRAND_EMERALD_DEEP = '#10b981'; // saturated emerald for "mastered" — distinct from practicing
+const BRAND_GOLD = '#E8C96A';
+
+// Status dots: deep emerald (mastered) → brand emerald (practicing) → brand gold (presented).
+// All on-brand, no stock blue/orange.
+const STATUS_COLORS: Record<string, string> = {
+  mastered: BRAND_EMERALD_DEEP,
+  completed: BRAND_EMERALD_DEEP,
+  practicing: BRAND_EMERALD,
+  presented: BRAND_GOLD,
+};
 
 export default function WorkWheelPicker({
   isOpen,
@@ -233,13 +239,18 @@ export default function WorkWheelPicker({
     return (
       <div className="fixed inset-0 z-50 bg-black/90 flex flex-col items-center justify-center" onClick={onClose}>
         <div className="text-center text-white p-8 w-full max-w-sm" onClick={e => e.stopPropagation()}>
+          {/* Area badge — emerald-tinted with subtle area-color border as identifier */}
           <div
-            className="w-14 h-14 rounded-2xl inline-flex items-center justify-center text-white text-2xl mx-auto mb-3"
-            style={{ backgroundColor: areaConfig.color }}
+            className="w-14 h-14 rounded-2xl inline-flex items-center justify-center text-2xl font-semibold mx-auto mb-3"
+            style={{
+              background: `${BRAND_EMERALD}1A`,
+              border: `1.5px solid ${areaConfig.color}55`,
+              color: BRAND_EMERALD,
+            }}
           >
-            {areaConfig.icon}
+            {getAreaPrefix(area, locale)}
           </div>
-          <h2 className="font-semibold text-xl mb-1">{areaConfig.name}</h2>
+          <h2 className="font-semibold text-xl mb-1">{getAreaLabel(area, locale)}</h2>
 
           {showAddForm ? (
             <div className="mt-4 space-y-3 text-left">
@@ -308,13 +319,18 @@ export default function WorkWheelPicker({
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
           </button>
           <div className="text-center">
+            {/* Area badge — emerald-tinted with subtle area-color border as identifier */}
             <div
-              className="w-10 h-10 rounded-xl inline-flex items-center justify-center text-white text-lg mx-auto mb-1"
-              style={{ backgroundColor: areaConfig.color }}
+              className="w-10 h-10 rounded-xl inline-flex items-center justify-center text-base font-semibold mx-auto mb-1"
+              style={{
+                background: `${BRAND_EMERALD}1A`,
+                border: `1.5px solid ${areaConfig.color}55`,
+                color: BRAND_EMERALD,
+              }}
             >
-              {areaConfig.icon}
+              {getAreaPrefix(area, locale)}
             </div>
-            <h2 className="font-semibold text-base tracking-tight">{areaConfig.name}</h2>
+            <h2 className="font-semibold text-base tracking-tight">{getAreaLabel(area, locale)}</h2>
           </div>
           <div className="w-10" />
         </div>
@@ -620,7 +636,7 @@ export default function WorkWheelPicker({
               }}>
                 +
               </span>
-              {t('workWheel.addCustomWork').replace('{area}', areaConfig.name)}
+              {t('workWheel.addCustomWork').replace('{area}', getAreaLabel(area, locale))}
             </button>
           </div>
         )}
