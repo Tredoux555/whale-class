@@ -102,20 +102,28 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // 3b. Fetch actual API usage from montree_api_usage (this month)
+    // 3b. Fetch actual API usage from montree_api_usage (this month).
+    // Also captures per-school MAX created_at so we have a comprehensive
+    // "last active" signal — every API call (photo capture, weekly wrap,
+    // replan, guru, etc.) writes a row here, so it's a much wider signal
+    // than just guru interactions + media uploads.
     const monthStart = new Date();
     monthStart.setDate(1);
     monthStart.setHours(0, 0, 0, 0);
     const { data: apiUsageRaw } = await supabase
       .from('montree_api_usage')
-      .select('school_id, cost_usd')
+      .select('school_id, cost_usd, created_at')
       .gte('created_at', monthStart.toISOString());
 
     const apiSpentMap: Record<string, number> = {};
     const apiCallsMap: Record<string, number> = {};
-    (apiUsageRaw || []).forEach((row: { school_id: string; cost_usd: number }) => {
+    const lastApiUsageMap: Record<string, string> = {};
+    (apiUsageRaw || []).forEach((row: { school_id: string; cost_usd: number; created_at: string }) => {
       apiSpentMap[row.school_id] = (apiSpentMap[row.school_id] || 0) + Number(row.cost_usd);
       apiCallsMap[row.school_id] = (apiCallsMap[row.school_id] || 0) + 1;
+      if (!lastApiUsageMap[row.school_id] || row.created_at > lastApiUsageMap[row.school_id]) {
+        lastApiUsageMap[row.school_id] = row.created_at;
+      }
     });
 
     // Single query for all interactions — filter in-memory for cost (30-day window)
@@ -169,12 +177,16 @@ export async function GET(request: NextRequest) {
     const schoolStats = (schools || []).map(school => {
       const lastInteraction = lastInteractionMap[school.id] || null;
       const lastMedia = lastMediaMap[school.id] || null;
-      let lastActiveAt: string | null = null;
-      if (lastInteraction && lastMedia) {
-        lastActiveAt = lastInteraction > lastMedia ? lastInteraction : lastMedia;
-      } else {
-        lastActiveAt = lastInteraction || lastMedia || null;
-      }
+      const lastApiUsage = lastApiUsageMap[school.id] || null;
+      // last_active = max of (api_usage, guru_interaction, media_upload).
+      // api_usage is the widest signal (catches photo capture, weekly wrap,
+      // replan, every Sonnet/Haiku call). Including it fixes the case where
+      // active schools showed "Never" because they hadn't used Guru directly
+      // and their media uploads fell outside the global recent-500 window.
+      const candidates = [lastInteraction, lastMedia, lastApiUsage].filter(Boolean) as string[];
+      const lastActiveAt = candidates.length > 0
+        ? candidates.reduce((max, ts) => (ts > max ? ts : max))
+        : null;
 
       return {
         ...school,
