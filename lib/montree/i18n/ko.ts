@@ -3887,4 +3887,7 @@ export const ko: Record<string, string> = {
   'voiceOnboarding.shelfEditor.addCustom': '+ 맞춤 작업 추가',
   'voiceOnboarding.shelfEditor.confirm': '좋아요',
   'voiceOnboarding.shelfEditor.empty': '아직 선택된 작업이 없어요. 맞춤 작업을 추가해서 시작하세요.',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'voiceOnboarding.processing.layingFoundation': '{name}을(를) 위한 기초를 마련하고 있어요',
 };

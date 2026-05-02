@@ -91,6 +91,16 @@ interface ProcessResult {
 
 const AREA_KEYS = ['practical_life', 'sensorial', 'mathematics', 'language', 'cultural'] as const;
 
+// Per-area dot RGB values — must match FocusWorksSection.tsx so the shelf
+// editor and the actual dashboard shelf are visually identical.
+const AREA_DOT_RGB: Record<string, string> = {
+  practical_life: '236, 72, 153',   // pink
+  sensorial:      '20, 184, 166',   // teal
+  mathematics:    '168, 85, 247',   // purple
+  language:       '74, 222, 128',   // green
+  cultural:       '249, 115, 22',   // orange
+};
+
 export default function VoiceOnboardingPage() {
   const router = useRouter();
   const { t, locale } = useI18n();
@@ -1166,16 +1176,10 @@ export default function VoiceOnboardingPage() {
             color: '#fff',
             margin: 0,
             letterSpacing: 0.3,
+            textAlign: 'center',
+            padding: '0 24px',
           }}>
-            Processing
-          </p>
-          <p style={{
-            ...bodyStyle,
-            fontSize: 14,
-            color: 'rgba(255,255,255,0.55)',
-            margin: 0,
-          }}>
-            {t('voiceOnboarding.processing', { name: firstName })}
+            {t('voiceOnboarding.processing.layingFoundation', { name: firstName })}
           </p>
         </div>
       )}
@@ -1362,16 +1366,17 @@ export default function VoiceOnboardingPage() {
             {t('voiceOnboarding.shelfEditor.subtitle')}
           </p>
 
-          {/* Shelf rows — ALWAYS render the 5 area slots in canonical order so
-              the teacher always has an entry point to add custom works, even
-              when /onboard didn't seed anything (e.g. "new" experience level or
-              the teacher didn't mention specific works). Filled rows show as
-              the dashboard would show them; empty rows show a brand-emerald
-              dashed "+ {Area}" affordance. */}
+          {/* Shelf rows — visually identical to the dashboard's "This Week's
+              Focus" rows in components/montree/child/FocusWorksSection.tsx.
+              Same colored AreaDot, same row chrome, same status badge, same
+              chevron. The teacher recognises this from the actual dashboard.
+              ALWAYS renders 5 area slots in canonical order so empty areas
+              still expose an entry point — even an empty row taps through to
+              the picker (which then offers the +Add custom work option). */}
           <div style={{
             display: 'flex',
             flexDirection: 'column',
-            gap: 10,
+            gap: 8,
             width: '100%',
             opacity: editorBusy ? 0.6 : 1,
             transition: 'opacity 0.15s',
@@ -1382,71 +1387,23 @@ export default function VoiceOnboardingPage() {
                 return rArea === areaKey;
               });
               const areaLabel = getAreaLabel(areaKey, locale);
-              if (!row) {
-                // Empty area — brand-emerald dashed affordance, taps open the
-                // picker for that area so the teacher can add a custom work.
-                return (
-                  <button
-                    key={`empty-${areaKey}`}
-                    onClick={() => onOpenAddCustom(areaKey)}
-                    disabled={editorBusy}
-                    style={{
-                      padding: '14px 20px',
-                      borderRadius: 14,
-                      background: 'rgba(52,211,153,0.04)',
-                      border: '1.5px dashed rgba(52,211,153,0.30)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      gap: 12,
-                      cursor: 'pointer',
-                      textAlign: 'left',
-                      width: '100%',
-                      fontFamily: "'Inter', -apple-system, sans-serif",
-                    }}
-                  >
-                    <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minWidth: 0 }}>
-                      <span style={{
-                        fontSize: 11,
-                        letterSpacing: 1.4,
-                        textTransform: 'uppercase',
-                        color: 'rgba(255,255,255,0.45)',
-                        marginBottom: 4,
-                      }}>
-                        {areaLabel}
-                      </span>
-                      <span style={{
-                        fontSize: 15,
-                        color: 'rgba(167,243,208,0.85)',
-                        textAlign: 'left',
-                      }}>
-                        {t('voiceOnboarding.shelfEditor.addCustom')}
-                      </span>
-                    </div>
-                    <span style={{
-                      fontSize: 22,
-                      color: 'rgba(167,243,208,0.7)',
-                      lineHeight: 1,
-                      paddingRight: 4,
-                    }}>
-                      +
-                    </span>
-                  </button>
-                );
-              }
+              const rgb = AREA_DOT_RGB[areaKey] || '255,255,255';
+              const prefix = getAreaPrefix(areaKey, locale);
+              const dotFontSize = prefix.length > 1 ? Math.round(36 * 0.36) : Math.round(36 * 0.5);
+              const isEmpty = !row;
+
               return (
                 <button
-                  key={`${row.work_name}-${row.area}`}
-                  onClick={() => onTapShelfRow(areaKey, row.work_name)}
+                  key={`${areaKey}-${row?.work_name || 'empty'}`}
+                  onClick={() => isEmpty ? onOpenAddCustom(areaKey) : onTapShelfRow(areaKey, row!.work_name)}
                   disabled={editorBusy}
                   style={{
-                    padding: '14px 20px',
+                    padding: '12px 14px',
                     borderRadius: 14,
-                    background: 'rgba(167,243,208,0.06)',
-                    border: '1px solid rgba(167,243,208,0.22)',
+                    background: 'rgba(8,20,12,0.55)',
+                    border: '1px solid rgba(167,243,208,0.18)',
                     display: 'flex',
                     alignItems: 'center',
-                    justifyContent: 'space-between',
                     gap: 12,
                     cursor: 'pointer',
                     textAlign: 'left',
@@ -1454,47 +1411,69 @@ export default function VoiceOnboardingPage() {
                     fontFamily: "'Inter', -apple-system, sans-serif",
                   }}
                 >
-                  <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minWidth: 0 }}>
-                    <span style={{
-                      fontSize: 11,
-                      letterSpacing: 1.4,
-                      textTransform: 'uppercase',
-                      color: 'rgba(255,255,255,0.45)',
-                      marginBottom: 4,
-                    }}>
-                      {areaLabel}
-                    </span>
-                    <span style={{
-                      fontSize: 16,
-                      color: '#e6fff4',
-                      textAlign: 'left',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                    }}>
-                      {row.work_name}
-                    </span>
+                  {/* Area dot — exact same styling as FocusWorksSection.AreaDot */}
+                  <div style={{
+                    width: 36, height: 36, flexShrink: 0,
+                    borderRadius: '50%',
+                    background: `rgba(${rgb}, 0.22)`,
+                    border: `1px solid rgba(${rgb}, 0.40)`,
+                    boxShadow: `0 0 0 1px rgba(${rgb}, 0.05) inset, 0 4px 12px rgba(${rgb}, 0.10)`,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    color: `rgba(${rgb}, 0.95)`,
+                    fontFamily: "'Inter', -apple-system, sans-serif",
+                    fontSize: dotFontSize,
+                    fontWeight: 600,
+                    letterSpacing: prefix.length > 1 ? '-0.02em' : '0',
+                    lineHeight: 1,
+                    userSelect: 'none',
+                  }}>
+                    {prefix}
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
+
+                  {/* Work name OR empty-state area label */}
+                  <span style={{
+                    flex: 1,
+                    fontWeight: 500,
+                    color: isEmpty ? 'rgba(255,255,255,0.55)' : '#e6fff4',
+                    fontSize: 14,
+                    fontStyle: isEmpty ? 'italic' : 'normal',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                  }}>
+                    {isEmpty ? areaLabel : row!.work_name}
+                  </span>
+
+                  {/* Status badge — only when populated */}
+                  {!isEmpty && (
                     <span style={{
-                      fontSize: 12,
+                      padding: '3px 10px',
+                      borderRadius: 20,
+                      fontSize: 11,
+                      fontWeight: 600,
                       color: '#a7f3d0',
-                      padding: '4px 12px',
-                      background: 'rgba(167,243,208,0.10)',
-                      border: '1px solid rgba(167,243,208,0.25)',
-                      borderRadius: 999,
+                      background: 'rgba(167,243,208,0.12)',
+                      border: '1px solid rgba(167,243,208,0.30)',
                       textTransform: 'capitalize',
                       whiteSpace: 'nowrap',
+                      flexShrink: 0,
+                      fontFamily: "'Inter', -apple-system, sans-serif",
                     }}>
-                      {row.status}
+                      {row!.status}
                     </span>
-                    <span style={{
-                      fontSize: 11,
-                      color: 'rgba(255,255,255,0.35)',
-                      whiteSpace: 'nowrap',
-                    }}>
-                      {t('voiceOnboarding.shelfEditor.tapToSwap')}
-                    </span>
-                  </div>
+                  )}
+
+                  {/* Chevron — matches dashboard */}
+                  <span style={{
+                    color: 'rgba(255,255,255,0.4)',
+                    flexShrink: 0,
+                    display: 'flex',
+                    alignItems: 'center',
+                  }}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round">
+                      <path d="m6 9 6 6 6-6" />
+                    </svg>
+                  </span>
                 </button>
               );
             })}

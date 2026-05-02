@@ -3887,4 +3887,7 @@ export const nl: Record<string, string> = {
   'voiceOnboarding.shelfEditor.addCustom': '+ Aangepast werk toevoegen',
   'voiceOnboarding.shelfEditor.confirm': 'Ziet er goed uit',
   'voiceOnboarding.shelfEditor.empty': 'Nog geen focuswerken. Voeg een aangepaste toe om te beginnen.',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'voiceOnboarding.processing.layingFoundation': 'Het fundament leggen voor {name}',
 };

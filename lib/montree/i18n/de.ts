@@ -3887,4 +3887,7 @@ export const de: Record<string, string> = {
   'voiceOnboarding.shelfEditor.addCustom': '+ Benutzerdefinierte Arbeit hinzufügen',
   'voiceOnboarding.shelfEditor.confirm': 'Sieht großartig aus',
   'voiceOnboarding.shelfEditor.empty': 'Noch keine Fokusarbeiten vorhanden. Fügen Sie eine benutzerdefinierte Arbeit hinzu, um zu beginnen.',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'voiceOnboarding.processing.layingFoundation': 'Grundlagen schaffen für {name}',
 };

@@ -4290,4 +4290,7 @@ export const zh = {
   'voiceOnboarding.shelfEditor.addCustom': '+ 添加自定义工作',
   'voiceOnboarding.shelfEditor.confirm': '看起来很不错',
   'voiceOnboarding.shelfEditor.empty': '还没有专注工作。添加一个自定义工作以开始。',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'voiceOnboarding.processing.layingFoundation': '为 {name} 奠定基础',
 } as const;
