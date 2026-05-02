@@ -12,6 +12,12 @@ import { loadAllCurriculumWorks, type CurriculumWork } from '@/lib/montree/curri
 import { checkRateLimit } from '@/lib/rate-limiter';
 import { getAILanguageInstruction } from '@/lib/montree/i18n/locale-config';
 
+
+// Railway/Next.js default serverless timeout is 15s. AI calls can
+// exceed that and return 503 (Service Unavailable). 120s gives the
+// route enough headroom while still bounded.
+export const maxDuration = 120;
+
 // Simplified tool schema — work is already known, just assess mastery
 const PHOTO_ENRICH_TOOL = {
   name: 'assess_mastery' as const,

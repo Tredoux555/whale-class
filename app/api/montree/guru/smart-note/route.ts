@@ -13,6 +13,12 @@ import { GURU_TOOLS } from '@/lib/montree/guru/tool-definitions';
 import { loadWorksForArea } from '@/lib/montree/curriculum-loader';
 import { checkRateLimit } from '@/lib/rate-limiter';
 
+
+// Railway/Next.js default serverless timeout is 15s. AI calls can
+// exceed that and return 503 (Service Unavailable). 60s gives the
+// route enough headroom while still bounded.
+export const maxDuration = 60;
+
 // Only expose 2 tools to Haiku — keep it fast and focused
 const SMART_NOTE_TOOL_NAMES = ['update_progress', 'save_observation'];
 const SMART_NOTE_TOOLS = GURU_TOOLS.filter(t => SMART_NOTE_TOOL_NAMES.includes(t.name));

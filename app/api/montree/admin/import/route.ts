@@ -5,6 +5,12 @@ import { getSupabase } from '@/lib/supabase-client';
 import Anthropic from '@anthropic-ai/sdk';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 
+
+// Railway/Next.js default serverless timeout is 15s. AI calls can
+// exceed that and return 503 (Service Unavailable). 60s gives the
+// route enough headroom while still bounded.
+export const maxDuration = 60;
+
 function getAnthropic(): Anthropic {
   if (!process.env.ANTHROPIC_API_KEY) throw new Error('Anthropic API key not configured');
   return new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });

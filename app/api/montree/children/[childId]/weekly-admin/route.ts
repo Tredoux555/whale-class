@@ -11,6 +11,12 @@ import { anthropic, AI_MODEL } from '@/lib/ai/anthropic';
 import { updateChildSettings } from '@/lib/montree/guru/settings-helper';
 import { enrichWithChineseNames } from '@/lib/montree/curriculum-loader';
 
+
+// Railway/Next.js default serverless timeout is 15s. AI calls can
+// exceed that and return 503 (Service Unavailable). 120s gives the
+// route enough headroom while still bounded.
+export const maxDuration = 120;
+
 // ---- Types ----
 
 interface FocusWork {

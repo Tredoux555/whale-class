@@ -5,6 +5,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 
+
+// Railway/Next.js default serverless timeout is 15s. AI calls can
+// exceed that and return 503 (Service Unavailable). 90s gives the
+// route enough headroom while still bounded.
+export const maxDuration = 90;
+
 export async function POST(request: NextRequest) {
   try {
     const auth = await verifySchoolRequest(request);

@@ -6,6 +6,12 @@ import { getSupabase } from '@/lib/supabase-client';
 import { verifySuperAdminPassword } from '@/lib/verify-super-admin';
 import Anthropic from '@anthropic-ai/sdk';
 
+
+// Railway/Next.js default serverless timeout is 15s. AI calls can
+// exceed that and return 503 (Service Unavailable). 60s gives the
+// route enough headroom while still bounded.
+export const maxDuration = 60;
+
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }

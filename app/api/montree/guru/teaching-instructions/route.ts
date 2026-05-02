@@ -11,6 +11,12 @@ import { buildChildContext } from '@/lib/montree/guru/context-builder';
 import { checkRateLimit } from '@/lib/rate-limiter';
 import { resolveReportModel } from '@/lib/montree/reports/resolve-model';
 
+
+// Railway/Next.js default serverless timeout is 15s. AI calls can
+// exceed that and return 503 (Service Unavailable). 120s gives the
+// route enough headroom while still bounded.
+export const maxDuration = 120;
+
 // Escape special SQL wildcard characters for safe ILIKE usage
 function escapeIlike(str: string): string {
   return str.replace(/[%_\\]/g, '\\$&');

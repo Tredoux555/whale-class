@@ -8,6 +8,12 @@ import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { anthropic, AI_ENABLED, AI_MODEL } from '@/lib/ai/anthropic';
 import { resolveReportModel } from '@/lib/montree/reports/resolve-model';
 
+
+// Railway/Next.js default serverless timeout is 15s. AI calls can
+// exceed that and return 503 (Service Unavailable). 120s gives the
+// route enough headroom while still bounded.
+export const maxDuration = 120;
+
 const GENERATE_CONTENT_TOOL = {
   name: 'generate_work_content' as const,
   description: 'Generate comprehensive Montessori curriculum content for a work/activity.',

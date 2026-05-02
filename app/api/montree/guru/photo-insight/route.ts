@@ -18,6 +18,12 @@ import { getClassroomOnboardingStatus, invalidateOnboardingCache, invalidateClas
 import { logApiUsage, checkAiBudget } from '@/lib/montree/api-usage';
 import { getAILanguageInstruction } from '@/lib/montree/i18n/locale-config';
 
+
+// Railway/Next.js default serverless timeout is 15s. AI calls can
+// exceed that and return 503 (Service Unavailable). 120s gives the
+// route enough headroom while still bounded.
+export const maxDuration = 120;
+
 // ================================================================
 // IN-MEMORY RATE LIMITER FALLBACK
 // Used when DB-based rate limiter is unavailable (Supabase down)

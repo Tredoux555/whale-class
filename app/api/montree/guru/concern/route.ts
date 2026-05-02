@@ -10,6 +10,12 @@ import { verifyChildBelongsToSchool } from '@/lib/montree/verify-child-access';
 import { getConcernById, type ConcernMapping } from '@/lib/montree/guru/concern-mappings';
 import { anthropic, AI_ENABLED, HAIKU_MODEL } from '@/lib/ai/anthropic';
 
+
+// Railway/Next.js default serverless timeout is 15s. AI calls can
+// exceed that and return 503 (Service Unavailable). 60s gives the
+// route enough headroom while still bounded.
+export const maxDuration = 60;
+
 function buildConcernPrompt(
   childName: string,
   childAge: number,
