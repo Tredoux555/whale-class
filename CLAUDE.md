@@ -181,6 +181,256 @@ GMass campaigns A/C/D are historical. Campaign C sent 335 blank emails (Session 
 
 ---
 
+## RECENT STATUS (May 2, 2026)
+
+### ⚡ Session 80 — Voice Onboarding Hardening + Live Transcription + Landing Page i18n + Picker Brand Pass (May 2, 2026)
+
+**🚨 CRITICAL CONTEXT:** User flagged that the first outreach wave LOST users because of poor onboarding. The whole point of this session was to wax the onboarding before outreach restarts. Voice onboarding is the entry point — it has to feel premium and bulletproof.
+
+**14 commits pushed to main this session.** Headline commits:
+- `4ac971f7` — New structured prompts: age + time + enjoys + struggles + per-area focus (with 5 areas indented)
+- `b044ac5f` — `/onboard` now returns MAX 5 focus works (one per area), matching dashboard logic exactly
+- `4d0a0ccc` — WorkWheelPicker rebrand: hot pink → emerald + agent-style Add custom work
+- `3a4783ee` — Real seeded shelf in onboarding review + remove No-evidence strip + Add custom work back on shelf
+- `e6da5d2b` — Landing page i18n + "Get my code → Let's go"
+- `2d59f5fa` — Belt-and-suspenders hardening: every silent-fail path closed
+- `735fc08d` — Real-time transcription via Web Speech API + match TellGuruCard call
+
+**A. Voice onboarding orchestrator — current state (post-hardening):**
+
+Architecture:
+- Page: `app/montree/dashboard/voice-onboarding/page.tsx` — single state-machine page
+- Trigger: dashboard redirects on load if pending children + `tell_guru_onboarding` + teacher role
+- Pipeline: `/voice-notes/transcribe` (Whisper backup) → `/children/:id/onboard` (Sonnet profile + game plan + curriculum seed) → `/onboarding/voice/scan-custom` → `/onboarding/voice/custom-work` (inline)
+
+Stages: `loading` → `welcome` → `recording` → `transcribing/processing` → `review` → `transition` → loop OR `complete`. Plus `debug_error` for any failure.
+
+Real-time transcription via Web Speech API:
+- Words appear live in a green-bordered panel below the mic as the teacher speaks
+- Locale-aware (en-US, zh-CN, es-ES, de-DE, etc.)
+- If live transcript ≥40 chars → skip Whisper, send live transcript to Sonnet (free, faster)
+- Falls back to Whisper for browsers without SpeechRecognition
+
+**B. The 7-round 503 saga — root cause + fix:**
+
+User saw silent "bumped back to recording" behavior across multiple attempts. After spawning a parallel investigation agent, the actual root cause: `currentChild = pending[currentIndex]` was becoming undefined mid-flow when something reset `pending`, and the code did `if (!currentChild) { setStage('idle'); return; }` SILENTLY — no log, no error handler, no debug screen. The 503 in the console was a red herring (likely SW intercepting an unrelated prefetch).
+
+Fix locked in via `2fa0e97c` + `2d59f5fa`:
+- `recordingChildRef` — child identity locked at recording-start, used throughout pipeline
+- `classroomIdRef` — same defensive pattern for classroom_id
+- `hasLoadedRef` — `loadPending` fires AT MOST ONCE per mount
+- 90s watchdog — if pipeline hangs, route to debug_error
+- Every `setStage('idle')` in error paths replaced with `setStage('debug_error')`
+- Cleanup useEffect clears watchdog on unmount
+
+**🚨 ARCHITECTURAL RULE:** every `setStage('idle')` in error paths is a bug going forward. Use `setStage('debug_error')` so failures are always visible.
+
+**C. Onboarding prompts (final structure — `4ac971f7`):**
+- How old they are
+- How long they've been in the classroom
+- What they enjoy doing
+- What they struggle with
+- What they're focusing on right now in each area:
+  - Practical Life
+  - Sensorial
+  - Mathematics
+  - Language
+  - Cultural
+
+The 5 areas render as indented sub-items so it reads as one mental task ("walk me through each area") rather than 9 separate questions. Drives much richer extracted data.
+
+**D. Review screen — what it shows now (`b044ac5f`):**
+
+Title → summary paragraph → **starting shelf** (5 works max, one per area, same source of truth as dashboard's "This Week's Focus") → **unmatched works** (only if any) — agent-styled amber cards with inline "Add to curriculum" button per row → "That's right" / "Try again" buttons.
+
+Earlier iterations had the wrong shelf (chips of `game_plan.works` then ALL `presented`/`practicing` rows producing 10-20 row long list). The fix: the dashboard's focus-picker logic in `fetchAssignments` filters to ONE focus work per area sorted by `is_focus → practicing → presented → not_started → completed`. `/onboard` now applies this exact same logic server-side and returns it as `seeded_shelf`. Same logic, same data, same UX in both places.
+
+**🚨 ARCHITECTURAL RULE:** when something on screen X "should match" something on screen Y, read screen Y's code BEFORE building screen X. This session burned 3 iterations getting this wrong.
+
+**E. Landing page i18n (`e6da5d2b`):**
+
+Full landing page (`app/montree/page.tsx`) now translatable in 12 languages:
+- `useI18n()` hook wired
+- `LanguageToggle` component added to nav
+- 21 new keys under `landing.*` namespace (nav, hero, three blocks, closing CTA)
+- All 12 locales translated to 100% parity
+
+Plus: trial signup CTA "Get my code →" → "Let's go →" across all 12 locales.
+
+A non-English-speaking teacher can now discover `montree.xyz`, pick their language from the nav toggle, read the entire site in that language, hit the CTA, sign up — the whole funnel is localised end-to-end.
+
+**F. Dashboard child page polish (`3a4783ee`):**
+- "No evidence" strip removed globally — `EvidenceStrengthBadge.tsx` returns null when strength === 'none'. Was cluttering fresh shelves on every newly-onboarded student.
+- "Add custom work" affordance added to `WorkWheelPicker` — was a tiny `white/30` text link, now a proper amber pill with gold border + badge. Same Sonnet-enrichment route as the voice onboarding catch.
+
+**G. WorkWheelPicker brand pass (PARTIAL — `4d0a0ccc`):**
+
+DONE:
+- Primary CTA button (Add Work / Select) → brand emerald gradient (`#34d399 → #1D6B48`) with glow shadow
+- Selection highlight in wheel → emerald-tinted (was area-coloured)
+- Empty-state Add first work button → emerald gradient
+- "Add custom work" link → agent-style amber pill matching voice-onboarding catch
+
+OUTSTANDING (next session):
+- Status dots in wheel rows still use stock blue (`#3b82f6` for practicing) and stock orange (`#f59e0b` for presented). Should be brand emerald + brand gold respectively.
+- Top area icon still uses solid `areaConfig.color` (e.g. hot pink for Practical Life). Needs softening.
+- `WorkPickerModal.tsx` (separate alternate picker) is still entirely light-theme — needs full dark-forest rebuild.
+
+**H. Marketing artifacts produced (in `docs/marketing/`):**
+- `04_montree_voice.png` (1080×1920) — voice onboarding card, full-bleed brand aesthetic
+- `05_montree_landing.png` (1080×1920) — English landing card
+- `05_montree_landing_zh.png` (1080×1920) — Chinese landing card with Noto Serif CJK SC
+
+Three video phrase translations:
+- "The problem" → 难题
+- "The solution" → 答案
+- "Tend to the Child, not the Observation" → 关注孩子，而非记录
+
+**I. Architectural rules locked in this session (do NOT let future agents break these):**
+- The welcome script is canonical (Tredoux-authored). Do not "improve" it.
+- No length cap during recording. Summary-back depends on rambling.
+- Mic-only during recording → clean Processing screen on stop → review. Three distinct states.
+- Status dots / chrome / CTAs use brand emerald. Per-area colors only on the small area icon (identifier data).
+- `recordingChildRef` is the canonical source of truth for which child the pipeline is processing. React state can be reset; the ref cannot.
+- `/onboard` route returns seeded_shelf using the focus-picker logic that mirrors `app/montree/dashboard/[childId]/page.tsx fetchAssignments`. If that logic ever changes, both must change together.
+
+**Cost per classroom of 20 onboarded:** ~$1–$1.50 (Whisper occasionally + Sonnet + handful of Haiku/Sonnet custom-work calls).
+
+**Verification status:**
+- ✅ All 14 commits pushed to `origin/main`
+- ✅ Lint clean across all touched files (warnings only, no errors)
+- ✅ All 12 locales at 100% i18n parity
+- ✅ Pre-commit hook passes
+- ⏳ End-to-end test of new 5-prompt structure on fresh classroom — user to perform after Railway deploy
+- ⏳ Welcome script tone review for zh/ja/ko/uk warmth
+- ⏳ WorkWheelPicker status dots + area icon brand pass — outstanding
+- ⏳ WorkPickerModal full dark-forest rebuild — outstanding
+
+**Handoff doc:** `docs/handoffs/SESSION_80_HANDOFF.md` — full file-by-file change list, the 503 saga in detail, deferred items, architectural rules, honest notes on wrong-turn fixes.
+
+**🚨 Next session priorities (ordered by importance for outreach restart):**
+
+1. **Verify Migration 175 is run** in Supabase (`tell_guru_onboarding` default_enabled = true). Check via:
+   ```sql
+   SELECT feature_key, default_enabled FROM montree_feature_definitions
+   WHERE feature_key = 'tell_guru_onboarding';
+   ```
+2. **End-to-end test the new 5-prompt structure** on a fresh test classroom. Record audio for one ghost student covering all 5 prompts (age, time, enjoys, struggles, per-area focus). Verify the review screen shows 5 focus works (one per area). Verify no silent failures.
+3. **Finish the WorkWheelPicker brand pass** — status dots blue→emerald, presented orange→gold, top area icon soften from solid color to emerald-tinted variant.
+4. **Rebuild WorkPickerModal in dark-forest theme** — currently light theme entirely, looks broken next to the rest of the app.
+5. **Welcome script tone review** for zh/ja/ko/uk versions of `voiceOnboarding.welcome.body` and `voiceOnboarding.welcome.takeBreak`. Haiku is reliable for short functional copy but can come back literal-but-flat for longer warm passages.
+6. **Free-tier gate decision** — voice onboarding currently works for all tiers; cost is $1/classroom. If we want Free schools blocked, gate `/onboard` and `/scan-custom` via `resolveReportModel()` 402.
+7. **Send 3 hot lead Gmail drafts** (carry-over) — Copenhagen, Paint Pots UK, Ardtona House UK.
+8. **FAMM Argentina follow-up** (carry-over) — past Apr 28 deadline.
+9. **Welcome Тамі in Ukrainian** (carry-over).
+10. **Resend domain verification** (carry-over).
+11. **TYPE B sweep across components** (Session 78 carry-over).
+
+---
+
+## RECENT STATUS (May 1, 2026)
+
+### ⚡ Session 79 — Smart Voice Onboarding Orchestrator + Default-Enabled Fix (May 1, 2026)
+
+**Two commits pushed to main: `70a680cd` (orchestrator + 19 files, +2,084) and `081757a9` (Migration 175: default-enabled fix).** Built the full-classroom voice onboarding flow that walks teachers through every un-onboarded child, one at a time, via voice. Replaces the friction of clicking into each child individually to trigger TellGuruCard.
+
+**The flow (per-child, looping until classroom is done):**
+- Welcome screen with warm Tredoux-authored script (locked) → "I'm ready" CTA → child name big + mic-only screen with prompts → no length cap recording → Whisper transcription → Sonnet structured profile extraction → summary-back to teacher for confirmation → optional custom-work catch with agent-styled "I noticed you mentioned X" → next child → completion ("Your classroom is alive")
+
+**Triggers (two paths):**
+- After bulk import: `onImported` callback redirects to `/montree/dashboard/voice-onboarding`
+- On dashboard load: new effect fetches status; if any children lack profiles AND `tell_guru_onboarding` enabled AND user is teacher (not parent/principal), redirect
+- Escape hatch: `?skipOnboarding=1` query param bypasses redirect once
+
+**Key files created (commit `70a680cd`):**
+- `app/montree/dashboard/voice-onboarding/page.tsx` — orchestrator page (state machine + sub-component for custom-work catch). ~640 lines, inline styles using dark forest aesthetic.
+- `app/api/montree/onboarding/voice/status/route.ts` — GET, returns pending children list (joins `montree_children` to `montree_child_mental_profiles`)
+- `app/api/montree/onboarding/voice/scan-custom/route.ts` — Haiku tool_use, fuzzy/semantic match transcript mentions against curriculum + area context. Filters confidence ≥ 0.6. Soft-fails to empty array on error.
+- `app/api/montree/onboarding/voice/custom-work/route.ts` — Sonnet tool_use generates description/parent_description/why_it_matters/materials. Inserts work, fires `translateAllLocales` and global staging. `source: 'voice_onboarding'`.
+
+**Modified (commit `70a680cd`):**
+- `app/api/montree/children/[childId]/onboard/route.ts` — added `getAILanguageInstruction(locale)` to the profile extraction prompt so the summary returns in the teacher's language (was always English regardless of teacher locale).
+- `app/montree/dashboard/page.tsx` — trigger effect (with `tell_guru_onboarding` gate, role check, escape param) + bulk import redirect.
+- `lib/montree/i18n/en.ts` — 44 new keys under `voiceOnboarding.*`.
+- `lib/montree/i18n/{zh,es,de,fr,pt,nl,it,ja,ko,uk,ru}.ts` — 44 keys per locale, populated via patched fill script. **All 12 locales at 100% parity (3,782 keys each).**
+- `scripts/fill-missing-i18n-keys.mjs` — closing-marker regex now matches `} as const;` (was only matching `};`, so script silently failed to write after translating).
+
+**🚨 Post-build fix — Migration 175 (commit `081757a9`):**
+
+User tested by opening a brand-new school on production. The trigger did NOT fire. Root cause: Migration 171 set `default_enabled = false` for `tell_guru_onboarding`. Migration 174 enabled it specifically for Whale Class. New schools fall through to `default_enabled` → `false` → my trigger correctly bails. **Migration 175** flips the default to `true`:
+```sql
+UPDATE montree_feature_definitions
+SET default_enabled = true
+WHERE feature_key = 'tell_guru_onboarding';
+```
+**🚨 Migration 175 must be run manually in Supabase SQL Editor.** Has not been run as of session end. Until run, every new school continues to fall through to the disabled default.
+
+**Immediate unblocker for the new school the user has open right now:**
+```sql
+-- Find new school's ID
+SELECT s.id, s.name FROM montree_schools s
+JOIN montree_classrooms c ON c.school_id = s.id
+WHERE c.name = 'Chen5';
+
+-- Enable for that school explicitly
+INSERT INTO montree_school_features (school_id, feature_key, enabled)
+VALUES ('<NEW_SCHOOL_ID>', 'tell_guru_onboarding', true)
+ON CONFLICT (school_id, feature_key) DO UPDATE SET enabled = true;
+```
+
+Then refresh the dashboard and the redirect fires.
+
+**🚨 What got REUSED (most of the heavy lifting was already there):**
+- Whisper integration via `/api/montree/voice-notes/transcribe` (existing, 5MB cap unchanged)
+- Sonnet profile extraction via `/api/montree/children/[childId]/onboard` (existing, very comprehensive — extracts experience_level, curriculum_per_area_0-100, all 9 temperament traits, learning modality, sensitive periods, family notes, strategies, triggers; idempotent upsert; auto-seeds curriculum positions; generates Haiku game plan with locale support)
+- Mental profile schema (`montree_child_mental_profiles` — presence/absence per child is the source of truth for "is this child onboarded")
+- Custom work translation (`translateAllLocales` from `lib/montree/insert-curriculum-work.ts`)
+- TellGuruCard left in place as per-child fallback
+
+No new database tables. Migration 175 is a one-line UPDATE on `montree_feature_definitions`.
+
+**Architectural rules locked in (do NOT let future agents break these):**
+- The welcome script is canonical — Tredoux authored it, do not "improve" the wording.
+- No length cap during recording — the summary-back wow moment depends on teachers being able to ramble.
+- Mic-only during recording — no shelf preview. The shelf reveal at completion is part of the hook.
+- `/onboard` is the canonical profile extraction route — do not duplicate.
+- Custom-work catch uses Sonnet (not Haiku) for the dialogue — personality matters there.
+- Skip = no profile written = re-appears next session. The only way to truly finish onboarding is confirm or fill in via TellGuruCard later.
+- Closing the tab loses nothing — pending list is always recomputed from DB.
+- Feature flag resolution: `classroom_override > school_override > default_enabled`. Migration 175 makes the orchestrator the default experience for new schools; classroom or school overrides can still opt out.
+
+**Cost per classroom of 20 onboarded:** ~$1–$1.50 (Whisper + Sonnet + handful of Haiku/Sonnet custom-work calls).
+
+**Free-tier gate NOT added** — voice onboarding works for all tiers including Free. If we want Free schools blocked, add `resolveReportModel()` 402 check at top of `/onboard` and `/scan-custom`. One small follow-up.
+
+**Whisper accuracy on Montessori vocab:** soft mitigation via Sonnet fuzzy-matching with area context in `/scan-custom`. Did NOT add Whisper `prompt` parameter with curriculum vocabulary hints — that's a half-day quality lift if misrecognition surfaces as a complaint.
+
+**Verification status:**
+- ✅ All four new routes lint clean (0 errors)
+- ✅ All modified routes lint clean (0 new errors)
+- ✅ All 12 locales at 100% i18n parity (3,782 keys each)
+- ✅ Pushed to `origin/main` as commits `70a680cd` and `081757a9`
+- ⏳ **Migration 175 not yet run in Supabase** — required for new schools
+- ⏳ End-to-end test on a fresh test classroom — user attempted, blocked by feature flag default; will work after migration 175 runs
+
+**Handoff doc:** `docs/handoffs/SESSION_79_HANDOFF.md` — full file-by-file change list, post-build fix details, test plan, deferred items, architectural rules.
+
+**Next session priorities:**
+1. **🚨 Run Migration 175 in Supabase** — one-line UPDATE on `montree_feature_definitions`. Required for new-school flow to work.
+2. **Verify trigger on the new school the user has open** — either run the per-school INSERT above OR run migration 175, then refresh dashboard. Should redirect to voice onboarding.
+3. **End-to-end test the wow moments** — record 60-90s for one ghost student, mention a fake work like "rainbow stacking blocks", verify summary-back, custom-work catch, completion screen, populated shelves.
+4. **Verify Whale Class behavior** — Whale Class still has the explicit migration-174 override; if any of the 20 students still lack a mental profile, the orchestrator WILL fire there too. If undesired, run `UPDATE montree_school_features SET enabled = false WHERE school_id = 'c6280fae-567c-45ed-ad4d-934eae79aabc' AND feature_key = 'tell_guru_onboarding';`
+5. **Welcome script tone review** — Eyeball the zh/ja/ko/uk versions of `voiceOnboarding.welcome.body` and `voiceOnboarding.welcome.takeBreak` for warmth. Haiku is reliable for short functional copy but can come back literal-but-flat for longer warm passages.
+6. **Free-tier gate decision** — Decide whether to block Free-tier from voice onboarding via `resolveReportModel()` 402.
+7. **Whisper vocabulary hints** — Decide whether to invest the half-day for per-classroom curriculum hints in Whisper prompt.
+8. **Send the 3 hot lead Gmail drafts** (carry-over) — Copenhagen, Paint Pots UK, Ardtona House UK.
+9. **FAMM Argentina follow-up** (carry-over) — past Apr 28 deadline.
+10. **Welcome Тамі in Ukrainian** (carry-over).
+11. **Resend domain verification** (carry-over).
+12. **TYPE B sweep across components** (Session 78 carry-over) — replace `locale === 'zh' ? work.x_zh : work.x` with `getLocalizedField()` everywhere.
+
+---
+
 ## RECENT STATUS (Apr 30, 2026)
 
 ### ⚡ Session 78 — Curriculum Translation Library + Apply-On-Seed Pipeline + Frontend Locale Fix (Apr 30, 2026)
