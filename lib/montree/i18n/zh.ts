@@ -4293,4 +4293,12 @@ export const zh = {
 
   // ─── Auto-filled missing keys (from Apr 30 audit) ───
   'voiceOnboarding.processing.layingFoundation': '为 {name} 奠定基础',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'dashboard.onboardingChoice.title': '您想如何开始?',
+  'dashboard.onboardingChoice.subtitle': '两条路。都很诚实。选择适合您这一周的那条。',
+  'dashboard.onboardingChoice.voiceTitle': '告诉我关于我的班级',
+  'dashboard.onboardingChoice.voiceBody': '每个孩子90秒。我会建立他们的档案，您的第一份报告听起来就像您自己写的一样。',
+  'dashboard.onboardingChoice.photoTitle': '直接从照片开始',
+  'dashboard.onboardingChoice.photoBody': '跳过前面步骤。拍照并观看仪表板栩栩如生。您的第一份报告将重点关注本周我们观察到的内容。',
 } as const;

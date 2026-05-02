@@ -3887,4 +3887,12 @@ export const ru: Record<string, string> = {
 
   // ─── Auto-filled missing keys (from Apr 30 audit) ───
   'voiceOnboarding.processing.layingFoundation': 'Закладываем основу для {name}',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'dashboard.onboardingChoice.title': 'Как вы хотели бы начать?',
+  'dashboard.onboardingChoice.subtitle': 'Два пути. Оба честные. Выберите тот, который подходит вам на эту неделю.',
+  'dashboard.onboardingChoice.voiceTitle': 'Расскажите мне о моём классе',
+  'dashboard.onboardingChoice.voiceBody': '90 секунд на ребёнка. Я построю их профили, и ваши первые отчёты будут звучать так, как будто вы их написали.',
+  'dashboard.onboardingChoice.photoTitle': 'Начните с фотографий',
+  'dashboard.onboardingChoice.photoBody': 'Пропустите подготовку. Делайте фотографии и смотрите, как оживает панель управления. Ваши первые отчёты сосредоточатся на том, что мы наблюдали на этой неделе.',
 };

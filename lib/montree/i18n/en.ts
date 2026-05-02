@@ -101,6 +101,12 @@ export const en = {
 
   // Dashboard
   'dashboard.title': 'Dashboard',
+  'dashboard.onboardingChoice.title': 'How would you like to get started?',
+  'dashboard.onboardingChoice.subtitle': 'Two paths. Both honest. Pick the one that fits your week.',
+  'dashboard.onboardingChoice.voiceTitle': 'Tell me about my class',
+  'dashboard.onboardingChoice.voiceBody': '90 seconds per child. I\'ll build their profiles and your first reports will sound like you wrote them.',
+  'dashboard.onboardingChoice.photoTitle': 'Just start with photos',
+  'dashboard.onboardingChoice.photoBody': 'Skip ahead. Take photos and watch the dashboard come alive. Your first reports will focus on what we observed this week.',
   'dashboard.selectChild': 'Select a child',
   'dashboard.weekView': 'This Week',
   'dashboard.progress': 'Progress',

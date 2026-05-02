@@ -40,6 +40,7 @@ const PaperworkPanel = dynamic(() => import('@/components/montree/PaperworkPanel
 const DailyBriefPanel = dynamic(() => import('@/components/montree/DailyBriefPanel'), { ssr: false });
 const BirthdayBanner = dynamic(() => import('@/components/montree/BirthdayBanner'), { ssr: false });
 const TodaysFocusStrip = dynamic(() => import('@/components/montree/focus/TodaysFocusStrip'), { ssr: false });
+const OnboardingPathChoice = dynamic(() => import('@/components/montree/onboarding/OnboardingPathChoice'), { ssr: false });
 
 
 interface Child {
@@ -235,34 +236,63 @@ export default function DashboardPage() {
 
   const isParent = session ? isHomeschoolParent(session) : false;
 
-  // Smart Voice Onboarding trigger:
-  // After children load, if any students lack a mental profile AND tell_guru_onboarding
-  // is enabled, redirect to the voice onboarding orchestrator.
-  // Teacher-only — parents/principals never see this.
+  // ─── Onboarding path choice ───
+  // When a teacher first lands here with un-onboarded children, show a
+  // two-path choice screen instead of force-redirecting them into voice
+  // onboarding. Path A = voice flow. Path B = "I'll just take photos" —
+  // dismisses the gate and lets the photo-capture pipeline drive shelves
+  // organically. The dismiss decision is persisted per-classroom in
+  // localStorage so the gate doesn't reappear on every refresh.
+  const [pendingOnboardingCount, setPendingOnboardingCount] = useState<number | null>(null);
+  const [photoPathChosen, setPhotoPathChosen] = useState(false);
+
+  // Read the per-classroom skip flag once we know the classroom id.
+  useEffect(() => {
+    const cid = session?.classroom?.id;
+    if (!cid || typeof window === 'undefined') return;
+    try {
+      const flag = window.localStorage.getItem(`montree.onboardingChoice.${cid}`);
+      if (flag === 'photo') setPhotoPathChosen(true);
+    } catch {
+      // private browsing / disabled storage — non-fatal
+    }
+  }, [session?.classroom?.id]);
+
+  // Pending-children probe — runs once per session+classroom. Replaces the
+  // old auto-redirect. We only count; we don't navigate.
   useEffect(() => {
     if (loading || !session || isParent) return;
-    if (children.length === 0) return;
-    if (!isEnabled('tell_guru_onboarding')) return;
-    // Honour an explicit "skip" param so the user can reach the dashboard if needed
-    if (searchParams.get('skipOnboarding') === '1') return;
+    if (children.length === 0) { setPendingOnboardingCount(0); return; }
+    if (!isEnabled('tell_guru_onboarding')) { setPendingOnboardingCount(0); return; }
+    if (searchParams.get('skipOnboarding') === '1') { setPendingOnboardingCount(0); return; }
 
     const ctrl = new AbortController();
     fetch('/api/montree/onboarding/voice/status', { signal: ctrl.signal })
       .then(r => r.ok ? r.json() : null)
       .then(data => {
-        if (!data?.success) return;
+        if (!data?.success) { setPendingOnboardingCount(0); return; }
         const pending: Array<{ id: string }> = data.pending || [];
-        if (pending.length > 0) {
-          router.replace('/montree/dashboard/voice-onboarding');
-        }
+        setPendingOnboardingCount(pending.length);
       })
       .catch(err => {
         if (err?.name !== 'AbortError') {
           console.error('[Dashboard] Voice onboarding status check failed:', err);
         }
+        setPendingOnboardingCount(0);
       });
     return () => ctrl.abort();
-  }, [loading, session, isParent, children.length, isEnabled, router, searchParams]);
+  }, [loading, session, isParent, children.length, isEnabled, searchParams]);
+
+  // Should we show the choice screen? Only when there are real pending
+  // children, the teacher hasn't already chosen the photo path for this
+  // classroom, and this is a teacher (not a parent).
+  const showOnboardingChoice =
+    !isParent &&
+    !loading &&
+    !!session &&
+    pendingOnboardingCount !== null &&
+    pendingOnboardingCount > 0 &&
+    !photoPathChosen;
 
   if (!session || loading) {
     return <DashboardSkeleton />;
@@ -271,6 +301,19 @@ export default function DashboardPage() {
   // Homeschool parents get redirected — show skeleton while redirect fires
   if (isParent && children.length > 0) {
     return <DashboardSkeleton />;
+  }
+
+  // Two-path onboarding gate. When pending children exist and the teacher
+  // hasn't already chosen the photo path, present the choice as a clean
+  // full-screen takeover. They go either to voice onboarding (router.push)
+  // or dismiss to the dashboard (setPhotoPathChosen + localStorage write).
+  if (showOnboardingChoice) {
+    return (
+      <OnboardingPathChoice
+        classroomId={session?.classroom?.id}
+        onSkipPhoto={() => setPhotoPathChosen(true)}
+      />
+    );
   }
 
   // Guru-first full-screen view for home parents
@@ -590,12 +633,14 @@ export default function DashboardPage() {
                 children: [...children, ...importedChildren],
               });
             }
-            // Drive new students into smart voice onboarding immediately —
-            // the dashboard trigger will pick up any pending children and redirect.
-            // Calling router.replace explicitly here gives a smoother handoff than
-            // waiting for the effect to fire.
+            // After bulk import, refresh the pending-onboarding probe so the
+            // two-path choice screen surfaces. We DON'T auto-redirect anymore —
+            // the teacher chooses voice or photos for themselves. If the teacher
+            // had previously chosen 'photo' on this classroom, the per-classroom
+            // localStorage flag keeps them on the dashboard and the new children
+            // simply appear in the grid for photo-driven onboarding.
             if (importedChildren.length > 0 && isEnabled('tell_guru_onboarding')) {
-              router.replace('/montree/dashboard/voice-onboarding');
+              setPendingOnboardingCount(prev => (prev ?? 0) + importedChildren.length);
             }
           }}
           onClose={() => setShowBulkImport(false)}

@@ -3890,4 +3890,12 @@ export const ja: Record<string, string> = {
 
   // ─── Auto-filled missing keys (from Apr 30 audit) ───
   'voiceOnboarding.processing.layingFoundation': '{name}さまの基礎を築いています',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'dashboard.onboardingChoice.title': 'どのようにして始めますか？',
+  'dashboard.onboardingChoice.subtitle': '2つの方法があります。どちらもご正直です。お子さまのこの1週間に合わせてお選びください。',
+  'dashboard.onboardingChoice.voiceTitle': 'クラスについて教えてください',
+  'dashboard.onboardingChoice.voiceBody': 'お子さま1人あたり90秒です。プロフィールを作成し、最初のレポートはあなたが書いたようなご報告をいたします。',
+  'dashboard.onboardingChoice.photoTitle': '写真から始めましょう',
+  'dashboard.onboardingChoice.photoBody': '先へ進みます。写真を撮って、ダッシュボードが生き生きとするのをご覧ください。最初のレポートは、この1週間に観察したことに焦点を当てます。',
 };

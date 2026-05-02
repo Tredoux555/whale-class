@@ -3890,4 +3890,12 @@ export const ko: Record<string, string> = {
 
   // ─── Auto-filled missing keys (from Apr 30 audit) ───
   'voiceOnboarding.processing.layingFoundation': '{name}을(를) 위한 기초를 마련하고 있어요',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'dashboard.onboardingChoice.title': '어떻게 시작하시겠어요?',
+  'dashboard.onboardingChoice.subtitle': '두 가지 방법이 있어요. 둘 다 솔직해요. 이번 주에 맞는 방법을 선택해주세요.',
+  'dashboard.onboardingChoice.voiceTitle': '저에게 우리 반에 대해 말씀해주세요',
+  'dashboard.onboardingChoice.voiceBody': '자녀분당 90초면 돼요. 저는 자녀분들의 프로필을 구성하고 첫 번째 보고서를 선생님께서 작성하신 것처럼 만들어드릴게요.',
+  'dashboard.onboardingChoice.photoTitle': '사진으로 바로 시작하기',
+  'dashboard.onboardingChoice.photoBody': '이미 사진을 촬영했나요? 사진을 업로드하고 대시보드가 살아나는 모습을 지켜보세요. 첫 번째 보고서는 이번 주에 우리가 관찰한 내용에 초점을 맞출 거예요.',
 };

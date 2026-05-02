@@ -3890,4 +3890,12 @@ export const nl: Record<string, string> = {
 
   // ─── Auto-filled missing keys (from Apr 30 audit) ───
   'voiceOnboarding.processing.layingFoundation': 'Het fundament leggen voor {name}',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'dashboard.onboardingChoice.title': 'Hoe zou u graag willen beginnen?',
+  'dashboard.onboardingChoice.subtitle': 'Twee wegen. Beide eerlijk. Kies de weg die bij uw week past.',
+  'dashboard.onboardingChoice.voiceTitle': 'Vertel me over mijn groep',
+  'dashboard.onboardingChoice.voiceBody': '90 seconden per kind. Ik bouw hun profielen op en uw eerste verslagen zullen klinken alsof u ze heeft geschreven.',
+  'dashboard.onboardingChoice.photoTitle': 'Begin gewoon met foto\'s',
+  'dashboard.onboardingChoice.photoBody': 'Ga direct verder. Maak foto\'s en zie het dashboard tot leven komen. Uw eerste verslagen zullen zich concentreren op wat we deze week hebben waargenomen.',
 };
