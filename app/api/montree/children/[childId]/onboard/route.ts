@@ -94,8 +94,58 @@ const EXTRACTION_TOOL = {
       sensitive_period_sensory: { type: ['string', 'null'] as unknown as 'string', enum: ['active', 'waning', 'complete', 'not_started', null] },
       sensitive_period_small_objects: { type: ['string', 'null'] as unknown as 'string', enum: ['active', 'waning', 'complete', 'not_started', null] },
       sensitive_period_grace_courtesy: { type: ['string', 'null'] as unknown as 'string', enum: ['active', 'waning', 'complete', 'not_started', null] },
+      // ── FOCUS WORKS PER AREA ──
+      // Extract or strongly infer the ONE Montessori work the child is currently
+      // focused on in each area. The shelf editor expects one row per area, so
+      // these MUST be filled — match what the teacher said when possible, and
+      // when not mentioned, take a confident best guess based on the child's
+      // age + experience level + the typical Montessori progression. NEVER
+      // leave these null. Use EXACT names from the AVAILABLE WORKS list in the
+      // prompt so they map to real curriculum rows.
+      focus_practical_life: {
+        type: 'string' as const,
+        description: 'Exact work name from the Practical Life section of AVAILABLE WORKS. If teacher mentioned a specific PL work for this child, use that. Otherwise pick the most likely PL work for this child\'s age and stage.',
+      },
+      focus_practical_life_status: {
+        type: 'string' as const,
+        enum: ['presented', 'practicing', 'mastered'],
+        description: 'practicing if teacher said child is currently working on it; presented if just introduced or you are inferring; mastered if teacher described full proficiency.',
+      },
+      focus_sensorial: {
+        type: 'string' as const,
+        description: 'Exact work name from Sensorial. Same rules as focus_practical_life.',
+      },
+      focus_sensorial_status: { type: 'string' as const, enum: ['presented', 'practicing', 'mastered'] },
+      focus_mathematics: {
+        type: 'string' as const,
+        description: 'Exact work name from Mathematics. Same rules as focus_practical_life.',
+      },
+      focus_mathematics_status: { type: 'string' as const, enum: ['presented', 'practicing', 'mastered'] },
+      focus_language: {
+        type: 'string' as const,
+        description: 'Exact work name from Language. Same rules as focus_practical_life.',
+      },
+      focus_language_status: { type: 'string' as const, enum: ['presented', 'practicing', 'mastered'] },
+      focus_cultural: {
+        type: 'string' as const,
+        description: 'Exact work name from Cultural. Same rules as focus_practical_life.',
+      },
+      focus_cultural_status: { type: 'string' as const, enum: ['presented', 'practicing', 'mastered'] },
     },
-    required: ['summary', 'experience_level'],
+    required: [
+      'summary',
+      'experience_level',
+      'focus_practical_life',
+      'focus_practical_life_status',
+      'focus_sensorial',
+      'focus_sensorial_status',
+      'focus_mathematics',
+      'focus_mathematics_status',
+      'focus_language',
+      'focus_language_status',
+      'focus_cultural',
+      'focus_cultural_status',
+    ],
   },
 };
 
@@ -146,6 +196,43 @@ export async function POST(
       ? `The child's date of birth is ${dob}.`
       : '';
 
+    // Fetch the classroom's curriculum grouped by area so Sonnet can pick
+    // EXACT work names that map to real curriculum rows. Previously this fetch
+    // happened only inside generateGamePlan; we now lift it up so the focus
+    // work extraction has the same vocabulary.
+    const cidForWorks = classroom_id || auth.classroomId;
+    const worksByArea: Record<string, string[]> = {
+      practical_life: [], sensorial: [], mathematics: [], language: [], cultural: [],
+    };
+    if (cidForWorks) {
+      try {
+        const { data: areas } = await supabase
+          .from('montree_classroom_curriculum_areas')
+          .select('id, area_key')
+          .eq('classroom_id', cidForWorks);
+        if (areas && areas.length > 0) {
+          const typedAreas = areas as Array<{ id: string; area_key: string }>;
+          for (const area of typedAreas) {
+            const { data: works } = await supabase
+              .from('montree_classroom_curriculum_works')
+              .select('name')
+              .eq('classroom_id', cidForWorks)
+              .eq('area_id', area.id)
+              .order('sequence', { ascending: true });
+            if (works && works.length > 0 && worksByArea[area.area_key] !== undefined) {
+              worksByArea[area.area_key] = (works as Array<{ name: string }>).map(w => w.name);
+            }
+          }
+        }
+      } catch (err) {
+        console.error('[Onboard] Curriculum fetch for extraction failed (non-fatal):', err);
+      }
+    }
+    const availableWorksBlock = (Object.keys(worksByArea) as Array<keyof typeof worksByArea>)
+      .filter(k => worksByArea[k].length > 0)
+      .map(k => `${k.toUpperCase()} (pick ONE for focus_${k}):\n${worksByArea[k].slice(0, 80).map(n => `  - ${n}`).join('\n')}`)
+      .join('\n\n');
+
     // Call Sonnet with tool_use for structured extraction
     console.log(`[Onboard] Extracting profile for ${childName} (${childId}) from ${transcript.length} char transcript`);
 
@@ -165,6 +252,8 @@ The child's name is ${childName}. ${ageNote}
 TEACHER'S DESCRIPTION:
 "${transcript}"
 
+${availableWorksBlock ? `AVAILABLE WORKS (the actual curriculum in this teacher's classroom — you MUST pick from this list when filling focus_* fields):\n\n${availableWorksBlock}\n` : ''}
+
 Extract as much as you can infer. For curriculum levels, use the 0-100 scale based on what works the teacher mentioned:
 - Practical Life: pouring/spooning/cutting = 25-40, folding/sewing/food prep = 50-70, complex multi-step = 75-100
 - Sensorial: pink tower/brown stair = 20-35, colour tablets/geometric solids = 40-60, binomial cube/complex = 70-100
@@ -174,7 +263,20 @@ Extract as much as you can infer. For curriculum levels, use the 0-100 scale bas
 
 For temperament traits, infer from behavioral descriptions. "Quiet" suggests lower activity_level. "Focused for long periods" suggests high persistence and low distractibility. "Watches others first" suggests lower initial_reaction. "Gets frustrated easily" suggests low adaptability or high intensity.
 
-If the teacher didn't mention anything about a field, leave it null. Only fill in what you can reasonably infer.
+If the teacher didn't mention anything about a temperament/learning/sensitive-period field, leave it null. Only fill in what you can reasonably infer.
+
+CRITICAL — FOCUS WORKS (5 fields, all REQUIRED, NEVER null):
+The teacher's shelf editor will display ONE focus work per area. You MUST pick one work per area from the AVAILABLE WORKS list above:
+- focus_practical_life, focus_sensorial, focus_mathematics, focus_language, focus_cultural
+
+Rules for picking:
+1. If the teacher EXPLICITLY mentioned a work in that area (e.g. "she's working on Pink Tower", "he's just started Sandpaper Letters"), match it to the closest exact name in AVAILABLE WORKS for that area. Status: "practicing" if they're working on it, "mastered" if teacher said proficient/done, "presented" if just introduced.
+2. If the teacher did NOT mention a work in that area, take a confident BEST GUESS based on the child's age, experience_level, and the typical Montessori progression. Status: "presented" (you are inferring, not observing).
+3. Match by MEANING, not just literal text. "the pink tower" → "Pink Tower", "she pours water" → "Pouring Water", "letter sounds" → "Sandpaper Letters" or first phonics work in the curriculum.
+4. NEVER invent a work name. Use the EXACT spelling from AVAILABLE WORKS.
+5. If AVAILABLE WORKS is empty for an area, pick a canonical Montessori starting work for that area (e.g. "Pouring Water", "Pink Tower", "Number Rods", "Sandpaper Letters", "Land and Water Forms"). The system will auto-create the curriculum row.
+
+Listen carefully to the transcript — teachers often mention works in passing ("she just loves the brown stair", "he's getting into spindle boxes"). Don't miss those.
 
 Create a warm summary that confirms back to the teacher what you understood. The summary should focus on what the teacher actually said about this specific child — strengths, weaknesses, current works, interests, personality — rendered back to them clearly and concisely. Mirror the teacher's own thoughts but more organized than how they said it.${summaryLanguageInstruction ? `\n\n${summaryLanguageInstruction} Write the SUMMARY field in this language. All other structured fields stay in English (they are stored values, not user-facing text).` : ''}`,
       }],
@@ -284,6 +386,20 @@ Create a warm summary that confirms back to the teacher what you understood. The
       } catch (seedErr) {
         console.error('[Onboard] Curriculum seed error:', seedErr);
         // Non-fatal
+      }
+    }
+
+    // ── ALWAYS seed the 5 focus works (one per area) regardless of expLevel ──
+    // Sonnet's job above was to guarantee non-null focus_<area> picks. We now
+    // upsert each one as a montree_child_progress row with is_focus=true so
+    // the seededShelf fetch (and the dashboard) always shows a populated shelf.
+    // Auto-creates curriculum rows for picks that aren't yet in the curriculum.
+    if (cid) {
+      try {
+        await seedFocusWorks(supabase, childId, cid, extracted);
+        console.log(`[Onboard] Focus works seeded for ${childName}`);
+      } catch (focusSeedErr) {
+        console.error('[Onboard] Focus works seed error (non-fatal):', focusSeedErr);
       }
     }
 
@@ -457,6 +573,203 @@ async function seedCurriculumPositions(
       if (error) {
         console.error(`[Onboard] Progress seed error for ${area.key}:`, error);
       }
+    }
+  }
+}
+
+/**
+ * Seed the 5 focus works (one per area) extracted by Sonnet.
+ *
+ * Always runs regardless of experience_level. The shelf editor + dashboard
+ * shelf rely on every child having at least one is_focus=true row per area.
+ *
+ * Strategy:
+ * 1. For each of the 5 areas, take Sonnet's pick (focus_<area> + status).
+ * 2. Match it to a curriculum row in this classroom by exact name first,
+ *    then case-insensitive ILIKE. If no match, fall back to a canonical
+ *    Montessori starting work for that area (auto-created via curriculum
+ *    insert) — guarantees the row always exists.
+ * 3. UPSERT into montree_child_progress with is_focus=true.
+ * 4. Demote any other is_focus=true rows in the same area on this child.
+ */
+async function seedFocusWorks(
+  supabase: ReturnType<typeof getSupabase>,
+  childId: string,
+  classroomId: string,
+  extracted: Record<string, unknown>,
+) {
+  const FALLBACKS: Record<string, string> = {
+    practical_life: 'Pouring Water',
+    sensorial: 'Pink Tower',
+    mathematics: 'Number Rods',
+    language: 'Sandpaper Letters',
+    cultural: 'Land and Water Forms',
+  };
+  const AREA_KEYS = ['practical_life', 'sensorial', 'mathematics', 'language', 'cultural'] as const;
+  const VALID_STATUSES = new Set(['presented', 'practicing', 'mastered']);
+  const now = new Date().toISOString();
+
+  for (const areaKey of AREA_KEYS) {
+    const sonnetPickRaw = extracted[`focus_${areaKey}`];
+    const sonnetStatusRaw = extracted[`focus_${areaKey}_status`];
+    const sonnetPick = typeof sonnetPickRaw === 'string' ? sonnetPickRaw.trim() : '';
+    const status = typeof sonnetStatusRaw === 'string' && VALID_STATUSES.has(sonnetStatusRaw)
+      ? sonnetStatusRaw
+      : 'presented';
+
+    // Resolve area_id (skip if classroom doesn't have this area for some reason)
+    const { data: areaRow } = await supabase
+      .from('montree_classroom_curriculum_areas')
+      .select('id')
+      .eq('classroom_id', classroomId)
+      .eq('area_key', areaKey)
+      .maybeSingle() as { data: { id: string } | null };
+
+    if (!areaRow) {
+      console.warn(`[Onboard] No area row for ${areaKey} in classroom ${classroomId}, skipping focus seed`);
+      continue;
+    }
+
+    // Try to match Sonnet's pick to an existing curriculum row.
+    // Pass 1: exact name match (case-insensitive).
+    let matchedName: string | null = null;
+    if (sonnetPick) {
+      const escaped = sonnetPick.replace(/[%_\\]/g, '\\$&');
+      const { data: exactMatch } = await supabase
+        .from('montree_classroom_curriculum_works')
+        .select('name')
+        .eq('classroom_id', classroomId)
+        .eq('area_id', areaRow.id)
+        .ilike('name', escaped)
+        .maybeSingle() as { data: { name: string } | null };
+      if (exactMatch?.name) {
+        matchedName = exactMatch.name;
+      }
+    }
+
+    // Pass 2: fuzzy ILIKE on either side ("Pink Tower" matches "the Pink Tower").
+    if (!matchedName && sonnetPick) {
+      const escaped = sonnetPick.replace(/[%_\\]/g, '\\$&');
+      const { data: fuzzyMatch } = await supabase
+        .from('montree_classroom_curriculum_works')
+        .select('name')
+        .eq('classroom_id', classroomId)
+        .eq('area_id', areaRow.id)
+        .ilike('name', `%${escaped}%`)
+        .order('sequence', { ascending: true })
+        .limit(1)
+        .maybeSingle() as { data: { name: string } | null };
+      if (fuzzyMatch?.name) {
+        matchedName = fuzzyMatch.name;
+      }
+    }
+
+    // Pass 3: fallback to a canonical Montessori starting work for this area.
+    // We auto-create the curriculum row if missing so the progress UPSERT works.
+    if (!matchedName) {
+      const fallbackName = FALLBACKS[areaKey];
+      console.log(`[Onboard] No curriculum match for "${sonnetPick}" in ${areaKey}, falling back to "${fallbackName}"`);
+
+      // Check if the fallback already exists in the curriculum
+      const escapedFallback = fallbackName.replace(/[%_\\]/g, '\\$&');
+      const { data: existing } = await supabase
+        .from('montree_classroom_curriculum_works')
+        .select('name')
+        .eq('classroom_id', classroomId)
+        .eq('area_id', areaRow.id)
+        .ilike('name', escapedFallback)
+        .maybeSingle() as { data: { name: string } | null };
+
+      if (existing?.name) {
+        matchedName = existing.name;
+      } else {
+        // Auto-create the fallback as a custom work
+        const { data: maxSeq } = await supabase
+          .from('montree_classroom_curriculum_works')
+          .select('sequence')
+          .eq('area_id', areaRow.id)
+          .order('sequence', { ascending: false })
+          .limit(1)
+          .maybeSingle() as { data: { sequence: number | null } | null };
+        const nextSeq = (maxSeq?.sequence || 0) + 1;
+        const { error: insertErr } = await supabase
+          .from('montree_classroom_curriculum_works')
+          .insert({
+            classroom_id: classroomId,
+            area_id: areaRow.id,
+            work_key: `auto_${areaKey}_${Date.now()}`,
+            name: fallbackName,
+            sequence: nextSeq,
+            is_custom: true,
+            is_active: true,
+          });
+        if (insertErr) {
+          console.error(`[Onboard] Failed to auto-create fallback work "${fallbackName}":`, insertErr);
+          continue;
+        }
+        matchedName = fallbackName;
+      }
+    }
+
+    // SELECT-then-UPDATE-or-INSERT to preserve any higher status that
+    // seedCurriculumPositions may have already written for this work
+    // (e.g., if it was already mastered, we don't want to downgrade to
+    // presented/practicing just because Sonnet was picking a focus).
+    const STATUS_RANK: Record<string, number> = {
+      not_started: 0, presented: 1, practicing: 2, mastered: 3, completed: 3,
+    };
+    const { data: existingRow } = await supabase
+      .from('montree_child_progress')
+      .select('id, status')
+      .eq('child_id', childId)
+      .eq('work_name', matchedName)
+      .maybeSingle() as { data: { id: string; status: string } | null };
+
+    if (existingRow) {
+      // Row exists — set is_focus=true; only upgrade status if Sonnet's pick
+      // is higher in the progression than what's already stored.
+      const existingRank = STATUS_RANK[existingRow.status] ?? 0;
+      const newRank = STATUS_RANK[status] ?? 0;
+      const finalStatus = newRank > existingRank ? status : existingRow.status;
+      const { error: updateErr } = await supabase
+        .from('montree_child_progress')
+        .update({
+          is_focus: true,
+          status: finalStatus,
+          updated_at: now,
+        })
+        .eq('id', existingRow.id);
+      if (updateErr) {
+        console.error(`[Onboard] Focus update error for ${areaKey} (${matchedName}):`, updateErr);
+        continue;
+      }
+    } else {
+      // No existing row — insert fresh.
+      const { error: insertErr } = await supabase
+        .from('montree_child_progress')
+        .insert({
+          child_id: childId,
+          work_name: matchedName,
+          area: areaKey,
+          status,
+          is_focus: true,
+          updated_at: now,
+        } as unknown as Record<string, unknown>);
+      if (insertErr) {
+        console.error(`[Onboard] Focus insert error for ${areaKey} (${matchedName}):`, insertErr);
+        continue;
+      }
+    }
+
+    // Demote any other is_focus=true rows in this area on this child.
+    const { error: demoteErr } = await supabase
+      .from('montree_child_progress')
+      .update({ is_focus: false, updated_at: now })
+      .eq('child_id', childId)
+      .eq('area', areaKey)
+      .neq('work_name', matchedName);
+    if (demoteErr) {
+      console.error(`[Onboard] Focus demote error for ${areaKey} (non-fatal):`, demoteErr);
     }
   }
 }
