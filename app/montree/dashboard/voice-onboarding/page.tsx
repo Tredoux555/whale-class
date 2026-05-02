@@ -20,6 +20,8 @@ import { useI18n } from '@/lib/montree/i18n';
 import { montreeApi } from '@/lib/montree/api';
 import { getProxyUrl } from '@/lib/montree/media/proxy-url';
 import MontreeLogo from '@/components/montree/MonteeLogo';
+import WorkWheelPicker from '@/components/montree/WorkWheelPicker';
+import { getAreaLabel } from '@/lib/montree/i18n/area-labels';
 
 type Stage =
   | 'loading'
@@ -29,12 +31,32 @@ type Stage =
   | 'transcribing'
   | 'processing'
   | 'review'
+  | 'shelf_editor'
   | 'custom_work_catch'
   | 'custom_work_adding'
   | 'transition'
   | 'complete'
   | 'error_permission'
   | 'debug_error';
+
+interface ShelfRow {
+  work_name: string;
+  area: string;
+  status: string;
+}
+
+// Local Work shape for WorkWheelPicker — only the fields that the picker reads.
+interface PickerWork {
+  id: string;
+  name: string;
+  name_chinese?: string;
+  status?: 'not_started' | 'presented' | 'practicing' | 'mastered' | 'completed';
+  sequence?: number;
+  dbSequence?: number;
+  area_key?: string;
+  area_name?: string;
+  area_color?: string;
+}
 
 interface DebugError {
   step: string;
@@ -93,6 +115,27 @@ export default function VoiceOnboardingPage() {
   const [addedCustomWorks, setAddedCustomWorks] = useState<Set<string>>(new Set());
   // Tracks which inline add is in-flight (visual feedback)
   const [addingCustomWork, setAddingCustomWork] = useState<string | null>(null);
+
+  // ── Additive update mode ──
+  // When the teacher taps "Update" instead of "That's right", their next recording
+  // is treated as an addition to what was just shared. We carry the prior transcript
+  // forward and prepend it (with a soft separator) when re-running extraction.
+  const [priorTranscript, setPriorTranscript] = useState<string>('');
+  const isUpdateModeRef = useRef(false);
+
+  // ── Shelf editor (after "That's right") ──
+  // Mutable working copy of the seeded shelf so swaps/adds reflect immediately.
+  // The actual DB writes happen via /api/montree/progress/update.
+  const [editorShelf, setEditorShelf] = useState<ShelfRow[]>([]);
+  // Curriculum cache for the current child — fetched once on entry to shelf_editor.
+  const [curriculumByArea, setCurriculumByArea] = useState<Record<string, PickerWork[]>>({});
+  const [curriculumLoading, setCurriculumLoading] = useState(false);
+  // Picker state
+  const [swapOpen, setSwapOpen] = useState(false);
+  const [swapArea, setSwapArea] = useState<string>('practical_life');
+  const [swapCurrentWork, setSwapCurrentWork] = useState<string | undefined>(undefined);
+  // Whether we're persisting an edit (visual lock)
+  const [editorBusy, setEditorBusy] = useState(false);
 
   // Refs (audio + timer + abort)
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -421,6 +464,21 @@ export default function VoiceOnboardingPage() {
       setStage('idle');
       return;
     }
+
+    // ADDITIVE MODE: if the teacher tapped "Update" on the prior review, prepend
+    // their previous transcript so Sonnet builds a merged profile rather than a
+    // replacement. The DB UPSERT already overwrites — what we want is for the
+    // extraction to consider both passes as one combined description.
+    if (isUpdateModeRef.current && priorTranscript.trim()) {
+      const separator = '\n\n[Teacher added more:]\n';
+      text = `${priorTranscript.trim()}${separator}${text.trim()}`;
+      console.log('[VoiceOnboarding] Additive mode: combined transcript', {
+        priorLen: priorTranscript.length,
+        newLen: liveFinalRef.current.length,
+        combinedLen: text.length,
+      });
+    }
+
     setTranscript(text);
 
     try {
@@ -551,19 +609,169 @@ export default function VoiceOnboardingPage() {
   };
 
   const onConfirmReview = () => {
-    // Custom-work additions are now inline. Once the teacher confirms, we're done
-    // with this child — advance straight to the next.
-    advanceToNext();
+    // "That's right" — instead of jumping straight to the next student, take the
+    // teacher into the shelf editor so they can review/edit the focus shelf for
+    // this child before moving on. Custom works added here persist immediately;
+    // the swap operation updates is_focus on montree_child_progress.
+    const seeded = result?.seeded_shelf ?? [];
+    setEditorShelf(seeded);
+    // Reset additive mode now that we've confirmed the recording — the next
+    // child starts fresh.
+    isUpdateModeRef.current = false;
+    setPriorTranscript('');
+    // Prefetch curriculum so swap picker opens instantly when a row is tapped.
+    void loadCurriculumForEditor();
+    setStage('shelf_editor');
   };
 
-  const onTryAgain = () => {
-    // Discard current result and re-record
-    // Note: profile is already saved server-side. This is acceptable —
-    // the next confirm will UPSERT and overwrite.
+  // "Update" — the teacher wants to add to what they just shared, not replace it.
+  // We KEEP the prior result (so the summary doesn't disappear from history) and
+  // stash the prior transcript so the next pipeline run can prepend it. Setting
+  // isUpdateModeRef ensures transcribeAndProcess picks up the additive path.
+  const onUpdate = () => {
+    if (transcript) {
+      setPriorTranscript(transcript);
+    }
+    isUpdateModeRef.current = true;
     setTranscript('');
-    setResult(null);
+    setLiveText('');
+    liveFinalRef.current = '';
     setUnmatchedQueue([]);
+    // Note: we deliberately keep `result` in state so the previous summary is
+    // still on screen until the next pass returns. Stage flip to idle makes the
+    // recording UI take over visually.
     setStage('idle');
+  };
+
+  // ── Shelf editor helpers ──
+  // Fetches all curriculum works for this classroom (one call) and groups them
+  // by area for instant picker open. Idempotent.
+  const loadCurriculumForEditor = useCallback(async () => {
+    const cid = classroomIdRef.current || classroomId;
+    if (!cid || curriculumLoading || Object.keys(curriculumByArea).length > 0) return;
+    setCurriculumLoading(true);
+    try {
+      const res = await montreeApi(`/api/montree/curriculum?classroom_id=${cid}`);
+      if (!res.ok) {
+        console.warn('[VoiceOnboarding] Curriculum fetch failed for editor:', res.status);
+        return;
+      }
+      const data = await res.json();
+      const byArea: Record<string, PickerWork[]> = {};
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const flat = ((data.curriculum || []) as any[]);
+      for (const w of flat) {
+        const areaKey: string = w.area?.area_key || 'other';
+        if (!byArea[areaKey]) byArea[areaKey] = [];
+        byArea[areaKey].push({
+          id: w.id,
+          name: w.name,
+          name_chinese: w.name_chinese,
+          status: w.status,
+          sequence: w.sequence,
+          dbSequence: w.sequence,
+          area_key: areaKey,
+          area_name: w.area?.name,
+          area_color: w.area?.color,
+        });
+      }
+      // Sort by sequence within each area
+      for (const k of Object.keys(byArea)) {
+        byArea[k].sort((a, b) => (a.sequence || 0) - (b.sequence || 0));
+      }
+      setCurriculumByArea(byArea);
+    } catch (err) {
+      console.error('[VoiceOnboarding] Curriculum fetch error:', err);
+    } finally {
+      setCurriculumLoading(false);
+    }
+  }, [classroomId, curriculumLoading, curriculumByArea]);
+
+  // Open the swap picker for a given area, anchored on the current row's work.
+  const onTapShelfRow = (area: string, currentWorkName: string) => {
+    setSwapArea(area);
+    setSwapCurrentWork(currentWorkName);
+    setSwapOpen(true);
+    // If curriculum somehow didn't preload, kick it off now (picker will show
+    // its own loading state if works array is empty).
+    if (Object.keys(curriculumByArea).length === 0) {
+      void loadCurriculumForEditor();
+    }
+  };
+
+  // Add custom work flow — teacher picks an area, then we open WorkWheelPicker
+  // for that area. The picker has its own "+ Add custom work" affordance which
+  // is the agent-styled amber pill that calls /api/montree/curriculum POST.
+  const onOpenAddCustom = (area: string) => {
+    setSwapArea(area);
+    setSwapCurrentWork(undefined); // no current selection — teacher is adding
+    setSwapOpen(true);
+    if (Object.keys(curriculumByArea).length === 0) {
+      void loadCurriculumForEditor();
+    }
+  };
+
+  // Persist a swap: mark the new work as the focus for this area on this child.
+  // Uses /api/montree/progress/update with is_focus=true; the route demotes any
+  // other focus row in the same area on the server side. Then refreshes the
+  // local editorShelf so the new work shows immediately.
+  const onSwapWorkSelected = async (newWork: PickerWork) => {
+    const lockedChild = recordingChildRef.current;
+    if (!lockedChild?.id) {
+      console.warn('[VoiceOnboarding] swap: no locked child');
+      setSwapOpen(false);
+      return;
+    }
+    setEditorBusy(true);
+    setSwapOpen(false);
+    try {
+      const res = await montreeApi('/api/montree/progress/update', {
+        method: 'POST',
+        body: JSON.stringify({
+          child_id: lockedChild.id,
+          work_name: newWork.name,
+          area: swapArea,
+          // Promote to practicing if not already at a higher status — gives the
+          // new focus the right status priority for the dashboard sort.
+          status: newWork.status === 'mastered' || newWork.status === 'practicing'
+            ? newWork.status
+            : 'practicing',
+          is_focus: true,
+        }),
+      });
+      if (!res.ok) {
+        const errBody = await res.text().catch(() => '(could not read body)');
+        console.error('[VoiceOnboarding] swap save failed', res.status, errBody);
+      }
+      // Optimistic local update — splice in the new row for this area.
+      setEditorShelf(prev => {
+        const others = prev.filter(r => {
+          const rArea = r.area === 'math' ? 'mathematics' : r.area;
+          return rArea !== swapArea;
+        });
+        const newStatus = newWork.status === 'mastered' || newWork.status === 'practicing'
+          ? newWork.status
+          : 'practicing';
+        return [...others, { work_name: newWork.name, area: swapArea, status: newStatus }];
+      });
+    } catch (err) {
+      console.error('[VoiceOnboarding] swap error:', err);
+    } finally {
+      setEditorBusy(false);
+    }
+  };
+
+  // Curriculum was edited (e.g. a custom work added via the picker's amber pill).
+  // We refetch so the picker shows the new work and it's available for selection.
+  const onCurriculumChangedInEditor = useCallback(() => {
+    // Force-reload by clearing the cache, then triggering load.
+    setCurriculumByArea({});
+    setCurriculumLoading(false);
+    void loadCurriculumForEditor();
+  }, [loadCurriculumForEditor]);
+
+  const onConfirmShelfEditor = () => {
+    advanceToNext();
   };
 
   // ─── Custom work actions ───
@@ -1110,8 +1318,169 @@ export default function VoiceOnboardingPage() {
             <button onClick={onConfirmReview} style={primaryButtonStyle}>
               {t('voiceOnboarding.review.confirm')}
             </button>
-            <button onClick={onTryAgain} style={secondaryButtonStyle}>
-              {t('voiceOnboarding.review.tryAgain')}
+            <button onClick={onUpdate} style={secondaryButtonStyle}>
+              {t('voiceOnboarding.review.update')}
+            </button>
+          </div>
+          {/* Hint about additive behaviour — only shows after the teacher has tapped
+              Update once and is back at idle, or persistently below the buttons so
+              they understand what Update will do before tapping. */}
+          <p style={{
+            ...bodyStyle,
+            marginTop: 14,
+            fontSize: 13,
+            color: 'rgba(255,255,255,0.45)',
+            fontStyle: 'italic',
+            maxWidth: 460,
+          }}>
+            {t('voiceOnboarding.review.updateHint')}
+          </p>
+        </div>
+      )}
+
+      {/* Shelf Editor — after "That's right". Mirrors the dashboard shelf for
+          this child and lets the teacher swap any work or add a custom one before
+          moving on. The shelf is already persisted in montree_child_progress at
+          this point; swap = update is_focus, add custom = new progress row. */}
+      {stage === 'shelf_editor' && (
+        <div style={{
+          ...centerStyle,
+          maxWidth: 640,
+          padding: '32px 28px',
+          overflowY: 'auto',
+        }}>
+          <h2 style={{ ...titleStyle, fontSize: 26, marginBottom: 8 }}>
+            {t('voiceOnboarding.shelfEditor.title', { name: firstName })}
+          </h2>
+          <p style={{
+            ...bodyStyle,
+            fontSize: 14,
+            color: 'rgba(255,255,255,0.55)',
+            marginBottom: 24,
+            maxWidth: 460,
+          }}>
+            {t('voiceOnboarding.shelfEditor.subtitle')}
+          </p>
+
+          {/* Shelf rows — same visual language as the review-screen shelf so the
+              teacher recognises this is "the actual shelf" they'll see on the
+              dashboard. Tap to swap; per-row affordance hint on the right. */}
+          {editorShelf.length > 0 ? (
+            <div style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 10,
+              width: '100%',
+              opacity: editorBusy ? 0.6 : 1,
+              transition: 'opacity 0.15s',
+            }}>
+              {AREA_KEYS.map(areaKey => {
+                const row = editorShelf.find(r => {
+                  const rArea = r.area === 'math' ? 'mathematics' : r.area;
+                  return rArea === areaKey;
+                });
+                const areaLabel = getAreaLabel(areaKey, locale);
+                if (!row) {
+                  // Empty area — show a soft "+ add" affordance per area.
+                  return (
+                    <button
+                      key={`empty-${areaKey}`}
+                      onClick={() => onOpenAddCustom(areaKey)}
+                      style={{
+                        padding: '12px 18px',
+                        borderRadius: 14,
+                        background: 'transparent',
+                        border: '1px dashed rgba(255,255,255,0.18)',
+                        color: 'rgba(255,255,255,0.45)',
+                        fontSize: 13,
+                        fontFamily: "'Inter', -apple-system, sans-serif",
+                        textAlign: 'left',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      + {areaLabel}
+                    </button>
+                  );
+                }
+                return (
+                  <button
+                    key={`${row.work_name}-${row.area}`}
+                    onClick={() => onTapShelfRow(areaKey, row.work_name)}
+                    disabled={editorBusy}
+                    style={{
+                      padding: '14px 20px',
+                      borderRadius: 14,
+                      background: 'rgba(167,243,208,0.06)',
+                      border: '1px solid rgba(167,243,208,0.22)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      gap: 12,
+                      cursor: 'pointer',
+                      textAlign: 'left',
+                      width: '100%',
+                      fontFamily: "'Inter', -apple-system, sans-serif",
+                    }}
+                  >
+                    <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minWidth: 0 }}>
+                      <span style={{
+                        fontSize: 11,
+                        letterSpacing: 1.4,
+                        textTransform: 'uppercase',
+                        color: 'rgba(255,255,255,0.45)',
+                        marginBottom: 4,
+                      }}>
+                        {areaLabel}
+                      </span>
+                      <span style={{
+                        fontSize: 16,
+                        color: '#e6fff4',
+                        textAlign: 'left',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                      }}>
+                        {row.work_name}
+                      </span>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
+                      <span style={{
+                        fontSize: 12,
+                        color: '#a7f3d0',
+                        padding: '4px 12px',
+                        background: 'rgba(167,243,208,0.10)',
+                        border: '1px solid rgba(167,243,208,0.25)',
+                        borderRadius: 999,
+                        textTransform: 'capitalize',
+                        whiteSpace: 'nowrap',
+                      }}>
+                        {row.status}
+                      </span>
+                      <span style={{
+                        fontSize: 11,
+                        color: 'rgba(255,255,255,0.35)',
+                        whiteSpace: 'nowrap',
+                      }}>
+                        {t('voiceOnboarding.shelfEditor.tapToSwap')}
+                      </span>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          ) : (
+            <p style={{ ...bodyStyle, fontSize: 14, color: 'rgba(255,255,255,0.55)' }}>
+              {t('voiceOnboarding.shelfEditor.empty')}
+            </p>
+          )}
+
+          {/* Confirm + add custom (in another area) */}
+          <div style={{ display: 'flex', gap: 12, marginTop: 32, justifyContent: 'center', flexWrap: 'wrap' }}>
+            <button
+              onClick={onConfirmShelfEditor}
+              disabled={editorBusy}
+              style={{ ...primaryButtonStyle, opacity: editorBusy ? 0.5 : 1 }}
+            >
+              {t('voiceOnboarding.shelfEditor.confirm')} →
             </button>
           </div>
         </div>
@@ -1146,6 +1515,20 @@ export default function VoiceOnboardingPage() {
         background: 'radial-gradient(ellipse 1100px 900px at 88% 8%, rgba(39,129,90,0.48), rgba(39,129,90,0.18) 30%, transparent 60%)',
       }} />
       {renderInner()}
+
+      {/* Swap picker — mounted at page level so it overlays the shelf editor.
+          Uses curriculumByArea (preloaded on entry to shelf_editor) so the
+          picker opens instantly. The picker's built-in "+ Add custom work"
+          flow lets the teacher add brand-new works to the area in-context. */}
+      <WorkWheelPicker
+        isOpen={swapOpen}
+        onClose={() => setSwapOpen(false)}
+        area={swapArea}
+        works={curriculumByArea[swapArea] || []}
+        currentWorkName={swapCurrentWork}
+        onSelectWork={(work) => onSwapWorkSelected(work as PickerWork)}
+        onWorkAdded={onCurriculumChangedInEditor}
+      />
     </div>
   );
 }

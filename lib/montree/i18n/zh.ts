@@ -4280,4 +4280,14 @@ export const zh = {
   'voiceOnboarding.recording.areaMathematics': '数学',
   'voiceOnboarding.recording.areaLanguage': '语言',
   'voiceOnboarding.recording.areaCultural': '文化',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'voiceOnboarding.review.update': '更新',
+  'voiceOnboarding.review.updateHint': '告诉我更多 — 你的下一条录音将补充你已经分享的内容。',
+  'voiceOnboarding.shelfEditor.title': '{name}的书架',
+  'voiceOnboarding.shelfEditor.subtitle': '点击一项工作以将其替换为另一项。在下方添加自定义工作。',
+  'voiceOnboarding.shelfEditor.tapToSwap': '点击以交换',
+  'voiceOnboarding.shelfEditor.addCustom': '+ 添加自定义工作',
+  'voiceOnboarding.shelfEditor.confirm': '看起来很不错',
+  'voiceOnboarding.shelfEditor.empty': '还没有专注工作。添加一个自定义工作以开始。',
 } as const;

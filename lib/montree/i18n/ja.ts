@@ -3877,4 +3877,14 @@ export const ja: Record<string, string> = {
   'voiceOnboarding.recording.areaMathematics': '算数',
   'voiceOnboarding.recording.areaLanguage': '言語',
   'voiceOnboarding.recording.areaCultural': '文化',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'voiceOnboarding.review.update': '更新する',
+  'voiceOnboarding.review.updateHint': 'もっと詳しくお聞かせください。次の記録があなたが既に共有されたことに追加されます。',
+  'voiceOnboarding.shelfEditor.title': '{name}さんの棚',
+  'voiceOnboarding.shelfEditor.subtitle': '活動をタップしてほかの活動に変更できます。下記からカスタム活動を追加してください。',
+  'voiceOnboarding.shelfEditor.tapToSwap': 'タップして変更',
+  'voiceOnboarding.shelfEditor.addCustom': '+ カスタム活動を追加',
+  'voiceOnboarding.shelfEditor.confirm': '素晴らしいです',
+  'voiceOnboarding.shelfEditor.empty': 'まだ焦点を当てた活動がありません。カスタム活動を追加して始めましょう。',
 };
