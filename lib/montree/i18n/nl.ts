@@ -3866,4 +3866,15 @@ export const nl: Record<string, string> = {
   'workPicker.customWorkPlaceholder': 'bijv. Regenboog Stapelblokken',
   'workPicker.saveCustomWork': 'Toevoegen aan curriculum',
   'workPicker.adding': 'Toevoegen...',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'voiceOnboarding.recording.promptAge': 'Hoe oud zij zijn',
+  'voiceOnboarding.recording.promptEnjoys': 'Wat zij graag doen',
+  'voiceOnboarding.recording.promptStruggles': 'Waar zij moeite mee hebben',
+  'voiceOnboarding.recording.promptFocusByArea': 'Waar zij zich op dit moment op concentreren in elk gebied:',
+  'voiceOnboarding.recording.areaPracticalLife': 'Praktisch Leven',
+  'voiceOnboarding.recording.areaSensorial': 'Zintuiglijk',
+  'voiceOnboarding.recording.areaMathematics': 'Wiskunde',
+  'voiceOnboarding.recording.areaLanguage': 'Taal',
+  'voiceOnboarding.recording.areaCultural': 'Cultureel',
 };

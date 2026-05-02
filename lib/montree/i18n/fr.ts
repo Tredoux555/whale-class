@@ -3866,4 +3866,15 @@ export const fr: Record<string, string> = {
   'workPicker.customWorkPlaceholder': 'par ex. Blocs d\'empilement arc-en-ciel',
   'workPicker.saveCustomWork': 'Ajouter au programme',
   'workPicker.adding': 'Ajout en cours...',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'voiceOnboarding.recording.promptAge': 'Quel âge ils ont',
+  'voiceOnboarding.recording.promptEnjoys': 'Ce qu\'ils aiment faire',
+  'voiceOnboarding.recording.promptStruggles': 'Ce avec quoi ils ont des difficultés',
+  'voiceOnboarding.recording.promptFocusByArea': 'Sur quoi ils se concentrent en ce moment dans chaque domaine :',
+  'voiceOnboarding.recording.areaPracticalLife': 'Vie Pratique',
+  'voiceOnboarding.recording.areaSensorial': 'Sensoriel',
+  'voiceOnboarding.recording.areaMathematics': 'Mathématiques',
+  'voiceOnboarding.recording.areaLanguage': 'Langage',
+  'voiceOnboarding.recording.areaCultural': 'Culture',
 };

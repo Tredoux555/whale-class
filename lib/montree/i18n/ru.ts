@@ -3863,4 +3863,15 @@ export const ru: Record<string, string> = {
   'workPicker.customWorkPlaceholder': 'например, Радужные кубики',
   'workPicker.saveCustomWork': 'Добавить в программу',
   'workPicker.adding': 'Добавление...',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'voiceOnboarding.recording.promptAge': 'Сколько им лет',
+  'voiceOnboarding.recording.promptEnjoys': 'Что им нравится делать',
+  'voiceOnboarding.recording.promptStruggles': 'С чем они испытывают трудности',
+  'voiceOnboarding.recording.promptFocusByArea': 'На чём они сосредотачиваются в настоящее время в каждой области:',
+  'voiceOnboarding.recording.areaPracticalLife': 'Практическая Жизнь',
+  'voiceOnboarding.recording.areaSensorial': 'Сенсорика',
+  'voiceOnboarding.recording.areaMathematics': 'Математика',
+  'voiceOnboarding.recording.areaLanguage': 'Язык',
+  'voiceOnboarding.recording.areaCultural': 'Культура',
 };

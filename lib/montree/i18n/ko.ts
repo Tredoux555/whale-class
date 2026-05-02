@@ -3866,4 +3866,15 @@ export const ko: Record<string, string> = {
   'workPicker.customWorkPlaceholder': '예: 무지개 쌓기 블록',
   'workPicker.saveCustomWork': '교육과정에 추가',
   'workPicker.adding': '추가 중...',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'voiceOnboarding.recording.promptAge': '자녀분이 몇 살인지',
+  'voiceOnboarding.recording.promptEnjoys': '자녀분이 즐겨 하는 활동',
+  'voiceOnboarding.recording.promptStruggles': '자녀분이 어려워하는 것',
+  'voiceOnboarding.recording.promptFocusByArea': '현재 각 영역에서 자녀분이 집중하고 있는 것:',
+  'voiceOnboarding.recording.areaPracticalLife': '일상생활',
+  'voiceOnboarding.recording.areaSensorial': '감각',
+  'voiceOnboarding.recording.areaMathematics': '수학',
+  'voiceOnboarding.recording.areaLanguage': '언어',
+  'voiceOnboarding.recording.areaCultural': '문화',
 };
