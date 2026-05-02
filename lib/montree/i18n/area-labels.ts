@@ -181,11 +181,14 @@ export function getAreaPrefix(area: string, locale: string): string {
 
 /**
  * Get the localized area label.
+ * Normalizes the 'math' alias to 'mathematics' (same as getAreaPrefix).
  * Falls back to English, then to the raw area key if no translation exists.
  */
 export function getAreaLabel(area: string, locale: string): string {
   const map = AREA_LABELS[locale] || AREA_LABELS_EN;
-  return map[area] ?? AREA_LABELS_EN[area] ?? area;
+  // Normalize 'math' alias used in some legacy paths.
+  const key = area === 'math' ? 'mathematics' : area;
+  return map[key] ?? AREA_LABELS_EN[key] ?? key;
 }
 
 /**
