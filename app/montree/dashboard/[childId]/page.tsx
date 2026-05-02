@@ -18,7 +18,6 @@ import { mergeWorksWithCurriculum } from '@/lib/montree/work-matching';
 import { WeekViewSkeleton } from '@/components/montree/Skeletons';
 import { AreaConfig, QuickGuideData, MergedWork } from '@/components/montree/curriculum/types';
 import FocusWorksSection from '@/components/montree/child/FocusWorksSection';
-import WorkSearchBar from '@/components/montree/shared/WorkSearchBar';
 import { useWorkOperations } from '@/hooks/useWorkOperations';
 import GuruContextBubble from '@/components/montree/guru/GuruContextBubble';
 import type { GamePlan } from '@/components/montree/child/GamePlanCard';
@@ -30,7 +29,6 @@ import { useFeatures } from '@/hooks/useFeatures';
 const WorkWheelPicker = dynamic(() => import('@/components/montree/WorkWheelPicker'), { ssr: false });
 const QuickGuideModal = dynamic(() => import('@/components/montree/child/QuickGuideModal'), { ssr: false });
 const FullDetailsModal = dynamic(() => import('@/components/montree/child/FullDetailsModal'), { ssr: false });
-const WorkPickerModal = dynamic(() => import('@/components/montree/child/WorkPickerModal'), { ssr: false });
 const WeekViewGuide = dynamic(() => import('@/components/montree/onboarding/WeekViewGuide'), { ssr: false });
 const ChildWeeklyAdmin = dynamic(() => import('@/components/montree/child/ChildWeeklyAdmin'), { ssr: false });
 // PrintButton removed Session 78 — print moved to three-dot menu as feature-gated item
@@ -95,11 +93,11 @@ export default function WeekPage() {
   const [notes, setNotes] = useState<Record<string, string>>({});
   const [savingNote, setSavingNote] = useState<string | null>(null);
 
-  // Work picker state
-  const [pickerOpen, setPickerOpen] = useState(false);
+  // Curriculum cache (lazy-loaded). Used by the wheel picker, the area
+  // browser, and other lookups. The legacy WorkPickerModal/WorkSearchBar
+  // pair that also consumed pickerOpen/selectedArea/loadingCurriculum has
+  // been removed — works flow through the photo-capture pipeline now.
   const [curriculum, setCurriculum] = useState<Record<string, CurriculumWork[]>>({});
-  const [selectedArea, setSelectedArea] = useState<string | null>(null);
-  const [loadingCurriculum, setLoadingCurriculum] = useState(false);
 
   // "Tell Guru" onboarding — show card when system doesn't know child well
   // Condition: no mental profile AND fewer than 5 confirmed photos (i.e. limited data)
@@ -580,12 +578,12 @@ export default function WeekPage() {
   };
 
   // Use work operations hook
+  // (addWork was previously consumed by the now-removed WorkPickerModal flow.)
   const {
     cycleStatus,
     removeExtra,
     handleWheelPickerSelect,
     handleWheelPickerAddExtra,
-    addWork: addWorkFromHook,
     saveNote: saveNoteFromHook,
   } = useWorkOperations({
     childId,
@@ -649,13 +647,6 @@ export default function WeekPage() {
     setSmartNoteProcessing(null);
   };
 
-  // Wrapper for addWork to handle picker state
-  const onAddWork = async (work: CurriculumWork) => {
-    await addWorkFromHook(work, selectedArea);
-    setPickerOpen(false);
-    setSelectedArea(null);
-  };
-
   // Handle wheel picker select with isSaving flag
   const onWheelPickerSelect = async (work: MergedWork, status: string) => {
     setIsSaving(true);
@@ -693,16 +684,6 @@ export default function WeekPage() {
       await removeExtra(work);
     } finally {
       setIsSaving(false);
-    }
-  };
-
-  // Open picker and fetch curriculum
-  const openPicker = async () => {
-    setPickerOpen(true);
-    if (Object.keys(curriculum).length === 0) {
-      setLoadingCurriculum(true);
-      await loadCurriculumCache();
-      setLoadingCurriculum(false);
     }
   };
 
@@ -764,19 +745,10 @@ export default function WeekPage() {
             ))}
           </select>
         </div>
-
-        {/* Find Work search — fills remaining space */}
-        <div data-tutorial="work-search-bar" style={{ flex: 1 }}>
-          <WorkSearchBar
-            curriculum={curriculum}
-            onSelectWork={(work, areaKey) => {
-              setSelectedArea(areaKey);
-              setPickerOpen(true);
-            }}
-            onFocus={() => loadCurriculumCache()}
-            placeholder={t('weekview.findWork')}
-          />
-        </div>
+        {/* Find Work search bar removed: outdated architecture. New works
+            now flow through the photo-capture pipeline (camera → identify →
+            confirm), so the dedicated search-and-add input is redundant.
+            The legacy light-theme WorkPickerModal it opened is also gone. */}
       </div>
 
       {/* Action bar — Camera, Mic, Gallery (teacher only) */}
@@ -927,20 +899,6 @@ export default function WeekPage() {
         onSelectWork={onWheelPickerSelect}
         onAddExtra={onWheelPickerAddExtra}
         onWorkAdded={refreshWheelPickerWorks}
-      />
-
-      {/* Work Picker Modal (for Add Work button) */}
-      <WorkPickerModal
-        isOpen={pickerOpen}
-        onClose={() => { setPickerOpen(false); setSelectedArea(null); }}
-        curriculum={curriculum}
-        selectedArea={selectedArea}
-        setSelectedArea={setSelectedArea}
-        loadingCurriculum={loadingCurriculum}
-        allWorks={allWorks}
-        onAddWork={onAddWork}
-        getAreaConfig={getAreaConfig}
-        classroomId={session?.classroom?.id}
       />
 
       {/* Quick Guide Modal */}
