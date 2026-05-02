@@ -309,17 +309,50 @@ Create a warm summary that confirms back to the teacher what you understood. The
       // Non-fatal — profile is already saved, game plan can be generated later
     }
 
-    // Fetch the actual seeded shelf so the orchestrator can show what will appear
-    // on the child's page — same source of truth as the dashboard
+    // Fetch the actual focus shelf so the orchestrator can show EXACTLY what
+    // 'This Week's Focus' will show on the child's page. This mirrors the
+    // logic in app/montree/dashboard/[childId]/page.tsx:fetchAssignments —
+    // ONE focus work per area, max 5, prioritized by is_focus → practicing
+    // → presented → not_started → completed.
     let seededShelf: Array<{ work_name: string; area: string; status: string }> = [];
     try {
       const { data: progressRows } = await supabase
         .from('montree_child_progress')
-        .select('work_name, area, status')
-        .eq('child_id', childId)
-        .in('status', ['presented', 'practicing'])
-        .order('updated_at', { ascending: false });
-      seededShelf = (progressRows ?? []) as Array<{ work_name: string; area: string; status: string }>;
+        .select('work_name, area, status, is_focus')
+        .eq('child_id', childId);
+
+      const allProgress = (progressRows ?? []) as Array<{
+        work_name: string;
+        area: string;
+        status: string;
+        is_focus?: boolean;
+      }>;
+
+      const AREA_ORDER = ['practical_life', 'sensorial', 'mathematics', 'language', 'cultural'];
+      const STATUS_PRIORITY: Record<string, number> = {
+        practicing: 1,
+        presented: 2,
+        not_started: 3,
+        completed: 4,
+        mastered: 4,
+      };
+
+      for (const area of AREA_ORDER) {
+        const areaWorks = allProgress.filter(p => {
+          const pArea = p.area === 'math' ? 'mathematics' : p.area;
+          return pArea === area;
+        });
+        if (areaWorks.length === 0) continue;
+
+        areaWorks.sort((a, b) => {
+          if (a.is_focus && !b.is_focus) return -1;
+          if (!a.is_focus && b.is_focus) return 1;
+          return (STATUS_PRIORITY[a.status] ?? 5) - (STATUS_PRIORITY[b.status] ?? 5);
+        });
+
+        const top = areaWorks[0];
+        seededShelf.push({ work_name: top.work_name, area: top.area, status: top.status });
+      }
     } catch (shelfErr) {
       console.error('[Onboard] Seeded shelf fetch error (non-fatal):', shelfErr);
     }
