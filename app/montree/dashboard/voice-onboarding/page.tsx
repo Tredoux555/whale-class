@@ -663,8 +663,11 @@ export default function VoiceOnboardingPage() {
           </span>
         </div>
 
-      {/* Idle / Recording */}
-      {(stage === 'idle' || stage === 'recording') && (
+      {/* Idle / Recording / Transcribing / Processing — all keep the same shell so
+          the user never sees the screen "vanish" between hitting stop and the review.
+          The transcript stays visible and a clear processing indicator replaces the
+          stop button. */}
+      {(stage === 'idle' || stage === 'recording' || stage === 'transcribing' || stage === 'processing') && (
         <div style={{ ...centerStyle, maxWidth: 520, padding: '0 28px' }}>
           {currentChild.photo_url ? (
             <div style={avatarStyle}>
@@ -742,41 +745,71 @@ export default function VoiceOnboardingPage() {
               <button onClick={stopRecording} style={stopButtonStyle} aria-label="Stop">
                 <div style={{ width: 28, height: 28, background: 'white', borderRadius: 4 }} />
               </button>
-
-              {/* Live transcript — appears as the teacher speaks (Web Speech API) */}
-              {liveText ? (
-                <div style={{
-                  marginTop: 28,
-                  padding: '20px 24px',
-                  background: 'rgba(167,243,208,0.06)',
-                  border: '1px solid rgba(167,243,208,0.18)',
-                  borderRadius: 16,
-                  maxWidth: 600,
-                  width: '100%',
-                  textAlign: 'left',
-                  maxHeight: 240,
-                  overflowY: 'auto',
-                }}>
-                  <p style={{
-                    ...bodyStyle,
-                    fontSize: 17,
-                    lineHeight: 1.5,
-                    color: '#e6fff4',
-                    margin: 0,
-                  }}>
-                    {liveText}
-                  </p>
-                </div>
-              ) : (
-                <p style={{ ...bodyStyle, marginTop: 16, fontSize: 13, fontStyle: 'italic', color: '#a7f3d0' }}>
-                  {recordingTime < 15
-                    ? t('voiceOnboarding.recording.encourageEarly')
-                    : recordingTime < 60
-                      ? t('voiceOnboarding.recording.encourageMid')
-                      : t('voiceOnboarding.recording.encourageLate')}
-                </p>
-              )}
             </>
+          )}
+
+          {/* Processing indicator — replaces the stop button after stop is pressed.
+              Keeps the live transcript visible so the user sees what they said while
+              the system works on it. */}
+          {(stage === 'transcribing' || stage === 'processing') && (
+            <>
+              <div style={{ marginTop: 32 }}>
+                <p style={{ fontSize: 13, color: 'rgba(167,243,208,0.85)', letterSpacing: 1.5, textTransform: 'uppercase' }}>
+                  {stage === 'transcribing' ? 'Transcribing' : 'Putting it all together'}
+                </p>
+                <p style={{ fontSize: 36, color: '#34d399', fontFamily: 'monospace', marginTop: 8 }}>
+                  {formatTime(recordingTime)}
+                </p>
+              </div>
+              <div style={{
+                marginTop: 28, width: 96, height: 96, borderRadius: '50%',
+                background: 'rgba(52,211,153,0.18)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                boxShadow: '0 0 32px 8px rgba(52,211,153,0.30)',
+              }}>
+                <Spinner />
+              </div>
+              <p style={{ ...bodyStyle, marginTop: 16, fontSize: 14, color: 'rgba(255,255,255,0.7)' }}>
+                {t('voiceOnboarding.processing', { name: firstName })}
+              </p>
+            </>
+          )}
+
+          {/* Live transcript — appears during recording AND stays visible during processing
+              so the teacher can see exactly what was captured */}
+          {(stage === 'recording' || stage === 'transcribing' || stage === 'processing') && (
+            liveText ? (
+              <div style={{
+                marginTop: 28,
+                padding: '20px 24px',
+                background: 'rgba(167,243,208,0.06)',
+                border: '1px solid rgba(167,243,208,0.18)',
+                borderRadius: 16,
+                maxWidth: 600,
+                width: '100%',
+                textAlign: 'left',
+                maxHeight: 240,
+                overflowY: 'auto',
+              }}>
+                <p style={{
+                  ...bodyStyle,
+                  fontSize: 17,
+                  lineHeight: 1.5,
+                  color: '#e6fff4',
+                  margin: 0,
+                }}>
+                  {liveText}
+                </p>
+              </div>
+            ) : stage === 'recording' ? (
+              <p style={{ ...bodyStyle, marginTop: 16, fontSize: 13, fontStyle: 'italic', color: '#a7f3d0' }}>
+                {recordingTime < 15
+                  ? t('voiceOnboarding.recording.encourageEarly')
+                  : recordingTime < 60
+                    ? t('voiceOnboarding.recording.encourageMid')
+                    : t('voiceOnboarding.recording.encourageLate')}
+              </p>
+            ) : null
           )}
 
           {/* Skip — only available when idle */}
@@ -788,39 +821,8 @@ export default function VoiceOnboardingPage() {
         </div>
       )}
 
-      {/* Transcribing */}
-      {stage === 'transcribing' && (
-        <div style={centerStyle}>
-          <Spinner />
-          <p style={{ ...bodyStyle, marginTop: 24 }}>
-            {t('voiceOnboarding.transcribing', { name: firstName })}
-          </p>
-        </div>
-      )}
-
-      {/* Processing */}
-      {stage === 'processing' && (
-        <div style={centerStyle}>
-          <Spinner />
-          <p style={{ ...bodyStyle, marginTop: 24 }}>
-            {t('voiceOnboarding.processing', { name: firstName })}
-          </p>
-          {transcript && (
-            <p style={{
-              ...bodyStyle,
-              marginTop: 12, fontSize: 14, fontStyle: 'italic',
-              color: 'rgba(255,255,255,0.45)',
-              maxWidth: 480, padding: '0 28px',
-              display: '-webkit-box',
-              WebkitLineClamp: 3,
-              WebkitBoxOrient: 'vertical',
-              overflow: 'hidden',
-            }}>
-              &ldquo;{transcript}&rdquo;
-            </p>
-          )}
-        </div>
-      )}
+      {/* Transcribing + Processing are now rendered inline within the recording shell
+          above (see "Processing indicator" block) so the transcript stays visible. */}
 
       {/* Review */}
       {stage === 'review' && result && (
