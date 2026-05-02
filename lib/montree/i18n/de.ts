@@ -3890,4 +3890,12 @@ export const de: Record<string, string> = {
 
   // ─── Auto-filled missing keys (from Apr 30 audit) ───
   'voiceOnboarding.processing.layingFoundation': 'Grundlagen schaffen für {name}',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'dashboard.onboardingChoice.title': 'Wie möchten Sie beginnen?',
+  'dashboard.onboardingChoice.subtitle': 'Zwei Wege. Beide ehrlich. Wählen Sie den, der zu Ihrer Woche passt.',
+  'dashboard.onboardingChoice.voiceTitle': 'Erzählen Sie mir von meiner Klasse',
+  'dashboard.onboardingChoice.voiceBody': '90 Sekunden pro Kind. Ich erstelle ihre Profile und Ihre ersten Berichte klingen, als hätten Sie sie geschrieben.',
+  'dashboard.onboardingChoice.photoTitle': 'Beginnen Sie einfach mit Fotos',
+  'dashboard.onboardingChoice.photoBody': 'Überspringen Sie voraus. Machen Sie Fotos und sehen Sie, wie das Dashboard zum Leben erwacht. Ihre ersten Berichte konzentrieren sich auf das, was wir diese Woche beobachtet haben.',
 };

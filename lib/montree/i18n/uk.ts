@@ -3887,4 +3887,12 @@ export const uk: Record<string, string> = {
 
   // ─── Auto-filled missing keys (from Apr 30 audit) ───
   'voiceOnboarding.processing.layingFoundation': 'Закладання основи для {name}',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'dashboard.onboardingChoice.title': 'Як би Ви хотіли розпочати?',
+  'dashboard.onboardingChoice.subtitle': 'Два шляхи. Обидва чесні. Виберіть той, що підходить Вашому тижню.',
+  'dashboard.onboardingChoice.voiceTitle': 'Розповідайте мені про мій клас',
+  'dashboard.onboardingChoice.voiceBody': '90 секунд на одну дитину. Я створю їхні профілі, і Ваші перші звіти будуть звучати так, ніби Ви їх написали.',
+  'dashboard.onboardingChoice.photoTitle': 'Просто почніть із фотографій',
+  'dashboard.onboardingChoice.photoBody': 'Перейдіть далі. Робіть фотографії, і панель керування оживе. Ваші перші звіти зосередяться на тому, що ми спостерігали цього тижня.',
 };
