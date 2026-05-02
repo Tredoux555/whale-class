@@ -382,12 +382,12 @@ export default function WorkWheelPicker({
                     )}
                   </div>
                   <span className="flex-1 text-white text-sm font-medium truncate">{locale === 'zh' && w.name_chinese ? w.name_chinese : w.name}</span>
-                  {w.area_name && (
+                  {(w.area_name || w.area_key) && (
                     <span
                       className="text-[10px] font-semibold px-2 py-0.5 rounded-full shrink-0 uppercase tracking-wide"
                       style={{ color: w.area_color, backgroundColor: (w.area_color || '#888') + '22' }}
                     >
-                      {locale === 'zh' && w.area_name_zh ? w.area_name_zh : w.area_name}
+                      {w.area_key ? getAreaLabel(w.area_key, locale) : w.area_name}
                     </span>
                   )}
                 </button>
