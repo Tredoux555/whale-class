@@ -6,6 +6,13 @@ import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { checkRateLimit } from '@/lib/rate-limiter';
 import { getSupabase } from '@/lib/supabase-client';
 
+// Railway/Next.js default serverless timeout is 15s. Whisper transcription on
+// a 60-90s recording can easily exceed that — without this export, the route
+// gets killed mid-flight and returns 503 (Service Unavailable). 90s gives
+// Whisper headroom for accent handling, multi-language detection, and the
+// occasional cold-start penalty.
+export const maxDuration = 90;
+
 export async function POST(request: NextRequest) {
   // Auth
   const auth = await verifySchoolRequest(request);
