@@ -3852,4 +3852,10 @@ export const de: Record<string, string> = {
   'landing.closing.title': 'Erleben Sie die Magie.',
   'landing.closing.body': 'Einen Monat kostenlos. Danach 7 € pro Kind und Monat. Ein Plan. Keine Abstufungen. Keine Verträge.',
   'landing.closing.cta': 'Kostenlose Testversion starten',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'voiceOnboarding.review.shelfHeading': '{name}s Anfangsregal',
+  'voiceOnboarding.review.unmatchedHeading': 'Ich habe ein paar Arbeiten bemerkt, die noch nicht in Ihrem Lehrplan enthalten sind —',
+  'voiceOnboarding.review.addToCurriculum': 'Zum Lehrplan hinzufügen',
+  'voiceOnboarding.review.added': 'Hinzugefügt',
 };

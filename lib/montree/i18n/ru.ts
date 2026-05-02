@@ -3849,4 +3849,10 @@ export const ru: Record<string, string> = {
   'landing.closing.title': 'Откройте волшебство.',
   'landing.closing.body': 'Один месяц бесплатно. Затем $7 за одного ребёнка в месяц. Один тариф. Без уровней. Без контрактов.',
   'landing.closing.cta': 'Начните бесплатный пробный период',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'voiceOnboarding.review.shelfHeading': 'Начальная полка {name}',
+  'voiceOnboarding.review.unmatchedHeading': 'Я заметил несколько работ, которые еще не входят в Вашу программу —',
+  'voiceOnboarding.review.addToCurriculum': 'Добавить в программу',
+  'voiceOnboarding.review.added': 'Добавлено',
 };

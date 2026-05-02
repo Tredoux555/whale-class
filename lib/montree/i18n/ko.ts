@@ -3852,4 +3852,10 @@ export const ko: Record<string, string> = {
   'landing.closing.title': 'Montree의 마법을 경험해보세요.',
   'landing.closing.body': '첫 달은 무료에요. 그 후 자녀분당 월 $7. 한 가지 요금제. 등급 구분 없음. 계약 없음.',
   'landing.closing.cta': '무료 체험 시작하기',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'voiceOnboarding.review.shelfHeading': '{name}의 시작 선반',
+  'voiceOnboarding.review.unmatchedHeading': '자녀분의 커리큘럼에 아직 포함되지 않은 활동이 몇 개 있는 것 같아요 —',
+  'voiceOnboarding.review.addToCurriculum': '커리큘럼에 추가',
+  'voiceOnboarding.review.added': '추가됨',
 };

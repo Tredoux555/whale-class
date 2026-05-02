@@ -3852,4 +3852,10 @@ export const fr: Record<string, string> = {
   'landing.closing.title': 'Découvrez la magie.',
   'landing.closing.body': 'Un mois gratuit. Puis 7 € par enfant, par mois. Un seul forfait. Pas de niveaux. Aucun contrat.',
   'landing.closing.cta': 'Commencez votre essai gratuit',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'voiceOnboarding.review.shelfHeading': 'L\'étagère de départ de {name}',
+  'voiceOnboarding.review.unmatchedHeading': 'J\'ai remarqué quelques activités qui ne sont pas encore dans votre programme —',
+  'voiceOnboarding.review.addToCurriculum': 'Ajouter au programme',
+  'voiceOnboarding.review.added': 'Ajouté',
 };
