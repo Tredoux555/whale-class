@@ -104,6 +104,12 @@ export default function VoiceOnboardingPage() {
   const liveFinalRef = useRef<string>(''); // accumulates final results across pauses
   const [liveText, setLiveText] = useState(''); // final + interim, displayed live
 
+  // Child identity locked in at recording-start time. Decouples the in-flight pipeline
+  // from React state — if `pending` is reset by a refetch/remount mid-flow, the
+  // pipeline still knows which child it's processing. This prevents the silent
+  // bump-to-idle bug caused by `currentChild` becoming undefined between render cycles.
+  const recordingChildRef = useRef<{ id: string; name: string } | null>(null);
+
   // Load pending children
   const loadPending = useCallback(async () => {
     try {
@@ -179,6 +185,18 @@ export default function VoiceOnboardingPage() {
         setStage('error_permission');
         return;
       }
+
+      // CRITICAL: Lock the child identity for this entire recording flow into a ref.
+      // If `pending` gets refetched mid-flow (or React remounts), we still know
+      // which child the recording is for. Without this, the pipeline silently bails
+      // at the !currentChild check.
+      if (!currentChild?.id) {
+        console.error('[VoiceOnboarding] No currentChild at start — aborting');
+        setStage('idle');
+        return;
+      }
+      recordingChildRef.current = { id: currentChild.id, name: currentChild.name };
+      console.log('[VoiceOnboarding] Locked child for recording:', recordingChildRef.current);
 
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       streamRef.current = stream;
@@ -288,7 +306,7 @@ export default function VoiceOnboardingPage() {
       console.error('[VoiceOnboarding] Mic permission/start error:', err);
       setStage('error_permission');
     }
-  }, [speechLang]);
+  }, [speechLang, currentChild]);
 
   const stopRecording = useCallback(() => {
     if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
@@ -355,10 +373,22 @@ export default function VoiceOnboardingPage() {
 
       // Step B: Sonnet onboard (profile extraction + game plan)
       setStage('processing');
-      if (!currentChild) { setStage('idle'); return; }
 
-      const onboardUrl = `/api/montree/children/${currentChild.id}/onboard`;
-      console.log('[VoiceOnboarding] →POST', onboardUrl, { transcriptLength: text.length, classroomId });
+      // Use the LOCKED child identity from the recording-start ref, not the
+      // possibly-stale React state. This prevents the silent bump-to-idle bug.
+      const lockedChild = recordingChildRef.current;
+      if (!lockedChild?.id) {
+        setDebugError({
+          step: 'PIPELINE — child identity lost',
+          jsError: 'recordingChildRef.current is null at onboard step. This should be impossible if startRecording succeeded.',
+          transcriptLength: text.length,
+        });
+        setStage('debug_error');
+        return;
+      }
+
+      const onboardUrl = `/api/montree/children/${lockedChild.id}/onboard`;
+      console.log('[VoiceOnboarding] →POST', onboardUrl, { transcriptLength: text.length, classroomId, childName: lockedChild.name });
       let oRes: Response;
       try {
         // Body shape mirrors TellGuruCard exactly (which is known-working).
