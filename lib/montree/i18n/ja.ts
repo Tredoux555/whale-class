@@ -72,7 +72,6 @@ export const ja: Record<string, string> = {
   'signup.schoolClassroomName': '学園名 / クラス名',
   'signup.emailOptional': 'メールアドレス（オプション）',
   'signup.emailHint': 'コード紛失時の回復に使用されます',
-  'signup.getMyCode': 'コードを取得する →',
   'signup.backToRoles': '← 役割選択に戻る',
   'signup.settingUp': 'クラスルームを設定中です...',
   'signup.justAMoment': 'お待ちください',
@@ -3827,4 +3826,30 @@ export const ja: Record<string, string> = {
   'voiceOnboarding.recording.promptFocusArea': 'お子さまが現在最も集中している分野はどちらですか',
   'voiceOnboarding.recording.promptBehavior': '注目すべき行動上の特徴がありますか',
   'voiceOnboarding.recording.promptInterestedWork': '各分野でお子さまが最も興味のある活動と、その進捗状況についてお聞かせください',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'signup.getMyCode': 'では始めましょう →',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'landing.nav.library': 'ライブラリ',
+  'landing.nav.forTeachers': '先生向け',
+  'landing.nav.login': 'ログイン',
+  'landing.nav.getStarted': '始める',
+  'landing.hero.label': 'モンテッソーリ教室管理',
+  'landing.hero.title': 'Montreeの魔法。',
+  'landing.hero.subtitle': '先生が写真を撮ります。Montreeがあとはすべて行います。',
+  'landing.hero.cta': '30日間無料で体験する',
+  'landing.hero.fineprint': '1つの教室 · クレジットカード不要',
+  'landing.teacher.label': '先生向け',
+  'landing.teacher.title': 'もう書類作成はありません。もう文字を書く必要はありません。',
+  'landing.teacher.body': 'Montreeはすべての写真から活動内容を特定し、観察記録を作成し、すべてのお子さまをモンテッソーリ5つのカリキュラム領域（日常生活、感覚、算数、言語、文化）全体で追跡します。自動的に。',
+  'landing.parents.label': '保護者向け',
+  'landing.parents.title': '実際に何か書いてあるレポート。',
+  'landing.parents.body': 'テンプレートではありません。お子さまが何を学んでいるか、またなぜそれが大切なのかについての本物で、個別対応されたアカウント — 毎週作成されます。',
+  'landing.principal.label': '校長向け',
+  'landing.principal.title': '学校全体の完全なビュー。',
+  'landing.principal.body': 'すべての教室。すべてのお子さま。組み込みのモンテッソーリの専門家がいつでも利用可能で、どんな質問にも答えます。',
+  'landing.closing.title': 'Montreeの魔法を体験してください。',
+  'landing.closing.body': '1ヶ月間無料。その後、1人のお子さまにつき月額7ドル。1つのプラン。段階はありません。契約はありません。',
+  'landing.closing.cta': '無料トライアルを開始する',
 };

@@ -72,7 +72,6 @@ export const ko: Record<string, string> = {
   'signup.schoolClassroomName': '학교 / 반 이름',
   'signup.emailOptional': '이메일 (선택사항)',
   'signup.emailHint': '코드를 잃어버렸을 때 복구하는 데만 사용됩니다',
-  'signup.getMyCode': '코드 받기 →',
   'signup.backToRoles': '← 역할 선택으로 돌아가기',
   'signup.settingUp': '반을 설정하는 중입니다...',
   'signup.justAMoment': '잠깐만 기다려 주세요',
@@ -3827,4 +3826,30 @@ export const ko: Record<string, string> = {
   'voiceOnboarding.recording.promptFocusArea': '현재 자녀분이 가장 집중하고 계신 영역은 어느 것인가요?',
   'voiceOnboarding.recording.promptBehavior': '주목할 만한 행동 특성이 있으신가요?',
   'voiceOnboarding.recording.promptInterestedWork': '자녀분이 가장 관심 있는 각 영역의 작업 하나씩을 말씀해 주시고, 그 작업을 어떻게 진행하고 계신지 알려주세요.',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'signup.getMyCode': '시작해볼까요 →',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'landing.nav.library': '라이브러리',
+  'landing.nav.forTeachers': '교사를 위해',
+  'landing.nav.login': '로그인',
+  'landing.nav.getStarted': '시작하기',
+  'landing.hero.label': '몬테소리 교실 관리',
+  'landing.hero.title': 'Montree의 마법.',
+  'landing.hero.subtitle': '교사가 사진을 찍으면, Montree가 나머지를 처리해요.',
+  'landing.hero.cta': '30일 동안 무료로 경험해보세요',
+  'landing.hero.fineprint': '한 개의 교실 · 신용카드 불필요',
+  'landing.teacher.label': '교사를 위해',
+  'landing.teacher.title': '더 이상 서류 작업 없어요. 더 이상 작성할 필요 없어요.',
+  'landing.teacher.body': 'Montree는 모든 사진 속의 활동을 인식하고, 관찰을 기록하며, 각 자녀분이 다섯 개의 교육과정 영역(일상생활, 감각, 수학, 언어, 문화)을 통해 배우는 과정을 자동으로 추적해요.',
+  'landing.parents.label': '부모님을 위해',
+  'landing.parents.title': '의미 있는 보고서.',
+  'landing.parents.body': '서식이 아닌, 진정한 개인맞춤형 내용이에요. 각 자녀분이 무엇을 배우고 있으며 왜 그것이 중요한지에 관한 설명을 매주 작성해드려요.',
+  'landing.principal.label': '교장선생님을 위해',
+  'landing.principal.title': '학교 전체를 한눈에.',
+  'landing.principal.body': '모든 교실, 모든 학생을 볼 수 있어요. 내장된 몬테소리 전문가 Guru가 언제든 질문에 답변해드려요.',
+  'landing.closing.title': 'Montree의 마법을 경험해보세요.',
+  'landing.closing.body': '첫 달은 무료에요. 그 후 자녀분당 월 $7. 한 가지 요금제. 등급 구분 없음. 계약 없음.',
+  'landing.closing.cta': '무료 체험 시작하기',
 };

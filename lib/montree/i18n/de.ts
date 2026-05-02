@@ -72,7 +72,6 @@ export const de: Record<string, string> = {
   'signup.schoolClassroomName': 'Schule / Klassenzimmer',
   'signup.emailOptional': 'E-Mail (optional)',
   'signup.emailHint': 'Wird nur verwendet, um Ihren Code wiederherzustellen, falls Sie ihn verlieren',
-  'signup.getMyCode': 'Meinen Code abrufen →',
   'signup.backToRoles': '← Zurück zur Rollenauswahl',
   'signup.settingUp': 'Ihr Klassenzimmer wird eingerichtet...',
   'signup.justAMoment': 'Einen Moment bitte',
@@ -3827,4 +3826,30 @@ export const de: Record<string, string> = {
   'voiceOnboarding.recording.promptFocusArea': 'Auf welchen Bereich konzentrieren sie sich derzeit am meisten?',
   'voiceOnboarding.recording.promptBehavior': 'Welche Verhaltensmerkmale sind bemerkenswert?',
   'voiceOnboarding.recording.promptInterestedWork': 'Ein Werk in jedem Bereich, das sie am meisten interessiert, und wie sie damit vorankommt',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'signup.getMyCode': 'Auf geht\'s →',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'landing.nav.library': 'Bibliothek',
+  'landing.nav.forTeachers': 'Für Lehrkräfte',
+  'landing.nav.login': 'Anmelden',
+  'landing.nav.getStarted': 'Jetzt starten',
+  'landing.hero.label': 'Montessori-Klassenzimmerverwaltung',
+  'landing.hero.title': 'Die Magie von Montree.',
+  'landing.hero.subtitle': 'Eine Lehrkraft macht ein Foto. Montree macht den Rest.',
+  'landing.hero.cta': '30 Tage kostenlos ausprobieren',
+  'landing.hero.fineprint': 'Ein Klassenzimmer · Keine Kreditkarte erforderlich',
+  'landing.teacher.label': 'Für die Lehrkraft',
+  'landing.teacher.title': 'Keine Papierkram mehr. Keine Schreibarbeit mehr.',
+  'landing.teacher.body': 'Montree erkennt die Aktivität auf jedem Foto, dokumentiert die Beobachtung und verfolgt jedes Kind in allen fünf Lernbereichen (Praktisches Leben, Sinnesmaterial, Mathematik, Sprache, Kulturelles). Automatisch.',
+  'landing.parents.label': 'Für Eltern',
+  'landing.parents.title': 'Berichte, die wirklich etwas aussagen.',
+  'landing.parents.body': 'Keine Vorlagen. Authentische, persönliche Darstellungen dessen, was jedes Kind lernt und warum es wichtig ist – wöchentlich verfasst.',
+  'landing.principal.label': 'Für die Schulleitung',
+  'landing.principal.title': 'Ein umfassender Überblick über die Schule.',
+  'landing.principal.body': 'Jedes Klassenzimmer. Jedes Kind. Ein integrierter Montessori-Experte, der rund um die Uhr verfügbar ist, um jede Frage zu beantworten.',
+  'landing.closing.title': 'Erleben Sie die Magie.',
+  'landing.closing.body': 'Einen Monat kostenlos. Danach 7 € pro Kind und Monat. Ein Plan. Keine Abstufungen. Keine Verträge.',
+  'landing.closing.cta': 'Kostenlose Testversion starten',
 };
