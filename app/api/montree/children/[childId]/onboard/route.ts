@@ -428,20 +428,24 @@ Create a warm summary that confirms back to the teacher what you understood. The
     // Fetch the actual focus shelf so the orchestrator can show EXACTLY what
     // 'This Week's Focus' will show on the child's page. This mirrors the
     // logic in app/montree/dashboard/[childId]/page.tsx:fetchAssignments —
-    // ONE focus work per area, max 5, prioritized by is_focus → practicing
-    // → presented → not_started → completed.
-    let seededShelf: Array<{ work_name: string; area: string; status: string }> = [];
+    // ONE focus work per area, max 5, prioritized by status (the dashboard's
+    // is_focus is derived from the legacy montree_child_focus_works table,
+    // not from a column on this table).
+    const seededShelf: Array<{ work_name: string; area: string; status: string }> = [];
     try {
-      const { data: progressRows } = await supabase
+      const { data: progressRows, error: shelfFetchErr } = await supabase
         .from('montree_child_progress')
-        .select('work_name, area, status, is_focus')
+        .select('work_name, area, status')
         .eq('child_id', childId);
+
+      if (shelfFetchErr) {
+        console.error('[Onboard] Seeded shelf SELECT error:', shelfFetchErr);
+      }
 
       const allProgress = (progressRows ?? []) as Array<{
         work_name: string;
         area: string;
         status: string;
-        is_focus?: boolean;
       }>;
 
       const AREA_ORDER = ['practical_life', 'sensorial', 'mathematics', 'language', 'cultural'];
@@ -461,8 +465,6 @@ Create a warm summary that confirms back to the teacher what you understood. The
         if (areaWorks.length === 0) continue;
 
         areaWorks.sort((a, b) => {
-          if (a.is_focus && !b.is_focus) return -1;
-          if (!a.is_focus && b.is_focus) return 1;
           return (STATUS_PRIORITY[a.status] ?? 5) - (STATUS_PRIORITY[b.status] ?? 5);
         });
 
@@ -726,15 +728,14 @@ async function seedFocusWorks(
       .maybeSingle() as { data: { id: string; status: string } | null };
 
     if (existingRow) {
-      // Row exists — set is_focus=true; only upgrade status if Sonnet's pick
-      // is higher in the progression than what's already stored.
+      // Row exists — only upgrade status if Sonnet's pick is higher in the
+      // progression than what's already stored. Never downgrade.
       const existingRank = STATUS_RANK[existingRow.status] ?? 0;
       const newRank = STATUS_RANK[status] ?? 0;
       const finalStatus = newRank > existingRank ? status : existingRow.status;
       const { error: updateErr } = await supabase
         .from('montree_child_progress')
         .update({
-          is_focus: true,
           status: finalStatus,
           updated_at: now,
         })
@@ -752,7 +753,6 @@ async function seedFocusWorks(
           work_name: matchedName,
           area: areaKey,
           status,
-          is_focus: true,
           updated_at: now,
         } as unknown as Record<string, unknown>);
       if (insertErr) {
@@ -761,16 +761,10 @@ async function seedFocusWorks(
       }
     }
 
-    // Demote any other is_focus=true rows in this area on this child.
-    const { error: demoteErr } = await supabase
-      .from('montree_child_progress')
-      .update({ is_focus: false, updated_at: now })
-      .eq('child_id', childId)
-      .eq('area', areaKey)
-      .neq('work_name', matchedName);
-    if (demoteErr) {
-      console.error(`[Onboard] Focus demote error for ${areaKey} (non-fatal):`, demoteErr);
-    }
+    // (is_focus demote block removed — column doesn't exist on
+    // montree_child_progress. The dashboard sort falls back to status
+    // priority, which already gives a deterministic single-focus-per-area
+    // because we picked exactly one work per area above.)
   }
 }
 

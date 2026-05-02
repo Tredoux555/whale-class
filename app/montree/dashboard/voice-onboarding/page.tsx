@@ -741,11 +741,16 @@ export default function VoiceOnboardingPage() {
           child_id: lockedChild.id,
           work_name: newWork.name,
           area: swapArea,
-          // Promote to practicing if not already at a higher status — gives the
-          // new focus the right status priority for the dashboard sort.
+          // Promote to practicing if not already at a higher status — gives
+          // the new focus the right status priority for the dashboard sort.
           status: newWork.status === 'mastered' || newWork.status === 'practicing'
             ? newWork.status
             : 'practicing',
+          // is_focus=true tells progress/update to ALSO mirror this row to
+          // montree_child_focus_works (legacy table). That mirror is what
+          // makes the dashboard's progress GET return is_focus=true on this
+          // row (the GET derives is_focus from focus_works, not from a column
+          // on montree_child_progress — that column doesn't exist).
           is_focus: true,
         }),
       });

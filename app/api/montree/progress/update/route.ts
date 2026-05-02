@@ -131,12 +131,14 @@ export async function POST(request: NextRequest) {
     if (notes !== undefined) {
       record.notes = notes;
     }
-    // Persist is_focus on montree_child_progress so the dashboard's
-    // fetchAssignments sort (is_focus → status priority) actually respects it.
-    // Also still mirrors to montree_child_focus_works below for legacy callers.
-    if (is_focus !== undefined) {
-      record.is_focus = !!is_focus;
-    }
+    // NOTE: is_focus column does NOT exist on montree_child_progress in
+    // production. Writing it caused 500s on every progress update. The
+    // dashboard's fetchAssignments sort gracefully falls back to status
+    // priority when is_focus is undefined, so the focus shelf still works
+    // correctly without it. The legacy mirror to montree_child_focus_works
+    // (further down) still happens — that's the source of truth for legacy
+    // consumers. If we ever want true is_focus persistence on the progress
+    // table, ship a migration first then re-enable.
 
     // Use UPSERT with ON CONFLICT
     // This requires the unique_child_work constraint from migration 111
@@ -196,24 +198,10 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // ENFORCE single focus per area: if we just promoted this work to is_focus=true,
-    // demote every OTHER work in the same (child_id, area) so the dashboard's
-    // fetchAssignments sort returns exactly one focus row per area.
-    if (is_focus === true && area) {
-      try {
-        const { error: demoteError } = await supabase
-          .from('montree_child_progress')
-          .update({ is_focus: false, updated_at: now })
-          .eq('child_id', child_id)
-          .eq('area', area)
-          .neq('work_name', workNameToSave);
-        if (demoteError) {
-          console.error('[progress/update] Focus demote (non-fatal):', demoteError);
-        }
-      } catch (demoteErr) {
-        console.error('[progress/update] Focus demote error (non-fatal):', demoteErr);
-      }
-    }
+    // (Focus demote block removed — was writing is_focus=false to a column
+    // that doesn't exist on montree_child_progress, which would have errored.
+    // The legacy montree_child_focus_works UPSERT below already enforces
+    // single-focus-per-area via its own onConflict('child_id,area') key.)
 
     // AUTO-SYNC: Ensure work exists in curriculum (prevents orphaned progress records)
     if (classroomId && workNameToSave && area) {
