@@ -4261,4 +4261,12 @@ export const zh = {
   'voiceOnboarding.review.unmatchedHeading': '我发现了一些还没有加入您课程的作品——',
   'voiceOnboarding.review.addToCurriculum': '加入课程',
   'voiceOnboarding.review.added': '已添加',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'workPicker.addCustomWork': '添加自定义工作',
+  'workPicker.addCustomWorkSubtitle': '用于不在标准课程中的工作',
+  'workPicker.customWorkPrompt': '这个{area}工作的名称是什么？',
+  'workPicker.customWorkPlaceholder': '例如 彩虹叠积木',
+  'workPicker.saveCustomWork': '添加到课程',
+  'workPicker.adding': '添加中...',
 } as const;

@@ -512,6 +512,12 @@ export const en = {
   'workPicker.works': 'works',
   'workPicker.backToAreas': 'Back to areas',
   'workPicker.added': 'Added',
+  'workPicker.addCustomWork': 'Add a custom work',
+  'workPicker.addCustomWorkSubtitle': 'For works not in the standard curriculum',
+  'workPicker.customWorkPrompt': 'What\'s the name of the {area} work?',
+  'workPicker.customWorkPlaceholder': 'e.g. Rainbow Stacking Blocks',
+  'workPicker.saveCustomWork': 'Add to curriculum',
+  'workPicker.adding': 'Adding...',
 
   // Full Details Modal
   'common.closeModal': 'Close modal',

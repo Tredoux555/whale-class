@@ -309,11 +309,27 @@ Create a warm summary that confirms back to the teacher what you understood. The
       // Non-fatal — profile is already saved, game plan can be generated later
     }
 
+    // Fetch the actual seeded shelf so the orchestrator can show what will appear
+    // on the child's page — same source of truth as the dashboard
+    let seededShelf: Array<{ work_name: string; area: string; status: string }> = [];
+    try {
+      const { data: progressRows } = await supabase
+        .from('montree_child_progress')
+        .select('work_name, area, status')
+        .eq('child_id', childId)
+        .in('status', ['presented', 'practicing'])
+        .order('updated_at', { ascending: false });
+      seededShelf = (progressRows ?? []) as Array<{ work_name: string; area: string; status: string }>;
+    } catch (shelfErr) {
+      console.error('[Onboard] Seeded shelf fetch error (non-fatal):', shelfErr);
+    }
+
     return NextResponse.json({
       success: true,
       summary: extracted.summary,
       experience_level: expLevel,
       game_plan: gamePlan,
+      seeded_shelf: seededShelf,
     });
 
   } catch (error) {

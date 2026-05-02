@@ -3858,4 +3858,12 @@ export const ko: Record<string, string> = {
   'voiceOnboarding.review.unmatchedHeading': '자녀분의 커리큘럼에 아직 포함되지 않은 활동이 몇 개 있는 것 같아요 —',
   'voiceOnboarding.review.addToCurriculum': '커리큘럼에 추가',
   'voiceOnboarding.review.added': '추가됨',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'workPicker.addCustomWork': '맞춤 작업 추가',
+  'workPicker.addCustomWorkSubtitle': '표준 교육과정에 없는 작업의 경우',
+  'workPicker.customWorkPrompt': '{area} 작업의 이름이 무엇이에요?',
+  'workPicker.customWorkPlaceholder': '예: 무지개 쌓기 블록',
+  'workPicker.saveCustomWork': '교육과정에 추가',
+  'workPicker.adding': '추가 중...',
 };

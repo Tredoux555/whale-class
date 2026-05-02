@@ -3829,4 +3829,12 @@ export const es: Record<string, string> = {
   'voiceOnboarding.review.unmatchedHeading': 'Noté algunos trabajos que todavía no están en tu currículo —',
   'voiceOnboarding.review.addToCurriculum': 'Agregar al currículo',
   'voiceOnboarding.review.added': 'Agregado',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'workPicker.addCustomWork': 'Agregá un trabajo personalizado',
+  'workPicker.addCustomWorkSubtitle': 'Para trabajos que no están en el currículum estándar',
+  'workPicker.customWorkPrompt': '¿Cuál es el nombre del trabajo de {area}?',
+  'workPicker.customWorkPlaceholder': 'ej. Bloques para Apilar del Arco Iris',
+  'workPicker.saveCustomWork': 'Agregar al currículum',
+  'workPicker.adding': 'Agregando...',
 };

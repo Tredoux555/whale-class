@@ -3858,4 +3858,12 @@ export const de: Record<string, string> = {
   'voiceOnboarding.review.unmatchedHeading': 'Ich habe ein paar Arbeiten bemerkt, die noch nicht in Ihrem Lehrplan enthalten sind —',
   'voiceOnboarding.review.addToCurriculum': 'Zum Lehrplan hinzufügen',
   'voiceOnboarding.review.added': 'Hinzugefügt',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'workPicker.addCustomWork': 'Ein individuelles Material hinzufügen',
+  'workPicker.addCustomWorkSubtitle': 'Für Materialien, die nicht im Standardlehrplan enthalten sind',
+  'workPicker.customWorkPrompt': 'Wie heißt das Material aus dem Bereich {area}?',
+  'workPicker.customWorkPlaceholder': 'z. B. Regenbogenstapelblöcke',
+  'workPicker.saveCustomWork': 'Zum Lehrplan hinzufügen',
+  'workPicker.adding': 'Wird hinzugefügt…',
 };

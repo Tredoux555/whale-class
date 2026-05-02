@@ -940,6 +940,7 @@ export default function WeekPage() {
         allWorks={allWorks}
         onAddWork={onAddWork}
         getAreaConfig={getAreaConfig}
+        classroomId={session?.classroom?.id}
       />
 
       {/* Quick Guide Modal */}

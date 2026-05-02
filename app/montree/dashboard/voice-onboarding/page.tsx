@@ -63,7 +63,8 @@ interface UnmatchedWork {
 interface ProcessResult {
   summary: string;
   experience_level?: string;
-  game_plan?: { headline?: string; nudge?: string } | null;
+  game_plan?: { headline?: string; nudge?: string; works?: string[] } | null;
+  seeded_shelf?: Array<{ work_name: string; area: string; status: string }>;
 }
 
 const AREA_KEYS = ['practical_life', 'sensorial', 'mathematics', 'language', 'cultural'] as const;
@@ -486,6 +487,7 @@ export default function VoiceOnboardingPage() {
         summary: oData.summary || '',
         experience_level: oData.experience_level,
         game_plan: oData.game_plan,
+        seeded_shelf: oData.seeded_shelf,
       });
 
       // Step C: Scan for custom works (fire-and-forget on error — don't block flow)
@@ -964,8 +966,10 @@ export default function VoiceOnboardingPage() {
             <p style={{ ...bodyStyle, lineHeight: 1.6 }}>{result.summary}</p>
           )}
 
-          {/* Starting shelf — works the AI extracted from the voice description */}
-          {result.game_plan?.works && result.game_plan.works.length > 0 && (
+          {/* Starting shelf — the actual seeded works that will appear on the child's
+              page (from montree_child_progress). Uses the same row layout as the
+              dashboard for visual continuity. */}
+          {result.seeded_shelf && result.seeded_shelf.length > 0 && (
             <div style={{ marginTop: 28, width: '100%' }}>
               <p style={{
                 fontSize: 12, letterSpacing: 1.6, textTransform: 'uppercase',
@@ -973,18 +977,42 @@ export default function VoiceOnboardingPage() {
               }}>
                 {t('voiceOnboarding.review.shelfHeading', { name: firstName })}
               </p>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, justifyContent: 'center' }}>
-                {result.game_plan.works.map((workName, i) => (
-                  <div key={`${workName}-${i}`} style={{
-                    padding: '11px 18px',
-                    borderRadius: 999,
-                    background: 'rgba(167,243,208,0.10)',
-                    border: '1px solid rgba(167,243,208,0.32)',
-                    fontSize: 14,
-                    color: '#e6fff4',
-                    fontFamily: "'Inter', -apple-system, sans-serif",
-                  }}>
-                    {workName}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {result.seeded_shelf.map((work, i) => (
+                  <div
+                    key={`${work.work_name}-${i}`}
+                    style={{
+                      padding: '14px 20px',
+                      borderRadius: 14,
+                      background: 'rgba(167,243,208,0.06)',
+                      border: '1px solid rgba(167,243,208,0.22)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      gap: 12,
+                    }}
+                  >
+                    <span style={{
+                      ...bodyStyle,
+                      fontSize: 16,
+                      color: '#e6fff4',
+                      textAlign: 'left',
+                      fontFamily: "'Inter', -apple-system, sans-serif",
+                    }}>
+                      {work.work_name}
+                    </span>
+                    <span style={{
+                      fontSize: 12,
+                      color: '#a7f3d0',
+                      padding: '4px 12px',
+                      background: 'rgba(167,243,208,0.10)',
+                      border: '1px solid rgba(167,243,208,0.25)',
+                      borderRadius: 999,
+                      textTransform: 'capitalize',
+                      whiteSpace: 'nowrap',
+                    }}>
+                      {work.status}
+                    </span>
                   </div>
                 ))}
               </div>

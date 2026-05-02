@@ -35,7 +35,9 @@ export default function EvidenceStrengthBadge({
   const strength = getEvidenceStrength(photoCount, photoDays);
   const config = STRENGTH_CONFIG[strength];
 
-  if (strength === 'none' && compact) return null;
+  // Hide entirely when there's no evidence yet — the "No evidence" strip just clutters
+  // the work card on a freshly-seeded shelf. Absence of badge = no evidence (implicit).
+  if (strength === 'none') return null;
 
   return (
     <div className={`inline-flex items-center gap-1.5 ${compact ? '' : `px-2 py-0.5 rounded-full ${config.bg}`}`}>

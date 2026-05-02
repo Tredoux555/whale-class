@@ -3858,4 +3858,12 @@ export const ja: Record<string, string> = {
   'voiceOnboarding.review.unmatchedHeading': 'まだカリキュラムに含まれていないお仕事をいくつか見つけました —',
   'voiceOnboarding.review.addToCurriculum': 'カリキュラムに追加',
   'voiceOnboarding.review.added': '追加しました',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'workPicker.addCustomWork': 'カスタム活動を追加',
+  'workPicker.addCustomWorkSubtitle': '標準カリキュラムにない活動の場合',
+  'workPicker.customWorkPrompt': '{area}の活動の名前は何ですか？',
+  'workPicker.customWorkPlaceholder': '例：虹色の積み重ねブロック',
+  'workPicker.saveCustomWork': 'カリキュラムに追加',
+  'workPicker.adding': '追加中...',
 };
