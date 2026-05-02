@@ -72,7 +72,6 @@ export const fr: Record<string, string> = {
   'signup.schoolClassroomName': 'École / Nom de la classe',
   'signup.emailOptional': 'Email (optionnel)',
   'signup.emailHint': 'Utilisé uniquement pour récupérer votre code si vous le perdez',
-  'signup.getMyCode': 'Obtenir mon code →',
   'signup.backToRoles': '← Retour à la sélection des rôles',
   'signup.settingUp': 'Configuration de votre classe...',
   'signup.justAMoment': 'Un instant s\'il vous plaît',
@@ -3827,4 +3826,30 @@ export const fr: Record<string, string> = {
   'voiceOnboarding.recording.promptFocusArea': 'Sur quel domaine concentrez-vous vos efforts en ce moment ?',
   'voiceOnboarding.recording.promptBehavior': 'Y a-t-il des traits comportementaux importants à noter ?',
   'voiceOnboarding.recording.promptInterestedWork': 'Un travail dans chaque domaine qui l\'intéresse le plus, et comment il progresse avec celui-ci',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'signup.getMyCode': 'C\'est parti →',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'landing.nav.library': 'Bibliothèque',
+  'landing.nav.forTeachers': 'Pour les enseignants',
+  'landing.nav.login': 'Connexion',
+  'landing.nav.getStarted': 'Commencer',
+  'landing.hero.label': 'Gestion de la classe Montessori',
+  'landing.hero.title': 'La magie de Montree.',
+  'landing.hero.subtitle': 'Un enseignant prend une photo. Montree fait le reste.',
+  'landing.hero.cta': 'L\'essayer gratuitement pendant 30 jours',
+  'landing.hero.fineprint': 'Une classe · Aucune carte de crédit',
+  'landing.teacher.label': 'Pour l\'enseignant',
+  'landing.teacher.title': 'Fini la paperasserie. Fini la rédaction.',
+  'landing.teacher.body': 'Montree identifie le travail dans chaque photo, enregistre l\'observation et suit chaque enfant dans les cinq domaines d\'apprentissage. Automatiquement.',
+  'landing.parents.label': 'Pour les parents',
+  'landing.parents.title': 'Des rapports qui disent vraiment quelque chose.',
+  'landing.parents.body': 'Pas de modèles. Des récits authentiques et personnalisés de ce que chaque enfant apprend et pourquoi c\'est important — rédigés chaque semaine.',
+  'landing.principal.label': 'Pour le directeur',
+  'landing.principal.title': 'Une vue d\'ensemble de l\'école.',
+  'landing.principal.body': 'Chaque classe. Chaque enfant. Un expert Montessori intégré disponible à tout moment pour répondre à vos questions.',
+  'landing.closing.title': 'Découvrez la magie.',
+  'landing.closing.body': 'Un mois gratuit. Puis 7 € par enfant, par mois. Un seul forfait. Pas de niveaux. Aucun contrat.',
+  'landing.closing.cta': 'Commencez votre essai gratuit',
 };

@@ -73,7 +73,6 @@ export const es: Record<string, string> = {
   'signup.schoolClassroomName': 'Escuela / Nombre del aula',
   'signup.emailOptional': 'Email (opcional)',
   'signup.emailHint': 'Solo se usa para recuperar tu código si alguna vez lo pierdes',
-  'signup.getMyCode': 'Obtener mi código →',
   'signup.backToRoles': '← Volver a selección de rol',
   'signup.settingUp': 'Configurando tu aula...',
   'signup.justAMoment': 'Un momento',
@@ -3798,4 +3797,30 @@ export const es: Record<string, string> = {
   'voiceOnboarding.recording.promptFocusArea': '¿En qué área están enfocándose más en este momento?',
   'voiceOnboarding.recording.promptBehavior': '¿Hay algún rasgo de comportamiento que valga la pena destacar?',
   'voiceOnboarding.recording.promptInterestedWork': '¿Cuál es un trabajo en cada área que les interesa más, y cómo les está yendo con él?',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'signup.getMyCode': '¡Vamos →',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'landing.nav.library': 'Biblioteca',
+  'landing.nav.forTeachers': 'Para docentes',
+  'landing.nav.login': 'Iniciar sesión',
+  'landing.nav.getStarted': 'Comenzar',
+  'landing.hero.label': 'Gestión del ambiente Montessori',
+  'landing.hero.title': 'La magia de Montree.',
+  'landing.hero.subtitle': 'Una docente toma una foto. Montree hace el resto.',
+  'landing.hero.cta': 'Probalo gratis por 30 días',
+  'landing.hero.fineprint': 'Un ambiente · Sin tarjeta de crédito',
+  'landing.teacher.label': 'Para la docente',
+  'landing.teacher.title': 'Sin más papeleo. Sin más escritura.',
+  'landing.teacher.body': 'Montree identifica el trabajo en cada foto, registra la observación y rastrea a cada niño en las cinco áreas del currículo. Automáticamente.',
+  'landing.parents.label': 'Para familias',
+  'landing.parents.title': 'Reportes que realmente dicen algo.',
+  'landing.parents.body': 'No son plantillas. Relatos genuinos y personalizados de lo que cada niño está aprendiendo y por qué es importante — escritos cada semana.',
+  'landing.principal.label': 'Para la directora',
+  'landing.principal.title': 'Una visión completa del colegio.',
+  'landing.principal.body': 'Cada ambiente. Cada niño. Una experta Montessori integrada disponible a cualquier hora para responder cualquier pregunta.',
+  'landing.closing.title': 'Experimentá la magia.',
+  'landing.closing.body': 'Un mes gratis. Luego $7 por niño, por mes. Un plan. Sin niveles. Sin contratos.',
+  'landing.closing.cta': 'Iniciá tu prueba gratuita',
 };

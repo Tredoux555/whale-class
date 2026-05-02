@@ -72,7 +72,6 @@ export const ru: Record<string, string> = {
   'signup.schoolClassroomName': 'Школа / Название класса',
   'signup.emailOptional': 'Электронная почта (необязательно)',
   'signup.emailHint': 'Используется только для восстановления вашего кода, если вы его потеряете',
-  'signup.getMyCode': 'Получить мой код →',
   'signup.backToRoles': '← Вернуться к выбору роли',
   'signup.settingUp': 'Настройка вашего класса...',
   'signup.justAMoment': 'Подождите момент',
@@ -3824,4 +3823,30 @@ export const ru: Record<string, string> = {
   'voiceOnboarding.recording.promptFocusArea': 'На каком направлении Вы сейчас сосредоточиваетесь больше всего',
   'voiceOnboarding.recording.promptBehavior': 'Какие поведенческие особенности стоит отметить',
   'voiceOnboarding.recording.promptInterestedWork': 'По одному упражнению в каждом направлении, которое интересует ребёнка больше всего, и как он/она с ним справляется',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'signup.getMyCode': 'Начнём →',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'landing.nav.library': 'Библиотека',
+  'landing.nav.forTeachers': 'Для педагогов',
+  'landing.nav.login': 'Войти',
+  'landing.nav.getStarted': 'Начать',
+  'landing.hero.label': 'Управление классом Монтессори',
+  'landing.hero.title': 'Волшебство Montree.',
+  'landing.hero.subtitle': 'Педагог делает фотографию. Montree делает всё остальное.',
+  'landing.hero.cta': 'Попробуйте бесплатно 30 дней',
+  'landing.hero.fineprint': 'Один класс · Без кредитной карты',
+  'landing.teacher.label': 'Для педагога',
+  'landing.teacher.title': 'Без бумажной работы. Без написания отчётов.',
+  'landing.teacher.body': 'Montree определяет вид деятельности на каждой фотографии, записывает наблюдение и отслеживает развитие каждого ребёнка по всем пяти областям учебного плана. Автоматически.',
+  'landing.parents.label': 'Для родителей',
+  'landing.parents.title': 'Отчёты, которые действительно что-то говорят.',
+  'landing.parents.body': 'Не шаблоны. Подлинные, персонализированные описания того, чему учится каждый ребёнок и почему это важно — написанные еженедельно.',
+  'landing.principal.label': 'Для директора',
+  'landing.principal.title': 'Полный обзор школы.',
+  'landing.principal.body': 'Каждый класс. Каждый ребёнок. Встроенный эксперт по методу Монтессори, доступный в любое время для ответов на любые вопросы.',
+  'landing.closing.title': 'Откройте волшебство.',
+  'landing.closing.body': 'Один месяц бесплатно. Затем $7 за одного ребёнка в месяц. Один тариф. Без уровней. Без контрактов.',
+  'landing.closing.cta': 'Начните бесплатный пробный период',
 };

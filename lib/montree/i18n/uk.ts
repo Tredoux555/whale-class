@@ -72,7 +72,6 @@ export const uk: Record<string, string> = {
   'signup.schoolClassroomName': 'Школа / Назва класу',
   'signup.emailOptional': 'Електронна пошта (необов\'язково)',
   'signup.emailHint': 'Використовується лише для відновлення вашого коду, якщо ви його коли-небудь втратите',
-  'signup.getMyCode': 'Отримати мій код →',
   'signup.backToRoles': '← Повернутися до вибору ролі',
   'signup.settingUp': 'Налаштування вашого класу...',
   'signup.justAMoment': 'Просто хвилинку',
@@ -3824,4 +3823,30 @@ export const uk: Record<string, string> = {
   'voiceOnboarding.recording.promptFocusArea': 'На якій сфері вони найбільше зосереджені прямо зараз',
   'voiceOnboarding.recording.promptBehavior': 'Будь-які поведінкові особливості, гідні уваги',
   'voiceOnboarding.recording.promptInterestedWork': 'Одна робота в кожній сфері, яка їх найбільше цікавить, і як у них з нею йде',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'signup.getMyCode': 'Почнімо →',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'landing.nav.library': 'Бібліотека',
+  'landing.nav.forTeachers': 'Для педагогів',
+  'landing.nav.login': 'Увійти',
+  'landing.nav.getStarted': 'Почати роботу',
+  'landing.hero.label': 'Керування Монтессорі класом',
+  'landing.hero.title': 'Магія Montree.',
+  'landing.hero.subtitle': 'Педагог робить фото. Montree робить все решту.',
+  'landing.hero.cta': 'Спробуйте безплатно 30 днів',
+  'landing.hero.fineprint': 'Один клас · Без кредитної карти',
+  'landing.teacher.label': 'Для педагога',
+  'landing.teacher.title': 'Без паперів. Без писання.',
+  'landing.teacher.body': 'Montree визначає вид роботи на кожному фото, записує спостереження та відстежує розвиток кожної дитини в усіх п\'яти областях навчання: Практичне Життя, Сенсорний розвиток, Математика, Мова та Культура. Автоматично.',
+  'landing.parents.label': 'Для батьків',
+  'landing.parents.title': 'Звіти, які говорять істину.',
+  'landing.parents.body': 'Не шаблони. Справжні, персоніалізовані розповіді про те, що вивчає кожна дитина та',
+  'landing.principal.label': 'Для директора',
+  'landing.principal.title': 'Повний огляд школи.',
+  'landing.principal.body': 'Кожний клас. Кожна дитина. Вбудований експерт Монтессорі, доступний у будь-яку годину для відповідей на будь-які запитання',
+  'landing.closing.title': 'Відчуйте магію.',
+  'landing.closing.body': 'Перший місяць безплатно. Потім $7 за дитину на місяць. Один план. Без рівнів. Без контрактів.',
+  'landing.closing.cta': 'Розпочати безплатний період',
 };

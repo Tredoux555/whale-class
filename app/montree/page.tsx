@@ -1,10 +1,13 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
+import { useI18n } from '@/lib/montree/i18n';
+import LanguageToggle from '@/components/montree/LanguageToggle';
 
 // /montree/page.tsx — Montree landing page (v2 — deep forest palette)
 
 export default function MontreeLanding() {
+  const { t } = useI18n();
   const revealRefs = useRef<HTMLElement[]>([]);
 
   useEffect(() => {
@@ -337,19 +340,20 @@ export default function MontreeLanding() {
             <a className="m-nav-link" href="/montree/library" style={{ fontSize: '0.875rem', color: 'rgba(255,255,255,0.55)', textDecoration: 'none', letterSpacing: '0.01em', transition: 'color 200ms ease' }}
               onMouseEnter={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.85)' )}
               onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.55)')}>
-              Library
+              {t('landing.nav.library')}
             </a>
             <a className="m-nav-link" href="/montree/for-teachers" style={{ fontSize: '0.875rem', color: 'rgba(255,255,255,0.55)', textDecoration: 'none', letterSpacing: '0.01em', transition: 'color 200ms ease' }}
               onMouseEnter={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.85)' )}
               onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.55)')}>
-              For teachers
+              {t('landing.nav.forTeachers')}
             </a>
             <a className="m-nav-link" href="/montree/login-select" style={{ fontSize: '0.875rem', color: 'rgba(255,255,255,0.55)', textDecoration: 'none', letterSpacing: '0.01em', transition: 'color 200ms ease' }}
               onMouseEnter={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.85)' )}
               onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.55)')}>
-              Log in
+              {t('landing.nav.login')}
             </a>
-            <a className="m-pill" href="/montree/login-select?signup=true">Get started</a>
+            <LanguageToggle />
+            <a className="m-pill" href="/montree/login-select?signup=true">{t('landing.nav.getStarted')}</a>
           </div>
         </div>
       </nav>
@@ -357,13 +361,13 @@ export default function MontreeLanding() {
       {/* ── HERO ── */}
       <section className="m-hero">
         <div ref={addReveal} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-          <span className="m-label">Montessori classroom management</span>
-          <h1>The magic of Montree.</h1>
-          <p className="m-hero-sub">A teacher takes a photo. Montree does the rest.</p>
+          <span className="m-label">{t('landing.hero.label')}</span>
+          <h1>{t('landing.hero.title')}</h1>
+          <p className="m-hero-sub">{t('landing.hero.subtitle')}</p>
           <a className="m-pill m-pill-lg" href="/montree/login-select?signup=true">
-            Experience it free for 30 days
+            {t('landing.hero.cta')}
           </a>
-          <p className="m-hero-fineprint">One classroom · No credit card</p>
+          <p className="m-hero-fineprint">{t('landing.hero.fineprint')}</p>
         </div>
       </section>
 
@@ -372,21 +376,21 @@ export default function MontreeLanding() {
         <div className="m-editorial-inner">
 
           <article className="m-block" ref={addReveal}>
-            <span className="m-label">For the teacher</span>
-            <h2>No more paperwork. No more writing.</h2>
-            <p>Montree identifies the work in every photo, records the observation, and tracks each child across all five curriculum areas. Automatically.</p>
+            <span className="m-label">{t('landing.teacher.label')}</span>
+            <h2>{t('landing.teacher.title')}</h2>
+            <p>{t('landing.teacher.body')}</p>
           </article>
 
           <article className="m-block" ref={addReveal}>
-            <span className="m-label">For parents</span>
-            <h2>Reports that actually say something.</h2>
-            <p>Not templates. Genuine, personalised accounts of what each child is learning and why it matters — written every week.</p>
+            <span className="m-label">{t('landing.parents.label')}</span>
+            <h2>{t('landing.parents.title')}</h2>
+            <p>{t('landing.parents.body')}</p>
           </article>
 
           <article className="m-block" ref={addReveal}>
-            <span className="m-label">For the principal</span>
-            <h2>A complete view of the school.</h2>
-            <p>Every classroom. Every child. A built-in Montessori expert available at any hour to answer any question.</p>
+            <span className="m-label">{t('landing.principal.label')}</span>
+            <h2>{t('landing.principal.title')}</h2>
+            <p>{t('landing.principal.body')}</p>
           </article>
 
         </div>
@@ -394,10 +398,10 @@ export default function MontreeLanding() {
 
       {/* ── CLOSING CTA ── */}
       <section className="m-closing" id="cta" ref={addReveal}>
-        <h2>Experience the magic.</h2>
-        <p className="m-closing-sub">One month free. Then $7 per child, per month.<br />One plan. No tiers. No contracts.</p>
+        <h2>{t('landing.closing.title')}</h2>
+        <p className="m-closing-sub">{t('landing.closing.body')}</p>
         <a className="m-pill m-pill-lg" href="/montree/login-select?signup=true">
-          Start your free trial
+          {t('landing.closing.cta')}
         </a>
       </section>
 

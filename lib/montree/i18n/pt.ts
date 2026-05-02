@@ -72,7 +72,6 @@ export const pt: Record<string, string> = {
   'signup.schoolClassroomName': 'Escola / Nome da Sala de Aula',
   'signup.emailOptional': 'E-mail (opcional)',
   'signup.emailHint': 'Usado apenas para recuperar seu código caso você o perca',
-  'signup.getMyCode': 'Obter meu código →',
   'signup.backToRoles': '← Voltar à seleção de função',
   'signup.settingUp': 'Configurando sua sala de aula...',
   'signup.justAMoment': 'Um momento',
@@ -3827,4 +3826,30 @@ export const pt: Record<string, string> = {
   'voiceOnboarding.recording.promptFocusArea': 'Em qual área você está focando mais no momento',
   'voiceOnboarding.recording.promptBehavior': 'Alguma característica comportamental que vale a pena observar',
   'voiceOnboarding.recording.promptInterestedWork': 'Um trabalho em cada área em que está mais interessado e como está progredindo com ele',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'signup.getMyCode': 'Vamos lá →',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'landing.nav.library': 'Biblioteca',
+  'landing.nav.forTeachers': 'Para educadores',
+  'landing.nav.login': 'Fazer login',
+  'landing.nav.getStarted': 'Começar',
+  'landing.hero.label': 'Gestão de sala Montessori',
+  'landing.hero.title': 'A magia do Montree.',
+  'landing.hero.subtitle': 'Um educador tira uma foto. Montree faz o resto.',
+  'landing.hero.cta': 'Experimente gratuitamente por 30 dias',
+  'landing.hero.fineprint': 'Uma sala de aula · Sem necessidade de cartão de crédito',
+  'landing.teacher.label': 'Para o educador',
+  'landing.teacher.title': 'Chega de papelada. Chega de escrever.',
+  'landing.teacher.body': 'Montree identifica o trabalho em cada foto, registra a observação e acompanha cada criança em todas as cinco áreas do currículo. Automaticamente.',
+  'landing.parents.label': 'Para pais',
+  'landing.parents.title': 'Relatórios que realmente dizem algo.',
+  'landing.parents.body': 'Não são modelos. Relatos genuínos e personalizados do que cada criança está aprendendo e por que é importante — escritos toda semana.',
+  'landing.principal.label': 'Para a diretoria',
+  'landing.principal.title': 'Uma visão completa da escola.',
+  'landing.principal.body': 'Toda sala de aula. Toda criança. Um especialista Montessori integrado disponível a qualquer hora para responder qualquer pergunta.',
+  'landing.closing.title': 'Experimente a magia.',
+  'landing.closing.body': 'Um mês gratuito. Depois R$ 7 por criança, por mês. Um plano. Sem camadas. Sem contratos.',
+  'landing.closing.cta': 'Comece seu teste gratuito',
 };

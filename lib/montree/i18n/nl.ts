@@ -72,7 +72,6 @@ export const nl: Record<string, string> = {
   'signup.schoolClassroomName': 'School / Klasnaam',
   'signup.emailOptional': 'E-mail (optioneel)',
   'signup.emailHint': 'Alleen gebruikt om uw code terug te vinden als u deze kwijtraakt',
-  'signup.getMyCode': 'Mijn code ophalen →',
   'signup.backToRoles': '← Terug naar rolselectie',
   'signup.settingUp': 'Uw klaslokaal instellen...',
   'signup.justAMoment': 'Even geduld alstublieft',
@@ -3827,4 +3826,30 @@ export const nl: Record<string, string> = {
   'voiceOnboarding.recording.promptFocusArea': 'Op welk gebied concentreert u zich momenteel het meest',
   'voiceOnboarding.recording.promptBehavior': 'Eventuele gedragskenmerken die het vermelden waard zijn',
   'voiceOnboarding.recording.promptInterestedWork': 'Één werk in elk gebied waarin u het meest geïnteresseerd bent, en hoe het daarmee gaat',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'signup.getMyCode': 'Laten we gaan →',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'landing.nav.library': 'Bibliotheek',
+  'landing.nav.forTeachers': 'Voor onderwijzers',
+  'landing.nav.login': 'Inloggen',
+  'landing.nav.getStarted': 'Aan de slag',
+  'landing.hero.label': 'Montessori-klassenmanagement',
+  'landing.hero.title': 'De magie van Montree.',
+  'landing.hero.subtitle': 'Een onderwijzer maakt een foto. Montree doet de rest.',
+  'landing.hero.cta': 'Ervaar het gratis 30 dagen',
+  'landing.hero.fineprint': 'Eén klas · Geen creditcard',
+  'landing.teacher.label': 'Voor de onderwijzer',
+  'landing.teacher.title': 'Geen meer papierwerk. Geen meer schrijven.',
+  'landing.teacher.body': 'Montree herkent het werk in elke foto, registreert de observatie en volgt elk kind in alle vijf curriculumgebieden. Automatisch.',
+  'landing.parents.label': 'Voor ouders',
+  'landing.parents.title': 'Verslagen die werkelijk iets zeggen.',
+  'landing.parents.body': 'Geen sjablonen. Echte, persoonlijke beschrijvingen van wat elk kind leert en waarom dat belangrijk is — wekelijks geschreven.',
+  'landing.principal.label': 'Voor de directeur',
+  'landing.principal.title': 'Een volledig overzicht van de school.',
+  'landing.principal.body': 'Elke klas. Elk kind. Een ingebouwde Montessori-expert beschikbaar op elk moment om elke vraag te beantwoorden.',
+  'landing.closing.title': 'Ervaar de magie.',
+  'landing.closing.body': 'Eerste maand gratis. Daarna €7 per kind, per maand. Één abonnement. Geen niveaus. Geen contracten.',
+  'landing.closing.cta': 'Start uw gratis proefperiode',
 };
