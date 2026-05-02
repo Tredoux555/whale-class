@@ -512,14 +512,17 @@ export default function SchoolsTab({
                                   </button>
                                 ))}
                               </div>
-                              {spent > 0 && (
-                                <span className={`text-xs font-mono ${spent > 5 ? 'text-red-400' : spent > 1 ? 'text-amber-400' : 'text-slate-400'}`}>
-                                  ${spent < 0.01 ? spent.toFixed(4) : spent.toFixed(2)}
-                                </span>
-                              )}
-                              {calls > 0 && (
-                                <span className="text-slate-600 text-[10px]">{calls} calls</span>
-                              )}
+                              {/* Always render spend so $0 schools are visibly tracked,
+                                  not invisibly tracked. Previously this gated on spent>0
+                                  which made the column look broken for new schools and
+                                  for the first day of a new calendar month. */}
+                              <span
+                                title="API spend this month (resets the 1st of each month)"
+                                className={`text-xs font-mono ${spent > 5 ? 'text-red-400' : spent > 1 ? 'text-amber-400' : spent > 0 ? 'text-slate-400' : 'text-slate-600'}`}
+                              >
+                                ${spent < 0.01 && spent > 0 ? spent.toFixed(4) : spent.toFixed(2)}
+                              </span>
+                              <span className="text-slate-600 text-[10px]">{calls} {calls === 1 ? 'call' : 'calls'}</span>
                             </div>
                           );
                         })()}
