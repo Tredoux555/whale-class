@@ -3877,4 +3877,14 @@ export const nl: Record<string, string> = {
   'voiceOnboarding.recording.areaMathematics': 'Wiskunde',
   'voiceOnboarding.recording.areaLanguage': 'Taal',
   'voiceOnboarding.recording.areaCultural': 'Cultureel',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'voiceOnboarding.review.update': 'Bijwerken',
+  'voiceOnboarding.review.updateHint': 'Vertel me meer — uw volgende opname voegt toe aan wat u al hebt gedeeld.',
+  'voiceOnboarding.shelfEditor.title': '{name}\'s boekenplank',
+  'voiceOnboarding.shelfEditor.subtitle': 'Tik op een werk om het voor een ander in te ruilen. Voeg aangepaste werken hieronder toe.',
+  'voiceOnboarding.shelfEditor.tapToSwap': 'Tik om in te ruilen',
+  'voiceOnboarding.shelfEditor.addCustom': '+ Aangepast werk toevoegen',
+  'voiceOnboarding.shelfEditor.confirm': 'Ziet er goed uit',
+  'voiceOnboarding.shelfEditor.empty': 'Nog geen focuswerken. Voeg een aangepaste toe om te beginnen.',
 };

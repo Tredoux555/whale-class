@@ -3877,4 +3877,14 @@ export const ko: Record<string, string> = {
   'voiceOnboarding.recording.areaMathematics': '수학',
   'voiceOnboarding.recording.areaLanguage': '언어',
   'voiceOnboarding.recording.areaCultural': '문화',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'voiceOnboarding.review.update': '업데이트',
+  'voiceOnboarding.review.updateHint': '더 알려주세요 — 다음 녹음이 이미 공유하신 내용에 추가돼요.',
+  'voiceOnboarding.shelfEditor.title': '{name}님의 선반',
+  'voiceOnboarding.shelfEditor.subtitle': '작업을 탭해서 다른 것으로 바꿀 수 있어요. 아래에서 맞춤 작업을 추가하세요.',
+  'voiceOnboarding.shelfEditor.tapToSwap': '탭하여 바꾸기',
+  'voiceOnboarding.shelfEditor.addCustom': '+ 맞춤 작업 추가',
+  'voiceOnboarding.shelfEditor.confirm': '좋아요',
+  'voiceOnboarding.shelfEditor.empty': '아직 선택된 작업이 없어요. 맞춤 작업을 추가해서 시작하세요.',
 };

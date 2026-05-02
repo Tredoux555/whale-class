@@ -3874,4 +3874,14 @@ export const uk: Record<string, string> = {
   'voiceOnboarding.recording.areaMathematics': 'Математика',
   'voiceOnboarding.recording.areaLanguage': 'Мова',
   'voiceOnboarding.recording.areaCultural': 'Культура',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'voiceOnboarding.review.update': 'Оновити',
+  'voiceOnboarding.review.updateHint': 'Розкажіть більше — ваше наступне записування доповнить те, що ви вже поділилися.',
+  'voiceOnboarding.shelfEditor.title': 'Полиця {name}',
+  'voiceOnboarding.shelfEditor.subtitle': 'Натисніть на роботу, щоб замінити її на іншу. Додавайте власні роботи нижче.',
+  'voiceOnboarding.shelfEditor.tapToSwap': 'Натисніть, щоб замінити',
+  'voiceOnboarding.shelfEditor.addCustom': '+ Додати власну роботу',
+  'voiceOnboarding.shelfEditor.confirm': 'Чудово виглядає',
+  'voiceOnboarding.shelfEditor.empty': 'Поки що немає сфокусованих робіт. Додайте власну, щоб розпочати.',
 };

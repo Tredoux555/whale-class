@@ -3874,4 +3874,14 @@ export const ru: Record<string, string> = {
   'voiceOnboarding.recording.areaMathematics': 'Математика',
   'voiceOnboarding.recording.areaLanguage': 'Язык',
   'voiceOnboarding.recording.areaCultural': 'Культура',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'voiceOnboarding.review.update': 'Обновить',
+  'voiceOnboarding.review.updateHint': 'Расскажите подробнее — ваша следующая запись дополнит то, что вы уже поделились.',
+  'voiceOnboarding.shelfEditor.title': 'Полка {name}',
+  'voiceOnboarding.shelfEditor.subtitle': 'Нажмите на работу, чтобы заменить её на другую. Добавляйте авторские работы ниже.',
+  'voiceOnboarding.shelfEditor.tapToSwap': 'Нажмите для замены',
+  'voiceOnboarding.shelfEditor.addCustom': '+ Добавить авторскую работу',
+  'voiceOnboarding.shelfEditor.confirm': 'Отлично',
+  'voiceOnboarding.shelfEditor.empty': 'Пока нет работ в фокусе. Добавьте авторскую работу, чтобы начать.',
 };

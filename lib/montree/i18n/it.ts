@@ -3877,4 +3877,14 @@ export const it: Record<string, string> = {
   'voiceOnboarding.recording.areaMathematics': 'Matematica',
   'voiceOnboarding.recording.areaLanguage': 'Linguaggio',
   'voiceOnboarding.recording.areaCultural': 'Culturale',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'voiceOnboarding.review.update': 'Aggiorna',
+  'voiceOnboarding.review.updateHint': 'Mi dica di più — la Sua prossima registrazione aggiungerà a quello che ha già condiviso.',
+  'voiceOnboarding.shelfEditor.title': 'Scaffale di {name}',
+  'voiceOnboarding.shelfEditor.subtitle': 'Tocchi un\'attività per sostituirla con un\'altra. Aggiunga attività personalizzate di seguito.',
+  'voiceOnboarding.shelfEditor.tapToSwap': 'Toccare per sostituire',
+  'voiceOnboarding.shelfEditor.addCustom': '+ Aggiungi attività personalizzata',
+  'voiceOnboarding.shelfEditor.confirm': 'Perfetto',
+  'voiceOnboarding.shelfEditor.empty': 'Nessuna attività di focus ancora. Aggiunga una personalizzata per iniziare.',
 };

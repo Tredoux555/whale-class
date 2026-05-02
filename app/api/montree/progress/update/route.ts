@@ -131,7 +131,12 @@ export async function POST(request: NextRequest) {
     if (notes !== undefined) {
       record.notes = notes;
     }
-    // Note: is_focus triggers update to montree_child_focus_works table (see below)
+    // Persist is_focus on montree_child_progress so the dashboard's
+    // fetchAssignments sort (is_focus → status priority) actually respects it.
+    // Also still mirrors to montree_child_focus_works below for legacy callers.
+    if (is_focus !== undefined) {
+      record.is_focus = !!is_focus;
+    }
 
     // Use UPSERT with ON CONFLICT
     // This requires the unique_child_work constraint from migration 111
@@ -188,6 +193,25 @@ export async function POST(request: NextRequest) {
       } else {
         console.error('[progress/update] Upsert error:', error);
         return NextResponse.json({ error: 'Failed to save progress' }, { status: 500 });
+      }
+    }
+
+    // ENFORCE single focus per area: if we just promoted this work to is_focus=true,
+    // demote every OTHER work in the same (child_id, area) so the dashboard's
+    // fetchAssignments sort returns exactly one focus row per area.
+    if (is_focus === true && area) {
+      try {
+        const { error: demoteError } = await supabase
+          .from('montree_child_progress')
+          .update({ is_focus: false, updated_at: now })
+          .eq('child_id', child_id)
+          .eq('area', area)
+          .neq('work_name', workNameToSave);
+        if (demoteError) {
+          console.error('[progress/update] Focus demote (non-fatal):', demoteError);
+        }
+      } catch (demoteErr) {
+        console.error('[progress/update] Focus demote error (non-fatal):', demoteErr);
       }
     }
 

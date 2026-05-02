@@ -3877,4 +3877,14 @@ export const pt: Record<string, string> = {
   'voiceOnboarding.recording.areaMathematics': 'Matemática',
   'voiceOnboarding.recording.areaLanguage': 'Linguagem',
   'voiceOnboarding.recording.areaCultural': 'Cultural',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'voiceOnboarding.review.update': 'Atualizar',
+  'voiceOnboarding.review.updateHint': 'Conte-me mais — sua próxima gravação será adicionada ao que você já compartilhou.',
+  'voiceOnboarding.shelfEditor.title': 'Estante de {name}',
+  'voiceOnboarding.shelfEditor.subtitle': 'Toque em um trabalho para trocá-lo por outro. Adicione trabalhos personalizados abaixo.',
+  'voiceOnboarding.shelfEditor.tapToSwap': 'Toque para trocar',
+  'voiceOnboarding.shelfEditor.addCustom': '+ Adicionar trabalho personalizado',
+  'voiceOnboarding.shelfEditor.confirm': 'Ficou ótimo',
+  'voiceOnboarding.shelfEditor.empty': 'Nenhum trabalho de foco ainda. Adicione um personalizado para começar.',
 };
