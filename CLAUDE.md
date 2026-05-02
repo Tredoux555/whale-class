@@ -181,6 +181,119 @@ GMass campaigns A/C/D are historical. Campaign C sent 335 blank emails (Session 
 
 ---
 
+## RECENT STATUS (May 2–3, 2026)
+
+### ⚡ Session 81 — Two-Path Onboarding + Voice Hardening + Critical 503/500 Fixes + Super Admin Restored + Language Semester v7 Port (May 2–3, 2026)
+
+**16 commits pushed to main this session.** Cascading discoveries: brand pass on the picker turned into a redesign of the onboarding entry point, which surfaced a latent 503 wave, which surfaced a deeper 500 from a non-existent `is_focus` column, plus super-admin regressions and the v7 report port. Headline commits:
+- `8391b541` — Two-path onboarding choice (Tell me about my class / Just start with photos)
+- `beb0ffd1` — CRITICAL FIX: stop writing is_focus to montree_child_progress (column doesn't exist)
+- `294a0648` — Health check: maxDuration on 25 AI-calling routes (was 503-prone)
+- `941bcaa6` — maxDuration=90 on Whisper transcribe (was 503-ing)
+- `1bee23ea` — Super admin: restore visible spend + fix 'Never' activity for active schools
+- `8a1b26d4` — Language Semester Report: port v7 format into in-app generator
+- `9d4a7757` — Onboard: always seed 5 focus works (one per area), Sonnet best-guesses
+- `c18fd212` — Voice onboarding polish: foundation copy + dashboard parity + prominent search
+- `fcab43bc` — Remove legacy WorkSearchBar + fix Chinese leak in search
+- `fd4cb638` — WorkWheelPicker brand pass: emerald/gold status dots + softened area badge
+
+**A. Two-Path Onboarding Choice (`8391b541`):**
+
+Forced auto-redirect to voice onboarding gone. New `OnboardingPathChoice.tsx` component renders a clean full-screen takeover with the canonical (locked) copy:
+> **Tell me about my class** — 90 seconds per child. I'll build their profiles and your first reports will sound like you wrote them.
+>
+> **Just start with photos** — Skip ahead. Take photos and watch the dashboard come alive. Your first reports will focus on what we observed this week.
+
+Path A → `/montree/dashboard/voice-onboarding`. Path B → `localStorage.setItem('montree.onboardingChoice.<classroomId>', 'photo')` and dashboard takes over. Choice doesn't nag on refresh. Bulk-import callback no longer auto-redirects — bumps `pendingOnboardingCount` instead. Per-classroom photo flag suppresses re-prompt when teacher has chosen photo. Skeleton holds during probe to prevent flicker. 6 i18n keys × 12 locales.
+
+**B. Voice Onboarding Hardening:**
+
+- **Update flow (`d42727bc`):** "Try again" → "Update". `priorTranscript` state + `isUpdateModeRef` ref. Next recording prepended with `[Teacher added more:]` separator, Sonnet builds a merged profile not a replacement.
+- **Shelf Editor stage (`d42727bc`+`a281f9fe`):** mirrors dashboard's `FocusWorksSection` exactly — same `AREA_DOT_RGB` (pink/teal/purple/green/orange), same row chrome `rgba(8,20,12,0.55)`, same status badge, same chevron. Always 5 area slots in canonical PL/S/M/L/C order. Empty slots → brand-emerald dashed pill with the area label. Tap row → WorkWheelPicker for that area. Picker's amber "+ Add custom work" pill creates curriculum works inline.
+- **Onboard always seeds 5 focus works (`9d4a7757`):** EXTRACTION_TOOL gained 5 required `focus_<area>` + 5 `focus_<area>_status` fields. Curriculum fetched up-front and included in prompt as AVAILABLE WORKS. Sonnet must pick from real names. New `seedFocusWorks()` runs ALWAYS (regardless of expLevel) with 3-pass match (exact ILIKE → fuzzy ILIKE → canonical fallback that auto-creates the curriculum row). Status preservation via SELECT-then-UPDATE-or-INSERT — never downgrades.
+- **Foundation copy (`c18fd212`):** processing screen now says "Laying the foundation for {name}" instead of "Processing / Putting it all together for {name}".
+- **Search bar promoted to primary (`c18fd212`):** WorkWheelPicker search input is now the headline element. `pl-14 pr-12 py-4 text-lg`, 22×22 magnifier, focus state has emerald glow ring. Reads as the most important element on the picker screen.
+
+**C. WorkWheelPicker Brand Pass (`fd4cb638` + `618b023f` + `0c55a0e3`):**
+
+Status dots on-brand: practicing `#3b82f6` → `#34d399` (BRAND_EMERALD), presented `#f59e0b` → `#E8C96A` (BRAND_GOLD), mastered keeps `#10b981` for differentiation. Top area badge softened: solid per-area color → emerald-tinted surface + subtle area-color border with localized letter prefix via `getAreaPrefix()`. `getAreaLabel` gained `'math' → 'mathematics'` normalization (parity with `getAreaPrefix`). Global search overlay area badge localized via `getAreaLabel(w.area_key, locale)`.
+
+**D. WorkSearchBar Removal + Chinese Leak Fix (`fcab43bc` + `7c5e5724`):**
+
+The "Find a work" search bar at top of `[childId]` page deleted. New works flow through photo capture pipeline now. Legacy white-theme `WorkPickerModal` deleted (`7c5e5724`) — was broken (took teacher to area view, not specific work; adding made work disappear). State cleanup: `pickerOpen`, `selectedArea`, `loadingCurriculum`, `onAddWork`, `openPicker`, `addWorkFromHook` destructure all removed.
+
+`WorkSearchBar` component KEPT (still used on curriculum directory page). Its Chinese leak fixed — was rendering `result.work.name_chinese` as a stacked subtitle on every result regardless of locale. English-mode teachers saw "Carrying a Chair / 搬椅子" stacked. Now uses `getLocalizedWorkName(work, locale)`, no Chinese subtitle. Audited every other `name_chinese` reference — `WorkSearchBar` was the only user-facing offender. Whale-Class admin pages intentionally bilingual.
+
+**E. CRITICAL: 503/500 Cascade Resolved**
+
+Three layers of latent failures, all surfaced this session:
+
+1. **Whisper transcribe missing maxDuration (`941bcaa6`):** `voice-notes/transcribe/route.ts` had no `maxDuration` export. Railway default 15s. Whisper on 60-90s audio → 503. Fix: `export const maxDuration = 90`.
+
+2. **25 AI routes missing maxDuration (`294a0648`):** Health-check sweep found systemic gap. Bulk-fixed via Python script — 15 heavy Sonnet routes → 120s, 1 transcribe → 90s, 9 quick Haiku → 60s. Includes Smart Capture (photo-insight, snap-identify), weekly review, classroom setup describe, daily plan, end-of-day, photo audit AI tell, weekly admin, activity summary, generate-work-content, photo-enrich, teaching-instructions, weekly-planning/upload, and 13 others.
+
+3. **`is_focus` column doesn't exist on `montree_child_progress` (`beb0ffd1`):** Commits `d42727bc` and `9d4a7757` introduced writes to `is_focus`. No migration ever added it. Postgres 500'd every progress update. Manifested as: 500 on manual "add a work", silently empty seeded shelves after voice onboarding (the `seedFocusWorks` insert was failing inside try/catch).
+
+**The insight:** `progress/route.ts` line 243 DERIVES `is_focus` from the legacy `montree_child_focus_works` table for clients. The focus shelf has always worked off `focus_works` as source of truth. We just needed to stop writing the non-existent column.
+
+🚨 **ARCHITECTURAL RULE LOCKED IN: `is_focus` is NOT a column on `montree_child_progress`.** Never write to it. Future code wanting true persistence must ship a migration first. The legacy `focus_works` mirror in `progress/update` is the trigger when a client sends `is_focus: true` in the body.
+
+Three files cleaned: `progress/update/route.ts` (removed upsert + demote), `onboard/route.ts` (`seedFocusWorks` UPDATE/INSERT branches + demote, `seededShelf` SELECT + sort), `voice-onboarding/page.tsx` (`onSwapWorkSelected` KEPT `is_focus: true` in body — that triggers the legacy mirror, not the column write).
+
+**F. Super Admin Restored (`17ae7b9b` + `1bee23ea`):**
+
+User flagged two regressions:
+
+1. **API spend column invisible** — was rendered alongside Free/Pro tier pill but `text-slate-600` on dark slate background = invisible. $0 spend looked like tracking was missing. Fix: brighter slate text. Data was always there.
+
+2. **"Never" last_active for active schools** — `last_active = max(last_guru_interaction, last_media_upload)` had two gaps: guru interactions only fire on direct Guru use, and `recentMedia` is `.limit(500)` globally. Fix: `apiUsageRaw` query in `super-admin/schools/route.ts` now also captures `created_at`. New `lastApiUsageMap` tracks max(created_at) per school. `last_active` candidates = `[interaction, media, api_usage]` filtered + Math.max. Any school making any AI-routed call gets accurate activity.
+
+**G. Language Semester Report v7 Port (`8a1b26d4`):**
+
+The `term-reports-v7/` outputs (21 PPTXs from `scripts/generate-term-reports.mjs`) are the canonical end-of-semester format we landed on after 7 iterations. Ported v7 prompt rules into `app/api/montree/reports/language-semester/generate/route.ts`. REPORT_TOOL descriptions tightened:
+- `para_opening`: 25-30 words HARD LIMIT (was ~30-40)
+- `para_circle`: 60-70 words total, 1-2 sentences per point, "do NOT repeat the work name twice", "every sentence must be COMPLETE" (was ~75-90 words, 2-3 sentences)
+- `para_english`: 20-25 words HARD LIMIT, "Do NOT start with Dear" (was ~25-30)
+
+System prompt added: no `Dear` in closing, never repeat work name, never invent names, every sentence MUST be complete, total body MUST stay under 110 words.
+
+Still TODO (deferred): `postProcess` strip `Dear X,` from closing, de-dupe `Work - Work` and `Work (Work)` patterns, stricter `scrubHallucinatedWorks`, better `trimToWords` fallback. The v7 script (`scripts/generate-term-reports.mjs`) is the canonical reference.
+
+**Architectural rules locked in this session (do NOT let future agents break these):**
+
+- **`is_focus` is NOT a column on `montree_child_progress`.** Legacy `montree_child_focus_works` table is the source of truth.
+- **Every AI-calling route MUST declare `maxDuration`.** Default 15s 503's most Sonnet calls.
+- **Two-path onboarding: voice flow stays opt-in.** Photo-driven is the canonical Montessori-aligned path. Choice copy is locked across 12 locales.
+- **Voice onboarding shelf editor mirrors the dashboard exactly.** Same colors, chrome, status badge, chevron.
+- **Sonnet's `focus_<area>` extraction is REQUIRED, never null.** 5 fields plus statuses required in the tool schema.
+- **`Update` button on review = additive merge, not replace.** Prior transcript + separator + new transcript.
+- **No bilingual stacking in user-facing UI.** One language per locale.
+
+**i18n state:** 12 locales at 100% parity. New keys: `voiceOnboarding.review.update`, `voiceOnboarding.review.updateHint`, `voiceOnboarding.shelfEditor.*` (6 keys), `voiceOnboarding.processing.layingFoundation`, `dashboard.onboardingChoice.*` (6 keys). All Haiku-batch translated.
+
+**Verification status:**
+- ✅ All 16 commits on `origin/main`. Railway auto-deploys triggered.
+- ✅ Lint clean (only pre-existing warnings).
+- ✅ Pre-commit i18n strict check passes.
+- ✅ 500 cascade resolved after `beb0ffd1` deployed.
+- ⏳ User to verify on production: tap "Update" on review, manually add a work, generate one Language Semester Report.
+
+**Handoff doc:** `docs/handoffs/SESSION_81_HANDOFF.md` — full 16-commit log, architectural rules, deferred items, file-by-file change list.
+
+**🚨 Next session priorities:**
+1. **Verify production** — open dashboard with un-onboarded children, expect choice screen. Tap each path. Verify Update flow on review. Manually add a work (no 500). Generate one Language Semester Report (v7 quality check).
+2. **Finish v7 `postProcess` polish** — strip Dear, de-dupe work names, stricter scrub, better trim. ~30 min.
+3. **`Update` additive transcript FIFO cap** — ~5 lines, prevents unbounded growth.
+4. **Welcome script tone review** for zh/ja/ko/uk warmth.
+5. **TYPE B sweep across components** (Session 78 carry-over) — replace `locale === 'zh' ? work.x_zh : work.x` with `getLocalizedField()` everywhere. Hot files: `ThisIsSheet.tsx`, `EditWorkModal.tsx`, super-admin/*.
+6. **Free-tier gate decision** — voice onboarding currently works for all tiers including Free.
+7. **Send 3 hot lead Gmail drafts** (carry-over) — Copenhagen, Paint Pots UK, Ardtona House UK.
+8. **FAMM Argentina follow-up** (carry-over) — past Apr 28 deadline.
+9. **Welcome Тамі in Ukrainian** (carry-over) — first organic Ukrainian signup.
+10. **Resend domain verification** (carry-over) — verify montree.xyz in Resend.
+
+---
+
 ## RECENT STATUS (May 2, 2026)
 
 ### ⚡ Session 80 — Voice Onboarding Hardening + Live Transcription + Landing Page i18n + Picker Brand Pass (May 2, 2026)
