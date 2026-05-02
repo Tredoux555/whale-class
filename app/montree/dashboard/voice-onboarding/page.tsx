@@ -110,45 +110,78 @@ export default function VoiceOnboardingPage() {
   // bump-to-idle bug caused by `currentChild` becoming undefined between render cycles.
   const recordingChildRef = useRef<{ id: string; name: string } | null>(null);
 
-  // Load pending children
+  // Classroom ID locked in a ref alongside child identity. Same defensive pattern —
+  // the pipeline reads from the ref, not from React state.
+  const classroomIdRef = useRef<string | null>(null);
+
+  // Guard: ensure loadPending fires AT MOST ONCE. Prevents the orchestrator from
+  // refetching /status mid-flow (which could reset `pending` and cause cascading
+  // silent failures including unwanted redirects to /montree/dashboard).
+  const hasLoadedRef = useRef(false);
+
+  // Watchdog: if the pipeline hangs (no progress for 90s after stop), surface a
+  // debug error instead of leaving the user staring at a spinner.
+  const watchdogRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Load pending children — runs ONCE per mount, never refetches.
   const loadPending = useCallback(async () => {
+    if (hasLoadedRef.current) {
+      console.warn('[VoiceOnboarding] loadPending called again — ignoring (already loaded)');
+      return;
+    }
+    hasLoadedRef.current = true;
     try {
       const res = await montreeApi('/api/montree/onboarding/voice/status');
       if (!res.ok) {
-        // If unauthorized, bounce to login
         if (res.status === 401) {
           router.replace('/montree/login');
           return;
         }
-        // Soft-fail: redirect to dashboard
-        router.replace('/montree/dashboard');
+        // Hard fail surfaces as debug screen — no more silent redirects.
+        const body = await res.text().catch(() => '');
+        setDebugError({
+          step: 'STATUS — server returned error',
+          url: '/api/montree/onboarding/voice/status',
+          status: res.status,
+          statusText: res.statusText,
+          body: body || '(empty)',
+        });
+        setStage('debug_error');
         return;
       }
       const data = await res.json();
       const list = (data.pending as PendingChild[]) || [];
+      console.log('[VoiceOnboarding] loadPending OK:', { pending: list.length, completed: data.completed_count, total: data.total });
       setPending(list);
       setCompletedCount(data.completed_count || 0);
       setTotal(data.total || 0);
       setClassroomId(data.classroom_id || null);
+      classroomIdRef.current = data.classroom_id || null; // lock for the pipeline
 
       if (list.length === 0) {
-        // Nothing to do — go to dashboard
         router.replace('/montree/dashboard');
         return;
       }
 
       setStage('welcome');
     } catch (err) {
-      console.error('[VoiceOnboarding] Failed to load pending:', err);
-      router.replace('/montree/dashboard');
+      setDebugError({
+        step: 'STATUS — fetch threw',
+        url: '/api/montree/onboarding/voice/status',
+        jsError: err instanceof Error ? `${err.name}: ${err.message}` : String(err),
+      });
+      setStage('debug_error');
     }
   }, [router]);
 
   useEffect(() => {
     loadPending();
-  }, [loadPending]);
+    // Intentionally omitting loadPending from deps — we want strict run-once semantics.
+    // hasLoadedRef inside loadPending double-guards against React strict mode double-invoke.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-  // Cleanup on unmount — release mic, clear timer
+  // Cleanup on unmount — release mic, clear timer + watchdog
   useEffect(() => {
     return () => {
       if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
@@ -156,6 +189,7 @@ export default function VoiceOnboardingPage() {
       }
       streamRef.current?.getTracks().forEach(t => t.stop());
       if (timerRef.current) clearInterval(timerRef.current);
+      if (watchdogRef.current) clearTimeout(watchdogRef.current);
     };
   }, []);
 
@@ -191,8 +225,11 @@ export default function VoiceOnboardingPage() {
       // which child the recording is for. Without this, the pipeline silently bails
       // at the !currentChild check.
       if (!currentChild?.id) {
-        console.error('[VoiceOnboarding] No currentChild at start — aborting');
-        setStage('idle');
+        setDebugError({
+          step: 'START — no currentChild',
+          jsError: `pending.length=${pending.length}, currentIndex=${currentIndex}. The recording could not start because the child queue was empty or the index was out of range.`,
+        });
+        setStage('debug_error');
         return;
       }
       recordingChildRef.current = { id: currentChild.id, name: currentChild.name };
@@ -224,6 +261,18 @@ export default function VoiceOnboardingPage() {
           try { recognitionRef.current.stop(); } catch { /* noop */ }
           recognitionRef.current = null;
         }
+
+        // Watchdog: if the pipeline has not progressed past 'processing' within 90s,
+        // surface a debug error rather than leaving the user staring at a spinner.
+        if (watchdogRef.current) clearTimeout(watchdogRef.current);
+        watchdogRef.current = setTimeout(() => {
+          setDebugError({
+            step: 'WATCHDOG — pipeline hung',
+            jsError: '90 seconds passed after stop with no progress. The transcribe or onboard call is hanging or the response was lost. Check Network tab for in-flight requests.',
+            transcriptLength: liveFinalRef.current.length,
+          });
+          setStage('debug_error');
+        }, 90_000);
 
         const chunks = chunksRef.current;
         chunksRef.current = [];
@@ -388,17 +437,18 @@ export default function VoiceOnboardingPage() {
       }
 
       const onboardUrl = `/api/montree/children/${lockedChild.id}/onboard`;
-      console.log('[VoiceOnboarding] →POST', onboardUrl, { transcriptLength: text.length, classroomId, childName: lockedChild.name });
+      const lockedClassroomId = classroomIdRef.current || classroomId;
+      console.log('[VoiceOnboarding] →POST', onboardUrl, { transcriptLength: text.length, classroomId: lockedClassroomId, childName: lockedChild.name });
       let oRes: Response;
       try {
         // Body shape mirrors TellGuruCard exactly (which is known-working).
-        // No `locale` field — /onboard reads locale from URL/Accept-Language headers.
+        // classroom_id read from ref so a state reset can't null it out mid-flow.
         oRes = await montreeApi(onboardUrl, {
           method: 'POST',
           timeout: 120000,
           body: JSON.stringify({
             transcript: text,
-            classroom_id: classroomId,
+            classroom_id: lockedClassroomId,
           }),
         });
         console.log('[VoiceOnboarding] ←onboard response', { ok: oRes.ok, status: oRes.status, statusText: oRes.statusText });
@@ -439,7 +489,7 @@ export default function VoiceOnboardingPage() {
         const sRes = await fetch('/api/montree/onboarding/voice/scan-custom', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ transcript: text, classroom_id: classroomId }),
+          body: JSON.stringify({ transcript: text, classroom_id: lockedClassroomId }),
         });
         if (sRes.ok) {
           const sData = await sRes.json();
@@ -453,8 +503,11 @@ export default function VoiceOnboardingPage() {
         setUnmatchedQueue([]);
       }
 
+      // SUCCESS — clear the hung-pipeline watchdog and present the review screen.
+      if (watchdogRef.current) { clearTimeout(watchdogRef.current); watchdogRef.current = null; }
       setStage('review');
     } catch (err) {
+      if (watchdogRef.current) { clearTimeout(watchdogRef.current); watchdogRef.current = null; }
       setDebugError({
         step: 'PIPELINE — unexpected exception',
         jsError: err instanceof Error ? `${err.name}: ${err.message}\n${err.stack?.slice(0, 500) || ''}` : String(err),
