@@ -3863,4 +3863,15 @@ export const uk: Record<string, string> = {
   'workPicker.customWorkPlaceholder': 'напр. Веселкові блоки для укладання',
   'workPicker.saveCustomWork': 'Додати до програми',
   'workPicker.adding': 'Додавання...',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'voiceOnboarding.recording.promptAge': 'Скільки років дитині',
+  'voiceOnboarding.recording.promptEnjoys': 'Що дитина любить робити',
+  'voiceOnboarding.recording.promptStruggles': 'З чим дитина має труднощі',
+  'voiceOnboarding.recording.promptFocusByArea': 'На чому дитина зосереджується прямо зараз у кожній галузі:',
+  'voiceOnboarding.recording.areaPracticalLife': 'Практичне Життя',
+  'voiceOnboarding.recording.areaSensorial': 'Сенсорний',
+  'voiceOnboarding.recording.areaMathematics': 'Математика',
+  'voiceOnboarding.recording.areaLanguage': 'Мова',
+  'voiceOnboarding.recording.areaCultural': 'Культура',
 };

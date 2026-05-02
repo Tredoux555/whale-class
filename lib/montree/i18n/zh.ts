@@ -4269,4 +4269,15 @@ export const zh = {
   'workPicker.customWorkPlaceholder': '例如 彩虹叠积木',
   'workPicker.saveCustomWork': '添加到课程',
   'workPicker.adding': '添加中...',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'voiceOnboarding.recording.promptAge': '他们多大了',
+  'voiceOnboarding.recording.promptEnjoys': '他们喜欢做什么',
+  'voiceOnboarding.recording.promptStruggles': '他们在哪方面遇到困难',
+  'voiceOnboarding.recording.promptFocusByArea': '他们目前在各个领域的重点是什么：',
+  'voiceOnboarding.recording.areaPracticalLife': '日常生活',
+  'voiceOnboarding.recording.areaSensorial': '感官',
+  'voiceOnboarding.recording.areaMathematics': '数学',
+  'voiceOnboarding.recording.areaLanguage': '语言',
+  'voiceOnboarding.recording.areaCultural': '文化',
 } as const;

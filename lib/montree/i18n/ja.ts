@@ -3866,4 +3866,15 @@ export const ja: Record<string, string> = {
   'workPicker.customWorkPlaceholder': '例：虹色の積み重ねブロック',
   'workPicker.saveCustomWork': 'カリキュラムに追加',
   'workPicker.adding': '追加中...',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'voiceOnboarding.recording.promptAge': 'お子さまは何歳ですか',
+  'voiceOnboarding.recording.promptEnjoys': 'お子さまが楽しんでいることは何ですか',
+  'voiceOnboarding.recording.promptStruggles': 'お子さまが苦手なことは何ですか',
+  'voiceOnboarding.recording.promptFocusByArea': '現在、各分野で取り組んでいることは何ですか：',
+  'voiceOnboarding.recording.areaPracticalLife': '日常生活',
+  'voiceOnboarding.recording.areaSensorial': '感覚',
+  'voiceOnboarding.recording.areaMathematics': '算数',
+  'voiceOnboarding.recording.areaLanguage': '言語',
+  'voiceOnboarding.recording.areaCultural': '文化',
 };

@@ -3866,4 +3866,15 @@ export const de: Record<string, string> = {
   'workPicker.customWorkPlaceholder': 'z. B. Regenbogenstapelblöcke',
   'workPicker.saveCustomWork': 'Zum Lehrplan hinzufügen',
   'workPicker.adding': 'Wird hinzugefügt…',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'voiceOnboarding.recording.promptAge': 'Wie alt das Kind ist',
+  'voiceOnboarding.recording.promptEnjoys': 'Was das Kind gerne tut',
+  'voiceOnboarding.recording.promptStruggles': 'Womit das Kind Schwierigkeiten hat',
+  'voiceOnboarding.recording.promptFocusByArea': 'Worauf sich das Kind derzeit in den einzelnen Bereichen konzentriert:',
+  'voiceOnboarding.recording.areaPracticalLife': 'Praktisches Leben',
+  'voiceOnboarding.recording.areaSensorial': 'Sinnesmaterial',
+  'voiceOnboarding.recording.areaMathematics': 'Mathematik',
+  'voiceOnboarding.recording.areaLanguage': 'Sprache',
+  'voiceOnboarding.recording.areaCultural': 'Kulturelles',
 };

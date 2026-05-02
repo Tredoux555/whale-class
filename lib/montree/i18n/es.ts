@@ -3837,4 +3837,15 @@ export const es: Record<string, string> = {
   'workPicker.customWorkPlaceholder': 'ej. Bloques para Apilar del Arco Iris',
   'workPicker.saveCustomWork': 'Agregar al currículum',
   'workPicker.adding': 'Agregando...',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'voiceOnboarding.recording.promptAge': 'Qué edad tienen',
+  'voiceOnboarding.recording.promptEnjoys': 'Qué disfrutás hacer',
+  'voiceOnboarding.recording.promptStruggles': 'Con qué tienen dificultades',
+  'voiceOnboarding.recording.promptFocusByArea': 'En qué se están enfocando ahora mismo en cada área:',
+  'voiceOnboarding.recording.areaPracticalLife': 'Vida Práctica',
+  'voiceOnboarding.recording.areaSensorial': 'Sensorial',
+  'voiceOnboarding.recording.areaMathematics': 'Matemática',
+  'voiceOnboarding.recording.areaLanguage': 'Lengua',
+  'voiceOnboarding.recording.areaCultural': 'Estudios Culturales',
 };

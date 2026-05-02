@@ -810,10 +810,26 @@ export default function VoiceOnboardingPage() {
           <div style={promptsStyle}>
             <p style={promptHeadingStyle}>{t('voiceOnboarding.recording.promptHeading')}</p>
             <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+              <li style={promptItemStyle}>· {t('voiceOnboarding.recording.promptAge')}</li>
               <li style={promptItemStyle}>· {t('voiceOnboarding.recording.promptTime')}</li>
-              <li style={promptItemStyle}>· {t('voiceOnboarding.recording.promptFocusArea')}</li>
-              <li style={promptItemStyle}>· {t('voiceOnboarding.recording.promptBehavior')}</li>
-              <li style={promptItemStyle}>· {t('voiceOnboarding.recording.promptInterestedWork')}</li>
+              <li style={promptItemStyle}>· {t('voiceOnboarding.recording.promptEnjoys')}</li>
+              <li style={promptItemStyle}>· {t('voiceOnboarding.recording.promptStruggles')}</li>
+              <li style={{ ...promptItemStyle, marginTop: 6 }}>· {t('voiceOnboarding.recording.promptFocusByArea')}</li>
+              <li style={{ ...promptItemStyle, paddingLeft: 24, fontSize: 13, color: 'rgba(255,255,255,0.66)' }}>
+                · {t('voiceOnboarding.recording.areaPracticalLife')}
+              </li>
+              <li style={{ ...promptItemStyle, paddingLeft: 24, fontSize: 13, color: 'rgba(255,255,255,0.66)' }}>
+                · {t('voiceOnboarding.recording.areaSensorial')}
+              </li>
+              <li style={{ ...promptItemStyle, paddingLeft: 24, fontSize: 13, color: 'rgba(255,255,255,0.66)' }}>
+                · {t('voiceOnboarding.recording.areaMathematics')}
+              </li>
+              <li style={{ ...promptItemStyle, paddingLeft: 24, fontSize: 13, color: 'rgba(255,255,255,0.66)' }}>
+                · {t('voiceOnboarding.recording.areaLanguage')}
+              </li>
+              <li style={{ ...promptItemStyle, paddingLeft: 24, fontSize: 13, color: 'rgba(255,255,255,0.66)' }}>
+                · {t('voiceOnboarding.recording.areaCultural')}
+              </li>
             </ul>
           </div>
 

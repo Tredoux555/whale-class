@@ -3866,4 +3866,15 @@ export const it: Record<string, string> = {
   'workPicker.customWorkPlaceholder': 'es. Blocchi Impilabili Arcobaleno',
   'workPicker.saveCustomWork': 'Aggiungi al curriculum',
   'workPicker.adding': 'Aggiunta in corso...',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'voiceOnboarding.recording.promptAge': 'Quale età hanno',
+  'voiceOnboarding.recording.promptEnjoys': 'Cosa amano fare',
+  'voiceOnboarding.recording.promptStruggles': 'Dove incontrano difficoltà',
+  'voiceOnboarding.recording.promptFocusByArea': 'Su cosa stanno concentrandosi in questo momento in ciascuna area:',
+  'voiceOnboarding.recording.areaPracticalLife': 'Vita Pratica',
+  'voiceOnboarding.recording.areaSensorial': 'Sensoriale',
+  'voiceOnboarding.recording.areaMathematics': 'Matematica',
+  'voiceOnboarding.recording.areaLanguage': 'Linguaggio',
+  'voiceOnboarding.recording.areaCultural': 'Culturale',
 };
