@@ -88,6 +88,10 @@ export default function VoiceOnboardingPage() {
   const [currentUnmatchedIndex, setCurrentUnmatchedIndex] = useState(0);
   const [errorMsg, setErrorMsg] = useState('');
   const [debugError, setDebugError] = useState<DebugError | null>(null);
+  // Tracks which unmatched works the teacher has chosen to add inline (by work_name)
+  const [addedCustomWorks, setAddedCustomWorks] = useState<Set<string>>(new Set());
+  // Tracks which inline add is in-flight (visual feedback)
+  const [addingCustomWork, setAddingCustomWork] = useState<string | null>(null);
 
   // Refs (audio + timer + abort)
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -517,11 +521,36 @@ export default function VoiceOnboardingPage() {
   };
 
   // ─── Review actions ───
-  const onConfirmReview = () => {
-    if (unmatchedQueue.length > 0) {
-      setStage('custom_work_catch');
-      return;
+  // Inline custom-work add — fires the existing /custom-work route and updates the
+  // local "added" set so the chip flips to "Added" without leaving the review.
+  const onAddCustomWorkInline = async (work: UnmatchedWork) => {
+    setAddingCustomWork(work.work_name);
+    try {
+      const res = await fetch('/api/montree/onboarding/voice/custom-work', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: work.work_name,
+          area: work.area,
+          classroom_id: classroomIdRef.current || classroomId,
+          teacher_phrase: work.teacher_phrase,
+        }),
+      });
+      if (res.ok) {
+        setAddedCustomWorks(prev => new Set(prev).add(work.work_name));
+      } else {
+        console.error('[VoiceOnboarding] Inline custom-work add failed', { status: res.status });
+      }
+    } catch (err) {
+      console.error('[VoiceOnboarding] Inline custom-work add error', err);
+    } finally {
+      setAddingCustomWork(null);
     }
+  };
+
+  const onConfirmReview = () => {
+    // Custom-work additions are now inline. Once the teacher confirms, we're done
+    // with this child — advance straight to the next.
     advanceToNext();
   };
 
@@ -925,28 +954,115 @@ export default function VoiceOnboardingPage() {
         </div>
       )}
 
-      {/* Review */}
+      {/* Review — single screen: summary + starting shelf + (optional) inline custom-work catch */}
       {stage === 'review' && result && (
-        <div style={{ ...centerStyle, maxWidth: 560, padding: '32px 28px', overflowY: 'auto' }}>
+        <div style={{ ...centerStyle, maxWidth: 640, padding: '32px 28px', overflowY: 'auto' }}>
           <h2 style={{ ...titleStyle, fontSize: 24, marginBottom: 20 }}>
             {t('voiceOnboarding.review.title', { name: firstName })}
           </h2>
           {result.summary && (
             <p style={{ ...bodyStyle, lineHeight: 1.6 }}>{result.summary}</p>
           )}
-          {result.game_plan?.nudge && (
-            <div style={{
-              marginTop: 20, padding: '16px 20px',
-              background: 'rgba(167,243,208,0.08)',
-              border: '1px solid rgba(167,243,208,0.18)',
-              borderRadius: 14,
-            }}>
-              <p style={{ ...bodyStyle, fontSize: 14, color: '#a7f3d0', margin: 0, lineHeight: 1.5 }}>
-                {result.game_plan.nudge}
+
+          {/* Starting shelf — works the AI extracted from the voice description */}
+          {result.game_plan?.works && result.game_plan.works.length > 0 && (
+            <div style={{ marginTop: 28, width: '100%' }}>
+              <p style={{
+                fontSize: 12, letterSpacing: 1.6, textTransform: 'uppercase',
+                color: 'rgba(255,255,255,0.55)', marginBottom: 14, textAlign: 'center',
+              }}>
+                {t('voiceOnboarding.review.shelfHeading', { name: firstName })}
               </p>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, justifyContent: 'center' }}>
+                {result.game_plan.works.map((workName, i) => (
+                  <div key={`${workName}-${i}`} style={{
+                    padding: '11px 18px',
+                    borderRadius: 999,
+                    background: 'rgba(167,243,208,0.10)',
+                    border: '1px solid rgba(167,243,208,0.32)',
+                    fontSize: 14,
+                    color: '#e6fff4',
+                    fontFamily: "'Inter', -apple-system, sans-serif",
+                  }}>
+                    {workName}
+                  </div>
+                ))}
+              </div>
             </div>
           )}
-          <div style={{ display: 'flex', gap: 12, marginTop: 28, justifyContent: 'center', flexWrap: 'wrap' }}>
+
+          {/* Unmatched works — agent voice + inline add buttons */}
+          {unmatchedQueue.length > 0 && (
+            <div style={{ marginTop: 28, width: '100%' }}>
+              <p style={{
+                ...bodyStyle, fontSize: 14, color: '#a7f3d0',
+                fontStyle: 'italic', marginBottom: 12, textAlign: 'left',
+              }}>
+                {t('voiceOnboarding.review.unmatchedHeading')}
+              </p>
+              {unmatchedQueue.map((work, i) => {
+                const isAdded = addedCustomWorks.has(work.work_name);
+                const isAdding = addingCustomWork === work.work_name;
+                return (
+                  <div key={`${work.work_name}-${i}`} style={{
+                    padding: '14px 18px',
+                    background: 'rgba(232,201,106,0.06)',
+                    border: '1px solid rgba(232,201,106,0.30)',
+                    borderRadius: 14,
+                    marginBottom: 10,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    gap: 14,
+                    flexWrap: 'wrap',
+                  }}>
+                    <div style={{ flex: 1, textAlign: 'left', minWidth: 200 }}>
+                      <span style={{ ...bodyStyle, fontSize: 15, color: '#fff' }}>
+                        “{work.work_name}”
+                      </span>
+                      <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', marginTop: 2 }}>
+                        {t(`voiceOnboarding.customWork.area${work.area.charAt(0).toUpperCase()}${work.area.slice(1).replace('_', '')}` as never)}
+                      </div>
+                    </div>
+                    {isAdded ? (
+                      <span style={{
+                        fontSize: 13, color: '#a7f3d0',
+                        padding: '6px 14px',
+                        background: 'rgba(167,243,208,0.10)',
+                        borderRadius: 999,
+                      }}>
+                        ✓ {t('voiceOnboarding.review.added')}
+                      </span>
+                    ) : isAdding ? (
+                      <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)' }}>
+                        {t('voiceOnboarding.customWork.adding', { name: work.work_name })}
+                      </span>
+                    ) : (
+                      <button
+                        onClick={() => onAddCustomWorkInline(work)}
+                        style={{
+                          padding: '8px 16px',
+                          background: 'transparent',
+                          border: '1px solid rgba(167,243,208,0.5)',
+                          borderRadius: 999,
+                          color: '#a7f3d0',
+                          fontSize: 13,
+                          fontWeight: 500,
+                          cursor: 'pointer',
+                          fontFamily: "'Inter', -apple-system, sans-serif",
+                          whiteSpace: 'nowrap',
+                        }}
+                      >
+                        {t('voiceOnboarding.review.addToCurriculum')}
+                      </button>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          <div style={{ display: 'flex', gap: 12, marginTop: 32, justifyContent: 'center', flexWrap: 'wrap' }}>
             <button onClick={onConfirmReview} style={primaryButtonStyle}>
               {t('voiceOnboarding.review.confirm')}
             </button>
@@ -957,26 +1073,9 @@ export default function VoiceOnboardingPage() {
         </div>
       )}
 
-      {/* Custom work catch */}
-      {stage === 'custom_work_catch' && unmatchedQueue[currentUnmatchedIndex] && (
-        <CustomWorkCatchPanel
-          work={unmatchedQueue[currentUnmatchedIndex]}
-          onAdd={onAddCustomWork}
-          onSkip={onSkipCustomWork}
-          t={t}
-        />
-      )}
-
-      {stage === 'custom_work_adding' && unmatchedQueue[currentUnmatchedIndex] && (
-        <div style={centerStyle}>
-          <Spinner />
-          <p style={{ ...bodyStyle, marginTop: 24 }}>
-            {t('voiceOnboarding.customWork.adding', {
-              name: unmatchedQueue[currentUnmatchedIndex].work_name,
-            })}
-          </p>
-        </div>
-      )}
+      {/* Legacy custom_work_catch and custom_work_adding stages no longer reached;
+          inline addition on the review screen replaced them. Kept in the type union
+          for backwards compatibility but never assigned. */}
       </>
     );
   };

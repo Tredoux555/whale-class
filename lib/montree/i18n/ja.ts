@@ -3852,4 +3852,10 @@ export const ja: Record<string, string> = {
   'landing.closing.title': 'Montreeの魔法を体験してください。',
   'landing.closing.body': '1ヶ月間無料。その後、1人のお子さまにつき月額7ドル。1つのプラン。段階はありません。契約はありません。',
   'landing.closing.cta': '無料トライアルを開始する',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'voiceOnboarding.review.shelfHeading': '{name}さまの最初の棚',
+  'voiceOnboarding.review.unmatchedHeading': 'まだカリキュラムに含まれていないお仕事をいくつか見つけました —',
+  'voiceOnboarding.review.addToCurriculum': 'カリキュラムに追加',
+  'voiceOnboarding.review.added': '追加しました',
 };

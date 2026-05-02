@@ -3823,4 +3823,10 @@ export const es: Record<string, string> = {
   'landing.closing.title': 'Experimentá la magia.',
   'landing.closing.body': 'Un mes gratis. Luego $7 por niño, por mes. Un plan. Sin niveles. Sin contratos.',
   'landing.closing.cta': 'Iniciá tu prueba gratuita',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'voiceOnboarding.review.shelfHeading': 'Estante inicial de {name}',
+  'voiceOnboarding.review.unmatchedHeading': 'Noté algunos trabajos que todavía no están en tu currículo —',
+  'voiceOnboarding.review.addToCurriculum': 'Agregar al currículo',
+  'voiceOnboarding.review.added': 'Agregado',
 };

@@ -3852,4 +3852,10 @@ export const nl: Record<string, string> = {
   'landing.closing.title': 'Ervaar de magie.',
   'landing.closing.body': 'Eerste maand gratis. Daarna €7 per kind, per maand. Één abonnement. Geen niveaus. Geen contracten.',
   'landing.closing.cta': 'Start uw gratis proefperiode',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'voiceOnboarding.review.shelfHeading': 'Startkast van {name}',
+  'voiceOnboarding.review.unmatchedHeading': 'Ik heb enkele werken opgemerkt die nog niet in uw curriculum voorkomen —',
+  'voiceOnboarding.review.addToCurriculum': 'Aan curriculum toevoegen',
+  'voiceOnboarding.review.added': 'Toegevoegd',
 };

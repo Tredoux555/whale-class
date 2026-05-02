@@ -4255,4 +4255,10 @@ export const zh = {
   'landing.closing.title': '体验魔力。',
   'landing.closing.body': '免费试用一个月。之后每个儿童每月 7 美元。一个方案。无分级。无合同。',
   'landing.closing.cta': '开始免费试用',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'voiceOnboarding.review.shelfHeading': '{name}的起始架',
+  'voiceOnboarding.review.unmatchedHeading': '我发现了一些还没有加入您课程的作品——',
+  'voiceOnboarding.review.addToCurriculum': '加入课程',
+  'voiceOnboarding.review.added': '已添加',
 } as const;
