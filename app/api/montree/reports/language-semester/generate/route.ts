@@ -188,6 +188,13 @@ Write the monthly academic report paragraph.`;
 
 // ── 6M: Full semester report tool ───────────────────────────────────────────
 
+// v7 FORMAT — these tool descriptions and rules are the canonical format that
+// emerged after 7 iterations on Whale Class. Tightened from earlier drafts:
+//   - opening: 25-30 words (was 30-40)
+//   - circle: 60-70 words total, 1-2 sentences per point (was 75-90 with 2-3)
+//   - closing: 20-25 words (was 25-30) and explicit "no Dear"
+//   - circle Point 2: explicit "do NOT repeat the name twice"
+//   - all sections: "every sentence must be COMPLETE — never trail off"
 const REPORT_TOOL = {
   name: 'write_language_semester_report',
   description:
@@ -198,17 +205,17 @@ const REPORT_TOOL = {
       para_opening: {
         type: 'string',
         description:
-          'Greeting: "Dear [Name]," + 2-3 warm sentences of pride. ~30-40 words.',
+          'Greeting: "Dear [Name]," + 1-2 warm sentences of pride. HARD LIMIT: 25-30 words maximum. Be concise.',
       },
       para_circle: {
         type: 'string',
         description:
-          'Three accomplishments, each on its own line separated by \\n. Point 1: circle time / social growth. Point 2: a SPECIFIC work from the progress list — name it EXACTLY. Point 3: character strength or another achievement. Each point 2-3 sentences. ~75-90 words total. Use ONLY works from the provided list.',
+          'Three accomplishments, each on its own line separated by \\n. Point 1: circle time / social growth (1-2 sentences). Point 2: a SPECIFIC work from the progress list — name it EXACTLY as written, do NOT repeat the name twice (1-2 sentences). Point 3: character strength or another achievement (1-2 sentences). HARD LIMIT: 60-70 words total. Every sentence must be COMPLETE — never end mid-thought. Use ONLY works from the provided list.',
       },
       para_english: {
         type: 'string',
         description:
-          'Warm closing: 2 sentences, personal and encouraging. ~25-30 words. No work names.',
+          'Warm closing: 1-2 complete sentences, personal and encouraging. HARD LIMIT: 20-25 words. No work names. Do NOT start with "Dear".',
       },
     },
     required: ['para_opening', 'para_circle', 'para_english'],
@@ -238,6 +245,12 @@ RULES:
 - No line breaks in para_opening or para_english
 - No bullets, markdown, emojis, or asterisks
 - Do NOT name any works in para_english
+- Do NOT start para_english with "Dear"
+- NEVER repeat a work name twice in the same sentence
+- NEVER invent work names — use ONLY the exact names from the ALLOWED list above
+- Every sentence MUST be complete — never trail off or end mid-thought
+- HARD WORD LIMITS: opening ~25-30 words, circle ~60-70 words, closing ~20-25 words
+- Total body (opening + circle) MUST stay under 110 words
 - Write beautifully — every sentence worth framing`;
 }
 
@@ -278,47 +291,70 @@ async function callSonnet(
 
 // --- POST-PROCESSING (the "different angle") --------------------------------
 
-/** Trim text to at most maxWords by removing sentences from the end. */
+/** Trim text to at most maxWords. v7 LOGIC: walks backwards to find the last
+ *  COMPLETE sentence — checks both '<punct> ' AND end-of-string punctuation
+ *  so it doesn't miss sentences that end the joined slice without a trailing
+ *  space. Falls back to a clean word-boundary trim with a period. */
 function trimToWords(text: string, maxWords: number): string {
   const words = text.split(/\s+/).filter(Boolean);
   if (words.length <= maxWords) return text;
-  // Walk backwards to find the last sentence boundary within limit
   const joined = words.slice(0, maxWords).join(' ');
-  const lastPeriod = Math.max(joined.lastIndexOf('. '), joined.lastIndexOf('! '), joined.lastIndexOf('? '));
-  if (lastPeriod > joined.length * 0.5) {
-    return joined.slice(0, lastPeriod + 1);
+  const sentenceEnd = Math.max(
+    joined.lastIndexOf('. '),
+    joined.lastIndexOf('! '),
+    joined.lastIndexOf('? '),
+    joined.endsWith('.') ? joined.length - 1 : -1,
+    joined.endsWith('!') ? joined.length - 1 : -1,
+    joined.endsWith('?') ? joined.length - 1 : -1,
+  );
+  if (sentenceEnd > joined.length * 0.3) {
+    return joined.slice(0, sentenceEnd + 1);
   }
-  // No good sentence boundary — just add ellipsis-free period
-  const trimmed = joined.replace(/[,;:\s]+$/, '');
+  // Fallback: trim to word boundary with sentinel punctuation cleanup
+  const trimmed = joined.replace(/[,;:\s—\-]+$/, '');
   return trimmed.endsWith('.') ? trimmed : trimmed + '.';
 }
 
-/** Remove any capitalized multi-word phrases that aren't in the allowed work list.
- *  Replaces them with a generic reference so the sentence stays readable. */
+/** Remove any capitalized multi-word phrases that aren't in the allowed work
+ *  list. v7 LOGIC: STRICT — only exact match or "phrase is the start of an
+ *  allowed work" survives. Substring/fuzzy matching is removed because it
+ *  was producing false-positive replacements. Common English title-cased
+ *  phrases (greetings, time references, language names) are protected via
+ *  an extended SAFE_STARTS regex. Also catches partial 2-word references
+ *  to longer work names. */
 function scrubHallucinatedWorks(text: string, allowedWorks: string[]): string {
   if (allowedWorks.length === 0) return text;
   const lowerAllowed = new Set(allowedWorks.map(w => w.toLowerCase()));
 
-  return text.replace(/[A-Z][a-z]+(?:\s+[A-Z][a-z]+)+/g, (phrase) => {
-    // Skip common English phrases that aren't work names
-    if (/^(Dear|Keep|We|You|Next|This|That|Your|Circle|Time|Language|English|Pre|Kindergarten|Good|Big|Well|How|What|Thank|Every)/.test(phrase)) {
-      return phrase;
-    }
-    // If it's in the allowed list (case-insensitive), keep it
+  // Common English phrases that LOOK like work names but aren't.
+  // Extended in v7 with: Circle, Time, Pre, Kindergarten, See, One, During,
+  // At, The — caught common false positives during Whale Class testing.
+  const SAFE_STARTS = /^(Dear|Keep|We|You|Next|This|That|Your|Circle|Time|Language|English|Pre|Kindergarten|Good|Big|Well|How|What|Thank|Every|See|One|During|At|The)/;
+
+  // Allow partial 2-word references to longer allowed works
+  // (e.g. "Sandpaper Letters" matches "Sandpaper Letters and Phonics Cards")
+  const shortNames = new Map<string, string>();
+  for (const w of allowedWorks) {
+    const short = w.split(/\s+/).slice(0, 2).join(' ').toLowerCase();
+    if (short.length > 5) shortNames.set(short, w);
+  }
+
+  return text.replace(/[A-Z][a-z]+(?:[\s\-]+[A-Z][a-z]+)+/g, (phrase) => {
+    if (SAFE_STARTS.test(phrase)) return phrase;
+    // Exact match (case-insensitive)
     if (lowerAllowed.has(phrase.toLowerCase())) return phrase;
-    // Fuzzy: check if it's a substring of an allowed work or vice versa
+    // Phrase is the start of an allowed work? Replace with full allowed name.
     for (const w of allowedWorks) {
-      if (w.toLowerCase().includes(phrase.toLowerCase()) ||
-          phrase.toLowerCase().includes(w.toLowerCase())) {
-        return w; // Replace with the EXACT allowed name
-      }
+      if (w.toLowerCase().startsWith(phrase.toLowerCase())) return w;
     }
-    // Not a real work — replace with generic phrase
+    // STRICT: no fuzzy/substring matching — replace with generic phrase.
     return 'your work';
   });
 }
 
-/** Full post-processing pipeline. Enforces fit regardless of what Sonnet produced. */
+/** Full post-processing pipeline. v7 LOGIC: enforces fit, strips stray "Dear"
+ *  from closing, de-duplicates work-name patterns Sonnet sometimes emits like
+ *  "Pink Tower - Pink Tower" or "Pink Tower (Pink Tower)". */
 function postProcess(report: SonnetReport, childName: string, allowedWorks: string[]): SonnetReport {
   // 1. Clean line breaks from opening and closing
   let opening = cleanText(report.para_opening);
@@ -329,6 +365,11 @@ function postProcess(report: SonnetReport, childName: string, allowedWorks: stri
     opening = `Dear ${childName}, ${opening}`;
   }
 
+  // 2b. v7: strip any stray "Dear X," from closing — Sonnet sometimes
+  // mistakenly addresses the child a second time. The format wants the
+  // closing to flow as a continuation, not a new letter.
+  closing = closing.replace(/^Dear\s+\w+,?\s*/i, '');
+
   // 3. Scrub hallucinated work names from all sections
   opening = scrubHallucinatedWorks(opening, allowedWorks);
   // For para_circle, process each point separately (preserve \\n separators)
@@ -337,6 +378,20 @@ function postProcess(report: SonnetReport, childName: string, allowedWorks: stri
   const scrubbedPoints = circlePoints.map(p => scrubHallucinatedWorks(p, allowedWorks));
   circle = scrubbedPoints.join('\\n');
   closing = scrubHallucinatedWorks(closing, allowedWorks);
+
+  // 3b. v7: de-duplicate work names that got repeated. Two patterns Sonnet
+  // emits when it second-guesses itself on a work reference:
+  //   "Metal Insets - Metal Insets" → "Metal Insets"
+  //   "Pink Tower (Pink Tower)"     → "Pink Tower"
+  for (const w of allowedWorks) {
+    const escaped = w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const doubled = new RegExp(`${escaped}\\s*[-–—]?\\s*${escaped}`, 'gi');
+    circle = circle.replace(doubled, w);
+    opening = opening.replace(doubled, w);
+    const parens = new RegExp(`${escaped}\\s*\\(${escaped}\\)`, 'gi');
+    circle = circle.replace(parens, w);
+    opening = opening.replace(parens, w);
+  }
 
   // 4. Trim body (opening + circle) to fit the 12-line visible area
   const openingWords = countWords(opening);
