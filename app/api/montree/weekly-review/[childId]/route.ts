@@ -11,6 +11,12 @@ import { checkRateLimit } from '@/lib/rate-limiter';
 import { getSupabase } from '@/lib/supabase-client';
 import { anthropic, AI_MODEL } from '@/lib/ai/anthropic';
 import { resolveReportModel } from '@/lib/montree/reports/resolve-model';
+
+// Railway/Next.js default serverless timeout is 15s. AI calls can
+// exceed that and return 503 (Service Unavailable). 120s gives the
+// route enough headroom while still bounded.
+export const maxDuration = 120;
+
 import {
   loadAllCurriculumWorks,
   enrichWithChineseNames,

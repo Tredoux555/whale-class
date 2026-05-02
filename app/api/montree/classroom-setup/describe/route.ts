@@ -10,6 +10,12 @@ import { getProxyUrl } from '@/lib/montree/media/proxy-url';
 import { checkRateLimit } from '@/lib/rate-limiter';
 import { getSupabase } from '@/lib/supabase-client';
 
+
+// Railway/Next.js default serverless timeout is 15s. AI calls can
+// exceed that and return 503 (Service Unavailable). 120s gives the
+// route enough headroom while still bounded.
+export const maxDuration = 120;
+
 // SQL injection defense helper for .ilike() queries
 function escapeIlike(str: string): string {
   return str.replace(/[%_\\]/g, '\\$&');

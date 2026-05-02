@@ -15,6 +15,12 @@ import { isValidLocale } from '@/lib/montree/i18n/locales';
 import { getAreaLabel } from '@/lib/montree/i18n/area-labels';
 import { getAILanguageInstruction } from '@/lib/montree/i18n/locale-config';
 
+
+// Railway/Next.js default serverless timeout is 15s. AI calls can
+// exceed that and return 503 (Service Unavailable). 120s gives the
+// route enough headroom while still bounded.
+export const maxDuration = 120;
+
 export const dynamic = 'force-dynamic';
 
 // Explicit types to avoid Supabase `never` inference

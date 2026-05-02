@@ -17,6 +17,12 @@ import sensorialData from '@/lib/curriculum/data/sensorial.json';
 import practicalLifeData from '@/lib/curriculum/data/practical-life.json';
 import culturalData from '@/lib/curriculum/data/cultural.json';
 
+
+// Railway/Next.js default serverless timeout is 15s. AI calls can
+// exceed that and return 503 (Service Unavailable). 60s gives the
+// route enough headroom while still bounded.
+export const maxDuration = 60;
+
 function findWorkInCurriculum(workName: string) {
   const areas = [
     { data: practicalLifeData, areaId: 'practical_life', areaName: 'Practical Life' },

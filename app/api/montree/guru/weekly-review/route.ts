@@ -9,6 +9,12 @@ import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { verifyChildBelongsToSchool } from '@/lib/montree/verify-child-access';
 import { anthropic, AI_ENABLED, HAIKU_MODEL } from '@/lib/ai/anthropic';
 
+
+// Railway/Next.js default serverless timeout is 15s. AI calls can
+// exceed that and return 503 (Service Unavailable). 120s gives the
+// route enough headroom while still bounded.
+export const maxDuration = 120;
+
 // Get ISO week string for caching: "2026-W09"
 function getISOWeek(date: Date): string {
   const d = new Date(date);

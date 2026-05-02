@@ -12,6 +12,12 @@ import { SUPPORTED_LOCALES, DEFAULT_LOCALE, type Locale } from '@/lib/montree/i1
 import { LOCALE_AI_CONFIG, getLanguageName } from '@/lib/montree/i18n/locale-config';
 import { buildLocalizedColumnList, getLocalizedColumn } from '@/lib/montree/i18n/db-helpers';
 
+
+// Railway/Next.js default serverless timeout is 15s. AI calls can
+// exceed that and return 503 (Service Unavailable). 60s gives the
+// route enough headroom while still bounded.
+export const maxDuration = 60;
+
 // Escape special SQL wildcard characters for safe ILIKE usage
 function escapeIlike(str: string): string {
   return str.replace(/[%_\\]/g, '\\$&');
