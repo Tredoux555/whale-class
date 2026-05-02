@@ -38,6 +38,13 @@ const STATUS_COLORS: Record<string, string> = {
   presented: '#f59e0b',
 };
 
+// Brand emerald — used for all primary actions, selections, and accents in this picker.
+// The per-area colors (areaConfig.color) are kept ONLY for the small area icon at top
+// so teachers can still recognise the area at a glance, but buttons and selection
+// highlights all use the brand colour for visual consistency with the rest of the app.
+const BRAND_EMERALD = '#34d399';
+const BRAND_EMERALD_DARK = '#1D6B48';
+
 export default function WorkWheelPicker({
   isOpen,
   onClose,
@@ -253,7 +260,10 @@ export default function WorkWheelPicker({
                   onClick={handleAddWork}
                   disabled={!newWorkName.trim() || isAdding}
                   className="flex-1 py-3 rounded-xl text-sm font-medium text-white transition-colors disabled:opacity-30"
-                  style={{ backgroundColor: areaConfig.color }}
+                  style={{
+                    background: `linear-gradient(180deg, ${BRAND_EMERALD} 0%, ${BRAND_EMERALD_DARK} 100%)`,
+                    boxShadow: `0 4px 14px -4px ${BRAND_EMERALD}80`,
+                  }}
                 >
                   {isAdding ? '...' : `+ ${t('workWheel.addFirstWork')}`}
                 </button>
@@ -378,12 +388,12 @@ export default function WorkWheelPicker({
         <div className="absolute top-0 left-0 right-0 h-24 bg-gradient-to-b from-black/80 via-black/40 to-transparent z-10 pointer-events-none" />
         <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-black/80 via-black/40 to-transparent z-10 pointer-events-none" />
 
-        {/* Selection highlight */}
+        {/* Selection highlight — brand emerald regardless of area */}
         <div
           className="absolute top-1/2 left-3 right-3 -translate-y-1/2 h-[64px] rounded-2xl z-5 pointer-events-none"
           style={{
-            background: `linear-gradient(135deg, ${areaConfig.color}18, ${areaConfig.color}08)`,
-            border: `1.5px solid ${areaConfig.color}40`,
+            background: `linear-gradient(135deg, ${BRAND_EMERALD}18, ${BRAND_EMERALD}08)`,
+            border: `1.5px solid ${BRAND_EMERALD}40`,
           }}
         />
 
@@ -557,7 +567,10 @@ export default function WorkWheelPicker({
                 onClick={handleAddWork}
                 disabled={!newWorkName.trim() || isAdding}
                 className="flex-1 py-3 font-semibold rounded-xl text-sm disabled:opacity-40 transition-colors text-white"
-                style={{ backgroundColor: areaConfig.color }}
+                style={{
+                  background: `linear-gradient(180deg, ${BRAND_EMERALD} 0%, ${BRAND_EMERALD_DARK} 100%)`,
+                  boxShadow: `0 4px 14px -4px ${BRAND_EMERALD}80`,
+                }}
               >
                 {isAdding ? t('common.adding') : t('workWheel.addWork')}
               </button>
@@ -565,7 +578,7 @@ export default function WorkWheelPicker({
           </div>
         ) : (
           <div className="space-y-2">
-            {/* Primary action */}
+            {/* Primary action — brand emerald, on-brand consistently */}
             <button
               onClick={() => {
                 if (!selectedWork) return;
@@ -574,7 +587,10 @@ export default function WorkWheelPicker({
               }}
               disabled={!selectedWork}
               className="w-full py-3.5 text-white font-semibold rounded-2xl text-[15px] active:scale-[0.98] transition-all disabled:opacity-40"
-              style={{ backgroundColor: areaConfig.color }}
+              style={{
+                background: `linear-gradient(180deg, ${BRAND_EMERALD} 0%, ${BRAND_EMERALD_DARK} 100%)`,
+                boxShadow: `0 6px 20px -6px ${BRAND_EMERALD}90`,
+              }}
             >
               {onAddExtra ? t('workWheel.addWork') : t('common.select')}
             </button>
@@ -586,12 +602,25 @@ export default function WorkWheelPicker({
               </p>
             )}
 
-            {/* Add custom work */}
+            {/* Add custom work — agent-style affordance matching the voice onboarding catch */}
             <button
               onClick={() => setShowAddForm(true)}
-              className="w-full py-2 text-white/30 text-xs font-medium hover:text-white/60 transition-colors"
+              className="w-full mt-3 py-3 px-4 rounded-xl text-sm font-medium transition-all flex items-center justify-center gap-2"
+              style={{
+                background: 'rgba(232,201,106,0.08)',
+                border: '1px solid rgba(232,201,106,0.30)',
+                color: '#E8C96A',
+              }}
             >
-              + {t('workWheel.addCustomWork').replace('{area}', areaConfig.name)}
+              <span style={{
+                width: 20, height: 20, borderRadius: '50%',
+                background: 'rgba(232,201,106,0.20)',
+                display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: 14, lineHeight: 1, fontWeight: 600,
+              }}>
+                +
+              </span>
+              {t('workWheel.addCustomWork').replace('{area}', areaConfig.name)}
             </button>
           </div>
         )}
