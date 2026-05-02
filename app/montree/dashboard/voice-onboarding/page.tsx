@@ -1362,56 +1362,39 @@ export default function VoiceOnboardingPage() {
             {t('voiceOnboarding.shelfEditor.subtitle')}
           </p>
 
-          {/* Shelf rows — same visual language as the review-screen shelf so the
-              teacher recognises this is "the actual shelf" they'll see on the
-              dashboard. Tap to swap; per-row affordance hint on the right. */}
-          {editorShelf.length > 0 ? (
-            <div style={{
-              display: 'flex',
-              flexDirection: 'column',
-              gap: 10,
-              width: '100%',
-              opacity: editorBusy ? 0.6 : 1,
-              transition: 'opacity 0.15s',
-            }}>
-              {AREA_KEYS.map(areaKey => {
-                const row = editorShelf.find(r => {
-                  const rArea = r.area === 'math' ? 'mathematics' : r.area;
-                  return rArea === areaKey;
-                });
-                const areaLabel = getAreaLabel(areaKey, locale);
-                if (!row) {
-                  // Empty area — show a soft "+ add" affordance per area.
-                  return (
-                    <button
-                      key={`empty-${areaKey}`}
-                      onClick={() => onOpenAddCustom(areaKey)}
-                      style={{
-                        padding: '12px 18px',
-                        borderRadius: 14,
-                        background: 'transparent',
-                        border: '1px dashed rgba(255,255,255,0.18)',
-                        color: 'rgba(255,255,255,0.45)',
-                        fontSize: 13,
-                        fontFamily: "'Inter', -apple-system, sans-serif",
-                        textAlign: 'left',
-                        cursor: 'pointer',
-                      }}
-                    >
-                      + {areaLabel}
-                    </button>
-                  );
-                }
+          {/* Shelf rows — ALWAYS render the 5 area slots in canonical order so
+              the teacher always has an entry point to add custom works, even
+              when /onboard didn't seed anything (e.g. "new" experience level or
+              the teacher didn't mention specific works). Filled rows show as
+              the dashboard would show them; empty rows show a brand-emerald
+              dashed "+ {Area}" affordance. */}
+          <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 10,
+            width: '100%',
+            opacity: editorBusy ? 0.6 : 1,
+            transition: 'opacity 0.15s',
+          }}>
+            {AREA_KEYS.map(areaKey => {
+              const row = editorShelf.find(r => {
+                const rArea = r.area === 'math' ? 'mathematics' : r.area;
+                return rArea === areaKey;
+              });
+              const areaLabel = getAreaLabel(areaKey, locale);
+              if (!row) {
+                // Empty area — brand-emerald dashed affordance, taps open the
+                // picker for that area so the teacher can add a custom work.
                 return (
                   <button
-                    key={`${row.work_name}-${row.area}`}
-                    onClick={() => onTapShelfRow(areaKey, row.work_name)}
+                    key={`empty-${areaKey}`}
+                    onClick={() => onOpenAddCustom(areaKey)}
                     disabled={editorBusy}
                     style={{
                       padding: '14px 20px',
                       borderRadius: 14,
-                      background: 'rgba(167,243,208,0.06)',
-                      border: '1px solid rgba(167,243,208,0.22)',
+                      background: 'rgba(52,211,153,0.04)',
+                      border: '1.5px dashed rgba(52,211,153,0.30)',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'space-between',
@@ -1433,45 +1416,89 @@ export default function VoiceOnboardingPage() {
                         {areaLabel}
                       </span>
                       <span style={{
-                        fontSize: 16,
-                        color: '#e6fff4',
+                        fontSize: 15,
+                        color: 'rgba(167,243,208,0.85)',
                         textAlign: 'left',
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
                       }}>
-                        {row.work_name}
+                        {t('voiceOnboarding.shelfEditor.addCustom')}
                       </span>
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
-                      <span style={{
-                        fontSize: 12,
-                        color: '#a7f3d0',
-                        padding: '4px 12px',
-                        background: 'rgba(167,243,208,0.10)',
-                        border: '1px solid rgba(167,243,208,0.25)',
-                        borderRadius: 999,
-                        textTransform: 'capitalize',
-                        whiteSpace: 'nowrap',
-                      }}>
-                        {row.status}
-                      </span>
-                      <span style={{
-                        fontSize: 11,
-                        color: 'rgba(255,255,255,0.35)',
-                        whiteSpace: 'nowrap',
-                      }}>
-                        {t('voiceOnboarding.shelfEditor.tapToSwap')}
-                      </span>
-                    </div>
+                    <span style={{
+                      fontSize: 22,
+                      color: 'rgba(167,243,208,0.7)',
+                      lineHeight: 1,
+                      paddingRight: 4,
+                    }}>
+                      +
+                    </span>
                   </button>
                 );
-              })}
-            </div>
-          ) : (
-            <p style={{ ...bodyStyle, fontSize: 14, color: 'rgba(255,255,255,0.55)' }}>
-              {t('voiceOnboarding.shelfEditor.empty')}
-            </p>
-          )}
+              }
+              return (
+                <button
+                  key={`${row.work_name}-${row.area}`}
+                  onClick={() => onTapShelfRow(areaKey, row.work_name)}
+                  disabled={editorBusy}
+                  style={{
+                    padding: '14px 20px',
+                    borderRadius: 14,
+                    background: 'rgba(167,243,208,0.06)',
+                    border: '1px solid rgba(167,243,208,0.22)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    gap: 12,
+                    cursor: 'pointer',
+                    textAlign: 'left',
+                    width: '100%',
+                    fontFamily: "'Inter', -apple-system, sans-serif",
+                  }}
+                >
+                  <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minWidth: 0 }}>
+                    <span style={{
+                      fontSize: 11,
+                      letterSpacing: 1.4,
+                      textTransform: 'uppercase',
+                      color: 'rgba(255,255,255,0.45)',
+                      marginBottom: 4,
+                    }}>
+                      {areaLabel}
+                    </span>
+                    <span style={{
+                      fontSize: 16,
+                      color: '#e6fff4',
+                      textAlign: 'left',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                    }}>
+                      {row.work_name}
+                    </span>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
+                    <span style={{
+                      fontSize: 12,
+                      color: '#a7f3d0',
+                      padding: '4px 12px',
+                      background: 'rgba(167,243,208,0.10)',
+                      border: '1px solid rgba(167,243,208,0.25)',
+                      borderRadius: 999,
+                      textTransform: 'capitalize',
+                      whiteSpace: 'nowrap',
+                    }}>
+                      {row.status}
+                    </span>
+                    <span style={{
+                      fontSize: 11,
+                      color: 'rgba(255,255,255,0.35)',
+                      whiteSpace: 'nowrap',
+                    }}>
+                      {t('voiceOnboarding.shelfEditor.tapToSwap')}
+                    </span>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
 
           {/* Confirm + add custom (in another area) */}
           <div style={{ display: 'flex', gap: 12, marginTop: 32, justifyContent: 'center', flexWrap: 'wrap' }}>
