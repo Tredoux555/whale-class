@@ -4,13 +4,16 @@ import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { AREA_CONFIG } from '@/lib/montree/types';
 import { normalizeArea } from '@/components/montree/shared/AreaBadge';
 import { useI18n } from '@/lib/montree/i18n';
+import { getLocalizedWorkName } from '@/lib/montree/i18n/db-helpers';
+import { getAreaLabel } from '@/lib/montree/i18n/area-labels';
 
-interface WorkItem {
+// Accept any DB-shape work — we read locale-suffixed fields generically.
+type WorkItem = Record<string, unknown> & {
   id?: string;
   name: string;
   name_chinese?: string;
   area_id?: string;
-}
+};
 
 interface SearchResult {
   work: WorkItem;
@@ -35,7 +38,7 @@ export default function WorkSearchBar({
   placeholder: placeholderProp,
   maxResults = 8,
 }: WorkSearchBarProps) {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const placeholder = placeholderProp || t('weekview.findWork');
   const [query, setQuery] = useState('');
   const [debouncedQuery, setDebouncedQuery] = useState('');
@@ -50,7 +53,11 @@ export default function WorkSearchBar({
     return () => clearTimeout(timer);
   }, [query]);
 
-  // Search across all areas
+  // Search across all areas. Matches against the English `name` AND the
+  // teacher's localized name (whatever the current locale is). This means a
+  // Spanish teacher can type either "Pink Tower" or "Torre Rosa" and find the
+  // same work. We DO NOT match against every locale's name simultaneously —
+  // only the active locale's name + the canonical English name.
   const results = useMemo<SearchResult[]>(() => {
     if (!debouncedQuery.trim()) return [];
     const q = debouncedQuery.toLowerCase();
@@ -59,16 +66,18 @@ export default function WorkSearchBar({
     for (const [areaKey, works] of Object.entries(curriculum)) {
       const normalized = normalizeArea(areaKey);
       const config = AREA_CONFIG[normalized] || { name: areaKey, icon: '?', color: '#888' };
+      const localizedAreaName = getAreaLabel(normalized, locale);
 
       for (const work of works) {
+        const localizedName = getLocalizedWorkName(work as Record<string, unknown>, locale);
         if (
           work.name.toLowerCase().includes(q) ||
-          (work.name_chinese && work.name_chinese.toLowerCase().includes(q))
+          localizedName.toLowerCase().includes(q)
         ) {
           matches.push({
             work,
             areaKey: normalized,
-            areaName: config.name,
+            areaName: localizedAreaName,
             areaColor: config.color,
             areaIcon: config.icon,
           });
@@ -77,7 +86,7 @@ export default function WorkSearchBar({
       }
     }
     return matches;
-  }, [debouncedQuery, curriculum, maxResults]);
+  }, [debouncedQuery, curriculum, maxResults, locale]);
 
   // Close on click outside
   useEffect(() => {
@@ -175,18 +184,17 @@ export default function WorkSearchBar({
                   >
                     {result.areaIcon}
                   </span>
-                  {/* Work info */}
+                  {/* Work info — single language only (the teacher's locale).
+                      Previously we rendered name_chinese as a subtitle on EVERY
+                      result regardless of locale, which caused Chinese to bleed
+                      into English/Spanish/German UIs. Locale separation is
+                      strictly enforced now. */}
                   <div className="min-w-0 flex-1">
                     <div className="text-sm font-medium text-gray-800 truncate">
-                      {result.work.name}
+                      {getLocalizedWorkName(result.work as Record<string, unknown>, locale)}
                     </div>
-                    {result.work.name_chinese && (
-                      <div className="text-xs text-gray-400 truncate">
-                        {result.work.name_chinese}
-                      </div>
-                    )}
                   </div>
-                  {/* Area label */}
+                  {/* Area label — also localized */}
                   <span className="text-[10px] text-gray-400 flex-shrink-0">
                     {result.areaName}
                   </span>
