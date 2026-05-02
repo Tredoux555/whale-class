@@ -303,6 +303,20 @@ export default function DashboardPage() {
     return <DashboardSkeleton />;
   }
 
+  // Hold the skeleton while the pending-children probe is in flight.
+  // Without this, teachers with un-onboarded children would see the
+  // dashboard flicker into view for ~100-300ms before the choice screen
+  // takes over. Only applies when we're actually going to probe (teacher,
+  // children present, feature enabled, no skip param).
+  const willProbe =
+    !isParent &&
+    children.length > 0 &&
+    isEnabled('tell_guru_onboarding') &&
+    searchParams.get('skipOnboarding') !== '1';
+  if (willProbe && pendingOnboardingCount === null) {
+    return <DashboardSkeleton />;
+  }
+
   // Two-path onboarding gate. When pending children exist and the teacher
   // hasn't already chosen the photo path, present the choice as a clean
   // full-screen takeover. They go either to voice onboarding (router.push)
