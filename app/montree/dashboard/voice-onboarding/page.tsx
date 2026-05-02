@@ -19,6 +19,7 @@ import { useRouter } from 'next/navigation';
 import { useI18n } from '@/lib/montree/i18n';
 import { montreeApi } from '@/lib/montree/api';
 import { getProxyUrl } from '@/lib/montree/media/proxy-url';
+import MontreeLogo from '@/components/montree/MonteeLogo';
 
 type Stage =
   | 'loading'
@@ -663,11 +664,10 @@ export default function VoiceOnboardingPage() {
           </span>
         </div>
 
-      {/* Idle / Recording / Transcribing / Processing — all keep the same shell so
-          the user never sees the screen "vanish" between hitting stop and the review.
-          The transcript stays visible and a clear processing indicator replaces the
-          stop button. */}
-      {(stage === 'idle' || stage === 'recording' || stage === 'transcribing' || stage === 'processing') && (
+      {/* Idle / Recording — child name + prompts + mic + (live transcript while recording).
+          On stop, this whole shell unmounts and the dedicated Processing screen below
+          takes over: clean Montree logo + "Processing", no transcript visible. */}
+      {(stage === 'idle' || stage === 'recording') && (
         <div style={{ ...centerStyle, maxWidth: 520, padding: '0 28px' }}>
           {currentChild.photo_url ? (
             <div style={avatarStyle}>
@@ -748,36 +748,9 @@ export default function VoiceOnboardingPage() {
             </>
           )}
 
-          {/* Processing indicator — replaces the stop button after stop is pressed.
-              Keeps the live transcript visible so the user sees what they said while
-              the system works on it. */}
-          {(stage === 'transcribing' || stage === 'processing') && (
-            <>
-              <div style={{ marginTop: 32 }}>
-                <p style={{ fontSize: 13, color: 'rgba(167,243,208,0.85)', letterSpacing: 1.5, textTransform: 'uppercase' }}>
-                  {stage === 'transcribing' ? 'Transcribing' : 'Putting it all together'}
-                </p>
-                <p style={{ fontSize: 36, color: '#34d399', fontFamily: 'monospace', marginTop: 8 }}>
-                  {formatTime(recordingTime)}
-                </p>
-              </div>
-              <div style={{
-                marginTop: 28, width: 96, height: 96, borderRadius: '50%',
-                background: 'rgba(52,211,153,0.18)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                boxShadow: '0 0 32px 8px rgba(52,211,153,0.30)',
-              }}>
-                <Spinner />
-              </div>
-              <p style={{ ...bodyStyle, marginTop: 16, fontSize: 14, color: 'rgba(255,255,255,0.7)' }}>
-                {t('voiceOnboarding.processing', { name: firstName })}
-              </p>
-            </>
-          )}
-
-          {/* Live transcript — appears during recording AND stays visible during processing
-              so the teacher can see exactly what was captured */}
-          {(stage === 'recording' || stage === 'transcribing' || stage === 'processing') && (
+          {/* Live transcript — only while recording. On stop, this unmounts and the
+              dedicated processing screen takes over (see below). */}
+          {stage === 'recording' && (
             liveText ? (
               <div style={{
                 marginTop: 28,
@@ -801,7 +774,7 @@ export default function VoiceOnboardingPage() {
                   {liveText}
                 </p>
               </div>
-            ) : stage === 'recording' ? (
+            ) : (
               <p style={{ ...bodyStyle, marginTop: 16, fontSize: 13, fontStyle: 'italic', color: '#a7f3d0' }}>
                 {recordingTime < 15
                   ? t('voiceOnboarding.recording.encourageEarly')
@@ -809,7 +782,7 @@ export default function VoiceOnboardingPage() {
                     ? t('voiceOnboarding.recording.encourageMid')
                     : t('voiceOnboarding.recording.encourageLate')}
               </p>
-            ) : null
+            )
           )}
 
           {/* Skip — only available when idle */}
@@ -821,8 +794,53 @@ export default function VoiceOnboardingPage() {
         </div>
       )}
 
-      {/* Transcribing + Processing are now rendered inline within the recording shell
-          above (see "Processing indicator" block) so the transcript stays visible. */}
+      {/* Processing — clean takeover screen with the Montree logo.
+          On stop, the recording shell (transcript, prompts, mic) all unmounts.
+          This screen is what the teacher sees while transcribe + Sonnet are running.
+          When the summary is ready, stage flips to 'review'. */}
+      {(stage === 'transcribing' || stage === 'processing') && (
+        <div style={{
+          ...centerStyle,
+          gap: 28,
+        }}>
+          <div style={{
+            position: 'relative',
+            width: 120,
+            height: 120,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}>
+            {/* Pulsing emerald glow ring around the logo */}
+            <div style={{
+              position: 'absolute',
+              inset: 0,
+              borderRadius: 24,
+              boxShadow: '0 0 60px 12px rgba(52,211,153,0.45)',
+              animation: 'voiceonb-glow 2s ease-in-out infinite',
+            }} />
+            <MontreeLogo size={120} showBackground={true} />
+          </div>
+          <p style={{
+            fontFamily: "'Lora', Georgia, serif",
+            fontSize: 28,
+            fontWeight: 500,
+            color: '#fff',
+            margin: 0,
+            letterSpacing: 0.3,
+          }}>
+            Processing
+          </p>
+          <p style={{
+            ...bodyStyle,
+            fontSize: 14,
+            color: 'rgba(255,255,255,0.55)',
+            margin: 0,
+          }}>
+            {t('voiceOnboarding.processing', { name: firstName })}
+          </p>
+        </div>
+      )}
 
       {/* Review */}
       {stage === 'review' && result && (
@@ -890,6 +908,10 @@ export default function VoiceOnboardingPage() {
         @keyframes voiceonb-pulse {
           0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.55); }
           50% { box-shadow: 0 0 0 24px rgba(239, 68, 68, 0); }
+        }
+        @keyframes voiceonb-glow {
+          0%, 100% { box-shadow: 0 0 50px 8px rgba(52,211,153,0.35); transform: scale(1); }
+          50%      { box-shadow: 0 0 80px 18px rgba(52,211,153,0.65); transform: scale(1.04); }
         }
       `}</style>
       {/* Off-centre radial glow — matches dashboard aesthetic */}
