@@ -3858,4 +3858,12 @@ export const nl: Record<string, string> = {
   'voiceOnboarding.review.unmatchedHeading': 'Ik heb enkele werken opgemerkt die nog niet in uw curriculum voorkomen —',
   'voiceOnboarding.review.addToCurriculum': 'Aan curriculum toevoegen',
   'voiceOnboarding.review.added': 'Toegevoegd',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'workPicker.addCustomWork': 'Een aangepast werk toevoegen',
+  'workPicker.addCustomWorkSubtitle': 'Voor werken die niet in het standaardcurriculum voorkomen',
+  'workPicker.customWorkPrompt': 'Wat is de naam van het {area}-werk?',
+  'workPicker.customWorkPlaceholder': 'bijv. Regenboog Stapelblokken',
+  'workPicker.saveCustomWork': 'Toevoegen aan curriculum',
+  'workPicker.adding': 'Toevoegen...',
 };

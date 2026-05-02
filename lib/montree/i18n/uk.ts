@@ -3855,4 +3855,12 @@ export const uk: Record<string, string> = {
   'voiceOnboarding.review.unmatchedHeading': 'Я помітив(-ла) кілька робіт, які ще не в Вашій навчальній програмі —',
   'voiceOnboarding.review.addToCurriculum': 'Додати до навчальної програми',
   'voiceOnboarding.review.added': 'Додано',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'workPicker.addCustomWork': 'Додати власну роботу',
+  'workPicker.addCustomWorkSubtitle': 'Для робіт, які не входять в стандартну програму',
+  'workPicker.customWorkPrompt': 'Як називається робота з {area}?',
+  'workPicker.customWorkPlaceholder': 'напр. Веселкові блоки для укладання',
+  'workPicker.saveCustomWork': 'Додати до програми',
+  'workPicker.adding': 'Додавання...',
 };

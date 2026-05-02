@@ -3855,4 +3855,12 @@ export const ru: Record<string, string> = {
   'voiceOnboarding.review.unmatchedHeading': 'Я заметил несколько работ, которые еще не входят в Вашу программу —',
   'voiceOnboarding.review.addToCurriculum': 'Добавить в программу',
   'voiceOnboarding.review.added': 'Добавлено',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'workPicker.addCustomWork': 'Добавить пользовательскую работу',
+  'workPicker.addCustomWorkSubtitle': 'Для работ, не включённых в стандартную программу',
+  'workPicker.customWorkPrompt': 'Как называется эта работа по {area}?',
+  'workPicker.customWorkPlaceholder': 'например, Радужные кубики',
+  'workPicker.saveCustomWork': 'Добавить в программу',
+  'workPicker.adding': 'Добавление...',
 };

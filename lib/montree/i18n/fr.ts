@@ -3858,4 +3858,12 @@ export const fr: Record<string, string> = {
   'voiceOnboarding.review.unmatchedHeading': 'J\'ai remarqué quelques activités qui ne sont pas encore dans votre programme —',
   'voiceOnboarding.review.addToCurriculum': 'Ajouter au programme',
   'voiceOnboarding.review.added': 'Ajouté',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'workPicker.addCustomWork': 'Ajouter un travail personnalisé',
+  'workPicker.addCustomWorkSubtitle': 'Pour les travaux ne figurant pas au programme standard',
+  'workPicker.customWorkPrompt': 'Quel est le nom du travail en {area} ?',
+  'workPicker.customWorkPlaceholder': 'par ex. Blocs d\'empilement arc-en-ciel',
+  'workPicker.saveCustomWork': 'Ajouter au programme',
+  'workPicker.adding': 'Ajout en cours...',
 };

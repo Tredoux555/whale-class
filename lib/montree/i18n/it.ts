@@ -3858,4 +3858,12 @@ export const it: Record<string, string> = {
   'voiceOnboarding.review.unmatchedHeading': 'Ho notato alcuni lavori che non sono ancora nel Suo curriculum —',
   'voiceOnboarding.review.addToCurriculum': 'Aggiungi al curriculum',
   'voiceOnboarding.review.added': 'Aggiunto',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'workPicker.addCustomWork': 'Aggiungi un lavoro personalizzato',
+  'workPicker.addCustomWorkSubtitle': 'Per i lavori non inclusi nel curriculum standard',
+  'workPicker.customWorkPrompt': 'Qual è il nome del lavoro di {area}?',
+  'workPicker.customWorkPlaceholder': 'es. Blocchi Impilabili Arcobaleno',
+  'workPicker.saveCustomWork': 'Aggiungi al curriculum',
+  'workPicker.adding': 'Aggiunta in corso...',
 };
