@@ -335,22 +335,34 @@ export default function WorkWheelPicker({
           <div className="w-10" />
         </div>
 
-        {/* Search */}
-        <div className="mt-3 relative">
+        {/* Search — promoted to PRIMARY interaction. Teachers reach for the
+            keyboard before the wheel. Larger input, larger icon, brighter
+            focus ring, and an emerald glow when focused so it reads as the
+            most important element on the screen. */}
+        <div className="mt-4 relative">
           <input
             ref={searchInputRef}
             type="text"
             value={searchText}
             onChange={e => setSearchText(e.target.value)}
             placeholder={t('workWheel.typeToSearch')}
-            className="w-full px-4 py-2.5 pl-10 rounded-xl bg-white/8 text-white placeholder-white/30 border border-white/10 focus:outline-none focus:border-white/30 focus:bg-white/12 text-sm transition-colors"
+            className="w-full pl-14 pr-12 py-4 rounded-2xl bg-white/[0.10] text-white text-lg placeholder-white/40 border-[1.5px] border-white/15 focus:outline-none focus:border-emerald-400/70 focus:bg-white/[0.14] transition-all"
+            style={{
+              boxShadow: '0 0 0 0 rgba(52, 211, 153, 0.0)',
+            }}
+            onFocus={(e) => {
+              e.currentTarget.style.boxShadow = '0 0 0 4px rgba(52, 211, 153, 0.15), 0 8px 24px -8px rgba(52, 211, 153, 0.35)';
+            }}
+            onBlur={(e) => {
+              e.currentTarget.style.boxShadow = '0 0 0 0 rgba(52, 211, 153, 0.0)';
+            }}
           />
-          <svg className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/30" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+          <svg className="absolute left-4 top-1/2 -translate-y-1/2 text-white/55" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
             <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
           </svg>
           {searchText && (
-            <button onClick={() => setSearchText('')} className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 rounded-full bg-white/20 flex items-center justify-center">
-              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+            <button onClick={() => setSearchText('')} className="absolute right-3 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
             </button>
           )}
         </div>

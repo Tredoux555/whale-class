@@ -4030,6 +4030,7 @@ export const en = {
   'voiceOnboarding.recording.encourageLate': 'Wonderful detail.',
   'voiceOnboarding.transcribing': 'Listening to what you said about {name}...',
   'voiceOnboarding.processing': 'Putting it all together for {name}...',
+  'voiceOnboarding.processing.layingFoundation': 'Laying the foundation for {name}',
   'voiceOnboarding.review.title': 'Here\'s what I heard about {name}',
   'voiceOnboarding.review.confirm': 'That\'s right',
   'voiceOnboarding.review.tryAgain': 'Try again',

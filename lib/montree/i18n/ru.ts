@@ -3884,4 +3884,7 @@ export const ru: Record<string, string> = {
   'voiceOnboarding.shelfEditor.addCustom': '+ Добавить авторскую работу',
   'voiceOnboarding.shelfEditor.confirm': 'Отлично',
   'voiceOnboarding.shelfEditor.empty': 'Пока нет работ в фокусе. Добавьте авторскую работу, чтобы начать.',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'voiceOnboarding.processing.layingFoundation': 'Закладываем основу для {name}',
 };

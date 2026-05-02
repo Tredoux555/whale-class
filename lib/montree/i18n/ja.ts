@@ -3887,4 +3887,7 @@ export const ja: Record<string, string> = {
   'voiceOnboarding.shelfEditor.addCustom': '+ カスタム活動を追加',
   'voiceOnboarding.shelfEditor.confirm': '素晴らしいです',
   'voiceOnboarding.shelfEditor.empty': 'まだ焦点を当てた活動がありません。カスタム活動を追加して始めましょう。',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'voiceOnboarding.processing.layingFoundation': '{name}さまの基礎を築いています',
 };
