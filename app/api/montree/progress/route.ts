@@ -35,11 +35,15 @@ export async function GET(request: NextRequest) {
   }
 
   // --- SECURITY: Verify child belongs to this user's school ---
+  // We hoist classroomId out so the curriculum-localized-names query can join
+  // the parallel batch below instead of running sequentially after it.
+  let classroomId: string | undefined;
   try {
     const access = await verifyChildBelongsToSchool(childId, auth.schoolId);
     if (!access.allowed) {
       return NextResponse.json({ error: 'Access denied', ...EMPTY_RESPONSE }, { status: 403 });
     }
+    classroomId = access.classroomId;
   } catch {
     // If verification fails, return empty rather than leaking data
     return NextResponse.json(EMPTY_RESPONSE);
@@ -79,6 +83,13 @@ export async function GET(request: NextRequest) {
   progressQuery = progressQuery.order('updated_at', { ascending: false });
 
   // --- EXECUTE ALL QUERIES IN PARALLEL ---
+  // Index map (kept consistent with results unpacking below):
+  //   0 progress
+  //   1 focus works
+  //   2 extras
+  //   3 classroom curriculum (for localized names) — only if classroomId known
+  //   4 observations            (only if includeObservations)
+  //   5 work sessions / notes   (only if includeObservations)
   const queryPromises = [
     progressQuery,
     supabase
@@ -91,15 +102,36 @@ export async function GET(request: NextRequest) {
       .eq('child_id', childId),
   ];
 
+  // Curriculum localized names — moved into the parallel batch (used to be a
+  // sequential SELECT after the batch returned, costing 200-500ms on rows with
+  // 300+ works). Skipped when classroomId is missing (extremely rare — would
+  // mean the access check returned allowed without a classroom).
+  let curriculumQueryIndex = -1;
+  if (classroomId) {
+    curriculumQueryIndex = queryPromises.length;
+    queryPromises.push(
+      supabase
+        .from('montree_classroom_curriculum_works')
+        .select(buildLocalizedSelect('name'))
+        .eq('classroom_id', classroomId)
+    );
+  }
+
   // Add observation queries if requested
+  let obsQueryIndex = -1;
+  let notesQueryIndex = -1;
   if (includeObservations) {
+    obsQueryIndex = queryPromises.length;
     queryPromises.push(
       supabase
         .from('montree_behavioral_observations')
         .select('id, behavior_description, antecedent, consequence, environmental_notes, observed_at, time_of_day, activity_during')
         .eq('child_id', childId)
         .order('observed_at', { ascending: false })
-        .limit(50),
+        .limit(50)
+    );
+    notesQueryIndex = queryPromises.length;
+    queryPromises.push(
       supabase
         .from('montree_work_sessions')
         .select('id, work_name, area, notes, observed_at, teacher_id')
@@ -154,32 +186,39 @@ export async function GET(request: NextRequest) {
     }
   }
 
-  // Observations (optional)
+  // Observations (optional). Indices set above when the queries were pushed.
   let observations: unknown[] = [];
   let workNotes: unknown[] = [];
   if (includeObservations) {
-    const obsResult = results[3];
-    if (obsResult.status === 'fulfilled') {
-      const { data: obs, error: obsError } = obsResult.value;
-      if (obsError && process.env.NODE_ENV === 'development') {
-        console.warn('[PROGRESS API] Observation query error:', obsError.message);
+    if (obsQueryIndex >= 0) {
+      const obsResult = results[obsQueryIndex];
+      if (obsResult.status === 'fulfilled') {
+        const { data: obs, error: obsError } = obsResult.value;
+        if (obsError && process.env.NODE_ENV === 'development') {
+          console.warn('[PROGRESS API] Observation query error:', obsError.message);
+        }
+        observations = obs || [];
       }
-      observations = obs || [];
     }
 
-    const notesResult = results[4];
-    if (notesResult.status === 'fulfilled') {
-      const { data: sessions, error: notesError } = notesResult.value;
-      if (notesError && process.env.NODE_ENV === 'development') {
-        console.warn('[PROGRESS API] Work notes query error:', notesError.message);
+    if (notesQueryIndex >= 0) {
+      const notesResult = results[notesQueryIndex];
+      if (notesResult.status === 'fulfilled') {
+        const { data: sessions, error: notesError } = notesResult.value;
+        if (notesError && process.env.NODE_ENV === 'development') {
+          console.warn('[PROGRESS API] Work notes query error:', notesError.message);
+        }
+        workNotes = sessions || [];
       }
-      workNotes = sessions || [];
     }
   }
 
-  // --- FETCH DB CHINESE + SPANISH NAMES (classroom-specific, covers custom works) ---
-  // Build name→localized maps from the classroom curriculum for works that
-  // the static JSON doesn't cover (custom works, works added after static export).
+  // --- BUILD DB-SOURCED LOCALIZED NAME MAPS ---
+  // Used to be a sequential SELECT-child-then-SELECT-curriculum after the
+  // parallel batch (200-500ms on classrooms with hundreds of works). The
+  // curriculum SELECT is now part of the parallel batch above; we just unpack
+  // it here. Skipped when classroomId was unavailable (curriculumQueryIndex
+  // is -1) or when the query failed.
   const dbChineseMap = new Map<string, string>();
   const dbSpanishMap = new Map<string, string>();
   const dbDeMap = new Map<string, string>();
@@ -191,22 +230,10 @@ export async function GET(request: NextRequest) {
   const dbKoMap = new Map<string, string>();
   const dbUkMap = new Map<string, string>();
   const dbRuMap = new Map<string, string>();
-  try {
-    // Get child's classroom_id
-    const { data: childData } = await supabase
-      .from('montree_children')
-      .select('classroom_id')
-      .eq('id', childId)
-      .maybeSingle();
-
-    if (childData?.classroom_id) {
-      // SELECT auto-derives locale columns from SUPPORTED_LOCALES — adding a
-      // new locale to locales.ts extends this query with no edit here.
-      const { data: currWorks } = await supabase
-        .from('montree_classroom_curriculum_works')
-        .select(buildLocalizedSelect('name'))
-        .eq('classroom_id', childData.classroom_id);
-
+  if (curriculumQueryIndex >= 0) {
+    const curriculumResult = results[curriculumQueryIndex];
+    if (curriculumResult.status === 'fulfilled') {
+      const { data: currWorks } = curriculumResult.value;
       // Row type is dynamic because the SELECT is built at runtime, so we
       // cast to a permissive local shape. Each `name_<locale>` column is
       // optional and read defensively.
@@ -226,10 +253,11 @@ export async function GET(request: NextRequest) {
         if (w.name_uk) dbUkMap.set(key, w.name_uk);
         if (w.name_ru) dbRuMap.set(key, w.name_ru);
       }
+      // end for-loop over LocalizedWorkRow
     }
-  } catch {
-    // Non-fatal — static enrichment will still work
+    // end if (curriculumResult.status === 'fulfilled')
   }
+  // end if (curriculumQueryIndex >= 0)
 
   // --- ADD FLAGS AND ENRICH ONCE ---
   // Combine flags and enrich in a single pass
