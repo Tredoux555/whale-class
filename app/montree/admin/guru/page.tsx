@@ -529,25 +529,59 @@ export default function PrincipalAdminGuruPage() {
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-200px)] bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 rounded-lg overflow-hidden">
+    <div
+      className="flex flex-col h-[calc(100vh-160px)] rounded-2xl overflow-hidden"
+      style={{
+        background: 'rgba(8,20,12,0.55)',
+        backdropFilter: 'blur(18px)',
+        border: '1px solid rgba(52,211,153,0.18)',
+      }}
+    >
       {/* Header */}
-      <div className="border-b border-slate-700 bg-slate-800/50 backdrop-blur p-4 flex items-center justify-between">
+      <div
+        className="p-5 flex items-center justify-between"
+        style={{
+          borderBottom: '1px solid rgba(52,211,153,0.15)',
+          background: 'rgba(7,18,12,0.50)',
+        }}
+      >
         <div>
-          <h2 className="text-xl font-bold text-white">
-            🧠 Admin Guru
+          <h2
+            style={{
+              fontFamily: '"Lora", Georgia, serif',
+              fontSize: 22,
+              fontWeight: 500,
+              color: 'rgba(255,255,255,0.92)',
+              letterSpacing: -0.3,
+              margin: 0,
+            }}
+          >
+            Ask Guru
           </h2>
-          <p className="text-xs text-slate-400 mt-0.5">
+          <p
+            style={{
+              fontSize: 12,
+              color: 'rgba(52,211,153,0.65)',
+              marginTop: 4,
+              fontFamily: '"Inter", -apple-system, sans-serif',
+            }}
+          >
             {schoolName
-              ? `AI copilot for ${schoolName}`
-              : 'School operations copilot'}
+              ? `Your school advisor for ${schoolName}`
+              : 'Your school advisor'}
           </p>
         </div>
         {messages.length > 0 && (
           <button
             onClick={handleClearChat}
-            className="px-3 py-1.5 text-xs bg-slate-700 hover:bg-slate-600 text-slate-300 rounded font-medium"
+            className="px-3 py-1.5 text-xs rounded-full font-medium transition-colors"
+            style={{
+              background: 'rgba(52,211,153,0.10)',
+              color: 'rgba(52,211,153,0.85)',
+              border: '1px solid rgba(52,211,153,0.25)',
+            }}
           >
-            Clear Chat
+            Clear chat
           </button>
         )}
       </div>
@@ -660,7 +694,13 @@ export default function PrincipalAdminGuruPage() {
       </div>
 
       {/* Input */}
-      <div className="border-t border-slate-700 bg-slate-800/50 backdrop-blur p-4">
+      <div
+        className="p-4"
+        style={{
+          borderTop: '1px solid rgba(52,211,153,0.15)',
+          background: 'rgba(7,18,12,0.50)',
+        }}
+      >
         <form onSubmit={handleSubmit} className="flex gap-2">
           <input
             type="text"
@@ -668,13 +708,25 @@ export default function PrincipalAdminGuruPage() {
             onChange={(e) => setInput(e.target.value)}
             placeholder="Ask the Guru about your school..."
             disabled={loading}
-            className="flex-1 bg-slate-700 text-white placeholder-slate-400 rounded-lg px-4 py-2 border border-slate-600 focus:border-emerald-500 focus:outline-none disabled:opacity-50"
+            className="flex-1 rounded-full px-4 py-2.5 disabled:opacity-50 focus:outline-none"
+            style={{
+              background: 'rgba(0,0,0,0.30)',
+              color: 'rgba(255,255,255,0.92)',
+              border: '1px solid rgba(52,211,153,0.25)',
+              fontFamily: '"Inter", -apple-system, sans-serif',
+              fontSize: 14,
+            }}
           />
           {loading ? (
             <button
               type="button"
               onClick={handleCancel}
-              className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium"
+              className="px-4 py-2 rounded-full font-medium"
+              style={{
+                background: 'rgba(248,113,113,0.18)',
+                color: '#f87171',
+                border: '1px solid rgba(248,113,113,0.25)',
+              }}
             >
               Cancel
             </button>
@@ -682,7 +734,13 @@ export default function PrincipalAdminGuruPage() {
             <button
               type="submit"
               disabled={!input.trim() || loading}
-              className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-medium disabled:opacity-50 flex items-center gap-2"
+              className="px-5 py-2 rounded-full font-medium disabled:opacity-50 flex items-center gap-2"
+              style={{
+                background: '#34d399',
+                color: '#0a1a0f',
+                border: 'none',
+                fontWeight: 600,
+              }}
             >
               <SendHorizontal className="w-4 h-4" />
               Send
