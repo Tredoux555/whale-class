@@ -181,6 +181,75 @@ GMass campaigns A/C/D are historical. Campaign C sent 335 blank emails (Session 
 
 ---
 
+## RECENT STATUS (May 3, 2026)
+
+### ⚡ Session 82 — Quick Guide System Structural Fix (3x3x3 Audit) (May 3, 2026)
+
+**8 files changed locally. 0 commits pushed yet — ready for `git push origin main` when user is ready.** Applied the 3x3x3 audit methodology after user reported Quick Guide showing wrong language across multiple locales. What looked like a "stale state" bug turned out to be four structural defects layered on top of each other in the consumer code, while the data layer was actually correct.
+
+**The bug anatomy (in plain language):**
+
+The Quick Guide modal was reading from "phantom" TypeScript fields — `quick_guide_zh`, `materials_zh`, `direct_aims_zh`, `indirect_aims_zh` — that no migration ever created and no API ever populated. They were dead types from an early Chinese-first phase that the JSONB-cache architecture (migration 169 + 180-182) replaced. Plus the URL-builder caller in `[childId]/page.tsx` was hardcoded to `if (locale === 'zh' || locale === 'es') url += &locale=...`, silently shipping English to nine other locales (de/fr/pt/nl/it/ja/ko/uk/ru). Plus a third surface (`WorkDetailSheet.tsx` on the home view) wasn't passing the locale param at all. Plus the curriculum directory caller (`curriculum/page.tsx`) had its own Chinese-only filter.
+
+Per-locale UX before fix:
+- `en`: worked
+- `zh`: blank body — modal read phantom `quick_guide_zh` (undefined) instead of `quick_guide` (which the API had populated with Chinese)
+- `es`: worked (the only language that actually worked)
+- `de fr pt nl it ja ko uk ru`: English silently — locale never sent to API
+
+**The 3x3x3 method (preserved as user's standing methodology):**
+
+1. **3x RESEARCH** — Audit codebase, count patterns, classify types
+2. **3x PLAN** — Design architecture, write handoff, assess risks
+3. **3x INVESTIGATE** — Deep-read every target file, verify plan fits, map exact line numbers
+4. **3x BUILD** — Implement with audit cycles between rounds
+5. **3x AUDIT** — Fix cycle until 3 consecutive clean audits
+
+The methodology paid for itself this session. The initial "5 file targeted fix" pass declared "done," but a self-audit caught two more callers (`curriculum/page.tsx` and `WorkDetailSheet.tsx`) plus a runtime crash risk (Haiku's translation tool schema permitted `oneOf: [array, string]` for `materials` / `direct_aims`, so legacy JSONB rows could in theory store a string and crash `.map()`). After the self-audit, an **independent fresh agent** was spawned with no prior context to re-derive the bugs from symptoms — confirmed soundness and recommended the phantom-type cleanup as the final hardening step.
+
+**Files changed (8):**
+
+1. **`lib/montree/i18n/db-helpers.ts`** — added `getLocalizedGuideField<T>(work, field, locale)`. The canonical pattern: reads `work.guide_content_<locale>.<field>` (JSONB) with fallback to the English flat column. Use this for `quick_guide`, `materials`, `direct_aims`, `presentation_steps`, `control_of_error`, `why_it_matters`, `parent_description` from a curriculum work row.
+2. **`app/montree/dashboard/[childId]/page.tsx`** — replaced `if (locale === 'zh' || locale === 'es')` with `if (locale !== DEFAULT_LOCALE && SUPPORTED_LOCALES.includes(locale))`. Added imports.
+3. **`app/montree/dashboard/curriculum/page.tsx`** — same locale gate fix (was Chinese-only). Plus modal display name now uses `getLocalizedWorkName(work, locale)` so all 11 non-English locales show the right header (was `locale === 'zh' && chineseName ? chineseName : workName`).
+4. **`components/montree/child/QuickGuideModal.tsx`** — now reads `guideData?.quick_guide` and `guideData?.materials` directly. The API merges JSONB into flat fields server-side; reading `quick_guide_zh` / `materials_zh` was reading phantom fields that always returned undefined. `locale` removed from `useI18n()` destructure (no longer needed).
+5. **`components/montree/child/FullDetailsModal.tsx`** — same fix for 5 fields: `quick_guide`, `direct_aims`, `materials`, `control_of_error`, `why_it_matters`.
+6. **`components/montree/curriculum/CurriculumWorkList.tsx`** — 7 read sites converted to use `getLocalizedGuideField()`. Added `Array.isArray()` guards via IIFE pattern around 3 array fields in case any legacy JSONB row stored a string. The YouTube fallback at line 310 was `!work.quick_guide` (English-only); now `!getLocalizedGuideField<string>(work, 'quick_guide', locale)`.
+7. **`components/montree/home/WorkDetailSheet.tsx`** — was passing **no locale param at all**. Now passes for any non-English supported locale. Added `locale` to useEffect dep array so it refetches if user switches language while modal is open.
+8. **`components/montree/curriculum/types.ts`** — phantom-field declarations deleted from `Work` (`direct_aims_zh`, `indirect_aims_zh`, `materials_zh`, `quick_guide_zh`) and from `QuickGuideData` (all 8 `_zh` fields). KEPT real columns (`name_chinese`, `parent_description_zh`, `why_it_matters_zh`, `control_of_error_zh` — populated by migration 182). Added typed `guide_content_<locale>?: Record<string, unknown>` for all 11 non-English locales for type support.
+
+**🚨 Architectural rules locked in this session (do NOT let future agents break these):**
+
+- **The `/works/guide` API merges `guide_content_<locale>` JSONB into the flat response fields.** It NEVER returns `_zh`-suffixed body fields. Consumers always read flat fields on the API response.
+- **`getLocalizedGuideField(work, field, locale)` is the canonical pattern** for translated guide-body content from a curriculum work row. Don't re-invent the lookup. Don't read from non-existent columns.
+- **There are NO `quick_guide_<locale>`, `materials_<locale>`, `direct_aims_<locale>`, `indirect_aims_<locale>`, `presentation_steps_<locale>`, `control_of_error_<locale>` columns.** Only `guide_content_<locale>` JSONB exists for guide-body content (since migration 169). The TS types no longer declare these as autocomplete options.
+- **`parent_description_<locale>`, `why_it_matters_<locale>`, `control_of_error_<locale>`, `name_<locale>` ARE real columns** (per migration 182). Read via `getLocalizedField()` — NOT `getLocalizedGuideField()` (which only knows about JSONB).
+- **Every caller of `/api/montree/works/guide` MUST pass `&locale=`** for any non-English supported locale. Use the `SUPPORTED_LOCALES.includes(locale)` gate. Validated callers post-fix: `[childId]/page.tsx`, `curriculum/page.tsx`, `ShelfView.tsx`, `WorkDetailSheet.tsx`.
+- **Defensive `Array.isArray()` checks before `.map()` on guide-body arrays.** Haiku's translation tool schema permitted `oneOf: [array, string]` for `materials` / `direct_aims`. Render-loop crashes are visible to the teacher.
+
+**Verification status:**
+- ✅ 5 phases × 3 rounds (RESEARCH/PLAN/INVESTIGATE/BUILD/AUDIT) complete.
+- ✅ Self-audit caught 2 missed callers (`curriculum/page.tsx`, `WorkDetailSheet.tsx`).
+- ✅ Independent fresh-agent audit confirmed soundness.
+- ✅ Phantom-field reads anywhere in codebase: zero (`grep` clean).
+- ✅ ESLint on all 8 changed files: zero new errors, zero new warnings (1 pre-existing `@ts-nocheck` error on `CurriculumWorkList.tsx`, 15 pre-existing warnings — all unchanged).
+- ⚠️ TypeScript full compile timed out at 30s in sandbox (codebase too large) — Railway `next build` will catch any remaining issues.
+- ✅ Production data populated for all 11 locales per CLAUDE.md Session 78 (migrations 180-182, all batch scripts ran).
+- ⏳ User to verify on Railway after deploy.
+
+**Adjacent issues flagged (NOT fixed this session):**
+- **`components/montree/home/ShelfView.tsx` lines 441, 602, 870** — work *name* display still uses `locale === 'zh' && work.chineseName ? work.chineseName : work.name`. Same TYPE B pattern but on names not guide content. Already on radar from CLAUDE.md Session 75's "TYPE B sweep across components" TODO.
+- **Reports routes (`weekly-wrap`, `send`, `preview`, `batch-narratives`)** — Chinese-only parent narratives. Already in carry-over priorities.
+
+**Handoff doc:** `docs/handoffs/SESSION_82_HANDOFF.md` — full file-by-file breakdown, the 3x3x3 method documented, architectural rules, adjacent issues, next-session priorities.
+
+**🚨 Next session priorities:**
+1. **🚨 Push to main + verify on Railway production** — open the dashboard with each locale (en/zh/es/de/fr/pt/nl/it/ja/ko/uk/ru), tap a focus work, verify Quick Guide body shows in the right language. Verify Full Details modal too. Verify curriculum directory and home shelf view's WorkDetailSheet.
+2. **ShelfView work-name TYPE B fix** — same pattern as the curriculum directory display-name fix this session. ~30 min, 3 sites.
+3. **Carry-overs from Session 81:** Update flow verification, Language Semester v7 polish, transcript FIFO cap, welcome script tone review, free-tier gate decision, 3 hot-lead Gmail drafts (Copenhagen / Paint Pots UK / Ardtona House UK), FAMM Argentina follow-up, welcome Тамі in Ukrainian, Resend domain verification.
+
+---
+
 ## RECENT STATUS (May 2–3, 2026)
 
 ### ⚡ Session 81 — Two-Path Onboarding + Voice Hardening + Critical 503/500 Fixes + Super Admin Restored + Language Semester v7 Port (May 2–3, 2026)

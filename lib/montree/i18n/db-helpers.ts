@@ -120,6 +120,49 @@ export function getLocalizedColumn(field: string, locale: string): string {
 }
 
 // ---------------------------------------------------------------------------
+// Guide field resolution (JSONB-backed)
+// ---------------------------------------------------------------------------
+
+/**
+ * Get a guide field (quick_guide, materials, presentation_steps, direct_aims, etc.)
+ * localized via the `guide_content_<locale>` JSONB column, with fallback to the
+ * English top-level column.
+ *
+ * Schema reminder: only English has flat columns (`quick_guide`, `materials`).
+ * Translated guide content lives inside `guide_content_<locale>` JSONB whose
+ * keys are SUFFIX-FREE (e.g. `{ quick_guide: "...", materials: [...] }`).
+ *
+ * There is NO `quick_guide_<locale>` or `materials_<locale>` column — anything
+ * that reads those is reading a phantom field. Use this helper instead.
+ *
+ * @example
+ *   getLocalizedGuideField(work, 'quick_guide', 'zh')
+ *   // → work.guide_content_zh.quick_guide ?? work.quick_guide
+ *
+ *   getLocalizedGuideField<string[]>(work, 'materials', 'es')
+ *   // → work.guide_content_es.materials ?? work.materials
+ */
+export function getLocalizedGuideField<T = unknown>(
+  work: Record<string, unknown>,
+  field: string,
+  locale: string,
+): T | undefined {
+  if (locale === DEFAULT_LOCALE) return work[field] as T | undefined;
+
+  const suffix = LOCALE_COLUMN_SUFFIX[locale as Locale];
+  if (suffix) {
+    const guideContent = work[`guide_content${suffix}`] as Record<string, unknown> | null | undefined;
+    if (guideContent && typeof guideContent === 'object') {
+      const val = guideContent[field];
+      if (val !== undefined && val !== null && val !== '') return val as T;
+    }
+  }
+
+  // Fall back to English column
+  return work[field] as T | undefined;
+}
+
+// ---------------------------------------------------------------------------
 // SELECT-list builders — auto-derive locale columns for Supabase queries
 // ---------------------------------------------------------------------------
 

@@ -64,16 +64,20 @@ export default function FullDetailsModal({
   guideData,
   loading,
 }: FullDetailsModalProps) {
-  const { t, locale } = useI18n();
+  const { t } = useI18n();
   if (!isOpen) {
     return null;
   }
 
-  const quickGuide = locale === 'zh' ? guideData?.quick_guide_zh : guideData?.quick_guide;
-  const directAims = locale === 'zh' ? guideData?.direct_aims_zh : guideData?.direct_aims;
-  const materials = locale === 'zh' ? guideData?.materials_zh : guideData?.materials;
-  const controlOfError = locale === 'zh' ? guideData?.control_of_error_zh : guideData?.control_of_error;
-  const whyItMatters = locale === 'zh' ? guideData?.why_it_matters_zh : guideData?.why_it_matters;
+  // Same fix as QuickGuideModal: the /works/guide API has already merged the
+  // matching `guide_content_<locale>` JSONB into these flat fields. The old
+  // `_zh`-suffixed reads pointed at phantom fields that no migration created
+  // and no API populates, which is why Chinese full-details were blank.
+  const quickGuide = guideData?.quick_guide;
+  const directAims = guideData?.direct_aims;
+  const materials = guideData?.materials;
+  const controlOfError = guideData?.control_of_error;
+  const whyItMatters = guideData?.why_it_matters;
 
   return (
     <div

@@ -11,6 +11,8 @@ import CurriculumWorkList from '@/components/montree/curriculum/CurriculumWorkLi
 import { Work, QuickGuideData } from '@/components/montree/curriculum/types';
 import { AREA_CONFIG } from '@/lib/montree/types';
 import { useI18n } from '@/lib/montree/i18n';
+import { SUPPORTED_LOCALES, DEFAULT_LOCALE } from '@/lib/montree/i18n/locales';
+import { getLocalizedWorkName } from '@/lib/montree/i18n/db-helpers';
 import AreaBadge from '@/components/montree/shared/AreaBadge';
 import WorkSearchBar from '@/components/montree/shared/WorkSearchBar';
 import GuruContextBubble from '@/components/montree/guru/GuruContextBubble';
@@ -156,9 +158,17 @@ export default function CurriculumPage() {
 
 
   // Open Full Details modal — fetch guide data from API
+  // chineseName is legacy; we resolve the localized display name from the
+  // full curriculum state via getLocalizedWorkName so every supported locale
+  // shows the right header text (not just Chinese).
   const openFullDetails = async (workName: string, chineseName?: string) => {
     setFullDetailsWork(workName);
-    setFullDetailsDisplayName(locale === 'zh' && chineseName ? chineseName : workName);
+    const matchedWork = curriculum.find((w) => w.name === workName) as Record<string, unknown> | undefined;
+    const localizedName = matchedWork ? getLocalizedWorkName(matchedWork, locale) : workName;
+    // Fall back: if locale is en, just use workName; if zh and we have the legacy
+    // `chineseName` arg but no match in curriculum state, honor it.
+    const displayName = localizedName || (locale === 'zh' && chineseName ? chineseName : workName);
+    setFullDetailsDisplayName(displayName);
     setFullDetailsLoading(true);
     setFullDetailsOpen(true);
     try {
@@ -166,7 +176,12 @@ export default function CurriculumPage() {
       let url = classroomId
         ? `/api/montree/works/guide?name=${encodeURIComponent(workName)}&classroom_id=${classroomId}`
         : `/api/montree/works/guide?name=${encodeURIComponent(workName)}`;
-      if (locale === 'zh') url += '&locale=zh';
+      // Pass locale for ANY non-English supported locale. The /works/guide API
+      // merges guide_content_<locale> JSONB into the flat response. Was hardcoded
+      // to zh-only before, silently shipping English to es/de/fr/pt/nl/it/ja/ko/uk/ru.
+      if (locale !== DEFAULT_LOCALE && (SUPPORTED_LOCALES as readonly string[]).includes(locale)) {
+        url += `&locale=${locale}`;
+      }
       const res = await fetch(url);
       if (!res.ok) throw new Error(`Guide fetch: ${res.status}`);
       const data = await res.json();

@@ -3,7 +3,7 @@
 
 import { useEffect, useState, useRef } from 'react';
 import { useI18n } from '@/lib/montree/i18n';
-import { getLocalizedWorkName, getLocalizedField } from '@/lib/montree/i18n/db-helpers';
+import { getLocalizedWorkName, getLocalizedField, getLocalizedGuideField } from '@/lib/montree/i18n/db-helpers';
 import { Work, AREA_COLORS } from './types';
 import AreaBadge from '../shared/AreaBadge';
 import { toast } from 'sonner';
@@ -281,7 +281,7 @@ function ExpandedWorkDetails({
 
         <div className="flex-1 min-w-0">
           {/* QUICK GUIDE */}
-          {(locale === 'zh' ? work.quick_guide_zh : work.quick_guide) && (
+          {getLocalizedGuideField<string>(work, 'quick_guide', locale) && (
             <div style={{ background: 'rgba(245,158,11,0.07)', border: '1px solid rgba(245,158,11,0.22)', borderRadius: 12, padding: 12 }}>
               <div className="flex items-center justify-between mb-1">
                 <p style={{ fontFamily: '"Inter", sans-serif', fontWeight: 700, color: '#f59e0b', fontSize: 12, margin: 0, display: 'flex', alignItems: 'center', gap: 4 }}>
@@ -297,7 +297,7 @@ function ExpandedWorkDetails({
                 </a>
               </div>
               <div style={{ fontFamily: '"Inter", sans-serif', fontSize: 12, color: 'rgba(255,255,255,0.75)' }}>
-                {(locale === 'zh' ? work.quick_guide_zh : work.quick_guide)?.split('\n').map((line, i) => (
+                {getLocalizedGuideField<string>(work, 'quick_guide', locale)?.split('\n').map((line, i) => (
                   <p key={i} style={{ lineHeight: 1.55, margin: '2px 0' }}>{line}</p>
                 ))}
               </div>
@@ -306,8 +306,8 @@ function ExpandedWorkDetails({
         </div>
       </div>
 
-      {/* Video button if no quick guide */}
-      {!work.quick_guide && (
+      {/* Video button if no quick guide (in current locale or English fallback) */}
+      {!getLocalizedGuideField<string>(work, 'quick_guide', locale) && (
         <a
           href={`https://youtube.com/results?search_query=${encodeURIComponent('montessori ' + work.name + ' presentation')}`}
           target="_blank"
@@ -347,38 +347,53 @@ function ExpandedWorkDetails({
 
       {/* Details Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        {(locale === 'zh' ? work.direct_aims_zh : work.direct_aims)?.length > 0 && (
-          <div>
-            <p style={{ fontFamily: '"Inter", sans-serif', fontWeight: 600, color: 'rgba(255,255,255,0.65)', fontSize: 12, marginBottom: 4, marginTop: 0 }}>🎯 {t('curriculum.directAims')}</p>
-            <ul style={{ margin: 0, padding: 0, listStyle: 'none' }}>
-              {(locale === 'zh' ? work.direct_aims_zh : work.direct_aims)?.map((aim: string, i: number) => (
-                <li key={i} style={{ fontFamily: '"Inter", sans-serif', fontSize: 12, color: 'rgba(255,255,255,0.55)', lineHeight: 1.5, marginBottom: 2 }}>• {aim}</li>
-              ))}
-            </ul>
-          </div>
-        )}
+        {(() => {
+          // Extract once + Array.isArray() guard. Some legacy JSONB rows may
+          // store these as a string instead of an array (Haiku's oneOf schema
+          // permitted both); without the guard, `.map()` would throw.
+          const directAims = getLocalizedGuideField<string[]>(work, 'direct_aims', locale);
+          if (!Array.isArray(directAims) || directAims.length === 0) return null;
+          return (
+            <div>
+              <p style={{ fontFamily: '"Inter", sans-serif', fontWeight: 600, color: 'rgba(255,255,255,0.65)', fontSize: 12, marginBottom: 4, marginTop: 0 }}>🎯 {t('curriculum.directAims')}</p>
+              <ul style={{ margin: 0, padding: 0, listStyle: 'none' }}>
+                {directAims.map((aim: string, i: number) => (
+                  <li key={i} style={{ fontFamily: '"Inter", sans-serif', fontSize: 12, color: 'rgba(255,255,255,0.55)', lineHeight: 1.5, marginBottom: 2 }}>• {aim}</li>
+                ))}
+              </ul>
+            </div>
+          );
+        })()}
 
-        {(locale === 'zh' ? work.indirect_aims_zh : work.indirect_aims)?.length > 0 && (
-          <div>
-            <p style={{ fontFamily: '"Inter", sans-serif', fontWeight: 600, color: 'rgba(255,255,255,0.65)', fontSize: 12, marginBottom: 4, marginTop: 0 }}>🌱 {t('curriculum.indirectAims')}</p>
-            <ul style={{ margin: 0, padding: 0, listStyle: 'none' }}>
-              {(locale === 'zh' ? work.indirect_aims_zh : work.indirect_aims)?.map((aim: string, i: number) => (
-                <li key={i} style={{ fontFamily: '"Inter", sans-serif', fontSize: 12, color: 'rgba(255,255,255,0.55)', lineHeight: 1.5, marginBottom: 2 }}>• {aim}</li>
-              ))}
-            </ul>
-          </div>
-        )}
+        {(() => {
+          const indirectAims = getLocalizedGuideField<string[]>(work, 'indirect_aims', locale);
+          if (!Array.isArray(indirectAims) || indirectAims.length === 0) return null;
+          return (
+            <div>
+              <p style={{ fontFamily: '"Inter", sans-serif', fontWeight: 600, color: 'rgba(255,255,255,0.65)', fontSize: 12, marginBottom: 4, marginTop: 0 }}>🌱 {t('curriculum.indirectAims')}</p>
+              <ul style={{ margin: 0, padding: 0, listStyle: 'none' }}>
+                {indirectAims.map((aim: string, i: number) => (
+                  <li key={i} style={{ fontFamily: '"Inter", sans-serif', fontSize: 12, color: 'rgba(255,255,255,0.55)', lineHeight: 1.5, marginBottom: 2 }}>• {aim}</li>
+                ))}
+              </ul>
+            </div>
+          );
+        })()}
 
-        {(locale === 'zh' ? work.materials_zh : work.materials)?.length > 0 && (
-          <div>
-            <p style={{ fontFamily: '"Inter", sans-serif', fontWeight: 600, color: 'rgba(255,255,255,0.65)', fontSize: 12, marginBottom: 4, marginTop: 0 }}>🧰 {t('curriculum.materials')}</p>
-            <ul style={{ margin: 0, padding: 0, listStyle: 'none' }}>
-              {(locale === 'zh' ? work.materials_zh : work.materials)?.map((item: string, i: number) => (
-                <li key={i} style={{ fontFamily: '"Inter", sans-serif', fontSize: 12, color: 'rgba(255,255,255,0.55)', lineHeight: 1.5, marginBottom: 2 }}>• {item}</li>
-              ))}
-            </ul>
-          </div>
-        )}
+        {(() => {
+          const materialsList = getLocalizedGuideField<string[]>(work, 'materials', locale);
+          if (!Array.isArray(materialsList) || materialsList.length === 0) return null;
+          return (
+            <div>
+              <p style={{ fontFamily: '"Inter", sans-serif', fontWeight: 600, color: 'rgba(255,255,255,0.65)', fontSize: 12, marginBottom: 4, marginTop: 0 }}>🧰 {t('curriculum.materials')}</p>
+              <ul style={{ margin: 0, padding: 0, listStyle: 'none' }}>
+                {materialsList.map((item: string, i: number) => (
+                  <li key={i} style={{ fontFamily: '"Inter", sans-serif', fontSize: 12, color: 'rgba(255,255,255,0.55)', lineHeight: 1.5, marginBottom: 2 }}>• {item}</li>
+                ))}
+              </ul>
+            </div>
+          );
+        })()}
 
         {work.prerequisites?.length > 0 && (
           <div>
@@ -406,9 +421,9 @@ function ExpandedWorkDetails({
             {t('curriculum.age')}: {work.age_range}
           </span>
         )}
-        {(locale === 'zh' ? work.control_of_error_zh : work.control_of_error) && (
+        {getLocalizedGuideField<string>(work, 'control_of_error', locale) && (
           <span style={{ fontFamily: '"Inter", sans-serif', fontSize: 11, padding: '4px 10px', background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.25)', borderRadius: 999, color: '#f59e0b' }}>
-            {t('curriculum.control')}: {locale === 'zh' ? work.control_of_error_zh : work.control_of_error}
+            {t('curriculum.control')}: {getLocalizedGuideField<string>(work, 'control_of_error', locale)}
           </span>
         )}
       </div>
