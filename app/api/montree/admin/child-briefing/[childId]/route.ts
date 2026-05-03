@@ -384,6 +384,7 @@ Cover, in this order:
 
 Rules:
 - Never invent observations, work names, dates, or teacher comments. Use only what's in the data below.
+- Only quote dates that appear verbatim in the data below, and only in the form they appear (YYYY-MM-DD). Don't paraphrase ("a few days ago"), don't compute relative dates.
 - If a category is empty, just skip it — don't say "we don't have data on this."
 - No medical claims. No diagnostic language.
 - No "the child" or "this student" — always the first name.
