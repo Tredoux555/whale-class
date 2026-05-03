@@ -1,7 +1,9 @@
 // components/montree/InvitePrincipalModal.tsx
-// Teacher-facing modal: invite your principal to view this classroom.
-// Posts to /api/montree/invite-principal which generates a code, creates
-// the principal account, and emails them a soft-pitch from hello@montree.xyz.
+// Teacher-facing modal: create a principal account for this classroom and
+// surface a 6-char login code the teacher hands off directly (SMS, WhatsApp,
+// in person). The auto-email step was retired — Resend setup on Railway is
+// the recurring blocker, and a code-on-screen + copy button is plenty to
+// share with one principal at a time.
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -32,8 +34,6 @@ interface InviteResult {
   code: string;
   email: string;
   name: string;
-  emailSent: boolean;
-  emailError?: string;
 }
 
 export default function InvitePrincipalModal({ isOpen, onClose }: Props) {
@@ -86,8 +86,6 @@ export default function InvitePrincipalModal({ isOpen, onClose }: Props) {
         code: data.principal.login_code,
         email: data.principal.email,
         name: data.principal.name,
-        emailSent: data.email?.sent ?? false,
-        emailError: data.email?.error,
       });
       setSubmitting(false);
     } catch (err) {
@@ -300,7 +298,7 @@ export default function InvitePrincipalModal({ isOpen, onClose }: Props) {
                     submitting || !name.trim() || !email.trim() ? 0.5 : 1,
                 }}
               >
-                {submitting ? 'Sending…' : 'Send invitation'}
+                {submitting ? 'Creating…' : 'Get their code'}
               </button>
             </div>
           </>
@@ -333,7 +331,7 @@ export default function InvitePrincipalModal({ isOpen, onClose }: Props) {
                 letterSpacing: -0.3,
               }}
             >
-              Invitation sent
+              Code created
             </h2>
             <p
               style={{
@@ -345,18 +343,9 @@ export default function InvitePrincipalModal({ isOpen, onClose }: Props) {
                 textAlign: 'center',
               }}
             >
-              {result.emailSent ? (
-                <>
-                  We've emailed <strong>{result.name}</strong> at{' '}
-                  <strong>{result.email}</strong> with their login code.
-                </>
-              ) : (
-                <>
-                  We've created an account for <strong>{result.name}</strong>{' '}
-                  but the email didn't go through. You can share their code
-                  manually:
-                </>
-              )}
+              Share this code with <strong>{result.name}</strong>. They'll log
+              in at <strong>montree.xyz</strong> with it and land straight on
+              your classroom.
             </p>
 
             <div
@@ -425,25 +414,6 @@ export default function InvitePrincipalModal({ isOpen, onClose }: Props) {
                 )}
               </button>
             </div>
-
-            {!result.emailSent && result.emailError && (
-              <div
-                style={{
-                  padding: 12,
-                  background: 'rgba(232,201,106,0.10)',
-                  border: '1px solid rgba(232,201,106,0.25)',
-                  borderRadius: 10,
-                  color: T.gold,
-                  fontSize: 12,
-                  lineHeight: 1.5,
-                  marginBottom: 14,
-                }}
-              >
-                The email didn't deliver: {result.emailError}. The principal
-                account was created — share the code with them directly and
-                they can log in at montree.xyz.
-              </div>
-            )}
 
             <button
               onClick={onClose}
