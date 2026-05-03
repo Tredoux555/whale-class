@@ -81,6 +81,7 @@ export async function GET(request: NextRequest) {
           .from('montree_media')
           .select('child_id')
           .in('classroom_id', classroomIds)
+          .eq('teacher_confirmed', true)
           .gte('created_at', eightDaysAgo),
       ]);
       children = childrenRes.data || [];
