@@ -80,12 +80,18 @@ export default function QuickGuideModal({
   loading,
   onOpenFullDetails,
 }: QuickGuideModalProps) {
-  const { t, locale } = useI18n();
+  const { t } = useI18n();
 
   if (!isOpen) return null;
 
-  const guideText = locale === 'zh' ? guideData?.quick_guide_zh : guideData?.quick_guide;
-  const materials = locale === 'zh' ? guideData?.materials_zh : guideData?.materials;
+  // The /works/guide API merges `guide_content_<locale>` JSONB into the flat
+  // response fields, so `quick_guide` and `materials` already contain
+  // locale-correct content. Reading `quick_guide_zh` / `materials_zh` (as this
+  // file used to) was reading phantom fields that no migration ever created
+  // and the API never returns — that's why Chinese guide content was always
+  // blank, and other locales fell through to English.
+  const guideText = guideData?.quick_guide;
+  const materials = guideData?.materials;
   const hasGuide = !!guideText;
 
   return (

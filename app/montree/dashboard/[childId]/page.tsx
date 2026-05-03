@@ -13,6 +13,7 @@ import { toast, Toaster } from 'sonner';
 import { getSession, isHomeschoolParent } from '@/lib/montree/auth';
 import { AREA_CONFIG } from '@/lib/montree/types';
 import { useI18n } from '@/lib/montree/i18n';
+import { SUPPORTED_LOCALES, DEFAULT_LOCALE } from '@/lib/montree/i18n/locales';
 import { montreeApi } from '@/lib/montree/api';
 import { mergeWorksWithCurriculum } from '@/lib/montree/work-matching';
 import { WeekViewSkeleton } from '@/components/montree/Skeletons';
@@ -249,8 +250,12 @@ export default function WeekPage() {
       let url = classroomId
         ? `/api/montree/works/guide?name=${encodeURIComponent(workName)}&classroom_id=${classroomId}`
         : `/api/montree/works/guide?name=${encodeURIComponent(workName)}`;
-      // Pass locale for translated guide content
-      if (locale === 'zh' || locale === 'es') {
+      // Pass locale for translated guide content. The API merges the matching
+      // `guide_content_<locale>` JSONB into the flat response fields. We pass
+      // for EVERY non-English supported locale — anything else falls back to
+      // English server-side. (Earlier this was hardcoded to zh/es only, which
+      // silently shipped English to de/fr/pt/nl/it/ja/ko/uk/ru users.)
+      if (locale !== DEFAULT_LOCALE && (SUPPORTED_LOCALES as readonly string[]).includes(locale)) {
         url += `&locale=${locale}`;
       }
       const res = await montreeApi(url);

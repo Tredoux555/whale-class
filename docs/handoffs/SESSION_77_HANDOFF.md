@@ -1,6 +1,11 @@
 # Session 77 Handoff — i18n Completeness Sweep + Automation + Mobile Polish (Apr 30, 2026)
 
-**Status: ALL WORK COMPLETE LOCALLY. Three commits ready. One commit (`fa6d3722`) is already on `main`. Two more (`5255a2e5` and the upcoming Session 77 polish commit) are staged/pending push.**
+**Status: ✅ ALL WORK SHIPPED. Three commits on `origin/main`:**
+- `fa6d3722` — i18n completeness (UI keys + curriculum names + area letters)
+- `5255a2e5` — automation hooks (pre-commit + npm scripts + admin endpoint)
+- `26266747` — mobile polish (SW v3 + compact lang toggle + stats row removal)
+
+Railway auto-redeployed on push. Pre-commit hook installed locally via `npm run hooks:install`. PWA users on the build need to close+reopen the app once for SW v3 to activate and serve the fresh JS bundle.
 
 ---
 
@@ -158,34 +163,34 @@ The focus list and ◐/✓ badges already convey the same information without th
 - `scripts/check-i18n-completeness.mjs` — added --strict flag with key-set diff
 - `package.json` — i18n:* + hooks:install scripts
 
-### Commit pending (this Session 77)
+### Commit `26266747` (this Session 77 polish)
 - `public/montree-sw.js` — CACHE_NAME → montree-v3
-- `components/montree/LanguageToggle.tsx` — short labels
-- `components/montree/DashboardHeader.tsx` — classroom name maxWidth
-- `app/montree/dashboard/[childId]/page.tsx` — stats row removed + cleanup
+- `components/montree/LanguageToggle.tsx` — short labels (EN/УКР/etc)
+- `components/montree/DashboardHeader.tsx` — classroom name maxWidth `min(40vw, 200px)`
+- `app/montree/dashboard/[childId]/page.tsx` — stats row removed + dead-code cleanup
+- `CLAUDE.md` — Session 77 entry added at top of RECENT STATUS
+- `docs/handoffs/SESSION_77_HANDOFF.md` — this file
 
 ---
 
-## To finish (user actions on the Mac)
+## Verification checklist (post-deploy)
 
-1. **Commit + push the polish work**:
-   ```
-   cd ~/Desktop/Master\ Brain/ACTIVE/whale
-   git add public/montree-sw.js \
-           components/montree/LanguageToggle.tsx \
-           components/montree/DashboardHeader.tsx \
-           app/montree/dashboard/[childId]/page.tsx \
-           docs/handoffs/SESSION_77_HANDOFF.md
-   git commit -m "Mobile polish: SW v3, compact lang toggle, remove stats row"
-   ```
-   Then push via Desktop Commander.
+When Railway finishes redeploying (~2 min after push):
 
-2. **Verify on production** once Railway redeploys (~2 min):
-   - **PWA users may need to close + reopen the app** for the v3 service worker to activate.
-   - Switch dashboard language to Українська → "Golden Bead Multiplication" should now read "Множення з Золотими Бісеринками".
-   - Focus list dots should show letters: **Ма** for Mathematics, **Мо** for Language, **Пр** for Practical Life, **Се** for Sensorial, **Ку** for Cultural.
-   - Header should fit cleanly on mobile (no Engdish overlap).
-   - Child page no longer has the 5 MASTERED / 14 PRACTICING / Photos row.
+1. **Close + reopen the Montree PWA on your phone** so the v3 service worker activates and purges the v2 bundle. Without this step, the cached v2 JS keeps serving even though the deploy is live.
+
+2. **Switch dashboard language to Українська** and confirm:
+   - Work names read in Ukrainian: "Множення з Золотими Бісеринками" (was "Golden Bead Multiplication"), "Введення до Золотих Бісеринок" (was "Introduction to Golden Beads"), etc.
+   - Focus list colored dots show Ukrainian letters: **Пр** (Practical Life), **Се** (Sensorial), **Ма** (Mathematics), **Мо** (Language), **Ку** (Cultural).
+   - Header pill shows "УКР" (compact) instead of "Українська" (long).
+   - "Whale Class" title doesn't overlap with the language toggle.
+   - Bottom of child page: no MASTERED / PRACTICING / Photos tile row.
+
+3. **Switch to Deutsch** and confirm focus dots show **Pr / Si / Ma / Sp / Ku** (German also uses 2-letter codes due to Sinnesmaterial vs Sprache collision).
+
+4. **Switch back to English** — dots show **P / S / M / L / C**.
+
+If any of these still show old behavior, the PWA cache hasn't flushed. Force-quit and reopen the app (or hard-refresh the browser tab on web).
 
 ---
 

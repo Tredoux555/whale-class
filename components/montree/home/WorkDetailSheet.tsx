@@ -6,6 +6,7 @@
 import { useState, useEffect } from 'react';
 import { BIO } from '@/lib/montree/bioluminescent-theme';
 import { useI18n, type TranslationKey } from '@/lib/montree/i18n';
+import { SUPPORTED_LOCALES, DEFAULT_LOCALE } from '@/lib/montree/i18n/locales';
 
 interface WorkDetailSheetProps {
   workName: string;
@@ -72,7 +73,7 @@ export default function WorkDetailSheet({
   onClose,
   onAskGuide,
 }: WorkDetailSheetProps) {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const [guide, setGuide] = useState<WorkGuide | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -91,6 +92,12 @@ export default function WorkDetailSheet({
       try {
         const params = new URLSearchParams({ name: workName });
         if (classroomId) params.set('classroom_id', classroomId);
+        // Pass locale so the API merges guide_content_<locale> JSONB into the
+        // flat response. Without this, every non-English user sees the English
+        // guide regardless of their language setting.
+        if (locale !== DEFAULT_LOCALE && (SUPPORTED_LOCALES as readonly string[]).includes(locale)) {
+          params.set('locale', locale);
+        }
         const res = await fetch(`/api/montree/works/guide?${params}`, {
           signal: abortController.signal,
         });
@@ -106,7 +113,7 @@ export default function WorkDetailSheet({
     };
     fetchGuide();
     return () => abortController.abort();
-  }, [workName, classroomId]);
+  }, [workName, classroomId, locale]);
 
   // Parse materials — could be string[] or string
   const materials: string[] = (() => {
