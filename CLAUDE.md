@@ -282,15 +282,44 @@ User asked for help building social analytics dashboard inside Whale (Meta Graph
 
 **Handoff doc:** `docs/handoffs/SESSION_84_HANDOFF.md` — full file-by-file changes, every commit explained, architectural rules in detail, deferred items.
 
-**Next session priorities:**
+**🚨 Late-session product reframe — TRACY (no code yet, theorize-first):**
+
+After shipping the V2 agent home, user pushed back on the "proactive briefing" dashboard mockup I'd drawn. Real position from Chen-as-archetype:
+- Principal **does NOT want a daily briefing.** Has enough to deal with outside Montree. Last thing she wants is the system adding new problems to her plate.
+- Principal **does NOT care about individual children pedagogically.** That's the teacher's job. She's not teaching.
+- Principal **cares about the business** — parent retention, teacher accountability, school reputation.
+- Wants **competence on demand.** Reactive only. The home page is a clean surface with one input. The product's value is what happens when she asks.
+
+Naming decision locked in: **the principal's AI is named TRACY.** Distinct from Guru:
+- **Guru** = Maria Montessori in your pocket. Per-child, pedagogical, teacher-focused.
+- **Tracy** = principal's chief-of-staff. Whole-school scope (every child, every teacher, every note, every observation, every parent signal). Can CALL Guru as a sub-tool when child-pedagogical depth is needed.
+- Voice: chief-of-staff, decisive, **always ends with what she should DO**, never delivers new problems she didn't ask about.
+- Question categories Tracy must answer well:
+  - **Teachers (her core job):** *"How is Susan doing in the classroom?"* — Tracy unpacks vague-on-purpose into activity + coverage + quality + pattern + verdict
+  - **Parent-trigger child synthesis:** *"Emily's mom is asking about her math — what do I say?"* — Tracy pulls child data + relevant teacher note + stitches an honest, defensible, parent-ready answer in the principal's voice
+  - **Parent relationships:** *"What's the latest with Emma's family?"* — needs new parent-as-first-class-entity data model (current biggest gap)
+
+🚨 **Tracy is theorize-first.** Next session does NOT build code. Next session uses the 3×3×3×3×3 method (Session 82 canonical) and produces `docs/TRACY_FRAMEWORK_PLAN.md`. Brief lives at `docs/TRACY_FRAMEWORK_BRIEF.md` with full scope of what to research, what's already decided, and what NOT to do. Build comes after the plan + investigate + audit cycles are complete.
+
+**Decisions already locked (do not re-debate next session):**
+1. AI is named Tracy.
+2. Tracy is distinct from Guru. Different surface, different voice, different scope.
+3. Tracy can call Guru as a sub-tool.
+4. Home page has no proactive content. Reactive only.
+5. Tracy lives on the existing `/montree/admin` route (replaces principal-agent prompt + tools — doesn't replace the route).
+6. Logging continues to `montree_principal_agent_log` (migration 184).
+7. Whether to rename the existing `/montree/admin/guru` sidebar item is a separate question, decide in the plan, not now.
+
+**Next session priorities (ordered):**
 1. **🚨 Run migration 184** in Supabase SQL Editor — required for principal-agent logging.
-2. **Verify V2 principal-agent on production** — open `/montree/admin`, ask 5-10 questions covering the agent's full tool surface. Watch the super-admin questions log fill in.
-3. **Send the 3 hot lead drafts in Gmail** — Ardtona, FAMM, Тамі. All passed dedup checks, ready to send.
-4. **Update CLAUDE.md lead state** — Paint Pots BOUNCED, Ardtona email correction, Copenhagen email verification.
-5. **Resolve the Resend block** — set `RESEND_API_KEY` on Railway with a real key + verify `montree.xyz` domain.
-6. **Wait for user prompt to resume social setup** — phrase: **"Ready for Step 2 of social setup"**. Then walk through Supabase tables + Railway env vars.
-7. **Inner-content polish** on the 8 admin pages from Session 83.
-8. **Stripe upgrade flow** — self-serve `personal_classroom` → `school` transition.
+2. **🚨 TRACY THEORIZE PHASE.** Open `docs/TRACY_FRAMEWORK_BRIEF.md`. Run Phases 1–3 of the 3×3×3×3×3 (RESEARCH × 3 → PLAN × 3 → INVESTIGATE × 3). Produce `docs/TRACY_FRAMEWORK_PLAN.md`. Audit the plan. **Do not write code in that session.**
+3. **Verify V2 principal-agent on production** (current state, before Tracy lands) — open `/montree/admin`, ask 5-10 questions covering the agent's full tool surface. Watch the super-admin questions log fill in. This validates the plumbing before Tracy reframes the brain.
+4. **Send the 3 hot lead drafts in Gmail** — Ardtona, FAMM, Тамі. All passed dedup checks, ready to send.
+5. **Update CLAUDE.md lead state** — Paint Pots BOUNCED, Ardtona email correction (`vheavey@ardtonahouseschool.ie` not `info@ardtonahouse.co.uk`, .ie not .co.uk), Copenhagen email verification.
+6. **Resolve the Resend block** — set `RESEND_API_KEY` on Railway with a real key + verify `montree.xyz` domain.
+7. **Wait for user prompt to resume social setup** — phrase: **"Ready for Step 2 of social setup"**. Then walk through Supabase tables + Railway env vars.
+8. **Inner-content polish** on the 8 admin pages from Session 83.
+9. **Stripe upgrade flow** — self-serve `personal_classroom` → `school` transition.
 
 ---
 
