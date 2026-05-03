@@ -46,8 +46,25 @@ const MAX_TOOL_RESULT_CHARS = 50_000;
 
 // Sonnet 4.6 pricing as of May 2026 — kept here so cost_usd in the log is
 // accurate even when the upstream price changes (just bump these constants).
+// COST_MODEL is the model these prices are valid for — if `model` resolves
+// to something different at runtime we refuse to log a misleading cost
+// (see assertSupportedCostModel below).
+const COST_MODEL = 'claude-sonnet-4-6';
 const SONNET_INPUT_USD_PER_MTOK = 3;
 const SONNET_OUTPUT_USD_PER_MTOK = 15;
+
+function assertSupportedCostModel(model: string): void {
+  // Soft assertion: log loudly if we ever start using a model whose pricing
+  // these constants don't cover. We don't throw — the agent should still
+  // work — but a bad cost log is better caught early.
+  if (model !== COST_MODEL) {
+    console.error(
+      `[principal-agent] cost model drift: using model="${model}" but ` +
+        `cost constants are for "${COST_MODEL}". cost_usd in the log will ` +
+        `be wrong until pricing constants are updated.`
+    );
+  }
+}
 
 // ── Tool definitions ────────────────────────────────────────────────────
 // Read-only. Scoped to the principal's school via auth + every tool re-checks
@@ -142,6 +159,17 @@ async function executeTool(
   // Helper to call our own internal API endpoints with the principal's cookie
   // (so verifySchoolRequest + verifyChildBelongsToSchool inside those routes
   // see the same identity).
+  //
+  // SCHOOL-SCOPING CONTRACT (load-bearing — do not weaken):
+  //   The agent forwards the principal's cookie to internal endpoints so each
+  //   endpoint re-verifies the school via verifySchoolRequest +
+  //   verifyChildBelongsToSchool. This route does NOT independently scope
+  //   tool input — the trust boundary is the inner endpoint. If you add a
+  //   new tool that calls an internal endpoint, that endpoint MUST itself
+  //   re-validate school_id against the principal's auth. If you add a tool
+  //   that does direct Supabase queries (like list_classrooms_with_summary
+  //   or list_teachers_with_summary below), it MUST filter by the schoolId
+  //   passed to executeTool.
   const internalGet = async (path: string) => {
     const res = await fetch(`${origin}${path}`, {
       headers: { cookie: cookieHeader },
@@ -503,6 +531,11 @@ export async function POST(request: NextRequest) {
   // tool-use loop reasoning quality matters here. Cost is acceptable because
   // agent calls are not bulk-batched.
   const model = AI_MODEL;
+  // Catch the "Anthropic changed the default and we forgot" failure mode:
+  // if AI_MODEL drifts to anything other than COST_MODEL, the cost we log
+  // becomes silently wrong. We log loudly so super-admin's cost view doesn't
+  // mislead Tredoux for weeks.
+  assertSupportedCostModel(model);
 
   // Best-effort school + principal name lookup for the system prompt
   let schoolName = 'your school';
@@ -535,9 +568,45 @@ export async function POST(request: NextRequest) {
 
   // Conversation context: prepend any client-supplied history (capped),
   // then the current question.
-  const historyMessages: MessageParam[] = Array.isArray(body.history)
-    ? body.history.slice(-10) // cap at last 10 turns to control prompt size
-    : [];
+  //
+  // SECURITY: We do NOT trust the client to send well-formed Anthropic
+  // MessageParam objects. A malicious client could send tool_use /
+  // tool_result blocks in history to forge tool round-trips and trick the
+  // agent into "remembering" results it never produced. We strip every
+  // history entry down to { role, content: string } where content is just
+  // text — anything else is dropped. The role is also clamped to user/assistant.
+  const sanitizeHistory = (raw: unknown): MessageParam[] => {
+    if (!Array.isArray(raw)) return [];
+    const out: MessageParam[] = [];
+    for (const item of raw.slice(-10)) {
+      if (!item || typeof item !== 'object') continue;
+      const obj = item as Record<string, unknown>;
+      const role = obj.role === 'assistant' ? 'assistant' : 'user';
+      const content = obj.content;
+      let text = '';
+      if (typeof content === 'string') {
+        text = content;
+      } else if (Array.isArray(content)) {
+        // Accept only inline text blocks; ignore tool_use, tool_result, image, etc.
+        for (const block of content) {
+          if (
+            block &&
+            typeof block === 'object' &&
+            (block as Record<string, unknown>).type === 'text' &&
+            typeof (block as Record<string, unknown>).text === 'string'
+          ) {
+            text += (block as Record<string, string>).text;
+          }
+        }
+      }
+      text = text.trim();
+      if (!text) continue;
+      // Cap each turn so a malicious client can't blow up the context.
+      out.push({ role, content: text.slice(0, 4000) });
+    }
+    return out;
+  };
+  const historyMessages: MessageParam[] = sanitizeHistory(body.history);
   const initialMessages: MessageParam[] = [
     ...historyMessages,
     { role: 'user', content: question },
