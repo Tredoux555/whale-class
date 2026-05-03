@@ -49,26 +49,25 @@ const NAV: NavItem[] = [
     match: (p) => p.startsWith('/montree/admin/classrooms'),
   },
   {
-    // Until /people is built, point at the closest existing page (students list).
-    // The match() still highlights "People" for any of the consolidated routes.
-    href: '/montree/admin/students',
+    href: '/montree/admin/people',
     label: 'People',
     icon: Users,
     match: (p) =>
       p.startsWith('/montree/admin/people') ||
       p.startsWith('/montree/admin/teachers') ||
       p.startsWith('/montree/admin/students') ||
-      p.startsWith('/montree/admin/parent-codes'),
+      p.startsWith('/montree/admin/parent-codes') ||
+      p.startsWith('/montree/admin/import'),
   },
   {
-    // Until /pulse is built, point at the closest existing page (activity).
-    href: '/montree/admin/activity',
+    href: '/montree/admin/pulse',
     label: 'Pulse',
     icon: Activity,
     match: (p) =>
       p.startsWith('/montree/admin/pulse') ||
       p.startsWith('/montree/admin/activity') ||
-      p.startsWith('/montree/admin/reports'),
+      p.startsWith('/montree/admin/reports') ||
+      p.startsWith('/montree/admin/billing'),
   },
   {
     href: '/montree/admin/settings',
