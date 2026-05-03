@@ -47,12 +47,24 @@ const PRECACHE_ASSETS = [
   '/montree-icons/icon-512.png',
 ];
 
-// Install event - cache core assets
+// Install event - cache core assets.
+// We use per-URL cache.add wrapped in Promise.allSettled instead of
+// cache.addAll because addAll rejects the entire install if ANY URL returns
+// non-200. A single transient 404 (e.g., during a deploy where a route is
+// briefly unavailable, or if a future commit accidentally deletes a precache
+// route) would break offline support for everyone. allSettled lets us skip
+// individual failures and still install with whatever assets we did get.
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
       console.log('[Montree SW] Precaching assets');
-      return cache.addAll(PRECACHE_ASSETS);
+      return Promise.allSettled(
+        PRECACHE_ASSETS.map((url) =>
+          cache.add(url).catch((err) => {
+            console.warn('[Montree SW] Precache failed for', url, err);
+          })
+        )
+      );
     })
   );
   // Activate immediately
