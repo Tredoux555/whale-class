@@ -33,6 +33,17 @@ export interface VerifiedRequest {
 export async function verifySchoolRequest(
   request: NextRequest
 ): Promise<VerifiedRequest | NextResponse> {
+  // [503-DIAGNOSTIC] One-line request log so Railway logs show whether
+  // requests reach the app at all. If we see "[req]" lines for a request
+  // that the client reported as 503, the 503 came from the app (real bug).
+  // If we DON'T see "[req]", the 503 was Railway's edge during container
+  // churn / cold start / healthcheck failure. Cheap insurance, remove
+  // once root cause is confirmed.
+  try {
+    const url = new URL(request.url);
+    console.log(`[req] ${request.method} ${url.pathname}`);
+  } catch { /* URL parse should never fail; ignore */ }
+
   // 1. Check httpOnly cookie (primary — automatically sent by browser)
   const cookieToken = request.cookies.get(MONTREE_AUTH_COOKIE)?.value;
   if (cookieToken) {
