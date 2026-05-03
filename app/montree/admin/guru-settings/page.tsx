@@ -116,14 +116,14 @@ export default function GuruSettingsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[#0D1F1C] to-[#1a3a2a] flex items-center justify-center">
+      <div className="min-h-[60vh] flex items-center justify-center">
         <div className="text-emerald-300 text-lg">Loading...</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#0D1F1C] to-[#1a3a2a]">
+    <div className="text-white">
       <Toaster position="top-center" />
 
       {/* Header */}

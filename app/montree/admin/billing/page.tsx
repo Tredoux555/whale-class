@@ -146,7 +146,7 @@ function BillingContent() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-emerald-900 to-teal-900 p-6">
+    <div className="text-white">
       <Toaster position="top-center" />
       
       {/* Header */}

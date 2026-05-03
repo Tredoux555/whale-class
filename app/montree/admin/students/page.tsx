@@ -175,12 +175,12 @@ export default function StudentsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-emerald-900 via-emerald-800 to-teal-900 p-6">
+      <div>
         <div className="max-w-4xl mx-auto">
-          <div className="h-8 w-32 bg-emerald-700 rounded animate-pulse mb-6"></div>
+          <div className="h-8 w-32 bg-emerald-900/40 rounded animate-pulse mb-6"></div>
           <div className="space-y-4">
             {[1,2,3,4,5].map(i => (
-              <div key={i} className="h-16 bg-emerald-800/50 rounded-xl animate-pulse"></div>
+              <div key={i} className="h-16 bg-emerald-900/30 rounded-xl animate-pulse"></div>
             ))}
           </div>
         </div>
@@ -189,7 +189,7 @@ export default function StudentsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-900 via-emerald-800 to-teal-900 p-6">
+    <div className="text-white">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
