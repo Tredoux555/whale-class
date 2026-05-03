@@ -427,3 +427,170 @@ ${signupUrl}?code=${inviteCode}
 🌳 Montree - Montessori Progress Tracking
   `.trim();
 }
+
+// ============================================
+// SEND PRINCIPAL INVITE EMAIL
+// ============================================
+// Soft-pitch from a teacher to their principal.
+// Warm, human tone. Goal: principal logs in, looks at the existing
+// classroom for free, and converts when they want to add their own.
+
+export async function sendPrincipalInviteEmail(
+  principalEmail: string,
+  principalName: string,
+  teacherName: string,
+  schoolName: string,
+  loginCode: string,
+  loginUrl: string,
+  optionalNote?: string,
+): Promise<EmailResult> {
+  try {
+    const { data, error } = await getResend().emails.send({
+      from: getFromEmail(),
+      to: principalEmail,
+      subject: `${teacherName} wants to show you something`,
+      html: generatePrincipalInviteHtml(
+        principalName,
+        teacherName,
+        schoolName,
+        loginCode,
+        loginUrl,
+        optionalNote,
+      ),
+      text: generatePrincipalInviteText(
+        principalName,
+        teacherName,
+        schoolName,
+        loginCode,
+        loginUrl,
+        optionalNote,
+      ),
+    });
+
+    if (error) {
+      console.error('[email] Principal invite send error:', error);
+      return { success: false, error: error.message };
+    }
+    return { success: true, messageId: data?.id };
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err);
+    console.error('[email] Principal invite exception:', err);
+    return { success: false, error: message };
+  }
+}
+
+function generatePrincipalInviteHtml(
+  principalName: string,
+  teacherName: string,
+  schoolName: string,
+  loginCode: string,
+  loginUrl: string,
+  optionalNote?: string,
+): string {
+  const noteBlock = optionalNote && optionalNote.trim().length > 0
+    ? `
+        <div style="margin: 24px 0 28px; padding: 16px 20px; background: #f4f8f3; border-left: 3px solid #34d399; border-radius: 6px; font-style: italic; color: #2d4a3e; line-height: 1.6;">
+          ${escapeHtml(optionalNote.trim())}
+          <div style="margin-top: 10px; font-style: normal; font-size: 13px; color: #5a7a6c;">— ${escapeHtml(teacherName)}</div>
+        </div>
+      `
+    : '';
+
+  return `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>You're invited to Montree</title>
+</head>
+<body style="margin: 0; padding: 0; background: #f7faf7; font-family: 'Lora', Georgia, serif; color: #2d4a3e;">
+  <table role="presentation" style="width: 100%; max-width: 560px; margin: 0 auto; padding: 40px 24px;" cellpadding="0" cellspacing="0">
+    <tr>
+      <td>
+        <h1 style="font-family: 'Lora', Georgia, serif; font-size: 26px; font-weight: 500; color: #1d2e26; letter-spacing: -0.5px; margin: 0 0 8px;">
+          Hello ${escapeHtml(principalName)},
+        </h1>
+        <p style="font-size: 16px; line-height: 1.65; color: #2d4a3e; margin: 0 0 18px;">
+          ${escapeHtml(teacherName)} at ${escapeHtml(schoolName)} invited you to see what they've been working on in&nbsp;Montree.
+        </p>
+
+        ${noteBlock}
+
+        <p style="font-size: 16px; line-height: 1.65; color: #2d4a3e; margin: 0 0 18px;">
+          Montree is the AI-powered classroom management system designed specifically for Montessori schools. ${escapeHtml(teacherName)} has been using it to track every child, every observation, every parent letter — and would like you to see what that looks like.
+        </p>
+
+        <div style="background: #1a2e22; border-radius: 14px; padding: 28px 24px; text-align: center; margin: 28px 0;">
+          <div style="font-size: 11px; font-weight: 600; color: rgba(232,201,106,0.85); letter-spacing: 1.6px; text-transform: uppercase; margin-bottom: 10px;">
+            Your code
+          </div>
+          <div style="font-family: 'Lora', Georgia, serif; font-size: 36px; font-weight: 600; color: #ffffff; letter-spacing: 4px; margin-bottom: 18px;">
+            ${escapeHtml(loginCode)}
+          </div>
+          <a href="${loginUrl}" style="display: inline-block; padding: 12px 28px; background: #34d399; color: #0a1a0f; text-decoration: none; border-radius: 999px; font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 600;">
+            Open Montree
+          </a>
+        </div>
+
+        <p style="font-size: 15px; line-height: 1.65; color: #2d4a3e; margin: 0 0 14px;">
+          You'll see ${escapeHtml(teacherName)}'s classroom — every child, every observation, every parent letter — through their eyes. <strong>Free for as long as you want to look.</strong>
+        </p>
+        <p style="font-size: 15px; line-height: 1.65; color: #2d4a3e; margin: 0 0 14px;">
+          When you're ready to bring more classrooms or your other teachers on, you can upgrade and we'll set up the school plan together.
+        </p>
+
+        <p style="font-size: 14px; line-height: 1.65; color: #5a7a6c; margin: 32px 0 0; padding-top: 22px; border-top: 1px solid #d8e3da;">
+          Kind regards,<br>
+          Tredoux at Montree<br>
+          <a href="https://montree.xyz" style="color: #34d399; text-decoration: none;">montree.xyz</a>
+        </p>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+  `.trim();
+}
+
+function generatePrincipalInviteText(
+  principalName: string,
+  teacherName: string,
+  schoolName: string,
+  loginCode: string,
+  loginUrl: string,
+  optionalNote?: string,
+): string {
+  const noteBlock = optionalNote && optionalNote.trim().length > 0
+    ? `\n\n"${optionalNote.trim()}"\n— ${teacherName}\n`
+    : '';
+
+  return `
+Hello ${principalName},
+
+${teacherName} at ${schoolName} invited you to see what they've been working on in Montree.${noteBlock}
+
+Montree is the AI-powered classroom management system designed specifically for Montessori schools. ${teacherName} has been using it to track every child, every observation, every parent letter — and would like you to see what that looks like.
+
+YOUR CODE: ${loginCode}
+
+Open Montree: ${loginUrl}
+
+You'll see ${teacherName}'s classroom — every child, every observation, every parent letter — through their eyes. Free for as long as you want to look.
+
+When you're ready to bring more classrooms or your other teachers on, you can upgrade and we'll set up the school plan together.
+
+Kind regards,
+Tredoux at Montree
+montree.xyz
+  `.trim();
+}
+
+function escapeHtml(s: string): string {
+  return String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}

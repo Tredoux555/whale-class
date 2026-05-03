@@ -79,6 +79,11 @@ interface Attention {
   idle_children: IdleChild[];
   idle_children_total: number;
 }
+interface PlanSummary {
+  plan_type: string;
+  subscription_status: string;
+  is_teacher_led: boolean;
+}
 
 export default function AdminTodayPage() {
   const router = useRouter();
@@ -88,6 +93,7 @@ export default function AdminTodayPage() {
   const [stats, setStats] = useState<Stats | null>(null);
   const [digest, setDigest] = useState<Digest | null>(null);
   const [attention, setAttention] = useState<Attention | null>(null);
+  const [plan, setPlan] = useState<PlanSummary | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -119,6 +125,7 @@ export default function AdminTodayPage() {
       setStats(data.stats);
       setDigest(data.digest);
       setAttention(data.attention);
+      setPlan(data.plan || null);
     } catch (err) {
       console.error('[Today] fetch error', err);
     } finally {
@@ -219,6 +226,49 @@ export default function AdminTodayPage() {
           <span style={{ color: T.textSecondary }}>{dateLine}</span>
         </p>
       </div>
+
+      {/* Viewer banner — shown when this is a teacher-led school the principal
+          was invited to. Frames the experience as "you're looking at their
+          classroom" and explains the upgrade path without nagging. */}
+      {plan?.is_teacher_led && (
+        <div
+          style={{
+            background: 'rgba(232,201,106,0.08)',
+            border: '1px solid rgba(232,201,106,0.22)',
+            borderRadius: 14,
+            padding: '14px 18px',
+            marginBottom: 22,
+            display: 'flex',
+            alignItems: 'flex-start',
+            gap: 12,
+          }}
+        >
+          <div
+            style={{
+              width: 8,
+              height: 8,
+              borderRadius: '50%',
+              background: '#E8C96A',
+              marginTop: 8,
+              flexShrink: 0,
+            }}
+          />
+          <div style={{ flex: 1, fontSize: 13, lineHeight: 1.55, color: 'rgba(255,255,255,0.78)' }}>
+            <strong style={{ color: '#E8C96A' }}>You're a viewer.</strong>{' '}
+            This is a teacher's classroom — you can browse everything below
+            for free. To add your own classrooms or invite your other teachers,{' '}
+            <a
+              href="https://montree.xyz/pricing"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ color: '#E8C96A', textDecoration: 'underline' }}
+            >
+              upgrade to a school plan
+            </a>
+            .
+          </div>
+        </div>
+      )}
 
       {/* Digest paragraph */}
       {digestSentence && (
