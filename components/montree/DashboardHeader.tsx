@@ -9,7 +9,7 @@ import {
   Camera, Mic, Square, MoreHorizontal, ChevronDown,
   Bell, FileText, Target, Search, Sparkles, BookOpen,
   LayoutGrid, CalendarDays, Images, FolderOpen, TrendingUp,
-  Users, BookMarked, Globe, BarChart2, Settings2, LogOut,
+  Users, BookMarked, Globe, BarChart2, Settings2, LogOut, UserPlus,
 } from 'lucide-react';
 import { getSession, clearSession, isHomeschoolParent, type MontreeSession } from '@/lib/montree/auth';
 import { HOME_THEME } from '@/lib/montree/home-theme';
@@ -18,6 +18,7 @@ import { montreeApi } from '@/lib/montree/api';
 import InboxButton from './InboxButton';
 import LanguageToggle from './LanguageToggle';
 import MontreeLogo from './MonteeLogo';
+import InvitePrincipalModal from './InvitePrincipalModal';
 import { toast } from 'sonner';
 import { useFeatures } from '@/hooks/useFeatures';
 
@@ -147,6 +148,7 @@ function DashboardHeader() {
   const { isEnabled } = useFeatures();
 
   const [showMoreMenu,    setShowMoreMenu]    = useState(false);
+  const [showInvitePrincipal, setShowInvitePrincipal] = useState(false);
   const moreMenuRef = useRef<HTMLDivElement>(null);
 
   // Voice note state
@@ -649,7 +651,8 @@ function DashboardHeader() {
                   )}
                   <Divider />
 
-                  {/* Always visible — Menu Management + Logout */}
+                  {/* Always visible — Invite principal + Menu Management + Logout */}
+                  <MenuRow icon={UserPlus} label="Invite your principal" onClick={() => { setShowMoreMenu(false); setShowInvitePrincipal(true); }} />
                   <MenuRow icon={Settings2} label="Menu Management" active={activePage === 'menu-setup'} onClick={() => { setShowMoreMenu(false); router.push('/montree/dashboard/menu-setup'); }} />
                   <Divider />
                   <MenuRow icon={LogOut} label={t('auth.logout')} danger onClick={() => { setShowMoreMenu(false); clearSession(); router.push('/montree/login'); }} />
@@ -800,6 +803,12 @@ function DashboardHeader() {
           </div>
         )}
       </header>
+
+      {/* Invite Principal modal — opened from More menu */}
+      <InvitePrincipalModal
+        isOpen={showInvitePrincipal}
+        onClose={() => setShowInvitePrincipal(false)}
+      />
     </>
   );
 }

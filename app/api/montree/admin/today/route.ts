@@ -30,7 +30,7 @@ export async function GET(request: NextRequest) {
 
     // ── 1. Identity + roster (parallel) ────────────────────────────────────
     const [schoolRes, principalRes, classroomsRes, teachersRes] = await Promise.all([
-      supabase.from('montree_schools').select('id, name, slug').eq('id', schoolId).maybeSingle(),
+      supabase.from('montree_schools').select('id, name, slug, plan_type, subscription_status, founding_teacher_id').eq('id', schoolId).maybeSingle(),
       supabase
         .from('montree_school_admins')
         .select('id, name, email, role, last_login')
@@ -58,6 +58,21 @@ export async function GET(request: NextRequest) {
     const classrooms = classroomsRes.data || [];
     const teachers = teachersRes.data || [];
     const classroomIds = classrooms.map(c => c.id);
+
+    // ── Plan / billing state — drives the principal cockpit gates ───────────
+    // A "teacher-led" school is one where the founder was a teacher (via the
+    // /try/instant teacher path). Principals invited to such schools are
+    // viewers — they can browse, but adding classrooms / teachers requires
+    // upgrading to a school plan. plan_type === 'personal_classroom' is the
+    // primary signal; founding_teacher_id is a secondary signal for clarity.
+    const isTeacherLed =
+      school.plan_type === 'personal_classroom' ||
+      !!school.founding_teacher_id;
+    const planSummary = {
+      plan_type: school.plan_type || 'school',
+      subscription_status: school.subscription_status || 'trialing',
+      is_teacher_led: isTeacherLed,
+    };
 
     // ── 2. Children, photos (depends on classroomIds) ──────────────────────
     let children: { id: string; name: string; classroom_id: string }[] = [];
@@ -157,6 +172,7 @@ export async function GET(request: NextRequest) {
       stats,
       digest,
       attention,
+      plan: planSummary,
     });
     response.headers.set('Cache-Control', 'private, max-age=300, stale-while-revalidate=600');
     return response;

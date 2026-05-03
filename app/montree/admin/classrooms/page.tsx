@@ -50,6 +50,7 @@ export default function ClassroomsPage() {
   const { t } = useI18n();
   const [classrooms, setClassrooms] = useState<Classroom[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isViewer, setIsViewer] = useState(false); // teacher-led school → no add
   const [showClassroomModal, setShowClassroomModal] = useState(false);
   const [editingClassroom, setEditingClassroom] = useState<Classroom | null>(null);
   const [classroomForm, setClassroomForm] = useState({ name: '', icon: '🐻', color: '#34d399' });
@@ -80,17 +81,26 @@ export default function ClassroomsPage() {
 
   const fetchData = async () => {
     try {
-      const res = await fetch('/api/montree/admin/overview', { headers: getHeaders() });
-      if (res.status === 401) {
+      // Two parallel calls: classrooms list + plan info (today endpoint).
+      const [overviewRes, todayRes] = await Promise.all([
+        fetch('/api/montree/admin/overview', { headers: getHeaders() }),
+        fetch('/api/montree/admin/today', { credentials: 'include' }),
+      ]);
+      if (overviewRes.status === 401) {
         router.replace('/montree/login-select');
         return;
       }
-      if (!res.ok) {
-        console.error('Failed to load classrooms:', res.status);
+      if (!overviewRes.ok) {
+        console.error('Failed to load classrooms:', overviewRes.status);
         return;
       }
-      const data = await res.json();
+      const data = await overviewRes.json();
       setClassrooms(data.classrooms || []);
+
+      if (todayRes.ok) {
+        const todayData = await todayRes.json();
+        setIsViewer(!!todayData.plan?.is_teacher_led);
+      }
     } catch {
       toast.error(t('admin.error.loadDashboard'));
     } finally {
@@ -184,26 +194,53 @@ export default function ClassroomsPage() {
               : `${classrooms.length} classrooms`}
           </p>
         </div>
-        <button
-          onClick={() => openClassroomModal()}
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: 8,
-            padding: '10px 18px',
-            background: T.emerald,
-            color: '#0a1a0f',
-            border: 'none',
-            borderRadius: 999,
-            fontFamily: T.sans,
-            fontSize: 14,
-            fontWeight: 600,
-            cursor: 'pointer',
-          }}
-        >
-          <Plus size={16} strokeWidth={2.25} />
-          {t('admin.addClassroom')}
-        </button>
+        {isViewer ? (
+          <a
+            href="https://montree.xyz/pricing"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 8,
+              padding: '10px 18px',
+              background: 'rgba(232,201,106,0.10)',
+              color: '#E8C96A',
+              border: '1px solid rgba(232,201,106,0.30)',
+              borderRadius: 999,
+              fontFamily: T.sans,
+              fontSize: 14,
+              fontWeight: 600,
+              cursor: 'pointer',
+              textDecoration: 'none',
+            }}
+            title="Adding classrooms requires a school plan"
+          >
+            <Plus size={16} strokeWidth={2.25} />
+            Upgrade to add classrooms
+          </a>
+        ) : (
+          <button
+            onClick={() => openClassroomModal()}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 8,
+              padding: '10px 18px',
+              background: T.emerald,
+              color: '#0a1a0f',
+              border: 'none',
+              borderRadius: 999,
+              fontFamily: T.sans,
+              fontSize: 14,
+              fontWeight: 600,
+              cursor: 'pointer',
+            }}
+          >
+            <Plus size={16} strokeWidth={2.25} />
+            {t('admin.addClassroom')}
+          </button>
+        )}
       </div>
 
       {/* Empty state */}
@@ -362,28 +399,56 @@ export default function ClassroomsPage() {
             );
           })}
 
-          {/* Add tile */}
-          <button
-            onClick={() => openClassroomModal()}
-            style={{
-              background: 'rgba(8,20,12,0.30)',
-              border: '2px dashed rgba(52,211,153,0.30)',
-              borderRadius: 16,
-              padding: 24,
-              minHeight: 160,
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: 8,
-              cursor: 'pointer',
-              fontFamily: T.sans,
-              color: T.emeraldDim,
-            }}
-          >
-            <Plus size={28} strokeWidth={1.5} />
-            <span style={{ fontSize: 13 }}>{t('admin.addClassroom')}</span>
-          </button>
+          {/* Add tile — gated for viewer principals */}
+          {isViewer ? (
+            <a
+              href="https://montree.xyz/pricing"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                background: 'rgba(232,201,106,0.06)',
+                border: '2px dashed rgba(232,201,153,0.30)',
+                borderRadius: 16,
+                padding: 24,
+                minHeight: 160,
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 8,
+                fontFamily: T.sans,
+                color: '#E8C96A',
+                textDecoration: 'none',
+                textAlign: 'center',
+              }}
+            >
+              <Plus size={28} strokeWidth={1.5} />
+              <span style={{ fontSize: 13, fontWeight: 500 }}>Upgrade to add</span>
+              <span style={{ fontSize: 11, color: 'rgba(232,201,106,0.65)' }}>school plan unlocks classrooms</span>
+            </a>
+          ) : (
+            <button
+              onClick={() => openClassroomModal()}
+              style={{
+                background: 'rgba(8,20,12,0.30)',
+                border: '2px dashed rgba(52,211,153,0.30)',
+                borderRadius: 16,
+                padding: 24,
+                minHeight: 160,
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 8,
+                cursor: 'pointer',
+                fontFamily: T.sans,
+                color: T.emeraldDim,
+              }}
+            >
+              <Plus size={28} strokeWidth={1.5} />
+              <span style={{ fontSize: 13 }}>{t('admin.addClassroom')}</span>
+            </button>
+          )}
         </div>
       )}
 
