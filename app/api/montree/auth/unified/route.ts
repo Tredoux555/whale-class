@@ -294,24 +294,13 @@ async function tryPrincipalLogin(supabase: ReturnType<typeof getSupabase>, code:
 
   let principal = hashMatch;
 
-  // Step 2: login_code column
-  if (!principal) {
-    const { data: codeMatch } = await supabase
-      .from('montree_school_admins')
-      .select(`${fields}, login_code`)
-      .ilike('login_code', escapeIlike(code))
-      .eq('role', 'principal')
-      .maybeSingle();
-
-    if (codeMatch) {
-      if (codeMatch.password_hash) {
-        const valid = await verifyPassword(code, codeMatch.password_hash)
-          || await verifyPassword(code.toLowerCase(), codeMatch.password_hash);
-        if (!valid) return null;
-      }
-      principal = codeMatch;
-    }
-  }
+  // NOTE: Principals do NOT have a login_code column on montree_school_admins.
+  // They authenticate via password_hash lookup only. The Step 2 ILIKE
+  // login_code lookup that used to live here was dead code — Postgres returned
+  // 42703 (undefined column), the destructured error was discarded, and
+  // codeMatch was always undefined. Step 1 (SHA-256 hash) and Step 3 (bcrypt
+  // scan) cover all real cases. See app/api/montree/invite-principal/route.ts
+  // for the same fix on the write side.
 
   // Step 3: bcrypt scan fallback
   if (!principal) {
