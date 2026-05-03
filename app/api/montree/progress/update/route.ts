@@ -203,111 +203,116 @@ export async function POST(request: NextRequest) {
     // The legacy montree_child_focus_works UPSERT below already enforces
     // single-focus-per-area via its own onConflict('child_id,area') key.)
 
-    // AUTO-SYNC: Ensure work exists in curriculum (prevents orphaned progress records)
-    if (classroomId && workNameToSave && area) {
-      try {
-        // Check if work exists in curriculum
-        const { data: existingWork } = await supabase
-          .from('montree_classroom_curriculum_works')
-          .select('id')
-          .eq('classroom_id', classroomId)
-          .ilike('name', escapeIlike(workNameToSave))
-          .maybeSingle();
+    // ── BOOKKEEPING — fire and forget, response returns NOW ──────────────────
+    // The progress UPSERT above is the source of truth. Everything below is
+    // side-effect bookkeeping that the user does not need to wait for. Running
+    // these sequentially before the response was costing 400-1500ms of
+    // perceived latency on every "add a work" tap. The UI is already
+    // optimistic — it doesn't depend on these completing.
+    //
+    // - Curriculum auto-sync: ensures custom work names get a curriculum row
+    //   so they appear in pickers later. Already commented "non-fatal."
+    // - Extras upsert: only fires when is_extra=true.
+    // - Focus mirror to legacy montree_child_focus_works: derived from this
+    //   anyway by progress GET routes; the mirror is just for legacy consumers.
 
-        if (!existingWork) {
-          // Get area_id — need this first for the max_seq query
-          const { data: areaData } = await supabase
-            .from('montree_classroom_curriculum_areas')
+    if (classroomId && workNameToSave && area) {
+      // Curriculum auto-sync (1-4 queries depending on whether work exists).
+      void (async () => {
+        try {
+          const { data: existingWork } = await supabase
+            .from('montree_classroom_curriculum_works')
             .select('id')
             .eq('classroom_id', classroomId)
-            .eq('area_key', area)
+            .ilike('name', escapeIlike(workNameToSave))
             .maybeSingle();
 
-          if (areaData) {
-            // Get next sequence number (now that we have area_id)
-            const { data: maxSeq } = await supabase
-              .from('montree_classroom_curriculum_works')
-              .select('sequence')
-              .eq('area_id', areaData.id)
-              .order('sequence', { ascending: false })
-              .limit(1)
+          if (!existingWork) {
+            const { data: areaData } = await supabase
+              .from('montree_classroom_curriculum_areas')
+              .select('id')
+              .eq('classroom_id', classroomId)
+              .eq('area_key', area)
               .maybeSingle();
 
-            const nextSeq = (maxSeq?.sequence || 0) + 1;
+            if (areaData) {
+              const { data: maxSeq } = await supabase
+                .from('montree_classroom_curriculum_works')
+                .select('sequence')
+                .eq('area_id', areaData.id)
+                .order('sequence', { ascending: false })
+                .limit(1)
+                .maybeSingle();
 
-            // Create curriculum entry for this work
-            const workKey = `custom_${area}_${Date.now()}`;
-            await supabase
-              .from('montree_classroom_curriculum_works')
-              .insert({
-                classroom_id: classroomId,
-                area_id: areaData.id,
-                work_key: workKey,
-                name: workNameToSave,
-                sequence: nextSeq,
-                is_custom: true,
-                is_active: true,
-              });
+              const nextSeq = (maxSeq?.sequence || 0) + 1;
+              const workKey = `custom_${area}_${Date.now()}`;
+              await supabase
+                .from('montree_classroom_curriculum_works')
+                .insert({
+                  classroom_id: classroomId,
+                  area_id: areaData.id,
+                  work_key: workKey,
+                  name: workNameToSave,
+                  sequence: nextSeq,
+                  is_custom: true,
+                  is_active: true,
+                });
+            }
           }
+        } catch (syncErr) {
+          console.error('[progress/update] Curriculum sync error (non-fatal):', syncErr);
         }
-      } catch (syncErr) {
-        // Don't fail the request if sync fails - progress was already saved
-        console.error('[progress/update] Curriculum sync error (non-fatal):', syncErr);
-      }
+      })();
     }
 
-    // If is_extra is true, insert into extras table
     if (is_extra && area) {
-      try {
-        await supabase
-          .from('montree_child_extras')
-          .upsert({
-            child_id,
-            work_name: workNameToSave,
-            area: area,
-          }, {
-            onConflict: 'child_id,work_name',
-            ignoreDuplicates: true,
-          });
-      } catch (extraErr) {
-        console.error('[progress/update] Extras insert error (non-fatal):', extraErr);
-      }
+      void (async () => {
+        try {
+          await supabase
+            .from('montree_child_extras')
+            .upsert({
+              child_id,
+              work_name: workNameToSave,
+              area: area,
+            }, {
+              onConflict: 'child_id,work_name',
+              ignoreDuplicates: true,
+            });
+        } catch (extraErr) {
+          console.error('[progress/update] Extras insert error (non-fatal):', extraErr);
+        }
+      })();
     }
 
-    // If is_focus is true, also update the focus-works table
     if (is_focus && area) {
-      try {
-        const { error: focusError } = await supabase
-          .from('montree_child_focus_works')
-          .upsert({
-            child_id,
-            classroom_id: child.classroom_id,
-            area: area,
-            work_name: workNameToSave,
-            set_at: now,
-            set_by: 'teacher',
-            updated_at: now,
-          }, {
-            onConflict: 'child_id,area',
-          });
-
-        if (focusError) {
-          console.error('[progress/update] Focus works update failed:', focusError);
-        }
-
-        // Cleanup: remove from extras if this work was previously an extra
+      void (async () => {
         try {
+          const { error: focusError } = await supabase
+            .from('montree_child_focus_works')
+            .upsert({
+              child_id,
+              classroom_id: child.classroom_id,
+              area: area,
+              work_name: workNameToSave,
+              set_at: now,
+              set_by: 'teacher',
+              updated_at: now,
+            }, {
+              onConflict: 'child_id,area',
+            });
+          if (focusError) {
+            console.error('[progress/update] Focus works update failed:', focusError);
+          }
+          // Cleanup: remove from extras if this work was previously an extra.
           await supabase
             .from('montree_child_extras')
             .delete()
             .eq('child_id', child_id)
             .eq('work_name', workNameToSave);
-        } catch (cleanupErr) {
-          console.error('[progress/update] Focus cleanup extras error:', cleanupErr);
+        } catch (focusErr) {
+          console.error('[progress/update] Focus works error:', focusErr);
         }
-      } catch (focusErr) {
-        console.error('[progress/update] Focus works error:', focusErr);
-      }
+      })();
     }
 
     return NextResponse.json({ success: true, status: statusStr, data });
