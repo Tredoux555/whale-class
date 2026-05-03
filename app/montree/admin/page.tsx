@@ -1,325 +1,672 @@
 // /montree/admin/page.tsx
-// Principal Admin Dashboard — Classroom tiles with drill-down navigation
+// Principal Cockpit — Today page.
+// Hero greeting, this-week digest, attention list, quick actions.
+// Replaces the old classroom-tile overview (now at /montree/admin/classrooms).
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { toast, Toaster } from 'sonner';
+import {
+  AlertCircle,
+  ArrowRight,
+  Camera,
+  GraduationCap,
+  Sparkles,
+  UserMinus,
+  Users,
+} from 'lucide-react';
 import { useI18n } from '@/lib/montree/i18n';
 
-interface ClassroomTeacher {
+const T = {
+  emerald: '#34d399',
+  emeraldDim: 'rgba(52,211,153,0.65)',
+  emeraldSoft: 'rgba(52,211,153,0.10)',
+  gold: '#E8C96A',
+  goldDim: 'rgba(232,201,106,0.65)',
+  goldSoft: 'rgba(232,201,106,0.10)',
+  cardBg: 'rgba(8,20,12,0.55)',
+  cardBgStrong: 'rgba(8,20,12,0.75)',
+  cardBorder: '1px solid rgba(52,211,153,0.18)',
+  textPrimary: 'rgba(255,255,255,0.92)',
+  textSecondary: 'rgba(255,255,255,0.62)',
+  textMuted: 'rgba(255,255,255,0.40)',
+  serif: '"Lora", Georgia, serif',
+  sans: '"Inter", -apple-system, BlinkMacSystemFont, sans-serif',
+};
+
+interface School {
+  id: string;
+  name: string;
+}
+interface Principal {
   id: string;
   name: string;
   email: string;
-  role: string;
-  last_login: string | null;
-  login_code: string | null;
 }
-
-interface Classroom {
+interface Stats {
+  total_classrooms: number;
+  total_teachers: number;
+  total_students: number;
+  total_observed_this_week: number;
+}
+interface Digest {
+  photos_confirmed_7d: number;
+  active_teacher_count: number;
+  total_teacher_count: number;
+}
+interface IdleTeacher {
+  id: string;
+  name: string;
+  email: string;
+  classroom_id: string | null;
+  last_login_at: string | null;
+}
+interface ClassroomLite {
   id: string;
   name: string;
   icon: string;
   color: string;
-  teacher_id: string | null;
-  teacher_name: string | null;
-  teachers: ClassroomTeacher[];
-  teacher_count: number;
-  student_count: number;
+}
+interface IdleChild {
+  id: string;
+  name: string;
+  classroom_id: string;
+  classroom_name: string;
+}
+interface Attention {
+  idle_teachers: IdleTeacher[];
+  classrooms_without_teacher: ClassroomLite[];
+  idle_children: IdleChild[];
+  idle_children_total: number;
 }
 
-interface School { id: string; name: string; slug: string; }
-interface Principal { id: string; name: string; email: string; }
-interface Stats { total_classrooms: number; total_teachers: number; total_students: number; classrooms_without_teacher: number; }
-
-const ICONS = ['🐻', '🦁', '🐨', '🐼', '🦊', '🐰', '🦋', '🌈', '🌻', '⭐', '🎨', '📚'];
-const COLORS = ['#10B981', '#3B82F6', '#8B5CF6', '#EC4899', '#F59E0B', '#EF4444'];
-
-export default function AdminPage() {
+export default function AdminTodayPage() {
   const router = useRouter();
-  const { t } = useI18n();
+  const { locale } = useI18n();
   const [school, setSchool] = useState<School | null>(null);
   const [principal, setPrincipal] = useState<Principal | null>(null);
-  const [classrooms, setClassrooms] = useState<Classroom[]>([]);
   const [stats, setStats] = useState<Stats | null>(null);
+  const [digest, setDigest] = useState<Digest | null>(null);
+  const [attention, setAttention] = useState<Attention | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Modal states
-  const [showClassroomModal, setShowClassroomModal] = useState(false);
-  const [editingClassroom, setEditingClassroom] = useState<Classroom | null>(null);
-  const [showSettingsModal, setShowSettingsModal] = useState(false);
-  const [classroomForm, setClassroomForm] = useState({ name: '', icon: '🐻', color: '#10B981' });
-  const [settingsForm, setSettingsForm] = useState({ school_name: '', principal_name: '', principal_email: '', new_password: '' });
-  const [saving, setSaving] = useState(false);
-
   useEffect(() => {
-    const schoolData = localStorage.getItem('montree_school');
     const principalData = localStorage.getItem('montree_principal');
-    if (!schoolData || !principalData) { router.push('/montree/principal/login'); return; }
+    if (!principalData) {
+      router.replace('/montree/login-select');
+      return;
+    }
     fetchData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  const getHeaders = () => {
-    const schoolData = localStorage.getItem('montree_school');
-    const principalData = localStorage.getItem('montree_principal');
-    const s = schoolData ? JSON.parse(schoolData) : null;
-    const p = principalData ? JSON.parse(principalData) : null;
-    return { 'Content-Type': 'application/json', 'x-school-id': s?.id || '', 'x-principal-id': p?.id || '' };
-  };
 
   const fetchData = async () => {
     try {
-      const res = await fetch('/api/montree/admin/overview', { headers: getHeaders() });
-      if (res.status === 401) { router.push('/montree/principal/login'); return; }
-      if (!res.ok) { console.error('Failed to load admin data:', res.status); return; }
+      const res = await fetch('/api/montree/admin/today', {
+        credentials: 'include',
+      });
+      if (res.status === 401) {
+        router.replace('/montree/login-select');
+        return;
+      }
+      if (!res.ok) {
+        console.error('Failed to load Today:', res.status);
+        return;
+      }
       const data = await res.json();
       setSchool(data.school);
       setPrincipal(data.principal);
-      setClassrooms(data.classrooms || []);
       setStats(data.stats);
-      if (data.school && data.principal) {
-        setSettingsForm({ school_name: data.school.name, principal_name: data.principal.name, principal_email: data.principal.email, new_password: '' });
-      }
-    } catch { toast.error(t('admin.error.loadDashboard')); }
-    finally { setLoading(false); }
-  };
-
-  const handleLogout = () => {
-    localStorage.removeItem('montree_school');
-    localStorage.removeItem('montree_principal');
-    router.push('/montree');
-  };
-
-  const openClassroomModal = (classroom?: Classroom) => {
-    if (classroom) {
-      setEditingClassroom(classroom);
-      setClassroomForm({ name: classroom.name, icon: classroom.icon, color: classroom.color });
-    } else {
-      setEditingClassroom(null);
-      setClassroomForm({ name: '', icon: '🐻', color: '#10B981' });
+      setDigest(data.digest);
+      setAttention(data.attention);
+    } catch (err) {
+      console.error('[Today] fetch error', err);
+    } finally {
+      setLoading(false);
     }
-    setShowClassroomModal(true);
-  };
-
-  const saveClassroom = async () => {
-    if (!classroomForm.name.trim()) return;
-    setSaving(true);
-    try {
-      const method = editingClassroom ? 'PATCH' : 'POST';
-      const body = editingClassroom ? { id: editingClassroom.id, ...classroomForm } : classroomForm;
-      const res = await fetch('/api/montree/admin/classrooms', { method, headers: getHeaders(), body: JSON.stringify(body) });
-      if (res.ok) { setShowClassroomModal(false); toast.success(editingClassroom ? t('admin.success.classroomUpdated') : t('admin.success.classroomCreated')); fetchData(); }
-    } catch { toast.error(t('admin.error.saveClassroom')); }
-    finally { setSaving(false); }
-  };
-
-  const saveSettings = async () => {
-    setSaving(true);
-    try {
-      const res = await fetch('/api/montree/admin/settings', { method: 'PATCH', headers: getHeaders(), body: JSON.stringify(settingsForm) });
-      if (res.ok) {
-        const sd = localStorage.getItem('montree_school');
-        if (sd) { const s = JSON.parse(sd); s.name = settingsForm.school_name; localStorage.setItem('montree_school', JSON.stringify(s)); }
-        setShowSettingsModal(false); toast.success(t('admin.success.settingsSaved')); fetchData();
-      }
-    } catch { toast.error(t('admin.error.saveSettings')); }
-    finally { setSaving(false); }
   };
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-emerald-900 via-emerald-800 to-teal-900 flex items-center justify-center">
-        <div className="text-center">
-          <div className="text-5xl mb-4 animate-bounce">🏫</div>
-          <p className="text-emerald-200">{t('admin.loadingDashboard')}</p>
-        </div>
+      <div
+        style={{
+          padding: '60px 0',
+          textAlign: 'center',
+          color: T.textSecondary,
+          fontFamily: T.sans,
+        }}
+      >
+        <div
+          style={{
+            width: 32,
+            height: 32,
+            border: '2px solid rgba(52,211,153,0.20)',
+            borderTopColor: T.emerald,
+            borderRadius: '50%',
+            margin: '0 auto 14px',
+            animation: 'spin 0.8s linear infinite',
+          }}
+        />
+        Loading your school…
+        <style jsx>{`
+          @keyframes spin {
+            to {
+              transform: rotate(360deg);
+            }
+          }
+        `}</style>
       </div>
     );
   }
 
-  const leadTeacher = (c: Classroom) => c.teachers?.find(t => t.role === 'lead_teacher') || c.teachers?.[0] || null;
-  const assistantCount = (c: Classroom) => Math.max(0, (c.teacher_count || 0) - 1);
+  const firstName = (principal?.name || '').split(' ')[0] || '';
+  const now = new Date();
+  const intlLocale = locale === 'en' ? 'en-US' : locale;
+  const weekday = now.toLocaleDateString(intlLocale, { weekday: 'long' });
+  const dateLabel = now.toLocaleDateString(intlLocale, {
+    month: 'long',
+    day: 'numeric',
+  });
+
+  const greeting = firstName
+    ? `Welcome back, ${firstName}.`
+    : 'Welcome back.';
+  const dateLine = `It's ${weekday}, ${dateLabel}.`;
+
+  // Build the digest paragraph in plain English.
+  const digestSentence = digest
+    ? buildDigestSentence(digest, stats)
+    : '';
+
+  const observedRate =
+    stats && stats.total_students > 0
+      ? Math.round((stats.total_observed_this_week / stats.total_students) * 100)
+      : 0;
+
+  const hasAttention =
+    attention &&
+    (attention.idle_teachers.length > 0 ||
+      attention.classrooms_without_teacher.length > 0 ||
+      attention.idle_children.length > 0);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-900 via-emerald-800 to-teal-900 p-4 md:p-6">
-      <Toaster position="top-center" />
-      <div className="max-w-7xl mx-auto">
-
-        {/* Header */}
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h1 className="text-2xl font-bold text-white">{school?.name}</h1>
-            <p className="text-emerald-300 text-sm">{t('admin.principalLabel')} {principal?.name}</p>
-          </div>
-          <div className="flex items-center gap-2">
-            <button onClick={() => router.push('/montree/admin/guru-settings')} className="p-2 bg-emerald-700/50 rounded-lg text-white hover:bg-emerald-600" title={t('admin.guruSettings.navLabel')}>🧠</button>
-            <button onClick={() => setShowSettingsModal(true)} className="p-2 bg-emerald-700/50 rounded-lg text-white hover:bg-emerald-600">⚙️</button>
-            <button onClick={handleLogout} className="px-4 py-2 bg-red-500/20 text-red-300 rounded-lg hover:bg-red-500/30 text-sm">{t('admin.logout')}</button>
-          </div>
-        </div>
-
-        {/* Stats Row */}
-        {stats && (
-          <div className="grid grid-cols-3 gap-3 mb-6">
-            <div className="bg-white/10 rounded-xl p-3 text-center">
-              <div className="text-2xl font-bold text-white">{stats.total_classrooms}</div>
-              <div className="text-emerald-300 text-xs">{t('admin.stats.classrooms')}</div>
-            </div>
-            <div className="bg-white/10 rounded-xl p-3 text-center">
-              <div className="text-2xl font-bold text-white">{stats.total_teachers}</div>
-              <div className="text-emerald-300 text-xs">{t('admin.stats.teachers')}</div>
-            </div>
-            <div className="bg-white/10 rounded-xl p-3 text-center">
-              <div className="text-2xl font-bold text-white">{stats.total_students}</div>
-              <div className="text-emerald-300 text-xs">{t('admin.stats.students')}</div>
-            </div>
-          </div>
-        )}
-
-        {/* Onboarding banner (only if no classrooms) */}
-        {stats && stats.total_classrooms === 0 && (
-          <div className="mb-6 p-4 bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-500/30 rounded-xl">
-            <div className="flex items-center gap-4">
-              <div className="text-4xl">👆</div>
-              <div className="flex-1">
-                <h3 className="text-lg font-semibold text-white">{t('admin.onboarding.createFirstClassroom')}</h3>
-                <p className="text-amber-200 text-sm">{t('admin.onboarding.addClassroomDesc')}</p>
-              </div>
-              <button onClick={() => openClassroomModal()} className="px-6 py-3 bg-amber-500 text-white rounded-xl font-semibold hover:bg-amber-600 animate-pulse">
-                + {t('admin.addClassroom')}
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* Classroom Tiles — the main content */}
-        <div className="mb-6">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-white">{t('admin.yourClassrooms')}</h2>
-            <button onClick={() => openClassroomModal()} className="px-4 py-2 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 font-medium text-sm">+ {t('admin.addClassroom')}</button>
-          </div>
-
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {classrooms.map((classroom, index) => {
-              const lead = leadTeacher(classroom);
-              const assistants = assistantCount(classroom);
-
-              return (
-                <button
-                  key={classroom.id}
-                  onClick={() => router.push(`/montree/admin/classrooms/${classroom.id}`)}
-                  className="bg-white/10 rounded-2xl p-4 border-l-4 text-left hover:bg-white/15 hover:scale-[1.02] active:scale-[0.98] transition-all group"
-                  style={{ borderLeftColor: classroom.color }}
-                  {...(index === 0 ? { 'data-guide': 'first-classroom', 'data-href': `/montree/admin/classrooms/${classroom.id}` } : {})}
-                >
-                  {/* Icon + Name */}
-                  <div className="flex items-center gap-3 mb-3">
-                    <span className="text-3xl">{classroom.icon}</span>
-                    <div className="min-w-0">
-                      <h3 className="font-semibold text-white truncate">{classroom.name}</h3>
-                      <div className="flex items-center gap-2 mt-0.5">
-                        <span className="text-emerald-300 text-xs">{t('admin.studentCount').replace('{count}', String(classroom.student_count))}</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Teacher info */}
-                  {lead ? (
-                    <div className="bg-black/20 rounded-lg px-3 py-2 mb-2">
-                      <div className="text-white text-sm font-medium truncate">{lead.name}</div>
-                      {assistants > 0 && (
-                        <div className="text-emerald-400/70 text-xs">+{assistants} {t('admin.assistantCount').replace('{count}', String(assistants))}</div>
-                      )}
-                    </div>
-                  ) : (
-                    <div className="bg-amber-500/20 rounded-lg px-3 py-2 mb-2 text-center">
-                      <span className="text-amber-300 text-xs">{t('admin.noTeacherAssigned')}</span>
-                    </div>
-                  )}
-
-                  {/* Chevron hint */}
-                  <div className="text-right text-emerald-400/50 group-hover:text-emerald-300 transition-colors text-sm">
-                    {t('admin.view')} →
-                  </div>
-                </button>
-              );
-            })}
-
-            {/* Add Classroom tile */}
-            <button onClick={() => openClassroomModal()} className="bg-white/5 border-2 border-dashed border-emerald-500/30 rounded-2xl p-4 hover:border-emerald-500/50 hover:bg-white/10 transition-all flex flex-col items-center justify-center min-h-[160px]">
-              <span className="text-3xl mb-2 opacity-50">+</span>
-              <span className="text-emerald-300 text-sm">{t('admin.addClassroom')}</span>
-            </button>
-          </div>
-        </div>
-
+    <div style={{ fontFamily: T.sans, color: T.textPrimary }}>
+      {/* Hero — school name in serif + welcome */}
+      <div style={{ marginBottom: 36 }}>
+        <h1
+          style={{
+            fontFamily: T.serif,
+            fontSize: 'clamp(28px, 4vw, 40px)',
+            fontWeight: 500,
+            letterSpacing: -0.6,
+            color: T.textPrimary,
+            margin: 0,
+            lineHeight: 1.1,
+          }}
+        >
+          {school?.name || 'Your school'}
+        </h1>
+        <p
+          style={{
+            color: T.emeraldDim,
+            fontSize: 14,
+            marginTop: 10,
+            fontFamily: T.sans,
+            letterSpacing: 0.2,
+          }}
+        >
+          <span style={{ color: T.textPrimary }}>{greeting}</span>{' '}
+          <span style={{ color: T.textSecondary }}>{dateLine}</span>
+        </p>
       </div>
 
-      {/* Classroom Modal */}
-      {showClassroomModal && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
-          <div className="bg-emerald-900 rounded-2xl p-6 max-w-md w-full border border-emerald-700">
-            <h2 className="text-xl font-bold text-white mb-4">{editingClassroom ? t('admin.modal.editClassroom') : t('admin.modal.addClassroom')}</h2>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-emerald-300 text-sm mb-1">{t('admin.modal.name')}</label>
-                <input type="text" value={classroomForm.name} onChange={e => setClassroomForm(f => ({ ...f, name: e.target.value }))} className="w-full px-4 py-3 bg-black/20 border border-emerald-600 rounded-xl text-white" placeholder={t('admin.modal.namePlaceholder')} />
-              </div>
-              <div>
-                <label className="block text-emerald-300 text-sm mb-1">{t('admin.modal.icon')}</label>
-                <div className="flex flex-wrap gap-2">
-                  {ICONS.map(icon => (
-                    <button key={icon} onClick={() => setClassroomForm(f => ({ ...f, icon }))} className={`w-10 h-10 rounded-lg text-xl ${classroomForm.icon === icon ? 'bg-emerald-500' : 'bg-black/20'}`}>{icon}</button>
-                  ))}
-                </div>
-              </div>
-              <div>
-                <label className="block text-emerald-300 text-sm mb-1">{t('admin.modal.color')}</label>
-                <div className="flex gap-2">
-                  {COLORS.map(color => (
-                    <button key={color} onClick={() => setClassroomForm(f => ({ ...f, color }))} className={`w-8 h-8 rounded-full ${classroomForm.color === color ? 'ring-2 ring-white ring-offset-2 ring-offset-emerald-900' : ''}`} style={{ backgroundColor: color }} />
-                  ))}
-                </div>
-              </div>
-            </div>
-            <div className="flex gap-3 mt-6">
-              <button onClick={() => setShowClassroomModal(false)} className="flex-1 py-3 bg-white/10 text-white rounded-xl">{t('admin.modal.cancel')}</button>
-              <button onClick={saveClassroom} disabled={saving || !classroomForm.name.trim()} className="flex-1 py-3 bg-emerald-500 text-white rounded-xl font-medium disabled:opacity-50">{saving ? t('admin.modal.saving') : t('admin.modal.save')}</button>
-            </div>
+      {/* Digest paragraph */}
+      {digestSentence && (
+        <div
+          style={{
+            background: T.cardBg,
+            backdropFilter: 'blur(18px)',
+            border: T.cardBorder,
+            borderRadius: 18,
+            padding: '22px 26px',
+            marginBottom: 24,
+          }}
+        >
+          <div
+            style={{
+              fontSize: 11,
+              fontWeight: 600,
+              color: T.emeraldDim,
+              textTransform: 'uppercase',
+              letterSpacing: 1.4,
+              marginBottom: 10,
+            }}
+          >
+            This week so far
           </div>
+          <p
+            style={{
+              fontFamily: T.serif,
+              fontSize: 19,
+              lineHeight: 1.55,
+              color: T.textPrimary,
+              margin: 0,
+              fontWeight: 400,
+            }}
+          >
+            {digestSentence}
+          </p>
         </div>
       )}
 
-      {/* Settings Modal */}
-      {showSettingsModal && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
-          <div className="bg-emerald-900 rounded-2xl p-6 max-w-md w-full border border-emerald-700">
-            <h2 className="text-xl font-bold text-white mb-4">⚙️ {t('admin.settings.title')}</h2>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-emerald-300 text-sm mb-1">{t('admin.settings.schoolName')}</label>
-                <input type="text" value={settingsForm.school_name} onChange={e => setSettingsForm(f => ({ ...f, school_name: e.target.value }))} className="w-full px-4 py-3 bg-black/20 border border-emerald-600 rounded-xl text-white" />
-              </div>
-              <div>
-                <label className="block text-emerald-300 text-sm mb-1">{t('admin.settings.principalName')}</label>
-                <input type="text" value={settingsForm.principal_name} onChange={e => setSettingsForm(f => ({ ...f, principal_name: e.target.value }))} className="w-full px-4 py-3 bg-black/20 border border-emerald-600 rounded-xl text-white" />
-              </div>
-              <div>
-                <label className="block text-emerald-300 text-sm mb-1">{t('admin.settings.email')}</label>
-                <input type="email" value={settingsForm.principal_email} onChange={e => setSettingsForm(f => ({ ...f, principal_email: e.target.value }))} className="w-full px-4 py-3 bg-black/20 border border-emerald-600 rounded-xl text-white" />
-              </div>
-              <div>
-                <label className="block text-emerald-300 text-sm mb-1">{t('admin.settings.newPassword')}</label>
-                <input type="password" value={settingsForm.new_password} onChange={e => setSettingsForm(f => ({ ...f, new_password: e.target.value }))} className="w-full px-4 py-3 bg-black/20 border border-emerald-600 rounded-xl text-white" placeholder={t('admin.settings.passwordPlaceholder')} />
-              </div>
-            </div>
-            <div className="flex gap-3 mt-6">
-              <button onClick={() => setShowSettingsModal(false)} className="flex-1 py-3 bg-white/10 text-white rounded-xl">{t('admin.modal.cancel')}</button>
-              <button onClick={saveSettings} disabled={saving} className="flex-1 py-3 bg-emerald-500 text-white rounded-xl font-medium disabled:opacity-50">{saving ? t('admin.modal.saving') : t('admin.modal.save')}</button>
-            </div>
-          </div>
+      {/* Metric tile row */}
+      {stats && (
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+            gap: 14,
+            marginBottom: 32,
+          }}
+        >
+          <Tile
+            icon={<Users size={18} strokeWidth={1.75} color={T.emerald} />}
+            value={stats.total_students}
+            label="children"
+          />
+          <Tile
+            icon={<GraduationCap size={18} strokeWidth={1.75} color={T.emerald} />}
+            value={stats.total_classrooms}
+            label="classrooms"
+          />
+          <Tile
+            icon={
+              <Sparkles size={18} strokeWidth={1.75} color={T.emerald} />
+            }
+            value={`${digest?.active_teacher_count ?? 0}/${
+              digest?.total_teacher_count ?? 0
+            }`}
+            label="teachers active this week"
+          />
+          <Tile
+            icon={<Camera size={18} strokeWidth={1.75} color={T.emerald} />}
+            value={`${observedRate}%`}
+            label="children observed"
+          />
         </div>
       )}
+
+      {/* Wants your attention */}
+      {hasAttention ? (
+        <section
+          style={{
+            background: T.cardBg,
+            backdropFilter: 'blur(18px)',
+            border: '1px solid rgba(232,201,106,0.22)',
+            borderRadius: 18,
+            padding: '22px 26px',
+            marginBottom: 28,
+          }}
+        >
+          <div
+            style={{
+              fontSize: 11,
+              fontWeight: 600,
+              color: T.goldDim,
+              textTransform: 'uppercase',
+              letterSpacing: 1.4,
+              marginBottom: 14,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8,
+            }}
+          >
+            <AlertCircle size={14} strokeWidth={2} color={T.gold} />
+            Wants your attention
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {attention?.classrooms_without_teacher.map((c) => (
+              <AttentionRow
+                key={`cwt-${c.id}`}
+                title={`${c.icon} ${c.name} — no teacher assigned`}
+                subtitle="Assign a lead teacher so families can be invited."
+                cta="Assign"
+                onClick={() => router.push(`/montree/admin/classrooms/${c.id}`)}
+              />
+            ))}
+
+            {attention?.idle_teachers.map((tch) => (
+              <AttentionRow
+                key={`it-${tch.id}`}
+                icon={<UserMinus size={16} strokeWidth={1.75} color={T.gold} />}
+                title={`${tch.name} — no login in 3+ days`}
+                subtitle={
+                  tch.last_login_at
+                    ? `Last seen ${formatRelative(tch.last_login_at)}`
+                    : 'Never logged in'
+                }
+                cta="Open"
+                onClick={() =>
+                  tch.classroom_id &&
+                  router.push(`/montree/admin/classrooms/${tch.classroom_id}`)
+                }
+              />
+            ))}
+
+            {attention && attention.idle_children.length > 0 && (
+              <AttentionRow
+                icon={<Camera size={16} strokeWidth={1.75} color={T.gold} />}
+                title={`${attention.idle_children_total} ${
+                  attention.idle_children_total === 1 ? 'child' : 'children'
+                } not observed in 8+ days`}
+                subtitle={
+                  attention.idle_children
+                    .slice(0, 5)
+                    .map((c) => c.name)
+                    .join(', ') +
+                  (attention.idle_children_total > 5 ? '…' : '')
+                }
+                cta="View"
+                onClick={() => router.push('/montree/admin/classrooms')}
+              />
+            )}
+          </div>
+        </section>
+      ) : stats && stats.total_classrooms > 0 ? (
+        <section
+          style={{
+            background: T.cardBg,
+            backdropFilter: 'blur(18px)',
+            border: T.cardBorder,
+            borderRadius: 18,
+            padding: '22px 26px',
+            marginBottom: 28,
+            color: T.textSecondary,
+            fontSize: 14,
+          }}
+        >
+          <span style={{ color: T.emerald, fontWeight: 600 }}>All clear.</span>{' '}
+          Every classroom has a teacher and every child has been observed this
+          week.
+        </section>
+      ) : null}
+
+      {/* Quick actions */}
+      <section style={{ marginBottom: 24 }}>
+        <div
+          style={{
+            fontSize: 11,
+            fontWeight: 600,
+            color: T.emeraldDim,
+            textTransform: 'uppercase',
+            letterSpacing: 1.4,
+            marginBottom: 12,
+          }}
+        >
+          Quick actions
+        </div>
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+            gap: 12,
+          }}
+        >
+          <ActionCard
+            label="Open classrooms"
+            sublabel="Drill into any class"
+            onClick={() => router.push('/montree/admin/classrooms')}
+          />
+          <ActionCard
+            label="Ask Guru"
+            sublabel="Your school advisor"
+            onClick={() => router.push('/montree/admin/guru')}
+          />
+          <ActionCard
+            label="Settings"
+            sublabel="School & profile"
+            onClick={() => router.push('/montree/admin/settings')}
+          />
+        </div>
+      </section>
     </div>
+  );
+}
+
+// ── Helpers ─────────────────────────────────────────────────────────────────
+
+function buildDigestSentence(d: Digest, s: Stats | null): string {
+  const parts: string[] = [];
+  if (s && s.total_students > 0) {
+    parts.push(
+      `${s.total_observed_this_week} of ${s.total_students} children have moments to share`
+    );
+  }
+  if (d.photos_confirmed_7d > 0) {
+    parts.push(
+      `${d.photos_confirmed_7d} ${
+        d.photos_confirmed_7d === 1 ? 'photo' : 'photos'
+      } confirmed`
+    );
+  } else if (s && s.total_students > 0) {
+    parts.push(`no photos confirmed yet this week`);
+  }
+  if (d.total_teacher_count > 0) {
+    parts.push(
+      `${d.active_teacher_count} of ${d.total_teacher_count} teachers logged in`
+    );
+  }
+  if (parts.length === 0) return '';
+  // Sentence case + period.
+  const joined =
+    parts.length === 1
+      ? parts[0]
+      : parts.length === 2
+        ? `${parts[0]} and ${parts[1]}`
+        : `${parts.slice(0, -1).join(', ')}, and ${parts[parts.length - 1]}`;
+  return joined.charAt(0).toUpperCase() + joined.slice(1) + '.';
+}
+
+function formatRelative(iso: string): string {
+  const ms = Date.now() - new Date(iso).getTime();
+  const days = Math.floor(ms / (1000 * 60 * 60 * 24));
+  if (days <= 0) return 'today';
+  if (days === 1) return 'yesterday';
+  if (days < 7) return `${days} days ago`;
+  if (days < 30) return `${Math.floor(days / 7)} weeks ago`;
+  return `${Math.floor(days / 30)} months ago`;
+}
+
+function Tile({
+  icon,
+  value,
+  label,
+}: {
+  icon: React.ReactNode;
+  value: string | number;
+  label: string;
+}) {
+  return (
+    <div
+      style={{
+        background: T.cardBg,
+        backdropFilter: 'blur(18px)',
+        border: T.cardBorder,
+        borderRadius: 14,
+        padding: '16px 18px',
+      }}
+    >
+      <div style={{ marginBottom: 6 }}>{icon}</div>
+      <div
+        style={{
+          fontFamily: T.serif,
+          fontSize: 28,
+          fontWeight: 600,
+          color: T.textPrimary,
+          letterSpacing: -0.5,
+          fontVariantNumeric: 'tabular-nums',
+        }}
+      >
+        {value}
+      </div>
+      <div
+        style={{
+          color: T.textSecondary,
+          fontSize: 12,
+          marginTop: 4,
+        }}
+      >
+        {label}
+      </div>
+    </div>
+  );
+}
+
+function AttentionRow({
+  icon,
+  title,
+  subtitle,
+  cta,
+  onClick,
+}: {
+  icon?: React.ReactNode;
+  title: string;
+  subtitle?: string;
+  cta?: string;
+  onClick?: () => void;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      disabled={!onClick}
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: 14,
+        padding: '12px 14px',
+        background: 'rgba(232,201,106,0.06)',
+        border: '1px solid rgba(232,201,106,0.18)',
+        borderRadius: 12,
+        cursor: onClick ? 'pointer' : 'default',
+        textAlign: 'left',
+        fontFamily: T.sans,
+        color: T.textPrimary,
+      }}
+    >
+      {icon && (
+        <div
+          style={{
+            width: 28,
+            height: 28,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            background: 'rgba(232,201,106,0.10)',
+            borderRadius: 8,
+            flexShrink: 0,
+          }}
+        >
+          {icon}
+        </div>
+      )}
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div
+          style={{
+            fontSize: 14,
+            fontWeight: 500,
+            color: T.textPrimary,
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+          }}
+        >
+          {title}
+        </div>
+        {subtitle && (
+          <div
+            style={{
+              color: T.textSecondary,
+              fontSize: 12,
+              marginTop: 2,
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+            }}
+          >
+            {subtitle}
+          </div>
+        )}
+      </div>
+      {cta && onClick && (
+        <div
+          style={{
+            color: T.gold,
+            fontSize: 13,
+            fontWeight: 600,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 4,
+            flexShrink: 0,
+          }}
+        >
+          {cta}
+          <ArrowRight size={14} strokeWidth={2} />
+        </div>
+      )}
+    </button>
+  );
+}
+
+function ActionCard({
+  label,
+  sublabel,
+  onClick,
+}: {
+  label: string;
+  sublabel: string;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      style={{
+        background: T.cardBg,
+        backdropFilter: 'blur(18px)',
+        border: T.cardBorder,
+        borderRadius: 14,
+        padding: '16px 18px',
+        textAlign: 'left',
+        cursor: 'pointer',
+        fontFamily: T.sans,
+        color: T.textPrimary,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        transition: 'background 0.15s ease',
+      }}
+      onMouseEnter={(e) =>
+        ((e.currentTarget as HTMLButtonElement).style.background = T.cardBgStrong)
+      }
+      onMouseLeave={(e) =>
+        ((e.currentTarget as HTMLButtonElement).style.background = T.cardBg)
+      }
+    >
+      <div>
+        <div style={{ fontSize: 14, fontWeight: 500, color: T.textPrimary }}>
+          {label}
+        </div>
+        <div
+          style={{
+            color: T.textSecondary,
+            fontSize: 12,
+            marginTop: 3,
+          }}
+        >
+          {sublabel}
+        </div>
+      </div>
+      <ArrowRight size={16} strokeWidth={1.75} color={T.emeraldDim} />
+    </button>
   );
 }
