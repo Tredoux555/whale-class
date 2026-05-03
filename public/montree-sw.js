@@ -2,11 +2,22 @@
 // Service Worker for Montree PWA
 // Provides offline caching and background sync
 
-// Bumped to v3 (Apr 30, 2026 — second time this day) — i18n completeness +
-// area-letter changes shipped, but PWA installs were still serving the v2
-// JS bundle (cached) so the new AreaDot + UI translations never appeared.
-// Bumping the version forces activate → purges old cache → serves fresh JS.
-const CACHE_NAME = 'montree-v3';
+// Bumped to v4 (May 3, 2026) — fix for the ghost 503 console noise that has
+// been chasing us across multiple sessions. The previous fetch handler called
+// event.respondWith() on EVERY same-origin GET (including Next.js RSC
+// prefetches the SW had no business handling). When any such fetch failed —
+// briefly aborted, cancelled, network blip — the .catch() block fabricated a
+// synthetic 503 response with `new Response('Offline', { status: 503 })`.
+// That 503 was logged in console even though Railway never returned one
+// (confirmed by absence of [req] log lines for the page in Railway logs).
+// New behavior: only intercept cacheable static assets + navigation requests.
+// Everything else (RSC prefetches, page documents going to network normally,
+// data fetches) is left to the browser's default stack — no fake 503s.
+//
+// Also: OFFLINE_URL is now actually pre-cached on install. Previously listed
+// as the navigation fallback but never added to PRECACHE_ASSETS, so the
+// fallback always missed and fell through to the synthetic 503.
+const CACHE_NAME = 'montree-v4';
 const OFFLINE_URL = '/montree/offline';
 
 // Only cache immutable assets — static files that change with build hashes.
@@ -25,8 +36,10 @@ function isCacheable(url) {
   }
 }
 
-// Assets to cache immediately on install
+// Assets to cache immediately on install. OFFLINE_URL is now included so
+// the navigation-failure fallback below actually works.
 const PRECACHE_ASSETS = [
+  OFFLINE_URL,
   '/montree/parent/login',
   '/montree/parent/dashboard',
   '/montree-manifest.json',
@@ -64,51 +77,69 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
-// Fetch event - network first, fallback to cache
+// Fetch event — narrow scope.
+// We ONLY intercept things we actually serve from cache:
+//   1. Cacheable static assets (so we can read-through cache + populate it)
+//   2. Top-level navigation requests (so we can fall back to the offline page
+//      when the network is down)
+// Everything else — RSC prefetches, dynamic pages, data fetches — passes
+// straight through the browser's default stack. This eliminates the synthetic
+// 503 console noise that the old broad-intercept caused: any time a Next.js
+// prefetch flickered, the SW's .catch() fabricated a 503 even though the
+// server never returned one.
 self.addEventListener('fetch', (event) => {
   // Skip non-GET requests
   if (event.request.method !== 'GET') return;
 
-  // Skip API calls - always go to network
+  // Skip API calls — always go to network, never SW-touched.
   if (event.request.url.includes('/api/')) return;
 
   // Skip external requests
   if (!event.request.url.startsWith(self.location.origin)) return;
 
+  const isNavigation = event.request.mode === 'navigate';
+  const cacheable = isCacheable(event.request.url);
+
+  // If we're not going to do anything special, don't intercept at all.
+  // Browser handles the request normally. No fake 503 on transient failures.
+  if (!isNavigation && !cacheable) return;
+
+  if (cacheable) {
+    // Static asset path: try network, populate cache on success, fall back to
+    // cache on failure. Failures don't synthesize a status code — we either
+    // return the cached version or let the error propagate.
+    event.respondWith(
+      fetch(event.request)
+        .then((response) => {
+          if (response.status === 200) {
+            const responseClone = response.clone();
+            caches.open(CACHE_NAME).then((cache) => {
+              cache.put(event.request, responseClone);
+            });
+          }
+          return response;
+        })
+        .catch(async () => {
+          const cachedResponse = await caches.match(event.request);
+          if (cachedResponse) return cachedResponse;
+          // Re-throw so the browser sees a normal network failure instead of
+          // a fake 503. This is what would have happened without the SW.
+          throw new TypeError('Asset fetch failed and no cache fallback');
+        })
+    );
+    return;
+  }
+
+  // Navigation path: try network, fall back to offline page on failure. The
+  // offline page is now actually pre-cached (PRECACHE_ASSETS above), so this
+  // fallback no longer falls through to a synthetic 503.
   event.respondWith(
     fetch(event.request)
-      .then((response) => {
-        // Cache only immutable static assets. HTML pages must always go to the
-        // network so we never serve a stale shell while APIs fail (Apr 30, 2026
-        // incident). Navigation requests still get an offline-page fallback below.
-        if (response.status === 200 && isCacheable(event.request.url)) {
-          const responseClone = response.clone();
-          caches.open(CACHE_NAME).then((cache) => {
-            cache.put(event.request, responseClone);
-          });
-        }
-        return response;
-      })
       .catch(async () => {
-        // Network failed - try cache
-        const cachedResponse = await caches.match(event.request);
-        if (cachedResponse) {
-          return cachedResponse;
-        }
-
-        // If it's a navigation request, show offline page
-        if (event.request.mode === 'navigate') {
-          const offlineResponse = await caches.match(OFFLINE_URL);
-          if (offlineResponse) {
-            return offlineResponse;
-          }
-        }
-
-        // Return a basic offline response
-        return new Response('Offline', {
-          status: 503,
-          statusText: 'Service Unavailable',
-        });
+        const offlineResponse = await caches.match(OFFLINE_URL);
+        if (offlineResponse) return offlineResponse;
+        // Last resort: re-throw so the browser shows its native offline UI.
+        throw new TypeError('Navigation fetch failed and offline page missing from cache');
       })
   );
 });
