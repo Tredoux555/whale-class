@@ -17,8 +17,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
-import { sendPrincipalInviteEmail } from '@/lib/montree/email';
 import { legacySha256 } from '@/lib/montree/password';
+// sendPrincipalInviteEmail import removed: email send is now skipped — see
+// the comment near the JSON response below for the rationale.
 
 export const maxDuration = 60; // Email send + DB writes; well under any timeout.
 
@@ -76,27 +77,20 @@ export async function POST(request: NextRequest) {
 
     const supabase = getSupabase();
 
-    // Resolve teacher + school for the email body.
-    const [teacherRes, schoolRes] = await Promise.all([
-      supabase
-        .from('montree_teachers')
-        .select('id, name')
-        .eq('id', auth.userId)
-        .maybeSingle(),
-      supabase
-        .from('montree_schools')
-        .select('id, name')
-        .eq('id', auth.schoolId)
-        .maybeSingle(),
-    ]);
-    if (!teacherRes.data || !schoolRes.data) {
+    // Verify the teacher's school exists. We used to also fetch teacher.name +
+    // school.name to embed in the welcome email body — that step is gone now,
+    // so we keep just the existence check (cheap school SELECT) for safety.
+    const { data: school } = await supabase
+      .from('montree_schools')
+      .select('id')
+      .eq('id', auth.schoolId)
+      .maybeSingle();
+    if (!school) {
       return NextResponse.json(
         { error: 'Could not load your school.' },
         { status: 500 }
       );
     }
-    const teacherName = teacherRes.data.name || 'Your teacher';
-    const schoolName = schoolRes.data.name || 'their school';
 
     // Check if a principal already exists for this school+email.
     const { data: existing, error: existingErr } = await supabase
@@ -179,31 +173,16 @@ export async function POST(request: NextRequest) {
       principalId = inserted.id;
     }
 
-    // Send the warm welcome email. Non-blocking from a UX perspective —
-    // even if Resend fails, the principal record is created and the teacher
-    // can copy the code manually.
-    const origin =
-      request.headers.get('origin') ||
-      `https://${request.headers.get('host') || 'montree.xyz'}`;
-    const loginUrl = `${origin}/montree/login-select?code=${encodeURIComponent(loginCode!)}`;
-
-    let emailStatus: { sent: boolean; error?: string } = { sent: false };
-    try {
-      const result = await sendPrincipalInviteEmail(
-        principalEmail,
-        principalName,
-        teacherName,
-        schoolName,
-        loginCode!,
-        loginUrl,
-        note,
-      );
-      emailStatus = { sent: result.success, error: result.error };
-    } catch (err) {
-      const message = err instanceof Error ? err.message : String(err);
-      emailStatus = { sent: false, error: message };
-      console.error('[invite-principal] email send threw:', err);
-    }
+    // Email send intentionally skipped. The original design tried to send a
+    // welcome email via Resend, but Railway's RESEND_API_KEY env var is the
+    // recurring blocker (unset / placeholder). The route already returns the
+    // plain code in the JSON response and the modal already shows it with a
+    // "Copy code" button, so the teacher can share the code by SMS / WhatsApp /
+    // verbal hand-off. That's the canonical flow now — when Resend domain
+    // verification + API key are sorted on Railway, re-enable the send call.
+    //
+    // Response keeps an `email` field for backward-compat with any consumer
+    // that destructures it; we just always report skipped.
 
     return NextResponse.json({
       success: true,
@@ -213,7 +192,7 @@ export async function POST(request: NextRequest) {
         email: principalEmail,
         login_code: loginCode!,
       },
-      email: emailStatus,
+      email: { sent: false, skipped: true },
       reused_existing: !!existing,
     });
   } catch (err) {
