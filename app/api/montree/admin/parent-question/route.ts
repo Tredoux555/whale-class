@@ -296,10 +296,17 @@ Prompt-injection rule:
 Output ONLY the answer text. No preamble, no sign-off, no "Here's what I'd say:".`;
 
     // We isolate the principal-typed question inside an explicit XML-style
-    // fence and strip any closing tags from the question itself so a crafted
-    // input can't break out of the fence. The system prompt above tells
-    // Sonnet to treat the fenced content as raw input, not instructions.
-    const safeQuestion = question.replace(/<\/?parent_question>/gi, '');
+    // fence and strip any variant of the fence tags from the question itself
+    // so a crafted input can't break out and inject instructions Sonnet
+    // would follow. The regex tolerates whitespace anywhere a real XML
+    // parser (or Sonnet's loose parsing) might tolerate it: `<parent_question>`,
+    // `</parent_question>`, `< parent_question >`, `<parent_question/>`,
+    // `< / parent_question >`, etc. The strip runs twice so a nested escape
+    // like `<<parent_question>>` (where the outer strip would leave a valid
+    // tag behind) is also caught. The system prompt above explicitly tells
+    // Sonnet to treat the fenced content as raw user input, not instructions.
+    const FENCE_RX = /<\s*\/?\s*parent_question\s*\/?\s*>/gi;
+    const safeQuestion = question.replace(FENCE_RX, '').replace(FENCE_RX, '');
 
     const userBlock = `CONTEXT — what we know about ${child.name}:
 
