@@ -99,13 +99,20 @@ export async function POST(request: NextRequest) {
     const schoolName = schoolRes.data.name || 'their school';
 
     // Check if a principal already exists for this school+email.
-    const { data: existing } = await supabase
+    const { data: existing, error: existingErr } = await supabase
       .from('montree_school_admins')
-      .select('id, name, email, login_code')
+      .select('id, name, email')
       .eq('school_id', auth.schoolId)
       .eq('email', principalEmail)
       .eq('role', 'principal')
       .maybeSingle();
+    if (existingErr) {
+      console.error('[invite-principal] existing-row lookup error:', existingErr);
+      return NextResponse.json(
+        { error: 'Could not check for an existing invitation.' },
+        { status: 500 }
+      );
+    }
 
     let loginCode: string;
     let principalId: string;
@@ -114,13 +121,16 @@ export async function POST(request: NextRequest) {
       // Re-invite — reuse the same row, regenerate code so the previous email
       // becomes invalid (security hygiene). Update name in case the teacher
       // typed it differently this time.
+      // NOTE: montree_school_admins has no login_code column — principals
+      // authenticate via password_hash lookup (legacy SHA-256 of the code).
+      // We only persist the hash; the plain code is returned in the JSON
+      // response and emailed to the principal.
       loginCode = generateLoginCode();
       const codeHash = legacySha256(loginCode);
       const { error: updateErr } = await supabase
         .from('montree_school_admins')
         .update({
           name: principalName,
-          login_code: loginCode,
           password_hash: codeHash,
         })
         .eq('id', existing.id);
@@ -133,46 +143,40 @@ export async function POST(request: NextRequest) {
       }
       principalId = existing.id;
     } else {
-      // New invite — find a unique code.
-      let attempts = 0;
-      while (attempts < 5) {
-        loginCode = generateLoginCode();
-        const codeHash = legacySha256(loginCode);
-        const { data: inserted, error: insertErr } = await supabase
-          .from('montree_school_admins')
-          .insert({
-            school_id: auth.schoolId,
-            email: principalEmail,
-            name: principalName,
-            password_hash: codeHash,
-            login_code: loginCode,
-            role: 'principal',
-          })
-          .select('id')
-          .single();
+      // New invite. The only UNIQUE on montree_school_admins is (school_id, email),
+      // and the existing-row check above already prevents that collision under
+      // normal flow. We retry on 23505 anyway in case of a concurrent insert
+      // for the same email — the existing-row branch will handle it on the next
+      // attempt's caller (rare; we just bail with a clean error here).
+      loginCode = generateLoginCode();
+      const codeHash = legacySha256(loginCode);
+      const { data: inserted, error: insertErr } = await supabase
+        .from('montree_school_admins')
+        .insert({
+          school_id: auth.schoolId,
+          email: principalEmail,
+          name: principalName,
+          password_hash: codeHash,
+          role: 'principal',
+        })
+        .select('id')
+        .single();
 
-        if (!insertErr && inserted) {
-          principalId = inserted.id;
-          break;
-        }
-        // Unique-violation on login_code — retry with a fresh code.
-        if (insertErr && insertErr.code === '23505') {
-          attempts++;
-          continue;
-        }
-        // Anything else — bail.
+      if (insertErr || !inserted) {
         console.error('[invite-principal] insert error:', insertErr);
+        // 23505 here means a race on (school_id, email). Surface a friendly message.
+        if (insertErr && insertErr.code === '23505') {
+          return NextResponse.json(
+            { error: 'A principal with that email already exists for your school. Refresh and try again.' },
+            { status: 409 }
+          );
+        }
         return NextResponse.json(
           { error: 'Could not create the invitation.' },
           { status: 500 }
         );
       }
-      if (attempts >= 5) {
-        return NextResponse.json(
-          { error: 'Could not generate a unique code. Please try again.' },
-          { status: 500 }
-        );
-      }
+      principalId = inserted.id;
     }
 
     // Send the warm welcome email. Non-blocking from a UX perspective —
