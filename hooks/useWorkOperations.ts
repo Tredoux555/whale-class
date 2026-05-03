@@ -141,14 +141,28 @@ export function useWorkOperations({
       return wArea === area;
     });
 
-    // OPTIMISTIC UPDATE - update UI immediately
-    setFocusWorks(prev => prev.map(w => {
-      const wArea = w.area === 'math' ? 'mathematics' : w.area;
-      if (wArea === area) {
-        return { work_name: work.name, area: area, status: newStatus, is_focus: true };
+    // OPTIMISTIC UPDATE - update UI immediately.
+    // If the area already has a focus work, replace it (prev.map). If it
+    // doesn't (this is the first focus work for the area), append it so the
+    // shelf row renders right away. The render in FocusWorksSection iterates
+    // over AREAS and uses focusWorks.find(...) per area, so the new entry
+    // shows up immediately. Without the append branch, the new work would
+    // disappear into a void until the next fetchAssignments refresh — which
+    // is the "not instant" feel the user has been chasing.
+    setFocusWorks(prev => {
+      const replacement: Assignment = { work_name: work.name, area, status: newStatus, is_focus: true };
+      const hasArea = prev.some(w => {
+        const wArea = w.area === 'math' ? 'mathematics' : w.area;
+        return wArea === area;
+      });
+      if (hasArea) {
+        return prev.map(w => {
+          const wArea = w.area === 'math' ? 'mathematics' : w.area;
+          return wArea === area ? replacement : w;
+        });
       }
-      return w;
-    }));
+      return [...prev, replacement];
+    });
     setWheelPickerOpen(false);
     toast.success(t('toast.focusSet', { name: work.name }));
 
@@ -189,14 +203,19 @@ export function useWorkOperations({
         }
       }
     } catch {
-      // Revert on failure
-      if (oldFocusWork) {
-        setFocusWorks(prev => prev.map(w => {
-          const wArea = w.area === 'math' ? 'mathematics' : w.area;
-          if (wArea === area) return oldFocusWork;
-          return w;
-        }));
-      }
+      // Revert on failure. Two cases:
+      //   - The area had a previous focus work → put it back.
+      //   - The area was empty before (we just appended a new row) → remove
+      //     the new row so the optimistic "Added!" toast doesn't lie.
+      setFocusWorks(prev => {
+        if (oldFocusWork) {
+          return prev.map(w => {
+            const wArea = w.area === 'math' ? 'mathematics' : w.area;
+            return wArea === area ? oldFocusWork : w;
+          });
+        }
+        return prev.filter(w => w.work_name !== work.name);
+      });
       toast.error(t('toast.failedToUpdate'));
     }
   }, [childId, wheelPickerArea, wheelPickerWorks, focusWorks, setFocusWorks, setWheelPickerOpen]);
