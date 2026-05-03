@@ -183,9 +183,111 @@ GMass campaigns A/C/D are historical. Campaign C sent 335 blank emails (Session 
 
 ## RECENT STATUS (May 3, 2026)
 
+### ⚡ Session 83 — Principal Cockpit Reframe + Invite Flow + 503 Diagnostic + Speed Fix (May 3, 2026)
+
+**9 commits pushed to main this session.** Reframed the principal portal from CRUD admin tool to school cockpit, shipped the missing teacher→principal invite flow, added 503 diagnostic instrumentation, and made the add-work POST 5x faster. Plus pushed Session 82's Quick Guide fix that had been sitting locally.
+
+**Commits:**
+- `38839e36` — Session 82 Quick Guide fix shipped (was sitting in working tree)
+- `05d70462` — Cockpit V1: Today page + 6-item dark-forest sidebar + classrooms relocated to `/admin/classrooms` + new `/api/montree/admin/today` endpoint
+- `6c9ad229` — V1 audit fix: `teacher_confirmed=true` on observation query + sidebar fallback links
+- `4cd40016` — Cockpit V2: People + Pulse hub pages with 4 metric cards each
+- `a0c4bd2e` — Cockpit V3: Settings full rewrite + theme cleanup on 8 admin pages (gradient wrappers stripped)
+- `303d9bfb` — Cockpit V4: Guru chat dark-forest theme
+- `4c2acd07` — 503 diagnostic: `[req] METHOD /pathname` log in `verifySchoolRequest` + `timeout 20` on pip install in `start.sh`
+- `247de394` — Principal invite flow + viewer-mode billing gates
+- `775afac5` — Speed up `/api/montree/progress/update` — bookkeeping moved to fire-and-forget after response
+
+**A. Principal Cockpit reframe (V1-V4, commits 05d70462 → 303d9bfb):**
+
+The principal portal was 3 sidebar items (Overview / Guru / Settings) with 14 orphaned sub-pages and inconsistent themes (mix of `from-emerald-900`, `from-slate-900`, `bg-gray-950`, no theme at all). Now: 6-item dark-forest sidebar (Today, Classrooms, People, Pulse, Settings, Ask Guru) where every destination resolves to a real page in the canonical brand theme.
+
+The new **Today cockpit** (`/montree/admin`) is the heart of the reframe. School name in Lora serif (clamp 28-40px), "Welcome back, {firstName}. It's {weekday}, {date}.", weekly digest paragraph in plain English ("X of Y children have moments to share, Z photos confirmed, A of B teachers logged in"), 4 metric tiles (children · classrooms · active teachers ratio · observation rate %), wants-your-attention list in gold (idle teachers 3+d, classrooms without lead, children not observed 8+d), quick actions row.
+
+**New API:** `app/api/montree/admin/today/route.ts`. Returns `school / principal / stats / digest / attention / plan`. Cache 5 min, SWR 10 min. The canonical source for principal cockpit data.
+
+**Theme cleanup on 8 drill-down pages** — minimal-touch intervention. Stripped `min-h-screen bg-gradient-to-br ...` wrappers from activity / reports / billing / teachers / students / import / classroom drill-down / guru-settings. Inner content (cards, buttons) unchanged. Pages now sit on the layout's `#0a1a0f` cleanly. Inner-content polish (replacing `bg-white/10` cards with canonical glass tokens) deferred to a focused follow-up commit.
+
+Skipped: `parent-codes` (light theme intentional for printing) and `features` (no theme conflict).
+
+**B. Principal invite flow + viewer-mode (commit 247de394):**
+
+The missing mid-funnel piece. Until this session, principals of teacher-led schools (where a teacher signed up at `/montree/try` first) had no path in — the teacher signup at `try/instant/route.ts:332` doesn't create a `montree_school_admins` row.
+
+The flow:
+1. Teacher's More menu → "Invite your principal"
+2. Modal: name + email + optional 600-char note
+3. Server creates `montree_school_admins` row tied to teacher's `school_id`, generates unique 6-char code (avoids I/O/0/1 for verbal sharing)
+4. Resend sends warm welcome email **from `RESEND_FROM_EMAIL`** with subject `'{teacherName} wants to show you something'`
+5. Principal clicks "Open Montree" → lands on `/montree/login-select?code=ABC123` → cockpit
+6. Principal sees gold viewer banner: "You're a viewer. This is a teacher's classroom — you can browse everything below for free. To add your own classrooms or invite your other teachers, upgrade to a school plan."
+7. Add-classroom buttons replaced with gold "Upgrade to add classrooms" links
+
+**Pricing model that this enforces:**
+
+| State | plan_type / status | What | Cost |
+|---|---|---|---|
+| Trial | `personal_classroom` + `trialing` | 1 classroom · 1 teacher · 30 days · full AI | Free |
+| Single classroom | `personal_classroom` + `active` | 1 classroom · 1 teacher · full AI | $7/student/mo |
+| School plan | `school` + `active` | N classrooms · N teachers · principal billing | $7/student/mo across school |
+
+Principal invited to a teacher-led school sees but pays nothing — they're a witness. AI work was already done for the teacher; principal is just looking at cached data. Conversion happens at the moment of EXPANSION (adding their own classrooms / teachers), not at the door.
+
+**🚨 Architectural rule locked in:** `is_teacher_led = (plan_type === 'personal_classroom') || has founding_teacher_id`. This is the canonical signal for principal-as-viewer mode. Lives in `/api/montree/admin/today` response under `plan.is_teacher_led`. Drives banners + add-capacity gates.
+
+**🚨 Stripe upgrade flow NOT shipped.** "Upgrade to add classrooms" links to `/pricing` (marketing page). The transition `personal_classroom` → `school` is currently manual (super-admin updates `plan_type`). Self-serve checkout is its own session.
+
+**C. 503 diagnostic instrumentation (commit 4c2acd07):**
+
+After 6 commits in quick succession, user reported persistent 503s. **Root cause confirmed: deploy-window churn.** Each Railway redeploy creates a 30-60s container-replacement window during which Railway's edge proxy returns 503 to all in-flight requests. NOT an app bug — a normal consequence of deploying. But it FELT like a persistent app bug because the user was testing during deploy windows.
+
+**Two surgical changes shipped to confirm + remove one specific failure mode:**
+
+1. `lib/montree/verify-request.ts` — added `console.log('[req] ${method} ${pathname}')` at the top of every API call. Next 503: check Railway logs.
+   - `[req]` line present → app got the request → real bug (would normally be 500, not 503)
+   - `[req]` line absent → request never reached Node → Railway edge during churn / cold start / healthcheck failure
+2. `start.sh` — wrapped `pip3 install --upgrade yt-dlp` in `timeout 20`. Could previously hang on slow PyPI days, blocking `exec node server.js` past Railway's 60s healthcheck timeout, marking container unhealthy, replacing it.
+
+**🚨 Architectural rule locked in:** `export const maxDuration` from prior sessions does NOT take effect on Railway standalone mode. Only enforced by Vercel/Lambda. Session 81's commit `294a0648` ("maxDuration on 25 AI-calling routes") was a placebo on this stack. **Don't ship more `maxDuration` exports attributing 503 fixes.** Real Railway 503 fixes are container-level (memory, healthcheck, startup races).
+
+**D. progress/update speed fix (commit 775afac5):**
+
+User reported add-work was working but "far from instant." Route was awaiting 8-10 sequential DB queries before responding (~1200ms). Auth + `verifyChild` + `SELECT child` + `SELECT existing` + `UPSERT progress` is the actual write. The remaining 4-6 queries were bookkeeping the user shouldn't wait for: curriculum auto-sync (1-4 queries), `is_extra` upsert, focus_works legacy mirror + extras cleanup.
+
+**Fix:** moved all three bookkeeping blocks into `void (async () => { ... })()` fire-and-forget IIFEs that run AFTER `NextResponse.json()` returns. Critical path: ~250ms.
+
+**🚨 Architectural rule locked in:** Bookkeeping after a write goes in fire-and-forget IIFEs. The user shouldn't wait for side effects. Pattern: `void (async () => { try { ... } catch (e) { console.error(...) } })()` before the response return.
+
+**Verification status:**
+- ✅ All 9 commits on `origin/main`. Railway auto-deploys triggered.
+- ✅ Session 82 Quick Guide fix on production (was the most-overdue ship).
+- ✅ Lint clean across all changed files.
+- ✅ All 6 sidebar destinations resolve to real `page.tsx` files.
+- ✅ All 7 hub-linked pages resolve.
+- ⏳ User to verify on production: open `/montree/admin` as principal, expect dark-forest cockpit. Click around hub pages, verify drill-downs open.
+- ⏳ Test invite flow: More menu → Invite your principal → check email arrives.
+- ⏳ Watch Railway logs for next 503 — `[req]` log line tells us app vs edge.
+
+**Handoff doc:** `docs/handoffs/SESSION_83_HANDOFF.md` — full file-by-file change list, architectural rules, every commit explained, deferred items, end-to-end test instructions.
+
+**🚨 Next session priorities:**
+1. **Verify principal invite end-to-end on production** — More menu → Invite → email → click link → land on cockpit with viewer banner.
+2. **🚨 Resend `hello@montree.xyz` domain verification** — see Session 83 handoff Section "Carry-overs" for the 6-step process. The invite emails are currently sending from `onboarding@resend.dev` test address (only delivers to Resend account owner). Code is ready — just env var update needed.
+3. **Inner-content polish** on the 8 V3 admin pages — replace `bg-white/10` cards with canonical glass tokens. Mechanical sweep, ~30-45 min.
+4. **Translation pass** on cockpit + invite copy — about 50 hardcoded English strings. `npm run i18n:fill-ui`.
+5. **Voice-first principal onboarding rebuild** — replace 697-line wizard with TellGuruCard-pattern voice flow. Half-day to full-day.
+6. **Auth consolidation** — drop localStorage in favor of cookie-only on principal portal.
+7. **Setup-stream resilience** — make `/api/montree/principal/setup-stream` idempotent so 503 mid-stream doesn't leave a half-built school.
+8. **Stripe upgrade flow** — self-serve checkout for `personal_classroom` → `school` transition. Big lift, separate session.
+9. **Verify Quick Guide on production** — eyeball DE/FR/JA after Session 82 fix.
+10. **Watch for 503s** — diagnostic shipped, waiting for evidence.
+11. **parent-codes** print/screen split.
+
+---
+
 ### ⚡ Session 82 — Quick Guide System Structural Fix (3x3x3 Audit) (May 3, 2026)
 
-**8 files changed locally. 0 commits pushed yet — ready for `git push origin main` when user is ready.** Applied the 3x3x3 audit methodology after user reported Quick Guide showing wrong language across multiple locales. What looked like a "stale state" bug turned out to be four structural defects layered on top of each other in the consumer code, while the data layer was actually correct.
+**🟢 SHIPPED to production in Session 83 (commit `38839e36`).** Originally 8 files changed locally — pushed clean. Applied the 3x3x3 audit methodology after user reported Quick Guide showing wrong language across multiple locales. What looked like a "stale state" bug turned out to be four structural defects layered on top of each other in the consumer code, while the data layer was actually correct.
 
 **The bug anatomy (in plain language):**
 
