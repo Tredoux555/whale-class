@@ -186,7 +186,7 @@ export default function ActivityPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-950">
+      <div className="flex items-center justify-center min-h-[60vh]">
         <div className="text-center">
           <div className="w-12 h-12 border-4 border-emerald-500/20 border-t-emerald-500 rounded-full animate-spin mx-auto mb-4"></div>
           <p className="text-gray-400">{t('common.loading')}</p>
@@ -196,7 +196,7 @@ export default function ActivityPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white">
+    <div className="text-white">
       {/* Header */}
       <div className="border-b border-gray-800 bg-gray-900/50 backdrop-blur sticky top-0 z-10">
         <div className="px-6 py-4">

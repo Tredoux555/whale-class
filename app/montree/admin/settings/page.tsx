@@ -1,11 +1,13 @@
 // /montree/admin/settings/page.tsx
-// School Settings - for principals
+// School Settings — for principals.
+// Dark forest theme. Logout removed (sidebar provides it). Back arrow removed (sidebar provides nav).
 'use client';
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { toast, Toaster } from 'sonner';
+import { Building2, KeyRound, UserRound, CreditCard, ArrowRight } from 'lucide-react';
 import { useI18n } from '@/lib/montree/i18n';
 
 interface School {
@@ -16,11 +18,20 @@ interface School {
   plan_type: string;
 }
 
-interface Principal {
-  id: string;
-  name: string;
-  email: string;
-}
+const T = {
+  emerald: '#34d399',
+  emeraldDim: 'rgba(52,211,153,0.65)',
+  gold: '#E8C96A',
+  cardBg: 'rgba(8,20,12,0.55)',
+  cardBorder: '1px solid rgba(52,211,153,0.18)',
+  inputBg: 'rgba(0,0,0,0.30)',
+  inputBorder: '1px solid rgba(52,211,153,0.25)',
+  textPrimary: 'rgba(255,255,255,0.92)',
+  textSecondary: 'rgba(255,255,255,0.62)',
+  textMuted: 'rgba(255,255,255,0.40)',
+  serif: '"Lora", Georgia, serif',
+  sans: '"Inter", -apple-system, BlinkMacSystemFont, sans-serif',
+};
 
 export default function AdminSettingsPage() {
   const router = useRouter();
@@ -28,9 +39,7 @@ export default function AdminSettingsPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [school, setSchool] = useState<School | null>(null);
-  const [principal, setPrincipal] = useState<Principal | null>(null);
 
-  // Form state
   const [schoolName, setSchoolName] = useState('');
   const [principalName, setPrincipalName] = useState('');
   const [principalEmail, setPrincipalEmail] = useState('');
@@ -38,49 +47,38 @@ export default function AdminSettingsPage() {
   const [confirmPassword, setConfirmPassword] = useState('');
 
   useEffect(() => {
-    checkAuth();
-  }, []);
-
-  const checkAuth = () => {
     const schoolData = localStorage.getItem('montree_school');
     const principalData = localStorage.getItem('montree_principal');
-
     if (!schoolData || !principalData) {
-      router.push('/montree/principal/login');
+      router.replace('/montree/login-select');
       return;
     }
-
     fetchData();
-  };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const getHeaders = () => {
     const schoolData = localStorage.getItem('montree_school');
     const principalData = localStorage.getItem('montree_principal');
-    const school = schoolData ? JSON.parse(schoolData) : null;
-    const principal = principalData ? JSON.parse(principalData) : null;
-
+    const s = schoolData ? JSON.parse(schoolData) : null;
+    const p = principalData ? JSON.parse(principalData) : null;
     return {
       'Content-Type': 'application/json',
-      'x-school-id': school?.id || '',
-      'x-principal-id': principal?.id || '',
+      'x-school-id': s?.id || '',
+      'x-principal-id': p?.id || '',
     };
   };
 
   const fetchData = async () => {
     try {
       const res = await fetch('/api/montree/admin/overview', { headers: getHeaders() });
-
       if (res.status === 401) {
-        router.push('/montree/principal/login');
+        router.replace('/montree/login-select');
         return;
       }
-
       if (!res.ok) throw new Error('Failed to load settings');
       const data = await res.json();
       setSchool(data.school);
-      setPrincipal(data.principal);
-
-      // Initialize form
       if (data.school) setSchoolName(data.school.name);
       if (data.principal) {
         setPrincipalName(data.principal.name);
@@ -99,18 +97,14 @@ export default function AdminSettingsPage() {
       toast.error(t('admin.errors.passwordsMismatch'));
       return;
     }
-
     setSaving(true);
     try {
-      const payload: any = {
+      const payload: Record<string, string> = {
         school_name: schoolName,
         principal_name: principalName,
         principal_email: principalEmail,
       };
-
-      if (newPassword) {
-        payload.new_password = newPassword;
-      }
+      if (newPassword) payload.new_password = newPassword;
 
       const res = await fetch('/api/montree/admin/settings', {
         method: 'PATCH',
@@ -119,22 +113,19 @@ export default function AdminSettingsPage() {
       });
 
       if (res.ok) {
-        // Update localStorage
-        const schoolData = localStorage.getItem('montree_school');
-        if (schoolData) {
-          const school = JSON.parse(schoolData);
-          school.name = schoolName;
-          localStorage.setItem('montree_school', JSON.stringify(school));
+        const sd = localStorage.getItem('montree_school');
+        if (sd) {
+          const sObj = JSON.parse(sd);
+          sObj.name = schoolName;
+          localStorage.setItem('montree_school', JSON.stringify(sObj));
         }
-
-        const principalData = localStorage.getItem('montree_principal');
-        if (principalData) {
-          const principal = JSON.parse(principalData);
-          principal.name = principalName;
-          principal.email = principalEmail;
-          localStorage.setItem('montree_principal', JSON.stringify(principal));
+        const pd = localStorage.getItem('montree_principal');
+        if (pd) {
+          const pObj = JSON.parse(pd);
+          pObj.name = principalName;
+          pObj.email = principalEmail;
+          localStorage.setItem('montree_principal', JSON.stringify(pObj));
         }
-
         toast.success(t('admin.messages.settingsSaved'));
         setNewPassword('');
         setConfirmPassword('');
@@ -150,188 +141,320 @@ export default function AdminSettingsPage() {
     }
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem('montree_school');
-    localStorage.removeItem('montree_principal');
-    router.push('/montree');
-  };
-
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-emerald-900 via-emerald-800 to-teal-900 flex items-center justify-center">
-        <div className="text-center">
-          <div className="text-5xl mb-4 animate-bounce">⚙️</div>
-          <p className="text-emerald-200">{t('admin.states.loadingSettings')}</p>
-        </div>
+      <div style={{ padding: 60, textAlign: 'center', color: T.textSecondary, fontFamily: T.sans }}>
+        {t('admin.states.loadingSettings')}
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-900 via-emerald-800 to-teal-900 p-4 md:p-6">
-      <Toaster position="top-center" />
-      <div className="max-w-2xl mx-auto">
-        {/* Header */}
-        <div className="flex items-center gap-4 mb-6">
-          <Link href="/montree/admin" className="text-emerald-300 hover:text-white text-2xl">←</Link>
-          <div>
-            <h1 className="text-2xl font-bold text-white">⚙️ {t('admin.sections.schoolSettings')}</h1>
-            <p className="text-emerald-300 text-sm">{t('admin.messages.manageSchoolProfile')}</p>
+    <div style={{ fontFamily: T.sans, color: T.textPrimary, maxWidth: 720 }}>
+      <Toaster position="top-center" theme="dark" />
+
+      <div style={{ marginBottom: 28 }}>
+        <h1
+          style={{
+            fontFamily: T.serif,
+            fontSize: 'clamp(26px, 4vw, 36px)',
+            fontWeight: 500,
+            letterSpacing: -0.4,
+            margin: 0,
+          }}
+        >
+          {t('admin.sections.schoolSettings')}
+        </h1>
+        <p style={{ color: T.textSecondary, fontSize: 14, marginTop: 8, margin: '8px 0 0 0' }}>
+          {t('admin.messages.manageSchoolProfile')}
+        </p>
+      </div>
+
+      <div
+        style={{
+          background: T.cardBg,
+          backdropFilter: 'blur(18px)',
+          border: T.cardBorder,
+          borderRadius: 18,
+          padding: '26px 28px',
+        }}
+      >
+        <SectionHeader icon={<Building2 size={18} strokeWidth={1.75} color={T.emerald} />}>
+          {t('admin.labels.schoolInformation')}
+        </SectionHeader>
+        <Field label={t('admin.form.schoolName')}>
+          <Input
+            value={schoolName}
+            onChange={(e) => setSchoolName(e.target.value)}
+            placeholder={t('admin.placeholders.schoolName') || 'e.g., Beijing International School'}
+          />
+        </Field>
+        {school?.slug && (
+          <div style={{ color: T.emeraldDim, fontSize: 12, marginTop: 6 }}>
+            {t('admin.labels.schoolUrl')}: montree.app/{school.slug}
           </div>
-        </div>
+        )}
 
-        {/* Settings Form */}
-        <div className="bg-white/10 rounded-2xl p-6 border border-emerald-700 space-y-6">
-          {/* School Info */}
-          <div>
-            <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-              <span>🏫</span> {t('admin.labels.schoolInformation')}
-            </h2>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-emerald-300 text-sm mb-1">{t('admin.form.schoolName')}</label>
-                <input
-                  type="text"
-                  value={schoolName}
-                  onChange={(e) => setSchoolName(e.target.value)}
-                  className="w-full px-4 py-3 bg-black/20 border border-emerald-600 rounded-xl text-white placeholder-emerald-400/50 focus:border-emerald-400 focus:outline-none"
-                  placeholder={t('admin.placeholders.schoolName') || 'e.g., Beijing International School'}
-                />
-              </div>
-              {school?.slug && (
-                <div className="text-sm text-emerald-400">
-                  {t('admin.labels.schoolUrl')}: montree.app/{school.slug}
-                </div>
-              )}
-            </div>
-          </div>
+        <Divider />
 
-          <hr className="border-emerald-700" />
+        <SectionHeader icon={<UserRound size={18} strokeWidth={1.75} color={T.emerald} />}>
+          {t('admin.labels.principalAccount')}
+        </SectionHeader>
+        <Field label={t('admin.form.name')}>
+          <Input
+            value={principalName}
+            onChange={(e) => setPrincipalName(e.target.value)}
+            placeholder={t('admin.placeholders.yourName') || 'Your name'}
+          />
+        </Field>
+        <Field label={t('admin.form.email')}>
+          <Input
+            type="email"
+            value={principalEmail}
+            onChange={(e) => setPrincipalEmail(e.target.value)}
+            placeholder={
+              t('admin.placeholders.principalEmail') || 'principal@school.com'
+            }
+          />
+        </Field>
 
-          {/* Principal Info */}
-          <div>
-            <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-              <span>👤</span> {t('admin.labels.principalAccount')}
-            </h2>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-emerald-300 text-sm mb-1">{t('admin.form.name')}</label>
-                <input
-                  type="text"
-                  value={principalName}
-                  onChange={(e) => setPrincipalName(e.target.value)}
-                  className="w-full px-4 py-3 bg-black/20 border border-emerald-600 rounded-xl text-white placeholder-emerald-400/50 focus:border-emerald-400 focus:outline-none"
-                  placeholder={t('admin.placeholders.yourName') || 'Your name'}
-                />
-              </div>
-              <div>
-                <label className="block text-emerald-300 text-sm mb-1">{t('admin.form.email')}</label>
-                <input
-                  type="email"
-                  value={principalEmail}
-                  onChange={(e) => setPrincipalEmail(e.target.value)}
-                  className="w-full px-4 py-3 bg-black/20 border border-emerald-600 rounded-xl text-white placeholder-emerald-400/50 focus:border-emerald-400 focus:outline-none"
-                  placeholder={t('admin.placeholders.principalEmail') || 'principal@school.com'}
-                />
-              </div>
-            </div>
-          </div>
+        <Divider />
 
-          <hr className="border-emerald-700" />
+        <SectionHeader icon={<KeyRound size={18} strokeWidth={1.75} color={T.emerald} />}>
+          {t('admin.labels.changePassword')}
+        </SectionHeader>
+        <Field label={t('admin.form.newPassword')}>
+          <Input
+            type="password"
+            value={newPassword}
+            onChange={(e) => setNewPassword(e.target.value)}
+            placeholder={
+              t('admin.placeholders.leaveBlank') || 'Leave blank to keep current'
+            }
+          />
+        </Field>
+        <Field label={t('admin.form.confirmPassword')}>
+          <Input
+            type="password"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            placeholder={
+              t('admin.placeholders.confirmPassword') || 'Confirm password'
+            }
+          />
+        </Field>
 
-          {/* Change Password */}
-          <div>
-            <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-              <span>🔐</span> {t('admin.labels.changePassword')}
-            </h2>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-emerald-300 text-sm mb-1">{t('admin.form.newPassword')}</label>
-                <input
-                  type="password"
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                  className="w-full px-4 py-3 bg-black/20 border border-emerald-600 rounded-xl text-white placeholder-emerald-400/50 focus:border-emerald-400 focus:outline-none"
-                  placeholder={t('admin.placeholders.leaveBlank') || 'Leave blank to keep current'}
-                />
-              </div>
-              <div>
-                <label className="block text-emerald-300 text-sm mb-1">{t('admin.form.confirmPassword')}</label>
-                <input
-                  type="password"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="w-full px-4 py-3 bg-black/20 border border-emerald-600 rounded-xl text-white placeholder-emerald-400/50 focus:border-emerald-400 focus:outline-none"
-                  placeholder={t('admin.placeholders.confirmPassword') || 'Confirm password'}
-                />
-              </div>
-            </div>
-          </div>
-
-          <hr className="border-emerald-700" />
-
-          {/* Subscription Info */}
-          {school && (
-            <div>
-              <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-                <span>💳</span> {t('admin.labels.subscription')}
-              </h2>
-              <div className="bg-black/20 rounded-xl p-4">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-emerald-300">{t('admin.labels.status')}</span>
-                  <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                    school.subscription_status === 'active'
-                      ? 'bg-emerald-500/20 text-emerald-300'
-                      : school.subscription_status === 'trial'
-                      ? 'bg-amber-500/20 text-amber-300'
-                      : 'bg-red-500/20 text-red-300'
-                  }`}>
-                    {school.subscription_status === 'active' ? '✓ ' + t('admin.states.active') :
-                     school.subscription_status === 'trial' ? '⏰ ' + t('admin.states.trial') : t('admin.states.inactive')}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-emerald-300">{t('admin.labels.plan')}</span>
-                  <span className="text-white">{school.plan_type || t('admin.states.free')}</span>
-                </div>
-              </div>
-              <Link
-                href="/montree/admin/billing"
-                className="block mt-3 text-center py-2 bg-emerald-500/20 text-emerald-300 rounded-lg hover:bg-emerald-500/30 transition-colors"
-              >
-                {t('admin.actions.manageSubscription')} →
-              </Link>
-            </div>
-          )}
-
-          {/* Save Button */}
-          <div className="flex gap-3 pt-4">
-            <button
-              onClick={handleSave}
-              disabled={saving}
-              className="flex-1 py-3 bg-emerald-500 text-white rounded-xl font-medium hover:bg-emerald-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+        {school && (
+          <>
+            <Divider />
+            <SectionHeader icon={<CreditCard size={18} strokeWidth={1.75} color={T.emerald} />}>
+              {t('admin.labels.subscription')}
+            </SectionHeader>
+            <div
+              style={{
+                background: 'rgba(0,0,0,0.25)',
+                borderRadius: 12,
+                padding: 14,
+                marginBottom: 14,
+              }}
             >
-              {saving ? t('admin.states.saving') : t('admin.actions.saveChanges')}
-            </button>
-          </div>
-        </div>
+              <Row label={t('admin.labels.status')}>
+                <Badge
+                  status={
+                    school.subscription_status === 'active'
+                      ? 'good'
+                      : school.subscription_status === 'trial'
+                        ? 'warn'
+                        : 'bad'
+                  }
+                >
+                  {school.subscription_status === 'active'
+                    ? t('admin.states.active')
+                    : school.subscription_status === 'trial'
+                      ? t('admin.states.trial')
+                      : t('admin.states.inactive')}
+                </Badge>
+              </Row>
+              <Row label={t('admin.labels.plan')}>
+                <span style={{ color: T.textPrimary, fontSize: 14 }}>
+                  {school.plan_type || t('admin.states.free')}
+                </span>
+              </Row>
+            </div>
+            <Link
+              href="/montree/admin/billing"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                padding: '10px 14px',
+                background: 'rgba(52,211,153,0.10)',
+                border: '1px solid rgba(52,211,153,0.25)',
+                borderRadius: 12,
+                color: T.emerald,
+                fontSize: 13,
+                fontWeight: 500,
+                textDecoration: 'none',
+                marginTop: 8,
+              }}
+            >
+              {t('admin.actions.manageSubscription')}
+              <ArrowRight size={14} strokeWidth={2} />
+            </Link>
+          </>
+        )}
 
-        {/* Danger Zone */}
-        <div className="mt-6 bg-red-500/10 rounded-2xl p-6 border border-red-500/30">
-          <h2 className="text-lg font-semibold text-red-300 mb-4 flex items-center gap-2">
-            <span>⚠️</span> {t('admin.labels.dangerZone')}
-          </h2>
-          <p className="text-red-200/70 text-sm mb-4">
-            {t('admin.messages.logoutWarning')}
-          </p>
-          <button
-            onClick={handleLogout}
-            className="w-full py-3 bg-red-500/20 text-red-300 rounded-xl font-medium hover:bg-red-500/30 transition-colors"
-          >
-            🚪 {t('admin.actions.signOut')}
-          </button>
-        </div>
+        <Divider />
+
+        <button
+          onClick={handleSave}
+          disabled={saving}
+          style={{
+            width: '100%',
+            padding: '14px 22px',
+            background: T.emerald,
+            color: '#0a1a0f',
+            border: 'none',
+            borderRadius: 999,
+            fontFamily: T.sans,
+            fontSize: 14,
+            fontWeight: 600,
+            cursor: saving ? 'not-allowed' : 'pointer',
+            opacity: saving ? 0.5 : 1,
+            marginTop: 6,
+          }}
+        >
+          {saving ? t('admin.states.saving') : t('admin.actions.saveChanges')}
+        </button>
       </div>
     </div>
+  );
+}
+
+function SectionHeader({
+  icon,
+  children,
+}: {
+  icon: React.ReactNode;
+  children: React.ReactNode;
+}) {
+  return (
+    <div
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: 10,
+        marginBottom: 14,
+      }}
+    >
+      {icon}
+      <h2
+        style={{
+          fontFamily: T.serif,
+          fontSize: 16,
+          fontWeight: 500,
+          color: T.textPrimary,
+          margin: 0,
+          letterSpacing: -0.2,
+        }}
+      >
+        {children}
+      </h2>
+    </div>
+  );
+}
+
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div style={{ marginBottom: 14 }}>
+      <label
+        style={{
+          display: 'block',
+          fontSize: 11,
+          fontWeight: 600,
+          color: T.emeraldDim,
+          textTransform: 'uppercase',
+          letterSpacing: 1.2,
+          marginBottom: 6,
+        }}
+      >
+        {label}
+      </label>
+      {children}
+    </div>
+  );
+}
+
+function Input(props: React.InputHTMLAttributes<HTMLInputElement>) {
+  return (
+    <input
+      {...props}
+      style={{
+        width: '100%',
+        padding: '12px 14px',
+        background: T.inputBg,
+        border: T.inputBorder,
+        borderRadius: 10,
+        color: T.textPrimary,
+        fontFamily: T.sans,
+        fontSize: 14,
+        outline: 'none',
+      }}
+    />
+  );
+}
+
+function Divider() {
+  return (
+    <div
+      style={{
+        borderTop: '1px solid rgba(52,211,153,0.10)',
+        margin: '20px 0',
+      }}
+    />
+  );
+}
+
+function Row({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        padding: '6px 0',
+      }}
+    >
+      <span style={{ color: T.textSecondary, fontSize: 13 }}>{label}</span>
+      {children}
+    </div>
+  );
+}
+
+function Badge({
+  status,
+  children,
+}: {
+  status: 'good' | 'warn' | 'bad';
+  children: React.ReactNode;
+}) {
+  const palette = {
+    good: { bg: 'rgba(52,211,153,0.18)', fg: T.emerald },
+    warn: { bg: 'rgba(232,201,106,0.18)', fg: T.gold },
+    bad: { bg: 'rgba(248,113,113,0.18)', fg: '#f87171' },
+  }[status];
+  return (
+    <span
+      style={{
+        padding: '4px 10px',
+        background: palette.bg,
+        color: palette.fg,
+        borderRadius: 999,
+        fontSize: 12,
+        fontWeight: 600,
+      }}
+    >
+      {children}
+    </span>
   );
 }

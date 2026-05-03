@@ -140,8 +140,8 @@ export default function ClassroomDetailPage({ params }: { params: Promise<{ clas
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-emerald-900 via-emerald-800 to-teal-900 flex items-center justify-center">
-        <div className="text-5xl animate-bounce">🏫</div>
+      <div className="min-h-[60vh] flex items-center justify-center">
+        <div className="text-emerald-300 text-sm">Loading…</div>
       </div>
     );
   }
@@ -152,11 +152,11 @@ export default function ClassroomDetailPage({ params }: { params: Promise<{ clas
   const assistantTeachers = teachers.filter(t => t.role !== 'lead_teacher');
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-900 via-emerald-800 to-teal-900">
+    <div className="text-white">
       <Toaster position="top-center" />
 
       {/* Header */}
-      <div className="sticky top-0 z-40 bg-gradient-to-r from-emerald-600 to-teal-700 px-4 py-3 shadow-lg">
+      <div className="sticky top-0 z-40 bg-gradient-to-r from-emerald-700/80 to-emerald-900/80 backdrop-blur-md px-4 py-3 shadow-lg border-b border-emerald-500/20">
         <div className="max-w-6xl mx-auto flex items-center gap-3">
           <button onClick={() => router.push('/montree/admin')} className="p-2 rounded-lg bg-white/20 hover:bg-white/30 text-white">
             ←
