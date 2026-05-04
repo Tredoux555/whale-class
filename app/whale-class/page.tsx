@@ -16,6 +16,7 @@ interface Song {
   week?: string;
   category: string;
   uploadedAt: string;
+  mediaType?: 'video' | 'audio'; // undefined/missing = 'video' (backwards compat with old metadata rows)
 }
 
 const CATEGORY_LABELS: Record<string, string> = {
@@ -158,16 +159,29 @@ export default function WhaleClassPage() {
                 <span className="ml-auto text-white/70 text-xs shrink-0">Week {highlightedSong.week}</span>
               )}
             </div>
-            <div className="aspect-video bg-black">
-              <video
-                src={highlightedSong.videoUrl}
-                controls
-                playsInline
-                preload="metadata"
-                crossOrigin="anonymous"
-                className="w-full h-full object-contain"
-              />
-            </div>
+            {highlightedSong.mediaType === 'audio' ? (
+              <div className="bg-gradient-to-br from-purple-100 via-pink-50 to-indigo-100 px-6 py-10 flex flex-col items-center gap-4">
+                <div className="text-6xl">🎵</div>
+                <audio
+                  src={highlightedSong.videoUrl}
+                  controls
+                  preload="metadata"
+                  crossOrigin="anonymous"
+                  className="w-full max-w-md"
+                />
+              </div>
+            ) : (
+              <div className="aspect-video bg-black">
+                <video
+                  src={highlightedSong.videoUrl}
+                  controls
+                  playsInline
+                  preload="metadata"
+                  crossOrigin="anonymous"
+                  className="w-full h-full object-contain"
+                />
+              </div>
+            )}
             <div className="px-5 py-3 bg-purple-50">
               <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${CATEGORY_COLORS[highlightedSong.category] ?? 'bg-gray-100 text-gray-600'}`}>
                 {CATEGORY_LABELS[highlightedSong.category] ?? highlightedSong.category}
@@ -201,16 +215,29 @@ export default function WhaleClassPage() {
                     id={`song-${slug}`}
                     className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden scroll-mt-24 hover:shadow-md transition-shadow"
                   >
-                    <div className="aspect-video bg-black">
-                      <video
-                        src={song.videoUrl}
-                        controls
-                        playsInline
-                        preload="metadata"
-                        crossOrigin="anonymous"
-                        className="w-full h-full object-contain"
-                      />
-                    </div>
+                    {song.mediaType === 'audio' ? (
+                      <div className="bg-gradient-to-br from-purple-100 via-pink-50 to-indigo-100 px-4 py-6 flex flex-col items-center gap-3">
+                        <div className="text-4xl">🎵</div>
+                        <audio
+                          src={song.videoUrl}
+                          controls
+                          preload="metadata"
+                          crossOrigin="anonymous"
+                          className="w-full"
+                        />
+                      </div>
+                    ) : (
+                      <div className="aspect-video bg-black">
+                        <video
+                          src={song.videoUrl}
+                          controls
+                          playsInline
+                          preload="metadata"
+                          crossOrigin="anonymous"
+                          className="w-full h-full object-contain"
+                        />
+                      </div>
+                    )}
                     <div className="px-4 py-3 flex items-center gap-2">
                       <span className={`text-xs font-medium px-2 py-0.5 rounded-full shrink-0 ${CATEGORY_COLORS[song.category] ?? 'bg-gray-100 text-gray-600'}`}>
                         {CATEGORY_LABELS[song.category] ?? song.category}
