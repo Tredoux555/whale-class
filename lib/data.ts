@@ -22,19 +22,46 @@ function getLocalPaths() {
   return { dataDir, videosFile };
 }
 
+// Wrap a promise with a timeout. If `ms` elapses before the promise settles,
+// the returned promise rejects with a timeout error. The underlying promise
+// keeps running but its result is ignored. This is the only reliable way to
+// abort a Supabase Storage download since the SDK doesn't accept an AbortSignal.
+function withTimeout<T>(promise: Promise<T>, ms: number, label: string): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const timer = setTimeout(() => {
+      reject(new Error(`${label} timed out after ${ms}ms`));
+    }, ms);
+    promise.then(
+      (value) => {
+        clearTimeout(timer);
+        resolve(value);
+      },
+      (err) => {
+        clearTimeout(timer);
+        reject(err);
+      },
+    );
+  });
+}
+
 // Get videos from local filesystem (localhost) or Supabase Storage (cloud)
 export async function getVideos(): Promise<Video[]> {
   // Use Supabase if on Vercel, Railway, or any cloud deployment
   const isCloud = process.env.VERCEL === "1" || process.env.RAILWAY_ENVIRONMENT || process.env.NODE_ENV === "production";
-  
+
   try {
     if (isCloud) {
-      // On Vercel: Read from Supabase Storage
+      // On Vercel/Railway: Read from Supabase Storage with a 20-second timeout.
+      // Without this, a slow or hung Supabase Storage download would block the
+      // GET handler indefinitely — Railway eventually kills the request and the
+      // browser sees an indefinite "Loading…" until its own 30s timeout fires.
       try {
         const supabase = createSupabaseAdmin();
-        const { data, error } = await supabase.storage
-          .from(STORAGE_BUCKET)
-          .download(METADATA_FILE);
+        const { data, error } = await withTimeout(
+          supabase.storage.from(STORAGE_BUCKET).download(METADATA_FILE),
+          20_000,
+          "Supabase Storage download (videos metadata)",
+        );
 
         if (error) {
           // Check if it's a "not found" error (file doesn't exist yet)
