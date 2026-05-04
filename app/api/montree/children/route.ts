@@ -203,8 +203,49 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Failed to fetch children' }, { status: 500 });
     }
 
+    // Diagnostic logging — fires once per request, lets Railway logs prove
+    // exactly what the API saw if the chronic empty-state bug recurs.
+    // Includes auth context + raw query row count + classroom check result.
+    const childCount = (data || []).length;
+    console.log('[children GET]', JSON.stringify({
+      role: auth.role,
+      authSchool: auth.schoolId,
+      authClassroom: auth.classroomId,
+      reqClassroom: classroomId,
+      allowed: allowedClassroomIds,
+      rowCount: childCount,
+      sampleIds: (data || []).slice(0, 3).map(c => c.id),
+    }));
+
+    // 🚨 NO HTTP CACHE on the children list response.
+    //
+    // We HAD `Cache-Control: private, max-age=120, stale-while-revalidate=300`
+    // here. That was the actual root cause of the chronic 'Bulk Import Students'
+    // empty-state flash that bit us across Sessions 70/72/81/86 (and twice
+    // today, Session 88). Sequence:
+    //   1. Teacher creates new classroom. Dashboard GETs /children?classroom_id=X.
+    //      DB has 0 children → API returns {children: []}.
+    //      → BROWSER caches that empty response for 120 seconds.
+    //   2. Teacher bulk-imports students. The POST returns the new children.
+    //      Dashboard's setCacheData populates the in-memory SWR cache. Grid renders.
+    //   3. Teacher clicks into a child page, updates a shelf work, clicks back.
+    //   4. Dashboard remounts. SWR fires a background refetch on /children.
+    //   5. Browser sees a fresh-ish entry in HTTP cache (<120s old) and SERVES
+    //      THE STALE EMPTY RESPONSE from cache instead of hitting the server.
+    //   6. Stale empty response overwrites the in-memory cache. Grid disappears.
+    //   7. 'Bulk Import Students' empty state renders for a teacher who literally
+    //      just imported. Critical trust failure.
+    //
+    // Session 86's fetchStartTime race-condition guard didn't help because the
+    // in-memory cache wasn't being clobbered DURING a fetch — the fetch was
+    // resolved synchronously from the browser HTTP cache before the network
+    // even saw it.
+    //
+    // Disabling the cache adds ~1 small JSON request per dashboard mount.
+    // Worth it for correctness. The in-memory SWR cache + dashboard skeleton
+    // still give instant perceived load on revisits within the same session.
     const response = NextResponse.json({ children: data || [] });
-    response.headers.set('Cache-Control', 'private, max-age=120, stale-while-revalidate=300');
+    response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate');
     return response;
 
   } catch (error) {
