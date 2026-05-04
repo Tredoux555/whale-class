@@ -17,7 +17,10 @@
 // Also: OFFLINE_URL is now actually pre-cached on install. Previously listed
 // as the navigation fallback but never added to PRECACHE_ASSETS, so the
 // fallback always missed and fell through to the synthetic 503.
-const CACHE_NAME = 'montree-v4';
+// Bumped to v5 (May 4, 2026) — Montree M monogram is now the canonical
+// favicon + PWA + apple-touch icon (uniform brand). Cache bump forces existing
+// PWA installs to discard the v4 icon set on next activation.
+const CACHE_NAME = 'montree-v5';
 const OFFLINE_URL = '/montree/offline';
 
 // Only cache immutable assets — static files that change with build hashes.
