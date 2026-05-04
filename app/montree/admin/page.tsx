@@ -1,41 +1,51 @@
 // /montree/admin/page.tsx
 //
-// Principal home — "ask anything about your school" agent chat (May 3 2026,
-// pivot from same-day search-first design).
+// Tracy — the principal's chief-of-staff AI.
 //
-// The principal types a question. The page streams back a Sonnet agent's
-// reasoning + tool calls + final answer, all rendered live. Conversation
-// thread persists in localStorage so refreshing the page doesn't lose state.
+// The principal opens the page, sees a quiet greeting from Tracy, and asks.
+// Tracy streams back a chief-of-staff answer that always ends with one
+// concrete next action. That's the whole surface.
 //
-// What the agent can do (tools):
-//   - find_children_by_name
-//   - get_child_briefing
-//   - answer_about_child
-//   - list_classrooms_with_summary
-//   - list_teachers_with_summary
+// What stays under the hood (load-bearing — do not remove):
+//   - SSE stream consumption from /api/montree/admin/principal-agent
+//   - localStorage conversation persistence per conversation_id
+//   - history sanitisation (server re-sanitises but client also stays clean)
+//   - Auth redirect on 401, viewer-mode banner for teacher-led schools
 //
-// Every exchange is logged server-side to montree_principal_agent_log.
-// Tredoux reads that log via super-admin to learn what to build next.
+// What this rewrite changes (the visual port from the mockup):
+//   - Strips the school-name hero + verbose subtitle (no system noise)
+//   - Empty state is just Tracy's avatar + "Hi [name]." + "How can I help you?"
+//   - Tool chips are hidden — Tracy's mechanism is invisible to the principal
+//   - Thinking interludes are hidden — Tracy speaks once at the end
+//   - Closing action line ("I'd …") is parsed out and rendered distinctly
+//   - Tracy's avatar (gold T circle) sits beside her replies
+//
+// The tool/thinking event data is still received and stored on the turn —
+// just not rendered. Future "show your work" toggle would be one render swap.
 'use client';
 
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { Send, Sparkles, RotateCcw, Wrench } from 'lucide-react';
+import { Send, RotateCcw } from 'lucide-react';
 
 const T = {
   emerald: '#34d399',
-  emeraldDim: 'rgba(52,211,153,0.65)',
   emeraldSoft: 'rgba(52,211,153,0.10)',
-  emeraldGlow: 'rgba(52,211,153,0.22)',
   gold: '#E8C96A',
+  goldText: '#f0d68a',
+  goldOnGold: '#2a1f08',
+  goldDimDash: 'rgba(232,201,106,0.55)',
   cardBg: 'rgba(8,20,12,0.55)',
   cardBgStrong: 'rgba(8,20,12,0.80)',
   cardBorder: '1px solid rgba(52,211,153,0.18)',
   inputBg: 'rgba(0,0,0,0.30)',
   inputBorder: '1px solid rgba(52,211,153,0.25)',
   textPrimary: 'rgba(255,255,255,0.92)',
-  textSecondary: 'rgba(255,255,255,0.62)',
+  textSoft: '#eaf1e6',
+  textHelloBright: '#f5f8ef',
+  textSecondary: 'rgba(234,241,230,0.55)',
   textMuted: 'rgba(255,255,255,0.40)',
+  bubbleSoft: 'rgba(234,241,230,0.06)',
   serif: '"Lora", Georgia, serif',
   sans: '"Inter", -apple-system, BlinkMacSystemFont, sans-serif',
 };
@@ -100,22 +110,222 @@ function writeConv(convId: string, turns: ConvTurn[]) {
 }
 
 function newConvId(): string {
-  // RFC 4122 v4-ish, doesn't need to be cryptographically perfect — server
-  // re-validates and the conversation_id is just a grouping key.
+  // RFC 4122 v4-ish — server treats it as a grouping key so we don't need
+  // strong cryptographic uniqueness, just collision-resistant enough.
   if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) {
     return crypto.randomUUID();
   }
   return 'c-' + Math.random().toString(36).slice(2) + Date.now().toString(36);
 }
 
+/**
+ * Tracy's responses end with a single closing action line that begins with
+ * "I'd ..." (per her system prompt). Split that off so we can render it
+ * distinctly from the body prose.
+ *
+ * Matches the LAST paragraph of the response if it starts with "I'd " or
+ * "I'd " (smart-quote variant), case-insensitive. Returns the body without
+ * the action line and the action line itself. If no match, the whole text
+ * is body and action is null.
+ */
+function splitActionLine(text: string): { body: string; action: string | null } {
+  if (!text || !text.trim()) return { body: text, action: null };
+  const paragraphs = text.split(/\n\s*\n/);
+  if (paragraphs.length === 0) return { body: text, action: null };
+  const last = paragraphs[paragraphs.length - 1].trim();
+  if (/^I['’]d\s/i.test(last)) {
+    const body = paragraphs.slice(0, -1).join('\n\n').trim();
+    return { body, action: last };
+  }
+  // Fallback: also try splitting on single newlines if the action came back
+  // on its own single-newline line rather than after a blank line.
+  const lines = text.split(/\n/);
+  if (lines.length >= 2) {
+    const lastLine = lines[lines.length - 1].trim();
+    if (/^I['’]d\s/i.test(lastLine)) {
+      const body = lines.slice(0, -1).join('\n').trim();
+      return { body, action: lastLine };
+    }
+  }
+  return { body: text, action: null };
+}
+
+// ── Subcomponents ────────────────────────────────────────────────────────
+
+function TracyAvatar({ size = 36 }: { size?: number }) {
+  // CSS-rendered placeholder. When the Canva-generated T monogram lands as
+  // an image asset, swap this to an <img> with the same outer dimensions.
+  return (
+    <div
+      style={{
+        width: size,
+        height: size,
+        borderRadius: '50%',
+        background: T.gold,
+        color: T.goldOnGold,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        fontFamily: T.serif,
+        fontSize: Math.round(size * 0.47),
+        fontWeight: 500,
+        lineHeight: 1,
+        flexShrink: 0,
+      }}
+    >
+      T
+    </div>
+  );
+}
+
+function EmptyState({ firstName }: { firstName: string }) {
+  return (
+    <div style={{ padding: '24px 0 12px' }}>
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 14,
+          marginBottom: 6,
+        }}
+      >
+        <TracyAvatar size={36} />
+        <p
+          style={{
+            fontFamily: T.serif,
+            fontSize: 22,
+            color: T.textHelloBright,
+            margin: 0,
+            letterSpacing: -0.005,
+          }}
+        >
+          Hi{firstName ? ` ${firstName}` : ''}.
+        </p>
+      </div>
+      <p
+        style={{
+          color: T.textSecondary,
+          fontSize: 14,
+          margin: 0,
+          paddingLeft: 50,
+          lineHeight: 1.55,
+        }}
+      >
+        How can I help you?
+      </p>
+    </div>
+  );
+}
+
+function UserBubble({ text }: { text: string }) {
+  return (
+    <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+      <div
+        style={{
+          maxWidth: '75%',
+          padding: '11px 16px',
+          background: T.bubbleSoft,
+          borderRadius: 14,
+          color: T.textSoft,
+          fontFamily: T.sans,
+          fontSize: 14.5,
+          lineHeight: 1.55,
+          whiteSpace: 'pre-wrap',
+        }}
+      >
+        {text}
+      </div>
+    </div>
+  );
+}
+
+function AssistantBubble({ turn }: { turn: ConvTurn }) {
+  const { body, action } = splitActionLine(turn.text);
+  const showThinkingDots = turn.pending && !turn.text && !turn.error;
+
+  return (
+    <div
+      style={{ display: 'flex', alignItems: 'flex-start', gap: 14, width: '100%' }}
+    >
+      <TracyAvatar size={36} />
+      <div style={{ flex: 1, minWidth: 0, paddingTop: 4 }}>
+        {/* Pre-text pending indicator — soft ellipsis while she composes */}
+        {showThinkingDots && (
+          <div
+            style={{
+              color: T.textMuted,
+              fontSize: 14,
+              fontStyle: 'italic',
+              letterSpacing: 1.5,
+            }}
+            aria-label="Tracy is thinking"
+          >
+            …
+          </div>
+        )}
+
+        {/* Body prose (everything except the closing action line) */}
+        {body && (
+          <div
+            style={{
+              fontFamily: T.sans,
+              fontSize: 14.5,
+              lineHeight: 1.7,
+              color: T.textSoft,
+              whiteSpace: 'pre-wrap',
+            }}
+          >
+            {body}
+          </div>
+        )}
+
+        {/* Action line — distinct gold treatment, set apart by spacing */}
+        {action && (
+          <div
+            style={{
+              marginTop: 18,
+              fontSize: 14.5,
+              lineHeight: 1.55,
+              color: T.goldText,
+              fontFamily: T.sans,
+            }}
+          >
+            <span style={{ color: T.goldDimDash, marginRight: 4 }}>—</span>
+            {action}
+          </div>
+        )}
+
+        {/* Error path — quiet but visible */}
+        {turn.error && (
+          <div
+            style={{
+              marginTop: body ? 12 : 0,
+              padding: '10px 14px',
+              background: 'rgba(239,68,68,0.08)',
+              border: '1px solid rgba(239,68,68,0.22)',
+              borderRadius: 12,
+              color: '#f87171',
+              fontSize: 13.5,
+              lineHeight: 1.55,
+            }}
+          >
+            {turn.error}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ── Main page ────────────────────────────────────────────────────────────
+
 export default function AdminAgentPage() {
   const router = useRouter();
 
-  // Header data
+  // Header data — kept for first-name + viewer-mode banner only
   const [school, setSchool] = useState<School | null>(null);
   const [principal, setPrincipal] = useState<Principal | null>(null);
   const [plan, setPlan] = useState<PlanSummary | null>(null);
-  const [headerLoading, setHeaderLoading] = useState(true);
 
   // Conversation state
   const [convId, setConvId] = useState<string>('');
@@ -134,7 +344,6 @@ export default function AdminAgentPage() {
       return;
     }
 
-    // Resolve or create the active conversation id
     let id = '';
     try {
       id = localStorage.getItem(CONV_ID_KEY) || '';
@@ -152,7 +361,6 @@ export default function AdminAgentPage() {
     setConvId(id);
     setTurns(readConv(id));
 
-    // Header data
     fetch('/api/montree/admin/today', { credentials: 'include' })
       .then((res) => {
         if (res.status === 401) {
@@ -168,8 +376,7 @@ export default function AdminAgentPage() {
         setPrincipal(data.principal);
         setPlan(data.plan || null);
       })
-      .catch((err) => console.error('[admin agent] today fetch error', err))
-      .finally(() => setHeaderLoading(false));
+      .catch((err) => console.error('[admin agent] today fetch error', err));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -198,12 +405,73 @@ export default function AdminAgentPage() {
     inputRef.current?.focus();
   }, [convId]);
 
+  const handleEvent = useCallback((evt: Record<string, unknown>) => {
+    setTurns((prev) => {
+      if (prev.length === 0) return prev;
+      const last = prev[prev.length - 1];
+      if (last.role !== 'assistant') return prev;
+
+      const updated = { ...last };
+      switch (evt.type) {
+        case 'tool_call': {
+          const tool: ToolEvent = {
+            name: String(evt.tool || 'tool'),
+            success: null,
+          };
+          updated.tools = [...(updated.tools || []), tool];
+          break;
+        }
+        case 'tool_result': {
+          const tools = [...(updated.tools || [])];
+          for (let i = tools.length - 1; i >= 0; i--) {
+            if (
+              tools[i].name === String(evt.tool) &&
+              tools[i].success === null
+            ) {
+              tools[i] = {
+                ...tools[i],
+                success: !!evt.success,
+                summary:
+                  typeof evt.summary === 'string' ? evt.summary : undefined,
+              };
+              break;
+            }
+          }
+          updated.tools = tools;
+          break;
+        }
+        case 'thinking': {
+          updated.thinking = (updated.thinking || '') + String(evt.text || '');
+          break;
+        }
+        case 'text': {
+          updated.text = (updated.text || '') + String(evt.text || '');
+          break;
+        }
+        case 'done': {
+          updated.pending = false;
+          updated.costUsd =
+            typeof evt.cost_usd === 'number' ? evt.cost_usd : undefined;
+          break;
+        }
+        case 'error': {
+          updated.pending = false;
+          updated.error = String(
+            evt.error || 'Something stopped me — try again in a second.'
+          );
+          break;
+        }
+      }
+
+      return [...prev.slice(0, -1), updated];
+    });
+  }, []);
+
   const submit = useCallback(async () => {
     const q = question.trim();
     if (!q || submitting || !convId) return;
     setSubmitting(true);
 
-    // Optimistic: append user turn + a pending assistant turn
     const userTurn: ConvTurn = { role: 'user', text: q };
     const assistantTurn: ConvTurn = {
       role: 'assistant',
@@ -214,14 +482,14 @@ export default function AdminAgentPage() {
     setTurns((prev) => [...prev, userTurn, assistantTurn]);
     setQuestion('');
 
-    // Build short history for the server (last 6 turns, role + text only)
+    // Build short history for the server (last 6 turns, role + text only).
+    // Server sanitises again on its end — this is just a courtesy clamp.
     const history: { role: 'user' | 'assistant'; content: string }[] = [];
-    const recent = [...turns, userTurn].slice(-7); // include the new user turn
+    const recent = [...turns, userTurn].slice(-7);
     for (const t of recent) {
       if (t.text) history.push({ role: t.role, content: t.text });
     }
-    // Drop the very last item (it's the current question — server adds it)
-    history.pop();
+    history.pop(); // drop the just-added question — server adds it itself
 
     try {
       const res = await fetch('/api/montree/admin/principal-agent', {
@@ -245,7 +513,7 @@ export default function AdminAgentPage() {
                   pending: false,
                   error:
                     payload?.error ||
-                    'AI features require an active AI tier. Please contact support.',
+                    'AI features need an active plan — please contact support.',
                 }
               : t
           )
@@ -262,7 +530,7 @@ export default function AdminAgentPage() {
                   pending: false,
                   error:
                     payload?.error ||
-                    "I couldn't process that. Please try again.",
+                    "Something stopped me there — give me a second and try again.",
                 }
               : t
           )
@@ -270,13 +538,16 @@ export default function AdminAgentPage() {
         return;
       }
 
-      // Stream parser
       const reader = res.body?.getReader();
       if (!reader) {
         setTurns((prev) =>
           prev.map((t, i) =>
             i === prev.length - 1
-              ? { ...t, pending: false, error: 'No response stream.' }
+              ? {
+                  ...t,
+                  pending: false,
+                  error: 'No response stream — try again in a second.',
+                }
               : t
           )
         );
@@ -290,7 +561,6 @@ export default function AdminAgentPage() {
         if (done) break;
         buffer += decoder.decode(value, { stream: true });
 
-        // Parse out complete `data: ...\n\n` events
         let nlIdx;
         // eslint-disable-next-line no-cond-assign
         while ((nlIdx = buffer.indexOf('\n\n')) !== -1) {
@@ -316,7 +586,7 @@ export default function AdminAgentPage() {
             ? {
                 ...t,
                 pending: false,
-                error: 'Connection failed. Please try again.',
+                error: 'Connection failed — try again in a moment.',
               }
             : t
         )
@@ -325,66 +595,7 @@ export default function AdminAgentPage() {
       setSubmitting(false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [question, submitting, convId, turns]);
-
-  const handleEvent = useCallback((evt: Record<string, unknown>) => {
-    setTurns((prev) => {
-      if (prev.length === 0) return prev;
-      const last = prev[prev.length - 1];
-      if (last.role !== 'assistant') return prev;
-
-      const updated = { ...last };
-      switch (evt.type) {
-        case 'tool_call': {
-          const tool: ToolEvent = {
-            name: String(evt.tool || 'tool'),
-            success: null,
-          };
-          updated.tools = [...(updated.tools || []), tool];
-          break;
-        }
-        case 'tool_result': {
-          const tools = [...(updated.tools || [])];
-          // Match the most recent in-flight tool with the same name
-          for (let i = tools.length - 1; i >= 0; i--) {
-            if (tools[i].name === String(evt.tool) && tools[i].success === null) {
-              tools[i] = {
-                ...tools[i],
-                success: !!evt.success,
-                summary:
-                  typeof evt.summary === 'string' ? evt.summary : undefined,
-              };
-              break;
-            }
-          }
-          updated.tools = tools;
-          break;
-        }
-        case 'thinking': {
-          updated.thinking =
-            (updated.thinking || '') + String(evt.text || '');
-          break;
-        }
-        case 'text': {
-          updated.text = (updated.text || '') + String(evt.text || '');
-          break;
-        }
-        case 'done': {
-          updated.pending = false;
-          updated.costUsd =
-            typeof evt.cost_usd === 'number' ? evt.cost_usd : undefined;
-          break;
-        }
-        case 'error': {
-          updated.pending = false;
-          updated.error = String(evt.error || 'Something went wrong.');
-          break;
-        }
-      }
-
-      return [...prev.slice(0, -1), updated];
-    });
-  }, []);
+  }, [question, submitting, convId, turns, handleEvent]);
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -394,111 +605,55 @@ export default function AdminAgentPage() {
   };
 
   const firstName = (principal?.name || '').split(' ')[0] || '';
-  const greeting = firstName ? `Welcome back, ${firstName}.` : 'Welcome back.';
 
   return (
-    <div style={{ fontFamily: T.sans, color: T.textPrimary }}>
-      {/* Hero */}
-      <div style={{ marginBottom: 18 }}>
-        <h1
-          style={{
-            fontFamily: T.serif,
-            fontSize: 'clamp(28px, 4vw, 40px)',
-            fontWeight: 500,
-            letterSpacing: -0.6,
-            color: T.textPrimary,
-            margin: 0,
-            lineHeight: 1.1,
-            opacity: headerLoading ? 0 : 1,
-            transition: 'opacity 200ms ease',
-          }}
-        >
-          {school?.name || ' '}
-        </h1>
-        <p
-          style={{
-            color: T.emeraldDim,
-            fontSize: 14,
-            marginTop: 10,
-            letterSpacing: 0.2,
-          }}
-        >
-          <span style={{ color: T.textPrimary }}>{greeting}</span>{' '}
-          <span style={{ color: T.textSecondary }}>
-            Ask me anything about your school — children, classrooms, teachers, the week so far.
-          </span>
-        </p>
-      </div>
-
-      {/* Viewer banner */}
+    <div style={{ fontFamily: T.sans, color: T.textSoft }}>
+      {/* Viewer-mode banner — kept because it's a real product fact the
+          principal needs to know. Quieter visual treatment than before. */}
       {plan?.is_teacher_led && (
         <div
           style={{
-            background: 'rgba(232,201,106,0.08)',
-            border: '1px solid rgba(232,201,106,0.22)',
-            borderRadius: 14,
-            padding: '12px 16px',
+            background: 'rgba(232,201,106,0.06)',
+            border: '1px solid rgba(232,201,106,0.18)',
+            borderRadius: 12,
+            padding: '10px 14px',
             marginBottom: 18,
-            display: 'flex',
-            alignItems: 'flex-start',
-            gap: 12,
+            fontSize: 12.5,
+            lineHeight: 1.55,
+            color: 'rgba(255,255,255,0.74)',
           }}
         >
-          <div
-            style={{
-              width: 7,
-              height: 7,
-              borderRadius: '50%',
-              background: T.gold,
-              marginTop: 7,
-              flexShrink: 0,
-            }}
-          />
-          <div
-            style={{
-              flex: 1,
-              fontSize: 12.5,
-              lineHeight: 1.55,
-              color: 'rgba(255,255,255,0.78)',
-            }}
+          <strong style={{ color: T.gold }}>You're a viewer.</strong>{' '}
+          {school?.name || 'This school'} is teacher-led — you can ask about
+          anything below for free. To add your own classrooms or invite
+          teachers,{' '}
+          <a
+            href="https://montree.xyz/pricing"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ color: T.gold, textDecoration: 'underline' }}
           >
-            <strong style={{ color: T.gold }}>You're a viewer.</strong> This is
-            a teacher's classroom — you can ask about everything below for free.
-            To add your own classrooms or invite your other teachers,{' '}
-            <a
-              href="https://montree.xyz/pricing"
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{ color: T.gold, textDecoration: 'underline' }}
-            >
-              upgrade to a school plan
-            </a>
-            .
-          </div>
+            upgrade to a school plan
+          </a>
+          .
         </div>
       )}
 
-      {/* Conversation thread */}
+      {/* Conversation thread — empty state OR a list of turns */}
       <div
         ref={scrollRef}
         style={{
           display: 'flex',
           flexDirection: 'column',
-          gap: 16,
-          marginBottom: 18,
-          maxHeight: '60vh',
+          gap: 22,
+          marginBottom: 22,
+          maxHeight: '64vh',
           overflowY: 'auto',
           paddingRight: 4,
         }}
       >
         {turns.length === 0 ? (
-          <Suggestions
-            childName={undefined}
-            onPick={(text) => {
-              setQuestion(text);
-              setTimeout(() => inputRef.current?.focus(), 0);
-            }}
-          />
+          <EmptyState firstName={firstName} />
         ) : (
           turns.map((t, i) =>
             t.role === 'user' ? (
@@ -510,14 +665,14 @@ export default function AdminAgentPage() {
         )}
       </div>
 
-      {/* Input */}
+      {/* Input area — quiet, subordinate to the conversation */}
       <div
         style={{
           background: T.cardBgStrong,
           backdropFilter: 'blur(18px)',
           border: T.cardBorder,
           borderRadius: 18,
-          padding: '16px 18px',
+          padding: '14px 16px',
         }}
       >
         <textarea
@@ -525,19 +680,19 @@ export default function AdminAgentPage() {
           value={question}
           onChange={(e) => setQuestion(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder="Ask anything…"
+          placeholder="Type here…"
           rows={2}
           maxLength={1500}
           disabled={submitting}
           style={{
             width: '100%',
-            padding: '10px 12px',
+            padding: '8px 10px',
             background: T.inputBg,
             border: T.inputBorder,
-            borderRadius: 12,
-            color: T.textPrimary,
+            borderRadius: 10,
+            color: T.textSoft,
             fontFamily: T.sans,
-            fontSize: 16,
+            fontSize: 15,
             outline: 'none',
             resize: 'none',
             lineHeight: 1.55,
@@ -576,272 +731,27 @@ export default function AdminAgentPage() {
             type="button"
             onClick={submit}
             disabled={submitting || !question.trim()}
+            aria-label="Send message"
             style={{
               display: 'inline-flex',
               alignItems: 'center',
-              gap: 8,
-              padding: '10px 20px',
+              justifyContent: 'center',
+              width: 38,
+              height: 38,
               background: T.emerald,
               color: '#0a1a0f',
               border: 'none',
-              borderRadius: 999,
-              fontFamily: T.sans,
-              fontSize: 14,
-              fontWeight: 600,
+              borderRadius: '50%',
               cursor:
                 submitting || !question.trim() ? 'not-allowed' : 'pointer',
               opacity: submitting || !question.trim() ? 0.4 : 1,
+              transition: 'opacity 120ms ease',
             }}
           >
-            <Send size={14} strokeWidth={2} />
-            {submitting ? 'Thinking…' : 'Ask'}
+            <Send size={15} strokeWidth={2} />
           </button>
         </div>
       </div>
-    </div>
-  );
-}
-
-// ── Subcomponents ────────────────────────────────────────────────────────
-
-function UserBubble({ text }: { text: string }) {
-  return (
-    <div
-      style={{
-        alignSelf: 'flex-end',
-        maxWidth: '85%',
-        padding: '10px 14px',
-        background: T.emeraldSoft,
-        border: '1px solid rgba(52,211,153,0.20)',
-        borderRadius: 14,
-        color: T.textPrimary,
-        fontFamily: T.sans,
-        fontSize: 15,
-        lineHeight: 1.55,
-        whiteSpace: 'pre-wrap',
-      }}
-    >
-      {text}
-    </div>
-  );
-}
-
-function AssistantBubble({ turn }: { turn: ConvTurn }) {
-  const hasOnlyTools = !turn.text && !turn.error && (turn.tools?.length || 0) > 0;
-  return (
-    <div style={{ alignSelf: 'flex-start', maxWidth: '95%', width: '100%' }}>
-      {/* Tool chips */}
-      {turn.tools && turn.tools.length > 0 && (
-        <div
-          style={{
-            display: 'flex',
-            flexWrap: 'wrap',
-            gap: 6,
-            marginBottom: 8,
-          }}
-        >
-          {turn.tools.map((t, i) => (
-            <ToolChip key={i} tool={t} />
-          ))}
-        </div>
-      )}
-
-      {/* Thinking text (intermediate text between tool calls) */}
-      {turn.thinking && (
-        <div
-          style={{
-            color: T.textMuted,
-            fontStyle: 'italic',
-            fontSize: 13,
-            marginBottom: 8,
-            lineHeight: 1.55,
-          }}
-        >
-          {turn.thinking}
-        </div>
-      )}
-
-      {/* Final answer */}
-      {turn.text && (
-        <div
-          style={{
-            padding: '14px 16px',
-            background: T.cardBg,
-            backdropFilter: 'blur(18px)',
-            border: T.cardBorder,
-            borderRadius: 14,
-            fontFamily: T.serif,
-            fontSize: 16,
-            lineHeight: 1.65,
-            color: T.textPrimary,
-            whiteSpace: 'pre-wrap',
-          }}
-        >
-          {turn.text}
-        </div>
-      )}
-
-      {/* Error */}
-      {turn.error && (
-        <div
-          style={{
-            padding: '12px 14px',
-            background: 'rgba(239,68,68,0.08)',
-            border: '1px solid rgba(239,68,68,0.22)',
-            borderRadius: 12,
-            color: '#f87171',
-            fontSize: 13,
-            lineHeight: 1.55,
-          }}
-        >
-          {turn.error}
-        </div>
-      )}
-
-      {/* Pending indicator (before any text arrives) */}
-      {turn.pending && !turn.text && !turn.error && !hasOnlyTools && (
-        <div
-          style={{
-            padding: '12px 14px',
-            color: T.textMuted,
-            fontSize: 13,
-            fontStyle: 'italic',
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: 8,
-          }}
-        >
-          <Sparkles size={14} strokeWidth={1.75} color={T.emerald} />
-          Thinking…
-        </div>
-      )}
-    </div>
-  );
-}
-
-function ToolChip({ tool }: { tool: ToolEvent }) {
-  const inFlight = tool.success === null;
-  const failed = tool.success === false;
-  const color = failed ? '#f87171' : inFlight ? T.textMuted : T.emeraldDim;
-  const bg = failed
-    ? 'rgba(239,68,68,0.10)'
-    : inFlight
-    ? 'rgba(255,255,255,0.04)'
-    : T.emeraldSoft;
-  const border = failed
-    ? '1px solid rgba(239,68,68,0.25)'
-    : inFlight
-    ? '1px solid rgba(255,255,255,0.10)'
-    : '1px solid rgba(52,211,153,0.22)';
-  const label = friendlyToolName(tool.name);
-  return (
-    <div
-      style={{
-        display: 'inline-flex',
-        alignItems: 'center',
-        gap: 6,
-        padding: '4px 10px',
-        background: bg,
-        border,
-        borderRadius: 999,
-        fontSize: 11,
-        color,
-        fontFamily: T.sans,
-        letterSpacing: 0.2,
-      }}
-    >
-      <Wrench size={10} strokeWidth={1.75} />
-      {label}
-      {tool.summary && !inFlight && !failed && (
-        <span
-          style={{
-            color: T.textMuted,
-            marginLeft: 4,
-            fontSize: 10.5,
-          }}
-        >
-          · {tool.summary}
-        </span>
-      )}
-    </div>
-  );
-}
-
-function friendlyToolName(raw: string): string {
-  const map: Record<string, string> = {
-    find_children_by_name: 'Looking up children',
-    get_child_briefing: 'Reading the child briefing',
-    answer_about_child: 'Answering about the child',
-    list_classrooms_with_summary: 'Checking classrooms',
-    list_teachers_with_summary: 'Checking teachers',
-  };
-  return map[raw] || raw;
-}
-
-function Suggestions({
-  childName,
-  onPick,
-}: {
-  childName?: string;
-  onPick: (text: string) => void;
-}) {
-  const suggestions = [
-    "How is the school doing this week?",
-    "Which classrooms have been quiet?",
-    "Which teachers have been most active?",
-    childName
-      ? `How is ${childName} doing this week?`
-      : 'How is [child name] doing this week?',
-  ];
-  return (
-    <div
-      style={{
-        padding: '20px 4px',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 8,
-      }}
-    >
-      <div
-        style={{
-          fontSize: 11,
-          fontWeight: 600,
-          color: T.emeraldDim,
-          textTransform: 'uppercase',
-          letterSpacing: 1.4,
-          marginBottom: 8,
-        }}
-      >
-        Try one of these
-      </div>
-      {suggestions.map((s, i) => (
-        <button
-          key={i}
-          type="button"
-          onClick={() => onPick(s)}
-          style={{
-            textAlign: 'left',
-            padding: '12px 16px',
-            background: T.cardBg,
-            backdropFilter: 'blur(18px)',
-            border: T.cardBorder,
-            borderRadius: 12,
-            color: T.textPrimary,
-            fontFamily: T.sans,
-            fontSize: 14,
-            cursor: 'pointer',
-            transition: 'background 120ms ease',
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.background = T.cardBgStrong;
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background = T.cardBg;
-          }}
-        >
-          {s}
-        </button>
-      ))}
     </div>
   );
 }
