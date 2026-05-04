@@ -43,6 +43,10 @@ Output only a JSON array of integers, one per note, in order. No prose. No expla
 
   const userPrompt = `Score these ${notes.length} note(s):\n\n${numbered}`;
 
+  // Track the timeout so we can clear it on success and avoid keeping the
+  // event loop alive past function return (serverless cold-suspend issue +
+  // memory churn under load).
+  let timeoutHandle: ReturnType<typeof setTimeout> | undefined;
   try {
     const response = await Promise.race([
       anthropic.messages.create({
@@ -51,13 +55,14 @@ Output only a JSON array of integers, one per note, in order. No prose. No expla
         system: systemPrompt,
         messages: [{ role: 'user', content: userPrompt }],
       }),
-      new Promise<never>((_, reject) =>
-        setTimeout(
+      new Promise<never>((_, reject) => {
+        timeoutHandle = setTimeout(
           () => reject(new Error('note-quality scoring timeout')),
           SCORE_TIMEOUT_MS
-        )
-      ),
+        );
+      }),
     ]);
+    if (timeoutHandle) clearTimeout(timeoutHandle);
 
     // Extract first text block from Haiku response
     const block = response.content.find((b) => b.type === 'text');
@@ -84,6 +89,7 @@ Output only a JSON array of integers, one per note, in order. No prose. No expla
     }
     return scores;
   } catch (err) {
+    if (timeoutHandle) clearTimeout(timeoutHandle);
     console.error('[tracy/note-quality] scoring failed:', err);
     return [];
   }
