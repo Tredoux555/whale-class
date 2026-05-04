@@ -29,6 +29,7 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import type Anthropic from '@anthropic-ai/sdk';
 import { randomBytes } from 'crypto';
 import { HAIKU_MODEL } from '@/lib/ai/anthropic';
+import { getAILanguageInstruction } from '@/lib/montree/i18n/locale-config';
 
 const AREAS = [
   'practical_life',
@@ -42,6 +43,12 @@ type Area = (typeof AREAS)[number];
 export interface ChildFocusInput {
   question: string;
   schoolId: string;
+  /**
+   * Locale for the COMPOSED answer. The Haiku parse step stays English-only
+   * (it returns structured data, not user-facing prose), but the Sonnet
+   * compose step responds in this language. Defaults to 'en' if omitted.
+   */
+  locale?: string;
 }
 
 export interface ChildFocusMatch {
@@ -476,7 +483,8 @@ async function composeAnswer(
   area: Area | null,
   focus: string,
   anthropic: Anthropic,
-  composeModel: string
+  composeModel: string,
+  locale: string = 'en'
 ): Promise<{ text: string; sparse: boolean; grounded_in: string[] }> {
   const childName = context.child.name;
   const sections: string[] = [];
@@ -547,7 +555,9 @@ async function composeAnswer(
   const beginFence = `[BEGIN_QUESTION_${fenceNonce}]`;
   const endFence = `[END_QUESTION_${fenceNonce}]`;
 
-  const systemPrompt = `You are helping a Montessori principal answer a question about a specific child. Write a single answer the principal could read aloud — to a parent or to herself — verbatim.
+  const languageDirective = getAILanguageInstruction(locale);
+
+  const systemPrompt = `You are helping a Montessori principal answer a question about a specific child. Write a single answer the principal could read aloud — to a parent or to herself — verbatim.${languageDirective}
 
 Voice & tone:
 - Warm, specific, professional. The principal knows this child.
@@ -679,14 +689,15 @@ export async function childFocus(
   const child = resolution.child!;
   const context = await fetchChildContext(child, parsed.area, supabase);
 
-  // Step 4 — compose
+  // Step 4 — compose (in the principal's locale)
   const answer = await composeAnswer(
     question,
     context,
     parsed.area,
     parsed.focus,
     anthropic,
-    composeModel
+    composeModel,
+    input.locale || 'en'
   );
 
   return {

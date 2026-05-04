@@ -3898,4 +3898,21 @@ export const ja: Record<string, string> = {
   'dashboard.onboardingChoice.voiceBody': 'お子さま1人あたり90秒です。プロフィールを作成し、最初のレポートはあなたが書いたようなご報告をいたします。',
   'dashboard.onboardingChoice.photoTitle': '写真から始めましょう',
   'dashboard.onboardingChoice.photoBody': '先へ進みます。写真を撮って、ダッシュボードが生き生きとするのをご覧ください。最初のレポートは、この1週間に観察したことに焦点を当てます。',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'tracy.greeting': 'こんにちは。',
+  'tracy.greetingNamed': 'こんにちは、{name}さん。',
+  'tracy.helpPrompt': 'どのようにお手伝いしましょうか?',
+  'tracy.placeholder': 'ここに入力してください…',
+  'tracy.newConversation': '新しい会話',
+  'tracy.sendAria': 'メッセージを送信',
+  'tracy.thinkingAria': 'Tracyが考え中です',
+  'tracy.viewer.title': '閲覧者です。',
+  'tracy.viewer.thisSchool': 'このスクール',
+  'tracy.viewer.body': '{school}は教師が主導しており、以下について何でも無料でお尋ねいただけます。お子さまのクラスを追加したり、先生を招待したりするには',
+  'tracy.viewer.upgradeLink': 'スクール計画にアップグレード',
+  'tracy.errors.tier': 'AI機能をご利用いただくには、アクティブなプランが必要です。サポートにお問い合わせください。',
+  'tracy.errors.transient': '一時的な問題が発生しました。少々お待ちになってからもう一度お試しください。',
+  'tracy.errors.noStream': '応答ストリームがありません。少々お待ちになってからもう一度お試しください。',
+  'tracy.errors.connection': '接続に失敗しました。少々お待ちになってからもう一度お試しください。',
 };

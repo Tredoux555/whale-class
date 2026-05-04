@@ -3898,4 +3898,21 @@ export const de: Record<string, string> = {
   'dashboard.onboardingChoice.voiceBody': '90 Sekunden pro Kind. Ich erstelle ihre Profile und Ihre ersten Berichte klingen, als hätten Sie sie geschrieben.',
   'dashboard.onboardingChoice.photoTitle': 'Beginnen Sie einfach mit Fotos',
   'dashboard.onboardingChoice.photoBody': 'Überspringen Sie voraus. Machen Sie Fotos und sehen Sie, wie das Dashboard zum Leben erwacht. Ihre ersten Berichte konzentrieren sich auf das, was wir diese Woche beobachtet haben.',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'tracy.greeting': 'Hallo.',
+  'tracy.greetingNamed': 'Hallo {name}.',
+  'tracy.helpPrompt': 'Wie kann ich Ihnen helfen?',
+  'tracy.placeholder': 'Hier eingeben…',
+  'tracy.newConversation': 'Neues Gespräch',
+  'tracy.sendAria': 'Nachricht senden',
+  'tracy.thinkingAria': 'Tracy überlegt',
+  'tracy.viewer.title': 'Sie sind Zuschauer.',
+  'tracy.viewer.thisSchool': 'Diese Schule',
+  'tracy.viewer.body': '{school} wird von Lehrkräften geleitet — Sie können alle Inhalte unten kostenlos abfragen. Um Ihre eigenen Klassen hinzuzufügen oder Lehrkräfte einzuladen,',
+  'tracy.viewer.upgradeLink': 'aktualisieren Sie auf einen Schulplan',
+  'tracy.errors.tier': 'KI-Funktionen erfordern einen aktiven Plan — bitte wenden Sie sich an den Support.',
+  'tracy.errors.transient': 'Etwas hat mich dort unterbrochen — geben Sie mir einen Moment und versuchen Sie es erneut.',
+  'tracy.errors.noStream': 'Kein Antwortstrom — versuchen Sie es in einer Sekunde erneut.',
+  'tracy.errors.connection': 'Verbindung fehlgeschlagen — versuchen Sie es in einem Moment erneut.',
 };

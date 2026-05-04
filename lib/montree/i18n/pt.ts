@@ -3898,4 +3898,21 @@ export const pt: Record<string, string> = {
   'dashboard.onboardingChoice.voiceBody': '90 segundos por criança. Vou construir seus perfis e seus primeiros relatórios soarão como se você os tivesse escrito.',
   'dashboard.onboardingChoice.photoTitle': 'Comece apenas com fotos',
   'dashboard.onboardingChoice.photoBody': 'Avance rápido. Tire fotos e veja o painel ganhar vida. Seus primeiros relatórios focarão no que observamos nesta semana.',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'tracy.greeting': 'Olá.',
+  'tracy.greetingNamed': 'Olá, {name}.',
+  'tracy.helpPrompt': 'Como posso ajudá-lo?',
+  'tracy.placeholder': 'Digite aqui…',
+  'tracy.newConversation': 'Nova conversa',
+  'tracy.sendAria': 'Enviar mensagem',
+  'tracy.thinkingAria': 'Tracy está pensando',
+  'tracy.viewer.title': 'Você é um visualizador.',
+  'tracy.viewer.thisSchool': 'Esta escola',
+  'tracy.viewer.body': '{school} é coordenada pelo professor — você pode fazer perguntas sobre qualquer assunto abaixo gratuitamente. Para adicionar suas próprias salas ou convidar professores,',
+  'tracy.viewer.upgradeLink': 'atualize para um plano de escola',
+  'tracy.errors.tier': 'Recursos de IA precisam de um plano ativo — entre em contato com o suporte.',
+  'tracy.errors.transient': 'Algo me impediu ali — me dê um segundo e tente novamente.',
+  'tracy.errors.noStream': 'Nenhum fluxo de resposta — tente novamente em um segundo.',
+  'tracy.errors.connection': 'Falha na conexão — tente novamente em um momento.',
 };

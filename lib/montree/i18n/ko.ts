@@ -3898,4 +3898,21 @@ export const ko: Record<string, string> = {
   'dashboard.onboardingChoice.voiceBody': '자녀분당 90초면 돼요. 저는 자녀분들의 프로필을 구성하고 첫 번째 보고서를 선생님께서 작성하신 것처럼 만들어드릴게요.',
   'dashboard.onboardingChoice.photoTitle': '사진으로 바로 시작하기',
   'dashboard.onboardingChoice.photoBody': '이미 사진을 촬영했나요? 사진을 업로드하고 대시보드가 살아나는 모습을 지켜보세요. 첫 번째 보고서는 이번 주에 우리가 관찰한 내용에 초점을 맞출 거예요.',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'tracy.greeting': '안녕하세요.',
+  'tracy.greetingNamed': '안녕하세요, {name}님.',
+  'tracy.helpPrompt': '어떻게 도와드릴까요?',
+  'tracy.placeholder': '여기에 입력하세요…',
+  'tracy.newConversation': '새로운 대화',
+  'tracy.sendAria': '메시지 전송',
+  'tracy.thinkingAria': 'Tracy가 생각 중입니다',
+  'tracy.viewer.title': '열람자입니다.',
+  'tracy.viewer.thisSchool': '이 학교',
+  'tracy.viewer.body': '{school}는 교사 주도 학교이므로 아래에 대해 자유롭게 질문할 수 있습니다. 자신의 학급을 추가하거나 교사를 초대하려면',
+  'tracy.viewer.upgradeLink': '학교 플랜으로 업그레이드하세요',
+  'tracy.errors.tier': 'AI 기능을 사용하려면 활성 플랜이 필요합니다 — 지원팀에 문의하세요.',
+  'tracy.errors.transient': '그곳에서 무언가 멈췄어요 — 잠깐 기다린 후 다시 시도해주세요.',
+  'tracy.errors.noStream': '응답 스트림이 없습니다 — 잠깐 후 다시 시도해주세요.',
+  'tracy.errors.connection': '연결에 실패했습니다 — 잠깐 후 다시 시도해주세요.',
 };
