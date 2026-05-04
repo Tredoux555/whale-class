@@ -117,11 +117,26 @@ export function useMontreeData<T = unknown>(
 
     if (showLoading && mountedRef.current) setLoading(true);
 
+    // Capture the start time of this fetch. If a more recent write to the
+    // cache happens BEFORE this fetch resolves (e.g. setCacheData() called by
+    // a bulk-import handler), we discard our stale GET result rather than
+    // overwriting the fresher mutation with it. Without this guard, the
+    // dashboard's "Bulk Import Students" empty state can flash on back-nav
+    // because an in-flight GET that started before the import returns empty
+    // milliseconds AFTER the import wrote real children into the cache —
+    // and the post-mutation cache entry gets wiped.
+    const fetchStartTime = Date.now();
+
     const promise = fetch(currentUrl, { credentials: 'same-origin' })
       .then(async (res) => {
         if (!res.ok) throw new Error(`${res.status}`);
         const json = await res.json();
-        // Store in cache
+        const existingCached = cache.get(currentUrl);
+        // Race-condition guard: if the cache was touched after this fetch
+        // started, that newer entry is more authoritative than our response.
+        if (existingCached && existingCached.timestamp >= fetchStartTime) {
+          return existingCached.data as unknown;
+        }
         cache.set(currentUrl, { data: json, timestamp: Date.now() });
         evictOldest();
         // Notify all subscribers of this URL
