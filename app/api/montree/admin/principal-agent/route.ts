@@ -1,23 +1,27 @@
 // app/api/montree/admin/principal-agent/route.ts
 //
-// "Ask anything about your school" — the principal's home-page agent.
+// Tracy — the principal's chief-of-staff AI.
 //
-// The principal types a question. The agent figures out what data to fetch
+// The principal types a question. Tracy figures out what data to fetch
 // (which child, which classroom, which teacher), calls one or more read-only
-// tools, and replies in a warm, professional voice. The whole point is that
-// the principal doesn't have to think about WHERE the answer lives — she just
-// asks. Same way she'd ask a thoughtful chief-of-staff.
+// tools, and replies in a chief-of-staff voice that always ends with one
+// concrete next action. The whole point is that the principal doesn't have to
+// think about WHERE the answer lives — she just asks.
+//
+// This route is the SSE plumbing. Tracy's brain (system prompt, tool
+// definitions, framework tools, executor) lives in lib/montree/tracy/ —
+// keep this file thin and don't drop architectural details into it.
 //
 // Every exchange is logged to montree_principal_agent_log (migration 184).
-// Super-admin can read the log to see what principals are actually asking
-// — that's the signal Tredoux uses to decide what to build next.
+// Super-admin reads the log to see what principals are actually asking —
+// that's the signal Tredoux uses to decide what to build next.
 //
-// POST body: { question: string, conversation_id: string }
+// POST body: { question: string, conversation_id: string, history?: [...] }
 //   conversation_id is generated client-side per fresh chat session. Reuse
 //   the same id for follow-up questions in the same conversation.
 //
 // Response: SSE stream of { type, ... } events:
-//   { type: 'tool_call', tool, input }            — agent invoked a tool
+//   { type: 'tool_call', tool, input }            — Tracy invoked a tool
 //   { type: 'tool_result', tool, success, summary } — tool returned
 //   { type: 'thinking', text }                     — interim text between tool calls
 //   { type: 'text', text }                         — final answer chunk
@@ -30,12 +34,16 @@ import type {
   MessageParam,
   ContentBlockParam,
   ToolResultBlockParam,
-  Tool,
 } from '@anthropic-ai/sdk/resources/messages';
 import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { resolveReportModel } from '@/lib/montree/reports/resolve-model';
 import { anthropic, AI_MODEL } from '@/lib/ai/anthropic';
+import {
+  buildTracySystemPrompt,
+  TRACY_TOOLS,
+  executeTracyTool,
+} from '@/lib/montree/tracy';
 
 export const maxDuration = 120;
 
@@ -66,407 +74,18 @@ function assertSupportedCostModel(model: string): void {
   }
 }
 
-// ── Tool definitions ────────────────────────────────────────────────────
-// Read-only. Scoped to the principal's school via auth + every tool re-checks
-// school_id. Designed to be MINIMAL on purpose — start with the questions
-// principals actually ask, expand from log evidence.
-
-const PRINCIPAL_AGENT_TOOLS: Tool[] = [
-  {
-    name: 'find_children_by_name',
-    description:
-      "Search the principal's school for children whose name matches a query. Use this when the principal mentions a child by name (full or partial). Returns up to 10 matches with id, name, classroom, and age.",
-    input_schema: {
-      type: 'object',
-      properties: {
-        query: {
-          type: 'string',
-          description:
-            "The name (or partial name) to search for. Case-insensitive substring match against the child's name.",
-        },
-      },
-      required: ['query'],
-    },
-  },
-  {
-    name: 'get_child_briefing',
-    description:
-      'Get a 30-second AI-synthesised briefing on one child — who they are right now, what they\'re working on, recent observations, what to watch for. Use when the principal wants a general "how is X doing" answer. Requires the exact child_id (use find_children_by_name first if you only have a name).',
-    input_schema: {
-      type: 'object',
-      properties: {
-        child_id: { type: 'string' },
-      },
-      required: ['child_id'],
-    },
-  },
-  {
-    name: 'answer_about_child',
-    description:
-      "Get a focused answer to a SPECIFIC question about ONE child, drawing on every observation in the system. Use when the principal is relaying a parent's question (e.g., 'Has she been calmer this week?', 'Did she finish the moveable alphabet?') or asking a pointed question about a single child. Returns a short, factually-grounded answer in the principal's voice. Requires child_id.",
-    input_schema: {
-      type: 'object',
-      properties: {
-        child_id: { type: 'string' },
-        question: {
-          type: 'string',
-          description:
-            "The specific question being asked about the child, in plain English. If you're rephrasing a parent's question, keep the parent's phrasing.",
-        },
-      },
-      required: ['child_id', 'question'],
-    },
-  },
-  {
-    name: 'list_classrooms_with_summary',
-    description:
-      "List every classroom in the principal's school with: classroom name, child count, lead teacher name, and how many of those children have been observed this week. Use this when the principal asks broad school-level questions like 'how is the school doing this week', 'which classrooms are quiet', 'who's been observing'.",
-    input_schema: {
-      type: 'object',
-      properties: {},
-    },
-  },
-  {
-    name: 'list_teachers_with_summary',
-    description:
-      "List every active teacher in the school with: name, classroom, last login date, and a 7-day activity count (photos confirmed). Use when the principal asks about teachers — who's active, who hasn't logged in, who's been observing the most.",
-    input_schema: {
-      type: 'object',
-      properties: {},
-    },
-  },
-];
-
-// ── Tool executor ──────────────────────────────────────────────────────
-
-interface ToolExecResult {
-  success: boolean;
-  data?: unknown;
-  error?: string;
-  result_summary?: string;
-}
-
-async function executeTool(
-  name: string,
-  input: Record<string, unknown>,
-  schoolId: string,
-  request: NextRequest
-): Promise<ToolExecResult> {
-  const supabase = getSupabase();
-  const cookieHeader = request.headers.get('cookie') || '';
-  const origin = request.nextUrl.origin;
-
-  // Helper to call our own internal API endpoints with the principal's cookie
-  // (so verifySchoolRequest + verifyChildBelongsToSchool inside those routes
-  // see the same identity).
-  //
-  // SCHOOL-SCOPING CONTRACT (load-bearing — do not weaken):
-  //   The agent forwards the principal's cookie to internal endpoints so each
-  //   endpoint re-verifies the school via verifySchoolRequest +
-  //   verifyChildBelongsToSchool. This route does NOT independently scope
-  //   tool input — the trust boundary is the inner endpoint. If you add a
-  //   new tool that calls an internal endpoint, that endpoint MUST itself
-  //   re-validate school_id against the principal's auth. If you add a tool
-  //   that does direct Supabase queries (like list_classrooms_with_summary
-  //   or list_teachers_with_summary below), it MUST filter by the schoolId
-  //   passed to executeTool.
-  const internalGet = async (path: string) => {
-    const res = await fetch(`${origin}${path}`, {
-      headers: { cookie: cookieHeader },
-    });
-    if (!res.ok) {
-      const body = await res.text().catch(() => '');
-      return { ok: false, status: res.status, body };
-    }
-    const data = await res.json();
-    return { ok: true, status: res.status, data };
-  };
-  const internalPost = async (path: string, body: unknown) => {
-    const res = await fetch(`${origin}${path}`, {
-      method: 'POST',
-      headers: {
-        cookie: cookieHeader,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(body),
-    });
-    if (!res.ok) {
-      const text = await res.text().catch(() => '');
-      return { ok: false, status: res.status, body: text };
-    }
-    const data = await res.json();
-    return { ok: true, status: res.status, data };
-  };
-
-  try {
-    switch (name) {
-      case 'find_children_by_name': {
-        const query = String(input.query || '').trim();
-        if (!query) {
-          return { success: false, error: 'query is required' };
-        }
-        const result = await internalGet(
-          `/api/montree/admin/students/search?q=${encodeURIComponent(query)}`
-        );
-        if (!result.ok) {
-          return {
-            success: false,
-            error: `students/search returned ${result.status}`,
-          };
-        }
-        const data = result.data as { students?: unknown[] } | undefined;
-        const students = Array.isArray(data?.students)
-          ? data!.students!.slice(0, 10)
-          : [];
-        return {
-          success: true,
-          data: { matches: students },
-          result_summary: `${students.length} match(es)`,
-        };
-      }
-
-      case 'get_child_briefing': {
-        const childId = String(input.child_id || '').trim();
-        if (!childId) {
-          return { success: false, error: 'child_id is required' };
-        }
-        const result = await internalGet(
-          `/api/montree/admin/child-briefing/${encodeURIComponent(childId)}`
-        );
-        if (!result.ok) {
-          return {
-            success: false,
-            error: `child-briefing returned ${result.status}`,
-          };
-        }
-        const data = result.data as
-          | { child?: { name?: string }; briefing?: string }
-          | undefined;
-        return {
-          success: true,
-          data: result.data,
-          result_summary: `briefing for ${data?.child?.name || childId}`,
-        };
-      }
-
-      case 'answer_about_child': {
-        const childId = String(input.child_id || '').trim();
-        const question = String(input.question || '').trim();
-        if (!childId || !question) {
-          return { success: false, error: 'child_id and question are required' };
-        }
-        const result = await internalPost(
-          '/api/montree/admin/parent-question',
-          { child_id: childId, question }
-        );
-        if (!result.ok) {
-          return {
-            success: false,
-            error: `parent-question returned ${result.status}`,
-          };
-        }
-        const data = result.data as { answer?: string; child_name?: string } | undefined;
-        return {
-          success: true,
-          data: result.data,
-          result_summary: `answered for ${data?.child_name || childId}`,
-        };
-      }
-
-      case 'list_classrooms_with_summary': {
-        // Inline (no internal API for this exact shape yet)
-        const { data: classrooms, error: cErr } = await supabase
-          .from('montree_classrooms')
-          .select('id, name')
-          .eq('school_id', schoolId)
-          .eq('is_active', true);
-        if (cErr) return { success: false, error: cErr.message };
-        if (!classrooms || classrooms.length === 0) {
-          return {
-            success: true,
-            data: { classrooms: [] },
-            result_summary: '0 classrooms',
-          };
-        }
-
-        const classroomIds = classrooms.map((c) => c.id);
-        const sevenDaysAgo = new Date(
-          Date.now() - 7 * 24 * 60 * 60 * 1000
-        ).toISOString();
-
-        // Children per classroom
-        const { data: children } = await supabase
-          .from('montree_children')
-          .select('id, classroom_id')
-          .in('classroom_id', classroomIds)
-          .eq('is_active', true);
-        const childrenByClassroom = new Map<string, string[]>();
-        for (const c of children || []) {
-          const list = childrenByClassroom.get(c.classroom_id) || [];
-          list.push(c.id);
-          childrenByClassroom.set(c.classroom_id, list);
-        }
-
-        // Lead teacher per classroom (first active teacher per classroom)
-        const { data: teachers } = await supabase
-          .from('montree_teachers')
-          .select('classroom_id, name, created_at')
-          .in('classroom_id', classroomIds)
-          .eq('is_active', true)
-          .order('created_at', { ascending: true });
-        const leadByClassroom = new Map<string, string>();
-        for (const t of teachers || []) {
-          if (!leadByClassroom.has(t.classroom_id)) {
-            leadByClassroom.set(t.classroom_id, t.name);
-          }
-        }
-
-        // Distinct children with a teacher-confirmed photo in last 7 days
-        const allChildIds = (children || []).map((c) => c.id);
-        const observedSet = new Set<string>();
-        if (allChildIds.length) {
-          const { data: photos } = await supabase
-            .from('montree_media')
-            .select('child_id')
-            .in('child_id', allChildIds)
-            .eq('teacher_confirmed', true)
-            .gte('captured_at', sevenDaysAgo);
-          for (const p of photos || []) observedSet.add(p.child_id);
-        }
-
-        const summary = classrooms.map((c) => {
-          const ids = childrenByClassroom.get(c.id) || [];
-          const observed = ids.filter((id) => observedSet.has(id)).length;
-          return {
-            id: c.id,
-            name: c.name,
-            child_count: ids.length,
-            lead_teacher: leadByClassroom.get(c.id) || null,
-            children_observed_this_week: observed,
-          };
-        });
-
-        return {
-          success: true,
-          data: { classrooms: summary },
-          result_summary: `${summary.length} classroom(s)`,
-        };
-      }
-
-      case 'list_teachers_with_summary': {
-        const sevenDaysAgo = new Date(
-          Date.now() - 7 * 24 * 60 * 60 * 1000
-        ).toISOString();
-
-        // All active teachers in the school
-        const { data: teachers, error: tErr } = await supabase
-          .from('montree_teachers')
-          .select('id, name, classroom_id, last_login_at')
-          .eq('school_id', schoolId)
-          .eq('is_active', true);
-        if (tErr) return { success: false, error: tErr.message };
-        if (!teachers || teachers.length === 0) {
-          return {
-            success: true,
-            data: { teachers: [] },
-            result_summary: '0 teachers',
-          };
-        }
-
-        // Map teacher → classroom name
-        const classroomIds = Array.from(
-          new Set(teachers.map((t) => t.classroom_id).filter(Boolean))
-        );
-        const classroomNameById = new Map<string, string>();
-        if (classroomIds.length) {
-          const { data: classrooms } = await supabase
-            .from('montree_classrooms')
-            .select('id, name')
-            .in('id', classroomIds);
-          for (const c of classrooms || []) classroomNameById.set(c.id, c.name);
-        }
-
-        // 7-day photo confirmation count per teacher (best-effort — confirms
-        // are tied to media.confirmed_by if that column exists; fall back to
-        // 0 silently if not).
-        const photoCountByTeacher = new Map<string, number>();
-        try {
-          const { data: photos } = await supabase
-            .from('montree_media')
-            .select('confirmed_by')
-            .eq('school_id', schoolId)
-            .eq('teacher_confirmed', true)
-            .gte('captured_at', sevenDaysAgo);
-          for (const p of photos || []) {
-            const tid = (p as { confirmed_by?: string }).confirmed_by;
-            if (tid) {
-              photoCountByTeacher.set(
-                tid,
-                (photoCountByTeacher.get(tid) || 0) + 1
-              );
-            }
-          }
-        } catch {
-          // Non-fatal — column may not exist on older deployments.
-        }
-
-        const summary = teachers.map((t) => ({
-          id: t.id,
-          name: t.name,
-          classroom: t.classroom_id
-            ? classroomNameById.get(t.classroom_id) || null
-            : null,
-          last_login_at: t.last_login_at,
-          photos_confirmed_7d: photoCountByTeacher.get(t.id) || 0,
-        }));
-
-        return {
-          success: true,
-          data: { teachers: summary },
-          result_summary: `${summary.length} teacher(s)`,
-        };
-      }
-
-      default:
-        return { success: false, error: `Unknown tool: ${name}` };
-    }
-  } catch (err) {
-    return {
-      success: false,
-      error: err instanceof Error ? err.message : 'Tool execution failed',
-    };
-  }
-}
-
-// ── System prompt ──────────────────────────────────────────────────────
-
-function buildSystemPrompt(schoolName: string, principalName: string): string {
-  return `You are the principal's personal assistant for ${schoolName}. Your name is Guru. The person you are talking to is ${principalName}, the principal.
-
-Your role: ${principalName} types questions. You go and find the answer using the tools available, then reply in a warm, professional, conversational voice. The principal should never have to think about WHERE the answer lives — she just asks, you handle it.
-
-How to think:
-- Most questions will be about a SPECIFIC child whose name appears in the question. When you see a name, your first move is almost always find_children_by_name to get the child_id, then either get_child_briefing (for general "how is she doing") OR answer_about_child (for a specific question).
-- For school-wide questions ("how is this week going", "which classrooms are quiet", "who's been observing"), use list_classrooms_with_summary or list_teachers_with_summary.
-- You can chain tools — e.g. find_children_by_name → get_child_briefing → if she asks a specific follow-up, answer_about_child.
-- Don't call tools you don't need. If the principal says "thanks" or "ok", just respond conversationally without tool calls.
-
-Voice:
-- Warm, specific, professional. Like a knowledgeable chief-of-staff briefing the principal.
-- Refer to children by their first name. Refer to ${principalName} as "you".
-- No bullet points unless the principal asks for a list. Plain prose.
-- Length: match the question. A one-sentence question deserves a one-sentence answer.
-
-Honesty rules — non-negotiable:
-- Use ONLY information returned by the tools. Never invent observations, dates, names, classroom counts.
-- If a tool returns no matches (e.g. no child found by that name), tell the principal honestly: "I couldn't find a child named X in your school — did you mean someone else, or should I check a different spelling?"
-- If a tool errors, tell the principal what failed and offer to try again.
-- For ${principalName}'s viewer mode (when ${schoolName} is teacher-led and she doesn't own it), never invent classrooms or teachers she doesn't actually have access to. Stay strictly within the data the tools return.
-
-When you're done answering, do NOT add a "Let me know if you'd like more!" sign-off. Just answer the question and stop. The principal will ask if she needs more.
-
-Output: Plain conversational prose. Markdown is fine for a quoted parent letter or a short list when explicitly helpful, but default to flowing sentences.`;
-}
+// ── Tracy's brain lives in lib/montree/tracy/ ────────────────────────
+// System prompt: lib/montree/tracy/system-prompt.ts
+// Tool defs:     lib/montree/tracy/tool-definitions.ts (TRACY_TOOLS)
+// Executor:      lib/montree/tracy/tool-executor.ts (executeTracyTool)
+// Frameworks:    lib/montree/tracy/frameworks/*
+//
+// SCHOOL-SCOPING CONTRACT (load-bearing — do not weaken):
+//   The executor forwards the principal's cookie to internal endpoints so
+//   each endpoint re-verifies the school. For tools that do direct Supabase
+//   queries, every query MUST filter by the schoolId passed in. The trust
+//   boundary is the inner endpoint or the explicit schoolId filter — never
+//   the agent loop here.
 
 // ── Main handler ──────────────────────────────────────────────────────
 
@@ -625,10 +244,25 @@ export async function POST(request: NextRequest) {
   let finalAnswerText = '';
   let logError: string | null = null;
 
+  // Today's date label for Tracy's system prompt — matches how the principal
+  // would say it ("Monday, May 4, 2026"). Uses the principal's locale would
+  // be ideal; for now use en-US as a stable default since Tracy speaks
+  // English in this version. Internationalising her voice is a later phase.
+  const todayLabel = new Date().toLocaleDateString('en-US', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
+
   const stream = new ReadableStream<Uint8Array>({
     async start(controller) {
       try {
-        const systemPrompt = buildSystemPrompt(schoolName, principalName);
+        const systemPrompt = buildTracySystemPrompt({
+          schoolName,
+          principalName,
+          todayLabel,
+        });
 
         const conversationMessages: MessageParam[] = [...initialMessages];
         let lastAssistantBlocks: ContentBlockParam[] = [];
@@ -666,7 +300,7 @@ export async function POST(request: NextRequest) {
                 model,
                 max_tokens: 2048,
                 system: systemPrompt,
-                tools: PRINCIPAL_AGENT_TOOLS,
+                tools: TRACY_TOOLS,
                 messages: messagesForRound,
               },
               { timeout: API_TIMEOUT_MS }
@@ -717,11 +351,15 @@ export async function POST(request: NextRequest) {
                 })
               );
 
-              const result = await executeTool(
+              const result = await executeTracyTool(
                 block.name,
                 block.input as Record<string, unknown>,
-                auth.schoolId,
-                request
+                {
+                  supabase,
+                  anthropic,
+                  schoolId: auth.schoolId,
+                  request,
+                }
               );
               const toolDuration = Date.now() - toolStart;
 
