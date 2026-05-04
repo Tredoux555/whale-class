@@ -178,16 +178,23 @@ function splitActionLine(text: string): { body: string; action: string | null } 
 
 // ── Subcomponents ────────────────────────────────────────────────────────
 
+// Bump this every time /public/tracy-avatar.png contents change. Appended as
+// a query string on the <img src> so Chrome / Safari / Firefox treat it as
+// a fresh URL and bypass their HTTP image cache. Without this, swapping the
+// avatar bytes leaves users staring at the previously-cached image for hours.
+// History: v1 = original T monogram (Session 87), v2 = stretched-borders T
+// monogram (earlier today), v3 = watercolor portrait.
+const TRACY_AVATAR_VERSION = 3;
+
 function TracyAvatar({ size = 36 }: { size?: number }) {
-  // Renders the Canva-designed T monogram (gold serif T with a sprout, on
-  // a deep forest green ground) from /public/tracy-avatar.png. If the asset
-  // is missing in the deploy (404), we silently fall back to the original
-  // CSS-rendered gold-circle T placeholder so the page never looks broken.
+  // Renders Tracy's avatar from /public/tracy-avatar.png. If the asset is
+  // missing in the deploy (404), we silently fall back to the CSS-rendered
+  // gold-circle T placeholder so the page never looks broken.
   //
-  // Rounded-square corners (not full circle) preserve the design's
-  // composition — the T's stem + leaf grows out of the square's bottom edge,
-  // a circle crop would clip it. No border ring; the gold reads as a card
-  // against the dark forest UI on its own.
+  // For the watercolor portrait we use a circular crop so the cream/peach
+  // brushstroke edges fade into the dark forest UI instead of getting
+  // clipped to a square. Earlier T-monogram era used a rounded-square crop;
+  // if we ever swap back to a monogram, change borderRadius accordingly.
   const [imgFailed, setImgFailed] = useState(false);
 
   if (imgFailed) {
@@ -217,7 +224,7 @@ function TracyAvatar({ size = 36 }: { size?: number }) {
   return (
     // eslint-disable-next-line @next/next/no-img-element
     <img
-      src="/tracy-avatar.png"
+      src={`/tracy-avatar.png?v=${TRACY_AVATAR_VERSION}`}
       alt="Tracy"
       onError={() => setImgFailed(true)}
       width={size}
@@ -225,7 +232,7 @@ function TracyAvatar({ size = 36 }: { size?: number }) {
       style={{
         width: size,
         height: size,
-        borderRadius: Math.round(size * 0.22), // rounded-square, ~8px on a 36px avatar
+        borderRadius: '50%', // circular crop — works for both watercolor portrait and monogram
         objectFit: 'cover',
         flexShrink: 0,
         display: 'block',
