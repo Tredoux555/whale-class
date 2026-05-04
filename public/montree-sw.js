@@ -17,11 +17,12 @@
 // Also: OFFLINE_URL is now actually pre-cached on install. Previously listed
 // as the navigation fallback but never added to PRECACHE_ASSETS, so the
 // fallback always missed and fell through to the synthetic 503.
-// Bumped to v6 (May 4, 2026) — Tracy avatar refreshed to the stretched-borders
-// T monogram (no more white edges). Cache bump forces existing PWA installs
-// to discard the cached old tracy-avatar.png on next activation.
-// (v5 was the M-monogram favicon/icon uniform brand bump earlier same day.)
-const CACHE_NAME = 'montree-v6';
+// Bumped to v7 (May 4, 2026) — Tracy avatar swapped from T monogram to the
+// watercolor portrait. Cache bump forces existing PWA installs to discard
+// the cached v6 T-monogram avatar on next activation.
+// (v5 = M-monogram favicon/PWA brand uniform; v6 = T-monogram tracy avatar
+// with fixed borders; v7 = watercolor face tracy avatar.)
+const CACHE_NAME = 'montree-v7';
 const OFFLINE_URL = '/montree/offline';
 
 // Only cache immutable assets — static files that change with build hashes.
