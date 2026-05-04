@@ -226,9 +226,16 @@ export async function unpackTeacher(
 
   const noteRows = notes || [];
   const notesWritten = noteRows.length;
+  // Coverage signal: only notes about children IN this teacher's roster
+  // count. A teacher may write notes about children in other classrooms
+  // (e.g., when covering for an absent colleague) — those are real notes
+  // but they don't constitute coverage of THIS teacher's children. Without
+  // this filter, off-roster notes inflate childrenWithEvidence past the
+  // roster size and produce coverage_pct > 100%.
+  const rosterIdSet = new Set(rosterIds);
   const evidenceNoteChildIds = new Set<string>();
   for (const n of noteRows) {
-    if (n.child_id) {
+    if (n.child_id && rosterIdSet.has(n.child_id)) {
       evidenceNoteChildIds.add(n.child_id);
       evidenceCountById.set(
         n.child_id,
