@@ -143,14 +143,23 @@ export default function QrGeneratorPage() {
   }, [songTitle, songSlugTouched]);
 
   // Load videos from the admin video-manager the first time the Song tab is opened.
+  // Re-fetches when `loadAttempt` increments (Retry button bumps it).
+  const [loadAttempt, setLoadAttempt] = useState<number>(0);
   useEffect(() => {
-    if (mode !== 'song' || videos.length > 0 || videosLoading) return;
+    if (mode !== 'song') return;
+    if (videos.length > 0) return;
+
+    let cancelled = false;
+    let timedOut = false;
     const controller = new AbortController();
     setVideosLoading(true);
     setVideosError(null);
 
-    // 15-second timeout — Supabase Storage download can be slow on cold start
-    const timer = setTimeout(() => controller.abort(), 15_000);
+    // 30-second timeout — Supabase Storage cold start can take 10–20s on Railway.
+    const timer = setTimeout(() => {
+      timedOut = true;
+      controller.abort();
+    }, 30_000);
 
     (async () => {
       try {
@@ -158,6 +167,7 @@ export default function QrGeneratorPage() {
           credentials: 'include',
           signal: controller.signal,
         });
+        if (cancelled) return;
         if (res.status === 401) {
           // Auth gate elsewhere handles the redirect; just stop here.
           return;
@@ -166,7 +176,7 @@ export default function QrGeneratorPage() {
           throw new Error(`HTTP ${res.status}`);
         }
         const data = await res.json();
-        if (controller.signal.aborted) return;
+        if (cancelled) return;
         if (data?.success && Array.isArray(data.videos)) {
           // Sort newest first
           const sorted = [...data.videos].sort((a: VideoRow, b: VideoRow) => {
@@ -176,25 +186,27 @@ export default function QrGeneratorPage() {
           });
           setVideos(sorted);
         } else {
-          setVideosError('Video list was empty.');
+          setVideosError('Server returned an empty video list.');
         }
       } catch (err) {
-        if (!controller.signal.aborted) {
-          const msg = (err as Error).name === 'AbortError'
-            ? 'Timed out loading videos. Try refreshing.'
-            : (err as Error).message;
-          setVideosError(msg);
-        }
+        if (cancelled) return;
+        const msg = timedOut
+          ? 'Timed out after 30 seconds. The video metadata file may be slow to load — hit Retry, or type the title manually below.'
+          : (err as Error).message || 'Failed to load videos.';
+        setVideosError(msg);
       } finally {
         clearTimeout(timer);
-        if (!controller.signal.aborted) setVideosLoading(false);
+        if (!cancelled) setVideosLoading(false);
       }
     })();
     return () => {
+      cancelled = true;
       controller.abort();
       clearTimeout(timer);
     };
-  }, [mode, videos.length, videosLoading]);
+    // Intentionally NOT depending on `videosLoading` — it's set inside this effect
+    // and re-running on its own state change caused spurious aborts.
+  }, [mode, videos.length, loadAttempt]);
 
   // Filter videos by search text
   const filteredVideos = useMemo(() => {
@@ -460,8 +472,17 @@ export default function QrGeneratorPage() {
                   <span className="text-slate-600">(auto-fills title + slug)</span>
                 </label>
                 {videosError ? (
-                  <div className="bg-red-500/10 border border-red-500/30 rounded-md px-3 py-2 text-xs text-red-300">
-                    Couldn&apos;t load videos: {videosError}. You can still type the title manually below.
+                  <div className="bg-red-500/10 border border-red-500/30 rounded-md px-3 py-2 text-xs text-red-300 flex items-start gap-3">
+                    <div className="flex-1">
+                      Couldn&apos;t load videos: {videosError} You can still type the title manually below.
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setLoadAttempt(n => n + 1)}
+                      className="shrink-0 px-2 py-1 rounded bg-red-500/20 hover:bg-red-500/30 text-red-200 hover:text-white text-xs font-medium transition"
+                    >
+                      Retry
+                    </button>
                   </div>
                 ) : videosLoading ? (
                   <div className="bg-slate-900 border border-slate-700 rounded-md px-3 py-2 text-xs text-slate-400">
