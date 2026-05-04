@@ -183,6 +183,120 @@ GMass campaigns A/C/D are historical. Campaign C sent 335 blank emails (Session 
 
 ## RECENT STATUS (May 4, 2026)
 
+### ⚡ Session 87 — Super-admin Principals modal + Tracy live play-by-play + Principal Vault prototype + per-song Share button + Tracy avatar shipped (May 4, 2026 evening)
+
+**6 commits pushed to main this session.** Sat on top of Session 86's morning work. Headline: the principal portal got dramatically richer — live play-by-play status under Tracy's avatar, an end-to-end encrypted parent-meeting Vault gated to Tredoux on Whale Class, the real T monogram avatar from Canva, super-admin principal management UI, and per-song Share buttons that retire the slug-typo class of bugs from the QR generator.
+
+**Commits (oldest first):**
+- `445ec181` — Whale-class audio rendering fix + super-admin 👤 Principals modal
+- `59041e63` — Tracy: live play-by-play progress events under each tool chip
+- `d097c22d` — Principal Vault prototype — encrypted parent-meeting recordings (Tredoux-only)
+- `fc7d7ac2` — Per-song Share button + QR modal on whale-class pages
+- `adfbfd63` — Tracy avatar via /tracy-avatar.png + drop Ask Guru from principal sidebar
+- `ac4c24b6` — Add Tracy T monogram avatar asset
+
+**Outside git:**
+- 🚨 **Migration 185 run** in Supabase SQL Editor (`montree_principal_vault` table created, all 12 columns verified by user)
+- **Tredoux's principal code reset to `ZNGLJT`** (the prior code's plaintext was unrecoverable; new SHA-256 hash written directly to `montree_school_admins.password_hash` for Whale Class principal `16eec1c0-bfb5-4edf-a160-059bb41803fb`)
+- **Brand Kit Word doc generated** at `whale/Montree_Brand_Kit.docx` — portable reference for the Canva setup (11-color palette with rendered swatches, fonts, logo asset table, voice & tone, photography guidance, Canva Brand Voice prompt)
+- Tracy in Chinese verified working end-to-end on production
+
+**A. Whale-class audio rendering fix + super-admin 👤 (`445ec181`):**
+
+Two assets in `videos.json` had overlapping titles: `End of year Performance` (mp4, slug `end-of-year-performance`) and `End of year Performance Song` (mp3 with `mediaType: 'audio'`, slug `end-of-year-performance-song`). The QR was scanning to the audio entry but the page was rendering everything inside `<video>` regardless of mediaType. Fixed: extended the `Song` interface with `mediaType?: 'video' | 'audio'`, both highlighted and grid cards now branch — audio renders inside `<audio>` on a soft purple-pink-indigo gradient backdrop with 🎵 icon, video keeps the existing `<video>` aspect-video black box.
+
+Plus the super-admin gap: until this commit there was no UI to add/list/reset codes for/deactivate principals from the super-admin dashboard. New API at `/api/montree/super-admin/principals` (GET/POST/PATCH/DELETE) is super-admin-token gated. New modal `components/montree/super-admin/PrincipalsModal.tsx` lists per-school principals with last-login + activation state + "Never logged in" chip; reveal-once banner shows the new 6-char code with Copy button after a create or reset (the only time the plaintext is visible). 👤 button per row in `SchoolsTab.tsx` between ⚙️ and Login →.
+
+🚨 **Architectural rules locked in (Session 84 confirmed):** `montree_school_admins` has NO `login_code` column — codes are SHA-256 hashes in `password_hash`, alphabet excludes I/O/0/1. UNIQUE on `(school_id, email)`. Plain code returned in JSON exactly once.
+
+**B. Tracy live play-by-play progress events (`59041e63`):**
+
+Until this commit, the principal saw a single soft `…` while Tracy was working. Session 85's architecture collapsed parse → resolve → fetch → compose into one server-side `child_focus` tool, which was cheaper but opaque from the client's perspective. A 1-3s delay with no visibility looked like a freeze.
+
+`childFocus()` now accepts an optional `onProgress?: ChildFocusProgressFn` parameter and emits structured `{ phase, vars }` events at each phase boundary: `parsing → lookingUp` (or `lookingUpName` if a name was extracted) `→ fetchingContext → composing`. Errors thrown by listeners are swallowed in a try/catch — the orchestrator never crashes. `TracyToolDeps` in `tool-executor.ts` gains `onProgress?` in deps; the executor wraps the consumer's callback in try/catch via a local `emitProgress()` helper. The principal-agent route wires `onProgress` into a closure that emits a new SSE event type `tool_progress` with `{ type, tool, phase, vars }`. Frontend's `handleEvent` catches `tool_progress` and stores the latest as `turn.progress = { phase, vars }`. The `AssistantBubble` renders the formatted message via `t('tracy.progress.<phase>', vars)`. On unknown phase the fallback is the existing thinking-dots, so a future server emitting an unknown phase doesn't render `tracy.progress.foo` raw.
+
+8 new `tracy.progress.*` keys added (parsing/lookingUp/lookingUpName/fetchingContext/composing + unpacking/countingNotes/scoringNotes reserved for `unpack_teacher`). All 11 non-English locales filled via Haiku batch — strict completeness check passes (3864 keys × 12 locales). Chinese examples: `'正在阅读问题…'`, `'正在查找 {name}…'`, `'正在获取 {name} 的最近观察记录…'`, `'正在组织答案…'`.
+
+🚨 **Architectural rules:** Framework tools with non-trivial latency MUST emit progress events. Server emits structured events, client formats via i18n keys (server stays language-agnostic). `tool_progress` is fire-and-forget — listeners that throw must not crash the tool.
+
+**C. Principal Vault prototype (`d097c22d`):**
+
+Voice-record a parent meeting → Whisper transcription → Sonnet 3-paragraph summary → AES-256-GCM encryption with PBKDF2-derived key from the principal's vault password → save under principal profile. Full client-side end-to-end encryption: the server stores only ciphertext + per-record salt + iv.
+
+**🚨 This is a private prototype.** Both the route handlers AND the sidebar entry are gated to a hardcoded principal_id allow-list (`PRINCIPAL_VAULT_ENABLED_FOR` / `VAULT_ENABLED_PRINCIPAL_IDS`). Until that's removed, nobody else sees this feature exists. Tredoux's principal_id is `16eec1c0-bfb5-4edf-a160-059bb41803fb`.
+
+Files added:
+- `migrations/185_principal_vault.sql` — `montree_principal_vault` table, 12 columns, indexed on `(principal_id, recorded_at DESC)`, FK cascades from school + principal
+- `app/api/montree/admin/conversations/transcribe/route.ts` — POST audio (multipart) OR raw transcript (json), returns plaintext summary + transcript. Audio flows request → Whisper → response → discarded (never persisted). Sonnet generates the 3-paragraph summary in the principal's locale. NEVER saves anything — stateless route.
+- `app/api/montree/admin/conversations/route.ts` — GET list (encrypted blobs + metadata only) + POST save. POST validates base64 shape, salt/iv length bounds, iteration count (100k–5M), ciphertext size (≤2 MB encoded).
+- `app/api/montree/admin/conversations/[id]/route.ts` — GET one + DELETE. UUID format enforced before DB hit.
+- `lib/montree/vault-crypto.ts` — WebCrypto helpers: `encryptRecord()`, `decryptRecord()`, `verifyPasswordAgainstRecord()`. PBKDF2-SHA256 600k iterations, AES-GCM 256, 16-byte salt, 12-byte IV per record. AES-GCM auth-tag failure on decrypt = wrong password (throws `'WRONG_PASSWORD'` — no separate password-check blob).
+- `app/montree/admin/conversations/page.tsx` — full UI: list / new / detail views, first-setup gate, unlock gate, recording with `MediaRecorder`, metadata editor, encrypt-and-save flow, decrypt-on-open, delete. Vault password lives in component memory only — never localStorage. Cleared on lock, refresh, or page navigation away.
+- `app/montree/admin/layout.tsx` — sidebar shows 🔒 Conversations entry (between Settings and what was Ask Guru), but only when the logged-in principal_id is in `VAULT_ENABLED_PRINCIPAL_IDS`.
+
+The plain `summary`, `transcript`, `child_id`, `child_name`, `notes`, `meeting_date` are NEVER stored on the table — they live INSIDE the encrypted ciphertext as a JSON blob. The server cannot decrypt.
+
+Privacy posture:
+- Audio bytes flow request → OpenAI Whisper → response → discarded. By default OpenAI retains audio up to 30 days for abuse monitoring. Acceptable for the Whale Class prototype; broader rollout needs zero-retention agreement OR self-hosted Whisper.
+- Transcript flows to Anthropic for the summary under the existing API contract (30d retention, no training).
+- Encrypted vault blob is the only persistent copy. Server cannot decrypt. If the principal forgets her password, data is unrecoverable.
+- Gold consent banner before every recording: "Tell the parent. Recording someone without telling them is illegal in many places, and even where it's legal it's the wrong way to start a relationship. Use this for your own clarity, not as evidence."
+
+🚨 **Architectural rules locked in:** Server NEVER sees plaintext. Vault password in-memory only. First save asks for password twice (matched). Subsequent saves run typed password through `verifyPasswordAgainstRecord()` against most recent record. AES-GCM auth-tag failure = wrong password. Cipher version on every record. BOTH server + client gate on the principal_id allow-list — don't widen one without widening the other.
+
+**D. Per-song Share button + QR modal (`fc7d7ac2`):**
+
+Replaces the manual `/admin/qr-generator` typing flow for the per-song use case. Eliminates the entire class of slug-typo bugs that produced this morning's "wrong song plays when QR is scanned" incident — share URL is generated from the same `lib/slugify.ts` the public page uses, so link and target page card cannot desync.
+
+New `components/ShareSongModal.tsx` — generates QR client-side via the existing `qrcode` lib, shows the canonical URL with Copy button (clipboard API + `execCommand` fallback), Download QR PNG button, native share button (`navigator.share`) when supported. Generated URL: `https://teacherpotato.xyz/whale-class#song-{slug}` regardless of which page launched it (since `/whale-class` already has the deep-link highlighted-card UX + audio rendering).
+
+Wired into both production listings: `app/page.tsx` (root teacherpotato.xyz, blue/indigo theme) gets a Share button next to Download in the card footer; `app/whale-class/page.tsx` (purple/lilac theme) gets a Share pill in the highlighted card's bottom strip + small share icon next to the week label in grid cards. Both modals dynamic-imported (`ssr: false`) so qrcode library only ships on first share open.
+
+🚨 **Architectural rule:** Share URLs MUST be derived from `lib/slugify.ts`. Hardcoded slugs in QR generators or comms drift over time.
+
+**E. Tracy avatar wiring + drop Ask Guru (`adfbfd63` + `ac4c24b6`):**
+
+`TracyAvatar` component now renders `<img src="/tracy-avatar.png" />` with `onError` → fallback to original CSS-rendered gold-circle T placeholder. Rounded-square corners (border-radius ≈ 22% of size) preserve the design's composition — the T's stem and leaf grow out of the bottom edge of the square, a circle crop would clip them. No border ring; the gold reads as a self-contained card against the dark forest UI on its own.
+
+Asset shipped in `ac4c24b6`: 1024×1024 PNG, 71 KB, valid 8-bit RGB. User saved to `public/tracy-avatar.png` directly via Finder after we figured out that pasting images inline in chat doesn't put them on disk (chat sees them as multimodal context, not files).
+
+Plus dropped Ask Guru from the principal sidebar. Tracy IS the principal's chief-of-staff AI surface. Guru is per-child Maria Montessori in your pocket for teachers, and Tracy can call it as a sub-tool when child-pedagogical depth is needed (Session 85 carry-over `consult_guru`, not yet implemented). Removed `Sparkles` import + `'Ask Guru'` NAV entry. Simplified `activeNav` logic — now just appends Conversations to base NAV for vault-enabled principals.
+
+**Sidebar order after this commit:** Today / Classrooms / People / Pulse / Settings (+ 🔒 Conversations for vault principals). Teacher-side `/montree/dashboard/guru` route untouched.
+
+🚨 **Architectural rules:** Tracy is the principal's only AI chat surface. Tracy avatar is `/public/tracy-avatar.png` with CSS-T fallback — never break the fallback path.
+
+**F. Brand Kit consolidation (no commit, deliverable):**
+
+Generated `whale/Montree_Brand_Kit.docx` (13.6 KB Word doc, validated clean) consolidating canonical brand assets for Canva setup. Contains: tagline ("The magic of Montree."), 11-color palette with hex codes + rendered swatches per row + usage notes, fonts (Lora display / Inter body / SF Mono mono), logo asset table (Wordmark / M Monogram / T Monogram), sprout-mark canonical description, voice & tone do/don't table, canonical phrases ("Tend to the child, not the observation.", "A teacher takes a photo. Montree does the rest."), photography guidance, step-by-step Canva setup, Brand Voice prompt for Canva's AI brand voice setup. Doc lives at `whale/Montree_Brand_Kit.docx` — not committed to git (deliverable, not source).
+
+**Verification status:**
+- ✅ Migration 185 run in Supabase, all 12 columns confirmed
+- ✅ Tracy in Chinese verified working
+- ✅ Tracy avatar PNG on disk and pushed
+- ✅ Tredoux logged in successfully with `ZNGLJT`
+- ⏳ Audio rendering on whale-class (code shipped, not user-tested)
+- ⏳ Super-admin 👤 modal (code shipped, not user-tested)
+- ⏳ Tracy play-by-play SSE (code shipped, not user-tested)
+- ⏳ Vault end-to-end (NOT tested — full Whisper → Sonnet → encrypt → decrypt round-trip)
+- ⏳ Per-song Share button (code shipped, not user-tested)
+
+**Handoff doc:** `docs/handoffs/SESSION_87_HANDOFF.md` — full file-by-file change list, architectural rules, deferred items, end-to-end test plan.
+
+**🚨 Next session priorities (ordered):**
+1. **Vault end-to-end test** — Open `/montree/admin` → Conversations → set vault password → record 30-sec dummy → Encrypt & save → reload → re-enter password → tap row → verify decrypted summary + transcript display. Full pipeline (mic → Whisper → Sonnet → AES-GCM → DB → AES-GCM → render) is unverified.
+2. **Verify Tracy play-by-play in production** — ask Tracy a child question, expect rolling status line under her avatar (parsing → looking up → fetching → composing) before the answer streams in.
+3. **Verify per-song Share button** — root teacherpotato → click Share → confirm QR + URL + native share work.
+4. **Verify super-admin 👤 modal** — click 👤 on Chen9 row, run through list/add/reset/deactivate flows.
+5. **Tracy `→ ` vs `—` action-line marker** — Tracy is using em-dash where the system prompt asked for arrow. Cosmetic; one-line check on `buildTracySystemPrompt`.
+6. **`unpack_teacher` progress events** — three i18n keys pre-translated, ~15 min follow-up.
+7. **Super-admin simplification** — multi-session refactor (5-tab structure: Schools / Principals / Money / Outreach / Tracy Insights, archive 18 dead marketing sub-pages and `social-manager/` subtree, retire colored tile ribbon). Worth a fresh head.
+8. **Avatar polish** (optional) — tighter T crop, slightly larger sprout for better small-size legibility.
+9. **Send the 3 hot lead Gmail drafts** (carry-over) — Ardtona, FAMM, Тамі.
+10. **Update CLAUDE.md lead state** (carry-over) — Paint Pots BOUNCED, Ardtona email correction (`vheavey@ardtonahouseschool.ie`), Copenhagen verification.
+
+---
+
 ### ⚡ Session 86 — Tracy multilingual + dashboard empty-state race + QR domain isolation + JWT mis-stamp fix (May 4, 2026)
 
 **6 commits pushed to main this session.** Tracy is now fully translated across all 12 locales, the recurring "Bulk Import Students" empty-state flash is fixed at the root cache layer, the QR generator now points songs at teacherpotato.xyz (the canonical Whale Class domain) with middleware enforcement of the product split, and a long-standing JWT role mis-stamp bug that was 403'ing principals out of Tracy is patched at both ends.
@@ -3102,6 +3216,9 @@ All migrations through 169 have been run. Key ones: 147 (smart learning columns)
 - `181_add_school_primary_locale.sql` — `primary_locale` + `secondary_locales[]` on `montree_schools`. Whale Class set to `en+[zh]`. Two existing schools manually updated post-migration: Школа Монтессорі (Tamі) → `uk`, Chen school → `de`.
 - `182_apply_global_translations_function.sql` — `apply_global_translations(uuid)` Postgres function (11 per-locale UPDATE blocks, COALESCE-safe, SECURITY DEFINER, GRANT EXECUTE to anon/authenticated/service_role).
 - **Bonus column-add ALTER TABLE** (not in a numbered migration file — run inline) — added 36 missing locale columns to `montree_classroom_curriculum_works`: `parent_description_<locale>` and `why_it_matters_<locale>` for de/fr/pt/nl/it/ja/ko/uk/ru. The 9 newer locales had `name_*` and `guide_content_*` columns from prior sessions but were missing the description columns. Idempotent via `ADD COLUMN IF NOT EXISTS`.
+
+**Session 87 (May 4, 2026) — Principal Vault migration run via Supabase SQL Editor:**
+- `185_principal_vault.sql` — `montree_principal_vault` table for end-to-end encrypted parent-meeting recordings. 12 columns (id, principal_id, school_id, salt_b64, iv_b64, ciphertext_b64, pbkdf2_iterations, cipher_version, recorded_at, duration_seconds, created_at, updated_at). Indexed on `(principal_id, recorded_at DESC)` and `(school_id)`. FK cascades from `montree_school_admins` and `montree_schools`. Plus the `update_principal_vault_updated_at()` trigger function for auto-bumping `updated_at` on row UPDATE. Verified by user with the 12-column information_schema query.
 
 ---
 
