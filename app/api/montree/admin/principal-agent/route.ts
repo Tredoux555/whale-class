@@ -117,10 +117,44 @@ export async function POST(request: NextRequest) {
 
   const auth = await verifySchoolRequest(request);
   if (auth instanceof NextResponse) return auth;
+  // Principal role gate. Defensive: if the JWT role is NOT 'principal' but
+  // the userId actually belongs to an active row in montree_school_admins
+  // for the current school, treat them as a principal anyway. This handles
+  // a known JWT-mis-stamping case: someone who is BOTH a teacher row and a
+  // school_admins row gets a teacher JWT from the unified login (which
+  // tries tryTeacherLogin before tryPrincipalLogin) — even though they
+  // are, in fact, a principal in the DB. Without this fallback, Tracy
+  // hard-403s and looks broken to the actual owner of the school.
+  // Cross-table UUID collisions between montree_teachers and
+  // montree_school_admins are not a concern here because both columns are
+  // populated by gen_random_uuid() with separate generations; a forged
+  // teacher userId cannot collide with a school_admin id.
   if (auth.role !== 'principal') {
-    return NextResponse.json(
-      { error: 'Only principals can use the home agent.' },
-      { status: 403 }
+    const supabaseForCheck = getSupabase();
+    const { data: schoolAdmin } = await supabaseForCheck
+      .from('montree_school_admins')
+      .select('id, role, is_active')
+      .eq('id', auth.userId)
+      .eq('school_id', auth.schoolId)
+      .eq('is_active', true)
+      .maybeSingle();
+    if (!schoolAdmin || schoolAdmin.role !== 'principal') {
+      console.warn(
+        `[principal-agent] 403: JWT role="${auth.role}", userId=${auth.userId} ` +
+        `not an active principal in school_admins for school=${auth.schoolId}`,
+      );
+      return NextResponse.json(
+        { error: 'Only principals can use the home agent.' },
+        { status: 403 }
+      );
+    }
+    // JWT was mis-stamped but the user IS a principal — log loudly so we
+    // can surface and fix the upstream login flow.
+    console.warn(
+      `[principal-agent] JWT role mismatch detected: cookie says "${auth.role}" but ` +
+      `userId=${auth.userId} is an active principal in school=${auth.schoolId}. ` +
+      `Allowing through. The unified login route should be patched to try ` +
+      `principal BEFORE teacher to prevent re-occurrence.`,
     );
   }
 
