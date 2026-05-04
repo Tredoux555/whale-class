@@ -6,11 +6,16 @@
 // public page uses, so they cannot desync.
 //
 // The modal shows:
-//   - The canonical share URL (always teacherpotato.xyz/whale-class#song-{slug})
+//   - The canonical share URL (montree.xyz/whale-class#song-{slug})
 //   - A "Copy link" button
 //   - A live-rendered QR code (client-side, no server round-trip)
 //   - "Download QR PNG" button
 //   - Native share button (navigator.share — falls back gracefully)
+//
+// ⚠ Default origin used to be teacherpotato.xyz but as of May 5, 2026
+// that domain is dead (DNS at parking server, every path 405s). When
+// teacherpotato.xyz is re-attached to Railway, change the default back
+// to keep Whale Class brand isolation. See middleware.ts comment.
 
 import { useEffect, useState } from 'react';
 import QRCode from 'qrcode';
@@ -18,14 +23,14 @@ import { slugify } from '@/lib/slugify';
 
 interface ShareSongModalProps {
   title: string;
-  /** Optional override; defaults to the canonical Whale Class listing on teacherpotato.xyz. */
+  /** Optional override; defaults to montree.xyz (teacherpotato.xyz currently dead — see header comment). */
   origin?: string;
   onClose: () => void;
 }
 
 export default function ShareSongModal({ title, origin, onClose }: ShareSongModalProps) {
   const slug = slugify(title);
-  const baseOrigin = origin || 'https://teacherpotato.xyz';
+  const baseOrigin = origin || 'https://montree.xyz';
   const shareUrl = `${baseOrigin}/whale-class#song-${slug}`;
 
   const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
