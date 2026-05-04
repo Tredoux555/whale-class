@@ -143,16 +143,35 @@ export async function unpackTeacher(
   }
 
   // ── 2. Roster (children assigned to this teacher's classroom) ──────
-  const rosterChildren: Array<{ id: string; name: string }> = [];
+  // We pull enrolled_at so the stalled-detection layer can avoid flagging
+  // a child who joined yesterday as "21 days stalled" (they haven't had
+  // time to progress).
+  const rosterChildren: Array<{
+    id: string;
+    name: string;
+    enrolled_ms: number | null;
+  }> = [];
   if (teacher.classroom_id) {
     const { data: kids } = await supabase
       .from('montree_children')
-      .select('id, name')
+      .select('id, name, enrolled_at, created_at')
       .eq('classroom_id', teacher.classroom_id)
       .eq('school_id', input.schoolId)
       .eq('is_active', true);
     for (const k of kids || []) {
-      rosterChildren.push({ id: k.id, name: k.name });
+      // Prefer enrolled_at (the canonical join date); fall back to
+      // created_at if enrolled_at is null on legacy rows.
+      const joinSource = k.enrolled_at || k.created_at || null;
+      const enrolledMs = joinSource
+        ? new Date(joinSource).getTime()
+        : null;
+      rosterChildren.push({
+        id: k.id,
+        name: k.name,
+        enrolled_ms: Number.isFinite(enrolledMs as number)
+          ? (enrolledMs as number)
+          : null,
+      });
     }
   }
   const rosterIds = rosterChildren.map((c) => c.id);
@@ -355,15 +374,27 @@ export async function unpackTeacher(
       }
     }
     for (const child of rosterChildren) {
+      // Skip children who haven't been in the classroom 21+ days yet —
+      // they couldn't be "stalled 3 weeks" by definition.
+      if (
+        child.enrolled_ms !== null &&
+        now - child.enrolled_ms < 21 * MS_PER_DAY
+      ) {
+        continue;
+      }
       const last = lastByChild.get(child.id);
       if (last === undefined) {
-        // No progress rows ever — count as deeply stalled if the child is
-        // in the roster and has been there long enough. We don't know
-        // join date here without an extra query, so treat as 21d.
+        // No progress rows ever AND the child has been on roster 21+ days
+        // (or we don't know the enrol date). Use enrolled_ms to compute
+        // a real "stalled days" if we have it — otherwise fall back to 21.
+        const stalledDays =
+          child.enrolled_ms !== null
+            ? Math.floor((now - child.enrolled_ms) / MS_PER_DAY)
+            : 21;
         childrenStalled.push({
           id: child.id,
           name: child.name,
-          days_stalled: 21,
+          days_stalled: stalledDays,
         });
       } else if (last < threeWeeksAgoMs) {
         childrenStalled.push({
@@ -387,10 +418,14 @@ export async function unpackTeacher(
 
   // ── 7. Deterministic verdict ───────────────────────────────────────
   // Combine layers into a single label so Tracy's prose tone doesn't drift.
-  // Strong week: high coverage + substantive quality + progressing pattern.
+  // Strong week: high coverage + non-thin quality + progressing pattern.
   // Concerning: low coverage AND (thin notes OR stalled pattern OR very stale login).
+  //
+  // qualityOk treats 'no_notes' as NEUTRAL — a teacher who photographs well
+  // and whose children progress shouldn't be penalised for not writing notes
+  // this week. Only explicitly thin notes count against the verdict.
   const coverageOk = coveragePct >= 70;
-  const qualityOk = qualityLabel === 'strong' || qualityLabel === 'mixed';
+  const qualityOk = qualityLabel !== 'thin'; // strong, mixed, no_notes all pass
   const loginOk = loginBucket === 'recent';
   const progressOk =
     patternVerdict === 'progressing' || patternVerdict === 'mixed';
