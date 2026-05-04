@@ -20,7 +20,9 @@
 import type { NextRequest } from 'next/server';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type Anthropic from '@anthropic-ai/sdk';
+import { AI_MODEL } from '@/lib/ai/anthropic';
 import { unpackTeacher } from './frameworks/unpack-teacher';
+import { childFocus } from './frameworks/child-focus';
 
 export interface TracyToolResult {
   success: boolean;
@@ -75,6 +77,40 @@ export async function executeTracyTool(
 
   try {
     switch (name) {
+      // ── FRAMEWORK TOOL: child_focus ────────────────────────────────
+      case 'child_focus': {
+        const question = String(input.question || '').trim();
+        if (!question) {
+          return { success: false, error: 'question is required' };
+        }
+        const result = await childFocus(
+          { question, schoolId },
+          supabase,
+          anthropic,
+          AI_MODEL
+        );
+        if (!result.ok) {
+          return {
+            success: false,
+            error: result.error || 'child_focus failed',
+          };
+        }
+        const d = result.data!;
+        let summary = '';
+        if (d.resolution === 'found' && d.child) {
+          summary = `${d.child.name}: ${d.answer?.sparse ? 'sparse data' : 'answer composed'}`;
+        } else if (d.resolution === 'not_found') {
+          summary = `no child matching "${d.not_found_query || ''}"`;
+        } else if (d.resolution === 'ambiguous') {
+          summary = `${d.candidates?.length || 0} possible matches`;
+        }
+        return {
+          success: true,
+          data: d,
+          result_summary: summary,
+        };
+      }
+
       // ── FRAMEWORK TOOL: unpack_teacher ─────────────────────────────
       case 'unpack_teacher': {
         const teacherId = String(input.teacher_id || '').trim();
@@ -148,34 +184,10 @@ export async function executeTracyTool(
         };
       }
 
-      case 'answer_about_child': {
-        const childId = String(input.child_id || '').trim();
-        const question = String(input.question || '').trim();
-        if (!childId || !question) {
-          return {
-            success: false,
-            error: 'child_id and question are required',
-          };
-        }
-        const result = await internalPost(
-          '/api/montree/admin/parent-question',
-          { child_id: childId, question }
-        );
-        if (!result.ok) {
-          return {
-            success: false,
-            error: `parent-question returned ${result.status}`,
-          };
-        }
-        const data = result.data as
-          | { answer?: string; child_name?: string }
-          | undefined;
-        return {
-          success: true,
-          data: result.data,
-          result_summary: `answered for ${data?.child_name || childId}`,
-        };
-      }
+      // (answer_about_child removed — subsumed by child_focus, which handles
+      // resolution + context + composition in one call. The
+      // /api/montree/admin/parent-question route still exists and is used by
+      // the deep-link child page; Tracy just doesn't call it via tool anymore.)
 
       case 'list_classrooms_with_summary': {
         const { data: classrooms, error: cErr } = await supabase

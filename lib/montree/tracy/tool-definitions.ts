@@ -5,24 +5,48 @@
 // Tools fall into two tiers:
 //
 //   FRAMEWORK tools (the thinking is baked in, server-side):
-//     - unpack_teacher       — "How is X doing?" returns activity + coverage + quality + pattern + verdict
+//     - child_focus      — answers any question about a specific child end-to-end
+//     - unpack_teacher   — "How is X doing?" returns activity + coverage + quality + pattern + verdict
 //
 //   PRIMITIVE tools (small, composable lookups):
-//     - find_children_by_name
-//     - get_child_briefing
-//     - answer_about_child
-//     - list_classrooms_with_summary
-//     - list_teachers_with_summary
+//     - find_children_by_name        — explicit name search
+//     - get_child_briefing           — deep child snapshot (the full file)
+//     - list_classrooms_with_summary — school-wide classroom view
+//     - list_teachers_with_summary   — school-wide teacher view
 //
-// Future: synthesize_parent_answer, family_context, school_pulse,
-// recent_conversations, consult_guru (Tracy → Guru bridge). Build them as
-// Tracy proves out — only after we see them in real principal questions
-// (montree_principal_agent_log).
+// Tracy's PRIMARY path for any question naming a specific child is
+// child_focus — single tool, single failure surface, end-to-end answer
+// (Haiku parses the question, direct DB resolves the child + fetches context,
+// Sonnet composes a grounded answer). The chained-tool path
+// (find_children_by_name → answer_about_child) was deprecated as the primary
+// flow because it had multiple HTTP hops, multiple auth re-verifications, and
+// chained Sonnet rounds — too fragile for the canonical use case.
+//
+// Future: synthesize_parent_answer (parent-conversation framing layer over
+// child_focus), family_context, school_pulse, recent_conversations,
+// consult_guru (Tracy → Guru bridge). Build them as Tracy proves out — only
+// after we see them in real principal questions (montree_principal_agent_log).
 
 import type { Tool } from '@anthropic-ai/sdk/resources/messages';
 
 export const TRACY_TOOLS: Tool[] = [
   // ── FRAMEWORK TOOLS ──────────────────────────────────────────────────
+  {
+    name: 'child_focus',
+    description:
+      "PRIMARY tool for any question about a specific child. Use this whenever the principal asks something that names a child or asks about a child indirectly — \"how is Austin?\", \"tell me about Austin's English progress\", \"what should I tell Emily's mum about her math\", \"is Lucky ready for the moveable alphabet?\", \"how has Stella been this week?\". Pass the principal's question text VERBATIM as the `question` parameter — server-side it parses the question (extracting child name, area, focus), resolves the child, fetches all relevant context (progress, observations, notes, profile), and composes a grounded answer. Returns either: a `found` resolution with a `child` object and an `answer.text` ready to relay, OR a `not_found` resolution if no child by that name exists, OR an `ambiguous` resolution with `candidates` if multiple children match. ALWAYS prefer this tool over chaining find_children_by_name + get_child_briefing for child-specific questions — it's one tool, one failure surface, end-to-end.",
+    input_schema: {
+      type: 'object',
+      properties: {
+        question: {
+          type: 'string',
+          description:
+            "The principal's question, passed verbatim (or as close to verbatim as possible). E.g., \"how is Austin doing?\", \"tell me about Austin's English progress\", \"what should I tell Emily's mum about her math?\". Don't paraphrase or summarise — the parser handles the intent extraction.",
+        },
+      },
+      required: ['question'],
+    },
+  },
   {
     name: 'unpack_teacher',
     description:
@@ -48,7 +72,7 @@ export const TRACY_TOOLS: Tool[] = [
   {
     name: 'find_children_by_name',
     description:
-      "Search the principal's school for children whose name matches a query. Use this when the principal mentions a child by name (full or partial). Returns up to 10 matches; each match has id, name, age, classroom_id, classroom_name, and photo_url.",
+      "SECONDARY tool — use ONLY when the principal explicitly wants a list of children matching a name (\"who are all the Austins in the school?\"), NOT when she's asking about a specific child's progress or wellbeing (use child_focus for that instead). Returns up to 10 matches with id, name, age, classroom_id, classroom_name, photo_url.",
     input_schema: {
       type: 'object',
       properties: {
@@ -64,30 +88,13 @@ export const TRACY_TOOLS: Tool[] = [
   {
     name: 'get_child_briefing',
     description:
-      'Get a 30-second AI-synthesised briefing on one child — who they are right now, what they\'re working on, recent observations, what to watch for. Use when the principal wants a general "how is X doing" answer about a child. Requires child_id (use find_children_by_name first if you only have a name).',
+      'SECONDARY tool — use only when the principal wants an EXTENSIVE deep-dive briefing on a specific child (the full file: profile, all areas of progress, all recent observations, watch-list items). For a single targeted question or a normal "how is X doing" — use child_focus instead, it\'s much faster and more focused. Requires child_id.',
     input_schema: {
       type: 'object',
       properties: {
         child_id: { type: 'string' },
       },
       required: ['child_id'],
-    },
-  },
-  {
-    name: 'answer_about_child',
-    description:
-      "Get a focused answer to a SPECIFIC question about ONE child, drawing on every observation in the system. Use when the principal is relaying a parent's question (e.g., 'Has she been calmer this week?', 'Did she finish the moveable alphabet?') or asking a pointed question about a single child. Returns a short, factually-grounded answer. Requires child_id and the question text.",
-    input_schema: {
-      type: 'object',
-      properties: {
-        child_id: { type: 'string' },
-        question: {
-          type: 'string',
-          description:
-            "The specific question being asked, in plain English. If you're rephrasing a parent's question, keep the parent's phrasing.",
-        },
-      },
-      required: ['child_id', 'question'],
     },
   },
   {
