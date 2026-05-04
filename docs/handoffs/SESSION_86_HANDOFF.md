@@ -1,6 +1,6 @@
 # Session 86 Handoff — May 4, 2026
 
-## What Shipped (6 commits on `main`)
+## What Shipped (8 commits on `main`)
 
 | Commit | Title |
 |--------|-------|
@@ -9,8 +9,13 @@
 | `3d9969da` | Dashboard: kill the "Bulk Import Students" flash on back-nav |
 | `734a2b5f` | Domain isolation: QR codes point at teacherpotato.xyz + middleware blocks Whale routes on montree.xyz |
 | `ca1e13bc` | Tracy 403 'Only principals can use the home agent.' — fix JWT role mis-stamping |
+| `90379c61` | Session 86 handoff doc + CLAUDE.md update |
+| `3dc7364a` | (then reverted to montree.xyz when sandbox curl saw teacherpotato.xyz as 404 — turned out to be a sandbox-side network issue, not a deployment outage) |
+| `7e9bce37` | (then re-flipped QR base back to teacherpotato.xyz after user confirmed the site is reachable from their browser) |
 
 All on `origin/main`, Railway auto-deploys triggered.
+
+**Final state of the QR + domain question:** QR base URL is `https://teacherpotato.xyz/whale-class`. Middleware does NOT redirect Whale routes from montree.xyz to teacherpotato.xyz — both domains serve their own routes independently. The brand-clean middleware redirect (Whale-only paths on montree.xyz → teacherpotato.xyz) was added in `734a2b5f`, removed in `3dc7364a`, and stayed removed because it wasn't load-bearing for fixing the QR — only the QR base URL was. Future session can re-add the redirect if the brand split tightening matters; comments are in `middleware.ts` explaining the recipe.
 
 ---
 
@@ -32,21 +37,11 @@ The song base URL was hardcoded to `https://montree.xyz/whale-class`. The Whale 
 - Bulk-import examples + placeholder all reference teacherpotato.xyz
 - Outdated comment about "always use montree.xyz" rewritten to make the domain split explicit
 
-### 🚨 Open issue — teacherpotato.xyz returning 404
+### Resolved — teacherpotato.xyz is fine, sandbox curl was misleading
 
-Late in the session, curl to `https://teacherpotato.xyz/whale-class` and `https://teacherpotato.xyz/admin/qr-generator` both returned **404** within ~1s — meaning Railway IS reaching the host but not serving the routes. The user had been hitting `teacherpotato.xyz/admin/qr-generator` successfully earlier in the session, so this is a deployment-side change, not a code regression.
+Mid-session I tested `https://teacherpotato.xyz/whale-class` from this sandbox and got 404s, plus DNS resolution to `15.197.225.128 / 3.33.251.168` (legacy registrar IPs). I concluded the deployment was broken and reverted the QR base URL to `montree.xyz`. Then the user told me the site loads perfectly fine from their browser — and re-flipping the QR back to teacherpotato.xyz (commit `7e9bce37`) is the final state.
 
-Possible causes (need user verification on Railway):
-- Custom-domain alias for `teacherpotato.xyz` was removed or expired
-- DNS pointing somewhere stale
-- Railway service config dropped the domain during a redeploy
-
-**Until this is fixed, the QR codes I just generated will 404 for parents.** If teacherpotato.xyz can't be quickly restored, two options:
-
-1. **Revert the QR base URL** to `https://montree.xyz/whale-class` (which redirects to teacherpotato.xyz via my new middleware — but if teacherpotato is 404'ing, that just bounces parents to a 404). So this only helps if we ALSO remove the middleware redirect.
-2. **Re-attach teacherpotato.xyz** in Railway's domain config and verify routing.
-
-Recommended: option 2. The product-split rationale stands; we just need the deployment to honor it.
+The sandbox-side network was either resolving via stale DNS or hitting a different edge than the user's browser. Lesson for future sessions: **don't trust sandbox curl for production reachability — always verify with the user before assuming a deployment outage and rolling back work.**
 
 ---
 
@@ -138,10 +133,10 @@ Capture `fetchStartTime` before the GET. In the resolve handler, check if `cache
 
 ## Outstanding / Next Session
 
-### 🚨 Critical — Verify production
-1. **Verify teacherpotato.xyz is reachable end-to-end.** As of session close, `https://teacherpotato.xyz/whale-class` and `https://teacherpotato.xyz/admin/qr-generator` returned **404** via curl. The user had been on those pages earlier in the session. Check Railway domain config — make sure teacherpotato.xyz alias is attached and routing to the same service as montree.xyz.
-2. **Test Tracy on production in Chinese.** After Railway deploys `ca1e13bc`, switch language to 中文 in the principal portal and ask "告诉我关于奥斯汀英语进步的情况". Should respond in Chinese without 403.
-3. **Test the dashboard empty-state fix.** Create a new classroom, bulk-import students, click into a child, update a shelf, click back. The grid must remain populated through every step.
+### Critical — Verify production after refresh
+1. **Test Tracy on production in Chinese.** Switch language to 中文 in the principal portal and ask "告诉我关于奥斯汀英语进步的情况". Should respond in Chinese without 403, action line begins with `→ `.
+2. **Test the dashboard empty-state fix.** Create a new classroom, bulk-import students, click into a child, update a shelf, click back. The grid must remain populated through every step.
+3. **Verify a freshly-generated QR code scans to a working song page.** Open `/admin/qr-generator` → Whale Class Song tab → pick any song → scan the resulting PNG. Should land on `https://teacherpotato.xyz/whale-class#song-{slug}` and auto-scroll to the right card.
 
 ### High priority
 4. **Run migration 184** in Supabase SQL Editor — required for `montree_principal_agent_log` to receive Tracy interaction rows.

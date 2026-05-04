@@ -200,7 +200,7 @@ Two layered bugs. **Frontend (`app/admin/qr-generator/page.tsx`):** the load eff
 
 Then user flagged the QR was pointing at `https://montree.xyz/whale-class` but the song page lives on **teacherpotato.xyz**. Fixed `songBase` default + bulk-import examples + placeholder. Plus middleware (`middleware.ts`) — the existing comment claimed it blocked Whale routes on montree.xyz but only redirected `/`. New `WHALE_ONLY_PREFIXES = ['/whale-class', '/admin', '/teacher', '/story', '/games', '/auth']` redirects the whole list from montree.xyz to teacherpotato.xyz, preserving query string and hash so song deep links survive. `/api/*` is intentionally excluded — APIs are gated by per-route auth.
 
-**🚨 OPEN — teacherpotato.xyz returning 404:** Late in the session, curl to `https://teacherpotato.xyz/whale-class` and `/admin/qr-generator` returned 404 within ~1s. The user had been hitting these successfully earlier in the session. This is a deployment-side issue, NOT a code regression. Possible causes: Railway custom-domain alias for teacherpotato.xyz removed/expired, DNS pointing somewhere stale, or a config dropped during redeploy. Until restored, the new QR codes will 404 for parents. Need to check Railway → Settings → Domains and verify teacherpotato.xyz is attached and routing to the same service as montree.xyz.
+**Resolved — teacherpotato.xyz is fine, sandbox curl was misleading:** Mid-session I curl'd `https://teacherpotato.xyz/whale-class` from the sandbox and got 404s + DNS pointing at `15.197.225.128 / 3.33.251.168`. Concluded the deployment was broken, reverted the QR base URL to `montree.xyz` in commit `3dc7364a`. User then confirmed the site loads fine from their browser — re-flipped the QR back to `teacherpotato.xyz` in commit `7e9bce37`. Final state: QR base URL = `https://teacherpotato.xyz/whale-class`. Middleware does NOT redirect Whale routes from montree.xyz (that piece was added in `734a2b5f` and removed in `3dc7364a` — both domains serve their own routes independently). **Lesson:** don't trust sandbox curl for production reachability checks; verify with the user before reverting work on a deployment-outage assumption.
 
 **B. Tracy multilingual (`87b5d526`):**
 
@@ -266,9 +266,9 @@ Both branches log loudly so Railway logs surface how many users are in the broke
 
 **🚨 Next session priorities (ordered):**
 
-1. **🚨 RESTORE teacherpotato.xyz** — currently 404'ing on `/whale-class` and `/admin/qr-generator`. Check Railway → Settings → Domains. Until fixed, the new QR codes will 404 for parents. If teacherpotato.xyz can't be quickly restored, decide: revert QR base to montree.xyz + remove the middleware redirect, or keep the product-split rationale and prioritise the deployment fix.
-2. **Verify Tracy on production in Chinese** — open `/montree/admin`, switch to 中文, ask "告诉我关于奥斯汀英语进步的情况". Expect Chinese response with `→ ` action-line.
-3. **Verify dashboard empty-state fix on production** — create a fresh classroom, bulk-import, click into a child, update shelf, click back. Grid must remain populated through every step.
+1. **Verify Tracy on production in Chinese** — open `/montree/admin`, switch to 中文, ask "告诉我关于奥斯汀英语进步的情况". Expect Chinese response with `→ ` action-line.
+2. **Verify dashboard empty-state fix on production** — create a fresh classroom, bulk-import, click into a child, update shelf, click back. Grid must remain populated through every step.
+3. **Verify QR code end-to-end** — generate one from `/admin/qr-generator`, scan it, confirm it lands on `https://teacherpotato.xyz/whale-class#song-{slug}` and the page renders.
 4. **🚨 Run migration 184** in Supabase SQL Editor — required for `montree_principal_agent_log` to receive Tracy interaction rows (carry-over from Session 84/85).
 5. **Translation gap audit** — user reported seeing some untranslated strings system-wide. Open dashboard in zh/fr/uk page-by-page, screenshot any English bleed-through, do targeted t() conversions. Infrastructure is solid; gaps are likely individual hardcoded strings that pre-date i18n adoption.
 6. **Drop Canva-exported T monogram into `/public/tracy-avatar.png`** (Session 85 carry-over).
