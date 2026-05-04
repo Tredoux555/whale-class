@@ -32,22 +32,53 @@ export async function middleware(req: NextRequest) {
   
   // ============================================
   // DOMAIN ISOLATION — Separate teacherpotato.xyz and montree.xyz
-  // teacherpotato.xyz = Whale Class (videos, games, admin, teacher)
-  // montree.xyz = Montree SaaS (classroom management, home program)
+  // teacherpotato.xyz = Whale Class (videos, games, admin, teacher, story,
+  //                     whale-class song page, legacy /auth pages)
+  // montree.xyz       = Montree SaaS (classroom management, home program —
+  //                     everything under /montree/*)
+  //
+  // Cross-domain bleed is a trust + brand failure: a parent who scans a
+  // Whale Class song QR should land on teacherpotato.xyz, never on
+  // montree.xyz. A Montree principal who follows an invite link should
+  // land on montree.xyz, never on teacherpotato.xyz. The product split
+  // must hold at the URL bar, not just at the layout level.
   // ============================================
   const isTeacherPotato = hostname.includes('teacherpotato.xyz');
   const isMontree = hostname.includes('montree.xyz');
-  
+
+  // Whale-Class-only top-level routes. Anything under one of these prefixes
+  // must NEVER render on montree.xyz — redirect to teacherpotato.xyz.
+  // Note: /api/* is intentionally NOT in this list. APIs serve both products
+  // and the per-route auth handlers gate them correctly.
+  const WHALE_ONLY_PREFIXES = [
+    '/whale-class',
+    '/admin',     // Whale Class admin tools (qr-generator, video-manager, etc.)
+    '/teacher',   // Whale Class teacher login
+    '/story',     // Whale Class Story system
+    '/games',     // Whale Class games
+    '/auth',      // Whale Class legacy auth pages (Montree uses /montree/login*)
+  ];
+  const isWhaleOnlyPath = WHALE_ONLY_PREFIXES.some(
+    (p) => pathname === p || pathname.startsWith(p + '/'),
+  );
+
   // Block Montree routes on teacherpotato.xyz
   if (isTeacherPotato && pathname.startsWith('/montree')) {
-    // Redirect to the correct domain
     return NextResponse.redirect(new URL(pathname, 'https://montree.xyz'));
   }
-  
-  // Block Whale Class routes on montree.xyz (root page, admin, teacher, games, story)
+
+  // Block Whale-Class routes on montree.xyz — preserve query + hash so
+  // song deep links (e.g. /whale-class#song-animal-habitats) survive the redirect.
+  if (isMontree && isWhaleOnlyPath) {
+    const target = new URL(pathname, 'https://teacherpotato.xyz');
+    target.search = req.nextUrl.search;
+    target.hash = req.nextUrl.hash;
+    return NextResponse.redirect(target);
+  }
+
+  // Force montree.xyz root → /montree (redundant with next.config.ts redirect,
+  // but kept as a fallback if that redirect doesn't fire).
   if (isMontree && pathname === '/') {
-    // montree.xyz root is handled by next.config.ts redirect → /montree
-    // This is a fallback in case that redirect doesn't fire
     return NextResponse.redirect(new URL('/montree', req.url));
   }
   
