@@ -49,6 +49,56 @@ interface Child {
   photo_url?: string;
 }
 
+// ── High-water-mark for children count (chronic empty-state-flash defense) ──
+// This bug has been chased four times: Sessions 70 (9db1f142), 81 (d0c56992 +
+// 6c6fe885), and 86 (3d9969da + 7c5e5724). Each fix targeted ONE specific race
+// (POST resolves before GET / GET clobbers setCacheData / etc). But the
+// underlying architectural issue is that ANY single empty API response — for
+// ANY reason (auth refresh hiccup, transient backend, Railway cold-start
+// returning [], LRU eviction + bad response) — wipes the user's cache and
+// shows them the "Bulk Import Students" empty state when their classroom
+// genuinely has children. After they just imported. That's a brutal trust
+// failure for a new school.
+//
+// The defense: track per-classroom highest-known children count in
+// localStorage. On render, if the API currently shows 0 children but we've
+// previously seen >0 for this classroom, render a "Refreshing..." skeleton
+// instead of the bulk-import empty state, and force a refetch. The watermark
+// only ever increases — it gets reset to 0 only on explicit deletion (which
+// today happens only via DB; UI delete-all isn't yet a flow).
+const CHILDREN_WATERMARK_KEY = 'montree.classroomChildrenWatermark.v1';
+type ChildrenWatermark = Record<string, { count: number; ts: number }>;
+
+function readChildrenWatermark(classroomId: string): { count: number; ts: number } | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const raw = localStorage.getItem(CHILDREN_WATERMARK_KEY);
+    if (!raw) return null;
+    const all = JSON.parse(raw) as ChildrenWatermark;
+    return all[classroomId] || null;
+  } catch {
+    return null;
+  }
+}
+
+function writeChildrenWatermark(classroomId: string, count: number): void {
+  if (typeof window === 'undefined') return;
+  try {
+    const raw = localStorage.getItem(CHILDREN_WATERMARK_KEY);
+    const all = (raw ? JSON.parse(raw) : {}) as ChildrenWatermark;
+    const existing = all[classroomId];
+    // Only ever raise the watermark — never lower it from a transient empty
+    // response. A genuine zero will be written by an explicit-delete handler
+    // (not yet wired up; if we add one, call writeChildrenWatermark with the
+    // post-delete count and skip this max-guard for that one call).
+    const newCount = Math.max(existing?.count ?? 0, count);
+    all[classroomId] = { count: newCount, ts: Date.now() };
+    localStorage.setItem(CHILDREN_WATERMARK_KEY, JSON.stringify(all));
+  } catch {
+    // private browsing / disabled storage — non-fatal
+  }
+}
+
 // ─── Avatar Components ───
 function StudentAvatarIcon({ child, isSelected }: { child: Child; isSelected: boolean }) {
   const [showFallback, setShowFallback] = useState(!child.photo_url);
@@ -165,8 +215,84 @@ export default function DashboardPage() {
   const childrenUrl = session?.classroom?.id
     ? `/api/montree/children?classroom_id=${session.classroom.id}`
     : null;
-  const { data: childrenData, loading, error: childrenError } = useMontreeData<{ children: Child[] }>(childrenUrl);
+  const { data: childrenData, loading, error: childrenError, refetch: refetchChildren } =
+    useMontreeData<{ children: Child[] }>(childrenUrl);
   const children = childrenData?.children || [];
+
+  // ── High-water-mark watch on children count ──
+  // Update the watermark whenever the API gives us a positive count, AND log
+  // a warning if we observe a regression from positive → zero (suggests the
+  // API returned empty when it shouldn't have — exactly the chronic bug).
+  // The visible suppression of the bulk-import empty state is enforced below
+  // in the render guard.
+  useEffect(() => {
+    const cid = session?.classroom?.id;
+    if (!cid) return;
+    if (childrenData === null) return; // still loading — don't touch
+
+    const currentCount = children.length;
+    const watermark = readChildrenWatermark(cid);
+    const previousCount = watermark?.count ?? 0;
+
+    if (currentCount > 0) {
+      // Successful read with children — update watermark to max(prev, current).
+      writeChildrenWatermark(cid, currentCount);
+    } else if (previousCount > 0) {
+      // Suspicious: API said 0 but we've previously seen > 0. Log so we can
+      // catch this in browser console / Railway client error logs. Then the
+      // render guard below will keep the user on a skeleton instead of the
+      // bulk-import empty state, AND we trigger a refetch.
+      console.warn(
+        `[dashboard] Suspicious children count regression: classroom=${cid} ` +
+        `prev=${previousCount} now=0 cacheTs=${watermark?.ts} url=${childrenUrl}`
+      );
+    }
+  }, [childrenData, session?.classroom?.id, childrenUrl, children.length]);
+
+  // Boolean: should we suppress the empty state because we believe this
+  // classroom has children? True iff API currently shows 0 AND watermark
+  // shows >0. Used in the render guard below.
+  const suspectFalseEmpty = useMemo(() => {
+    const cid = session?.classroom?.id;
+    if (!cid) return false;
+    if (children.length > 0) return false;
+    const w = readChildrenWatermark(cid);
+    return (w?.count ?? 0) > 0;
+  }, [session?.classroom?.id, children.length]);
+
+  // When we suspect a false empty, force a refetch (which puts us in loading
+  // state, hence into the skeleton render path), AND start a give-up timer.
+  // If 6 seconds pass and we're STILL suspect-empty, it's not a transient API
+  // hiccup — the watermark is misleading us (e.g. children genuinely deleted
+  // outside this client). Clear the watermark and let the empty state render
+  // normally so the user isn't trapped in skeleton-land forever.
+  const [giveUpOnSuspect, setGiveUpOnSuspect] = useState(false);
+  useEffect(() => {
+    if (!suspectFalseEmpty) {
+      setGiveUpOnSuspect(false);
+      return;
+    }
+    // Trigger a single refetch — refetchChildren() clears the cache entry
+    // and sets loading=true, which routes through the existing skeleton.
+    refetchChildren();
+    const timer = setTimeout(() => {
+      const cid = session?.classroom?.id;
+      if (cid) {
+        // Clear the watermark so we don't keep flagging this classroom.
+        try {
+          const raw = localStorage.getItem(CHILDREN_WATERMARK_KEY);
+          if (raw) {
+            const all = JSON.parse(raw) as ChildrenWatermark;
+            delete all[cid];
+            localStorage.setItem(CHILDREN_WATERMARK_KEY, JSON.stringify(all));
+          }
+        } catch {}
+      }
+      setGiveUpOnSuspect(true);
+      console.warn('[dashboard] Suspect-empty give-up timer fired — letting empty state render.');
+    }, 6000);
+    return () => clearTimeout(timer);
+  }, [suspectFalseEmpty, refetchChildren, session?.classroom?.id]);
 
   // Filtered children for search (MUST be after children declaration)
   const filteredChildren = useMemo(() => {
@@ -303,8 +429,21 @@ export default function DashboardPage() {
   // session loaded but the classroom id is somehow missing, or the children
   // fetch hasn't yielded a real response yet (childrenData still null), hold
   // the skeleton instead of flashing the import prompt at a teacher who just
-  // imported students. This is a trust-on-the-product issue, not a perf one.
-  if (!isParent && (childrenUrl === null || (childrenData === null && !childrenError))) {
+  // imported students.
+  //
+  // Extended in this commit (Session 88): also hold the skeleton when we
+  // SUSPECT a false-empty. The watermark in localStorage tells us this
+  // classroom previously had children, so an API response of [] is suspicious.
+  // The give-up timer (6s) above will eventually flip giveUpOnSuspect to true
+  // and let the empty state render if the suspicion proves wrong.
+  if (
+    !isParent &&
+    (
+      childrenUrl === null ||
+      (childrenData === null && !childrenError) ||
+      (suspectFalseEmpty && !giveUpOnSuspect)
+    )
+  ) {
     return <DashboardSkeleton />;
   }
 
