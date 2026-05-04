@@ -181,6 +181,120 @@ GMass campaigns A/C/D are historical. Campaign C sent 335 blank emails (Session 
 
 ---
 
+## RECENT STATUS (May 4, 2026)
+
+### ⚡ Session 85 — Tracy: build → 5 audit cycles → frontend port → child_focus restructure (May 4, 2026)
+
+**7 commits pushed to main this session.** Tracy went from architectural brief to shipped, audited five times (10 real bugs caught and fixed across the cycles), frontend ported to match the friendly mockup, then completely re-architected when the canonical use case ("tell me about Austin's English progress") proved fragile under chained-tool orchestration.
+
+**Commits (oldest first):**
+- `bc018674` — Tracy phase 1: chief-of-staff brain + unpack_teacher framework tool
+- `a693674a` — Audit #1 fixes: phantom consult_guru tool, qualityOk excluded no_notes, brand-new children flagged as 21d stalled
+- `7c7a02e5` — Audit #2 fixes: phantom find_teacher_by_name, empty-roster nonsense, setTimeout leak in Promise.race
+- `a2779360` — Audit #3 fixes: prompt rule contradiction, off-roster note coverage inflation, missing prompt-injection fence on note-quality
+- `4f17a3cc` — Audit #4 fix: find_children_by_name tool description claimed wrong field name
+- `7ac24885` — Frontend port: friendly mockup → /montree/admin page (gold T avatar, "Hi [Name]. How can I help you?", action line styled distinctly)
+- `e4c59894` — child_focus single-tool architecture: replaces fragile chained-tool path with end-to-end server-side flow
+
+**A. Tracy is now live (`/montree/admin`):**
+
+Empty state is just a gold T avatar + `Hi [Name].` + `How can I help you?` and an input. No date, no school name, no system noise. When the principal asks something, Tracy streams a chief-of-staff response that always ends with one concrete action line (parsed via `splitActionLine()` and rendered distinctly with a warm gold dash + 18px breathing room).
+
+Architecture: `lib/montree/tracy/` module — `system-prompt.ts`, `tool-definitions.ts`, `tool-executor.ts`, `frameworks/child-focus.ts`, `frameworks/unpack-teacher.ts`, `frameworks/note-quality.ts`, `index.ts`. The route at `/api/montree/admin/principal-agent/route.ts` imports the module — same SSE/auth/streaming/cost-model machinery from Session 84.
+
+**B. The child_focus restructure (commit `e4c59894`) — the biggest architectural move:**
+
+After 5 audit passes the BACKEND was solid. But on production the user tested "I want to know about Austin's English progress" and Tracy tripped — likely Railway deploy lag, but the user correctly identified the architecture was fragile regardless. *"The be-end-and-end of this system is to answer specific questions about specific children. If it doesn't have this capability you need to restructure its architecture to be competent in this regard."*
+
+OLD path: Sonnet decides find_children_by_name → internal HTTP fetch → auth re-verify → returns matches → Sonnet decides answer_about_child → internal HTTP fetch → auth re-verify → Sonnet inside that route composes → Sonnet relays. **4 Sonnet rounds, 2 internal HTTP hops, 2 auth re-verifications, ~$0.05/question, multiple failure points.**
+
+NEW path: Sonnet decides `child_focus(question)` → server-side: Haiku parses (extracts name, area, focus) → direct DB resolves child + fetches context in parallel → Sonnet composes grounded answer → returns structured result → Sonnet relays. **3 Sonnet + 1 Haiku, zero internal HTTP, zero auth re-verification, ~$0.028/question.**
+
+The user proposed the Haiku-as-parser/Sonnet-as-composer flow himself: *"Haiku dissects the question, sends for the information, Sonnet puts it together."* I refined slightly: keep Sonnet for the compose step because parent-facing voice quality matters; Haiku for parse only. He accepted the cost (~$15-25/month per active principal) given there's "only one principal running this."
+
+**C. Architectural rules locked in this session (do NOT let future agents break these):**
+
+1. **Action rule** — every SUBSTANTIVE Tracy response ends with ONE concrete next action. Pure acknowledgments ("Thanks", "OK") are exempt.
+2. **Reactive only** — Tracy never volunteers adjacent problems.
+3. **Honesty** — Tracy only quotes dates verbatim (ISO YYYY-MM-DD). Never invents observations, names, classrooms, parents.
+4. **Don't lead with pedagogy** — Tracy uses developmental knowledge as substrate, not as the lead.
+5. **School-scoping contract preserved** — every direct Supabase query in framework tools filters by `schoolId`. Internal-endpoint wraps re-verify via cookie forwarding.
+6. **🚨 No internal HTTP for child questions** — the canonical use case is end-to-end inside `child_focus` via direct Supabase. No HTTP hops, no auth re-verification cascade, no chained-tool fragility. This is the architectural lesson of Session 85.
+7. **Per-request random-nonce fences for ANY user-input → AI prompt boundary** — Session 84 canonical pattern. Applied THREE times in Tracy alone: `note-quality.ts`, the parse step in `child-focus.ts`, AND the compose step in `child-focus.ts`.
+8. **Heuristic fallbacks for every AI step** — `parseQuestion()` has regex-based fallback if Haiku fails, `composeAnswer()` returns defensive sentence if Sonnet fails, `scoreNoteQuality()` returns `[]` if Haiku fails. No path throws unhandled.
+9. **`montree_children` columns confirmed**: `school_id` (migration 126/143), `enrolled_at` (113), `is_active`, `created_at`. All load-bearing for Tracy's queries.
+10. **`montree_teacher_notes.teacher_id` IS reliable** (migration 148 line 18). The strongest per-teacher attribution signal. `montree_media.confirmed_by` is best-effort and not used for attribution in unpack_teacher.
+11. **`unpack_teacher` quality layer treats `'no_notes'` as NEUTRAL** — only `'thin'` notes count against the verdict.
+12. **Brand-new children (enrolled <21d) skipped from stalled-detection** — they couldn't be "stalled 3 weeks" by definition.
+13. **Off-roster notes don't inflate `coverage_pct`** — `evidenceNoteChildIds` is filtered to children IN the teacher's roster.
+14. **Empty roster returns `verdict.label: 'no_data'`** — not `soft_week` with nonsense reasons.
+
+**D. The 10 bugs caught across 5 audit passes (convergence pattern: 3→3→3→1→0):**
+
+Audit #1: phantom consult_guru tool (5 references), qualityOk excluded no_notes (penalised note-less teachers), stalled-detection treated brand-new children as 21d stalled.
+
+Audit #2: phantom find_teacher_by_name (same bug class as consult_guru), empty-roster verdict was nonsense ("Coverage at 0% — 0 children without evidence"), setTimeout leak in Promise.race (Node anti-pattern).
+
+Audit #3: prompt rule contradiction (non-negotiable action rule contradicted conversational carve-out), off-roster note coverage inflation (could produce coverage_pct >100%), missing prompt-injection fence on note-quality.ts.
+
+Audit #4: find_children_by_name description claimed `classroom` field but actual API returns `classroom_name`.
+
+Audit #5: came back clean.
+
+**E. Tracy's voice and visual design conversations:**
+
+User pushed twice on the surface design. First mockup feedback: *"I want it simpler and more friendly — does she really need to know the date, the day and the school's name?"* Stripped to just `Hi [Name].` + greeting + input. Second: *"How can I help you?"* — the simplest, most timeless version. *"A real person asking, not a service bot."*
+
+Avatar exploration in Canva Pro: started with three options (illustrated portrait, botanical symbol, monogram). Tested watercolor portraits in Canva — generic AI woman, rejected. Settled on **T monogram in elegant serif** (Ink print style, gold on deep forest green). Final asset still pending the user's chosen Canva export. CSS-rendered T placeholder works for now — `TracyAvatar` component swap to `<img>` is one-line when the PNG drops.
+
+**F. Carry-overs that are STILL unresolved:**
+
+1. **🚨 Migration 184 still hasn't been run in Supabase** (carry-over from Session 84). `montree_principal_agent_log` table doesn't exist. Until run, every Tracy interaction's logging silently fails. Tredoux can't see what principals are asking via `/montree/super-admin/principal-questions`.
+2. **Resend `RESEND_API_KEY` env var on Railway still placeholder** (carry-over from Session 83/84). Affects principal invite emails, unrelated to Tracy.
+
+**G. Pre-existing 401 noise (NOT introduced by Tracy):**
+
+User's console showed a 401 on `/api/montree/auth/me`. Diagnosed as pre-existing: `recoverSession()` in `lib/montree/auth.ts:94` expects a teacher session shape. Principals 401 silently. Function catches the failure and returns null. Noisy console output, harmless function impact.
+
+**Files changed (7 commits):**
+- NEW: `lib/montree/tracy/` (system-prompt, tool-definitions, tool-executor, index, frameworks/child-focus, frameworks/unpack-teacher, frameworks/note-quality)
+- MODIFIED: `app/api/montree/admin/principal-agent/route.ts` (imports Tracy module)
+- REWRITTEN: `app/montree/admin/page.tsx` (Tracy frontend, +348/−438 lines)
+
+**Cost analysis (real numbers):**
+- Per Tracy child question: ~$0.028 (3 Sonnet + 1 Haiku)
+- Per Tracy teacher question: ~$0.015 (2 Sonnet + 1 Haiku for note quality)
+- 20-30 questions/day per principal × ~$0.025/question = **$15-25/month per active principal**
+
+**Handoff doc:** `docs/handoffs/SESSION_85_HANDOFF.md` — full file-by-file change list, audit-cycle bug catalogue, architectural restructure rationale, deferred items, 9-step production verification checklist, next-session priorities.
+
+**🚨 Production verification checklist (next session, after Railway redeploys e4c59894):**
+
+1. Hard refresh `/montree/admin` (Cmd+Shift+R) to clear any cached bundle.
+2. Confirm empty state: gold T avatar + `Hi [Name].` + `How can I help you?`.
+3. Try "How is [a real student name] doing?" → expect Tracy calls `child_focus` once, returns grounded prose.
+4. Try "Tell me about [student]'s English progress" → expect prose specifically about their language area.
+5. Try "What should I tell [parent] about [child]'s math?" → expect parent-ready paragraph.
+6. Try "How is Frodo doing?" (nonexistent name) → expect honest "I couldn't find" response, NOT system error.
+7. Try "How is [a real teacher] doing?" → expect Tracy calls `unpack_teacher`, returns chief-of-staff assessment.
+8. Verify closing "I'd …" line renders distinctly with warm gold dash treatment.
+9. Run migration 184 in Supabase (if not done), verify rows in `/montree/super-admin/principal-questions`.
+
+**🚨 Next session priorities (ordered):**
+
+1. **Run migration 184 in Supabase SQL Editor** — required for principal-agent logging to work. Until run, the questions log is dark and we can't learn from real principal usage.
+2. **Verify production works for real child questions** — run the 9-step checklist above. If anything trips, send screenshot.
+3. **Drop Canva-exported T monogram into `/public/tracy-avatar.png`** — when Tredoux has chosen his preferred variant. `TracyAvatar` swap to `<img>` is one-line.
+4. **Voice input for Tracy** — biggest UX win remaining. Whisper integration shipped elsewhere in the app (see Sessions 79-80). Mic button next to send. Half a day's work.
+5. **First-run onboarding** — Tracy introduces herself once on first visit: *"Hi, I'm Tracy. I'm here to help you run the school — ask me anything."* Then steps back to clean home forever after.
+6. **System prompt nudge for closing-action variety** — closing actions feel slightly mechanical right now. Want range: "Worth a check-in tomorrow", "Leave it for now", "I'd reply with this paragraph as written."
+7. **Family data model — Phase 3 of the original Tracy plan** — the largest novel-capability unlock. New tables: `montree_families`, `montree_family_members`, `montree_family_interactions`. Then build `family_context` framework tool. Without this, Tracy can't answer "what's the latest with Emma's family?"
+8. **`consult_guru` Tracy → Guru bridge** — when a question goes pedagogically deep on a single child, Tracy currently answers from her own training. A consult_guru tool would let her hand off to Guru properly.
+9. **Send the 3 hot lead drafts in Gmail** (carry-over from Session 84) — Ardtona, FAMM Argentina, Тамі.
+10. **Update CLAUDE.md lead state** (carry-over) — Paint Pots BOUNCED, Ardtona email correction (`vheavey@ardtonahouseschool.ie`), Copenhagen email verification.
+
+---
+
 ## RECENT STATUS (May 3, 2026)
 
 ### ⚡ Session 84 — Bug-fix sprint → principal home redesigned twice → "ask anything" agent with product-signal logging (May 3, 2026)
