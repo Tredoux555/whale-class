@@ -7,6 +7,7 @@ import { School } from './types';
 import { getCountryFlag, formatLocation } from '@/lib/ip-geolocation';
 
 const SchoolFeaturesModal = dynamic(() => import('./SchoolFeaturesModal'), { ssr: false });
+const PrincipalsModal = dynamic(() => import('./PrincipalsModal'), { ssr: false });
 
 interface SchoolsTabProps {
   schools: School[];
@@ -82,6 +83,7 @@ export default function SchoolsTab({
   const [showConfirm, setShowConfirm] = useState(false);
   const [confirmText, setConfirmText] = useState('');
   const [featuresSchool, setFeaturesSchool] = useState<{ id: string; name: string } | null>(null);
+  const [principalsSchool, setPrincipalsSchool] = useState<{ id: string; name: string } | null>(null);
   const [togglingAi, setTogglingAi] = useState<Set<string>>(new Set());
   const [tierOverrides, setTierOverrides] = useState<Record<string, 'free' | 'premium'>>({});
 
@@ -530,8 +532,16 @@ export default function SchoolsTab({
                       <td className="p-3 text-right">
                         <div className="flex items-center justify-end gap-1">
                           <button
+                            onClick={() => setPrincipalsSchool({ id: school.id, name: school.name })}
+                            className="px-2 py-1 bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30 rounded text-xs font-medium"
+                            title="Manage principals"
+                          >
+                            👤
+                          </button>
+                          <button
                             onClick={() => setFeaturesSchool({ id: school.id, name: school.name })}
                             className="px-2 py-1 bg-indigo-500/20 text-indigo-400 hover:bg-indigo-500/30 rounded text-xs font-medium"
+                            title="Feature flags"
                           >
                             ⚙️
                           </button>
@@ -565,6 +575,16 @@ export default function SchoolsTab({
           schoolName={featuresSchool.name}
           sessionToken={sessionToken}
           onClose={() => setFeaturesSchool(null)}
+        />
+      )}
+
+      {/* Principals management modal */}
+      {principalsSchool && sessionToken && (
+        <PrincipalsModal
+          schoolId={principalsSchool.id}
+          schoolName={principalsSchool.name}
+          sessionToken={sessionToken}
+          onClose={() => setPrincipalsSchool(null)}
         />
       )}
     </>
