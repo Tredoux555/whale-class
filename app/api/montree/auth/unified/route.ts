@@ -39,7 +39,60 @@ export async function POST(request: NextRequest) {
     const normalizedCode = code.trim().toUpperCase();
 
     // ============================================
-    // 1. TRY TEACHER / HOMESCHOOL PARENT
+    // 1. TRY PRINCIPAL (must run before TEACHER — see below)
+    // ============================================
+    // ORDER MATTERS. Principal is tried FIRST because someone may exist in
+    // BOTH montree_school_admins (as a principal) AND montree_teachers (as a
+    // teacher in their own school) with the same login code. The principal
+    // role is strictly more privileged — if the same code matches both
+    // identities, the principal context is what the user intends. Putting
+    // teacher first issued a teacher JWT to a principal, which then 403'd
+    // them out of /api/montree/admin/principal-agent (Tracy) and any other
+    // principal-only route. Principal first gives them the higher role.
+    const principalResult = await tryPrincipalLogin(supabase, normalizedCode);
+    if (principalResult) {
+      const { principal, school, needsSetup } = principalResult;
+
+      const token = await createMontreeToken({
+        sub: principal.id,
+        schoolId: school.id,
+        role: 'principal',
+      });
+
+      logAudit(supabase, {
+        adminIdentifier: principal.email || principal.name || 'unknown',
+        action: 'login_success',
+        resourceType: 'principal',
+        resourceId: principal.id,
+        resourceDetails: { endpoint: '/api/montree/auth/unified', schoolId: school.id },
+        ipAddress: ip,
+        userAgent,
+      });
+
+      const response = NextResponse.json({
+        success: true,
+        role: 'principal',
+        token,
+        needsSetup,
+        school: {
+          id: school.id,
+          name: school.name,
+          slug: school.slug,
+        },
+        principal: {
+          id: principal.id,
+          name: principal.name,
+          email: principal.email,
+          role: 'principal',
+        },
+        redirect: needsSetup ? '/montree/principal/setup' : '/montree/admin',
+      });
+      setMontreeAuthCookie(response, token, 'principal');
+      return response;
+    }
+
+    // ============================================
+    // 2. TRY TEACHER / HOMESCHOOL PARENT
     // ============================================
     const teacherResult = await tryTeacherLogin(supabase, normalizedCode);
     if (teacherResult) {
@@ -83,51 +136,6 @@ export async function POST(request: NextRequest) {
         redirect: !onboarded ? '/montree/onboarding' : '/montree/dashboard',
       });
       setMontreeAuthCookie(response, token, teacherRole);
-      return response;
-    }
-
-    // ============================================
-    // 2. TRY PRINCIPAL
-    // ============================================
-    const principalResult = await tryPrincipalLogin(supabase, normalizedCode);
-    if (principalResult) {
-      const { principal, school, needsSetup } = principalResult;
-
-      const token = await createMontreeToken({
-        sub: principal.id,
-        schoolId: school.id,
-        role: 'principal',
-      });
-
-      logAudit(supabase, {
-        adminIdentifier: principal.email || principal.name || 'unknown',
-        action: 'login_success',
-        resourceType: 'principal',
-        resourceId: principal.id,
-        resourceDetails: { endpoint: '/api/montree/auth/unified', schoolId: school.id },
-        ipAddress: ip,
-        userAgent,
-      });
-
-      const response = NextResponse.json({
-        success: true,
-        role: 'principal',
-        token,
-        needsSetup,
-        school: {
-          id: school.id,
-          name: school.name,
-          slug: school.slug,
-        },
-        principal: {
-          id: principal.id,
-          name: principal.name,
-          email: principal.email,
-          role: 'principal',
-        },
-        redirect: needsSetup ? '/montree/principal/setup' : '/montree/admin',
-      });
-      setMontreeAuthCookie(response, token, 'principal');
       return response;
     }
 
