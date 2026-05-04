@@ -85,10 +85,21 @@ export interface UnpackTeacherResult {
       verdict: 'progressing' | 'mixed' | 'stalled';
     };
     verdict: {
-      // ONE of: 'strong_week' | 'normal_week' | 'soft_week' | 'concerning'
+      // ONE of:
+      //   'strong_week'   — high coverage + non-thin notes + progressing
+      //   'normal_week'   — coverage ok, progressing or mixed, non-thin notes
+      //   'soft_week'     — quieter than usual, no red flags
+      //   'concerning'    — low coverage AND (thin notes OR stalled OR very stale login)
+      //   'no_data'       — teacher has no classroom assigned or empty roster
+      //                     (so coverage/pattern/etc. are meaningless)
       // Computed deterministically from the layers above so Tracy's prose
       // doesn't drift in tone.
-      label: 'strong_week' | 'normal_week' | 'soft_week' | 'concerning';
+      label:
+        | 'strong_week'
+        | 'normal_week'
+        | 'soft_week'
+        | 'concerning'
+        | 'no_data';
       headline: string; // one sentence summary the model can quote or paraphrase
       reasons: string[]; // 1-3 evidence bullet points (text, no formatting)
     };
@@ -430,8 +441,84 @@ export async function unpackTeacher(
   const progressOk =
     patternVerdict === 'progressing' || patternVerdict === 'mixed';
 
-  let verdictLabel: 'strong_week' | 'normal_week' | 'soft_week' | 'concerning';
+  let verdictLabel:
+    | 'strong_week'
+    | 'normal_week'
+    | 'soft_week'
+    | 'concerning'
+    | 'no_data';
   const reasons: string[] = [];
+
+  // Empty-roster special case — coverage/pattern/etc. are meaningless without
+  // children to observe. Tracy's prose layer reads 'no_data' and explains
+  // honestly: "Susan isn't assigned to a classroom" / "her classroom has no
+  // children yet". DON'T fall through to soft_week, that produced nonsense
+  // like "Coverage at 0% — 0 children without evidence."
+  if (rosterIds.length === 0) {
+    verdictLabel = 'no_data';
+    if (!teacher.classroom_id) {
+      reasons.push(`${teacher.name} isn't assigned to a classroom yet.`);
+    } else {
+      reasons.push(
+        `${teacher.name}'s classroom (${classroomName ?? 'unnamed'}) has no active children yet.`
+      );
+    }
+    if (notesWritten > 0) {
+      reasons.push(
+        `She has written ${notesWritten} note(s) in the last ${windowDays} days.`
+      );
+    }
+    if (daysSinceLogin !== null) {
+      reasons.push(`Last login ${daysSinceLogin} days ago.`);
+    }
+    return {
+      ok: true,
+      data: {
+        teacher: {
+          id: teacher.id,
+          name: teacher.name,
+          classroom_name: classroomName,
+          last_login_at: teacher.last_login_at,
+          days_since_last_login: daysSinceLogin,
+        },
+        window: { days: windowDays, from_iso: fromIso, to_iso: toIso },
+        activity: {
+          photos_confirmed_in_classroom: photosConfirmed,
+          notes_written: notesWritten,
+          mastery_confirmations: masteryConfirmations,
+          logins_in_window_estimate: loginBucket,
+        },
+        coverage: {
+          roster_size: 0,
+          children_with_evidence: 0,
+          neglected_children: [],
+          coverage_pct: 0,
+          distribution: 'even',
+          most_observed: [],
+        },
+        quality: {
+          notes_sampled: noteTexts.length,
+          avg_word_count: Math.round(avgWords),
+          substantive_notes: substantiveCount,
+          score: Number(qualityScoreAvg.toFixed(2)),
+          sample_substantive_quote: sampleSubstantive,
+          label: qualityLabel,
+        },
+        pattern: {
+          children_with_progress: 0,
+          children_stalled_3w: [],
+          verdict: 'mixed',
+        },
+        verdict: {
+          label: verdictLabel,
+          headline: !teacher.classroom_id
+            ? `${teacher.name} isn't assigned to a classroom.`
+            : `${teacher.name}'s classroom is empty so far.`,
+          reasons,
+        },
+      },
+    };
+  }
 
   if (coverageOk && qualityOk && loginOk && patternVerdict === 'progressing') {
     verdictLabel = 'strong_week';
@@ -487,6 +574,8 @@ export async function unpackTeacher(
     }
   }
 
+  // verdictLabel here is narrowed by TypeScript to exclude 'no_data'
+  // because the empty-roster path early-returned above.
   const headline = (() => {
     switch (verdictLabel) {
       case 'strong_week':
