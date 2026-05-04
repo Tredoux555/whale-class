@@ -183,8 +183,14 @@ function splitActionLine(text: string): { body: string; action: string | null } 
 // a fresh URL and bypass their HTTP image cache. Without this, swapping the
 // avatar bytes leaves users staring at the previously-cached image for hours.
 // History: v1 = original T monogram (Session 87), v2 = stretched-borders T
-// monogram (earlier today), v3 = watercolor portrait.
-const TRACY_AVATAR_VERSION = 3;
+// monogram, v3 = watercolor portrait, v4 = back to T monogram for comparison.
+const TRACY_AVATAR_VERSION = 4;
+// Crop shape — must match the active avatar's composition:
+//   'square' (radius 22%) → T monogram. Preserves the sprout+stem at the
+//                          bottom edge that a circle crop would clip.
+//   'circle' (radius 50%) → watercolor portrait. Lets cream/peach
+//                          brushstrokes feather into the dark forest UI.
+const TRACY_AVATAR_SHAPE: 'square' | 'circle' = 'square';
 
 function TracyAvatar({ size = 36 }: { size?: number }) {
   // Renders Tracy's avatar from /public/tracy-avatar.png. If the asset is
@@ -232,7 +238,7 @@ function TracyAvatar({ size = 36 }: { size?: number }) {
       style={{
         width: size,
         height: size,
-        borderRadius: '50%', // circular crop — works for both watercolor portrait and monogram
+        borderRadius: TRACY_AVATAR_SHAPE === 'circle' ? '50%' : Math.round(size * 0.22),
         objectFit: 'cover',
         flexShrink: 0,
         display: 'block',
