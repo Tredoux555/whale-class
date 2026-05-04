@@ -2,7 +2,13 @@
 
 import { useEffect, useState, useMemo, useRef, useCallback } from "react";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { getVideoProxyUrl } from "@/lib/montree/media/proxy-url";
+
+// Lazy-load the share modal so the qrcode lib only ships on first share open.
+const ShareSongModal = dynamic(() => import("@/components/ShareSongModal"), {
+  ssr: false,
+});
 
 // On montree.xyz (behind Cloudflare), proxy through CDN for edge caching.
 // On teacherpotato.xyz (direct Railway), use raw Supabase URLs — proxy 502s without Cloudflare.
@@ -27,6 +33,7 @@ interface Video {
 export default function Home() {
   const [videos, setVideos] = useState<Video[]>([]);
   const [loading, setLoading] = useState(true);
+  const [shareTarget, setShareTarget] = useState<Video | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<"all" | "song-of-week" | "phonics" | "weekly-phonics-sound" | "stories">("all");
   const [currentlyPlayingId, setCurrentlyPlayingId] = useState<string | null>(null);
   const [repeatModes, setRepeatModes] = useState<Record<string, boolean>>({});
@@ -320,19 +327,36 @@ export default function Home() {
                       </span>
                     )}
                   </div>
-                  <button
-                    onClick={() => handleDownload(video)}
-                    className="w-full flex items-center justify-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2.5 rounded-xl font-medium transition-colors"
-                  >
-                    <span>⬇️</span>
-                    <span>Download</span>
-                  </button>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => handleDownload(video)}
+                      className="flex-1 flex items-center justify-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2.5 rounded-xl font-medium transition-colors"
+                    >
+                      <span>⬇️</span>
+                      <span>Download</span>
+                    </button>
+                    <button
+                      onClick={() => setShareTarget(video)}
+                      className="flex-1 flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-xl font-medium transition-colors shadow-sm"
+                      title="Share or get a QR code"
+                    >
+                      <span>🔗</span>
+                      <span>Share</span>
+                    </button>
+                  </div>
                 </div>
               </div>
             ))}
           </div>
         )}
       </main>
+
+      {shareTarget && (
+        <ShareSongModal
+          title={shareTarget.title}
+          onClose={() => setShareTarget(null)}
+        />
+      )}
     </div>
   );
 }
