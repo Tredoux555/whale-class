@@ -46,18 +46,23 @@ export async function middleware(req: NextRequest) {
   const isTeacherPotato = hostname.includes('teacherpotato.xyz');
   const isMontree = hostname.includes('montree.xyz');
 
-  // Whale-Class-only top-level routes. Anything under one of these prefixes
-  // must NEVER render on montree.xyz — redirect to teacherpotato.xyz.
-  // Note: /api/* is intentionally NOT in this list. APIs serve both products
-  // and the per-route auth handlers gate them correctly.
-  const WHALE_ONLY_PREFIXES = [
-    '/whale-class',
-    '/admin',     // Whale Class admin tools (qr-generator, video-manager, etc.)
-    '/teacher',   // Whale Class teacher login
-    '/story',     // Whale Class Story system
-    '/games',     // Whale Class games
-    '/auth',      // Whale Class legacy auth pages (Montree uses /montree/login*)
-  ];
+  // Whale-Class-only top-level routes that should redirect from montree.xyz
+  // to teacherpotato.xyz when teacherpotato is actually serving the deploy.
+  //
+  // ⚠ As of May 4, 2026 teacherpotato.xyz DNS points at a legacy parking
+  // server (15.197.225.128 / 3.33.251.168) and returns 405/404 for every
+  // path — it is NOT routing to the Railway service that fronts montree.xyz
+  // (Cloudflare 172.67.196.225 / 104.21.68.162). Until the Railway custom-
+  // domain alias is re-attached to teacherpotato.xyz, redirecting visitors
+  // there sends them to a dead host. So this list is empty for now and
+  // /whale-class etc. continue to render on montree.xyz unchanged.
+  //
+  // To restore the product split: re-attach teacherpotato.xyz in Railway →
+  // Settings → Domains, verify DNS points to Railway/Cloudflare, then add
+  // entries back here ('/whale-class', '/admin', '/teacher', '/story',
+  // '/games', '/auth'). /api/* must stay excluded — APIs are gated by
+  // per-route auth handlers and serve both products.
+  const WHALE_ONLY_PREFIXES: string[] = [];
   const isWhaleOnlyPath = WHALE_ONLY_PREFIXES.some(
     (p) => pathname === p || pathname.startsWith(p + '/'),
   );
