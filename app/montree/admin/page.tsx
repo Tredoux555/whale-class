@@ -27,6 +27,8 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { Send, RotateCcw } from 'lucide-react';
+import { useI18n } from '@/lib/montree/i18n';
+import LanguageToggle from '@/components/montree/LanguageToggle';
 
 const T = {
   emerald: '#34d399',
@@ -120,33 +122,50 @@ function newConvId(): string {
 
 /**
  * Tracy's responses end with a single closing action line that begins with
- * "I'd ..." (per her system prompt). Split that off so we can render it
- * distinctly from the body prose.
+ * the universal arrow marker "→ ". Split that off so we can render it
+ * distinctly from the body prose, and so the splitter works in any language
+ * (the action TEXT itself is in the principal's locale, but the marker is
+ * the literal "→" character regardless).
  *
- * Matches the LAST paragraph of the response if it starts with "I'd " or
- * "I'd " (smart-quote variant), case-insensitive. Returns the body without
- * the action line and the action line itself. If no match, the whole text
- * is body and action is null.
+ * Returns the body without the action line and the action line itself
+ * (with the arrow marker stripped — caller renders its own dash decoration).
+ * If no marker is found, the whole text is body and action is null.
+ *
+ * Backward-compat: the legacy "I'd …" English pattern is still matched as a
+ * fallback so older cached responses or stragglers still render correctly.
  */
 function splitActionLine(text: string): { body: string; action: string | null } {
   if (!text || !text.trim()) return { body: text, action: null };
+  // Accept either the literal "→" or the older "->" ASCII fallback, plus a
+  // surrounding whitespace tolerance, so a typo in transit doesn't drop the action.
+  const ARROW_RE = /^\s*(?:→|->)\s+/;
+
   const paragraphs = text.split(/\n\s*\n/);
-  if (paragraphs.length === 0) return { body: text, action: null };
-  const last = paragraphs[paragraphs.length - 1].trim();
-  if (/^I['’]d\s/i.test(last)) {
+  const lastPara = paragraphs[paragraphs.length - 1]?.trim() ?? '';
+  if (ARROW_RE.test(lastPara)) {
+    const action = lastPara.replace(ARROW_RE, '').trim();
     const body = paragraphs.slice(0, -1).join('\n\n').trim();
-    return { body, action: last };
+    return { body, action };
   }
-  // Fallback: also try splitting on single newlines if the action came back
-  // on its own single-newline line rather than after a blank line.
+
+  // Single-newline fallback — Tracy sometimes drops the blank line before the action.
   const lines = text.split(/\n/);
   if (lines.length >= 2) {
     const lastLine = lines[lines.length - 1].trim();
-    if (/^I['’]d\s/i.test(lastLine)) {
+    if (ARROW_RE.test(lastLine)) {
+      const action = lastLine.replace(ARROW_RE, '').trim();
       const body = lines.slice(0, -1).join('\n').trim();
-      return { body, action: lastLine };
+      return { body, action };
     }
   }
+
+  // Legacy pattern (English-only "I'd …") — kept as a backstop for cached
+  // responses that pre-date the arrow marker convention.
+  if (/^I['’]d\s/i.test(lastPara)) {
+    const body = paragraphs.slice(0, -1).join('\n\n').trim();
+    return { body, action: lastPara };
+  }
+
   return { body: text, action: null };
 }
 
@@ -179,6 +198,10 @@ function TracyAvatar({ size = 36 }: { size?: number }) {
 }
 
 function EmptyState({ firstName }: { firstName: string }) {
+  const { t } = useI18n();
+  const greeting = firstName
+    ? t('tracy.greetingNamed', { name: firstName })
+    : t('tracy.greeting');
   return (
     <div style={{ padding: '24px 0 12px' }}>
       <div
@@ -199,7 +222,7 @@ function EmptyState({ firstName }: { firstName: string }) {
             letterSpacing: -0.005,
           }}
         >
-          Hi{firstName ? ` ${firstName}` : ''}.
+          {greeting}
         </p>
       </div>
       <p
@@ -211,7 +234,7 @@ function EmptyState({ firstName }: { firstName: string }) {
           lineHeight: 1.55,
         }}
       >
-        How can I help you?
+        {t('tracy.helpPrompt')}
       </p>
     </div>
   );
@@ -240,6 +263,7 @@ function UserBubble({ text }: { text: string }) {
 }
 
 function AssistantBubble({ turn }: { turn: ConvTurn }) {
+  const { t } = useI18n();
   const { body, action } = splitActionLine(turn.text);
   const showThinkingDots = turn.pending && !turn.text && !turn.error;
 
@@ -258,7 +282,7 @@ function AssistantBubble({ turn }: { turn: ConvTurn }) {
               fontStyle: 'italic',
               letterSpacing: 1.5,
             }}
-            aria-label="Tracy is thinking"
+            aria-label={t('tracy.thinkingAria')}
           >
             …
           </div>
@@ -321,6 +345,7 @@ function AssistantBubble({ turn }: { turn: ConvTurn }) {
 
 export default function AdminAgentPage() {
   const router = useRouter();
+  const { t, locale } = useI18n();
 
   // Header data — kept for first-name + viewer-mode banner only
   const [school, setSchool] = useState<School | null>(null);
@@ -405,7 +430,7 @@ export default function AdminAgentPage() {
     inputRef.current?.focus();
   }, [convId]);
 
-  const handleEvent = useCallback((evt: Record<string, unknown>) => {
+  const handleEvent = useCallback((evt: Record<string, unknown>) => { // eslint-disable-line react-hooks/exhaustive-deps
     setTurns((prev) => {
       if (prev.length === 0) return prev;
       const last = prev[prev.length - 1];
@@ -456,9 +481,7 @@ export default function AdminAgentPage() {
         }
         case 'error': {
           updated.pending = false;
-          updated.error = String(
-            evt.error || 'Something stopped me — try again in a second.'
-          );
+          updated.error = String(evt.error || t('tracy.errors.transient'));
           break;
         }
       }
@@ -500,22 +523,21 @@ export default function AdminAgentPage() {
           question: q,
           conversation_id: convId,
           history,
+          locale,
         }),
       });
 
       if (res.status === 402) {
         const payload = await res.json().catch(() => ({}));
         setTurns((prev) =>
-          prev.map((t, i) =>
+          prev.map((tt, i) =>
             i === prev.length - 1
               ? {
-                  ...t,
+                  ...tt,
                   pending: false,
-                  error:
-                    payload?.error ||
-                    'AI features need an active plan — please contact support.',
+                  error: payload?.error || t('tracy.errors.tier'),
                 }
-              : t
+              : tt
           )
         );
         return;
@@ -523,16 +545,14 @@ export default function AdminAgentPage() {
       if (!res.ok) {
         const payload = await res.json().catch(() => ({}));
         setTurns((prev) =>
-          prev.map((t, i) =>
+          prev.map((tt, i) =>
             i === prev.length - 1
               ? {
-                  ...t,
+                  ...tt,
                   pending: false,
-                  error:
-                    payload?.error ||
-                    "Something stopped me there — give me a second and try again.",
+                  error: payload?.error || t('tracy.errors.transient'),
                 }
-              : t
+              : tt
           )
         );
         return;
@@ -541,14 +561,14 @@ export default function AdminAgentPage() {
       const reader = res.body?.getReader();
       if (!reader) {
         setTurns((prev) =>
-          prev.map((t, i) =>
+          prev.map((tt, i) =>
             i === prev.length - 1
               ? {
-                  ...t,
+                  ...tt,
                   pending: false,
-                  error: 'No response stream — try again in a second.',
+                  error: t('tracy.errors.noStream'),
                 }
-              : t
+              : tt
           )
         );
         return;
@@ -581,21 +601,21 @@ export default function AdminAgentPage() {
     } catch (err) {
       console.error('[admin agent] stream error', err);
       setTurns((prev) =>
-        prev.map((t, i) =>
+        prev.map((tt, i) =>
           i === prev.length - 1
             ? {
-                ...t,
+                ...tt,
                 pending: false,
-                error: 'Connection failed — try again in a moment.',
+                error: t('tracy.errors.connection'),
               }
-            : t
+            : tt
         )
       );
     } finally {
       setSubmitting(false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [question, submitting, convId, turns, handleEvent]);
+  }, [question, submitting, convId, turns, handleEvent, locale, t]);
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -608,6 +628,19 @@ export default function AdminAgentPage() {
 
   return (
     <div style={{ fontFamily: T.sans, color: T.textSoft }}>
+      {/* Compact language switcher — the principal can change Tracy's language
+          here and her next response is in that language. Sits above the thread
+          aligned right so it doesn't compete with the empty-state greeting. */}
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'flex-end',
+          marginBottom: 8,
+        }}
+      >
+        <LanguageToggle />
+      </div>
+
       {/* Viewer-mode banner — kept because it's a real product fact the
           principal needs to know. Quieter visual treatment than before. */}
       {plan?.is_teacher_led && (
@@ -623,17 +656,15 @@ export default function AdminAgentPage() {
             color: 'rgba(255,255,255,0.74)',
           }}
         >
-          <strong style={{ color: T.gold }}>You're a viewer.</strong>{' '}
-          {school?.name || 'This school'} is teacher-led — you can ask about
-          anything below for free. To add your own classrooms or invite
-          teachers,{' '}
+          <strong style={{ color: T.gold }}>{t('tracy.viewer.title')}</strong>{' '}
+          {t('tracy.viewer.body', { school: school?.name || t('tracy.viewer.thisSchool') })}{' '}
           <a
             href="https://montree.xyz/pricing"
             target="_blank"
             rel="noopener noreferrer"
             style={{ color: T.gold, textDecoration: 'underline' }}
           >
-            upgrade to a school plan
+            {t('tracy.viewer.upgradeLink')}
           </a>
           .
         </div>
@@ -680,7 +711,7 @@ export default function AdminAgentPage() {
           value={question}
           onChange={(e) => setQuestion(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder="Type here…"
+          placeholder={t('tracy.placeholder')}
           rows={2}
           maxLength={1500}
           disabled={submitting}
@@ -725,13 +756,13 @@ export default function AdminAgentPage() {
             }}
           >
             <RotateCcw size={12} strokeWidth={1.75} />
-            New conversation
+            {t('tracy.newConversation')}
           </button>
           <button
             type="button"
             onClick={submit}
             disabled={submitting || !question.trim()}
-            aria-label="Send message"
+            aria-label={t('tracy.sendAria')}
             style={{
               display: 'inline-flex',
               alignItems: 'center',

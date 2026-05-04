@@ -3898,4 +3898,21 @@ export const fr: Record<string, string> = {
   'dashboard.onboardingChoice.voiceBody': '90 secondes par enfant. Je construirai leurs profils et vos premiers rapports sonneront comme si vous les aviez écrits.',
   'dashboard.onboardingChoice.photoTitle': 'Commencez simplement par des photos',
   'dashboard.onboardingChoice.photoBody': 'Passez directement aux photos. Prenez des photos et regardez le tableau de bord s\'animer. Vos premiers rapports se concentreront sur ce que nous avons observé cette semaine.',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'tracy.greeting': 'Bonjour.',
+  'tracy.greetingNamed': 'Bonjour {name}.',
+  'tracy.helpPrompt': 'Comment puis-je vous aider ?',
+  'tracy.placeholder': 'Tapez ici…',
+  'tracy.newConversation': 'Nouvelle conversation',
+  'tracy.sendAria': 'Envoyer le message',
+  'tracy.thinkingAria': 'Tracy réfléchit',
+  'tracy.viewer.title': 'Vous êtes observateur.',
+  'tracy.viewer.thisSchool': 'Cette école',
+  'tracy.viewer.body': '{school} est dirigée par l\'éducateur — vous pouvez poser des questions sur tout ce qui suit gratuitement. Pour ajouter vos propres classes ou inviter des éducateurs,',
+  'tracy.viewer.upgradeLink': 'passer à un plan scolaire',
+  'tracy.errors.tier': 'Les fonctionnalités IA nécessitent un plan actif — veuillez contacter le support.',
+  'tracy.errors.transient': 'Quelque chose m\'a arrêté là — donnez-moi une seconde et réessayez.',
+  'tracy.errors.noStream': 'Aucun flux de réponse — réessayez dans une seconde.',
+  'tracy.errors.connection': 'Connexion échouée — réessayez dans un instant.',
 };

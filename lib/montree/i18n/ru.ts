@@ -3895,4 +3895,21 @@ export const ru: Record<string, string> = {
   'dashboard.onboardingChoice.voiceBody': '90 секунд на ребёнка. Я построю их профили, и ваши первые отчёты будут звучать так, как будто вы их написали.',
   'dashboard.onboardingChoice.photoTitle': 'Начните с фотографий',
   'dashboard.onboardingChoice.photoBody': 'Пропустите подготовку. Делайте фотографии и смотрите, как оживает панель управления. Ваши первые отчёты сосредоточатся на том, что мы наблюдали на этой неделе.',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'tracy.greeting': 'Здравствуйте.',
+  'tracy.greetingNamed': 'Здравствуйте, {name}.',
+  'tracy.helpPrompt': 'Чем я могу Вам помочь?',
+  'tracy.placeholder': 'Напишите здесь…',
+  'tracy.newConversation': 'Новый диалог',
+  'tracy.sendAria': 'Отправить сообщение',
+  'tracy.thinkingAria': 'Tracy думает',
+  'tracy.viewer.title': 'Вы — наблюдатель.',
+  'tracy.viewer.thisSchool': 'Это учреждение',
+  'tracy.viewer.body': '{school} — учреждение под руководством педагога — Вы можете бесплатно задавать вопросы обо всём ниже. Чтобы добавить свои классы или пригласить педагогов,',
+  'tracy.viewer.upgradeLink': 'перейдите на школьный план',
+  'tracy.errors.tier': 'Функции ИИ требуют активного плана — пожалуйста, свяжитесь со службой поддержки.',
+  'tracy.errors.transient': 'Что-то прервало процесс — дайте мне секунду и попробуйте ещё раз.',
+  'tracy.errors.noStream': 'Нет потока ответов — попробуйте снова через секунду.',
+  'tracy.errors.connection': 'Соединение прервано — попробуйте ещё раз через мгновение.',
 };

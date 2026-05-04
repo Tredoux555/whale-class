@@ -93,6 +93,19 @@ interface BodyShape {
   question?: string;
   conversation_id?: string;
   history?: MessageParam[]; // optional client-side context for follow-ups
+  /** Locale code from the principal's UI (e.g. 'en', 'zh', 'es', 'fr', …). */
+  locale?: string;
+}
+
+// Allow-list of supported locales — silently downgrades anything else to 'en'.
+// Kept aligned with SUPPORTED_LOCALES in lib/montree/i18n/locales.ts.
+const SUPPORTED_TRACY_LOCALES = new Set([
+  'en', 'zh', 'es', 'de', 'fr', 'pt', 'nl', 'it', 'ja', 'ko', 'uk', 'ru',
+]);
+function normalizeLocale(raw: unknown): string {
+  if (typeof raw !== 'string') return 'en';
+  const v = raw.trim().toLowerCase();
+  return SUPPORTED_TRACY_LOCALES.has(v) ? v : 'en';
 }
 
 function sse(encoder: TextEncoder, payload: Record<string, unknown>): Uint8Array {
@@ -120,6 +133,7 @@ export async function POST(request: NextRequest) {
 
   const question = (body.question || '').trim();
   const conversationId = (body.conversation_id || '').trim();
+  const locale = normalizeLocale(body.locale);
   if (!question) {
     return NextResponse.json({ error: 'question required' }, { status: 400 });
   }
@@ -244,16 +258,26 @@ export async function POST(request: NextRequest) {
   let finalAnswerText = '';
   let logError: string | null = null;
 
-  // Today's date label for Tracy's system prompt — matches how the principal
-  // would say it ("Monday, May 4, 2026"). Uses the principal's locale would
-  // be ideal; for now use en-US as a stable default since Tracy speaks
-  // English in this version. Internationalising her voice is a later phase.
-  const todayLabel = new Date().toLocaleDateString('en-US', {
-    weekday: 'long',
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  });
+  // Today's date label for Tracy's system prompt — formatted in the
+  // principal's locale so "Monday, May 4, 2026" reads natively in zh/es/fr/etc.
+  // Falls back to en-US if Intl can't resolve the locale.
+  const todayLabel = (() => {
+    try {
+      return new Date().toLocaleDateString(locale === 'en' ? 'en-US' : locale, {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      });
+    } catch {
+      return new Date().toLocaleDateString('en-US', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      });
+    }
+  })();
 
   const stream = new ReadableStream<Uint8Array>({
     async start(controller) {
@@ -262,6 +286,7 @@ export async function POST(request: NextRequest) {
           schoolName,
           principalName,
           todayLabel,
+          locale,
         });
 
         const conversationMessages: MessageParam[] = [...initialMessages];
@@ -359,6 +384,7 @@ export async function POST(request: NextRequest) {
                   anthropic,
                   schoolId: auth.schoolId,
                   request,
+                  locale,
                 }
               );
               const toolDuration = Date.now() - toolStart;

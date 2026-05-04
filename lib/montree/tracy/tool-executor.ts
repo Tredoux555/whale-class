@@ -36,6 +36,11 @@ export interface TracyToolDeps {
   anthropic: Anthropic | null;
   schoolId: string;
   request: NextRequest;
+  /**
+   * Locale of the principal's UI. Forwarded to framework tools so their
+   * Sonnet compose steps respond in the right language. 'en' if omitted.
+   */
+  locale?: string;
 }
 
 export async function executeTracyTool(
@@ -43,7 +48,7 @@ export async function executeTracyTool(
   input: Record<string, unknown>,
   deps: TracyToolDeps
 ): Promise<TracyToolResult> {
-  const { supabase, anthropic, schoolId, request } = deps;
+  const { supabase, anthropic, schoolId, request, locale = 'en' } = deps;
   const cookieHeader = request.headers.get('cookie') || '';
   const origin = request.nextUrl.origin;
 
@@ -84,7 +89,7 @@ export async function executeTracyTool(
           return { success: false, error: 'question is required' };
         }
         const result = await childFocus(
-          { question, schoolId },
+          { question, schoolId, locale },
           supabase,
           anthropic,
           AI_MODEL

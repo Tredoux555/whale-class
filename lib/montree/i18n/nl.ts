@@ -3898,4 +3898,21 @@ export const nl: Record<string, string> = {
   'dashboard.onboardingChoice.voiceBody': '90 seconden per kind. Ik bouw hun profielen op en uw eerste verslagen zullen klinken alsof u ze heeft geschreven.',
   'dashboard.onboardingChoice.photoTitle': 'Begin gewoon met foto\'s',
   'dashboard.onboardingChoice.photoBody': 'Ga direct verder. Maak foto\'s en zie het dashboard tot leven komen. Uw eerste verslagen zullen zich concentreren op wat we deze week hebben waargenomen.',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'tracy.greeting': 'Hallo.',
+  'tracy.greetingNamed': 'Hallo {name}.',
+  'tracy.helpPrompt': 'Hoe kan ik u helpen?',
+  'tracy.placeholder': 'Typ hier…',
+  'tracy.newConversation': 'Nieuw gesprek',
+  'tracy.sendAria': 'Bericht verzenden',
+  'tracy.thinkingAria': 'Tracy is aan het nadenken',
+  'tracy.viewer.title': 'U bent een kijker.',
+  'tracy.viewer.thisSchool': 'Deze school',
+  'tracy.viewer.body': '{school} wordt door de leraar geleid — u kunt gratis vragen stellen over alles hieronder. Om uw eigen klaslokalen toe te voegen of docenten uit te nodigen,',
+  'tracy.viewer.upgradeLink': 'upgrade naar een schoolplan',
+  'tracy.errors.tier': 'AI-functies vereisen een actief plan — neem alstublieft contact op met ondersteuning.',
+  'tracy.errors.transient': 'Ik ben daar gestopt — geef me even de tijd en probeer het opnieuw.',
+  'tracy.errors.noStream': 'Geen antwoordstroom — probeer het over een seconde opnieuw.',
+  'tracy.errors.connection': 'Verbinding mislukt — probeer het over een moment opnieuw.',
 };

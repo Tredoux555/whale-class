@@ -4301,4 +4301,21 @@ export const zh = {
   'dashboard.onboardingChoice.voiceBody': '每个孩子90秒。我会建立他们的档案，您的第一份报告听起来就像您自己写的一样。',
   'dashboard.onboardingChoice.photoTitle': '直接从照片开始',
   'dashboard.onboardingChoice.photoBody': '跳过前面步骤。拍照并观看仪表板栩栩如生。您的第一份报告将重点关注本周我们观察到的内容。',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'tracy.greeting': '你好。',
+  'tracy.greetingNamed': '你好 {name}。',
+  'tracy.helpPrompt': '我能如何帮助你？',
+  'tracy.placeholder': '在此输入…',
+  'tracy.newConversation': '新对话',
+  'tracy.sendAria': '发送消息',
+  'tracy.thinkingAria': 'Tracy 正在思考',
+  'tracy.viewer.title': '您是查看者。',
+  'tracy.viewer.thisSchool': '此校园',
+  'tracy.viewer.body': '{school} 由教师主导 — 您可以免费询问下面的任何内容。要添加您自己的教室或邀请教师，',
+  'tracy.viewer.upgradeLink': '升级到校园计划',
+  'tracy.errors.tier': 'AI 功能需要有效计划 — 请联系支持。',
+  'tracy.errors.transient': '我在这里遇到了问题 — 给我一秒钟后再试一次。',
+  'tracy.errors.noStream': '没有响应流 — 一秒钟后再试一次。',
+  'tracy.errors.connection': '连接失败 — 请稍后再试。',
 } as const;

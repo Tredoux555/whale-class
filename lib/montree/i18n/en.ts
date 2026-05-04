@@ -4276,6 +4276,29 @@ export const en = {
   'photoBank.loadMore': 'Load more ({current}/{total})',
   'photoBank.loading': 'Loading...',
   'photoBank.wordsResults': '{words} words · {count} photos found',
+
+  // ── Tracy (principal home agent at /montree/admin) ────────────────────
+  // Greeting + prompt are intentionally short and warm. Tracy responds in
+  // the principal's locale automatically; these are the surface UI strings
+  // around her conversation.
+  'tracy.greeting': 'Hi.',
+  'tracy.greetingNamed': 'Hi {name}.',
+  'tracy.helpPrompt': 'How can I help you?',
+  'tracy.placeholder': 'Type here…',
+  'tracy.newConversation': 'New conversation',
+  'tracy.sendAria': 'Send message',
+  'tracy.thinkingAria': 'Tracy is thinking',
+  // Viewer-mode banner (teacher-led schools where the principal is a viewer).
+  'tracy.viewer.title': "You're a viewer.",
+  'tracy.viewer.thisSchool': 'This school',
+  'tracy.viewer.body': '{school} is teacher-led — you can ask about anything below for free. To add your own classrooms or invite teachers,',
+  'tracy.viewer.upgradeLink': 'upgrade to a school plan',
+  // Error fallbacks. Server errors that come back with a localized `error`
+  // field are preferred over these — these are the catch-all client copies.
+  'tracy.errors.tier': 'AI features need an active plan — please contact support.',
+  'tracy.errors.transient': 'Something stopped me there — give me a second and try again.',
+  'tracy.errors.noStream': 'No response stream — try again in a second.',
+  'tracy.errors.connection': 'Connection failed — try again in a moment.',
 } as const;
 
 export type TranslationKey = keyof typeof en;

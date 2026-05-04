@@ -3895,4 +3895,21 @@ export const uk: Record<string, string> = {
   'dashboard.onboardingChoice.voiceBody': '90 секунд на одну дитину. Я створю їхні профілі, і Ваші перші звіти будуть звучати так, ніби Ви їх написали.',
   'dashboard.onboardingChoice.photoTitle': 'Просто почніть із фотографій',
   'dashboard.onboardingChoice.photoBody': 'Перейдіть далі. Робіть фотографії, і панель керування оживе. Ваші перші звіти зосередяться на тому, що ми спостерігали цього тижня.',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'tracy.greeting': 'Привіт.',
+  'tracy.greetingNamed': 'Привіт {name}.',
+  'tracy.helpPrompt': 'Чим я можу вам допомогти?',
+  'tracy.placeholder': 'Введіть текст…',
+  'tracy.newConversation': 'Нова розмова',
+  'tracy.sendAria': 'Надіслати повідомлення',
+  'tracy.thinkingAria': 'Трейсі думає',
+  'tracy.viewer.title': 'Ви переглядач.',
+  'tracy.viewer.thisSchool': 'Цей заклад',
+  'tracy.viewer.body': '{school} ведеться вчителем — ви можете безплатно задавати питання про будь-що нижче. Щоб додати свої',
+  'tracy.viewer.upgradeLink': 'перейти на план школи',
+  'tracy.errors.tier': 'Функції ШІ потребують активного плану — будь ласка, зв\'яжіться з технічною підтримкою.',
+  'tracy.errors.transient': 'Щось зупинило мене там — дайте мені секунду й спробуйте знову.',
+  'tracy.errors.noStream': 'Без потоку відповідей — спробуйте знову за секунду.',
+  'tracy.errors.connection': 'З\'єднання не вдалось — спробуйте знову через мить.',
 };
