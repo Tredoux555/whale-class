@@ -15,7 +15,9 @@
 //     - list_teachers_with_summary
 //
 // Future: synthesize_parent_answer, family_context, school_pulse,
-// recent_conversations, consult_guru. Build them as Tracy proves out.
+// recent_conversations, consult_guru (Tracy → Guru bridge). Build them as
+// Tracy proves out — only after we see them in real principal questions
+// (montree_principal_agent_log).
 
 import type { Tool } from '@anthropic-ai/sdk/resources/messages';
 
