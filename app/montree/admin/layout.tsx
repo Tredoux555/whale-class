@@ -15,7 +15,15 @@ import {
   Sparkles,
   Menu,
   X,
+  Lock,
 } from 'lucide-react';
+
+// Principal Vault prototype gate — until the feature is broadened, only
+// surface the sidebar entry for these principal IDs. The server enforces the
+// same allow-list (see /api/montree/admin/conversations/* routes).
+const VAULT_ENABLED_PRINCIPAL_IDS = new Set<string>([
+  '16eec1c0-bfb5-4edf-a160-059bb41803fb', // Tredoux on Whale Class
+]);
 
 // Canonical dark-forest tokens (mirror the teacher-side voice-onboarding / curriculum pages)
 const T = {
@@ -93,9 +101,10 @@ interface SidebarContentProps {
   pathname: string;
   isActive: (item: NavItem) => boolean;
   onLogout: () => void;
+  nav: NavItem[];
 }
 
-function SidebarContent({ schoolName, isActive, onLogout }: SidebarContentProps) {
+function SidebarContent({ schoolName, isActive, onLogout, nav }: SidebarContentProps) {
   return (
     <>
       {/* School identity (Lora serif) */}
@@ -129,7 +138,7 @@ function SidebarContent({ schoolName, isActive, onLogout }: SidebarContentProps)
 
       {/* Nav */}
       <nav style={{ padding: '8px 12px', flex: 1 }}>
-        {NAV.map((item) => {
+        {nav.map((item) => {
           const Icon = item.icon;
           const active = isActive(item);
           return (
@@ -192,6 +201,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const router = useRouter();
   const [schoolName, setSchoolName] = useState('');
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [principalId, setPrincipalId] = useState<string | null>(null);
 
   useEffect(() => {
     const schoolData = localStorage.getItem('montree_school');
@@ -204,8 +214,29 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     }
     if (!principalData) {
       router.replace('/montree/login-select');
+      return;
     }
+    try {
+      const p = JSON.parse(principalData);
+      if (p && typeof p.id === 'string') setPrincipalId(p.id);
+    } catch { /* ignore */ }
   }, [router]);
+
+  // Build the active nav list — append the Conversations vault item if this
+  // principal is on the prototype allow-list. Server enforces the same gate
+  // independently; this just keeps the sidebar from showing a dead link.
+  const activeNav: NavItem[] = principalId && VAULT_ENABLED_PRINCIPAL_IDS.has(principalId)
+    ? [
+        ...NAV.slice(0, NAV.length - 1), // everything except the last (Ask Guru)
+        {
+          href: '/montree/admin/conversations',
+          label: 'Conversations',
+          icon: Lock,
+          match: (p) => p.startsWith('/montree/admin/conversations'),
+        },
+        NAV[NAV.length - 1], // Ask Guru stays at the bottom
+      ]
+    : NAV;
 
   // Close drawer on route change
   useEffect(() => {
@@ -310,6 +341,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           pathname={pathname}
           isActive={isActive}
           onLogout={handleLogout}
+          nav={activeNav}
         />
       </aside>
 
@@ -357,11 +389,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               <X size={20} strokeWidth={1.75} />
             </button>
             <SidebarContent
-          schoolName={schoolName}
-          pathname={pathname}
-          isActive={isActive}
-          onLogout={handleLogout}
-        />
+              schoolName={schoolName}
+              pathname={pathname}
+              isActive={isActive}
+              onLogout={handleLogout}
+              nav={activeNav}
+            />
           </aside>
         </>
       )}
