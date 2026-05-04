@@ -12,11 +12,16 @@ import {
   Users,
   Activity,
   Settings,
-  Sparkles,
   Menu,
   X,
   Lock,
 } from 'lucide-react';
+// "Sparkles" (Ask Guru) was previously in the sidebar but Tracy IS the
+// principal's chief-of-staff AI surface — Guru is the per-child Maria
+// Montessori in your pocket for teachers, and Tracy can call it as a
+// sub-tool when child-pedagogical depth is needed. The principal doesn't
+// need a separate Guru chat. Removed from the principal sidebar; the
+// teacher-side /montree/dashboard/guru entry is unaffected.
 
 // Principal Vault prototype gate — until the feature is broadened, only
 // surface the sidebar entry for these principal IDs. The server enforces the
@@ -86,13 +91,6 @@ const NAV: NavItem[] = [
       p.startsWith('/montree/admin/billing') ||
       p.startsWith('/montree/admin/features') ||
       p.startsWith('/montree/admin/import'),
-  },
-  {
-    href: '/montree/admin/guru',
-    label: 'Ask Guru',
-    icon: Sparkles,
-    match: (p) =>
-      p.startsWith('/montree/admin/guru') || p.startsWith('/montree/admin/guru-settings'),
   },
 ];
 
@@ -227,14 +225,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   // independently; this just keeps the sidebar from showing a dead link.
   const activeNav: NavItem[] = principalId && VAULT_ENABLED_PRINCIPAL_IDS.has(principalId)
     ? [
-        ...NAV.slice(0, NAV.length - 1), // everything except the last (Ask Guru)
+        ...NAV,
         {
           href: '/montree/admin/conversations',
           label: 'Conversations',
           icon: Lock,
           match: (p) => p.startsWith('/montree/admin/conversations'),
         },
-        NAV[NAV.length - 1], // Ask Guru stays at the bottom
       ]
     : NAV;
 

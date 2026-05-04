@@ -179,28 +179,58 @@ function splitActionLine(text: string): { body: string; action: string | null } 
 // ── Subcomponents ────────────────────────────────────────────────────────
 
 function TracyAvatar({ size = 36 }: { size?: number }) {
-  // CSS-rendered placeholder. When the Canva-generated T monogram lands as
-  // an image asset, swap this to an <img> with the same outer dimensions.
+  // Renders the Canva-designed T monogram (gold serif T with a sprout, on
+  // a deep forest green ground) from /public/tracy-avatar.png. If the asset
+  // is missing in the deploy (404), we silently fall back to the original
+  // CSS-rendered gold-circle T placeholder so the page never looks broken.
+  //
+  // Rounded-square corners (not full circle) preserve the design's
+  // composition — the T's stem + leaf grows out of the square's bottom edge,
+  // a circle crop would clip it. No border ring; the gold reads as a card
+  // against the dark forest UI on its own.
+  const [imgFailed, setImgFailed] = useState(false);
+
+  if (imgFailed) {
+    return (
+      <div
+        style={{
+          width: size,
+          height: size,
+          borderRadius: '50%',
+          background: T.gold,
+          color: T.goldOnGold,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          fontFamily: T.serif,
+          fontSize: Math.round(size * 0.47),
+          fontWeight: 500,
+          lineHeight: 1,
+          flexShrink: 0,
+        }}
+      >
+        T
+      </div>
+    );
+  }
+
   return (
-    <div
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src="/tracy-avatar.png"
+      alt="Tracy"
+      onError={() => setImgFailed(true)}
+      width={size}
+      height={size}
       style={{
         width: size,
         height: size,
-        borderRadius: '50%',
-        background: T.gold,
-        color: T.goldOnGold,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        fontFamily: T.serif,
-        fontSize: Math.round(size * 0.47),
-        fontWeight: 500,
-        lineHeight: 1,
+        borderRadius: Math.round(size * 0.22), // rounded-square, ~8px on a 36px avatar
+        objectFit: 'cover',
         flexShrink: 0,
+        display: 'block',
       }}
-    >
-      T
-    </div>
+    />
   );
 }
 
