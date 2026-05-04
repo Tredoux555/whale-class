@@ -99,13 +99,22 @@ export default function QrGeneratorPage() {
   // Single URL
   const [singleUrl, setSingleUrl] = useState<string>('');
 
-  // Song deep-link builder — ALWAYS use teacherpotato.xyz, the Whale Class
-  // domain. The /whale-class route is the parent-facing Whale Class song page;
-  // it lives on teacherpotato.xyz and must STAY there to keep Whale Class and
-  // Montree as two separate products. Do NOT change this to montree.xyz —
-  // bleeding the Whale Class brand into Montree confuses parents and breaks
-  // the product split.
-  const [songBase, setSongBase] = useState<string>('https://teacherpotato.xyz/whale-class');
+  // Song deep-link builder.
+  //
+  // ASPIRATIONAL: Whale Class lives at teacherpotato.xyz/whale-class. That's
+  // the brand-correct destination and the canonical Whale Class song URL.
+  //
+  // CURRENT REALITY (May 4, 2026): teacherpotato.xyz DNS does not resolve to
+  // the active Railway deployment — it points at a legacy registrar's parking
+  // server that returns 405 / 404 for everything. Until the Railway custom-
+  // domain alias is restored AND DNS is repointed to the Cloudflare-fronted
+  // service, QR codes pointing at teacherpotato.xyz will dead-end for
+  // parents.
+  //
+  // To switch back to teacherpotato.xyz once Railway is fixed: change this
+  // default to 'https://teacherpotato.xyz/whale-class' AND restore the
+  // /whale-class entry in WHALE_ONLY_PREFIXES in middleware.ts.
+  const [songBase, setSongBase] = useState<string>('https://montree.xyz/whale-class');
   const [songTitle, setSongTitle] = useState<string>('');
   const [songSlug, setSongSlug] = useState<string>('');
   const [songSlugTouched, setSongSlugTouched] = useState<boolean>(false);
@@ -617,18 +626,18 @@ export default function QrGeneratorPage() {
             <div className="text-sm text-slate-300">
               Paste one entry per line. Formats accepted:
               <ul className="list-disc list-inside mt-2 text-xs text-slate-400 space-y-0.5">
-                <li><code className="bg-slate-900 px-1 rounded">Animal Habitats, https://teacherpotato.xyz/whale-class#song-animal-habitats</code></li>
-                <li><code className="bg-slate-900 px-1 rounded">Circle of Life | https://teacherpotato.xyz/whale-class#song-circle-of-life</code></li>
-                <li><code className="bg-slate-900 px-1 rounded">https://teacherpotato.xyz/story</code> <span className="text-slate-600">(URL only — label taken from URL)</span></li>
+                <li><code className="bg-slate-900 px-1 rounded">Animal Habitats, https://montree.xyz/whale-class#song-animal-habitats</code></li>
+                <li><code className="bg-slate-900 px-1 rounded">Circle of Life | https://montree.xyz/whale-class#song-circle-of-life</code></li>
+                <li><code className="bg-slate-900 px-1 rounded">https://montree.xyz/story</code> <span className="text-slate-600">(URL only — label taken from URL)</span></li>
               </ul>
             </div>
 
             <textarea
               value={bulkText}
               onChange={e => setBulkText(e.target.value)}
-              placeholder={`Animal Habitats, https://teacherpotato.xyz/whale-class#song-animal-habitats
-Circle of Life, https://teacherpotato.xyz/whale-class#song-circle-of-life
-Five Senses, https://teacherpotato.xyz/whale-class#song-five-senses`}
+              placeholder={`Animal Habitats, https://montree.xyz/whale-class#song-animal-habitats
+Circle of Life, https://montree.xyz/whale-class#song-circle-of-life
+Five Senses, https://montree.xyz/whale-class#song-five-senses`}
               rows={10}
               className="w-full bg-slate-900 border border-slate-700 rounded-md px-3 py-2 text-sm text-white font-mono placeholder-slate-600 focus:outline-none focus:border-violet-500"
             />
