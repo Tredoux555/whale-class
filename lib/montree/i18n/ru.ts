@@ -3912,4 +3912,14 @@ export const ru: Record<string, string> = {
   'tracy.errors.transient': 'Что-то прервало процесс — дайте мне секунду и попробуйте ещё раз.',
   'tracy.errors.noStream': 'Нет потока ответов — попробуйте снова через секунду.',
   'tracy.errors.connection': 'Соединение прервано — попробуйте ещё раз через мгновение.',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'tracy.progress.parsing': 'Анализ вопроса…',
+  'tracy.progress.lookingUp': 'Поиск ребёнка…',
+  'tracy.progress.lookingUpName': 'Поиск {name}…',
+  'tracy.progress.fetchingContext': 'Получение последних наблюдений {name}…',
+  'tracy.progress.composing': 'Составление ответа…',
+  'tracy.progress.unpacking': 'Разворачивание данных {name}…',
+  'tracy.progress.countingNotes': 'Подсчёт записей и охвата…',
+  'tracy.progress.scoringNotes': 'Оценка качества записей…',
 };

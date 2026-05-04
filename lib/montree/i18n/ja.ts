@@ -3915,4 +3915,14 @@ export const ja: Record<string, string> = {
   'tracy.errors.transient': '一時的な問題が発生しました。少々お待ちになってからもう一度お試しください。',
   'tracy.errors.noStream': '応答ストリームがありません。少々お待ちになってからもう一度お試しください。',
   'tracy.errors.connection': '接続に失敗しました。少々お待ちになってからもう一度お試しください。',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'tracy.progress.parsing': '質問を読み込んでいます…',
+  'tracy.progress.lookingUp': 'お子さまを検索しています…',
+  'tracy.progress.lookingUpName': '{name}さまを検索しています…',
+  'tracy.progress.fetchingContext': '{name}さまの最近の観察を取得しています…',
+  'tracy.progress.composing': '回答を作成しています…',
+  'tracy.progress.unpacking': '{name}さまの情報を解析しています…',
+  'tracy.progress.countingNotes': '記録と対象範囲をカウントしています…',
+  'tracy.progress.scoringNotes': '記録の質を読み込んでいます…',
 };

@@ -3886,4 +3886,14 @@ export const es: Record<string, string> = {
   'tracy.errors.transient': 'Algo me detuvo ahí — dame un segundo e intentá de nuevo.',
   'tracy.errors.noStream': 'Sin flujo de respuesta — intentá de nuevo en un segundo.',
   'tracy.errors.connection': 'La conexión falló — intentá de nuevo en un momento.',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'tracy.progress.parsing': 'Leyendo la pregunta…',
+  'tracy.progress.lookingUp': 'Buscando al niño…',
+  'tracy.progress.lookingUpName': 'Buscando a {name}…',
+  'tracy.progress.fetchingContext': 'Obteniendo las observaciones recientes de {name}…',
+  'tracy.progress.composing': 'Componiendo la respuesta…',
+  'tracy.progress.unpacking': 'Desempaquetando {name}…',
+  'tracy.progress.countingNotes': 'Contando registros y cobertura…',
+  'tracy.progress.scoringNotes': 'Leyendo la calidad de los registros…',
 };

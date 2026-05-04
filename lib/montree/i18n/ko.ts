@@ -3915,4 +3915,14 @@ export const ko: Record<string, string> = {
   'tracy.errors.transient': '그곳에서 무언가 멈췄어요 — 잠깐 기다린 후 다시 시도해주세요.',
   'tracy.errors.noStream': '응답 스트림이 없습니다 — 잠깐 후 다시 시도해주세요.',
   'tracy.errors.connection': '연결에 실패했습니다 — 잠깐 후 다시 시도해주세요.',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'tracy.progress.parsing': '질문을 읽고 있어요…',
+  'tracy.progress.lookingUp': '자녀분을 찾고 있어요…',
+  'tracy.progress.lookingUpName': '{name}님을 찾고 있어요…',
+  'tracy.progress.fetchingContext': '{name}님의 최근 관찰 내용을 불러오고 있어요…',
+  'tracy.progress.composing': '답변을 작성하고 있어요…',
+  'tracy.progress.unpacking': '{name}님의 정보를 분석하고 있어요…',
+  'tracy.progress.countingNotes': '기록과 범위를 계산하고 있어요…',
+  'tracy.progress.scoringNotes': '기록 품질을 검토하고 있어요…',
 };

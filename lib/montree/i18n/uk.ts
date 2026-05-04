@@ -3912,4 +3912,14 @@ export const uk: Record<string, string> = {
   'tracy.errors.transient': 'Щось зупинило мене там — дайте мені секунду й спробуйте знову.',
   'tracy.errors.noStream': 'Без потоку відповідей — спробуйте знову за секунду.',
   'tracy.errors.connection': 'З\'єднання не вдалось — спробуйте знову через мить.',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'tracy.progress.parsing': 'Читаю питання…',
+  'tracy.progress.lookingUp': 'Пошук дитини…',
+  'tracy.progress.lookingUpName': 'Пошук {name}…',
+  'tracy.progress.fetchingContext': 'Отримую останні спостереження {name}…',
+  'tracy.progress.composing': 'Складаю відповідь…',
+  'tracy.progress.unpacking': 'Розпаковую {name}…',
+  'tracy.progress.countingNotes': 'Підрахунок записів та охоплення…',
+  'tracy.progress.scoringNotes': 'Оцінюю якість записів…',
 };

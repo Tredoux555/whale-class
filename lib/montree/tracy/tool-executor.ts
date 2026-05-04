@@ -31,6 +31,19 @@ export interface TracyToolResult {
   result_summary?: string;
 }
 
+/**
+ * Per-tool progress event emitted by framework tools (child_focus,
+ * unpack_teacher) so the principal sees what Tracy is doing in real time.
+ * The route serializes this onto the SSE channel as a `tool_progress` event;
+ * the client formats it via `tracy.progress.<phase>` i18n keys with `vars`
+ * interpolated.
+ */
+export interface TracyToolProgress {
+  tool: string;
+  phase: string;
+  vars?: Record<string, string>;
+}
+
 export interface TracyToolDeps {
   supabase: SupabaseClient;
   anthropic: Anthropic | null;
@@ -41,6 +54,13 @@ export interface TracyToolDeps {
    * Sonnet compose steps respond in the right language. 'en' if omitted.
    */
   locale?: string;
+  /**
+   * Optional progress callback. The route wires this to an SSE emitter so
+   * the client can render Guru-style live status under each tool chip.
+   * Tools may call this 0+ times during execution. Errors thrown by the
+   * callback are caught and logged — never propagated to the caller.
+   */
+  onProgress?: (evt: TracyToolProgress) => void;
 }
 
 export async function executeTracyTool(
@@ -48,7 +68,18 @@ export async function executeTracyTool(
   input: Record<string, unknown>,
   deps: TracyToolDeps
 ): Promise<TracyToolResult> {
-  const { supabase, anthropic, schoolId, request, locale = 'en' } = deps;
+  const { supabase, anthropic, schoolId, request, locale = 'en', onProgress } = deps;
+
+  // Safe progress emitter — wraps the consumer's callback so a buggy listener
+  // can't crash a tool mid-flight.
+  const emitProgress = (tool: string, phase: string, vars?: Record<string, string>) => {
+    if (!onProgress) return;
+    try {
+      onProgress({ tool, phase, vars });
+    } catch (e) {
+      console.warn('[tracy/tool-executor] onProgress threw:', e);
+    }
+  };
   const cookieHeader = request.headers.get('cookie') || '';
   const origin = request.nextUrl.origin;
 
@@ -92,7 +123,8 @@ export async function executeTracyTool(
           { question, schoolId, locale },
           supabase,
           anthropic,
-          AI_MODEL
+          AI_MODEL,
+          (evt) => emitProgress('child_focus', evt.phase, evt.vars)
         );
         if (!result.ok) {
           return {

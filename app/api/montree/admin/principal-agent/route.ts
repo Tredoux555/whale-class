@@ -22,6 +22,7 @@
 //
 // Response: SSE stream of { type, ... } events:
 //   { type: 'tool_call', tool, input }            — Tracy invoked a tool
+//   { type: 'tool_progress', tool, phase, vars }   — live status from inside a tool
 //   { type: 'tool_result', tool, success, summary } — tool returned
 //   { type: 'thinking', text }                     — interim text between tool calls
 //   { type: 'text', text }                         — final answer chunk
@@ -419,6 +420,20 @@ export async function POST(request: NextRequest) {
                   schoolId: auth.schoolId,
                   request,
                   locale,
+                  // Forward progress phases out as SSE so the client can render
+                  // Guru-style live status under each tool chip. Tools emit
+                  // structured { phase, vars } events; the client formats them
+                  // via tracy.progress.<phase> i18n keys with vars interpolated.
+                  onProgress: (evt) => {
+                    controller.enqueue(
+                      sse(encoder, {
+                        type: 'tool_progress',
+                        tool: evt.tool,
+                        phase: evt.phase,
+                        vars: evt.vars || {},
+                      })
+                    );
+                  },
                 }
               );
               const toolDuration = Date.now() - toolStart;

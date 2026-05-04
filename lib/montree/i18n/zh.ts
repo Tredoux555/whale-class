@@ -4318,4 +4318,14 @@ export const zh = {
   'tracy.errors.transient': '我在这里遇到了问题 — 给我一秒钟后再试一次。',
   'tracy.errors.noStream': '没有响应流 — 一秒钟后再试一次。',
   'tracy.errors.connection': '连接失败 — 请稍后再试。',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'tracy.progress.parsing': '正在阅读问题…',
+  'tracy.progress.lookingUp': '正在查找学生…',
+  'tracy.progress.lookingUpName': '正在查找 {name}…',
+  'tracy.progress.fetchingContext': '正在获取 {name} 的最近观察记录…',
+  'tracy.progress.composing': '正在组织答案…',
+  'tracy.progress.unpacking': '正在解析 {name}…',
+  'tracy.progress.countingNotes': '正在统计笔记和覆盖范围…',
+  'tracy.progress.scoringNotes': '正在评估笔记质量…',
 } as const;

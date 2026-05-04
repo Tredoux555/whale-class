@@ -4299,6 +4299,18 @@ export const en = {
   'tracy.errors.transient': 'Something stopped me there — give me a second and try again.',
   'tracy.errors.noStream': 'No response stream — try again in a second.',
   'tracy.errors.connection': 'Connection failed — try again in a moment.',
+  // Play-by-play progress lines emitted from inside framework tools so the
+  // principal sees what Tracy is doing in real time (parse → resolve → fetch →
+  // compose). Server emits structured { phase, vars } events; client
+  // formats with these keys.
+  'tracy.progress.parsing': 'Reading the question…',
+  'tracy.progress.lookingUp': 'Looking up the child…',
+  'tracy.progress.lookingUpName': 'Looking up {name}…',
+  'tracy.progress.fetchingContext': "Pulling {name}'s recent observations…",
+  'tracy.progress.composing': 'Composing the answer…',
+  'tracy.progress.unpacking': 'Unpacking {name}…',
+  'tracy.progress.countingNotes': 'Counting notes and coverage…',
+  'tracy.progress.scoringNotes': 'Reading note quality…',
 } as const;
 
 export type TranslationKey = keyof typeof en;
