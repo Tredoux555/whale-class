@@ -6,8 +6,14 @@
 'use client';
 
 import { useEffect, useState, useRef } from 'react';
+import dynamic from 'next/dynamic';
 import { getVideoProxyUrl } from '@/lib/montree/media/proxy-url';
 import { slugify } from '@/lib/slugify';
+
+// Lazy-load — qrcode lib only ships when the principal opens a share.
+const ShareSongModal = dynamic(() => import('@/components/ShareSongModal'), {
+  ssr: false,
+});
 
 interface Song {
   id: string;
@@ -44,6 +50,7 @@ export default function WhaleClassPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [highlightedSlug, setHighlightedSlug] = useState<string | null>(null);
+  const [shareTarget, setShareTarget] = useState<Song | null>(null);
   const scrolledRef = useRef(false);
 
   // Read the hash on mount — e.g. #song-animal-habitats → 'animal-habitats'
@@ -182,10 +189,18 @@ export default function WhaleClassPage() {
                 />
               </div>
             )}
-            <div className="px-5 py-3 bg-purple-50">
+            <div className="px-5 py-3 bg-purple-50 flex items-center justify-between gap-3">
               <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${CATEGORY_COLORS[highlightedSong.category] ?? 'bg-gray-100 text-gray-600'}`}>
                 {CATEGORY_LABELS[highlightedSong.category] ?? highlightedSong.category}
               </span>
+              <button
+                onClick={() => setShareTarget(highlightedSong)}
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white text-xs font-semibold rounded-full shadow-sm transition-colors shrink-0"
+                title="Get a share link or QR for this song"
+              >
+                <span>🔗</span>
+                <span>Share</span>
+              </button>
             </div>
           </div>
         )}
@@ -244,8 +259,22 @@ export default function WhaleClassPage() {
                       </span>
                       <span className="text-sm font-medium text-gray-700 truncate">{song.title}</span>
                       {song.week && (
-                        <span className="ml-auto text-xs text-gray-400 shrink-0">Wk {song.week}</span>
+                        <span className="text-xs text-gray-400 shrink-0">Wk {song.week}</span>
                       )}
+                      <button
+                        onClick={() => setShareTarget(song)}
+                        className="ml-auto p-1.5 rounded-full bg-purple-100 hover:bg-purple-200 text-purple-700 transition-colors shrink-0"
+                        title="Share this song"
+                        aria-label={`Share ${song.title}`}
+                      >
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                          <circle cx="18" cy="5" r="3" />
+                          <circle cx="6" cy="12" r="3" />
+                          <circle cx="18" cy="19" r="3" />
+                          <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
+                          <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+                        </svg>
+                      </button>
                     </div>
                   </div>
                 );
@@ -259,6 +288,13 @@ export default function WhaleClassPage() {
           Whale Class · Montree
         </div>
       </div>
+
+      {shareTarget && (
+        <ShareSongModal
+          title={shareTarget.title}
+          onClose={() => setShareTarget(null)}
+        />
+      )}
     </div>
   );
 }
