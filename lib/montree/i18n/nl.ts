@@ -3915,4 +3915,14 @@ export const nl: Record<string, string> = {
   'tracy.errors.transient': 'Ik ben daar gestopt — geef me even de tijd en probeer het opnieuw.',
   'tracy.errors.noStream': 'Geen antwoordstroom — probeer het over een seconde opnieuw.',
   'tracy.errors.connection': 'Verbinding mislukt — probeer het over een moment opnieuw.',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'tracy.progress.parsing': 'De vraag lezen…',
+  'tracy.progress.lookingUp': 'Het kind opzoeken…',
+  'tracy.progress.lookingUpName': '{name} opzoeken…',
+  'tracy.progress.fetchingContext': 'Recente observaties van {name} ophalen…',
+  'tracy.progress.composing': 'Het antwoord samenstellen…',
+  'tracy.progress.unpacking': '{name} uitpakken…',
+  'tracy.progress.countingNotes': 'Notities en dekking tellen…',
+  'tracy.progress.scoringNotes': 'Kwaliteit van notities lezen…',
 };

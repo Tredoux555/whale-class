@@ -73,11 +73,18 @@ interface ToolEvent {
   summary?: string;
 }
 
+interface ProgressEvent {
+  phase: string; // matches a tracy.progress.<phase> i18n key
+  vars?: Record<string, string>;
+}
+
 interface ConvTurn {
   role: 'user' | 'assistant';
   text: string;
   tools?: ToolEvent[];
   thinking?: string;
+  /** Latest live status from inside Tracy's tools — rendered while pending. */
+  progress?: ProgressEvent | null;
   pending?: boolean;
   error?: string;
   costUsd?: number;
@@ -265,7 +272,24 @@ function UserBubble({ text }: { text: string }) {
 function AssistantBubble({ turn }: { turn: ConvTurn }) {
   const { t } = useI18n();
   const { body, action } = splitActionLine(turn.text);
-  const showThinkingDots = turn.pending && !turn.text && !turn.error;
+  const showThinkingDots = turn.pending && !turn.text && !turn.error && !turn.progress;
+  const progressLine = (() => {
+    if (!turn.pending || turn.text || turn.error || !turn.progress) return null;
+    const { phase, vars } = turn.progress;
+    // Defensive — only call t() with a key shape that exists; unknown phases
+    // fall back to the generic ellipsis below rather than rendering 'tracy.progress.foo' raw.
+    const key = `tracy.progress.${phase}`;
+    try {
+      // useI18n's t() takes the key + interpolation vars and returns the
+      // formatted string. If the key doesn't exist (e.g. a future server
+      // emits an unknown phase) it returns the key itself, which we detect.
+      const rendered = t(key as Parameters<typeof t>[0], vars);
+      if (rendered === key) return null;
+      return rendered;
+    } catch {
+      return null;
+    }
+  })();
 
   return (
     <div
@@ -285,6 +309,23 @@ function AssistantBubble({ turn }: { turn: ConvTurn }) {
             aria-label={t('tracy.thinkingAria')}
           >
             …
+          </div>
+        )}
+
+        {/* Live status line — rendered while a tool is running, replaced by
+            body once Tracy starts streaming the answer. Italic + dim so it
+            reads as a soft progress hint, not a chat reply. */}
+        {progressLine && (
+          <div
+            style={{
+              color: T.textMuted,
+              fontSize: 13.5,
+              fontStyle: 'italic',
+              lineHeight: 1.5,
+            }}
+            aria-live="polite"
+          >
+            {progressLine}
           </div>
         )}
 
@@ -444,6 +485,20 @@ export default function AdminAgentPage() {
             success: null,
           };
           updated.tools = [...(updated.tools || []), tool];
+          // Clear any stale progress from a prior tool — fresh tool, fresh slate.
+          updated.progress = null;
+          break;
+        }
+        case 'tool_progress': {
+          const phase = typeof evt.phase === 'string' ? evt.phase : '';
+          const rawVars = (evt as Record<string, unknown>).vars;
+          const vars =
+            rawVars && typeof rawVars === 'object'
+              ? (rawVars as Record<string, string>)
+              : undefined;
+          if (phase) {
+            updated.progress = { phase, vars };
+          }
           break;
         }
         case 'tool_result': {
@@ -475,12 +530,14 @@ export default function AdminAgentPage() {
         }
         case 'done': {
           updated.pending = false;
+          updated.progress = null;
           updated.costUsd =
             typeof evt.cost_usd === 'number' ? evt.cost_usd : undefined;
           break;
         }
         case 'error': {
           updated.pending = false;
+          updated.progress = null;
           updated.error = String(evt.error || t('tracy.errors.transient'));
           break;
         }

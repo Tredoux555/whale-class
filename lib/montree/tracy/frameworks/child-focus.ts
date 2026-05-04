@@ -51,6 +51,25 @@ export interface ChildFocusInput {
   locale?: string;
 }
 
+/**
+ * Server-emitted progress phases. The frontend maps these to localized
+ * strings via `tracy.progress.<phase>` i18n keys, with `vars` interpolated
+ * (e.g. `{name}`, `{area}`). The server stays language-agnostic.
+ */
+export type ChildFocusProgressPhase =
+  | 'parsing'
+  | 'lookingUp'
+  | 'lookingUpName'
+  | 'fetchingContext'
+  | 'composing';
+
+export interface ChildFocusProgressEvent {
+  phase: ChildFocusProgressPhase;
+  vars?: Record<string, string>;
+}
+
+export type ChildFocusProgressFn = (evt: ChildFocusProgressEvent) => void;
+
 export interface ChildFocusMatch {
   id: string;
   name: string;
@@ -640,7 +659,8 @@ export async function childFocus(
   input: ChildFocusInput,
   supabase: SupabaseClient,
   anthropic: Anthropic | null,
-  composeModel: string
+  composeModel: string,
+  onProgress?: ChildFocusProgressFn
 ): Promise<ChildFocusResult> {
   const question = (input.question || '').trim();
   if (!question) {
@@ -653,10 +673,27 @@ export async function childFocus(
     };
   }
 
+  // onProgress is fire-and-forget. We never let a buggy listener throw and
+  // crash the orchestrator — each call is wrapped to swallow exceptions.
+  const emit = (phase: ChildFocusProgressPhase, vars?: Record<string, string>) => {
+    if (!onProgress) return;
+    try {
+      onProgress({ phase, vars });
+    } catch (e) {
+      console.warn('[child_focus/progress] listener threw:', e);
+    }
+  };
+
   // Step 1 — parse
+  emit('parsing');
   const parsed = await parseQuestion(question, anthropic);
 
   // Step 2 — resolve
+  if (parsed.child_name) {
+    emit('lookingUpName', { name: parsed.child_name });
+  } else {
+    emit('lookingUp');
+  }
   const resolution = await resolveChild(
     parsed.child_name,
     input.schoolId,
@@ -687,9 +724,11 @@ export async function childFocus(
 
   // Step 3 — fetch context
   const child = resolution.child!;
+  emit('fetchingContext', { name: child.name });
   const context = await fetchChildContext(child, parsed.area, supabase);
 
   // Step 4 — compose (in the principal's locale)
+  emit('composing');
   const answer = await composeAnswer(
     question,
     context,
