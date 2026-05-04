@@ -298,6 +298,16 @@ export default function DashboardPage() {
     return <DashboardSkeleton />;
   }
 
+  // Trust gate: never show the "Bulk Import Students" empty state until we
+  // have an explicit, confirmed response for the current classroom. If the
+  // session loaded but the classroom id is somehow missing, or the children
+  // fetch hasn't yielded a real response yet (childrenData still null), hold
+  // the skeleton instead of flashing the import prompt at a teacher who just
+  // imported students. This is a trust-on-the-product issue, not a perf one.
+  if (!isParent && (childrenUrl === null || (childrenData === null && !childrenError))) {
+    return <DashboardSkeleton />;
+  }
+
   // Homeschool parents get redirected — show skeleton while redirect fires
   if (isParent && children.length > 0) {
     return <DashboardSkeleton />;
