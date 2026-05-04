@@ -183,6 +183,103 @@ GMass campaigns A/C/D are historical. Campaign C sent 335 blank emails (Session 
 
 ## RECENT STATUS (May 4, 2026)
 
+### ⚡ Session 86 — Tracy multilingual + dashboard empty-state race + QR domain isolation + JWT mis-stamp fix (May 4, 2026)
+
+**6 commits pushed to main this session.** Tracy is now fully translated across all 12 locales, the recurring "Bulk Import Students" empty-state flash is fixed at the root cache layer, the QR generator now points songs at teacherpotato.xyz (the canonical Whale Class domain) with middleware enforcement of the product split, and a long-standing JWT role mis-stamp bug that was 403'ing principals out of Tracy is patched at both ends.
+
+**Commits (oldest first):**
+- `a86ec6ba` — QR generator: fix indefinite "Loading videos…" on the Song picker
+- `87b5d526` — Tracy: full multilingual support (12 locales) + universal action-line marker
+- `3d9969da` — Dashboard: kill the "Bulk Import Students" flash on back-nav
+- `734a2b5f` — Domain isolation: QR codes point at teacherpotato.xyz + middleware blocks Whale routes on montree.xyz
+- `ca1e13bc` — Tracy 403 'Only principals can use the home agent.' — fix JWT role mis-stamping
+
+**A. QR generator stuck-loading + wrong domain (`a86ec6ba`, `734a2b5f`):**
+
+Two layered bugs. **Frontend (`app/admin/qr-generator/page.tsx`):** the load effect's catch and finally branches both checked `controller.signal.aborted`. When the 15s timeout fired, both were `true`, so the catch silently swallowed timeout errors AND the finally never cleared `videosLoading`. Spinner persisted indefinitely. Fix: track `cancelled` (effect teardown) and `timedOut` (timer fired) as separate closure flags. Bumped 15s → 30s for Supabase Storage cold-start tolerance. Removed `videosLoading` from dep array (it was set inside the effect, causing the effect to re-run and abort its own in-flight fetch). Added a Retry button on the error state. **Backend (`lib/data.ts`):** `getVideos()` had no timeout on the Supabase Storage download, and the SDK doesn't accept an `AbortSignal` on `.download()`. New `withTimeout` helper races the download against a 20s timer. Production verified: 92 videos return in 1.75s.
+
+Then user flagged the QR was pointing at `https://montree.xyz/whale-class` but the song page lives on **teacherpotato.xyz**. Fixed `songBase` default + bulk-import examples + placeholder. Plus middleware (`middleware.ts`) — the existing comment claimed it blocked Whale routes on montree.xyz but only redirected `/`. New `WHALE_ONLY_PREFIXES = ['/whale-class', '/admin', '/teacher', '/story', '/games', '/auth']` redirects the whole list from montree.xyz to teacherpotato.xyz, preserving query string and hash so song deep links survive. `/api/*` is intentionally excluded — APIs are gated by per-route auth.
+
+**🚨 OPEN — teacherpotato.xyz returning 404:** Late in the session, curl to `https://teacherpotato.xyz/whale-class` and `/admin/qr-generator` returned 404 within ~1s. The user had been hitting these successfully earlier in the session. This is a deployment-side issue, NOT a code regression. Possible causes: Railway custom-domain alias for teacherpotato.xyz removed/expired, DNS pointing somewhere stale, or a config dropped during redeploy. Until restored, the new QR codes will 404 for parents. Need to check Railway → Settings → Domains and verify teacherpotato.xyz is attached and routing to the same service as montree.xyz.
+
+**B. Tracy multilingual (`87b5d526`):**
+
+Backend: `buildTracySystemPrompt(opts)` now accepts optional `locale` and appends `getAILanguageInstruction(locale)`. New action-line directive in the system prompt: Tracy MUST begin her closing action with the literal arrow `→ ` (universal across languages). `composeAnswer()` and `childFocus()` thread `locale` through to the Sonnet compose system prompt. Haiku parse step stays English-only (returns structured data). `TracyToolDeps` gains `locale`. Route at `/api/montree/admin/principal-agent/route.ts` reads `locale` from request body, allow-lists against 12 supported locales, passes through. `todayLabel` formats in the principal's locale.
+
+Frontend (`app/montree/admin/page.tsx`): `useI18n()` + `LanguageToggle` dropped into the page header. Hardcoded strings replaced with `t()` keys: greeting, help prompt, placeholder, "New conversation", viewer-mode banner, error fallbacks, send/thinking aria labels. `splitActionLine()` rewritten to parse the universal `→ ` marker plus the legacy `I'd …` fallback for cached responses. Request body sends `locale` so the server uses it.
+
+i18n: 15 new `tracy.*` keys added to `en.ts`, Haiku-translated into all 11 other locales via `npm run i18n:fill-ui`. Strict completeness check passes — 3856 keys × 12 locales.
+
+**C. Dashboard "Bulk Import Students" flash (`3d9969da`):**
+
+Critical trust bug. Repro: create new classroom → bulk-import students → click into a child → update shelf → click back → dashboard shows "Bulk Import Students" empty state for ~30s before children "roll back" into view.
+
+Root cause — race in `lib/montree/cache.ts`:
+1. User creates new classroom. `useMontreeData(url)` fires GET.
+2. GET in flight (Railway cold-start ~1-3s). User opens BulkPasteImport, posts class list.
+3. Bulk-import POST resolves first. `onImported` calls `setCacheData(url, {children: [imports]})`. Cache + subscribers update. Grid renders.
+4. Original GET resolves with `{children: []}` (queried API before imports inserted). Resolve handler unconditionally writes `cache.set(url, ...)` — **overwriting fresh imports with stale empty.**
+5. User navigates to child, comes back. Cache has empty. Empty state renders.
+6. ~30s later staleTime expires, refresh pulls real data, grid finally appears.
+
+Fix 1 — race-condition guard in `cache.ts`: capture `fetchStartTime` before the GET. In resolve handler, check if `cache.get(url).timestamp >= fetchStartTime`. If so, a `setCacheData()` write happened DURING our fetch — that mutation is more authoritative than our pre-mutation read. Return cached data instead of overwriting.
+
+Fix 2 — defensive skeleton guard in `app/montree/dashboard/page.tsx`: never render the empty state until a confirmed response arrives. If `childrenUrl === null` (no classroom) OR `childrenData === null` (no response yet, no error), hold the skeleton.
+
+Sessions 70/72/81 had taken stabs at related symptoms but missed the actual cache race. This commit closes the underlying mechanism, not just the symptom.
+
+**D. Tracy 403 'Only principals can use the home agent.' (`ca1e13bc`):**
+
+User reported Tracy 403'ing despite being logged in as principal (dashboard correctly displays "PRINCIPAL"). Root cause: `app/api/montree/auth/unified/route.ts` tried `tryTeacherLogin` BEFORE `tryPrincipalLogin`. For founder-principals (someone in BOTH `montree_teachers` as a teacher in their own school AND `montree_school_admins` as the principal), the same login code matches both tables. Teacher matched first, JWT got stamped `role: 'teacher'`, and the principal-agent route correctly rejected it.
+
+Fix 1 — swap order in unified login: principal first, teacher second. Principal is strictly more privileged; if the same code matches both, principal wins. Other login flows (`/api/montree/principal/login` direct) already issue the correct role — this only affects the unified code-entry path.
+
+Fix 2 — defensive `school_admins` fallback in `app/api/montree/admin/principal-agent/route.ts`: when JWT role isn't 'principal', look up `userId` in `montree_school_admins` filtered by `school_id`, `is_active=true`, `role='principal'`. If found, allow through with a `console.warn` logging the mismatch. This unblocks any existing user holding a mis-stamped JWT (no need to log out + log in to recover). Cross-table UUID collisions between `montree_teachers` and `montree_school_admins` are statistically impossible (separate `gen_random_uuid()` generations) so this can't grant a real teacher elevated access.
+
+Both branches log loudly so Railway logs surface how many users are in the broken state.
+
+**🚨 Architectural rules locked in this session (do NOT let future agents break these):**
+
+1. **`https://teacherpotato.xyz/whale-class` is the canonical Whale Class song URL.** Never point QR codes at montree.xyz.
+2. **`/whale-class`, `/admin`, `/teacher`, `/story`, `/games`, `/auth` are Whale-Class-only top-level routes.** Middleware redirects them from montree.xyz to teacherpotato.xyz. `/api/*` is intentionally excluded.
+3. **Unified login order: principal → teacher → parent.** A code matching both principal and teacher records grants principal.
+4. **Tracy's action line uses the universal `→ ` marker.** `splitActionLine()` parses this in any language. Don't revert to "I'd" English-only matching.
+5. **Tracy's `child_focus` parse step stays English-only.** Returns structured data regardless of question language. Compose step is locale-aware.
+6. **`fetchData` in `useMontreeData` MUST defer to a more recent `setCacheData` write.** Don't remove the `fetchStartTime >= existingCached.timestamp` guard.
+7. **`montree_school_admins` is the source of truth for principal identity.** Other principal-only routes should adopt the same defensive fallback if bitten by a JWT mis-stamp.
+
+**Files changed (6 commits):**
+- `app/admin/qr-generator/page.tsx` — frontend timeout fix + teacherpotato.xyz URL
+- `lib/data.ts` — `withTimeout` helper around Supabase Storage download
+- `lib/montree/tracy/system-prompt.ts` — locale + arrow marker rule
+- `lib/montree/tracy/frameworks/child-focus.ts` — locale through compose step
+- `lib/montree/tracy/tool-executor.ts` — locale on `TracyToolDeps`
+- `app/api/montree/admin/principal-agent/route.ts` — locale read + defensive school_admins fallback
+- `app/montree/admin/page.tsx` — `useI18n` + `LanguageToggle` + universal action-line parser
+- `lib/montree/i18n/{en,zh,es,de,fr,pt,nl,it,ja,ko,uk,ru}.ts` — 15 new `tracy.*` keys × 12 locales
+- `lib/montree/cache.ts` — race-condition guard via `fetchStartTime` comparison
+- `app/montree/dashboard/page.tsx` — defensive skeleton guard
+- `middleware.ts` — `WHALE_ONLY_PREFIXES` redirect block
+- `app/api/montree/auth/unified/route.ts` — principal-first login order
+
+**Handoff doc:** `docs/handoffs/SESSION_86_HANDOFF.md` — full file-by-file change list, audit-cycle bug catalogue, architectural rules, deferred items, next-session test plan.
+
+**🚨 Next session priorities (ordered):**
+
+1. **🚨 RESTORE teacherpotato.xyz** — currently 404'ing on `/whale-class` and `/admin/qr-generator`. Check Railway → Settings → Domains. Until fixed, the new QR codes will 404 for parents. If teacherpotato.xyz can't be quickly restored, decide: revert QR base to montree.xyz + remove the middleware redirect, or keep the product-split rationale and prioritise the deployment fix.
+2. **Verify Tracy on production in Chinese** — open `/montree/admin`, switch to 中文, ask "告诉我关于奥斯汀英语进步的情况". Expect Chinese response with `→ ` action-line.
+3. **Verify dashboard empty-state fix on production** — create a fresh classroom, bulk-import, click into a child, update shelf, click back. Grid must remain populated through every step.
+4. **🚨 Run migration 184** in Supabase SQL Editor — required for `montree_principal_agent_log` to receive Tracy interaction rows (carry-over from Session 84/85).
+5. **Translation gap audit** — user reported seeing some untranslated strings system-wide. Open dashboard in zh/fr/uk page-by-page, screenshot any English bleed-through, do targeted t() conversions. Infrastructure is solid; gaps are likely individual hardcoded strings that pre-date i18n adoption.
+6. **Drop Canva-exported T monogram into `/public/tracy-avatar.png`** (Session 85 carry-over).
+7. **Voice input for Tracy via Whisper** (Session 85 priority 4 carry-over).
+8. **First-run onboarding for Tracy** (Session 85 priority 5 carry-over).
+9. **Family data model for Tracy** (Session 85 priority 7 carry-over).
+10. **Send the 3 hot lead Gmail drafts** — Ardtona, FAMM, Тамі (Session 84 carry-over).
+11. **Update CLAUDE.md lead state** — Paint Pots BOUNCED, Ardtona email correction (`vheavey@ardtonahouseschool.ie` not `info@ardtonahouse.co.uk`), Copenhagen email verification (Session 84 carry-over).
+
+---
+
 ### ⚡ Session 85 — Tracy: build → 5 audit cycles → frontend port → child_focus restructure (May 4, 2026)
 
 **7 commits pushed to main this session.** Tracy went from architectural brief to shipped, audited five times (10 real bugs caught and fixed across the cycles), frontend ported to match the friendly mockup, then completely re-architected when the canonical use case ("tell me about Austin's English progress") proved fragile under chained-tool orchestration.
