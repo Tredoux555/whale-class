@@ -48,7 +48,7 @@ export const TRACY_TOOLS: Tool[] = [
   {
     name: 'find_children_by_name',
     description:
-      "Search the principal's school for children whose name matches a query. Use this when the principal mentions a child by name (full or partial). Returns up to 10 matches with id, name, classroom, and age.",
+      "Search the principal's school for children whose name matches a query. Use this when the principal mentions a child by name (full or partial). Returns up to 10 matches; each match has id, name, age, classroom_id, classroom_name, and photo_url.",
     input_schema: {
       type: 'object',
       properties: {
