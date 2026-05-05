@@ -583,6 +583,16 @@ async function fillTemplate(templateBuf, report, progress) {
 
   let xml = await slideFile.async('string');
 
+  // Patch the ClosingText shape's text colour from bg1 (white — invisible on
+  // white background) to tx1 (dark — visible). The template ships with bg1
+  // for legacy reasons, which made closings invisible on every report.
+  // We only touch the runs/endParaRPr inside the shape with name="ClosingText"
+  // so we don't accidentally change other elements that legitimately use bg1.
+  xml = xml.replace(
+    /(<p:cNvPr id="\d+" name="ClosingText"\/>[\s\S]*?<\/p:sp>)/,
+    (closingShape) => closingShape.replace(/<a:schemeClr val="bg1"\/>/g, '<a:schemeClr val="tx1"/>')
+  );
+
   xml = xml
     .replace('{{PARA_OPENING}}', xmlEscape(report.para_opening))
     .replace('{{PARA_CIRCLE}}', textWithBreaks(report.para_circle))
