@@ -104,7 +104,9 @@ const CardGenerator: React.FC<CardGeneratorProps> = ({
   const [cards, setCards] = useState<Card[]>([]);
   const [borderColor, setBorderColor] = useState('#2D5A27');
   const [fontFamily, setFontFamily] = useState('Comic Sans MS');
-  const [cardSizeCm, setCardSizeCm] = useState(10);
+  // Strip mode defaults to 6.5cm (standard Montessori sentence strip height)
+  // Square mode defaults to 10cm (existing 3-part-card default)
+  const [cardSizeCm, setCardSizeCm] = useState(layoutMode === 'strip' ? 6.5 : 10);
   const [bulkText, setBulkText] = useState('');
   const [cropMode, setCropMode] = useState<number | null>(null);
   const [generating, setGenerating] = useState(false);
@@ -427,28 +429,40 @@ const CardGenerator: React.FC<CardGeneratorProps> = ({
 
       // ============================================================
       // STRIP LAYOUT — sentence-match cards
+      //
+      // Sizing (at default 6.5cm):
+      //   Control:  21 × 6.5 cm   — sentence-left + picture-right, ONE bordered piece
+      //   Picture:  6.5 × 6.5 cm  — matches picture portion of control
+      //   Sentence: 14.5 × 6.5 cm — matches sentence portion of control
+      // Sentence + Picture, laid side by side, reconstruct the control card.
       // ============================================================
       if (isStrip) {
-        const A4_W_PX = 21 * CM_TO_PX;             // 21cm full A4 width
-        const STRIP_H_PX = cardSizeCm * CM_TO_PX;   // strip height = cardSizeCm
-        const PIC_INNER_PX = (cardSizeCm - 1) * CM_TO_PX; // square picture area inside strip
-        const GAP_PX = 0.5 * CM_TO_PX;              // gap between text area and picture
-        const TEXT_W_INNER_PX = A4_W_PX - BORDER_SIZE * 2 - PIC_INNER_PX - GAP_PX;
-        const TEXT_H_INNER_PX = PIC_INNER_PX;
+        const A4_W_PX = 21 * CM_TO_PX;                               // 21cm full A4 width = control card width
+        const STRIP_H_PX = cardSizeCm * CM_TO_PX;                    // strip height
+        const PIC_TOTAL_PX = cardSizeCm * CM_TO_PX;                  // picture card outer = stripHeight square
+        const PIC_INNER_PX = (cardSizeCm - 1) * CM_TO_PX;            // picture white area = outer - 2×0.5 border
+        const SENTENCE_TOTAL_PX = (21 - cardSizeCm) * CM_TO_PX;      // standalone sentence card outer width
+        const SENTENCE_INNER_PX = SENTENCE_TOTAL_PX - BORDER_SIZE * 2; // sentence white area width
+        // Control card internal layout:
+        //   strip padding 0.5 + sentence-text-white + 1cm internal gap + picture-white + 0.5 padding = 21
+        const INTERNAL_GAP_PX = 1 * CM_TO_PX;
+        const CONTROL_TEXT_W_PX = A4_W_PX - BORDER_SIZE * 2 - INTERNAL_GAP_PX - PIC_INNER_PX;
+        const TEXT_H_INNER_PX = PIC_INNER_PX; // both white areas share the strip height
         const STRIP_FONT_BASE = Math.max(20, Math.min(60, Math.round(STRIP_H_PX * 0.32)));
 
         if (type === 'control') {
+          // Full-width control strip: padding 0.5 + sentence-text + 1cm gap + picture + 0.5
           canvas.width = A4_W_PX;
           canvas.height = STRIP_H_PX;
           ctx.fillStyle = currentBorderColor;
           ctx.fillRect(0, 0, canvas.width, canvas.height);
-          // Left white text area
+          // Left white text area (sentence portion)
           const textX = BORDER_SIZE;
           const textY = BORDER_SIZE;
           ctx.fillStyle = '#FFFFFF';
-          ctx.fillRect(textX, textY, TEXT_W_INNER_PX, TEXT_H_INNER_PX);
+          ctx.fillRect(textX, textY, CONTROL_TEXT_W_PX, TEXT_H_INNER_PX);
           // Right white picture area
-          const picX = textX + TEXT_W_INNER_PX + GAP_PX;
+          const picX = textX + CONTROL_TEXT_W_PX + INTERNAL_GAP_PX;
           const picY = textY;
           ctx.fillRect(picX, picY, PIC_INNER_PX, PIC_INNER_PX);
           // Image
@@ -464,10 +478,10 @@ const CardGenerator: React.FC<CardGeneratorProps> = ({
               ctx.clip();
               ctx.drawImage(img, picX + drawX, picY + drawY, scaledW, scaledH);
               ctx.restore();
-              // Sentence text — multi-line, fitted
+              // Sentence text — multi-line, fitted to the sentence-portion white area
               drawMultilineText(
                 ctx, cardLabel,
-                textX, textY, TEXT_W_INNER_PX, TEXT_H_INNER_PX,
+                textX, textY, CONTROL_TEXT_W_PX, TEXT_H_INNER_PX,
                 currentFontFamily, STRIP_FONT_BASE
               );
               resolve(canvas);
@@ -481,8 +495,7 @@ const CardGenerator: React.FC<CardGeneratorProps> = ({
         }
 
         if (type === 'picture') {
-          // Square picture card, total = cardSizeCm × cardSizeCm
-          const PIC_TOTAL_PX = cardSizeCm * CM_TO_PX;
+          // Square picture card: cardSizeCm × cardSizeCm outer, white inside (cardSizeCm − 1)²
           canvas.width = PIC_TOTAL_PX;
           canvas.height = PIC_TOTAL_PX;
           ctx.fillStyle = currentBorderColor;
@@ -512,18 +525,17 @@ const CardGenerator: React.FC<CardGeneratorProps> = ({
         }
 
         if (type === 'label') {
-          // Full-width sentence strip, no picture
-          canvas.width = A4_W_PX;
+          // Standalone sentence card: SENTENCE_TOTAL_PX × STRIP_H_PX (matches sentence
+          // portion of control). White inside = SENTENCE_INNER_PX × TEXT_H_INNER_PX.
+          canvas.width = SENTENCE_TOTAL_PX;
           canvas.height = STRIP_H_PX;
           ctx.fillStyle = currentBorderColor;
           ctx.fillRect(0, 0, canvas.width, canvas.height);
-          const FULL_TEXT_W_PX = A4_W_PX - BORDER_SIZE * 2;
-          const FULL_TEXT_H_PX = STRIP_H_PX - BORDER_SIZE * 2;
           ctx.fillStyle = '#FFFFFF';
-          ctx.fillRect(BORDER_SIZE, BORDER_SIZE, FULL_TEXT_W_PX, FULL_TEXT_H_PX);
+          ctx.fillRect(BORDER_SIZE, BORDER_SIZE, SENTENCE_INNER_PX, TEXT_H_INNER_PX);
           drawMultilineText(
             ctx, cardLabel,
-            BORDER_SIZE, BORDER_SIZE, FULL_TEXT_W_PX, FULL_TEXT_H_PX,
+            BORDER_SIZE, BORDER_SIZE, SENTENCE_INNER_PX, TEXT_H_INNER_PX,
             currentFontFamily, STRIP_FONT_BASE
           );
           resolve(canvas);
@@ -945,11 +957,23 @@ const CardGenerator: React.FC<CardGeneratorProps> = ({
                 cursor: 'pointer'
               }}
             >
-              <option value={10}>10 cm (standard)</option>
-              <option value={12}>12 cm</option>
-              <option value={15}>15 cm</option>
-              <option value={20}>20 cm</option>
-              <option value={30}>30 cm</option>
+              {isStrip ? (
+                <>
+                  <option value={5}>5 cm (compact)</option>
+                  <option value={6}>6 cm</option>
+                  <option value={6.5}>6.5 cm (standard)</option>
+                  <option value={7}>7 cm</option>
+                  <option value={8}>8 cm (large)</option>
+                </>
+              ) : (
+                <>
+                  <option value={10}>10 cm (standard)</option>
+                  <option value={12}>12 cm</option>
+                  <option value={15}>15 cm</option>
+                  <option value={20}>20 cm</option>
+                  <option value={30}>30 cm</option>
+                </>
+              )}
             </select>
           </div>
           <div style={{
@@ -960,7 +984,15 @@ const CardGenerator: React.FC<CardGeneratorProps> = ({
             color: '#2e7d32',
             alignSelf: 'flex-end'
           }}>
-            <strong>Card Size:</strong> {cardSizeCm + 1}cm × {cardSizeCm + 1}cm ({cardSizeCm}cm image + 0.5cm border)
+            {isStrip ? (
+              <>
+                <strong>Strip Size:</strong> 21cm × {cardSizeCm}cm control · {cardSizeCm}cm × {cardSizeCm}cm picture · {21 - cardSizeCm}cm × {cardSizeCm}cm sentence
+              </>
+            ) : (
+              <>
+                <strong>Card Size:</strong> {cardSizeCm + 1}cm × {cardSizeCm + 1}cm ({cardSizeCm}cm image + 0.5cm border)
+              </>
+            )}
           </div>
         </div>
       </div>

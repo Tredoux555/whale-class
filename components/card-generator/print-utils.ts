@@ -765,31 +765,42 @@ export const generateLabelsOnly = ({
 
 /**
  * Compute strip-layout dimensions for sentence-match cards.
+ *
  * `cardSizeCm` controls the strip height AND the picture-square edge length.
- * The strip width is always full A4 (210mm).
+ * Standard Montessori sentence-strip sizing (after Nienhuis / AMI / AMS):
+ * 6.5cm strip height with a 6.5cm square picture — fits 4 strips per A4 page.
+ *
+ * The standalone sentence card has dimensions IDENTICAL to the sentence
+ * portion of the control card (14.5 × 6.5cm at default size). When you lay a
+ * sentence card next to a picture card you reconstruct the control card's
+ * full footprint exactly (21cm = full A4 width).
+ *
+ * Internal gap inside the control card = 1cm (= 0.5cm right-padding the
+ * sentence card would have + 0.5cm left-padding the picture card would have).
  */
 function computeStripLayout(cardSizeCm: number) {
-  const stripHeight = cardSizeCm; // e.g. 7cm
-  const stripWidth = A4_WIDTH_CM; // 21cm — full A4 width
-  // The picture square inside the strip's right side (and as the picture card)
-  const pictureSize = stripHeight; // matches strip height for visual balance
+  const stripHeight = cardSizeCm;          // e.g. 6.5cm
+  const stripWidth = A4_WIDTH_CM;          // 21cm — full A4 width (control card width)
+  const pictureSize = stripHeight;         // square picture at strip height: 6.5×6.5cm
+  const sentenceWidth = stripWidth - pictureSize; // 14.5cm — matches sentence portion of control
+  const internalGap = WHITE_BORDER_CM * 2; // 1cm gap inside control = right-pad + left-pad
 
-  // Strips per page — A4_HEIGHT_CM / stripHeight
+  // Per-page counts
   const stripsPerPage = Math.max(1, Math.floor(A4_HEIGHT_CM / stripHeight));
-
-  // Picture cards: square grid, same size as strip height
   const picCols = Math.max(1, Math.floor(A4_WIDTH_CM / pictureSize));
   const picRows = Math.max(1, Math.floor(A4_HEIGHT_CM / pictureSize));
   const picPerPage = picCols * picRows;
 
   // Font size scales with strip height — sentences need more vertical room
-  // than single-word labels so we tune coefficient lower
+  // than single-word labels so we tune the coefficient lower
   const fontSize = Math.max(14, Math.min(32, Math.round(stripHeight * 2.6)));
 
   return {
     stripHeight,
     stripWidth,
+    sentenceWidth,
     pictureSize,
+    internalGap,
     stripsPerPage,
     picCols,
     picRows,
@@ -853,13 +864,20 @@ export const generateStripCards = ({
   cards,
   borderColor,
   fontFamily,
-  cardSizeCm = 7,
+  cardSizeCm = 6.5,
 }: GenerateCardsParams): string => {
   const L = computeStripLayout(cardSizeCm);
 
-  // Sentence-text area dimensions inside a strip
-  const textWidthCm = L.stripWidth - L.pictureSize - WHITE_BORDER_CM * 3;
+  // Sentence-text white area dimensions inside the control strip:
+  //   total strip width
+  //     − 2× outer border (left + right padding of the strip)
+  //     − internal gap (1cm = where the two cards would meet if separated)
+  //     − picture square width
+  // = strip - 2×0.5 - 1 - 6.5 = stripWidth - 8.5  (= 12.5cm at default 6.5)
+  const textWidthCm = L.stripWidth - WHITE_BORDER_CM * 2 - L.internalGap - L.pictureSize;
   const textHeightCm = L.stripHeight - WHITE_BORDER_CM * 2;
+  // Sentence-only standalone card: white area inside (sentenceWidth × stripHeight) with 0.5cm border
+  const sentenceOnlyTextW = L.sentenceWidth - WHITE_BORDER_CM * 2;
 
   let html = `<!DOCTYPE html>
 <html>
@@ -896,15 +914,28 @@ export const generateStripCards = ({
       text-align: center;
     }
 
-    /* === STRIP CARDS (control + sentence-only) === */
-    .strip {
+    /* === CONTROL STRIP — full A4 width (21cm), sentence + picture in one bordered piece === */
+    .strip-control {
       background: ${borderColor};
       width: ${L.stripWidth}cm;
       height: ${L.stripHeight}cm;
       padding: ${WHITE_BORDER_CM}cm;
       display: flex;
       flex-direction: row;
-      gap: ${WHITE_BORDER_CM}cm;
+      gap: ${L.internalGap}cm;
+      box-sizing: border-box;
+      border-radius: ${CARD_BORDER_RADIUS}cm;
+      overflow: hidden;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+
+    /* === SENTENCE-ONLY STRIP — sentence-portion size (14.5cm at default), borders on all 4 sides === */
+    .strip-sentence {
+      background: ${borderColor};
+      width: ${L.sentenceWidth}cm;
+      height: ${L.stripHeight}cm;
+      padding: ${WHITE_BORDER_CM}cm;
       box-sizing: border-box;
       border-radius: ${CARD_BORDER_RADIUS}cm;
       overflow: hidden;
@@ -914,6 +945,8 @@ export const generateStripCards = ({
 
     .strip-text-area {
       flex: 1;
+      width: 100%;
+      height: 100%;
       background: white;
       display: flex;
       align-items: center;
@@ -928,6 +961,7 @@ export const generateStripCards = ({
       word-wrap: break-word;
       word-break: break-word;
       border-radius: ${CARD_BORDER_RADIUS}cm;
+      box-sizing: border-box;
       -webkit-print-color-adjust: exact;
       print-color-adjust: exact;
     }
@@ -949,9 +983,16 @@ export const generateStripCards = ({
       object-fit: cover;
     }
 
-    .strips-grid {
+    .strips-grid-control {
       display: grid;
       grid-template-columns: ${L.stripWidth}cm;
+      grid-auto-rows: ${L.stripHeight}cm;
+      gap: 0;
+    }
+
+    .strips-grid-sentence {
+      display: grid;
+      grid-template-columns: ${L.sentenceWidth}cm;
       grid-auto-rows: ${L.stripHeight}cm;
       gap: 0;
     }
@@ -1012,16 +1053,16 @@ export const generateStripCards = ({
 <body>
 `;
 
-  // Control strips: sentence-left + picture-right
+  // Control strips: sentence-left + picture-right, full A4 width (21cm)
   for (let i = 0; i < cards.length; i += L.stripsPerPage) {
     const pageCards = cards.slice(i, i + L.stripsPerPage);
     const pageNum = Math.floor(i / L.stripsPerPage) + 1;
     html += `<div class="page">
       <div class="page-title">Control Strips - Page ${pageNum}</div>
-      <div class="strips-grid">`;
+      <div class="strips-grid-control">`;
     for (const card of pageCards) {
       const fontPt = adaptiveStripFontSize(card.label, L.fontSize, textWidthCm, textHeightCm);
-      html += `<div class="strip">
+      html += `<div class="strip-control">
         <div class="strip-text-area" style="font-size: ${fontPt}pt;">${escapeHtml(card.label)}</div>
         <div class="strip-image-area"><img src="${sanitizeImageUrl(card.croppedImage)}" alt="${escapeHtml(card.label)}" style="${getObjectPosition(card)}"></div>
       </div>`;
@@ -1029,7 +1070,7 @@ export const generateStripCards = ({
     html += '</div></div>';
   }
 
-  // Picture cards: square grid
+  // Picture cards: square grid (each card identical in size to the picture portion of control)
   for (let i = 0; i < cards.length; i += L.picPerPage) {
     const pageCards = cards.slice(i, i + L.picPerPage);
     const pageNum = Math.floor(i / L.picPerPage) + 1;
@@ -1044,19 +1085,18 @@ export const generateStripCards = ({
     html += '</div></div>';
   }
 
-  // Sentence strips: text-only
+  // Sentence strips: text-only, sentence-portion size (14.5cm wide × 6.5cm tall at default)
+  // Each card identical in size to the sentence portion of the control card.
   for (let i = 0; i < cards.length; i += L.stripsPerPage) {
     const pageCards = cards.slice(i, i + L.stripsPerPage);
     const pageNum = Math.floor(i / L.stripsPerPage) + 1;
     html += `<div class="page">
       <div class="page-title">Sentence Strips - Page ${pageNum}</div>
-      <div class="strips-grid">`;
+      <div class="strips-grid-sentence">`;
     for (const card of pageCards) {
-      // Full-strip text area: width = full strip minus borders
-      const fullTextWidth = L.stripWidth - WHITE_BORDER_CM * 2;
-      const fontPt = adaptiveStripFontSize(card.label, L.fontSize, fullTextWidth, textHeightCm);
-      html += `<div class="strip">
-        <div class="strip-text-area" style="font-size: ${fontPt}pt; flex: 1;">${escapeHtml(card.label)}</div>
+      const fontPt = adaptiveStripFontSize(card.label, L.fontSize, sentenceOnlyTextW, textHeightCm);
+      html += `<div class="strip-sentence">
+        <div class="strip-text-area" style="font-size: ${fontPt}pt;">${escapeHtml(card.label)}</div>
       </div>`;
     }
     html += '</div></div>';
@@ -1079,7 +1119,7 @@ export const generateStripImagesOnly = ({
   cards,
   borderColor,
   fontFamily: _fontFamily,
-  cardSizeCm = 7,
+  cardSizeCm = 6.5,
 }: GenerateCardsParams): string => {
   const L = computeStripLayout(cardSizeCm);
 
@@ -1160,10 +1200,11 @@ export const generateStripSentencesOnly = ({
   cards,
   borderColor,
   fontFamily,
-  cardSizeCm = 7,
+  cardSizeCm = 6.5,
 }: GenerateCardsParams): string => {
   const L = computeStripLayout(cardSizeCm);
-  const fullTextWidth = L.stripWidth - WHITE_BORDER_CM * 2;
+  // Standalone sentence card = sentence-portion of control, 14.5cm × 6.5cm at default size
+  const textWidthCm = L.sentenceWidth - WHITE_BORDER_CM * 2;
   const textHeightCm = L.stripHeight - WHITE_BORDER_CM * 2;
 
   let html = `<!DOCTYPE html>
@@ -1186,13 +1227,13 @@ export const generateStripSentencesOnly = ({
     .page-title { font-size: 10pt; color: #999; margin-bottom: 0.3cm; text-align: center; }
     .strips-grid {
       display: grid;
-      grid-template-columns: ${L.stripWidth}cm;
+      grid-template-columns: ${L.sentenceWidth}cm;
       grid-auto-rows: ${L.stripHeight}cm;
       gap: 0;
     }
     .strip {
       background: ${borderColor};
-      width: ${L.stripWidth}cm;
+      width: ${L.sentenceWidth}cm;
       height: ${L.stripHeight}cm;
       padding: ${WHITE_BORDER_CM}cm;
       box-sizing: border-box;
@@ -1234,7 +1275,7 @@ export const generateStripSentencesOnly = ({
       <div class="page-title">Sentence Strips - Page ${pageNum}</div>
       <div class="strips-grid">`;
     for (const card of pageCards) {
-      const fontPt = adaptiveStripFontSize(card.label, L.fontSize, fullTextWidth, textHeightCm);
+      const fontPt = adaptiveStripFontSize(card.label, L.fontSize, textWidthCm, textHeightCm);
       html += `<div class="strip">
         <div class="strip-text-area" style="font-size: ${fontPt}pt;">${escapeHtml(card.label)}</div>
       </div>`;
