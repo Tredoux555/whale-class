@@ -345,6 +345,43 @@ const CardGenerator: React.FC<CardGeneratorProps> = ({
     return minFontSize;
   };
 
+  // Single-line text fitter for the strip layout — finds the largest font
+  // size where the entire sentence fits on ONE line within the rectangle,
+  // then draws it centered. Falls back to drawMultilineText if the text is
+  // too long to fit on one line even at minFontPx.
+  const drawSingleLineText = (
+    ctx: CanvasRenderingContext2D,
+    text: string,
+    x: number,
+    y: number,
+    w: number,
+    h: number,
+    fontFamilyName: string,
+    maxFontPx: number,
+    minFontPx = 18
+  ) => {
+    let fontPx = maxFontPx;
+    let fits = false;
+    while (fontPx >= minFontPx) {
+      ctx.font = `bold ${fontPx}px "${fontFamilyName}", cursive`;
+      const lineHeight = fontPx * 1.2;
+      if (ctx.measureText(text).width <= w * 0.95 && lineHeight <= h * 0.95) {
+        fits = true;
+        break;
+      }
+      fontPx -= 2;
+    }
+    if (!fits) {
+      // Fall back to multi-line wrap for sentences too long to fit one line
+      drawMultilineText(ctx, text, x, y, w, h, fontFamilyName, maxFontPx, minFontPx - 4);
+      return;
+    }
+    ctx.fillStyle = '#000000';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(text, x + w / 2, y + h / 2);
+  };
+
   // Multi-line text fitter for the strip layout — wraps to as many lines as
   // needed and shrinks the font until everything fits in the given rectangle.
   const drawMultilineText = (
@@ -481,8 +518,8 @@ const CardGenerator: React.FC<CardGeneratorProps> = ({
               ctx.clip();
               ctx.drawImage(img, picX + drawX, picY + drawY, scaledW, scaledH);
               ctx.restore();
-              // Sentence text — multi-line, fitted to the sentence-portion white area
-              drawMultilineText(
+              // Sentence text — single-line preferred, fitted to the sentence-portion white area
+              drawSingleLineText(
                 ctx, cardLabel,
                 textX, textY, CONTROL_TEXT_W_PX, TEXT_H_INNER_PX,
                 currentFontFamily, STRIP_FONT_BASE
@@ -536,7 +573,7 @@ const CardGenerator: React.FC<CardGeneratorProps> = ({
           ctx.fillRect(0, 0, canvas.width, canvas.height);
           ctx.fillStyle = '#FFFFFF';
           ctx.fillRect(BORDER_SIZE, BORDER_SIZE, SENTENCE_INNER_PX, TEXT_H_INNER_PX);
-          drawMultilineText(
+          drawSingleLineText(
             ctx, cardLabel,
             BORDER_SIZE, BORDER_SIZE, SENTENCE_INNER_PX, TEXT_H_INNER_PX,
             currentFontFamily, STRIP_FONT_BASE
