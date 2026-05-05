@@ -251,9 +251,18 @@ export default function ReverseBingoPage() {
     padding: 2px 0; text-align: center; font-weight: 500;
   }
 
-  .calling-header { text-align: center; margin-bottom: 6mm; }
-  .calling-header h2 { font-size: 26px; color: #1f2937; font-family: 'Nunito', system-ui, sans-serif; font-weight: 700; }
-  .calling-header p { font-size: 12px; color: #999; margin-top: 3px; }
+  /* Locked dimensions so FRONT and BACK pages have identical layout —
+     critical for duplex alignment. The grid below it starts at exactly the
+     same Y on both sides regardless of header text length. */
+  .calling-header {
+    text-align: center;
+    height: 18mm;
+    margin-bottom: 4mm;
+    overflow: hidden;
+    box-sizing: border-box;
+  }
+  .calling-header h2 { font-size: 26px; color: #1f2937; font-family: 'Nunito', system-ui, sans-serif; font-weight: 700; line-height: 1.1; white-space: nowrap; }
+  .calling-header p { font-size: 12px; color: #999; margin-top: 3px; line-height: 1.2; white-space: nowrap; }
 
   @media print {
     body { background: white; }
@@ -315,10 +324,12 @@ export default function ReverseBingoPage() {
         const pageItems: (PhonicsWord | null)[] = callingWords.slice(start, start + cardsPerPage);
         while (pageItems.length < cardsPerPage) pageItems.push(null);
 
-        // FRONT — Pictures only (what players see)
+        // FRONT — Pictures only (what players see).
+        // Header text length kept similar to back so heights match —
+        // critical for duplex alignment. Print FLIP ON SHORT EDGE.
         let frontHtml = `<div class="page"><div class="calling-header">
           <h2>✂️ Calling Cards — ${phaseLabel}</h2>
-          <p>PICTURE SIDE (show to players) · Page ${p + 1} of ${pages} · Print duplex, flip on short edge</p>
+          <p>PICTURE SIDE · Page ${p + 1} of ${pages}</p>
         </div><div class="calling-cards-grid">`;
 
         for (const item of pageItems) {
@@ -335,11 +346,12 @@ export default function ReverseBingoPage() {
         frontHtml += '</div></div>';
         printWindow.document.write(frontHtml);
 
-        // BACK — Game Master Answer Key (mirrored rows for duplex)
-        // Small word printed under picture so game master can verify answers
+        // BACK — Game Master Answer Key. Columns within each row mirrored,
+        // which is the correct geometry for SHORT-EDGE flip on portrait paper.
+        // DO NOT use long-edge flip — words land on the wrong pictures.
         let backHtml = `<div class="page"><div class="calling-header">
           <h2>🔑 Answer Key — ${phaseLabel}</h2>
-          <p>GAME MASTER SIDE (don't show to players!) · Page ${p + 1} of ${pages}</p>
+          <p>GAME MASTER SIDE · Page ${p + 1} of ${pages}</p>
         </div><div class="calling-cards-grid">`;
 
         const rows = Math.ceil(pageItems.length / cols);

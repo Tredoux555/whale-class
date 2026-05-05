@@ -250,9 +250,18 @@ export default function PhonicsBingoPage() {
   }
   .card-emoji { font-size: 4rem; }
 
-  .calling-header { text-align: center; margin-bottom: 6mm; }
-  .calling-header h2 { font-size: 26px; color: #1f2937; font-family: 'Nunito', system-ui, sans-serif; font-weight: 700; }
-  .calling-header p { font-size: 12px; color: #999; margin-top: 3px; }
+  /* Locked dimensions so FRONT and BACK pages have identical layout —
+     critical for duplex alignment. The grid below it starts at exactly the
+     same Y on both sides regardless of header text length. */
+  .calling-header {
+    text-align: center;
+    height: 18mm;
+    margin-bottom: 4mm;
+    overflow: hidden;
+    box-sizing: border-box;
+  }
+  .calling-header h2 { font-size: 26px; color: #1f2937; font-family: 'Nunito', system-ui, sans-serif; font-weight: 700; line-height: 1.1; white-space: nowrap; }
+  .calling-header p { font-size: 12px; color: #999; margin-top: 3px; line-height: 1.2; white-space: nowrap; }
 
   @media print {
     body { background: white; }
@@ -319,10 +328,13 @@ export default function PhonicsBingoPage() {
         const pageItems: (PhonicsWord | null)[] = callingWords.slice(start, start + cardsPerPage);
         while (pageItems.length < cardsPerPage) pageItems.push(null);
 
-        // FRONT — pictures
+        // FRONT — pictures.
+        // Header text is INTENTIONALLY the same length as the back header so
+        // both pages render at identical heights — critical for duplex
+        // alignment. Print with FLIP ON SHORT EDGE (printer default).
         let frontHtml = `<div class="page"><div class="calling-header">
           <h2>✂️ Calling Cards — ${phaseLabel}</h2>
-          <p>Picture Side · Page ${p + 1} of ${pages} · Print duplex, flip on short edge</p>
+          <p>Picture Side · Page ${p + 1} of ${pages}</p>
         </div><div class="calling-cards-grid">`;
 
         for (const item of pageItems) {
@@ -339,10 +351,12 @@ export default function PhonicsBingoPage() {
         frontHtml += '</div></div>';
         printWindow.document.write(frontHtml);
 
-        // BACK — words (mirrored rows for duplex)
+        // BACK — words. Columns within each row are mirrored, which is the
+        // correct geometry for SHORT-EDGE flip on portrait paper.
+        // DO NOT use long-edge flip — words will end up on wrong pictures.
         let backHtml = `<div class="page"><div class="calling-header">
           <h2>✂️ Calling Cards — ${phaseLabel}</h2>
-          <p>Word Side (mirror-printed for duplex) · Page ${p + 1} of ${pages}</p>
+          <p>Word Side · Page ${p + 1} of ${pages}</p>
         </div><div class="calling-cards-grid">`;
 
         const rows = Math.ceil(pageItems.length / cols);
