@@ -435,7 +435,21 @@ export default function SchoolsTab({
                           </span>
                           <div>
                             <p className="font-medium text-white text-sm">{school.name}</p>
-                            <p className="text-slate-500 text-xs">{school.owner_name || school.owner_email || '-'}</p>
+                            {school.owner_name && (
+                              <p className="text-slate-400 text-xs">{school.owner_name}</p>
+                            )}
+                            {school.owner_email && (
+                              <a
+                                href={`mailto:${school.owner_email}`}
+                                className="text-slate-500 text-xs hover:text-emerald-400 transition-colors break-all"
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                {school.owner_email}
+                              </a>
+                            )}
+                            {!school.owner_name && !school.owner_email && (
+                              <p className="text-slate-600 text-xs">-</p>
+                            )}
                             {(school.login_codes || []).length > 0 && (
                               <p className="text-slate-600 text-xs font-mono mt-0.5">{(school.login_codes || []).join(', ')}</p>
                             )}
