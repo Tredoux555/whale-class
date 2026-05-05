@@ -433,25 +433,34 @@ export default function SchoolsTab({
                             {school.subscription_tier === 'free' ? '🌍' :
                              school.subscription_tier === 'paid' ? '⭐' : '🎓'}
                           </span>
-                          <div>
+                          <div className="space-y-0.5">
                             <p className="font-medium text-white text-sm">{school.name}</p>
                             {school.owner_name && (
-                              <p className="text-slate-400 text-xs">{school.owner_name}</p>
+                              <p className="text-slate-300 text-xs flex items-center gap-1.5">
+                                <span aria-hidden>👤</span>
+                                <span>{school.owner_name}</span>
+                              </p>
                             )}
                             {school.owner_email && (
-                              <a
-                                href={`mailto:${school.owner_email}`}
-                                className="text-slate-500 text-xs hover:text-emerald-400 transition-colors break-all"
-                                onClick={(e) => e.stopPropagation()}
-                              >
-                                {school.owner_email}
-                              </a>
+                              <p className="text-xs flex items-center gap-1.5">
+                                <span aria-hidden>📧</span>
+                                <a
+                                  href={`mailto:${school.owner_email}`}
+                                  className="text-slate-400 hover:text-emerald-400 transition-colors break-all"
+                                  onClick={(e) => e.stopPropagation()}
+                                >
+                                  {school.owner_email}
+                                </a>
+                              </p>
                             )}
                             {!school.owner_name && !school.owner_email && (
-                              <p className="text-slate-600 text-xs">-</p>
+                              <p className="text-slate-600 text-xs italic">no contact info</p>
                             )}
                             {(school.login_codes || []).length > 0 && (
-                              <p className="text-slate-600 text-xs font-mono mt-0.5">{(school.login_codes || []).join(', ')}</p>
+                              <p className="text-slate-600 text-xs font-mono flex items-center gap-1.5">
+                                <span aria-hidden>🔑</span>
+                                <span>{(school.login_codes || []).join(', ')}</span>
+                              </p>
                             )}
                           </div>
                         </div>
