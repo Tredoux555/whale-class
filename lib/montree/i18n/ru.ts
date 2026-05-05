@@ -3922,4 +3922,10 @@ export const ru: Record<string, string> = {
   'tracy.progress.unpacking': 'Разворачивание данных {name}…',
   'tracy.progress.countingNotes': 'Подсчёт записей и охвата…',
   'tracy.progress.scoringNotes': 'Оценка качества записей…',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'library.sentenceMatchGeneratorTitle': 'Генератор карточек на сопоставление предложений с изображением',
+  'library.sentenceMatchGeneratorSubtitle': 'Создание трёхчастных карточек предложений — предложение к изображению',
+  'tools.sentence_match_generator': 'Генератор карточек на сопоставление предложений с изображением',
+  'tools.sentence_match_generator_desc': 'Создание трёхчастных карточек предложений — предложение к изображению',
 };

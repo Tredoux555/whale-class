@@ -19,12 +19,41 @@ interface HeaderConfig {
   centered?: boolean;
 }
 
+/**
+ * One bullet point in the bottom info section. Renders as
+ * <li><strong>{strong}</strong> {body}</li>. Plain strings — no HTML —
+ * so it's XSS-safe regardless of where the values come from.
+ */
+export interface InfoBullet {
+  strong: string;
+  body: string;
+}
+
+/**
+ * Optional text overrides. Every field is optional; omitted fields fall back
+ * to the canonical three-part-card copy. Used to retheme the same generator
+ * for sentence-match-picture (or any future variant) without forking the
+ * print-utils, layout, or border logic.
+ */
+export interface TextConfig {
+  bulkTabLabel?: string;          // e.g. "📝 Bulk Sentences"
+  bulkInstructions?: string;      // helper text above the textarea
+  bulkPlaceholder?: string;       // textarea placeholder
+  bulkButtonLabel?: string;       // button under the textarea
+  emptyStateText?: string;        // shown when no cards uploaded
+  infoSectionTitle?: string;      // bottom info card heading
+  infoSectionLead?: string;       // bottom info card opening line
+  infoSectionItems?: InfoBullet[];// bullet points; each rendered with <strong> + body
+  infoSectionFooter?: string;     // bottom info card closing line
+}
+
 interface CardGeneratorProps {
   headerConfig?: HeaderConfig;
+  textConfig?: TextConfig;
   initialCards?: Card[];
 }
 
-const CardGenerator: React.FC<CardGeneratorProps> = ({ headerConfig = {}, initialCards }) => {
+const CardGenerator: React.FC<CardGeneratorProps> = ({ headerConfig = {}, textConfig = {}, initialCards }) => {
   const {
     showBackButton = false,
     backButtonLabel = '←',
@@ -35,6 +64,22 @@ const CardGenerator: React.FC<CardGeneratorProps> = ({ headerConfig = {}, initia
     gradientEnd = '#4a8c42',
     centered = true
   } = headerConfig;
+
+  const {
+    bulkTabLabel = '📝 Bulk Labels',
+    bulkInstructions = 'Enter one label per line. Labels will be applied to cards in order.',
+    bulkPlaceholder = 'apple\nbanana\ncherry\n...',
+    bulkButtonLabel = 'Apply Labels to Cards',
+    emptyStateText = 'Upload some images to get started!',
+    infoSectionTitle = 'ℹ️ About Montessori Three-Part Cards',
+    infoSectionLead = 'Three-part cards (also called nomenclature cards) consist of:',
+    infoSectionItems = [
+      { strong: 'Control Card:', body: 'Picture + label together (used for self-checking)' },
+      { strong: 'Picture Card:', body: 'Image only (for matching)' },
+      { strong: 'Label Card:', body: 'Word only (for reading practice)' }
+    ] as InfoBullet[],
+    infoSectionFooter = 'Children match picture cards and label cards, then use the control cards to verify their work. This self-correcting format builds vocabulary, reading skills, and independence.'
+  } = textConfig;
   // State management
   const [cards, setCards] = useState<Card[]>([]);
   const [borderColor, setBorderColor] = useState('#2D5A27');
@@ -776,7 +821,7 @@ const CardGenerator: React.FC<CardGeneratorProps> = ({ headerConfig = {}, initia
             fontSize: '14px'
           }}
         >
-          📝 Bulk Labels
+          {bulkTabLabel}
         </button>
         <button
           onClick={() => setActiveTab('photo-bank')}
@@ -846,12 +891,12 @@ const CardGenerator: React.FC<CardGeneratorProps> = ({ headerConfig = {}, initia
         {activeTab === 'labels' && (
           <div>
             <p style={{ margin: '0 0 12px 0', color: '#666', fontSize: '14px' }}>
-              Enter one label per line. Labels will be applied to cards in order.
+              {bulkInstructions}
             </p>
             <textarea
               value={bulkText}
               onChange={(e) => setBulkText(e.target.value)}
-              placeholder="apple&#10;banana&#10;cherry&#10;..."
+              placeholder={bulkPlaceholder}
               style={{
                 width: '100%',
                 minHeight: '150px',
@@ -877,7 +922,7 @@ const CardGenerator: React.FC<CardGeneratorProps> = ({ headerConfig = {}, initia
                 fontWeight: '600'
               }}
             >
-              Apply Labels to Cards
+              {bulkButtonLabel}
             </button>
           </div>
         )}
@@ -1038,7 +1083,7 @@ const CardGenerator: React.FC<CardGeneratorProps> = ({ headerConfig = {}, initia
         }}>
           <div style={{ fontSize: '64px', marginBottom: '16px' }}>🎴</div>
           <p style={{ fontSize: '18px', margin: 0 }}>
-            Upload some images to get started!
+            {emptyStateText}
           </p>
         </div>
       )}
@@ -1061,19 +1106,18 @@ const CardGenerator: React.FC<CardGeneratorProps> = ({ headerConfig = {}, initia
         borderLeft: '4px solid #ff9800'
       }}>
         <h3 style={{ margin: '0 0 12px 0', color: '#e65100' }}>
-          ℹ️ About Montessori Three-Part Cards
+          {infoSectionTitle}
         </h3>
         <p style={{ margin: '0 0 8px 0', color: '#555', lineHeight: 1.6 }}>
-          Three-part cards (also called nomenclature cards) consist of:
+          {infoSectionLead}
         </p>
         <ul style={{ margin: '0 0 12px 0', color: '#555', lineHeight: 1.8, paddingLeft: '20px' }}>
-          <li><strong>Control Card:</strong> Picture + label together (used for self-checking)</li>
-          <li><strong>Picture Card:</strong> Image only (for matching)</li>
-          <li><strong>Label Card:</strong> Word only (for reading practice)</li>
+          {infoSectionItems.map((item, idx) => (
+            <li key={idx}><strong>{item.strong}</strong> {item.body}</li>
+          ))}
         </ul>
         <p style={{ margin: 0, color: '#555', lineHeight: 1.6 }}>
-          Children match picture cards and label cards, then use the control cards to verify their work.
-          This self-correcting format builds vocabulary, reading skills, and independence.
+          {infoSectionFooter}
         </p>
       </div>
 

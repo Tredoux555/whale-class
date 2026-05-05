@@ -3925,4 +3925,10 @@ export const ko: Record<string, string> = {
   'tracy.progress.unpacking': '{name}님의 정보를 분석하고 있어요…',
   'tracy.progress.countingNotes': '기록과 범위를 계산하고 있어요…',
   'tracy.progress.scoringNotes': '기록 품질을 검토하고 있어요…',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'library.sentenceMatchGeneratorTitle': '문장 매칭 그림 생성기',
+  'library.sentenceMatchGeneratorSubtitle': '3부 문장 카드 만들기 — 그림과 맞는 문장',
+  'tools.sentence_match_generator': '문장 매칭 그림 생성기',
+  'tools.sentence_match_generator_desc': '3부 문장 카드 만들기 — 그림과 맞는 문장',
 };

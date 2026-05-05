@@ -3896,4 +3896,10 @@ export const es: Record<string, string> = {
   'tracy.progress.unpacking': 'Desempaquetando {name}…',
   'tracy.progress.countingNotes': 'Contando registros y cobertura…',
   'tracy.progress.scoringNotes': 'Leyendo la calidad de los registros…',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'library.sentenceMatchGeneratorTitle': 'Generador de Tarjetas de Concordancia de Oraciones con Imágenes',
+  'library.sentenceMatchGeneratorSubtitle': 'Creá tarjetas de oraciones de tres partes — oración para concordar con una imagen',
+  'tools.sentence_match_generator': 'Generador de Tarjetas de Concordancia de Oraciones con Imágenes',
+  'tools.sentence_match_generator_desc': 'Creá tarjetas de oraciones de tres partes — oración para concordar con una imagen',
 };

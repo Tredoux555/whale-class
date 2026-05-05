@@ -3925,4 +3925,10 @@ export const nl: Record<string, string> = {
   'tracy.progress.unpacking': '{name} uitpakken…',
   'tracy.progress.countingNotes': 'Notities en dekking tellen…',
   'tracy.progress.scoringNotes': 'Kwaliteit van notities lezen…',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'library.sentenceMatchGeneratorTitle': 'Zin Afbeelding Matcher Generator',
+  'library.sentenceMatchGeneratorSubtitle': 'Maak driedelige zinkaarten — zin passend bij een afbeelding',
+  'tools.sentence_match_generator': 'Zin Afbeelding Matcher Generator',
+  'tools.sentence_match_generator_desc': 'Maak driedelige zinkaarten — zin passend bij een afbeelding',
 };

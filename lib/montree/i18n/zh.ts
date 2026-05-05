@@ -4328,4 +4328,10 @@ export const zh = {
   'tracy.progress.unpacking': '正在解析 {name}…',
   'tracy.progress.countingNotes': '正在统计笔记和覆盖范围…',
   'tracy.progress.scoringNotes': '正在评估笔记质量…',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'library.sentenceMatchGeneratorTitle': '句子匹配图片生成器',
+  'library.sentenceMatchGeneratorSubtitle': '创建三部分句子卡片 — 句子与图片相匹配',
+  'tools.sentence_match_generator': '句子匹配图片生成器',
+  'tools.sentence_match_generator_desc': '创建三部分句子卡片 — 句子与图片相匹配',
 } as const;

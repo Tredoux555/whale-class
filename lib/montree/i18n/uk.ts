@@ -3922,4 +3922,10 @@ export const uk: Record<string, string> = {
   'tracy.progress.unpacking': 'Розпаковую {name}…',
   'tracy.progress.countingNotes': 'Підрахунок записів та охоплення…',
   'tracy.progress.scoringNotes': 'Оцінюю якість записів…',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'library.sentenceMatchGeneratorTitle': 'Генератор карток "Речення до зображення"',
+  'library.sentenceMatchGeneratorSubtitle': 'Створюйте триступеневі картки речень — речення до зображення',
+  'tools.sentence_match_generator': 'Генератор карток "Речення до зображення"',
+  'tools.sentence_match_generator_desc': 'Створюйте триступеневі картки речень — речення до зображення',
 };
