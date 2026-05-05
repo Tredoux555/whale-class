@@ -793,10 +793,9 @@ function computeStripLayout(cardSizeCm: number) {
 
   // Base font size for adaptive sizing. The adaptive algorithm SHRINKS from
   // this base — never grows above it — so the base must be high enough to
-  // fill the available text area for short sentences. At 6.5cm strip the text
-  // area is ~13.5×5.5cm with plenty of vertical room, so we pick a generous
-  // starting point and let adaptive shrinking handle long sentences.
-  const fontSize = Math.max(24, Math.min(72, Math.round(stripHeight * 8)));
+  // fill the available text area for short sentences. Calibrated so a typical
+  // 4–6 word sentence renders on 2 lines at ~55pt in a 6.5cm strip.
+  const fontSize = Math.max(28, Math.min(72, Math.round(stripHeight * 12)));
 
   return {
     stripHeight,
@@ -823,11 +822,18 @@ function adaptiveStripFontSize(
   textWidthCm: number,
   textHeightCm: number
 ): number {
-  const internalWidthPt = (textWidthCm - 0.6) * 28.35;
-  const internalHeightPt = (textHeightCm - 0.4) * 28.35;
-  const lineHeight = 1.25;
-  const CHAR_W = 0.6;
-  const MIN_PT = 10;
+  // Padding allowance inside the white area (the .strip-text-area has
+  // padding: 0.2cm 0.5cm) — leave a small margin for safety.
+  const internalWidthPt = (textWidthCm - 0.4) * 28.35;
+  const internalHeightPt = (textHeightCm - 0.3) * 28.35;
+  const lineHeight = 1.2;
+  // Comic Sans MS bold has a real average char width of ~0.52 of the font
+  // size (proportional font; punctuation and "i" are narrow, "M"/"W" are
+  // wide). The previous 0.6 estimate over-counted width and forced the
+  // algorithm into too-small single-line layouts. 0.52 leaves a small safety
+  // margin without being too conservative.
+  const CHAR_W = 0.52;
+  const MIN_PT = 14;
 
   const words = sentence.split(/\s+/).filter(Boolean);
   const longestWordLen = words.reduce((m, w) => Math.max(m, w.length), 1);
