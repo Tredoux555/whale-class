@@ -448,7 +448,10 @@ const CardGenerator: React.FC<CardGeneratorProps> = ({
         const INTERNAL_GAP_PX = 1 * CM_TO_PX;
         const CONTROL_TEXT_W_PX = A4_W_PX - BORDER_SIZE * 2 - INTERNAL_GAP_PX - PIC_INNER_PX;
         const TEXT_H_INNER_PX = PIC_INNER_PX; // both white areas share the strip height
-        const STRIP_FONT_BASE = Math.max(20, Math.min(60, Math.round(STRIP_H_PX * 0.32)));
+        // Base font for adaptive sizing — the multiline fitter SHRINKS from
+        // this base, so it needs to be generous enough to fill the area for
+        // short sentences. Matches the print-utils ratio (~stripHeight * 8pt).
+        const STRIP_FONT_BASE = Math.max(28, Math.min(72, Math.round(STRIP_H_PX * 0.3)));
 
         if (type === 'control') {
           // Full-width control strip: padding 0.5 + sentence-text + 1cm gap + picture + 0.5
