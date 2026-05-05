@@ -257,18 +257,18 @@ const CardPreview: React.FC<CardPreviewProps> = ({
             </div>
           </div>
 
-          {/* Sentence strip preview (text only, full width) */}
+          {/* Sentence strip preview — ~69% of control strip width (matches 14.5/21 ratio) */}
           <div style={{
             display: 'flex',
             flexDirection: 'column',
-            alignItems: 'center',
+            alignItems: 'flex-start',
             gap: '4px',
             width: '100%',
+            maxWidth: '280px',
           }}>
-            <span style={{ fontSize: '10px', color: '#666', fontFamily: 'system-ui' }}>Sentence</span>
+            <span style={{ fontSize: '10px', color: '#666', fontFamily: 'system-ui', alignSelf: 'center' }}>Sentence</span>
             <div style={{
-              width: '100%',
-              maxWidth: '280px',
+              width: '69%',
               backgroundColor: borderColor,
               padding: '4px',
               borderRadius: '4px',
