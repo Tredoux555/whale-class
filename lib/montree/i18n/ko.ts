@@ -3931,4 +3931,10 @@ export const ko: Record<string, string> = {
   'library.sentenceMatchGeneratorSubtitle': '3부 문장 카드 만들기 — 그림과 맞는 문장',
   'tools.sentence_match_generator': '문장 매칭 그림 생성기',
   'tools.sentence_match_generator_desc': '3부 문장 카드 만들기 — 그림과 맞는 문장',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'library.sortingMatGeneratorTitle': '정렬 매트 생성기',
+  'library.sortingMatGeneratorSubtitle': '2개, 3개 또는 4개의 지정된 원이 있는 A4 정렬 매트를 만들어요',
+  'tools.sorting_mat_generator': '정렬 매트 생성기',
+  'tools.sorting_mat_generator_desc': '카테고리 작업을 위한 2개, 3개 또는 4개의 라벨이 지정된 원이 있는 A4 정렬 매트입니다',
 };

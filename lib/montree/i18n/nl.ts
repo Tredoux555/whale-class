@@ -3931,4 +3931,10 @@ export const nl: Record<string, string> = {
   'library.sentenceMatchGeneratorSubtitle': 'Maak driedelige zinkaarten — zin passend bij een afbeelding',
   'tools.sentence_match_generator': 'Zin Afbeelding Matcher Generator',
   'tools.sentence_match_generator_desc': 'Maak driedelige zinkaarten — zin passend bij een afbeelding',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'library.sortingMatGeneratorTitle': 'Sorteermat Generator',
+  'library.sortingMatGeneratorSubtitle': 'Maak A4 sorteermats met 2, 3 of 4 aangewezen cirkels',
+  'tools.sorting_mat_generator': 'Sorteermat Generator',
+  'tools.sorting_mat_generator_desc': 'A4 sorteermats met 2, 3 of 4 gelabelde cirkels voor categoriewerk',
 };

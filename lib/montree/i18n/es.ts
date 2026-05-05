@@ -3902,4 +3902,10 @@ export const es: Record<string, string> = {
   'library.sentenceMatchGeneratorSubtitle': 'Creá tarjetas de oraciones de tres partes — oración para concordar con una imagen',
   'tools.sentence_match_generator': 'Generador de Tarjetas de Concordancia de Oraciones con Imágenes',
   'tools.sentence_match_generator_desc': 'Creá tarjetas de oraciones de tres partes — oración para concordar con una imagen',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'library.sortingMatGeneratorTitle': 'Generador de Bandejas de Clasificación',
+  'library.sortingMatGeneratorSubtitle': 'Creá bandejas de clasificación A4 con 2, 3 o 4 círculos designados',
+  'tools.sorting_mat_generator': 'Generador de Bandejas de Clasificación',
+  'tools.sorting_mat_generator_desc': 'Bandejas de clasificación A4 con 2, 3 o 4 círculos rotulados para trabajo de categorías',
 };

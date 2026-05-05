@@ -3931,4 +3931,10 @@ export const pt: Record<string, string> = {
   'library.sentenceMatchGeneratorSubtitle': 'Criar cartões de sentença em três partes — sentença para corresponder a uma imagem',
   'tools.sentence_match_generator': 'Gerador de Cartões de Sentença para Correspondência com Imagem',
   'tools.sentence_match_generator_desc': 'Criar cartões de sentença em três partes — sentença para corresponder a uma imagem',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'library.sortingMatGeneratorTitle': 'Gerador de Tabuleiros de Classificação',
+  'library.sortingMatGeneratorSubtitle': 'Crie tabuleiros de classificação A4 com 2, 3 ou 4 círculos designados',
+  'tools.sorting_mat_generator': 'Gerador de Tabuleiros de Classificação',
+  'tools.sorting_mat_generator_desc': 'Tabuleiros de classificação A4 com 2, 3 ou 4 círculos etiquetados para trabalho de categorias',
 };

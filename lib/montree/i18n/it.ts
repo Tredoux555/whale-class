@@ -3931,4 +3931,10 @@ export const it: Record<string, string> = {
   'library.sentenceMatchGeneratorSubtitle': 'Crea cartellini a tre parti — frase da abbinare a un\'immagine',
   'tools.sentence_match_generator': 'Generatore di Corrispondenza Frase-Immagine',
   'tools.sentence_match_generator_desc': 'Crea cartellini a tre parti — frase da abbinare a un\'immagine',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'library.sortingMatGeneratorTitle': 'Generatore di Tappeti di Classificazione',
+  'library.sortingMatGeneratorSubtitle': 'Crei tappeti A4 con 2, 3 o 4 cerchi designati',
+  'tools.sorting_mat_generator': 'Generatore di Tappeti di Classificazione',
+  'tools.sorting_mat_generator_desc': 'Tappeti A4 con 2, 3 o 4 cerchi etichettati per il lavoro di categorizzazione',
 };

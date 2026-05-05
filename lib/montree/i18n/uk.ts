@@ -3928,4 +3928,10 @@ export const uk: Record<string, string> = {
   'library.sentenceMatchGeneratorSubtitle': 'Створюйте триступеневі картки речень — речення до зображення',
   'tools.sentence_match_generator': 'Генератор карток "Речення до зображення"',
   'tools.sentence_match_generator_desc': 'Створюйте триступеневі картки речень — речення до зображення',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'library.sortingMatGeneratorTitle': 'Генератор сортувальних матів',
+  'library.sortingMatGeneratorSubtitle': 'Створіть сортувальні мати формату А4 з 2, 3 або 4 позначеними колами',
+  'tools.sorting_mat_generator': 'Генератор сортувальних матів',
+  'tools.sorting_mat_generator_desc': 'Сортувальні мати формату А4 з 2, 3 або 4 позначеними колами для роботи з категоріями',
 };
