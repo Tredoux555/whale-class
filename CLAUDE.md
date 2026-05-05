@@ -181,6 +181,190 @@ GMass campaigns A/C/D are historical. Campaign C sent 335 blank emails (Session 
 
 ---
 
+## RECENT STATUS (May 5, 2026)
+
+### ⚡ Session 89 — Sentence Match + Sorting Mat + Term Reports Grammar Overhaul + Bingo Duplex Lock + Super-Admin Polish (May 5, 2026, evening)
+
+**14 commits pushed to main: `22272ab7` → `405db7eb`.** Five distinct workstreams shipped in one session — two new content-generator tools, a complete grammar/visibility overhaul of the term report pipeline, calibration fix on the bingo calling-card duplex layout, and super-admin quality-of-life polish.
+
+**A. Sentence Match Picture Generator (new tool):**
+
+Routes: `/admin/sentence-match-generator` + `/montree/library/tools/sentence-match-generator`. Reuses the existing `<CardGenerator>` component via two new optional props:
+- `textConfig` — overrides 9 user-facing strings with sentence-match copy. Defaults preserve 3-Part-Card behaviour exactly.
+- `layoutMode: 'square' | 'strip'` — default square (unchanged). Strip enables landscape sentence-match cards.
+
+Strip-layout dimensions (Montessori sentence-strip standard):
+| Card | Outer size (default 6.5cm height) | Per A4 |
+|------|------------------------------------|--------|
+| Control | 21 × 6.5 cm — sentence-left + picture-right in ONE bordered piece | 4 |
+| Picture | 6.5 × 6.5 cm — matches picture portion of control | 12 (3×4) |
+| Sentence | 14.5 × 6.5 cm — matches sentence portion of control | 4 |
+
+**Identical-overlay invariant:** standalone sentence card + standalone picture card laid side-by-side reconstruct the control card's 21cm × 6.5cm footprint exactly. Internal gap inside control = 1cm (= 0.5cm sentence right-padding + 0.5cm picture left-padding) is the join.
+
+Adaptive font sizing took several iterations. Final algorithm: `computeUniformStripFontSize()` finds the largest font where EVERY sentence in the batch fits on one line within the control's NARROWER text area (12.5cm internal at default). That single uniform size is applied to ALL control sentence portions AND ALL standalone sentence cards in the same print job. `CHAR_W = 0.52` (Comic Sans MS measured average; was 0.6).
+
+**B. Sorting Mat Generator (new tool):**
+
+Routes: `/admin/sorting-mat-generator` + `/montree/library/tools/sorting-mat-generator`. New component family. A4 sorting mats with 2, 3, or 4 labelled circles for category sorting work.
+
+Layouts: 2 circles side-by-side (9.5cm), 3 circles triangular = 2 top + 1 centred bottom (9cm), 4 circles 2×2 grid (9cm). Settings: number of circles, mat title, per-circle label, border colour, font.
+
+**C. Term Reports overhaul (`scripts/generate-term-reports.mjs`):**
+
+User reported v7 reports had grammar issues — `(CVC Words) (CVC Words)` duplications, `helped you learned` verb errors, white-on-white closings. Audit found three concrete bugs and one critical visual bug. All fixed; 20 v8 reports clean.
+
+Five layered improvements:
+
+1. **Mask-then-scrub** — `scrubHallucinatedWorks()` was matching capitalised phrases INSIDE parenthesised work names (e.g. inside `Classified Cards (Nomenclature Cards)` it'd match `Nomenclature Cards` separately and replace with "your work" → `Classified Cards (Nomenclature Cards) (your work)`). Fix: mask every allowed work name with placeholder before regex (sorted by length DESC), restore after. The regex literally cannot see inside parenthesised work names anymore.
+
+2. **Haiku grammar polish pass** — final pass with Haiku to fix verb-tense errors, awkward phrasing. ~$0.001/report. Best-effort: if Haiku fails or strips a work name, falls back to unpolished. Defensive sanity check confirms no work names are dropped.
+
+3. **Tighter dedup regex** — Pattern C catches `Work (X) (X)` where X is the parenthetical suffix from inside the work name itself, in addition to existing `Work Work` and `Work (Work)` patterns.
+
+4. **Closing colour fix (bg1 → tx1)** — PPTX template ships with `ClosingText` shape using `schemeClr bg1` (white-on-white). Closings were INVISIBLE in every previous run; v7 only worked by accident because Sonnet sometimes wrote the closing as the last circle paragraph (different shape, dark text). `fillTemplate()` now patches `bg1 → tx1` inside the `ClosingText` shape.
+
+5. **Closing merged into body block** — instead of using the separate `ClosingText` shape (italic 13pt), `fillTemplate()` now appends the closing to `PARA_CIRCLE` content with a line break so it flows in the body shape with uniform 14pt regular formatting. The `ClosingText` shape is filled with empty string. User explicitly wanted "all uniform text in the same text block."
+
+Output: `term-reports-v8/` (v7 preserved untouched). 20 PPTX + bundle ZIP. Audit verified: zero scrub artifacts, zero verb-tense errors, every capitalised body phrase matches a real work in the curriculum, all warm/glowing tone, returning vs graduating closing language correct.
+
+**🚨 Architectural rules locked in (do NOT let future agents break these):**
+- `montree_child_progress.status='mastered'` is the SOLE source of truth for MD on parent-facing reports (existing rule, restated)
+- Mask allowed work names BEFORE running scrub regex
+- Haiku polish is best-effort with fallback to unpolished — never crash on polish failure
+- Closing belongs in the body block (`PARA_CIRCLE`), not a separate shape
+- Closing-shape colour is `tx1` not `bg1`
+
+**D. Bingo Calling Card duplex calibration:**
+
+User cuts cards after duplex print on industrial printers (mechanically exact) and reported few-mm drift on cut lines. Diagnosis: front and back calling-card headers had different text lengths (front "Picture Side · Page X of Y · Print duplex, flip on short edge" vs back "Word Side (mirror-printed for duplex) · Page X of Y") → different rendered heights → grid below started at slightly different Y on the back → cumulative few-mm offset.
+
+**Fix in three files** (`public/tools/picture-bingo-generator.html`, `app/montree/library/tools/phonics-fast/bingo/page.tsx`, `app/montree/library/tools/phonics-fast/reverse-bingo/page.tsx`):
+- `.calling-header { height: 18mm; margin-bottom: 4mm; overflow: hidden; }` — fixed dimensions, no variation
+- `.calling-header h2`, `.calling-header p` — `white-space: nowrap`, fixed `line-height` so text physically cannot wrap
+- Front/back header text normalised to similar character counts
+- Comments + UI banner explicitly call out SHORT-EDGE flip is required (printer default; long-edge flip will mismatch words to pictures)
+
+**🚨 Architectural rule:** SHORT-edge flip is canonical for these calling cards. The col-mirror logic in the back-page render is calibrated for short-edge geometry. Long-edge flip will mismatch words to pictures.
+
+**Pending verification:** user will print and cut tomorrow on industrial printers. If still drifting, next move is `.page { width: 198mm }` to eliminate browser scale-to-fit offset (currently page is 210mm but printable area inside @page margin 6mm is 198mm).
+
+**E. Super-admin polish:**
+
+*Leads bulk-clean:* user had 50 junk leads, was deleting one-by-one. Three new clean-up modes:
+- **🧹 Clear all New (N)** — one click, count-aware, hidden when 0
+- **🧹 Clear Declined (N)** — same pattern
+- **☑️ Select mode** — toggle reveals per-lead checkboxes + action bar (Select all / Select all New / Clear / 🗑️ Delete N selected / Done)
+
+API extension: `DELETE /api/montree/leads` accepts THREE modes — `?lead_id=X` (legacy), body `{ lead_ids: [...] }` (multi-select, capped 1000), body `{ status: '...' }` (purge). Returns `{ success, deleted: <count> }`. Cleans up associated DMs in every mode.
+
+*Schools row owner info:* previously showed `owner_name OR owner_email` (whichever existed). Now stacks both with explicit icons: `👤 Name`, `📧 owner@email.com` (clickable mailto), `🔑 LOGIN-CODE`. If neither exists, italic `no contact info`. User flagged confusion when only one of name/email was set.
+
+**Files changed (15 files, 14 commits):**
+- `components/card-generator/{CardGenerator,CardPreview,print-utils}.tsx` — textConfig prop, layoutMode prop, strip-layout generators, uniform batch font sizing
+- `components/sentence-match-generator/*` — re-export shims pointing back to canonical card-generator module
+- `components/sorting-mat-generator/{types,print-utils,SortingMatGenerator}.{ts,tsx}` — NEW
+- `app/admin/{sentence-match,sorting-mat}-generator/page.tsx` — NEW
+- `app/montree/library/tools/{sentence-match,sorting-mat}-generator/page.tsx` — NEW
+- `app/montree/library/tools/page.tsx` — TOOLS array tiles
+- `app/api/montree/leads/route.ts` — DELETE bulk modes
+- `hooks/useLeadOperations.ts` — `bulkDeleteLeadsByIds`, `bulkDeleteLeadsByStatus`
+- `components/montree/super-admin/{LeadsTab,SchoolsTab}.tsx` — bulk UI + owner row icons
+- `app/montree/super-admin/page.tsx` — props wiring
+- `scripts/generate-term-reports.mjs` — mask-then-scrub, Haiku polish, tighter dedup, closing colour fix, closing-into-body merge
+- `public/tools/picture-bingo-generator.html` — locked calling-card header geometry
+- `app/montree/library/tools/phonics-fast/{bingo,reverse-bingo}/page.tsx` — same fix
+- `lib/montree/i18n/*.ts` — 4 new keys × 12 locales (sentence-match) + 4 new keys × 12 locales (sorting-mat)
+
+**Handoff doc:** `docs/handoffs/SESSION_89_HANDOFF.md` — full breakdown of all five workstreams.
+
+**🚨 Next session priorities (ordered):**
+1. **🚨 User verifies bingo calling cards** on industrial printer (tomorrow). If still drifting, follow up with `.page { width: 198mm }` patch.
+2. **User reads v8 term reports** end-to-end. Verify uniform formatting + warmth. ZIP at `~/Desktop/Master Brain/ACTIVE/whale/term-reports-v8/Whale_Class_Language_Term_Reports.zip`.
+3. **Verify Library Tools tiles render on production** — open `/montree/library/tools` after Railway redeploys. Expect 📖 Sentence Match + 🎯 Sorting Mat tiles next to 3-Part Card.
+4. **End-to-end test Sentence Match Generator** — upload photo, type sentence, print all cards, confirm dimensions (21×6.5 / 6.5×6.5 / 14.5×6.5).
+5. **End-to-end test Sorting Mat Generator** — pick 3 circles, change labels + colour, print mat.
+6. **Test super-admin Leads bulk clean** — confirm `Clear all New` wipes the 50 junk leads.
+7. **Two-stage Language Presentation flow** — user confirmed direction but build was paused mid-stream when grammar fix took priority. Plan: Stage 1 = teacher picks photos manually with optional AI-suggest; Stage 2 = AI writes captions around chosen photos. Pick this back up when ready.
+8. **Carry-overs from prior sessions:** run migration 184, send 3 hot lead Gmail drafts (Ardtona, FAMM, Тамі), update CLAUDE.md lead state.
+
+---
+
+### ⚡ Session 88 — Classroom material build + outreach mega-batch (72 Gmail drafts) (May 5, 2026)
+
+**No code commits.** Teacher-side classroom-material build + the largest outreach drafting push of the campaign so far. Two parallel tracks ran today, with a separate dedup discipline pass that prevented at least three duplicate sends.
+
+**A. Whale Class digraph progression (`whale/digraph-shelf/`):**
+
+Sparked by Tredoux noticing kids stuck on the *"sheep go baa baa"* line of last week's sh-sound song — that stickiness pointed to the next digraph (**ee**), and we built around it. The full 17-week digraph year is now mapped: each week opens with a circle-time song that introduces the digraph, followed by the same five-step shelf arc (sound sort → picture-word match → two-column sort → moveable alphabet build → writing booklet). The progression is **emergent within a planned scaffold** — the children's stickiness picks the next digraph, the planned order is just a default.
+
+The 17 weeks: sh (Hush, Little Sea) → ee (Sheep Go Baa Baa) → oo (Moon and Spoon) → ch (Chick on a Chair) → ai (Rain on the Train) → th (Three Thumbs Up) → oa (Goat in a Boat) → wh (Whale on a Wheel) → qu (Quick Little Queen) → ar (Star in a Jar) → or (Horse with a Horn) → ou (Mouse in a House) → er (Tiger and the River) → oi/oy (Boy with a Toy) → au/aw (Saw and Straw) → ie (Pie and Tie) → ue (Blue Glue).
+
+Each song is Suno-ready (style prompt + clean lyrics + movement guide). Bingo boards organised in teaching order (6 boards × 16 words each), printed as both `.md` and `.docx`. Master file: `Digraph_Year_Plan.md` + `.docx`. Open in September, jump to the week, run it.
+
+**B. Solar system 3-day theme (`whale/themes/solar-system/`):**
+
+Compressed from 5 days to 3 (per teacher constraint). The "dance" frame is the load-bearing pedagogical idea — teach motion, not facts. The week ends Day 3 with a dim-room flashlight-Sun orbit dance, each child holding a planet.
+
+Anchor song *Round and Round* was rewritten heavily for **ESL kindergarten**: every cosmic word is single-syllable (Sun, Earth, Moon, Mars), each verse repeats its anchor 5 times, the chorus is identical every time. Total vocabulary in the song: ~12 words. The dreamy/catchy earlier drafts were superseded — "slow it right down, simplify it properly" was the steer.
+
+**C. Outreach mega-batch — 72 Gmail drafts (`whale/outreach/2026-05-05-drafts-log.md`):**
+
+| Type | Count |
+|------|-------|
+| Signup welcomes | 3 (BCMA paid `school` plan, Georgetown, Surina) |
+| Personalised school follow-ups | 17 (each tailored: country, name, language, recent Montree change) |
+| Multiplier partnership pitches | 8 (AMS, Montessori Europe, Montessori Deutschland, NAMC, NCMPS, AMI/USA, Montessori Foundation, Indian Montessori Foundation) |
+| Hot-lead carry-overs | 2 (Otari NZ → Susan West, Montessori CH → Silvia partnership reframe) |
+| Video-attached short follow-ups | 42 (brief prompt + country-specific one-liner; user attaches short video before sending) |
+| **Total** | **72** |
+
+The multiplier pitches all use the same structure: 60-day free pilot for any school they recommend, **20% recurring revenue share** on every conversion (≈$1.40/student/month recurring), free customisation, priority feature requests. This is the partnership angle the dead multipliers never got — they only saw the generic Montree pitch before.
+
+**🚨 Dedup discipline (the win that prevented duplicates):**
+
+Per the standing rule (Session 46 and 50), Gmail searches were run on every recipient before any draft. **Three contacts were skipped because Gmail showed prior follow-ups already sent:**
+- MSB Beijing — three prior touches (Mar 28, Apr 2, Apr 7)
+- Ohana Tokyo — Apr 30 follow-up already sent
+- IMSP Prague — drafted earlier in this same session
+
+**Five more were skipped because no Gmail history was found** (likely stale addresses): Maria Montessori Toronto, Peterson Mexico, FAMM cdleon, Porirua NZ, Studio Montessori SF.
+
+The DB `status='sent'` field is NOT reliable for dedup — confirmed again today. Always check Gmail. Use batched OR queries (10 emails per query) for speed.
+
+**D. Picture bank audit (read-only):**
+
+Reviewed `/montree/library/photo-bank` route + component + API after Tredoux reported "478 photos found, none rendering." Likely causes identified: Supabase Storage bucket toggled non-public, CSP `img-src` blocking, or stale service worker cache. Issue self-resolved during session. Architectural note: the photo bank API returns **direct Supabase URLs** rather than going through the `getProxyUrl()` Cloudflare proxy that every other media surface uses. Inconsistent — file as future migration.
+
+**Files added (no commits):**
+- `digraph-shelf/` — full 17-week language curriculum (15 .md files + 2 .docx)
+- `themes/solar-system/Solar_System_Week.md`
+- `outreach/2026-05-05-drafts-log.md`
+- `docs/handoffs/SESSION_88_HANDOFF.md`
+
+**Outreach campaign state:**
+
+| Metric | Value |
+|--------|-------|
+| Total contacts | 536 |
+| Sent (initial pitch) | 270 |
+| Drafts in Gmail awaiting send (created today) | 72 |
+| Drafts sent earlier today | 30 |
+| Bounced | 102 (research recovery next session) |
+| Replied | 13 |
+| Dead | 37 |
+
+**🚨 Next session priorities (ordered):**
+
+1. **Verify the 72 drafts get sent** — Gmail Drafts → review → for the 42 video-attached ones, attach the short video before send. Tick boxes in `whale/outreach/2026-05-05-drafts-log.md` as they go.
+2. **Continue outreach push** — ~57 more individual schools at `status='sent'` `follow_up_count=0`. Use the short video-prompt template from today, respect the dedup discipline.
+3. **Bounce-recovery email research** — Paint Pots UK (Apr 30 bounce), Copenhagen (verify `info@montessori-cph.dk`), Opera Nazionale Italy (use `segreteria@montessori.it` from their auto-reply), Montessori St Nicholas UK, Montessori Society UK, SAMA South Africa.
+4. **Stale-address verification** — Maria Montessori Toronto, Peterson Mexico, Porirua NZ, Studio Montessori SF, FAMM cdleon. Web-search before any future send.
+5. **Resume Session 87 code priorities** (untouched today): Vault end-to-end test, Tracy play-by-play verification, per-song Share button verification, super-admin 👤 modal verification, Stripe upgrade flow, Tracy `→ ` vs em-dash, `unpack_teacher` progress events, super-admin simplification.
+6. **Listen to the Suno output of *Round and Round*** before the solar system week starts — confirm the simplified ESL pace actually sings well, adjust if not.
+
+---
+
 ## RECENT STATUS (May 4, 2026)
 
 ### ⚡ Session 87 — Super-admin Principals modal + Tracy live play-by-play + Principal Vault prototype + per-song Share button + Tracy avatar shipped (May 4, 2026 evening)
