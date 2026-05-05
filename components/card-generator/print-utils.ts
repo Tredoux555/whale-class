@@ -829,12 +829,25 @@ function adaptiveStripFontSize(
   const lineHeight = 1.2;
   // Comic Sans MS bold has a real average char width of ~0.52 of the font
   // size (proportional font; punctuation and "i" are narrow, "M"/"W" are
-  // wide). The previous 0.6 estimate over-counted width and forced the
-  // algorithm into too-small single-line layouts. 0.52 leaves a small safety
-  // margin without being too conservative.
+  // wide).
   const CHAR_W = 0.52;
   const MIN_PT = 14;
 
+  // Pass 1 — SINGLE LINE PREFERENCE: find the largest font size where the
+  // entire sentence fits on one line within the strip's text area. This is
+  // the canonical Montessori sentence-strip presentation: one strip = one
+  // sentence = one line.
+  const totalChars = sentence.length;
+  for (let fontSize = basePt; fontSize >= MIN_PT; fontSize--) {
+    const lineWidth = totalChars * fontSize * CHAR_W;
+    const lineHeightPt = fontSize * lineHeight;
+    if (lineWidth <= internalWidthPt && lineHeightPt <= internalHeightPt) {
+      return fontSize;
+    }
+  }
+
+  // Pass 2 — fallback for sentences too long to fit on one line even at
+  // MIN_PT. Wrap to as few lines as possible at MIN_PT.
   const words = sentence.split(/\s+/).filter(Boolean);
   const longestWordLen = words.reduce((m, w) => Math.max(m, w.length), 1);
 
