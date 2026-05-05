@@ -791,9 +791,12 @@ function computeStripLayout(cardSizeCm: number) {
   const picRows = Math.max(1, Math.floor(A4_HEIGHT_CM / pictureSize));
   const picPerPage = picCols * picRows;
 
-  // Font size scales with strip height — sentences need more vertical room
-  // than single-word labels so we tune the coefficient lower
-  const fontSize = Math.max(14, Math.min(32, Math.round(stripHeight * 2.6)));
+  // Base font size for adaptive sizing. The adaptive algorithm SHRINKS from
+  // this base — never grows above it — so the base must be high enough to
+  // fill the available text area for short sentences. At 6.5cm strip the text
+  // area is ~13.5×5.5cm with plenty of vertical room, so we pick a generous
+  // starting point and let adaptive shrinking handle long sentences.
+  const fontSize = Math.max(24, Math.min(72, Math.round(stripHeight * 8)));
 
   return {
     stripHeight,
