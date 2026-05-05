@@ -64,6 +64,71 @@ export function useLeadOperations({
     }
   }, [password, setLeads, setNewLeadCount]);
 
+  /**
+   * Bulk-delete leads by id list (e.g. from a multi-select).
+   */
+  const bulkDeleteLeadsByIds = useCallback(async (ids: string[]): Promise<number> => {
+    if (ids.length === 0) return 0;
+    if (!confirm(`Delete ${ids.length} lead${ids.length === 1 ? '' : 's'}? This cannot be undone.`)) return 0;
+    try {
+      const res = await fetch('/api/montree/leads', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-super-admin-token': password,
+        },
+        body: JSON.stringify({ lead_ids: ids }),
+      });
+      if (!res.ok) throw new Error('Failed');
+      const data = await res.json().catch(() => ({ deleted: ids.length }));
+      const deletedCount = typeof data?.deleted === 'number' ? data.deleted : ids.length;
+      const idSet = new Set(ids);
+      // Count how many of the deleted were 'new' so the badge updates
+      const deletedNewCount = leads.filter(l => idSet.has(l.id) && l.status === 'new').length;
+      setLeads(prev => prev.filter(l => !idSet.has(l.id)));
+      if (deletedNewCount > 0) setNewLeadCount(prev => Math.max(0, prev - deletedNewCount));
+      return deletedCount;
+    } catch (err) {
+      console.error('Failed to bulk-delete leads:', err);
+      alert('Failed to delete leads');
+      return 0;
+    }
+  }, [password, leads, setLeads, setNewLeadCount]);
+
+  /**
+   * Bulk-delete every lead with a given status (e.g. clear all 'new' or all
+   * 'declined'). Goes through the API rather than re-using
+   * bulkDeleteLeadsByIds so the database does the filter atomically.
+   */
+  const bulkDeleteLeadsByStatus = useCallback(async (status: 'new' | 'contacted' | 'onboarded' | 'declined'): Promise<number> => {
+    const candidates = leads.filter(l => l.status === status);
+    if (candidates.length === 0) {
+      alert(`No leads with status "${status}" to delete.`);
+      return 0;
+    }
+    if (!confirm(`Delete all ${candidates.length} ${status} lead${candidates.length === 1 ? '' : 's'}? This cannot be undone.`)) return 0;
+    try {
+      const res = await fetch('/api/montree/leads', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-super-admin-token': password,
+        },
+        body: JSON.stringify({ status }),
+      });
+      if (!res.ok) throw new Error('Failed');
+      const data = await res.json().catch(() => ({ deleted: candidates.length }));
+      const deletedCount = typeof data?.deleted === 'number' ? data.deleted : candidates.length;
+      setLeads(prev => prev.filter(l => l.status !== status));
+      if (status === 'new') setNewLeadCount(prev => Math.max(0, prev - candidates.length));
+      return deletedCount;
+    } catch (err) {
+      console.error('Failed to bulk-delete leads by status:', err);
+      alert('Failed to delete leads');
+      return 0;
+    }
+  }, [password, leads, setLeads, setNewLeadCount]);
+
   const saveLeadNotes = useCallback(async (leadId: string, notesText: string) => {
     try {
       await fetch('/api/montree/leads', {
@@ -313,6 +378,8 @@ export function useLeadOperations({
   return {
     updateLeadStatus,
     deleteLead,
+    bulkDeleteLeadsByIds,
+    bulkDeleteLeadsByStatus,
     saveLeadNotes,
     provisionSchool,
     updateSchoolStatus,

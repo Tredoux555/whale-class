@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useMemo } from 'react';
 import { Lead } from './types';
 
 interface LeadsTabProps {
@@ -8,6 +9,8 @@ interface LeadsTabProps {
   onFetchLeads: () => void;
   onUpdateStatus: (leadId: string, status: string) => void;
   onDeleteLead: (lead: Lead) => void;
+  onBulkDeleteByIds?: (ids: string[]) => Promise<number>;
+  onBulkDeleteByStatus?: (status: 'new' | 'contacted' | 'onboarded' | 'declined') => Promise<number>;
   onProvision: (lead: Lead) => void;
   onOpenDm: (id: string, name?: string, email?: string) => void;
   onLoginAs: (schoolId: string) => void;
@@ -47,6 +50,8 @@ export default function LeadsTab({
   onFetchLeads,
   onUpdateStatus,
   onDeleteLead,
+  onBulkDeleteByIds,
+  onBulkDeleteByStatus,
   onProvision,
   onOpenDm,
   onLoginAs,
@@ -59,15 +64,122 @@ export default function LeadsTab({
   dmUnreadTotal,
   newLeadCount
 }: LeadsTabProps) {
+  // Multi-select state for bulk clean-up
+  const [selectMode, setSelectMode] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+
+  const newLeadsCount = useMemo(() => leads.filter(l => l.status === 'new').length, [leads]);
+  const declinedLeadsCount = useMemo(() => leads.filter(l => l.status === 'declined').length, [leads]);
+
+  const toggleSelect = (id: string) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
+  const selectAllVisible = () => setSelectedIds(new Set(leads.map(l => l.id)));
+  const selectAllNew = () => setSelectedIds(new Set(leads.filter(l => l.status === 'new').map(l => l.id)));
+  const clearSelection = () => setSelectedIds(new Set());
+  const exitSelectMode = () => { setSelectMode(false); setSelectedIds(new Set()); };
+
+  const handleBulkDeleteSelected = async () => {
+    if (!onBulkDeleteByIds || selectedIds.size === 0) return;
+    const deleted = await onBulkDeleteByIds(Array.from(selectedIds));
+    if (deleted > 0) exitSelectMode();
+  };
+
+  const handleBulkDeleteByStatus = async (status: 'new' | 'contacted' | 'onboarded' | 'declined') => {
+    if (!onBulkDeleteByStatus) return;
+    await onBulkDeleteByStatus(status);
+  };
+
   return (
     <div className="space-y-4">
       {/* Leads Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-2">
         <h2 className="text-lg font-semibold text-white">People interested in Montree</h2>
-        <button onClick={onFetchLeads} className="text-sm text-slate-400 hover:text-white">
-          ↻ Refresh
-        </button>
+        <div className="flex items-center gap-2 flex-wrap">
+          {!selectMode && onBulkDeleteByStatus && newLeadsCount > 0 && (
+            <button
+              onClick={() => handleBulkDeleteByStatus('new')}
+              className="text-xs px-3 py-1.5 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 border border-red-500/30 font-medium whitespace-nowrap"
+              title="Delete every lead currently marked 'new'"
+            >
+              🧹 Clear all New ({newLeadsCount})
+            </button>
+          )}
+          {!selectMode && onBulkDeleteByStatus && declinedLeadsCount > 0 && (
+            <button
+              onClick={() => handleBulkDeleteByStatus('declined')}
+              className="text-xs px-3 py-1.5 rounded-lg bg-slate-700/40 text-slate-300 hover:bg-slate-700/60 border border-slate-600 font-medium whitespace-nowrap"
+              title="Delete every lead currently marked 'declined'"
+            >
+              🧹 Clear Declined ({declinedLeadsCount})
+            </button>
+          )}
+          {onBulkDeleteByIds && (
+            <button
+              onClick={() => { setSelectMode(s => !s); if (selectMode) setSelectedIds(new Set()); }}
+              className={`text-xs px-3 py-1.5 rounded-lg border font-medium whitespace-nowrap ${
+                selectMode
+                  ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/50'
+                  : 'bg-slate-700/40 text-slate-300 hover:bg-slate-700/60 border-slate-600'
+              }`}
+            >
+              {selectMode ? '✓ Selecting' : '☑️ Select'}
+            </button>
+          )}
+          <button onClick={onFetchLeads} className="text-sm text-slate-400 hover:text-white">
+            ↻ Refresh
+          </button>
+        </div>
       </div>
+
+      {/* Multi-select action bar (only visible in select mode) */}
+      {selectMode && (
+        <div className="bg-slate-800/70 border border-slate-700 rounded-xl p-3 flex flex-wrap items-center gap-2">
+          <span className="text-sm text-slate-300 mr-2">
+            {selectedIds.size} selected
+          </span>
+          <button
+            onClick={selectAllVisible}
+            className="text-xs px-2.5 py-1 rounded-md bg-slate-700/60 text-slate-200 hover:bg-slate-600"
+          >
+            Select all ({leads.length})
+          </button>
+          {newLeadsCount > 0 && (
+            <button
+              onClick={selectAllNew}
+              className="text-xs px-2.5 py-1 rounded-md bg-emerald-500/15 text-emerald-300 hover:bg-emerald-500/25"
+            >
+              Select all New ({newLeadsCount})
+            </button>
+          )}
+          <button
+            onClick={clearSelection}
+            disabled={selectedIds.size === 0}
+            className="text-xs px-2.5 py-1 rounded-md bg-slate-700/40 text-slate-400 hover:bg-slate-700/60 disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            Clear
+          </button>
+          <div className="ml-auto flex items-center gap-2">
+            <button
+              onClick={handleBulkDeleteSelected}
+              disabled={selectedIds.size === 0}
+              className="text-xs px-3 py-1.5 rounded-lg bg-red-500/20 text-red-300 hover:bg-red-500/30 border border-red-500/40 font-medium disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              🗑️ Delete {selectedIds.size > 0 ? selectedIds.size : ''} selected
+            </button>
+            <button
+              onClick={exitSelectMode}
+              className="text-xs px-3 py-1.5 rounded-lg bg-slate-700/60 text-slate-300 hover:bg-slate-600"
+            >
+              Done
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Lead Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -114,11 +226,31 @@ export default function LeadsTab({
             return (
             <div
               key={lead.id}
+              onClick={selectMode ? () => toggleSelect(lead.id) : undefined}
               className={`bg-slate-800/50 border rounded-xl p-4 transition-all ${
-                lead.status === 'new' ? 'border-emerald-500/50 bg-emerald-500/5' : 'border-slate-700'
+                selectMode && selectedIds.has(lead.id)
+                  ? 'border-emerald-400/80 bg-emerald-500/10 cursor-pointer'
+                  : selectMode
+                    ? 'border-slate-700 cursor-pointer hover:border-slate-500'
+                    : lead.status === 'new'
+                      ? 'border-emerald-500/50 bg-emerald-500/5'
+                      : 'border-slate-700'
               }`}
             >
               <div className="flex items-start gap-4">
+                {/* Selection checkbox (only visible in select mode) */}
+                {selectMode && (
+                  <div className="mt-1">
+                    <input
+                      type="checkbox"
+                      checked={selectedIds.has(lead.id)}
+                      onChange={() => toggleSelect(lead.id)}
+                      onClick={(e) => e.stopPropagation()}
+                      className="w-5 h-5 rounded accent-emerald-500 cursor-pointer"
+                    />
+                  </div>
+                )}
+
                 {/* Interest type icon */}
                 <div className="text-2xl mt-1">
                   {lead.interest_type === 'try' ? '🚀' : '💬'}
@@ -200,7 +332,7 @@ export default function LeadsTab({
                 </div>
 
                 {/* Actions */}
-                <div className="flex flex-col gap-2">
+                <div className="flex flex-col gap-2" onClick={(e) => e.stopPropagation()}>
                   {lead.status === 'new' && (
                     <>
                       <button
