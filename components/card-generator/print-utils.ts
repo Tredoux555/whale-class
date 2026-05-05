@@ -816,6 +816,32 @@ function computeStripLayout(cardSizeCm: number) {
  * but tuned for the longer text rectangle (full strip width minus the picture
  * square minus borders).
  */
+/**
+ * Compute a UNIFORM font size for an entire batch of sentences. Picks the
+ * largest font where EVERY sentence in the batch fits on one line within the
+ * given text area. Used so a teacher's printout has consistent letter sizing
+ * across all cards instead of each card individually scaled.
+ *
+ * Returns MIN_PT if at least one sentence is too long to fit on one line at
+ * MIN_PT — the per-card adaptive sizer in adaptiveStripFontSize() will then
+ * fall back to wrapping for that specific card.
+ */
+function computeUniformStripFontSize(
+  sentences: string[],
+  basePt: number,
+  textWidthCm: number,
+  textHeightCm: number
+): number {
+  if (sentences.length === 0) return basePt;
+  // Find the longest sentence (by char count) — that's the constraint
+  let uniform = basePt;
+  for (const s of sentences) {
+    const fit = adaptiveStripFontSize(s, basePt, textWidthCm, textHeightCm);
+    if (fit < uniform) uniform = fit;
+  }
+  return uniform;
+}
+
 function adaptiveStripFontSize(
   sentence: string,
   basePt: number,
@@ -898,8 +924,14 @@ export const generateStripCards = ({
   // = strip - 2×0.5 - 1 - 6.5 = stripWidth - 8.5  (= 12.5cm at default 6.5)
   const textWidthCm = L.stripWidth - WHITE_BORDER_CM * 2 - L.internalGap - L.pictureSize;
   const textHeightCm = L.stripHeight - WHITE_BORDER_CM * 2;
-  // Sentence-only standalone card: white area inside (sentenceWidth × stripHeight) with 0.5cm border
-  const sentenceOnlyTextW = L.sentenceWidth - WHITE_BORDER_CM * 2;
+
+  // UNIFORM batch font size — calibrated to the NARROWER text area (control
+  // sentence portion, 12.5cm at default). Applied to both control sentences
+  // AND standalone sentence cards so they visually match — when a kid lays
+  // the standalone sentence card on top of the control's sentence portion,
+  // the text is the same size.
+  const sentences = cards.map(c => c.label);
+  const uniformFontPt = computeUniformStripFontSize(sentences, L.fontSize, textWidthCm, textHeightCm);
 
   let html = `<!DOCTYPE html>
 <html>
@@ -1083,9 +1115,8 @@ export const generateStripCards = ({
       <div class="page-title">Control Strips - Page ${pageNum}</div>
       <div class="strips-grid-control">`;
     for (const card of pageCards) {
-      const fontPt = adaptiveStripFontSize(card.label, L.fontSize, textWidthCm, textHeightCm);
       html += `<div class="strip-control">
-        <div class="strip-text-area" style="font-size: ${fontPt}pt;">${escapeHtml(card.label)}</div>
+        <div class="strip-text-area" style="font-size: ${uniformFontPt}pt;">${escapeHtml(card.label)}</div>
         <div class="strip-image-area"><img src="${sanitizeImageUrl(card.croppedImage)}" alt="${escapeHtml(card.label)}" style="${getObjectPosition(card)}"></div>
       </div>`;
     }
@@ -1116,9 +1147,11 @@ export const generateStripCards = ({
       <div class="page-title">Sentence Strips - Page ${pageNum}</div>
       <div class="strips-grid-sentence">`;
     for (const card of pageCards) {
-      const fontPt = adaptiveStripFontSize(card.label, L.fontSize, sentenceOnlyTextW, textHeightCm);
+      // Same uniform font as the control sentence portion — when the
+      // standalone sentence card is laid over the control's sentence half,
+      // the text matches in size.
       html += `<div class="strip-sentence">
-        <div class="strip-text-area" style="font-size: ${fontPt}pt;">${escapeHtml(card.label)}</div>
+        <div class="strip-text-area" style="font-size: ${uniformFontPt}pt;">${escapeHtml(card.label)}</div>
       </div>`;
     }
     html += '</div></div>';
@@ -1225,9 +1258,14 @@ export const generateStripSentencesOnly = ({
   cardSizeCm = 6.5,
 }: GenerateCardsParams): string => {
   const L = computeStripLayout(cardSizeCm);
-  // Standalone sentence card = sentence-portion of control, 14.5cm × 6.5cm at default size
-  const textWidthCm = L.sentenceWidth - WHITE_BORDER_CM * 2;
+  // Use the NARROWER text area (control sentence portion) as the sizing
+  // constraint so the standalone sentence cards' text matches the control
+  // sentence portion when the user prints both sets and lays them on top.
+  const controlTextWidthCm = L.stripWidth - WHITE_BORDER_CM * 2 - L.internalGap - L.pictureSize;
   const textHeightCm = L.stripHeight - WHITE_BORDER_CM * 2;
+  // UNIFORM batch font size across all sentence strips
+  const sentences = cards.map(c => c.label);
+  const uniformFontPt = computeUniformStripFontSize(sentences, L.fontSize, controlTextWidthCm, textHeightCm);
 
   let html = `<!DOCTYPE html>
 <html>
@@ -1297,9 +1335,8 @@ export const generateStripSentencesOnly = ({
       <div class="page-title">Sentence Strips - Page ${pageNum}</div>
       <div class="strips-grid">`;
     for (const card of pageCards) {
-      const fontPt = adaptiveStripFontSize(card.label, L.fontSize, textWidthCm, textHeightCm);
       html += `<div class="strip">
-        <div class="strip-text-area" style="font-size: ${fontPt}pt;">${escapeHtml(card.label)}</div>
+        <div class="strip-text-area" style="font-size: ${uniformFontPt}pt;">${escapeHtml(card.label)}</div>
       </div>`;
     }
     html += '</div></div>';
