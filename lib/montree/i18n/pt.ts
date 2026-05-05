@@ -3925,4 +3925,10 @@ export const pt: Record<string, string> = {
   'tracy.progress.unpacking': 'Desdobrando {name}…',
   'tracy.progress.countingNotes': 'Contando anotações e cobertura…',
   'tracy.progress.scoringNotes': 'Lendo a qualidade das anotações…',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'library.sentenceMatchGeneratorTitle': 'Gerador de Cartões de Sentença para Correspondência com Imagem',
+  'library.sentenceMatchGeneratorSubtitle': 'Criar cartões de sentença em três partes — sentença para corresponder a uma imagem',
+  'tools.sentence_match_generator': 'Gerador de Cartões de Sentença para Correspondência com Imagem',
+  'tools.sentence_match_generator_desc': 'Criar cartões de sentença em três partes — sentença para corresponder a uma imagem',
 };

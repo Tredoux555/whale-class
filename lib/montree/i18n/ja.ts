@@ -3925,4 +3925,10 @@ export const ja: Record<string, string> = {
   'tracy.progress.unpacking': '{name}さまの情報を解析しています…',
   'tracy.progress.countingNotes': '記録と対象範囲をカウントしています…',
   'tracy.progress.scoringNotes': '記録の質を読み込んでいます…',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'library.sentenceMatchGeneratorTitle': '文を絵に合わせるカード生成ツール',
+  'library.sentenceMatchGeneratorSubtitle': '3部構成の文カードを作成します — 絵に合わせた文',
+  'tools.sentence_match_generator': '文を絵に合わせるカード生成ツール',
+  'tools.sentence_match_generator_desc': '3部構成の文カードを作成します — 絵に合わせた文',
 };

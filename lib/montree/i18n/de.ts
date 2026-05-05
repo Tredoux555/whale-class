@@ -3925,4 +3925,10 @@ export const de: Record<string, string> = {
   'tracy.progress.unpacking': '{name} wird analysiert…',
   'tracy.progress.countingNotes': 'Notizen und Abdeckung werden gezählt…',
   'tracy.progress.scoringNotes': 'Die Qualität der Notizen wird bewertet…',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'library.sentenceMatchGeneratorTitle': 'Satzabgleich-Bildgenerator',
+  'library.sentenceMatchGeneratorSubtitle': 'Erstellen Sie dreiteilige Satzkarten – Satz zum Abgleichen mit einem Bild',
+  'tools.sentence_match_generator': 'Satzabgleich-Bildgenerator',
+  'tools.sentence_match_generator_desc': 'Erstellen Sie dreiteilige Satzkarten – Satz zum Abgleichen mit einem Bild',
 };

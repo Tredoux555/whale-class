@@ -3925,4 +3925,10 @@ export const it: Record<string, string> = {
   'tracy.progress.unpacking': 'Analisi di {name}…',
   'tracy.progress.countingNotes': 'Conteggio delle note e copertura…',
   'tracy.progress.scoringNotes': 'Valutazione della qualità delle note…',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'library.sentenceMatchGeneratorTitle': 'Generatore di Corrispondenza Frase-Immagine',
+  'library.sentenceMatchGeneratorSubtitle': 'Crea cartellini a tre parti — frase da abbinare a un\'immagine',
+  'tools.sentence_match_generator': 'Generatore di Corrispondenza Frase-Immagine',
+  'tools.sentence_match_generator_desc': 'Crea cartellini a tre parti — frase da abbinare a un\'immagine',
 };

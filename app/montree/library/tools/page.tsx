@@ -22,6 +22,13 @@ const TOOLS = [
     gradient: 'from-emerald-500 to-teal-600',
   },
   {
+    href: '/montree/library/tools/sentence-match-generator',
+    icon: '📖',
+    titleKey: 'tools.sentence_match_generator',
+    descKey: 'tools.sentence_match_generator_desc',
+    gradient: 'from-blue-600 to-sky-500',
+  },
+  {
     href: '/montree/library/tools/flashcard-maker',
     icon: '🎬',
     titleKey: 'tools.video_flashcard',
