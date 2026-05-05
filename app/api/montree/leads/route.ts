@@ -284,6 +284,15 @@ export async function PATCH(req: NextRequest) {
 }
 
 // DELETE - Remove a lead (super admin only)
+//
+// Three modes:
+//   1. Single   — ?lead_id=<uuid>                   (legacy query-string form)
+//   2. Bulk IDs — body: { lead_ids: [<uuid>, ...] } (multi-select clean-up)
+//   3. By status— body: { status: 'new'|'contacted'|'declined'|'onboarded' }
+//                                                   (purge all leads of a status)
+//
+// Returns { success: true, deleted: <count> }. Cleans up associated DMs in
+// every mode.
 export async function DELETE(req: NextRequest) {
   try {
     const supabase = getSupabase();
@@ -295,26 +304,69 @@ export async function DELETE(req: NextRequest) {
     }
 
     const { searchParams } = new URL(req.url);
-    const leadId = searchParams.get('lead_id');
+    const queryLeadId = searchParams.get('lead_id');
 
-    if (!leadId) {
-      return NextResponse.json({ error: 'lead_id required' }, { status: 400 });
+    // Body is optional — only present for bulk modes. Tolerant parse so the
+    // single-id query-string mode keeps working unchanged.
+    let body: { lead_ids?: unknown; status?: unknown } = {};
+    try {
+      const text = await req.text();
+      if (text) body = JSON.parse(text);
+    } catch {
+      // ignore — empty body or non-JSON is fine for single-id mode
     }
 
-    // Also clean up any DM messages for this lead
-    await supabase.from('montree_dm').delete().eq('conversation_id', leadId);
+    // Resolve target lead IDs ----------------------------------------
+    let targetIds: string[] = [];
+
+    if (queryLeadId) {
+      // Mode 1: single id via query-string
+      targetIds = [queryLeadId];
+    } else if (Array.isArray(body.lead_ids)) {
+      // Mode 2: bulk IDs (e.g. multi-select)
+      targetIds = (body.lead_ids as unknown[])
+        .filter((x): x is string => typeof x === 'string' && x.length > 0)
+        .slice(0, 1000); // hard cap to avoid runaway requests
+    } else if (typeof body.status === 'string') {
+      // Mode 3: purge by status
+      const validStatuses = ['new', 'contacted', 'onboarded', 'declined'];
+      if (!validStatuses.includes(body.status)) {
+        return NextResponse.json({ error: 'Invalid status' }, { status: 400 });
+      }
+      const { data: rows, error: lookupErr } = await supabase
+        .from('montree_leads')
+        .select('id')
+        .eq('status', body.status);
+      if (lookupErr) {
+        console.error('Lead lookup error:', lookupErr);
+        return NextResponse.json({ error: 'Failed to look up leads' }, { status: 500 });
+      }
+      targetIds = (rows || []).map(r => r.id as string);
+    } else {
+      return NextResponse.json(
+        { error: 'lead_id query param, lead_ids array, or status required' },
+        { status: 400 }
+      );
+    }
+
+    if (targetIds.length === 0) {
+      return NextResponse.json({ success: true, deleted: 0 });
+    }
+
+    // Clean up DMs for every targeted lead (best-effort)
+    await supabase.from('montree_dm').delete().in('conversation_id', targetIds);
 
     const { error } = await supabase
       .from('montree_leads')
       .delete()
-      .eq('id', leadId);
+      .in('id', targetIds);
 
     if (error) {
       console.error('Lead delete error:', error);
-      return NextResponse.json({ error: 'Failed to delete lead' }, { status: 500 });
+      return NextResponse.json({ error: 'Failed to delete leads' }, { status: 500 });
     }
 
-    return NextResponse.json({ success: true });
+    return NextResponse.json({ success: true, deleted: targetIds.length });
 
   } catch (error) {
     console.error('Lead DELETE error:', error);

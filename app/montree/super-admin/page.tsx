@@ -650,6 +650,8 @@ export default function SuperAdminPage() {
             onFetchLeads={adminData.fetchLeads}
             onUpdateStatus={leadOps.updateLeadStatus}
             onDeleteLead={leadOps.deleteLead}
+            onBulkDeleteByIds={leadOps.bulkDeleteLeadsByIds}
+            onBulkDeleteByStatus={leadOps.bulkDeleteLeadsByStatus}
             onProvision={leadOps.provisionSchool}
             onOpenDm={openDm}
             onLoginAs={leadOps.loginAsSchool}
