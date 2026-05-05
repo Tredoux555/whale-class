@@ -753,3 +753,495 @@ export const generateLabelsOnly = ({
 
   return html;
 };
+
+// ============================================================================
+// STRIP LAYOUT — Sentence Match Cards
+// ----------------------------------------------------------------------------
+// Long horizontal sentence strips paired with square picture cards. Standard
+// Montessori sentence-strip format: 21cm × ~7cm strips, full A4 page width.
+// Used by the Sentence Match Picture Generator. The square Three-Part Card
+// Generator continues to use the layout above unchanged.
+// ============================================================================
+
+/**
+ * Compute strip-layout dimensions for sentence-match cards.
+ * `cardSizeCm` controls the strip height AND the picture-square edge length.
+ * The strip width is always full A4 (210mm).
+ */
+function computeStripLayout(cardSizeCm: number) {
+  const stripHeight = cardSizeCm; // e.g. 7cm
+  const stripWidth = A4_WIDTH_CM; // 21cm — full A4 width
+  // The picture square inside the strip's right side (and as the picture card)
+  const pictureSize = stripHeight; // matches strip height for visual balance
+
+  // Strips per page — A4_HEIGHT_CM / stripHeight
+  const stripsPerPage = Math.max(1, Math.floor(A4_HEIGHT_CM / stripHeight));
+
+  // Picture cards: square grid, same size as strip height
+  const picCols = Math.max(1, Math.floor(A4_WIDTH_CM / pictureSize));
+  const picRows = Math.max(1, Math.floor(A4_HEIGHT_CM / pictureSize));
+  const picPerPage = picCols * picRows;
+
+  // Font size scales with strip height — sentences need more vertical room
+  // than single-word labels so we tune coefficient lower
+  const fontSize = Math.max(14, Math.min(32, Math.round(stripHeight * 2.6)));
+
+  return {
+    stripHeight,
+    stripWidth,
+    pictureSize,
+    stripsPerPage,
+    picCols,
+    picRows,
+    picPerPage,
+    fontSize,
+  };
+}
+
+/**
+ * Adaptive font sizer for sentence strips. Same algorithm as the square version
+ * but tuned for the longer text rectangle (full strip width minus the picture
+ * square minus borders).
+ */
+function adaptiveStripFontSize(
+  sentence: string,
+  basePt: number,
+  textWidthCm: number,
+  textHeightCm: number
+): number {
+  const internalWidthPt = (textWidthCm - 0.6) * 28.35;
+  const internalHeightPt = (textHeightCm - 0.4) * 28.35;
+  const lineHeight = 1.25;
+  const CHAR_W = 0.6;
+  const MIN_PT = 10;
+
+  const words = sentence.split(/\s+/).filter(Boolean);
+  const longestWordLen = words.reduce((m, w) => Math.max(m, w.length), 1);
+
+  let fontSize = basePt;
+  while (fontSize > MIN_PT) {
+    const charWidth = fontSize * CHAR_W;
+    const charsPerLine = Math.max(1, Math.floor(internalWidthPt / charWidth));
+    const longestWordFits = longestWordLen <= charsPerLine;
+
+    let lines = 1;
+    let cur = 0;
+    for (const w of words) {
+      if (cur > 0 && cur + 1 + w.length > charsPerLine) {
+        lines++;
+        cur = w.length;
+      } else {
+        cur += (cur > 0 ? 1 : 0) + w.length;
+      }
+      if (w.length > charsPerLine) {
+        lines += Math.ceil(w.length / charsPerLine) - 1;
+      }
+    }
+    const totalHeightPt = lines * fontSize * lineHeight;
+    if (longestWordFits && totalHeightPt <= internalHeightPt) break;
+    fontSize -= 1;
+  }
+  return Math.max(MIN_PT, fontSize);
+}
+
+/**
+ * Generate strip-layout print: control strips (sentence-left + picture-right)
+ * + square picture cards + sentence-only strips. Returns one HTML doc with
+ * all three sets paginated for A4 printing.
+ */
+export const generateStripCards = ({
+  cards,
+  borderColor,
+  fontFamily,
+  cardSizeCm = 7,
+}: GenerateCardsParams): string => {
+  const L = computeStripLayout(cardSizeCm);
+
+  // Sentence-text area dimensions inside a strip
+  const textWidthCm = L.stripWidth - L.pictureSize - WHITE_BORDER_CM * 3;
+  const textHeightCm = L.stripHeight - WHITE_BORDER_CM * 2;
+
+  let html = `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Sentence Match Cards - Print</title>
+  <style>
+    @page {
+      size: A4;
+      margin: ${MARGIN_CM}cm;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: system-ui, sans-serif;
+      background: white;
+      position: relative;
+    }
+
+    .page {
+      page-break-after: always;
+      width: ${A4_WIDTH_CM}cm;
+      height: ${A4_HEIGHT_CM}cm;
+      position: relative;
+      overflow: hidden;
+    }
+    .page:last-child { page-break-after: auto; }
+
+    .page-title {
+      font-size: 10pt;
+      color: #999;
+      margin-bottom: 0.3cm;
+      text-align: center;
+    }
+
+    /* === STRIP CARDS (control + sentence-only) === */
+    .strip {
+      background: ${borderColor};
+      width: ${L.stripWidth}cm;
+      height: ${L.stripHeight}cm;
+      padding: ${WHITE_BORDER_CM}cm;
+      display: flex;
+      flex-direction: row;
+      gap: ${WHITE_BORDER_CM}cm;
+      box-sizing: border-box;
+      border-radius: ${CARD_BORDER_RADIUS}cm;
+      overflow: hidden;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+
+    .strip-text-area {
+      flex: 1;
+      background: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.2cm 0.5cm;
+      font-family: "${fontFamily}", cursive;
+      font-weight: bold;
+      text-align: center;
+      line-height: 1.25;
+      color: #1f2937;
+      overflow: hidden;
+      word-wrap: break-word;
+      word-break: break-word;
+      border-radius: ${CARD_BORDER_RADIUS}cm;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+
+    .strip-image-area {
+      width: ${L.pictureSize - WHITE_BORDER_CM * 2}cm;
+      height: ${L.pictureSize - WHITE_BORDER_CM * 2}cm;
+      background: white;
+      overflow: hidden;
+      flex-shrink: 0;
+      border-radius: ${CARD_BORDER_RADIUS}cm;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+
+    .strip-image-area img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .strips-grid {
+      display: grid;
+      grid-template-columns: ${L.stripWidth}cm;
+      grid-auto-rows: ${L.stripHeight}cm;
+      gap: 0;
+    }
+
+    /* === PICTURE CARDS (square) === */
+    .pic-grid {
+      display: grid;
+      grid-template-columns: repeat(${L.picCols}, ${L.pictureSize}cm);
+      grid-auto-rows: ${L.pictureSize}cm;
+      gap: 0;
+    }
+
+    .pic-card {
+      background: ${borderColor};
+      width: ${L.pictureSize}cm;
+      height: ${L.pictureSize}cm;
+      padding: ${WHITE_BORDER_CM}cm;
+      box-sizing: border-box;
+      border-radius: ${CARD_BORDER_RADIUS}cm;
+      overflow: hidden;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+
+    .pic-card-inner {
+      width: 100%;
+      height: 100%;
+      background: white;
+      overflow: hidden;
+      border-radius: ${CARD_BORDER_RADIUS}cm;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+
+    .pic-card-inner img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    @media print {
+      * {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+        color-adjust: exact !important;
+      }
+      body { margin: 0; padding: 0; }
+      .page-title { display: none; }
+      .strip, .pic-card { background: ${borderColor} !important; }
+    }
+
+    @media screen {
+      body { padding: 20px; background: #f0f0f0; }
+      .page { background: white; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    }
+  </style>
+</head>
+<body>
+`;
+
+  // Control strips: sentence-left + picture-right
+  for (let i = 0; i < cards.length; i += L.stripsPerPage) {
+    const pageCards = cards.slice(i, i + L.stripsPerPage);
+    const pageNum = Math.floor(i / L.stripsPerPage) + 1;
+    html += `<div class="page">
+      <div class="page-title">Control Strips - Page ${pageNum}</div>
+      <div class="strips-grid">`;
+    for (const card of pageCards) {
+      const fontPt = adaptiveStripFontSize(card.label, L.fontSize, textWidthCm, textHeightCm);
+      html += `<div class="strip">
+        <div class="strip-text-area" style="font-size: ${fontPt}pt;">${escapeHtml(card.label)}</div>
+        <div class="strip-image-area"><img src="${sanitizeImageUrl(card.croppedImage)}" alt="${escapeHtml(card.label)}" style="${getObjectPosition(card)}"></div>
+      </div>`;
+    }
+    html += '</div></div>';
+  }
+
+  // Picture cards: square grid
+  for (let i = 0; i < cards.length; i += L.picPerPage) {
+    const pageCards = cards.slice(i, i + L.picPerPage);
+    const pageNum = Math.floor(i / L.picPerPage) + 1;
+    html += `<div class="page">
+      <div class="page-title">Picture Cards - Page ${pageNum}</div>
+      <div class="pic-grid">`;
+    for (const card of pageCards) {
+      html += `<div class="pic-card">
+        <div class="pic-card-inner"><img src="${sanitizeImageUrl(card.croppedImage)}" alt="${escapeHtml(card.label)}" style="${getObjectPosition(card)}"></div>
+      </div>`;
+    }
+    html += '</div></div>';
+  }
+
+  // Sentence strips: text-only
+  for (let i = 0; i < cards.length; i += L.stripsPerPage) {
+    const pageCards = cards.slice(i, i + L.stripsPerPage);
+    const pageNum = Math.floor(i / L.stripsPerPage) + 1;
+    html += `<div class="page">
+      <div class="page-title">Sentence Strips - Page ${pageNum}</div>
+      <div class="strips-grid">`;
+    for (const card of pageCards) {
+      // Full-strip text area: width = full strip minus borders
+      const fullTextWidth = L.stripWidth - WHITE_BORDER_CM * 2;
+      const fontPt = adaptiveStripFontSize(card.label, L.fontSize, fullTextWidth, textHeightCm);
+      html += `<div class="strip">
+        <div class="strip-text-area" style="font-size: ${fontPt}pt; flex: 1;">${escapeHtml(card.label)}</div>
+      </div>`;
+    }
+    html += '</div></div>';
+  }
+
+  html += `
+  <script>
+    window.onload = function() { setTimeout(() => { window.print(); }, 500); };
+  </script>
+</body>
+</html>`;
+
+  return html;
+};
+
+/**
+ * Strip-layout images-only print: just the square picture cards.
+ */
+export const generateStripImagesOnly = ({
+  cards,
+  borderColor,
+  fontFamily: _fontFamily,
+  cardSizeCm = 7,
+}: GenerateCardsParams): string => {
+  const L = computeStripLayout(cardSizeCm);
+
+  let html = `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Sentence Match Pictures - Print</title>
+  <style>
+    @page { size: A4; margin: ${MARGIN_CM}cm; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: system-ui, sans-serif; background: white; }
+    .page {
+      page-break-after: always;
+      width: ${A4_WIDTH_CM}cm;
+      height: ${A4_HEIGHT_CM}cm;
+      position: relative;
+      overflow: hidden;
+    }
+    .page:last-child { page-break-after: auto; }
+    .page-title { font-size: 10pt; color: #999; margin-bottom: 0.3cm; text-align: center; }
+    .pic-grid {
+      display: grid;
+      grid-template-columns: repeat(${L.picCols}, ${L.pictureSize}cm);
+      grid-auto-rows: ${L.pictureSize}cm;
+      gap: 0;
+    }
+    .pic-card {
+      background: ${borderColor};
+      width: ${L.pictureSize}cm;
+      height: ${L.pictureSize}cm;
+      padding: ${WHITE_BORDER_CM}cm;
+      box-sizing: border-box;
+      border-radius: ${CARD_BORDER_RADIUS}cm;
+      overflow: hidden;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    .pic-card-inner {
+      width: 100%; height: 100%;
+      background: white; overflow: hidden;
+      border-radius: ${CARD_BORDER_RADIUS}cm;
+    }
+    .pic-card-inner img { width: 100%; height: 100%; object-fit: cover; }
+    @media print {
+      * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+      body { margin: 0; padding: 0; }
+      .page-title { display: none; }
+      .pic-card { background: ${borderColor} !important; }
+    }
+    @media screen { body { padding: 20px; background: #f0f0f0; } .page { background: white; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); } }
+  </style>
+</head>
+<body>`;
+
+  for (let i = 0; i < cards.length; i += L.picPerPage) {
+    const pageCards = cards.slice(i, i + L.picPerPage);
+    const pageNum = Math.floor(i / L.picPerPage) + 1;
+    html += `<div class="page">
+      <div class="page-title">Pictures - Page ${pageNum}</div>
+      <div class="pic-grid">`;
+    for (const card of pageCards) {
+      html += `<div class="pic-card">
+        <div class="pic-card-inner"><img src="${sanitizeImageUrl(card.croppedImage)}" alt="${escapeHtml(card.label)}" style="${getObjectPosition(card)}"></div>
+      </div>`;
+    }
+    html += '</div></div>';
+  }
+
+  html += `<script>window.onload = function(){setTimeout(()=>window.print(),500);};</script></body></html>`;
+  return html;
+};
+
+/**
+ * Strip-layout sentences-only print: full A4-width text strips, no images.
+ */
+export const generateStripSentencesOnly = ({
+  cards,
+  borderColor,
+  fontFamily,
+  cardSizeCm = 7,
+}: GenerateCardsParams): string => {
+  const L = computeStripLayout(cardSizeCm);
+  const fullTextWidth = L.stripWidth - WHITE_BORDER_CM * 2;
+  const textHeightCm = L.stripHeight - WHITE_BORDER_CM * 2;
+
+  let html = `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Sentence Strips - Print</title>
+  <style>
+    @page { size: A4; margin: ${MARGIN_CM}cm; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: system-ui, sans-serif; background: white; }
+    .page {
+      page-break-after: always;
+      width: ${A4_WIDTH_CM}cm;
+      height: ${A4_HEIGHT_CM}cm;
+      position: relative;
+      overflow: hidden;
+    }
+    .page:last-child { page-break-after: auto; }
+    .page-title { font-size: 10pt; color: #999; margin-bottom: 0.3cm; text-align: center; }
+    .strips-grid {
+      display: grid;
+      grid-template-columns: ${L.stripWidth}cm;
+      grid-auto-rows: ${L.stripHeight}cm;
+      gap: 0;
+    }
+    .strip {
+      background: ${borderColor};
+      width: ${L.stripWidth}cm;
+      height: ${L.stripHeight}cm;
+      padding: ${WHITE_BORDER_CM}cm;
+      box-sizing: border-box;
+      border-radius: ${CARD_BORDER_RADIUS}cm;
+      overflow: hidden;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    .strip-text-area {
+      width: 100%; height: 100%;
+      background: white;
+      display: flex; align-items: center; justify-content: center;
+      padding: 0.2cm 0.5cm;
+      font-family: "${fontFamily}", cursive;
+      font-weight: bold;
+      text-align: center;
+      line-height: 1.25;
+      color: #1f2937;
+      overflow: hidden;
+      word-wrap: break-word;
+      word-break: break-word;
+      border-radius: ${CARD_BORDER_RADIUS}cm;
+    }
+    @media print {
+      * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+      body { margin: 0; padding: 0; }
+      .page-title { display: none; }
+      .strip { background: ${borderColor} !important; }
+    }
+    @media screen { body { padding: 20px; background: #f0f0f0; } .page { background: white; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); } }
+  </style>
+</head>
+<body>`;
+
+  for (let i = 0; i < cards.length; i += L.stripsPerPage) {
+    const pageCards = cards.slice(i, i + L.stripsPerPage);
+    const pageNum = Math.floor(i / L.stripsPerPage) + 1;
+    html += `<div class="page">
+      <div class="page-title">Sentence Strips - Page ${pageNum}</div>
+      <div class="strips-grid">`;
+    for (const card of pageCards) {
+      const fontPt = adaptiveStripFontSize(card.label, L.fontSize, fullTextWidth, textHeightCm);
+      html += `<div class="strip">
+        <div class="strip-text-area" style="font-size: ${fontPt}pt;">${escapeHtml(card.label)}</div>
+      </div>`;
+    }
+    html += '</div></div>';
+  }
+
+  html += `<script>window.onload = function(){setTimeout(()=>window.print(),500);};</script></body></html>`;
+  return html;
+};

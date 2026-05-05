@@ -1,12 +1,27 @@
 "use client";
 
-import React, { useState, useRef, useCallback, useEffect } from 'react';
+import React, { useRef, useCallback, useEffect } from 'react';
 import { Card } from './types';
+
+/** Compact button style used by the strip-mode action row. */
+const btnStyle = (bg: string): React.CSSProperties => ({
+  padding: '6px 12px',
+  borderRadius: '6px',
+  border: 'none',
+  backgroundColor: bg,
+  color: '#fff',
+  cursor: 'pointer',
+  fontSize: '12px',
+  fontFamily: 'system-ui',
+});
 
 interface CardPreviewProps {
   card: Card;
   borderColor: string;
   fontFamily: string;
+  layoutMode?: 'square' | 'strip';
+  /** Label override for the third card type. 'Sentence' for strip mode, 'Label' otherwise. */
+  thirdCardLabel?: string;
   onUpdateLabel: (id: number, newLabel: string) => void;
   onStartCrop: (id: number) => void;
   onDownloadCard: (card: Card, type: 'control' | 'picture' | 'label') => void;
@@ -129,6 +144,8 @@ const CardPreview: React.FC<CardPreviewProps> = ({
   card,
   borderColor,
   fontFamily,
+  layoutMode = 'square',
+  thirdCardLabel,
   onUpdateLabel,
   onStartCrop,
   onDownloadCard,
@@ -138,11 +155,208 @@ const CardPreview: React.FC<CardPreviewProps> = ({
   const offX = card.imageOffset?.x ?? 50;
   const offY = card.imageOffset?.y ?? 50;
   const isRepositioned = offX !== 50 || offY !== 50;
+  const isStrip = layoutMode === 'strip';
+  const thirdLabel = thirdCardLabel ?? (isStrip ? 'Sentence' : 'Label');
 
   const handleOffsetChange = useCallback((x: number, y: number) => {
     onUpdateOffset(card.id, x, y);
   }, [card.id, onUpdateOffset]);
 
+  // ----- Strip-layout preview -----
+  // Mirrors the print layout: control = wide strip with sentence-left + picture-right,
+  // picture = square card, sentence = wide text-only strip.
+  if (isStrip) {
+    return (
+      <div style={{
+        backgroundColor: '#fff',
+        borderRadius: '12px',
+        padding: '16px',
+        boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '12px'
+      }}>
+        <div style={{
+          display: 'flex',
+          gap: '12px',
+          flexWrap: 'wrap',
+          justifyContent: 'center'
+        }}>
+          {/* Control strip — sentence left, picture right */}
+          <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: '4px',
+            width: '100%',
+          }}>
+            <span style={{ fontSize: '10px', color: '#666', fontFamily: 'system-ui' }}>Control</span>
+            <div style={{
+              width: '100%',
+              maxWidth: '280px',
+              backgroundColor: borderColor,
+              padding: '4px',
+              borderRadius: '4px',
+              display: 'flex',
+              gap: '4px',
+              alignItems: 'stretch',
+            }}>
+              <div style={{
+                flex: 1,
+                backgroundColor: '#fff',
+                padding: '4px 6px',
+                textAlign: 'center',
+                fontFamily: fontFamily,
+                fontSize: '10px',
+                fontWeight: 'bold',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                wordBreak: 'break-word',
+                lineHeight: 1.25,
+                minHeight: '70px',
+              }}>
+                {card.label}
+              </div>
+              <div style={{ flexShrink: 0 }}>
+                <DraggableImage
+                  src={card.croppedImage}
+                  alt={card.label}
+                  size={70}
+                  offsetX={offX}
+                  offsetY={offY}
+                  onOffsetChange={handleOffsetChange}
+                  onDoubleClick={() => onStartCrop(card.id)}
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Picture card preview (square) */}
+          <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: '4px'
+          }}>
+            <span style={{ fontSize: '10px', color: '#666', fontFamily: 'system-ui' }}>Picture</span>
+            <div style={{
+              backgroundColor: borderColor,
+              padding: '4px',
+              borderRadius: '4px'
+            }}>
+              <DraggableImage
+                src={card.croppedImage}
+                alt={card.label}
+                size={78}
+                offsetX={offX}
+                offsetY={offY}
+                onOffsetChange={handleOffsetChange}
+                onDoubleClick={() => onStartCrop(card.id)}
+              />
+            </div>
+          </div>
+
+          {/* Sentence strip preview (text only, full width) */}
+          <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: '4px',
+            width: '100%',
+          }}>
+            <span style={{ fontSize: '10px', color: '#666', fontFamily: 'system-ui' }}>Sentence</span>
+            <div style={{
+              width: '100%',
+              maxWidth: '280px',
+              backgroundColor: borderColor,
+              padding: '4px',
+              borderRadius: '4px',
+            }}>
+              <div style={{
+                backgroundColor: '#fff',
+                padding: '10px 6px',
+                textAlign: 'center',
+                fontFamily: fontFamily,
+                fontSize: '11px',
+                fontWeight: 'bold',
+                wordBreak: 'break-word',
+                lineHeight: 1.3,
+                minHeight: '40px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}>
+                {card.label}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Reposition hint */}
+        <div style={{
+          textAlign: 'center',
+          fontSize: '11px',
+          color: '#999',
+          fontFamily: 'system-ui',
+        }}>
+          Drag picture to reposition · Double-click to crop
+          {isRepositioned && (
+            <button
+              onClick={() => onUpdateOffset(card.id, 50, 50)}
+              style={{
+                marginLeft: '8px',
+                padding: '2px 8px',
+                borderRadius: '4px',
+                border: '1px solid #ddd',
+                backgroundColor: '#f5f5f5',
+                color: '#666',
+                cursor: 'pointer',
+                fontSize: '11px',
+                fontFamily: 'system-ui',
+              }}
+            >
+              Reset
+            </button>
+          )}
+        </div>
+
+        {/* Multi-line sentence editor */}
+        <textarea
+          value={card.label}
+          onChange={(e) => onUpdateLabel(card.id, e.target.value)}
+          rows={2}
+          placeholder="The cat sits on the mat."
+          style={{
+            padding: '8px 12px',
+            borderRadius: '6px',
+            border: '2px solid #e0e0e0',
+            fontFamily: 'system-ui',
+            fontSize: '14px',
+            textAlign: 'center',
+            resize: 'vertical',
+            minHeight: '52px',
+          }}
+        />
+
+        {/* Action buttons */}
+        <div style={{
+          display: 'flex',
+          gap: '8px',
+          flexWrap: 'wrap',
+          justifyContent: 'center'
+        }}>
+          <button onClick={() => onStartCrop(card.id)} style={btnStyle('#2196F3')}>✂️ Crop</button>
+          <button onClick={() => onDownloadCard(card, 'control')} style={btnStyle('#4CAF50')}>⬇ Control</button>
+          <button onClick={() => onDownloadCard(card, 'picture')} style={btnStyle('#FF9800')}>⬇ Picture</button>
+          <button onClick={() => onDownloadCard(card, 'label')} style={btnStyle('#9C27B0')}>⬇ {thirdLabel}</button>
+          <button onClick={() => onRemoveCard(card.id)} style={btnStyle('#f44336')}>🗑️</button>
+        </div>
+      </div>
+    );
+  }
+
+  // ----- Square-layout preview (default — three-part cards) -----
   return (
     <div style={{
       backgroundColor: '#fff',
@@ -229,7 +443,7 @@ const CardPreview: React.FC<CardPreviewProps> = ({
           alignItems: 'center',
           gap: '4px'
         }}>
-          <span style={{ fontSize: '10px', color: '#666', fontFamily: 'system-ui' }}>Label</span>
+          <span style={{ fontSize: '10px', color: '#666', fontFamily: 'system-ui' }}>{thirdLabel}</span>
           <div style={{
             width: '100px',
             backgroundColor: borderColor,
@@ -357,7 +571,7 @@ const CardPreview: React.FC<CardPreviewProps> = ({
             fontFamily: 'system-ui'
           }}
         >
-          ⬇ Label
+          ⬇ {thirdLabel}
         </button>
         <button
           onClick={() => onRemoveCard(card.id)}
