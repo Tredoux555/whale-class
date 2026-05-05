@@ -18,6 +18,7 @@ export default function LibrarySentenceMatchGeneratorPage() {
 
   return (
     <CardGenerator
+      layoutMode="strip"
       headerConfig={{
         title: `📖 ${t('library.sentenceMatchGeneratorTitle')}`,
         subtitle: t('library.sentenceMatchGeneratorSubtitle'),

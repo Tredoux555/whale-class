@@ -19,6 +19,7 @@ import CardGenerator from '@/components/card-generator/CardGenerator';
 export default function AdminSentenceMatchGeneratorPage() {
   return (
     <CardGenerator
+      layoutMode="strip"
       headerConfig={{
         title: '📖 Sentence Match Picture Generator',
         subtitle: 'Create three-part sentence cards — sentence to match a picture',

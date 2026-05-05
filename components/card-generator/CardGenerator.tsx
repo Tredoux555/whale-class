@@ -4,7 +4,10 @@ import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { Card } from './types';
 import CropOverlay from './CropOverlay';
 import CardPreview from './CardPreview';
-import { generateCards, generateLargeCards, generateLabelsOnly } from './print-utils';
+import {
+  generateCards, generateLargeCards, generateLabelsOnly,
+  generateStripCards, generateStripImagesOnly, generateStripSentencesOnly,
+} from './print-utils';
 import PhotoBankPicker from '@/components/montree/PhotoBankPicker';
 import LanguageToggle from '@/components/montree/LanguageToggle';
 
@@ -47,13 +50,30 @@ export interface TextConfig {
   infoSectionFooter?: string;     // bottom info card closing line
 }
 
+/**
+ * Card layout mode.
+ * - 'square' (default) — classic Montessori three-part cards: square picture
+ *   stacked above its label. Used by the 3-Part Card Generator.
+ * - 'strip' — sentence-match cards: full A4-width landscape strips with the
+ *   sentence on the left and the picture on the right. Picture-only cards stay
+ *   square. Used by the Sentence Match Picture Generator.
+ */
+export type LayoutMode = 'square' | 'strip';
+
 interface CardGeneratorProps {
   headerConfig?: HeaderConfig;
   textConfig?: TextConfig;
+  layoutMode?: LayoutMode;
   initialCards?: Card[];
 }
 
-const CardGenerator: React.FC<CardGeneratorProps> = ({ headerConfig = {}, textConfig = {}, initialCards }) => {
+const CardGenerator: React.FC<CardGeneratorProps> = ({
+  headerConfig = {},
+  textConfig = {},
+  layoutMode = 'square',
+  initialCards,
+}) => {
+  const isStrip = layoutMode === 'strip';
   const {
     showBackButton = false,
     backButtonLabel = '←',
@@ -323,6 +343,53 @@ const CardGenerator: React.FC<CardGeneratorProps> = ({ headerConfig = {}, textCo
     return minFontSize;
   };
 
+  // Multi-line text fitter for the strip layout — wraps to as many lines as
+  // needed and shrinks the font until everything fits in the given rectangle.
+  const drawMultilineText = (
+    ctx: CanvasRenderingContext2D,
+    text: string,
+    x: number,
+    y: number,
+    w: number,
+    h: number,
+    fontFamilyName: string,
+    maxFontPx: number,
+    minFontPx = 14
+  ) => {
+    let fontPx = maxFontPx;
+    let lines: string[] = [text];
+    while (fontPx >= minFontPx) {
+      ctx.font = `bold ${fontPx}px "${fontFamilyName}", cursive`;
+      const words = text.split(/\s+/).filter(Boolean);
+      lines = [];
+      let cur = '';
+      for (const word of words) {
+        const test = cur ? cur + ' ' + word : word;
+        if (ctx.measureText(test).width <= w * 0.95) {
+          cur = test;
+        } else {
+          if (cur) lines.push(cur);
+          cur = word;
+        }
+      }
+      if (cur) lines.push(cur);
+      const lineH = fontPx * 1.25;
+      const totalH = lines.length * lineH;
+      const allFit = lines.every(l => ctx.measureText(l).width <= w * 0.95);
+      if (totalH <= h * 0.95 && allFit) break;
+      fontPx -= 2;
+    }
+    ctx.fillStyle = '#000000';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    const lineH = fontPx * 1.25;
+    const totalH = lines.length * lineH;
+    const startY = y + (h - totalH) / 2 + lineH / 2;
+    lines.forEach((line, i) => {
+      ctx.fillText(line, x + w / 2, startY + i * lineH);
+    });
+  };
+
   // Generate card image
   const generateCardCanvas = (card: Card, type: string): Promise<HTMLCanvasElement> => {
     return new Promise((resolve, reject) => {
@@ -331,14 +398,14 @@ const CardGenerator: React.FC<CardGeneratorProps> = ({ headerConfig = {}, textCo
       const currentFontFamily = fontFamily;
       const cardLabel = card.label;
       const cardImage = card.croppedImage;
-      
+
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
       if (!ctx) {
         reject(new Error('Could not get 2d context'));
         return;
       }
-      
+
       // Helper: calculate offset-aware image position (matches CSS object-fit:cover + object-position)
       const calcCoverPosition = (imgW: number, imgH: number, areaW: number, areaH: number, offXPct: number, offYPct: number) => {
         const scale = Math.max(areaW / imgW, areaH / imgH);
@@ -358,6 +425,115 @@ const CardGenerator: React.FC<CardGeneratorProps> = ({ headerConfig = {}, textCo
       const imgOffX = card.imageOffset?.x ?? 50;
       const imgOffY = card.imageOffset?.y ?? 50;
 
+      // ============================================================
+      // STRIP LAYOUT — sentence-match cards
+      // ============================================================
+      if (isStrip) {
+        const A4_W_PX = 21 * CM_TO_PX;             // 21cm full A4 width
+        const STRIP_H_PX = cardSizeCm * CM_TO_PX;   // strip height = cardSizeCm
+        const PIC_INNER_PX = (cardSizeCm - 1) * CM_TO_PX; // square picture area inside strip
+        const GAP_PX = 0.5 * CM_TO_PX;              // gap between text area and picture
+        const TEXT_W_INNER_PX = A4_W_PX - BORDER_SIZE * 2 - PIC_INNER_PX - GAP_PX;
+        const TEXT_H_INNER_PX = PIC_INNER_PX;
+        const STRIP_FONT_BASE = Math.max(20, Math.min(60, Math.round(STRIP_H_PX * 0.32)));
+
+        if (type === 'control') {
+          canvas.width = A4_W_PX;
+          canvas.height = STRIP_H_PX;
+          ctx.fillStyle = currentBorderColor;
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          // Left white text area
+          const textX = BORDER_SIZE;
+          const textY = BORDER_SIZE;
+          ctx.fillStyle = '#FFFFFF';
+          ctx.fillRect(textX, textY, TEXT_W_INNER_PX, TEXT_H_INNER_PX);
+          // Right white picture area
+          const picX = textX + TEXT_W_INNER_PX + GAP_PX;
+          const picY = textY;
+          ctx.fillRect(picX, picY, PIC_INNER_PX, PIC_INNER_PX);
+          // Image
+          const img = new Image();
+          img.onload = () => {
+            try {
+              const { drawX, drawY, scaledW, scaledH } = calcCoverPosition(
+                img.width, img.height, PIC_INNER_PX, PIC_INNER_PX, imgOffX, imgOffY
+              );
+              ctx.save();
+              ctx.beginPath();
+              ctx.rect(picX, picY, PIC_INNER_PX, PIC_INNER_PX);
+              ctx.clip();
+              ctx.drawImage(img, picX + drawX, picY + drawY, scaledW, scaledH);
+              ctx.restore();
+              // Sentence text — multi-line, fitted
+              drawMultilineText(
+                ctx, cardLabel,
+                textX, textY, TEXT_W_INNER_PX, TEXT_H_INNER_PX,
+                currentFontFamily, STRIP_FONT_BASE
+              );
+              resolve(canvas);
+            } catch (error) {
+              reject(error);
+            }
+          };
+          img.onerror = () => reject(new Error('Failed to load image'));
+          img.src = cardImage;
+          return;
+        }
+
+        if (type === 'picture') {
+          // Square picture card, total = cardSizeCm × cardSizeCm
+          const PIC_TOTAL_PX = cardSizeCm * CM_TO_PX;
+          canvas.width = PIC_TOTAL_PX;
+          canvas.height = PIC_TOTAL_PX;
+          ctx.fillStyle = currentBorderColor;
+          ctx.fillRect(0, 0, PIC_TOTAL_PX, PIC_TOTAL_PX);
+          ctx.fillStyle = '#FFFFFF';
+          ctx.fillRect(BORDER_SIZE, BORDER_SIZE, PIC_INNER_PX, PIC_INNER_PX);
+          const img = new Image();
+          img.onload = () => {
+            try {
+              const { drawX, drawY, scaledW, scaledH } = calcCoverPosition(
+                img.width, img.height, PIC_INNER_PX, PIC_INNER_PX, imgOffX, imgOffY
+              );
+              ctx.save();
+              ctx.beginPath();
+              ctx.rect(BORDER_SIZE, BORDER_SIZE, PIC_INNER_PX, PIC_INNER_PX);
+              ctx.clip();
+              ctx.drawImage(img, BORDER_SIZE + drawX, BORDER_SIZE + drawY, scaledW, scaledH);
+              ctx.restore();
+              resolve(canvas);
+            } catch (error) {
+              reject(error);
+            }
+          };
+          img.onerror = () => reject(new Error('Failed to load image'));
+          img.src = cardImage;
+          return;
+        }
+
+        if (type === 'label') {
+          // Full-width sentence strip, no picture
+          canvas.width = A4_W_PX;
+          canvas.height = STRIP_H_PX;
+          ctx.fillStyle = currentBorderColor;
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          const FULL_TEXT_W_PX = A4_W_PX - BORDER_SIZE * 2;
+          const FULL_TEXT_H_PX = STRIP_H_PX - BORDER_SIZE * 2;
+          ctx.fillStyle = '#FFFFFF';
+          ctx.fillRect(BORDER_SIZE, BORDER_SIZE, FULL_TEXT_W_PX, FULL_TEXT_H_PX);
+          drawMultilineText(
+            ctx, cardLabel,
+            BORDER_SIZE, BORDER_SIZE, FULL_TEXT_W_PX, FULL_TEXT_H_PX,
+            currentFontFamily, STRIP_FONT_BASE
+          );
+          resolve(canvas);
+          return;
+        }
+      }
+
+      // ============================================================
+      // SQUARE LAYOUT (default — three-part cards)
+      // ============================================================
       if (type === 'control') {
         // Control card: Image + Label
         canvas.width = CARD_SIZE;
@@ -490,7 +666,7 @@ const CardGenerator: React.FC<CardGeneratorProps> = ({ headerConfig = {}, textCo
         return;
       }
 
-      const html = generateCards({
+      const html = (isStrip ? generateStripCards : generateCards)({
         cards,
         borderColor,
         fontFamily,
@@ -524,7 +700,7 @@ const CardGenerator: React.FC<CardGeneratorProps> = ({ headerConfig = {}, textCo
         return;
       }
 
-      const html = generateLargeCards({
+      const html = (isStrip ? generateStripImagesOnly : generateLargeCards)({
         cards,
         borderColor,
         fontFamily,
@@ -558,7 +734,7 @@ const CardGenerator: React.FC<CardGeneratorProps> = ({ headerConfig = {}, textCo
         return;
       }
 
-      const html = generateLabelsOnly({
+      const html = (isStrip ? generateStripSentencesOnly : generateLabelsOnly)({
         cards,
         borderColor,
         fontFamily,
@@ -1063,6 +1239,8 @@ const CardGenerator: React.FC<CardGeneratorProps> = ({ headerConfig = {}, textCo
                 card={card}
                 borderColor={borderColor}
                 fontFamily={fontFamily}
+                layoutMode={layoutMode}
+                thirdCardLabel={isStrip ? 'Sentence' : 'Label'}
                 onUpdateLabel={updateCardLabel}
                 onStartCrop={startCrop}
                 onDownloadCard={downloadCard}
