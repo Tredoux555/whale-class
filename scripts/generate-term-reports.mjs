@@ -583,20 +583,19 @@ async function fillTemplate(templateBuf, report, progress) {
 
   let xml = await slideFile.async('string');
 
-  // Patch the ClosingText shape's text colour from bg1 (white — invisible on
-  // white background) to tx1 (dark — visible). The template ships with bg1
-  // for legacy reasons, which made closings invisible on every report.
-  // We only touch the runs/endParaRPr inside the shape with name="ClosingText"
-  // so we don't accidentally change other elements that legitimately use bg1.
-  xml = xml.replace(
-    /(<p:cNvPr id="\d+" name="ClosingText"\/>[\s\S]*?<\/p:sp>)/,
-    (closingShape) => closingShape.replace(/<a:schemeClr val="bg1"\/>/g, '<a:schemeClr val="tx1"/>')
-  );
+  // The template puts the closing in its own ClosingText shape with italic
+  // 13pt styling — visually separate from the body's regular 14pt block.
+  // For consistent formatting (one continuous text block, all the same size
+  // and style) we merge the closing INTO the body's PARA_CIRCLE area and
+  // leave the ClosingText shape empty.
+  const mergedCircle = report.para_english
+    ? `${report.para_circle}\\n${report.para_english}`
+    : report.para_circle;
 
   xml = xml
     .replace('{{PARA_OPENING}}', xmlEscape(report.para_opening))
-    .replace('{{PARA_CIRCLE}}', textWithBreaks(report.para_circle))
-    .replace('{{PARA_ENGLISH}}', xmlEscape(report.para_english));
+    .replace('{{PARA_CIRCLE}}', textWithBreaks(mergedCircle))
+    .replace('{{PARA_ENGLISH}}', ''); // closing now lives in the body block
 
   const top4 = progress.slice(0, 4);
   for (let i = 0; i < 4; i++) {
