@@ -29,6 +29,13 @@ const TOOLS = [
     gradient: 'from-blue-600 to-sky-500',
   },
   {
+    href: '/montree/library/tools/sorting-mat-generator',
+    icon: '🎯',
+    titleKey: 'tools.sorting_mat_generator',
+    descKey: 'tools.sorting_mat_generator_desc',
+    gradient: 'from-teal-600 to-emerald-500',
+  },
+  {
     href: '/montree/library/tools/flashcard-maker',
     icon: '🎬',
     titleKey: 'tools.video_flashcard',

@@ -3931,4 +3931,10 @@ export const ja: Record<string, string> = {
   'library.sentenceMatchGeneratorSubtitle': '3部構成の文カードを作成します — 絵に合わせた文',
   'tools.sentence_match_generator': '文を絵に合わせるカード生成ツール',
   'tools.sentence_match_generator_desc': '3部構成の文カードを作成します — 絵に合わせた文',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'library.sortingMatGeneratorTitle': 'ソーティングマットジェネレータ',
+  'library.sortingMatGeneratorSubtitle': '2個、3個、または4個の指定されたサークルを持つA4ソーティングマットを作成します',
+  'tools.sorting_mat_generator': 'ソーティングマットジェネレータ',
+  'tools.sorting_mat_generator_desc': 'カテゴリー分類作業用の2個、3個、または4個のラベル付きサークルを持つA4ソーティングマット',
 };

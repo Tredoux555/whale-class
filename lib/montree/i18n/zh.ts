@@ -4334,4 +4334,10 @@ export const zh = {
   'library.sentenceMatchGeneratorSubtitle': '创建三部分句子卡片 — 句子与图片相匹配',
   'tools.sentence_match_generator': '句子匹配图片生成器',
   'tools.sentence_match_generator_desc': '创建三部分句子卡片 — 句子与图片相匹配',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'library.sortingMatGeneratorTitle': '分类垫生成器',
+  'library.sortingMatGeneratorSubtitle': '创建具有2个、3个或4个指定圆圈的A4分类垫',
+  'tools.sorting_mat_generator': '分类垫生成器',
+  'tools.sorting_mat_generator_desc': '用于分类工作的A4分类垫，具有2个、3个或4个标记圆圈',
 } as const;

@@ -3928,4 +3928,10 @@ export const ru: Record<string, string> = {
   'library.sentenceMatchGeneratorSubtitle': 'Создание трёхчастных карточек предложений — предложение к изображению',
   'tools.sentence_match_generator': 'Генератор карточек на сопоставление предложений с изображением',
   'tools.sentence_match_generator_desc': 'Создание трёхчастных карточек предложений — предложение к изображению',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'library.sortingMatGeneratorTitle': 'Генератор Сортировочных Матов',
+  'library.sortingMatGeneratorSubtitle': 'Создавайте сортировочные маты А4 с 2, 3 или 4 обозначенными кругами',
+  'tools.sorting_mat_generator': 'Генератор Сортировочных Матов',
+  'tools.sorting_mat_generator_desc': 'Сортировочные маты А4 с 2, 3 или 4 обозначенными кругами для работы с категориями',
 };

@@ -3931,4 +3931,10 @@ export const de: Record<string, string> = {
   'library.sentenceMatchGeneratorSubtitle': 'Erstellen Sie dreiteilige Satzkarten – Satz zum Abgleichen mit einem Bild',
   'tools.sentence_match_generator': 'Satzabgleich-Bildgenerator',
   'tools.sentence_match_generator_desc': 'Erstellen Sie dreiteilige Satzkarten – Satz zum Abgleichen mit einem Bild',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'library.sortingMatGeneratorTitle': 'Sortier-Matte Generator',
+  'library.sortingMatGeneratorSubtitle': 'Erstellen Sie A4-Sortier-Matten mit 2, 3 oder 4 bezeichneten Kreisen',
+  'tools.sorting_mat_generator': 'Sortier-Matte Generator',
+  'tools.sorting_mat_generator_desc': 'A4-Sortier-Matten mit 2, 3 oder 4 beschrifteten Kreisen für Kategoriearbeit',
 };
