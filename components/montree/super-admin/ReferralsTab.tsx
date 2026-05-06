@@ -135,7 +135,12 @@ export default function ReferralsTab({ saToken }: ReferralsTabProps) {
       });
       const data = await res.json();
       if (!res.ok) {
-        setError(data.error || 'Could not create code.');
+        // Surface DB / Stripe / underlying error detail when present so we can
+        // debug schema mismatches without grepping Railway logs.
+        const msg = data.error || 'Could not create code.';
+        const detail = data.detail ? ` — ${data.detail}` : '';
+        const hint = data.hint ? ` (${data.hint})` : '';
+        setError(msg + detail + hint);
         return;
       }
       setRevealed({ code: data.code, agent: data.referral.agent_display_name });
