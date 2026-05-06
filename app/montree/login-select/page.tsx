@@ -73,6 +73,13 @@ function UnifiedLoginContent() {
 
       const data = await res.json();
 
+      // Phase 2: pending referral code → bounce to signup with the code carried
+      // over. Distinct from a normal auth failure (which is 401 + an error toast).
+      if (res.status === 409 && data?.pendingReferral && data?.redirectTo) {
+        router.replace(data.redirectTo);
+        return;
+      }
+
       if (!res.ok || !data.success) {
         setError(data.error || t('auth.invalidCode'));
         setLoading(false);
@@ -162,7 +169,7 @@ function UnifiedLoginContent() {
               <input
                 type="text"
                 value={code}
-                onChange={(e) => setCode(e.target.value.toUpperCase().slice(0, 10))}
+                onChange={(e) => setCode(e.target.value.toUpperCase().slice(0, 32))}
                 placeholder="ABC123"
                 className="w-full px-4 py-4 bg-white/10 border border-white/20 rounded-xl text-white text-center text-2xl font-mono tracking-[0.3em] placeholder-white/20 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/20 outline-none transition-all"
                 required

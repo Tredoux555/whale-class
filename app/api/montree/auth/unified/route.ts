@@ -32,11 +32,30 @@ export async function POST(request: NextRequest) {
     }
 
     const { code } = await request.json();
-    if (!code || code.length < 4 || code.length > 10) {
+    // 32-char ceiling accommodates referral codes (<FIRSTNAME>-XXXX) up to a
+    // 12-char prefix + dash + 4-char suffix. Direct-signup login codes remain
+    // 6 chars; the floor stays at 4.
+    if (!code || code.length < 4 || code.length > 32) {
       return NextResponse.json({ error: 'Please enter a valid code' }, { status: 400 });
     }
 
     const normalizedCode = code.trim().toUpperCase();
+
+    // ============================================
+    // 0. REFERRAL CODE PRECHECK
+    // ============================================
+    // Phase 2: if the entered code matches a montree_referral_codes row, route
+    // appropriately BEFORE attempting principal/teacher/parent login.
+    //
+    // - status='pending'   → 409 with redirectTo signup (school hasn't redeemed yet)
+    // - status='revoked'   → 401 with clear message
+    // - status='expired'   → 401 with clear message
+    // - status='redeemed'  → return null, fall through (the principal's
+    //                        password_hash matches legacySha256(referralCode)
+    //                        so tryPrincipalLogin below will find them)
+    // - not a referral row → return null, fall through (legacy 6-char codes)
+    const referralResponse = await tryReferralPrecheck(supabase, normalizedCode);
+    if (referralResponse) return referralResponse;
 
     // ============================================
     // 1. TRY PRINCIPAL (must run before TEACHER — see below)
@@ -348,6 +367,65 @@ async function tryPrincipalLogin(supabase: ReturnType<typeof getSupabase>, code:
   const needsSetup = !classrooms || classrooms.length === 0;
 
   return { principal, school, needsSetup };
+}
+
+// ---- Helper: Referral code precheck (Phase 2) ----
+// Returns a NextResponse if the code maps to a referral row that requires
+// special handling (pending → redirect to signup; revoked/expired → reject).
+// Returns null if the code is not a referral OR has been redeemed (in which
+// case the principal's password_hash matches the redeemed referral code, so
+// the existing principal-login flow handles auth).
+async function tryReferralPrecheck(
+  supabase: ReturnType<typeof getSupabase>,
+  code: string
+): Promise<NextResponse | null> {
+  const { data, error } = await supabase
+    .from('montree_referral_codes')
+    .select('code, status, expires_at')
+    .eq('code', code)
+    .maybeSingle();
+
+  if (error) {
+    // Table missing or transient DB error — never block login on this.
+    // Fall through to the legacy login flow.
+    console.error('[unified-auth] referral precheck error:', error.message);
+    return null;
+  }
+  if (!data) return null;
+
+  // Pending: school hasn't redeemed yet. Bounce them to signup with the code
+  // pre-populated so they can complete trial signup. The 409 status keeps
+  // this distinct from a normal auth failure.
+  if (data.status === 'pending') {
+    if (data.expires_at && new Date(data.expires_at) < new Date()) {
+      return NextResponse.json({
+        error: 'This referral code has expired. Ask your contact for a fresh one.',
+      }, { status: 401 });
+    }
+    return NextResponse.json({
+      error: 'pending_referral',
+      pendingReferral: true,
+      code: data.code,
+      redirectTo: `/montree/try?ref=${encodeURIComponent(data.code)}`,
+      message: "You're on the list. Let's get your school set up.",
+    }, { status: 409 });
+  }
+
+  if (data.status === 'revoked') {
+    return NextResponse.json({
+      error: 'This referral code has been revoked. Please contact whoever sent it to you.',
+    }, { status: 401 });
+  }
+  if (data.status === 'expired') {
+    return NextResponse.json({
+      error: 'This referral code has expired. Ask your contact for a fresh one.',
+    }, { status: 401 });
+  }
+
+  // status === 'redeemed' → fall through to normal login. The principal of
+  // the school that redeemed this code has password_hash = legacySha256(code),
+  // so tryPrincipalLogin below will find them via Step 1 (SHA-256 lookup).
+  return null;
 }
 
 // ---- Helper: Try parent invite code ----

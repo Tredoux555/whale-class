@@ -535,12 +535,25 @@ export async function POST(req: NextRequest) {
     } else {
       // Principal
       steps.push('4-principal');
+
+      // ── Phase 2: dual-purpose referral code ──
+      // When a referral code is present, the SAME code becomes the principal's
+      // login. We hash the referral code itself (uppercased) as password_hash
+      // — the existing principal-login flow at /api/montree/auth/unified does
+      // legacySha256(input) and compares to password_hash, so this just works.
+      // The school's principal will type SARAH-K9X7 at the login screen and
+      // be in. Without a referral code, we fall back to the auto-generated
+      // 6-char code (legacy direct-signup behaviour).
+      const principalLoginCode = referral ? referral.code : code;
+      const principalPasswordHash = referral ? legacySha256(referral.code.toUpperCase()) : codeHash;
+      const emailFallbackSlug = principalLoginCode.toLowerCase().replace(/[^a-z0-9]/g, '-');
+
       const { data: principal, error: principalErr } = await supabase
         .from('montree_school_admins')
         .insert({
           school_id: school.id,
-          email: email?.trim() || `trial-${code.toLowerCase()}@montree.app`,
-          password_hash: codeHash,
+          email: email?.trim() || `trial-${emailFallbackSlug}@montree.app`,
+          password_hash: principalPasswordHash,
           name: userName,
           role: 'principal',
         })
@@ -610,7 +623,10 @@ export async function POST(req: NextRequest) {
 
       const response = NextResponse.json({
         success: true,
-        code,
+        // When redeemed via referral code, return the referral code as the
+        // login code — that's what the principal types from now on. Without
+        // a referral, return the auto-generated 6-char code as before.
+        code: principalLoginCode,
         token,
         role: 'principal',
         principal: {
