@@ -77,7 +77,8 @@ function formatTimeAgo(dateStr: string): string {
   return `${days}d ago`;
 }
 
-function shortenUrl(url: string): string {
+function shortenUrl(url: string | null | undefined): string {
+  if (!url || typeof url !== 'string') return '/';
   return url.replace(/^\/montree/, '').replace(/^\//, '') || '/';
 }
 
@@ -304,7 +305,7 @@ export default function VisitorsTab({ saToken }: VisitorsTabProps) {
                 </div>
                 <div className="text-slate-400 text-xs truncate mt-0.5">
                   {shortenUrl(v.page_url)}
-                  {v.referrer && (
+                  {v.referrer && typeof v.referrer === 'string' && (
                     <span className="text-slate-600 ml-2">
                       via {v.referrer.replace(/^https?:\/\//, '').split('/')[0]}
                     </span>
