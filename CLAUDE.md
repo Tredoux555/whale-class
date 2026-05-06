@@ -181,7 +181,75 @@ GMass campaigns A/C/D are historical. Campaign C sent 335 blank emails (Session 
 
 ---
 
-## RECENT STATUS (May 5, 2026)
+## RECENT STATUS (May 6, 2026)
+
+### ⚡ Session 90 — Agent Referral & Financial Tracking — Design Locked, Build Plan Drafted (May 6, 2026)
+
+**No code commits.** Pure design + handoff session. User needs to start issuing referral codes to a teacher (Sarah) who's pitching a school, with 50% net-profit revenue share. Walked through the full mechanic across four conversational rounds, locked every decision, and produced two deliverable docs.
+
+**Deliverables:**
+- `docs/finance/accountant-onepager.md` — for the HK accountant. Covers revenue model, money flow (Stripe → Wallex HK), three cost categories (direct cost of revenue / referral commissions / operating expenses), multi-currency handling (USD base), monthly export pack contents (CSV + PDF + per-school CSV + per-agent CSV + JSON backup), and seven explicit questions for the accountant (category mapping, commission classification as cost-of-sales vs operating expense, format prefs, frequency, HK-specific items, currency confirm, year-end pack).
+- `docs/AGENT_REFERRAL_AND_FINANCIALS_PLAN.md` — comprehensive build plan. Captures every locked decision, full DB schema (3 new tables + extensions to existing), 7 build phases with effort estimates, Stripe Connect Express specifics, risks & open questions.
+
+**Decisions locked (DO NOT re-debate next session):**
+
+| Decision | Value |
+|----------|-------|
+| Code format | `<FIRSTNAME>-XXXX` (e.g. `SARAH-K9X7`). 4 random chars, no I/O/0/1. |
+| Codes per agent | Unlimited — one code per pitch. Generated on demand. |
+| Code lifecycle | Pending until redeemed. Tredoux can DELETE pending codes if a pitch dies. Once redeemed, the code is locked, school↔agent link permanent. |
+| Code dual purpose | At redemption, the code becomes the principal's login code for that specific school. Hashed into `montree_school_admins.password_hash`. |
+| Multiple schools per agent | Yes — fresh code per pitch. |
+| Adjustable % | Per-agent default + per-school override. Tredoux adjusts manually. No automated re-calc. |
+| Profit math | Net = Stripe revenue − (Anthropic + OpenAI + Stripe fee). Agent payout = Net × school's %. Negative net → agent gets zero. No clawback. |
+| Base currency | USD. |
+| Payout rail | Stripe Connect Express → Wallex HK. Wallex is just the wallet at end of chain. |
+| Other rails | Architectural support for manual Wallex wire as backup. Finalise once banker confirms. |
+| Headcount source | `montree_children` count (already used for billing). No manual gross entry. |
+
+**Existing infrastructure (Session 72) being EXTENDED, not replaced:**
+- `montree_schools.founding_teacher_id` — semantics shift to "linked agent" (could be teacher or non-teacher)
+- `montree_schools.revenue_share_pct` + `revenue_share_active` — kept
+- `montree_teacher_earnings` — left in place, sunset over time. New rows go to `montree_agent_payouts` (wider schema).
+- `app/montree/dashboard/earnings/page.tsx` — kept for teacher-agents.
+- `app/montree/for-teachers/page.tsx` — Phase 7 decision (repurpose vs retire).
+
+**New schema (3 tables + extensions):**
+- `montree_referral_codes` — one row per pitch. `code` UNIQUE, `agent_id`, `agent_display_name`, `agent_email`, `agent_pitch_label`, `revenue_share_pct`, `status` (pending/redeemed/revoked/expired), `redeemed_by_school_id`, etc.
+- `montree_agent_payouts` — per (agent, school, month) row. Captures the full math (gross, stripe fee, anthropic, openai, net, share %, payout) plus payout state (status, stripe_transfer_id, paid_at, paid_by_method, fx_rate_used).
+- `montree_finance_transactions` — unified ledger. Every income/direct_cost/commission/op_expense/fx_adjustment lands here. Multi-currency aware (`original_currency`, `original_amount`, `fx_rate`, `usd_amount`). Source tracking (`stripe_webhook` / `api_usage_aggregate` / `manual_entry`).
+- `montree_teachers` extension: `stripe_connect_account_id`, `stripe_connect_status`, `stripe_connect_completed_at`.
+- `montree_schools` extension: `referral_code_id`, `referral_code_used` (denorm for quick lookup).
+
+**7-phase build plan (~10-12 days total):**
+
+1. **Foundation** (1 day) — migrations 186/187/188, super admin code-issuing API + UI. Phase 1 unblocks issuing Sarah's first code.
+2. **Redemption** (1 day) — school signup flow accepts `?ref=CODE`, code becomes principal login.
+3. **Stripe Connect onboarding** (1.5 days) — agent gets one-time link, completes Stripe Express form, webhook captures status.
+4. **Stripe school subscription billing** (3-4 days, precondition) — schools actually billed via Stripe. Without this, dashboard falls back to manual gross entry.
+5. **Payout calculation engine** (1.5 days) — monthly job aggregates revenue + costs per school, calculates payouts, idempotent UPSERT into `montree_agent_payouts`.
+6. **Money tab in super admin** (2-3 days) — Income / Direct costs / Commissions / Op expenses / P&L / Exports (CSV + PDF + Accountant Pack ZIP).
+7. **Agent dashboard refresh** (0.5 days) — `/montree/dashboard/earnings` shows linked schools, monthly statements, Stripe Connect status.
+
+**Open questions to resolve before Phase 1:**
+1. Non-teacher agents (multipliers, consultants) — keep using `montree_teachers` rows with `is_active=false`, or add a thin `montree_agents` table? Recommendation: `montree_teachers` for Phase 1, extract later if messy.
+2. Stripe HK availability for Connect Express — confirm via banker. If not supported, fall back to Stripe Standard or manual Wallex wires.
+3. `for-teachers` landing page — repurpose for "request an agent code from us" or retire? Phase 7 decision.
+
+**🚨 Next session priority:**
+1. **Phase 1 implementation** — migrations 186/187/188, code generation + listing + revoke API, super admin UI. After Phase 1 lands, Tredoux can issue Sarah's first code and we have the foundation for everything else.
+2. **Tredoux to send accountant one-pager to HK accountant** in parallel — get answers to the seven questions before Phase 6 (Money tab) is built so categories map correctly to their filing requirements.
+3. **Tredoux to confirm with banker** Stripe Connect Express HK availability + Wallex compatibility — affects Phase 3.
+4. **Carry-overs from Session 89** (still pending):
+   - User verifies bingo calling cards on industrial printer
+   - User reads v8 term reports end-to-end
+   - Verify Library Tools tiles render on production
+   - End-to-end test Sentence Match + Sorting Mat generators
+   - Test super-admin Leads bulk clean
+   - Two-stage Language Presentation flow (paused)
+   - Run migration 184, send 3 hot lead Gmail drafts
+
+---
 
 ### ⚡ Session 89 — Sentence Match + Sorting Mat + Term Reports Grammar Overhaul + Bingo Duplex Lock + Super-Admin Polish (May 5, 2026, evening)
 

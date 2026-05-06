@@ -15,6 +15,7 @@ const FeedbackTab = dynamic(() => import('@/components/montree/super-admin/Feedb
 const DmPanel = dynamic(() => import('@/components/montree/super-admin/DmPanel'), { ssr: false });
 const VisitorsTab = dynamic(() => import('@/components/montree/super-admin/VisitorsTab'), { ssr: false });
 const SuperAdminGuru = dynamic(() => import('@/components/montree/super-admin/SuperAdminGuru'), { ssr: false });
+const ReferralsTab = dynamic(() => import('@/components/montree/super-admin/ReferralsTab'), { ssr: false });
 
 
 interface DmMessage {
@@ -25,7 +26,7 @@ interface DmMessage {
   created_at: string;
 }
 
-type TabType = 'schools' | 'feedback' | 'leads' | 'visitors' | 'guru';
+type TabType = 'schools' | 'feedback' | 'leads' | 'visitors' | 'guru' | 'referrals';
 
 const SESSION_TIMEOUT_MS = 15 * 60 * 1000; // 15 minutes
 
@@ -620,6 +621,16 @@ export default function SuperAdminPage() {
           >
             🧠 Guru
           </button>
+          <button
+            onClick={() => setActiveTab('referrals')}
+            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+              activeTab === 'referrals'
+                ? 'bg-emerald-500 text-white'
+                : 'bg-slate-800 text-slate-400 hover:text-white'
+            }`}
+          >
+            🎟️ Referrals
+          </button>
         </div>
 
         {/* Tab Content */}
@@ -684,6 +695,10 @@ export default function SuperAdminPage() {
 
         {activeTab === 'guru' && (
           <SuperAdminGuru saToken={saToken} />
+        )}
+
+        {activeTab === 'referrals' && (
+          <ReferralsTab saToken={saToken} />
         )}
 
       </div>

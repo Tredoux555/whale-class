@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useI18n } from '@/lib/montree/i18n';
 import LanguageToggle from '@/components/montree/LanguageToggle';
@@ -53,6 +53,25 @@ export default function TryMontreePage() {
   const [responseData, setResponseData] = useState<TrialResponse | null>(null);
   const [error, setError] = useState('');
   const [copied, setCopied] = useState(false);
+  const [referralCode, setReferralCode] = useState<string | null>(null);
+
+  // Read ?ref=CODE from URL on mount. Using window.location keeps us out of
+  // Suspense-boundary territory (useSearchParams in Next 13+ requires Suspense).
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const ref = params.get('ref');
+      if (ref) {
+        const cleaned = ref.trim().toUpperCase();
+        if (cleaned.length >= 4 && cleaned.length <= 32) {
+          setReferralCode(cleaned);
+        }
+      }
+    } catch {
+      // ignore
+    }
+  }, []);
 
   const handleRoleSelect = (role: 'teacher' | 'principal') => {
     setSelectedRole(role);
@@ -83,6 +102,7 @@ export default function TryMontreePage() {
           schoolName: schoolName.trim(),
           email: userEmail.trim(),
           locale, // Capture the user's UI locale → school.primary_locale at signup
+          referral_code: referralCode, // Optional — set if user arrived via ?ref=CODE
         })
       });
 
@@ -184,6 +204,24 @@ export default function TryMontreePage() {
         >
           <span>←</span> {t('common.back')}
         </a>
+
+        {/* Referral code banner — shown on every step if a ?ref= code was detected */}
+        {referralCode && step !== 'code' && (
+          <div className="mb-6 px-4 py-3 rounded-xl flex items-center gap-3" style={{
+            background: 'rgba(232,201,106,0.10)',
+            border: '1px solid rgba(232,201,106,0.32)',
+          }}>
+            <span style={{ color: 'rgba(232,201,106,0.85)', fontSize: '1.1rem' }}>🎟️</span>
+            <div className="flex-1 min-w-0">
+              <p className="text-white text-sm">
+                Referral code: <code className="font-mono font-medium" style={{ color: 'rgba(232,201,106,0.95)' }}>{referralCode}</code>
+              </p>
+              <p style={{ color: 'rgba(255,255,255,0.55)', fontSize: '0.78rem' }}>
+                You&apos;ll be linked to your referrer when your school is created.
+              </p>
+            </div>
+          </div>
+        )}
 
         {/* Step 1: Role Selection */}
         {step === 'role' && (
