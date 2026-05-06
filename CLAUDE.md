@@ -183,13 +183,29 @@ GMass campaigns A/C/D are historical. Campaign C sent 335 blank emails (Session 
 
 ## RECENT STATUS (May 6, 2026)
 
-### ⚡ Session 90 — Agent Referral & Financial Tracking — Design Locked, Build Plan Drafted (May 6, 2026)
+### ⚡ Session 90 — Agent Referral & Financial Tracking — Phase 1 Foundation Shipped (May 6, 2026)
 
-**No code commits.** Pure design + handoff session. User needs to start issuing referral codes to a teacher (Sarah) who's pitching a school, with 50% net-profit revenue share. Walked through the full mechanic across four conversational rounds, locked every decision, and produced two deliverable docs.
+**1 commit pushed to main: `e0ee3c7d`.** 10 files, 1,521 lines. Phase 1 of the agent referral programme is live. Tredoux can now issue Sarah a code from super admin and send her the link; when the school redeems it they're permanently linked to Sarah at her negotiated revenue share %. Phase 2 (code-as-principal-login), Phase 3 (Stripe Connect), and Phase 4-7 (billing/payouts/Money tab/agent dashboard) are still ahead.
 
-**Deliverables:**
+**Two design docs also delivered:**
 - `docs/finance/accountant-onepager.md` — for the HK accountant. Covers revenue model, money flow (Stripe → Wallex HK), three cost categories (direct cost of revenue / referral commissions / operating expenses), multi-currency handling (USD base), monthly export pack contents (CSV + PDF + per-school CSV + per-agent CSV + JSON backup), and seven explicit questions for the accountant (category mapping, commission classification as cost-of-sales vs operating expense, format prefs, frequency, HK-specific items, currency confirm, year-end pack).
 - `docs/AGENT_REFERRAL_AND_FINANCIALS_PLAN.md` — comprehensive build plan. Captures every locked decision, full DB schema (3 new tables + extensions to existing), 7 build phases with effort estimates, Stripe Connect Express specifics, risks & open questions.
+
+**Comprehensive Phase 1 handoff:** `docs/handoffs/SESSION_90_HANDOFF.md` — file-by-file change list, exact "send Sarah this" pitch flow, what is NOT shipped yet, next session priorities.
+
+**🚨 PRECONDITION before code works:** Run `migrations/186_referral_codes.sql` in Supabase SQL Editor. Until run, the new 🎟️ Referrals tab will 500.
+
+**What shipped in commit `e0ee3c7d`:**
+- `migrations/186_referral_codes.sql` — `montree_referral_codes` table + `montree_schools.referral_code_id` + `referral_code_used` columns. Idempotent (`IF NOT EXISTS` on every clause).
+- `lib/montree/referral/code-gen.ts` — `generateUniqueReferralCode(displayName)` produces `<FIRSTNAME>-XXXX` codes (4-char random suffix, same I/O/0/1-free alphabet as login codes), DB-collision-checked. `nameToPrefix()` normalises diacritics.
+- `app/api/montree/super-admin/referral-codes/route.ts` — POST/GET/DELETE. POST auto-creates a shell `montree_teachers` row for non-teaching agents (is_active=false). DELETE only allows revoking pending codes.
+- `components/montree/super-admin/ReferralsTab.tsx` — issue-code form, reveal-once gold banner with Copy button, status filter tabs, table with copy + revoke actions.
+- `app/montree/super-admin/page.tsx` — wired the 🎟️ Referrals tab into the super admin nav.
+- `app/api/montree/try/instant/route.ts` — `resolveReferralCode()` validates BEFORE any DB writes (clean 400 on bad code). On success: stamps the AGENT (not the new teacher) on `school.founding_teacher_id`, locks `revenue_share_pct`, sets `revenue_share_active=true`, writes `referral_code_id` + `referral_code_used`, marks code redeemed. Wired into all three role branches (teacher/principal/homeschool_parent).
+- `app/montree/try/page.tsx` — reads `?ref=CODE` on mount via `window.location` (avoids `useSearchParams` Suspense requirement), shows gold "Referral code: SARAH-K9X7" banner on every step until success, passes `referral_code` in POST body.
+
+**🚨 IMPORTANT NUANCE — the gap between vision and Phase 1:**
+User asked for the code to be the school's **login**. What shipped is the code being the school's **referral link** at signup. The school clicks the link, fills in school details, gets a separate 6-char principal login code via the existing flow. The referral code is NOT yet the principal's password — that's Phase 2 (~half a day, hash the redeemed code into `montree_school_admins.password_hash` at signup + handle the login-select routing). Phase 1 is still a "give them this link, they're set up, you're paid" experience — it just goes through a signup form rather than a login box. Fine for Sarah's first pitch.
 
 **Decisions locked (DO NOT re-debate next session):**
 
@@ -236,11 +252,23 @@ GMass campaigns A/C/D are historical. Campaign C sent 335 blank emails (Session 
 2. Stripe HK availability for Connect Express — confirm via banker. If not supported, fall back to Stripe Standard or manual Wallex wires.
 3. `for-teachers` landing page — repurpose for "request an agent code from us" or retire? Phase 7 decision.
 
-**🚨 Next session priority:**
-1. **Phase 1 implementation** — migrations 186/187/188, code generation + listing + revoke API, super admin UI. After Phase 1 lands, Tredoux can issue Sarah's first code and we have the foundation for everything else.
+**🚨 Immediate next steps (this is what Tredoux does next):**
+1. **Run migration 186 in Supabase SQL Editor.** Open `migrations/186_referral_codes.sql`, paste into SQL Editor, run. Verify with `SELECT * FROM montree_referral_codes;` (empty table, right columns).
+2. **Wait for Railway to finish deploying** commit `e0ee3c7d`. ~2-3 minutes after push.
+3. **Hard-refresh** `/montree/super-admin` (Cmd+Shift+R) to pull the new bundle.
+4. **Issue Sarah's first code** via the 🎟️ Referrals tab.
+5. **Send Sarah the link**: `https://montree.xyz/montree/try?ref=SARAH-XXXX` (with her actual code).
+
+**🚨 Next session priorities:**
+1. **Phase 2 — code as principal login.** Half a day. Hash the redeemed referral code into `montree_school_admins.password_hash` at signup; handle `/montree/login-select` so typing a referral code routes correctly (pending → signup, redeemed → login). Delivers the original "type the code, you're in the school" UX.
 2. **Tredoux to send accountant one-pager to HK accountant** in parallel — get answers to the seven questions before Phase 6 (Money tab) is built so categories map correctly to their filing requirements.
 3. **Tredoux to confirm with banker** Stripe Connect Express HK availability + Wallex compatibility — affects Phase 3.
-4. **Carry-overs from Session 89** (still pending):
+4. **Phase 3 — Stripe Connect onboarding** (~1.5 days). One-time link to Sarah, hosted Stripe Express form, capture account ID. After this lands she's set up for automated payouts.
+5. **Phase 4 — Stripe school subscription billing** (3-4 days, precondition for automated revenue). Until shipped, Money tab falls back to manual gross entry.
+6. **Phase 5 — payout calculation engine** (~1.5 days). Idempotent monthly job aggregates revenue + costs per school, calculates each agent's cut.
+7. **Phase 6 — Money tab in super admin** (2-3 days). Income / direct costs / commissions / op-ex / P&L / monthly Accountant Pack ZIP export.
+8. **Phase 7 — agent dashboard refresh + decide on `/for-teachers` page** (0.5 days).
+9. **Carry-overs from Session 89** (still pending):
    - User verifies bingo calling cards on industrial printer
    - User reads v8 term reports end-to-end
    - Verify Library Tools tiles render on production
