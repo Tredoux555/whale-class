@@ -31,6 +31,25 @@ interface Referral {
   notes: string | null;
   agent_stripe_connect_account_id: string | null;
   agent_stripe_connect_status: ConnectStatus;
+  // Phase 7a — agent-dashboard flags. Populated when migration 188 has run;
+  // safe defaults otherwise (the GET enrichment falls back gracefully).
+  agent_is_agent: boolean;
+  agent_login_set_at: string | null;
+  agent_login_last_used_at: string | null;
+  agent_default_share_pct: number | null;
+  agent_suspended_at: string | null;
+}
+
+interface AgentAuditEvent {
+  id: string;
+  agent_id: string | null;
+  agent_display_name: string | null;
+  agent_email: string | null;
+  event_type: string;
+  actor_role: 'super_admin' | 'agent' | 'system';
+  details: Record<string, unknown> | null;
+  ip_address: string | null;
+  created_at: string;
 }
 
 interface ReferralsTabProps {
@@ -78,6 +97,36 @@ export default function ReferralsTab({ saToken }: ReferralsTabProps) {
   const [connectLink, setConnectLink] = useState<{ url: string; agent: string; expiresAt: number } | null>(null);
   const [connectLinkCopied, setConnectLinkCopied] = useState(false);
   const [connectLoadingAgentId, setConnectLoadingAgentId] = useState<string | null>(null);
+
+  // Phase 7a — agent login modals + state.
+  const [agentLoginModal, setAgentLoginModal] = useState<
+    | null
+    | {
+        agentId: string;
+        agentName: string;
+        isReset: boolean;
+        currentDefaultPct: number | null;
+      }
+  >(null);
+  const [agentLoginPct, setAgentLoginPct] = useState<string>('50');
+  const [agentLoginLoading, setAgentLoginLoading] = useState(false);
+  const [agentLoginRevealed, setAgentLoginRevealed] = useState<{ code: string; agent: string } | null>(null);
+  const [agentLoginCopied, setAgentLoginCopied] = useState(false);
+
+  const [editPctModal, setEditPctModal] = useState<
+    | null
+    | { agentId: string; agentName: string; currentPct: number | null }
+  >(null);
+  const [editPctValue, setEditPctValue] = useState<string>('');
+  const [editPctLoading, setEditPctLoading] = useState(false);
+
+  const [agentToggleLoadingId, setAgentToggleLoadingId] = useState<string | null>(null);
+
+  // Recent activity panel.
+  const [activityOpen, setActivityOpen] = useState(false);
+  const [activityEvents, setActivityEvents] = useState<AgentAuditEvent[]>([]);
+  const [activityLoading, setActivityLoading] = useState(false);
+  const [activityMigrationPending, setActivityMigrationPending] = useState(false);
 
   // Filters.
   const [statusFilter, setStatusFilter] = useState<'all' | Referral['status']>('all');
@@ -231,6 +280,206 @@ export default function ReferralsTab({ saToken }: ReferralsTabProps) {
     }
   };
 
+  // ── Phase 7a handlers ─────────────────────────────────────────────────────
+  // Generic clipboard helper that drives a passed-in setter so we can re-use
+  // for the agent-login reveal banner.
+  const copyTo = (value: string, setFlag: (v: boolean) => void) => {
+    try {
+      navigator.clipboard.writeText(value);
+      setFlag(true);
+      setTimeout(() => setFlag(false), 2000);
+    } catch {
+      const ta = document.createElement('textarea');
+      ta.value = value;
+      document.body.appendChild(ta);
+      ta.select();
+      try { document.execCommand('copy'); } catch { /* */ }
+      document.body.removeChild(ta);
+      setFlag(true);
+      setTimeout(() => setFlag(false), 2000);
+    }
+  };
+
+  const openAgentLoginModal = (r: Referral) => {
+    if (!r.agent_id) {
+      setError('This referral predates agent linkage; cannot issue an agent login. Re-issue the code first.');
+      return;
+    }
+    const isReset = r.agent_is_agent;
+    setAgentLoginPct(
+      r.agent_default_share_pct !== null
+        ? String(r.agent_default_share_pct)
+        : String(r.revenue_share_pct ?? 50)
+    );
+    setAgentLoginModal({
+      agentId: r.agent_id,
+      agentName: r.agent_display_name,
+      isReset,
+      currentDefaultPct: r.agent_default_share_pct,
+    });
+    setError(null);
+  };
+
+  const submitAgentLoginModal = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!agentLoginModal) return;
+    const pctNum = Number(agentLoginPct);
+    if (Number.isNaN(pctNum) || pctNum < 0 || pctNum > 100) {
+      setError('Default % must be between 0 and 100.');
+      return;
+    }
+    setAgentLoginLoading(true);
+    setError(null);
+    try {
+      const res = await fetch(
+        `/api/montree/super-admin/agents/${encodeURIComponent(agentLoginModal.agentId)}/login`,
+        {
+          method: 'POST',
+          headers: headers(),
+          body: JSON.stringify({ default_share_pct: pctNum }),
+        }
+      );
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.detail || data.error || 'Could not issue agent login.');
+        return;
+      }
+      setAgentLoginRevealed({
+        code: data.code,
+        agent: agentLoginModal.agentName,
+      });
+      setAgentLoginCopied(false);
+      setAgentLoginModal(null);
+      await load();
+    } catch (err) {
+      console.error('[ReferralsTab] agent-login error:', err);
+      setError('Network error issuing agent login.');
+    } finally {
+      setAgentLoginLoading(false);
+    }
+  };
+
+  const toggleSuspendAgent = async (
+    agentId: string,
+    agentName: string,
+    isSuspended: boolean
+  ) => {
+    const action = isSuspended ? 'reactivate' : 'suspend';
+    if (action === 'suspend') {
+      const ok = confirm(
+        `Suspend ${agentName}'s login?\n\nThey will not be able to access the agent dashboard or generate new codes. Their existing pending payouts on referred schools will still pay out — that's earned money.\n\nUse Reactivate to restore access.`
+      );
+      if (!ok) return;
+    }
+    setAgentToggleLoadingId(agentId);
+    setError(null);
+    try {
+      const res = await fetch(
+        `/api/montree/super-admin/agents/${encodeURIComponent(agentId)}/login`,
+        {
+          method: 'PATCH',
+          headers: headers(),
+          body: JSON.stringify({ action }),
+        }
+      );
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.detail || data.error || `Could not ${action} agent.`);
+        return;
+      }
+      await load();
+      if (activityOpen) await loadActivity();
+    } catch (err) {
+      console.error('[ReferralsTab] suspend/reactivate error:', err);
+      setError(`Network error trying to ${action} agent.`);
+    } finally {
+      setAgentToggleLoadingId(null);
+    }
+  };
+
+  const openEditPctModal = (r: Referral) => {
+    if (!r.agent_id) return;
+    setEditPctValue(r.agent_default_share_pct !== null ? String(r.agent_default_share_pct) : '');
+    setEditPctModal({
+      agentId: r.agent_id,
+      agentName: r.agent_display_name,
+      currentPct: r.agent_default_share_pct,
+    });
+    setError(null);
+  };
+
+  const submitEditPctModal = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editPctModal) return;
+    const trimmed = editPctValue.trim();
+    let next: number | null;
+    if (trimmed === '') {
+      next = null;
+    } else {
+      const n = Number(trimmed);
+      if (Number.isNaN(n) || n < 0 || n > 100) {
+        setError('Default % must be empty (no self-service) or between 0 and 100.');
+        return;
+      }
+      next = n;
+    }
+    setEditPctLoading(true);
+    setError(null);
+    try {
+      const res = await fetch(
+        `/api/montree/super-admin/agents/${encodeURIComponent(editPctModal.agentId)}/login`,
+        {
+          method: 'PATCH',
+          headers: headers(),
+          body: JSON.stringify({ action: 'set_default_pct', default_pct: next }),
+        }
+      );
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.detail || data.error || 'Could not update default %.');
+        return;
+      }
+      setEditPctModal(null);
+      await load();
+      if (activityOpen) await loadActivity();
+    } catch (err) {
+      console.error('[ReferralsTab] edit-pct error:', err);
+      setError('Network error updating default %.');
+    } finally {
+      setEditPctLoading(false);
+    }
+  };
+
+  const loadActivity = useCallback(async () => {
+    setActivityLoading(true);
+    try {
+      const res = await fetch('/api/montree/super-admin/agent-audit?limit=50', {
+        headers: { 'x-super-admin-token': saToken },
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setActivityEvents([]);
+        setActivityMigrationPending(false);
+        return;
+      }
+      setActivityEvents(data.events || []);
+      setActivityMigrationPending(Boolean(data.migration_pending));
+    } catch (err) {
+      console.error('[ReferralsTab] activity load error:', err);
+      setActivityEvents([]);
+    } finally {
+      setActivityLoading(false);
+    }
+  }, [saToken]);
+
+  const toggleActivity = async () => {
+    const next = !activityOpen;
+    setActivityOpen(next);
+    if (next) {
+      await loadActivity();
+    }
+  };
+
   const filtered = useMemo(() => {
     if (statusFilter === 'all') return referrals;
     return referrals.filter(r => r.status === statusFilter);
@@ -271,6 +520,42 @@ export default function ReferralsTab({ saToken }: ReferralsTabProps) {
             </div>
             <button
               onClick={() => { setRevealed(null); setCopied(false); }}
+              className="text-slate-400 hover:text-white text-sm self-start"
+              aria-label="Dismiss"
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Agent login reveal banner (shown once after issuing/resetting an agent code) */}
+      {agentLoginRevealed && (
+        <div className="bg-amber-500/15 border-2 border-amber-500/50 rounded-xl p-5">
+          <div className="flex items-center justify-between gap-3 flex-wrap">
+            <div>
+              <p className="text-amber-200 text-xs uppercase tracking-wider font-semibold mb-1">
+                🔑 Agent login code — copy it now
+              </p>
+              <p className="text-white text-sm mb-2">
+                For <span className="font-semibold">{agentLoginRevealed.agent}</span>. This is the
+                only time the code is shown — the database stores only a hash. Send it to the agent
+                so they can log in at <code className="text-amber-300">montree.xyz</code>.
+              </p>
+              <div className="flex items-center gap-3 mt-3">
+                <code className="px-4 py-2.5 bg-black/40 border border-amber-500/40 rounded-lg text-amber-300 font-mono text-lg tracking-wider">
+                  {agentLoginRevealed.code}
+                </code>
+                <button
+                  onClick={() => copyTo(agentLoginRevealed.code, setAgentLoginCopied)}
+                  className="px-4 py-2.5 bg-amber-500 hover:bg-amber-400 text-white font-medium rounded-lg text-sm transition-colors"
+                >
+                  {agentLoginCopied ? '✓ Copied' : 'Copy'}
+                </button>
+              </div>
+            </div>
+            <button
+              onClick={() => { setAgentLoginRevealed(null); setAgentLoginCopied(false); }}
               className="text-slate-400 hover:text-white text-sm self-start"
               aria-label="Dismiss"
             >
@@ -488,6 +773,32 @@ export default function ReferralsTab({ saToken }: ReferralsTabProps) {
                       <td className="px-3 py-3 text-white">
                         <div>{r.agent_display_name}</div>
                         <div className="text-slate-400 text-xs">{r.agent_email}</div>
+                        {r.agent_is_agent && (
+                          <div className="mt-1 flex items-center gap-1 flex-wrap">
+                            {r.agent_suspended_at ? (
+                              <span className="inline-block px-1.5 py-0.5 rounded-full border border-orange-500/40 bg-orange-500/15 text-orange-300 text-[10px] font-medium">
+                                Suspended
+                              </span>
+                            ) : (
+                              <span
+                                className="inline-block px-1.5 py-0.5 rounded-full border border-emerald-500/40 bg-emerald-500/15 text-emerald-300 text-[10px] font-medium"
+                                title={r.agent_login_last_used_at
+                                  ? `Last login ${fmtDate(r.agent_login_last_used_at)}`
+                                  : 'Login issued, never used'}
+                              >
+                                {r.agent_login_last_used_at ? 'Active' : 'Login issued'}
+                              </span>
+                            )}
+                            {r.agent_default_share_pct !== null && (
+                              <span
+                                className="inline-block px-1.5 py-0.5 rounded-full border border-slate-600 bg-slate-700/60 text-slate-300 text-[10px] font-medium"
+                                title="Default share % when this agent self-generates a code"
+                              >
+                                Default {r.agent_default_share_pct}%
+                              </span>
+                            )}
+                          </div>
+                        )}
                       </td>
                       <td className="px-3 py-3 text-right text-white tabular-nums">
                         {Number(r.revenue_share_pct).toFixed(0)}%
@@ -534,6 +845,46 @@ export default function ReferralsTab({ saToken }: ReferralsTabProps) {
                             {isLoadingConnect ? '…' : '💳'}
                           </button>
                         )}
+                        {r.agent_id && (
+                          <button
+                            onClick={() => openAgentLoginModal(r)}
+                            className={`px-2.5 py-1 text-xs rounded-md mr-1 border ${
+                              r.agent_is_agent
+                                ? 'bg-amber-500/15 hover:bg-amber-500/30 text-amber-300 border-amber-500/30'
+                                : 'bg-emerald-500/20 hover:bg-emerald-500/35 text-emerald-300 border-emerald-500/30'
+                            }`}
+                            title={r.agent_is_agent ? 'Reset agent login' : 'Issue agent login'}
+                          >
+                            {r.agent_is_agent ? '🔑↻' : '🔑'}
+                          </button>
+                        )}
+                        {r.agent_id && r.agent_is_agent && (
+                          <button
+                            onClick={() => openEditPctModal(r)}
+                            className="px-2.5 py-1 text-xs rounded-md bg-slate-700/60 hover:bg-slate-600 text-slate-200 mr-1 border border-slate-600"
+                            title={`Edit default % (currently ${r.agent_default_share_pct ?? '—'}%)`}
+                          >
+                            ✏️
+                          </button>
+                        )}
+                        {r.agent_id && r.agent_is_agent && (
+                          <button
+                            onClick={() => toggleSuspendAgent(
+                              r.agent_id as string,
+                              r.agent_display_name,
+                              Boolean(r.agent_suspended_at)
+                            )}
+                            disabled={agentToggleLoadingId === r.agent_id}
+                            className={`px-2.5 py-1 text-xs rounded-md mr-1 border disabled:opacity-50 ${
+                              r.agent_suspended_at
+                                ? 'bg-emerald-500/20 hover:bg-emerald-500/35 text-emerald-300 border-emerald-500/30'
+                                : 'bg-orange-500/15 hover:bg-orange-500/30 text-orange-300 border-orange-500/30'
+                            }`}
+                            title={r.agent_suspended_at ? 'Reactivate agent' : 'Suspend agent'}
+                          >
+                            {agentToggleLoadingId === r.agent_id ? '…' : (r.agent_suspended_at ? '▶' : '⏸')}
+                          </button>
+                        )}
                         {r.status === 'pending' && (
                           <button
                             onClick={() => handleRevoke(r.id, r.code)}
@@ -559,6 +910,237 @@ export default function ReferralsTab({ saToken }: ReferralsTabProps) {
         (or send a direct link <code className="text-slate-400">montree.xyz/montree/try?ref=CODE</code>).
         Once redeemed the school is permanently linked to the agent.
       </p>
+
+      {/* ── Phase 7a — Recent agent activity panel ─────────────────────────── */}
+      <div className="mt-6 bg-slate-800/40 border border-slate-700 rounded-xl overflow-hidden">
+        <button
+          onClick={toggleActivity}
+          className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-slate-700/30 transition-colors"
+        >
+          <div>
+            <h3 className="text-white font-semibold text-sm">📋 Recent agent activity</h3>
+            <p className="text-slate-400 text-xs mt-0.5">
+              Login issues, suspends, default % changes. Future phases will log self-service code generation here too.
+            </p>
+          </div>
+          <span className="text-slate-400 text-xs">
+            {activityOpen ? '▾ Hide' : '▸ Show'}
+          </span>
+        </button>
+        {activityOpen && (
+          <div className="border-t border-slate-700">
+            {activityMigrationPending ? (
+              <div className="px-4 py-6 text-amber-300 text-sm text-center">
+                Run migration <code className="bg-black/40 px-1.5 py-0.5 rounded">188_agent_dashboard.sql</code> in Supabase SQL Editor to enable agent activity logging.
+              </div>
+            ) : activityLoading ? (
+              <div className="px-4 py-6 text-slate-400 text-sm text-center">Loading…</div>
+            ) : activityEvents.length === 0 ? (
+              <div className="px-4 py-6 text-slate-500 text-sm text-center">
+                No agent activity yet. Issue an agent login above to start the trail.
+              </div>
+            ) : (
+              <ul className="divide-y divide-slate-700/60">
+                {activityEvents.map(ev => (
+                  <li key={ev.id} className="px-4 py-3 text-sm">
+                    <div className="flex items-start justify-between gap-3 flex-wrap">
+                      <div className="min-w-0 flex-1">
+                        <div className="text-white">
+                          <span className="font-mono text-xs text-slate-400 mr-2">
+                            {new Date(ev.created_at).toLocaleString(undefined, {
+                              year: 'numeric',
+                              month: 'short',
+                              day: '2-digit',
+                              hour: '2-digit',
+                              minute: '2-digit',
+                            })}
+                          </span>
+                          <span className="font-medium">{describeAuditEvent(ev)}</span>
+                        </div>
+                        {ev.agent_display_name && (
+                          <div className="text-slate-400 text-xs mt-0.5">
+                            Agent: {ev.agent_display_name}
+                            {ev.agent_email ? ` (${ev.agent_email})` : ''}
+                          </div>
+                        )}
+                      </div>
+                      <span className={`shrink-0 inline-block px-2 py-0.5 rounded-full border text-[10px] font-medium ${
+                        ev.actor_role === 'super_admin'
+                          ? 'bg-blue-500/15 border-blue-500/30 text-blue-300'
+                          : ev.actor_role === 'agent'
+                            ? 'bg-emerald-500/15 border-emerald-500/30 text-emerald-300'
+                            : 'bg-slate-700 border-slate-600 text-slate-300'
+                      }`}>
+                        {ev.actor_role}
+                      </span>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* ── Phase 7a — Issue / reset agent login modal ──────────────────────── */}
+      {agentLoginModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4"
+          role="dialog"
+          aria-modal="true"
+        >
+          <form
+            onSubmit={submitAgentLoginModal}
+            className="w-full max-w-md bg-slate-900 border border-slate-700 rounded-xl shadow-2xl p-6"
+          >
+            <h3 className="text-white text-lg font-bold">
+              {agentLoginModal.isReset ? '🔑 Reset agent login' : '🔑 Issue agent login'}
+            </h3>
+            <p className="text-slate-300 text-sm mt-2">
+              For <span className="font-semibold text-white">{agentLoginModal.agentName}</span>.
+              {agentLoginModal.isReset ? (
+                <>
+                  {' '}A fresh code will be generated. Their <strong>previous code stops working
+                  immediately</strong>. They keep all their schools, codes, and earnings.
+                </>
+              ) : (
+                <>
+                  {' '}A 6-character code will be generated. They&apos;ll enter it at <code className="text-emerald-300">montree.xyz</code> to reach their dashboard.
+                </>
+              )}
+            </p>
+
+            <div className="mt-4">
+              <label className="block text-slate-300 text-xs uppercase tracking-wider font-semibold mb-1">
+                Default revenue share %
+              </label>
+              <input
+                type="number"
+                value={agentLoginPct}
+                onChange={(e) => setAgentLoginPct(e.target.value)}
+                min="0"
+                max="100"
+                step="1"
+                required
+                className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white text-sm focus:border-emerald-500 outline-none"
+              />
+              <p className="text-slate-500 text-xs mt-1">
+                Locked when they self-generate codes. They cannot raise this themselves —
+                you can adjust later via the ✏️ button. Existing codes keep their per-pitch %.
+              </p>
+            </div>
+
+            <div className="flex justify-end gap-2 mt-6">
+              <button
+                type="button"
+                onClick={() => setAgentLoginModal(null)}
+                className="px-4 py-2 text-slate-400 hover:text-white text-sm"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={agentLoginLoading}
+                className="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-white font-medium rounded-lg text-sm disabled:opacity-50"
+              >
+                {agentLoginLoading
+                  ? 'Generating…'
+                  : (agentLoginModal.isReset ? 'Generate new code' : 'Issue agent login')}
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
+
+      {/* ── Phase 7a — Edit default % modal ─────────────────────────────────── */}
+      {editPctModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4"
+          role="dialog"
+          aria-modal="true"
+        >
+          <form
+            onSubmit={submitEditPctModal}
+            className="w-full max-w-md bg-slate-900 border border-slate-700 rounded-xl shadow-2xl p-6"
+          >
+            <h3 className="text-white text-lg font-bold">✏️ Edit default share %</h3>
+            <p className="text-slate-300 text-sm mt-2">
+              For <span className="font-semibold text-white">{editPctModal.agentName}</span>.
+              Currently <span className="text-emerald-300 font-mono">{editPctModal.currentPct === null ? '—' : `${editPctModal.currentPct}%`}</span>.
+              Changes only affect FUTURE codes the agent self-generates. Existing redeemed
+              schools keep their locked-in revenue share.
+            </p>
+
+            <div className="mt-4">
+              <label className="block text-slate-300 text-xs uppercase tracking-wider font-semibold mb-1">
+                New default %
+              </label>
+              <input
+                type="number"
+                value={editPctValue}
+                onChange={(e) => setEditPctValue(e.target.value)}
+                min="0"
+                max="100"
+                step="1"
+                placeholder="50"
+                className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white text-sm focus:border-emerald-500 outline-none"
+              />
+              <p className="text-slate-500 text-xs mt-1">
+                Leave empty to disable self-service code generation entirely.
+              </p>
+            </div>
+
+            <div className="flex justify-end gap-2 mt-6">
+              <button
+                type="button"
+                onClick={() => setEditPctModal(null)}
+                className="px-4 py-2 text-slate-400 hover:text-white text-sm"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={editPctLoading}
+                className="px-4 py-2 bg-emerald-500 hover:bg-emerald-400 text-white font-medium rounded-lg text-sm disabled:opacity-50"
+              >
+                {editPctLoading ? 'Saving…' : 'Save default %'}
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
     </div>
   );
+}
+
+// ── Audit event renderers ─────────────────────────────────────────────────
+function describeAuditEvent(ev: AgentAuditEvent): string {
+  const d = (ev.details || {}) as Record<string, unknown>;
+  switch (ev.event_type) {
+    case 'agent_login_issued':
+      return d.reset ? 'Agent login reset (new code generated)' : 'Agent login issued';
+    case 'agent_suspended':
+      return 'Agent suspended';
+    case 'agent_reactivated':
+      return 'Agent reactivated';
+    case 'agent_default_pct_changed': {
+      const from = d.from === null || d.from === undefined ? '—' : `${d.from}%`;
+      const to = d.to === null || d.to === undefined ? '—' : `${d.to}%`;
+      return `Default % changed: ${from} → ${to}`;
+    }
+    case 'agent_login_succeeded':
+      return 'Agent logged in';
+    case 'agent_login_failed':
+      return 'Failed agent login attempt';
+    case 'agent_code_generated':
+      return d.code ? `Agent generated code ${d.code}` : 'Agent generated a code';
+    case 'agent_code_revoked':
+      return d.code ? `Agent revoked code ${d.code}` : 'Agent revoked a code';
+    case 'agent_stripe_link_generated':
+      return 'Agent generated Stripe onboarding link';
+    case 'agent_profile_changed':
+      return 'Agent profile changed';
+    default:
+      return ev.event_type.replace(/_/g, ' ');
+  }
 }
