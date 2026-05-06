@@ -434,61 +434,29 @@ export default function SuperAdminPage() {
               {adminData.schools.length} schools • {trialSchools.length} trial • {freeSchools.length} free • {paidSchools.length} paid
             </p>
           </div>
-          <div className="flex gap-2">
-            <Link
-              href="/montree/super-admin/community"
-              className="px-4 py-2 bg-teal-600 text-white rounded-lg font-medium hover:bg-teal-700 text-sm"
-            >
-              📚 Community Library
-            </Link>
+          {/* Cleaned up Session 90: kept the three actively-used links
+              (Community Library, API Usage, Register School). Stale routes
+              are still on disk (Marketing Hub, Master Campaign, Social
+              Manager, Job Tracker, Content Studio, Teacher Trial) — just
+              no longer surfaced from the header. URL-bookmarkable as before. */}
+          <div className="flex gap-2 flex-wrap">
             <Link
               href="/montree/super-admin/api-usage"
-              className="px-4 py-2 bg-amber-600 text-white rounded-lg font-medium hover:bg-amber-700 text-sm"
+              className="px-3 py-2 bg-slate-700 hover:bg-slate-600 text-slate-200 rounded-lg font-medium text-sm border border-slate-600 transition-colors"
             >
               📊 API Usage
             </Link>
             <Link
-              href="/montree/super-admin/job-tracker"
-              className="px-4 py-2 bg-rose-600 text-white rounded-lg font-medium hover:bg-rose-700 text-sm"
+              href="/montree/super-admin/community"
+              className="px-3 py-2 bg-slate-700 hover:bg-slate-600 text-slate-200 rounded-lg font-medium text-sm border border-slate-600 transition-colors"
             >
-              🎯 Job Tracker
-            </Link>
-            <Link
-              href="/montree/super-admin/marketing/master-campaign"
-              className="px-4 py-2 bg-emerald-600 text-white rounded-lg font-medium hover:bg-emerald-500 text-sm shadow-lg"
-            >
-              🎯 Master Campaign
-            </Link>
-            <Link
-              href="/montree/super-admin/marketing"
-              className="px-4 py-2 bg-purple-600 text-white rounded-lg font-medium hover:bg-purple-700 text-sm"
-            >
-              🚀 Marketing Hub
-            </Link>
-            <Link
-              href="/montree/super-admin/social-manager"
-              className="px-4 py-2 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 text-sm"
-            >
-              📱 Social Manager
-            </Link>
-            <a
-              href="/tools/ai-content-studio.html"
-              target="_blank"
-              className="px-4 py-2 bg-pink-600 text-white rounded-lg font-medium hover:bg-pink-700 text-sm"
-            >
-              🤖 Content Studio
-            </a>
-            <Link
-              href="/montree/teacher/register"
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 text-sm"
-            >
-              Teacher Trial →
+              📚 Community
             </Link>
             <Link
               href="/montree/onboarding"
-              className="px-4 py-2 bg-emerald-600 text-white rounded-lg font-medium hover:bg-emerald-700 text-sm"
+              className="px-3 py-2 bg-emerald-500 hover:bg-emerald-400 text-white rounded-lg font-medium text-sm transition-colors"
             >
-              + Register School
+              + Register school
             </Link>
           </div>
         </div>
