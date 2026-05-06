@@ -181,7 +181,89 @@ GMass campaigns A/C/D are historical. Campaign C sent 335 blank emails (Session 
 
 ---
 
-## RECENT STATUS (May 6, 2026)
+## RECENT STATUS (May 6-7, 2026)
+
+### ⚡ Session 92 — Phase 7 Complete: Full Agent Dashboard System + teacherpotato.xyz Audio Fix (May 6-7, 2026, overnight build)
+
+**24 files changed.** Phases 7b + 7c + 7d + 7e all shipped in one push. Sarah can now log in with her agent code, see her dashboard, generate her own referral codes, see her referred schools and estimated monthly earnings, complete her Stripe Connect setup self-service, and sign out. Plus a teacherpotato.xyz music-streaming bug fix that user reported yesterday.
+
+**🚨 Canonical resume doc:** `docs/handoffs/SESSION_92_HANDOFF.md` — comprehensive single source of truth with the 14-step production verification checklist.
+
+**🚨 Migration 188 must be run** in Supabase SQL Editor (carry-over from Session 91) before Sarah can authenticate. Until run, `tryAgentLogin` returns null silently and the agent UI 401's.
+
+**Phase 7b — Auth wiring (3 files modified):**
+- `lib/montree/server-auth.ts` — `'agent'` added to `MontreeTokenPayload.role` union, `verifyMontreeToken` role check, and `setMontreeAuthCookie` param type. Note: the `_role` param is intentionally unused (cookie shape is identical across roles, role lives in JWT payload) — eslint-disable annotation added with explanation.
+- `lib/montree/verify-request.ts` — `'agent'` added to `VerifiedRequest.role` union with comment documenting that schoolId is INERT for agent sessions.
+- `app/api/montree/auth/unified/route.ts` — `tryAgentLogin()` helper added between teacher and parent (matching plan ordering). Lookup pattern `WHERE agent_password_hash = legacySha256(code)`. Defensive: refuses if `is_agent=false` (logs warn) or `agent_suspended_at` set (logs `agent_login_failed`). On success: stamps `agent_login_last_used_at` fire-and-forget, logs `agent_login_succeeded` to `montree_agent_audit` AND `login_success` to central security log, issues JWT, redirects to `/montree/agent/dashboard`. Migration-not-run case (Postgres 42703) returns null silently.
+
+**Phase 7d — APIs (9 endpoints, all NEW):**
+- `/api/montree/agent/me` GET — agent profile + referred schools with student counts
+- `/api/montree/agent/schools` GET — all referred schools (overflow from /me)
+- `/api/montree/agent/schools/[id]` GET — per-school detail with full earnings estimate breakdown
+- `/api/montree/agent/codes` GET/POST/DELETE — list + self-generate (rate limited 20/24h, requires pitch_label, refuses if `agent_default_share_pct IS NULL`) + revoke pending
+- `/api/montree/agent/earnings` GET — monthly estimates per-school + total. Formula: `(students × $7 − Stripe fee ≈ 2.9% + $0.30 − API costs) × share %`. Negative net → 0 (no clawback)
+- `/api/montree/agent/payouts` GET — Stripe Connect status + payout history (history empty until Phase 5)
+- `/api/montree/agent/connect-onboard` POST — generate fresh Stripe onboarding link (race-safe account creation)
+- `/api/montree/agent/connect-status` POST — force-refresh status from Stripe API (preserves `completed_at` once set)
+- `/api/montree/agent/logout` POST — clear cookie
+
+Every endpoint gates on `auth.role === 'agent'` and self-scopes via `founding_teacher_id = auth.userId` (schools), `agent_id = auth.userId` (codes/payouts), or `id = auth.userId` (own profile). Cross-pollination filter is the most important security invariant — verified on all 9 via grep audit.
+
+**Phase 7c — Pages (9 files, all NEW):**
+- `app/montree/agent/layout.tsx` — Shared shell with dark forest gradient + AgentNav at top (matches /montree, /montree/try, /montree/login-select aesthetic)
+- `app/montree/agent/dashboard/page.tsx` — Home: greeting + summary line, Stripe banner, schools cards (max 6 with "See all"), 3-tile earnings, recent codes (max 5)
+- `app/montree/agent/schools/page.tsx` — Full schools grid with per-card student count + gross estimate
+- `app/montree/agent/schools/[id]/page.tsx` — Per-school: name + linked-on date + locale, snapshot tiles, full estimate breakdown (gross → fees → costs → net → share). Intentionally no classroom/child detail — that's the school's private space.
+- `app/montree/agent/codes/page.tsx` — Self-service code form, reveal-once banner with Copy code + Copy share link, status filter tabs, table with Revoke
+- `app/montree/agent/earnings/page.tsx` — Two-tile summary + formula explanation + per-school table with the full math
+- `app/montree/agent/payouts/page.tsx` — Stripe Connect status pill + onboarding-link CTA + payout history (placeholder until Phase 5)
+- `app/montree/agent/settings/page.tsx` — Read-only profile (Q2 — agent can't edit name/email; ask Tredoux). Login-reset hint. Sign-out button.
+- `components/montree/agent/AgentNav.tsx` — Sticky top nav, mobile hamburger sheet, agent name + Sign out
+
+**Phase 7e — Polish (2 components, NEW):**
+- `AgentFirstRunOverlay.tsx` — 3-card walkthrough shown ONCE per device (localStorage `montree.agent.firstrun.dismissed.v1`). Cards: home explanation → code generation → Stripe Connect CTA.
+- `AgentRedemptionBanner.tsx` — Celebration when school count went up since last load (localStorage `montree.agent.lastSeenSchoolCount.v1`). First load silently writes baseline (no false positive). Subsequent loads with delta show "🎉 [School] just signed up using one of your codes."
+
+Both injected into the dashboard page.
+
+**teacherpotato.xyz audio fix:**
+
+User reported struggling to stream music yesterday. Parallel agent audit identified: `app/whale-class/page.tsx` had `crossOrigin="anonymous"` on every audio/video element (4 instances). The page intentionally uses raw Supabase URLs on teacherpotato.xyz (proxy 502s without Cloudflare in front). With `crossOrigin="anonymous"`, browsers send a CORS preflight on every media request — Supabase Storage doesn't return `Access-Control-Allow-Origin` for teacherpotato.xyz origin, so playback blocks. We don't actually use cross-origin features (no canvas frame access, no MSE, no SW media caching — SW v3 only caches static assets). Removing the attribute unblocks playback without changing URL routing or requiring Tredoux to dashboard-action Supabase CORS.
+
+**Architectural rules locked in (do NOT break):**
+1. Cross-pollination filter is mandatory on every agent endpoint — `WHERE founding_teacher_id = auth.userId` (schools), `WHERE agent_id = auth.userId` (codes), `WHERE id = auth.userId` (own row).
+2. Every agent endpoint gates on `auth.role === 'agent'`. Teacher hitting `/api/montree/agent/me` MUST 403.
+3. Agent JWT `schoolId` is INERT (placeholder for shell agents). Never use schoolId for agent self-scoping.
+4. Unified login order: principal → teacher → AGENT → parent. Strictly more specific roles first.
+5. `is_agent=true` is required, not just hash match. `tryAgentLogin` refuses if `is_agent=false` even when hash matches.
+6. Agent self-service POSTs audit to `montree_agent_audit` — `agent_code_generated`, `agent_code_revoked`, `agent_stripe_link_generated`. Phase 7a's panel surfaces them.
+7. First-run overlay + redemption banner use localStorage, not server state — decouples from server timing.
+8. `crossOrigin="anonymous"` on `<audio>`/`<video>` is a CORS escalator. Don't add it unless you actually need canvas/MSE/cross-origin SW. For plain playback, leave it off.
+9. Earnings is ESTIMATES until Phase 5. Always labelled. Negative net → 0 (no clawback, no negative payouts).
+10. Self-service code generation rate-limited 20/24h. Soft fail-open if count query errors.
+11. Self-service codes lock at agent's `agent_default_share_pct`. Agent CANNOT raise their own %. NULL pct = self-service disabled.
+
+**What's NOT shipped:** Phase 4 (Stripe school billing) and Phase 5 (payout calc) still ahead. Until they ship, dashboard shows estimates labelled as such. Architecture is ready to swap in actuals from `montree_agent_payouts` when Phase 5 lands. Phase 6 (super-admin Money tab P&L) also still ahead.
+
+**14-step production verification checklist** in `docs/handoffs/SESSION_92_HANDOFF.md` — covers issue-code → login → all 6 nav pages → generate code → revoke code → Stripe link → sign out → re-auth → activity panel cross-check → first-run overlay → celebration banner → teacherpotato.xyz audio.
+
+**Audit trail:**
+- Lint: `--max-warnings=0` clean across all 24 changed/new files (eslint exit 0)
+- Cross-pollination filter verified on every agent endpoint via grep
+- Auth role check verified on every agent endpoint
+- Plaintext code never logged or persisted (Phase 7a rule preserved)
+- Migration 188 graceful degradation in `tryAgentLogin` (Postgres 42703 → null, falls through cleanly)
+- Belt-and-braces filters: DELETE on codes uses BOTH agent_id-scoped fetch AND agent_id-scoped update
+- Race-safe Stripe Connect account creation (conditional UPDATE WHERE account_id IS NULL)
+
+**Next session priorities:**
+1. **🚨 Tredoux runs migration 188** in Supabase SQL Editor (carry-over from Session 91 — still required).
+2. **Walk 14-step verification checklist** on production after Railway redeploys.
+3. **Phase 4 — Stripe school subscription billing** (~3-4 days). Schools actually pay $7/student/month via Stripe.
+4. **Phase 5 — Payout calculation engine** (~1.5 days). Monthly aggregator writes to `montree_agent_payouts`.
+5. **Phase 6 — Super-admin Money tab** (~2-3 days). Tredoux's P&L view.
+
+---
 
 ### ⚡ Session 91 — Phase 7a: Agent Login Foundation (May 6, 2026, overnight build)
 
