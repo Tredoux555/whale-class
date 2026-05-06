@@ -183,9 +183,9 @@ GMass campaigns A/C/D are historical. Campaign C sent 335 blank emails (Session 
 
 ## RECENT STATUS (May 6, 2026)
 
-### ⚡ Session 90 — Agent Referral & Financial Tracking — Phase 1 Foundation Shipped (May 6, 2026)
+### ⚡ Session 90 — Agent Referral & Financial Tracking — Phases 1 + 2 Shipped (May 6, 2026)
 
-**1 commit pushed to main: `e0ee3c7d`.** 10 files, 1,521 lines. Phase 1 of the agent referral programme is live. Tredoux can now issue Sarah a code from super admin and send her the link; when the school redeems it they're permanently linked to Sarah at her negotiated revenue share %. Phase 2 (code-as-principal-login), Phase 3 (Stripe Connect), and Phase 4-7 (billing/payouts/Money tab/agent dashboard) are still ahead.
+**3 commits pushed to main: `e0ee3c7d` (Phase 1 — codes + redemption), `31b0a496` (handoff doc), `d73a1d94` (Phase 2 — code IS the principal's login).** Phases 1 + 2 of the agent referral programme are live. Tredoux can now issue Sarah a code, and the SAME code becomes her school's permanent login — exactly the original vision ("type the code, you're in"). Phase 3 (Stripe Connect), Phase 4 (Stripe school billing), and Phases 5-7 (payouts/Money tab/agent dashboard) are still ahead.
 
 **Two design docs also delivered:**
 - `docs/finance/accountant-onepager.md` — for the HK accountant. Covers revenue model, money flow (Stripe → Wallex HK), three cost categories (direct cost of revenue / referral commissions / operating expenses), multi-currency handling (USD base), monthly export pack contents (CSV + PDF + per-school CSV + per-agent CSV + JSON backup), and seven explicit questions for the accountant (category mapping, commission classification as cost-of-sales vs operating expense, format prefs, frequency, HK-specific items, currency confirm, year-end pack).
@@ -204,8 +204,15 @@ GMass campaigns A/C/D are historical. Campaign C sent 335 blank emails (Session 
 - `app/api/montree/try/instant/route.ts` — `resolveReferralCode()` validates BEFORE any DB writes (clean 400 on bad code). On success: stamps the AGENT (not the new teacher) on `school.founding_teacher_id`, locks `revenue_share_pct`, sets `revenue_share_active=true`, writes `referral_code_id` + `referral_code_used`, marks code redeemed. Wired into all three role branches (teacher/principal/homeschool_parent).
 - `app/montree/try/page.tsx` — reads `?ref=CODE` on mount via `window.location` (avoids `useSearchParams` Suspense requirement), shows gold "Referral code: SARAH-K9X7" banner on every step until success, passes `referral_code` in POST body.
 
-**🚨 IMPORTANT NUANCE — the gap between vision and Phase 1:**
-User asked for the code to be the school's **login**. What shipped is the code being the school's **referral link** at signup. The school clicks the link, fills in school details, gets a separate 6-char principal login code via the existing flow. The referral code is NOT yet the principal's password — that's Phase 2 (~half a day, hash the redeemed code into `montree_school_admins.password_hash` at signup + handle the login-select routing). Phase 1 is still a "give them this link, they're set up, you're paid" experience — it just goes through a signup form rather than a login box. Fine for Sarah's first pitch.
+**Phase 2 — code IS the principal's login (commit `d73a1d94`):**
+
+3 files modified, 106 insertions. Closes the gap from Phase 1's "referral link at signup" to the original vision "type the code, you're in."
+
+- `app/api/montree/try/instant/route.ts` — principal branch now hashes the REFERRAL code itself (uppercased, via `legacySha256`) as `montree_school_admins.password_hash` when a referral code is present. Email fallback uses the referral code's slug. Response returns the referral code as `code` so the success screen shows it as the principal's login (not the legacy 6-char). Without a referral code, falls back to the auto-generated 6-char code unchanged. Teacher and homeschool_parent branches with referral codes keep their auto-generated codes (referral linkage on the school is set, but their personal login isn't the referral code — principal-only behaviour).
+- `app/api/montree/auth/unified/route.ts` — new `tryReferralPrecheck()` helper runs FIRST (after rate limit + length check). Looks up entered code in `montree_referral_codes`. status=pending → 409 with `redirectTo: /montree/try?ref=CODE`; revoked → 401 with clear message; expired → 401 with clear message; redeemed → returns null, falls through (the principal's `password_hash` matches `legacySha256(code)`, so `tryPrincipalLogin` Step 1 finds them naturally); not a referral row → returns null, falls through (legacy 6-char codes unaffected). Code length cap widened from 10 → 32 to fit `<FIRSTNAME>-XXXX` format.
+- `app/montree/login-select/page.tsx` — input cap widened to 32 chars. Handles 409 `pending_referral` by `router.replace(data.redirectTo)` instead of showing an error toast.
+
+**Sarah's pitch flow after Phase 2:** "Go to montree.xyz, type SARAH-K9X7. You're in." First use → server detects pending → redirects to signup with code carried in → school fills in details, gets created with principal `password_hash = legacySha256(SARAH-K9X7)`, code marked redeemed. Every subsequent login → server's precheck sees status=redeemed → falls through → `tryPrincipalLogin` matches the hash → in.
 
 **Decisions locked (DO NOT re-debate next session):**
 
@@ -260,8 +267,8 @@ User asked for the code to be the school's **login**. What shipped is the code b
 5. **Send Sarah the link**: `https://montree.xyz/montree/try?ref=SARAH-XXXX` (with her actual code).
 
 **🚨 Next session priorities:**
-1. **Phase 2 — code as principal login.** Half a day. Hash the redeemed referral code into `montree_school_admins.password_hash` at signup; handle `/montree/login-select` so typing a referral code routes correctly (pending → signup, redeemed → login). Delivers the original "type the code, you're in the school" UX.
-2. **Tredoux to send accountant one-pager to HK accountant** in parallel — get answers to the seven questions before Phase 6 (Money tab) is built so categories map correctly to their filing requirements.
+1. **End-to-end Phase 2 production verification** — issue a test code → log in with it → confirm redirect to signup → complete signup → log out → log in again with the same code → land directly in dashboard. Full checklist in `docs/handoffs/SESSION_90_HANDOFF.md`.
+2. **Tredoux to send accountant one-pager to HK accountant** — Gmail draft already created (`r2430204512620199011`, sent via parallel agent during this session). Review and send. Their answers, especially the cost-of-sales vs operating-expense classification for commissions, affect Phase 6 (Money tab) categories.
 3. **Tredoux to confirm with banker** Stripe Connect Express HK availability + Wallex compatibility — affects Phase 3.
 4. **Phase 3 — Stripe Connect onboarding** (~1.5 days). One-time link to Sarah, hosted Stripe Express form, capture account ID. After this lands she's set up for automated payouts.
 5. **Phase 4 — Stripe school subscription billing** (3-4 days, precondition for automated revenue). Until shipped, Money tab falls back to manual gross entry.

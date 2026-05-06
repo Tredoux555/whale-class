@@ -1,7 +1,7 @@
-# Session 90 Handoff — Agent Referral Programme, Phase 1
+# Session 90 Handoff — Agent Referral Programme, Phases 1 + 2
 
 **Date:** May 6, 2026
-**Commit:** `e0ee3c7d` on main
+**Commits:** `e0ee3c7d` (Phase 1 — codes + redemption) + `d73a1d94` (Phase 2 — code IS the principal's login) on main
 **Companion docs:**
 - `docs/AGENT_REFERRAL_AND_FINANCIALS_PLAN.md` — full 7-phase build plan
 - `docs/finance/accountant-onepager.md` — for HK accountant review
@@ -27,21 +27,32 @@ She forwards it to the school. They click → fill in school name + principal na
 
 ---
 
-## ⚠️ Important nuance — read this before promising Sarah anything
+## How the full flow works after Phase 2
 
-You asked for the code to be the school's **login**. What shipped is the code being the school's **referral link** at signup. There's a small but real difference:
+The code IS the school's login. Sarah's pitch is one sentence:
 
-**What ships TODAY:**
-- School clicks the referral link → lands on the trial signup form → fills in details → school + principal accounts created → school is linked to Sarah.
-- The principal still gets a separate 6-character login code emailed back at signup (the existing flow).
-- The referral code itself is NOT the principal's password.
+> "Go to montree.xyz, type SARAH-K9X7. You're in."
 
-**What was originally pitched ("type the code → you're in the school") — Phase 2:**
-- School types `SARAH-K9X7` at the login screen → if pending, routed to school signup → if redeemed, treated as the principal's password and they're in their dashboard.
-- Requires hashing the referral code into `montree_school_admins.password_hash` at redemption.
-- About a half-day's work. Slot it in next session if you want it before Sarah pitches.
+**First use (school redeems):**
+1. School types `SARAH-K9X7` at `/montree/login-select`.
+2. Server runs `tryReferralPrecheck` — sees status=`pending`, returns 409 with `redirectTo=/montree/try?ref=SARAH-K9X7`.
+3. Login page redirects them to the trial signup form, code already in the URL.
+4. They fill in school name + principal name + email, submit.
+5. Backend creates the school + principal, with `password_hash = legacySha256(SARAH-K9X7)`.
+6. Stamps `school.founding_teacher_id = Sarah`, locks 50% revenue share, marks code `redeemed`.
+7. Issues JWT, principal lands in their dashboard.
 
-The Phase 1 flow IS still a "give them this code/link, they're set up and you're paid" experience — it just goes through a signup form rather than a login box. For Sarah's first pitch this is genuinely fine.
+**Every subsequent login:**
+1. Principal types `SARAH-K9X7` at `/montree/login-select`.
+2. Server's referral precheck sees status=`redeemed` → returns null → falls through.
+3. Existing `tryPrincipalLogin` does `legacySha256(SARAH-K9X7)`, finds the matching `password_hash`, logs them in.
+4. JWT issued, principal in dashboard.
+
+**Edge cases (handled):**
+- Code revoked before use → 401 "This referral code has been revoked. Please contact whoever sent it to you."
+- Code expired → 401 "This referral code has expired. Ask your contact for a fresh one."
+- Wrong code → 401 standard "Invalid code".
+- Direct-signup schools (no referral) → completely unaffected, keep their legacy 6-char codes.
 
 ---
 
@@ -96,16 +107,15 @@ The Phase 1 flow IS still a "give them this code/link, they're set up and you're
 
 ## What is NOT shipped yet
 
-These are the gaps between Phase 1 and the full vision. Documented so future-you can pick up the right next thing.
+Phases 1 + 2 are live. The following are still ahead.
 
 ### Critical gaps
 
-1. **The code isn't yet the principal's login.** Phase 2. ~Half a day. See "Important nuance" above.
-2. **No Stripe Connect onboarding for Sarah.** Phase 3. She has no automated payout rail yet — you'll Wallex-wire her manually month one.
-3. **No Stripe school subscription billing.** Phase 4. Schools are still on manual `personal_classroom` → `school` transitions. Without this, the payout calculator has nothing to read from for revenue.
-4. **No payout calculator.** Phase 5.
-5. **No Money tab / financial dashboard.** Phase 6.
-6. **No agent dashboard refresh.** Phase 7. Sarah, if she's also a teacher, can already see `/montree/dashboard/earnings` from Session 72 — but the page assumes the old self-serve model and won't reflect this new flow correctly.
+1. **No Stripe Connect onboarding for Sarah.** Phase 3. She has no automated payout rail yet — you'll Wallex-wire her manually month one.
+2. **No Stripe school subscription billing.** Phase 4. Schools are still on manual `personal_classroom` → `school` transitions. Without this, the payout calculator has nothing to read from for revenue.
+3. **No payout calculator.** Phase 5.
+4. **No Money tab / financial dashboard.** Phase 6.
+5. **No agent dashboard refresh.** Phase 7. Sarah, if she's also a teacher, can already see `/montree/dashboard/earnings` from Session 72 — but the page assumes the old self-serve model and won't reflect this new flow correctly.
 
 ### Smaller gaps
 
@@ -155,9 +165,9 @@ These are the gaps between Phase 1 and the full vision. Documented so future-you
 
 ## Next session priorities (in order)
 
-1. **Phase 2 — code as principal login.** Half a day. Hash the redeemed referral code into `montree_school_admins.password_hash` at signup, plus handle the `/montree/login-select` flow so typing a referral code routes correctly (pending → signup, redeemed → login). This delivers the original "type the code, you're in the school" UX.
+1. **End-to-end test on production** after Railway redeploys `d73a1d94`. Concrete checklist below.
 
-2. **Send the accountant one-pager to your HK accountant.** Run in parallel with Phase 2. Their answers — especially the cost-of-sales vs operating-expense classification for commissions — affect Phase 6 (Money tab) categories.
+2. **Send the accountant one-pager to your HK accountant.** Email draft already in your Gmail (draft `r2430204512620199011`) — review and send when ready. Their answers, especially the cost-of-sales vs operating-expense classification for commissions, affect Phase 6 (Money tab) categories.
 
 3. **Confirm with your banker** that Stripe Connect Express is HK-supported and Wallex receives the deposits cleanly. Affects Phase 3.
 
@@ -170,6 +180,23 @@ These are the gaps between Phase 1 and the full vision. Documented so future-you
 7. **Phase 6 — Money tab in super admin.** 2-3 days. Income / direct costs / commissions / op-ex / P&L / monthly Accountant Pack ZIP export.
 
 8. **Phase 7 — agent dashboard refresh + decide on `/for-teachers` page.** 0.5 days.
+
+## Phase 2 production verification checklist
+
+After Railway finishes deploying `d73a1d94`:
+
+1. **🚨 Migration 186 must be run first** — verify in Supabase:
+   ```sql
+   SELECT count(*) FROM montree_referral_codes;  -- should return 0 or more, not error
+   SELECT referral_code_id FROM montree_schools LIMIT 1;  -- column should exist
+   ```
+2. **Issue a test code** — open `/montree/super-admin` → 🎟️ Referrals → "+ Issue code" → fake agent (e.g. name "Test", email "test@example.com", 50%). Confirm `TEST-XXXX` returned.
+3. **Pending → signup redirect** — open private window → `/montree/login-select` → type the test code → expect immediate redirect to `/montree/try?ref=TEST-XXXX` with the gold banner showing the code.
+4. **Complete redemption** — pick role=Principal → fill in school + name + email → submit → expect to land in principal dashboard.
+5. **Code is now login** — log out → `/montree/login-select` → type the same `TEST-XXXX` → expect to land directly in the principal dashboard. This is the proof Phase 2 works.
+6. **Verify DB state** — `SELECT status, redeemed_by_school_id FROM montree_referral_codes WHERE code='TEST-XXXX';` → status should be `redeemed`. `SELECT founding_teacher_id, revenue_share_pct, referral_code_used FROM montree_schools WHERE referral_code_used='TEST-XXXX';` → all three should be populated.
+7. **Revoke a fresh code** — issue another test code, then immediately revoke from the table. Try logging in with it — expect 401 "This referral code has been revoked."
+8. **Confirm legacy login still works** — try logging in as Tredoux (Whale Class principal, code `ZNGLJT` per Session 87). Should work unchanged.
 
 ---
 
