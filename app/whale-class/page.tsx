@@ -57,6 +57,7 @@ export default function WhaleClassPage() {
   useEffect(() => {
     const hash = window.location.hash;
     if (hash.startsWith('#song-')) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setHighlightedSlug(hash.slice(6));
     }
   }, []);
@@ -173,7 +174,6 @@ export default function WhaleClassPage() {
                   src={highlightedSong.videoUrl}
                   controls
                   preload="metadata"
-                  crossOrigin="anonymous"
                   className="w-full max-w-md"
                 />
               </div>
@@ -184,7 +184,6 @@ export default function WhaleClassPage() {
                   controls
                   playsInline
                   preload="metadata"
-                  crossOrigin="anonymous"
                   className="w-full h-full object-contain"
                 />
               </div>
@@ -237,7 +236,6 @@ export default function WhaleClassPage() {
                           src={song.videoUrl}
                           controls
                           preload="metadata"
-                          crossOrigin="anonymous"
                           className="w-full"
                         />
                       </div>
@@ -248,7 +246,6 @@ export default function WhaleClassPage() {
                           controls
                           playsInline
                           preload="metadata"
-                          crossOrigin="anonymous"
                           className="w-full h-full object-contain"
                         />
                       </div>

@@ -23,12 +23,16 @@ function getSecretKey(): Uint8Array {
 // Cookie name for teacher/principal httpOnly auth cookie
 export const MONTREE_AUTH_COOKIE = 'montree-auth';
 
-// Token payload shape (teacher/principal/homeschool_parent — stored in httpOnly cookie)
+// Token payload shape — stored in httpOnly cookie.
+// 'agent' (Phase 7b) is the Sarah / multiplier-partner role. They span schools
+// via referrals; schoolId on their JWT is their montree_teachers row's
+// (placeholder for shell agents, real for teacher-agents) and is INERT for
+// agent routes — those self-scope via founding_teacher_id = sub.
 export interface MontreeTokenPayload {
-  sub: string;        // teacher ID, principal ID, or homeschool parent ID
+  sub: string;        // teacher ID, principal ID, agent ID (= montree_teachers.id), or homeschool parent ID
   schoolId: string;
   classroomId?: string;
-  role: 'teacher' | 'principal' | 'homeschool_parent';
+  role: 'teacher' | 'principal' | 'homeschool_parent' | 'agent';
 }
 
 // Parent token payload (stored in HTTP-only cookie)
@@ -76,7 +80,7 @@ export async function verifyMontreeToken(token: string): Promise<MontreeTokenPay
       return null;
     }
 
-    if (role !== 'teacher' && role !== 'principal' && role !== 'homeschool_parent') {
+    if (role !== 'teacher' && role !== 'principal' && role !== 'homeschool_parent' && role !== 'agent') {
       return null;
     }
 
@@ -84,7 +88,7 @@ export async function verifyMontreeToken(token: string): Promise<MontreeTokenPay
       sub,
       schoolId,
       classroomId: (payload.classroomId as string) || undefined,
-      role: role as 'teacher' | 'principal' | 'homeschool_parent',
+      role: role as 'teacher' | 'principal' | 'homeschool_parent' | 'agent',
     };
   } catch {
     // Token is invalid, expired, or tampered with
@@ -149,7 +153,11 @@ export async function verifyParentToken(token: string): Promise<ParentTokenPaylo
 export function setMontreeAuthCookie(
   response: NextResponse,
   token: string,
-  role?: 'teacher' | 'principal' | 'homeschool_parent'
+  // Kept for API compat (callers pass it as self-documentation) but the
+  // cookie shape is identical across roles, so the cookie write doesn't
+  // actually branch on it. Role lives inside the JWT payload.
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  _role?: 'teacher' | 'principal' | 'homeschool_parent' | 'agent'
 ): void {
   const maxAge = 365 * 24 * 60 * 60;  // 365 days — paid subscription, cookie should effectively not expire
   response.cookies.set(MONTREE_AUTH_COOKIE, token, {

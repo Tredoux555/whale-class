@@ -7,6 +7,7 @@ import { createMontreeToken, setMontreeAuthCookie, createParentToken } from '@/l
 import { verifyPassword, legacySha256 } from '@/lib/montree/password';
 import { checkRateLimit } from '@/lib/rate-limiter';
 import { logAudit, getClientIP, getUserAgent } from '@/lib/montree/audit-logger';
+import { logAgentAudit } from '@/lib/montree/referral/agent-audit';
 import { cookies } from 'next/headers';
 
 // SQL injection defense helper for .ilike() queries
@@ -159,7 +160,77 @@ export async function POST(request: NextRequest) {
     }
 
     // ============================================
-    // 3. TRY PARENT INVITE CODE
+    // 3. TRY AGENT LOGIN (Phase 7b)
+    // ============================================
+    // Agent dashboard login. Sarah / multiplier partners enter their 6-char
+    // agent code → tryAgentLogin returns the agent row → JWT issued with
+    // role='agent' → cookie set → redirect to /montree/agent/dashboard.
+    //
+    // Order: AFTER teacher (so teacher-agents holding both logins get the
+    // teacher session for their classroom code, agent session for their
+    // agent code — separate hashes ensure no collision). BEFORE parent.
+    const agentResult = await tryAgentLogin(supabase, normalizedCode);
+    if (agentResult) {
+      const { agent } = agentResult;
+
+      const token = await createMontreeToken({
+        sub: agent.id,
+        // Agent JWT schoolId is INERT — the agent's montree_teachers row's
+        // school_id. Agent routes self-scope via founding_teacher_id, not
+        // schoolId. We thread it only because MontreeTokenPayload requires it.
+        schoolId: agent.school_id,
+        role: 'agent',
+      });
+
+      // Stamp last-used timestamp so super admin's "Active" pill is accurate.
+      // Fire-and-forget — login must not fail if the timestamp update fails.
+      void supabase
+        .from('montree_teachers')
+        .update({ agent_login_last_used_at: new Date().toISOString() })
+        .eq('id', agent.id)
+        .then(({ error: stampErr }) => {
+          if (stampErr) console.error('[unified login] agent_login_last_used_at update failed:', stampErr.message);
+        });
+
+      // Audit success in the agent log + the central security log.
+      void logAgentAudit(supabase, {
+        agent_id: agent.id,
+        agent_display_name: agent.name,
+        agent_email: agent.email,
+        event_type: 'agent_login_succeeded',
+        actor_role: 'agent',
+        details: null,
+        ip_address: ip,
+        user_agent: userAgent,
+      });
+
+      logAudit(supabase, {
+        adminIdentifier: agent.email || agent.name || 'unknown',
+        action: 'login_success',
+        resourceType: 'agent',
+        resourceId: agent.id,
+        resourceDetails: { endpoint: '/api/montree/auth/unified' },
+        ipAddress: ip,
+        userAgent,
+      });
+
+      const response = NextResponse.json({
+        success: true,
+        role: 'agent',
+        token,
+        agent: {
+          id: agent.id,
+          name: agent.name,
+          email: agent.email,
+        },
+        redirect: '/montree/agent/dashboard',
+      });
+      setMontreeAuthCookie(response, token, 'agent');
+      return response;
+    }
+
+    // ============================================
+    // 4. TRY PARENT INVITE CODE
     // ============================================
     const parentResult = await tryParentLogin(supabase, normalizedCode);
     if (parentResult) {
@@ -367,6 +438,68 @@ async function tryPrincipalLogin(supabase: ReturnType<typeof getSupabase>, code:
   const needsSetup = !classrooms || classrooms.length === 0;
 
   return { principal, school, needsSetup };
+}
+
+// ---- Helper: Try agent login (Phase 7b) ----
+// Agent dashboard login. The agent's 6-char code is hashed (legacySha256) and
+// stored in montree_teachers.agent_password_hash — separate from password_hash
+// so a teacher-agent can hold both a teacher login (their classroom code) and
+// an agent login (their referral dashboard code) without collision.
+//
+// Architectural rule (Phase 7a): is_agent=true is the marker. Even if a hash
+// matched without is_agent set, we refuse to authenticate. Same for
+// agent_suspended_at — suspended agents can't log in.
+async function tryAgentLogin(supabase: ReturnType<typeof getSupabase>, code: string) {
+  const fields = 'id, name, email, school_id, is_agent, agent_suspended_at, agent_password_hash';
+  const codeHash = legacySha256(code);
+
+  const { data: match, error } = await supabase
+    .from('montree_teachers')
+    .select(fields)
+    .eq('agent_password_hash', codeHash)
+    .maybeSingle();
+
+  if (error) {
+    // If migration 188 hasn't run yet the agent_password_hash column doesn't
+    // exist — Postgres returns 42703. Surface as "no match" so the rest of
+    // the unified login chain continues normally (instead of throwing 500).
+    return null;
+  }
+  if (!match) return null;
+
+  // Defensive checks — even if the hash matched, refuse if marker missing
+  // or agent suspended. Belt-and-suspenders against future schema bugs.
+  if (!match.is_agent) {
+    // Hash matched but is_agent=false. This shouldn't happen — POST /agents/
+    // [id]/login always sets is_agent=true on issue. Log it loudly and treat
+    // as no match.
+    console.warn('[tryAgentLogin] hash matched but is_agent=false for id', match.id);
+    return null;
+  }
+  if (match.agent_suspended_at) {
+    // Hash matched but agent is suspended. Don't authenticate. We could
+    // return a distinct error to surface "you're suspended, contact Tredoux"
+    // but for now just refuse silently — same UX as wrong code, prevents
+    // information leak.
+    void logAgentAudit(supabase, {
+      agent_id: match.id,
+      agent_display_name: match.name,
+      agent_email: match.email,
+      event_type: 'agent_login_failed',
+      actor_role: 'system',
+      details: { reason: 'suspended' },
+    });
+    return null;
+  }
+
+  return {
+    agent: {
+      id: match.id,
+      name: match.name,
+      email: match.email,
+      school_id: match.school_id,
+    },
+  };
 }
 
 // ---- Helper: Referral code precheck (Phase 2) ----

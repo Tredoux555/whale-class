@@ -18,7 +18,11 @@ export interface VerifiedRequest {
   userId: string;
   schoolId: string;
   classroomId?: string;
-  role: 'teacher' | 'principal' | 'homeschool_parent';
+  // 'agent' (Phase 7b) — Sarah / multiplier-partner sessions. schoolId on
+  // these is INERT (the agent's montree_teachers row's school_id, placeholder
+  // for shell agents). Agent routes MUST self-scope via founding_teacher_id =
+  // userId, NOT via schoolId.
+  role: 'teacher' | 'principal' | 'homeschool_parent' | 'agent';
 }
 
 /**
