@@ -3,15 +3,20 @@
 **Date:** May 6, 2026
 **Status:** All three phases shipped to main. Setup steps required before anything is testable in production (see "What you need to do" below).
 
-**Commits pushed (5, in order):**
+**Commits pushed (9, in order):**
 1. `e0ee3c7d` — Phase 1: codes + redemption foundation
 2. `31b0a496` — Phase 1 docs (handoff + CLAUDE.md update)
 3. `d73a1d94` — Phase 2: redeemed code IS the principal's login
 4. `6bd5b955` — Phase 2 docs update
 5. `03e2942c` — Phase 3: Stripe Connect Express onboarding for agents
+6. `74d217d2` — Comprehensive handoff doc + CLAUDE.md aligned
+7. `c17ab294` — Fix: 500 on issuing referral codes (multi-row email lookup + missing school_id)
+8. `39b36e9f` — Fix: null.replace crash on Visitors tab when page_url/referrer is null
+9. `5bb02a39` — Super-admin tidy: rainbow tile ribbon → three-button slate row
 
 **Companion docs (in repo):**
 - `docs/AGENT_REFERRAL_AND_FINANCIALS_PLAN.md` — full 7-phase blueprint, all locked decisions
+- `docs/AGENT_DASHBOARD_PLAN.md` — Phase 7 strategy: agent login, self-service codes, transparent earnings, schools-they-referred view (THIS IS THE NEXT BUILD)
 - `docs/finance/accountant-onepager.md` — for HK accountant Pamela (already drafted as Gmail draft `r2430204512620199011`)
 
 ---
@@ -224,25 +229,68 @@ If any of these trip, send me a screenshot or the Railway log line — most fail
 
 ---
 
+## Overnight cleanup (commits 7-9)
+
+After Phases 1-3 shipped, three issues surfaced during user testing. All fixed and deployed.
+
+**Commit `c17ab294` — referral codes 500 fix.**
+When Tredoux issued the first code for "Gloria" with email `tredoux555@gmail.com`, the route returned 500 "Could not create agent record." Two layered bugs:
+
+1. The lookup `'.eq("email", email).maybeSingle()'` errored on multi-row results (multiple test teacher rows shared the email). Error was discarded by destructuring; data became null; the route fell through to shell-creation.
+2. The shell insert lacked `school_id`, which is `NOT NULL` on `montree_teachers`.
+
+Fixes: lookup now `.order(created_at desc).limit(1)` + take-first; shell creation pulls the OLDEST `montree_schools` row as a placeholder; the API now surfaces DB error detail in the response so the UI can show what specifically failed.
+
+**Commit `39b36e9f` — Visitors tab null.replace crash.**
+The super-admin page hard-crashed with `Cannot read properties of null (reading 'replace')` whenever any `montree_visitors` row had a null `page_url` or `referrer`. `shortenUrl(url: string)` was typed as non-null but called with possibly-null DB data. Fix: accept `string | null | undefined`, return `'/'` on null. Same defence on inline `v.referrer.replace`. Now the empty state ("No visitors in the last N days") renders correctly.
+
+**Commit `5bb02a39` — super-admin tidy.**
+Replaced the 9-button rainbow tile ribbon with a three-button slate row. Kept the actively-used links (API Usage, Community, + Register school). Hidden the dead/abandoned links (Job Tracker, Master Campaign, Marketing Hub + 18 sub-pages, Social Manager + 5 sub-pages, Content Studio, Teacher Trial). Routes preserved on disk — bookmarks still work. The visual result: tabs (Schools/Leads/Feedback/Visitors/Guru/Referrals) are no longer drowning under a wall of colourful chrome.
+
+---
+
+## Phase 7 — Agent Dashboard plan (NEXT BUILD)
+
+Full strategy in `docs/AGENT_DASHBOARD_PLAN.md`. The summary:
+
+Agents (Sarah, multipliers) need their own dashboard so they can log in, see which schools they brought in, generate their own codes self-service, and watch their earnings transparently. Phase 7 splits into 5 sub-phases (~5 days total):
+
+- **7a Foundation (1 day)** — migration 188 + super admin "Issue agent login" button
+- **7b Auth (0.5 day)** — `'agent'` JWT role, `tryAgentLogin()` in unified login
+- **7c Pages (2 days)** — `/montree/agent/*` routes (dashboard, schools, codes, earnings, payouts, settings)
+- **7d APIs (1 day)** — 10 endpoints, all gated to the auth'd agent's data only
+- **7e Polish (0.5 day)** — first-run tutorial, redemption celebration banner, mobile sweep
+
+**Key decisions already locked in the plan** (don't re-debate at build time):
+- Agents stay in `montree_teachers` with `is_agent=true`, separate `agent_password_hash` column
+- 6-char alphanumeric agent login codes (no I/O/0/1)
+- Self-service code generation at agent's locked default %, 20/day rate limit
+- Earnings show ESTIMATES until Phase 5 lands (then swap to actuals from `montree_agent_payouts`)
+- Suspending an agent stops their login but does NOT freeze pending payouts (two-knob system)
+- Subpath routing (`/montree/agent/*`), not subdomain
+- Dark forest theme (matches public pages), mobile-first
+
+**7 open questions** in the plan need decisions BEFORE Phase 7a starts. The recommendations are documented; just need a yes/no when you wake up.
+
+---
+
 ## Next session — exact resume instructions
 
-If you're picking this up cold, here's the bare minimum to get oriented:
+If you're picking this up cold (e.g. a fresh session next morning), here's the orientation:
 
-1. **Read this doc top to bottom** (you're reading it).
-2. **Check setup steps 1-7 above** — which have you completed?
-   - If migrations 186 + 187 not run → start there. Five minutes.
-   - If `STRIPE_CONNECT_WEBHOOK_SECRET` not set → Phase 3 won't work end-to-end.
-3. **Run the production verification checklist** above (8 + 4 = 12 numbered tests). If anything fails, screenshot + log line.
-4. **Decide what to build next.** Recommended order:
-   - **Phase 4** (Stripe school subscription billing) — 3-4 days, dedicated session. This is the precondition for automated revenue tracking. Big but high-value.
-   - **Phase 5** (payout calculator) — 1.5 days. Builds directly on Phase 4. Can be done same session or split.
-   - **Phase 6** (Money tab) — 2-3 days. Where you'll see your P&L. Builds on Phase 4 + 5.
-   - **Phase 7** (agent dashboard refresh) — half a day. Sarah seeing her own schools + earnings.
+1. **Read this doc top to bottom** (you're already reading it).
+2. **Check setup steps** at the top — migrations 186 + 187 should be done (Tredoux confirmed Wed evening). Stripe Connect dashboard setup may not be done yet (steps 4-7 in "Before Stripe Connect onboarding works").
+3. **Decide what to build next.** Recommended order based on what's blocking the most value:
 
-If you want to delay the financials and instead ship something easier first:
-- **Polish the Referrals tab** — add filters by agent, search by school, show running totals.
-- **Email automation** — when Tredoux issues a code, auto-send the link to the agent (Resend integration; the rail's already there from Session 87).
-- **Notification ping** when a school redeems a code (Slack webhook, or a banner in super admin).
+   **Option A — Build Phase 7 (Agent Dashboard) first.** ~5 days. Read `docs/AGENT_DASHBOARD_PLAN.md`. Sub-phases are independent and shippable. After Phase 7a (~1 day) Tredoux can issue Sarah an agent login. After 7c-d (3 days) she's looking at her own dashboard with estimated earnings. Highest UX impact for the lowest effort. *Recommended next.*
+
+   **Option B — Build Phase 4 (Stripe school subscription billing) first.** 3-4 days. Precondition for automated revenue tracking. Without it, Sarah's dashboard shows estimates only (still useful). Big but high-value. Choose this if real-money flows are urgent.
+
+   **Option C — Smaller polish wins first.** Email automation for code issuance, redemption notification banner, Referrals tab filters. Half a day each.
+
+4. **If picking Phase 7:** answer the 7 open questions in `docs/AGENT_DASHBOARD_PLAN.md` Section 9 first (recommendations are already there — just need yes/no). Then start Phase 7a.
+
+5. **End-to-end verify** what's already shipped before adding more. The 12-test checklist above. Especially "type the code → redirect to signup → redeem → re-login = direct dashboard." If that doesn't work end-to-end, fix that BEFORE building more.
 
 ---
 
