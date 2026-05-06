@@ -1,212 +1,282 @@
-# Session 90 Handoff — Agent Referral Programme, Phases 1 + 2
+# Session 90 Handoff — Agent Referral Programme, Phases 1 + 2 + 3
 
 **Date:** May 6, 2026
-**Commits:** `e0ee3c7d` (Phase 1 — codes + redemption) + `d73a1d94` (Phase 2 — code IS the principal's login) on main
-**Companion docs:**
-- `docs/AGENT_REFERRAL_AND_FINANCIALS_PLAN.md` — full 7-phase build plan
-- `docs/finance/accountant-onepager.md` — for HK accountant review
+**Status:** All three phases shipped to main. Setup steps required before anything is testable in production (see "What you need to do" below).
+
+**Commits pushed (5, in order):**
+1. `e0ee3c7d` — Phase 1: codes + redemption foundation
+2. `31b0a496` — Phase 1 docs (handoff + CLAUDE.md update)
+3. `d73a1d94` — Phase 2: redeemed code IS the principal's login
+4. `6bd5b955` — Phase 2 docs update
+5. `03e2942c` — Phase 3: Stripe Connect Express onboarding for agents
+
+**Companion docs (in repo):**
+- `docs/AGENT_REFERRAL_AND_FINANCIALS_PLAN.md` — full 7-phase blueprint, all locked decisions
+- `docs/finance/accountant-onepager.md` — for HK accountant Pamela (already drafted as Gmail draft `r2430204512620199011`)
 
 ---
 
-## Can I give my teacher a code right now?
+## TL;DR — what you can do right now
 
-**Yes — after two things happen.**
+After running two Supabase migrations + one Stripe setup pass, you can:
 
-1. Run migration `migrations/186_referral_codes.sql` in Supabase SQL Editor.
-2. Wait for Railway to finish deploying commit `e0ee3c7d` (~2-3 minutes after push).
+1. Issue Sarah a unique code (`SARAH-K9X7`) from super admin → 🎟️ Referrals.
+2. Send her the code (or a link `montree.xyz/montree/try?ref=SARAH-K9X7`).
+3. The school types it at the Montree login → if pending, redirected to signup with code carried in. They fill in school + principal details.
+4. School is created, Sarah is permanently linked as the founding agent at her negotiated %.
+5. The same code becomes the principal's login forever — they type `SARAH-K9X7` to enter their dashboard.
+6. Issue Sarah a Stripe Connect onboarding link from the same Referrals tab → she completes Stripe's hosted form → her status flips to **Verified** in your table once Stripe pings the webhook.
 
-After those two, open `/montree/super-admin` → 🎟️ **Referrals** tab → "+ Issue code" → fill in Sarah's name, email, 50% → Generate. You'll see the code in a gold banner with a Copy button (e.g. `SARAH-K9X7`).
-
-Send Sarah this link — the code goes in the URL so she doesn't have to explain it:
-
-```
-https://montree.xyz/montree/try?ref=SARAH-K9X7
-```
-
-She forwards it to the school. They click → fill in school name + principal name + email → submit. They're in. The school is permanently stamped with Sarah as the founding agent at 50% revenue share.
+The pieces NOT yet built: automated school subscription billing (Phase 4), monthly payout calculator (Phase 5), Money tab dashboard (Phase 6), agent-side dashboard (Phase 7). Until those land, monthly payouts to Sarah are still a manual Wallex wire — but Phase 3 means she's set up to receive automated transfers the moment Phase 4 + 5 ship.
 
 ---
 
-## How the full flow works after Phase 2
+## 🚨 What you need to do before any of this works in production
 
-The code IS the school's login. Sarah's pitch is one sentence:
+### Before issuing Sarah's first code (~5 minutes)
 
-> "Go to montree.xyz, type SARAH-K9X7. You're in."
+1. **Run migration 186** in Supabase SQL Editor.
+   File: `migrations/186_referral_codes.sql`. Idempotent. Verify with `SELECT COUNT(*) FROM montree_referral_codes;` (should return 0, not error).
 
-**First use (school redeems):**
-1. School types `SARAH-K9X7` at `/montree/login-select`.
-2. Server runs `tryReferralPrecheck` — sees status=`pending`, returns 409 with `redirectTo=/montree/try?ref=SARAH-K9X7`.
-3. Login page redirects them to the trial signup form, code already in the URL.
-4. They fill in school name + principal name + email, submit.
-5. Backend creates the school + principal, with `password_hash = legacySha256(SARAH-K9X7)`.
-6. Stamps `school.founding_teacher_id = Sarah`, locks 50% revenue share, marks code `redeemed`.
-7. Issues JWT, principal lands in their dashboard.
+2. **Run migration 187** in Supabase SQL Editor.
+   File: `migrations/187_agent_stripe_connect.sql`. Idempotent. Verify with `SELECT stripe_connect_account_id FROM montree_teachers LIMIT 1;` (column should exist).
 
-**Every subsequent login:**
-1. Principal types `SARAH-K9X7` at `/montree/login-select`.
-2. Server's referral precheck sees status=`redeemed` → returns null → falls through.
-3. Existing `tryPrincipalLogin` does `legacySha256(SARAH-K9X7)`, finds the matching `password_hash`, logs them in.
-4. JWT issued, principal in dashboard.
+3. **Hard refresh** `/montree/super-admin` (Cmd+Shift+R) so the new bundle loads.
 
-**Edge cases (handled):**
-- Code revoked before use → 401 "This referral code has been revoked. Please contact whoever sent it to you."
-- Code expired → 401 "This referral code has expired. Ask your contact for a fresh one."
-- Wrong code → 401 standard "Invalid code".
-- Direct-signup schools (no referral) → completely unaffected, keep their legacy 6-char codes.
+After (1) + (2) + (3), the 🎟️ Referrals tab works. You can issue Sarah's code immediately. Phase 1 + 2 are functional. Stripe onboarding (Phase 3) requires step 4-7 below.
 
----
+### Before Stripe Connect onboarding works (~15-30 minutes)
 
-## Exactly what was shipped (file-by-file)
+4. **Confirm `STRIPE_SECRET_KEY` is set in Railway.**
+   Likely already there (the existing school-billing webhook uses the same key). Test with: open a Connect-related endpoint — if you get "STRIPE_SECRET_KEY not configured" you need to set it.
 
-10 files, 1,521 lines of code + docs, single commit `e0ee3c7d`.
+5. **Enable Stripe Connect on your platform account.**
+   Stripe Dashboard → Settings → Connect → "Get started." This is a one-time check — Stripe asks a few questions about your business model, you answer, Connect is on.
 
-### New files
+6. **Create the Connect webhook endpoint.**
+   Stripe Dashboard → Developers → Webhooks → "Add endpoint":
+   - URL: `https://montree.xyz/api/stripe/connect-webhook`
+   - **Mode: Connect** (NOT "Account" — this is critical, the dropdown is on the page)
+   - Events to send: `account.updated` (just that one for Phase 3)
+   - Save → copy the signing secret (`whsec_...`)
+   - Set in Railway as `STRIPE_CONNECT_WEBHOOK_SECRET`
 
-| File | Purpose |
-|------|---------|
-| `migrations/186_referral_codes.sql` | DB schema — creates `montree_referral_codes` table + extends `montree_schools` with `referral_code_id` and `referral_code_used` columns. **🚨 You must run this in Supabase SQL Editor before the new tab works.** |
-| `lib/montree/referral/code-gen.ts` | `generateUniqueReferralCode(displayName)` — produces `<FIRSTNAME>-XXXX` codes (4-char random suffix from the same I/O/0/1-free alphabet as login codes), checks the DB for collisions, retries up to 6 times. `nameToPrefix()` strips diacritics + non-alphanumerics, falls back to `AGENT` if nothing usable. |
-| `app/api/montree/super-admin/referral-codes/route.ts` | Super-admin-only API. **POST** issues a code (auto-creates a shell `montree_teachers` row for non-teaching agents). **GET** lists codes with optional status filter, enriches with school name where redeemed. **DELETE** revokes pending codes only — redeemed codes are locked. |
-| `components/montree/super-admin/ReferralsTab.tsx` | The 🎟️ Referrals tab UI — issue-code form (name, email, %, optional pitch label), reveal-once gold banner with Copy button, status filter tabs, table with code/agent/% /status/school/pitch/created/actions. Copy + Revoke buttons per row. |
-| `docs/AGENT_REFERRAL_AND_FINANCIALS_PLAN.md` | Comprehensive build plan — every locked decision, full DB schema (all 3 tables planned), 7 build phases with effort estimates, Stripe Connect Express specifics, risks + open questions. |
-| `docs/finance/accountant-onepager.md` | For your HK accountant. Revenue model, money flow (Stripe → Wallex), three cost categories (direct cost of revenue / referral commissions / operating expenses), USD base, monthly export pack contents, seven explicit questions you need answers to (especially: classify commissions as cost-of-sales vs operating expense?). |
+7. **Confirm with your banker / Wallex** that Stripe Connect Express in HK can deposit into your Wallex multi-currency account. (You said your banker is checking; if no, fall back to Stripe Standard or manual Wallex wires for payouts.)
 
-### Modified files
+After 4-7, the Stripe Connect flow works end-to-end. Sarah clicks the link, fills the Stripe form, her status flips to Verified within seconds of completion.
 
-| File | Change |
-|------|--------|
-| `app/montree/super-admin/page.tsx` | Imported `ReferralsTab`, added 🎟️ Referrals to the tab type union, added the tab button in the nav row, added the conditional render block. |
-| `app/api/montree/try/instant/route.ts` | Added `resolveReferralCode()` helper that validates a code BEFORE creating any school records (returns clear error on bad code so signup fails cleanly rather than half-creating). On success, stamps `school.founding_teacher_id` (the AGENT, not the new teacher), `revenue_share_pct`, `revenue_share_active=true`, `referral_code_id`, `referral_code_used`. Marks the referral code as `redeemed`. Wired into all three role branches: teacher, principal, homeschool_parent. |
-| `app/montree/try/page.tsx` | Added `useEffect` that reads `?ref=CODE` from `window.location` on mount (avoids Suspense-boundary requirement of `useSearchParams`). Stores in `referralCode` state, shows a small gold banner on every step until success ("Referral code: SARAH-K9X7 · You'll be linked to your referrer"). Passes `referral_code` in the POST body alongside `locale`. |
-| `CLAUDE.md` | Session 90 entry capturing decisions + status. |
+### Independent of the above (~5 minutes, can do now)
 
----
-
-## How redemption works under the hood (so future-you remembers)
-
-1. School clicks `https://montree.xyz/montree/try?ref=SARAH-K9X7`.
-2. `app/montree/try/page.tsx` `useEffect` reads `?ref=SARAH-K9X7` on mount, stores it in state, shows the gold banner.
-3. School fills in their details, hits submit. POST body includes `referral_code: "SARAH-K9X7"`.
-4. `app/api/montree/try/instant/route.ts` calls `resolveReferralCode()` BEFORE any DB writes:
-   - Looks up the code in `montree_referral_codes`.
-   - Validates: status === `pending`, not expired.
-   - Throws an error (returned as 400) if anything is off — signup fails clean, no half-state.
-5. School row is created normally.
-6. After school creation, the route fires three updates concurrently:
-   - `montree_schools.founding_teacher_id` ← the AGENT's id (overrides the new teacher)
-   - `montree_schools.revenue_share_pct` ← `50.00` (or whatever you set)
-   - `montree_schools.revenue_share_active` ← `true`
-   - `montree_schools.referral_code_id` ← the code's UUID
-   - `montree_schools.referral_code_used` ← `'SARAH-K9X7'`
-   - `montree_referral_codes.status` ← `'redeemed'`
-   - `montree_referral_codes.redeemed_by_school_id` ← the new school's id
-   - `montree_referral_codes.redeemed_at` ← now
-7. Diagnostic step `4a-referral-redeemed:SARAH-K9X7` is logged so you can grep Railway logs to confirm.
-
----
-
-## What is NOT shipped yet
-
-Phases 1 + 2 are live. The following are still ahead.
-
-### Critical gaps
-
-1. **No Stripe Connect onboarding for Sarah.** Phase 3. She has no automated payout rail yet — you'll Wallex-wire her manually month one.
-2. **No Stripe school subscription billing.** Phase 4. Schools are still on manual `personal_classroom` → `school` transitions. Without this, the payout calculator has nothing to read from for revenue.
-3. **No payout calculator.** Phase 5.
-4. **No Money tab / financial dashboard.** Phase 6.
-5. **No agent dashboard refresh.** Phase 7. Sarah, if she's also a teacher, can already see `/montree/dashboard/earnings` from Session 72 — but the page assumes the old self-serve model and won't reflect this new flow correctly.
-
-### Smaller gaps
-
-- The new tab uses Tailwind dark-slate styling (matches the rest of super admin) instead of the dark-forest aesthetic from Session 83 — consistent with all the other admin tabs that haven't been converted yet.
-- No email to the agent when a code is created — you copy and send it manually.
-- No notification to Tredoux when a school redeems a code — visible in the Referrals tab on next refresh, but no real-time ping.
-- No bulk-issue (one code at a time).
-- Pre-existing `/montree/for-teachers` landing page still pitches the old self-serve "20% if you bring in your school" model. Either repurpose or retire — Phase 7 decision.
+8. **Send the Pamela email.**
+   Gmail draft already in your account: ID `r2430204512620199011`. ~320 words. To `yanyuan.pan@vistra.com`. Asks her seven specific questions; her answers (especially commission classification as cost-of-sales vs operating expense) shape Phase 6's category structure. No prior Gmail thread with Pamela — this is a fresh outreach.
 
 ---
 
 ## Sarah pitch flow — exactly what to do
 
-**Before Sarah pitches:**
+Once setup steps 1-3 above are done:
 
-1. Run migration 186 in Supabase. Open `migrations/186_referral_codes.sql`, paste into SQL Editor, run. Verify `SELECT * FROM montree_referral_codes;` returns an empty table with the right columns.
-2. Wait for Railway to finish deploying commit `e0ee3c7d`. Watch dashboard for green tick.
-3. Hard-refresh `/montree/super-admin` (Cmd+Shift+R) to load the new bundle.
-4. Click the 🎟️ Referrals tab. Confirm it loads (no 500 error).
+1. Open `/montree/super-admin` → 🎟️ Referrals tab.
+2. Click "+ Issue code" → fill in:
+   - Agent name: `Sarah` (just first name; that becomes the prefix)
+   - Email: her email
+   - Revenue share %: `50`
+   - Pitch label (optional): `Greenfield Montessori — May 2026 pitch` or whatever helps you remember
+3. Generate. Code appears in a gold banner — Copy it.
 
-**Issuing Sarah's code:**
-
-1. Click "+ Issue code".
-2. Agent name: `Sarah` (use just her first name — the code prefix derives from this).
-3. Email: her email.
-4. Revenue share %: `50`.
-5. Pitch label: optional, e.g. `Greenfield Montessori — May 2026 pitch`.
-6. Click Generate. Code appears in gold banner — Copy it.
-7. The code is also visible in the table below as Pending.
-
-**Send Sarah:**
+Send Sarah this exact message:
 
 > Hi Sarah,
 > Here's your code: **SARAH-K9X7**.
-> When you're with the school, send the principal this link:
+> Send your school's principal this link:
 > `https://montree.xyz/montree/try?ref=SARAH-K9X7`
-> They click → fill in their school details → they're in.
-> You're locked to that school at 50% revenue share for as long as they're a paying subscriber.
+> They fill in their school details and they're in. From the moment they sign up, you're locked to that school at 50% of net profit for as long as they're a paying subscriber.
+> Once they've signed up I'll send you a separate link to set up your payout details with Stripe (5-minute form).
 
-**After the school redeems:**
+Once steps 4-7 above are done and Sarah's school is set up:
 
-- Open the Referrals tab. Sarah's row will show status **Redeemed** with the school's name.
-- Open the Schools tab. The school row will show Sarah's id on `founding_teacher_id` and `revenue_share_pct = 50`.
-- Look for `4a-referral-redeemed:SARAH-K9X7` in Railway logs as the smoke-test.
-
----
-
-## Next session priorities (in order)
-
-1. **End-to-end test on production** after Railway redeploys `d73a1d94`. Concrete checklist below.
-
-2. **Send the accountant one-pager to your HK accountant.** Email draft already in your Gmail (draft `r2430204512620199011`) — review and send when ready. Their answers, especially the cost-of-sales vs operating-expense classification for commissions, affect Phase 6 (Money tab) categories.
-
-3. **Confirm with your banker** that Stripe Connect Express is HK-supported and Wallex receives the deposits cleanly. Affects Phase 3.
-
-4. **Phase 3 — Stripe Connect onboarding.** ~1.5 days. Send Sarah a one-time link, she completes Stripe's hosted form, we capture her account ID. After this lands she's set up to receive automated payouts.
-
-5. **Phase 4 — Stripe school subscription billing** (precondition for automated revenue). 3-4 days. Until this ships, the Money tab will fall back to manual entry of monthly gross per school.
-
-6. **Phase 5 — payout calculation engine.** 1.5 days. Idempotent monthly job that aggregates revenue + costs per school, calculates each agent's cut, writes to `montree_agent_payouts`.
-
-7. **Phase 6 — Money tab in super admin.** 2-3 days. Income / direct costs / commissions / op-ex / P&L / monthly Accountant Pack ZIP export.
-
-8. **Phase 7 — agent dashboard refresh + decide on `/for-teachers` page.** 0.5 days.
-
-## Phase 2 production verification checklist
-
-After Railway finishes deploying `d73a1d94`:
-
-1. **🚨 Migration 186 must be run first** — verify in Supabase:
-   ```sql
-   SELECT count(*) FROM montree_referral_codes;  -- should return 0 or more, not error
-   SELECT referral_code_id FROM montree_schools LIMIT 1;  -- column should exist
-   ```
-2. **Issue a test code** — open `/montree/super-admin` → 🎟️ Referrals → "+ Issue code" → fake agent (e.g. name "Test", email "test@example.com", 50%). Confirm `TEST-XXXX` returned.
-3. **Pending → signup redirect** — open private window → `/montree/login-select` → type the test code → expect immediate redirect to `/montree/try?ref=TEST-XXXX` with the gold banner showing the code.
-4. **Complete redemption** — pick role=Principal → fill in school + name + email → submit → expect to land in principal dashboard.
-5. **Code is now login** — log out → `/montree/login-select` → type the same `TEST-XXXX` → expect to land directly in the principal dashboard. This is the proof Phase 2 works.
-6. **Verify DB state** — `SELECT status, redeemed_by_school_id FROM montree_referral_codes WHERE code='TEST-XXXX';` → status should be `redeemed`. `SELECT founding_teacher_id, revenue_share_pct, referral_code_used FROM montree_schools WHERE referral_code_used='TEST-XXXX';` → all three should be populated.
-7. **Revoke a fresh code** — issue another test code, then immediately revoke from the table. Try logging in with it — expect 401 "This referral code has been revoked."
-8. **Confirm legacy login still works** — try logging in as Tredoux (Whale Class principal, code `ZNGLJT` per Session 87). Should work unchanged.
+4. Open Referrals tab → find Sarah's row → click 💳.
+5. Onboarding URL appears in a banner — copy and email to Sarah.
+6. She clicks → Stripe form → fills bank/tax details → returns to `/montree/agent/onboarding?status=complete`.
+7. Webhook fires → her Stripe column flips from "Not started" to "Verified" within seconds.
+8. Done. She's set up to receive automated payouts.
 
 ---
 
-## Carry-overs from Session 89 (still open)
+## What was shipped — phase by phase, file by file
 
-- User to verify bingo calling cards on industrial printer
-- User to read v8 term reports end-to-end
-- Verify Library Tools tiles render on production
-- End-to-end test Sentence Match + Sorting Mat generators
-- Test super-admin Leads bulk clean
-- Two-stage Language Presentation flow (paused mid-stream when grammar fix took priority)
-- Run migration 184 (still pending — needed for Tracy interaction logging)
-- Send 3 hot lead Gmail drafts (Ardtona, FAMM, Тамі)
+### Phase 1 — codes + redemption (`e0ee3c7d`)
+
+10 files, 1,521 lines.
+
+**New:**
+- `migrations/186_referral_codes.sql` — `montree_referral_codes` table (code unique, agent_id, status enum, redemption tracking, expiry) + extends `montree_schools` with `referral_code_id` and `referral_code_used` columns. Idempotent.
+- `lib/montree/referral/code-gen.ts` — `generateUniqueReferralCode(displayName)` produces `<FIRSTNAME>-XXXX` codes. 4-char random suffix, no I/O/0/1 (same alphabet as login codes). DB-collision-checked, retries up to 6 times. `nameToPrefix()` normalises diacritics and falls back to `AGENT` if nothing usable.
+- `app/api/montree/super-admin/referral-codes/route.ts` — POST creates a code (auto-creates a shell `montree_teachers` row for non-teaching agents with `is_active=false`). GET lists codes with status filter, enriched with school name where redeemed AND (after Phase 3) the agent's Stripe Connect status. DELETE revokes pending codes only — redeemed codes are locked.
+- `components/montree/super-admin/ReferralsTab.tsx` — issue-code form, reveal-once gold banner with Copy button, status filter tabs, table with code/agent/% /status/school/pitch/created/actions. Copy + Revoke buttons per row. (Phase 3 added Stripe column + 💳 button.)
+- `docs/AGENT_REFERRAL_AND_FINANCIALS_PLAN.md` — comprehensive 7-phase blueprint.
+- `docs/finance/accountant-onepager.md` — for Pamela.
+
+**Modified:**
+- `app/montree/super-admin/page.tsx` — wired the 🎟️ Referrals tab into the nav.
+- `app/api/montree/try/instant/route.ts` — added `resolveReferralCode()` helper that validates a code BEFORE creating any school records (clean 400 on bad code). On success, stamps `school.founding_teacher_id` (the AGENT, not the new teacher), `revenue_share_pct`, `revenue_share_active=true`, `referral_code_id`, `referral_code_used`. Marks the referral code as `redeemed`. Wired into all three role branches (teacher, principal, homeschool_parent).
+- `app/montree/try/page.tsx` — reads `?ref=CODE` from `window.location` on mount (no Suspense boundary), shows a small gold banner on every step until success, passes `referral_code` in the POST body.
+- `CLAUDE.md` — Session 90 entry.
+
+### Phase 2 — code IS the principal's login (`d73a1d94`)
+
+3 files, 106 insertions.
+
+**Modified:**
+- `app/api/montree/try/instant/route.ts` — principal branch now hashes the REFERRAL code itself (uppercased, via `legacySha256`) as `montree_school_admins.password_hash` when a referral code is present. Email fallback uses the referral code's slug. Response returns the referral code as `code` so the success screen shows it as the principal's login (not the legacy 6-char). Without a referral code, falls back to the auto-generated 6-char code unchanged.
+- `app/api/montree/auth/unified/route.ts` — new `tryReferralPrecheck()` helper runs FIRST (after rate limit + length check). status=pending → 409 with `redirectTo: /montree/try?ref=CODE`. status=revoked → 401 clear message. status=expired → 401 clear message. status=redeemed → returns null, falls through (the principal's `password_hash` matches `legacySha256(code)`, so `tryPrincipalLogin` Step 1 finds them naturally). Code length cap widened from 10 → 32 to fit `<FIRSTNAME>-XXXX` format.
+- `app/montree/login-select/page.tsx` — input cap widened to 32. Handles 409 `pending_referral` by `router.replace(data.redirectTo)` instead of showing an error toast.
+
+### Phase 3 — Stripe Connect for agents (`03e2942c`)
+
+9 files, 767 lines.
+
+**New:**
+- `migrations/187_agent_stripe_connect.sql` — `montree_teachers` extended with `stripe_connect_account_id` (UNIQUE partial index), `stripe_connect_status`, `charges_enabled`, `payouts_enabled`, `details_submitted`, `disabled_reason`, `completed_at`, `updated_at`. Idempotent.
+- `lib/montree/referral/stripe-connect.ts` — Connect-specific helpers built on the existing `getStripe()` singleton. `createConnectAccount()` (Express, business_type=individual, capabilities.transfers=requested, metadata.source for audit). `createOnboardingLink()` with return + refresh URLs that land on `/montree/agent/onboarding`. `fetchAccountStatus()` for force refresh. `summariseStatus()` derives the status enum (pending/onboarding/verified/restricted/disabled) from the Stripe Account object.
+- `app/api/montree/super-admin/agents/[id]/connect-onboard/route.ts` — POST. If agent has no Stripe account, creates one via Stripe API. Race-safe conditional UPDATE (`.is('stripe_connect_account_id', null)`) — on race-loss, re-fetches the canonical account ID and proceeds; orphan Stripe account logged for manual reconciliation. Always generates a fresh onboarding link (Stripe expires them in ~5min) and returns the URL.
+- `app/api/montree/super-admin/agents/[id]/connect-status/route.ts` — GET. Pulls latest from Stripe, persists to DB, returns. Stamp `completed_at` on FIRST transition to verified — never overwrites (audit trail).
+- `app/api/stripe/connect-webhook/route.ts` — receives `account.updated` events with signature verification (`STRIPE_CONNECT_WEBHOOK_SECRET`, falls back to `STRIPE_WEBHOOK_SECRET`). Updates the agent's denormalised status. Returns 200 on errors to prevent Stripe retry loops. All errors logged loudly.
+- `app/montree/agent/onboarding/page.tsx` — Stripe's return-URL landing. Reads `?status=complete|refresh` and shows appropriate copy. Webhook is the source of truth — this page is purely friendly bouncing.
+
+**Modified:**
+- `components/montree/super-admin/ReferralsTab.tsx` — new "Stripe" column with colour-coded pills (Not started / In progress / Verified / Restricted / Disabled). 💳 button per row generates an onboarding link, displays in a banner with Copy. Hidden once agent is verified.
+- `app/api/montree/super-admin/referral-codes/route.ts` — GET enrichment now includes `agent_stripe_connect_account_id` and `agent_stripe_connect_status` from `montree_teachers` in one batch query. Gracefully degrades to null if migration 187 not yet run.
+- `.env.example` — added `STRIPE_CONNECT_WEBHOOK_SECRET` and `NEXT_PUBLIC_APP_URL`.
+
+---
+
+## Real bugs caught during audit cycles
+
+The audit-fix discipline caught five real bugs across the session — listing here so future sessions know they're already-fixed and don't re-introduce them.
+
+1. **Phase 1 — apostrophe escape** in `try/page.tsx` and `ReferralsTab.tsx`. ESLint's `react/no-unescaped-entities` flagged. Replaced raw `'` with `&apos;`. Cosmetic, but a Next.js build can fail on these in stricter configs.
+
+2. **Phase 2 — `submitCode` accessed before declaration** in login-select. Pre-existing pattern from before this session; left unchanged after confirming behaviour was correct (TDZ doesn't apply because the effect runs after function declarations are evaluated). Documented as known.
+
+3. **Phase 3 — race condition in `connect-onboard`.** Two simultaneous POSTs would both see null `stripe_connect_account_id`, both create Stripe accounts, second's DB write would silently overwrite first → orphaning the first Stripe account in Stripe. Fixed with conditional `.is('stripe_connect_account_id', null)` UPDATE + race-detection branch that re-fetches the canonical account and proceeds with onboarding link generation against THAT account.
+
+4. **Phase 3 — `connect-status` route nuking `completed_at`.** Was setting it to NULL whenever current status dropped below verified. Audit trail destroyed. Fixed to mirror the webhook handler: only stamp on FIRST transition to verified, never overwrite.
+
+5. **Phase 3 — unused `fetchAccountStatus` import** in connect-onboard route. Dead import. Removed.
+
+---
+
+## Production verification checklist (next session, after setup steps 1-7)
+
+After Railway redeploys and you've completed setup steps 1-7:
+
+**Phase 1 + 2 (referral code lifecycle):**
+1. Open `/montree/super-admin` → 🎟️ Referrals → "+ Issue code". Use fake agent (`Test`, `test@example.com`, 50%). Confirm `TEST-XXXX` appears in gold banner.
+2. Open private window → `/montree/login-select` → type the test code → expect immediate redirect to `/montree/try?ref=TEST-XXXX` with the gold "Referral code" banner.
+3. Pick role=Principal → fill in school + name + email → submit → expect to land in principal dashboard.
+4. Log out → `/montree/login-select` → type the same code → **expect to land directly in the principal dashboard.** This is the proof Phase 2 works.
+5. Verify DB: `SELECT status FROM montree_referral_codes WHERE code='TEST-XXXX';` → `redeemed`. `SELECT founding_teacher_id, revenue_share_pct FROM montree_schools WHERE referral_code_used='TEST-XXXX';` → values populated.
+6. Issue another test code. Revoke it from the table immediately. Try logging in with it → expect 401 "This referral code has been revoked."
+7. Confirm legacy login still works — type your own `ZNGLJT` code → should land in your dashboard unchanged.
+
+**Phase 3 (Stripe Connect):**
+8. With the test agent from steps 1-3 above, click 💳 on their row → confirm onboarding URL appears in indigo banner.
+9. (Optional, real test) Open the URL in a private window → land on Stripe's hosted Express form → fill in test data using Stripe's test mode credentials → return to `/montree/agent/onboarding?status=complete`.
+10. Within ~10 seconds the agent's Stripe column should flip to "In progress" or "Verified" (depending on what test data Stripe accepted).
+11. Verify webhook fired: Stripe Dashboard → Developers → Webhooks → your Connect endpoint → recent events → see the `account.updated` events.
+12. Verify DB: `SELECT stripe_connect_status, stripe_connect_completed_at FROM montree_teachers WHERE id='<test-agent-id>';`.
+
+If any of these trip, send me a screenshot or the Railway log line — most failures will be migration not run, env var missing, or Connect not enabled in Stripe Dashboard.
+
+---
+
+## What is NOT shipped — clear gap list
+
+**Phase 4 — Stripe school subscription billing** (3-4 days, precondition for automated revenue tracking). Schools are still on manual `personal_classroom` → `school` transitions. Without Phase 4, the Money tab in Phase 6 has nothing to read for revenue — would fall back to manually entering monthly gross per school.
+
+**Phase 5 — payout calculation engine** (~1.5 days). Idempotent monthly job that aggregates revenue + Anthropic + OpenAI + Stripe fees per school, calculates each agent's cut as `net × revenue_share_pct`, writes to `montree_agent_payouts`. Won't have anything to calculate until Phase 4 ships.
+
+**Phase 6 — Money tab in super admin** (2-3 days). Income / direct costs / commissions / op-ex / P&L / monthly Accountant Pack ZIP export. Architecture in `docs/AGENT_REFERRAL_AND_FINANCIALS_PLAN.md`.
+
+**Phase 7 — agent dashboard refresh + decide on `/for-teachers` page** (~half a day). The existing `/montree/dashboard/earnings` page from Session 72 still assumes the OLD self-serve model. Either repurpose for "request an agent code from us" or retire. The `/montree/for-teachers` landing still pitches the old 20%-if-you-bring-your-school flow — same decision pending.
+
+**Smaller things deferred:**
+- No automated email to the agent when Tredoux issues their code (you copy + paste manually).
+- No notification when a school redeems (visible in Referrals tab on next refresh).
+- Dark-forest theme on the new Referrals tab — uses Tailwind dark-slate matching the rest of super admin (which is consistent — dark-forest conversion is a separate Session 83 item that's only ~5% done across super admin).
+- The `montree_teacher_earnings` table from Session 72 has no rows yet and is left in place. New rows will go to `montree_agent_payouts` when Phase 5 lands. We can sunset the old table later.
+
+---
+
+## Architectural rules locked in this session (do NOT let future agents break these)
+
+1. **`montree_referral_codes` is the source of truth for agent referral identity.** The `code` column is plaintext; only super-admin reads it. Status enum: `pending` → `redeemed` (terminal) OR `revoked` OR `expired`.
+2. **At redemption, the referral code becomes the principal's password.** `legacySha256(referralCode.toUpperCase())` is written to `montree_school_admins.password_hash`. The existing `tryPrincipalLogin` does the same hash to compare — so the existing login flow Just Works.
+3. **`tryReferralPrecheck()` runs FIRST in `/api/montree/auth/unified`** — before principal/teacher/parent attempts. Pending codes route to signup. Redeemed codes fall through (the existing principal lookup naturally finds them).
+4. **`founding_teacher_id` semantics are now "linked agent."** It's the agent the school is permanently bound to via referral, NOT necessarily a teacher at the school. Could be a multiplier partner, a consultant, or an agent who has no relationship with the school other than introducing them.
+5. **`revenue_share_pct` on `montree_schools` is editable per-school by super admin.** Whatever's there is what applies for that school's payouts — no historical preservation of original deal across edits. Tredoux adjusts manually as deals evolve.
+6. **Stripe Connect Express, not Standard.** Stripe hosts the onboarding form, we never see bank/tax info, Stripe handles 1099-NEC and equivalents.
+7. **Connect webhook MUST verify signature with the raw body** before doing anything. Returns 200 even on DB errors / unknown agents to prevent Stripe retry loops; all errors logged loudly for observability.
+8. **`stripe_connect_completed_at` is stamped on FIRST transition to verified — never overwritten.** Both the webhook and the GET status route follow this rule. It's the audit-trail timestamp for "when did this agent become payment-ready."
+9. **Race-safe Stripe account creation:** the conditional UPDATE pattern (`.is('stripe_connect_account_id', null)`) prevents the second of two simultaneous POSTs from orphaning the first's Stripe account. The orphan is still logged so you can clean it up manually.
+10. **Phase 1 graceful degradation:** if migration 186 isn't run, the new Referrals tab returns 500 (loud failure). If migration 187 isn't run, the Stripe column shows "Not setup" for all agents and clicking 💳 surfaces the missing-column error. No silent corruption.
+
+---
+
+## Next session — exact resume instructions
+
+If you're picking this up cold, here's the bare minimum to get oriented:
+
+1. **Read this doc top to bottom** (you're reading it).
+2. **Check setup steps 1-7 above** — which have you completed?
+   - If migrations 186 + 187 not run → start there. Five minutes.
+   - If `STRIPE_CONNECT_WEBHOOK_SECRET` not set → Phase 3 won't work end-to-end.
+3. **Run the production verification checklist** above (8 + 4 = 12 numbered tests). If anything fails, screenshot + log line.
+4. **Decide what to build next.** Recommended order:
+   - **Phase 4** (Stripe school subscription billing) — 3-4 days, dedicated session. This is the precondition for automated revenue tracking. Big but high-value.
+   - **Phase 5** (payout calculator) — 1.5 days. Builds directly on Phase 4. Can be done same session or split.
+   - **Phase 6** (Money tab) — 2-3 days. Where you'll see your P&L. Builds on Phase 4 + 5.
+   - **Phase 7** (agent dashboard refresh) — half a day. Sarah seeing her own schools + earnings.
+
+If you want to delay the financials and instead ship something easier first:
+- **Polish the Referrals tab** — add filters by agent, search by school, show running totals.
+- **Email automation** — when Tredoux issues a code, auto-send the link to the agent (Resend integration; the rail's already there from Session 87).
+- **Notification ping** when a school redeems a code (Slack webhook, or a banner in super admin).
+
+---
+
+## Agent referral programme — quick reference card
+
+| What | Where |
+|------|-------|
+| Issue a code | `/montree/super-admin` → 🎟️ Referrals → "+ Issue code" |
+| List/filter codes | Same tab, status filter at top of table |
+| Revoke a pending code | Per-row "Revoke" button (only visible while status=pending) |
+| Send agent a Stripe onboarding link | 💳 button per row → URL in indigo banner → Copy |
+| Refresh agent's Stripe status manually | GET `/api/montree/super-admin/agents/[id]/connect-status` (no UI yet, just curl) |
+| Code format | `<FIRSTNAME>-XXXX`, e.g. `SARAH-K9X7`, no I/O/0/1 |
+| Code length | 5-12 char prefix + 4 random = 10-17 chars total |
+| % range | 0-100 (entered per code, locked into school at redemption, editable per-school by super admin) |
+| Code lifecycle | `pending` → `redeemed`/`revoked`/`expired` |
+| Connect status enum | `pending` / `onboarding` / `verified` / `restricted` / `disabled` (or null = no account yet) |
+| Login as redeemed code | Type at `/montree/login-select` — falls through to principal login naturally |
+| Login as pending code | Type at `/montree/login-select` — 409 redirects to `/montree/try?ref=CODE` |
+| DB tables | `montree_referral_codes` (codes), `montree_schools` (linkage cols), `montree_teachers` (agent + Stripe Connect cols) |
+| Migrations | `186_referral_codes.sql` + `187_agent_stripe_connect.sql` |
+| Env vars | `STRIPE_SECRET_KEY`, `STRIPE_CONNECT_WEBHOOK_SECRET`, optional `NEXT_PUBLIC_APP_URL` |
+| Webhook | `https://montree.xyz/api/stripe/connect-webhook`, Connect mode, `account.updated` event |
+
+---
+
+## Carry-overs from earlier sessions (still pending — not Session 90 work)
+
+- User to verify bingo calling cards on industrial printer (Session 89)
+- User to read v8 term reports end-to-end (Session 89)
+- Verify Library Tools tiles render on production (Session 89)
+- End-to-end test Sentence Match + Sorting Mat generators (Session 89)
+- Test super-admin Leads bulk clean (Session 89)
+- Two-stage Language Presentation flow (Session 89, paused)
+- Run migration 184 (Tracy interaction logging — still not run)
+- Send 3 hot lead Gmail drafts: Ardtona, FAMM, Тамі (Session 84-87)
+- Decide on `/montree/for-teachers` landing page (Phase 7)

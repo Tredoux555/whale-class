@@ -183,9 +183,11 @@ GMass campaigns A/C/D are historical. Campaign C sent 335 blank emails (Session 
 
 ## RECENT STATUS (May 6, 2026)
 
-### ⚡ Session 90 — Agent Referral & Financial Tracking — Phases 1 + 2 Shipped (May 6, 2026)
+### ⚡ Session 90 — Agent Referral Programme: Phases 1 + 2 + 3 Shipped (May 6, 2026)
 
-**3 commits pushed to main: `e0ee3c7d` (Phase 1 — codes + redemption), `31b0a496` (handoff doc), `d73a1d94` (Phase 2 — code IS the principal's login).** Phases 1 + 2 of the agent referral programme are live. Tredoux can now issue Sarah a code, and the SAME code becomes her school's permanent login — exactly the original vision ("type the code, you're in"). Phase 3 (Stripe Connect), Phase 4 (Stripe school billing), and Phases 5-7 (payouts/Money tab/agent dashboard) are still ahead.
+**5 commits pushed to main: `e0ee3c7d` (Phase 1 — codes + redemption), `31b0a496` (Phase 1 docs), `d73a1d94` (Phase 2 — code IS the principal's login), `6bd5b955` (Phase 2 docs), `03e2942c` (Phase 3 — Stripe Connect Express onboarding for agents).** Phases 1 + 2 + 3 are live. Tredoux can now issue Sarah a code, the SAME code becomes her school's permanent login, AND he can issue her a Stripe Connect onboarding link from the same tab — once she completes Stripe's hosted form she's set up to receive automated payouts. Phase 4 (Stripe school subscription billing — precondition for automated revenue tracking), Phase 5 (payout calculator), Phase 6 (Money tab), Phase 7 (agent dashboard refresh) still ahead.
+
+**🚨 Canonical resume doc:** `docs/handoffs/SESSION_90_HANDOFF.md` — comprehensive, single source of truth for picking this session back up cold.
 
 **Two design docs also delivered:**
 - `docs/finance/accountant-onepager.md` — for the HK accountant. Covers revenue model, money flow (Stripe → Wallex HK), three cost categories (direct cost of revenue / referral commissions / operating expenses), multi-currency handling (USD base), monthly export pack contents (CSV + PDF + per-school CSV + per-agent CSV + JSON backup), and seven explicit questions for the accountant (category mapping, commission classification as cost-of-sales vs operating expense, format prefs, frequency, HK-specific items, currency confirm, year-end pack).
@@ -213,6 +215,35 @@ GMass campaigns A/C/D are historical. Campaign C sent 335 blank emails (Session 
 - `app/montree/login-select/page.tsx` — input cap widened to 32 chars. Handles 409 `pending_referral` by `router.replace(data.redirectTo)` instead of showing an error toast.
 
 **Sarah's pitch flow after Phase 2:** "Go to montree.xyz, type SARAH-K9X7. You're in." First use → server detects pending → redirects to signup with code carried in → school fills in details, gets created with principal `password_hash = legacySha256(SARAH-K9X7)`, code marked redeemed. Every subsequent login → server's precheck sees status=redeemed → falls through → `tryPrincipalLogin` matches the hash → in.
+
+**Phase 3 — Stripe Connect Express onboarding for agents (commit `03e2942c`):**
+
+9 files, 767 insertions. Each agent (Sarah, multipliers, consultants — anyone in `montree_teachers`) gets their own Stripe Connect Express account they onboard via Stripe's hosted form. Agents fill in bank + tax details on Stripe's site; we never see those. Stripe handles 1099-NEC and equivalents.
+
+- `migrations/187_agent_stripe_connect.sql` — extends `montree_teachers` with `stripe_connect_account_id` (UNIQUE partial index), `stripe_connect_status`, `charges_enabled`, `payouts_enabled`, `details_submitted`, `disabled_reason`, `completed_at`, `updated_at`. Idempotent.
+- `lib/montree/referral/stripe-connect.ts` — Connect helpers built on the existing `getStripe()` singleton. `createConnectAccount()` (Express, business_type=individual, capabilities.transfers=requested, metadata.source for audit). `createOnboardingLink()` with return + refresh URLs that land on `/montree/agent/onboarding`. `summariseStatus()` derives the status enum from the Stripe Account object.
+- `app/api/montree/super-admin/agents/[id]/connect-onboard/route.ts` — POST. Creates Stripe account if needed, generates fresh onboarding URL. Race-safe via conditional UPDATE (`.is('stripe_connect_account_id', null)`); on race-loss re-fetches canonical account ID and proceeds. Orphan accounts logged for manual cleanup.
+- `app/api/montree/super-admin/agents/[id]/connect-status/route.ts` — GET. Pulls latest from Stripe, persists, returns. Stamps `completed_at` on FIRST transition to verified — never overwrites (audit trail).
+- `app/api/stripe/connect-webhook/route.ts` — receives `account.updated` events with signature verification (`STRIPE_CONNECT_WEBHOOK_SECRET`, falls back to `STRIPE_WEBHOOK_SECRET`). Updates denormalised status fields. Returns 200 on errors to prevent Stripe retry loops.
+- `app/montree/agent/onboarding/page.tsx` — Stripe's return-URL landing page. Reads `?status=complete|refresh` and shows appropriate copy.
+- `components/montree/super-admin/ReferralsTab.tsx` — new "Stripe" column with colour-coded pills (Not started / In progress / Verified / Restricted / Disabled). 💳 button per row generates an onboarding link, displays in indigo banner with Copy. Hidden once agent is verified.
+- `app/api/montree/super-admin/referral-codes/route.ts` GET enrichment — each code response now includes `agent_stripe_connect_account_id` and `agent_stripe_connect_status` from `montree_teachers` in one batch query. Gracefully degrades if migration 187 not yet run.
+- `.env.example` — added `STRIPE_CONNECT_WEBHOOK_SECRET` and `NEXT_PUBLIC_APP_URL`.
+
+**Two real bugs caught and fixed during Phase 3 audit cycle:**
+1. Race in `connect-onboard` where two simultaneous POSTs would both create Stripe accounts and the second would silently orphan the first. Fixed with conditional UPDATE + race-detection branch.
+2. `connect-status` route was overwriting `stripe_connect_completed_at` to NULL when status dropped below verified. Fixed to preserve the timestamp like the webhook does.
+
+**🚨 5-step Stripe setup before Phase 3 works in production:**
+1. Run migration 187 in Supabase SQL Editor.
+2. Confirm `STRIPE_SECRET_KEY` is set in Railway (existing school-billing webhook uses the same key — likely already there).
+3. Enable Connect on your platform account in Stripe Dashboard (Settings → Connect → Get started).
+4. Create a Connect-mode webhook endpoint in Stripe Dashboard:
+   - URL: `https://montree.xyz/api/stripe/connect-webhook`
+   - Mode: **Connect** (NOT Account)
+   - Event: `account.updated`
+   - Copy the signing secret → set as `STRIPE_CONNECT_WEBHOOK_SECRET` in Railway.
+5. Confirm with banker that Stripe Connect Express in HK can deposit into Wallex.
 
 **Decisions locked (DO NOT re-debate next session):**
 
@@ -259,30 +290,39 @@ GMass campaigns A/C/D are historical. Campaign C sent 335 blank emails (Session 
 2. Stripe HK availability for Connect Express — confirm via banker. If not supported, fall back to Stripe Standard or manual Wallex wires.
 3. `for-teachers` landing page — repurpose for "request an agent code from us" or retire? Phase 7 decision.
 
-**🚨 Immediate next steps (this is what Tredoux does next):**
-1. **Run migration 186 in Supabase SQL Editor.** Open `migrations/186_referral_codes.sql`, paste into SQL Editor, run. Verify with `SELECT * FROM montree_referral_codes;` (empty table, right columns).
-2. **Wait for Railway to finish deploying** commit `e0ee3c7d`. ~2-3 minutes after push.
-3. **Hard-refresh** `/montree/super-admin` (Cmd+Shift+R) to pull the new bundle.
-4. **Issue Sarah's first code** via the 🎟️ Referrals tab.
-5. **Send Sarah the link**: `https://montree.xyz/montree/try?ref=SARAH-XXXX` (with her actual code).
+**🚨 Immediate next steps for Tredoux (do these BEFORE the system is testable):**
 
-**🚨 Next session priorities:**
-1. **End-to-end Phase 2 production verification** — issue a test code → log in with it → confirm redirect to signup → complete signup → log out → log in again with the same code → land directly in dashboard. Full checklist in `docs/handoffs/SESSION_90_HANDOFF.md`.
-2. **Tredoux to send accountant one-pager to HK accountant** — Gmail draft already created (`r2430204512620199011`, sent via parallel agent during this session). Review and send. Their answers, especially the cost-of-sales vs operating-expense classification for commissions, affect Phase 6 (Money tab) categories.
-3. **Tredoux to confirm with banker** Stripe Connect Express HK availability + Wallex compatibility — affects Phase 3.
-4. **Phase 3 — Stripe Connect onboarding** (~1.5 days). One-time link to Sarah, hosted Stripe Express form, capture account ID. After this lands she's set up for automated payouts.
-5. **Phase 4 — Stripe school subscription billing** (3-4 days, precondition for automated revenue). Until shipped, Money tab falls back to manual gross entry.
-6. **Phase 5 — payout calculation engine** (~1.5 days). Idempotent monthly job aggregates revenue + costs per school, calculates each agent's cut.
-7. **Phase 6 — Money tab in super admin** (2-3 days). Income / direct costs / commissions / op-ex / P&L / monthly Accountant Pack ZIP export.
-8. **Phase 7 — agent dashboard refresh + decide on `/for-teachers` page** (0.5 days).
-9. **Carry-overs from Session 89** (still pending):
+A. **Run migration 186 in Supabase SQL Editor** — `migrations/186_referral_codes.sql`. Verify with `SELECT COUNT(*) FROM montree_referral_codes;`.
+
+B. **Run migration 187 in Supabase SQL Editor** — `migrations/187_agent_stripe_connect.sql`. Verify with `SELECT stripe_connect_account_id FROM montree_teachers LIMIT 1;`.
+
+C. **Hard-refresh** `/montree/super-admin` (Cmd+Shift+R) so the new bundle loads.
+
+D. **Stripe Connect setup** (for Phase 3):
+   - Confirm `STRIPE_SECRET_KEY` is set in Railway (existing school-billing webhook uses it — likely already there).
+   - Enable Connect on your platform account: Stripe Dashboard → Settings → Connect → Get started.
+   - Create the Connect webhook endpoint: Stripe Dashboard → Developers → Webhooks → Add endpoint → URL `https://montree.xyz/api/stripe/connect-webhook`, **Mode: Connect** (not Account), event `account.updated`. Copy signing secret → set `STRIPE_CONNECT_WEBHOOK_SECRET` in Railway.
+   - Confirm with banker: Stripe Connect Express in HK + Wallex compatibility.
+
+E. **Send the Pamela email** — Gmail draft `r2430204512620199011` is ready in your account. To `yanyuan.pan@vistra.com`. Their answers (especially cost-of-sales vs operating-expense classification for commissions) shape Phase 6 categories.
+
+F. **Issue Sarah's first code** via the 🎟️ Referrals tab. Send her: `https://montree.xyz/montree/try?ref=SARAH-XXXX`.
+
+**🚨 Next session priorities (after the above):**
+
+1. **Production verification** — full 12-test checklist in `docs/handoffs/SESSION_90_HANDOFF.md`. Issue test code → redirect-to-signup test → redemption test → re-login test → revoke test → Stripe onboarding test → webhook test.
+2. **Phase 4 — Stripe school subscription billing** (3-4 days, dedicated session). Precondition for automated revenue tracking. Until this ships, monthly payouts to Sarah are still a manual Wallex wire.
+3. **Phase 5 — payout calculation engine** (~1.5 days). Builds directly on Phase 4. Idempotent monthly aggregator.
+4. **Phase 6 — Money tab in super admin** (2-3 days). Where you'll actually see your P&L. Builds on 4 + 5.
+5. **Phase 7 — agent dashboard refresh + `/for-teachers` page decision** (~half a day). Sarah seeing her own schools and earnings.
+6. **Carry-overs from Session 89** (still pending):
    - User verifies bingo calling cards on industrial printer
    - User reads v8 term reports end-to-end
    - Verify Library Tools tiles render on production
    - End-to-end test Sentence Match + Sorting Mat generators
    - Test super-admin Leads bulk clean
    - Two-stage Language Presentation flow (paused)
-   - Run migration 184, send 3 hot lead Gmail drafts
+   - Run migration 184, send 3 hot lead Gmail drafts (Ardtona, FAMM, Тамі)
 
 ---
 
