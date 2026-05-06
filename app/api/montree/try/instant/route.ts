@@ -30,6 +30,58 @@ function resolvePrimaryLocale(req: NextRequest, bodyLocale: unknown): Locale {
 }
 
 /**
+ * If a referral code was supplied at signup, validate it BEFORE creating any
+ * school records. Returns the resolved agent context to stamp on the school
+ * once it exists, OR null if no code (clean direct signup), OR throws an
+ * Error with a user-safe message if the code is invalid.
+ *
+ * We treat invalid codes as a hard signup failure so the user sees a clear
+ * error rather than silently signing up without referral attribution. The
+ * front-end can then prompt them to fix the code or proceed without one.
+ */
+interface ReferralContext {
+  codeId: string;
+  code: string;
+  agentId: string | null;
+  revenueSharePct: number;
+}
+async function resolveReferralCode(
+  supabase: ReturnType<typeof getSupabase>,
+  rawCode: unknown
+): Promise<ReferralContext | null> {
+  if (!rawCode || typeof rawCode !== 'string') return null;
+  const code = rawCode.trim().toUpperCase();
+  if (!code) return null;
+
+  const { data, error } = await supabase
+    .from('montree_referral_codes')
+    .select('id, code, agent_id, revenue_share_pct, status, expires_at')
+    .eq('code', code)
+    .maybeSingle();
+
+  if (error) {
+    console.error('[Trial] referral code lookup failed:', error.message);
+    throw new Error('Could not validate referral code. Try again.');
+  }
+  if (!data) {
+    throw new Error(`Referral code "${code}" was not found.`);
+  }
+  if (data.status !== 'pending') {
+    throw new Error(`Referral code "${code}" is no longer valid (status: ${data.status}).`);
+  }
+  if (data.expires_at && new Date(data.expires_at) < new Date()) {
+    throw new Error(`Referral code "${code}" has expired.`);
+  }
+
+  return {
+    codeId: data.id as string,
+    code: data.code as string,
+    agentId: (data.agent_id as string | null) || null,
+    revenueSharePct: Number(data.revenue_share_pct),
+  };
+}
+
+/**
  * Seed full Montessori curriculum for a new classroom
  * Non-blocking: failures here don't prevent trial creation
  */
@@ -132,12 +184,23 @@ export async function POST(req: NextRequest) {
     steps.push('1-init');
     const supabase = getSupabase();
     const body = await req.json();
-    const { role, name, schoolName, email, locale: bodyLocale } = body;
+    const { role, name, schoolName, email, locale: bodyLocale, referral_code: rawReferralCode } = body;
     const primaryLocale = resolvePrimaryLocale(req, bodyLocale);
     steps.push(`1-locale:${primaryLocale}`);
 
     if (!role || !['teacher', 'principal', 'homeschool_parent'].includes(role)) {
       return NextResponse.json({ error: 'Invalid role' }, { status: 400 });
+    }
+
+    // ── Step 1a: Validate referral code (if provided) BEFORE creating any rows ──
+    let referral: ReferralContext | null = null;
+    try {
+      referral = await resolveReferralCode(supabase, rawReferralCode);
+      if (referral) steps.push(`1a-referral-ok:${referral.code}`);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Invalid referral code';
+      steps.push(`1a-referral-fail:${msg}`);
+      return NextResponse.json({ error: msg }, { status: 400 });
     }
 
     // Use provided names or fall back to defaults
@@ -275,6 +338,31 @@ export async function POST(req: NextRequest) {
       }
       steps.push('4-homeschool-parent-ok:' + teacher.id);
 
+      // ── Stamp the school's referral linkage (homeschool branch) ──
+      if (referral) {
+        supabase
+          .from('montree_schools')
+          .update({
+            founding_teacher_id: referral.agentId,
+            revenue_share_pct: referral.revenueSharePct,
+            revenue_share_active: true,
+            referral_code_id: referral.codeId,
+            referral_code_used: referral.code,
+          })
+          .eq('id', school.id)
+          .then(({ error }) => {
+            if (error) console.error('[Trial] referral school update failed (homeschool):', error.message);
+          });
+        supabase
+          .from('montree_referral_codes')
+          .update({ status: 'redeemed', redeemed_by_school_id: school.id, redeemed_at: new Date().toISOString() })
+          .eq('id', referral.codeId)
+          .then(({ error }) => {
+            if (error) console.error('[Trial] referral code redeem failed (homeschool):', error.message);
+          });
+        steps.push(`4a-referral-redeemed:${referral.code}`);
+      }
+
       // Lead record (non-blocking)
       try {
         await supabase.from('montree_leads').insert({
@@ -353,14 +441,43 @@ export async function POST(req: NextRequest) {
       }
       steps.push('4-teacher-ok:' + teacher.id);
 
-      // ── Mark this teacher as founding teacher for revenue share (non-blocking) ──
-      supabase
-        .from('montree_schools')
-        .update({ founding_teacher_id: teacher.id, revenue_share_active: false })
-        .eq('id', school.id)
-        .then(({ error }) => {
-          if (error) console.error('[Trial] founding_teacher_id update failed:', error.message);
-        });
+      // ── Stamp the school's referral / founding-agent linkage ──
+      // If the user signed up with a referral code, the LINKED AGENT (not the
+      // new teacher) becomes the school's founding_teacher_id, the agent's
+      // negotiated % is locked in, and the code is marked redeemed.
+      // Without a code, the new teacher becomes the founding teacher (legacy
+      // self-serve flow from Session 72).
+      if (referral) {
+        supabase
+          .from('montree_schools')
+          .update({
+            founding_teacher_id: referral.agentId,
+            revenue_share_pct: referral.revenueSharePct,
+            revenue_share_active: true,
+            referral_code_id: referral.codeId,
+            referral_code_used: referral.code,
+          })
+          .eq('id', school.id)
+          .then(({ error }) => {
+            if (error) console.error('[Trial] referral school update failed:', error.message);
+          });
+        supabase
+          .from('montree_referral_codes')
+          .update({ status: 'redeemed', redeemed_by_school_id: school.id, redeemed_at: new Date().toISOString() })
+          .eq('id', referral.codeId)
+          .then(({ error }) => {
+            if (error) console.error('[Trial] referral code redeem failed:', error.message);
+          });
+        steps.push(`4a-referral-redeemed:${referral.code}`);
+      } else {
+        supabase
+          .from('montree_schools')
+          .update({ founding_teacher_id: teacher.id, revenue_share_active: false })
+          .eq('id', school.id)
+          .then(({ error }) => {
+            if (error) console.error('[Trial] founding_teacher_id update failed:', error.message);
+          });
+      }
 
       // Lead record (non-blocking)
       try {
@@ -438,6 +555,34 @@ export async function POST(req: NextRequest) {
         }, { status: 500 });
       }
       steps.push('4-principal-ok:' + principal.id);
+
+      // ── Stamp the school's referral linkage (principal branch) ──
+      // Principals have no auto-set founding agent. If a referral code was
+      // used, the agent becomes founding_teacher_id and the school is locked
+      // to that revenue share %.
+      if (referral) {
+        supabase
+          .from('montree_schools')
+          .update({
+            founding_teacher_id: referral.agentId,
+            revenue_share_pct: referral.revenueSharePct,
+            revenue_share_active: true,
+            referral_code_id: referral.codeId,
+            referral_code_used: referral.code,
+          })
+          .eq('id', school.id)
+          .then(({ error }) => {
+            if (error) console.error('[Trial] referral school update failed (principal):', error.message);
+          });
+        supabase
+          .from('montree_referral_codes')
+          .update({ status: 'redeemed', redeemed_by_school_id: school.id, redeemed_at: new Date().toISOString() })
+          .eq('id', referral.codeId)
+          .then(({ error }) => {
+            if (error) console.error('[Trial] referral code redeem failed (principal):', error.message);
+          });
+        steps.push(`4a-referral-redeemed:${referral.code}`);
+      }
 
       // Lead record (non-blocking)
       try {
