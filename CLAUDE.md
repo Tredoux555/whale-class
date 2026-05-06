@@ -183,6 +183,61 @@ GMass campaigns A/C/D are historical. Campaign C sent 335 blank emails (Session 
 
 ## RECENT STATUS (May 6, 2026)
 
+### ⚡ Session 91 — Phase 7a: Agent Login Foundation (May 6, 2026, overnight build)
+
+**6 files created/edited.** Migration 188 + agent login API + agent audit API + audit helper + ReferralsTab UI + referral-codes GET enrichment. All eslint-clean with `--max-warnings=0`. Push pending.
+
+**🚨 Canonical resume doc:** `docs/handoffs/SESSION_91_HANDOFF.md` — comprehensive, single source of truth.
+
+**🚨 Migration 188 must be run** in Supabase SQL Editor before the new buttons work. Until run, the new tab surfaces clear "Run migration 188" messages and the issue-login modal will 500 on POST. The page itself stays usable thanks to the wide-select fallback in referral-codes GET.
+
+**What shipped:**
+- `migrations/188_agent_dashboard.sql` — `montree_teachers` extensions (is_agent, agent_password_hash, agent_login_set_at, agent_login_last_used_at, agent_default_share_pct, agent_suspended_at, agent_notes) + new `montree_agent_audit` table + indexes (active-agent partial, hash-uniqueness partial, audit per-agent/per-event/recent). Idempotent — safe to re-run.
+- `app/api/montree/super-admin/agents/[id]/login/route.ts` — POST issues/resets agent login (returns plaintext exactly once, hashes via `legacySha256()`, alphabet `ABCDEFGHJKLMNPQRSTUVWXYZ23456789` matching principal codes). PATCH suspends/reactivates/sets default %. All actions write to audit log fire-and-forget.
+- `app/api/montree/super-admin/agent-audit/route.ts` — GET paginated audit feed. Optional filters by agent_id and event_type. Detects "table not yet created" (Postgres 42P01) and returns `migration_pending: true` so UI can show clear message instead of 500.
+- `lib/montree/referral/agent-audit.ts` — `logAgentAudit(supabase, entry)` fire-and-forget writer. Defines all current and reserved event types via `AgentAuditEventType` union to prevent drift.
+- `components/montree/super-admin/ReferralsTab.tsx` — per-row buttons 🔑 (issue/reset), 🔑↻ (reset variant), ✏️ (edit default %), ⏸/▶ (suspend/reactivate). Status pills below agent email when `is_agent=true` (Active / Login issued / Suspended / Default X%). Gold reveal-once banner for the agent code (separate from the green referral code banner). Two modals: "Issue / reset agent login" with default % input, "Edit default %" with empty=disable hint. Collapsible "📋 Recent agent activity" panel below the codes table with last 50 events.
+- `app/api/montree/super-admin/referral-codes/route.ts` — GET enrichment widened to also pull `is_agent`, `agent_login_set_at`, `agent_login_last_used_at`, `agent_default_share_pct`, `agent_suspended_at`. Wide-select with narrow fallback so the page stays usable while migration 188 isn't yet run.
+
+**Q3 modification (decided this session):** Tredoux opted to LOG agent activity instead of getting pinged on every event. Implementation: `montree_agent_audit` table + collapsible "Recent agent activity" panel inline in the Referrals tab. Reversible — if it gets too noisy he can collapse the panel; if too quiet, future phases can add notifications.
+
+**Architectural rules locked in (do NOT break):**
+1. Plaintext agent login codes returned EXACTLY once on POST. Never logged, never persisted plaintext, never returned by GET.
+2. `is_agent=true` is the marker. Phase 7b's `tryAgentLogin()` must check this — without it, even a matching hash should refuse to authenticate.
+3. Two-knob suspend system. `agent_suspended_at` stops login; `montree_schools.revenue_share_active=false` stops accrual. Independent.
+4. Default % change only affects FUTURE codes. Existing per-school % stays locked.
+5. Issuing a fresh code clears any prior suspension (explicit re-activation).
+6. Every state change writes to `montree_agent_audit` (Q3 decision). Logging is fire-and-forget.
+7. `agent_password_hash` is SEPARATE from `password_hash`. Teacher-agents hold both logins independently.
+8. Phase 7b unified login order: principal → teacher → AGENT → parent. Strictly more specific roles first.
+
+**Decisions confirmed this session (Q1-Q7 from AGENT_DASHBOARD_PLAN Section 9):**
+- Q1 (suspend keeps payouts active) ✓ recommendation accepted
+- Q2 (read-only profile) ✓ recommendation accepted (Phase 7c)
+- Q3 (no ping → **LOG instead**) ⚠ MODIFIED — built audit table + activity panel
+- Q4 (locked default % at code-gen) ✓ recommendation accepted (Phase 7d)
+- Q5 (single agent per school) ✓ recommendation accepted
+- Q6 (subpath not subdomain) ✓ recommendation accepted (Phase 7c)
+- Q7 (ship before Phases 4-5 with estimates) ✓ recommendation accepted
+
+**What is NOT shipped yet:**
+- Phase 7b — auth wiring (`tryAgentLogin()` in unified route, `'agent'` MontreeRole, agent route protection). Sarah's code goes into the DB but won't authenticate her until 7b lands. ~0.5 day.
+- Phase 7c — agent dashboard pages (~2 days). The actual UI Sarah sees.
+- Phase 7d — agent self-scoped APIs (~1 day). With the critical `WHERE founding_teacher_id = auth.userId` filter on every endpoint.
+- Phase 7e — polish (~0.5 day).
+
+**Production verification checklist** (15 steps, in `docs/handoffs/SESSION_91_HANDOFF.md`): issue/reset/suspend/reactivate/edit-pct flows + activity panel + reveal-once banner + migration-pending fallback. Run after Tredoux executes migration 188 and Railway redeploys.
+
+**Next session priorities (ordered):**
+1. **🚨 Tredoux runs migration 188** in Supabase SQL Editor.
+2. **15-step production verification** on the new Referrals UI.
+3. **Phase 7b — Agent auth wiring** (~0.5 day). Three files: `lib/montree/server-auth.ts`, `app/api/montree/auth/unified/route.ts`, `lib/montree/verify-request.ts`.
+4. **Phase 7c — Agent pages** (~2 days). Dark forest theme, mobile-first.
+5. **Phase 7d — Agent APIs** (~1 day). Self-scoped via auth.userId filtering on every endpoint.
+6. **Phase 7e — Polish** (~0.5 day).
+
+---
+
 ### ⚡ Session 90 — Agent Referral Programme: Phases 1 + 2 + 3 Shipped + Overnight Cleanup + Phase 7 Strategy (May 6, 2026)
 
 **9 commits pushed to main:** `e0ee3c7d` (Phase 1 — codes + redemption), `31b0a496` (Phase 1 docs), `d73a1d94` (Phase 2 — code IS principal's login), `6bd5b955` (Phase 2 docs), `03e2942c` (Phase 3 — Stripe Connect Express onboarding), `74d217d2` (handoff alignment), `c17ab294` (fix: 500 on issuing referral codes), `39b36e9f` (fix: null.replace crash on Visitors), `5bb02a39` (super-admin tidy: rainbow tiles → slate row).

@@ -54,32 +54,77 @@ export async function GET(req: NextRequest) {
     schoolMap = Object.fromEntries((schools || []).map(s => [s.id, s.name]));
   }
 
-  // Enrich with each agent's Stripe Connect status (Phase 3). One row per
-  // agent in montree_teachers; many referral codes may share the same agent.
+  // Enrich with each agent's Stripe Connect status (Phase 3) AND agent
+  // dashboard flags (Phase 7a — is_agent, login set timestamp, suspend flag,
+  // default share %). One row per agent in montree_teachers; many referral
+  // codes may share the same agent. The select widens gracefully if some
+  // columns don't exist yet (migration 187 / 188 not run); Postgres returns
+  // an error on the whole select so we fall back to a narrow select.
   const agentIds = Array.from(new Set((data || [])
     .map(r => r.agent_id)
     .filter((v): v is string => Boolean(v))));
   let agentMap: Record<string, {
     stripe_connect_account_id: string | null;
     stripe_connect_status: string | null;
+    is_agent: boolean;
+    agent_login_set_at: string | null;
+    agent_login_last_used_at: string | null;
+    agent_default_share_pct: number | null;
+    agent_suspended_at: string | null;
   }> = {};
   if (agentIds.length > 0) {
-    const { data: agents } = await supabase
+    // Try the wide select (post-migration-188). If a column is missing we
+    // retry with the narrow select (pre-188) so the page stays usable while
+    // Tredoux runs the migration in Supabase SQL Editor.
+    const wideFields = 'id, stripe_connect_account_id, stripe_connect_status, is_agent, agent_login_set_at, agent_login_last_used_at, agent_default_share_pct, agent_suspended_at';
+    const { data: wideAgents, error: wideErr } = await supabase
       .from('montree_teachers')
-      .select('id, stripe_connect_account_id, stripe_connect_status')
+      .select(wideFields)
       .in('id', agentIds);
-    agentMap = Object.fromEntries((agents || []).map(a => [a.id as string, {
-      stripe_connect_account_id: (a.stripe_connect_account_id as string | null) || null,
-      stripe_connect_status: (a.stripe_connect_status as string | null) || null,
-    }]));
+    if (wideErr) {
+      // Fall back to narrow (pre-188) select.
+      const { data: narrowAgents } = await supabase
+        .from('montree_teachers')
+        .select('id, stripe_connect_account_id, stripe_connect_status')
+        .in('id', agentIds);
+      agentMap = Object.fromEntries((narrowAgents || []).map(a => [a.id as string, {
+        stripe_connect_account_id: (a.stripe_connect_account_id as string | null) || null,
+        stripe_connect_status: (a.stripe_connect_status as string | null) || null,
+        is_agent: false,
+        agent_login_set_at: null,
+        agent_login_last_used_at: null,
+        agent_default_share_pct: null,
+        agent_suspended_at: null,
+      }]));
+    } else {
+      agentMap = Object.fromEntries((wideAgents || []).map(a => [a.id as string, {
+        stripe_connect_account_id: (a.stripe_connect_account_id as string | null) || null,
+        stripe_connect_status: (a.stripe_connect_status as string | null) || null,
+        is_agent: Boolean(a.is_agent),
+        agent_login_set_at: (a.agent_login_set_at as string | null) || null,
+        agent_login_last_used_at: (a.agent_login_last_used_at as string | null) || null,
+        agent_default_share_pct: a.agent_default_share_pct === null || a.agent_default_share_pct === undefined
+          ? null
+          : Number(a.agent_default_share_pct),
+        agent_suspended_at: (a.agent_suspended_at as string | null) || null,
+      }]));
+    }
   }
 
-  const enriched = (data || []).map(r => ({
-    ...r,
-    redeemed_by_school_name: r.redeemed_by_school_id ? schoolMap[r.redeemed_by_school_id] || null : null,
-    agent_stripe_connect_account_id: r.agent_id ? agentMap[r.agent_id]?.stripe_connect_account_id || null : null,
-    agent_stripe_connect_status: r.agent_id ? agentMap[r.agent_id]?.stripe_connect_status || null : null,
-  }));
+  const enriched = (data || []).map(r => {
+    const agentInfo = r.agent_id ? agentMap[r.agent_id] : null;
+    return {
+      ...r,
+      redeemed_by_school_name: r.redeemed_by_school_id ? schoolMap[r.redeemed_by_school_id] || null : null,
+      agent_stripe_connect_account_id: agentInfo?.stripe_connect_account_id || null,
+      agent_stripe_connect_status: agentInfo?.stripe_connect_status || null,
+      agent_is_agent: agentInfo?.is_agent || false,
+      agent_login_set_at: agentInfo?.agent_login_set_at || null,
+      agent_login_last_used_at: agentInfo?.agent_login_last_used_at || null,
+      agent_default_share_pct: agentInfo?.agent_default_share_pct ?? null,
+      agent_suspended_at: agentInfo?.agent_suspended_at || null,
+    };
+  });
 
   return NextResponse.json({ codes: enriched });
 }
