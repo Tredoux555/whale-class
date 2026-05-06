@@ -12,6 +12,8 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
+type ConnectStatus = 'pending' | 'onboarding' | 'verified' | 'restricted' | 'disabled' | null;
+
 interface Referral {
   id: string;
   code: string;
@@ -27,6 +29,8 @@ interface Referral {
   expires_at: string | null;
   created_at: string;
   notes: string | null;
+  agent_stripe_connect_account_id: string | null;
+  agent_stripe_connect_status: ConnectStatus;
 }
 
 interface ReferralsTabProps {
@@ -45,6 +49,14 @@ const STATUS_PILL: Record<Referral['status'], { label: string; cls: string }> = 
   expired: { label: 'Expired', cls: 'bg-slate-700 text-slate-400 border-slate-600' },
 };
 
+const CONNECT_PILL: Record<Exclude<ConnectStatus, null>, { label: string; cls: string; tip: string }> = {
+  pending: { label: 'Not started', cls: 'bg-slate-700 text-slate-300 border-slate-600', tip: 'Stripe account created. Send onboarding link.' },
+  onboarding: { label: 'In progress', cls: 'bg-amber-500/15 text-amber-300 border-amber-500/40', tip: 'Agent has started but not finished onboarding.' },
+  verified: { label: 'Verified', cls: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40', tip: 'Ready for automated payouts.' },
+  restricted: { label: 'Restricted', cls: 'bg-red-500/15 text-red-300 border-red-500/40', tip: 'Stripe needs more info. Agent should check their email.' },
+  disabled: { label: 'Disabled', cls: 'bg-red-500/30 text-red-200 border-red-500/60', tip: 'Account disabled. Cannot receive payouts.' },
+};
+
 export default function ReferralsTab({ saToken }: ReferralsTabProps) {
   const [referrals, setReferrals] = useState<Referral[]>([]);
   const [loading, setLoading] = useState(true);
@@ -61,6 +73,11 @@ export default function ReferralsTab({ saToken }: ReferralsTabProps) {
   // Reveal-once banner state.
   const [revealed, setRevealed] = useState<{ code: string; agent: string } | null>(null);
   const [copied, setCopied] = useState(false);
+
+  // Stripe Connect onboarding link banner.
+  const [connectLink, setConnectLink] = useState<{ url: string; agent: string; expiresAt: number } | null>(null);
+  const [connectLinkCopied, setConnectLinkCopied] = useState(false);
+  const [connectLoadingAgentId, setConnectLoadingAgentId] = useState<string | null>(null);
 
   // Filters.
   const [statusFilter, setStatusFilter] = useState<'all' | Referral['status']>('all');
@@ -135,6 +152,39 @@ export default function ReferralsTab({ saToken }: ReferralsTabProps) {
       setError('Network error creating code.');
     } finally {
       setCreating(false);
+    }
+  };
+
+  const handleGenerateConnectLink = async (agentId: string, agentName: string) => {
+    if (!agentId) {
+      setError('This referral predates agent linkage; cannot generate a Stripe link. Re-issue the code.');
+      return;
+    }
+    setConnectLoadingAgentId(agentId);
+    setError(null);
+    try {
+      const res = await fetch(`/api/montree/super-admin/agents/${encodeURIComponent(agentId)}/connect-onboard`, {
+        method: 'POST',
+        headers: headers(),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.detail || data.error || 'Could not generate onboarding link.');
+        return;
+      }
+      setConnectLink({
+        url: data.onboarding_url,
+        agent: agentName,
+        expiresAt: data.onboarding_expires_at,
+      });
+      setConnectLinkCopied(false);
+      // Refresh table so the Stripe status pill updates if a new account was created.
+      await load();
+    } catch (err) {
+      console.error('[ReferralsTab] connect-onboard error:', err);
+      setError('Network error generating Stripe onboarding link.');
+    } finally {
+      setConnectLoadingAgentId(null);
     }
   };
 
@@ -216,6 +266,48 @@ export default function ReferralsTab({ saToken }: ReferralsTabProps) {
             </div>
             <button
               onClick={() => { setRevealed(null); setCopied(false); }}
+              className="text-slate-400 hover:text-white text-sm self-start"
+              aria-label="Dismiss"
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Stripe Connect onboarding link banner */}
+      {connectLink && (
+        <div className="bg-indigo-500/10 border border-indigo-500/40 rounded-xl p-5">
+          <div className="flex items-start justify-between gap-3 flex-wrap">
+            <div className="flex-1 min-w-0">
+              <p className="text-indigo-200 text-xs uppercase tracking-wider font-semibold mb-1">
+                Stripe onboarding link for {connectLink.agent}
+              </p>
+              <p className="text-white text-sm mb-3">
+                Send this URL to the agent. They&apos;ll complete payout setup on
+                Stripe&apos;s hosted form. Link expires in ~5 minutes — generate a
+                fresh one if it times out.
+              </p>
+              <div className="flex items-center gap-2 flex-wrap">
+                <code className="flex-1 min-w-0 px-3 py-2 bg-black/40 border border-indigo-500/30 rounded-lg text-indigo-200 font-mono text-xs break-all">
+                  {connectLink.url}
+                </code>
+                <button
+                  onClick={() => {
+                    try {
+                      navigator.clipboard.writeText(connectLink.url);
+                      setConnectLinkCopied(true);
+                      setTimeout(() => setConnectLinkCopied(false), 2000);
+                    } catch { /* */ }
+                  }}
+                  className="px-3 py-2 bg-indigo-500 hover:bg-indigo-400 text-white text-xs font-medium rounded-lg transition-colors"
+                >
+                  {connectLinkCopied ? '✓ Copied' : 'Copy'}
+                </button>
+              </div>
+            </div>
+            <button
+              onClick={() => { setConnectLink(null); setConnectLinkCopied(false); }}
               className="text-slate-400 hover:text-white text-sm self-start"
               aria-label="Dismiss"
             >
@@ -371,6 +463,7 @@ export default function ReferralsTab({ saToken }: ReferralsTabProps) {
                   <th className="px-3 py-3 text-left">Agent</th>
                   <th className="px-3 py-3 text-right">%</th>
                   <th className="px-3 py-3 text-left">Status</th>
+                  <th className="px-3 py-3 text-left">Stripe</th>
                   <th className="px-3 py-3 text-left">School</th>
                   <th className="px-3 py-3 text-left">Pitch</th>
                   <th className="px-3 py-3 text-left">Created</th>
@@ -380,6 +473,10 @@ export default function ReferralsTab({ saToken }: ReferralsTabProps) {
               <tbody className="divide-y divide-slate-700/60">
                 {filtered.map(r => {
                   const pill = STATUS_PILL[r.status];
+                  const connect = r.agent_stripe_connect_status
+                    ? CONNECT_PILL[r.agent_stripe_connect_status as Exclude<ConnectStatus, null>]
+                    : null;
+                  const isLoadingConnect = connectLoadingAgentId === r.agent_id;
                   return (
                     <tr key={r.id} className="hover:bg-slate-700/20">
                       <td className="px-3 py-3 font-mono text-emerald-300">{r.code}</td>
@@ -394,6 +491,18 @@ export default function ReferralsTab({ saToken }: ReferralsTabProps) {
                         <span className={`inline-block px-2 py-0.5 rounded-full border text-xs font-medium ${pill.cls}`}>
                           {pill.label}
                         </span>
+                      </td>
+                      <td className="px-3 py-3">
+                        {connect ? (
+                          <span
+                            className={`inline-block px-2 py-0.5 rounded-full border text-xs font-medium ${connect.cls}`}
+                            title={connect.tip}
+                          >
+                            {connect.label}
+                          </span>
+                        ) : (
+                          <span className="text-slate-500 text-xs">Not setup</span>
+                        )}
                       </td>
                       <td className="px-3 py-3 text-slate-300">
                         {r.redeemed_by_school_name || <span className="text-slate-500">—</span>}
@@ -410,6 +519,16 @@ export default function ReferralsTab({ saToken }: ReferralsTabProps) {
                         >
                           📋
                         </button>
+                        {r.agent_id && r.agent_stripe_connect_status !== 'verified' && (
+                          <button
+                            onClick={() => handleGenerateConnectLink(r.agent_id as string, r.agent_display_name)}
+                            disabled={isLoadingConnect}
+                            className="px-2.5 py-1 text-xs rounded-md bg-indigo-500/20 hover:bg-indigo-500/35 text-indigo-300 border border-indigo-500/30 mr-1 disabled:opacity-50"
+                            title={connect?.label === 'In progress' ? 'Resume Stripe onboarding' : 'Send Stripe onboarding link'}
+                          >
+                            {isLoadingConnect ? '…' : '💳'}
+                          </button>
+                        )}
                         {r.status === 'pending' && (
                           <button
                             onClick={() => handleRevoke(r.id, r.code)}

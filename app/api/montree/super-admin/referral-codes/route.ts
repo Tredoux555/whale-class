@@ -41,7 +41,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Failed to load referral codes' }, { status: 500 });
   }
 
-  // Enrich with school name where redeemed
+  // Enrich with school name where redeemed.
   const schoolIds = (data || [])
     .map(r => r.redeemed_by_school_id)
     .filter((v): v is string => Boolean(v));
@@ -54,9 +54,31 @@ export async function GET(req: NextRequest) {
     schoolMap = Object.fromEntries((schools || []).map(s => [s.id, s.name]));
   }
 
+  // Enrich with each agent's Stripe Connect status (Phase 3). One row per
+  // agent in montree_teachers; many referral codes may share the same agent.
+  const agentIds = Array.from(new Set((data || [])
+    .map(r => r.agent_id)
+    .filter((v): v is string => Boolean(v))));
+  let agentMap: Record<string, {
+    stripe_connect_account_id: string | null;
+    stripe_connect_status: string | null;
+  }> = {};
+  if (agentIds.length > 0) {
+    const { data: agents } = await supabase
+      .from('montree_teachers')
+      .select('id, stripe_connect_account_id, stripe_connect_status')
+      .in('id', agentIds);
+    agentMap = Object.fromEntries((agents || []).map(a => [a.id as string, {
+      stripe_connect_account_id: (a.stripe_connect_account_id as string | null) || null,
+      stripe_connect_status: (a.stripe_connect_status as string | null) || null,
+    }]));
+  }
+
   const enriched = (data || []).map(r => ({
     ...r,
     redeemed_by_school_name: r.redeemed_by_school_id ? schoolMap[r.redeemed_by_school_id] || null : null,
+    agent_stripe_connect_account_id: r.agent_id ? agentMap[r.agent_id]?.stripe_connect_account_id || null : null,
+    agent_stripe_connect_status: r.agent_id ? agentMap[r.agent_id]?.stripe_connect_status || null : null,
   }));
 
   return NextResponse.json({ codes: enriched });
