@@ -1053,10 +1053,9 @@ export default function PhotoAuditPage() {
   const handleDateChange = (d: DateRange) => { setDateRange(d); setPage(0); setSelectedIds(new Set()); };
 
   // Single confirm
-  const handleConfirm = async (photo: AuditPhoto) => {
-    // Guard: corrections route requires both child_id and original identification.
-    // Photos in the "Today (All)" tab can include untagged/unidentified rows that
-    // would 400 with `child_id is required` or `Missing original identification`.
+  // OPTIMISTIC pattern: photo vanishes instantly, API call runs in the background,
+  // photo is restored only if the API fails. Teachers don't wait for the wheel.
+  const handleConfirm = (photo: AuditPhoto) => {
     if (!photo.child_id) {
       toast.error(t('photoAudit.tagChildFirst'));
       return;
@@ -1065,44 +1064,54 @@ export default function PhotoAuditPage() {
       toast.error(t('photoAudit.tagWorkFirst'));
       return;
     }
-    setProcessingId(photo.id);
-    try {
-      const res = await fetch('/api/montree/guru/corrections', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          media_id: photo.id,
-          child_id: photo.child_id,
-          original_work_name: photo.work_name || '',
-          original_work_id: photo.work_id || '',
-          original_area: photo.area || '',
-          original_confidence: photo.confidence || 0,
-          action: 'confirm',
-        }),
-      });
-      if (!res.ok) {
-        const errData = await res.json().catch(() => ({}));
-        console.error('[Photo Audit] Confirm failed:', res.status, errData);
-        throw new Error(errData?.error || 'confirm failed');
+    // Snapshot for revert if the API rejects.
+    const oldZone = photo.zone || 'amber';
+    const photoSnapshot = photo;
+    // 1. Optimistic removal — vanish from grid + decrement counts NOW.
+    confirmedIdsRef.current.add(photo.id);
+    setPhotos(prev => prev.filter(p => p.id !== photo.id));
+    setCounts(prev => ({
+      ...prev,
+      ...(oldZone === 'amber' ? { amber: Math.max(0, prev.amber - 1) } : {}),
+      ...(oldZone === 'red' ? { red: Math.max(0, prev.red - 1) } : {}),
+      ...(oldZone === 'untagged' ? { untagged: Math.max(0, prev.untagged - 1) } : {}),
+    }));
+    // 2. Fire API in background. No await, no spinner.
+    void (async () => {
+      try {
+        const res = await fetch('/api/montree/guru/corrections', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            media_id: photo.id,
+            child_id: photo.child_id,
+            original_work_name: photo.work_name || '',
+            original_work_id: photo.work_id || '',
+            original_area: photo.area || '',
+            original_confidence: photo.confidence || 0,
+            action: 'confirm',
+          }),
+        });
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          console.error('[Photo Audit] Confirm failed:', res.status, errData);
+          throw new Error(errData?.error || 'confirm failed');
+        }
+        // Success — photo already gone. Silent. No toast.
+      } catch (err: unknown) {
+        // 3. API failed — restore the photo + counts and surface the error.
+        confirmedIdsRef.current.delete(photo.id);
+        setPhotos(prev => (prev.some(p => p.id === photoSnapshot.id) ? prev : [photoSnapshot, ...prev]));
+        setCounts(prev => ({
+          ...prev,
+          ...(oldZone === 'amber' ? { amber: prev.amber + 1 } : {}),
+          ...(oldZone === 'red' ? { red: prev.red + 1 } : {}),
+          ...(oldZone === 'untagged' ? { untagged: prev.untagged + 1 } : {}),
+        }));
+        const msg = err instanceof Error ? err.message : t('audit.confirmFailed');
+        toast.error(msg);
       }
-      // "Correct" = done signal. Remove photo from list entirely.
-      confirmedIdsRef.current.add(photo.id);
-      const oldZone = photo.zone || 'amber';
-      setPhotos(prev => prev.filter(p => p.id !== photo.id));
-      setCounts(prev => ({
-        ...prev,
-        ...(oldZone === 'amber' ? { amber: Math.max(0, prev.amber - 1) } : {}),
-        ...(oldZone === 'red' ? { red: Math.max(0, prev.red - 1) } : {}),
-        ...(oldZone === 'untagged' ? { untagged: Math.max(0, prev.untagged - 1) } : {}),
-      }));
-      toast.success(t('audit.confirmed'));
-      // Photo is removed from view. On next refresh, server has confidence=1.0
-      // so it won't appear in non-green zones.
-    } catch (err: any) {
-      toast.error(err?.message || t('audit.confirmFailed'));
-    } finally {
-      setProcessingId(null);
-    }
+    })();
   };
 
   // Set work status (Presented/Practicing/Mastered) from photo audit
@@ -1263,10 +1272,24 @@ export default function PhotoAuditPage() {
     return null;
   }, [curriculum]);
 
-  // Silently attach a photo to an existing curriculum work via the corrections endpoint.
-  // Used by both the Tier 1 (>=90% match) auto-attach path and the Tier 2 modal "Use existing" button.
+  // OPTIMISTIC pattern. Photo vanishes immediately, API runs in the background,
+  // photo restored only on failure. Used by Tier 1 auto-attach path AND the
+  // ThisIsSheet "pick existing" path. Teachers don't wait.
   const attachToExistingWork = async (photo: AuditPhoto, work: { id: string; name: string }, areaKey: string) => {
-    setProcessingId(photo.id);
+    const removedZone = photo.zone || 'untagged';
+    const photoSnapshot = photo;
+    // 1. Optimistic — vanish from grid + decrement counts now.
+    setPhotos(prev => prev.filter(p => p.id !== photo.id));
+    setCounts(prev => ({
+      ...prev,
+      ...(removedZone === 'green' ? { green: Math.max(0, prev.green - 1) } : {}),
+      ...(removedZone === 'amber' ? { amber: Math.max(0, prev.amber - 1) } : {}),
+      ...(removedZone === 'red' ? { red: Math.max(0, prev.red - 1) } : {}),
+      ...(removedZone === 'untagged' ? { untagged: Math.max(0, prev.untagged - 1) } : {}),
+    }));
+    setSelectedIds(prev => { const next = new Set(prev); next.delete(photo.id); return next; });
+    setAcceptingPhoto(null);
+    // 2. Fire API in background.
     try {
       const res = await fetch('/api/montree/guru/corrections', {
         method: 'POST',
@@ -1287,26 +1310,21 @@ export default function PhotoAuditPage() {
         const errData = await res.json().catch(() => ({}));
         throw new Error(errData?.error || 'attach failed');
       }
-      // Remove photo from grid — it's now confirmed
-      const removedZone = photo.zone || 'untagged';
-      setPhotos(prev => prev.filter(p => p.id !== photo.id));
-      setCounts(prev => ({
-        ...prev,
-        ...(removedZone === 'green' ? { green: Math.max(0, prev.green - 1) } : {}),
-        ...(removedZone === 'amber' ? { amber: Math.max(0, prev.amber - 1) } : {}),
-        ...(removedZone === 'red' ? { red: Math.max(0, prev.red - 1) } : {}),
-        ...(removedZone === 'untagged' ? { untagged: Math.max(0, prev.untagged - 1) } : {}),
-      }));
-      setSelectedIds(prev => { const next = new Set(prev); next.delete(photo.id); return next; });
-      toast.success(`🔗 Matched to "${work.name}"`);
-      setAcceptingPhoto(null);
+      // Success — photo already gone. Silent.
       return true;
     } catch (err) {
       console.error('[AttachExisting] Failed:', err);
+      // 3. API failed — restore the photo + counts, surface the error.
+      setPhotos(prev => (prev.some(p => p.id === photoSnapshot.id) ? prev : [photoSnapshot, ...prev]));
+      setCounts(prev => ({
+        ...prev,
+        ...(removedZone === 'green' ? { green: prev.green + 1 } : {}),
+        ...(removedZone === 'amber' ? { amber: prev.amber + 1 } : {}),
+        ...(removedZone === 'red' ? { red: prev.red + 1 } : {}),
+        ...(removedZone === 'untagged' ? { untagged: prev.untagged + 1 } : {}),
+      }));
       toast.error(err instanceof Error ? err.message : 'Failed to attach');
       return false;
-    } finally {
-      setProcessingId(null);
     }
   };
 
@@ -1396,9 +1414,39 @@ export default function PhotoAuditPage() {
   };
 
   // Unified resolver — called by ThisIsSheet with a {type, ...} resolution.
-  // Posts to /api/montree/photo-audit/resolve and removes the photo from the grid on success.
+  // OPTIMISTIC pattern: photo vanishes immediately, fetch runs in the background,
+  // photo is restored only on failure. ThisIsSheet's fireAndClose closes the modal
+  // BEFORE this fires, so the teacher's perceived flow is: tap → modal closed +
+  // photo gone. No spinner, no wait.
   const handleResolvePhoto = async (photo: AuditPhoto, resolution: ThisIsResolution) => {
-    setProcessingId(photo.id);
+    const removedZone = photo.zone || 'untagged';
+    const photoSnapshot = photo;
+    // 1. Optimistic — vanish from grid + decrement counts now.
+    setPhotos(prev => prev.filter(p => p.id !== photo.id));
+    setCounts(prev => ({
+      ...prev,
+      ...(removedZone === 'green' ? { green: Math.max(0, prev.green - 1) } : {}),
+      ...(removedZone === 'amber' ? { amber: Math.max(0, prev.amber - 1) } : {}),
+      ...(removedZone === 'red' ? { red: Math.max(0, prev.red - 1) } : {}),
+      ...(removedZone === 'untagged' ? { untagged: Math.max(0, prev.untagged - 1) } : {}),
+    }));
+    setSelectedIds(prev => { const next = new Set(prev); next.delete(photo.id); return next; });
+    setThisIsPhoto(null);
+    // Auto-set "practicing" optimistically too — fire-and-forget either way.
+    const workName = resolution.type === 'new_custom' ? resolution.name : resolution.work_name;
+    if (photo.child_id && workName) {
+      montreeApi('/api/montree/progress/update', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          child_id: photo.child_id,
+          work_name: workName,
+          status: 'practicing',
+          no_downgrade: true,
+        }),
+      }).catch(err => console.error('[ResolvePhoto] Auto-practicing failed (non-fatal):', err));
+    }
+    // 2. Fire main resolve API in background.
     try {
       const res = await fetch('/api/montree/photo-audit/resolve', {
         method: 'POST',
@@ -1409,48 +1457,24 @@ export default function PhotoAuditPage() {
       if (!res.ok || !json.success) {
         throw new Error(json?.error || 'resolve failed');
       }
-      // Remove from grid
-      const removedZone = photo.zone || 'untagged';
-      setPhotos(prev => prev.filter(p => p.id !== photo.id));
-      setCounts(prev => ({
-        ...prev,
-        ...(removedZone === 'green' ? { green: Math.max(0, prev.green - 1) } : {}),
-        ...(removedZone === 'amber' ? { amber: Math.max(0, prev.amber - 1) } : {}),
-        ...(removedZone === 'red' ? { red: Math.max(0, prev.red - 1) } : {}),
-        ...(removedZone === 'untagged' ? { untagged: Math.max(0, prev.untagged - 1) } : {}),
-      }));
-      setSelectedIds(prev => { const next = new Set(prev); next.delete(photo.id); return next; });
-      const label =
-        resolution.type === 'new_custom'
-          ? `✨ Added "${resolution.name}" to curriculum`
-          : resolution.type === 'confirm_ai'
-            ? `✅ Confirmed "${resolution.work_name}"`
-            : `🔗 Matched to "${resolution.work_name}"`;
-      toast.success(label);
-      setThisIsPhoto(null);
-      // Refresh curriculum cache so new custom works appear in the Fix picker immediately
+      // Success — photo already gone. Silent. New-custom path also refreshes
+      // the curriculum cache in the background so the next "This is…" picker
+      // sees the new work immediately.
       if (resolution.type === 'new_custom') {
         fetchCurriculum();
       }
-      // Auto-set "practicing" — teacher photographed the child doing this work
-      const workName = resolution.type === 'new_custom' ? resolution.name : resolution.work_name;
-      if (photo.child_id && workName) {
-        montreeApi('/api/montree/progress/update', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            child_id: photo.child_id,
-            work_name: workName,
-            status: 'practicing',
-            no_downgrade: true,
-          }),
-        }).catch(err => console.error('[ResolvePhoto] Auto-practicing failed (non-fatal):', err));
-      }
     } catch (err) {
       console.error('[ResolvePhoto] Failed:', err);
+      // 3. API failed — restore the photo + counts.
+      setPhotos(prev => (prev.some(p => p.id === photoSnapshot.id) ? prev : [photoSnapshot, ...prev]));
+      setCounts(prev => ({
+        ...prev,
+        ...(removedZone === 'green' ? { green: prev.green + 1 } : {}),
+        ...(removedZone === 'amber' ? { amber: prev.amber + 1 } : {}),
+        ...(removedZone === 'red' ? { red: prev.red + 1 } : {}),
+        ...(removedZone === 'untagged' ? { untagged: prev.untagged + 1 } : {}),
+      }));
       toast.error(err instanceof Error ? err.message : 'Failed to resolve');
-    } finally {
-      setProcessingId(null);
     }
   };
 
