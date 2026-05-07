@@ -8,6 +8,12 @@ import { getSupabase } from '@/lib/supabase-client';
 import { isFeatureEnabled } from '@/lib/montree/features/server';
 import { sortChildrenByCustomOrder } from '@/lib/montree/weekly-admin/child-order';
 import { AREA_KEYS, AREA_LABELS_EN, AREA_LABELS_ZH } from '@/lib/montree/i18n/area-labels';
+import { anthropic, HAIKU_MODEL, AI_ENABLED } from '@/lib/ai/anthropic';
+
+// Haiku-narrated paragraph timeout — keep small. We run all children in
+// parallel; if any individual call blows past this, fall back silently to
+// the flat-tag string so the teacher still gets SOMETHING in the textarea.
+export const maxDuration = 60;
 
 const AREAS = AREA_KEYS;
 const AREA_LABELS: Record<string, { en: string; zh: string }> = Object.fromEntries(
@@ -27,6 +33,13 @@ interface ChildSuggestion {
   summaryChinese: string;
   planAreas: Record<string, string>;
   planAreasZh: Record<string, string>;
+  // Internal — stripped before sending to the client. Carries the structured
+  // data Haiku needs to write a narrative paragraph in the second pass.
+  _narrativeContext?: {
+    childWorks: Record<string, string[]>;
+    childProgress: Record<string, string>;
+    focus: Record<string, string>;
+  };
 }
 
 export async function GET(request: NextRequest) {
@@ -597,11 +610,91 @@ export async function GET(request: NextRequest) {
         summaryChinese,
         planAreas,
         planAreasZh,
+        // Pass through the raw data Haiku needs to write a narrative.
+        // Keeps the per-child loop a synchronous data-build; the AI call is a
+        // separate parallel pass below.
+        _narrativeContext: {
+          childWorks: childWorks ? Object.fromEntries(childWorks) : {},
+          childProgress: childProgressMap.get(child.id) ? Object.fromEntries(childProgressMap.get(child.id)!) : {},
+          focus: planAreas,
+        },
       };
     });
 
+    // ── Haiku narrative pass ─────────────────────────────────────
+    // Replace each child's flat-tag summaryEnglish with a 2-3 sentence
+    // narrative paragraph teachers can copy-paste straight into a parent
+    // doc. Per-child Haiku call, all in parallel, ~600ms each.
+    //
+    // Flat-tag fallback ("Work (P); Work (Pr). Next week: X") is preserved
+    // on the suggestion BEFORE the Haiku pass — if Haiku fails or AI is
+    // disabled, the textarea still gets meaningful text.
+    if (AI_ENABLED && anthropic) {
+      const narrativePromises = suggestions.map(async (s) => {
+        const ctx = s._narrativeContext;
+        // No data → keep the flat fallback (which says "No recorded activities…")
+        const totalWorks = Object.values(ctx.childWorks).reduce((acc: number, v: unknown) => acc + (Array.isArray(v) ? v.length : 0), 0);
+        if (totalWorks === 0) return;
+
+        // Build the structured prompt input
+        const worksByArea: string[] = [];
+        for (const [area, names] of Object.entries(ctx.childWorks)) {
+          if (!Array.isArray(names) || names.length === 0) continue;
+          const tagged = (names as string[]).map(n => {
+            const status = ctx.childProgress[n.toLowerCase()] || 'presented';
+            const tag = status === 'mastered' ? 'mastered' : status === 'practicing' ? 'practicing' : 'presented';
+            return `${n} (${tag})`;
+          });
+          worksByArea.push(`${area.replace(/_/g, ' ')}: ${tagged.join(', ')}`);
+        }
+        const focusList = Object.entries(ctx.focus)
+          .filter(([, v]) => v && !String(v).endsWith('-P'))
+          .map(([area, v]) => `${area.replace(/_/g, ' ')}: ${String(v).replace(/-P$/, '')}`)
+          .join('; ');
+
+        try {
+          const res = await anthropic.messages.create({
+            model: HAIKU_MODEL,
+            max_tokens: 280,
+            messages: [{
+              role: 'user',
+              content: `Write a 2-3 sentence warm narrative paragraph about ${s.childName}'s week for the teacher's printable summary. Use the works listed below. Keep it factual, observational, Montessori-aligned in tone — never invent details, never use "loves" or "enjoys" without evidence. End with one short sentence about what's next.
+
+Works this period:
+${worksByArea.join('\n')}
+
+Next focus${focusList ? `: ${focusList}` : ' — none specified'}.
+
+Output ONLY the paragraph. No preamble, no markdown, no quotes around it. Start with the child's name.`
+            }],
+          });
+          const block = res.content?.[0];
+          if (block && block.type === 'text' && block.text.trim()) {
+            const narrative = block.text.trim();
+            // Replace the flat-tag summaryEnglish on the suggestion in-place.
+            s.summaryEnglish = narrative;
+          }
+        } catch (err) {
+          console.error(`[auto-fill] Haiku narrative failed for ${s.childName}:`, err instanceof Error ? err.message : err);
+          // Silently keep the flat-tag fallback already on s.summaryEnglish.
+        }
+      });
+      // Cap at 25s so a slow Haiku response doesn't time the whole route out.
+      await Promise.race([
+        Promise.allSettled(narrativePromises),
+        new Promise(resolve => setTimeout(resolve, 25_000)),
+      ]);
+    }
+
+    // Strip the internal _narrativeContext before returning to the client.
+    const cleanSuggestions = suggestions.map((s) => {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { _narrativeContext, ...rest } = s;
+      return rest;
+    });
+
     return NextResponse.json(
-      { children: suggestions },
+      { children: cleanSuggestions },
       { headers: { 'Cache-Control': 'private, max-age=30, stale-while-revalidate=60' } }
     );
   } catch (err) {
