@@ -1,80 +1,84 @@
 // /api/montree/billing/checkout/route.ts
-// Create Stripe checkout session
+//
+// Phase 4 — Start a Stripe Checkout session for a school's $7/student
+// subscription. Replaces the old tier-based endpoint (basic/standard/premium).
+//
+// Auth: principal of the school (verified via verifySchoolRequest +
+// auth.role === 'principal'). The school_id is derived from the JWT, NOT
+// the body — prevents one principal from starting checkout for another
+// school.
+//
+// Pre-Stripe-config: returns 503 with `configured: false` so the principal
+// UI can show "billing isn't set up yet" instead of crashing.
+
 import { NextRequest, NextResponse } from 'next/server';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
-import { getStripe, PRICE_IDS } from '@/lib/montree/stripe';
 import { getSupabase } from '@/lib/supabase-client';
+import { getBillingConfig, createSchoolCheckoutSession } from '@/lib/montree/billing';
+
+export const dynamic = 'force-dynamic';
 
 export async function POST(request: NextRequest) {
-  try {
-    // Verify authentication
-    const auth = await verifySchoolRequest(request);
-    if (auth instanceof NextResponse) return auth;
-
-    const { school_id, plan } = await request.json();
-
-    if (!school_id || !plan) {
-      return NextResponse.json({ error: 'Missing school_id or plan' }, { status: 400 });
-    }
-
-    const priceId = PRICE_IDS[plan as keyof typeof PRICE_IDS];
-    if (!priceId) {
-      return NextResponse.json({ error: 'Invalid plan' }, { status: 400 });
-    }
-
-    const supabase = getSupabase();
-    const stripe = getStripe();
-
-    // Get school info
-    const { data: school, error: schoolError } = await supabase
-      .from('montree_schools')
-      .select('id, name, stripe_customer_id')
-      .eq('id', school_id)
-      .maybeSingle();
-
-    if (schoolError) {
-      console.error('School lookup error:', schoolError);
-      return NextResponse.json({ error: 'School not found' }, { status: 404 });
-    }
-
-    if (!school) {
-      return NextResponse.json({ error: 'School not found' }, { status: 404 });
-    }
-
-    // Get or create Stripe customer
-    let customerId = school.stripe_customer_id;
-    
-    if (!customerId) {
-      const customer = await stripe.customers.create({
-        name: school.name,
-        metadata: { school_id: school.id },
-      });
-      customerId = customer.id;
-
-      // Save customer ID
-      await supabase
-        .from('montree_schools')
-        .update({ stripe_customer_id: customerId })
-        .eq('id', school_id);
-    }
-
-    // Create checkout session
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
-    
-    const session = await stripe.checkout.sessions.create({
-      customer: customerId,
-      payment_method_types: ['card'],
-      line_items: [{ price: priceId, quantity: 1 }],
-      mode: 'subscription',
-      success_url: `${appUrl}/montree/admin/billing?success=true`,
-      cancel_url: `${appUrl}/montree/admin/billing?canceled=true`,
-      metadata: { school_id, plan },
-    });
-
-    return NextResponse.json({ url: session.url });
-
-  } catch (error) {
-    console.error('Checkout error:', error);
-    return NextResponse.json({ error: 'Failed to create checkout' }, { status: 500 });
+  const auth = await verifySchoolRequest(request);
+  if (auth instanceof NextResponse) return auth;
+  if (auth.role !== 'principal') {
+    return NextResponse.json(
+      { error: 'Only the principal can start a checkout for their school.' },
+      { status: 403 }
+    );
   }
+
+  const cfg = getBillingConfig();
+  if (!cfg.configured) {
+    return NextResponse.json(
+      {
+        error: 'Billing not configured',
+        configured: false,
+        detail: cfg.reason,
+        message: "Stripe billing isn't set up yet. We'll reach out when it's ready.",
+      },
+      { status: 503 }
+    );
+  }
+
+  const supabase = getSupabase();
+
+  // Defence-in-depth: confirm the principal's JWT schoolId still maps to a
+  // real school + this principal still owns it.
+  const { data: school } = await supabase
+    .from('montree_schools')
+    .select('id, name, subscription_status')
+    .eq('id', auth.schoolId)
+    .maybeSingle();
+  if (!school) {
+    return NextResponse.json({ error: 'School not found' }, { status: 404 });
+  }
+
+  // If already actively subscribed, point them at the customer portal.
+  if (school.subscription_status === 'active' || school.subscription_status === 'trialing') {
+    return NextResponse.json({
+      already_subscribed: true,
+      message: 'School is already subscribed. Use the manage-billing portal instead.',
+      portal_endpoint: '/api/montree/billing/portal-session',
+    });
+  }
+
+  const result = await createSchoolCheckoutSession(supabase, auth.schoolId, {});
+  if (!result.ok || !result.data) {
+    return NextResponse.json(
+      {
+        error: 'Could not create checkout',
+        configured: result.configured,
+        detail: result.reason,
+      },
+      { status: result.configured ? 500 : 503 }
+    );
+  }
+
+  return NextResponse.json({
+    ok: true,
+    configured: true,
+    checkout_url: result.data.checkout_url,
+    session_id: result.data.session_id,
+  });
 }

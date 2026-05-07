@@ -4,7 +4,7 @@ import { useState, useMemo, useCallback } from 'react';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import { School } from './types';
-import { getCountryFlag, formatLocation } from '@/lib/ip-geolocation';
+import { getCountryFlag } from '@/lib/ip-geolocation';
 
 const SchoolFeaturesModal = dynamic(() => import('./SchoolFeaturesModal'), { ssr: false });
 const PrincipalsModal = dynamic(() => import('./PrincipalsModal'), { ssr: false });
@@ -455,6 +455,30 @@ export default function SchoolsTab({
                             )}
                             {!school.owner_name && !school.owner_email && (
                               <p className="text-slate-600 text-xs italic">no contact info</p>
+                            )}
+                            {/* Phase 4 — Stripe billing indicator. Only rendered
+                                when there's something to say (school has a Stripe
+                                subscription_id or status is meaningful). */}
+                            {(school.stripe_subscription_id || (school.subscription_status && ['active', 'trialing', 'past_due', 'canceled'].includes(school.subscription_status))) && (
+                              <p className="text-xs flex items-center gap-1.5">
+                                <span aria-hidden>💳</span>
+                                <span className={
+                                  school.subscription_status === 'active' ? 'text-emerald-400' :
+                                  school.subscription_status === 'trialing' ? 'text-amber-300' :
+                                  school.subscription_status === 'past_due' ? 'text-red-400' :
+                                  school.subscription_status === 'canceled' ? 'text-slate-500' :
+                                  'text-slate-400'
+                                }>
+                                  {school.subscription_status === 'active' ? 'Stripe — active' :
+                                   school.subscription_status === 'trialing' ? 'Stripe — trial' :
+                                   school.subscription_status === 'past_due' ? 'Stripe — past due' :
+                                   school.subscription_status === 'canceled' ? 'Stripe — canceled' :
+                                   'Stripe — pending'}
+                                  {school.billing_quantity !== null && school.billing_quantity !== undefined && (
+                                    <span className="text-slate-500"> · qty {school.billing_quantity}</span>
+                                  )}
+                                </span>
+                              </p>
                             )}
                             {(school.login_codes || []).length > 0 && (
                               <p className="text-slate-600 text-xs font-mono flex items-center gap-1.5">

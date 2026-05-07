@@ -181,6 +181,72 @@ GMass campaigns A/C/D are historical. Campaign C sent 335 blank emails (Session 
 
 ---
 
+## RECENT STATUS (May 7, 2026)
+
+### ⚡ Session 93 — Phase 4: Stripe School Billing (env-gated, ready to wire) (May 7, 2026)
+
+**13 files changed.** Schools can be billed $7/active-student/month via Stripe — the moment Tredoux connects Stripe (sets env vars + creates the Stripe Product/Price + configures webhook), billing works automatically. Until then, the principal billing page renders an honest "Billing isn't set up yet. Tredoux will reach out when it's ready" and no Stripe calls happen.
+
+**🚨 Canonical resume doc:** `docs/handoffs/SESSION_93_HANDOFF.md` — comprehensive single source of truth.
+
+**🚨 Setup playbook for Tredoux:** `docs/STRIPE_BILLING_SETUP.md` — 9-step activation checklist with verification queries and failure-mode table.
+
+**🚨 Migration 189 must be run** in Supabase SQL Editor before Phase 4 functions. Adds billing columns to `montree_schools`, creates `montree_finance_transactions` ledger, ensures `montree_billing_history` schema. Idempotent.
+
+**The build strategy (locked in):** Phase 4 ships to production BEFORE Stripe credentials are configured. All endpoints check `getBillingConfig().configured` at the top — when env vars are missing, returns 503 with `configured: false`. Tredoux follows the setup doc when ready; no code change needed at activation time. The architecture is "set it up so you can connect Stripe after the fact" — done.
+
+**What shipped:**
+
+- **`migrations/189_billing_phase4.sql`** — `montree_schools` extensions (billing_quantity, last_synced_to_stripe_at, stripe_price_id_active, billing_email, monthly_charge_estimate_cents) + new `montree_finance_transactions` ledger (multi-currency aware, idempotent via unique partial index on `(source, source_ref)`) + ensures `montree_billing_history`. All idempotent.
+
+- **`lib/montree/billing.ts`** — keystone library (~470 lines). Public surface: `getBillingConfig()`, `loadSchoolBilling()`, `countActiveStudents()`, `getOrCreateStripeCustomer()` (race-safe persist), `createSchoolCheckoutSession()`, `createCustomerPortalSession()`, `syncSubscriptionQuantity()` (skips Stripe call if quantity unchanged), `maybeSyncStripeQuantity()` (fire-and-forget wrapper), webhook handlers `handleInvoicePaid`/`handleInvoicePaymentFailed`/`handleSubscriptionUpsert`/`handleSubscriptionDeleted`/`handleChargeRefunded`. Every helper gracefully degrades when Stripe unconfigured.
+
+- **5 API endpoints** — `POST /api/montree/billing/webhook` (Stripe signature verification, 6 event types, returns 200 on handler errors to prevent retry storms), `POST /api/montree/billing/checkout` (principal-only, school derived from JWT), `POST /api/montree/billing/portal-session`, `GET /api/montree/billing/status` (always 200, principal OR teacher), `POST /api/montree/billing/sync-quantity` (single-school OR sweep mode, accepts super admin OR `x-cron-secret`).
+
+- **Headcount sync hooks** — `maybeSyncStripeQuantity()` wired fire-and-forget into `/api/montree/children/route.ts` (single create) and `/api/montree/admin/import/route.ts` (one sync after batch).
+
+- **`app/montree/admin/billing/page.tsx`** — principal-facing billing page. Replaces old tier-based UI (basic/standard/premium with max_students). Shows: status pill, 3-tile snapshot (active students, monthly charge, trial-days-remaining or next-bill-date), drift indicator, CTA (Set up billing / Manage billing in Stripe / Resubscribe), invoice history with PDF links. Pre-Stripe-config state is honest: "Billing isn't set up yet. Tredoux will reach out."
+
+- **`components/montree/super-admin/SchoolsTab.tsx`** — small Stripe billing indicator on school rows: `💳 Stripe — active · qty 18`. Status colored (active=emerald, trial=amber, past_due=red, canceled=slate). Hidden when no billing data.
+
+- **`docs/STRIPE_BILLING_SETUP.md`** — 9-step playbook: (1) run migration 189, (2) create Stripe Product + Price ($7 USD monthly licensed), (3) set Railway env vars, (4) configure webhook (Account mode, 6 event types), (5) test in test mode with `4242 4242 4242 4242`, (6) switch to live, (7) migrate existing schools (manual override OR convert via principal UI), (8) optional cron, (9) Stripe Connect carry-over. Plus failure-mode table.
+
+**Architectural rules locked in (do NOT break):**
+1. Every billing helper gracefully degrades when Stripe unconfigured. No required setup-before-shipping.
+2. Pricing: $7 per active student per month. Quantity = `montree_children WHERE is_active=true`. 30-day trial, no card. No tiers, no annual.
+3. Webhook idempotency via `(source, source_ref)` unique index on `montree_finance_transactions`. Replays are silent no-ops.
+4. Webhook returns 200 on handler errors (Stripe retries on 500 → retry storms).
+5. Mutating endpoints: principal-only. Read endpoint: principal OR teacher. School derived from JWT, never from body.
+6. Race-safe Stripe customer creation (conditional UPDATE WHERE customer_id IS NULL).
+7. Race-safe quantity sync (no Stripe round-trip if quantity unchanged).
+8. Refunds = negative income row. Phase 5 nets it. Never claw back paid commissions.
+9. `montree_finance_transactions` is the canonical ledger. Phase 5 + Phase 6 read from here. NOT from `montree_billing_history` (per-school invoice timeline only).
+10. Stripe fee captured as separate `direct_cost` row at invoice.paid time (estimated 2.9% + $0.30; reconciliation in Phase 6).
+
+**What is NOT in Phase 4:**
+- Phase 5 (payout calculator) — now unblocked. Reads `montree_finance_transactions`. ~1.5 days.
+- Phase 6 (Money tab P&L) — same ledger. ~2-3 days.
+- Per-school custom pricing — flat $7 only. Discounts via Stripe coupons (`allow_promotion_codes` already enabled on Checkout).
+- Annual billing — monthly only.
+
+**Audit trail:**
+- Lint: `--max-warnings=0` clean across all 11 changed/new code files
+- 3 pre-existing warnings cleaned up incidentally (unused catch param, `let → const`, unused import)
+- Auth + cross-pollination verified on all 5 new endpoints via grep
+- Webhook signature verification + idempotency
+- Race-safe customer creation + quantity sync
+- All endpoints gate on `getBillingConfig().configured` BEFORE calling Stripe SDK
+
+**Production verification checklist** (8 steps, in `docs/handoffs/SESSION_93_HANDOFF.md`): set up billing → checkout with test card → verify ledger rows → add child → check quantity sync → super admin indicator → sweep endpoint.
+
+**Next session priorities:**
+1. **🚨 Tredoux runs migrations 188 + 189** in Supabase + follows `docs/STRIPE_BILLING_SETUP.md` — required prerequisite for Phases 4/5/6 working in production.
+2. **Walk 8-step Phase 4 verification** after Stripe is wired.
+3. **Phase 5 — Payout calculation engine** (~1.5 days). Now unblocked. Idempotent monthly aggregator → `montree_agent_payouts`.
+4. **Phase 6 — Super admin Money tab** (~2-3 days). P&L from the unified ledger.
+
+---
+
 ## RECENT STATUS (May 6-7, 2026)
 
 ### ⚡ Session 92 — Phase 7 Complete: Full Agent Dashboard System + teacherpotato.xyz Audio Fix (May 6-7, 2026, overnight build)

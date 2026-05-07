@@ -28,6 +28,14 @@ export interface School {
   signup_region?: string | null;
   signup_timezone?: string | null;
   login_codes?: string[];
+  // Phase 4 — Stripe billing fields. All optional because pre-Phase-4
+  // schools won't have any of these populated.
+  stripe_customer_id?: string | null;
+  stripe_subscription_id?: string | null;
+  current_period_end?: string | null;
+  billing_quantity?: number | null;
+  monthly_charge_estimate_cents?: number | null;
+  last_synced_to_stripe_at?: string | null;
 }
 
 export interface Feedback {

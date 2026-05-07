@@ -5,6 +5,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
+import { maybeSyncStripeQuantity } from '@/lib/montree/billing';
 
 // Add a new child to classroom
 export async function POST(request: NextRequest) {
@@ -27,10 +28,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Notes too long' }, { status: 400 });
     }
 
-    // Verify classroom exists
+    // Verify classroom exists. We also pull school_id so we can fire the
+    // billing headcount sync after the insert (Phase 4 — Stripe quantity push).
     const { data: classroom, error: classroomError } = await supabase
       .from('montree_classrooms')
-      .select('id')
+      .select('id, school_id')
       .eq('id', classroomId)
       .maybeSingle();
 
@@ -57,6 +59,13 @@ export async function POST(request: NextRequest) {
     if (childError) {
       console.error('Failed to create child:', childError);
       return NextResponse.json({ error: 'Failed to create student' }, { status: 500 });
+    }
+
+    // Phase 4 — fire-and-forget headcount sync to Stripe. No-op if billing
+    // isn't configured or the school doesn't have a subscription. Never
+    // blocks the response.
+    if (classroom.school_id) {
+      maybeSyncStripeQuantity(classroom.school_id);
     }
 
     // If progress is provided, create progress records
@@ -189,7 +198,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ children: [] });
     }
 
-    let query = supabase
+    const query = supabase
       .from('montree_children')
       .select('id, name, age, photo_url, notes, classroom_id, enrolled_at')
       .in('classroom_id', allowedClassroomIds)
