@@ -4,7 +4,7 @@
 // page is classroom-wide. If needed later, could render one popup per visible child.
 'use client';
 
-import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo, CSSProperties } from 'react';
 import dynamic from 'next/dynamic';
 import { toast } from 'sonner';
 import { useI18n } from '@/lib/montree/i18n';
@@ -2759,6 +2759,28 @@ export default function PhotoAuditPage() {
   );
 }
 
+// Shared style for the fast custom hover tooltips on icon-only buttons.
+// React state tracks hover (instead of HTML `title`) so the tooltip appears
+// immediately rather than after the browser's slow ~1500ms native delay.
+const iconTooltipStyle: CSSProperties = {
+  position: 'absolute',
+  bottom: 'calc(100% + 6px)',
+  left: '50%',
+  transform: 'translateX(-50%)',
+  background: 'rgba(7,18,12,0.96)',
+  color: 'rgba(255,255,255,0.95)',
+  padding: '4px 9px',
+  borderRadius: 6,
+  fontSize: 11,
+  fontWeight: 500,
+  whiteSpace: 'nowrap',
+  pointerEvents: 'none',
+  zIndex: 50,
+  border: '1px solid rgba(52,211,153,0.30)',
+  boxShadow: '0 4px 12px rgba(0,0,0,0.40)',
+  fontFamily: "'Inter', -apple-system, sans-serif",
+};
+
 // ─── AuditPhotoCard ───
 function AuditPhotoCard({ photo, selected, onToggle, onConfirm, onCorrect, onUseAsReference, onTagChildren, onDelete, onMarkAsPaperwork, onToggleDiscussion, rerunResult, onAcceptResult, onAcceptDraft, onConfirmDraft, onTellAI, onPhotoTap, onSaveNote, processing, workStatus, onSetStatus, unifiedTagger, t }: {
   photo: AuditPhoto;
@@ -2788,6 +2810,12 @@ function AuditPhotoCard({ photo, selected, onToggle, onConfirm, onCorrect, onUse
   const [noteSaving, setNoteSaving] = useState(false);
   const [noteSaved, setNoteSaved] = useState(false);
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Track which icon button is currently hovered for the fast custom tooltip.
+  // We use this instead of the HTML `title` attribute because native browser
+  // tooltips have a slow ~1500ms delay and were invisible to teachers in
+  // practice — they hover, see nothing, move on.
+  const [hoveredIcon, setHoveredIcon] = useState<string | null>(null);
 
   // Debounced auto-save: 1.2s after last keystroke
   const handleNoteChange = useCallback((value: string) => {
@@ -3124,30 +3152,64 @@ function AuditPhotoCard({ photo, selected, onToggle, onConfirm, onCorrect, onUse
         {/* Utility actions — Confirm and Teach hidden (auto-handled on resolve/fix).
             Kept in code for reinstatement. Only delete remains visible. */}
         <div style={{ display: 'flex', gap: 4, marginTop: 8, justifyContent: 'flex-end' }}>
-          <button
-            onClick={onToggleDiscussion}
-            disabled={processing}
-            style={{ fontSize: 10, padding: '4px 7px', borderRadius: 6, background: photo.discussion_flag ? 'rgba(96,165,250,0.18)' : 'rgba(96,165,250,0.07)', border: `1px solid ${photo.discussion_flag ? 'rgba(96,165,250,0.45)' : 'rgba(96,165,250,0.18)'}`, cursor: processing ? 'wait' : 'pointer', opacity: processing ? 0.5 : 1 }}
-            title={photo.discussion_flag ? t('audit.toggleDiscussionRemove') : t('audit.toggleDiscussion')}
+          {/* 💬 Discussion flag toggle — instant tooltip via React state. */}
+          <span
+            style={{ position: 'relative', display: 'inline-block' }}
+            onMouseEnter={() => setHoveredIcon('discussion')}
+            onMouseLeave={() => setHoveredIcon(null)}
           >
-            💬
-          </button>
-          <button
-            onClick={onMarkAsPaperwork}
-            disabled={processing}
-            style={{ fontSize: 10, padding: '4px 7px', borderRadius: 6, background: 'rgba(245,158,11,0.07)', border: '1px solid rgba(245,158,11,0.18)', cursor: processing ? 'wait' : 'pointer', opacity: processing ? 0.5 : 1 }}
-            title={t('audit.markPaperwork')}
+            <button
+              onClick={onToggleDiscussion}
+              disabled={processing}
+              style={{ fontSize: 10, padding: '4px 7px', borderRadius: 6, background: photo.discussion_flag ? 'rgba(96,165,250,0.18)' : 'rgba(96,165,250,0.07)', border: `1px solid ${photo.discussion_flag ? 'rgba(96,165,250,0.45)' : 'rgba(96,165,250,0.18)'}`, cursor: processing ? 'wait' : 'pointer', opacity: processing ? 0.5 : 1 }}
+              aria-label={photo.discussion_flag ? t('audit.toggleDiscussionRemove') : t('audit.toggleDiscussion')}
+            >
+              💬
+            </button>
+            {hoveredIcon === 'discussion' && (
+              <span style={iconTooltipStyle}>
+                {photo.discussion_flag ? t('audit.toggleDiscussionRemove') : t('audit.toggleDiscussion')}
+              </span>
+            )}
+          </span>
+
+          {/* 📋 Mark as paperwork. */}
+          <span
+            style={{ position: 'relative', display: 'inline-block' }}
+            onMouseEnter={() => setHoveredIcon('paperwork')}
+            onMouseLeave={() => setHoveredIcon(null)}
           >
-            📋
-          </button>
-          <button
-            onClick={onDelete}
-            disabled={processing}
-            style={{ fontSize: 10, padding: '4px 7px', borderRadius: 6, background: 'rgba(239,68,68,0.07)', border: '1px solid rgba(239,68,68,0.18)', cursor: processing ? 'wait' : 'pointer', opacity: processing ? 0.5 : 1 }}
-            title={t('audit.deletePhoto')}
+            <button
+              onClick={onMarkAsPaperwork}
+              disabled={processing}
+              style={{ fontSize: 10, padding: '4px 7px', borderRadius: 6, background: 'rgba(245,158,11,0.07)', border: '1px solid rgba(245,158,11,0.18)', cursor: processing ? 'wait' : 'pointer', opacity: processing ? 0.5 : 1 }}
+              aria-label={t('audit.markPaperwork')}
+            >
+              📋
+            </button>
+            {hoveredIcon === 'paperwork' && (
+              <span style={iconTooltipStyle}>{t('audit.markPaperwork')}</span>
+            )}
+          </span>
+
+          {/* 🗑️ Delete photo. */}
+          <span
+            style={{ position: 'relative', display: 'inline-block' }}
+            onMouseEnter={() => setHoveredIcon('delete')}
+            onMouseLeave={() => setHoveredIcon(null)}
           >
-            🗑️
-          </button>
+            <button
+              onClick={onDelete}
+              disabled={processing}
+              style={{ fontSize: 10, padding: '4px 7px', borderRadius: 6, background: 'rgba(239,68,68,0.07)', border: '1px solid rgba(239,68,68,0.18)', cursor: processing ? 'wait' : 'pointer', opacity: processing ? 0.5 : 1 }}
+              aria-label={t('audit.deletePhoto')}
+            >
+              🗑️
+            </button>
+            {hoveredIcon === 'delete' && (
+              <span style={iconTooltipStyle}>{t('audit.deletePhoto')}</span>
+            )}
+          </span>
         </div>
         {/* Teacher note — always at the very bottom */}
         <div className="mt-1.5 relative">
