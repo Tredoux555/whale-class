@@ -3262,6 +3262,7 @@ export const it: Record<string, string> = {
   'audit.deleteFailed': 'Impossibile eliminare la foto',
   'audit.addNote': 'Aggiungi una nota su questa foto...',
   'audit.saving': 'Salvataggio in corso...',
+  'audit.saved': 'Salvato',
   'audit.noteSaveFailed': 'Impossibile salvare la nota',
   'audit.changeArea': 'Cambia Area',
   'audit.reclassifyAll': 'Riclassifica tutto',

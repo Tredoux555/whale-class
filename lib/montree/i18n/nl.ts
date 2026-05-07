@@ -3262,6 +3262,7 @@ export const nl: Record<string, string> = {
   'audit.deleteFailed': 'Foto verwijderen mislukt',
   'audit.addNote': 'Voeg een opmerking toe over deze foto...',
   'audit.saving': 'Opslaan...',
+  'audit.saved': 'Opgeslagen',
   'audit.noteSaveFailed': 'Opmerking opslaan mislukt',
   'audit.changeArea': 'Gebied wijzigen',
   'audit.reclassifyAll': 'Alles opnieuw classificeren',

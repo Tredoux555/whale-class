@@ -3710,6 +3710,7 @@ export const zh = {
   'audit.deleteFailed': '删除照片失败',
   'audit.addNote': '添加关于这张照片的备注...',
   'audit.saving': '保存中...',
+  'audit.saved': '已保存',
   'audit.noteSaveFailed': '保存备注失败',
   'audit.changeArea': '切换区域',
   'audit.reclassifyAll': '重新分类全部',

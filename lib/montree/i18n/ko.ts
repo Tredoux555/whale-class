@@ -3262,6 +3262,7 @@ export const ko: Record<string, string> = {
   'audit.deleteFailed': '사진 삭제 실패',
   'audit.addNote': '이 사진에 대한 메모를 추가하세요...',
   'audit.saving': '저장 중...',
+  'audit.saved': '저장됨',
   'audit.noteSaveFailed': '메모 저장 실패',
   'audit.changeArea': '영역 변경',
   'audit.reclassifyAll': '모두 다시 분류',
