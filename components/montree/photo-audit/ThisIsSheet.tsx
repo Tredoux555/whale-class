@@ -164,10 +164,11 @@ export default function ThisIsSheet({
       const confidence = photo?.sonnet_draft?.confidence ?? 0;
       if (proposed && confidence >= 0.4) setQuery(proposed);
       // Autofocus and select-all so a quick edit is one keypress away.
-      requestAnimationFrame(() => {
+      // Using setTimeout to ensure DOM has rendered and focus can persist.
+      setTimeout(() => {
         inputRef.current?.focus();
         inputRef.current?.select();
-      });
+      }, 0);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, photo?.id]);
@@ -621,10 +622,21 @@ export default function ThisIsSheet({
                 <div style={{ position: 'relative', flex: 1 }}>
                   <input
                     ref={inputRef}
+                    type="text"
                     value={query}
                     onChange={e => setQuery(e.target.value)}
+                    onKeyDown={e => {
+                      // Allow Escape to close the modal
+                      if (e.key === 'Escape') {
+                        e.preventDefault();
+                        onClose();
+                      }
+                    }}
                     placeholder="Search works…"
                     disabled={submitting}
+                    autoFocus
+                    spellCheck={false}
+                    autoComplete="off"
                     style={{
                       width: '100%',
                       padding: '12px 14px 12px 38px',
