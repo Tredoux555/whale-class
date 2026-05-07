@@ -675,9 +675,9 @@ export async function GET(request: NextRequest) {
             max_tokens: 280,
             messages: [{
               role: 'user',
-              content: `Write a 2-3 sentence warm narrative paragraph about ${s.childName}'s ${areaLabel}work this period for the teacher's printable summary. Use ONLY the works listed below — do NOT mention any other curriculum area, materials, or activities not on this list. Keep it factual, observational, Montessori-aligned in tone — never invent details, never use "loves" or "enjoys" without evidence. End with one short sentence about what's next.
+              content: `Write a 2-3 sentence warm narrative paragraph about ${s.childName}'s ${areaLabel}work this week for the teacher's printable summary. Use ONLY the works listed below — do NOT mention any other curriculum area, materials, or activities not on this list. Keep it factual, observational, Montessori-aligned in tone — never invent details, never use "loves" or "enjoys" without evidence. Always phrase the time frame as "this week" regardless of how many weeks of data are listed below. End with one short sentence about what's next.
 
-Works this period:
+Works this week:
 ${worksByArea.join('\n')}
 
 Next focus${focusList ? `: ${focusList}` : ' — none specified'}.
