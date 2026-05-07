@@ -3609,6 +3609,7 @@ export const en = {
   'weeklyWrap.guruMissingEn': ' No documented engagement in {areas}.',
   'weeklyWrap.noReports': 'No reports for this week',
   'weeklyWrap.clickGenerateToStart': 'Click "Generate" to start',
+  'weeklyWrap.adminTabHint': '↗ Looking for multi-week summaries? See the Weekly Admin tab.',
   'weeklyWrap.noPhotos': 'No photos captured for {name} this week',
   'weeklyWrap.learningMoments': "{name}'s Learning Moments",
   'weeklyWrap.other': 'Other',

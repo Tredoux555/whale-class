@@ -3145,6 +3145,7 @@ export const nl: Record<string, string> = {
   'weeklyWrap.guruMissingEn': 'Geen gedocumenteerde activiteiten in {areas}.',
   'weeklyWrap.noReports': 'Geen rapporten voor deze week',
   'weeklyWrap.clickGenerateToStart': 'Klik op "Genereren" om te beginnen',
+  'weeklyWrap.adminTabHint': '↗ Op zoek naar samenvattingen van meerdere weken? Zie het tabblad Weekly Admin.',
   'weeklyWrap.noPhotos': 'Geen foto\'s van {name} deze week vastgelegd',
   'weeklyWrap.other': 'Overig',
   'weeklyWrap.loadFailed': 'Rapporten konden niet worden geladen',

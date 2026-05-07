@@ -3145,6 +3145,7 @@ export const ja: Record<string, string> = {
   'weeklyWrap.guruMissingEn': '{areas}での記録された活動はありません。',
   'weeklyWrap.noReports': '今週のレポートはありません',
   'weeklyWrap.clickGenerateToStart': '「生成」をクリックして開始してください',
+  'weeklyWrap.adminTabHint': '↗ 複数週分のまとめをお探しですか？Weekly Adminタブをご覧ください。',
   'weeklyWrap.noPhotos': '今週{name}さんの写真は撮影されていません',
   'weeklyWrap.other': 'その他',
   'weeklyWrap.loadFailed': 'レポートの読み込みに失敗しました',

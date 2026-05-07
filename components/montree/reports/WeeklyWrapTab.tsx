@@ -1002,7 +1002,18 @@ export default function WeeklyWrapTab({ classroomId, view: externalView }: Weekl
           fontFamily: T.sans,
         }}>
           <p style={{ fontSize: 18, marginBottom: 8, margin: 0, marginBottom: 8 }}>{t('weeklyWrap.noReports')}</p>
-          <p style={{ fontSize: 13, margin: 0 }}>{t('weeklyWrap.clickGenerateToStart')}</p>
+          <p style={{ fontSize: 13, margin: 0, marginBottom: 16 }}>{t('weeklyWrap.clickGenerateToStart')}</p>
+          {/* Cross-reference hint — the multi-week range stepper lives on the
+              Weekly Admin tab, not this one. Teachers expecting "past 2 weeks"
+              auto-fill here have to be pointed there. */}
+          <p style={{
+            fontSize: 12,
+            margin: 0,
+            color: 'rgba(245,158,11,0.85)',
+            fontStyle: 'italic',
+          }}>
+            {t('weeklyWrap.adminTabHint')}
+          </p>
         </div>
       )}
 

@@ -3145,6 +3145,7 @@ export const ru: Record<string, string> = {
   'weeklyWrap.guruMissingEn': 'Нет документированного взаимодействия в области {areas}.',
   'weeklyWrap.noReports': 'Нет отчётов на эту неделю',
   'weeklyWrap.clickGenerateToStart': 'Нажмите «Создать» для начала',
+  'weeklyWrap.adminTabHint': '↗ Ищете сводки за несколько недель? Откройте вкладку Weekly Admin.',
   'weeklyWrap.noPhotos': 'На этой неделе не было сделано фотографий ребёнка {name}',
   'weeklyWrap.other': 'Прочее',
   'weeklyWrap.loadFailed': 'Ошибка загрузки отчётов',
