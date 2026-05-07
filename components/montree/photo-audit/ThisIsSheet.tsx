@@ -641,10 +641,17 @@ export default function ThisIsSheet({
                       width: '100%',
                       padding: '12px 14px 12px 38px',
                       fontSize: 16,
-                      border: '1.5px solid #ddd',
+                      // Explicit color so typed text is unambiguously dark against
+                      // the off-white background — without this, browser defaults
+                      // can render value text in a faded grey that looks like
+                      // placeholder, leading teachers to think the input is broken.
+                      color: '#0f172a',
+                      caretColor: '#8b5cf6',
+                      border: '1.5px solid #c4b5fd',
                       borderRadius: 12,
                       outline: 'none',
-                      background: '#fafafa',
+                      background: '#ffffff',
+                      boxShadow: '0 0 0 3px rgba(139,92,246,0.12)',
                     }}
                   />
                   <div
@@ -1094,10 +1101,16 @@ export default function ThisIsSheet({
                   width: '100%',
                   padding: '12px 14px',
                   fontSize: 16,
+                  // Explicit dark text + visible caret — without these the
+                  // browser default colours can make the input look frozen.
+                  color: '#0f172a',
+                  caretColor: '#8b5cf6',
+                  background: '#ffffff',
                   border: '1.5px solid #8b5cf6',
                   borderRadius: 12,
                   marginBottom: 14,
                   outline: 'none',
+                  boxShadow: '0 0 0 3px rgba(139,92,246,0.12)',
                 }}
               />
 
