@@ -626,6 +626,14 @@ export async function GET(request: NextRequest) {
     // narrative paragraph teachers can copy-paste straight into a parent
     // doc. Per-child Haiku call, all in parallel, ~600ms each.
     //
+    // 🚨 NARRATIVE_AREAS — controls which curriculum areas appear in the
+    // generated paragraph. Whale Class currently uses language-only
+    // summaries (May 7, 2026 decision). Expand the array to include
+    // ['practical_life', 'sensorial', 'mathematics', 'language', 'cultural']
+    // when the school wants whole-child narratives. The works list passed
+    // to Haiku is filtered to these areas BEFORE the prompt is built.
+    const NARRATIVE_AREAS = ['language'] as const;
+
     // Flat-tag fallback ("Work (P); Work (Pr). Next week: X") is preserved
     // on the suggestion BEFORE the Haiku pass — if Haiku fails or AI is
     // disabled, the textarea still gets meaningful text.
@@ -636,9 +644,11 @@ export async function GET(request: NextRequest) {
         const totalWorks = Object.values(ctx.childWorks).reduce((acc: number, v: unknown) => acc + (Array.isArray(v) ? v.length : 0), 0);
         if (totalWorks === 0) return;
 
-        // Build the structured prompt input
+        // Build the structured prompt input — FILTERED to NARRATIVE_AREAS only.
+        // Other areas' works are excluded entirely so Haiku can't bring them in.
         const worksByArea: string[] = [];
         for (const [area, names] of Object.entries(ctx.childWorks)) {
+          if (!(NARRATIVE_AREAS as readonly string[]).includes(area)) continue;
           if (!Array.isArray(names) || names.length === 0) continue;
           const tagged = (names as string[]).map(n => {
             const status = ctx.childProgress[n.toLowerCase()] || 'presented';
@@ -647,10 +657,17 @@ export async function GET(request: NextRequest) {
           });
           worksByArea.push(`${area.replace(/_/g, ' ')}: ${tagged.join(', ')}`);
         }
+        // No language work this period → keep flat fallback (already says "no recorded activities" or similar).
+        if (worksByArea.length === 0) return;
+
         const focusList = Object.entries(ctx.focus)
-          .filter(([, v]) => v && !String(v).endsWith('-P'))
+          .filter(([area, v]) => v && !String(v).endsWith('-P') && (NARRATIVE_AREAS as readonly string[]).includes(area))
           .map(([area, v]) => `${area.replace(/_/g, ' ')}: ${String(v).replace(/-P$/, '')}`)
           .join('; ');
+
+        const areaLabel = NARRATIVE_AREAS.length === 1
+          ? `${NARRATIVE_AREAS[0].replace(/_/g, ' ')} `
+          : '';
 
         try {
           const res = await anthropic.messages.create({
@@ -658,7 +675,7 @@ export async function GET(request: NextRequest) {
             max_tokens: 280,
             messages: [{
               role: 'user',
-              content: `Write a 2-3 sentence warm narrative paragraph about ${s.childName}'s week for the teacher's printable summary. Use the works listed below. Keep it factual, observational, Montessori-aligned in tone — never invent details, never use "loves" or "enjoys" without evidence. End with one short sentence about what's next.
+              content: `Write a 2-3 sentence warm narrative paragraph about ${s.childName}'s ${areaLabel}work this period for the teacher's printable summary. Use ONLY the works listed below — do NOT mention any other curriculum area, materials, or activities not on this list. Keep it factual, observational, Montessori-aligned in tone — never invent details, never use "loves" or "enjoys" without evidence. End with one short sentence about what's next.
 
 Works this period:
 ${worksByArea.join('\n')}
