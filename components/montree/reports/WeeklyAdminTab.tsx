@@ -10,7 +10,7 @@ import { useI18n } from '@/lib/montree/i18n';
 import { getAreaLabel } from '@/lib/montree/i18n/area-labels';
 import { useFeatures } from '@/hooks/useFeatures';
 import { sortChildrenByCustomOrder } from '@/lib/montree/weekly-admin/child-order';
-import { ChevronLeft, ChevronRight, FileText, ClipboardList, Sparkles, Download, Save, AlertTriangle } from 'lucide-react';
+import { ChevronLeft, ChevronRight, FileText, ClipboardList, Sparkles, Download, Save, AlertTriangle, Minus, Plus } from 'lucide-react';
 
 const AREAS = [
   { key: 'practical_life', label: 'Practical Life', zh: '日常' },
@@ -168,6 +168,14 @@ export default function WeeklyAdminTab({ classroomId }: WeeklyAdminTabProps) {
   const [activeTab, setActiveTab] = useState<'summary' | 'plan'>('summary');
   const [summaryNotes, setSummaryNotes] = useState<SummaryNotes>({});
   const [planNotes, setPlanNotes] = useState<PlanNotes>({});
+
+  // Custom date range — pull data from N academic weeks back instead of just
+  // the displayed week. Default 1 (current week only). Max 8.
+  // Notes still SAVE to the displayed weekStart — this only widens the
+  // window the auto-fill pulls from for richer multi-week summaries.
+  // Plan tab is unaffected (focus shelf is current state, not historical).
+  const [weeksBack, setWeeksBack] = useState<number>(1);
+  const MAX_WEEKS_BACK = 8;
 
   // Staleness detection — see CLAUDE.md Session 29/30.
   // staleChildren = children whose expected work set (what Auto-fill would
@@ -444,7 +452,7 @@ export default function WeeklyAdminTab({ classroomId }: WeeklyAdminTabProps) {
 
     try {
       const res = await montreeApi(
-        `/api/montree/weekly-admin-docs/auto-fill?classroom_id=${classroomId}&week_start=${requestedWeek}&locale=${locale}`
+        `/api/montree/weekly-admin-docs/auto-fill?classroom_id=${classroomId}&week_start=${requestedWeek}&locale=${locale}&weeks_back=${weeksBack}`
       );
 
       // Bail if unmounted or user navigated to a different week
@@ -624,6 +632,75 @@ export default function WeeklyAdminTab({ classroomId }: WeeklyAdminTabProps) {
           >
             <ChevronRight size={14} strokeWidth={1.75} />
           </button>
+
+          {/* ── Custom date range stepper ───────────────────────────────
+              Pull the auto-fill data from N academic weeks BACK from the
+              displayed week (default 1, max 8). Plan tab is unaffected —
+              the focus shelf is current state, not historical. Notes still
+              save to the displayed week_start regardless of range. */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginLeft: 8 }}>
+            <span
+              title={t('weeklyAdmin.rangeHint')}
+              style={{
+                fontFamily: T.sans,
+                fontSize: 11,
+                fontWeight: 600,
+                color: T.textSecondary,
+                letterSpacing: 0.3,
+                textTransform: 'uppercase',
+              }}
+            >
+              {t('weeklyAdmin.range')}:
+            </span>
+            <button
+              onClick={() => setWeeksBack(w => Math.max(1, w - 1))}
+              disabled={weeksBack <= 1}
+              aria-label={t('weeklyAdmin.rangeFewer')}
+              style={{
+                ...ghostBtn,
+                width: 24,
+                height: 24,
+                padding: 0,
+                opacity: weeksBack <= 1 ? 0.30 : 1,
+                cursor: weeksBack <= 1 ? 'not-allowed' : 'pointer',
+              }}
+            >
+              <Minus size={12} strokeWidth={1.75} />
+            </button>
+            <span
+              style={{
+                minWidth: 70,
+                textAlign: 'center',
+                fontFamily: T.mono,
+                fontSize: 12,
+                fontWeight: 500,
+                color: weeksBack > 1 ? T.amber : T.textPrimary,
+                padding: '4px 8px',
+                borderRadius: 6,
+                background: weeksBack > 1 ? T.amberSoft : 'rgba(255,255,255,0.05)',
+                border: `1px solid ${weeksBack > 1 ? T.amberBorder : 'rgba(255,255,255,0.08)'}`,
+              }}
+            >
+              {weeksBack === 1
+                ? t('weeklyAdmin.rangeOneWeek')
+                : t('weeklyAdmin.rangeNWeeks').replace('{n}', String(weeksBack))}
+            </span>
+            <button
+              onClick={() => setWeeksBack(w => Math.min(MAX_WEEKS_BACK, w + 1))}
+              disabled={weeksBack >= MAX_WEEKS_BACK}
+              aria-label={t('weeklyAdmin.rangeMore')}
+              style={{
+                ...ghostBtn,
+                width: 24,
+                height: 24,
+                padding: 0,
+                opacity: weeksBack >= MAX_WEEKS_BACK ? 0.30 : 1,
+                cursor: weeksBack >= MAX_WEEKS_BACK ? 'not-allowed' : 'pointer',
+              }}
+            >
+              <Plus size={12} strokeWidth={1.75} />
+            </button>
+          </div>
         </div>
 
         {/* Tab selector + action buttons */}

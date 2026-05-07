@@ -2765,6 +2765,12 @@ export const en = {
 
   // Weekly Admin Documents (docx generation)
   'weeklyAdmin.week': 'Week',
+  'weeklyAdmin.range': 'Range',
+  'weeklyAdmin.rangeHint': 'Pull data from this many weeks back. Notes still save to the displayed week.',
+  'weeklyAdmin.rangeFewer': 'Fewer weeks',
+  'weeklyAdmin.rangeMore': 'More weeks',
+  'weeklyAdmin.rangeOneWeek': '1 week',
+  'weeklyAdmin.rangeNWeeks': '{n} weeks',
   'weeklyAdmin.summaryTab': 'Weekly Summary',
   'weeklyAdmin.planTab': 'Weekly Plan',
   'weeklyAdmin.englishSummary': 'English summary of what was done this week...',
