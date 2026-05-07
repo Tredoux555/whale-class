@@ -3730,6 +3730,7 @@ export const en = {
   'audit.deleteFailed': 'Failed to delete photo',
   'audit.addNote': 'Add a note about this photo...',
   'audit.saving': 'Saving...',
+  'audit.saved': 'Saved',
   'audit.noteSaveFailed': 'Failed to save note',
   'audit.changeArea': 'Change Area',
   'audit.reclassifyAll': 'Reclassify All',

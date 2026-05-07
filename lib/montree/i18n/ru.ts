@@ -3262,6 +3262,7 @@ export const ru: Record<string, string> = {
   'audit.deleteFailed': 'Не удалось удалить фото',
   'audit.addNote': 'Добавить заметку об этом фото...',
   'audit.saving': 'Сохраняем...',
+  'audit.saved': 'Сохранено',
   'audit.noteSaveFailed': 'Не удалось сохранить заметку',
   'audit.changeArea': 'Изменить область',
   'audit.reclassifyAll': 'Переклассифицировать все',

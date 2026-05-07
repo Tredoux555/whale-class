@@ -3262,6 +3262,7 @@ export const pt: Record<string, string> = {
   'audit.deleteFailed': 'Falha ao excluir foto',
   'audit.addNote': 'Adicionar uma observação sobre esta foto...',
   'audit.saving': 'Salvando...',
+  'audit.saved': 'Salvo',
   'audit.noteSaveFailed': 'Falha ao salvar observação',
   'audit.changeArea': 'Alterar Área',
   'audit.reclassifyAll': 'Reclassificar Tudo',

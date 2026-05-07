@@ -3262,6 +3262,7 @@ export const ja: Record<string, string> = {
   'audit.deleteFailed': '写真の削除に失敗しました',
   'audit.addNote': 'この写真についてのメモを追加...',
   'audit.saving': '保存しています...',
+  'audit.saved': '保存済み',
   'audit.noteSaveFailed': 'メモの保存に失敗しました',
   'audit.changeArea': 'エリアを変更',
   'audit.reclassifyAll': 'すべて再分類',

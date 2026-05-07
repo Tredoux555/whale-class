@@ -2802,6 +2802,21 @@ function AuditPhotoCard({ photo, selected, onToggle, onConfirm, onCorrect, onUse
     }, 1200);
   }, [onSaveNote]);
 
+  // Flush-save on blur: when the teacher clicks away from the textarea, save
+  // immediately instead of waiting for the 1.2s debounce. Avoids the "did it
+  // save?" anxiety when navigating away from a card.
+  const handleNoteBlur = useCallback(() => {
+    if (saveTimerRef.current) {
+      clearTimeout(saveTimerRef.current);
+      saveTimerRef.current = null;
+    }
+    if (noteText !== (photo.caption || '')) {
+      setNoteSaving(true);
+      onSaveNote(noteText);
+      setTimeout(() => { setNoteSaving(false); setNoteSaved(true); }, 400);
+    }
+  }, [noteText, photo.caption, onSaveNote]);
+
   // Cleanup timer on unmount
   useEffect(() => () => { if (saveTimerRef.current) clearTimeout(saveTimerRef.current); }, []);
 
@@ -3146,12 +3161,33 @@ function AuditPhotoCard({ photo, selected, onToggle, onConfirm, onCorrect, onUse
           <textarea
             value={noteText}
             onChange={e => handleNoteChange(e.target.value)}
+            onBlur={handleNoteBlur}
             placeholder={t('audit.addNote')}
             style={{ width: '100%', fontSize: 10, padding: '6px 8px', borderRadius: 8, border: '1px solid rgba(52,211,153,0.12)', background: 'rgba(0,0,0,0.20)', color: 'rgba(255,255,255,0.75)', resize: 'none', outline: 'none', fontFamily: "'Inter', sans-serif", boxSizing: 'border-box' }}
             rows={2}
           />
-          {noteSaving && <span style={{ position: 'absolute', top: 2, right: 4, fontSize: 8, color: 'rgba(255,255,255,0.35)' }}>{t('audit.saving')}</span>}
-          {noteSaved && !noteSaving && <span style={{ position: 'absolute', top: 2, right: 4, fontSize: 8, color: '#34d399' }}>✓</span>}
+          {/* Save status indicator — bottom-right of the textarea so it doesn't
+              collide with the mic button (z-10) up top. Visible 11px font on
+              a translucent backdrop so the teacher actually sees feedback. */}
+          {(noteSaving || noteSaved) && (
+            <span
+              style={{
+                position: 'absolute',
+                bottom: 4,
+                right: 6,
+                fontSize: 10,
+                fontWeight: 600,
+                color: noteSaving ? 'rgba(255,255,255,0.55)' : '#34d399',
+                background: 'rgba(7,18,12,0.85)',
+                padding: '1px 6px',
+                borderRadius: 4,
+                pointerEvents: 'none',
+                fontFamily: "'Inter', sans-serif",
+              }}
+            >
+              {noteSaving ? `${t('audit.saving')}…` : `✓ ${t('audit.saved') || 'Saved'}`}
+            </span>
+          )}
         </div>
       </div>
     </div>
