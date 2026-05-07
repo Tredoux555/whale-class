@@ -2516,7 +2516,7 @@ export default function PhotoAuditPage() {
             current_area: thisIsPhoto.area || null,
             sonnet_draft: thisIsPhoto.sonnet_draft || null,
           }}
-          classroomId={classroomIdState || null}
+          classroomId={getSession()?.classroom?.id || null}
           onResolve={(resolution) => handleResolvePhoto(thisIsPhoto, resolution)}
           onDiscussionFlag={(photoId) => {
             const p = photos.find(ph => ph.id === photoId);
