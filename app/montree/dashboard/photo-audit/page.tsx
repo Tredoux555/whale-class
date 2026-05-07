@@ -1313,7 +1313,10 @@ export default function PhotoAuditPage() {
   // "✓ Correct" for haiku_drafted cards — teacher says the AI draft is right.
   // Looks up the proposed name in the loaded curriculum:
   //   found  → attachToExistingWork (same as Tier 1b but teacher-initiated, no confidence gate)
-  //   not found → opens the sheet so the teacher can type the work name themselves
+  //   not found → opens the sheet so the teacher can type the work name themselves.
+  //               Pass allowAutoAttach=true because the teacher already
+  //               endorsed the AI's analysis with the Correct button — Tier 1a
+  //               on closest_existing_match is a legitimate shortcut here.
   const handleConfirmHaikuDraft = (photo: AuditPhoto) => {
     if (!photo.child_id) {
       toast.error('Photo has no child tagged — tag a child first');
@@ -1322,7 +1325,7 @@ export default function PhotoAuditPage() {
     const draft = photo.sonnet_draft;
     const proposed = draft?.proposed_name?.trim() || photo.work_name?.trim();
     if (!proposed) {
-      openThisIsSheet(photo);
+      openThisIsSheet(photo, true);
       return;
     }
     const resolved = findWorkByName(proposed, draft?.suggested_area);
@@ -1331,50 +1334,62 @@ export default function PhotoAuditPage() {
       attachToExistingWork(photo, resolved.work, resolved.areaKey);
     } else {
       // Proposed name not in curriculum — open the sheet so teacher can pick/create
-      openThisIsSheet(photo);
+      openThisIsSheet(photo, true);
     }
   };
 
   // "This is..." — one button, one sheet, three resolution paths (existing / new_custom / confirm_ai).
   // Replaces the old Fix + Accept + AcceptDraftModal tangle.
   //
-  // Tier 1 shortcut (Session 9 fix): when the Sonnet draft has a very
-  // high-confidence closest_existing_match AND that match resolves to a
-  // real classroom work, silently attach the photo right here instead
-  // of opening the sheet. This restores the single-tap Accept behavior
-  // that got lost when Session 8 collapsed everything into the sheet.
-  // No sheet, no extra click, photo is out of the queue.
-  const openThisIsSheet = (photo: AuditPhoto) => {
+  // 🚨 The `allowAutoAttach` parameter is LOAD-BEARING for correctness.
+  //
+  // Tier 1a/1b shortcuts (Session 9 fix): when the Sonnet draft has a very
+  // high-confidence closest_existing_match AND that match resolves to a real
+  // classroom work, silently attach the photo to the AI's guess instead of
+  // opening the sheet. Saves the teacher a tap when they're saying YES.
+  //
+  // BUT — these shortcuts are catastrophic when bound to "✏️ Wrong" / "🏷️ This
+  // is…" buttons. The teacher's intent there is to REJECT or CHANGE the AI's
+  // categorisation. A silent auto-attach to the AI's guess on those buttons
+  // is the literal opposite of what the teacher wants — and it pollutes the
+  // visual-memory moat with a positive example for a wrong association.
+  //
+  // Default: `false` — opens the sheet so the teacher can pick/correct.
+  // Pass `true` only from "✓ Correct" fallback paths where the teacher has
+  // already endorsed the AI's analysis and we just couldn't resolve their
+  // endorsement to a specific work via proposed_name.
+  const openThisIsSheet = (photo: AuditPhoto, allowAutoAttach: boolean = false) => {
     if (!photo.child_id) {
       toast.error('Photo has no child tagged — tag a child first');
       return;
     }
-    const draft = photo.sonnet_draft;
-    // Tier 1a — closest_existing_match similarity ≥ 0.8
-    const match = draft?.closest_existing_match;
-    const sim = typeof match?.similarity === 'number' ? match.similarity : 0;
-    if (match?.work_name && sim >= 0.8) {
-      const resolved = findWorkByName(match.work_name, draft?.suggested_area);
-      if (resolved) {
-        console.log(`[ThisIsSheet] Tier 1a auto-attach: "${match.work_name}" ${Math.round(sim * 100)}% — skipping sheet`);
-        attachToExistingWork(photo, resolved.work, resolved.areaKey);
-        return;
+    if (allowAutoAttach) {
+      const draft = photo.sonnet_draft;
+      // Tier 1a — closest_existing_match similarity ≥ 0.8
+      const match = draft?.closest_existing_match;
+      const sim = typeof match?.similarity === 'number' ? match.similarity : 0;
+      if (match?.work_name && sim >= 0.8) {
+        const resolved = findWorkByName(match.work_name, draft?.suggested_area);
+        if (resolved) {
+          console.log(`[ThisIsSheet] Tier 1a auto-attach: "${match.work_name}" ${Math.round(sim * 100)}% — skipping sheet`);
+          attachToExistingWork(photo, resolved.work, resolved.areaKey);
+          return;
+        }
       }
-    }
-    // Tier 1b — Sonnet's proposed_name already IS an existing curriculum work
-    // (confidence ≥ 0.85). ONLY applies to genuine Sonnet drafts — NOT haiku_pass2.
-    // Haiku_pass2 sources are stored as haiku_drafted (trust threshold 0.85) so if
-    // they're still in the queue the teacher WANTS to review them. Auto-attaching them
-    // here causes photos to vanish silently when the teacher clicks "This is…".
-    const proposed = draft?.proposed_name?.trim();
-    const draftConf = typeof draft?.confidence === 'number' ? draft.confidence : 0;
-    const isHaikuPass2 = (draft as Record<string, unknown> | null)?._source === 'haiku_pass2';
-    if (proposed && draftConf >= 0.85 && !isHaikuPass2) {
-      const resolvedProposed = findWorkByName(proposed, draft?.suggested_area);
-      if (resolvedProposed) {
-        console.log(`[ThisIsSheet] Tier 1b auto-attach via proposed_name: "${proposed}" ${Math.round(draftConf * 100)}% — skipping sheet`);
-        attachToExistingWork(photo, resolvedProposed.work, resolvedProposed.areaKey);
-        return;
+      // Tier 1b — Sonnet's proposed_name already IS an existing curriculum work
+      // (confidence ≥ 0.85). ONLY applies to genuine Sonnet drafts — NOT haiku_pass2.
+      // Haiku_pass2 sources are stored as haiku_drafted (trust threshold 0.85) so if
+      // they're still in the queue the teacher WANTS to review them.
+      const proposed = draft?.proposed_name?.trim();
+      const draftConf = typeof draft?.confidence === 'number' ? draft.confidence : 0;
+      const isHaikuPass2 = (draft as Record<string, unknown> | null)?._source === 'haiku_pass2';
+      if (proposed && draftConf >= 0.85 && !isHaikuPass2) {
+        const resolvedProposed = findWorkByName(proposed, draft?.suggested_area);
+        if (resolvedProposed) {
+          console.log(`[ThisIsSheet] Tier 1b auto-attach via proposed_name: "${proposed}" ${Math.round(draftConf * 100)}% — skipping sheet`);
+          attachToExistingWork(photo, resolvedProposed.work, resolvedProposed.areaKey);
+          return;
+        }
       }
     }
     setThisIsPhoto(photo);
@@ -2502,7 +2517,6 @@ export default function PhotoAuditPage() {
             sonnet_draft: thisIsPhoto.sonnet_draft || null,
           }}
           classroomId={classroomIdState || null}
-          submitting={processingId === thisIsPhoto.id}
           onResolve={(resolution) => handleResolvePhoto(thisIsPhoto, resolution)}
           onDiscussionFlag={(photoId) => {
             const p = photos.find(ph => ph.id === photoId);

@@ -84,7 +84,11 @@ interface Props {
   onResolve: (resolution: Resolution) => Promise<void>;
   onDiscussionFlag?: (photoId: string) => void;
   photo: ThisIsSheetPhoto | null;
-  classroomId: string;
+  // The parent (photo-audit/page.tsx) sometimes passes null when classroom
+  // state hasn't yet loaded. useClassroomWorks already accepts null, but the
+  // sheet itself becomes useless without a classroom — render nothing so we
+  // don't show a broken modal with no curriculum to search.
+  classroomId: string | null;
 }
 
 export default function ThisIsSheet({
@@ -130,6 +134,12 @@ export default function ThisIsSheet({
   }, [isOpen, photo?.id, reloadWorks]);
 
   // Reset on close / pre-seed on open
+  //
+  // 🚨 Dep array uses photo?.id (NOT photo) — the parent passes a fresh
+  // object literal every render, so depending on `photo` itself caused this
+  // effect to re-run on every parent re-render and wipe the teacher's typed
+  // value back to the AI's pre-seed. photo?.id is stable per photo so the
+  // effect runs once per photo as intended.
   useEffect(() => {
     if (!isOpen) {
       setQuery('');
@@ -159,15 +169,18 @@ export default function ThisIsSheet({
         inputRef.current?.select();
       });
     }
-  }, [isOpen, photo]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen, photo?.id]);
 
-  // Pre-seed the "new work area" from Sonnet's suggested_area if available
+  // Pre-seed the "new work area" from Sonnet's suggested_area if available.
+  // Same dep-stability fix as above — depend on the scalar suggested_area,
+  // not the whole photo object.
   useEffect(() => {
     const suggested = photo?.sonnet_draft?.suggested_area;
     if (suggested && (AREA_KEYS as readonly string[]).includes(suggested)) {
       setNewWorkArea(suggested);
     }
-  }, [photo]);
+  }, [photo?.sonnet_draft?.suggested_area]);
 
   // --- derive the "AI guess" shortcut row ---
   // Prefer an already-attached work (photo.current_work_*) because that is
@@ -450,7 +463,7 @@ export default function ThisIsSheet({
     setMergeResult(null);
   }, []);
 
-  if (!isOpen || !photo) return null;
+  if (!isOpen || !photo || !classroomId) return null;
 
   return (
     <div
