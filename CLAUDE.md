@@ -144,44 +144,184 @@ GMass campaigns A/C/D are historical. Campaign C sent 335 blank emails (Session 
 
 **🚨 NEVER automate email sending.** Claude creates drafts only. Tredoux reviews and sends every email manually. This prevents another blank-email disaster.
 
-### Active Reply Threads (as of Apr 23, 2026 — updated Session 55)
+### Active Reply Threads (as of May 7, 2026 — updated Session 94 from full Gmail audit)
 
-**🔥 HOT — Multiplier Partners:**
-- **FAMM Argentina (Marisa Canova de Sioli, marisa@fundacionmontessori.org)** — AMI Foundation + Training Center. Asked for CV, pricing, AMI compatibility. Tredoux replied Apr 18 with full pricing breakdown + partnership offer (revenue share). AWAITING RESPONSE. This is the #1 lead. **Follow up if no response by Apr 28.**
-- **Cambridge Montessori Global (info@jalsaventures.com)** — Replied "Let us know more about it please!" Draft reply created with full Montree overview + tier breakdown + demo call request. AWAITING TREDOUX SEND + RESPONSE. NOT IN DB (GMass recipient).
+**🚨 Session 94 corrections to lead state — three "hot leads" in Sessions 71-87 were misclassified:**
+- **Ardtona House** is DEAD, not a hot trial-request lead. Valerie sent a final "hard no" on May 5 ("My teachers were not interested"). Don't email further.
+- **Paint Pots Montessori at `paintpotsmontessori@outlook.com`** is a DEAD ADDRESS — the email bounced "Address not found" on Apr 30. The real Paint Pots contact is **Jessica Dilhe** at `jessica@paint-pots.co.uk` (Nursery Manager, multi-location group). She got the Montree pitch + CV Apr 12, you nudged Apr 19. No reply since. NOT a hot demo request.
+- **Montessori Copenhagen at `info@montessori-cph.dk`** — wrong email. Real address is **`info@montessorischool.dk`**. Head of School **Karin Schurian Rosenø** received the corrected pitch Apr 12 + Apr 21. NO reply. Treat as cold lead awaiting first response.
 
-**🔥 HOT — School Leads (asked for resume/CV or showed interest):**
-- **The Ardee School, India (Sunpritt Dang, phone 9718902010)** — Gave phone number. Tredoux already contacted on WhatsApp (Session 47).
-- **I Cube Montessori, India (reachus@icubemontessori.com)** — "Warm Greetings... send your detailed resume." Tredoux sent resume + Montree pitch.
-- **Ace Montessori, India (acemontessorijngr@gmail.com)** — Gave phone number +91 9663373111. Direct contact.
-- **Meraki Montessori, India (management@merakimontessori.in)** — Asked for resume. Tredoux sent.
-- **Village Montessori, SC (info@villagemontessori.com)** — RESURRECTED (Session 47). Previously said "not interested" but came back and asked for resume. Tredoux sent.
-- **Paint Pots Montessori, UK (paintpotsmontessori@outlook.com)** — 🔥 "Can you give me any more details or a demo?" Demo request. Reply drafted (Session 71): magic of Montree + 20-min demo offer. AWAITING TREDOUX SEND + RESPONSE.
-- **Ardtona House Montessori, UK (info@ardtonahouse.co.uk)** — 🔥 "Do you offer a free trial?" Trial interest. Reply drafted (Session 71): "Yes — one month free, no credit card" + direct signup link + early adopter hook. AWAITING TREDOUX SEND + RESPONSE.
-- **Montessori Copenhagen (info@montessori-cph.dk)** — 🔥 "Can you provide more details about the system?" Reply drafted (Session 71): full magic overview + 9 languages + early adopter + demo or trial CTA. AWAITING TREDOUX SEND + RESPONSE.
+**🔥 HOT — Multiplier Partners (real, awaiting reply):**
+- **FAMM Argentina (Marisa Canova de Sioli, marisa@fundacionmontessori.org)** — AMI Foundation + Training Center. Replied Apr 23 *"it'll take me a few more days... we're definitely interested."* Tredoux nudged Apr 24 (Spanish translation now live) + May 5 (gentle nudge). AWAITING RESPONSE. **#1 multiplier lead — let it breathe; no further nudge until after May 14.**
+- **Cambridge Montessori Global (Manish Goyal, info@jalsaventures.com)** — Replied Apr 20 *"Let us know more about it please!"* Tredoux replied with full overview + tier breakdown + demo CTA. AWAITING RESPONSE. Follow up around May 10-12 if no reply.
+
+**🔥 HOT — School Leads (genuinely awaiting follow-up):**
+- **Otari School NZ (principal@otari.school.nz, forwarded to Susan West Acting Principal)** — Sabbatical auto-reply received May 5. Susan should respond. **Follow up around May 12-14 if no response.**
+- **Lions Gate Montessori (Ingrid, info@lionsgatemontessori.org)** — School of 200+ families across three campuses. Auto-reply May 5 acknowledged the message. Awaiting actual reply.
+- **Montessori Norge (Nina Johansen, nina.johansen@montessorinorge.no)** — Out of office returned May 6. **Follow-up window OPEN — can re-nudge any time from May 7 onward.**
+
+**🔥 HOT — Indian schools (sent CV + Montree pitch, awaiting reply):**
+- **The Ardee School, India (Sunpritt Dang, phone 9718902010)** — Tredoux contacted via WhatsApp.
+- **I Cube Montessori, India (reachus@icubemontessori.com)** — Tredoux sent CV + Montree pitch Apr 14. No reply since.
+- **Meraki Montessori, India (management@merakimontessori.in)** — Tredoux sent CV Apr 13. No reply since.
+- **Ace Montessori, India (+91 9663373111)** — Direct phone contact.
+- **Village Montessori, SC (info@villagemontessori.com)** — Resurrected (Session 47). Tredoux sent resume.
+- **Paint Pots Montessori, UK (Jessica Dilhe, jessica@paint-pots.co.uk)** — Multi-location group. Asked for CV Apr 10. Tredoux sent CV + Montree pitch Apr 12 + nudged Apr 19. No reply since. **Worth one more gentle nudge.**
 
 **⚠️ PIVOTED — Declined teaching, Tredoux pivoted to Montree pitch (awaiting reply):**
-- **Remuera NZ (info@remueramontessori.co.nz)** — Fully staffed. Tredoux pivoted to Montree.
+- **Remuera NZ (Shenali, info@remueramontessori.co.nz)** — Fully staffed. Tredoux pivoted to Montree Apr 13. No reply.
 - **Prerana Montessori, India (preranamontessori2002@gmail.com)** — No vacancy. Tredoux pivoted to Montree.
 
-**⏸ AUTO-REPLY / FOLLOW-UP LATER:**
-- **Otari School NZ (principal@otari.school.nz)** — Principal on sabbatical. Forwarded to Acting Principal. Follow up May 1.
-- **Montessori Norge (nina.johansen@montessorinorge.no)** — Out of office until May 5. Follow up after May 6. NOT IN DB (GMass recipient).
-- **Montessori CH (kurs@montessori-ch.ch)** — Multiplier training center. In follow_up status. Needs Montree partnership pitch.
+**⏸ COLD / AWAITING FIRST RESPONSE (no actual reply yet):**
+- **Montessori Copenhagen (Karin Schurian Rosenø, info@montessorischool.dk)** — Pitch sent Apr 12 + Apr 21. No reply. Worth one more follow-up.
+- **Montessori CH (kurs@montessori-ch.ch)** — Replied Apr 14 they're a training center, no classrooms. Could re-pitch as training-tool partner.
 
 **💡 COMPETITIVE INTEL:**
 - **Jakarta Montessori School (admission@jakartamontessori.com)** — Uses **Montessori Compass** (competitor). Active in SE Asia. No further follow-up.
 
-**❌ DEAD (7 total):**
+**❌ DEAD (8 total — Ardtona added Session 94):**
+- **Ardtona House Montessori, UK (vheavey@ardtonahouseschool.ie)** — Valerie: "It is a hard no. My teachers were not interested." (May 5)
 - **Montessori Aotearoa NZ (ce@montessori.org.nz)** — Board declined. "Not something we wish to explore."
 - **Melville Montessori (jacqui@melvillemontessori.co.za)** — No longer owns school or lives in SA.
 - **Kakuozan Montessori (information@kakuozan-preschool.com)** — "Not Montessori."
 - **Sonnberg Austria (sabine@am-sonnberg.com)** — Position filled. Graceful close. NOT IN DB.
 - **Al Qamar Academy, BestStart Montessori, CHOW Montessori** — No response / dead leads.
 
+**📭 BOUNCED ADDRESSES (Apr 22-30, May 5 — need DB cleanup):**
+Wave 1 sends bounced for these addresses. None of these are flagged as `bounced` in `montree_outreach_contacts` yet:
+- `paintpotsmontessori@outlook.com` (use jessica@paint-pots.co.uk instead)
+- `admin@littleexplorersami.com` (inbox full May 5)
+- `info@mmigroup.co.uk` (server misconfigured)
+- `info@koniskorea.com`, `info@alshamelah.com`, `info@alnebras.com`, `info@indomontessori.com` (server rejection)
+- `info@madridmontessori.es`, `info@giis.org`, `info@giisabudhabi.com`, `info@childrensoasis.ae`, `info@monecole.me`, `info@jawahirvp.com`, `info@ciminternational.com`, `syed@jawahirvp.com` (domain not found)
+
+**📝 DRAFTS sitting unsent (as of Session 94):**
+- **Pamela @ Vistra HK (yanyuan.pan@vistra.com)** — finance export structure + 7 questions for HK profits-tax. Draft `19dfd400`. ✅ SENT in Session 94 per Tredoux's confirmation.
+
 ---
 
 ## RECENT STATUS (May 7, 2026)
+
+### ⚡ Session 94 — Photo audit polish + Weekly Admin custom date range + email triage + repo cleanup (May 7, 2026 evening)
+
+**8 commits pushed to main this session: `bf5bb382` → `b1263acb` → `5abcc449` → `09fe9cde` → `ac1bab13` → `51970dc3`. Plus surgical drop of broken parallel-agent commit `0f6b1f6b` and 4.9 GB disk reclaim.**
+
+**🚨 SATURDAY PRIORITIES — Tredoux to look at properly when back at the desk:**
+
+1. **🚨 Supabase security alerts (2 emails: Apr 28 + May 5)** — "Action required: security vulnerabilities detected in your projects." Open the email, click through to Supabase advisor, see what they flagged. Could be RLS gaps, missing policies, or service_role exposure. 5-min triage but real.
+2. **🚨 Stripe wiring per `docs/STRIPE_BILLING_SETUP.md`** — 9 steps in Stripe Dashboard + Railway env vars. Migration 189 already run; the moment env vars + webhook are configured, Phase 4 billing goes live. **Biggest unlock — agent dashboard, payouts, Money tab all light up after this.**
+3. **Resend domain verification** — verify `montree.xyz` in Resend, update `RESEND_FROM_EMAIL` in Railway. Without this, demo-request confirmation emails (incl. Pamela's reply if any) only deliver to the Resend account owner.
+4. **Issue Sarah's agent login** — Super-admin Referrals → 🔑 button on her row → reveal-once code → share with her. Migration 188 is already run, system ready.
+5. **Verify Session 94 fixes on production** — hard refresh photo-audit, type in modal (cursor purple, text dark), hover icons (instant tooltip), Weekly Admin range stepper (1-8 weeks).
+6. **Phase 5 build — Payout calculator** (~1.5 days) — now fully unblocked. Reads `montree_finance_transactions`. Idempotent monthly aggregator → `montree_agent_payouts`.
+7. **Phase 6 build — Super-admin Money tab** (~2-3 days) — same ledger, P&L view + exports. Pamela's accountant answers (when received) shape the categories.
+
+**🚨 Outreach (Tredoux looking properly Saturday):**
+- FAMM Argentina + Cambridge Montessori Global + Otari NZ + Lions Gate + Montessori Norge — see the `Active Reply Threads` block above (just rewritten with full Gmail-audit corrections — Ardtona is DEAD, Paint Pots@outlook bounced, Copenhagen email was wrong). Three "hot leads" CLAUDE.md previously claimed are no longer real.
+- 14+ bounce addresses from Wave 1 still need DB `status='bounced'` updates.
+- Pamela accountant draft was sent during Session 94 per Tredoux confirmation.
+
+---
+
+**Code changes this session (in order):**
+
+**A. Photo audit "Wrong" button silent auto-confirm — commit `bf5bb382`:**
+
+User reported: clicking "✏️ Wrong" on a haiku-drafted photo card made the photo silently vanish. Root cause: `onAcceptDraft={() => openThisIsSheet(photo)}` and `openThisIsSheet` had Tier 1a/1b auto-attach shortcuts that fired on Wrong/This-is-… buttons too. Tier 1a (closest_existing_match similarity ≥ 0.8) and Tier 1b (proposed_name confidence ≥ 0.85) both silently confirmed the AI's guess via `attachToExistingWork()` — the literal opposite of what "Wrong" should do, and it polluted the visual-memory moat with a positive example for a wrong association.
+
+Fix: added `allowAutoAttach: boolean = false` parameter to `openThisIsSheet`. Auto-attach logic only runs when explicitly opted in. Wrong / This-is… / unifiedTagger buttons keep default `false` → always opens the sheet. `handleConfirmHaikuDraft` (the "✓ Correct" fallback path) passes `true` because the teacher already endorsed the AI.
+
+Also fixed input-typing bug in same commit: `useEffect` deps in `ThisIsSheet.tsx` changed from `[isOpen, photo]` to `[isOpen, photo?.id]` because parent passes `photo={{ ... }}` as fresh object literal every render, causing the effect to re-fire and `setQuery(proposed)` to wipe typed values. Tightened `classroomId` type to `string | null` with null guard. Removed dead `submitting` prop from JSX.
+
+**B. Photo note save feedback — commit `09fe9cde`:**
+
+Auto-save on photo notes was already working (1.2s debounced PATCH to `/api/montree/media`), but the `saving / ✓ saved` indicators were 8px font (basically invisible) AND positioned in the same corner as the VoiceDictate mic button at `z-10` — so the indicators were literally COVERED by the mic icon. User typed "Hayden is totally ready for CVC word building" and had no idea if it saved (it had).
+
+Fix: moved indicator to bottom-right of textarea (clear of mic button), bumped 8px → 10px with semibold weight, added dark backdrop pill so it's readable against the photo. Plus added `onBlur` handler to flush save IMMEDIATELY when teacher clicks away (no more 1.2s debounce wait). Added `audit.saved` translation key across all 12 locales.
+
+**C. Modal input visibility — commit `5abcc449`:**
+
+User reported "I cant type" but their screenshot proved typing WAS working ("Blue Series (Blends)fdsdf" — the user-typed "fdsdf" appeared in the input, and the warning correctly read "No curriculum match for 'Blue Series (Blends)fdsdf'"). The actual bug was VISUAL: the value text was rendering in browser-default color which on the off-white background looked like faded placeholder. No visible blinking caret made it worse.
+
+Fix on both inputs (search bar + addMode "What is the work called?"):
+- `color: '#0f172a'` — explicit dark text
+- `caretColor: '#8b5cf6'` — purple visible cursor matching modal accent
+- `background: '#ffffff'` — pure white (was off-white #fafafa)
+- `boxShadow: '0 0 0 3px rgba(139,92,246,0.12)'` — soft violet focus halo
+
+🚨 **Architectural rule:** when user reports "input doesn't work" and the technical state shows it IS working, check VISUAL contrast / caret visibility before assuming a React/state bug. Default browser color rendering against tinted backgrounds can silently make value text indistinguishable from placeholder.
+
+**D. Hover tooltips on icon buttons — commit `b1263acb`:**
+
+User: *"when I hover over these icons I want to see what they are. Like a little note popping up to see. I built it and I dont know what they are."* The icons (💬 📋 🗑️) had `title="..."` attributes but native HTML title has a ~1500ms hover delay — teachers hover, see nothing, move on.
+
+Fix: replaced HTML `title` with React-state-driven custom tooltips that appear instantly on hover. New `hoveredIcon` state in `AuditPhotoCard` tracks which button is hovered; each icon button is wrapped in a span with `onMouseEnter / onMouseLeave`. Tooltip renders with dark forest backdrop, emerald border, white text. Module-level `iconTooltipStyle` constant avoids style duplication. `aria-label` preserved for screen readers.
+
+(Cherry-picked agent's i18n key additions in earlier commit `ac1bab13`: `audit.toggleDiscussion`, `audit.toggleDiscussionRemove`, `audit.markPaperwork` across all 12 locales.)
+
+**E. Weekly Admin custom date range stepper — commit `51970dc3`:**
+
+User asked to pull "the past two academic weeks" of data into Weekly Admin auto-fill. Currently fixed to single Monday-Monday week.
+
+Frontend (`WeeklyAdminTab.tsx`): new "Range: [−] {1 week} [+]" stepper inline with the week navigator. Default 1 (preserves original behaviour), max 8. Pill turns amber when range > 1 so the widened window is visually obvious. Passes `weeks_back` query param to auto-fill API.
+
+Backend (`auto-fill/route.ts`): accepts `weeks_back` (validated 1-8 with `Math.max(1, Math.min(8, …))`), computes `rangeStart = weekStart - (weeksBack - 1) × 7 days`. Two queries widened:
+- `montree_weekly_reports` — was `eq('week_start', weekStart)`, now `gte/lte` across the range
+- `montree_media` — was `gte('captured_at', weekStart)`, now `gte('captured_at', rangeStartStr)`
+- `weekEndStr` upper bound preserved (no future data)
+
+Plan tab unaffected — `focusMap` reads current shelf, not historical. Saved notes still write to displayed `week_start`. Existing dedup (`if (!existing.includes(work.name)) existing.push(...)`) handles overlapping works across weeks.
+
+i18n: 6 new keys (range, rangeHint, rangeFewer, rangeMore, rangeOneWeek, rangeNWeeks) across all 12 locales. Pre-commit hook strict parity check passed (3,882 keys per locale).
+
+**F. Two parallel agents shipped + one had to be rolled back:**
+
+- **First parallel agent (commit `807465ca` — already on origin/main pre-session):** Replaced `requestAnimationFrame` with `setTimeout(0)` for input focus, added `autoFocus`, `type="text"`, `onKeyDown` for Escape, `spellCheck={false}`, `autoComplete="off"`. Helpful additive change. Kept.
+- **Second parallel agent (commit `0f6b1f6b` — DROPPED):** Tried to memoize the photo prop with `useMemo` to fix typing. Wrote `photo={useMemo(() => ({...}), [thisIsPhoto.id])}` — **invalid React** (hooks cannot be called inline in JSX prop expressions; would crash the page with "Invalid hook call"). They also did `git add .` and committed 105 stray files including a 528 MB binary in `term-reports/`, which is what caused multiple SSH push failures with "send-pack: unexpected disconnect." The agent CLAIMED the push succeeded — it didn't. Surgically reset --hard to origin/main, cherry-picked the two clean commits (`c7d78c23`, `90075b4d`) onto a clean base, dropped the broken commit, ran `git gc --prune=now --aggressive` to reclaim disk.
+- **Third parallel agent (commit `90075b4d` cherry-picked → `ac1bab13`):** Added `title` attribute tooltips with i18n keys across all 12 locales. Title-only was insufficient (1.5s delay) — needed Session 94 commit `b1263acb` follow-up to add custom React-state hover tooltips. But the agent's i18n work was clean and reused.
+
+🚨 **Architectural rule for future parallel-agent dispatches:** ALWAYS verify the agent's claimed push actually landed via `git log --oneline origin/main` before trusting their report. The "Pushed successfully" claim from Agent 2 was false. Disk reclaim from a single `.git/objects` cleanup: 5.5 GB → 610 MB.
+
+**G. Disk cleanup — 5.4 GB reclaimed:**
+
+- `.git/objects` 5.5 GB → 610 MB (orphaned binaries from broken commit, freed via reset + tag delete + reflog expire + `git gc --prune=now --aggressive`)
+- `docs/artifacts/Language_Semester_Reports/` 504 MB → 0 (20 PPTX semester reports, no longer needed)
+- `term-reports/` directories (528 MB binaries) — purged via the broken-commit drop
+
+**H. Email triage (Saturday-relevant findings):**
+
+User asked Claude to walk through the chat + look through Gmail. Findings beyond the lead-state corrections above:
+- **Supabase security vulnerability emails** (Apr 28 + May 5) — open them, click to advisor, triage. Likely RLS or policy gaps.
+- **iCloud storage full** (May 6) — backups stopped. Personal admin, not Montree.
+- **GitHub PAT "riddick-chess-push" expiring in 6 days** (May 4 notification) — regenerate if used anywhere.
+- **Multiple Railway "Build failed for happy-flow"** Apr 26-29 — current builds work, informational only.
+- **GMass campaign reports** trickling in — informational.
+
+**Files changed across the 6 Session 94 commits (counted unique):**
+- `app/montree/dashboard/photo-audit/page.tsx` (5 commits touched)
+- `components/montree/photo-audit/ThisIsSheet.tsx` (3 commits)
+- `components/montree/reports/WeeklyAdminTab.tsx`
+- `app/api/montree/weekly-admin-docs/auto-fill/route.ts`
+- `lib/montree/i18n/{en,zh,es,de,fr,pt,nl,it,ja,ko,uk,ru}.ts` (12 locale files, 11 keys total added)
+- `CLAUDE.md` (this session entry + Active Reply Threads rewrite)
+
+**🚨 Architectural rules locked in this session (do NOT let future agents break these):**
+1. `openThisIsSheet(photo, allowAutoAttach: boolean = false)` — Wrong/This-is-… buttons MUST default to `false` (no auto-attach). Only "✓ Correct" fallback path passes `true`.
+2. `useEffect` deps that include a parent-passed object prop MUST use scalar accessor (`photo?.id`) not the whole object. The parent's JSX prop is recreated every render even when content is identical.
+3. Browser-default text color on tinted-background inputs makes value text look like placeholder. ALWAYS set explicit `color` + `caretColor` + focused `boxShadow` on customer-facing form inputs.
+4. HTML `title` attribute is INSUFFICIENT for icon tooltips (1.5s delay, often invisible to users). Use React-state-driven custom tooltip pattern with `onMouseEnter / onMouseLeave`.
+5. Photo note auto-save uses 1.2s debounce + onBlur flush — never strip the onBlur handler.
+6. Custom date range in Weekly Admin: Plan tab is current state, NOT historical — never extend the range to plan data.
+7. Parallel-agent push claims MUST be verified via `git log --oneline origin/main`. The "Pushed successfully" string from agents has been false in this session.
+
+**🚨 Verification still pending (Session 95 first action):**
+Hard refresh photo-audit page on production after Railway redeploys — verify:
+- Modal inputs accept typing with visible dark text + purple caret + violet focus halo
+- 💬 📋 🗑️ icons show instant tooltips on hover (no 1.5s delay)
+- Weekly Admin tab has "Range: [−] {1 week} [+]" stepper inline with week navigator
+- Photo notes show "✓ Saved" pill at bottom-right of textarea after typing
+
+---
 
 ### ⚡ Session 93 — Phase 4: Stripe School Billing (env-gated, ready to wire) (May 7, 2026)
 
