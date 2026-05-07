@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import Anthropic from '@anthropic-ai/sdk';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
+import { maybeSyncStripeQuantity } from '@/lib/montree/billing';
 
 
 // Railway/Next.js default serverless timeout is 15s. AI calls can
@@ -164,6 +165,12 @@ export async function POST(request: NextRequest) {
       });
     }
 
+    // Phase 4 — single fire-and-forget headcount sync after batch import.
+    // No-op if billing isn't configured. Avoids one Stripe call per child.
+    if (results.childrenCreated > 0) {
+      maybeSyncStripeQuantity(schoolId);
+    }
+
     return NextResponse.json({
       success: true,
       results,
@@ -245,7 +252,7 @@ IMPORTANT:
       return JSON.parse(jsonMatch[0]);
     }
     throw new Error('No valid JSON found');
-  } catch (e) {
+  } catch {
     console.error('Parse error:', responseText.substring(0, 500));
     return { assignments: [] };
   }
