@@ -2745,6 +2745,12 @@ export const zh = {
 
   // Weekly Admin Documents (docx generation)
   'weeklyAdmin.week': '周',
+  'weeklyAdmin.range': '范围',
+  'weeklyAdmin.rangeHint': '从过去几周拉取数据。笔记仍保存到所显示的当前周。',
+  'weeklyAdmin.rangeFewer': '减少周数',
+  'weeklyAdmin.rangeMore': '增加周数',
+  'weeklyAdmin.rangeOneWeek': '1 周',
+  'weeklyAdmin.rangeNWeeks': '{n} 周',
   'weeklyAdmin.summaryTab': '每周总结',
   'weeklyAdmin.planTab': '每周计划表',
   'weeklyAdmin.englishSummary': '本周英文总结...',

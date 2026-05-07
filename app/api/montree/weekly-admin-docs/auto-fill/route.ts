@@ -44,6 +44,15 @@ export async function GET(request: NextRequest) {
     const weekStart = searchParams.get('week_start');
     const locale = searchParams.get('locale') || 'en';
 
+    // Custom date range — pull data from N academic weeks BACK from
+    // weekStart. Default 1 (current week only). Capped at 8 to prevent
+    // runaway queries against very large media tables. Frontend ships a
+    // 1-8 stepper; we re-validate here defensively.
+    const weeksBackRaw = Number(searchParams.get('weeks_back') || '1');
+    const weeksBack = Number.isFinite(weeksBackRaw)
+      ? Math.max(1, Math.min(8, Math.floor(weeksBackRaw)))
+      : 1;
+
     if (!classroomId) {
       return NextResponse.json({ error: 'classroom_id required' }, { status: 400 });
     }
@@ -82,6 +91,13 @@ export async function GET(request: NextRequest) {
     // Calculate week boundaries
     const weekEnd = new Date(parsed.getTime() + 7 * 24 * 60 * 60 * 1000);
     const weekEndStr = weekEnd.toISOString().slice(0, 10);
+
+    // Custom-range start — when weeksBack > 1, the auto-fill window extends
+    // further back. weeksBack=1 → rangeStart === weekStart (current week
+    // only, original behaviour). weeksBack=N → rangeStart is (N-1) weeks
+    // earlier. The end of the window is still weekEndStr (= weekStart + 7d).
+    const rangeStart = new Date(parsed.getTime() - (weeksBack - 1) * 7 * 24 * 60 * 60 * 1000);
+    const rangeStartStr = rangeStart.toISOString().slice(0, 10);
 
     // Step 1: Fetch children first (need IDs for subsequent queries)
     const childrenRes = await supabase
@@ -137,13 +153,18 @@ export async function GET(request: NextRequest) {
 
     // Step 2: Fetch all data sources in parallel
     const [reportsRes, focusWorksRes, mediaRes, existingNotesRes, allWorksRes, progressRes] = await Promise.all([
-      // Weekly Wrap reports — parent (preferred, has works array) + teacher (fallback)
+      // Weekly Wrap reports — parent (preferred, has works array) + teacher (fallback).
+      // When weeksBack > 1, pull reports from EVERY week in the range so the
+      // summary reflects multi-week activity. Same downstream dedup logic
+      // (existing `if (!existing.includes(work.name)) existing.push(...)`)
+      // handles works that appear in multiple weekly reports.
       supabase
         .from('montree_weekly_reports')
         .select('child_id, report_type, content')
         .eq('classroom_id', classroomId)
         .in('report_type', ['parent', 'teacher'])
-        .eq('week_start', weekStart)
+        .gte('week_start', rangeStartStr)
+        .lte('week_start', weekStart)
         .in('child_id', childIds),
 
       supabase
@@ -151,7 +172,9 @@ export async function GET(request: NextRequest) {
         .select('child_id, area, work_name')
         .in('child_id', childIds),
 
-      // Smart Capture photos with work_id this week
+      // Smart Capture photos with work_id — when weeksBack > 1, the window
+      // starts at rangeStartStr instead of weekStart so multi-week summaries
+      // reflect every confirmed photo across the range.
       supabase
         .from('montree_media')
         .select('id, child_id, work_id, captured_at')
@@ -160,7 +183,7 @@ export async function GET(request: NextRequest) {
         .not('work_id', 'is', null)
         // Only reflect teacher-approved activity in weekly admin docs.
         .or('identification_status.is.null,identification_status.neq.pending_review')
-        .gte('captured_at', weekStart)
+        .gte('captured_at', rangeStartStr)
         .lt('captured_at', weekEndStr),
 
       // Existing saved notes (for flat-text parsing fallback)
