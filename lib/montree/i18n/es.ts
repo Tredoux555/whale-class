@@ -3216,6 +3216,7 @@ export const es: Record<string, string> = {
   'weeklyWrap.guruMissingEn': 'Sin documentación de trabajo en {areas}.',
   'weeklyWrap.noReports': 'Sin reportes para esta semana',
   'weeklyWrap.clickGenerateToStart': 'Hacé clic en "Generar" para comenzar',
+  'weeklyWrap.adminTabHint': '↗ ¿Buscás resúmenes de varias semanas? Mirá la pestaña Weekly Admin.',
   'weeklyWrap.noPhotos': 'Sin fotos capturadas de {name} esta semana',
   'weeklyWrap.learningMoments': 'Momentos de aprendizaje de {name}',
   'weeklyWrap.other': 'Otro',

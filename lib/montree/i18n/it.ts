@@ -3145,6 +3145,7 @@ export const it: Record<string, string> = {
   'weeklyWrap.guruMissingEn': 'Nessun coinvolgimento documentato nelle aree {areas}.',
   'weeklyWrap.noReports': 'Nessun rapporto per questa settimana',
   'weeklyWrap.clickGenerateToStart': 'Fare clic su "Genera" per iniziare',
+  'weeklyWrap.adminTabHint': '↗ Cerchi riepiloghi di più settimane? Vedi la scheda Weekly Admin.',
   'weeklyWrap.noPhotos': 'Nessuna foto acquisita per {name} questa settimana',
   'weeklyWrap.other': 'Altro',
   'weeklyWrap.loadFailed': 'Impossibile caricare i rapporti',

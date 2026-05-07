@@ -3589,6 +3589,7 @@ export const zh = {
   'weeklyWrap.guruMissingEn': '在{areas}方面没有记录的参与。',
   'weeklyWrap.noReports': '本周还没有报告',
   'weeklyWrap.clickGenerateToStart': '点击"生成"开始',
+  'weeklyWrap.adminTabHint': '↗ 想要查看多周汇总？请前往 Weekly Admin 标签页。',
   'weeklyWrap.noPhotos': '本周没有拍摄照片',
   'weeklyWrap.learningMoments': '{name} 的学习瞬间',
   'weeklyWrap.other': '其他',

@@ -3145,6 +3145,7 @@ export const ko: Record<string, string> = {
   'weeklyWrap.guruMissingEn': '{areas}에서 기록된 참여가 없습니다.',
   'weeklyWrap.noReports': '이번 주 보고서가 없습니다',
   'weeklyWrap.clickGenerateToStart': '"생성"을 클릭하여 시작해주세요',
+  'weeklyWrap.adminTabHint': '↗ 여러 주 요약을 찾으시나요? Weekly Admin 탭을 확인하세요.',
   'weeklyWrap.noPhotos': '이번 주 {name}의 사진이 없습니다',
   'weeklyWrap.other': '기타',
   'weeklyWrap.loadFailed': '보고서 로드에 실패했습니다',

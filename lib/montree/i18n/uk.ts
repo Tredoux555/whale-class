@@ -3145,6 +3145,7 @@ export const uk: Record<string, string> = {
   'weeklyWrap.guruMissingEn': 'Немає задокументованої роботи в {areas}.',
   'weeklyWrap.noReports': 'Немає звітів за цей тиждень',
   'weeklyWrap.clickGenerateToStart': 'Натисніть «Створити», щоб розпочати',
+  'weeklyWrap.adminTabHint': '↗ Шукаєте багатотижневі зведення? Перейдіть на вкладку Weekly Admin.',
   'weeklyWrap.noPhotos': 'Фото {name} не зроблено цього тижня',
   'weeklyWrap.other': 'Інше',
   'weeklyWrap.loadFailed': 'Не вдалося завантажити звіти',
