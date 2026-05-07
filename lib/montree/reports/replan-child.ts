@@ -19,7 +19,6 @@
 
 import type Anthropic from '@anthropic-ai/sdk';
 import type { Locale } from '@/lib/montree/i18n/locales';
-import { updateChildSettings } from '@/lib/montree/guru/settings-helper';
 import { logApiUsage } from '@/lib/montree/api-usage';
 import { AREA_LABELS_EN, AREA_LABELS_ZH, AREA_LABELS_ES } from '@/lib/montree/i18n/area-labels';
 
@@ -91,9 +90,19 @@ export interface ReplanResult {
 /**
  * Refresh the child's game plan + clear/refill the focus shelf in-process.
  * Returns { replanned: false, error } on any failure — never throws.
+ *
+ * Diagnostic logging: every stage emits a `[Replan:<childName>]` log line so
+ * Railway logs reveal exactly where a silent failure happened. Add new lines
+ * around any new write.
  */
 export async function replanChildInProcess(input: ReplanInput): Promise<ReplanResult> {
-  const { childId, childName, classroomId, schoolId, locale, anthropic, model, supabase } = input;
+  const { childId, childName, classroomId, schoolId, anthropic, model, supabase } = input;
+  // `locale` is on ReplanInput for forward compatibility (per-locale prompts) but
+  // not yet consumed — Sonnet generates trilingual output in one tool call.
+  void input.locale;
+
+  const tag = `[Replan:${childName}]`;
+  console.log(`${tag} START model=${model} child_id=${childId.slice(0,8)} ts=${new Date().toISOString()}`);
 
   try {
     // ── Stage 1: Load child + profile + progress + recent notes ────────
@@ -281,6 +290,7 @@ What's the teacher's next move?`;
 
     const toolBlock = response.content.find((b) => b.type === 'tool_use');
     if (!toolBlock || toolBlock.type !== 'tool_use') {
+      console.error(`${tag} FAIL stage=tool_block content_blocks=${response.content.length} types=${response.content.map(b => b.type).join(',')}`);
       return { replanned: false, works: [], error: 'plan: no tool_use block' };
     }
 
@@ -290,6 +300,10 @@ What's the teacher's next move?`;
       works?: string[]; direction?: string;
     };
     const planWorks = (rawPlan.works || []).filter((w): w is string => typeof w === 'string' && w.trim().length > 0);
+    console.log(`${tag} STAGE_3 sonnet_returned works=${planWorks.length} direction="${rawPlan.direction || ''}" nudge_en_len=${(rawPlan.nudge_en || rawPlan.nudge || '').length}`);
+    if (planWorks.length === 0) {
+      console.warn(`${tag} WARN sonnet returned zero works — raw_plan=${JSON.stringify(rawPlan).slice(0, 500)}`);
+    }
 
     // ── Build trilingual JSONB structure ─────────────────────────────
     // Works: always English from Haiku, Chinese resolved from DB, Spanish falls back to English (no name_es column)
@@ -320,7 +334,34 @@ What's the teacher's next move?`;
       source: 'weekly_wrap',
     };
 
-    await updateChildSettings(childId, { game_plan: updatedPlan });
+    // Inline read-merge-write so we can SEE the write succeed (or fail).
+    // The shared updateChildSettings() in guru/settings-helper.ts swallows
+    // .update() errors silently — when a write quietly fails (which is what
+    // was happening here), the function returns void with no signal.
+    // Reuse the request-scope `supabase` client so every replan write is
+    // visible in Railway logs and surfaces as a returned error.
+    const { data: existingChildRow, error: readErr } = await supabase
+      .from('montree_children')
+      .select('settings')
+      .eq('id', childId)
+      .maybeSingle();
+    if (readErr) {
+      console.error(`${tag} FAIL stage=settings_read msg=${readErr.message}`);
+      return { replanned: false, works: planWorks, error: `settings-read: ${readErr.message}` };
+    }
+    const mergedSettings = {
+      ...((existingChildRow?.settings as Record<string, unknown>) || {}),
+      game_plan: updatedPlan,
+    };
+    const { error: gpWriteErr } = await supabase
+      .from('montree_children')
+      .update({ settings: mergedSettings })
+      .eq('id', childId);
+    if (gpWriteErr) {
+      console.error(`${tag} FAIL stage=game_plan_write msg=${gpWriteErr.message}`);
+      return { replanned: false, works: planWorks, error: `game-plan-write: ${gpWriteErr.message}` };
+    }
+    console.log(`${tag} STAGE_3.5 game_plan written source=weekly_wrap works=${planWorks.length}`);
 
     // ── Stage 4: Wipe the current focus shelf ──────────────────────────
     // Weekly Wrap is "advance to next week" — it intentionally clears the
@@ -331,17 +372,18 @@ What's the teacher's next move?`;
       .delete()
       .eq('child_id', childId);
     if (deleteErr) {
-      console.error(`[Replan] Shelf clear failed for ${childName}:`, deleteErr.message);
+      console.error(`${tag} FAIL stage=shelf_clear msg=${deleteErr.message}`);
       return {
         replanned: false,
         works: planWorks,
         error: `shelf-clear: ${deleteErr.message}`,
       };
     }
+    console.log(`${tag} STAGE_4 shelf_cleared`);
 
     if (planWorks.length === 0) {
       // Plan with no works is rare but not fatal — game plan still saved.
-      console.log(`[Replan] ${childName}: plan saved but no works to fill`);
+      console.log(`${tag} DONE early plan_saved_but_no_works_to_fill`);
       return { replanned: true, works: [] };
     }
 
@@ -462,12 +504,12 @@ What's the teacher's next move?`;
       }
 
       if (!area) {
-        console.log(`[Replan] ${childName}: skipped "${workName}" — no curriculum match`);
+        console.log(`${tag} skip "${workName}" — no curriculum match`);
         continue;
       }
       if (filledAreas.has(area)) continue; // first match per area wins
 
-      await supabase.from('montree_child_focus_works').upsert(
+      const { error: shelfUpsertErr } = await supabase.from('montree_child_focus_works').upsert(
         {
           child_id: childId,
           classroom_id: classroomId,
@@ -479,8 +521,12 @@ What's the teacher's next move?`;
         },
         { onConflict: 'child_id,area' },
       );
+      if (shelfUpsertErr) {
+        console.error(`${tag} FAIL stage=shelf_upsert area=${area} work="${canonicalName}" msg=${shelfUpsertErr.message}`);
+        // Don't bail — try to fill remaining areas, surface error at end.
+      }
 
-      await supabase.from('montree_child_progress').upsert(
+      const { error: progressUpsertErr } = await supabase.from('montree_child_progress').upsert(
         {
           child_id: childId,
           work_name: canonicalName,
@@ -490,6 +536,9 @@ What's the teacher's next move?`;
         },
         { onConflict: 'child_id,work_name' },
       );
+      if (progressUpsertErr) {
+        console.error(`${tag} FAIL stage=progress_upsert area=${area} work="${canonicalName}" msg=${progressUpsertErr.message}`);
+      }
 
       filled.push({ work_name: canonicalName, area });
       filledAreas.add(area);
@@ -525,7 +574,7 @@ What's the teacher's next move?`;
         // Pick a random candidate (avoid always recommending the first one)
         const pick = candidates[Math.floor(Math.random() * candidates.length)];
 
-        await supabase.from('montree_child_focus_works').upsert(
+        const { error: gapShelfErr } = await supabase.from('montree_child_focus_works').upsert(
           {
             child_id: childId,
             classroom_id: classroomId,
@@ -537,8 +586,11 @@ What's the teacher's next move?`;
           },
           { onConflict: 'child_id,area' },
         );
+        if (gapShelfErr) {
+          console.error(`${tag} FAIL stage=gap_shelf_upsert area=${missingArea} work="${pick.name}" msg=${gapShelfErr.message}`);
+        }
 
-        await supabase.from('montree_child_progress').upsert(
+        const { error: gapProgressErr } = await supabase.from('montree_child_progress').upsert(
           {
             child_id: childId,
             work_name: pick.name,
@@ -548,17 +600,18 @@ What's the teacher's next move?`;
           },
           { onConflict: 'child_id,work_name' },
         );
+        if (gapProgressErr) {
+          console.error(`${tag} FAIL stage=gap_progress_upsert area=${missingArea} work="${pick.name}" msg=${gapProgressErr.message}`);
+        }
 
         filled.push({ work_name: pick.name, area: missingArea });
         filledAreas.add(missingArea);
-        console.log(
-          `[Replan] ${childName}: gap-filled ${missingArea} with "${pick.name}" (Haiku skipped this area)`,
-        );
+        console.log(`${tag} gap-filled ${missingArea}="${pick.name}" (sonnet skipped this area)`);
       }
     }
 
     console.log(
-      `[Replan] ${childName}: shelf advanced — ${filled.length}/${CORE_AREAS.length} areas filled (${filled
+      `${tag} DONE shelf_advanced filled=${filled.length}/${CORE_AREAS.length} (${filled
         .map((f) => `${f.area}=${f.work_name}`)
         .join(', ')})`,
     );
@@ -566,7 +619,7 @@ What's the teacher's next move?`;
     return { replanned: true, works: planWorks };
   } catch (err) {
     const msg = err instanceof Error ? err.message : 'unknown';
-    console.error(`[Replan] Unhandled error for ${childName}:`, err);
+    console.error(`${tag} FAIL stage=unhandled msg=${msg}`, err);
     return { replanned: false, works: [], error: `unhandled: ${msg}` };
   }
 }
