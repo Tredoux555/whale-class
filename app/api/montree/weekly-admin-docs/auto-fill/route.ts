@@ -39,6 +39,9 @@ interface ChildSuggestion {
     childWorks: Record<string, string[]>;
     childProgress: Record<string, string>;
     focus: Record<string, string>;
+    // Third-tier fallback: progress rows grouped by area. Used when captured
+    // works AND focus shelf are both empty for the narrative area.
+    progressByArea: Record<string, Array<{ name: string; status: string }>>;
   };
 }
 
@@ -214,11 +217,16 @@ export async function GET(request: NextRequest) {
         .select('name, area_id')
         .eq('classroom_id', classroomId),
 
-      // Child progress (P/Pr/M status per work)
+      // Child progress (P/Pr/M status per work) — includes area for the
+      // narrative pass's third fallback when both captured works AND focus
+      // shelf miss the narrative area for a given child (e.g. Joey: focus
+      // shelf only has 4 areas, language slot empty, but progress history
+      // is rich with practicing language works).
       supabase
         .from('montree_child_progress')
-        .select('child_id, work_name, status')
-        .in('child_id', childIds),
+        .select('child_id, work_name, status, area, updated_at')
+        .in('child_id', childIds)
+        .order('updated_at', { ascending: false }),
     ]);
 
     if (reportsRes.error) {
@@ -252,10 +260,22 @@ export async function GET(request: NextRequest) {
     }
 
     // Build child progress map: child_id → work_name(lower) → status
+    // (legacy lookup, used downstream for status-tagging captured works)
     const childProgressMap = new Map<string, Map<string, string>>();
-    for (const row of (progressRes.data || []) as Array<{ child_id: string; work_name: string; status: string }>) {
+    // Build area-grouped progress map: child_id → area → [{name, status}, ...]
+    // (newer — used by the Haiku narrative pass's third-tier fallback when
+    // captured works AND focus shelf are both empty for the narrative area)
+    const childProgressByAreaMap = new Map<string, Map<string, Array<{ name: string; status: string }>>>();
+    for (const row of (progressRes.data || []) as Array<{ child_id: string; work_name: string; status: string; area: string | null }>) {
       if (!childProgressMap.has(row.child_id)) childProgressMap.set(row.child_id, new Map());
       childProgressMap.get(row.child_id)!.set(row.work_name.toLowerCase(), row.status);
+
+      const area = row.area || '';
+      if (!area) continue;
+      if (!childProgressByAreaMap.has(row.child_id)) childProgressByAreaMap.set(row.child_id, new Map());
+      const areaMap = childProgressByAreaMap.get(row.child_id)!;
+      if (!areaMap.has(area)) areaMap.set(area, []);
+      areaMap.get(area)!.push({ name: row.work_name, status: row.status });
     }
 
     // Build existing saved notes by child (flat-text fallback source)
@@ -617,6 +637,7 @@ export async function GET(request: NextRequest) {
           childWorks: childWorks ? Object.fromEntries(childWorks) : {},
           childProgress: childProgressMap.get(child.id) ? Object.fromEntries(childProgressMap.get(child.id)!) : {},
           focus: planAreas,
+          progressByArea: childProgressByAreaMap.get(child.id) ? Object.fromEntries(childProgressByAreaMap.get(child.id)!) : {},
         },
       };
     });
@@ -669,16 +690,42 @@ export async function GET(request: NextRequest) {
 
         // No captured works → fall back to the focus shelf as the basis for
         // the narrative. The teacher gets a "going-forward" paragraph instead
-        // of an empty textarea. If even the focus shelf is empty, keep the
-        // flat fallback ("No recorded activities…").
+        // of an empty textarea.
         if (worksByArea.length === 0) {
-          if (focusEntries.length === 0) return;
-          const focusBackfill = focusEntries.map(([area, v]) => {
-            const work = String(v).replace(/-P$/, '');
-            const isPracticing = String(v).endsWith('-P');
-            return `${area.replace(/_/g, ' ')}: ${work} (${isPracticing ? 'practicing' : 'next up'})`;
-          });
-          worksByArea.push(...focusBackfill);
+          if (focusEntries.length > 0) {
+            const focusBackfill = focusEntries.map(([area, v]) => {
+              const work = String(v).replace(/-P$/, '');
+              const isPracticing = String(v).endsWith('-P');
+              return `${area.replace(/_/g, ' ')}: ${work} (${isPracticing ? 'practicing' : 'next up'})`;
+            });
+            worksByArea.push(...focusBackfill);
+          } else {
+            // 🚨 Third-tier fallback: pull active progress rows in the narrative
+            // area when both captured works AND focus shelf are empty. This
+            // catches children whose focus shelf is incomplete (e.g. Joey: 4
+            // areas filled, language slot blank) but who have rich progress
+            // history. Without this, those children get an empty textarea
+            // even though they HAVE been doing language work — just not
+            // captured in the works-this-period or current focus-shelf paths.
+            for (const area of NARRATIVE_AREAS) {
+              const rows = ctx.progressByArea[area];
+              if (!Array.isArray(rows) || rows.length === 0) continue;
+              // Prefer practicing > presented > mastered. Take up to 6 most
+              // recently-touched. Most recent is already first because the
+              // server query orders by updated_at desc.
+              const ranked = rows
+                .slice(0, 12)
+                .sort((a, b) => {
+                  const order: Record<string, number> = { practicing: 0, presented: 1, mastered: 2 };
+                  return (order[a.status] ?? 3) - (order[b.status] ?? 3);
+                })
+                .slice(0, 6);
+              const tagged = ranked.map(r => `${r.name} (${r.status})`).join(', ');
+              worksByArea.push(`${area.replace(/_/g, ' ')} (recent progress): ${tagged}`);
+            }
+            // If even progress is empty for the narrative area → truly no data.
+            if (worksByArea.length === 0) return;
+          }
         }
 
         const areaLabel = NARRATIVE_AREAS.length === 1
