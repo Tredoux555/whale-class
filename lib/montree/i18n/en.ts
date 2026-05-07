@@ -3752,6 +3752,9 @@ export const en = {
   'audit.rerunResult': 'AI now thinks:',
   'audit.rerunNoMatch': 'No work identified',
   'audit.rerunRunning': 'Running AI classification...',
+  'audit.toggleDiscussion': 'Flag for team discussion',
+  'audit.toggleDiscussionRemove': 'Remove from discussion',
+  'audit.markPaperwork': 'Mark as paperwork page — AI will read the week number',
 
   // Classroom Setup — "Teach the AI"
   'setup.title': 'Teach the AI',
