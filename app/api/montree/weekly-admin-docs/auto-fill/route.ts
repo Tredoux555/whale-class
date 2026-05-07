@@ -640,9 +640,6 @@ export async function GET(request: NextRequest) {
     if (AI_ENABLED && anthropic) {
       const narrativePromises = suggestions.map(async (s) => {
         const ctx = s._narrativeContext;
-        // No data → keep the flat fallback (which says "No recorded activities…")
-        const totalWorks = Object.values(ctx.childWorks).reduce((acc: number, v: unknown) => acc + (Array.isArray(v) ? v.length : 0), 0);
-        if (totalWorks === 0) return;
 
         // Build the structured prompt input — FILTERED to NARRATIVE_AREAS only.
         // Other areas' works are excluded entirely so Haiku can't bring them in.
@@ -657,13 +654,32 @@ export async function GET(request: NextRequest) {
           });
           worksByArea.push(`${area.replace(/_/g, ' ')}: ${tagged.join(', ')}`);
         }
-        // No language work this period → keep flat fallback (already says "no recorded activities" or similar).
-        if (worksByArea.length === 0) return;
 
-        const focusList = Object.entries(ctx.focus)
-          .filter(([area, v]) => v && !String(v).endsWith('-P') && (NARRATIVE_AREAS as readonly string[]).includes(area))
+        // Focus shelf — used both for the "Next focus" line AND as a fallback
+        // when no captured works exist this period. Every child should have a
+        // focus shelf populated by Weekly Wrap's replan, even when photo capture
+        // was incomplete this week, so this lets us write a forward-looking
+        // narrative for those children too.
+        const focusEntries = Object.entries(ctx.focus)
+          .filter(([area, v]) => v && (NARRATIVE_AREAS as readonly string[]).includes(area));
+        const focusList = focusEntries
+          .filter(([, v]) => !String(v).endsWith('-P'))
           .map(([area, v]) => `${area.replace(/_/g, ' ')}: ${String(v).replace(/-P$/, '')}`)
           .join('; ');
+
+        // No captured works → fall back to the focus shelf as the basis for
+        // the narrative. The teacher gets a "going-forward" paragraph instead
+        // of an empty textarea. If even the focus shelf is empty, keep the
+        // flat fallback ("No recorded activities…").
+        if (worksByArea.length === 0) {
+          if (focusEntries.length === 0) return;
+          const focusBackfill = focusEntries.map(([area, v]) => {
+            const work = String(v).replace(/-P$/, '');
+            const isPracticing = String(v).endsWith('-P');
+            return `${area.replace(/_/g, ' ')}: ${work} (${isPracticing ? 'practicing' : 'next up'})`;
+          });
+          worksByArea.push(...focusBackfill);
+        }
 
         const areaLabel = NARRATIVE_AREAS.length === 1
           ? `${NARRATIVE_AREAS[0].replace(/_/g, ' ')} `
