@@ -45,16 +45,28 @@ export interface ChildNotes {
 
 // ─── Pre-computed Twips (verified from template measurements) ─
 
-// Weekly Summary: 3 cols × 8 rows grid, each cell = one child
+// Weekly Summary: 2-column "Child | Narrative" table, ONE row per child.
+// Format baked from the May 7 manual draft Tredoux approved as the canonical
+// look — landscape A4, dark green header, alternating row fills, Calibri.
 const SUMMARY = {
-  PAGE_WIDTH: 11907,   // 21.008cm
-  PAGE_HEIGHT: 16839,  // 29.704cm
+  // Landscape A4. Width × Height swapped from portrait dims.
+  PAGE_WIDTH: 16839,   // 29.704cm (landscape — wider than tall)
+  PAGE_HEIGHT: 11907,  // 21.008cm
   MARGIN: 720,         // 1.270cm
-  COL_WIDTH: 3402,     // 6.001cm (3 equal columns)
-  ROW_HEIGHT: 3402,    // 6.001cm
-  TABLE_WIDTH: 10206,  // 3 × 3402
-  FONT: 'SimSun',     // handles mixed EN/ZH text (matches Plan doc font)
-  FONT_SIZE: 18,       // 9pt in half-points
+  COL_NAME_WIDTH: 1400,    // ~2.47cm — child name column (left)
+  COL_BODY_WIDTH: 13000,   // ~22.93cm — narrative column (right)
+  TABLE_WIDTH: 14400,      // sum
+  // Calibri renders English cleanly; fallback to SimSun for east-asia
+  // characters so zh-locale exports still render Chinese inline.
+  FONT: { ascii: 'Calibri', eastAsia: 'SimSun', hAnsi: 'Calibri', cs: 'Calibri' } as const,
+  FONT_SIZE: 16,           // 8pt in half-points (narrative body)
+  HEADER_FONT_SIZE: 20,    // 10pt for header row
+  // Color palette (also documented as canonical "Montree summary doc" tokens).
+  HEADER_FILL: '1D4E2A',   // deep forest green
+  HEADER_TEXT: 'FFFFFF',
+  ROW_FILL_A: 'EAF4EC',    // very pale green (odd rows)
+  ROW_FILL_B: 'FFFFFF',    // white (even rows)
+  CELL_BORDER: 'CCCCCC',   // light gray, 1pt
 };
 
 // Weekly Plan: 7 cols (Name + 5 areas + Notes), 11 rows per table
@@ -131,51 +143,88 @@ function emptyCell(width: number): TableCell {
 // ─── Weekly Summary Generator ────────────────────────────────
 
 /**
- * Generates the "What was done" Weekly Summary document.
- * 3 columns × N rows table. Each cell = one child.
- * Cell format: "Name: English sentence.\n\n日常：...\n感官：...\n数学：...\n语言：...\n文化：..."
+ * CANONICAL FORMAT — locked in Session 94 (May 7, 2026) from a manual draft
+ * Tredoux approved as the look-and-feel for printable weekly summaries.
+ * DO NOT redesign without his explicit say-so.
+ *
+ * Layout: landscape A4, single 2-column table with one row per child.
+ *   - Col 1 (1400 dxa): child name, bold
+ *   - Col 2 (13000 dxa): narrative paragraph
+ *   - Header row: dark green #1D4E2A fill, white bold "Child | Activities — period"
+ *   - Body rows: alternating #EAF4EC / #FFFFFF fills, 1pt #CCCCCC borders
+ *   - Calibri throughout (with SimSun fallback for east-asia text)
+ *   - 8pt body, 10pt header
+ *
+ * The narrative comes from the saved summary note (auto-filled by the system
+ * or hand-edited by the teacher in the Weekly Admin tab). One paragraph per
+ * child — area-by-area breakdowns belong in the Weekly Plan doc, not here.
  */
 export function generateWeeklySummary(children: ChildNotes[], weekLabel: string): Document {
-  // Build cell content for each child
-  // Format: "Name\nArea: works\nArea: works\n\nNext week: ..."
-  const cellContents: string[] = children.map((child) => {
-    const en = child.englishSummary || '';
-    const zh = child.chineseSummary || '';
-    if (!en && !zh) return `${child.childName}:`;
-    // Use the locale-appropriate content (English already has area-by-area format)
-    const content = en || zh;
-    return `${child.childName}\n${content}`;
+  const lightGrayBorder = { style: BorderStyle.SINGLE, size: 1, color: SUMMARY.CELL_BORDER };
+  const noBorder = { style: BorderStyle.NONE, size: 0, color: 'FFFFFF' };
+
+  const summaryHeaderCell = (text: string, width: number): TableCell => new TableCell({
+    width: { size: width, type: WidthType.DXA },
+    shading: { type: 'clear' as const, color: 'auto', fill: SUMMARY.HEADER_FILL },
+    borders: { top: noBorder, bottom: noBorder, left: noBorder, right: noBorder },
+    margins: { top: 100, bottom: 100, left: 120, right: 120 },
+    children: [new Paragraph({
+      children: [new TextRun({
+        text,
+        font: SUMMARY.FONT,
+        size: SUMMARY.HEADER_FONT_SIZE,
+        bold: true,
+        color: SUMMARY.HEADER_TEXT,
+      })],
+    })],
   });
 
-  // Pad to fill complete rows (multiple of 3)
-  while (cellContents.length % 3 !== 0) {
-    cellContents.push('');
-  }
+  const summaryBodyCell = (text: string, width: number, fillColor: string, boldName?: boolean): TableCell => new TableCell({
+    width: { size: width, type: WidthType.DXA },
+    shading: { type: 'clear' as const, color: 'auto', fill: fillColor },
+    borders: { top: lightGrayBorder, bottom: lightGrayBorder, left: lightGrayBorder, right: lightGrayBorder },
+    margins: { top: 80, bottom: 80, left: 120, right: 120 },
+    children: [new Paragraph({
+      children: [new TextRun({
+        text: text || '',
+        font: SUMMARY.FONT,
+        size: SUMMARY.FONT_SIZE,
+        bold: !!boldName,
+      })],
+    })],
+  });
 
-  // Build table rows
-  const rows: TableRow[] = [];
-  for (let i = 0; i < cellContents.length; i += 3) {
-    rows.push(new TableRow({
-      height: { value: SUMMARY.ROW_HEIGHT, rule: HeightRule.EXACT },
-      children: [0, 1, 2].map((offset) =>
-        textCell(cellContents[i + offset], SUMMARY.COL_WIDTH, SUMMARY.FONT, SUMMARY.FONT_SIZE, { boldFirstLine: true })
-      ),
-    }));
-  }
+  // weekLabel arrives like "W23 (2026-05-04 – 2026-05-10)". Strip the bare
+  // W## prefix because the period inside parens is what teachers care about.
+  const headerSuffix = (() => {
+    const m = weekLabel.match(/\(([^)]+)\)/);
+    return m ? m[1] : weekLabel;
+  })();
+  const headerRow = new TableRow({
+    cantSplit: true,
+    children: [
+      summaryHeaderCell('Child', SUMMARY.COL_NAME_WIDTH),
+      summaryHeaderCell(`Activities — ${headerSuffix}`, SUMMARY.COL_BODY_WIDTH),
+    ],
+  });
 
-  // Ensure at least 8 rows (matching template)
-  while (rows.length < 8) {
-    rows.push(new TableRow({
-      height: { value: SUMMARY.ROW_HEIGHT, rule: HeightRule.EXACT },
-      children: [0, 1, 2].map(() => emptyCell(SUMMARY.COL_WIDTH)),
-    }));
-  }
+  const childRows: TableRow[] = children.map((child, idx) => {
+    const fill = idx % 2 === 0 ? SUMMARY.ROW_FILL_A : SUMMARY.ROW_FILL_B;
+    const narrative = (child.englishSummary || child.chineseSummary || '').trim();
+    return new TableRow({
+      cantSplit: true,
+      children: [
+        summaryBodyCell(child.childName, SUMMARY.COL_NAME_WIDTH, fill, true),
+        summaryBodyCell(narrative, SUMMARY.COL_BODY_WIDTH, fill),
+      ],
+    });
+  });
 
   return new Document({
     sections: [{
       properties: {
         page: {
-          size: { width: SUMMARY.PAGE_WIDTH, height: SUMMARY.PAGE_HEIGHT },
+          size: { width: SUMMARY.PAGE_WIDTH, height: SUMMARY.PAGE_HEIGHT, orientation: 'landscape' as const },
           margin: { top: SUMMARY.MARGIN, right: SUMMARY.MARGIN, bottom: SUMMARY.MARGIN, left: SUMMARY.MARGIN },
         },
       },
@@ -184,7 +233,7 @@ export function generateWeeklySummary(children: ChildNotes[], weekLabel: string)
           children: [new Paragraph({
             alignment: AlignmentType.CENTER,
             children: [
-              new TextRun({ text: `Weekly Summary \u2014 ${weekLabel}  |  Page `, font: SUMMARY.FONT, size: 16 }),
+              new TextRun({ text: `Weekly Summary — ${weekLabel}  |  Page `, font: SUMMARY.FONT, size: 16 }),
               new TextRun({ children: [PageNumber.CURRENT], font: SUMMARY.FONT, size: 16 }),
             ],
           })],
@@ -192,8 +241,8 @@ export function generateWeeklySummary(children: ChildNotes[], weekLabel: string)
       },
       children: [new Table({
         width: { size: SUMMARY.TABLE_WIDTH, type: WidthType.DXA },
-        columnWidths: [SUMMARY.COL_WIDTH, SUMMARY.COL_WIDTH, SUMMARY.COL_WIDTH],
-        rows,
+        columnWidths: [SUMMARY.COL_NAME_WIDTH, SUMMARY.COL_BODY_WIDTH],
+        rows: [headerRow, ...childRows],
       })],
     }],
   });
