@@ -3732,6 +3732,9 @@ export const zh = {
   'audit.rerunResult': 'AI现在认为：',
   'audit.rerunNoMatch': '未识别到工作',
   'audit.rerunRunning': '正在运行AI分类...',
+  'audit.toggleDiscussion': 'Flag for team discussion',
+  'audit.toggleDiscussionRemove': 'Remove from discussion',
+  'audit.markPaperwork': 'Mark as paperwork page — AI will read the week number',
 
   // Classroom Setup — "Teach the AI"
   'setup.title': '训练AI',

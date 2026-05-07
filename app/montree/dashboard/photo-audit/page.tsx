@@ -3128,7 +3128,7 @@ function AuditPhotoCard({ photo, selected, onToggle, onConfirm, onCorrect, onUse
             onClick={onToggleDiscussion}
             disabled={processing}
             style={{ fontSize: 10, padding: '4px 7px', borderRadius: 6, background: photo.discussion_flag ? 'rgba(96,165,250,0.18)' : 'rgba(96,165,250,0.07)', border: `1px solid ${photo.discussion_flag ? 'rgba(96,165,250,0.45)' : 'rgba(96,165,250,0.18)'}`, cursor: processing ? 'wait' : 'pointer', opacity: processing ? 0.5 : 1 }}
-            title={photo.discussion_flag ? 'Remove from discussion' : 'Flag for team discussion'}
+            title={photo.discussion_flag ? t('audit.toggleDiscussionRemove') : t('audit.toggleDiscussion')}
           >
             💬
           </button>
@@ -3136,7 +3136,7 @@ function AuditPhotoCard({ photo, selected, onToggle, onConfirm, onCorrect, onUse
             onClick={onMarkAsPaperwork}
             disabled={processing}
             style={{ fontSize: 10, padding: '4px 7px', borderRadius: 6, background: 'rgba(245,158,11,0.07)', border: '1px solid rgba(245,158,11,0.18)', cursor: processing ? 'wait' : 'pointer', opacity: processing ? 0.5 : 1 }}
-            title="Mark as paperwork page — AI will read the week number"
+            title={t('audit.markPaperwork')}
           >
             📋
           </button>
