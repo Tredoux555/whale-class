@@ -276,16 +276,25 @@ What's the teacher's next move?`;
       messages: [{ role: 'user', content: prompt }],
     });
 
-    // Log API usage (fire-and-forget)
+    // Log API usage. logApiUsage() is sync void (fire-and-forget internally
+    // via its own .then() chain — see lib/montree/api-usage.ts). Calling
+    // .catch() on its undefined return value was throwing TypeError and
+    // killing every replan at this exact line, before any DB writes ran.
+    // That single misplaced .catch() is why focus_works hadn't moved
+    // since April 21 even though Anthropic was charging us for the calls.
     if (response.usage) {
-      logApiUsage({
-        schoolId,
-        classroomId,
-        endpoint: '/lib/montree/reports/replan-child',
-        model,
-        inputTokens: response.usage.input_tokens,
-        outputTokens: response.usage.output_tokens,
-      }).catch(err => console.error('[ReplanChild] Failed to log usage:', err));
+      try {
+        logApiUsage({
+          schoolId,
+          classroomId,
+          endpoint: '/lib/montree/reports/replan-child',
+          model,
+          inputTokens: response.usage.input_tokens,
+          outputTokens: response.usage.output_tokens,
+        });
+      } catch (err) {
+        console.error(`${tag} usage_log_failed (non-fatal):`, err);
+      }
     }
 
     const toolBlock = response.content.find((b) => b.type === 'tool_use');
