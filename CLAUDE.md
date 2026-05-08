@@ -202,6 +202,90 @@ Wave 1 sends bounced for these addresses. None of these are flagged as `bounced`
 
 ## RECENT STATUS (May 8, 2026)
 
+### ⚡ Session 96 — Tracy as cockpit-wide chief-of-staff + classroom drill-down redesign + Opus + first-meeting protocol + privacy fix + Free-tier degradation + welcome template (May 8, 2026, evening)
+
+**8 commits pushed to main this session: `10296b3e` → `61d938e9` → `673a5fc2` → `575b29cb` → `d0188438` → `926d5531` → `451dc548` → `5b108ef0`. Plus a 1440-line redesign of the classroom drill-down page. Big push on the principal-as-overseer experience.**
+
+**🚨 Canonical resume doc:** `docs/handoffs/SESSION_96_HANDOFF.md` — full file-by-file change list, architectural rules, verification checklist, next-session priorities, and parent-communication theorizing block.
+
+**A. Tracy as cockpit-wide float (`575b29cb`):**
+
+New `components/montree/admin/TracyFloat.tsx` injected into the principal layout. Visible on every cockpit page except `/montree/admin` (chat page IS Tracy in full there). Collapsed: 56px gold-bordered avatar upper-right with notification dot. Expanded: ~380×540 chat panel with conversation thread + input. Auto-opens with situational greeting on first session login; subsequent navigation respects persisted state. Question-form action lines ending in `?` surface inline `Yes, please` / `Not now` buttons that auto-send back to Tracy (Pattern A — clean conversation flow, no special UI state).
+
+New action tool `draft_teacher_welcome_messages` — Tracy's first non-read-only tool. Generates copy-paste-ready welcome messages with each teacher's login code, school name, classroom name, principal sign-off. Scope: `'all'` (default) | `'classroom'` | `'teacher'`. School-scoped via the executor's `schoolId` filter (Phase 7d cross-pollination contract preserved).
+
+**B. Tracy switched to Opus + voice rewrite + first-meeting protocol (`d0188438`):**
+
+Switched the principal-agent route from Sonnet 4.6 → Opus 4.6 via new `OPUS_MODEL` constant in `lib/ai/anthropic.ts`. Cost goes from ~$0.04 to ~$0.20 per interaction. ~$1/day per active principal — worth it for the "wow factor" first-impression marketing window. Rest of the app (Guru, weekly reports, AI pipelines) stays on Sonnet. To revert later: one-line constant swap.
+
+System prompt rewritten as natural prose describing who Tracy is, with rules embedded as natural consequences of her character rather than commandments shouted in caps. Added explicit anti-AI-tells list (`I had a look around`, `Based on what I'm seeing`, `Hope this helps`, etc.). Two distinct kickoff prompts:
+- `[GREETING_FIRST]` — fires the very first time a principal meets Tracy on this device. She introduces herself naturally, then situational, then offer.
+- `[GREETING]` — every session after that. No reintroduction. Just `Hi, [name]. [observation]. → [offer]?`
+
+Both kickoff prompts are filtered from render on every chat surface — synthetic prompts never appear as stray user messages. Tracked via `localStorage.montree.tracyFloat.hasMet.<schoolId>`.
+
+**C. Classroom drill-down redesign (`926d5531`):**
+
+Full rewrite, 1440 insertions / 217 deletions in `app/montree/admin/classrooms/[classroomId]/page.tsx`. The principal-as-overseer mental model is now the canonical reference implementation here.
+
+Hierarchy: 1) Quiet back link + soft header card (icon in emerald-tinted square, name in Lora serif, small stat). Drops the heavy emerald gradient banner. 2) **Teaching team** (focal section). One-line lead. Per-teacher row: initial avatar + name + role badge + Copy code button (gold-tinted, instant "Copied" feedback) + Send button (mailto with pre-filled welcome) + kebab for advanced (Set as Lead / Assistant / Teacher, Regenerate code). 3) **Students** (outcome section). When empty: a single calm card explaining "Your teachers will add their students here once they log in." A tiny "Advanced setup" disclosure tucks the manual-add option for legitimate centralized-data-entry edge cases.
+
+Lead teachers sort first and get a brighter emerald border. The role dropdown that used to clutter every row is now hidden behind the kebab. No big +Add Student tile shouting at the principal in the empty student grid — that's not her job.
+
+**D. Conversation leak privacy fix (`451dc548`):**
+
+Tracy was leaking conversation between schools — logging into Whale Class then Test School 1 in the same browser surfaced Whale Class's old Amy chat in the Test School 1 float. Fixed via per-school storage namespacing.
+
+New module `lib/montree/tracy/storage-keys.ts` is the single source of truth. Key shape: `montree.admin.agentConvId.<schoolId>`, `montree.admin.agentConv.<schoolId>.<convId>`, `montree.tracyFloat.hasMet.<schoolId>`, `montree.tracyFloat.greetedSession.<schoolId>`. Both surfaces (TracyFloat + `/montree/admin` chat page) read/write through this module so they never diverge. Old unscoped keys are now orphaned; browser eviction handles cleanup.
+
+**E. Free-tier graceful degradation (`451dc548`):**
+
+When the principal-agent route 402s (school has no AI tier), the float no longer shows a red error. Static welcome takes its place introducing Tracy and pointing to `tredoux555@gmail.com` for activation. `hasMet` only flips on a successful `done` SSE event, so Free-tier schools keep firing `[GREETING_FIRST]` every session until AI is enabled — the real introduction lands the moment AI lights up.
+
+**F. Welcome message template lockstep (`451dc548`):**
+
+Classroom-page Send button (`sendEmailToTeacher`) and Tracy's `draft_teacher_welcome_messages` tool now produce identical text — feels like one product whether the principal sends from the row or asks Tracy to draft. Template includes Hi/welcome/login code/montree.xyz instruction/PWA install hint (explicit iPhone share-icon + Android menu instructions)/pointer to Guru/sign-off.
+
+**G. Bug fixes that landed this session:**
+
+- **SETUP_STEPS ReferenceError** (`10296b3e`): `app/montree/principal/setup/page.tsx` line 372 referenced a function-local const from JSX render path. Affected ALL new principal signups.
+- **Classroom drill-down `t` shadowing** (`61d938e9`): `.map(t => ...)` shadowed the i18n function inside the loop. Renamed iterator to `teacher`. Affected every classroom drill-down with at least one teacher.
+- **i18n key resolution** (`673a5fc2`): rewrote 32 nested key paths in the page to use existing flat keys.
+- **Kebab dropdown z-index trap** (`5b108ef0`): `backdrop-filter` on each teacher row created its own stacking context. Added `zIndex: menuOpen ? 30 : 1` on the row.
+
+**🚨 Architectural rules locked in this session (do NOT let future agents break these):**
+
+1. **Tracy is the principal's only AI chat surface.** Guru is per-child Maria-Montessori-in-pocket for teachers. Tracy can call Guru as a sub-tool (`consult_guru` reserved for future).
+2. **Tracy runs on Opus.** All other AI stays on Sonnet. The OPUS_MODEL constant in `lib/ai/anthropic.ts` is what the principal-agent route imports.
+3. **Tracy's storage is school-scoped via `lib/montree/tracy/storage-keys.ts`.** Both TracyFloat and the chat page read/write through this module. NEVER use the old unscoped keys. NEVER bypass the helper.
+4. **Tracy's voice rules** — short, smart, no narration of process, principal-as-overseer reframe, end with one concrete next move. Two kickoff prompts. The `→ ` arrow marker is load-bearing — front-end parses it.
+5. **Free-tier 402 on a kickoff prompt → static welcome, never a red error.** `hasMet` only flips on successful `done` event.
+6. **The principal-as-overseer mental model is the canonical posture for cockpit pages.** Foreground what the principal actually does (sharing codes, supporting teachers). Explain (not nag) what isn't her job. Tuck rare admin actions behind progressive disclosure (kebab + Advanced setup). Classroom drill-down is the reference implementation.
+7. **Welcome message template lives in TWO places** (classroom-page Send button + Tracy's draft tool) and they MUST stay in lockstep. Both files have a comment pointing at the other.
+8. **`backdrop-filter` creates a CSS stacking context** — sibling elements with `backdrop-filter` create their own. Dropdowns inside one need a parent zIndex bump to escape above siblings.
+
+**Multi-teacher classrooms — confirmed working.** Test School 1 already has 3 teachers in one classroom, all rendering with their own login codes. Schema (`montree_teachers` with single `classroom_id` per teacher, multiple teachers sharing the same classroom_id) supports any number per classroom. No upper limit. Photo confirmation is first-come-first-served. No team-level "what did we do this week" surface yet (Tracy's `unpack_teacher` is per-teacher). No notification routing for multi-teacher classrooms — becomes relevant when parent-reply notifications are built.
+
+**Verification status:**
+- ✅ All 8 commits on `origin/main`. Railway auto-deploys triggered throughout.
+- ✅ Lint clean across all new + changed files.
+- ⏳ User to verify on production after Railway settles: kebab dropdown ABOVE next row not behind it; conversation leak gone (Tracy on Test School 1 shows fresh thread); Send mailto template includes PWA install + Guru pointer; Free-tier flip shows static welcome, not red error.
+
+**🚨 Next session priorities (ordered):**
+1. **🚨 PARENT COMMUNICATION through the app — theorize-first session.** Rough scope: how do parents and teachers/principal communicate IN Montree (vs. email/WhatsApp/etc.)? What channels, what gates, what notification routing for multi-teacher classrooms, how does Tracy / Guru fit into drafting parent messages? See `docs/handoffs/SESSION_96_HANDOFF.md` "Parent Communication Theorizing" block for the kickoff prompts.
+2. **Tracy float overlap on viewports < ~1330px** — page content extends into Tracy's panel zone. Layout-shift when float is open. ~30 min.
+3. **Continue dashboard redesign page-by-page** following the overseer mental model: Classrooms list → Today (architectural decision) → People → Pulse → Settings.
+4. **Stripe wiring per `docs/STRIPE_BILLING_SETUP.md`** (carry-over from Session 93). Migration 189 already run — env vars + webhook only.
+5. **Run migration 188** (carry-over from Session 91) — required before agent dashboard authenticates.
+6. **Resend domain verification** for `montree.xyz` (carry-over from Session 83).
+7. **Issue Sarah's agent login** — Super-admin Referrals → 🔑 button.
+8. **Phase 5 Payout calculator** (~1.5 days, unblocked once Phase 4 wires).
+9. **Phase 6 super-admin Money tab** (~2-3 days).
+10. **Outreach** (carry-over): FAMM Argentina + Cambridge Montessori Global + Otari NZ + Lions Gate + Montessori Norge follow-ups (see `Active Reply Threads`). 14+ bounce addresses still need DB `status='bounced'` updates.
+11. **Optional: GuruFloat** — teacher-side mirror of TracyFloat (~2-3h). Build when teacher onboarding signal indicates they're getting lost.
+
+---
+
 ### ⚡ Session 95 — Replan write bug FOUND + FIXED (`.catch()` on void) + Whale Class flipped off Sonnet + Story pull-to-refresh + monthly summary 40-word cap (May 8, 2026)
 
 **5 commits pushed to main this session: `e9d1359e` → `cd8c654e` → `b57688d9` → `ad5e294c` → `fc2297ba`. Plus one Supabase feature-flag flip (Whale Class `ai_tier_sonnet=false`) and a non-code thesis-defense prep deliverable.**
