@@ -91,6 +91,14 @@ function cleanText(s: string): string {
   return s.replace(/\\n/g, ' ').replace(/\n/g, ' ').replace(/\s+/g, ' ').trim();
 }
 
+/** Trim text to a maximum number of words. Hard cap. */
+function trimToWords(s: string, maxWords: number): string {
+  const cleaned = cleanText(s);
+  const words = cleaned.split(/\s+/);
+  if (words.length <= maxWords) return cleaned;
+  return words.slice(0, maxWords).join(' ');
+}
+
 // --- Sonnet ----------------------------------------------------------------
 
 // ── 1M: Short academic report tool ──────────────────────────────────────────
@@ -105,7 +113,7 @@ const ACADEMIC_REPORT_TOOL = {
       paragraph: {
         type: 'string',
         description:
-          'One polished paragraph, ~40 words. Professional academic tone. Third person ("she", "he", "they"). Name 1-2 specific works from the list. Note concrete developmental progress. No bullets, no markdown, no line breaks. Ends with a period.',
+          'One polished paragraph. MUST be approximately 40 words. Hard cap at 45. Minimum 35. Professional academic tone. Third person ("she", "he", "they"). Name 1-2 specific works from the list. Note concrete developmental progress. No bullets, no markdown, no line breaks. Ends with a period.',
       },
     },
     required: ['paragraph'],
@@ -121,7 +129,7 @@ function buildAcademicSystemPrompt(childName: string, workNames: string[]): stri
 
 VOICE: Professional, precise, academic. This is a formal school report, not a parent letter.
 PERSON: Third person only ("${childName} has...", "she has...", "he has...").
-LENGTH: Exactly one paragraph, approximately 40 words.
+LENGTH: One paragraph only. MUST be approximately 40 words. Hard cap at 45. Minimum 35.
 
 ${workList}
 
@@ -182,8 +190,8 @@ Write the monthly academic report paragraph.`;
     throw new Error('Sonnet did not return tool_use output');
   }
   const raw = (block.input as { paragraph: string }).paragraph || '';
-  // Clean and trim to ~50 words max (slightly generous)
-  return cleanText(raw);
+  // Clean and trim to 45 words max (hard cap)
+  return trimToWords(raw, 45);
 }
 
 // ── 6M: Full semester report tool ───────────────────────────────────────────
