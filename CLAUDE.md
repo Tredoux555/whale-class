@@ -200,6 +200,94 @@ Wave 1 sends bounced for these addresses. None of these are flagged as `bounced`
 
 ---
 
+## RECENT STATUS (May 8, 2026)
+
+### ⚡ Session 95 — Replan write bug FOUND + FIXED (`.catch()` on void) + Whale Class flipped off Sonnet + Story pull-to-refresh + monthly summary 40-word cap (May 8, 2026)
+
+**5 commits pushed to main this session: `e9d1359e` → `cd8c654e` → `b57688d9` → `ad5e294c` → `fc2297ba`. Plus one Supabase feature-flag flip (Whale Class `ai_tier_sonnet=false`) and a non-code thesis-defense prep deliverable.**
+
+**🚨 Canonical resume doc:** `docs/handoffs/SESSION_95_HANDOFF.md`.
+
+**🚨 The headline:** Replan has been silently dying every Weekly Wrap since Session 74's Stage 0 fix shipped — 17 days of frozen focus shelves across all 20 children, Anthropic charged for the API calls, zero DB writes landing. Found via diagnostic logging that exposed the failure in Railway logs in 30 seconds.
+
+**A. Replan write bug — `e9d1359e` (logging) + `cd8c654e` (fix):**
+
+DB queries via Supabase REST exposed: every child's `montree_child_focus_works` was stuck at `updated_at='2026-04-21T08:18'` with `set_by='weekly_wrap'`, every game_plan was stuck at `source='onboard'` from April 25 in legacy string format. But `montree_api_usage` showed 20 replan-child calls billed yesterday at 22:21 UTC for ~$0.40 total in Sonnet calls. So Sonnet WAS being called — but the writes weren't landing.
+
+Phase 1 — shipped diagnostic logging (`e9d1359e`): tagged every log line with `[Replan:<childName>]`, added stage markers (`STAGE_3 sonnet_returned` → `STAGE_3.5 game_plan_written` → `STAGE_4 shelf_cleared` → `DONE shelf_advanced filled=N/5`). Replaced `await updateChildSettings(...)` with inline read-merge-write that captures `.error` from BOTH the read AND the update — the shared `updateChildSettings()` in `lib/montree/guru/settings-helper.ts` swallows `.update()` errors silently, which is exactly how this had been hiding. Added `.error` checks on every focus_works + child_progress upsert (loop body and gap-fill loop).
+
+Phase 2 — Tredoux ran a wrap, pulled Railway logs. EVERY child failed with the SAME error:
+```
+[Replan:Yo-yo]  FAIL  stage=unhandled  msg=Cannot read properties of undefined (reading 'catch')
+```
+
+Phase 3 — fix (`cd8c654e`): `logApiUsage()` is declared `function logApiUsage(...): void` in `lib/montree/api-usage.ts:99` — it does its own fire-and-forget internally via `.then(({error})=>...)`. The replan code was doing `logApiUsage({...}).catch(err => ...)` — calling `.catch()` on the void return value threw TypeError synchronously, jumped straight to the outer try/catch, returned `replanned: false`, and skipped every DB write. Wrapped in try/catch + dropped the `.catch()`. **Why this had been invisible**: the api_usage rows DID get written (the internal `.then()` chain runs in the background after sync return). Spending was visible; audit trail was complete; but every write line BELOW the `.catch()` was unreachable. Anthropic was paid; the customer got nothing back.
+
+**🚨 Architectural rules locked in (do NOT break):**
+1. **`logApiUsage()` returns `void`.** It does its own fire-and-forget via `.then()`. Never call `.catch()` on its return value. Wrap the call in try/catch if you want to handle synchronous throws.
+2. **Every Supabase `.update()` / `.upsert()` MUST check `.error`.** `updateChildSettings()` swallows them. When writes need to be observable, do read-merge-write inline using the request-scope client.
+3. **Long async functions (6+ stages) MUST emit stage markers** so silent failures tell you where they died.
+
+**B. Cost fix — Whale Class flipped off Sonnet tier:**
+
+Querying `montree_school_features` for Whale Class found BOTH `ai_tier_haiku=true` AND `ai_tier_sonnet=true` (both `enabled_by='super_admin_tier_change'` from 2026-04-17). `resolveReportModel()` checks Sonnet first — when both are on, Sonnet wins. Whale Class had been running every wrap on Sonnet at ~$1.60/wrap when Haiku tier would be ~$0.20/wrap (8× reduction).
+
+Tredoux flipped via Supabase SQL Editor:
+```sql
+UPDATE montree_school_features SET enabled = false
+WHERE school_id = 'c6280fae-567c-45ed-ad4d-934eae79aabc' AND feature_key = 'ai_tier_sonnet';
+```
+Verified next wrap ran on `claude-haiku-4-5-20251001`. Quality drop on teacher/parent reports is real but acceptable; flip back if reports feel thin.
+
+**C. Story pull-to-refresh — `ad5e294c`:**
+
+User asked for iOS-style pull-down refresh on both the parent-facing Story page AND the admin dashboard messaging system. Built as a small reusable hook + indicator pair. New files:
+- `lib/story/use-pull-to-refresh.ts` — touch gesture hook. Only arms when `scrollY === 0`, 0.5× rubber-band damping, threshold 70px, max pull 110px. Listeners attach once per mount via refs (not deps).
+- `lib/story/PullRefreshIndicator.tsx` — fixed-position pill that follows the pull. Two variants: `'parent'` (subtle dark gradient) and `'admin'` (slate panel). Arrow flips at threshold. Spinner during refresh.
+
+Wired into `app/story/[session]/page.tsx` (refreshes story + media + shared files + recent messages in parallel; disabled while editing) and `app/story/admin/dashboard/page.tsx` (refreshes online users + active tab; disabled during initial load and screensaver lock). Existing 10s polling stays; this is for "now" instead of "within 10 seconds." Also incidentally dropped a pre-existing duplicate `selectedVideo` prop on `<MessageComposer>` that was blocking lint.
+
+**🚨 Architectural rules:**
+- Pull-to-refresh is **touch-only by design**. Desktop users use the browser refresh.
+- `usePullToRefresh` only arms at `scrollY === 0` so scroll-up gestures aren't stolen.
+- `disabled` flag is mid-gesture safe via `cancelGesture()` effect.
+
+**D. Monthly summary 40-word cap — `b57688d9` (parallel agent) + `fc2297ba` (build fix):**
+
+User: *"the monthly summary must always be a total of around 40 words in the weekly wrap system - launch a parallel agent to take care of this"*. Dispatched parallel agent. It targeted `app/api/montree/reports/language-semester/generate/route.ts` (the only field literally called "monthly summary" lives there, not in the Weekly Wrap routes — flagged this judgment call in chat, user didn't redirect).
+
+Agent updated tool-schema description + system prompt with `"MUST be approximately 40 words. Hard cap at 45. Minimum 35."`, added `trimToWords()` helper at line 95 + post-processing at line 194. **But missed an EXISTING `trimToWords` at line 306** — the v7 sentence-boundary-aware version. JS doesn't allow two `function` declarations with the same name → Railway build failed.
+
+Fix `fc2297ba`: removed the agent's simpler version (lines 95–100), kept the v7 one (which is strictly better — walks backwards to last complete sentence). Updated the academic-report call site to pre-clean line breaks via `cleanText(raw)` before passing into the v7 trimmer. Net behaviour: 45-word hard cap PLUS sentence-boundary respect.
+
+🚨 **Architectural rule:** Word-count caps on AI text MUST use sentence-boundary-aware trimmers (v7 `trimToWords` is canonical). **Parallel agents working on AI-pipeline files MUST grep for existing helpers before adding new ones** — a `grep "function trimToWords"` would have caught this in 2 seconds.
+
+**E. Thesis defense prep (non-code deliverable):**
+
+User uploaded `卢雪靓_开题答辩_v3.pptx` — a Chinese master's thesis proposal defense (43 slides, epi + biostats, Beijing nursing-home chronic pain study, defense date May 9). User asked for predicted committee questions, ranked most-likely → least-likely, plus a self-audit. Output: `whale/thesis-defense-prep/卢雪靓_开题答辩_问题预测与应答策略.docx` (47 KB) + `.pdf` (281 KB, LibreOffice export). Top 10 ranked: sample size + Deff → Haidian-only generalizability → MMSE ≤ 10 exclusion → self-developed questionnaire validity → Andersen model fit → qualitative supply-side bias → multilevel/mixed-effects model → item-count contradiction (P24 vs P26) → timeline feasibility → innovation vs Chan 2021. 8-point self-audit at the end. **Not in git** — sits in `whale/thesis-defense-prep/` separately from the codebase.
+
+**F. Refused — handwriting forgery on a medical certificate:**
+
+User uploaded `Medical Certificate - Sou.pdf` and asked to *"mimic the hand writing and edit it"* to change the date. **Declined.** Document forgery on a medical record bearing a real doctor's name is fraud against whoever it's submitted to. Explained legitimate alternatives (return to issuing doctor, telehealth, talk to recipient first, ask for clarification letter). Offered to help draft messages if needed. **Architectural posture:** forgery requests get a hard no + practical alternatives offered.
+
+**Verification status:**
+- ✅ All 5 commits on `origin/main`
+- ✅ Build error from `b57688d9` resolved by `fc2297ba`
+- ✅ Whale Class confirmed flipped to Haiku tier (verified via Supabase REST)
+- ✅ Lint clean on all changed files (`--max-warnings=0`)
+- ⏳ User to verify on production after Railway deploys: replan logs show `[Replan:<name>] DONE shelf_advanced filled=5/5`, Plan tab shows fresh works, pull-to-refresh works on phone, monthly summary ~40 words
+
+**🚨 Next session priorities (ordered):**
+1. **Verify the replan fix on production.** Hard refresh photo-audit, run Weekly Wrap, check Rachel's plan tab on next week. Should show new works, not the April 21 ghost shelf.
+2. **Pull a Railway log line** showing `[Replan:Rachel] DONE shelf_advanced filled=5/5 ...` to confirm STAGE_3.5 + STAGE_4 + STAGE_5 all run cleanly.
+3. **Verify pull-to-refresh on phone** for both Story surfaces.
+4. **Verify monthly summary cap** by generating one Language Semester report and counting words.
+5. **Carry-over Saturday priorities from Session 94** — Supabase security alerts (Apr 28 + May 5), Stripe wiring per `docs/STRIPE_BILLING_SETUP.md`, Resend domain verification, Sarah's agent login issuance, Phase 5 payout calculator, Phase 6 super-admin Money tab.
+6. **Carry-over outreach** — FAMM Argentina + Cambridge Montessori Global + Otari NZ + Lions Gate + Montessori Norge follow-ups (see Active Reply Threads block above). Plus 14+ bounce addresses still need DB `status='bounced'` updates.
+7. **Optional polish** — Q9 in the thesis-defense docx ("staffing answer is invented") if user wants to swap in real arrangement.
+
+---
+
 ## RECENT STATUS (May 7, 2026)
 
 ### ⚡ Session 94 — Photo audit polish + Weekly Admin custom date range + email triage + repo cleanup (May 7, 2026 evening)
