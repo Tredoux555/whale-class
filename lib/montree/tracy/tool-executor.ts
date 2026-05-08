@@ -94,22 +94,8 @@ export async function executeTracyTool(
     const data = await res.json();
     return { ok: true as const, status: res.status, data };
   };
-  const internalPost = async (path: string, body: unknown) => {
-    const res = await fetch(`${origin}${path}`, {
-      method: 'POST',
-      headers: {
-        cookie: cookieHeader,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(body),
-    });
-    if (!res.ok) {
-      const text = await res.text().catch(() => '');
-      return { ok: false as const, status: res.status, body: text };
-    }
-    const data = await res.json();
-    return { ok: true as const, status: res.status, data };
-  };
+  // (internalPost removed — no current Tracy tool POSTs to internal endpoints.
+  // Re-add when an action tool needs to mutate via an internal route.)
 
   try {
     switch (name) {
@@ -299,6 +285,127 @@ export async function executeTracyTool(
           success: true,
           data: { classrooms: summary },
           result_summary: `${summary.length} classroom(s)`,
+        };
+      }
+
+      // ── ACTION TOOL: draft_teacher_welcome_messages ──────────────
+      case 'draft_teacher_welcome_messages': {
+        const rawScope = String(input.scope || 'all').trim();
+        const scope: 'all' | 'classroom' | 'teacher' =
+          rawScope === 'classroom' || rawScope === 'teacher' ? rawScope : 'all';
+        const classroomId = String(input.classroom_id || '').trim();
+        const teacherId = String(input.teacher_id || '').trim();
+
+        // Resolve school + principal name for the message template.
+        const [schoolRes, principalRes] = await Promise.all([
+          supabase
+            .from('montree_schools')
+            .select('name')
+            .eq('id', schoolId)
+            .maybeSingle(),
+          supabase
+            .from('montree_school_admins')
+            .select('name')
+            .eq('school_id', schoolId)
+            .eq('is_active', true)
+            .order('created_at', { ascending: true })
+            .limit(1)
+            .maybeSingle(),
+        ]);
+        const schoolName = schoolRes.data?.name || 'our school';
+        const principalFirstName =
+          (principalRes.data?.name || '').split(' ')[0] || '';
+        const signOff = principalFirstName ? `— ${principalFirstName}` : '';
+
+        // Pull the teacher list, scoped tightly to this school.
+        let teachersQuery = supabase
+          .from('montree_teachers')
+          .select('id, name, email, login_code, classroom_id')
+          .eq('school_id', schoolId)
+          .eq('is_active', true);
+        if (scope === 'classroom' && classroomId) {
+          teachersQuery = teachersQuery.eq('classroom_id', classroomId);
+        } else if (scope === 'teacher' && teacherId) {
+          teachersQuery = teachersQuery.eq('id', teacherId);
+        }
+        const { data: teachers, error: teachersErr } = await teachersQuery;
+        if (teachersErr) {
+          return { success: false, error: teachersErr.message };
+        }
+        if (!teachers || teachers.length === 0) {
+          return {
+            success: true,
+            data: {
+              drafts: [],
+              count: 0,
+              note: 'No active teachers found for the selected scope.',
+            },
+            result_summary: 'no teachers',
+          };
+        }
+
+        // Look up classroom names so we can mention "(Bunny Class)" in the body.
+        const classroomIds = Array.from(
+          new Set(
+            teachers
+              .map((t) => t.classroom_id)
+              .filter((id): id is string => Boolean(id))
+          )
+        );
+        const classroomNameById = new Map<string, string>();
+        if (classroomIds.length) {
+          const { data: classrooms } = await supabase
+            .from('montree_classrooms')
+            .select('id, name')
+            .in('id', classroomIds);
+          for (const c of classrooms || []) {
+            classroomNameById.set(c.id, c.name);
+          }
+        }
+
+        const drafts = teachers
+          .filter((t) => t.login_code)
+          .map((t) => {
+            const firstName = (t.name || '').split(' ')[0] || 'there';
+            const classroomName = t.classroom_id
+              ? classroomNameById.get(t.classroom_id) || null
+              : null;
+            const classroomFragment = classroomName
+              ? ` (${classroomName})`
+              : '';
+            const messageText =
+              `Hi ${firstName},\n\n` +
+              `Welcome to ${schoolName}'s new classroom system. Your login code for Montree is ${t.login_code}.\n\n` +
+              `Go to montree.xyz, type the code, and you'll land on your classroom${classroomFragment}. Add your students, then start taking photos — Montree's AI handles the rest.\n\n` +
+              `Let me know if you get stuck.\n\n` +
+              `${signOff}`.trim();
+            return {
+              teacher_id: t.id,
+              teacher_name: t.name,
+              teacher_email: t.email,
+              classroom_name: classroomName,
+              login_code: t.login_code,
+              message_text: messageText,
+            };
+          });
+
+        const skippedNoCode = teachers.length - drafts.length;
+        return {
+          success: true,
+          data: {
+            drafts,
+            count: drafts.length,
+            school_name: schoolName,
+            scope,
+            ...(skippedNoCode > 0
+              ? {
+                  warning: `${skippedNoCode} teacher(s) had no login_code — skipped.`,
+                }
+              : {}),
+          },
+          result_summary: `drafted ${drafts.length}${
+            skippedNoCode ? ` (${skippedNoCode} skipped, no code)` : ''
+          }`,
         };
       }
 

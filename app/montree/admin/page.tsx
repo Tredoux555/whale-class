@@ -29,6 +29,7 @@ import { useRouter } from 'next/navigation';
 import { Send, RotateCcw } from 'lucide-react';
 import { useI18n } from '@/lib/montree/i18n';
 import LanguageToggle from '@/components/montree/LanguageToggle';
+import TracyAvatar from '@/components/montree/admin/TracyAvatar';
 
 const T = {
   emerald: '#34d399',
@@ -177,75 +178,9 @@ function splitActionLine(text: string): { body: string; action: string | null } 
 }
 
 // ── Subcomponents ────────────────────────────────────────────────────────
-
-// Bump this every time /public/tracy-avatar.png contents change. Appended as
-// a query string on the <img src> so Chrome / Safari / Firefox treat it as
-// a fresh URL and bypass their HTTP image cache. Without this, swapping the
-// avatar bytes leaves users staring at the previously-cached image for hours.
-// History: v1 = original T monogram (Session 87), v2 = stretched-borders T
-// monogram, v3 = watercolor portrait, v4 = back to T monogram for comparison.
-const TRACY_AVATAR_VERSION = 4;
-// Crop shape — must match the active avatar's composition:
-//   'square' (radius 22%) → T monogram. Preserves the sprout+stem at the
-//                          bottom edge that a circle crop would clip.
-//   'circle' (radius 50%) → watercolor portrait. Lets cream/peach
-//                          brushstrokes feather into the dark forest UI.
-const TRACY_AVATAR_SHAPE: 'square' | 'circle' = 'square';
-
-function TracyAvatar({ size = 36 }: { size?: number }) {
-  // Renders Tracy's avatar from /public/tracy-avatar.png. If the asset is
-  // missing in the deploy (404), we silently fall back to the CSS-rendered
-  // gold-circle T placeholder so the page never looks broken.
-  //
-  // For the watercolor portrait we use a circular crop so the cream/peach
-  // brushstroke edges fade into the dark forest UI instead of getting
-  // clipped to a square. Earlier T-monogram era used a rounded-square crop;
-  // if we ever swap back to a monogram, change borderRadius accordingly.
-  const [imgFailed, setImgFailed] = useState(false);
-
-  if (imgFailed) {
-    return (
-      <div
-        style={{
-          width: size,
-          height: size,
-          borderRadius: '50%',
-          background: T.gold,
-          color: T.goldOnGold,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          fontFamily: T.serif,
-          fontSize: Math.round(size * 0.47),
-          fontWeight: 500,
-          lineHeight: 1,
-          flexShrink: 0,
-        }}
-      >
-        T
-      </div>
-    );
-  }
-
-  return (
-    // eslint-disable-next-line @next/next/no-img-element
-    <img
-      src={`/tracy-avatar.png?v=${TRACY_AVATAR_VERSION}`}
-      alt="Tracy"
-      onError={() => setImgFailed(true)}
-      width={size}
-      height={size}
-      style={{
-        width: size,
-        height: size,
-        borderRadius: TRACY_AVATAR_SHAPE === 'circle' ? '50%' : Math.round(size * 0.22),
-        objectFit: 'cover',
-        flexShrink: 0,
-        display: 'block',
-      }}
-    />
-  );
-}
+// TracyAvatar lives in components/montree/admin/TracyAvatar.tsx — shared
+// between this chat page and the cockpit-wide TracyFloat so the avatar
+// version, fallback, and crop shape stay in lock-step across surfaces.
 
 function EmptyState({ firstName }: { firstName: string }) {
   const { t } = useI18n();
@@ -770,31 +705,43 @@ export default function AdminAgentPage() {
         </div>
       )}
 
-      {/* Conversation thread — empty state OR a list of turns */}
-      <div
-        ref={scrollRef}
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          gap: 22,
-          marginBottom: 22,
-          maxHeight: '64vh',
-          overflowY: 'auto',
-          paddingRight: 4,
-        }}
-      >
-        {turns.length === 0 ? (
-          <EmptyState firstName={firstName} />
-        ) : (
-          turns.map((t, i) =>
-            t.role === 'user' ? (
-              <UserBubble key={i} text={t.text} />
+      {/* Conversation thread — empty state OR a list of turns.
+          Filter out the synthetic '[GREETING]' user turn that the cockpit-wide
+          TracyFloat injects on first session login. The server logs it
+          (super-admin sees it) but the principal shouldn't see her own
+          greeting prompt as a chat message. Tracy's greeting reply is kept
+          and rendered as the first assistant turn. */}
+      {(() => {
+        const visibleTurns = turns.filter(
+          (turn) => !(turn.role === 'user' && turn.text === '[GREETING]')
+        );
+        return (
+          <div
+            ref={scrollRef}
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 22,
+              marginBottom: 22,
+              maxHeight: '64vh',
+              overflowY: 'auto',
+              paddingRight: 4,
+            }}
+          >
+            {visibleTurns.length === 0 ? (
+              <EmptyState firstName={firstName} />
             ) : (
-              <AssistantBubble key={i} turn={t} />
-            )
-          )
-        )}
-      </div>
+              visibleTurns.map((turn, i) =>
+                turn.role === 'user' ? (
+                  <UserBubble key={i} text={turn.text} />
+                ) : (
+                  <AssistantBubble key={i} turn={turn} />
+                )
+              )
+            )}
+          </div>
+        );
+      })()}
 
       {/* Input area — quiet, subordinate to the conversation */}
       <div

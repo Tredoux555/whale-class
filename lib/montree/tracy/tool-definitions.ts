@@ -115,4 +115,34 @@ export const TRACY_TOOLS: Tool[] = [
       properties: {},
     },
   },
+
+  // ── ACTION TOOL: draft_teacher_welcome_messages ──────────────────────
+  // The chief-of-staff pattern: principal accepts an offer, Tracy executes
+  // and produces a copy-paste-ready deliverable. v1 only does welcome
+  // messages; future actions (parent announcements, teacher check-ins,
+  // family briefings) follow the same shape.
+  {
+    name: 'draft_teacher_welcome_messages',
+    description:
+      'Draft copy-paste-ready welcome messages the principal can send to her teachers with their login codes. Use this whenever the principal accepts an offer to draft welcome messages, or explicitly asks to "draft messages for my teachers", "create welcome messages", "send teachers their codes", etc. Each draft is personalised with the teacher\'s first name, the school name, the teacher\'s login code, and (if known) the classroom they\'re in. Default scope is "all" — every active teacher in the school. Pass scope="classroom" with classroom_id for a single classroom, or scope="teacher" with teacher_id for one specific teacher. Returns an array of drafts; format them inline in your reply with each teacher\'s name as a header and the message text underneath.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        scope: {
+          type: 'string',
+          enum: ['all', 'classroom', 'teacher'],
+          description:
+            'Which teachers to draft for. Default "all" — every active teacher in the school. Use "classroom" with classroom_id when the principal asks for a specific classroom\'s teachers; "teacher" with teacher_id for a single teacher.',
+        },
+        classroom_id: {
+          type: 'string',
+          description: 'Required if scope="classroom".',
+        },
+        teacher_id: {
+          type: 'string',
+          description: 'Required if scope="teacher".',
+        },
+      },
+    },
+  },
 ];
