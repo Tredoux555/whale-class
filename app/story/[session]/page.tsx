@@ -2,6 +2,8 @@
 
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+import { usePullToRefresh } from '@/lib/story/use-pull-to-refresh';
+import PullRefreshIndicator from '@/lib/story/PullRefreshIndicator';
 
 interface Story {
   title: string;
@@ -172,6 +174,23 @@ export default function StoryViewer() {
 
     return () => clearInterval(interval);
   }, [loadStory, loadMedia]);
+
+  // Pull-to-refresh — runs all four loaders in parallel. Touch-only;
+  // desktop users use the browser refresh. Disabled while editing a
+  // message so a typing-induced scroll bounce doesn't trigger a refresh.
+  const handlePullRefresh = useCallback(async () => {
+    await Promise.allSettled([
+      loadStory(true),
+      loadMedia(),
+      loadSharedFiles(),
+      loadRecentMessages(),
+    ]);
+  }, [loadStory, loadMedia, loadSharedFiles, loadRecentMessages]);
+
+  const pullState = usePullToRefresh({
+    onRefresh: handlePullRefresh,
+    disabled: isEditing,
+  });
 
   // Send heartbeat every 30 seconds to track activity
   useEffect(() => {
@@ -606,6 +625,12 @@ export default function StoryViewer() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-amber-50 to-orange-100 p-8">
+      <PullRefreshIndicator
+        pullDistance={pullState.pullDistance}
+        isRefreshing={pullState.isRefreshing}
+        threshold={pullState.threshold}
+        variant="parent"
+      />
       <div className="max-w-3xl mx-auto bg-white rounded-lg shadow-xl p-12">
         <h1 className="text-4xl font-bold mb-8 text-center text-gray-800 font-serif">
           {story.title}
