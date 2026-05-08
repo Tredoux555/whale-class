@@ -75,8 +75,19 @@ const MAX_PERSISTED_TURNS = 30;
 // Float-specific state keys
 const GREETED_SESSION_KEY = 'montree.tracyFloat.greetedSession';
 const FLOAT_OPEN_KEY = 'montree.tracyFloat.open';
+// Persistent across sessions — flips to true the first time Tracy ever
+// introduces herself to this principal on this device. Subsequent
+// greetings skip the introduction.
+const HAS_MET_KEY = 'montree.tracyFloat.hasMet';
 
 const GREETING_PROMPT = '[GREETING]';
+const GREETING_FIRST_PROMPT = '[GREETING_FIRST]';
+
+// Both kickoff prompts are filtered from render on every chat surface — the
+// principal sees Tracy's reply, never her own synthetic prompt.
+function isHiddenKickoff(text: string): boolean {
+  return text === GREETING_PROMPT || text === GREETING_FIRST_PROMPT;
+}
 
 // ── Helpers ──────────────────────────────────────────────────────────────
 
@@ -239,8 +250,29 @@ export default function TracyFloat() {
       } catch {
         // ignore
       }
+
+      // First-meeting check — if Tracy has never introduced herself to this
+      // principal on this device, fire [GREETING_FIRST] (full introduction +
+      // situational + offer). Otherwise fire the short [GREETING] (no
+      // reintroduction). hasMet is persistent across sessions, sessionStorage
+      // is per-tab/session — so a logout/login resumes with [GREETING], not
+      // a re-introduction.
+      let hasMet = false;
+      try {
+        hasMet = localStorage.getItem(HAS_MET_KEY) === 'true';
+      } catch {
+        // treat as not met if storage disabled
+      }
+      const kickoff = hasMet ? GREETING_PROMPT : GREETING_FIRST_PROMPT;
+      if (!hasMet) {
+        try {
+          localStorage.setItem(HAS_MET_KEY, 'true');
+        } catch {
+          // ignore
+        }
+      }
       // Fire the greeting in the background — don't block render.
-      void fireGreeting(id);
+      void fireGreeting(id, kickoff);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -477,14 +509,14 @@ export default function TracyFloat() {
   );
 
   const fireGreeting = useCallback(
-    async (currentConvId: string) => {
-      // Add a hidden user turn (rendered as "[GREETING]" — filtered out at
-      // render time below) so the server has the prompt + the conversation
-      // log captures the kickoff. Future follow-ups read this in their
-      // history slice so Tracy has the situational context.
+    async (currentConvId: string, kickoff: string) => {
+      // Add a hidden user turn (the kickoff prompt — filtered at render time
+      // below) so the server has the prompt + the conversation log captures
+      // the kickoff. Future follow-ups read this in their history slice so
+      // Tracy has the situational context.
       setSubmitting(true);
       try {
-        await sendMessage(GREETING_PROMPT, currentConvId, true);
+        await sendMessage(kickoff, currentConvId, true);
       } finally {
         setSubmitting(false);
       }
@@ -518,9 +550,9 @@ export default function TracyFloat() {
   if (pathname === '/montree/admin') return null;
   if (!mounted) return null;
 
-  // Filter out hidden greeting turns ("[GREETING]") at render time
+  // Filter out hidden kickoff turns ("[GREETING]" / "[GREETING_FIRST]") at render time
   const visibleTurns = turns.filter(
-    (turn) => !(turn.role === 'user' && turn.text === GREETING_PROMPT)
+    (turn) => !(turn.role === 'user' && isHiddenKickoff(turn.text))
   );
   const lastAssistantIdx = (() => {
     for (let i = visibleTurns.length - 1; i >= 0; i--) {
