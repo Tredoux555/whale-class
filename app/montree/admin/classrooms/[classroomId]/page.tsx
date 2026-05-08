@@ -148,8 +148,10 @@ export default function ClassroomDetailPage({ params }: { params: Promise<{ clas
 
   if (!classroom) return null;
 
-  const leadTeachers = teachers.filter(t => t.role === 'lead_teacher');
-  const assistantTeachers = teachers.filter(t => t.role !== 'lead_teacher');
+  // NOTE: do NOT name the iterator `t` — that shadows the useI18n() `t` function
+  // and breaks every t('...') call inside the .map() body with "TypeError: e is not a function"
+  const leadTeachers = teachers.filter(teacher => teacher.role === 'lead_teacher');
+  const assistantTeachers = teachers.filter(teacher => teacher.role !== 'lead_teacher');
 
   return (
     <div className="text-white">
@@ -185,27 +187,27 @@ export default function ClassroomDetailPage({ params }: { params: Promise<{ clas
           ) : (
             <div className="space-y-3">
               {/* Lead teachers — larger cards */}
-              {leadTeachers.map(t => (
-                <div key={t.id} className="bg-white/10 rounded-xl p-4 border-l-4 border-emerald-400">
+              {leadTeachers.map(teacher => (
+                <div key={teacher.id} className="bg-white/10 rounded-xl p-4 border-l-4 border-emerald-400">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <div className="w-12 h-12 bg-emerald-500/30 rounded-full flex items-center justify-center text-xl">👩‍🏫</div>
                       <div>
                         <div className="flex items-center gap-2">
-                          <span className="text-white font-semibold text-lg">{t.name}</span>
+                          <span className="text-white font-semibold text-lg">{teacher.name}</span>
                           <span className="px-2 py-0.5 bg-emerald-500/30 text-emerald-300 text-xs rounded-full font-medium">{t('admin.roles.lead')}</span>
                         </div>
-                        {t.email && <p className="text-white/50 text-sm">{t.email}</p>}
+                        {teacher.email && <p className="text-white/50 text-sm">{teacher.email}</p>}
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      {t.login_code && (
-                        <button onClick={() => copyCode(t.login_code!)} className="px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white text-sm rounded-lg font-mono">
-                          {copiedCode === t.login_code ? '✓ ' + t('admin.actions.copied') : t.login_code}
+                      {teacher.login_code && (
+                        <button onClick={() => copyCode(teacher.login_code!)} className="px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white text-sm rounded-lg font-mono">
+                          {copiedCode === teacher.login_code ? '✓ ' + t('admin.actions.copied') : teacher.login_code}
                         </button>
                       )}
-                      <button onClick={() => regenerateCode(t.id)} className="text-xs text-amber-400 hover:text-amber-300">🔄</button>
-                      <select value={t.role} onChange={e => changeRole(t.id, e.target.value)} className="bg-white/10 text-white text-xs rounded-lg px-2 py-1 border border-white/20">
+                      <button onClick={() => regenerateCode(teacher.id)} className="text-xs text-amber-400 hover:text-amber-300">🔄</button>
+                      <select value={teacher.role} onChange={e => changeRole(teacher.id, e.target.value)} className="bg-white/10 text-white text-xs rounded-lg px-2 py-1 border border-white/20">
                         <option value="lead_teacher">{t('admin.roles.lead')}</option>
                         <option value="assistant_teacher">{t('admin.roles.assistant')}</option>
                         <option value="teacher">{t('admin.roles.teacher')}</option>
@@ -216,28 +218,28 @@ export default function ClassroomDetailPage({ params }: { params: Promise<{ clas
               ))}
 
               {/* Assistant teachers — smaller cards */}
-              {assistantTeachers.map(t => (
-                <div key={t.id} className="bg-white/5 rounded-xl p-3 border-l-4 border-white/20">
+              {assistantTeachers.map(teacher => (
+                <div key={teacher.id} className="bg-white/5 rounded-xl p-3 border-l-4 border-white/20">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center text-lg">👩‍🏫</div>
                       <div>
                         <div className="flex items-center gap-2">
-                          <span className="text-white font-medium">{t.name}</span>
+                          <span className="text-white font-medium">{teacher.name}</span>
                           <span className="px-2 py-0.5 bg-white/10 text-white/50 text-xs rounded-full">
-                            {t.role === 'assistant_teacher' ? t('admin.roles.assistant').toUpperCase() : t('admin.roles.teacher').toUpperCase()}
+                            {teacher.role === 'assistant_teacher' ? t('admin.roles.assistant').toUpperCase() : t('admin.roles.teacher').toUpperCase()}
                           </span>
                         </div>
-                        {t.email && <p className="text-white/40 text-xs">{t.email}</p>}
+                        {teacher.email && <p className="text-white/40 text-xs">{teacher.email}</p>}
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      {t.login_code && (
-                        <button onClick={() => copyCode(t.login_code!)} className="px-2 py-1 bg-white/10 text-white text-xs rounded-lg font-mono">
-                          {copiedCode === t.login_code ? '✓' : t.login_code}
+                      {teacher.login_code && (
+                        <button onClick={() => copyCode(teacher.login_code!)} className="px-2 py-1 bg-white/10 text-white text-xs rounded-lg font-mono">
+                          {copiedCode === teacher.login_code ? '✓' : teacher.login_code}
                         </button>
                       )}
-                      <select value={t.role} onChange={e => changeRole(t.id, e.target.value)} className="bg-white/10 text-white text-xs rounded-lg px-2 py-1 border border-white/20">
+                      <select value={teacher.role} onChange={e => changeRole(teacher.id, e.target.value)} className="bg-white/10 text-white text-xs rounded-lg px-2 py-1 border border-white/20">
                         <option value="lead_teacher">{t('admin.roles.lead')}</option>
                         <option value="assistant_teacher">{t('admin.roles.assistant')}</option>
                         <option value="teacher">{t('admin.roles.teacher')}</option>
