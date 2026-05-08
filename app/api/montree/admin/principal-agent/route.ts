@@ -39,7 +39,7 @@ import type {
 import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { resolveReportModel } from '@/lib/montree/reports/resolve-model';
-import { anthropic, AI_MODEL } from '@/lib/ai/anthropic';
+import { anthropic, OPUS_MODEL } from '@/lib/ai/anthropic';
 import {
   buildTracySystemPrompt,
   TRACY_TOOLS,
@@ -53,14 +53,19 @@ const TOTAL_TIMEOUT_MS = 90_000;
 const API_TIMEOUT_MS = 50_000;
 const MAX_TOOL_RESULT_CHARS = 50_000;
 
-// Sonnet 4.6 pricing as of May 2026 — kept here so cost_usd in the log is
+// Opus 4.6 pricing as of May 2026 — kept here so cost_usd in the log is
 // accurate even when the upstream price changes (just bump these constants).
 // COST_MODEL is the model these prices are valid for — if `model` resolves
 // to something different at runtime we refuse to log a misleading cost
 // (see assertSupportedCostModel below).
-const COST_MODEL = 'claude-sonnet-4-6';
-const SONNET_INPUT_USD_PER_MTOK = 3;
-const SONNET_OUTPUT_USD_PER_MTOK = 15;
+//
+// Tracy uses Opus (not Sonnet like the rest of the app) because the principal
+// is the high-trust voice surface — she meets parents, board members, and
+// hard situations. Voice quality matters more than per-call cost here. ~5x
+// Sonnet pricing; per-greeting still well under $0.25.
+const COST_MODEL = 'claude-opus-4-6';
+const OPUS_INPUT_USD_PER_MTOK = 15;
+const OPUS_OUTPUT_USD_PER_MTOK = 75;
 
 function assertSupportedCostModel(model: string): void {
   // Soft assertion: log loudly if we ever start using a model whose pricing
@@ -195,12 +200,14 @@ export async function POST(request: NextRequest) {
       { status: 402 }
     );
   }
-  // We use Sonnet for the agent regardless of haiku/sonnet tier — the
-  // tool-use loop reasoning quality matters here. Cost is acceptable because
-  // agent calls are not bulk-batched.
-  const model = AI_MODEL;
+  // We use Opus for Tracy regardless of the school's haiku/sonnet tier — the
+  // principal's voice surface is the trust moment. Tracy meets parents, board
+  // members, and hard situations through the principal's read of her, so
+  // per-call cost is the wrong axis to optimise on. ~5x Sonnet, still well
+  // under $0.25 per interaction at typical lengths.
+  const model = OPUS_MODEL;
   // Catch the "Anthropic changed the default and we forgot" failure mode:
-  // if AI_MODEL drifts to anything other than COST_MODEL, the cost we log
+  // if OPUS_MODEL drifts to anything other than COST_MODEL, the cost we log
   // becomes silently wrong. We log loudly so super-admin's cost view doesn't
   // mislead Tredoux for weeks.
   assertSupportedCostModel(model);
@@ -488,8 +495,8 @@ export async function POST(request: NextRequest) {
 
         // Compute cost
         const costUsd =
-          (totalInputTokens / 1_000_000) * SONNET_INPUT_USD_PER_MTOK +
-          (totalOutputTokens / 1_000_000) * SONNET_OUTPUT_USD_PER_MTOK;
+          (totalInputTokens / 1_000_000) * OPUS_INPUT_USD_PER_MTOK +
+          (totalOutputTokens / 1_000_000) * OPUS_OUTPUT_USD_PER_MTOK;
 
         const totalDuration = Date.now() - startTime;
 
@@ -545,8 +552,8 @@ export async function POST(request: NextRequest) {
             output_tokens: totalOutputTokens,
             cost_usd: Number(
               (
-                (totalInputTokens / 1_000_000) * SONNET_INPUT_USD_PER_MTOK +
-                (totalOutputTokens / 1_000_000) * SONNET_OUTPUT_USD_PER_MTOK
+                (totalInputTokens / 1_000_000) * OPUS_INPUT_USD_PER_MTOK +
+                (totalOutputTokens / 1_000_000) * OPUS_OUTPUT_USD_PER_MTOK
               ).toFixed(6)
             ),
             duration_ms: Date.now() - startTime,

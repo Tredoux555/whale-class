@@ -706,14 +706,18 @@ export default function AdminAgentPage() {
       )}
 
       {/* Conversation thread — empty state OR a list of turns.
-          Filter out the synthetic '[GREETING]' user turn that the cockpit-wide
-          TracyFloat injects on first session login. The server logs it
-          (super-admin sees it) but the principal shouldn't see her own
-          greeting prompt as a chat message. Tracy's greeting reply is kept
-          and rendered as the first assistant turn. */}
+          Filter out the synthetic kickoff turns ('[GREETING]' / '[GREETING_FIRST]')
+          that the cockpit-wide TracyFloat injects on first session login.
+          The server logs them (super-admin sees them) but the principal
+          shouldn't see her own kickoff prompt as a chat message. Tracy's
+          reply is kept and rendered as the first assistant turn. */}
       {(() => {
         const visibleTurns = turns.filter(
-          (turn) => !(turn.role === 'user' && turn.text === '[GREETING]')
+          (turn) =>
+            !(
+              turn.role === 'user' &&
+              (turn.text === '[GREETING]' || turn.text === '[GREETING_FIRST]')
+            )
         );
         return (
           <div
