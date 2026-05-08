@@ -16,6 +16,7 @@ import {
   X,
   Lock,
 } from 'lucide-react';
+import TracyFloat from '@/components/montree/admin/TracyFloat';
 // "Sparkles" (Ask Guru) was previously in the sidebar but Tracy IS the
 // principal's chief-of-staff AI surface — Guru is the per-child Maria
 // Montessori in your pocket for teachers, and Tracy can call it as a
@@ -409,6 +410,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       >
         {children}
       </main>
+
+      {/* Tracy — chief-of-staff float, visible on every cockpit page except
+          /montree/admin (which IS Tracy in full-page form). The component
+          renders null on that route internally, so nothing to gate here. */}
+      <TracyFloat />
 
       <style jsx global>{`
         @import url('https://fonts.googleapis.com/css2?family=Lora:wght@400;500;600&display=swap');
