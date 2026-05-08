@@ -209,14 +209,19 @@ export default function ClassroomDetailPage({
       toast.success(`Code copied — share with ${teacher.name}.`);
       return;
     }
-    const firstName = teacher.name.split(' ')[0];
+    const firstName = (teacher.name || '').split(' ')[0] || 'there';
     const schoolName = school?.name || 'our school';
     const classroomName = classroom?.name || 'your classroom';
     const subject = `Welcome to ${schoolName} — your Montree login`;
+    // Keep this body in lockstep with Tracy's draft_teacher_welcome_messages
+    // tool (lib/montree/tracy/tool-executor.ts). Both paths produce the same
+    // welcome — feels like one product whether the principal sends from the
+    // classroom row or asks Tracy to draft for the whole team.
     const body =
       `Hi ${firstName},\n\n` +
-      `Welcome to ${schoolName}'s new classroom system. Your login code for Montree is ${teacher.login_code}.\n\n` +
-      `Go to montree.xyz, type the code, and you'll land on ${classroomName}. Add your students, then start taking photos — Montree's AI handles the rest.\n\n` +
+      `Welcome to ${schoolName}'s classroom system. Your login code for Montree is ${teacher.login_code}.\n\n` +
+      `Go to montree.xyz, type the code, and you'll land on ${classroomName}. Tip: once you're in, save the page to your home screen so it works like an app — on iPhone tap the share icon then "Add to Home Screen", on Android tap the menu then "Install app" or "Add to Home Screen".\n\n` +
+      `Once you're in, ask Guru — the AI assistant inside the app — anything you need. Adding students, your first photos, how Montree works. Guru's there for you.\n\n` +
       `Let me know if you get stuck.`;
     const href = `mailto:${encodeURIComponent(
       teacher.email

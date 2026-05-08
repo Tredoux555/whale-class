@@ -373,10 +373,15 @@ export async function executeTracyTool(
             const classroomFragment = classroomName
               ? ` (${classroomName})`
               : '';
+            // Keep this template in lockstep with sendEmailToTeacher() in
+            // app/montree/admin/classrooms/[classroomId]/page.tsx. Both paths
+            // produce the same welcome — feels like one product whether the
+            // principal sends from the classroom row or asks Tracy to draft.
             const messageText =
               `Hi ${firstName},\n\n` +
-              `Welcome to ${schoolName}'s new classroom system. Your login code for Montree is ${t.login_code}.\n\n` +
-              `Go to montree.xyz, type the code, and you'll land on your classroom${classroomFragment}. Add your students, then start taking photos — Montree's AI handles the rest.\n\n` +
+              `Welcome to ${schoolName}'s classroom system. Your login code for Montree is ${t.login_code}.\n\n` +
+              `Go to montree.xyz, type the code, and you'll land on your classroom${classroomFragment}. Tip: once you're in, save the page to your home screen so it works like an app — on iPhone tap the share icon then "Add to Home Screen", on Android tap the menu then "Install app" or "Add to Home Screen".\n\n` +
+              `Once you're in, ask Guru — the AI assistant inside the app — anything you need. Adding students, your first photos, how Montree works. Guru's there for you.\n\n` +
               `Let me know if you get stuck.\n\n` +
               `${signOff}`.trim();
             return {
