@@ -56,12 +56,100 @@ export async function GET(
     monthStart.setDate(1);
     monthStart.setHours(0, 0, 0, 0);
 
+    const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+    const studentIds = (students || []).map((s) => s.id);
+    const teacherIdList = (teachers || []).map((t) => t.id);
+
+    // ── Session 97 progress scan additions ─────────────────────────────────
+    // Per-student progress (works mastered/practicing/presented per area).
+    // Per-teacher activity (photos confirmed this week + last login already
+    // available). Surfaced inline in the classroom drill-down.
+    let progressByStudent: Map<string, { mastered: number; practicing: number; presented: number; by_area: Record<string, { mastered: number; practicing: number; presented: number }> }> = new Map();
+    if (studentIds.length) {
+      try {
+        const { data: progressRows } = await supabase
+          .from('montree_child_progress')
+          .select('child_id, area, status')
+          .in('child_id', studentIds);
+        progressByStudent = new Map();
+        for (const id of studentIds) {
+          progressByStudent.set(id, { mastered: 0, practicing: 0, presented: 0, by_area: {} });
+        }
+        for (const p of progressRows || []) {
+          const bucket = progressByStudent.get(p.child_id);
+          if (!bucket) continue;
+          const status = (p.status || 'presented') as 'mastered' | 'practicing' | 'presented';
+          if (status === 'mastered' || status === 'practicing' || status === 'presented') {
+            bucket[status] += 1;
+            const area = p.area || 'unspecified';
+            if (!bucket.by_area[area]) {
+              bucket.by_area[area] = { mastered: 0, practicing: 0, presented: 0 };
+            }
+            bucket.by_area[area][status] += 1;
+          }
+        }
+      } catch (e) {
+        console.warn('[classroom drill-down] progress query failed:', e);
+      }
+    }
+
+    // Photos this week per student.
+    const photosByStudent = new Map<string, number>();
+    if (studentIds.length) {
+      try {
+        const { data: photos } = await supabase
+          .from('montree_media')
+          .select('child_id, confirmed_by')
+          .in('child_id', studentIds)
+          .eq('teacher_confirmed', true)
+          .gte('captured_at', sevenDaysAgo);
+        for (const p of photos || []) {
+          photosByStudent.set(p.child_id, (photosByStudent.get(p.child_id) || 0) + 1);
+        }
+      } catch (e) {
+        console.warn('[classroom drill-down] media query failed:', e);
+      }
+    }
+
+    // Photos confirmed by each teacher this week.
+    const photosByTeacher = new Map<string, number>();
+    const notesByTeacher = new Map<string, number>();
+    if (teacherIdList.length) {
+      try {
+        const { data: photos } = await supabase
+          .from('montree_media')
+          .select('confirmed_by')
+          .in('confirmed_by', teacherIdList)
+          .eq('teacher_confirmed', true)
+          .gte('captured_at', sevenDaysAgo);
+        for (const p of photos || []) {
+          if (p.confirmed_by) {
+            photosByTeacher.set(p.confirmed_by, (photosByTeacher.get(p.confirmed_by) || 0) + 1);
+          }
+        }
+      } catch (e) {
+        console.warn('[classroom drill-down] teacher media query failed:', e);
+      }
+      try {
+        const { data: notes } = await supabase
+          .from('montree_teacher_notes')
+          .select('teacher_id')
+          .in('teacher_id', teacherIdList)
+          .gte('created_at', sevenDaysAgo);
+        for (const n of notes || []) {
+          if (n.teacher_id) notesByTeacher.set(n.teacher_id, (notesByTeacher.get(n.teacher_id) || 0) + 1);
+        }
+      } catch (e) {
+        console.warn('[classroom drill-down] teacher notes query failed:', e);
+      }
+    }
+
     let reportsThisMonth = 0;
     try {
       const { count } = await supabase
         .from('montree_weekly_reports')
         .select('id', { count: 'exact', head: true })
-        .in('child_id', (students || []).map(s => s.id))
+        .in('child_id', studentIds)
         .gte('generated_at', monthStart.toISOString());
       reportsThisMonth = count || 0;
     } catch {
@@ -78,8 +166,14 @@ export async function GET(
         login_code: t.login_code,
         last_login: t.last_login_at,
         is_active: t.is_active,
+        photos_this_week: photosByTeacher.get(t.id) || 0,
+        notes_this_week: notesByTeacher.get(t.id) || 0,
       })),
-      students: students || [],
+      students: (students || []).map((s) => ({
+        ...s,
+        progress: progressByStudent.get(s.id) || { mastered: 0, practicing: 0, presented: 0, by_area: {} },
+        photos_this_week: photosByStudent.get(s.id) || 0,
+      })),
       stats: {
         total_students: (students || []).length,
         total_teachers: (teachers || []).length,

@@ -200,6 +200,99 @@ Wave 1 sends bounced for these addresses. None of these are flagged as `bounced`
 
 ---
 
+## RECENT STATUS (May 9, 2026)
+
+### ⚡ Session 97 — Communication system + dashboard revamp + Tracy parent-comms (May 9, 2026)
+
+**Last cut before Gloria's first real school. Built the Communication system end-to-end + simplified the dashboard for principal-as-overseer + enriched Tracy with a parent-comms playbook + scan/draft tools.**
+
+**🚨 Canonical resume doc:** `docs/handoffs/SESSION_97_HANDOFF.md`. **🚨 Migration 190 must be run in Supabase SQL Editor before any new endpoint functions.**
+
+**A. Migration 190 (`migrations/190_communication_system.sql`):**
+
+Five new tables. Idempotent, FK-cascading, indexed for the common query patterns.
+- `montree_message_threads` — conversation container, school_id-scoped, thread_type ∈ {parent_teacher, parent_principal, internal, broadcast, group}.
+- `montree_message_thread_participants` — composite-key participant rows with last_read_at, can_reply, is_observer, is_primary.
+- `montree_thread_messages` — actual messages. ai_drafted + ai_draft_source + approved_by_id capture the Tracy → principal → send audit trail.
+- `montree_message_groups` — principal-defined custom groups (mixable teacher/parent/principal).
+- `montree_message_group_members` — composite-key membership rows.
+
+Plus a trigger that bumps `last_message_at` on insert. Legacy `montree_messages` (flat) kept for parent portal backward compat.
+
+**B. Sidebar revamp (`app/montree/admin/layout.tsx`):**
+
+Reduced from 5 items to 4: Today / Classrooms / **Communication** / Settings. Pulse hidden from nav (route still works for direct URL). Activity / Reports / Features / Import / Pulse all now reachable from Settings → "Advanced & reporting" section. `/montree/admin/people` → redirects to `/montree/admin/communication`. Hide-don't-delete posture per user directive.
+
+**C. Communication tab (`/montree/admin/communication/page.tsx`) — the new core surface:**
+
+Five tabs: **By classroom** (default — classroom selector → teachers + parents in two columns, message-all per side); **All teachers** (flat school roster, search, broadcast all); **All parents** (flat school roster grouped by classroom, search, broadcast all); **Custom groups** (principal-defined mixable groups, create + manage + message); **Inbox** (every thread sorted by recency, unread badges).
+
+Compose modal handles 1:1 (creates thread + posts) and broadcast (creates one broadcast thread + fans recipients + posts the body). Group builder modal lets the principal mix teachers + parents into one group.
+
+Each thread page (`threads/[threadId]/page.tsx`) renders the conversation, marks read on open, and surfaces Tracy's scan + draft buttons inline on parent threads.
+
+**D. Principal transparency:**
+
+`addPrincipalObserver()` in `lib/montree/messaging/thread-resolver.ts` runs inside `createThreadWithParticipants()` for every parent_teacher / parent_principal thread. Auto-adds the principal as `is_observer=true, can_reply=true` so they see every parent ↔ teacher conversation in their school. The threads-list endpoint widens to "every thread in school" for principal callers via `verifyThreadAccess()`. Teachers + parents see only their own threads.
+
+**E. Tracy enrichment:**
+
+System prompt extended with a "Parent communication playbook" section (`lib/montree/tracy/system-prompt.ts`):
+- Acknowledge before explaining when frustrated
+- Validate by naming concern back, then propose next step
+- Cross-cultural sensitivity (light touch — Chinese parents value academic clarity; Anglophone parents value child autonomy + observation language)
+- Honesty rules: no medical claims, no future promises, "let me check with [teacher]"
+
+Three new Tracy tools (`tool-definitions.ts` + `tool-executor.ts`):
+- **`list_recent_threads`** — top 20 with type, subject, last sender, snippet. Filters by thread_type / classroom_id.
+- **`scan_parent_thread`** — Opus reads thread end-to-end → 60-100 word chief-of-staff briefing with `→ ` action line. Routed via new `/api/montree/admin/tracy/scan-thread`.
+- **`draft_parent_response`** — Opus drafts reply in principal's voice using her last 10 messages as voice samples. Optional `guidance` parameter. Routed via `/api/montree/admin/tracy/draft-response`.
+
+**🚨 The principal always pulls the trigger.** Tracy never sends autonomously. When she drafts, the message posts with `ai_drafted=true, approved_by_id=<principal_id>` — permanent audit trail rendered as a "Tracy drafted" pill in the UI. Both Tracy AI endpoints tier-gate via `resolveReportModel()` — Free schools get 402 with friendly message pointing to `SUPPORT_EMAIL` env var.
+
+**F. Classroom drill-down progress data:**
+
+`/api/montree/admin/classrooms/[classroomId]/route.ts` extended to return per-student progress (`mastered/practicing/presented` counts + per-area breakdown) + per-student `photos_this_week` + per-teacher `photos_this_week` + per-teacher `notes_this_week`. Type interfaces extended with optional fields. Render UI panel deferred to a focused follow-up.
+
+**G. APIs (10 new endpoints):**
+
+`POST/GET /api/montree/messages/threads`, `GET/PATCH /api/montree/messages/threads/[id]`, `GET/POST /api/montree/messages/threads/[id]/messages`, `POST /api/montree/messages/broadcast`, `GET/POST /api/montree/messages/groups`, `PATCH/DELETE /api/montree/messages/groups/[id]`, `GET /api/montree/admin/communication/directory`, `POST /api/montree/admin/tracy/scan-thread`, `POST /api/montree/admin/tracy/draft-response`.
+
+Every endpoint: `verifySchoolRequest()` entry guard, school_id filter on every Supabase query, `homeschool_parent` mapped to `parent` for participant lookup, `verifyThreadAccess()` double-checks both school + participant membership before any read or write.
+
+**🚨 Architectural rules locked in:**
+1. Principal always pulls the trigger. Tracy can scan/draft/propose; never sends autonomously.
+2. Cross-pollination contract on every messaging endpoint via `verifySchoolRequest()` + `verifyThreadAccess()`.
+3. Principal auto-observed on every parent thread for transparency. Don't bypass `addPrincipalObserver()`.
+4. `montree_messages` (flat) is legacy — extend `montree_thread_messages` instead.
+5. `ai_drafted=true` + `approved_by_id` is the audit trail. Server overrides any client-supplied approved_by_id.
+6. Tier-gate every Opus call via `resolveReportModel()` — Free schools get 402.
+7. `homeschool_parent` always maps to `'parent'` for participant lookups.
+8. Sidebar nav is 4 items. Pulse hidden by design — Settings → Advanced surfaces it.
+9. Hide-don't-delete: `/pulse`, `/activity`, `/reports` route files preserved.
+
+**Verification status:**
+- ✅ Three consecutive clean audits achieved (3x AUDIT cycle complete).
+- ✅ Migration 190 idempotent + FK-cascading + indexed.
+- ✅ All 10 new endpoints school-scoped + auth-gated.
+- ✅ All Tracy tool dispatch cases return cleanly.
+- ✅ Inefficient client-side filter on directory route fixed (now server-side via `.in()`).
+- ⏳ User to run migration 190 in Supabase + verify all 14 production checks (see handoff doc).
+
+**🚨 Next session priorities (ordered):**
+1. **🚨 Run migration 190 in Supabase SQL Editor.**
+2. Walk the 14-step production verification (see `docs/handoffs/SESSION_97_HANDOFF.md`).
+3. Migrate parent portal `/montree/parent/messages` to the new threads system (currently still on legacy `montree_messages`). Add Reply CTA on Weekly Wrap report viewer.
+4. Render the "This week's activity" UI panel in classroom drill-down (data already flowing from API).
+5. Run `npm run i18n:fill-ui` to backfill the 11 non-English locales for the new UI strings.
+6. Carry-over Stripe wiring per `docs/STRIPE_BILLING_SETUP.md`. Migration 188 still needs to be run.
+7. Resend domain verification for `montree.xyz`.
+8. Issue Sarah's agent login.
+9. Phase 5 Payout calculator. Phase 6 super-admin Money tab.
+10. Outreach follow-ups (FAMM Argentina, Cambridge Montessori Global, Otari NZ, Lions Gate, Montessori Norge). 14+ bounce addresses still need DB `status='bounced'` updates.
+
+---
+
 ## RECENT STATUS (May 8, 2026)
 
 ### ⚡ Session 96 — Tracy as cockpit-wide chief-of-staff + classroom drill-down redesign + Opus + first-meeting protocol + privacy fix + Free-tier degradation + welcome template (May 8, 2026, evening)

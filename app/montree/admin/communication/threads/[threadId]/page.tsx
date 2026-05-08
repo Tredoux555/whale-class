@@ -1,0 +1,565 @@
+// /montree/admin/communication/threads/[threadId]/page.tsx
+// Session 97 — single thread view for the principal Communication hub.
+//
+// Principal-only surface. Shows full transcript + composer. Tracy tools:
+//   - "Tracy, scan this thread" → POST /api/montree/admin/tracy/scan-thread
+//   - "Tracy, draft a response" → POST /api/montree/admin/tracy/draft-response
+// When the principal posts, the thread is school-scoped + observer-aware.
+'use client';
+
+import { useEffect, useRef, useState, useCallback } from 'react';
+import { useParams, useRouter } from 'next/navigation';
+import { ArrowLeft, Send, Sparkles, Eye, MessageSquare, Loader2 } from 'lucide-react';
+
+const T = {
+  emerald: '#34d399',
+  emeraldDim: 'rgba(52,211,153,0.65)',
+  emeraldSoft: 'rgba(52,211,153,0.10)',
+  gold: '#E8C96A',
+  goldSoft: 'rgba(232,201,106,0.18)',
+  cardBg: 'rgba(8,20,12,0.55)',
+  cardBgStrong: 'rgba(8,20,12,0.75)',
+  cardBorder: '1px solid rgba(52,211,153,0.18)',
+  textPrimary: 'rgba(255,255,255,0.92)',
+  textSecondary: 'rgba(255,255,255,0.62)',
+  textMuted: 'rgba(255,255,255,0.40)',
+  serif: '"Lora", Georgia, serif',
+  sans: '"Inter", -apple-system, BlinkMacSystemFont, sans-serif',
+  inputBg: 'rgba(0,0,0,0.30)',
+};
+
+interface Participant {
+  role: string;
+  id: string;
+  name: string | null;
+  email: string | null;
+  is_observer: boolean;
+  is_primary: boolean;
+  can_reply: boolean;
+}
+
+interface Thread {
+  id: string;
+  thread_type: string;
+  subject: string | null;
+  classroom_id: string | null;
+  child_id: string | null;
+  created_at: string;
+  last_message_at: string;
+}
+
+interface Message {
+  id: string;
+  sender_role: string;
+  sender_id: string;
+  sender_name: string;
+  body: string;
+  ai_drafted: boolean;
+  ai_draft_source: string | null;
+  approved_by_id: string | null;
+  sent_at: string;
+}
+
+export default function ThreadPage() {
+  const params = useParams();
+  const router = useRouter();
+  const threadId = (params?.threadId as string) || '';
+  const [thread, setThread] = useState<Thread | null>(null);
+  const [classroom, setClassroom] = useState<{ name: string } | null>(null);
+  const [child, setChild] = useState<{ name: string; photo_url?: string } | null>(null);
+  const [participants, setParticipants] = useState<Participant[]>([]);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [draft, setDraft] = useState('');
+  const [aiDrafted, setAiDrafted] = useState(false);
+  const [tracyBriefing, setTracyBriefing] = useState<string | null>(null);
+  const [tracyLoading, setTracyLoading] = useState<'scan' | 'draft' | null>(null);
+  const [sending, setSending] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const load = useCallback(async () => {
+    try {
+      const [tRes, mRes] = await Promise.all([
+        fetch(`/api/montree/messages/threads/${threadId}`, { credentials: 'include' }),
+        fetch(`/api/montree/messages/threads/${threadId}/messages`, { credentials: 'include' }),
+      ]);
+      if (!tRes.ok) {
+        if (tRes.status === 404) {
+          router.replace('/montree/admin/communication');
+          return;
+        }
+        throw new Error('Failed to load thread');
+      }
+      const tData = await tRes.json();
+      setThread(tData.thread);
+      setClassroom(tData.classroom);
+      setChild(tData.child);
+      setParticipants(tData.participants || []);
+
+      const mData = await mRes.json();
+      setMessages(mData.messages || []);
+
+      // Mark as read.
+      void fetch(`/api/montree/messages/threads/${threadId}`, {
+        method: 'PATCH',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'mark_read' }),
+      });
+    } catch (err) {
+      console.error('Load thread:', err);
+    } finally {
+      setLoading(false);
+    }
+  }, [threadId, router]);
+
+  useEffect(() => {
+    if (threadId) void load();
+  }, [threadId, load]);
+
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [messages.length]);
+
+  async function send() {
+    if (!draft.trim()) return;
+    setSending(true);
+    setError(null);
+    try {
+      const res = await fetch(`/api/montree/messages/threads/${threadId}/messages`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          body: draft,
+          ai_drafted: aiDrafted,
+          ai_draft_source: aiDrafted ? 'tracy.draft_parent_response' : undefined,
+        }),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data?.error || 'Send failed');
+      }
+      setDraft('');
+      setAiDrafted(false);
+      void load();
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Send failed');
+    } finally {
+      setSending(false);
+    }
+  }
+
+  async function tracyScan() {
+    setTracyLoading('scan');
+    setError(null);
+    try {
+      const res = await fetch('/api/montree/admin/tracy/scan-thread', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ thread_id: threadId }),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data?.error || 'Tracy could not scan');
+      }
+      const data = await res.json();
+      setTracyBriefing(data.summary);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Tracy scan failed');
+    } finally {
+      setTracyLoading(null);
+    }
+  }
+
+  async function tracyDraft() {
+    setTracyLoading('draft');
+    setError(null);
+    try {
+      const res = await fetch('/api/montree/admin/tracy/draft-response', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ thread_id: threadId }),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data?.error || 'Tracy could not draft');
+      }
+      const data = await res.json();
+      setDraft(data.draft);
+      setAiDrafted(true);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Tracy draft failed');
+    } finally {
+      setTracyLoading(null);
+    }
+  }
+
+  if (loading) {
+    return (
+      <div style={{ padding: 60, textAlign: 'center', color: T.textSecondary, fontFamily: T.sans }}>
+        Loading thread…
+      </div>
+    );
+  }
+
+  if (!thread) return null;
+
+  const isParentThread = thread.thread_type === 'parent_teacher' || thread.thread_type === 'parent_principal';
+
+  return (
+    <div style={{ fontFamily: T.sans, color: T.textPrimary, maxWidth: 880 }}>
+      {/* Back link */}
+      <button
+        onClick={() => router.push('/montree/admin/communication')}
+        style={{
+          background: 'transparent',
+          border: 'none',
+          color: T.emeraldDim,
+          fontFamily: T.sans,
+          fontSize: 13,
+          fontWeight: 500,
+          cursor: 'pointer',
+          display: 'flex',
+          alignItems: 'center',
+          gap: 6,
+          padding: 0,
+          marginBottom: 16,
+        }}
+      >
+        <ArrowLeft size={14} strokeWidth={1.75} />
+        Communication
+      </button>
+
+      {/* Header */}
+      <header
+        style={{
+          background: T.cardBg,
+          border: T.cardBorder,
+          borderRadius: 16,
+          padding: 22,
+          marginBottom: 16,
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+          <span
+            style={{
+              fontSize: 11,
+              fontWeight: 600,
+              color: T.emerald,
+              textTransform: 'uppercase',
+              letterSpacing: 1,
+            }}
+          >
+            {threadTypeLabel(thread.thread_type)}
+          </span>
+          {child && (
+            <span style={{ fontSize: 12, color: T.textMuted }}>
+              · about <span style={{ color: T.textPrimary }}>{child.name}</span>
+            </span>
+          )}
+          {classroom && (
+            <span style={{ fontSize: 12, color: T.textMuted }}>
+              · {classroom.name}
+            </span>
+          )}
+        </div>
+        <h1 style={{ fontFamily: T.serif, fontSize: 24, fontWeight: 500, margin: 0, letterSpacing: -0.3 }}>
+          {thread.subject || '(no subject)'}
+        </h1>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 12 }}>
+          {participants.map((p) => (
+            <span
+              key={`${p.role}:${p.id}`}
+              style={{
+                fontSize: 11,
+                padding: '4px 10px',
+                background: p.is_observer ? 'rgba(255,255,255,0.06)' : T.emeraldSoft,
+                color: p.is_observer ? T.textMuted : T.emerald,
+                borderRadius: 999,
+                border: '1px solid rgba(52,211,153,0.20)',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 6,
+              }}
+            >
+              {p.is_observer && <Eye size={10} strokeWidth={1.75} />}
+              {p.name || p.email || 'Unknown'}
+              <span style={{ opacity: 0.6, textTransform: 'uppercase', fontSize: 9, letterSpacing: 0.5 }}>
+                {p.role}
+              </span>
+            </span>
+          ))}
+        </div>
+      </header>
+
+      {/* Tracy actions (only for parent threads) */}
+      {isParentThread && (
+        <div
+          style={{
+            background: 'linear-gradient(135deg, rgba(232,201,106,0.10), rgba(232,201,106,0.04))',
+            border: '1px solid rgba(232,201,106,0.25)',
+            borderRadius: 14,
+            padding: 14,
+            marginBottom: 16,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 12,
+            flexWrap: 'wrap',
+          }}
+        >
+          <Sparkles size={16} strokeWidth={1.75} color={T.gold} />
+          <span style={{ fontSize: 13, color: T.textSecondary, flex: 1 }}>
+            Ask Tracy to scan this thread or draft your reply.
+          </span>
+          <button
+            onClick={() => void tracyScan()}
+            disabled={tracyLoading !== null}
+            style={{
+              padding: '8px 14px',
+              background: 'transparent',
+              border: '1px solid rgba(232,201,106,0.35)',
+              borderRadius: 999,
+              color: T.gold,
+              fontSize: 12,
+              fontWeight: 500,
+              cursor: tracyLoading ? 'not-allowed' : 'pointer',
+              opacity: tracyLoading ? 0.5 : 1,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 6,
+            }}
+          >
+            {tracyLoading === 'scan' ? <Loader2 size={12} className="animate-spin" /> : <Eye size={12} strokeWidth={1.75} />}
+            Scan thread
+          </button>
+          <button
+            onClick={() => void tracyDraft()}
+            disabled={tracyLoading !== null}
+            style={{
+              padding: '8px 14px',
+              background: T.gold,
+              border: 'none',
+              borderRadius: 999,
+              color: '#0a1a0f',
+              fontSize: 12,
+              fontWeight: 600,
+              cursor: tracyLoading ? 'not-allowed' : 'pointer',
+              opacity: tracyLoading ? 0.5 : 1,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 6,
+            }}
+          >
+            {tracyLoading === 'draft' ? <Loader2 size={12} className="animate-spin" /> : <Sparkles size={12} strokeWidth={1.75} />}
+            Draft my reply
+          </button>
+        </div>
+      )}
+
+      {/* Tracy briefing */}
+      {tracyBriefing && (
+        <div
+          style={{
+            background: T.goldSoft,
+            border: '1px solid rgba(232,201,106,0.30)',
+            borderRadius: 14,
+            padding: 16,
+            marginBottom: 16,
+            color: T.textPrimary,
+          }}
+        >
+          <div
+            style={{
+              fontSize: 11,
+              fontWeight: 600,
+              color: T.gold,
+              textTransform: 'uppercase',
+              letterSpacing: 1,
+              marginBottom: 8,
+            }}
+          >
+            Tracy&apos;s read
+          </div>
+          <div style={{ fontSize: 14, lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>{tracyBriefing}</div>
+        </div>
+      )}
+
+      {/* Message list */}
+      <div
+        style={{
+          background: T.cardBg,
+          border: T.cardBorder,
+          borderRadius: 16,
+          padding: 16,
+          marginBottom: 16,
+          maxHeight: 'min(60vh, 600px)',
+          overflowY: 'auto',
+        }}
+      >
+        {messages.length === 0 ? (
+          <p style={{ color: T.textMuted, fontSize: 13, textAlign: 'center', padding: 30 }}>
+            No messages yet. Be the first to write.
+          </p>
+        ) : (
+          messages.map((m) => <MessageBubble key={m.id} message={m} />)
+        )}
+        <div ref={messagesEndRef} />
+      </div>
+
+      {/* Composer */}
+      <div
+        style={{
+          background: T.cardBgStrong,
+          border: T.cardBorder,
+          borderRadius: 16,
+          padding: 16,
+        }}
+      >
+        {aiDrafted && (
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 6,
+              marginBottom: 8,
+              fontSize: 11,
+              color: T.gold,
+              textTransform: 'uppercase',
+              letterSpacing: 1,
+            }}
+          >
+            <Sparkles size={12} strokeWidth={1.75} />
+            Tracy drafted this — review before sending
+          </div>
+        )}
+        <textarea
+          value={draft}
+          onChange={(e) => {
+            setDraft(e.target.value);
+            // If user edits the AI draft, clear the AI flag — they own it.
+            if (aiDrafted) setAiDrafted(false);
+          }}
+          placeholder="Write your reply…"
+          rows={5}
+          style={{
+            width: '100%',
+            padding: '12px 14px',
+            background: T.inputBg,
+            border: aiDrafted ? '1px solid rgba(232,201,106,0.45)' : T.cardBorder,
+            borderRadius: 10,
+            color: T.textPrimary,
+            fontFamily: T.sans,
+            fontSize: 14,
+            outline: 'none',
+            resize: 'vertical',
+            marginBottom: 12,
+          }}
+        />
+        {error && <div style={{ color: '#f87171', fontSize: 12, marginBottom: 8 }}>{error}</div>}
+        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
+          <button
+            onClick={() => void send()}
+            disabled={sending || !draft.trim()}
+            style={{
+              padding: '10px 20px',
+              background: T.emerald,
+              color: '#0a1a0f',
+              border: 'none',
+              borderRadius: 999,
+              fontSize: 13,
+              fontWeight: 600,
+              cursor: sending || !draft.trim() ? 'not-allowed' : 'pointer',
+              opacity: sending || !draft.trim() ? 0.5 : 1,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8,
+            }}
+          >
+            <Send size={14} strokeWidth={1.75} />
+            {sending ? 'Sending…' : aiDrafted ? 'Send Tracy\'s draft' : 'Send'}
+          </button>
+        </div>
+      </div>
+
+      <style jsx global>{`
+        .animate-spin {
+          animation: spin 0.6s linear infinite;
+        }
+        @keyframes spin {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+      `}</style>
+    </div>
+  );
+}
+
+function MessageBubble({ message }: { message: Message }) {
+  return (
+    <div style={{ marginBottom: 14 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 4 }}>
+        <div style={{ fontSize: 12, fontWeight: 600, color: T.textPrimary, display: 'flex', alignItems: 'center', gap: 6 }}>
+          {message.sender_name}
+          <span style={{ fontSize: 10, color: T.emeraldDim, textTransform: 'uppercase', letterSpacing: 0.5 }}>
+            {message.sender_role}
+          </span>
+          {message.ai_drafted && (
+            <span
+              style={{
+                fontSize: 10,
+                color: T.gold,
+                background: T.goldSoft,
+                padding: '2px 6px',
+                borderRadius: 999,
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 3,
+              }}
+            >
+              <Sparkles size={9} strokeWidth={1.75} />
+              Tracy drafted
+            </span>
+          )}
+        </div>
+        <span style={{ fontSize: 11, color: T.textMuted }}>{formatDateTime(message.sent_at)}</span>
+      </div>
+      <div
+        style={{
+          background: T.cardBgStrong,
+          border: T.cardBorder,
+          borderRadius: 12,
+          padding: '10px 14px',
+          fontSize: 14,
+          lineHeight: 1.5,
+          color: T.textPrimary,
+          whiteSpace: 'pre-wrap',
+        }}
+      >
+        {message.body}
+      </div>
+    </div>
+  );
+}
+
+function threadTypeLabel(t: string): string {
+  switch (t) {
+    case 'parent_teacher': return 'Parent · Teacher';
+    case 'parent_principal': return 'Parent · Principal';
+    case 'internal': return 'Internal';
+    case 'broadcast': return 'Broadcast';
+    case 'group': return 'Group';
+    default: return t;
+  }
+}
+
+function formatDateTime(iso: string): string {
+  const d = new Date(iso);
+  if (!Number.isFinite(d.getTime())) return '';
+  return d.toLocaleString();
+}
