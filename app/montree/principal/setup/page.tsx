@@ -369,7 +369,7 @@ export default function PrincipalSetupPage() {
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/80 backdrop-blur-sm">
             <div className="bg-white/10 backdrop-blur border border-white/20 rounded-3xl p-8 text-center max-w-md mx-4">
               <div className="text-6xl mb-6 transition-all duration-700 ease-in-out" key={setupStepIndex}>
-                {SETUP_STEPS[setupStepIndex]?.emoji || '⏳'}
+                {getSetupSteps(t)[setupStepIndex]?.emoji || '⏳'}
               </div>
               <h2 className="text-xl font-semibold text-white mb-3">
                 {t('principal.setup.settingUpSchool')}
