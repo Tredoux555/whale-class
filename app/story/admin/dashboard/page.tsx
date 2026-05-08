@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useAuthSession } from './hooks/useAuthSession';
 import { useOnlineUsers } from './hooks/useOnlineUsers';
 import { useLoginLogs } from './hooks/useLoginLogs';
@@ -21,6 +21,9 @@ import { VaultTab } from './components/VaultTab';
 import { FilesTab } from './components/FilesTab';
 import { SystemControlsTab } from './components/SystemControlsTab';
 import { Screensaver } from './components/Screensaver';
+
+import { usePullToRefresh } from '@/lib/story/use-pull-to-refresh';
+import PullRefreshIndicator from '@/lib/story/PullRefreshIndicator';
 
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState<TabType>('online');
@@ -235,6 +238,33 @@ export default function AdminDashboard() {
     );
   };
 
+  // Pull-to-refresh — refreshes whatever the active tab is showing, plus
+  // online users (always visible in sidebar count). Disabled while the
+  // session is still loading or when the screensaver is locked.
+  const handlePullRefresh = useCallback(async () => {
+    const tasks: Array<Promise<unknown> | void> = [loadOnlineUsers()];
+    if (activeTab === 'messages') tasks.push(loadMessages());
+    if (activeTab === 'logs') tasks.push(loadLoginLogs());
+    if (activeTab === 'vault' && vaultUnlocked) tasks.push(loadVaultFiles());
+    if (activeTab === 'files') tasks.push(loadSharedFiles());
+    if (activeTab === 'system') tasks.push(loadSystemStats());
+    await Promise.allSettled(tasks.map(t => Promise.resolve(t)));
+  }, [
+    activeTab,
+    vaultUnlocked,
+    loadOnlineUsers,
+    loadMessages,
+    loadLoginLogs,
+    loadVaultFiles,
+    loadSharedFiles,
+    loadSystemStats,
+  ]);
+
+  const pullState = usePullToRefresh({
+    onRefresh: handlePullRefresh,
+    disabled: isLoading || isLocked,
+  });
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
@@ -248,6 +278,12 @@ export default function AdminDashboard() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+      <PullRefreshIndicator
+        pullDistance={pullState.pullDistance}
+        isRefreshing={pullState.isRefreshing}
+        threshold={pullState.threshold}
+        variant="admin"
+      />
       <Header onLogout={handleLogout} />
 
       <div className="max-w-7xl mx-auto p-6">
@@ -288,7 +324,6 @@ export default function AdminDashboard() {
                 messageSent={messageSent}
                 messageError={messageError}
                 selectedImage={selectedImage}
-                selectedVideo={selectedVideo}
               />
             )}
 
