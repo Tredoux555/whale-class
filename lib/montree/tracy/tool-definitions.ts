@@ -116,6 +116,57 @@ export const TRACY_TOOLS: Tool[] = [
     },
   },
 
+  // ── COMMUNICATION TOOLS ──────────────────────────────────────────────
+  // Session 97 — Tracy scans parent threads and drafts principal replies.
+  // The principal always pulls the trigger; these tools READ + DRAFT only.
+  // Sending a drafted reply is done by the principal in the thread UI
+  // (with the ai_drafted indicator). Tracy never sends autonomously.
+  {
+    name: 'list_recent_threads',
+    description:
+      "List the most recent message threads in the school. Use when the principal asks vague things like \"what's going on in messages?\", \"any parent threads I should look at?\", \"who's been talking to whom?\". Returns up to 20 threads with subject, type, last sender, last snippet, and unread count. Optional filters: thread_type ('parent_teacher' | 'parent_principal' | 'internal' | 'broadcast' | 'group'), classroom_id, unread_only.",
+    input_schema: {
+      type: 'object',
+      properties: {
+        thread_type: {
+          type: 'string',
+          enum: ['parent_teacher', 'parent_principal', 'internal', 'broadcast', 'group'],
+        },
+        classroom_id: { type: 'string' },
+        unread_only: { type: 'boolean' },
+      },
+    },
+  },
+  {
+    name: 'scan_parent_thread',
+    description:
+      "Read a parent-teacher (or parent-principal) thread end-to-end and produce a chief-of-staff briefing for the principal. Returns sentiment, recurring concerns, whether the teacher is handling it well or needs principal support, and one concrete recommended next move. Use when the principal asks \"how is this conversation going?\", \"what's happening in [parent's] thread?\", \"should I jump in on [child's parent]?\" — and you already have the thread_id. Keep your relayed answer 60-100 words.",
+    input_schema: {
+      type: 'object',
+      properties: {
+        thread_id: { type: 'string' },
+      },
+      required: ['thread_id'],
+    },
+  },
+  {
+    name: 'draft_parent_response',
+    description:
+      "Draft a reply to a parent on the principal's behalf, voice-matched from her recent messages. Returns a single text body the principal can send (or edit and send). Use when she asks \"draft my reply\", \"write a response to [parent]\", or accepts your offer to draft. Optional `guidance` parameter passes specific direction (e.g. \"keep it warm but firm about the policy\"). The principal always pulls the trigger — your job ends at returning the draft text. Present it inline with a brief one-line lead-in like \"Here's a draft you can send:\".",
+    input_schema: {
+      type: 'object',
+      properties: {
+        thread_id: { type: 'string' },
+        guidance: {
+          type: 'string',
+          description:
+            "Optional direction for tone or content. E.g., \"keep it warm but firm about the late pickup policy\".",
+        },
+      },
+      required: ['thread_id'],
+    },
+  },
+
   // ── ACTION TOOL: draft_teacher_welcome_messages ──────────────────────
   // The chief-of-staff pattern: principal accepts an offer, Tracy executes
   // and produces a copy-paste-ready deliverable. v1 only does welcome

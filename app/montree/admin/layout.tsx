@@ -9,8 +9,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import {
   Home,
   GraduationCap,
-  Users,
-  Activity,
+  MessageSquare,
   Settings,
   Menu,
   X,
@@ -54,6 +53,13 @@ interface NavItem {
   match?: (pathname: string) => boolean;
 }
 
+// Session 97 — sidebar reorganized for principal-as-overseer mental model.
+// People → Communication (the new comms hub: by-classroom, all-teachers,
+// all-parents, custom-groups, inbox).
+// Pulse hidden from nav (route still exists; principal doesn't need extra
+// data nagging them). Activity / Reports / Billing all surface under Settings
+// (via dedicated links from the Settings page) so the principal can dig in
+// when she wants but isn't presented with them by default.
 const NAV: NavItem[] = [
   { href: '/montree/admin', label: 'Today', icon: Home, match: (p) => p === '/montree/admin' },
   {
@@ -63,25 +69,18 @@ const NAV: NavItem[] = [
     match: (p) => p.startsWith('/montree/admin/classrooms'),
   },
   {
-    href: '/montree/admin/people',
-    label: 'People',
-    icon: Users,
+    href: '/montree/admin/communication',
+    label: 'Communication',
+    icon: MessageSquare,
     match: (p) =>
+      p.startsWith('/montree/admin/communication') ||
+      // Old surfaces still match here so the user lands cleanly when they
+      // navigate via a stale link / bookmark.
       p.startsWith('/montree/admin/people') ||
       p.startsWith('/montree/admin/teachers') ||
       p.startsWith('/montree/admin/students') ||
       p.startsWith('/montree/admin/parent-codes') ||
       p.startsWith('/montree/admin/import'),
-  },
-  {
-    href: '/montree/admin/pulse',
-    label: 'Pulse',
-    icon: Activity,
-    match: (p) =>
-      p.startsWith('/montree/admin/pulse') ||
-      p.startsWith('/montree/admin/activity') ||
-      p.startsWith('/montree/admin/reports') ||
-      p.startsWith('/montree/admin/billing'),
   },
   {
     href: '/montree/admin/settings',
@@ -91,7 +90,9 @@ const NAV: NavItem[] = [
       p.startsWith('/montree/admin/settings') ||
       p.startsWith('/montree/admin/billing') ||
       p.startsWith('/montree/admin/features') ||
-      p.startsWith('/montree/admin/import'),
+      p.startsWith('/montree/admin/pulse') ||
+      p.startsWith('/montree/admin/activity') ||
+      p.startsWith('/montree/admin/reports'),
   },
 ];
 

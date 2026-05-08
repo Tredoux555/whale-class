@@ -288,6 +288,132 @@ export async function executeTracyTool(
         };
       }
 
+      // ── COMMUNICATION: list_recent_threads ───────────────────────
+      case 'list_recent_threads': {
+        const threadType = typeof input.thread_type === 'string' ? input.thread_type : null;
+        const classroomId = typeof input.classroom_id === 'string' ? input.classroom_id : null;
+        const unreadOnly = input.unread_only === true;
+
+        let q = supabase
+          .from('montree_message_threads')
+          .select('id, thread_type, subject, classroom_id, child_id, last_message_at')
+          .eq('school_id', schoolId)
+          .is('archived_at', null)
+          .order('last_message_at', { ascending: false })
+          .limit(20);
+        if (threadType) q = q.eq('thread_type', threadType);
+        if (classroomId) q = q.eq('classroom_id', classroomId);
+
+        const { data: threads, error: tErr } = await q;
+        if (tErr) return { success: false, error: tErr.message };
+        if (!threads || threads.length === 0) {
+          return {
+            success: true,
+            data: { threads: [] },
+            result_summary: '0 threads',
+          };
+        }
+
+        const ids = threads.map((t) => t.id);
+        const { data: lastMsgs } = await supabase
+          .from('montree_thread_messages')
+          .select('thread_id, body, sender_role, sender_name, sent_at')
+          .in('thread_id', ids)
+          .is('deleted_at', null)
+          .order('sent_at', { ascending: false })
+          .limit(200);
+
+        const latestByThread = new Map<string, { body: string; sender_name: string; sender_role: string; sent_at: string }>();
+        for (const m of lastMsgs || []) {
+          if (!latestByThread.has(m.thread_id)) {
+            latestByThread.set(m.thread_id, {
+              body: m.body,
+              sender_name: m.sender_name,
+              sender_role: m.sender_role,
+              sent_at: m.sent_at,
+            });
+          }
+        }
+
+        const enriched = threads.map((t) => {
+          const last = latestByThread.get(t.id);
+          return {
+            id: t.id,
+            thread_type: t.thread_type,
+            subject: t.subject,
+            classroom_id: t.classroom_id,
+            child_id: t.child_id,
+            last_message_at: t.last_message_at,
+            last_snippet: last ? last.body.slice(0, 200) : null,
+            last_sender_name: last ? last.sender_name : null,
+            last_sender_role: last ? last.sender_role : null,
+          };
+        });
+
+        // (unread_only is reserved for the future — currently the tool returns
+        // the full list and Sonnet decides what's relevant. Keeping the
+        // parameter in the schema so we can wire unread tracking later
+        // without a tool-definition change.)
+        void unreadOnly;
+        return {
+          success: true,
+          data: { threads: enriched },
+          result_summary: `${enriched.length} thread(s)`,
+        };
+      }
+
+      // ── COMMUNICATION: scan_parent_thread ────────────────────────
+      case 'scan_parent_thread': {
+        const threadId = String(input.thread_id || '').trim();
+        if (!threadId) return { success: false, error: 'thread_id required' };
+
+        // The scan endpoint is POST (writes nothing — just runs Opus).
+        const scanRes = await fetch(`${origin}/api/montree/admin/tracy/scan-thread`, {
+          method: 'POST',
+          headers: { cookie: cookieHeader, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ thread_id: threadId, locale }),
+        });
+        if (!scanRes.ok) {
+          const body = await scanRes.text().catch(() => '');
+          return {
+            success: false,
+            error: `scan-thread returned ${scanRes.status}: ${body.slice(0, 200)}`,
+          };
+        }
+        const scanData = await scanRes.json();
+        return {
+          success: true,
+          data: scanData,
+          result_summary: 'thread scanned',
+        };
+      }
+
+      // ── COMMUNICATION: draft_parent_response ─────────────────────
+      case 'draft_parent_response': {
+        const threadId = String(input.thread_id || '').trim();
+        if (!threadId) return { success: false, error: 'thread_id required' };
+        const guidance = typeof input.guidance === 'string' ? input.guidance : undefined;
+
+        const draftRes = await fetch(`${origin}/api/montree/admin/tracy/draft-response`, {
+          method: 'POST',
+          headers: { cookie: cookieHeader, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ thread_id: threadId, guidance, locale }),
+        });
+        if (!draftRes.ok) {
+          const body = await draftRes.text().catch(() => '');
+          return {
+            success: false,
+            error: `draft-response returned ${draftRes.status}: ${body.slice(0, 200)}`,
+          };
+        }
+        const draftData = await draftRes.json();
+        return {
+          success: true,
+          data: draftData,
+          result_summary: 'draft ready',
+        };
+      }
+
       // ── ACTION TOOL: draft_teacher_welcome_messages ──────────────
       case 'draft_teacher_welcome_messages': {
         const rawScope = String(input.scope || 'all').trim();

@@ -71,6 +71,15 @@ interface Teacher {
   login_code: string | null;
   last_login: string | null;
   is_active: boolean;
+  photos_this_week?: number;
+  notes_this_week?: number;
+}
+
+interface ProgressBucket {
+  mastered: number;
+  practicing: number;
+  presented: number;
+  by_area?: Record<string, { mastered: number; practicing: number; presented: number }>;
 }
 
 interface Student {
@@ -79,6 +88,8 @@ interface Student {
   photo_url: string | null;
   age: number | null;
   is_active: boolean;
+  progress?: ProgressBucket;
+  photos_this_week?: number;
 }
 
 interface ClassroomDetail {

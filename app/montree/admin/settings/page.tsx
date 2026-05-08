@@ -7,7 +7,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { toast, Toaster } from 'sonner';
-import { Building2, KeyRound, UserRound, CreditCard, ArrowRight } from 'lucide-react';
+import { Building2, KeyRound, UserRound, CreditCard, ArrowRight, Activity, BarChart3, Sliders, Upload } from 'lucide-react';
 import { useI18n } from '@/lib/montree/i18n';
 
 interface School {
@@ -306,6 +306,22 @@ export default function AdminSettingsPage() {
 
         <Divider />
 
+        <SectionHeader icon={<Sliders size={18} strokeWidth={1.75} color={T.emerald} />}>
+          Advanced &amp; reporting
+        </SectionHeader>
+        <p style={{ color: T.textMuted, fontSize: 12, marginTop: -8, marginBottom: 14 }}>
+          Optional surfaces. The dashboard hides them by default — open from here when you want to dig in.
+        </p>
+        <div style={{ display: 'grid', gap: 8, marginBottom: 8 }}>
+          <ManageLink href="/montree/admin/pulse" icon={<Activity size={14} strokeWidth={1.75} />} label="Pulse" />
+          <ManageLink href="/montree/admin/activity" icon={<Activity size={14} strokeWidth={1.75} />} label="Activity" />
+          <ManageLink href="/montree/admin/reports" icon={<BarChart3 size={14} strokeWidth={1.75} />} label="Reports" />
+          <ManageLink href="/montree/admin/features" icon={<Sliders size={14} strokeWidth={1.75} />} label="Feature flags" />
+          <ManageLink href="/montree/admin/import" icon={<Upload size={14} strokeWidth={1.75} />} label="Bulk import" />
+        </div>
+
+        <Divider />
+
         <button
           onClick={handleSave}
           disabled={saving}
@@ -428,6 +444,33 @@ function Row({ label, children }: { label: string; children: React.ReactNode }) 
       <span style={{ color: T.textSecondary, fontSize: 13 }}>{label}</span>
       {children}
     </div>
+  );
+}
+
+function ManageLink({ href, icon, label }: { href: string; icon: React.ReactNode; label: string }) {
+  return (
+    <Link
+      href={href}
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        padding: '10px 14px',
+        background: 'rgba(8,20,12,0.45)',
+        border: '1px solid rgba(52,211,153,0.12)',
+        borderRadius: 10,
+        color: T.textSecondary,
+        fontSize: 13,
+        fontWeight: 500,
+        textDecoration: 'none',
+      }}
+    >
+      <span style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        <span style={{ color: T.emeraldDim }}>{icon}</span>
+        {label}
+      </span>
+      <ArrowRight size={14} strokeWidth={2} color={T.emeraldDim} />
+    </Link>
   );
 }
 
