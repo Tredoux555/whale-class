@@ -724,7 +724,13 @@ function TeacherRow({
       data-teacher-menu
       className="teacher-row"
       style={{
+        // STACKING CONTEXT TRAP: backdropFilter creates its own stacking
+        // context per row, so the kebab dropdown (zIndex 10 inside this row)
+        // can't paint above the NEXT row's context unless THIS row also has
+        // an explicit zIndex. Bump it high when our menu is open so the
+        // dropdown floats above sibling rows below.
         position: 'relative',
+        zIndex: menuOpen ? 30 : 1,
         background: T.cardBg,
         backdropFilter: 'blur(14px)',
         border: isLead
