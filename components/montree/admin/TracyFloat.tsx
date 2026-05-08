@@ -20,6 +20,19 @@
 // Hidden-greeting rendering trick: the user turn with text exactly equal
 // to '[GREETING]' is filtered out at render time on both the float and
 // the chat page. The server logs it normally — super-admin can see it.
+//
+// PRIVACY (Session — May 8 2026):
+//   All Tracy localStorage keys are scoped by school_id (see
+//   lib/montree/tracy/storage-keys.ts). Logging into different schools on
+//   the same browser never bleeds conversation between them. Old unscoped
+//   keys are now orphaned; browser eviction handles cleanup.
+//
+// FREE-TIER GRACEFUL DEGRADATION:
+//   When the principal-agent route 402s (school has no AI tier yet), the
+//   float does NOT show a red error — it replaces the assistant turn with
+//   a static welcome introducing Tracy and pointing to tredoux555@gmail.com
+//   for activation. hasMet stays false on the failed kickoff so the next
+//   session re-attempts the introduction once AI is enabled.
 'use client';
 
 import { useEffect, useRef, useState, useCallback } from 'react';
@@ -27,6 +40,12 @@ import { usePathname } from 'next/navigation';
 import { Send, Minus } from 'lucide-react';
 import TracyAvatar from './TracyAvatar';
 import { useI18n } from '@/lib/montree/i18n';
+import {
+  tracyKeys,
+  getSchoolIdFromStorage,
+  TRACY_FLOAT_OPEN_KEY,
+  type TracyStorageKeys,
+} from '@/lib/montree/tracy/storage-keys';
 
 // Dark forest tokens — match the cockpit palette
 const T = {
@@ -67,34 +86,37 @@ interface ConvTurn {
   costUsd?: number;
 }
 
-// SHARED with /montree/admin/page.tsx — conversation history is one log.
-const CONV_KEY_PREFIX = 'montree.admin.agentConv.';
-const CONV_ID_KEY = 'montree.admin.agentConvId';
 const MAX_PERSISTED_TURNS = 30;
-
-// Float-specific state keys
-const GREETED_SESSION_KEY = 'montree.tracyFloat.greetedSession';
-const FLOAT_OPEN_KEY = 'montree.tracyFloat.open';
-// Persistent across sessions — flips to true the first time Tracy ever
-// introduces herself to this principal on this device. Subsequent
-// greetings skip the introduction.
-const HAS_MET_KEY = 'montree.tracyFloat.hasMet';
 
 const GREETING_PROMPT = '[GREETING]';
 const GREETING_FIRST_PROMPT = '[GREETING_FIRST]';
 
-// Both kickoff prompts are filtered from render on every chat surface — the
-// principal sees Tracy's reply, never her own synthetic prompt.
+// The synthetic kickoff prompts are filtered from render on every chat surface
+// — the principal sees Tracy's reply, never her own kickoff prompt.
 function isHiddenKickoff(text: string): boolean {
   return text === GREETING_PROMPT || text === GREETING_FIRST_PROMPT;
 }
 
+function isKickoff(text: string): boolean {
+  return isHiddenKickoff(text);
+}
+
+// Static welcome shown when the principal-agent route 402s (school has no
+// active AI tier yet). Replaces the assistant turn — no red error UI. The
+// principal still gets the introduction; AI features light up once Tredoux
+// flips the school to a paid tier.
+const FREE_TIER_STATIC_WELCOME = `Hi, I'm Tracy. I'll be your assistant once your school's AI features are switched on — Montessori expert in your pocket, drafting messages for your teachers, helping you handle parent questions, all the school operations work.
+
+Right now AI isn't active for this school. Drop me a line at tredoux555@gmail.com and I'll get you set up.
+
+→ Looking forward to working with you.`;
+
 // ── Helpers ──────────────────────────────────────────────────────────────
 
-function readConv(convId: string): ConvTurn[] {
+function readConv(keys: TracyStorageKeys, convId: string): ConvTurn[] {
   if (typeof window === 'undefined') return [];
   try {
-    const raw = localStorage.getItem(CONV_KEY_PREFIX + convId);
+    const raw = localStorage.getItem(keys.conversation(convId));
     if (!raw) return [];
     const parsed = JSON.parse(raw);
     return Array.isArray(parsed) ? parsed.slice(-MAX_PERSISTED_TURNS) : [];
@@ -103,11 +125,15 @@ function readConv(convId: string): ConvTurn[] {
   }
 }
 
-function writeConv(convId: string, turns: ConvTurn[]) {
+function writeConv(
+  keys: TracyStorageKeys,
+  convId: string,
+  turns: ConvTurn[]
+) {
   if (typeof window === 'undefined') return;
   try {
     localStorage.setItem(
-      CONV_KEY_PREFIX + convId,
+      keys.conversation(convId),
       JSON.stringify(turns.slice(-MAX_PERSISTED_TURNS))
     );
   } catch {
@@ -188,6 +214,11 @@ export default function TracyFloat() {
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const initialisedRef = useRef(false);
 
+  // School-scoped storage keys — built once on mount from localStorage's
+  // montree_school. If we end up with no schoolId (no logged-in principal),
+  // we never fire a greeting and the panel stays inert until next mount.
+  const keysRef = useRef<TracyStorageKeys | null>(null);
+
   // ── Initial mount: read state, fire greeting if first session login ─
   useEffect(() => {
     if (initialisedRef.current) return;
@@ -201,92 +232,98 @@ export default function TracyFloat() {
         : null;
     if (!principalData) return;
 
-    // Resolve convId
+    // Resolve schoolId. Without it we cannot scope keys, and we'd risk
+    // bleeding conversations between schools — refuse to proceed.
+    const schoolId = getSchoolIdFromStorage();
+    if (!schoolId) return;
+    const keys = tracyKeys(schoolId);
+    keysRef.current = keys;
+
+    // Resolve convId — scoped to this school
     let id = '';
     try {
-      id = localStorage.getItem(CONV_ID_KEY) || '';
+      id = localStorage.getItem(keys.conversationId) || '';
     } catch {
       id = '';
     }
     if (!id) {
       id = newConvId();
       try {
-        localStorage.setItem(CONV_ID_KEY, id);
+        localStorage.setItem(keys.conversationId, id);
       } catch {
         // ignore
       }
     }
     setConvId(id);
-    setTurns(readConv(id));
+    setTurns(readConv(keys, id));
 
-    // Persisted open/closed state (defaults to closed)
+    // Persisted open/closed state (defaults to closed). UI-only key — not
+    // school-scoped because panel position is a personal preference, not data.
     let persistedOpen = false;
     try {
-      persistedOpen = localStorage.getItem(FLOAT_OPEN_KEY) === 'true';
+      persistedOpen = localStorage.getItem(TRACY_FLOAT_OPEN_KEY) === 'true';
     } catch {
       // ignore
     }
     setOpen(persistedOpen);
 
-    // Once-per-session greeting trigger
+    // Once-per-session greeting trigger — also school-scoped so logging out
+    // of school A and into school B in the same tab still triggers Tracy's
+    // greeting on B.
     let alreadyGreeted = false;
     try {
-      alreadyGreeted = sessionStorage.getItem(GREETED_SESSION_KEY) === 'true';
+      alreadyGreeted = sessionStorage.getItem(keys.greetedSession) === 'true';
     } catch {
-      // sessionStorage disabled — treat as not greeted (will fire once per page
-      // load, which is a graceful fallback for incognito or locked-down
-      // browsers).
+      // sessionStorage disabled — treat as not greeted (will fire once per
+      // page load, graceful for incognito or locked-down browsers).
     }
     if (!alreadyGreeted) {
       try {
-        sessionStorage.setItem(GREETED_SESSION_KEY, 'true');
+        sessionStorage.setItem(keys.greetedSession, 'true');
       } catch {
         // ignore
       }
       // Open the panel so the greeting is visible immediately.
       setOpen(true);
       try {
-        localStorage.setItem(FLOAT_OPEN_KEY, 'true');
+        localStorage.setItem(TRACY_FLOAT_OPEN_KEY, 'true');
       } catch {
         // ignore
       }
 
-      // First-meeting check — if Tracy has never introduced herself to this
-      // principal on this device, fire [GREETING_FIRST] (full introduction +
-      // situational + offer). Otherwise fire the short [GREETING] (no
-      // reintroduction). hasMet is persistent across sessions, sessionStorage
-      // is per-tab/session — so a logout/login resumes with [GREETING], not
-      // a re-introduction.
+      // First-meeting check — fire [GREETING_FIRST] (full introduction) if
+      // Tracy has never properly introduced herself to this principal on this
+      // school. Otherwise fire the short [GREETING].
+      //
+      // CRITICAL: we do NOT preemptively flip hasMet to true here. We only
+      // flip it when a successful response arrives (sendMessage marks it on
+      // the 'done' SSE event). This way Free-tier schools — where the route
+      // 402s — keep firing [GREETING_FIRST] every session until AI is enabled
+      // and the real introduction lands.
       let hasMet = false;
       try {
-        hasMet = localStorage.getItem(HAS_MET_KEY) === 'true';
+        hasMet = localStorage.getItem(keys.hasMet) === 'true';
       } catch {
         // treat as not met if storage disabled
       }
       const kickoff = hasMet ? GREETING_PROMPT : GREETING_FIRST_PROMPT;
-      if (!hasMet) {
-        try {
-          localStorage.setItem(HAS_MET_KEY, 'true');
-        } catch {
-          // ignore
-        }
-      }
       // Fire the greeting in the background — don't block render.
       void fireGreeting(id, kickoff);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Persist conversation on every change
+  // Persist conversation on every change — uses the school-scoped keys
+  // resolved at mount.
   useEffect(() => {
-    if (convId) writeConv(convId, turns);
+    if (convId && keysRef.current) writeConv(keysRef.current, convId, turns);
   }, [convId, turns]);
 
   // Persist open/closed state
   useEffect(() => {
     if (!mounted) return;
     try {
-      localStorage.setItem(FLOAT_OPEN_KEY, open ? 'true' : 'false');
+      localStorage.setItem(TRACY_FLOAT_OPEN_KEY, open ? 'true' : 'false');
     } catch {
       // ignore
     }
@@ -415,6 +452,12 @@ export default function TracyFloat() {
         history.pop();
       }
 
+      // Track whether the response succeeded — used to flip hasMet=true on a
+      // GREETING_FIRST that actually landed (so Tracy doesn't keep
+      // re-introducing herself once she's done it once).
+      let succeeded = false;
+      const kickoff = isKickoff(questionText);
+
       try {
         const res = await fetch('/api/montree/admin/principal-agent', {
           method: 'POST',
@@ -428,13 +471,51 @@ export default function TracyFloat() {
           }),
         });
 
-        if (res.status === 402 || !res.ok) {
+        if (res.status === 402) {
+          // FREE-TIER GRACEFUL DEGRADATION:
+          // The school doesn't have an active AI tier yet. Don't surface a
+          // red error — Tracy still introduces herself with a static welcome
+          // and points the principal to tredoux555@gmail.com for activation.
+          // hasMet stays false, so once AI is enabled, the next session
+          // fires GREETING_FIRST again and the real Tracy meets her.
+          if (kickoff) {
+            setTurns((prev) =>
+              prev.map((tt, i) =>
+                i === prev.length - 1
+                  ? {
+                      ...tt,
+                      pending: false,
+                      text: FREE_TIER_STATIC_WELCOME,
+                    }
+                  : tt
+              )
+            );
+            if (!open) setHasUnread(true);
+          } else {
+            // User typed a question against a Free-tier school. Show a
+            // friendly tier-message error so they know what to do.
+            setTurns((prev) =>
+              prev.map((tt, i) =>
+                i === prev.length - 1
+                  ? {
+                      ...tt,
+                      pending: false,
+                      error:
+                        "AI features aren't active for this school yet. Email tredoux555@gmail.com to switch them on.",
+                    }
+                  : tt
+              )
+            );
+          }
+          return;
+        }
+
+        if (!res.ok) {
           const payload = await res.json().catch(() => ({}));
           const msg =
             payload?.error ||
-            (res.status === 402
-              ? t('tracy.errors.tier') || 'AI tier required.'
-              : t('tracy.errors.transient') || 'Something went wrong.');
+            t('tracy.errors.transient') ||
+            'Something went wrong.';
           setTurns((prev) =>
             prev.map((tt, i) =>
               i === prev.length - 1
@@ -476,6 +557,8 @@ export default function TracyFloat() {
             try {
               const evt = JSON.parse(json);
               handleEvent(evt);
+              if (evt.type === 'done') succeeded = true;
+              if (evt.type === 'error') succeeded = false;
               // If the panel is closed and Tracy started speaking, mark unread.
               if (
                 !open &&
@@ -487,6 +570,21 @@ export default function TracyFloat() {
               // ignore malformed event
             }
             nlIdx = buffer.indexOf('\n\n');
+          }
+        }
+
+        // Mark hasMet=true once the GREETING_FIRST kickoff has landed
+        // successfully. Means Tracy has properly introduced herself once on
+        // this school — subsequent sessions skip the introduction.
+        if (
+          succeeded &&
+          questionText === GREETING_FIRST_PROMPT &&
+          keysRef.current
+        ) {
+          try {
+            localStorage.setItem(keysRef.current.hasMet, 'true');
+          } catch {
+            // ignore
           }
         }
       } catch (err) {

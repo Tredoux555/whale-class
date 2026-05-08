@@ -30,6 +30,11 @@ import { Send, RotateCcw } from 'lucide-react';
 import { useI18n } from '@/lib/montree/i18n';
 import LanguageToggle from '@/components/montree/LanguageToggle';
 import TracyAvatar from '@/components/montree/admin/TracyAvatar';
+import {
+  tracyKeys,
+  getSchoolIdFromStorage,
+  type TracyStorageKeys,
+} from '@/lib/montree/tracy/storage-keys';
 
 const T = {
   emerald: '#34d399',
@@ -91,14 +96,17 @@ interface ConvTurn {
   costUsd?: number;
 }
 
-const CONV_KEY_PREFIX = 'montree.admin.agentConv.';
-const CONV_ID_KEY = 'montree.admin.agentConvId';
 const MAX_PERSISTED_TURNS = 30;
 
-function readConv(convId: string): ConvTurn[] {
+// Conversation storage is school-scoped (lib/montree/tracy/storage-keys.ts).
+// readConv / writeConv take the keys object resolved from the school the
+// principal is currently logged into so two schools on the same browser
+// can never see each other's conversation.
+
+function readConv(keys: TracyStorageKeys, convId: string): ConvTurn[] {
   if (typeof window === 'undefined') return [];
   try {
-    const raw = localStorage.getItem(CONV_KEY_PREFIX + convId);
+    const raw = localStorage.getItem(keys.conversation(convId));
     if (!raw) return [];
     const parsed = JSON.parse(raw);
     return Array.isArray(parsed) ? parsed.slice(-MAX_PERSISTED_TURNS) : [];
@@ -107,11 +115,11 @@ function readConv(convId: string): ConvTurn[] {
   }
 }
 
-function writeConv(convId: string, turns: ConvTurn[]) {
+function writeConv(keys: TracyStorageKeys, convId: string, turns: ConvTurn[]) {
   if (typeof window === 'undefined') return;
   try {
     localStorage.setItem(
-      CONV_KEY_PREFIX + convId,
+      keys.conversation(convId),
       JSON.stringify(turns.slice(-MAX_PERSISTED_TURNS))
     );
   } catch {
@@ -380,6 +388,10 @@ export default function AdminAgentPage() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
+  // School-scoped storage keys — built once on mount. If we end up with no
+  // schoolId (no logged-in principal), the page redirects to login.
+  const keysRef = useRef<TracyStorageKeys | null>(null);
+
   // ── Initial load ────────────────────────────────────────────────────
   useEffect(() => {
     const principalData = localStorage.getItem('montree_principal');
@@ -388,22 +400,32 @@ export default function AdminAgentPage() {
       return;
     }
 
+    // Resolve the school's storage namespace. Without a schoolId we can't
+    // safely read or write conversation state — bail to login.
+    const schoolId = getSchoolIdFromStorage();
+    if (!schoolId) {
+      router.replace('/montree/login-select');
+      return;
+    }
+    const keys = tracyKeys(schoolId);
+    keysRef.current = keys;
+
     let id = '';
     try {
-      id = localStorage.getItem(CONV_ID_KEY) || '';
+      id = localStorage.getItem(keys.conversationId) || '';
     } catch {
       id = '';
     }
     if (!id) {
       id = newConvId();
       try {
-        localStorage.setItem(CONV_ID_KEY, id);
+        localStorage.setItem(keys.conversationId, id);
       } catch {
         // ignore
       }
     }
     setConvId(id);
-    setTurns(readConv(id));
+    setTurns(readConv(keys, id));
 
     fetch('/api/montree/admin/today', { credentials: 'include' })
       .then((res) => {
@@ -424,9 +446,10 @@ export default function AdminAgentPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Persist conversation on every change
+  // Persist conversation on every change — uses the school-scoped keys
+  // resolved at mount.
   useEffect(() => {
-    if (convId) writeConv(convId, turns);
+    if (convId && keysRef.current) writeConv(keysRef.current, convId, turns);
   }, [convId, turns]);
 
   // Auto-scroll to bottom on new content
@@ -440,11 +463,14 @@ export default function AdminAgentPage() {
     const id = newConvId();
     setConvId(id);
     setTurns([]);
-    try {
-      localStorage.setItem(CONV_ID_KEY, id);
-      localStorage.removeItem(CONV_KEY_PREFIX + (convId || ''));
-    } catch {
-      // ignore
+    const keys = keysRef.current;
+    if (keys) {
+      try {
+        localStorage.setItem(keys.conversationId, id);
+        if (convId) localStorage.removeItem(keys.conversation(convId));
+      } catch {
+        // ignore
+      }
     }
     inputRef.current?.focus();
   }, [convId]);
