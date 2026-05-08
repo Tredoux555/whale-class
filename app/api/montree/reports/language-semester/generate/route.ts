@@ -91,13 +91,9 @@ function cleanText(s: string): string {
   return s.replace(/\\n/g, ' ').replace(/\n/g, ' ').replace(/\s+/g, ' ').trim();
 }
 
-/** Trim text to a maximum number of words. Hard cap. */
-function trimToWords(s: string, maxWords: number): string {
-  const cleaned = cleanText(s);
-  const words = cleaned.split(/\s+/);
-  if (words.length <= maxWords) return cleaned;
-  return words.slice(0, maxWords).join(' ');
-}
+// `trimToWords` is defined further down (line ~306) — the v7
+// sentence-boundary-aware version. Used by both the short academic report
+// (45-word hard cap) and the longer semester-report blocks.
 
 // --- Sonnet ----------------------------------------------------------------
 
@@ -190,8 +186,9 @@ Write the monthly academic report paragraph.`;
     throw new Error('Sonnet did not return tool_use output');
   }
   const raw = (block.input as { paragraph: string }).paragraph || '';
-  // Clean and trim to 45 words max (hard cap)
-  return trimToWords(raw, 45);
+  // Clean line breaks first, then trim to 45 words max (hard cap).
+  // trimToWords (defined below) walks back to a complete sentence boundary.
+  return trimToWords(cleanText(raw), 45);
 }
 
 // ── 6M: Full semester report tool ───────────────────────────────────────────
