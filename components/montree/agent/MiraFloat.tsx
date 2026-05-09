@@ -1,33 +1,33 @@
-// components/montree/agent/GloriaFloat.tsx
+// components/montree/agent/MiraFloat.tsx
 //
-// Gloria as a floating growth partner that lives in the agent dashboard
-// shell. Visible on every /montree/agent/* page EXCEPT /montree/agent/gloria
-// (the dedicated chat page IS Gloria there — the float would just duplicate
+// Mira as a floating growth partner that lives in the agent dashboard
+// shell. Visible on every /montree/agent/* page EXCEPT /montree/agent/mira
+// (the dedicated chat page IS Mira there — the float would just duplicate
 // the surface).
 //
 // Mirror of TracyFloat (components/montree/admin/TracyFloat.tsx) with these
 // adaptations:
 //   - Identity resolved from /api/montree/agent/me (NOT localStorage 'montree_school')
 //   - Storage keys scoped by agent_id (NOT school_id)
-//   - Hits /api/montree/agent/gloria (NOT /api/montree/admin/principal-agent)
+//   - Hits /api/montree/agent/mira (NOT /api/montree/admin/principal-agent)
 //   - hasMet flag flips ONLY on successful 'done' SSE event (audit fix from
 //     Session 97 commit aa23920b — same rule as Tracy)
 //
 // BEHAVIOUR:
 //   - First mount of the browser session → fire [GREETING_FIRST] (or
-//     [GREETING] if Gloria has met this agent before), stream her situational
+//     [GREETING] if Mira has met this agent before), stream her situational
 //     reading back, auto-open the panel.
 //   - Subsequent mounts (page navigation in the same session) → respect
 //     persisted open/closed state. Do NOT re-greet.
-//   - Conversation state SHARED with /montree/agent/gloria full chat page
-//     (same convId, same localStorage keys via gloriaKeys).
+//   - Conversation state SHARED with /montree/agent/mira full chat page
+//     (same convId, same localStorage keys via miraKeys).
 //   - Question-form action lines ending in "?" surface inline Yes/No buttons.
 //
-// PRIVACY: All Gloria localStorage keys are scoped by agent_id. Logging into
+// PRIVACY: All Mira localStorage keys are scoped by agent_id. Logging into
 // different agent accounts on the same browser never bleeds conversations.
 //
-// NO TIER GATE: agents are paid partners, Gloria is platform infrastructure
-// for them. The /api/montree/agent/gloria route enforces a per-day rate limit
+// NO TIER GATE: agents are paid partners, Mira is platform infrastructure
+// for them. The /api/montree/agent/mira route enforces a per-day rate limit
 // internally — the float just surfaces 4xx/5xx errors as friendly inline notes.
 
 'use client';
@@ -35,10 +35,10 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { usePathname } from 'next/navigation';
 import { Send, Minus } from 'lucide-react';
-import GloriaAvatar from './GloriaAvatar';
-import { gloriaKeys } from '@/lib/montree/gloria/storage-keys';
+import MiraAvatar from './MiraAvatar';
+import { miraKeys } from '@/lib/montree/mira/storage-keys';
 
-const GLORIA_FLOAT_OPEN_KEY = 'montree.gloriaFloat.open';
+const MIRA_FLOAT_OPEN_KEY = 'montree.miraFloat.open';
 
 // Dark forest tokens — same palette as TracyFloat / agent dashboard.
 const T = {
@@ -92,7 +92,7 @@ function isKickoff(text: string): boolean {
 function readConv(agentId: string, convId: string): ConvTurn[] {
   if (typeof window === 'undefined') return [];
   try {
-    const raw = localStorage.getItem(gloriaKeys.agentConv(agentId, convId));
+    const raw = localStorage.getItem(miraKeys.agentConv(agentId, convId));
     if (!raw) return [];
     const parsed = JSON.parse(raw);
     return Array.isArray(parsed) ? parsed.slice(-MAX_PERSISTED_TURNS) : [];
@@ -105,7 +105,7 @@ function writeConv(agentId: string, convId: string, turns: ConvTurn[]) {
   if (typeof window === 'undefined') return;
   try {
     localStorage.setItem(
-      gloriaKeys.agentConv(agentId, convId),
+      miraKeys.agentConv(agentId, convId),
       JSON.stringify(turns.slice(-MAX_PERSISTED_TURNS))
     );
   } catch {
@@ -163,7 +163,7 @@ interface AgentLite {
 
 // ── Component ────────────────────────────────────────────────────────────
 
-export default function GloriaFloat() {
+export default function MiraFloat() {
   const pathname = usePathname() || '';
 
   const [agent, setAgent] = useState<AgentLite | null>(null);
@@ -196,14 +196,14 @@ export default function GloriaFloat() {
         // Resolve convId — scoped to this agent
         let id = '';
         try {
-          id = localStorage.getItem(gloriaKeys.agentConvId(a.id)) || '';
+          id = localStorage.getItem(miraKeys.agentConvId(a.id)) || '';
         } catch {
           id = '';
         }
         if (!id) {
           id = newConvId();
           try {
-            localStorage.setItem(gloriaKeys.agentConvId(a.id), id);
+            localStorage.setItem(miraKeys.agentConvId(a.id), id);
           } catch {
             /* ignore */
           }
@@ -214,7 +214,7 @@ export default function GloriaFloat() {
         // Persisted open/closed state (UI-only key)
         let persistedOpen = false;
         try {
-          persistedOpen = localStorage.getItem(GLORIA_FLOAT_OPEN_KEY) === 'true';
+          persistedOpen = localStorage.getItem(MIRA_FLOAT_OPEN_KEY) === 'true';
         } catch {
           /* ignore */
         }
@@ -223,31 +223,31 @@ export default function GloriaFloat() {
         // Once-per-session greeting trigger — scoped per agent
         let alreadyGreeted = false;
         try {
-          alreadyGreeted = sessionStorage.getItem(gloriaKeys.greetedSession(a.id)) === 'true';
+          alreadyGreeted = sessionStorage.getItem(miraKeys.greetedSession(a.id)) === 'true';
         } catch {
           /* sessionStorage disabled — treat as not greeted */
         }
         if (!alreadyGreeted) {
           try {
-            sessionStorage.setItem(gloriaKeys.greetedSession(a.id), 'true');
+            sessionStorage.setItem(miraKeys.greetedSession(a.id), 'true');
           } catch {
             /* ignore */
           }
           // Open the panel so the greeting is visible immediately.
           setOpen(true);
           try {
-            localStorage.setItem(GLORIA_FLOAT_OPEN_KEY, 'true');
+            localStorage.setItem(MIRA_FLOAT_OPEN_KEY, 'true');
           } catch {
             /* ignore */
           }
 
           // First-meeting check — fire [GREETING_FIRST] (full introduction) if
-          // Gloria has never properly introduced herself to this agent.
+          // Mira has never properly introduced herself to this agent.
           // CRITICAL: hasMet flips ONLY on a successful 'done' SSE event,
           // not preemptively. Same rule as Tracy. Audit fix from Session 97.
           let hasMet = false;
           try {
-            hasMet = localStorage.getItem(gloriaKeys.hasMet(a.id)) === 'true';
+            hasMet = localStorage.getItem(miraKeys.hasMet(a.id)) === 'true';
           } catch {
             /* ignore */
           }
@@ -274,7 +274,7 @@ export default function GloriaFloat() {
   useEffect(() => {
     if (!mounted) return;
     try {
-      localStorage.setItem(GLORIA_FLOAT_OPEN_KEY, open ? 'true' : 'false');
+      localStorage.setItem(MIRA_FLOAT_OPEN_KEY, open ? 'true' : 'false');
     } catch {
       /* ignore */
     }
@@ -388,7 +388,7 @@ export default function GloriaFloat() {
       let succeeded = false;
 
       try {
-        const res = await fetch('/api/montree/agent/gloria', {
+        const res = await fetch('/api/montree/agent/mira', {
           method: 'POST',
           credentials: 'include',
           headers: { 'Content-Type': 'application/json' },
@@ -453,17 +453,17 @@ export default function GloriaFloat() {
         // Flip hasMet=true ONLY when the GREETING_FIRST kickoff lands successfully.
         if (succeeded && questionText === GREETING_FIRST_PROMPT) {
           try {
-            localStorage.setItem(gloriaKeys.hasMet(currentAgent.id), 'true');
+            localStorage.setItem(miraKeys.hasMet(currentAgent.id), 'true');
           } catch {
             /* ignore */
           }
         }
       } catch (err) {
-        console.error('[GloriaFloat] stream error', err);
+        console.error('[MiraFloat] stream error', err);
         setTurns((prev) =>
           prev.map((tt, i) =>
             i === prev.length - 1
-              ? { ...tt, pending: false, error: 'Could not reach Gloria.' }
+              ? { ...tt, pending: false, error: 'Could not reach Mira.' }
               : tt
           )
         );
@@ -507,7 +507,7 @@ export default function GloriaFloat() {
   };
 
   // Hide on the dedicated chat page — must come AFTER all hooks.
-  if (pathname === '/montree/agent/gloria') return null;
+  if (pathname === '/montree/agent/mira') return null;
   if (!mounted || !agent) return null;
 
   // Filter out hidden kickoff turns
@@ -526,7 +526,7 @@ export default function GloriaFloat() {
     return (
       <button
         onClick={() => setOpen(true)}
-        aria-label="Open Gloria"
+        aria-label="Open Mira"
         style={{
           position: 'fixed',
           top: 16,
@@ -546,9 +546,9 @@ export default function GloriaFloat() {
           justifyContent: 'center',
           transition: 'transform 0.18s ease, box-shadow 0.18s ease',
         }}
-        className="gloria-float-trigger"
+        className="mira-float-trigger"
       >
-        <GloriaAvatar size={42} />
+        <MiraAvatar size={42} />
         {hasUnread && (
           <span
             aria-hidden
@@ -566,7 +566,7 @@ export default function GloriaFloat() {
           />
         )}
         <style jsx>{`
-          .gloria-float-trigger:hover {
+          .mira-float-trigger:hover {
             transform: translateY(-1px);
             box-shadow: 0 8px 26px rgba(0, 0, 0, 0.5),
               0 0 0 4px rgba(232, 201, 106, 0.12);
@@ -580,7 +580,7 @@ export default function GloriaFloat() {
   return (
     <div
       role="dialog"
-      aria-label="Gloria"
+      aria-label="Mira"
       style={{
         position: 'fixed',
         top: 16,
@@ -611,7 +611,7 @@ export default function GloriaFloat() {
           background: 'rgba(0,0,0,0.18)',
         }}
       >
-        <GloriaAvatar size={32} />
+        <MiraAvatar size={32} />
         <div
           style={{
             flex: 1,
@@ -621,11 +621,11 @@ export default function GloriaFloat() {
             letterSpacing: -0.2,
           }}
         >
-          Gloria
+          Mira
         </div>
         <button
           onClick={() => setOpen(false)}
-          aria-label="Close Gloria"
+          aria-label="Close Mira"
           style={{
             background: 'transparent',
             border: 'none',
@@ -664,8 +664,8 @@ export default function GloriaFloat() {
               fontSize: 14,
             }}
           >
-            <GloriaAvatar size={28} />
-            <span>Gloria here. Ask me anything about your pipeline.</span>
+            <MiraAvatar size={28} />
+            <span>Mira here. Ask me anything about your pipeline.</span>
           </div>
         ) : (
           visibleTurns.map((turn, i) => {
@@ -714,7 +714,7 @@ export default function GloriaFloat() {
             value={question}
             onChange={(e) => setQuestion(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="Ask Gloria…"
+            placeholder="Ask Mira…"
             rows={1}
             maxLength={1500}
             disabled={submitting}
@@ -805,7 +805,7 @@ function AssistantBubble({
 
   return (
     <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
-      <GloriaAvatar size={28} />
+      <MiraAvatar size={28} />
       <div style={{ flex: 1, minWidth: 0, paddingTop: 2 }}>
         {showThinkingDots && (
           <div
