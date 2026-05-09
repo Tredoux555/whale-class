@@ -164,6 +164,7 @@ export default function SchoolsTab({
     const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
     return schools.filter(s => !s.last_active_at || s.last_active_at < thirtyDaysAgo);
   }, [schools]);
+  const agentReferredSchools = useMemo(() => schools.filter(s => Boolean(s.agent)), [schools]);
 
   const toggleSelect = (id: string) => {
     setSelected(prev => {
@@ -254,6 +255,15 @@ export default function SchoolsTab({
           <button onClick={selectInactive} className="px-3 py-1.5 bg-amber-900/40 text-amber-400 rounded-lg text-xs hover:bg-amber-900/60 border border-amber-800/50">
             Inactive 30d+ ({inactiveSchools.length})
           </button>
+          {agentReferredSchools.length > 0 && (
+            <button
+              onClick={() => setSelected(new Set(agentReferredSchools.map(s => s.id)))}
+              className="px-3 py-1.5 bg-amber-900/30 text-amber-300 rounded-lg text-xs hover:bg-amber-900/50 border border-amber-700/40"
+              title="Schools referred by an agent"
+            >
+              🤝 Agent-referred ({agentReferredSchools.length})
+            </button>
+          )}
         </div>
         {selected.size > 0 && (
           <button
@@ -455,6 +465,18 @@ export default function SchoolsTab({
                             )}
                             {!school.owner_name && !school.owner_email && (
                               <p className="text-slate-600 text-xs italic">no contact info</p>
+                            )}
+                            {/* Agent attribution — who referred this school. */}
+                            {school.agent && (
+                              <p className="text-xs flex items-center gap-1.5">
+                                <span aria-hidden>🤝</span>
+                                <span className="text-amber-300/90">
+                                  Agent · {school.agent.name || school.agent.email || 'unknown'}
+                                  {!school.agent.is_agent && (
+                                    <span className="text-slate-600 ml-1.5 italic">(not flagged is_agent)</span>
+                                  )}
+                                </span>
+                              </p>
                             )}
                             {/* Phase 4 — Stripe billing indicator. Only rendered
                                 when there's something to say (school has a Stripe

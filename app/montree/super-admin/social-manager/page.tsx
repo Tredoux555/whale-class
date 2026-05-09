@@ -2,41 +2,16 @@
 
 import Link from 'next/link';
 
+// Session 97 — culled stub modules (vault, credentials, tracker, calendar)
+// from the visible hub. Routes still exist but aren't surfaced. Bring them
+// back when they're actually built.
 const MODULES = [
-  {
-    name: 'Content Vault',
-    icon: '🎬',
-    desc: 'Final videos with captions & hashtags',
-    href: '/montree/super-admin/social-manager/vault',
-    color: 'emerald',
-  },
-  {
-    name: 'Account Credentials',
-    icon: '🔐',
-    desc: 'Encrypted passwords for all platforms',
-    href: '/montree/super-admin/social-manager/credentials',
-    color: 'blue',
-  },
   {
     name: 'Social Media Guru',
     icon: '🧠',
     desc: 'AI advisor trained on social media strategy',
     href: '/montree/super-admin/social-manager/guru',
     color: 'purple',
-  },
-  {
-    name: 'Post Tracker',
-    icon: '📊',
-    desc: 'Log what was posted where & when',
-    href: '/montree/super-admin/social-manager/tracker',
-    color: 'amber',
-  },
-  {
-    name: 'Content Calendar',
-    icon: '📅',
-    desc: 'Plan upcoming posts (coming soon)',
-    href: '/montree/super-admin/social-manager/calendar',
-    color: 'rose',
   },
 ];
 
@@ -112,46 +87,10 @@ export default function SocialManagerPage() {
           })}
         </div>
 
-        {/* Quick Stats (Placeholder) */}
-        <div className="mt-8 bg-slate-800 rounded-2xl p-6 border border-slate-700">
-          <h2 className="text-lg font-semibold text-white mb-4">📈 Recent Activity</h2>
-          <div className="grid grid-cols-3 gap-4 text-center">
-            <div>
-              <div className="text-3xl font-bold text-emerald-400">17</div>
-              <div className="text-slate-400 text-sm mt-1">FB Groups Posted</div>
-            </div>
-            <div>
-              <div className="text-3xl font-bold text-blue-400">815K</div>
-              <div className="text-slate-400 text-sm mt-1">Combined Reach</div>
-            </div>
-            <div>
-              <div className="text-3xl font-bold text-purple-400">3</div>
-              <div className="text-slate-400 text-sm mt-1">Videos Uploaded</div>
-            </div>
-          </div>
-        </div>
-
-        {/* Platforms */}
-        <div className="mt-6 bg-slate-800 rounded-2xl p-6 border border-slate-700">
-          <h2 className="text-lg font-semibold text-white mb-4">🌐 Connected Platforms</h2>
-          <div className="flex flex-wrap gap-3">
-            <div className="px-4 py-2 bg-gradient-to-br from-purple-600 to-pink-600 rounded-lg text-white text-sm font-medium">
-              Instagram @montreexyz
-            </div>
-            <div className="px-4 py-2 bg-black rounded-lg text-white text-sm font-medium">
-              TikTok @montreexyz
-            </div>
-            <div className="px-4 py-2 bg-blue-600 rounded-lg text-white text-sm font-medium">
-              Facebook /montreexyz
-            </div>
-            <div className="px-4 py-2 bg-blue-700 rounded-lg text-white text-sm font-medium">
-              LinkedIn
-            </div>
-            <div className="px-4 py-2 bg-red-600 rounded-lg text-white text-sm font-medium">
-              YouTube
-            </div>
-          </div>
-        </div>
+        <p className="mt-8 text-xs text-slate-600 italic max-w-md">
+          The vault / credentials / tracker / calendar modules are reserved for
+          future build. Routes exist but aren&apos;t surfaced from this hub yet.
+        </p>
       </div>
     </div>
   );

@@ -46,10 +46,12 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Failed to fetch schools' }, { status: 500 });
     }
 
-    // 2. Fetch counts (classrooms, teachers, children) + login codes labelled by who-they-belong-to.
-    // Pulls from BOTH montree_teachers (teacher codes) AND montree_school_admins (principal codes)
-    // so the super-admin display can label every code with the person it unlocks.
-    const [classroomRes, teacherRes, childrenRes, teacherCodesRes, principalCodesRes] = await Promise.all([
+    // 2. Fetch counts (classrooms, teachers, children) + login codes labelled by who-they-belong-to,
+    // + agent attribution (which agent referred each school via founding_teacher_id).
+    // Pulls from BOTH montree_teachers (teacher codes + agent rows) AND montree_school_admins
+    // (principal codes) so the super-admin display can label every code with the person it unlocks
+    // AND surface which agent each school is attributed to.
+    const [classroomRes, teacherRes, childrenRes, teacherCodesRes, principalCodesRes, agentsRes] = await Promise.all([
       supabase.from('montree_classrooms').select('school_id'),
       supabase.from('montree_teachers').select('school_id'),
       supabase.from('montree_children').select('school_id').not('school_id', 'is', null),
@@ -61,6 +63,13 @@ export async function GET(request: NextRequest) {
         .from('montree_school_admins')
         .select('school_id, login_code, name, is_active')
         .not('login_code', 'is', null),
+      // Pull every active agent so we can resolve founding_teacher_id → agent identity.
+      // Agents are montree_teachers rows with is_agent=true; we widen the select so a
+      // referrer who happens to be a teacher (not just a shell agent) still resolves cleanly.
+      supabase
+        .from('montree_teachers')
+        .select('id, name, email, is_agent')
+        .eq('is_active', true),
     ]);
 
     // Build count maps (O(N) instead of O(N²))
@@ -129,6 +138,14 @@ export async function GET(request: NextRequest) {
     const loginCodeMap: Record<string, string[]> = {};
     Object.keys(codesBySchool).forEach(schoolId => {
       loginCodeMap[schoolId] = codesBySchool[schoolId].map(c => c.code);
+    });
+
+    // Agent identity lookup keyed by montree_teachers.id. Used to resolve a
+    // school's founding_teacher_id → readable agent label.
+    interface AgentLite { id: string; name: string | null; email: string | null; is_agent: boolean }
+    const agentById: Record<string, AgentLite> = {};
+    (agentsRes.data || []).forEach((a: AgentLite) => {
+      agentById[a.id] = a;
     });
 
     // 3. Fetch last activity — guru interactions (most reliable activity signal)
@@ -259,6 +276,17 @@ export async function GET(request: NextRequest) {
         ai_tier: aiTierMap[school.id] || 'free',
         login_codes: loginCodeMap[school.id] || [],
         login_codes_labelled: codesBySchool[school.id] || [],
+        // Agent attribution: who referred this school. NULL when school
+        // signed up directly. Populated by the trial-instant flow when a
+        // referral code was used (see Session 90 commit e0ee3c7d).
+        agent: school.founding_teacher_id && agentById[school.founding_teacher_id]
+          ? {
+              id: agentById[school.founding_teacher_id].id,
+              name: agentById[school.founding_teacher_id].name,
+              email: agentById[school.founding_teacher_id].email,
+              is_agent: agentById[school.founding_teacher_id].is_agent,
+            }
+          : null,
       };
     });
 

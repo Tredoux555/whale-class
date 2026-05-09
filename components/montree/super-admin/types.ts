@@ -39,6 +39,17 @@ export interface School {
     name: string;
     active: boolean;
   }>;
+  /**
+   * Agent attribution. NULL when the school signed up directly (no referral
+   * code used). Populated when montree_schools.founding_teacher_id resolves
+   * to a montree_teachers row.
+   */
+  agent?: {
+    id: string;
+    name: string | null;
+    email: string | null;
+    is_agent: boolean;
+  } | null;
   // Phase 4 — Stripe billing fields. All optional because pre-Phase-4
   // schools won't have any of these populated.
   stripe_customer_id?: string | null;
