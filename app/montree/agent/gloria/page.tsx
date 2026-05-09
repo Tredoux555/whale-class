@@ -9,7 +9,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import GloriaAvatar from '@/components/montree/agent/GloriaAvatar';
-import AgentNav from '@/components/montree/agent/AgentNav';
 import { gloriaKeys } from '@/lib/montree/gloria/storage-keys';
 import { Send, Sparkles } from 'lucide-react';
 
@@ -313,28 +312,10 @@ export default function GloriaChatPage() {
     (t) => !(t.role === 'user' && (t.text === '[GREETING]' || t.text === '[GREETING_FIRST]'))
   );
 
+  // Layout provides background + AgentNav. We just render our content.
   return (
-    <div
-      style={{
-        minHeight: '100vh',
-        background: T.bg,
-        color: T.textPrimary,
-        fontFamily: T.sans,
-        position: 'relative',
-      }}
-    >
-      <div
-        aria-hidden
-        style={{
-          position: 'fixed',
-          inset: 0,
-          background: T.glow,
-          pointerEvents: 'none',
-          zIndex: 0,
-        }}
-      />
+    <div style={{ color: T.textPrimary, fontFamily: T.sans }}>
       <div style={{ position: 'relative', zIndex: 1 }}>
-        <AgentNav />
         <main style={{ maxWidth: 760, margin: '0 auto', padding: '24px 16px 80px 16px' }}>
           <header
             style={{
