@@ -245,6 +245,18 @@ export default function GloriaChatPage() {
               ...turn,
               cost_usd: payload.cost_usd as number,
             }));
+            // Flip hasMet flag ONLY on successful done (not on error/abort).
+            // If the greeting POST fails (network, 503, rate limit), the next
+            // session should still fire [GREETING_FIRST] so the agent eventually
+            // meets Gloria properly. Mirrors Tracy's pattern from Session 96.
+            if (pendingFirstMeetingRef.current && agent) {
+              pendingFirstMeetingRef.current = false;
+              try {
+                localStorage.setItem(gloriaKeys.hasMet(agent.id), '1');
+              } catch {
+                /* localStorage unavailable — silently fail; next session retries */
+              }
+            }
           } else if (t === 'error') {
             updateAssistant((turn) => ({
               ...turn,
@@ -278,21 +290,20 @@ export default function GloriaChatPage() {
   }, [agent, turns.length]);
 
   // Auto-fire greeting prompt on first mount of a fresh conversation.
+  // hasMet flag is flipped ONLY on a successful `done` SSE event (handled
+  // inside send()), not here — if the request fails, the next session should
+  // fire [GREETING_FIRST] again so the agent eventually meets Gloria properly.
+  // Mirrors Tracy's pattern from Session 96.
   const greetedRef = useRef(false);
+  const pendingFirstMeetingRef = useRef(false);
   useEffect(() => {
     if (greetedRef.current) return;
     if (!agent || !conversationId) return;
     if (turns.length > 0) return;
     greetedRef.current = true;
     const isFirstMeeting = greetingState === 'first_meeting';
+    pendingFirstMeetingRef.current = isFirstMeeting;
     void send(isFirstMeeting ? '[GREETING_FIRST]' : '[GREETING]');
-    if (isFirstMeeting) {
-      try {
-        localStorage.setItem(gloriaKeys.hasMet(agent.id), '1');
-      } catch {
-        /* ignore */
-      }
-    }
     // Disable lint — we intentionally only fire once per page load.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [agent, conversationId]);
