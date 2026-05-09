@@ -46,12 +46,21 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Failed to fetch schools' }, { status: 500 });
     }
 
-    // 2. Fetch counts (classrooms, teachers, children) + teacher login codes — all in parallel
-    const [classroomRes, teacherRes, childrenRes, teacherCodesRes] = await Promise.all([
+    // 2. Fetch counts (classrooms, teachers, children) + login codes labelled by who-they-belong-to.
+    // Pulls from BOTH montree_teachers (teacher codes) AND montree_school_admins (principal codes)
+    // so the super-admin display can label every code with the person it unlocks.
+    const [classroomRes, teacherRes, childrenRes, teacherCodesRes, principalCodesRes] = await Promise.all([
       supabase.from('montree_classrooms').select('school_id'),
       supabase.from('montree_teachers').select('school_id'),
       supabase.from('montree_children').select('school_id').not('school_id', 'is', null),
-      supabase.from('montree_teachers').select('school_id, login_code').not('login_code', 'is', null),
+      supabase
+        .from('montree_teachers')
+        .select('school_id, login_code, name, role, is_active')
+        .not('login_code', 'is', null),
+      supabase
+        .from('montree_school_admins')
+        .select('school_id, login_code, name, is_active')
+        .not('login_code', 'is', null),
     ]);
 
     // Build count maps (O(N) instead of O(N²))
@@ -67,12 +76,59 @@ export async function GET(request: NextRequest) {
     (childrenRes.data || []).forEach(s => {
       childCountMap[s.school_id] = (childCountMap[s.school_id] || 0) + 1;
     });
-    const loginCodeMap: Record<string, string[]> = {};
+
+    // Labelled login codes per school. Each entry: { code, role, name, active }.
+    // Sorted principals first, then lead teachers, then teachers, then assistants —
+    // so the super-admin row shows the most important codes first.
+    interface LabelledCode { code: string; role: 'principal' | 'lead_teacher' | 'teacher' | 'assistant_teacher'; name: string; active: boolean; }
+    const ROLE_RANK: Record<LabelledCode['role'], number> = {
+      principal: 0,
+      lead_teacher: 1,
+      teacher: 2,
+      assistant_teacher: 3,
+    };
+    const codesBySchool: Record<string, LabelledCode[]> = {};
+    const seenPerSchool: Record<string, Set<string>> = {};
+
+    const pushCode = (schoolId: string, entry: LabelledCode) => {
+      if (!codesBySchool[schoolId]) codesBySchool[schoolId] = [];
+      if (!seenPerSchool[schoolId]) seenPerSchool[schoolId] = new Set();
+      if (seenPerSchool[schoolId].has(entry.code)) return;
+      seenPerSchool[schoolId].add(entry.code);
+      codesBySchool[schoolId].push(entry);
+    };
+
+    (principalCodesRes.data || []).forEach(p => {
+      if (!p.login_code) return;
+      pushCode(p.school_id, {
+        code: p.login_code,
+        role: 'principal',
+        name: p.name || 'Principal',
+        active: p.is_active !== false,
+      });
+    });
     (teacherCodesRes.data || []).forEach(t => {
-      if (!loginCodeMap[t.school_id]) loginCodeMap[t.school_id] = [];
-      if (t.login_code && !loginCodeMap[t.school_id].includes(t.login_code)) {
-        loginCodeMap[t.school_id].push(t.login_code);
-      }
+      if (!t.login_code) return;
+      const r = (t.role || 'teacher') as 'lead_teacher' | 'teacher' | 'assistant_teacher';
+      const safeRole: LabelledCode['role'] =
+        r === 'lead_teacher' || r === 'teacher' || r === 'assistant_teacher' ? r : 'teacher';
+      pushCode(t.school_id, {
+        code: t.login_code,
+        role: safeRole,
+        name: t.name || 'Teacher',
+        active: t.is_active !== false,
+      });
+    });
+
+    // Sort each school's codes by role rank.
+    Object.keys(codesBySchool).forEach(schoolId => {
+      codesBySchool[schoolId].sort((a, b) => ROLE_RANK[a.role] - ROLE_RANK[b.role]);
+    });
+
+    // Backward-compat flat array (other callers / search filter still rely on it).
+    const loginCodeMap: Record<string, string[]> = {};
+    Object.keys(codesBySchool).forEach(schoolId => {
+      loginCodeMap[schoolId] = codesBySchool[schoolId].map(c => c.code);
     });
 
     // 3. Fetch last activity — guru interactions (most reliable activity signal)
@@ -202,6 +258,7 @@ export async function GET(request: NextRequest) {
         api_calls_this_month: apiCallsMap[school.id] || 0,
         ai_tier: aiTierMap[school.id] || 'free',
         login_codes: loginCodeMap[school.id] || [],
+        login_codes_labelled: codesBySchool[school.id] || [],
       };
     });
 
