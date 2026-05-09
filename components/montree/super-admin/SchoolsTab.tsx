@@ -480,12 +480,53 @@ export default function SchoolsTab({
                                 </span>
                               </p>
                             )}
-                            {(school.login_codes || []).length > 0 && (
+                            {(school.login_codes_labelled && school.login_codes_labelled.length > 0) ? (
+                              <div className="text-xs flex items-start gap-1.5">
+                                <span aria-hidden className="text-slate-500 mt-0.5">🔑</span>
+                                <div className="flex flex-wrap gap-x-2 gap-y-1">
+                                  {school.login_codes_labelled.map((entry) => {
+                                    const roleLabel =
+                                      entry.role === 'principal'
+                                        ? 'Principal'
+                                        : entry.role === 'lead_teacher'
+                                          ? 'Lead'
+                                          : entry.role === 'assistant_teacher'
+                                            ? 'Assistant'
+                                            : 'Teacher';
+                                    const roleColor =
+                                      entry.role === 'principal'
+                                        ? 'text-amber-400'
+                                        : entry.role === 'lead_teacher'
+                                          ? 'text-emerald-400'
+                                          : entry.role === 'assistant_teacher'
+                                            ? 'text-slate-400'
+                                            : 'text-slate-300';
+                                    return (
+                                      <span
+                                        key={`${entry.code}-${entry.role}-${entry.name}`}
+                                        className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded border border-slate-700/50 bg-slate-800/40"
+                                        title={`${roleLabel}: ${entry.name}${entry.active ? '' : ' (inactive)'}`}
+                                      >
+                                        <span className={`font-medium ${roleColor}`}>{roleLabel}</span>
+                                        <span className="text-slate-500">·</span>
+                                        <span className="text-slate-300 max-w-[140px] truncate">{entry.name}</span>
+                                        <span className="text-slate-500">·</span>
+                                        <span className="font-mono text-slate-400">{entry.code}</span>
+                                        {!entry.active && (
+                                          <span className="text-slate-600 text-[10px] uppercase tracking-wide">inactive</span>
+                                        )}
+                                      </span>
+                                    );
+                                  })}
+                                </div>
+                              </div>
+                            ) : (school.login_codes || []).length > 0 ? (
+                              // Backward-compat: if labelled list isn't available, fall back to flat list
                               <p className="text-slate-600 text-xs font-mono flex items-center gap-1.5">
                                 <span aria-hidden>🔑</span>
                                 <span>{(school.login_codes || []).join(', ')}</span>
                               </p>
-                            )}
+                            ) : null}
                           </div>
                         </div>
                       </td>

@@ -28,6 +28,17 @@ export interface School {
   signup_region?: string | null;
   signup_timezone?: string | null;
   login_codes?: string[];
+  /**
+   * Login codes labelled with the role + person they unlock. Sorted with
+   * principal first, then lead teacher, teacher, assistant teacher.
+   * Renders in the super-admin Schools row so each code shows whose it is.
+   */
+  login_codes_labelled?: Array<{
+    code: string;
+    role: 'principal' | 'lead_teacher' | 'teacher' | 'assistant_teacher';
+    name: string;
+    active: boolean;
+  }>;
   // Phase 4 — Stripe billing fields. All optional because pre-Phase-4
   // schools won't have any of these populated.
   stripe_customer_id?: string | null;
