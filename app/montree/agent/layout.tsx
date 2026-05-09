@@ -4,12 +4,18 @@
 // (matches /montree, /montree/try, /montree/login-select). Top nav with
 // agent name + sign-out. Individual pages plug into {children}.
 //
+// Session 97 — GloriaFloat injected here so every /montree/agent/* page has
+// Gloria one click away from the top-right corner. The float hides itself
+// on /montree/agent/gloria (the dedicated chat page IS Gloria there) and
+// stays inert if no agent session is active.
+//
 // /montree/agent/onboarding (Stripe return URL — Phase 3) is purposefully
 // excluded from the global nav — it's a one-off landing page reached via
 // Stripe's hosted form, the agent isn't logged in there yet.
 
 import type { Metadata } from 'next';
 import AgentNav from '@/components/montree/agent/AgentNav';
+import GloriaFloat from '@/components/montree/agent/GloriaFloat';
 
 export const metadata: Metadata = {
   title: 'Agent — Montree',
@@ -38,6 +44,11 @@ export default function AgentLayout({ children }: { children: React.ReactNode })
         <AgentNav />
         <main className="flex-1">{children}</main>
       </div>
+
+      {/* Gloria — agent's chief-of-staff float. Visible top-right on every
+          agent page except /montree/agent/gloria itself (the float hides
+          there since that page IS Gloria in full). */}
+      <GloriaFloat />
     </div>
   );
 }
