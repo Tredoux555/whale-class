@@ -273,23 +273,112 @@ Every endpoint: `verifySchoolRequest()` entry guard, school_id filter on every S
 
 **Verification status:**
 - ✅ Three consecutive clean audits achieved (3x AUDIT cycle complete).
-- ✅ Migration 190 idempotent + FK-cascading + indexed.
+- ✅ Migration 190 idempotent + FK-cascading + indexed. **CONFIRMED RUN.**
 - ✅ All 10 new endpoints school-scoped + auth-gated.
 - ✅ All Tracy tool dispatch cases return cleanly.
 - ✅ Inefficient client-side filter on directory route fixed (now server-side via `.in()`).
-- ⏳ User to run migration 190 in Supabase + verify all 14 production checks (see handoff doc).
 
-**🚨 Next session priorities (ordered):**
-1. **🚨 Run migration 190 in Supabase SQL Editor.**
-2. Walk the 14-step production verification (see `docs/handoffs/SESSION_97_HANDOFF.md`).
-3. Migrate parent portal `/montree/parent/messages` to the new threads system (currently still on legacy `montree_messages`). Add Reply CTA on Weekly Wrap report viewer.
-4. Render the "This week's activity" UI panel in classroom drill-down (data already flowing from API).
-5. Run `npm run i18n:fill-ui` to backfill the 11 non-English locales for the new UI strings.
-6. Carry-over Stripe wiring per `docs/STRIPE_BILLING_SETUP.md`. Migration 188 still needs to be run.
-7. Resend domain verification for `montree.xyz`.
-8. Issue Sarah's agent login.
-9. Phase 5 Payout calculator. Phase 6 super-admin Money tab.
-10. Outreach follow-ups (FAMM Argentina, Cambridge Montessori Global, Otari NZ, Lions Gate, Montessori Norge). 14+ bounce addresses still need DB `status='bounced'` updates.
+---
+
+### ⚡ Session 97 (continued) — Login codes labelled + Gloria + Super-admin retheme (May 9, 2026)
+
+After shipping the Communication system, the session continued with five more commits covering super-admin polish, Gloria (the agent's frontline AI), and a thorough super-admin retheme. **All migrations confirmed run by user. All 7 commits live in `origin/main`.**
+
+**Commits (oldest → newest):**
+- `47382fb3` — Communication system + Tracy parent-comms (above)
+- `3c58f6dd` — Super-admin Schools rows: login codes labelled by role + person
+- `54d52133` — Gloria — agent's frontline AI on Opus
+- `a10bc050` — Super-admin cleanup (sub-pages): agent attribution + dark-forest API Usage + culled social-manager stubs
+- `b7346029` — Fix agent attribution: removed `is_active=true` filter that was hiding shell agents
+- `aa23920b` — Gloria: hasMet flag flips only on successful done event (audit catch)
+- `30642ba8` — Super-admin main page retheme to canonical dark forest
+
+**A. Login codes labelled (`3c58f6dd`):**
+
+The super-admin Schools tab was showing a flat comma list of codes. Now each code renders as a chip with role + person + code + active state. Color-coded: principal=amber, lead=emerald, teacher=slate, assistant=lighter slate. Sorted principal-first. API now fetches BOTH `montree_teachers` codes AND `montree_school_admins` codes (was teachers-only). Returns `login_codes_labelled` array alongside legacy flat `login_codes` for backward compat.
+
+**B. Gloria — agent's frontline AI on Opus (`54d52133`, `aa23920b`):**
+
+Mirror of Tracy's architecture, agent-scoped. Same SSE plumbing, same `→ ` action-line marker, same "always pulls the trigger" rule.
+
+| File | Role |
+|------|------|
+| `migrations/191_gloria_agent_log.sql` | NEW — `montree_agent_gloria_log` table. **CONFIRMED RUN.** |
+| `lib/montree/gloria/storage-keys.ts` | Per-agent localStorage namespace |
+| `lib/montree/gloria/system-prompt.ts` | Opus prompt — chief-of-staff voice for the agent |
+| `lib/montree/gloria/tool-definitions.ts` | 6 tools (3 read, 3 draft) |
+| `lib/montree/gloria/tool-executor.ts` | Dispatch + draft helpers (Haiku for drafts) |
+| `app/api/montree/agent/gloria/route.ts` | SSE Opus tool-use loop, 80/24h rate limit |
+| `components/montree/agent/GloriaAvatar.tsx` | PNG with CSS "G" fallback |
+| `app/montree/agent/gloria/page.tsx` | Full chat page with first-meeting flow |
+| `components/montree/agent/AgentNav.tsx` | Gloria link added between Dashboard and Schools |
+
+**Tools:**
+- `list_my_schools` — agent's converted schools with student count + revenue share %
+- `list_my_codes` — agent's referral codes (filterable by status)
+- `school_health` — verdict per converted school (`healthy` / `quiet` / `idle` / `never_started`)
+- `draft_outreach_email` — Haiku-drafted cold pitch in 12 languages, country-aware register
+- `draft_followup_email` — warmer, shorter follow-up nudges
+- `translate_text` — Haiku translation preserving tone
+
+**🚨 Architectural rules locked in:**
+1. Agent always pulls the trigger. Gloria drafts, agent sends. No autonomous send.
+2. Cross-pollination filter is `auth.userId` (NOT schoolId — INERT for agent JWTs).
+3. Opus orchestrator + Haiku drafts (cost discipline).
+4. No tier gate (agents are paid partners). Daily 80/24h rate limit catches loops.
+5. Storage keys scoped by `agent_id`. No cross-agent bleed.
+6. `hasMet` flag flips only on successful `done` SSE event (audit fix `aa23920b`). Mirror of Tracy from Session 96.
+7. Drop `/public/gloria-avatar.png` when ready — CSS "G" fallback works in the meantime.
+
+Naming decision: AI named **Gloria** as a tribute to the human Gloria (first real partner). Tracy is principal's chief-of-staff; Gloria is the agent's growth partner. Both Opus, both with the same architecture. If Gloria-the-human ever asks to change the AI's name, it's a constant in the system prompt + a couple UI labels — trivial fix.
+
+**C. Super-admin sub-pages cleanup (`a10bc050`, `b7346029`):**
+
+Three coordinated wins on sub-pages:
+
+1. **Agent attribution on Schools rows** — `/api/montree/super-admin/schools` now resolves `founding_teacher_id` → agent identity. `SchoolsTab.tsx` renders `🤝 Agent · Name` line + `🤝 Agent-referred (N)` filter chip. Critical fix in `b7346029`: removed `is_active=true` filter that was hiding shell agents (Phase 7a creates them with `is_active=false`).
+2. **API Usage page rewritten in dark forest** — most jarring legacy white-themed surface in super-admin. Now slate-900 + emerald + Lora.
+3. **Social Manager hub culled** — 4 stub modules (vault/credentials/tracker/calendar) hidden from visible hub. Only Social Media Guru (wired) shown. Removed fake hardcoded stats and static platform bar. Routes preserved on disk per hide-don't-delete posture.
+
+**D. Super-admin main page retheme (`30642ba8`):**
+
+User feedback: "why is my super admin not changing its face?" — the sub-pages were retheme'd in `a10bc050` but the main page itself stayed slate-900 + slate-800. Fixed:
+
+| Element | Before | After |
+|---|---|---|
+| Background | slate gradient | `#0a1a0f` + radial emerald glow at 88% 8% |
+| Title | Inter bold 24px | Lora serif 30px, `letter-spacing: -0.4px` |
+| Header buttons | solid slate-700 | dark glass cards with emerald border |
+| Onboarding System | solid slate-800 box | glass card; active roles glow emerald |
+| Tabs | solid pill buttons | underline tabs with emerald active state + inline badges |
+| Login screen | solid slate-800 card | glass card on dark forest with backdrop blur |
+
+Lora font loaded via inline `<style jsx global>` (mirror of `/montree/admin/layout.tsx` pattern — there's no super-admin layout file).
+
+**🚨 Session 97 architectural posture summary:**
+
+The canonical "dark forest" theme — `#0a1a0f` base + emerald `#34d399` accent + gold `#E8C96A` Tracy/Gloria action lines + Lora serif headings + Inter body — is now consistent across `/montree/admin`, `/montree/parent/*`, `/montree/agent/*`, `/montree/admin/communication/*`, and the main `/montree/super-admin` page. New surfaces should inherit these tokens.
+
+Cross-pollination contract is now uniformly enforced: principal → school_id, teacher → school_id, parent → child_id (via `montree_parent_children`), agent → user_id (founding_teacher_id). No exceptions.
+
+**🚨 Next session priorities (ordered, after Railway settles `30642ba8`):**
+
+1. **Verify on production** — hard refresh `/montree/super-admin`, walk the 10-step verification in `docs/handoffs/SESSION_97_HANDOFF.md` (Part 5). Test School 1 should show `🤝 Agent · Gloria`. Tab strip should be underline-style. Login screen should be dark forest with glass card.
+2. **Test Gloria end-to-end** — log in as Gloria the human at `montree.xyz` with her code, click "Gloria" tab in AgentNav. Should auto-fire `[GREETING_FIRST]`, call `list_my_schools`, return briefing with `→ ` action line. Try "Draft a cold email to [school] in Mandarin" → expect Haiku-drafted Mandarin pitch.
+3. **Migrate parent portal `/montree/parent/messages`** to the new threads system (currently still on legacy `montree_messages`). Add Reply CTA on Weekly Wrap report viewer.
+4. **Render "This week's activity" UI panel** in classroom drill-down (data already flowing from API per Session 97 Part 1).
+5. **Run `npm run i18n:fill-ui`** to backfill the 11 non-English locales for the new UI strings.
+6. **Carry-over Stripe wiring** per `docs/STRIPE_BILLING_SETUP.md`. Migration 188 still needs to be run.
+7. **Resend domain verification** for `montree.xyz`.
+8. **Issue Sarah's agent login** — Super-admin Referrals → 🔑 button.
+9. **Phase 5 Payout calculator** (~1.5 days). **Phase 6 super-admin Money tab** (~2-3 days).
+10. **Outreach follow-ups** (FAMM Argentina, Cambridge Montessori Global, Otari NZ, Lions Gate, Montessori Norge). 14+ bounce addresses still need DB `status='bounced'` updates.
+11. **Optional polish** — drop `/public/gloria-avatar.png` (1024×1024) when ready. Marketing Hub consolidation (24 sub-routes, all themed but cluttered). community/job-tracker/principal-questions retheme to dark forest.
+
+**🚨 Original next-session priorities from initial Communication system commit (still relevant):**
+1. Run migration 190 in Supabase SQL Editor — ✅ done.
+2. Walk the 14-step production verification — see Part 5 verification list.
+3-10 listed above (now consolidated with continuation work).
 
 ---
 
