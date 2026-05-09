@@ -372,5 +372,142 @@ After the final commit `30642ba8` deploys, hard refresh `/montree/super-admin` a
 
 - **Marketing Hub sub-routes** (24 pages) — already in dark forest theme per audit. Cluttered but functional. Worth a separate session if you want to consolidate / cull.
 - **community/page.tsx, job-tracker/page.tsx, principal-questions/page.tsx** — legacy themed, low-leverage to retheme.
-- **Gloria avatar PNG** — `public/gloria-avatar.png` not in repo; CSS-rendered "G" fallback works fine. Drop a real PNG when ready.
-- **Carry-overs from Session 96** — Stripe wiring, migration 188, Resend domain verification, Sarah's agent login, Phase 5 payout calc, Phase 6 super-admin Money tab.
+- **Mira avatar PNG** — `public/mira-avatar.png` not in repo; CSS-rendered "M" fallback works fine. Drop a real PNG when ready.
+
+---
+
+# Part 6 — GloriaFloat → MiraFloat (commits `612d518b`, `5a42c289`)
+
+After the rename push, two coordinated UX wins on the agent dashboard:
+
+## GloriaFloat (commit `612d518b`)
+
+The agent's float now lives in the top-right corner of every `/montree/agent/*` page (Dashboard, Schools, Codes, Earnings, Payouts, Settings) — gold-bordered avatar that expands into a chat panel. Mirror of TracyFloat from Session 96 but agent-scoped. Auto-fires `[GREETING_FIRST]` or `[GREETING]` on first session login. Conversation state shared with the dedicated `/montree/agent/gloria` chat page via `gloriaKeys` so navigating between surfaces preserves the thread. Hides itself on the dedicated chat page. Per-agent localStorage namespacing — no cross-agent bleed.
+
+Layout integration: `app/montree/agent/layout.tsx` injects the float after `{children}`. Removed duplicate AgentNav and standalone background from the dedicated chat page since the layout already provides them.
+
+## Rename Gloria → Mira (commit `5a42c289`)
+
+User feedback after first real test: "Gloria using Gloria is weird" — the human Gloria (first agent partner) was confusingly the same name as her assistant. Renamed across the codebase via `git mv` + systematic substitutions:
+
+**File renames:**
+- `lib/montree/gloria/` → `lib/montree/mira/` (5 files inside)
+- `app/api/montree/agent/gloria/route.ts` → `app/api/montree/agent/mira/route.ts`
+- `app/montree/agent/gloria/page.tsx` → `app/montree/agent/mira/page.tsx`
+- `components/montree/agent/GloriaAvatar.tsx` → `components/montree/agent/MiraAvatar.tsx`
+- `components/montree/agent/GloriaFloat.tsx` → `components/montree/agent/MiraFloat.tsx`
+
+**Inside the renamed files:** every identifier (`GloriaAvatar` → `MiraAvatar`, `gloriaKeys` → `miraKeys`, `GLORIA_TOOLS` → `MIRA_TOOLS`, `executeGloriaTool` → `executeMiraTool`, `buildGloriaSystemPrompt` → `buildMiraSystemPrompt`, etc.), every storage-key namespace (`montree.agent.miraConvId`, `montree.miraFloat.hasMet`, etc.), every URL (`/api/montree/agent/mira`, `/montree/agent/mira`, `/mira-avatar.png`), CSS classnames (`mira-float-trigger`), DB table writes (`montree_agent_mira_log`), monogram letter (G → M), all "Gloria" prose. Removed the backstory paragraph in the system prompt that named Gloria-the-human as namesake.
+
+**Migration 192 (`migrations/192_rename_gloria_to_mira.sql`):**
+- `ALTER TABLE montree_agent_gloria_log RENAME TO montree_agent_mira_log`
+- Three indexes renamed (`idx_gloria_log_*` → `idx_mira_log_*`)
+- Idempotent (`IF EXISTS` guards)
+- Migration 191 left as historical record (table creation)
+
+**🚨 Migration 192 must be run in Supabase** before next agent test — otherwise the `/api/montree/agent/mira` route's logging insert will fail.
+
+External reference updates: AgentNav nav entry path + label, agent layout.tsx import + JSX + comments.
+
+Naming rationale locked in: Mira beats Gloria/Sarah/Vera because (1) two-syllable rhythm matches Tracy and Guru, (2) no real-person collision in Tredoux's orbit (Sarah is an existing agent, Vera is his sister, Gloria the human is the model partner), (3) reads cleanly across languages (Hindi/Spanish/Slavic all resolve the same way), (4) no whimsy that ages badly.
+
+---
+
+# Part 7 — Stripe + Airwallex business setup (operational milestone, not code)
+
+This wasn't a code session — it was the operational stand-up of Montree's payment infrastructure. The user walked through Stripe HK business verification end-to-end with me reading his uploaded HK incorporation docs (CI, BR, NNC1) and dictating the right values for each form field. Tab-by-tab ride, clean push, account is now LIVE.
+
+## Stripe HK live account (Montree Limited)
+
+| Field | Value |
+|------|-------|
+| Account ID | `acct_1RwNigRngZj3YCje` |
+| Legal name | Montree Limited |
+| CR / BR | 80261361 (8-digit, post-2014 aligned) |
+| Date of incorporation | 23 April 2026 |
+| Registered address | Room 1911, Lee Garden One, 33 Hysan Avenue, Causeway Bay, HK |
+| Industry | Software as a service — business use |
+| Business website | montree.xyz |
+| Statement descriptor | MONTREE |
+| Customer support phone | +86 185 4892 2404 |
+| Owner / Director | Tredoux Willemse, sole, 100% (10,000/10,000 ordinary shares) |
+| DOB | 2 June 1987 |
+| Residential address | Room 3-804, Teacher's Apartment, Daoxiang Lake Campus, No.1 Ningcui Road, Sujiatuo Town, Haidian District, Beijing, China — postcode **100194** |
+| ID | South African passport M00353211 |
+| Tax calculation | Off (deferred — free monitoring once enabled, fee only kicks in after registering somewhere) |
+| Climate commitment | Off (declined — keep margin) |
+
+**KYC was pre-handled by the corporate services agent (Richful Deyong, listed as the company secretary on the NNC1).** When the user reached the review screen, the only blocker was the Beijing residential postcode. After typing `100194` the form unlocked and Stripe activated the live account immediately — no separate passport-upload + selfie step was prompted, which means Richful Deyong submitted the ID documents during initial setup.
+
+**🚨 Hygiene to do post-session:**
+- Stripe → Settings → Team — verify Richful Deyong does NOT have lingering admin access
+- Confirm 2FA is fully on Tredoux's Google account (since Stripe is signed up via Google OAuth)
+- Save Stripe backup code somewhere durable (DONE — locked Apple Note)
+
+## Airwallex HKD Global Account → Stripe payout destination
+
+| Field | Value |
+|------|-------|
+| Bank | DBS Bank (Hong Kong) Limited |
+| Bank code | 016 |
+| Branch | 478 — Hong Kong Centre, Ground Floor, The Center, 99 Queen's Road Central |
+| Account number | 7949855392 |
+| SWIFT | DHBKHKHH |
+| Account holder | Montree Limited |
+| Currency | HKD |
+| Payout schedule | Automatic every Monday (weekly) |
+
+The HKD account already existed in Tredoux's Airwallex (the multi-currency Global Account holding HKD/CNY/USD + 8 others). The HKD specifics were extracted from Airwallex → Wallet → Global Accounts → Hong Kong SAR → drill-in. The "Account holder name must match exactly" warning is real — `Montree Limited` was used verbatim.
+
+## 2FA setup (Stripe)
+
+- **Primary:** Passkey via iCloud Keychain (Touch ID on this Mac, syncs to iPhone via iCloud)
+- **Backup code:** Saved in locked Apple Note (NOT in codebase, NOT in Supabase, NOT in workspace folder)
+- **Authenticator app:** Not yet added — recommended as secondary backup; can be added from Stripe Settings → Authentication later
+
+## InVideo refund — Gmail draft awaiting send
+
+Tredoux subscribed to InVideo Plus Yearly on 1 May 2026 ($200 USD via Stripe receipt #2326-0012 / invoice SQEJXLXH-0001). Within ~30 minutes of purchase he sent a refund request, then a second the same day. Both ignored for 8 days.
+
+I drafted the third-attempt email via the Gmail MCP — Gmail draft ID `r-47687054011919665`, subject "Refund request — third attempt — Plus Yearly, receipt #2326-0012", to `support@invideo.io`. The email leans on the same-day-purchase + same-hour-refund-request as evidence and threatens (1) chargeback dispute, (2) consumer-protection complaint, (3) Trustpilot/Reddit review escalation. Tredoux to send when ready.
+
+The earlier skeleton draft (`r8623193820995158061`) should be deleted from drafts.
+
+## On Chrome MCP control
+
+Loaded the **Claude in Chrome** extension and paired the browser. Selected the user's `Tredoux` device. Navigation was successful for general web — but **Anthropic safety restrictions block navigation to financial dashboards** (Stripe, Airwallex, etc.). This is by design — KYC and money-movement screens are too high-stakes for autonomous AI control. Form-fill was done dictate-and-type instead, which was actually faster than diagnosing every Chrome MCP edge case.
+
+Architectural rule for future sessions: **don't try to drive financial UIs via Chrome MCP.** It will fail with "site not allowed due to safety restrictions" and that's correct. Either dictate values for the user to paste, or pre-verify with safe domains.
+
+---
+
+## 🚨 Carry-over to next session
+
+1. **Run migration 192** in Supabase SQL Editor (`ALTER TABLE montree_agent_gloria_log RENAME TO montree_agent_mira_log` + three index renames). Required before any agent uses Mira's chat surface — the `/api/montree/agent/mira` route writes to `montree_agent_mira_log`.
+2. **Send the InVideo refund email** (Gmail draft `r-47687054011919665`).
+3. **Stripe verification status check** — log in to Stripe dashboard, Settings → Account, confirm verification is "Verified" not "Pending". If pending, may need to upload supporting docs.
+4. **Stripe Team audit** — confirm Richful Deyong has no lingering admin access.
+5. **Test Mira on production** — log in as Sarah/agent, click Mira tab, confirm `[GREETING_FIRST]` fires, confirm float appears top-right on other agent pages.
+6. **Drop `/public/mira-avatar.png`** when ready (1024×1024). CSS "M" fallback works in the meantime.
+7. **Carry-overs from Session 96** — migration 188, Resend domain verification, Sarah's agent login issuance.
+8. **Phase 5 Payout calculator** (~1.5 days) — now actually unlocked since Stripe is live and can start receiving school subscriptions.
+9. **Phase 6 super-admin Money tab** (~2-3 days).
+10. **Outreach follow-ups** — FAMM Argentina, Cambridge Montessori Global, Otari NZ, Lions Gate, Montessori Norge.
+
+---
+
+## Final session commit log (10 commits live in main)
+
+```
+47382fb3  Communication system + Tracy parent-comms
+3c58f6dd  Login codes labelled by role + person
+54d52133  Gloria — agent's frontline AI on Opus
+a10bc050  Super-admin cleanup (sub-pages)
+b7346029  Fix agent attribution for shell agents
+aa23920b  Gloria hasMet flag fix (audit catch)
+30642ba8  Super-admin main page retheme
+4392f9e0  Session 97 brain update + handoff
+612d518b  GloriaFloat — top-right on every agent page
+5a42c289  Rename Gloria → Mira across codebase
+[next]    Session 97 final handoff (this commit)
+```
