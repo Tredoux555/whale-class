@@ -1,6 +1,6 @@
-// lib/montree/gloria/tool-executor.ts
+// lib/montree/mira/tool-executor.ts
 //
-// Gloria's tool dispatch. Called from the agent-gloria SSE route inside the
+// Mira's tool dispatch. Called from the agent-mira SSE route inside the
 // Opus tool-use loop.
 //
 // 🚨 CROSS-POLLINATION CONTRACT (load-bearing):
@@ -18,14 +18,14 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import { HAIKU_MODEL } from '@/lib/ai/anthropic';
 import { getLanguageName, getAILanguageInstruction } from '@/lib/montree/i18n/locale-config';
 
-export interface GloriaToolResult {
+export interface MiraToolResult {
   success: boolean;
   data?: unknown;
   error?: string;
   result_summary?: string;
 }
 
-export interface GloriaToolDeps {
+export interface MiraToolDeps {
   supabase: SupabaseClient;
   anthropic: Anthropic | null;
   /** The agent's userId — the cross-pollination filter. */
@@ -158,11 +158,11 @@ async function callHaikuForText(
 
 // ── Main dispatch ─────────────────────────────────────────────────────
 
-export async function executeGloriaTool(
+export async function executeMiraTool(
   name: string,
   input: Record<string, unknown>,
-  deps: GloriaToolDeps
-): Promise<GloriaToolResult> {
+  deps: MiraToolDeps
+): Promise<MiraToolResult> {
   const { supabase, anthropic, agentId, locale = 'en' } = deps;
 
   try {

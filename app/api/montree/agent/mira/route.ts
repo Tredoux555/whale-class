@@ -1,14 +1,14 @@
-// app/api/montree/agent/gloria/route.ts
+// app/api/montree/agent/mira/route.ts
 //
-// Gloria — the agent's frontline AI. SSE streaming over an Opus tool-use loop.
+// Mira — the agent's frontline AI. SSE streaming over an Opus tool-use loop.
 //
 // Mirrors /api/montree/admin/principal-agent (Tracy). Differences:
 //   - Auth requires role='agent' (not 'principal').
 //   - Cross-pollination filter is auth.userId via founding_teacher_id, NOT
 //     schoolId (schoolId on agent JWTs is INERT).
-//   - No tier-gating against a school — agents are paid partners, Gloria is a
+//   - No tier-gating against a school — agents are paid partners, Mira is a
 //     platform tool. Cost discipline comes from per-day rate limit instead.
-//   - Logs to montree_agent_gloria_log (migration 191), not principal_agent_log.
+//   - Logs to montree_agent_mira_log (migration 192), not principal_agent_log.
 //
 // POST body: { question: string, conversation_id: string, history?: [...], locale?: string }
 //
@@ -25,10 +25,10 @@ import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { anthropic, OPUS_MODEL } from '@/lib/ai/anthropic';
 import {
-  buildGloriaSystemPrompt,
-  GLORIA_TOOLS,
-  executeGloriaTool,
-} from '@/lib/montree/gloria';
+  buildMiraSystemPrompt,
+  MIRA_TOOLS,
+  executeMiraTool,
+} from '@/lib/montree/mira';
 
 export const maxDuration = 120;
 
@@ -49,7 +49,7 @@ const OPUS_OUTPUT_USD_PER_MTOK = 75;
 function assertSupportedCostModel(model: string): void {
   if (model !== COST_MODEL) {
     console.error(
-      `[gloria] cost model drift: model="${model}" but cost constants are for "${COST_MODEL}".`
+      `[mira] cost model drift: model="${model}" but cost constants are for "${COST_MODEL}".`
     );
   }
 }
@@ -82,7 +82,7 @@ export async function POST(request: NextRequest) {
 
   if (auth.role !== 'agent') {
     return NextResponse.json(
-      { error: 'Gloria is only available to agents.' },
+      { error: 'Mira is only available to agents.' },
       { status: 403 }
     );
   }
@@ -126,14 +126,14 @@ export async function POST(request: NextRequest) {
   try {
     const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
     const { count, error } = await supabase
-      .from('montree_agent_gloria_log')
+      .from('montree_agent_mira_log')
       .select('id', { count: 'exact', head: true })
       .eq('agent_id', auth.userId)
       .gte('asked_at', since);
     if (!error && typeof count === 'number' && count >= DAILY_INTERACTION_CAP) {
       return NextResponse.json(
         {
-          error: 'Daily interaction limit reached for Gloria. Resets in 24 hours.',
+          error: 'Daily interaction limit reached for Mira. Resets in 24 hours.',
           limit: DAILY_INTERACTION_CAP,
         },
         { status: 429 }
@@ -231,7 +231,7 @@ export async function POST(request: NextRequest) {
   const stream = new ReadableStream<Uint8Array>({
     async start(controller) {
       try {
-        const systemPrompt = buildGloriaSystemPrompt({ agentName, todayLabel, locale });
+        const systemPrompt = buildMiraSystemPrompt({ agentName, todayLabel, locale });
 
         const conversationMessages: MessageParam[] = [...initialMessages];
         let lastAssistantBlocks: ContentBlockParam[] = [];
@@ -258,7 +258,7 @@ export async function POST(request: NextRequest) {
                 model,
                 max_tokens: 2048,
                 system: systemPrompt,
-                tools: GLORIA_TOOLS,
+                tools: MIRA_TOOLS,
                 messages: messagesForRound,
               },
               { timeout: API_TIMEOUT_MS }
@@ -298,7 +298,7 @@ export async function POST(request: NextRequest) {
                 sse(encoder, { type: 'tool_call', tool: block.name, input: block.input })
               );
 
-              const result = await executeGloriaTool(
+              const result = await executeMiraTool(
                 block.name,
                 block.input as Record<string, unknown>,
                 {
@@ -371,7 +371,7 @@ export async function POST(request: NextRequest) {
 
         // Fire-and-forget log
         void supabase
-          .from('montree_agent_gloria_log')
+          .from('montree_agent_mira_log')
           .insert({
             agent_id: auth.userId,
             conversation_id: conversationId,
@@ -386,14 +386,14 @@ export async function POST(request: NextRequest) {
             error: logError,
           })
           .then(({ error }) => {
-            if (error) console.error('[gloria] log insert error:', error.message);
+            if (error) console.error('[mira] log insert error:', error.message);
           });
       } catch (streamErr) {
         const msg = streamErr instanceof Error ? streamErr.message : 'Stream error';
         logError = msg;
         controller.enqueue(sse(encoder, { type: 'error', error: msg }));
         void supabase
-          .from('montree_agent_gloria_log')
+          .from('montree_agent_mira_log')
           .insert({
             agent_id: auth.userId,
             conversation_id: conversationId,
@@ -413,7 +413,7 @@ export async function POST(request: NextRequest) {
             error: msg,
           })
           .then(({ error }) => {
-            if (error) console.error('[gloria] error-log insert error:', error.message);
+            if (error) console.error('[mira] error-log insert error:', error.message);
           });
       } finally {
         controller.close();

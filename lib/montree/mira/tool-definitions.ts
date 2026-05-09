@@ -1,13 +1,13 @@
-// lib/montree/gloria/tool-definitions.ts
+// lib/montree/mira/tool-definitions.ts
 //
-// Gloria's tool surface. Two read tools (list_my_schools, list_my_codes,
+// Mira's tool surface. Two read tools (list_my_schools, list_my_codes,
 // school_health) + three drafting tools (cold outreach, follow-up, translate).
 // All read tools self-scope to auth.userId — see tool-executor.ts for the
 // cross-pollination contract.
 
 import type { Tool } from '@anthropic-ai/sdk/resources/messages';
 
-export const GLORIA_TOOLS: Tool[] = [
+export const MIRA_TOOLS: Tool[] = [
   // ── READ TOOLS ────────────────────────────────────────────────────────
   {
     name: 'list_my_schools',
@@ -21,7 +21,7 @@ export const GLORIA_TOOLS: Tool[] = [
   {
     name: 'list_my_codes',
     description:
-      "List the agent's referral codes. Each entry: code, status ('pending' | 'redeemed' | 'revoked' | 'expired'), pitch_label (the agent's note about which school this code was for), redeemed_by_school_name (if any), revenue_share_pct, created_at. Use when the agent asks 'what codes do I have out there?', 'which codes haven't converted?', 'how is GLORIA-2GH4 doing?'. Filter inline if she asks about a specific status.",
+      "List the agent's referral codes. Each entry: code, status ('pending' | 'redeemed' | 'revoked' | 'expired'), pitch_label (the agent's note about which school this code was for), redeemed_by_school_name (if any), revenue_share_pct, created_at. Use when the agent asks 'what codes do I have out there?', 'which codes haven't converted?', 'how is MIRA-2GH4 doing?'. Filter inline if she asks about a specific status.",
     input_schema: {
       type: 'object',
       properties: {

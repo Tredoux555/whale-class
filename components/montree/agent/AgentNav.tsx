@@ -15,7 +15,7 @@ interface MeResponse {
 
 const NAV_LINKS: Array<{ href: string; label: string }> = [
   { href: '/montree/agent/dashboard', label: 'Dashboard' },
-  { href: '/montree/agent/gloria', label: 'Gloria' },
+  { href: '/montree/agent/mira', label: 'Mira' },
   { href: '/montree/agent/schools', label: 'Schools' },
   { href: '/montree/agent/codes', label: 'Codes' },
   { href: '/montree/agent/earnings', label: 'Earnings' },

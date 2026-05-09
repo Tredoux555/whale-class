@@ -1,6 +1,6 @@
-// app/montree/agent/gloria/page.tsx
+// app/montree/agent/mira/page.tsx
 //
-// Gloria's full-page chat surface for the agent. Mirrors /montree/admin
+// Mira's full-page chat surface for the agent. Mirrors /montree/admin
 // (Tracy's full-page chat) — same SSE streaming pattern, same persisted
 // conversation state, same action-line rendering with the "→ " marker.
 
@@ -8,8 +8,8 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import GloriaAvatar from '@/components/montree/agent/GloriaAvatar';
-import { gloriaKeys } from '@/lib/montree/gloria/storage-keys';
+import MiraAvatar from '@/components/montree/agent/MiraAvatar';
+import { miraKeys } from '@/lib/montree/mira/storage-keys';
 import { Send, Sparkles } from 'lucide-react';
 
 const T = {
@@ -68,7 +68,7 @@ const SUGGESTIONS = [
   'Translate my pitch into Mandarin',
 ];
 
-export default function GloriaChatPage() {
+export default function MiraChatPage() {
   const router = useRouter();
   const [agent, setAgent] = useState<Agent | null>(null);
   const [conversationId, setConversationId] = useState<string>('');
@@ -101,10 +101,10 @@ export default function GloriaChatPage() {
   useEffect(() => {
     if (!agent) return;
     try {
-      const existingConvId = localStorage.getItem(gloriaKeys.agentConvId(agent.id));
+      const existingConvId = localStorage.getItem(miraKeys.agentConvId(agent.id));
       if (existingConvId) {
         setConversationId(existingConvId);
-        const stored = localStorage.getItem(gloriaKeys.agentConv(agent.id, existingConvId));
+        const stored = localStorage.getItem(miraKeys.agentConv(agent.id, existingConvId));
         if (stored) {
           try {
             const parsed = JSON.parse(stored) as Turn[];
@@ -116,7 +116,7 @@ export default function GloriaChatPage() {
       } else {
         const fresh = uuid();
         setConversationId(fresh);
-        localStorage.setItem(gloriaKeys.agentConvId(agent.id), fresh);
+        localStorage.setItem(miraKeys.agentConvId(agent.id), fresh);
       }
     } catch {
       // localStorage may be unavailable (private mode) — just start fresh.
@@ -128,7 +128,7 @@ export default function GloriaChatPage() {
   useEffect(() => {
     if (!agent || !conversationId) return;
     try {
-      localStorage.setItem(gloriaKeys.agentConv(agent.id, conversationId), JSON.stringify(turns));
+      localStorage.setItem(miraKeys.agentConv(agent.id, conversationId), JSON.stringify(turns));
     } catch {
       /* storage full or disabled */
     }
@@ -147,7 +147,7 @@ export default function GloriaChatPage() {
     setTurns([]);
     setError(null);
     try {
-      localStorage.setItem(gloriaKeys.agentConvId(agent.id), fresh);
+      localStorage.setItem(miraKeys.agentConvId(agent.id), fresh);
     } catch {
       /* ignore */
     }
@@ -171,7 +171,7 @@ export default function GloriaChatPage() {
       .filter((t) => t.content);
 
     try {
-      const res = await fetch('/api/montree/agent/gloria', {
+      const res = await fetch('/api/montree/agent/mira', {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
@@ -247,11 +247,11 @@ export default function GloriaChatPage() {
             // Flip hasMet flag ONLY on successful done (not on error/abort).
             // If the greeting POST fails (network, 503, rate limit), the next
             // session should still fire [GREETING_FIRST] so the agent eventually
-            // meets Gloria properly. Mirrors Tracy's pattern from Session 96.
+            // meets Mira properly. Mirrors Tracy's pattern from Session 96.
             if (pendingFirstMeetingRef.current && agent) {
               pendingFirstMeetingRef.current = false;
               try {
-                localStorage.setItem(gloriaKeys.hasMet(agent.id), '1');
+                localStorage.setItem(miraKeys.hasMet(agent.id), '1');
               } catch {
                 /* localStorage unavailable — silently fail; next session retries */
               }
@@ -281,7 +281,7 @@ export default function GloriaChatPage() {
   const greetingState = useMemo<'first_meeting' | 'normal' | 'live'>(() => {
     if (turns.length > 0) return 'live';
     try {
-      if (agent && localStorage.getItem(gloriaKeys.hasMet(agent.id))) return 'normal';
+      if (agent && localStorage.getItem(miraKeys.hasMet(agent.id))) return 'normal';
     } catch {
       /* ignore */
     }
@@ -291,7 +291,7 @@ export default function GloriaChatPage() {
   // Auto-fire greeting prompt on first mount of a fresh conversation.
   // hasMet flag is flipped ONLY on a successful `done` SSE event (handled
   // inside send()), not here — if the request fails, the next session should
-  // fire [GREETING_FIRST] again so the agent eventually meets Gloria properly.
+  // fire [GREETING_FIRST] again so the agent eventually meets Mira properly.
   // Mirrors Tracy's pattern from Session 96.
   const greetedRef = useRef(false);
   const pendingFirstMeetingRef = useRef(false);
@@ -325,7 +325,7 @@ export default function GloriaChatPage() {
               marginBottom: 18,
             }}
           >
-            <GloriaAvatar size={48} />
+            <MiraAvatar size={48} />
             <div style={{ flex: 1, minWidth: 0 }}>
               <h1
                 style={{
@@ -336,7 +336,7 @@ export default function GloriaChatPage() {
                   letterSpacing: -0.3,
                 }}
               >
-                Gloria
+                Mira
               </h1>
               <p style={{ fontSize: 12, color: T.textMuted, margin: 0 }}>
                 Your growth partner — drafts outreach, watches your pipeline.
@@ -373,7 +373,7 @@ export default function GloriaChatPage() {
               }}
             >
               <p style={{ color: T.textSecondary, fontSize: 14, margin: 0 }}>
-                Say hello — Gloria&apos;s reading your pipeline now.
+                Say hello — Mira&apos;s reading your pipeline now.
               </p>
             </div>
           )}
@@ -454,7 +454,7 @@ export default function GloriaChatPage() {
                   void send(input);
                 }
               }}
-              placeholder={streaming ? 'Gloria is thinking…' : 'Ask Gloria anything…'}
+              placeholder={streaming ? 'Mira is thinking…' : 'Ask Mira anything…'}
               rows={2}
               disabled={streaming}
               style={{
@@ -528,7 +528,7 @@ function AssistantBubble({ turn }: { turn: Turn }) {
   const { mainText, actionLine } = splitActionLine(turn.text || '');
   return (
     <div style={{ display: 'flex', gap: 10 }}>
-      <GloriaAvatar size={32} />
+      <MiraAvatar size={32} />
       <div style={{ flex: 1, minWidth: 0 }}>
         {turn.tools && turn.tools.length > 0 && (
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 8 }}>
@@ -610,7 +610,7 @@ function AssistantBubble({ turn }: { turn: Turn }) {
 }
 
 function splitActionLine(text: string): { mainText: string; actionLine: string } {
-  // Tracy/Gloria's action line is on its own paragraph prefixed with "→ ".
+  // Tracy/Mira's action line is on its own paragraph prefixed with "→ ".
   const arrowIdx = text.lastIndexOf('\n→ ');
   if (arrowIdx === -1) {
     // Also handle the case where the whole response IS just the action.

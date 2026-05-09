@@ -1,18 +1,18 @@
-// components/montree/agent/GloriaAvatar.tsx
+// components/montree/agent/MiraAvatar.tsx
 //
-// Gloria's avatar. Mirror of TracyAvatar — falls back to a CSS-rendered
+// Mira's avatar. Mirror of TracyAvatar — falls back to a CSS-rendered
 // monogram if the PNG isn't on disk yet. Drop a 1024×1024 PNG at
-// /public/gloria-avatar.png to activate the image variant.
+// /public/mira-avatar.png to activate the image variant.
 
 import { useState } from 'react';
 
-interface GloriaAvatarProps {
+interface MiraAvatarProps {
   size?: number;
   className?: string;
   style?: React.CSSProperties;
 }
 
-export default function GloriaAvatar({ size = 56, className, style }: GloriaAvatarProps) {
+export default function MiraAvatar({ size = 56, className, style }: MiraAvatarProps) {
   const [imgError, setImgError] = useState(false);
   const radius = Math.round(size * 0.22); // rounded square — same as Tracy
 
@@ -37,15 +37,15 @@ export default function GloriaAvatar({ size = 56, className, style }: GloriaAvat
           ...style,
         }}
       >
-        G
+        M
       </div>
     );
   }
 
   return (
     <img
-      src="/gloria-avatar.png"
-      alt="Gloria"
+      src="/mira-avatar.png"
+      alt="Mira"
       onError={() => setImgError(true)}
       className={className}
       style={{
