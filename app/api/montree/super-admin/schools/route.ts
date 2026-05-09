@@ -63,13 +63,15 @@ export async function GET(request: NextRequest) {
         .from('montree_school_admins')
         .select('school_id, login_code, name, is_active')
         .not('login_code', 'is', null),
-      // Pull every active agent so we can resolve founding_teacher_id → agent identity.
-      // Agents are montree_teachers rows with is_agent=true; we widen the select so a
-      // referrer who happens to be a teacher (not just a shell agent) still resolves cleanly.
+      // Pull every teacher row so we can resolve founding_teacher_id → agent identity.
+      // We do NOT filter is_active here. Shell agents (non-teaching referrers like
+      // Gloria) are created with is_active=false per Session 91 — that's the
+      // pattern. Filtering is_active=true would silently drop them and the
+      // agent attribution row would never render. Resolution works for both
+      // teacher-agents AND shell-agents.
       supabase
         .from('montree_teachers')
-        .select('id, name, email, is_agent')
-        .eq('is_active', true),
+        .select('id, name, email, is_agent'),
     ]);
 
     // Build count maps (O(N) instead of O(N²))
