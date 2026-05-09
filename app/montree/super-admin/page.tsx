@@ -390,12 +390,25 @@ export default function SuperAdminPage() {
 
   if (!authenticated) {
     return (
-      <div className="min-h-screen bg-slate-900 flex items-center justify-center p-4">
-        <div className="bg-slate-800 rounded-2xl p-8 max-w-md w-full">
+      <div className="min-h-screen relative flex items-center justify-center p-4" style={{ background: '#0a1a0f' }}>
+        <div
+          aria-hidden
+          className="absolute inset-0 pointer-events-none"
+          style={{ background: 'radial-gradient(ellipse 1100px 900px at 50% 30%, rgba(39,129,90,0.32), transparent 60%)' }}
+        />
+        <div
+          className="relative rounded-2xl p-8 max-w-md w-full backdrop-blur"
+          style={{
+            background: 'rgba(8,20,12,0.55)',
+            border: '1px solid rgba(52,211,153,0.18)',
+          }}
+        >
           <div className="text-center mb-6">
-            <span className="text-4xl block mb-2">🔐</span>
-            <h1 className="text-xl font-bold text-white">Master Admin</h1>
-            <p className="text-slate-400 text-sm">Enter password to continue</p>
+            <span className="text-4xl block mb-3">🔐</span>
+            <h1 className="text-xl font-medium text-white" style={{ fontFamily: '"Lora", Georgia, serif' }}>
+              Master Admin
+            </h1>
+            <p className="text-slate-400 text-sm mt-1">Enter password to continue</p>
           </div>
 
           <input
@@ -404,7 +417,11 @@ export default function SuperAdminPage() {
             onChange={(e) => setPassword(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
             placeholder="Password"
-            className="w-full p-4 bg-slate-700 border border-slate-600 rounded-xl text-white placeholder-slate-400 focus:border-emerald-500 outline-none"
+            className="w-full p-4 rounded-xl text-white placeholder-slate-500 outline-none transition"
+            style={{
+              background: 'rgba(0,0,0,0.30)',
+              border: '1px solid rgba(52,211,153,0.25)',
+            }}
             autoFocus
           />
 
@@ -412,7 +429,8 @@ export default function SuperAdminPage() {
 
           <button
             onClick={handleLogin}
-            className="mt-4 w-full py-3 bg-emerald-500 text-white font-semibold rounded-xl hover:bg-emerald-600"
+            className="mt-4 w-full py-3 font-semibold rounded-xl transition-colors"
+            style={{ background: '#34d399', color: '#0a1a0f' }}
           >
             Login
           </button>
@@ -422,16 +440,27 @@ export default function SuperAdminPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-6">
-      <div className="max-w-6xl mx-auto">
+    <div className="min-h-screen relative" style={{ background: '#0a1a0f' }}>
+      <div
+        aria-hidden
+        className="fixed inset-0 pointer-events-none"
+        style={{
+          background: 'radial-gradient(ellipse 1100px 900px at 88% 8%, rgba(39,129,90,0.32), transparent 60%)',
+          zIndex: 0,
+        }}
+      />
+      <div className="relative max-w-6xl mx-auto p-6" style={{ zIndex: 1 }}>
         {/* Header */}
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex items-start justify-between mb-8 flex-wrap gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-white flex items-center gap-3">
+            <h1
+              className="text-3xl font-medium text-white flex items-center gap-3"
+              style={{ fontFamily: '"Lora", Georgia, serif', letterSpacing: '-0.4px' }}
+            >
               <span>🌳</span> Montree Admin
             </h1>
-            <p className="text-slate-400 text-sm mt-1">
-              {adminData.schools.length} schools • {trialSchools.length} trial • {freeSchools.length} free • {paidSchools.length} paid
+            <p className="text-slate-400 text-sm mt-2">
+              {adminData.schools.length} schools · {trialSchools.length} trial · {freeSchools.length} free · {paidSchools.length} paid
             </p>
           </div>
           {/* Cleaned up Session 90: kept the three actively-used links
@@ -442,19 +471,30 @@ export default function SuperAdminPage() {
           <div className="flex gap-2 flex-wrap">
             <Link
               href="/montree/super-admin/api-usage"
-              className="px-3 py-2 bg-slate-700 hover:bg-slate-600 text-slate-200 rounded-lg font-medium text-sm border border-slate-600 transition-colors"
+              className="px-3 py-2 rounded-lg font-medium text-sm transition-colors"
+              style={{
+                background: 'rgba(8,20,12,0.55)',
+                border: '1px solid rgba(52,211,153,0.18)',
+                color: 'rgba(255,255,255,0.75)',
+              }}
             >
               📊 API Usage
             </Link>
             <Link
               href="/montree/super-admin/community"
-              className="px-3 py-2 bg-slate-700 hover:bg-slate-600 text-slate-200 rounded-lg font-medium text-sm border border-slate-600 transition-colors"
+              className="px-3 py-2 rounded-lg font-medium text-sm transition-colors"
+              style={{
+                background: 'rgba(8,20,12,0.55)',
+                border: '1px solid rgba(52,211,153,0.18)',
+                color: 'rgba(255,255,255,0.75)',
+              }}
             >
               📚 Community
             </Link>
             <Link
               href="/montree/onboarding"
-              className="px-3 py-2 bg-emerald-500 hover:bg-emerald-400 text-white rounded-lg font-medium text-sm transition-colors"
+              className="px-3 py-2 rounded-lg font-medium text-sm transition-colors"
+              style={{ background: '#34d399', color: '#0a1a0f' }}
             >
               + Register school
             </Link>
@@ -473,132 +513,87 @@ export default function SuperAdminPage() {
 
         {/* Onboarding System Settings */}
         {onboardingSettings && (
-          <div className="mb-6 bg-slate-800 rounded-xl p-6 border border-slate-700">
-            <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
-              🎓 Onboarding System
-            </h2>
+          <div
+            className="mb-6 rounded-2xl p-6 backdrop-blur"
+            style={{
+              background: 'rgba(8,20,12,0.55)',
+              border: '1px solid rgba(52,211,153,0.18)',
+            }}
+          >
+            <div className="flex items-baseline justify-between mb-4 gap-3 flex-wrap">
+              <h2
+                className="text-base font-medium text-white flex items-center gap-2"
+                style={{ fontFamily: '"Lora", Georgia, serif' }}
+              >
+                <span>🎓</span> Onboarding System
+              </h2>
+              <p className="text-xs text-slate-500">Toggle which roles get the voice-onboarding flow on first login.</p>
+            </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <label className="flex items-center justify-between p-4 bg-slate-700/50 rounded-lg hover:bg-slate-700 transition-colors cursor-pointer">
-                <span className="text-slate-300 text-sm font-medium">Teachers</span>
-                <input
-                  type="checkbox"
-                  checked={onboardingSettings.enabled_for_teachers}
-                  onChange={(e) => toggleOnboarding('teacher', e.target.checked)}
-                  className="w-5 h-5 text-emerald-500 bg-slate-600 border-slate-500 rounded focus:ring-emerald-500 focus:ring-2"
-                />
-              </label>
-
-              <label className="flex items-center justify-between p-4 bg-slate-700/50 rounded-lg hover:bg-slate-700 transition-colors cursor-pointer">
-                <span className="text-slate-300 text-sm font-medium">Principals</span>
-                <input
-                  type="checkbox"
-                  checked={onboardingSettings.enabled_for_principals}
-                  onChange={(e) => toggleOnboarding('principal', e.target.checked)}
-                  className="w-5 h-5 text-emerald-500 bg-slate-600 border-slate-500 rounded focus:ring-emerald-500 focus:ring-2"
-                />
-              </label>
-
-              <label className="flex items-center justify-between p-4 bg-slate-700/50 rounded-lg hover:bg-slate-700 transition-colors cursor-pointer">
-                <span className="text-slate-300 text-sm font-medium">Homeschool</span>
-                <input
-                  type="checkbox"
-                  checked={onboardingSettings.enabled_for_homeschool_parents}
-                  onChange={(e) => toggleOnboarding('homeschool_parent', e.target.checked)}
-                  className="w-5 h-5 text-emerald-500 bg-slate-600 border-slate-500 rounded focus:ring-emerald-500 focus:ring-2"
-                />
-              </label>
-
-              <label className="flex items-center justify-between p-4 bg-slate-700/50 rounded-lg hover:bg-slate-700 transition-colors cursor-pointer">
-                <span className="text-slate-300 text-sm font-medium">Parents</span>
-                <input
-                  type="checkbox"
-                  checked={onboardingSettings.enabled_for_parents}
-                  onChange={(e) => toggleOnboarding('parent', e.target.checked)}
-                  className="w-5 h-5 text-emerald-500 bg-slate-600 border-slate-500 rounded focus:ring-emerald-500 focus:ring-2"
-                />
-              </label>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              {([
+                ['teacher', 'Teachers', onboardingSettings.enabled_for_teachers],
+                ['principal', 'Principals', onboardingSettings.enabled_for_principals],
+                ['homeschool_parent', 'Homeschool', onboardingSettings.enabled_for_homeschool_parents],
+                ['parent', 'Parents', onboardingSettings.enabled_for_parents],
+              ] as Array<[string, string, boolean]>).map(([role, label, enabled]) => (
+                <label
+                  key={role}
+                  className="flex items-center justify-between p-3 rounded-lg cursor-pointer transition-colors"
+                  style={{
+                    background: enabled ? 'rgba(52,211,153,0.10)' : 'rgba(0,0,0,0.25)',
+                    border: enabled ? '1px solid rgba(52,211,153,0.30)' : '1px solid rgba(255,255,255,0.06)',
+                  }}
+                >
+                  <span
+                    className="text-sm font-medium"
+                    style={{ color: enabled ? '#34d399' : 'rgba(255,255,255,0.65)' }}
+                  >
+                    {label}
+                  </span>
+                  <input
+                    type="checkbox"
+                    checked={enabled}
+                    onChange={(e) => toggleOnboarding(role as 'teacher' | 'principal' | 'homeschool_parent' | 'parent', e.target.checked)}
+                    className="w-5 h-5 rounded focus:ring-emerald-500 focus:ring-2"
+                    style={{ accentColor: '#34d399' }}
+                  />
+                </label>
+              ))}
             </div>
           </div>
         )}
 
         {/* Tabs */}
-        <div className="flex gap-2 mb-6">
-          <button
-            onClick={() => setActiveTab('schools')}
-            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-              activeTab === 'schools'
-                ? 'bg-emerald-500 text-white'
-                : 'bg-slate-800 text-slate-400 hover:text-white'
-            }`}
-          >
-            🏫 Schools
-          </button>
-          <button
-            onClick={() => { setActiveTab('leads'); if (adminData.leads.length === 0) adminData.fetchLeads(); }}
-            className={`px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 ${
-              activeTab === 'leads'
-                ? 'bg-emerald-500 text-white'
-                : 'bg-slate-800 text-slate-400 hover:text-white'
-            }`}
-          >
-            👋 Leads
-            {adminData.newLeadCount > 0 && (
-              <span className="px-2 py-0.5 bg-emerald-500 text-white text-xs rounded-full animate-pulse">
-                {adminData.newLeadCount}
-              </span>
-            )}
-            {adminData.dmUnreadTotal > 0 && (
-              <span className="px-2 py-0.5 bg-red-500 text-white text-xs rounded-full animate-pulse">
-                ✉ {adminData.dmUnreadTotal}
-              </span>
-            )}
-          </button>
-          <button
-            onClick={() => { setActiveTab('feedback'); if (adminData.feedback.length === 0) adminData.fetchFeedback(); }}
-            className={`px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 ${
-              activeTab === 'feedback'
-                ? 'bg-emerald-500 text-white'
-                : 'bg-slate-800 text-slate-400 hover:text-white'
-            }`}
-          >
-            💬 Feedback
-            {adminData.unreadCount > 0 && (
-              <span className="px-2 py-0.5 bg-red-500 text-white text-xs rounded-full">
-                {adminData.unreadCount}
-              </span>
-            )}
-          </button>
-          <button
-            onClick={() => setActiveTab('visitors')}
-            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-              activeTab === 'visitors'
-                ? 'bg-emerald-500 text-white'
-                : 'bg-slate-800 text-slate-400 hover:text-white'
-            }`}
-          >
-            📍 Visitors
-          </button>
-          <button
-            onClick={() => setActiveTab('guru')}
-            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-              activeTab === 'guru'
-                ? 'bg-emerald-500 text-white'
-                : 'bg-slate-800 text-slate-400 hover:text-white'
-            }`}
-          >
-            🧠 Guru
-          </button>
-          <button
-            onClick={() => setActiveTab('referrals')}
-            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-              activeTab === 'referrals'
-                ? 'bg-emerald-500 text-white'
-                : 'bg-slate-800 text-slate-400 hover:text-white'
-            }`}
-          >
-            🎟️ Referrals
-          </button>
+        <div
+          className="flex gap-1 mb-6 overflow-x-auto pb-1"
+          style={{ borderBottom: '1px solid rgba(52,211,153,0.18)' }}
+        >
+          <SuperAdminTab active={activeTab === 'schools'} onClick={() => setActiveTab('schools')} icon="🏫" label="Schools" />
+          <SuperAdminTab
+            active={activeTab === 'leads'}
+            onClick={() => {
+              setActiveTab('leads');
+              if (adminData.leads.length === 0) adminData.fetchLeads();
+            }}
+            icon="👋"
+            label="Leads"
+            badge={adminData.newLeadCount > 0 ? { text: String(adminData.newLeadCount), color: 'emerald' } : null}
+            badge2={adminData.dmUnreadTotal > 0 ? { text: `✉ ${adminData.dmUnreadTotal}`, color: 'red' } : null}
+          />
+          <SuperAdminTab
+            active={activeTab === 'feedback'}
+            onClick={() => {
+              setActiveTab('feedback');
+              if (adminData.feedback.length === 0) adminData.fetchFeedback();
+            }}
+            icon="💬"
+            label="Feedback"
+            badge={adminData.unreadCount > 0 ? { text: String(adminData.unreadCount), color: 'red' } : null}
+          />
+          <SuperAdminTab active={activeTab === 'visitors'} onClick={() => setActiveTab('visitors')} icon="📍" label="Visitors" />
+          <SuperAdminTab active={activeTab === 'guru'} onClick={() => setActiveTab('guru')} icon="🧠" label="Guru" />
+          <SuperAdminTab active={activeTab === 'referrals'} onClick={() => setActiveTab('referrals')} icon="🎟️" label="Referrals" />
         </div>
 
         {/* Tab Content */}
@@ -683,6 +678,72 @@ export default function SuperAdminPage() {
         onSend={sendDm}
         sending={dmSending}
       />
+
+      {/* Load Lora serif so the canonical headings render correctly. Mirrors
+          the same import in /montree/admin/layout.tsx — this page is its own
+          shell (no layout file under /super-admin) so we load fonts inline. */}
+      <style jsx global>{`
+        @import url('https://fonts.googleapis.com/css2?family=Lora:wght@400;500;600&display=swap');
+      `}</style>
     </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────
+// Tab pill — canonical dark forest token style. Active state uses an
+// emerald underline + emerald text; inactive uses muted slate. Badges sit
+// inside the pill (one or two), each color-coded by urgency.
+// ─────────────────────────────────────────────────────────────────
+
+interface SuperAdminTabProps {
+  active: boolean;
+  onClick: () => void;
+  icon: string;
+  label: string;
+  badge?: { text: string; color: 'emerald' | 'red' | 'amber' } | null;
+  badge2?: { text: string; color: 'emerald' | 'red' | 'amber' } | null;
+}
+
+function SuperAdminTab({ active, onClick, icon, label, badge, badge2 }: SuperAdminTabProps) {
+  return (
+    <button
+      onClick={onClick}
+      className="px-4 py-2.5 font-medium text-sm flex items-center gap-2 transition-colors whitespace-nowrap"
+      style={{
+        background: 'transparent',
+        border: 'none',
+        borderBottom: active ? '2px solid #34d399' : '2px solid transparent',
+        color: active ? '#34d399' : 'rgba(255,255,255,0.62)',
+        marginBottom: -1, // pull underline flush with the parent border-bottom
+      }}
+    >
+      <span>{icon}</span>
+      <span>{label}</span>
+      {badge && <SuperAdminBadge color={badge.color} text={badge.text} />}
+      {badge2 && <SuperAdminBadge color={badge2.color} text={badge2.text} />}
+    </button>
+  );
+}
+
+function SuperAdminBadge({ color, text }: { color: 'emerald' | 'red' | 'amber'; text: string }) {
+  const bg =
+    color === 'emerald'
+      ? 'rgba(52,211,153,0.20)'
+      : color === 'red'
+        ? 'rgba(248,113,113,0.20)'
+        : 'rgba(232,201,106,0.20)';
+  const fg =
+    color === 'emerald'
+      ? '#34d399'
+      : color === 'red'
+        ? '#f87171'
+        : '#E8C96A';
+  return (
+    <span
+      className="px-2 py-0.5 text-xs rounded-full font-semibold"
+      style={{ background: bg, color: fg }}
+    >
+      {text}
+    </span>
   );
 }
