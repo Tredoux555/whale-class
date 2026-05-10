@@ -76,6 +76,30 @@ const CONNECT_PILL: Record<Exclude<ConnectStatus, null>, { label: string; cls: s
   disabled: { label: 'Disabled', cls: 'bg-red-500/30 text-red-200 border-red-500/60', tip: 'Account disabled. Cannot receive payouts.' },
 };
 
+// Instant-tooltip style. Native HTML `title` has a ~1500ms delay and was
+// invisible to Tredoux in practice — he hovered the action icons, saw
+// nothing, asked "where is her login?". React-state-driven custom tooltip
+// matches Session 89's canonical pattern (originally in
+// app/montree/dashboard/photo-audit/page.tsx iconTooltipStyle).
+const iconTooltipStyle: React.CSSProperties = {
+  position: 'absolute',
+  bottom: 'calc(100% + 6px)',
+  left: '50%',
+  transform: 'translateX(-50%)',
+  background: 'rgba(7,18,12,0.96)',
+  color: 'rgba(255,255,255,0.95)',
+  padding: '4px 9px',
+  borderRadius: 6,
+  fontSize: 11,
+  fontWeight: 500,
+  whiteSpace: 'nowrap',
+  pointerEvents: 'none',
+  zIndex: 50,
+  border: '1px solid rgba(52,211,153,0.30)',
+  boxShadow: '0 4px 12px rgba(0,0,0,0.40)',
+  fontFamily: "'Inter', -apple-system, sans-serif",
+};
+
 export default function ReferralsTab({ saToken }: ReferralsTabProps) {
   const [referrals, setReferrals] = useState<Referral[]>([]);
   const [loading, setLoading] = useState(true);
@@ -121,6 +145,10 @@ export default function ReferralsTab({ saToken }: ReferralsTabProps) {
   const [editPctLoading, setEditPctLoading] = useState(false);
 
   const [agentToggleLoadingId, setAgentToggleLoadingId] = useState<string | null>(null);
+
+  // Instant tooltip hover state. Keyed by `${referralId}:${action}` so each
+  // row's icons are independent. Session 89 pattern.
+  const [hoveredAction, setHoveredAction] = useState<string | null>(null);
 
   // Recent activity panel.
   const [activityOpen, setActivityOpen] = useState(false);
@@ -828,68 +856,127 @@ export default function ReferralsTab({ saToken }: ReferralsTabProps) {
                       </td>
                       <td className="px-3 py-3 text-slate-400 text-xs">{fmtDate(r.created_at)}</td>
                       <td className="px-3 py-3 text-right whitespace-nowrap">
-                        <button
-                          onClick={() => copy(r.code)}
-                          className="px-2.5 py-1 text-xs rounded-md bg-slate-700 hover:bg-slate-600 text-slate-200 mr-1"
-                          title="Copy code"
+                        {/* Copy code (📋) */}
+                        <span
+                          style={{ position: 'relative', display: 'inline-block', marginRight: 4 }}
+                          onMouseEnter={() => setHoveredAction(`${r.id}:copy`)}
+                          onMouseLeave={() => setHoveredAction(null)}
                         >
-                          📋
-                        </button>
+                          <button
+                            onClick={() => copy(r.code)}
+                            className="px-2.5 py-1 text-xs rounded-md bg-slate-700 hover:bg-slate-600 text-slate-200"
+                            aria-label="Copy code"
+                          >
+                            📋
+                          </button>
+                          {hoveredAction === `${r.id}:copy` && (
+                            <span style={iconTooltipStyle}>Copy referral code</span>
+                          )}
+                        </span>
+                        {/* Stripe Connect (💳) */}
                         {r.agent_id && r.agent_stripe_connect_status !== 'verified' && (
-                          <button
-                            onClick={() => handleGenerateConnectLink(r.agent_id as string, r.agent_display_name)}
-                            disabled={isLoadingConnect}
-                            className="px-2.5 py-1 text-xs rounded-md bg-indigo-500/20 hover:bg-indigo-500/35 text-indigo-300 border border-indigo-500/30 mr-1 disabled:opacity-50"
-                            title={connect?.label === 'In progress' ? 'Resume Stripe onboarding' : 'Send Stripe onboarding link'}
+                          <span
+                            style={{ position: 'relative', display: 'inline-block', marginRight: 4 }}
+                            onMouseEnter={() => setHoveredAction(`${r.id}:stripe`)}
+                            onMouseLeave={() => setHoveredAction(null)}
                           >
-                            {isLoadingConnect ? '…' : '💳'}
-                          </button>
-                        )}
-                        {r.agent_id && (
-                          <button
-                            onClick={() => openAgentLoginModal(r)}
-                            className={`px-2.5 py-1 text-xs rounded-md mr-1 border ${
-                              r.agent_is_agent
-                                ? 'bg-amber-500/15 hover:bg-amber-500/30 text-amber-300 border-amber-500/30'
-                                : 'bg-emerald-500/20 hover:bg-emerald-500/35 text-emerald-300 border-emerald-500/30'
-                            }`}
-                            title={r.agent_is_agent ? 'Reset agent login' : 'Issue agent login'}
-                          >
-                            {r.agent_is_agent ? '🔑↻' : '🔑'}
-                          </button>
-                        )}
-                        {r.agent_id && r.agent_is_agent && (
-                          <button
-                            onClick={() => openEditPctModal(r)}
-                            className="px-2.5 py-1 text-xs rounded-md bg-slate-700/60 hover:bg-slate-600 text-slate-200 mr-1 border border-slate-600"
-                            title={`Edit default % (currently ${r.agent_default_share_pct ?? '—'}%)`}
-                          >
-                            ✏️
-                          </button>
-                        )}
-                        {r.agent_id && r.agent_is_agent && (
-                          <button
-                            onClick={() => toggleSuspendAgent(
-                              r.agent_id as string,
-                              r.agent_display_name,
-                              Boolean(r.agent_suspended_at)
+                            <button
+                              onClick={() => handleGenerateConnectLink(r.agent_id as string, r.agent_display_name)}
+                              disabled={isLoadingConnect}
+                              className="px-2.5 py-1 text-xs rounded-md bg-indigo-500/20 hover:bg-indigo-500/35 text-indigo-300 border border-indigo-500/30 disabled:opacity-50"
+                              aria-label={connect?.label === 'In progress' ? 'Resume Stripe onboarding' : 'Send Stripe onboarding link'}
+                            >
+                              {isLoadingConnect ? '…' : '💳'}
+                            </button>
+                            {hoveredAction === `${r.id}:stripe` && (
+                              <span style={iconTooltipStyle}>
+                                {connect?.label === 'In progress' ? 'Resume Stripe onboarding' : 'Send Stripe onboarding link'}
+                              </span>
                             )}
-                            disabled={agentToggleLoadingId === r.agent_id}
-                            className={`px-2.5 py-1 text-xs rounded-md mr-1 border disabled:opacity-50 ${
-                              r.agent_suspended_at
-                                ? 'bg-emerald-500/20 hover:bg-emerald-500/35 text-emerald-300 border-emerald-500/30'
-                                : 'bg-orange-500/15 hover:bg-orange-500/30 text-orange-300 border-orange-500/30'
-                            }`}
-                            title={r.agent_suspended_at ? 'Reactivate agent' : 'Suspend agent'}
-                          >
-                            {agentToggleLoadingId === r.agent_id ? '…' : (r.agent_suspended_at ? '▶' : '⏸')}
-                          </button>
+                          </span>
                         )}
+                        {/* Agent login (🔑) */}
+                        {r.agent_id && (
+                          <span
+                            style={{ position: 'relative', display: 'inline-block', marginRight: 4 }}
+                            onMouseEnter={() => setHoveredAction(`${r.id}:login`)}
+                            onMouseLeave={() => setHoveredAction(null)}
+                          >
+                            <button
+                              onClick={() => openAgentLoginModal(r)}
+                              className={`px-2.5 py-1 text-xs rounded-md border ${
+                                r.agent_is_agent
+                                  ? 'bg-amber-500/15 hover:bg-amber-500/30 text-amber-300 border-amber-500/30'
+                                  : 'bg-emerald-500/20 hover:bg-emerald-500/35 text-emerald-300 border-emerald-500/30'
+                              }`}
+                              aria-label={r.agent_is_agent ? 'Reset agent login' : 'Issue agent login'}
+                            >
+                              {r.agent_is_agent ? '🔑↻' : '🔑'}
+                            </button>
+                            {hoveredAction === `${r.id}:login` && (
+                              <span style={iconTooltipStyle}>
+                                {r.agent_is_agent ? 'Reset agent login code' : 'Issue agent login code'}
+                              </span>
+                            )}
+                          </span>
+                        )}
+                        {/* Edit default % (✏️) */}
+                        {r.agent_id && r.agent_is_agent && (
+                          <span
+                            style={{ position: 'relative', display: 'inline-block', marginRight: 4 }}
+                            onMouseEnter={() => setHoveredAction(`${r.id}:editpct`)}
+                            onMouseLeave={() => setHoveredAction(null)}
+                          >
+                            <button
+                              onClick={() => openEditPctModal(r)}
+                              className="px-2.5 py-1 text-xs rounded-md bg-slate-700/60 hover:bg-slate-600 text-slate-200 border border-slate-600"
+                              aria-label={`Edit default % (currently ${r.agent_default_share_pct ?? '—'}%)`}
+                            >
+                              ✏️
+                            </button>
+                            {hoveredAction === `${r.id}:editpct` && (
+                              <span style={iconTooltipStyle}>
+                                {`Edit default % (now ${r.agent_default_share_pct ?? '—'}%)`}
+                              </span>
+                            )}
+                          </span>
+                        )}
+                        {/* Suspend / reactivate (⏸ / ▶) */}
+                        {r.agent_id && r.agent_is_agent && (
+                          <span
+                            style={{ position: 'relative', display: 'inline-block', marginRight: 4 }}
+                            onMouseEnter={() => setHoveredAction(`${r.id}:suspend`)}
+                            onMouseLeave={() => setHoveredAction(null)}
+                          >
+                            <button
+                              onClick={() => toggleSuspendAgent(
+                                r.agent_id as string,
+                                r.agent_display_name,
+                                Boolean(r.agent_suspended_at)
+                              )}
+                              disabled={agentToggleLoadingId === r.agent_id}
+                              className={`px-2.5 py-1 text-xs rounded-md border disabled:opacity-50 ${
+                                r.agent_suspended_at
+                                  ? 'bg-emerald-500/20 hover:bg-emerald-500/35 text-emerald-300 border-emerald-500/30'
+                                  : 'bg-orange-500/15 hover:bg-orange-500/30 text-orange-300 border-orange-500/30'
+                              }`}
+                              aria-label={r.agent_suspended_at ? 'Reactivate agent' : 'Suspend agent'}
+                            >
+                              {agentToggleLoadingId === r.agent_id ? '…' : (r.agent_suspended_at ? '▶' : '⏸')}
+                            </button>
+                            {hoveredAction === `${r.id}:suspend` && (
+                              <span style={iconTooltipStyle}>
+                                {r.agent_suspended_at ? 'Reactivate agent' : 'Suspend agent login'}
+                              </span>
+                            )}
+                          </span>
+                        )}
+                        {/* Revoke (text — no tooltip needed) */}
                         {r.status === 'pending' && (
                           <button
                             onClick={() => handleRevoke(r.id, r.code)}
                             className="px-2.5 py-1 text-xs rounded-md bg-red-500/20 hover:bg-red-500/35 text-red-300 border border-red-500/30"
-                            title="Revoke code"
+                            aria-label="Revoke code"
                           >
                             Revoke
                           </button>
