@@ -167,6 +167,80 @@ export const TRACY_TOOLS: Tool[] = [
     },
   },
 
+  // ── MEMORY TOOLS (Session 99 — migration 195) ────────────────────────
+  // Tracy's persistent relational memory. The active set (top-30 most recent)
+  // is loaded into the system prompt header on every turn. These tools let
+  // her WRITE new memories and DEEPER-recall when the header isn't enough.
+  {
+    name: 'remember_this',
+    description:
+      'Save a semantic memory about the principal for future conversations. CALL THIS whenever you learn something durable — a preference (e.g. "principal prefers messages under 3 sentences"), a concern (e.g. "principal has been worried about Austin\'s reading for several weeks"), a voice sample (a quoted message the principal wrote that you can match in future drafts), a parent priority, a teacher-specific note, or general context (e.g. "school is opening a new classroom in fall"). Do NOT save episodic facts ("principal asked about Austin on May 10") — only durable semantic knowledge that informs future interactions. Do NOT save private/sensitive personal facts unless the principal explicitly asked you to remember them. content is the memory itself in plain English, max 1000 chars. memory_type is one of: preference, concern, voice_sample, parent_priority, teacher_note, context, fact. supersedes_id is the id of a prior memory that this one updates/replaces (use when correcting outdated info — the id is shown in brackets next to each memory in the system-prompt header). related_child_id, related_teacher_id, related_parent_id are optional UUIDs that scope the memory to a specific person.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        memory_type: {
+          type: 'string',
+          enum: [
+            'preference',
+            'concern',
+            'voice_sample',
+            'parent_priority',
+            'teacher_note',
+            'context',
+            'fact',
+          ],
+        },
+        content: {
+          type: 'string',
+          description: 'Plain-English memory, max 1000 chars.',
+        },
+        source: {
+          type: 'string',
+          description:
+            'Optional brief source description, e.g. "noted from May 10 chat".',
+        },
+        supersedes_id: {
+          type: 'string',
+          description:
+            'UUID of a prior memory this updates. Use when correcting outdated info.',
+        },
+        related_child_id: { type: 'string' },
+        related_teacher_id: { type: 'string' },
+        related_parent_id: { type: 'string' },
+      },
+      required: ['memory_type', 'content'],
+    },
+  },
+  {
+    name: 'recall_memory',
+    description:
+      'Retrieve relevant memories from past conversations. Use when answering a question where past context would help — "what did we discuss about Austin?", "what was that thing the principal cared about?", or any time a child/teacher/parent name appears that might have prior context. The active memories are already in your system prompt header; use this tool when you need DEEPER recall (more memories than the system prompt shows, or filtering by topic). Returns up to 20 matching memories.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        memory_type: {
+          type: 'string',
+          enum: [
+            'preference',
+            'concern',
+            'voice_sample',
+            'parent_priority',
+            'teacher_note',
+            'context',
+            'fact',
+          ],
+        },
+        related_child_id: { type: 'string' },
+        related_teacher_id: { type: 'string' },
+        related_parent_id: { type: 'string' },
+        query: {
+          type: 'string',
+          description: 'Simple text search on memory content.',
+        },
+      },
+    },
+  },
+
   // ── ACTION TOOL: draft_teacher_welcome_messages ──────────────────────
   // CALL IMMEDIATELY when the principal mentions ANYTHING about teachers
   // not having codes, needing to be onboarded, needing welcome messages,

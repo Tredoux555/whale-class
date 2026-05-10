@@ -200,6 +200,93 @@ Wave 1 sends bounced for these addresses. None of these are flagged as `bounced`
 
 ---
 
+## RECENT STATUS (May 10, 2026)
+
+### ⚡ Session 99 — Tracy persistent memory (migration 195) + remember_this / recall_memory tools (May 10, 2026)
+
+**The headline:** Tracy now has true relational memory across conversations and devices. Until this session, she had ONLY episodic memory (last 10 turns of the active conversation, sent client-side from localStorage). Across "New conversation" clicks, fresh devices, or any cross-session interaction, she remembered nothing — the principal had to re-explain her preferences, voice, concerns, and parent priorities every time. That's now fixed.
+
+**🚨 Migration 195 (`migrations/195_principal_memory.sql`) must be run in Supabase SQL Editor** before the new tools function. Until run, `loadActiveMemories()` returns `[]` silently (graceful degradation), `remember_this` calls fail with a clean error, and `recall_memory` returns 0 memories. The agent itself doesn't crash — it just behaves like the pre-memory version.
+
+**A. Migration 195 — `montree_principal_memory` table + atomic supersede function:**
+
+The table stores semantic facts about the principal (`preference`, `concern`, `voice_sample`, `parent_priority`, `teacher_note`, `context`, `fact`). Each row has `school_id`, `principal_id`, `memory_type`, `content` (max 1000 chars), optional `related_child_id`/`related_teacher_id`/`related_parent_id`, plus pruning signals (`reference_count`, `last_referenced_at`) and the supersede chain (`superseded_by`, `superseded_at`).
+
+Four indexes: active memories per principal, type-filtered lookups, child-related, teacher-related — all partial indexes on `WHERE superseded_at IS NULL` so the superseded rows don't slow active queries.
+
+The `supersede_and_insert_memory()` Postgres function handles the atomic update path. When Tracy decides an existing memory is outdated, the new memory must be inserted AND the old marked superseded in a single step, otherwise concurrent reads briefly see both as active. Also bidirectional: `superseded_by` on the old row points at the new id. SECURITY DEFINER, GRANT EXECUTE to anon/authenticated/service_role.
+
+Defense in depth: the function filters the supersede UPDATE by `principal_id`, so even if a malicious caller passed someone else's memory id as `p_supersedes_id`, it would no-op rather than mark it superseded.
+
+**B. Memory helper module — `lib/montree/tracy/memory.ts`:**
+
+Five functions:
+- `loadActiveMemories(supabase, principalId, limit=30)` — top-N most recent active memories. Capped at 100. Returns `[]` on error (graceful pre-migration fallback).
+- `formatMemoriesForPrompt(memories)` — renders as a system-prompt section grouped by type with each memory's id in brackets. Empty string when no memories. Includes guidance for Tracy on supersede + saves.
+- `writeMemory(supabase, schoolId, principalId, input)` — atomic write. When `supersedes_id` is provided, routes through the Postgres RPC. Otherwise plain insert. Validates memory_type enum, content length cap (1000), all UUID fields. Returns `{ ok, id }` or `{ ok, error }`.
+- `recallMemories(supabase, principalId, filters, limit=20)` — filtered read for the `recall_memory` tool. ILIKE-escapes the query string (pattern metachars in PostgreSQL ILIKE: `%`, `_`, `\`).
+- `bumpMemoryReference(supabase, memoryIds)` — fire-and-forget reference-count bump. Best-effort read-then-write since a non-critical pruning signal isn't worth another RPC.
+
+**C. Tool definitions — `remember_this` and `recall_memory`:**
+
+Two new tools added to `TRACY_TOOLS` in `lib/montree/tracy/tool-definitions.ts`. Schemas allow optional `related_child_id`/`related_teacher_id`/`related_parent_id` UUIDs, optional `source` annotation, and `supersedes_id` for updates. The tool descriptions include explicit "DO save semantic / DO NOT save episodic" guidance so Tracy doesn't pollute the table with one-off conversation facts.
+
+**D. Tool executor — dispatch cases + `principalId` on TracyToolDeps:**
+
+Extended `TracyToolDeps` with `principalId: string` (was: schoolId only). Both new dispatch cases gate on `principalId` being present — defense in depth even though the route always passes `auth.userId`. The `recall_memory` case fires-and-forgets `bumpMemoryReference()` after returning results so frequently-recalled memories surface to top of pruning analysis later.
+
+**E. System prompt — Memory section + INTENT TABLE entries + dynamic memory injection:**
+
+`buildTracySystemPrompt()` now accepts an optional `memorySection: string`. When non-empty, gets injected after the "WORKED EXAMPLE" block and before "# Who you are" — Tracy reads her own memory at the top of every turn. The Memory documentation section explains both tools, their use cases, and the rule that she shouldn't cite memory ids back to the principal.
+
+Two new entries in the INTENT → MANDATORY TOOL CALL table:
+- principal mentions a preference / concern / voice quote / context worth remembering → `remember_this`
+- "what did we discuss about X" / "what was that thing about Y" → `recall_memory`
+
+**F. Route wiring — `app/api/montree/admin/principal-agent/route.ts`:**
+
+Added `loadActiveMemories(supabase, auth.userId, 30)` + `formatMemoriesForPrompt()` calls before the encoder is created. Result threaded into `buildTracySystemPrompt({ ..., memorySection })`. `principalId: auth.userId` added to `executeTracyTool` deps. Failure to load memories degrades gracefully (memorySection becomes "" and Tracy behaves as if she has no memories yet).
+
+**🚨 Architectural rules locked in this session (do NOT let future agents break these):**
+
+1. **Memories are SEMANTIC, not EPISODIC.** "Principal prefers short messages" is a memory. "Principal asked about Austin on 2026-05-10" is NOT — that already lives in `montree_principal_agent_log`.
+2. **Tracy decides what's memorable.** Not every turn writes a memory. The system prompt explicitly tells her to save durable knowledge only.
+3. **Memories are scoped per `principal_id`** — never per school. Multi-principal schools have separate memory streams. This is the cross-pollination contract for everything memory-related.
+4. **The `superseded_by` chain handles updates atomically via the Postgres function.** NEVER do a multi-statement client-side update for supersede — race condition.
+5. **Memory injection is on every turn** (system prompt rebuilt per request) capped at 30 most recent for cost control.
+6. **`recall_memory` is for DEEPER recall** beyond the 30 in the system prompt — filtered by topic / child / teacher / parent / text query.
+7. **`reference_count` + `last_referenced_at` are pruning signals.** Don't surface to the user. Fire-and-forget bumps from `recall_memory` dispatch.
+8. **Do NOT save sensitive personal facts** unless the principal explicitly asked Tracy to remember them. Do NOT save private parent/teacher info that wasn't shared in the principal's chat.
+9. **Memory id citation is forbidden** in user-facing output. The bracketed `[id: ...]` in the system prompt is for tool calls only.
+10. **Failure to load memories never crashes the agent.** `loadActiveMemories()` returns `[]` on any error. `memorySection` becomes `""`. Tracy degrades to no-memory mode silently.
+
+**Files changed (8 files):**
+- NEW: `migrations/195_principal_memory.sql`
+- NEW: `lib/montree/tracy/memory.ts`
+- EXTENDED: `lib/montree/tracy/tool-definitions.ts` (+2 tools)
+- EXTENDED: `lib/montree/tracy/tool-executor.ts` (+`principalId` on deps + 2 dispatch cases)
+- EXTENDED: `lib/montree/tracy/system-prompt.ts` (+memorySection opt + Memory section + INTENT TABLE entries)
+- EXTENDED: `lib/montree/tracy/index.ts` (+memory exports)
+- MODIFIED: `app/api/montree/admin/principal-agent/route.ts` (load memories + thread through)
+- MODIFIED: `CLAUDE.md` (this entry)
+
+**🚨 Next session priorities:**
+1. **🚨 Run migration 195 in Supabase SQL Editor** — required for memory writes/reads to land. Verify with `SELECT count(*) FROM montree_principal_memory;` (should return 0) and `SELECT proname FROM pg_proc WHERE proname = 'supersede_and_insert_memory';` (should return 1 row).
+2. **End-to-end test memory persistence** — see test plan below in this entry.
+3. Stripe live mode flip (carry-over from Session 98).
+4. Onboard first agent (Gloria) — issue agent login + Stripe Connect onboarding (carry-over).
+
+**Test plan (after migration 195 lands):**
+1. Open `/montree/admin` in fresh browser (or click "New conversation"). Tell Tracy something durable: *"I prefer short, warm messages — no more than 3 sentences."* She should call `remember_this` with `memory_type='preference'`.
+2. Click "New conversation" again. Verify the system-prompt header now contains `# What you remember about this principal` with the preference line. Ask Tracy a drafting question — she should match the preference.
+3. From a different device or incognito window, log in as the same principal. Same memory should be loaded (it lives in DB, not localStorage).
+4. Tell Tracy something that supersedes: *"Actually I want medium-length messages now, not short ones."* She should call `remember_this` with `memory_type='preference'` AND `supersedes_id=<id of the previous preference>`. Verify in Supabase: old row has `superseded_at` and `superseded_by` set; new row is the live one.
+5. Quote a real message the principal wrote: *"Save this as a voice sample: 'Hi Mary, hope you're well — wanted to share a quick update on Austin's progress this week.'"* — Tracy should call `remember_this` with `memory_type='voice_sample'`. Future parent-reply drafts should match this voice.
+6. Ask "what did we discuss about Austin?" — Tracy should call `recall_memory` with `query='Austin'`. Verify in Supabase that `reference_count` on returned rows incremented + `last_referenced_at` updated.
+7. Verify in `montree_principal_agent_log` that the conversations are still being logged (the memory system is parallel to the log, not a replacement).
+
+---
+
 ## RECENT STATUS (May 9, 2026)
 
 ### ⚡ Session 98 — Parent messaging architecture (flag-gated, OFF) + parent dashboard scope locked (May 9, 2026, post-Session 97)
@@ -314,9 +401,10 @@ User walked through full Stripe test-mode setup (Product + Price `price_1TVDJORn
 
 3. **Migration 194 — store principal login_code** (`91321e68`) — REVERSES the Session 84 rule. Adds `login_code TEXT` column to `montree_school_admins` + partial unique index. Updated /montree/try/instant signup to save plain code. Updated /montree/super-admin/principals POST + PATCH (reset_code) to save plain code on every code-issue path. Restored the principal codes query + pushCode loop in super-admin/schools API. Test School 2's principal Tredoux had `login_code='ATUDNV'` populated automatically because the signup happened after the deploy. **Architectural rule (revised, locked Session 98): principals get the same treatment as teachers — plain login_code stored alongside SHA-256 hash. Auth still goes through password_hash lookup.**
 
-**🚨 Migrations to run in Supabase before next session:**
-- `migrations/193_parent_messaging_feature.sql` (Session 98 Part 1)
-- `migrations/194_school_admin_login_code.sql` (Session 98 Part 2 — confirmed run by user during test)
+**✅ Migrations RUN in Supabase (May 10, 2026, 12:11–12:12 PM):**
+- ~~`migrations/193_parent_messaging_feature.sql`~~ ✅ **CONFIRMED RUN.** Verified via `SELECT feature_key, default_enabled FROM montree_feature_definitions WHERE feature_key = 'parent_messaging'` → 1 row returned.
+- ~~`migrations/194_school_admin_login_code.sql`~~ ✅ **CONFIRMED RUN.** Verified via `SELECT column_name FROM information_schema.columns WHERE table_name = 'montree_school_admins' AND column_name = 'login_code'` → returned `login_code` column.
+- **Stop telling future sessions to run these — they're done.**
 
 **I. Landing page polish (commit `6c72c40e`):**
 
@@ -349,8 +437,8 @@ i18n: only en.ts updated. Other 11 locales will fall back to keys until `npm run
 ---
 
 **🚨 Next session priorities (ordered):**
-1. **🚨 Run migration 193 in Supabase.** Required before any parent messaging endpoint works.
-2. **🚨 Run migration 194 in Supabase** (if not already — user ran during test session). Required before principal chips render in super-admin Schools list.
+1. ~~Run migration 193 in Supabase~~ ✅ **DONE May 10, 2026 12:11.**
+2. ~~Run migration 194 in Supabase~~ ✅ **DONE May 10, 2026 12:12.**
 3. **Complete the Stripe test end-to-end** — hard refresh `/montree/admin/billing` for Test School 2 → click "Set up billing" (new green button after the bug fix) → Stripe Checkout with `4242 4242 4242 4242` → verify the auto-tier-flip lands the school as Pro within 5-10 seconds. Then test cancel direction by clicking "Manage billing in Stripe" → Customer Portal → Cancel → verify tier auto-flips to Free.
 4. **Walk the 15-step verification checklist** in `docs/handoffs/SESSION_98_HANDOFF.md`.
 5. **Story app retheme + Yo-yo entry** (task #21) — dark forest theme across teacherpotato.xyz/story/* + hidden entry mechanism (only clicking the second "yo" in "Yo-yo" enters a session). Both visual upgrade and personality touch.
@@ -4528,6 +4616,13 @@ All migrations through 169 have been run. Key ones: 147 (smart learning columns)
 
 **Session 87 (May 4, 2026) — Principal Vault migration run via Supabase SQL Editor:**
 - `185_principal_vault.sql` — `montree_principal_vault` table for end-to-end encrypted parent-meeting recordings. 12 columns (id, principal_id, school_id, salt_b64, iv_b64, ciphertext_b64, pbkdf2_iterations, cipher_version, recorded_at, duration_seconds, created_at, updated_at). Indexed on `(principal_id, recorded_at DESC)` and `(school_id)`. FK cascades from `montree_school_admins` and `montree_schools`. Plus the `update_principal_vault_updated_at()` trigger function for auto-bumping `updated_at` on row UPDATE. Verified by user with the 12-column information_schema query.
+
+**Session 98 (May 10, 2026, 12:11–12:12 PM) — Parent Messaging + Principal login_code migrations run via Supabase SQL Editor:**
+- ✅ `193_parent_messaging_feature.sql` — adds `parent_messaging` to `montree_feature_definitions` with `default_enabled=false`. Idempotent. Verified via `SELECT feature_key, default_enabled FROM montree_feature_definitions WHERE feature_key = 'parent_messaging'` → 1 row returned. Schools opt in individually via super-admin.
+- ✅ `194_school_admin_login_code.sql` — adds `login_code TEXT` column to `montree_school_admins` + partial unique index `idx_school_admins_login_code_unique`. Reverses Session 84's "principal codes are never persisted" rule. Verified via `SELECT column_name FROM information_schema.columns WHERE table_name = 'montree_school_admins' AND column_name = 'login_code'` → returned `login_code`. Idempotent via `ADD COLUMN IF NOT EXISTS` and `CREATE UNIQUE INDEX IF NOT EXISTS`.
+
+**Session 99 (May 10, 2026) — Tracy persistent memory migration NOT YET RUN:**
+- ⏳ `195_principal_memory.sql` — `montree_principal_memory` table (15 columns) + 4 partial indexes + `supersede_and_insert_memory()` Postgres function. Idempotent. **Must be run in Supabase SQL Editor before Tracy's `remember_this` / `recall_memory` tools function.** Until run, `loadActiveMemories()` returns `[]` silently and Tracy degrades to no-memory mode. Verify with `SELECT count(*) FROM montree_principal_memory;` (0) and `SELECT proname FROM pg_proc WHERE proname = 'supersede_and_insert_memory';` (1 row).
 
 ---
 

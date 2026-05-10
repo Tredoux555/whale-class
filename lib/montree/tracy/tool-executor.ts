@@ -23,6 +23,13 @@ import type Anthropic from '@anthropic-ai/sdk';
 import { AI_MODEL } from '@/lib/ai/anthropic';
 import { unpackTeacher } from './frameworks/unpack-teacher';
 import { childFocus } from './frameworks/child-focus';
+import {
+  writeMemory,
+  recallMemories,
+  bumpMemoryReference,
+  type PrincipalMemoryType,
+  type RecallFilters,
+} from './memory';
 
 export interface TracyToolResult {
   success: boolean;
@@ -48,6 +55,12 @@ export interface TracyToolDeps {
   supabase: SupabaseClient;
   anthropic: Anthropic | null;
   schoolId: string;
+  /**
+   * Principal's user id (= montree_school_admins.id). Required for memory
+   * tools (remember_this, recall_memory) so memories are scoped per
+   * principal. Multi-principal schools have separate memory streams.
+   */
+  principalId: string;
   request: NextRequest;
   /**
    * Locale of the principal's UI. Forwarded to framework tools so their
@@ -68,7 +81,15 @@ export async function executeTracyTool(
   input: Record<string, unknown>,
   deps: TracyToolDeps
 ): Promise<TracyToolResult> {
-  const { supabase, anthropic, schoolId, request, locale = 'en', onProgress } = deps;
+  const {
+    supabase,
+    anthropic,
+    schoolId,
+    principalId,
+    request,
+    locale = 'en',
+    onProgress,
+  } = deps;
 
   // Safe progress emitter — wraps the consumer's callback so a buggy listener
   // can't crash a tool mid-flight.
@@ -609,6 +630,96 @@ export async function executeTracyTool(
           success: true,
           data: { teachers: summary },
           result_summary: `${summary.length} teacher(s)`,
+        };
+      }
+
+      // ── MEMORY: remember_this ────────────────────────────────────
+      // Tracy decides what's worth remembering across conversations.
+      // Validation happens in writeMemory() — invalid input returns
+      // ok=false rather than throwing.
+      case 'remember_this': {
+        if (!principalId) {
+          return { success: false, error: 'principalId missing' };
+        }
+        const memoryType = String(input.memory_type || '').trim();
+        const content = String(input.content || '').trim();
+        const source =
+          typeof input.source === 'string' ? input.source.trim() : undefined;
+        const supersedesId =
+          typeof input.supersedes_id === 'string'
+            ? input.supersedes_id.trim() || null
+            : null;
+        const relatedChildId =
+          typeof input.related_child_id === 'string'
+            ? input.related_child_id.trim() || null
+            : null;
+        const relatedTeacherId =
+          typeof input.related_teacher_id === 'string'
+            ? input.related_teacher_id.trim() || null
+            : null;
+        const relatedParentId =
+          typeof input.related_parent_id === 'string'
+            ? input.related_parent_id.trim() || null
+            : null;
+
+        const result = await writeMemory(supabase, schoolId, principalId, {
+          memory_type: memoryType as PrincipalMemoryType,
+          content,
+          source,
+          supersedes_id: supersedesId,
+          related_child_id: relatedChildId,
+          related_teacher_id: relatedTeacherId,
+          related_parent_id: relatedParentId,
+        });
+        if (!result.ok) {
+          return { success: false, error: result.error };
+        }
+        return {
+          success: true,
+          data: { id: result.id, saved: true },
+          result_summary: supersedesId
+            ? `memory updated (${memoryType})`
+            : `memory saved (${memoryType})`,
+        };
+      }
+
+      // ── MEMORY: recall_memory ────────────────────────────────────
+      // Deeper recall beyond the 30 in the system-prompt header.
+      // Bumps reference_count on returned ids fire-and-forget.
+      case 'recall_memory': {
+        if (!principalId) {
+          return { success: false, error: 'principalId missing' };
+        }
+        const filters: RecallFilters = {};
+        if (typeof input.memory_type === 'string') {
+          filters.memory_type = input.memory_type.trim() as PrincipalMemoryType;
+        }
+        if (typeof input.related_child_id === 'string') {
+          filters.related_child_id = input.related_child_id.trim();
+        }
+        if (typeof input.related_teacher_id === 'string') {
+          filters.related_teacher_id = input.related_teacher_id.trim();
+        }
+        if (typeof input.related_parent_id === 'string') {
+          filters.related_parent_id = input.related_parent_id.trim();
+        }
+        if (typeof input.query === 'string') {
+          filters.query = input.query.trim();
+        }
+        const memories = await recallMemories(supabase, principalId, filters, 20);
+        // Fire-and-forget reference bump — Tracy doesn't wait.
+        if (memories.length > 0) {
+          void bumpMemoryReference(
+            supabase,
+            memories.map((m) => m.id)
+          );
+        }
+        return {
+          success: true,
+          data: { memories, count: memories.length },
+          result_summary: `${memories.length} memor${
+            memories.length === 1 ? 'y' : 'ies'
+          }`,
         };
       }
 
