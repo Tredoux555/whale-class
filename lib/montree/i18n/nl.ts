@@ -3670,7 +3670,7 @@ export const nl: Record<string, string> = {
   'photoBank.closeUpload': '✕ Upload sluiten',
   'photoBank.uploadPictures': '📤 Afbeeldingen uploaden',
   'photoBank.dropHere': 'Sleep afbeeldingen hier of klik om te uploaden',
-  'photoBank.uploadFormats': "Ondersteunt PNG, JPG, WebP, GIF, AVIF — Max. 10 MB per stuk",
+  'photoBank.uploadFormats': "Alleen JPEG (.jpg / .jpeg) — Max. 10 MB per stuk",
   'photoBank.autoCategorized': 'Afbeeldingen worden automatisch gecategoriseerd op bestandsnaam',
   'photoBank.uploading': 'Afbeeldingen uploaden...',
   'photoBank.footer': 'Draag afbeeldingen bij om leraren wereldwijd te helpen',
@@ -3687,6 +3687,10 @@ export const nl: Record<string, string> = {
   'photoBank.loadMore': 'Meer laden ({current}/{total})',
   'photoBank.loading': 'Laden...',
   'photoBank.wordsResults': "{words} woorden · {count} foto's gevonden",
+  'photoBank.delete': 'Verwijderen',
+  'photoBank.deleteConfirm': 'Deze afbeelding uit de bank verwijderen? Dit kan niet ongedaan worden gemaakt.',
+  'photoBank.deleting': 'Verwijderen…',
+  'photoBank.deleteFailed': 'Kon deze afbeelding niet verwijderen. Probeer het opnieuw.',
 
 
   // ─── Auto-filled missing keys (from Apr 30 audit) ───

@@ -38,6 +38,44 @@ export default function PhotoBankPage() {
   const [selectedPhotos, setSelectedPhotos] = useState<Map<string, SelectedPhoto>>(new Map());
   const [showExportMenu, setShowExportMenu] = useState(false);
   const selectedIds = React.useMemo(() => new Set(selectedPhotos.keys()), [selectedPhotos]);
+  // Per-session deletion log so the grid hides removed rows immediately
+  const [deletedIds, setDeletedIds] = useState<Set<string>>(new Set());
+
+  const handleDeletePhoto = useCallback(async (photo: PhotoBankPhoto) => {
+    if (typeof window !== 'undefined') {
+      const confirmed = window.confirm(t('photoBank.deleteConfirm'));
+      if (!confirmed) return;
+    }
+    try {
+      const res = await fetch(`/api/montree/photo-bank?id=${encodeURIComponent(photo.id)}`, {
+        method: 'DELETE',
+      });
+      if (!res.ok) {
+        let message = t('photoBank.deleteFailed');
+        try {
+          const data = await res.json();
+          if (data?.error) message = data.error;
+        } catch { /* ignore */ }
+        if (typeof window !== 'undefined') window.alert(message);
+        return;
+      }
+      // Hide the deleted row + clear from selection (if it was selected)
+      setDeletedIds((prev) => {
+        const next = new Set(prev);
+        next.add(photo.id);
+        return next;
+      });
+      setSelectedPhotos((prev) => {
+        if (!prev.has(photo.id)) return prev;
+        const next = new Map(prev);
+        next.delete(photo.id);
+        return next;
+      });
+    } catch (err) {
+      console.error('Photo delete error:', err);
+      if (typeof window !== 'undefined') window.alert(t('photoBank.deleteFailed'));
+    }
+  }, [t]);
 
   const handleRawSelect = useCallback((photo: PhotoBankPhoto) => {
     setSelectedPhotos(prev => {
@@ -158,7 +196,14 @@ export default function PhotoBankPage() {
     e.preventDefault();
     e.stopPropagation();
     setDragOver(false);
-    const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/'));
+    // JPEG-only — match the API's restriction. Filter out non-JPEG drops at the UI layer too.
+    const files = Array.from(e.dataTransfer.files).filter(f => {
+      const mime = (f.type || '').toLowerCase();
+      const ext = f.name.includes('.') ? f.name.split('.').pop()?.toLowerCase() || '' : '';
+      const mimeOk = !mime || mime === 'image/jpeg' || mime === 'image/jpg';
+      const extOk = !ext || ext === 'jpg' || ext === 'jpeg';
+      return mimeOk && extOk && (mime || ext);
+    });
     if (files.length > 0) {
       uploadFiles(files);
     }
@@ -268,7 +313,7 @@ export default function PhotoBankPage() {
               ref={fileInputRef}
               type="file"
               multiple
-              accept="image/*"
+              accept="image/jpeg,.jpg,.jpeg"
               onChange={handleFileInput}
               style={{ display: 'none' }}
             />
@@ -316,6 +361,8 @@ export default function PhotoBankPage() {
               }}
               onRawSelect={handleRawSelect}
               selectedIds={selectedIds}
+              deletedIds={deletedIds}
+              onDeletePhoto={handleDeletePhoto}
               maxHeight={600}
             />
           </div>

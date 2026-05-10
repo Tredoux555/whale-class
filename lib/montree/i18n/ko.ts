@@ -3670,7 +3670,7 @@ export const ko: Record<string, string> = {
   'photoBank.closeUpload': '✕ 업로드 닫기',
   'photoBank.uploadPictures': '📤 그림 업로드',
   'photoBank.dropHere': '여기에 그림을 드롭하거나 클릭하여 업로드',
-  'photoBank.uploadFormats': 'PNG, JPG, WebP, GIF, AVIF 지원 — 각 최대 10MB',
+  'photoBank.uploadFormats': 'JPEG (.jpg / .jpeg)만 지원 — 각 최대 10MB',
   'photoBank.autoCategorized': '그림은 파일 이름으로 자동 분류됩니다',
   'photoBank.uploading': '그림 업로드 중...',
   'photoBank.footer': '전 세계 교사를 돕기 위해 그림을 기여하세요',
@@ -3687,6 +3687,10 @@ export const ko: Record<string, string> = {
   'photoBank.loadMore': '더 불러오기 ({current}/{total})',
   'photoBank.loading': '로딩 중...',
   'photoBank.wordsResults': '{words}단어 · 사진 {count}개 발견',
+  'photoBank.delete': '삭제',
+  'photoBank.deleteConfirm': '이 사진을 은행에서 삭제하시겠습니까? 이 작업은 취소할 수 없습니다.',
+  'photoBank.deleting': '삭제 중…',
+  'photoBank.deleteFailed': '사진을 삭제할 수 없습니다. 다시 시도해 주세요.',
 
 
   // ─── Auto-filled missing keys (from Apr 30 audit) ───

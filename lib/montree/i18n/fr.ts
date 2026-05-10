@@ -3670,7 +3670,7 @@ export const fr: Record<string, string> = {
   'photoBank.closeUpload': "✕ Fermer l'importation",
   'photoBank.uploadPictures': '📤 Importer des images',
   'photoBank.dropHere': 'Déposez des images ici ou cliquez pour importer',
-  'photoBank.uploadFormats': 'Formats acceptés : PNG, JPG, WebP, GIF, AVIF — Max. 10 Mo chacun',
+  'photoBank.uploadFormats': 'JPEG uniquement (.jpg / .jpeg) — Max. 10 Mo chacun',
   'photoBank.autoCategorized': 'Les images sont automatiquement catégorisées par nom de fichier',
   'photoBank.uploading': 'Importation en cours...',
   'photoBank.footer': 'Contribuez des images pour aider les enseignants du monde entier',
@@ -3687,6 +3687,10 @@ export const fr: Record<string, string> = {
   'photoBank.loadMore': 'Charger plus ({current}/{total})',
   'photoBank.loading': 'Chargement...',
   'photoBank.wordsResults': '{words} mots · {count} photos trouvées',
+  'photoBank.delete': 'Supprimer',
+  'photoBank.deleteConfirm': 'Supprimer cette image de la banque ? Cette action est irréversible.',
+  'photoBank.deleting': 'Suppression…',
+  'photoBank.deleteFailed': 'Impossible de supprimer cette image. Veuillez réessayer.',
 
 
   // ─── Auto-filled missing keys (from Apr 30 audit) ───

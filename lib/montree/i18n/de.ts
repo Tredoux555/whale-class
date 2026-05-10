@@ -3670,7 +3670,7 @@ export const de: Record<string, string> = {
   'photoBank.closeUpload': '✕ Upload schließen',
   'photoBank.uploadPictures': '📤 Bilder hochladen',
   'photoBank.dropHere': 'Bilder hierher ziehen oder klicken zum Hochladen',
-  'photoBank.uploadFormats': 'Unterstützt PNG, JPG, WebP, GIF, AVIF — Max. 10 MB pro Bild',
+  'photoBank.uploadFormats': 'Nur JPEG (.jpg / .jpeg) — Max. 10 MB pro Bild',
   'photoBank.autoCategorized': 'Bilder werden automatisch nach Dateiname kategorisiert',
   'photoBank.uploading': 'Bilder werden hochgeladen...',
   'photoBank.footer': 'Bilder beitragen, um Lehrenden weltweit zu helfen',
@@ -3687,6 +3687,10 @@ export const de: Record<string, string> = {
   'photoBank.loadMore': 'Mehr laden ({current}/{total})',
   'photoBank.loading': 'Wird geladen...',
   'photoBank.wordsResults': '{words} Wörter · {count} Bilder gefunden',
+  'photoBank.delete': 'Entfernen',
+  'photoBank.deleteConfirm': 'Dieses Bild aus der Datenbank entfernen? Dies kann nicht rückgängig gemacht werden.',
+  'photoBank.deleting': 'Wird entfernt…',
+  'photoBank.deleteFailed': 'Bild konnte nicht entfernt werden. Bitte erneut versuchen.',
 
 
   // ─── Auto-filled missing keys (from Apr 30 audit) ───

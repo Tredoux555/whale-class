@@ -1,11 +1,16 @@
 // /api/montree/photo-bank/route.ts
 // Picture Bank API — Search, browse, and upload pictures for the Montree picture library
+//
+// 🚨 JPEG-ONLY: Uploads are restricted to image/jpeg with .jpg / .jpeg extensions.
+// PNG, HEIC, WebP, GIF, AVIF, etc. fail to render reliably across the Cloudflare
+// proxy + tools pipeline, so we reject them at upload time. Validation lives in
+// the shared helper at lib/montree/media/jpeg-validation.ts — do not duplicate.
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
+import { validateJpegPhoto } from '@/lib/montree/media/jpeg-validation';
 
 const BUCKET = 'photo-bank';
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
-const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/avif'];
 
 /**
  * GET /api/montree/photo-bank
@@ -107,9 +112,10 @@ export async function POST(request: NextRequest) {
     // Process all files in parallel (each file is independent)
     const results = await Promise.all(
       files.map(async (file, idx): Promise<{ success: boolean; filename: string; error?: string; photo?: Record<string, unknown> }> => {
-        // Validate file type
-        if (!ALLOWED_TYPES.includes(file.type)) {
-          return { success: false, filename: file.name, error: 'Unsupported file type' };
+        // Validate file is JPEG (mime + extension). Same helper used by /api/montree/media/upload.
+        const jpegError = validateJpegPhoto({ name: file.name, type: file.type });
+        if (jpegError) {
+          return { success: false, filename: file.name, error: jpegError };
         }
 
         // Validate file size
@@ -193,6 +199,71 @@ export async function POST(request: NextRequest) {
     });
   } catch (err) {
     console.error('Photo bank POST error:', err);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  }
+}
+
+/**
+ * DELETE /api/montree/photo-bank?id=<uuid>
+ * Remove a picture from the bank (storage + DB row).
+ * Auth: any authenticated school user (the picture bank is shared across schools,
+ * so we don't enforce per-school ownership — matches the POST gate).
+ */
+export async function DELETE(request: NextRequest) {
+  try {
+    const { verifySchoolRequest } = await import('@/lib/montree/verify-request');
+    const auth = await verifySchoolRequest(request);
+    if (auth instanceof NextResponse) return auth;
+
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get('id')?.trim() || '';
+
+    // Reject anything that isn't a UUID before hitting the DB
+    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)) {
+      return NextResponse.json({ error: 'Invalid id' }, { status: 400 });
+    }
+
+    const supabase = getSupabase();
+
+    // Look up the row to get its storage_path before we delete the DB row
+    const { data: row, error: fetchError } = await supabase
+      .from('montree_photo_bank')
+      .select('id, storage_path, thumbnail_path')
+      .eq('id', id)
+      .maybeSingle();
+
+    if (fetchError) {
+      console.error('Photo bank fetch error before delete:', fetchError);
+      return NextResponse.json({ error: 'Failed to look up photo' }, { status: 500 });
+    }
+    if (!row) {
+      return NextResponse.json({ error: 'Photo not found' }, { status: 404 });
+    }
+
+    // Best-effort storage cleanup. We collect any paths and remove them.
+    const paths = [row.storage_path, row.thumbnail_path].filter((p): p is string => Boolean(p));
+    if (paths.length > 0) {
+      const { error: storageError } = await supabase.storage.from(BUCKET).remove(paths);
+      if (storageError) {
+        // Don't block the DB delete on a missing storage object — just log.
+        console.warn('Photo bank storage cleanup warning for', id, storageError);
+      }
+    }
+
+    // Delete the DB row
+    const { error: deleteError } = await supabase
+      .from('montree_photo_bank')
+      .delete()
+      .eq('id', id);
+
+    if (deleteError) {
+      console.error('Photo bank DB delete error:', deleteError);
+      return NextResponse.json({ error: 'Failed to delete photo' }, { status: 500 });
+    }
+
+    return NextResponse.json({ success: true, id });
+  } catch (err) {
+    console.error('Photo bank DELETE error:', err);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
