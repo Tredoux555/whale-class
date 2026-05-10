@@ -304,11 +304,59 @@ User flagged the customer journey: "activating the trial turns it to pro automat
 - COMMENT-ONLY: `app/montree/parent/milestones/page.tsx` (deprecation header)
 - NEW: `docs/handoffs/SESSION_98_HANDOFF.md`
 
+**H. Stripe billing test (May 10 morning) — bugs found, fixes pushed, test still pending end-to-end completion:**
+
+User walked through full Stripe test-mode setup (Product + Price `price_1TVDJORngZj3YCje03zT0R3j` + Account-mode webhook with signing secret + Railway env vars). During the test, three bugs surfaced and were fixed:
+
+1. **Billing page rendered wrong button for local trials** (`a6d00a17`) — `subscription_status='trialing'` set at /montree/try signup before any Stripe involvement caused `isActive=true`, rendering "Manage billing in Stripe" which 500'd on portal-session call. Fix: require `data.school.stripe_customer_id` to also be set for `isActive`. Schools in local trial without a Stripe customer now correctly fall through to "Set up billing" Checkout branch. Architectural rule: `subscription_status='trialing'` ≠ "has Stripe subscription" — always check `stripe_customer_id !== null` too.
+
+2. **Super admin schools API queried nonexistent column** (`6041c8cc`) — API was querying `montree_school_admins.login_code` which didn't exist (Session 84 architectural rule). Returned silently empty for principals so no principal chip ever rendered. User asked "teacher teacher teacher code, no principal code, why?" five times. Initial fix removed the dead query. Then user pushed back: they want to SEE the principal code.
+
+3. **Migration 194 — store principal login_code** (`91321e68`) — REVERSES the Session 84 rule. Adds `login_code TEXT` column to `montree_school_admins` + partial unique index. Updated /montree/try/instant signup to save plain code. Updated /montree/super-admin/principals POST + PATCH (reset_code) to save plain code on every code-issue path. Restored the principal codes query + pushCode loop in super-admin/schools API. Test School 2's principal Tredoux had `login_code='ATUDNV'` populated automatically because the signup happened after the deploy. **Architectural rule (revised, locked Session 98): principals get the same treatment as teachers — plain login_code stored alongside SHA-256 hash. Auth still goes through password_hash lookup.**
+
+**🚨 Migrations to run in Supabase before next session:**
+- `migrations/193_parent_messaging_feature.sql` (Session 98 Part 1)
+- `migrations/194_school_admin_login_code.sql` (Session 98 Part 2 — confirmed run by user during test)
+
+**I. Landing page polish (commit `6c72c40e`):**
+
+Three user-flagged issues addressed:
+
+1. **No login option on mobile** — header hid ALL `.m-nav-link` elements at max-width:640px, including the critical Log in link. Split into `.m-nav-link-secondary` (Library, Become an agent — hidden on mobile) and `.m-nav-link-login` (Log in — always visible). Mobile users now see Log in inline.
+
+2. **"For teachers" → "Become an agent"** — landing nav label changed (en.ts: `landing.nav.forTeachers` value updated). New stub route `/montree/become-an-agent` redirects to `/montree/for-teachers` for now. Full content rewrite (recruitment-focused, agent revenue share programme, Stripe Connect onboarding) captured as task #20.
+
+3. **CTA "Experience it free for 30 days" → "Try it"** — user reasoning: "free" has become a SaaS trap word. "Try it" is more confident and pairs better with "The magic of Montree." Trust signals moved to fineprint: "One classroom · 30 days · No credit card."
+
+Also converted the three internal nav `<a>` elements to Next.js `<Link>` for proper client-side routing.
+
+i18n: only en.ts updated. Other 11 locales will fall back to keys until `npm run i18n:fill-ui` backfills "Become an agent" + "Try it" + new fineprint. Pre-commit i18n strict completeness check passed (3883/3883 keys per locale at the time of push).
+
+---
+
+**🚨 Architectural rules locked / revised in this session (do NOT let future agents break these):**
+
+[Existing 8 rules from Session 98 Part 1 above — parent messaging gates, dashboard scope, etc.]
+
+9. **Stripe subscription events are the canonical source of truth for AI tier in production.** Manual super-admin override remains for legacy schools / demo accounts. The `enabled_by` column distinguishes them ('stripe_webhook' vs 'super_admin_tier_change').
+
+10. **Past_due / incomplete subscription states leave tier unchanged.** Stripe handles retry automatically; we don't downgrade prematurely. Only flip down on `canceled`, `unpaid`, or `incomplete_expired`.
+
+11. **`subscription_status='trialing'` ≠ "has Stripe subscription".** The /montree/try signup sets it directly in the DB (local 30-day trial timer). Always check `stripe_customer_id !== null` before assuming a Stripe customer exists.
+
+12. **🚨 REVERSED Session 84 rule: `montree_school_admins` NOW HAS a `login_code` column.** Plain principal codes stored alongside SHA-256 password_hash. Auth still goes through password_hash lookup. Migration 194. Don't delete the column without considering super-admin "show me the code" workflow.
+
+---
+
 **🚨 Next session priorities (ordered):**
 1. **🚨 Run migration 193 in Supabase.** Required before any parent messaging endpoint works.
-2. **Walk the 15-step verification checklist** in `docs/handoffs/SESSION_98_HANDOFF.md` after Railway redeploys.
-3. **Defer flag flip-on for any school** until the principal has been on `/montree/admin/communication` for ≥2 weeks AND there's a clear human handoff from Tredoux.
-4. **🚨 Tracy proactivity fix.** Real product feedback during Stripe test on May 10, 08:14: Tracy is too explanatory. She tells the principal what she COULD do instead of just doing it. User asked "okay what now" three times and each time Tracy responded with "I can draft a welcome message" + 4-step explanation, instead of drafting the message with the code embedded and saying "here it is, copy and send." Fix in `lib/montree/tracy/system-prompt.ts` voice rules — default to ACTION not OFFER. When intent is clear (new teacher added → welcome them next), call `draft_teacher_welcome_messages` immediately and present the artifact ready to copy/send. The "→ " action line should be the next concrete thing to click, never "let me know if you'd like me to draft." Quote from user: "She needs to write the message not tell me about it. Know what I need before I ask."
+2. **🚨 Run migration 194 in Supabase** (if not already — user ran during test session). Required before principal chips render in super-admin Schools list.
+3. **Complete the Stripe test end-to-end** — hard refresh `/montree/admin/billing` for Test School 2 → click "Set up billing" (new green button after the bug fix) → Stripe Checkout with `4242 4242 4242 4242` → verify the auto-tier-flip lands the school as Pro within 5-10 seconds. Then test cancel direction by clicking "Manage billing in Stripe" → Customer Portal → Cancel → verify tier auto-flips to Free.
+4. **Walk the 15-step verification checklist** in `docs/handoffs/SESSION_98_HANDOFF.md`.
+5. **Story app retheme + Yo-yo entry** (task #21) — dark forest theme across teacherpotato.xyz/story/* + hidden entry mechanism (only clicking the second "yo" in "Yo-yo" enters a session). Both visual upgrade and personality touch.
+6. **Become-an-agent page rewrite** (task #20) — pivot /for-teachers content from "teachers, use Montree" to "agents, refer schools, earn 20% revenue share."
+7. **Defer parent_messaging flag flip-on** until principal has been on `/montree/admin/communication` for ≥2 weeks AND there's a clear human handoff from Tredoux.
+8. **🚨 Tracy proactivity fix.** Real product feedback during Stripe test on May 10, 08:14: Tracy is too explanatory. She tells the principal what she COULD do instead of just doing it. User asked "okay what now" three times and each time Tracy responded with "I can draft a welcome message" + 4-step explanation, instead of drafting the message with the code embedded and saying "here it is, copy and send." Fix in `lib/montree/tracy/system-prompt.ts` voice rules — default to ACTION not OFFER. When intent is clear (new teacher added → welcome them next), call `draft_teacher_welcome_messages` immediately and present the artifact ready to copy/send. The "→ " action line should be the next concrete thing to click, never "let me know if you'd like me to draft." Quote from user: "She needs to write the message not tell me about it. Know what I need before I ask."
 5. **Reply CTA on Weekly Wrap report viewer** — small button in `/montree/parent/report/[reportId]` page that POSTs a new thread with report context. Easy add when the flag flips for any school.
 6. **Carry-overs from Session 97:** Migration 192 (Mira table rename), InVideo refund email (Gmail draft `r-47687054011919665`), Stripe verification status check, Stripe Team audit (Richful Deyong removal), Mira end-to-end test on production, drop `/public/mira-avatar.png` when ready, Phase 5 Payout calculator, Phase 6 super-admin Money tab, migration 188, Resend domain verification, Sarah's agent login.
 7. **Outreach follow-ups:** FAMM Argentina, Cambridge Montessori Global, Otari NZ, Lions Gate, Montessori Norge.
