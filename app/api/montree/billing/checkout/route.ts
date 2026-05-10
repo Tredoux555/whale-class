@@ -47,15 +47,25 @@ export async function POST(request: NextRequest) {
   // real school + this principal still owns it.
   const { data: school } = await supabase
     .from('montree_schools')
-    .select('id, name, subscription_status')
+    .select('id, name, subscription_status, stripe_customer_id')
     .eq('id', auth.schoolId)
     .maybeSingle();
   if (!school) {
     return NextResponse.json({ error: 'School not found' }, { status: 404 });
   }
 
-  // If already actively subscribed, point them at the customer portal.
-  if (school.subscription_status === 'active' || school.subscription_status === 'trialing') {
+  // If already actively subscribed via Stripe, point them at the customer portal.
+  // 🚨 CRITICAL: subscription_status='trialing' alone does NOT mean Stripe is
+  // involved — the /montree/try signup sets it directly for the local 30-day
+  // trial timer (no Stripe customer created). Mirror of the frontend fix in
+  // commit a6d00a17. Must also have a stripe_customer_id to be "actually
+  // subscribed via Stripe". Without this guard, every locally-trialing school
+  // gets stuck in "Starting..." because checkout bails before hitting Stripe.
+  const hasStripeCustomer = !!school.stripe_customer_id;
+  const isStripeActive =
+    (school.subscription_status === 'active' || school.subscription_status === 'trialing') &&
+    hasStripeCustomer;
+  if (isStripeActive) {
     return NextResponse.json({
       already_subscribed: true,
       message: 'School is already subscribed. Use the manage-billing portal instead.',
