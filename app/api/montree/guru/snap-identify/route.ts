@@ -15,6 +15,7 @@ import { loadAllCurriculumWorks, type CurriculumWork } from '@/lib/montree/curri
 import { getActiveSensitivePeriods } from '@/lib/montree/guru/knowledge/sensitive-periods';
 import { checkRateLimit } from '@/lib/rate-limiter';
 import { resolveReportModel } from '@/lib/montree/reports/resolve-model';
+import { validateJpegPhoto } from '@/lib/montree/media/jpeg-validation';
 
 
 // Railway/Next.js default serverless timeout is 15s. AI calls can
@@ -224,8 +225,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, error: 'file and child_id are required' }, { status: 400 });
     }
 
-    if (!file.type.startsWith('image/')) {
-      return NextResponse.json({ success: false, error: 'Only image files are accepted' }, { status: 400 });
+    // JPEG-only gate — Snap-Identify writes into montree_media as a photo.
+    // PNG/HEIC/WebP/GIF/AVIF do not render reliably across our pipeline.
+    {
+      const photoErr = validateJpegPhoto({ name: file.name, type: file.type });
+      if (photoErr) {
+        return NextResponse.json({ success: false, error: photoErr }, { status: 400 });
+      }
     }
 
     if (file.size > 10 * 1024 * 1024) {
@@ -257,7 +263,8 @@ export async function POST(request: NextRequest) {
     // ── Step 1: Upload photo to storage ──
     const timestamp = Date.now();
     const rawExt = (file.name.split('.').pop() || 'jpg').toLowerCase().replace(/[^a-z0-9]/g, '');
-    const ext = ['jpg', 'jpeg', 'png', 'webp', 'heic', 'heif'].includes(rawExt) ? rawExt : 'jpg';
+    // JPEG-only — anything else was already rejected by validateJpegPhoto above.
+    const ext = ['jpg', 'jpeg'].includes(rawExt) ? rawExt : 'jpg';
     const filename = `${timestamp}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
     const year = now.getFullYear();
     const month = (now.getMonth() + 1).toString().padStart(2, '0');

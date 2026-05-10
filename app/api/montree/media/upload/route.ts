@@ -5,6 +5,7 @@ import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { verifyChildBelongsToSchool } from '@/lib/montree/verify-child-access';
 import { getProxyUrl } from '@/lib/montree/media/proxy-url';
+import { validateJpegPhoto } from '@/lib/montree/media/jpeg-validation';
 
 export async function POST(request: NextRequest) {
   try {
@@ -40,6 +41,18 @@ export async function POST(request: NextRequest) {
     }
 
     const { school_id, classroom_id, child_id, child_ids, work_id, event_id, caption, tags, width, height, media_type, duration } = metadata;
+
+    // JPEG-only gate for PHOTOS into montree_media (Session 100).
+    // PNG/HEIC/WebP/GIF/AVIF do not render reliably across our proxy + thumbnail
+    // pipeline + parent surfaces, so reject them at the door rather than dump
+    // dead bytes into the photo bank. Videos and audio are unaffected.
+    const effectiveMediaType = media_type || 'photo';
+    if (effectiveMediaType !== 'video' && effectiveMediaType !== 'audio') {
+      const photoErr = validateJpegPhoto({ name: file.name, type: file.type });
+      if (photoErr) {
+        return NextResponse.json({ error: photoErr }, { status: 400 });
+      }
+    }
 
     // Use auth school_id as fallback (Guru uploads may not send school_id explicitly)
     const effectiveSchoolId = school_id || auth.schoolId;

@@ -662,7 +662,7 @@ export default function PortalChat({
           <input
             ref={fileInputRef}
             type="file"
-            accept="image/*"
+            accept="image/jpeg,.jpg,.jpeg"
             capture="environment"
             className="hidden"
             onChange={handleImageSelect}
