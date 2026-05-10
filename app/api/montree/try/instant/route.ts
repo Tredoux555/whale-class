@@ -553,6 +553,9 @@ export async function POST(req: NextRequest) {
         .insert({
           school_id: school.id,
           email: email?.trim() || `trial-${emailFallbackSlug}@montree.app`,
+          // Plain code stored alongside hash (Session 98 migration 194) so
+          // super admin can read it back to a principal who forgot theirs.
+          login_code: principalLoginCode,
           password_hash: principalPasswordHash,
           name: userName,
           role: 'principal',

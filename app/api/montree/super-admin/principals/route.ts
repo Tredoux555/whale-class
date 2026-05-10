@@ -8,8 +8,9 @@
 // from the super-admin SchoolsTab.
 //
 // Architectural rules (from Session 84):
-// - montree_school_admins has NO login_code column. Principals authenticate
-//   via password_hash lookup (legacy SHA-256 of the 6-char code).
+// - montree_school_admins now HAS a login_code column (Session 98 migration
+//   194) — plain code stored alongside SHA-256 password_hash so super admin
+//   can read codes back. Auth still goes through password_hash lookup.
 // - The plain code is only ever returned in the JSON response — once shown,
 //   it cannot be retrieved again.
 // - The UNIQUE on the table is (school_id, email). Adding a principal with
@@ -113,7 +114,7 @@ export async function POST(request: NextRequest) {
     if (existing) {
       const { data: updated, error: updErr } = await supabase
         .from('montree_school_admins')
-        .update({ name, password_hash: codeHash, is_active: true })
+        .update({ name, login_code: code, password_hash: codeHash, is_active: true })
         .eq('id', existing.id)
         .select(PRINCIPAL_FIELDS)
         .single();
@@ -134,6 +135,7 @@ export async function POST(request: NextRequest) {
         school_id: schoolId,
         email,
         name,
+        login_code: code,
         password_hash: codeHash,
         role: 'principal',
         is_active: true,
@@ -189,7 +191,7 @@ export async function PATCH(request: NextRequest) {
       const codeHash = legacySha256(code);
       const { data, error } = await supabase
         .from('montree_school_admins')
-        .update({ password_hash: codeHash })
+        .update({ login_code: code, password_hash: codeHash })
         .eq('id', principalId)
         .eq('role', 'principal')
         .select(PRINCIPAL_FIELDS)
