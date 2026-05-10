@@ -556,7 +556,7 @@ export default function QuickCapture({
       <input
         ref={fileInputRef}
         type="file"
-        accept="image/*"
+        accept="image/jpeg,.jpg,.jpeg"
         onChange={handleImageSelect}
         className="hidden"
       />

@@ -523,7 +523,7 @@ export default function CameraCapture({
       <input
         ref={albumInputRef}
         type="file"
-        accept="image/*"
+        accept="image/jpeg,.jpg,.jpeg"
         onChange={handleAlbumSelect}
         className="hidden"
       />

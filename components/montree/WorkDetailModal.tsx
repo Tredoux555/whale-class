@@ -448,7 +448,7 @@ export default function WorkDetailModal({
         <input
           ref={fileInputRef}
           type="file"
-          accept="image/*"
+          accept="image/jpeg,.jpg,.jpeg"
           onChange={handleFileSelect}
           className="hidden"
         />

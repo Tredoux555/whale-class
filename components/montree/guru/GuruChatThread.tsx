@@ -870,7 +870,7 @@ export default function GuruChatThread({
           <input
             ref={imageInputRef}
             type="file"
-            accept="image/*"
+            accept="image/jpeg,.jpg,.jpeg"
             style={{ display: 'none' }}
             onChange={handleImageSelect}
           />

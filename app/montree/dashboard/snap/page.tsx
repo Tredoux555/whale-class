@@ -505,7 +505,7 @@ export default function SnapIdentifyPage() {
             )}
           </div>
 
-          <input ref={fileInputRef} type="file" accept="image/*" capture="environment" onChange={handleFileInput} className="hidden" />
+          <input ref={fileInputRef} type="file" accept="image/jpeg,.jpg,.jpeg" capture="environment" onChange={handleFileInput} className="hidden" />
           <button onClick={() => fileInputRef.current?.click()} className="mt-3 text-sm text-violet-600 hover:text-violet-700 underline">
             {t('snap.uploadFromGallery')}
           </button>
