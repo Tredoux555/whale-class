@@ -44,8 +44,11 @@ async function verifyParentThreadAccess(
 
   const t = thread as ThreadRow;
 
-  // Thread must be about one of the parent's children.
-  if (!t.child_id || !parent.childIds.includes(t.child_id)) return null;
+  // Thread must be about one of the parent's children — UNLESS it's a
+  // broadcast (child_id IS NULL). Broadcasts are gated by the participant
+  // check below: the parent must have been added to the thread's participants
+  // explicitly (matches the threads LIST endpoint's H4 fix).
+  if (t.child_id !== null && !parent.childIds.includes(t.child_id)) return null;
 
   // Parent must be in the participant list (not just observer of someone
   // else's thread — parents are never observers in this schema).

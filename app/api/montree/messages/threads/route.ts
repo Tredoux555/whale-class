@@ -107,7 +107,7 @@ export async function GET(request: NextRequest) {
       .in('thread_id', ids),
     supabase
       .from('montree_thread_messages')
-      .select('id, thread_id, body, sender_role, sender_name, sent_at')
+      .select('id, thread_id, body, sender_role, sender_id, sender_name, sent_at')
       .in('thread_id', ids)
       .is('deleted_at', null)
       .order('sent_at', { ascending: false })
@@ -188,14 +188,16 @@ export async function GET(request: NextRequest) {
 
   // Compute unread per thread (only for non-principal participants — principal
   // is observer and we don't badge unread for them across the whole school).
+  // M1 sibling fix: identify "own messages" via sender_id === auth.userId, not
+  // sender_role — same-role group threads (teacher↔teacher, parent↔parent)
+  // would otherwise miscount the caller's own messages as unread for them.
   const unreadByThread = new Map<string, number>();
   if (auth.role !== 'principal') {
     // Count messages newer than my last_read_at in each thread.
     const countPerThread = new Map<string, number>();
     for (const m of lastMessagesRes.data || []) {
       const lr = lastReadByThread.get(m.thread_id);
-      if (m.sender_role === auth.role || (auth.role === 'homeschool_parent' && m.sender_role === 'parent'))
-        continue; // own messages don't count
+      if (m.sender_id === auth.userId) continue; // own messages don't count
       if (!lr || m.sent_at > lr) {
         countPerThread.set(m.thread_id, (countPerThread.get(m.thread_id) || 0) + 1);
       }
@@ -344,6 +346,27 @@ export async function POST(request: NextRequest) {
           { error: `Parent ${p.id} is not in your school` },
           { status: 400 }
         );
+      }
+      // NEW-3: For parent_teacher / parent_principal threads with a child_id,
+      // require the parent to actually be linked to that child. Without this,
+      // a teacher could create a thread for child Alice with Bob's mother as
+      // the parent participant — orphan participant row + polluted audit data.
+      if (
+        body.child_id &&
+        (body.thread_type === 'parent_teacher' || body.thread_type === 'parent_principal')
+      ) {
+        const { data: link } = await supabase
+          .from('montree_parent_children')
+          .select('child_id')
+          .eq('parent_id', p.id)
+          .eq('child_id', body.child_id)
+          .maybeSingle();
+        if (!link) {
+          return NextResponse.json(
+            { error: `Parent ${p.id} is not linked to this child` },
+            { status: 400 }
+          );
+        }
       }
     } else if (p.role === 'principal') {
       const { data: principal } = await supabase
