@@ -168,3 +168,147 @@ ON CONFLICT (school_id, feature_key) DO UPDATE SET enabled = true;
 6. **Phase 6 super-admin Money tab** (~2-3 days).
 7. **Outreach follow-ups:** FAMM Argentina, Cambridge Montessori Global, Otari NZ, Lions Gate, Montessori Norge.
 8. **InVideo refund email** — Gmail draft `r-47687054011919665`.
+
+---
+
+# Part 2 — Stripe billing setup + auto-tier flip + bug fixes (May 10, 2026 morning)
+
+After the parent messaging architecture shipped, the same session continued with the actual operational work: setting up Stripe in test mode, wiring auto-tier-flip on subscription events, and fixing two bugs that surfaced during the live test.
+
+## Stripe Dashboard configuration completed (test mode)
+
+User walked through the full setup in test mode:
+
+1. **Toggled to Test mode** at `https://dashboard.stripe.com/test/dashboard`. Stripe's UI calls test mode "Sandbox" now — banner reads "You are testing in a sandbox".
+2. **Created Product + Price**: "Montree subscription", $7.00 USD, Monthly, Licensed (NOT metered). Price ID: `price_1TVDJORngZj3YCje03zT0R3j`.
+3. **Created Account-mode webhook endpoint**: `https://montree.xyz/api/montree/billing/webhook`, listening to: `invoice.paid`, `invoice.payment_failed`, `customer.subscription.created/updated/deleted`, `charge.refunded`. Signing secret: `whsec_REDACTED_TEST_MODE_SECRET`.
+4. **Set Railway env vars**:
+   - `STRIPE_SECRET_KEY` = `sk_test_REDACTED` (test mode — saved in user's Notes app)
+   - `STRIPE_PRICE_PER_STUDENT` = `price_1TVDJORngZj3YCje03zT0R3j`
+   - `STRIPE_WEBHOOK_SECRET` = `whsec_REDACTED_TEST_MODE_SECRET`
+
+**🚨 Live key rotation deferred.** During the setup the user pasted their `sk_live_51RwNigRngZj3YCje...` key in chat. Per Stripe security best practice, that key should be rotated (Stripe Dashboard → Live mode → Developers → API keys → Roll secret key). Risk is low (chat is private with Anthropic, not posted publicly) but rotation is good hygiene before going live.
+
+**Connect-mode webhook NOT YET configured.** Skipped because Phase 5 (agent payouts) isn't built yet. When Phase 5 ships, set up:
+- Stripe Dashboard → Developers → Webhooks → Connect mode → Add endpoint `https://montree.xyz/api/stripe/connect-webhook`
+- Event: `account.updated`
+- Save signing secret as `STRIPE_CONNECT_WEBHOOK_SECRET` env var on Railway
+
+## Auto AI-tier flip on Stripe subscription events
+
+**File:** `lib/montree/billing.ts` (commit `ee286b42`)
+
+Built three things to make Stripe subscription events automatically flip the school's AI tier feature flags:
+
+```ts
+export type AiTierTarget = 'free' | 'premium';
+
+// Maps Stripe subscription status → tier action
+export function tierForSubscriptionStatus(status: string): AiTierTarget | null {
+  switch (status) {
+    case 'active':
+    case 'trialing':         return 'premium';
+    case 'canceled':
+    case 'unpaid':
+    case 'incomplete_expired': return 'free';
+    case 'past_due':
+    case 'incomplete':
+    case 'paused':
+    default:                 return null; // grace period — leave unchanged
+  }
+}
+
+// Mirrors the super-admin tier-change pattern: upserts ai_tier_haiku +
+// ai_tier_sonnet flags, sets monthly_ai_budget_usd ($0/hard_limit for free,
+// $9999/warn for premium), clears budget cache.
+export async function setSchoolAiTier(supabase, schoolId, tier, enabledBy);
+```
+
+Wired into:
+- `handleSubscriptionUpsert()` — calls `setSchoolAiTier()` after persisting subscription, gated on `tierForSubscriptionStatus()`. Past_due / incomplete states leave tier unchanged so Stripe's automatic retry window doesn't immediately downgrade users.
+- `handleSubscriptionDeleted()` — always flips to `'free'`. Finds school via `stripe_customer_id` first, then updates subscription_status='canceled' AND flips tier.
+
+**🚨 Architectural rule (locked):** Stripe subscription events are the single source of truth for AI tier in production. `enabled_by='stripe_webhook'` distinguishes auto-flips from manual super-admin overrides (`enabled_by='super_admin_tier_change'`). Don't add additional ways to flip tier without going through `setSchoolAiTier()`.
+
+## Bug #1: billing page rendered wrong button for local trials
+
+**File:** `app/montree/admin/billing/page.tsx` (commit `a6d00a17`)
+
+Symptom: Test School 2 had `subscription_status='trialing'` (set at /montree/try signup, BEFORE any Stripe involvement). The billing page rendered "Manage billing in Stripe" which 500'd on `/api/montree/billing/portal-session` because there was no `stripe_customer_id` to pass.
+
+Fix on line 165:
+
+```ts
+// Before
+const isActive = status === 'active' || status === 'trialing';
+
+// After
+const hasStripeCustomer = !!data.school.stripe_customer_id;
+const isActive = (status === 'active' || status === 'trialing') && hasStripeCustomer;
+```
+
+Now schools in local trial without a Stripe customer correctly fall through to the "Set up billing" Checkout branch.
+
+## Bug #2: super-admin schools API queried nonexistent column
+
+**File:** `app/api/montree/super-admin/schools/route.ts` (commit `6041c8cc`)
+
+Symptom: super-admin Schools list showed teacher login chips but never showed principal chips, even when principals existed. User asked "teacher teacher teacher code, no principal code — why?"
+
+Root cause: API was querying `montree_school_admins.login_code` — a column that **doesn't exist**. Per Session 84 architectural rule, principal codes are NEVER persisted in plain text. Only the SHA-256 hash lives in `password_hash`. The plain code is shown ONCE at creation/reset, then forgotten.
+
+Fix: removed the dead query and the dead `principalCodesRes.forEach` loop. Replaced with explanatory comments documenting the architectural rule.
+
+To get a working principal code now: super admin → Schools row → click 👤 PrincipalsModal button → Reset code → copy reveal-once banner.
+
+## Architectural rules locked in this session (Part 2 — DO NOT BREAK)
+
+1. **Stripe subscription events are the canonical source of truth for AI tier in production.** Manual super-admin override remains for legacy schools / demo accounts. The `enabled_by` column distinguishes them.
+
+2. **Past_due / incomplete subscription states leave tier unchanged.** Stripe handles retry automatically; we don't downgrade prematurely. Only flip down on `canceled`, `unpaid`, or `incomplete_expired`.
+
+3. **`subscription_status='trialing'` ≠ "has Stripe subscription".** The /montree/try signup sets `subscription_status='trialing'` directly in the DB without involving Stripe (local 30-day trial timer). Always check `stripe_customer_id !== null` before assuming a Stripe customer exists.
+
+4. **`montree_school_admins` has NO `login_code` column.** Don't add one. Don't query for it. Plain principal codes are shown once at creation/reset, never persisted. Use the 👤 PrincipalsModal to reset when you need a working code.
+
+## Tasks captured for next session
+
+- **#12 — Tracy proactivity fix** — system prompt change in `lib/montree/tracy/system-prompt.ts` so she drafts artifacts immediately instead of offering ("I can draft a welcome message for her right now"). User feedback during onboarding test: "she needs to write the message not tell me about it. Know what I need before I ask."
+- **#14 — Tracy 402 → Activate Tracy CTA** — currently the principal-agent route returns generic 402 error on Free tier. Should extend response with `requires_upgrade: true` so frontend renders an upgrade card with button leading to `/api/montree/billing/checkout` instead of a red error toast.
+- **#15 — Missing admin.* i18n keys** — settings page calls `t('admin.*')` 31 times but `lib/montree/i18n/en.ts` has zero `admin.*` keys defined. Pre-existing bug. Settings page unusable until fixed.
+- **#18 — Uniform header pattern** — top-left identity → home, top-right ••• overflow menu containing Sign out. Tracy/Mira coexist with overflow menu (visible at top-right next to ••• icon). Apply across principal / agent / parent / teacher portals.
+- **#19 — Top-left identity clicks back to home** — clicking school/classroom/Montree-logo always routes to that role's home page. Standard web convention.
+
+## Verification checklist for next session (Stripe test continuation)
+
+User had to stop mid-test. Resume from:
+
+1. Verify Railway shows latest deploy as **Active** after commits `ee286b42`, `a6d00a17`, `6041c8cc`. Three deploys may have stacked.
+2. Hard refresh `https://montree.xyz/montree/admin/billing` while logged in as Test School 2 principal.
+3. Button should now read **"Set up billing"** (green) — confirm.
+4. Click it → redirects to Stripe Checkout.
+5. Pay with `4242 4242 4242 4242`, any future expiry, any CVC, any postal code.
+6. Stripe redirects back to `/montree/admin/billing?status=success`.
+7. Within 5-10 seconds, webhook fires:
+   - `customer.subscription.created` (status='trialing' or 'active')
+   - `handleSubscriptionUpsert` runs
+   - `tierForSubscriptionStatus('trialing')` returns `'premium'`
+   - `setSchoolAiTier(schoolId, 'premium', 'stripe_webhook')` runs
+   - `ai_tier_haiku` and `ai_tier_sonnet` flags both flip to `true`
+   - Budget bumps to $9999/warn
+   - Cache cleared
+8. Refresh super admin Schools list → Test School 2's pill should auto-flip Free → **Pro** (purple).
+9. Open Tracy in Test School 2 → she now responds (no more 402).
+10. To test the cancel direction: in billing page, click "Manage billing in Stripe" → Customer Portal → Cancel subscription → return → super admin should auto-flip Pro → **Free** within seconds.
+
+## Once test passes — flip to Live mode
+
+Once test mode passes end-to-end:
+
+1. Stripe Dashboard → flip to Live mode.
+2. Re-do steps 2-3 (Product + Price + Webhook) in live mode. Get new live `price_*` ID and live `whsec_*` secret.
+3. Update Railway env vars to live values:
+   - `STRIPE_SECRET_KEY` → `sk_live_...` (after rotating the previously-exposed live key first!)
+   - `STRIPE_PRICE_PER_STUDENT` → live Price ID
+   - `STRIPE_WEBHOOK_SECRET` → live signing secret
+4. Smoke test with the user's SA card on a real test charge (then refund immediately in Stripe Dashboard).
