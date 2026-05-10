@@ -157,7 +157,12 @@ function BillingPageContent() {
   if (!data) return null;
 
   const status = data.school.subscription_status;
-  const isActive = status === 'active' || status === 'trialing';
+  // A subscription is "active" only if Stripe actually knows about it. The
+  // local /montree/try signup sets subscription_status='trialing' without
+  // creating a Stripe customer, so we must also check stripe_customer_id —
+  // otherwise the "Manage billing in Stripe" button 500s on the portal call.
+  const hasStripeCustomer = !!data.school.stripe_customer_id;
+  const isActive = (status === 'active' || status === 'trialing') && hasStripeCustomer;
   const isPastDue = status === 'past_due';
   const isCanceled = status === 'canceled';
 
