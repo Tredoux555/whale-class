@@ -52,10 +52,12 @@ export async function GET(request: NextRequest) {
         .eq('montree_classrooms.school_id', auth.schoolId);
       allowedChildIds = (schoolChildren || []).map((c: { id: string }) => c.id);
     } else {
-      // Teacher / principal — every child in auth.schoolId is in scope.
-      // If classroomId is provided, verify it belongs to auth.schoolId first
-      // so we don't 200 with an empty list when the caller is poking at another
-      // school's classroom.
+      // Teacher / principal scope precedence:
+      //   1. Explicit ?classroom_id= query param wins (verified against schoolId)
+      //   2. Else, for teachers: scope to auth.classroomId (JWT) if set, otherwise
+      //      look up the teacher's classroom_id from montree_teachers as a fallback
+      //   3. Else (principals, or teachers with no classroom assignment): every
+      //      child in auth.schoolId is in scope.
       if (classroomId) {
         const { data: classroom } = await supabase
           .from('montree_classrooms')
@@ -70,6 +72,34 @@ export async function GET(request: NextRequest) {
           .select('id')
           .eq('classroom_id', classroomId);
         allowedChildIds = (children || []).map((c) => c.id);
+      } else if (auth.role === 'teacher') {
+        // NEW-4: scope teachers to their classroom rather than the whole school.
+        let teacherClassroomId: string | null = auth.classroomId ?? null;
+        if (!teacherClassroomId) {
+          const { data: t } = await supabase
+            .from('montree_teachers')
+            .select('classroom_id, school_id')
+            .eq('id', auth.userId)
+            .maybeSingle();
+          if (t && t.school_id === auth.schoolId && t.classroom_id) {
+            teacherClassroomId = t.classroom_id;
+          }
+        }
+        if (teacherClassroomId) {
+          const { data: children } = await supabase
+            .from('montree_children')
+            .select('id')
+            .eq('classroom_id', teacherClassroomId);
+          allowedChildIds = (children || []).map((c) => c.id);
+        } else {
+          // Teacher with no classroom assignment — fall through to school-wide
+          // (same legacy behaviour, prevents lockout).
+          const { data: children } = await supabase
+            .from('montree_children')
+            .select('id, montree_classrooms!inner(school_id)')
+            .eq('montree_classrooms.school_id', auth.schoolId);
+          allowedChildIds = (children || []).map((c: { id: string }) => c.id);
+        }
       } else {
         const { data: children } = await supabase
           .from('montree_children')

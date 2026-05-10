@@ -43,7 +43,10 @@ async function verifyParentThreadAccess(
     .maybeSingle();
   if (!thread) return null;
   const t = thread as ThreadRow;
-  if (!t.child_id || !parent.childIds.includes(t.child_id)) return null;
+  // Broadcasts (child_id IS NULL) are allowed through the child check; the
+  // participant check below still gates them to threads the parent was
+  // explicitly added to. Mirrors the sibling thread/[threadId] route + H4 fix.
+  if (t.child_id !== null && !parent.childIds.includes(t.child_id)) return null;
 
   const { data: part } = await supabase
     .from('montree_message_thread_participants')
