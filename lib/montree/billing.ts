@@ -21,6 +21,7 @@
 import Stripe from 'stripe';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { getSupabase } from '@/lib/supabase-client';
+import { clearBudgetCache } from '@/lib/montree/api-usage';
 
 // ── Configuration ─────────────────────────────────────────────────────────
 
@@ -623,6 +624,97 @@ export async function handleInvoicePaymentFailed(
  * price_id + status + period dates on the school row. Run on
  * customer.subscription.created and .updated.
  */
+// ── AI tier auto-flip ─────────────────────────────────────────────────────
+//
+// Session 98 — when Stripe subscription events land, automatically flip the
+// school's AI tier feature flags so Tracy + AI reports activate / deactivate
+// in lockstep with the subscription. Mirrors the super-admin tier-change
+// pattern exactly (toggles ai_tier_haiku + ai_tier_sonnet, sets budget,
+// clears budget cache).
+//
+// Architectural rule: the principal's "Activate Tracy" CTA → Stripe Checkout
+// completing → webhook fires customer.subscription.created with status=
+// 'trialing' (or 'active' if no trial) → this helper flips the school to
+// premium. Subscription cancel → status='canceled' → this helper flips back
+// to free.
+//
+// Super-admin manual tier override remains. enabled_by='stripe_webhook'
+// distinguishes auto-flips from manual overrides in the audit log.
+
+export type AiTierTarget = 'free' | 'premium';
+
+/**
+ * Map a Stripe subscription status to a tier action.
+ * Returns null when the status implies "leave tier unchanged" (grace period
+ * states like past_due where Stripe is retrying and we shouldn't flip down
+ * yet).
+ */
+export function tierForSubscriptionStatus(status: string): AiTierTarget | null {
+  switch (status) {
+    case 'active':
+    case 'trialing':
+      return 'premium';
+    case 'canceled':
+    case 'unpaid':
+    case 'incomplete_expired':
+      return 'free';
+    case 'past_due':
+    case 'incomplete':
+    case 'paused':
+    default:
+      // Grace periods and unknown states — leave the existing tier alone.
+      // Stripe will retry payment automatically and eventually move to
+      // 'active' / 'unpaid' / 'canceled'.
+      return null;
+  }
+}
+
+/**
+ * Set a school's AI tier (free / premium) by upserting feature flags +
+ * adjusting the monthly AI budget. Mirrors the super-admin tier-change
+ * pattern in app/api/montree/super-admin/schools/route.ts.
+ *
+ * `enabledBy` is recorded for audit. Defaults to 'stripe_webhook' when called
+ * from this module's webhook handlers.
+ */
+export async function setSchoolAiTier(
+  supabase: SupabaseClient,
+  schoolId: string,
+  tier: AiTierTarget,
+  enabledBy: string = 'stripe_webhook'
+): Promise<void> {
+  const enable = tier === 'premium';
+
+  // Upsert both feature flags atomically (matching super admin route logic).
+  for (const key of ['ai_tier_haiku', 'ai_tier_sonnet'] as const) {
+    const { error } = await supabase
+      .from('montree_school_features')
+      .upsert(
+        { school_id: schoolId, feature_key: key, enabled: enable, enabled_by: enabledBy },
+        { onConflict: 'school_id,feature_key' }
+      );
+    if (error) {
+      console.error(`[billing] setSchoolAiTier: failed to set ${key} for ${schoolId}:`, error);
+      // Continue best-effort — don't throw inside a webhook handler.
+    }
+  }
+
+  // Match super-admin pattern: free → $0/hard_limit, premium → $9999/warn.
+  const budget = tier === 'premium' ? 9999 : 0;
+  const action = tier === 'premium' ? 'warn' : 'hard_limit';
+  const { error: budgetErr } = await supabase
+    .from('montree_schools')
+    .update({ monthly_ai_budget_usd: budget, ai_budget_action: action })
+    .eq('id', schoolId);
+  if (budgetErr) {
+    console.error('[billing] setSchoolAiTier: failed to set budget for', schoolId, budgetErr);
+  }
+
+  clearBudgetCache(schoolId);
+
+  console.log(`[billing] school ${schoolId} flipped to tier=${tier} via ${enabledBy}`);
+}
+
 export async function handleSubscriptionUpsert(
   supabase: SupabaseClient,
   subscription: Stripe.Subscription
@@ -665,10 +757,20 @@ export async function handleSubscriptionUpsert(
     })
     .eq('id', school.id);
 
-  // Defensive: if status flipped to canceled, log it.
-  if (status === 'canceled') {
-    console.log('[billing] subscription canceled for school', school.id, '— scheduling for downgrade');
+  // Auto-flip AI tier based on subscription status.
+  //   active / trialing → premium  (Tracy + Sonnet reports unlocked)
+  //   canceled / unpaid / incomplete_expired → free  (AI gates close)
+  //   past_due / incomplete → leave unchanged (grace period; Stripe is
+  //   retrying payment automatically)
+  const tierTarget = tierForSubscriptionStatus(status);
+  if (tierTarget) {
+    await setSchoolAiTier(supabase, school.id, tierTarget, 'stripe_webhook');
+  } else {
+    console.log(
+      `[billing] subscription status=${status} for school ${school.id} — tier left unchanged (grace period)`
+    );
   }
+
   // Reference periodStart so it's not flagged as unused (currently unused
   // but useful for future Phase 6 period analysis).
   void currentPeriodStart;
@@ -683,10 +785,22 @@ export async function handleSubscriptionDeleted(
   subscription: Stripe.Subscription
 ): Promise<void> {
   const customerId = subscription.customer as string;
+
+  // Find the school first so we can flip its AI tier off.
+  const { data: school } = await supabase
+    .from('montree_schools')
+    .select('id')
+    .eq('stripe_customer_id', customerId)
+    .maybeSingle();
+
   await supabase
     .from('montree_schools')
     .update({ subscription_status: 'canceled' })
     .eq('stripe_customer_id', customerId);
+
+  if (school) {
+    await setSchoolAiTier(supabase, school.id, 'free', 'stripe_webhook');
+  }
 }
 
 /**

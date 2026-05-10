@@ -1,3 +1,20 @@
+// /montree/parent/milestones/page.tsx
+//
+// 🚨 DEPRECATED as of Session 98 (May 9, 2026).
+//
+// Decision: parents do NOT need a perpetual milestones data view. Milestones
+// are a teacher → parent narrative moment that belongs in the Weekly Wrap
+// report and term reports — not a stand-alone surface. A scrolling list of
+// milestones invites unhealthy comparison ("why isn't my kid further?") and
+// misses the point that Montessori is about the child's own path, not a
+// checklist.
+//
+// Hide-don't-delete posture: the route file remains so direct URL bookmarks
+// don't 404, but the parent dashboard never links here. Future agents must
+// NOT extend this page or surface it in any nav. If you need to communicate
+// a milestone to a parent, use the Weekly Wrap report or (when the
+// `parent_messaging` flag flips on, Session 98) start a parent_teacher thread.
+
 'use client';
 
 import { useState, useEffect, Suspense } from 'react';
