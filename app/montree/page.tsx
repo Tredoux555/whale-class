@@ -362,16 +362,13 @@ export default function MontreeLanding() {
         </div>
       </nav>
 
-      {/* ── HERO ── */}
+      {/* ── HERO ── Clean and clear: title + CTA, nothing else. ── */}
       <section className="m-hero">
         <div ref={addReveal} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-          <span className="m-label">{t('landing.hero.label')}</span>
           <h1>{t('landing.hero.title')}</h1>
-          <p className="m-hero-sub">{t('landing.hero.subtitle')}</p>
-          <a className="m-pill m-pill-lg" href="/montree/login-select?signup=true">
+          <Link className="m-pill m-pill-lg" href="/montree/login-select?signup=true">
             {t('landing.hero.cta')}
-          </a>
-          <p className="m-hero-fineprint">{t('landing.hero.fineprint')}</p>
+          </Link>
         </div>
       </section>
 
