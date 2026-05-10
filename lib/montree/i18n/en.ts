@@ -4335,6 +4335,155 @@ export const en = {
   'tracy.progress.unpacking': 'Unpacking {name}…',
   'tracy.progress.countingNotes': 'Counting notes and coverage…',
   'tracy.progress.scoringNotes': 'Reading note quality…',
+
+  // ─────────────────────────────────────────────────────────────────────
+  // Missing keys sweep (Session 102) — Settings page + parent messaging +
+  // weekly wrap + focus mode + logo upload all showed raw `admin.*` keys
+  // in production. Audit found 104 dotted keys referenced via t() that
+  // never landed in en.ts. Added here; `npm run i18n:fill-ui` backfills
+  // the other 11 locales via Haiku batch.
+  // ─────────────────────────────────────────────────────────────────────
+
+  // admin.actions.* — buttons + click targets in cockpit + child page
+  'admin.actions.ask': 'Ask',
+  'admin.actions.copied': 'Copied',
+  'admin.actions.copySummary': 'Copy summary',
+  'admin.actions.generateReportForParent': 'Generate report for parent',
+  'admin.actions.manageSubscription': 'Manage subscription',
+  'admin.actions.saveChanges': 'Save changes',
+  'admin.actions.tryAgain': 'Try again',
+
+  // admin.emptyStates.*
+  'admin.emptyStates.noReportsSent': 'No reports sent yet.',
+
+  // admin.errors.* — surfaced via toast / inline error blocks
+  'admin.errors.failedToGetResponse': "Couldn't get a response. Please try again.",
+  'admin.errors.failedToLoadSettings': 'Failed to load settings.',
+  'admin.errors.failedToLoadStudentData': 'Failed to load student data.',
+  'admin.errors.failedToSaveSettings': 'Failed to save settings.',
+  'admin.errors.passwordsMismatch': "Passwords don't match.",
+  'admin.errors.somethingWentWrong': 'Something went wrong.',
+
+  // admin.form.* — input field labels on Settings page + Guru ask box
+  'admin.form.askFollowUpQuestion': 'Ask a follow-up question…',
+  'admin.form.confirmPassword': 'Confirm password',
+  'admin.form.email': 'Email',
+  'admin.form.name': 'Name',
+  'admin.form.newPassword': 'New password',
+  'admin.form.schoolName': 'School name',
+
+  // admin.labels.* — section + row labels across child page + Settings
+  'admin.labels.changePassword': 'Change password',
+  'admin.labels.currently': 'Currently',
+  'admin.labels.overall': 'Overall',
+  'admin.labels.plan': 'Plan',
+  'admin.labels.principalAccount': 'Principal account',
+  'admin.labels.quickQuestionsForGuru': 'Quick questions for Guru',
+  'admin.labels.sayToParent': 'Say to parent',
+  'admin.labels.schoolInformation': 'School information',
+  'admin.labels.schoolUrl': 'School URL',
+  'admin.labels.sent': 'Sent',
+  'admin.labels.status': 'Status',
+  'admin.labels.subscription': 'Subscription',
+  'admin.labels.suggestionsForHome': 'Suggestions for home',
+  'admin.labels.summary': 'Summary',
+  'admin.labels.timeline': 'Timeline',
+  'admin.labels.weekOf': 'Week of',
+  'admin.labels.works': 'Works',
+
+  // admin.messages.* — subtitles + toast confirmations
+  'admin.messages.analyzingProgress': "Analyzing your child's progress…",
+  'admin.messages.copiedToClipboard': 'Copied to clipboard',
+  'admin.messages.manageSchoolProfile': 'Manage your school profile and account details.',
+  'admin.messages.settingsSaved': 'Settings saved.',
+
+  // admin.sections.* — page section headings
+  'admin.sections.progressByArea': 'Progress by area',
+  'admin.sections.reportsSentToParents': 'Reports sent to parents',
+  'admin.sections.schoolSettings': 'School settings',
+
+  // admin.states.* — status pills + loading states
+  'admin.states.active': 'Active',
+  'admin.states.free': 'Free',
+  'admin.states.generatingReport': 'Generating report…',
+  'admin.states.inactive': 'Inactive',
+  'admin.states.loadingSettings': 'Loading settings…',
+  'admin.states.mastered': 'Mastered',
+  'admin.states.practicing': 'Practicing',
+  'admin.states.presented': 'Presented',
+  'admin.states.saving': 'Saving…',
+  'admin.states.trial': 'Trial',
+
+  // childSelector.*
+  'childSelector.selectChild': 'Select a child',
+
+  // common.* — shared labels across multiple surfaces
+  'common.change': 'Change',
+  'common.continue': 'Continue',
+  'common.loadMore': 'Load more',
+  'common.print': 'Print',
+  'common.started': 'Started',
+  'common.student': 'Student',
+  'common.yourChild': 'your child',
+  'common.yourChildren': 'your children',
+
+  // conferenceNotes.*
+  'conferenceNotes.fetchFailed': 'Failed to load conference notes.',
+
+  // focus_mode.* — focus shelf interactions
+  'focus_mode.add': 'Add',
+  'focus_mode.hold_to_switch': 'Hold to switch',
+  'focus_mode.tap_to_add': 'Tap to add',
+
+  // labels.* — class logo upload UI
+  'labels.class_logo': 'Class logo',
+  'labels.drop_logo': 'Drop logo here',
+  'labels.logo_applied': 'Logo applied',
+  'labels.logo_formats': 'PNG, JPG, or SVG',
+  'labels.remove': 'Remove',
+
+  // library.*
+  'library.category': 'Category',
+
+  // Literal domain — rendered as bare string (no real translation)
+  'montree.xyz': 'montree.xyz',
+
+  // nav.*
+  'nav.library': 'Library',
+
+  // parentMessages.* — parent-facing messaging UI (replied threads,
+  // compose, etc.). Whole surface was raw-keys until now.
+  'parentMessages.aboutChild': 'About {child}',
+  'parentMessages.backToReport': 'Back to report',
+  'parentMessages.bodyLabel': 'Message',
+  'parentMessages.bodyPlaceholder': 'Type your message…',
+  'parentMessages.emptyHint': 'Tap the + button to start a new conversation.',
+  'parentMessages.emptyTitle': 'No messages yet',
+  'parentMessages.leadTeacher': 'Lead teacher',
+  'parentMessages.newThread': 'New conversation',
+  'parentMessages.noChildren': 'No children linked to your account yet.',
+  'parentMessages.noMessagesYet': 'No messages in this conversation yet.',
+  'parentMessages.principalLabel': 'Principal',
+  'parentMessages.replyPlaceholder': 'Type a reply…',
+  'parentMessages.send': 'Send',
+  'parentMessages.sendFailed': "Couldn't send. Please try again.",
+  'parentMessages.sending': 'Sending…',
+  'parentMessages.subjectLabel': 'Subject',
+  'parentMessages.subjectPlaceholder': 'Subject (optional)',
+  'parentMessages.subtitle': "Conversations about your child's day.",
+  'parentMessages.teacherLabel': 'Teacher',
+  'parentMessages.title': 'Messages',
+  'parentMessages.toLabel': 'To',
+  'parentMessages.you': 'You',
+
+  // weeklyWrap.* — teacher-facing Weekly Wrap generation flow
+  'weeklyWrap.childrenLabel': 'Children',
+  'weeklyWrap.description': "Generate this week's reports for every child in the classroom.",
+  'weeklyWrap.done': 'Done',
+  'weeklyWrap.generateButton': 'Generate reports',
+  'weeklyWrap.generatingReports': 'Generating reports…',
+  'weeklyWrap.regenerateTitle': 'Regenerate report',
+  'weeklyWrap.reviewButton': 'Review',
 } as const;
 
 export type TranslationKey = keyof typeof en;
