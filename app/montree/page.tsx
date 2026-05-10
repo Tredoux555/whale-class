@@ -197,6 +197,16 @@ export default function MontreeLanding() {
           padding: 120px 32px 140px;
         }
         .m-hero .m-label { margin-bottom: 40px; }
+        .m-hero-kicker {
+          font-family: "Lora", Georgia, serif;
+          font-style: italic;
+          font-weight: 400;
+          font-size: clamp(18px, 2.5vw, 28px);
+          letter-spacing: 0.04em;
+          color: #E8C96A;
+          margin-bottom: 18px;
+          text-shadow: 0 0 24px rgba(232,201,106,0.18);
+        }
         .m-hero h1 {
           font-family: "Lora", Georgia, serif;
           font-weight: 400;
@@ -365,6 +375,7 @@ export default function MontreeLanding() {
       {/* ── HERO ── Clean and clear: title + CTA, nothing else. ── */}
       <section className="m-hero">
         <div ref={addReveal} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          <span className="m-hero-kicker">{t('landing.hero.kicker')}</span>
           <h1>{t('landing.hero.title')}</h1>
           <Link className="m-pill m-pill-lg" href="/montree/login-select?signup=true">
             {t('landing.hero.cta')}

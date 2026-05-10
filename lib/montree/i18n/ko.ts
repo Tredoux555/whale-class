@@ -3948,4 +3948,7 @@ export const ko: Record<string, string> = {
   'library.sortingMatGeneratorSubtitle': '2개, 3개 또는 4개의 지정된 원이 있는 A4 정렬 매트를 만들어요',
   'tools.sorting_mat_generator': '정렬 매트 생성기',
   'tools.sorting_mat_generator_desc': '카테고리 작업을 위한 2개, 3개 또는 4개의 라벨이 지정된 원이 있는 A4 정렬 매트입니다',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'landing.hero.kicker': '자녀분의 삶을 바꿔보세요',
 };

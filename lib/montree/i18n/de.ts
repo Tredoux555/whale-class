@@ -3948,4 +3948,7 @@ export const de: Record<string, string> = {
   'library.sortingMatGeneratorSubtitle': 'Erstellen Sie A4-Sortier-Matten mit 2, 3 oder 4 bezeichneten Kreisen',
   'tools.sorting_mat_generator': 'Sortier-Matte Generator',
   'tools.sorting_mat_generator_desc': 'A4-Sortier-Matten mit 2, 3 oder 4 beschrifteten Kreisen für Kategoriearbeit',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'landing.hero.kicker': 'Verändern Sie Ihr Leben',
 };

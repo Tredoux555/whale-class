@@ -3948,4 +3948,7 @@ export const fr: Record<string, string> = {
   'library.sortingMatGeneratorSubtitle': 'Créer des tapis de tri A4 avec 2, 3 ou 4 cercles désignés',
   'tools.sorting_mat_generator': 'Générateur de Tapis de Tri',
   'tools.sorting_mat_generator_desc': 'Tapis de tri A4 avec 2, 3 ou 4 cercles étiquetés pour le travail de catégorisation',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'landing.hero.kicker': 'Transformez votre vie',
 };

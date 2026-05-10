@@ -3948,4 +3948,7 @@ export const it: Record<string, string> = {
   'library.sortingMatGeneratorSubtitle': 'Crei tappeti A4 con 2, 3 o 4 cerchi designati',
   'tools.sorting_mat_generator': 'Generatore di Tappeti di Classificazione',
   'tools.sorting_mat_generator_desc': 'Tappeti A4 con 2, 3 o 4 cerchi etichettati per il lavoro di categorizzazione',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'landing.hero.kicker': 'Trasforma la tua vita',
 };

@@ -4099,6 +4099,7 @@ export const en = {
   'landing.nav.login': 'Log in',
   'landing.nav.getStarted': 'Get started',
   'landing.hero.label': 'Montessori classroom management',
+  'landing.hero.kicker': 'Change your life',
   'landing.hero.title': 'The magic of Montree.',
   'landing.hero.subtitle': 'A teacher takes a photo. Montree does the rest.',
   'landing.hero.cta': 'Try it',

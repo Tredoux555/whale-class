@@ -4351,4 +4351,7 @@ export const zh = {
   'library.sortingMatGeneratorSubtitle': '创建具有2个、3个或4个指定圆圈的A4分类垫',
   'tools.sorting_mat_generator': '分类垫生成器',
   'tools.sorting_mat_generator_desc': '用于分类工作的A4分类垫，具有2个、3个或4个标记圆圈',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'landing.hero.kicker': '改变你的生活',
 } as const;

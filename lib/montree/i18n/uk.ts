@@ -3945,4 +3945,7 @@ export const uk: Record<string, string> = {
   'library.sortingMatGeneratorSubtitle': 'Створіть сортувальні мати формату А4 з 2, 3 або 4 позначеними колами',
   'tools.sorting_mat_generator': 'Генератор сортувальних матів',
   'tools.sorting_mat_generator_desc': 'Сортувальні мати формату А4 з 2, 3 або 4 позначеними колами для роботи з категоріями',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'landing.hero.kicker': 'Змініть своє життя',
 };

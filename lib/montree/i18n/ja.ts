@@ -3948,4 +3948,7 @@ export const ja: Record<string, string> = {
   'library.sortingMatGeneratorSubtitle': '2個、3個、または4個の指定されたサークルを持つA4ソーティングマットを作成します',
   'tools.sorting_mat_generator': 'ソーティングマットジェネレータ',
   'tools.sorting_mat_generator_desc': 'カテゴリー分類作業用の2個、3個、または4個のラベル付きサークルを持つA4ソーティングマット',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'landing.hero.kicker': 'あなたの人生を変える',
 };

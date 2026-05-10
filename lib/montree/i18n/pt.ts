@@ -3948,4 +3948,7 @@ export const pt: Record<string, string> = {
   'library.sortingMatGeneratorSubtitle': 'Crie tabuleiros de classificação A4 com 2, 3 ou 4 círculos designados',
   'tools.sorting_mat_generator': 'Gerador de Tabuleiros de Classificação',
   'tools.sorting_mat_generator_desc': 'Tabuleiros de classificação A4 com 2, 3 ou 4 círculos etiquetados para trabalho de categorias',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'landing.hero.kicker': 'Transforme sua vida',
 };
