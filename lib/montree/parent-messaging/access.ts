@@ -37,6 +37,11 @@ interface LinkRow {
   child_id: string;
 }
 
+interface ChildRow {
+  id: string;
+  montree_classrooms: { school_id: string } | null;
+}
+
 /**
  * Resolve and authorize a parent for messaging. Returns the parent identity
  * bundle on success, or a NextResponse that the route handler must return.
@@ -86,15 +91,29 @@ export async function resolveMessagingParent(
   }
 
   // 5. Resolve the parent's children. They can ONLY message about these.
+  // Multi-school parents: filter the linked-children list to those whose
+  // classroom belongs to the parent's school. Cross-school children must
+  // never appear in this scope.
   const { data: links } = await supabase
     .from('montree_parent_children')
     .select('child_id')
     .eq('parent_id', parentRow.id);
 
-  const childIds = ((links as LinkRow[] | null) || []).map((l) => l.child_id);
+  const candidateChildIds = ((links as LinkRow[] | null) || []).map((l) => l.child_id);
+  if (!candidateChildIds.length) {
+    return NextResponse.json({ error: 'No children linked' }, { status: 404 });
+  }
+
+  const { data: schoolChildren } = await supabase
+    .from('montree_children')
+    .select('id, montree_classrooms!inner(school_id)')
+    .in('id', candidateChildIds)
+    .eq('montree_classrooms.school_id', parentRow.school_id);
+
+  const childIds = ((schoolChildren as ChildRow[] | null) || []).map((c) => c.id);
   if (!childIds.length) {
-    // Parent exists but has no linked children — nothing to message about.
-    // Treat as 404 to keep the surface invisible for empty accounts.
+    // Parent has linked children but none in this school — nothing to message
+    // about within this school's scope.
     return NextResponse.json({ error: 'No children linked' }, { status: 404 });
   }
 

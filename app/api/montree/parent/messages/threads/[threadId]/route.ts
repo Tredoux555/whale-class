@@ -116,11 +116,22 @@ export async function GET(
   for (const p of (principals.data || []) as Array<{ id: string; name: string }>)
     nameById.set(`principal:${p.id}`, p.name);
 
+  // L3: dedupe participants by (role, id) — defensive in case the participant
+  // table contains duplicates (e.g. observer + primary inserted as two rows).
+  const seen = new Set<string>();
+  const dedupedParts: Array<typeof parts[number]> = [];
+  for (const p of parts) {
+    const key = `${p.participant_role}:${p.participant_id}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    dedupedParts.push(p);
+  }
+
   return NextResponse.json({
     thread,
     classroom: classroomRes.data || null,
     child: childRes.data || null,
-    participants: parts.map((p) => ({
+    participants: dedupedParts.map((p) => ({
       role: p.participant_role,
       id: p.participant_id,
       name: nameById.get(`${p.participant_role}:${p.participant_id}`) || null,
