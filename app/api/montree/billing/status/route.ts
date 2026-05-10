@@ -43,12 +43,35 @@ export async function GET(request: NextRequest) {
   const liveEstimateCents = liveStudentCount * PRICE_PER_STUDENT_CENTS;
 
   // Recent invoice timeline (most recent 12 — a year of monthly invoices).
-  const { data: history } = await supabase
+  // Pull a wider buffer (40) so dedup-by-invoice-id doesn't accidentally
+  // drop legitimate older invoices when the most-recent invoice has lots
+  // of webhook events (3DS challenge → payment_failed → payment_action_required
+  // → paid all share the same stripe_invoice_id).
+  const { data: rawHistory } = await supabase
     .from('montree_billing_history')
     .select('id, stripe_invoice_id, amount_cents, currency, status, description, invoice_pdf_url, period_start, period_end, quantity, created_at')
     .eq('school_id', auth.schoolId)
     .order('created_at', { ascending: false })
-    .limit(12);
+    .limit(40);
+
+  // Dedupe by stripe_invoice_id — keep ONLY the most recent status for each
+  // invoice. This is the canonical fix for the "failed-then-paid" duplicate
+  // display issue. Stripe reuses the same invoice_id across retries (3DS
+  // challenges, card retries, etc.) — when the eventual outcome is `paid`,
+  // we only show the `paid` row. The earlier `failed` row was just a step
+  // in the authentication dance, not a real payment failure.
+  //
+  // Architectural rule: stripe_invoice_id is the canonical dedup key for
+  // billing_history display. If a row has no stripe_invoice_id (legacy data
+  // or non-Stripe entry), keep it untouched.
+  const seenInvoiceIds = new Set<string>();
+  const dedupedHistory = (rawHistory || []).filter((row) => {
+    if (!row.stripe_invoice_id) return true;
+    if (seenInvoiceIds.has(row.stripe_invoice_id)) return false;
+    seenInvoiceIds.add(row.stripe_invoice_id);
+    return true;
+  });
+  const history = dedupedHistory.slice(0, 12);
 
   // Days remaining in trial (if applicable).
   let trialDaysRemaining: number | null = null;
