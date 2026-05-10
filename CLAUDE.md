@@ -202,11 +202,87 @@ Wave 1 sends bounced for these addresses. None of these are flagged as `bounced`
 
 ## RECENT STATUS (May 10, 2026)
 
+### ⚡ Session 100 — THE MARATHON: Stripe LIVE + Communication 4-cycle audit + Tracy memory + Tracy proactivity v3 + Tracy warmth + Tracy thinking indicator + copy blocks + photo bank cleanup + landing kicker (May 10, 2026)
+
+**The most productive single session in the project's history. Real money flows. Tracy has memory, voice, and visual life. Communication system bulletproofed. Photo bank purged. Landing polished.**
+
+**🚨 Canonical resume doc:** `docs/handoffs/SESSION_100_HANDOFF.md` — comprehensive single source of truth for picking up Session 101 cold.
+
+**15 commits shipped. 3 migrations RUN (193, 194, 195). 4 audit cycles to CLEAN. Real $21 charge succeeded in Stripe live mode.**
+
+**Headline outcomes:**
+1. **Stripe LIVE mode end-to-end proven** — Test School 2 subscribed via real Visa, $21 invoice paid (`GGPEZ19T-0001`), Customer Portal live, tier auto-flipped Pro. Live price `price_1TVUiLRngZj3YCje8azeSIsN`, live webhook `we_1TVUwXRngZj3YCjedD20xX5s`. Live secret key rotated TWICE (once after exposure in chat, once cleanly). Cancel direction will auto-prove on Jun 10 via `cancel_at_period_end`.
+2. **Communication system: 4 audit-fix-audit cycles to CLEAN.** 19 original fixes + 5 regression fixes + 1 sibling fix. Three consecutive clean passes confirmed. 11 architectural rules enforced across every messaging endpoint. Whale Class READY to flip `parent_messaging` ON when human handoff is ready.
+3. **Tracy persistent memory live** (migration 195 RUN) — `montree_principal_memory` table + atomic supersede function + `remember_this` / `recall_memory` tools. True relational memory across conversations + devices. Memory injected on every turn (capped 30 most recent).
+4. **Tracy proactivity v3** — root cause finally found: tool description for `draft_teacher_welcome_messages` was telling her to offer first ("Use this whenever the principal accepts an offer"). Both system prompt + tool description rewritten. **Architectural rule locked: when adjusting AI proactivity, system prompt AND tool descriptions MUST agree. If they disagree, tool wins because that's what Opus reads at decision moment.**
+5. **Tracy warmth** — added "one warm sentence" framing between action and artifact. Strict guardrails: warmth allowed ("Here you go — three quick welcomes"); architecture forbidden ("Here's how it works...").
+6. **Tracy thinking indicator + copy blocks** (commit `78e62880`) — pulsing gold avatar + animated dots + progress label while loading; markdown code fences render as styled `<CopyableMessageCard>` with one-tap copy. Tracy's system prompt updated to wrap every draft message in fences with bold heading above.
+7. **Photo bank cleanup** — 510 photos → 389 photos. 121 non-JPEGs (PNG/WebP/AVIF, 24% of bank) purged from storage + DB. JPEG-only validation locked at upload + UI accept attributes tightened across 6 photo input surfaces. Per-photo delete button added. `montree_media` photo uploads also locked to JPEG-only.
+8. **Migrations 193 + 194 + 195 ALL RUN.** Parent messaging flag (default OFF), school_admins.login_code column (reverses Session 84 rule), Tracy memory table + Postgres function.
+9. **Landing page kicker** — "Change your life" in brand gold (Lora italic, soft gold glow) above "The magic of Montree." All 12 locales translated.
+10. **Stale Stripe state cleanup pattern** — Test School 2 had `cus_UUNyBWUuiGdn69` from yesterday's test mode. Cleared via SQL UPDATE → live customer created cleanly. Same SQL applies to any school migrating from test→live.
+
+**🚨 Architectural rules locked in this session (do NOT let future agents break):**
+
+1. **Tool descriptions and system prompts must AGREE on when to call.** If they disagree, tool wins. Always update both when adjusting AI behavior.
+2. **Stripe live mode keys live ONLY in Railway env vars.** Never CLAUDE.md, never git, never persistent files. Product/Price/Webhook IDs are non-sensitive object identifiers and OK to record. `sk_live_*` and `whsec_*` are credentials and stay out.
+3. **`subscription_status='trialing'` ≠ "has Stripe subscription".** Always check `stripe_customer_id !== null` before assuming Stripe customer exists. Both frontend (Session 98 `a6d00a17`) AND backend (Session 100 `f7560471`) enforce this.
+4. **Test mode customer IDs become invalid in live mode.** When switching modes, schools with stale `stripe_customer_id` need cleanup. Pattern: `UPDATE montree_schools SET stripe_customer_id=NULL, stripe_subscription_id=NULL, stripe_price_id_active=NULL, current_period_end=NULL, last_synced_to_stripe_at=NULL, monthly_charge_estimate_cents=NULL, subscription_status='trialing' WHERE id='<school_id>';`
+5. **Tracy memories are SEMANTIC, not EPISODIC.** Save preferences/concerns/voice samples; don't save "asked about X today" — that already lives in `montree_principal_agent_log`.
+6. **Memory injection on every turn**, capped at 30 most recent for cost control. `recall_memory` is for deeper recall beyond that cap.
+7. **Memories scoped per `principal_id`**, never per school. Multi-principal schools have separate memory streams.
+8. **Tracy's draft messages MUST be wrapped in markdown code fences** for copy blocks. The frontend renders fences as `<CopyableMessageCard>`. Recipient name goes BEFORE the fence as bold heading. Action line stays as prose AFTER all fences.
+9. **The `→ ` action-line marker** is load-bearing — front-end parses it. Don't change `splitActionLine()`.
+10. **Photo bank is shared public** by design (`is_public=true`, no `school_id`). Don't add ownership without explicit decision.
+11. **Every messaging endpoint** validates participant school membership + child-classroom linkage before insert.
+12. **Principal selection (recipients + observer)** uses CONSISTENT ordering: `last_login DESC nullsFirst:false`, `created_at DESC` tiebreaker. Both `addPrincipalObserver()` and `recipients/route.ts` must match.
+
+**Files changed (15 commits, ~50+ files):**
+
+```
+f58742ed  Landing: 'Change your life' gold kicker
+f7560471  Stripe checkout: don't bail on local-trial schools
+6d4283b4  Tracy proactivity: ACTION FIRST rewrite
+a799b4d7  Tracy proactivity v3: top-of-prompt mandate + tool description
+e4c93cf4  Communication audit: critical + high
+fb232065  Communication audit: medium + low
+bd96deb1  Communication audit: 4 regression fixes
+8f4db60b  AUDIT-1: recipients route principal ordering
+04395543  Tracy persistent memory: migration 195 + tools + injection
+97566d54  Photo upload: JPEG-only across montree_media routes
+d51df3c4  Photo bank audit script
+15fea956  Photo bank: JPEG-only + delete button + DELETE API
+27b176ad  Photo bank: cleanup utilities (4 files, +456)
+a2a1d3d5  Tracy voice: warm one-sentence intro
+78e62880  Tracy: thinking indicator + copy-able cards
+```
+
+**🚨 Carry-overs / next session priorities:**
+
+1. **🚨 Onboard Gloria as first agent today** — super-admin Referrals → 🔑 Issue agent login → reveal-once code → send to Gloria. Then 💳 Stripe Connect onboarding link → Gloria fills bank/tax in Stripe Express → done. Real money infrastructure complete.
+2. **🚨 Run migration 184** — `montree_principal_agent_log` table never created. Tracy interactions silently fail to log. File exists at `migrations/184_principal_agent_log.sql`. Fire-and-forget so doesn't break Tracy. Task #40.
+3. **🚨 Fix admin.\* i18n keys** — Settings page reveals raw `admin.actions.saveChanges` / `admin.labels.subscription` / etc. to users. ~31 missing keys per Session 98 #15. Run `npm run i18n:fill-ui` after adding to `en.ts`. Task #39.
+4. **UI glitch sweep** across principal portal — tied to admin.* fix. The brittleness undermines the otherwise polished feel.
+5. **In-app billing history filter** — cosmetic. Filter out failed-then-paid duplicate webhook events so principals don't see ghost "Payment failed" rows next to successful charges.
+6. **Phase 5 Payout calculator** — now actually unblocked since Stripe is live. Reads `montree_finance_transactions`. Idempotent monthly aggregator → `montree_agent_payouts`. ~1.5 days.
+7. **Phase 6 super-admin Money tab** — P&L from unified ledger. ~2-3 days.
+8. **Outreach follow-ups** — FAMM Argentina, Cambridge Montessori Global, Otari NZ, Lions Gate, Montessori Norge.
+
+**Test plan for Session 101 (smoke test the Session 100 work):**
+
+1. **Tracy memory** — open `/montree/admin`, tell her *"Remember — I prefer messages under 3 sentences"*, click "New conversation", ask any drafting question. Drafts should be short. Cross-device test: open same school in incognito, same memory loads.
+2. **Tracy thinking indicator** — send Tracy *"how do I onboard my teachers"*. Avatar pulses gold during wait, three dots animate, progress label rolls forward.
+3. **Tracy copy blocks** — same response should render as stacked copy cards (one per teacher), each with bold name + copy icon. Click copy → checkmark for 1.2s, paste in WhatsApp/Notes → clean text.
+4. **Stripe live billing** — Customer Portal accessible from `/montree/admin/billing`, shows `10 May 2026 · US$21.00 · Paid · Montree subscription`. Cancel from portal would prove cancel direction without waiting for Jun 10.
+5. **Communication system flag flip** (when ready) — `INSERT INTO montree_school_features (school_id, feature_key, enabled) VALUES ('c6280fae-567c-45ed-ad4d-934eae79aabc', 'parent_messaging', true) ON CONFLICT (school_id, feature_key) DO UPDATE SET enabled = true;`
+
+---
+
 ### ⚡ Session 99 — Tracy persistent memory (migration 195) + remember_this / recall_memory tools (May 10, 2026)
 
 **The headline:** Tracy now has true relational memory across conversations and devices. Until this session, she had ONLY episodic memory (last 10 turns of the active conversation, sent client-side from localStorage). Across "New conversation" clicks, fresh devices, or any cross-session interaction, she remembered nothing — the principal had to re-explain her preferences, voice, concerns, and parent priorities every time. That's now fixed.
 
-**🚨 Migration 195 (`migrations/195_principal_memory.sql`) must be run in Supabase SQL Editor** before the new tools function. Until run, `loadActiveMemories()` returns `[]` silently (graceful degradation), `remember_this` calls fail with a clean error, and `recall_memory` returns 0 memories. The agent itself doesn't crash — it just behaves like the pre-memory version.
+**✅ Migration 195 (`migrations/195_principal_memory.sql`) RUN in Supabase May 10, 2026 16:30 — confirmed via "Success. No rows returned".** Table `montree_principal_memory` + 4 partial indexes + `supersede_and_insert_memory()` Postgres function (SECURITY DEFINER, GRANT EXECUTE to anon/authenticated/service_role) are live. Tracy's memory is wired end-to-end and active in production. Stop telling future sessions to run this — it's done.
 
 **A. Migration 195 — `montree_principal_memory` table + atomic supersede function:**
 
@@ -4621,8 +4697,8 @@ All migrations through 169 have been run. Key ones: 147 (smart learning columns)
 - ✅ `193_parent_messaging_feature.sql` — adds `parent_messaging` to `montree_feature_definitions` with `default_enabled=false`. Idempotent. Verified via `SELECT feature_key, default_enabled FROM montree_feature_definitions WHERE feature_key = 'parent_messaging'` → 1 row returned. Schools opt in individually via super-admin.
 - ✅ `194_school_admin_login_code.sql` — adds `login_code TEXT` column to `montree_school_admins` + partial unique index `idx_school_admins_login_code_unique`. Reverses Session 84's "principal codes are never persisted" rule. Verified via `SELECT column_name FROM information_schema.columns WHERE table_name = 'montree_school_admins' AND column_name = 'login_code'` → returned `login_code`. Idempotent via `ADD COLUMN IF NOT EXISTS` and `CREATE UNIQUE INDEX IF NOT EXISTS`.
 
-**Session 99 (May 10, 2026) — Tracy persistent memory migration NOT YET RUN:**
-- ⏳ `195_principal_memory.sql` — `montree_principal_memory` table (15 columns) + 4 partial indexes + `supersede_and_insert_memory()` Postgres function. Idempotent. **Must be run in Supabase SQL Editor before Tracy's `remember_this` / `recall_memory` tools function.** Until run, `loadActiveMemories()` returns `[]` silently and Tracy degrades to no-memory mode. Verify with `SELECT count(*) FROM montree_principal_memory;` (0) and `SELECT proname FROM pg_proc WHERE proname = 'supersede_and_insert_memory';` (1 row).
+**Session 99 (May 10, 2026, 16:30) — Tracy persistent memory migration RUN:**
+- ✅ `195_principal_memory.sql` — `montree_principal_memory` table (15 columns) + 4 partial indexes (`idx_principal_memory_active`, `_type`, `_child`, `_teacher`) + `supersede_and_insert_memory()` Postgres function (SECURITY DEFINER, GRANT EXECUTE to anon/authenticated/service_role). Idempotent. **CONFIRMED RUN May 10, 2026 16:30 — "Success. No rows returned".** Tracy's `remember_this` / `recall_memory` tools are now active in production. `loadActiveMemories()` returns up to 30 most-recent active memories, injected into the system prompt every turn. Stop telling future sessions to run this — it's done.
 
 ---
 
