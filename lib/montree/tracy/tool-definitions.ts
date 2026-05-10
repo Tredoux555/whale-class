@@ -168,14 +168,15 @@ export const TRACY_TOOLS: Tool[] = [
   },
 
   // ── ACTION TOOL: draft_teacher_welcome_messages ──────────────────────
-  // The chief-of-staff pattern: principal accepts an offer, Tracy executes
-  // and produces a copy-paste-ready deliverable. v1 only does welcome
-  // messages; future actions (parent announcements, teacher check-ins,
-  // family briefings) follow the same shape.
+  // CALL IMMEDIATELY when the principal mentions ANYTHING about teachers
+  // not having codes, needing to be onboarded, needing welcome messages,
+  // or being told to log in. NEVER offer first. The principal is paying
+  // per-message in real money — every turn she has to repeat herself
+  // because Tracy offered instead of acted is wasted budget.
   {
     name: 'draft_teacher_welcome_messages',
     description:
-      'Draft copy-paste-ready welcome messages the principal can send to her teachers with their login codes. Use this whenever the principal accepts an offer to draft welcome messages, or explicitly asks to "draft messages for my teachers", "create welcome messages", "send teachers their codes", etc. Each draft is personalised with the teacher\'s first name, the school name, the teacher\'s login code, and (if known) the classroom they\'re in. Default scope is "all" — every active teacher in the school. Pass scope="classroom" with classroom_id for a single classroom, or scope="teacher" with teacher_id for one specific teacher. Returns an array of drafts; format them inline in your reply with each teacher\'s name as a header and the message text underneath.',
+      'CALL THIS IMMEDIATELY — do NOT offer first, do NOT ask permission — whenever the principal says ANYTHING that implies teachers need their login codes shared. Trigger phrases include but are not limited to: "my teachers don\'t have their codes", "teachers haven\'t logged in", "how do I onboard my teachers", "I need to welcome my teachers", "teachers need their codes", "draft messages for my teachers", "create welcome messages", "send teachers their codes", "yes draft them", "yes please", "go ahead". When in doubt, CALL THE TOOL — it costs the principal nothing and saves her a wasted turn. Returns copy-paste-ready welcome messages personalised with each teacher\'s first name, the school name, the login code, and the classroom. Default scope is "all" — every active teacher in the school. Pass scope="classroom" with classroom_id for a specific classroom; scope="teacher" with teacher_id for one teacher. Format the returned drafts inline in your reply: each teacher\'s name as a small header, the message text underneath, then a blank line then "→ Copy and send to your teachers."',
     input_schema: {
       type: 'object',
       properties: {
