@@ -3,7 +3,8 @@
 //
 // Returns one bundle per child: { child, classroom, teachers[], principal }.
 // Teachers are the active teachers in the child's classroom. Principal is
-// the school's primary principal (oldest active row in montree_school_admins).
+// the school's primary principal (most recently logged-in active principal,
+// oldest as tiebreaker — matches addPrincipalObserver() in thread-resolver.ts).
 
 import { NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
@@ -95,13 +96,15 @@ export async function GET() {
     });
   }
 
-  // 4. Principal (oldest active school admin in the school).
+  // 4. Principal (most recently logged-in active school admin in the school,
+  //    oldest as tiebreaker — matches addPrincipalObserver() in thread-resolver.ts).
   const { data: principalRow } = await supabase
     .from('montree_school_admins')
     .select('id, name')
     .eq('school_id', parent.schoolId)
     .eq('is_active', true)
-    .order('created_at', { ascending: true })
+    .order('last_login', { ascending: false, nullsFirst: false })
+    .order('created_at', { ascending: false })
     .limit(1)
     .maybeSingle();
   const principal: ParentRecipientOption | null = principalRow
