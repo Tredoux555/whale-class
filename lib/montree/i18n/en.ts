@@ -4095,14 +4095,14 @@ export const en = {
 
   // Landing page (montree.xyz/montree)
   'landing.nav.library': 'Library',
-  'landing.nav.forTeachers': 'For teachers',
+  'landing.nav.forTeachers': 'Become an agent',
   'landing.nav.login': 'Log in',
   'landing.nav.getStarted': 'Get started',
   'landing.hero.label': 'Montessori classroom management',
   'landing.hero.title': 'The magic of Montree.',
   'landing.hero.subtitle': 'A teacher takes a photo. Montree does the rest.',
-  'landing.hero.cta': 'Experience it free for 30 days',
-  'landing.hero.fineprint': 'One classroom · No credit card',
+  'landing.hero.cta': 'Try it',
+  'landing.hero.fineprint': 'One classroom · 30 days · No credit card',
   'landing.teacher.label': 'For the teacher',
   'landing.teacher.title': 'No more paperwork. No more writing.',
   'landing.teacher.body': 'Montree identifies the work in every photo, records the observation, and tracks each child across all five curriculum areas. Automatically.',
