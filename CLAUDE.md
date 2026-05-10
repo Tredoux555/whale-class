@@ -202,6 +202,119 @@ Wave 1 sends bounced for these addresses. None of these are flagged as `bounced`
 
 ## RECENT STATUS (May 9, 2026)
 
+### ⚡ Session 98 — Parent messaging architecture (flag-gated, OFF) + parent dashboard scope locked (May 9, 2026, post-Session 97)
+
+**Goal:** Build the full parent-side threaded messaging architecture mirroring Session 97's principal/teacher Communication system, but ship it with the feature flag OFF for every school. Eliminates the "two channels open at once" support-ticket scenario before Gloria's first real school onboards. Plus a deliberate scope lock on the parent dashboard.
+
+**🚨 Canonical resume doc:** `docs/handoffs/SESSION_98_HANDOFF.md`. **🚨 Migration 193 must be run in Supabase SQL Editor** before any of the new endpoints function (until run, every parent messages route returns 404 because `isFeatureEnabled()` falls back to `default_enabled` and there's no row to read).
+
+**A. The parent dashboard scope is locked: log in → see Weekly Wrap → log out.** No nav, no Messages link, no Photos/Milestones/Weekly-Review links — even when those routes exist. Surfacing any of them is a separate explicit decision, never an automatic side-effect of a flag flip. The dashboard's only job is the latest Weekly Wrap report. This is the canonical posture for all future parent-facing UX work.
+
+**B. Migration 193 (`migrations/193_parent_messaging_feature.sql`):**
+
+Adds `parent_messaging` to `montree_feature_definitions` with `default_enabled=false`. Idempotent. Schools opt-in individually via super-admin. Flag check uses the existing `isFeatureEnabled(supabase, schoolId, 'parent_messaging')` helper from `lib/montree/features/server.ts`. `parent_messaging` added to the `FeatureKey` union in `lib/montree/features/types.ts`.
+
+**C. Helper lib (`lib/montree/parent-messaging/`):**
+
+Three files — `types.ts`, `access.ts`, `index.ts`. The keystone is `resolveMessagingParent(supabase)`:
+- Verifies the parent JWT cookie via `verifyParentSession()`.
+- Refuses invite-based sessions (no `parentId` in JWT) with 403 — invite-only access is read-only by design because participants in messaging are people, not children.
+- Hydrates the parent row + school + child list from `montree_parents` + `montree_parent_children`.
+- Checks the `parent_messaging` feature flag for the parent's school. **Returns 404 (not 403, not redirect) when flag is OFF — the feature must not appear to exist.**
+- On success returns `{ parentId, schoolId, childIds, parentName }`.
+
+Every parent messaging API entry handler funnels through this helper before any data work. Verified by audit: 7 of 7 handlers gate before the first `.from(` call.
+
+**D. APIs (4 new routes, 7 handlers):**
+
+| Method | Path | Purpose |
+|--------|------|---------|
+| GET | `/api/montree/parent/messages/threads` | List parent's threads, filtered to where they're a participant AND `child_id ∈ parent.childIds`. Same enrichment as admin/communication: participants, last snippet, unread count. |
+| POST | `/api/montree/parent/messages/threads` | Create new thread + post first message. Validates `child_id ∈ parent.childIds`, recipient teacher in same classroom OR recipient principal in same school, body length ≤10000. Calls `createThreadWithParticipants()` which auto-adds principal as observer per Session 96 transparency rule. |
+| GET | `/api/montree/parent/messages/threads/[id]` | Thread detail + participants + child + classroom hydration. Marks `is_me` on participant rows for UI convenience. |
+| PATCH | `/api/montree/parent/messages/threads/[id]` | `mark_read` action only. Updates `last_read_at` on parent's participant row. |
+| GET | `/api/montree/parent/messages/threads/[id]/messages` | Paginated message list (max 500). |
+| POST | `/api/montree/parent/messages/threads/[id]/messages` | Post reply. Enforces `can_reply` on parent's participant row. **`ai_drafted` always forced false on parent posts** — Tracy's drafting is principal-only. |
+| GET | `/api/montree/parent/messages/recipients` | Per-child bundle: `{ child, classroom, teachers[], principal }`. Lead teachers sort first, then alpha. Used by compose modal. |
+
+**Cross-pollination contract verified across all 4 routes:**
+- All thread reads filter by `school_id = parent.schoolId` AND require `child_id IN parent.childIds`.
+- All participant queries filter by `participant_id = parent.parentId`.
+- POST validates `child_id ∈ parent.childIds` AND verifies recipient teacher is in the SAME classroom as the child OR recipient principal is in the same school.
+
+**E. UI pages (2 new):**
+
+`app/montree/parent/messages/page.tsx` — REPLACED the legacy flat-table inbox entirely. New version: probes `/api/montree/parent/messages/threads` on mount → if 401/403/404 → `router.replace('/montree/parent/dashboard')`. If 200 → renders the thread list (dark forest theme, mobile-first, mirrors admin/communication structure). Floating + button opens a compose modal that pulls from `/api/montree/parent/messages/recipients` and lets the parent pick child → recipient (teacher in classroom OR principal) → subject + body → send. Sender label shows "You" for parent's own messages.
+
+`app/montree/parent/messages/[threadId]/page.tsx` — thread detail with sticky header (back button + thread title + child/classroom subtitle), iMessage-style bubble layout (parent right-aligned in emerald, others left-aligned in glass cards), sticky bottom reply composer. Auto-marks read on open. Same flag check pattern (404 → bounce to dashboard). The "Tracy drafted" amber pill renders when an incoming message has `ai_drafted=true` so parents can see when the principal's reply was AI-assisted (transparency).
+
+**F. Milestones page deprecated (hide-don't-delete):**
+
+`app/montree/parent/milestones/page.tsx` got a top-of-file comment block documenting the decision: parents do NOT need a perpetual milestones data view. Milestones are a teacher → parent narrative moment that belongs in the Weekly Wrap and term reports — not a stand-alone surface. A scrolling list invites unhealthy comparison ("why isn't my kid further?") and misses the point that Montessori is about the child's own path. Route file remains so direct URL bookmarks don't 404, but the dashboard never links here. Future agents must NOT extend this page.
+
+**G. AI tier auto-flip on Stripe events (added late Session 98):**
+
+User flagged the customer journey: "activating the trial turns it to pro automatically. cancelling subscription turns it back to free." Tracy is the conversion moment — Free principals hit Tracy → 402 → "Activate Tracy" CTA → Stripe Checkout → trial begins → school becomes Pro → Tracy unlocked. Cancel → back to Free.
+
+**`lib/montree/billing.ts`** extended with:
+- `tierForSubscriptionStatus(status)` — maps Stripe status → tier action: `active`/`trialing` → `'premium'`, `canceled`/`unpaid`/`incomplete_expired` → `'free'`, `past_due`/`incomplete`/`paused` → `null` (leave unchanged, grace period).
+- `setSchoolAiTier(supabase, schoolId, tier, enabledBy)` — mirrors the super-admin tier-change pattern: upserts `ai_tier_haiku` + `ai_tier_sonnet` feature flags, sets `monthly_ai_budget_usd` ($0/hard_limit for free, $9999/warn for premium), clears budget cache.
+- `handleSubscriptionUpsert()` now calls `setSchoolAiTier()` after persisting the subscription row, gated on `tierForSubscriptionStatus()`. Past_due / incomplete states leave tier unchanged so Stripe's automatic retry window doesn't immediately downgrade users.
+- `handleSubscriptionDeleted()` always flips to `'free'`.
+
+**🚨 Architectural rule:** Stripe subscription events are the single source of truth for AI tier in production. Manual super-admin override remains for special cases (legacy schools, demo accounts). The `enabled_by` column distinguishes auto-flips (`stripe_webhook`) from manual overrides (`super_admin_tier_change`). Don't add additional ways to flip tier without going through `setSchoolAiTier()`.
+
+**Frontend follow-up (task #14):** The Tracy 402 response is currently a generic error. Need to extend it with `requires_upgrade: true` so the UI can render an "Activate Tracy" upgrade card with a button leading to `/api/montree/billing/checkout` instead of a red error toast. Same pattern should apply to all other 402'd AI surfaces (Weekly Wrap reports, etc.) via a shared `<UpgradeCard>` component.
+
+---
+
+**🚨 Architectural rules locked in this session (do NOT let future agents break these):**
+
+1. **Parent messaging is feature-flagged via `parent_messaging` (migration 193).** Default OFF. Every API endpoint gates via `resolveMessagingParent()`. When OFF, return 404 — not 403, not redirect-server-side. The feature must not appear to exist for unflagged schools.
+2. **Parent dashboard scope is locked: `log in → see Weekly Wrap → log out`.** No nav. Even when `parent_messaging` flips on, surfacing it on the dashboard is a separate explicit decision.
+3. **Invite-based parent sessions cannot participate in messaging.** Participants are people, not children. `resolveMessagingParent()` returns 403 for sessions without `parentId`.
+4. **Parent messages flow into the SAME `montree_message_threads` tables** as Session 97's Communication system. No parallel schema. Principal sees parent threads in `/montree/admin/communication` exactly as if a teacher drafted them.
+5. **`addPrincipalObserver()` runs automatically** on every parent_teacher and parent_principal thread via `createThreadWithParticipants()` from Session 97. Don't bypass it — that's the transparency contract.
+6. **Parents have NO AI drafting in v1.** Reply API forces `ai_drafted=false`, `approved_by_id=null`. Tracy belongs to the principal.
+7. **Hide-don't-delete on milestones page.** Comment header documents the decision. Don't extend or surface in nav.
+8. **Legacy parent /messages page (flat-table inbox) is GONE.** File rewritten in place. The legacy `MessageCard` / `MessageComposer` / `InboxHeader` components remain — teacher-side `/montree/dashboard/messages` still uses them.
+
+**Verification status:**
+- ✅ Lint clean across all 10 changed/new files (--max-warnings=0, exit 0).
+- ✅ 12 audits complete, all pass: cross-pollination filter consistent, all handlers gate before data work, frontend bounces on 401/403/404, dashboard does not link to /messages, no broken legacy imports, default_enabled=false confirmed.
+- ⏳ User to run migration 193 in Supabase.
+- ⏳ Production verification per `docs/handoffs/SESSION_98_HANDOFF.md` Section "Verification checklist" (15 steps).
+
+**🚨 Posture: when to flip the flag ON for the first school:**
+1. The principal has been comfortably using `/montree/admin/communication` for ≥2 weeks.
+2. Tredoux pings the principal directly: "your parents can now message you in the app, here's what they'll see."
+3. ONE canonical channel is established. If the school is still using WeChat / email for parent-school comms, don't add a third channel — convert THEN flip.
+4. First flip should be a low-stakes school with a small parent base.
+
+**Files changed (15 total):**
+- NEW: `migrations/193_parent_messaging_feature.sql`
+- NEW: `lib/montree/parent-messaging/{types,access,index}.ts`
+- EXTENDED: `lib/montree/features/types.ts` (added `parent_messaging` to `FeatureKey`)
+- NEW: `app/api/montree/parent/messages/threads/route.ts`
+- NEW: `app/api/montree/parent/messages/threads/[threadId]/route.ts`
+- NEW: `app/api/montree/parent/messages/threads/[threadId]/messages/route.ts`
+- NEW: `app/api/montree/parent/messages/recipients/route.ts`
+- REPLACED: `app/montree/parent/messages/page.tsx` (legacy flat-table → new threaded)
+- NEW: `app/montree/parent/messages/[threadId]/page.tsx`
+- COMMENT-ONLY: `app/montree/parent/milestones/page.tsx` (deprecation header)
+- NEW: `docs/handoffs/SESSION_98_HANDOFF.md`
+
+**🚨 Next session priorities (ordered):**
+1. **🚨 Run migration 193 in Supabase.** Required before any parent messaging endpoint works.
+2. **Walk the 15-step verification checklist** in `docs/handoffs/SESSION_98_HANDOFF.md` after Railway redeploys.
+3. **Defer flag flip-on for any school** until the principal has been on `/montree/admin/communication` for ≥2 weeks AND there's a clear human handoff from Tredoux.
+4. **🚨 Tracy proactivity fix.** Real product feedback during Stripe test on May 10, 08:14: Tracy is too explanatory. She tells the principal what she COULD do instead of just doing it. User asked "okay what now" three times and each time Tracy responded with "I can draft a welcome message" + 4-step explanation, instead of drafting the message with the code embedded and saying "here it is, copy and send." Fix in `lib/montree/tracy/system-prompt.ts` voice rules — default to ACTION not OFFER. When intent is clear (new teacher added → welcome them next), call `draft_teacher_welcome_messages` immediately and present the artifact ready to copy/send. The "→ " action line should be the next concrete thing to click, never "let me know if you'd like me to draft." Quote from user: "She needs to write the message not tell me about it. Know what I need before I ask."
+5. **Reply CTA on Weekly Wrap report viewer** — small button in `/montree/parent/report/[reportId]` page that POSTs a new thread with report context. Easy add when the flag flips for any school.
+6. **Carry-overs from Session 97:** Migration 192 (Mira table rename), InVideo refund email (Gmail draft `r-47687054011919665`), Stripe verification status check, Stripe Team audit (Richful Deyong removal), Mira end-to-end test on production, drop `/public/mira-avatar.png` when ready, Phase 5 Payout calculator, Phase 6 super-admin Money tab, migration 188, Resend domain verification, Sarah's agent login.
+7. **Outreach follow-ups:** FAMM Argentina, Cambridge Montessori Global, Otari NZ, Lions Gate, Montessori Norge.
+
+---
+
 ### ⚡ Session 97 — Communication system + dashboard revamp + Tracy parent-comms (May 9, 2026)
 
 **Last cut before Gloria's first real school. Built the Communication system end-to-end + simplified the dashboard for principal-as-overseer + enriched Tracy with a parent-comms playbook + scan/draft tools.**

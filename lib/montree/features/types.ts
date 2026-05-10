@@ -47,6 +47,10 @@ export type FeatureKey =
   | 'unified_photo_tagger'
   // Language presentation (semester presentation tool — once/twice per year)
   | 'language_presentation'
+  // Parent messaging — Session 98 threaded surface at /montree/parent/messages.
+  // OFF by default; when ON, parents can initiate parent_teacher / parent_principal
+  // threads that flow into the same Communication system from migration 190.
+  | 'parent_messaging'
   // Menu items — all gated so schools can customise their menu
   | 'menu_notes'
   | 'menu_focus_list'
