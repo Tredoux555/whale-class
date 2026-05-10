@@ -30,6 +30,8 @@ import { Send, RotateCcw } from 'lucide-react';
 import { useI18n } from '@/lib/montree/i18n';
 import LanguageToggle from '@/components/montree/LanguageToggle';
 import TracyAvatar from '@/components/montree/admin/TracyAvatar';
+import ThinkingIndicator from '@/components/montree/admin/ThinkingIndicator';
+import TracyBody from '@/components/montree/admin/TracyBody';
 import {
   tracyKeys,
   getSchoolIdFromStorage,
@@ -258,12 +260,17 @@ function UserBubble({ text }: { text: string }) {
 function AssistantBubble({ turn }: { turn: ConvTurn }) {
   const { t } = useI18n();
   const { body, action } = splitActionLine(turn.text);
-  const showThinkingDots = turn.pending && !turn.text && !turn.error && !turn.progress;
+  // Show the rich animated indicator while we're waiting on Tracy AND have
+  // no text yet. Once tokens start streaming the indicator gives way to the
+  // body. Progress line (parsing → looking up → composing) renders below
+  // the avatar pulse + dots so the principal sees what Tracy is actually
+  // doing, not just that something is happening.
+  const isThinking = turn.pending && !turn.text && !turn.error;
   const progressLine = (() => {
-    if (!turn.pending || turn.text || turn.error || !turn.progress) return null;
+    if (!turn.progress) return null;
     const { phase, vars } = turn.progress;
     // Defensive — only call t() with a key shape that exists; unknown phases
-    // fall back to the generic ellipsis below rather than rendering 'tracy.progress.foo' raw.
+    // fall back to the dots-only treatment in ThinkingIndicator.
     const key = `tracy.progress.${phase}`;
     try {
       // useI18n's t() takes the key + interpolation vars and returns the
@@ -277,57 +284,36 @@ function AssistantBubble({ turn }: { turn: ConvTurn }) {
     }
   })();
 
+  // Pre-text state — pulsing avatar + animated dots + (optional) progress.
+  // The whole row is replaced by the static avatar + body once tokens land.
+  if (isThinking) {
+    return (
+      <ThinkingIndicator
+        size={36}
+        progressLine={progressLine}
+        ariaLabel={t('tracy.thinkingAria')}
+      />
+    );
+  }
+
   return (
     <div
       style={{ display: 'flex', alignItems: 'flex-start', gap: 14, width: '100%' }}
     >
       <TracyAvatar size={36} />
       <div style={{ flex: 1, minWidth: 0, paddingTop: 4 }}>
-        {/* Pre-text pending indicator — soft ellipsis while she composes */}
-        {showThinkingDots && (
-          <div
-            style={{
-              color: T.textMuted,
-              fontSize: 14,
-              fontStyle: 'italic',
-              letterSpacing: 1.5,
-            }}
-            aria-label={t('tracy.thinkingAria')}
-          >
-            …
-          </div>
-        )}
-
-        {/* Live status line — rendered while a tool is running, replaced by
-            body once Tracy starts streaming the answer. Italic + dim so it
-            reads as a soft progress hint, not a chat reply. */}
-        {progressLine && (
-          <div
-            style={{
-              color: T.textMuted,
-              fontSize: 13.5,
-              fontStyle: 'italic',
-              lineHeight: 1.5,
-            }}
-            aria-live="polite"
-          >
-            {progressLine}
-          </div>
-        )}
-
-        {/* Body prose (everything except the closing action line) */}
+        {/* Body prose (everything except the closing action line). Fenced
+            code blocks render as CopyableMessageCard via TracyBody. */}
         {body && (
-          <div
+          <TracyBody
+            text={body}
             style={{
               fontFamily: T.sans,
               fontSize: 14.5,
               lineHeight: 1.7,
               color: T.textSoft,
-              whiteSpace: 'pre-wrap',
             }}
-          >
-            {body}
-          </div>
+          />
         )}
 
         {/* Action line — distinct gold treatment, set apart by spacing */}

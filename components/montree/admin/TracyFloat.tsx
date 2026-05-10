@@ -39,6 +39,8 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 import { usePathname } from 'next/navigation';
 import { Send, Minus } from 'lucide-react';
 import TracyAvatar from './TracyAvatar';
+import ThinkingIndicator from './ThinkingIndicator';
+import TracyBody from './TracyBody';
 import { useI18n } from '@/lib/montree/i18n';
 import {
   tracyKeys,
@@ -808,6 +810,21 @@ export default function TracyFloat() {
         ) : (
           visibleTurns.map((turn, i) => {
             const isLastAssistant = i === lastAssistantIdx;
+            // Resolve the progress label here (where the i18n hook is in
+            // scope) so AssistantBubble itself stays a pure presentation
+            // component. Unknown phases collapse to null and the indicator
+            // renders avatar pulse + dots only.
+            let progressLabel: string | null = null;
+            if (turn.progress) {
+              const { phase, vars } = turn.progress;
+              const key = `tracy.progress.${phase}`;
+              try {
+                const rendered = t(key as Parameters<typeof t>[0], vars);
+                if (rendered !== key) progressLabel = rendered;
+              } catch {
+                progressLabel = null;
+              }
+            }
             return turn.role === 'user' ? (
               <UserBubble key={i} text={turn.text} />
             ) : (
@@ -816,6 +833,7 @@ export default function TracyFloat() {
                 turn={turn}
                 isLast={isLastAssistant}
                 disabled={submitting}
+                progressLabel={progressLabel}
                 onAccept={() => {
                   submit('Yes, please.');
                 }}
@@ -927,53 +945,52 @@ function AssistantBubble({
   turn,
   isLast,
   disabled,
+  progressLabel,
   onAccept,
   onDecline,
 }: {
   turn: ConvTurn;
   isLast: boolean;
   disabled: boolean;
+  progressLabel?: string | null;
   onAccept: () => void;
   onDecline: () => void;
 }) {
   const { body, action } = splitActionLine(turn.text);
-  const showThinkingDots =
-    turn.pending && !turn.text && !turn.error && !turn.progress;
+  const isThinking = turn.pending && !turn.text && !turn.error;
   const showOfferButtons =
     isLast &&
     !turn.pending &&
     !turn.error &&
     isQuestionOffer(action);
 
+  // Pre-text state — pulsing avatar + dots + (optional) progress line.
+  // Float uses smaller avatar (28px) to fit the compact panel.
+  if (isThinking) {
+    return (
+      <ThinkingIndicator
+        size={28}
+        progressLine={progressLabel ?? null}
+        ariaLabel="Tracy is thinking"
+      />
+    );
+  }
+
   return (
     <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
       <TracyAvatar size={28} />
       <div style={{ flex: 1, minWidth: 0, paddingTop: 2 }}>
-        {showThinkingDots && (
-          <div
-            style={{
-              color: T.textMuted,
-              fontSize: 14,
-              fontStyle: 'italic',
-              letterSpacing: 1.5,
-            }}
-          >
-            …
-          </div>
-        )}
         {body && (
-          <div
+          <TracyBody
+            text={body}
             style={{
               fontFamily: T.sans,
               fontSize: 14,
               lineHeight: 1.6,
               color: T.textSoft,
-              whiteSpace: 'pre-wrap',
               wordBreak: 'break-word',
             }}
-          >
-            {body}
-          </div>
+          />
         )}
         {action && (
           <div
