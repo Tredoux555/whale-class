@@ -3945,4 +3945,7 @@ export const ru: Record<string, string> = {
   'library.sortingMatGeneratorSubtitle': 'Создавайте сортировочные маты А4 с 2, 3 или 4 обозначенными кругами',
   'tools.sorting_mat_generator': 'Генератор Сортировочных Матов',
   'tools.sorting_mat_generator_desc': 'Сортировочные маты А4 с 2, 3 или 4 обозначенными кругами для работы с категориями',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'landing.hero.kicker': 'Измените вашу жизнь',
 };

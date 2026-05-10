@@ -3919,4 +3919,7 @@ export const es: Record<string, string> = {
   'library.sortingMatGeneratorSubtitle': 'Creá bandejas de clasificación A4 con 2, 3 o 4 círculos designados',
   'tools.sorting_mat_generator': 'Generador de Bandejas de Clasificación',
   'tools.sorting_mat_generator_desc': 'Bandejas de clasificación A4 con 2, 3 o 4 círculos rotulados para trabajo de categorías',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'landing.hero.kicker': 'Cambiá tu vida',
 };

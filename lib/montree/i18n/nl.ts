@@ -3948,4 +3948,7 @@ export const nl: Record<string, string> = {
   'library.sortingMatGeneratorSubtitle': 'Maak A4 sorteermats met 2, 3 of 4 aangewezen cirkels',
   'tools.sorting_mat_generator': 'Sorteermat Generator',
   'tools.sorting_mat_generator_desc': 'A4 sorteermats met 2, 3 of 4 gelabelde cirkels voor categoriewerk',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'landing.hero.kicker': 'Verander uw leven',
 };
