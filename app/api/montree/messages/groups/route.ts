@@ -10,6 +10,9 @@ export const dynamic = 'force-dynamic';
 export async function GET(request: NextRequest) {
   const auth = await verifySchoolRequest(request);
   if (auth instanceof NextResponse) return auth;
+  if (auth.role === 'agent') {
+    return NextResponse.json({ error: 'Agents cannot use messaging' }, { status: 403 });
+  }
 
   const supabase = getSupabase();
   const { data: groups } = await supabase
@@ -80,6 +83,9 @@ interface PostBody {
 export async function POST(request: NextRequest) {
   const auth = await verifySchoolRequest(request);
   if (auth instanceof NextResponse) return auth;
+  if (auth.role === 'agent') {
+    return NextResponse.json({ error: 'Agents cannot use messaging' }, { status: 403 });
+  }
 
   // Only principals can create custom groups.
   if (auth.role !== 'principal') {
@@ -100,6 +106,64 @@ export async function POST(request: NextRequest) {
   }
 
   const supabase = getSupabase();
+
+  // M4: validate every member belongs to auth.schoolId BEFORE creating the group.
+  // Batch by role for efficiency.
+  const teacherIds = body.members.filter((m) => m.role === 'teacher').map((m) => m.id);
+  const parentIds = body.members.filter((m) => m.role === 'parent').map((m) => m.id);
+  const principalIds = body.members.filter((m) => m.role === 'principal').map((m) => m.id);
+
+  const [teachersRes, parentsRes, principalsRes] = await Promise.all([
+    teacherIds.length
+      ? supabase
+          .from('montree_teachers')
+          .select('id, school_id, is_active')
+          .in('id', teacherIds)
+      : Promise.resolve({ data: [] }),
+    parentIds.length
+      ? supabase
+          .from('montree_parents')
+          .select('id, school_id, is_active')
+          .in('id', parentIds)
+      : Promise.resolve({ data: [] }),
+    principalIds.length
+      ? supabase
+          .from('montree_school_admins')
+          .select('id, school_id, is_active')
+          .in('id', principalIds)
+      : Promise.resolve({ data: [] }),
+  ]);
+
+  const validTeacherIds = new Set(
+    ((teachersRes.data || []) as Array<{ id: string; school_id: string; is_active: boolean }>)
+      .filter((t) => t.is_active && t.school_id === auth.schoolId)
+      .map((t) => t.id)
+  );
+  const validParentIds = new Set(
+    ((parentsRes.data || []) as Array<{ id: string; school_id: string; is_active: boolean }>)
+      .filter((p) => p.is_active && p.school_id === auth.schoolId)
+      .map((p) => p.id)
+  );
+  const validPrincipalIds = new Set(
+    ((principalsRes.data || []) as Array<{ id: string; school_id: string; is_active: boolean }>)
+      .filter((p) => p.is_active && p.school_id === auth.schoolId)
+      .map((p) => p.id)
+  );
+
+  // Reject if any member fails school validation.
+  for (const m of body.members) {
+    const ok =
+      (m.role === 'teacher' && validTeacherIds.has(m.id)) ||
+      (m.role === 'parent' && validParentIds.has(m.id)) ||
+      (m.role === 'principal' && validPrincipalIds.has(m.id));
+    if (!ok) {
+      return NextResponse.json(
+        { error: `Member ${m.role}:${m.id} is not in your school` },
+        { status: 400 }
+      );
+    }
+  }
+
   const { data: group, error: groupErr } = await supabase
     .from('montree_message_groups')
     .insert({

@@ -25,6 +25,9 @@ interface PostBody {
 export async function POST(request: NextRequest) {
   const auth = await verifySchoolRequest(request);
   if (auth instanceof NextResponse) return auth;
+  if (auth.role === 'agent') {
+    return NextResponse.json({ error: 'Agents cannot use messaging' }, { status: 403 });
+  }
 
   // Only principals + teachers can broadcast.
   if (auth.role !== 'principal' && auth.role !== 'teacher') {
