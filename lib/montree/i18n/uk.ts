@@ -3668,7 +3668,7 @@ export const uk: Record<string, string> = {
   'photoBank.closeUpload': '✕ Закрити завантаження',
   'photoBank.uploadPictures': '📤 Завантажити зображення',
   'photoBank.dropHere': 'Перетягніть зображення сюди або натисніть для завантаження',
-  'photoBank.uploadFormats': 'Підтримуються PNG, JPG, WebP, GIF, AVIF — максимум 10МБ кожне',
+  'photoBank.uploadFormats': 'Лише JPEG (.jpg / .jpeg) — максимум 10МБ кожне',
   'photoBank.autoCategorized': 'Зображення автоматично категоризуються за назвою файлу',
   'photoBank.uploading': 'Завантаження зображень...',
   'photoBank.footer': 'Розміщуйте зображення, щоб допомогти вчителям у всьому світі',
@@ -3685,6 +3685,10 @@ export const uk: Record<string, string> = {
   'photoBank.loadMore': 'Завантажити ще ({current}/{total})',
   'photoBank.loading': 'Завантаження...',
   'photoBank.wordsResults': '{words} слів · Знайдено {count} фотографій',
+  'photoBank.delete': 'Видалити',
+  'photoBank.deleteConfirm': 'Видалити це зображення з банку? Цю дію не можна скасувати.',
+  'photoBank.deleting': 'Видалення…',
+  'photoBank.deleteFailed': 'Не вдалося видалити зображення. Спробуйте ще раз.',
 
   // ─── Auto-filled missing keys (from Apr 30 audit) ───
   'auth.noCode': 'Немає коду? Почніть →',

@@ -37,6 +37,17 @@ interface PhotoBankPickerProps {
   multiSelect?: boolean;
   /** Placeholder text for search input */
   searchPlaceholder?: string;
+  /**
+   * Optional. When provided, renders a small delete button on each photo card.
+   * Caller is responsible for confirmation + DELETE call. After a successful
+   * delete, the caller should remove the row by id (use onPhotoDeleted to clear
+   * local state). Wired only on the photo-bank management page; consumer tools
+   * (3-part cards, bingo, etc.) leave this off so teachers can't delete from
+   * inside a content-creation flow.
+   */
+  onDeletePhoto?: (photo: PhotoBankPhoto) => void;
+  /** Set of photo IDs that have been deleted client-side (hides them from the grid) */
+  deletedIds?: Set<string>;
 }
 
 export type { PhotoBankPhoto };
@@ -49,6 +60,8 @@ export default function PhotoBankPicker({
   showCategories = false,
   multiSelect = false,
   searchPlaceholder,
+  onDeletePhoto,
+  deletedIds,
 }: PhotoBankPickerProps) {
   const { t } = useI18n();
   const resolvedPlaceholder = searchPlaceholder
@@ -186,6 +199,13 @@ export default function PhotoBankPicker({
     }
   };
 
+  // Stop the parent card click from firing when the delete button is hit.
+  const handleDeleteClick = (e: React.MouseEvent, photo: PhotoBankPhoto) => {
+    e.stopPropagation();
+    e.preventDefault();
+    if (onDeletePhoto) onDeletePhoto(photo);
+  };
+
   // Handle drag start for drag-and-drop into tools
   const handleDragStart = (e: React.DragEvent, photo: PhotoBankPhoto) => {
     e.dataTransfer.setData('application/json', JSON.stringify({
@@ -203,6 +223,15 @@ export default function PhotoBankPicker({
     setPage(nextPage);
     fetchPhotos(searchQuery, selectedCategory, nextPage);
   };
+
+  // Filter deleted IDs out of any visible array. Caller bumps deletedIds on
+  // successful DELETE and we hide the row instantly without refetching.
+  const isVisible = (photoId: string) => !deletedIds || !deletedIds.has(photoId);
+  const visiblePhotos = photos.filter(p => isVisible(p.id));
+  const visibleMultiWord = multiWordResults.map(group => ({
+    ...group,
+    photos: group.photos.filter(p => isVisible(p.id)),
+  }));
 
   return (
     <div style={{ width: '100%' }}>
@@ -325,7 +354,7 @@ export default function PhotoBankPicker({
         padding: '8px',
         backgroundColor: '#fafafa',
       }}>
-        {photos.length === 0 && !loading ? (
+        {visiblePhotos.length === 0 && !loading ? (
           <div style={{
             textAlign: 'center',
             padding: '32px',
@@ -341,7 +370,7 @@ export default function PhotoBankPicker({
         ) : isMultiWord ? (
           /* Multi-word mode: grouped by search term */
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            {multiWordResults.map(({ word, photos: wordPhotos }) => (
+            {visibleMultiWord.map(({ word, photos: wordPhotos }) => (
               <div key={word}>
                 <div style={{
                   fontSize: '13px',
@@ -418,6 +447,26 @@ export default function PhotoBankPicker({
                             <span style={{ color: '#fff', fontSize: '13px', fontWeight: '700' }}>✓</span>
                           </div>
                         )}
+                        {onDeletePhoto && (
+                          <button
+                            type="button"
+                            onClick={(e) => handleDeleteClick(e, photo)}
+                            title={t('photoBank.delete')}
+                            aria-label={t('photoBank.delete')}
+                            style={{
+                              position: 'absolute', top: '4px', left: '4px',
+                              width: '24px', height: '24px', borderRadius: '50%',
+                              border: '1px solid rgba(220,38,38,0.85)',
+                              backgroundColor: 'rgba(0,0,0,0.55)',
+                              color: '#fecaca', display: 'flex',
+                              alignItems: 'center', justifyContent: 'center',
+                              cursor: 'pointer', padding: 0, fontSize: '13px',
+                              lineHeight: 1, boxShadow: '0 1px 3px rgba(0,0,0,0.3)',
+                            }}
+                          >
+                            🗑
+                          </button>
+                        )}
                         {loadingPhoto === photo.id && (
                           <div style={{
                             position: 'absolute', inset: 0,
@@ -447,7 +496,7 @@ export default function PhotoBankPicker({
               gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))',
               gap: '8px',
             }}>
-              {photos.map((photo) => {
+              {visiblePhotos.map((photo) => {
                 const isSelected = selectedIds?.has(photo.id);
                 return (
                 <div
@@ -514,6 +563,27 @@ export default function PhotoBankPicker({
                     }}>
                       <span style={{ color: '#fff', fontSize: '13px', fontWeight: '700' }}>✓</span>
                     </div>
+                  )}
+                  {/* Delete button (top-left, only when onDeletePhoto is wired) */}
+                  {onDeletePhoto && (
+                    <button
+                      type="button"
+                      onClick={(e) => handleDeleteClick(e, photo)}
+                      title={t('photoBank.delete')}
+                      aria-label={t('photoBank.delete')}
+                      style={{
+                        position: 'absolute', top: '4px', left: '4px',
+                        width: '24px', height: '24px', borderRadius: '50%',
+                        border: '1px solid rgba(220,38,38,0.85)',
+                        backgroundColor: 'rgba(0,0,0,0.55)',
+                        color: '#fecaca', display: 'flex',
+                        alignItems: 'center', justifyContent: 'center',
+                        cursor: 'pointer', padding: 0, fontSize: '13px',
+                        lineHeight: 1, boxShadow: '0 1px 3px rgba(0,0,0,0.3)',
+                      }}
+                    >
+                      🗑
+                    </button>
                   )}
                   {/* Loading spinner */}
                   {loadingPhoto === photo.id && (

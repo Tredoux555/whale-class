@@ -3668,7 +3668,7 @@ export const ru: Record<string, string> = {
   'photoBank.closeUpload': '✕ Закрыть загрузку',
   'photoBank.uploadPictures': '📤 Загрузить изображения',
   'photoBank.dropHere': 'Перетащите изображения сюда или нажмите для загрузки',
-  'photoBank.uploadFormats': 'Поддерживает PNG, JPG, WebP, GIF, AVIF — максимум 10 МБ каждое',
+  'photoBank.uploadFormats': 'Только JPEG (.jpg / .jpeg) — максимум 10 МБ каждое',
   'photoBank.autoCategorized': 'Изображения автоматически категоризируются по имени файла',
   'photoBank.uploading': 'Загрузка изображений...',
   'photoBank.footer': 'Добавляйте изображения, чтобы помочь учителям по всему миру',
@@ -3685,6 +3685,10 @@ export const ru: Record<string, string> = {
   'photoBank.loadMore': 'Загрузить ещё ({current}/{total})',
   'photoBank.loading': 'Загрузка...',
   'photoBank.wordsResults': '{words} слов · Найдено {count} фотографий',
+  'photoBank.delete': 'Удалить',
+  'photoBank.deleteConfirm': 'Удалить это изображение из банка? Это действие нельзя отменить.',
+  'photoBank.deleting': 'Удаление…',
+  'photoBank.deleteFailed': 'Не удалось удалить изображение. Попробуйте ещё раз.',
 
   // ─── Auto-filled missing keys (from Apr 30 audit) ───
   'auth.noCode': 'Нет кода? Начните прямо сейчас →',

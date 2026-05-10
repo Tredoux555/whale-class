@@ -4279,7 +4279,7 @@ export const en = {
   'photoBank.closeUpload': '✕ Close Upload',
   'photoBank.uploadPictures': '📤 Upload Pictures',
   'photoBank.dropHere': 'Drop pictures here or click to upload',
-  'photoBank.uploadFormats': 'Supports PNG, JPG, WebP, GIF, AVIF — Max 10MB each',
+  'photoBank.uploadFormats': 'JPEG only (.jpg / .jpeg) — Max 10MB each',
   'photoBank.autoCategorized': 'Pictures are automatically categorized by filename',
   'photoBank.uploading': 'Uploading pictures...',
   'photoBank.footer': 'Contribute pictures to help teachers worldwide',
@@ -4296,6 +4296,10 @@ export const en = {
   'photoBank.loadMore': 'Load more ({current}/{total})',
   'photoBank.loading': 'Loading...',
   'photoBank.wordsResults': '{words} words · {count} photos found',
+  'photoBank.delete': 'Delete',
+  'photoBank.deleteConfirm': 'Delete this picture from the bank? This cannot be undone.',
+  'photoBank.deleting': 'Deleting…',
+  'photoBank.deleteFailed': 'Could not delete this picture. Please try again.',
 
   // ── Tracy (principal home agent at /montree/admin) ────────────────────
   // Greeting + prompt are intentionally short and warm. Tracy responds in

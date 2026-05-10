@@ -4171,7 +4171,7 @@ export const zh = {
   'photoBank.closeUpload': '✕ 关闭上传',
   'photoBank.uploadPictures': '📤 上传图片',
   'photoBank.dropHere': '拖拽图片到此处或点击上传',
-  'photoBank.uploadFormats': '支持 PNG、JPG、WebP、GIF、AVIF — 每张最大 10MB',
+  'photoBank.uploadFormats': '仅支持 JPEG (.jpg / .jpeg) — 每张最大 10MB',
   'photoBank.autoCategorized': '图片按文件名自动分类',
   'photoBank.uploading': '正在上传图片...',
   'photoBank.footer': '为全球教师贡献图片',
@@ -4188,6 +4188,10 @@ export const zh = {
   'photoBank.loadMore': '加载更多 ({current}/{total})',
   'photoBank.loading': '加载中...',
   'photoBank.wordsResults': '{words} 个词 · 找到 {count} 张图片',
+  'photoBank.delete': '删除',
+  'photoBank.deleteConfirm': '从图库中删除此图片？此操作无法撤消。',
+  'photoBank.deleting': '正在删除…',
+  'photoBank.deleteFailed': '无法删除此图片，请重试。',
 
   // ─── Auto-filled missing keys (from Apr 30 audit) ───
   'voiceOnboarding.welcome.title': '在开始之前',

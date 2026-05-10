@@ -3670,7 +3670,7 @@ export const ja: Record<string, string> = {
   'photoBank.closeUpload': '✕ アップロードを閉じる',
   'photoBank.uploadPictures': '📤 画像をアップロード',
   'photoBank.dropHere': '画像をここにドロップするか、クリックしてアップロード',
-  'photoBank.uploadFormats': 'PNG、JPG、WebP、GIF、AVIF 対応 — 各最大10MB',
+  'photoBank.uploadFormats': 'JPEG (.jpg / .jpeg) のみ — 各最大10MB',
   'photoBank.autoCategorized': '画像はファイル名で自動的に分類されます',
   'photoBank.uploading': '画像をアップロード中...',
   'photoBank.footer': '世界中の教師を助けるために画像を投稿する',
@@ -3687,6 +3687,10 @@ export const ja: Record<string, string> = {
   'photoBank.loadMore': 'さらに読み込む ({current}/{total})',
   'photoBank.loading': '読み込み中...',
   'photoBank.wordsResults': '{words}語 · {count}枚の画像',
+  'photoBank.delete': '削除',
+  'photoBank.deleteConfirm': 'この画像をバンクから削除しますか？この操作は取り消せません。',
+  'photoBank.deleting': '削除中…',
+  'photoBank.deleteFailed': '画像を削除できませんでした。もう一度お試しください。',
 
 
   // ─── Auto-filled missing keys (from Apr 30 audit) ───
