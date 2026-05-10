@@ -45,6 +45,10 @@ import {
   TRACY_TOOLS,
   executeTracyTool,
 } from '@/lib/montree/tracy';
+import {
+  loadActiveMemories,
+  formatMemoriesForPrompt,
+} from '@/lib/montree/tracy/memory';
 
 export const maxDuration = 120;
 
@@ -236,6 +240,15 @@ export async function POST(request: NextRequest) {
     // Keep defaults.
   }
 
+  // Load Tracy's persistent memories for this principal (Session 99 /
+  // migration 195). Top-30 most recent active memories get injected into
+  // the system prompt so Tracy "remembers" preferences, concerns, voice,
+  // and parent priorities across conversations and devices. Failure here
+  // degrades gracefully to no-memory mode (loadActiveMemories returns []
+  // on any error including "table doesn't exist yet").
+  const principalMemories = await loadActiveMemories(supabase, auth.userId, 30);
+  const memorySection = formatMemoriesForPrompt(principalMemories);
+
   const encoder = new TextEncoder();
 
   // Anthropic client (we already verified `anthropic` is non-null above).
@@ -329,6 +342,7 @@ export async function POST(request: NextRequest) {
           principalName,
           todayLabel,
           locale,
+          memorySection,
         });
 
         const conversationMessages: MessageParam[] = [...initialMessages];
@@ -425,6 +439,7 @@ export async function POST(request: NextRequest) {
                   supabase,
                   anthropic,
                   schoolId: auth.schoolId,
+                  principalId: auth.userId,
                   request,
                   locale,
                   // Forward progress phases out as SSE so the client can render

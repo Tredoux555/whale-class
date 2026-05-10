@@ -6,3 +6,16 @@ export type { TracySystemPromptOpts } from './system-prompt';
 export { TRACY_TOOLS } from './tool-definitions';
 export { executeTracyTool } from './tool-executor';
 export type { TracyToolDeps, TracyToolResult } from './tool-executor';
+export {
+  loadActiveMemories,
+  formatMemoriesForPrompt,
+  writeMemory,
+  recallMemories,
+  bumpMemoryReference,
+} from './memory';
+export type {
+  PrincipalMemory,
+  PrincipalMemoryType,
+  RecallFilters,
+  WriteMemoryInput,
+} from './memory';
