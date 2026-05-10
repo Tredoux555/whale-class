@@ -51,17 +51,20 @@ export async function GET(request: NextRequest) {
     // Pulls from BOTH montree_teachers (teacher codes + agent rows) AND montree_school_admins
     // (principal codes) so the super-admin display can label every code with the person it unlocks
     // AND surface which agent each school is attributed to.
-    const [classroomRes, teacherRes, childrenRes, teacherCodesRes, principalCodesRes, agentsRes] = await Promise.all([
+    // 🚨 Session 84 architectural rule: montree_school_admins has NO login_code
+    // column. Plain principal codes are shown once at creation/reset time and
+    // never persisted (only the SHA-256 hash lives in password_hash). So we
+    // don't fetch principal rows for the codes display — the row's identity
+    // line shows 👤 PrincipalName and the 👤 PrincipalsModal button handles
+    // resets when you need a working code. Only teacher codes go in the chip
+    // strip.
+    const [classroomRes, teacherRes, childrenRes, teacherCodesRes, agentsRes] = await Promise.all([
       supabase.from('montree_classrooms').select('school_id'),
       supabase.from('montree_teachers').select('school_id'),
       supabase.from('montree_children').select('school_id').not('school_id', 'is', null),
       supabase
         .from('montree_teachers')
         .select('school_id, login_code, name, role, is_active')
-        .not('login_code', 'is', null),
-      supabase
-        .from('montree_school_admins')
-        .select('school_id, login_code, name, is_active')
         .not('login_code', 'is', null),
       // Pull every teacher row so we can resolve founding_teacher_id → agent identity.
       // We do NOT filter is_active here. Shell agents (non-teaching referrers like
@@ -109,15 +112,10 @@ export async function GET(request: NextRequest) {
       codesBySchool[schoolId].push(entry);
     };
 
-    (principalCodesRes.data || []).forEach(p => {
-      if (!p.login_code) return;
-      pushCode(p.school_id, {
-        code: p.login_code,
-        role: 'principal',
-        name: p.name || 'Principal',
-        active: p.is_active !== false,
-      });
-    });
+    // Principals don't have a stored plain login_code (Session 84 rule — only
+    // the SHA-256 hash is persisted). No code chip is pushed for principals;
+    // the row's identity line shows 👤 PrincipalName and the 👤 PrincipalsModal
+    // button handles resets when a working code is needed.
     (teacherCodesRes.data || []).forEach(t => {
       if (!t.login_code) return;
       const r = (t.role || 'teacher') as 'lead_teacher' | 'teacher' | 'assistant_teacher';
