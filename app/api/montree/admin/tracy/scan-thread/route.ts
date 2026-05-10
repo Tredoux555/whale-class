@@ -145,6 +145,10 @@ ${endFence}`;
       .join('\n')
       .trim();
 
+    if (!text) {
+      return NextResponse.json({ error: 'Tracy returned an empty briefing' }, { status: 500 });
+    }
+
     return NextResponse.json({
       summary: text,
       thread_type: thread.thread_type,

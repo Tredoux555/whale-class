@@ -70,12 +70,15 @@ export async function POST(request: NextRequest) {
       ? supabase.from('montree_children').select('name, age').eq('id', thread.child_id).maybeSingle()
       : Promise.resolve({ data: null }),
     supabase.from('montree_school_admins').select('name').eq('id', auth.userId).maybeSingle(),
-    // Pull principal's last 10 messages across any thread for voice-matching.
+    // Pull principal's last 10 messages across any thread IN THIS SCHOOL for
+    // voice-matching. Explicit school filter via inner join to montree_message_threads
+    // (M5 — defence-in-depth, even though sender_id pin-points one principal).
     supabase
       .from('montree_thread_messages')
-      .select('body, sent_at')
+      .select('body, sent_at, montree_message_threads!inner(school_id)')
       .eq('sender_role', 'principal')
       .eq('sender_id', auth.userId)
+      .eq('montree_message_threads.school_id', auth.schoolId)
       .is('deleted_at', null)
       .order('sent_at', { ascending: false })
       .limit(10),

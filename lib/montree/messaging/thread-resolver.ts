@@ -218,12 +218,17 @@ export async function addPrincipalObserver(
   schoolId: string,
   threadId: string
 ): Promise<void> {
+  // L2: prefer the most-recently-active principal. Multi-principal schools
+  // get the principal who's actually around. nullsLast so an absent
+  // last_login doesn't push an active principal down the order. Fall back
+  // to created_at if last_login is null on every row.
   const { data: principal } = await supabase
     .from('montree_school_admins')
     .select('id')
     .eq('school_id', schoolId)
     .eq('is_active', true)
-    .order('created_at', { ascending: true })
+    .order('last_login', { ascending: false, nullsFirst: false })
+    .order('created_at', { ascending: false })
     .limit(1)
     .maybeSingle();
   if (!principal) return;

@@ -14,6 +14,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { resolveMessagingParent } from '@/lib/montree/parent-messaging/access';
+import { isValidLocale } from '@/lib/montree/i18n/locales';
 
 export const dynamic = 'force-dynamic';
 
@@ -133,6 +134,10 @@ export async function POST(
     return NextResponse.json({ error: 'You cannot reply to this thread' }, { status: 403 });
   }
 
+  // L1: validate body_locale — accept only known locales, otherwise null.
+  const safeBodyLocale =
+    body.body_locale && isValidLocale(body.body_locale) ? body.body_locale : null;
+
   // Insert. ai_drafted is forced false — parents don't get AI drafting in v1.
   const { data: inserted, error } = await supabase
     .from('montree_thread_messages')
@@ -142,7 +147,7 @@ export async function POST(
       sender_id: parent.parentId,
       sender_name: parent.parentName,
       body: body.body.trim(),
-      body_locale: body.body_locale || null,
+      body_locale: safeBodyLocale,
       ai_drafted: false,
       ai_draft_source: null,
       approved_by_id: null,
