@@ -5,6 +5,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { verifyThreadAccess } from '@/lib/montree/messaging/thread-resolver';
+import { isValidLocale } from '@/lib/montree/i18n/locales';
 import type { SenderRole } from '@/lib/montree/messaging/types';
 
 export const dynamic = 'force-dynamic';
@@ -15,6 +16,9 @@ export async function GET(
 ) {
   const auth = await verifySchoolRequest(request);
   if (auth instanceof NextResponse) return auth;
+  if (auth.role === 'agent') {
+    return NextResponse.json({ error: 'Agents cannot use messaging' }, { status: 403 });
+  }
   const { threadId } = await params;
 
   const supabase = getSupabase();
@@ -67,6 +71,9 @@ export async function POST(
 ) {
   const auth = await verifySchoolRequest(request);
   if (auth instanceof NextResponse) return auth;
+  if (auth.role === 'agent') {
+    return NextResponse.json({ error: 'Agents cannot use messaging' }, { status: 403 });
+  }
   const { threadId } = await params;
 
   let body: PostBody;
@@ -139,6 +146,10 @@ export async function POST(
   // ai_drafted only valid when sender is principal.
   const aiDrafted = !!body.ai_drafted && partRole === 'principal';
 
+  // L1: validate body_locale — accept only known locales, otherwise null.
+  const safeBodyLocale =
+    body.body_locale && isValidLocale(body.body_locale) ? body.body_locale : null;
+
   const { data: inserted, error } = await supabase
     .from('montree_thread_messages')
     .insert({
@@ -147,7 +158,7 @@ export async function POST(
       sender_id: auth.userId,
       sender_name: senderName,
       body: body.body.trim(),
-      body_locale: body.body_locale || null,
+      body_locale: safeBodyLocale,
       media_url: body.media_url || null,
       media_type: body.media_type || null,
       media_filename: body.media_filename || null,

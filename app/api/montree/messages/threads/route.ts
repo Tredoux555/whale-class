@@ -38,6 +38,9 @@ interface ThreadRow {
 export async function GET(request: NextRequest) {
   const auth = await verifySchoolRequest(request);
   if (auth instanceof NextResponse) return auth;
+  if (auth.role === 'agent') {
+    return NextResponse.json({ error: 'Agents cannot use messaging' }, { status: 403 });
+  }
 
   const supabase = getSupabase();
   const { searchParams } = new URL(request.url);
@@ -237,6 +240,9 @@ interface CreateThreadBody {
 export async function POST(request: NextRequest) {
   const auth = await verifySchoolRequest(request);
   if (auth instanceof NextResponse) return auth;
+  if (auth.role === 'agent') {
+    return NextResponse.json({ error: 'Agents cannot use messaging' }, { status: 403 });
+  }
 
   let body: CreateThreadBody;
   try {
@@ -258,10 +264,111 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Parents can only initiate parent threads' }, { status: 403 });
   }
 
+  const supabase = getSupabase();
+
+  // ---- H1+H2: validate child + classroom + every participant against auth.schoolId.
+
+  // 1. If child_id provided, verify it belongs to a classroom in auth.schoolId
+  //    and capture its classroom_id for downstream teacher-membership checks.
+  let childClassroomId: string | null = null;
+  if (body.child_id) {
+    const { data: child } = await supabase
+      .from('montree_children')
+      .select('id, classroom_id, montree_classrooms!inner(school_id)')
+      .eq('id', body.child_id)
+      .maybeSingle();
+    const childSchoolId = (child?.montree_classrooms as { school_id: string } | null)?.school_id;
+    if (!child || !childSchoolId || childSchoolId !== auth.schoolId) {
+      return NextResponse.json(
+        { error: 'child_id must belong to your school' },
+        { status: 400 }
+      );
+    }
+    childClassroomId = child.classroom_id ?? null;
+  }
+
+  // 2. If classroom_id provided (without child_id), verify it belongs to auth.schoolId.
+  if (body.classroom_id) {
+    const { data: classroom } = await supabase
+      .from('montree_classrooms')
+      .select('id, school_id')
+      .eq('id', body.classroom_id)
+      .maybeSingle();
+    if (!classroom || classroom.school_id !== auth.schoolId) {
+      return NextResponse.json(
+        { error: 'classroom_id must belong to your school' },
+        { status: 400 }
+      );
+    }
+  }
+
+  // 3. Validate every participant: id exists in the right table AND school_id
+  //    matches auth.schoolId. For parent_teacher threads, the recipient teacher
+  //    must additionally be in the SAME classroom as the child.
+  for (const p of body.participants) {
+    if (!p || !p.role || !p.id) {
+      return NextResponse.json({ error: 'Each participant requires role + id' }, { status: 400 });
+    }
+    if (p.role === 'teacher') {
+      const { data: teacher } = await supabase
+        .from('montree_teachers')
+        .select('id, school_id, classroom_id, is_active')
+        .eq('id', p.id)
+        .maybeSingle();
+      if (!teacher || !teacher.is_active || teacher.school_id !== auth.schoolId) {
+        return NextResponse.json(
+          { error: `Teacher ${p.id} is not in your school` },
+          { status: 400 }
+        );
+      }
+      // For parent_teacher threads, require teacher to be in child's classroom.
+      if (
+        body.thread_type === 'parent_teacher' &&
+        childClassroomId &&
+        teacher.classroom_id &&
+        teacher.classroom_id !== childClassroomId
+      ) {
+        return NextResponse.json(
+          { error: `Teacher ${p.id} is not in this child’s classroom` },
+          { status: 400 }
+        );
+      }
+    } else if (p.role === 'parent') {
+      const { data: parent } = await supabase
+        .from('montree_parents')
+        .select('id, school_id, is_active')
+        .eq('id', p.id)
+        .maybeSingle();
+      if (!parent || !parent.is_active || parent.school_id !== auth.schoolId) {
+        return NextResponse.json(
+          { error: `Parent ${p.id} is not in your school` },
+          { status: 400 }
+        );
+      }
+    } else if (p.role === 'principal') {
+      const { data: principal } = await supabase
+        .from('montree_school_admins')
+        .select('id, school_id, is_active')
+        .eq('id', p.id)
+        .maybeSingle();
+      if (!principal || !principal.is_active || principal.school_id !== auth.schoolId) {
+        return NextResponse.json(
+          { error: `Principal ${p.id} is not in your school` },
+          { status: 400 }
+        );
+      }
+    } else {
+      return NextResponse.json(
+        { error: `Unsupported participant role: ${p.role}` },
+        { status: 400 }
+      );
+    }
+  }
+
   const callerRole: 'teacher' | 'principal' | 'parent' =
     auth.role === 'homeschool_parent' ? 'parent' : (auth.role as 'teacher' | 'principal');
 
-  const result = await createThreadWithParticipants(getSupabase(), {
+  const result = await createThreadWithParticipants(supabase, {
     schoolId: auth.schoolId,
     classroomId: body.classroom_id ?? null,
     childId: body.child_id ?? null,

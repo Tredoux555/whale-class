@@ -62,20 +62,24 @@ export async function GET() {
     return NextResponse.json({ threads: [] });
   }
 
-  // 2. Pull the thread rows. Belt-and-braces school filter + child_id ∈ parent
-  // child set so a stale participant row can't leak a thread for a child the
-  // parent no longer has access to.
+  // 2. Pull the thread rows. Belt-and-braces school filter at the DB. We
+  // intentionally DO NOT filter by child_id at this stage so that broadcasts
+  // (which have child_id IS NULL) come through — the participant table is
+  // the access gate. We filter out non-broadcast threads whose child_id is
+  // not in parent.childIds in code below.
   const { data: threads } = await supabase
     .from('montree_message_threads')
     .select('*')
     .in('id', threadIds)
     .eq('school_id', parent.schoolId)
-    .in('child_id', parent.childIds)
     .is('archived_at', null)
     .order('last_message_at', { ascending: false })
     .limit(200);
 
-  const threadRows = (threads || []) as ThreadRow[];
+  const allThreadRows = (threads || []) as ThreadRow[];
+  const threadRows = allThreadRows.filter(
+    (t) => t.child_id === null || parent.childIds.includes(t.child_id)
+  );
   if (!threadRows.length) return NextResponse.json({ threads: [] });
 
   const ids = threadRows.map((t) => t.id);
@@ -88,7 +92,7 @@ export async function GET() {
       .in('thread_id', ids),
     supabase
       .from('montree_thread_messages')
-      .select('id, thread_id, body, sender_role, sender_name, sent_at')
+      .select('id, thread_id, body, sender_role, sender_id, sender_name, sent_at')
       .in('thread_id', ids)
       .is('deleted_at', null)
       .order('sent_at', { ascending: false })
@@ -166,14 +170,13 @@ export async function GET() {
   }
 
   // Unread per thread (messages not authored by me, sent after my last_read_at).
+  // Use sender_id directly — name-based proxy is unreliable when two parents
+  // share a name.
   const unreadByThread = new Map<string, number>();
   const unreadCount = new Map<string, number>();
   for (const m of lastMessagesRes.data || []) {
-    if (m.sender_role === 'parent' && nameByKey.get(`parent:${parent.parentId}`)) {
-      // Skip my own messages — but we don't have sender_id in this select.
-      // Use sender_name as a proxy: skip messages whose sender_name matches mine.
-      if (m.sender_name === parent.parentName) continue;
-    }
+    // Skip my own messages by sender_id.
+    if (m.sender_id === parent.parentId) continue;
     const lr = lastReadByThread.get(m.thread_id);
     if (!lr || m.sent_at > lr) {
       unreadCount.set(m.thread_id, (unreadCount.get(m.thread_id) || 0) + 1);

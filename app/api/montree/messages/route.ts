@@ -1,7 +1,14 @@
 // /api/montree/messages/route.ts
-// Teacher-Parent messaging endpoints
-// GET: List messages (filtered by role)
-// POST: Send message
+// Teacher-Parent messaging endpoints (LEGACY flat-table system).
+//
+// CROSS-POLLINATION CONTRACT:
+//   - GET filters by child_id IN (children of auth.schoolId). Never returns
+//     messages for children outside the caller's school. classroom_id, if
+//     provided, must also belong to auth.schoolId.
+//   - POST derives sender identity from auth (role + userId). Never trusts
+//     client-supplied senderType / senderId / senderName. Looks up the
+//     display name server-side from the appropriate role table.
+//   - Agents and super-admins are not messaging roles → 403.
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
@@ -13,44 +20,87 @@ export async function GET(request: NextRequest) {
   try {
     const auth = await verifySchoolRequest(request);
     if (auth instanceof NextResponse) return auth;
+    if (auth.role === 'agent') {
+      return NextResponse.json({ error: 'Agents cannot use messaging' }, { status: 403 });
+    }
 
     const supabase = getSupabase();
     const { searchParams } = new URL(request.url);
     const classroomId = searchParams.get('classroom_id');
     const childId = searchParams.get('child_id');
-    const parentId = searchParams.get('parent_id');
     const unreadOnly = searchParams.get('unread_only') === 'true';
 
-    // Build query based on filters
+    // --- Resolve the set of child IDs the caller is allowed to see.
+    // For teachers/principals: children whose classroom belongs to auth.schoolId.
+    // For homeschool parents: children linked via montree_parent_children, then
+    //   intersected with auth.schoolId for safety.
+    let allowedChildIds: string[] = [];
+
+    if (auth.role === 'homeschool_parent') {
+      // Pull parent-linked children, then verify each child is in auth.schoolId.
+      const { data: links } = await supabase
+        .from('montree_parent_children')
+        .select('child_id')
+        .eq('parent_id', auth.userId);
+      const candidate = (links || []).map((l) => l.child_id);
+      if (!candidate.length) return NextResponse.json({ messages: [] });
+
+      const { data: schoolChildren } = await supabase
+        .from('montree_children')
+        .select('id, montree_classrooms!inner(school_id)')
+        .in('id', candidate)
+        .eq('montree_classrooms.school_id', auth.schoolId);
+      allowedChildIds = (schoolChildren || []).map((c: { id: string }) => c.id);
+    } else {
+      // Teacher / principal — every child in auth.schoolId is in scope.
+      // If classroomId is provided, verify it belongs to auth.schoolId first
+      // so we don't 200 with an empty list when the caller is poking at another
+      // school's classroom.
+      if (classroomId) {
+        const { data: classroom } = await supabase
+          .from('montree_classrooms')
+          .select('id, school_id')
+          .eq('id', classroomId)
+          .maybeSingle();
+        if (!classroom || classroom.school_id !== auth.schoolId) {
+          return NextResponse.json({ error: 'Classroom not found' }, { status: 404 });
+        }
+        const { data: children } = await supabase
+          .from('montree_children')
+          .select('id')
+          .eq('classroom_id', classroomId);
+        allowedChildIds = (children || []).map((c) => c.id);
+      } else {
+        const { data: children } = await supabase
+          .from('montree_children')
+          .select('id, montree_classrooms!inner(school_id)')
+          .eq('montree_classrooms.school_id', auth.schoolId);
+        allowedChildIds = (children || []).map((c: { id: string }) => c.id);
+      }
+    }
+
+    if (!allowedChildIds.length) {
+      return NextResponse.json({ messages: [] });
+    }
+
+    // If a specific child was requested, intersect with the allowed set.
+    let scopedChildIds = allowedChildIds;
+    if (childId) {
+      if (!allowedChildIds.includes(childId)) {
+        return NextResponse.json({ error: 'Child not found' }, { status: 404 });
+      }
+      scopedChildIds = [childId];
+    }
+
+    // Build query.
     let query = supabase
       .from('montree_messages')
       .select('*')
+      .in('child_id', scopedChildIds)
       .order('created_at', { ascending: false });
 
-    // Filter by child if provided
-    if (childId) {
-      query = query.eq('child_id', childId);
-    }
-
-    // Filter by unread if requested
     if (unreadOnly) {
       query = query.eq('is_read', false);
-    }
-
-    // For parent requests, filter to only their children's messages
-    if (parentId && !classroomId) {
-      // Get parent's children first
-      const { data: children } = await supabase
-        .from('montree_parent_children')
-        .select('child_id')
-        .eq('parent_id', parentId);
-
-      if (children && children.length > 0) {
-        const childIds = children.map(c => c.child_id);
-        query = query.in('child_id', childIds);
-      } else {
-        return NextResponse.json({ messages: [] });
-      }
     }
 
     const { data, error } = await query.limit(200);
@@ -80,15 +130,19 @@ export async function POST(request: NextRequest) {
   try {
     const auth = await verifySchoolRequest(request);
     if (auth instanceof NextResponse) return auth;
+    if (auth.role === 'agent') {
+      return NextResponse.json({ error: 'Agents cannot use messaging' }, { status: 403 });
+    }
 
     const supabase = getSupabase();
     const body = await request.json();
-    const { childId, senderType, senderId, senderName, subject, messageText } = body;
+    const { childId, subject, messageText } = body;
 
-    // Validate required fields
-    if (!childId || !senderType || !senderId || !senderName || !messageText) {
+    // Validate required fields. NOTE: senderType, senderId, senderName are
+    // intentionally NOT read from the body — they are derived from auth below.
+    if (!childId || !messageText) {
       return NextResponse.json(
-        { error: 'Missing required fields' },
+        { error: 'childId and messageText are required' },
         { status: 400 }
       );
     }
@@ -106,17 +160,21 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
-    if (typeof senderName === 'string' && senderName.length > 200) {
-      return NextResponse.json(
-        { error: 'Sender name must be 200 characters or fewer' },
-        { status: 400 }
-      );
-    }
 
-    if (!['teacher', 'parent'].includes(senderType)) {
+    // Map auth.role → senderType. The legacy montree_messages.sender_type
+    // CHECK constraint accepts only 'teacher' or 'parent', so principals
+    // cannot post via this legacy endpoint — they should use the threaded
+    // /messages/threads system. homeschool_parent maps to 'parent'.
+    let senderType: 'teacher' | 'parent';
+    if (auth.role === 'teacher') {
+      senderType = 'teacher';
+    } else if (auth.role === 'homeschool_parent') {
+      senderType = 'parent';
+    } else {
+      // 'principal' or anything else — not supported on this legacy route.
       return NextResponse.json(
-        { error: 'Invalid sender type' },
-        { status: 400 }
+        { error: 'Use /api/montree/messages/threads for principal messaging' },
+        { status: 403 }
       );
     }
 
@@ -129,13 +187,58 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create the message
+    // Resolve the sender's display name server-side. Never trust the body.
+    let senderName = 'Unknown';
+    if (senderType === 'teacher') {
+      const { data: t } = await supabase
+        .from('montree_teachers')
+        .select('name, classroom_id, school_id, is_active')
+        .eq('id', auth.userId)
+        .maybeSingle();
+      if (!t || !t.is_active || t.school_id !== auth.schoolId) {
+        return NextResponse.json({ error: 'Sender not found' }, { status: 403 });
+      }
+      // Belt-and-braces: teacher must be assigned to the child's classroom.
+      if (t.classroom_id && access.classroomId && t.classroom_id !== access.classroomId) {
+        return NextResponse.json(
+          { error: 'You are not assigned to this child’s classroom' },
+          { status: 403 }
+        );
+      }
+      senderName = t.name || 'Teacher';
+    } else {
+      // parent
+      const { data: p } = await supabase
+        .from('montree_parents')
+        .select('id, name, email, school_id, is_active')
+        .eq('id', auth.userId)
+        .maybeSingle();
+      if (!p || !p.is_active || p.school_id !== auth.schoolId) {
+        return NextResponse.json({ error: 'Sender not found' }, { status: 403 });
+      }
+      // Belt-and-braces: parent must be linked to the child.
+      const { data: link } = await supabase
+        .from('montree_parent_children')
+        .select('child_id')
+        .eq('parent_id', auth.userId)
+        .eq('child_id', childId)
+        .maybeSingle();
+      if (!link) {
+        return NextResponse.json(
+          { error: 'You are not linked to this child' },
+          { status: 403 }
+        );
+      }
+      senderName = p.name || p.email || 'Parent';
+    }
+
+    // Create the message with server-derived sender identity.
     const { data: message, error: messageError } = await supabase
       .from('montree_messages')
       .insert({
         child_id: childId,
         sender_type: senderType,
-        sender_id: senderId,
+        sender_id: auth.userId,
         sender_name: senderName,
         subject: subject || null,
         message_text: messageText.trim(),

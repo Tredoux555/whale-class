@@ -14,6 +14,9 @@ export async function GET(
 ) {
   const auth = await verifySchoolRequest(request);
   if (auth instanceof NextResponse) return auth;
+  if (auth.role === 'agent') {
+    return NextResponse.json({ error: 'Agents cannot use messaging' }, { status: 403 });
+  }
   const { threadId } = await params;
 
   const supabase = getSupabase();
@@ -98,6 +101,9 @@ export async function PATCH(
 ) {
   const auth = await verifySchoolRequest(request);
   if (auth instanceof NextResponse) return auth;
+  if (auth.role === 'agent') {
+    return NextResponse.json({ error: 'Agents cannot use messaging' }, { status: 403 });
+  }
   const { threadId } = await params;
 
   let body: PatchBody;
