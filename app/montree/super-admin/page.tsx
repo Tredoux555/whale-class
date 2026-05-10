@@ -14,8 +14,12 @@ const LeadsTab = dynamic(() => import('@/components/montree/super-admin/LeadsTab
 const FeedbackTab = dynamic(() => import('@/components/montree/super-admin/FeedbackTab'), { ssr: false });
 const DmPanel = dynamic(() => import('@/components/montree/super-admin/DmPanel'), { ssr: false });
 const VisitorsTab = dynamic(() => import('@/components/montree/super-admin/VisitorsTab'), { ssr: false });
-const SuperAdminGuru = dynamic(() => import('@/components/montree/super-admin/SuperAdminGuru'), { ssr: false });
-const ReferralsTab = dynamic(() => import('@/components/montree/super-admin/ReferralsTab'), { ssr: false });
+// Renamed surface label from "Referrals" → "Agents". Component file stays as
+// ReferralsTab for now — phase 2 will refactor internals to be agent-centric
+// (list of people → drill into one → see their codes + schools + earnings).
+// Super-admin Guru was retired this session; Tracy on the principal portal
+// does the equivalent, school-scoped, and cross-school queries weren't used.
+const AgentsTab = dynamic(() => import('@/components/montree/super-admin/ReferralsTab'), { ssr: false });
 
 
 interface DmMessage {
@@ -26,7 +30,7 @@ interface DmMessage {
   created_at: string;
 }
 
-type TabType = 'schools' | 'feedback' | 'leads' | 'visitors' | 'guru' | 'referrals';
+type TabType = 'schools' | 'feedback' | 'leads' | 'visitors' | 'agents';
 
 const SESSION_TIMEOUT_MS = 15 * 60 * 1000; // 15 minutes
 
@@ -138,7 +142,6 @@ export default function SuperAdminPage() {
   const [dmMessages, setDmMessages] = useState<DmMessage[]>([]);
   const [dmNewMsg, setDmNewMsg] = useState('');
   const [dmSending, setDmSending] = useState(false);
-  const [onboardingSettings, setOnboardingSettings] = useState<any>(null);
 
   // Simple audit logging
   const logAction = useCallback(async (action: string, details?: Record<string, unknown>) => {
@@ -219,24 +222,6 @@ export default function SuperAdminPage() {
     adminData.fetchFeedback();
     adminData.fetchLeads();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [authenticated]);
-
-  // Fetch onboarding settings
-  useEffect(() => {
-    if (!authenticated) return;
-
-    fetch('/api/montree/onboarding/settings')
-      .then(r => { if (!r.ok) throw new Error(`Settings fetch: ${r.status}`); return r.json(); })
-      .then(setOnboardingSettings)
-      .catch(() => {
-        // Failed to fetch, use defaults
-        setOnboardingSettings({
-          enabled_for_teachers: true,
-          enabled_for_principals: true,
-          enabled_for_parents: true,
-          enabled_for_homeschool_parents: true,
-        });
-      });
   }, [authenticated]);
 
   const handleLogin = async () => {
@@ -354,32 +339,6 @@ export default function SuperAdminPage() {
       adminData.setUnreadCount(prev => Math.max(0, prev - 1));
     } catch (err) {
       console.error('Failed to mark feedback read:', err);
-    }
-  };
-
-  // Toggle onboarding for a role
-  const toggleOnboarding = async (role: string, enabled: boolean) => {
-    try {
-      const field = `enabled_for_${role}s`; // 'enabled_for_teachers', etc.
-
-      await fetch('/api/montree/onboarding/settings', {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-super-admin-token': saToken,
-        },
-        body: JSON.stringify({ [field]: enabled }),
-      });
-
-      // Refresh settings
-      const settingsRes = await fetch('/api/montree/onboarding/settings');
-      if (!settingsRes.ok) throw new Error(`Settings refresh: ${settingsRes.status}`);
-      const updated = await settingsRes.json();
-      setOnboardingSettings(updated);
-
-      await logAction('onboarding_toggle', { role, enabled });
-    } catch (err) {
-      console.error('Failed to toggle onboarding:', err);
     }
   };
 
@@ -511,59 +470,6 @@ export default function SuperAdminPage() {
         {/* Demo Request Alert */}
         <DemoRequestAlert saToken={saToken} />
 
-        {/* Onboarding System Settings */}
-        {onboardingSettings && (
-          <div
-            className="mb-6 rounded-2xl p-6 backdrop-blur"
-            style={{
-              background: 'rgba(8,20,12,0.55)',
-              border: '1px solid rgba(52,211,153,0.18)',
-            }}
-          >
-            <div className="flex items-baseline justify-between mb-4 gap-3 flex-wrap">
-              <h2
-                className="text-base font-medium text-white flex items-center gap-2"
-                style={{ fontFamily: '"Lora", Georgia, serif' }}
-              >
-                <span>🎓</span> Onboarding System
-              </h2>
-              <p className="text-xs text-slate-500">Toggle which roles get the voice-onboarding flow on first login.</p>
-            </div>
-
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              {([
-                ['teacher', 'Teachers', onboardingSettings.enabled_for_teachers],
-                ['principal', 'Principals', onboardingSettings.enabled_for_principals],
-                ['homeschool_parent', 'Homeschool', onboardingSettings.enabled_for_homeschool_parents],
-                ['parent', 'Parents', onboardingSettings.enabled_for_parents],
-              ] as Array<[string, string, boolean]>).map(([role, label, enabled]) => (
-                <label
-                  key={role}
-                  className="flex items-center justify-between p-3 rounded-lg cursor-pointer transition-colors"
-                  style={{
-                    background: enabled ? 'rgba(52,211,153,0.10)' : 'rgba(0,0,0,0.25)',
-                    border: enabled ? '1px solid rgba(52,211,153,0.30)' : '1px solid rgba(255,255,255,0.06)',
-                  }}
-                >
-                  <span
-                    className="text-sm font-medium"
-                    style={{ color: enabled ? '#34d399' : 'rgba(255,255,255,0.65)' }}
-                  >
-                    {label}
-                  </span>
-                  <input
-                    type="checkbox"
-                    checked={enabled}
-                    onChange={(e) => toggleOnboarding(role as 'teacher' | 'principal' | 'homeschool_parent' | 'parent', e.target.checked)}
-                    className="w-5 h-5 rounded focus:ring-emerald-500 focus:ring-2"
-                    style={{ accentColor: '#34d399' }}
-                  />
-                </label>
-              ))}
-            </div>
-          </div>
-        )}
-
         {/* Tabs */}
         <div
           className="flex gap-1 mb-6 overflow-x-auto pb-1"
@@ -592,8 +498,7 @@ export default function SuperAdminPage() {
             badge={adminData.unreadCount > 0 ? { text: String(adminData.unreadCount), color: 'red' } : null}
           />
           <SuperAdminTab active={activeTab === 'visitors'} onClick={() => setActiveTab('visitors')} icon="📍" label="Visitors" />
-          <SuperAdminTab active={activeTab === 'guru'} onClick={() => setActiveTab('guru')} icon="🧠" label="Guru" />
-          <SuperAdminTab active={activeTab === 'referrals'} onClick={() => setActiveTab('referrals')} icon="🎟️" label="Referrals" />
+          <SuperAdminTab active={activeTab === 'agents'} onClick={() => setActiveTab('agents')} icon="🤝" label="Agents" />
         </div>
 
         {/* Tab Content */}
@@ -656,12 +561,8 @@ export default function SuperAdminPage() {
           <VisitorsTab saToken={saToken} />
         )}
 
-        {activeTab === 'guru' && (
-          <SuperAdminGuru saToken={saToken} />
-        )}
-
-        {activeTab === 'referrals' && (
-          <ReferralsTab saToken={saToken} />
+        {activeTab === 'agents' && (
+          <AgentsTab saToken={saToken} />
         )}
 
       </div>
