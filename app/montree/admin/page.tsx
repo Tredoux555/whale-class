@@ -33,6 +33,7 @@ import TracyAvatar from '@/components/montree/admin/TracyAvatar';
 import ThinkingIndicator from '@/components/montree/admin/ThinkingIndicator';
 import TracyBody from '@/components/montree/admin/TracyBody';
 import ChangelogModal from '@/components/montree/ChangelogModal';
+import TrialExpiringBanner from '@/components/montree/admin/TrialExpiringBanner';
 import {
   tracyKeys,
   getSchoolIdFromStorage,
@@ -678,6 +679,8 @@ export default function AdminAgentPage() {
     <div style={{ fontFamily: T.sans, color: T.textSoft }}>
       {/* What's new since principal's last visit. Principal-scoped. */}
       <ChangelogModal audience="principal" />
+      {/* Trial-expiring warning when subscription is in last 14 days of trial. */}
+      <TrialExpiringBanner />
       {/* Compact language switcher — the principal can change Tracy's language
           here and her next response is in that language. Sits above the thread
           aligned right so it doesn't compete with the empty-state greeting. */}
