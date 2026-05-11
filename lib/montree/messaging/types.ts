@@ -2,7 +2,7 @@
 // Session 97 — shared types for the Communication system.
 // Mirrors the schema in migrations/190_communication_system.sql.
 
-export type ParticipantRole = 'teacher' | 'principal' | 'parent';
+export type ParticipantRole = 'teacher' | 'principal' | 'parent' | 'agent';
 export type SenderRole = ParticipantRole | 'system';
 
 export type ThreadType =
@@ -10,7 +10,11 @@ export type ThreadType =
   | 'parent_principal'
   | 'internal'
   | 'broadcast'
-  | 'group';
+  | 'group'
+  // Session 104 — agent → principal messaging. Migration 197 widens the
+  // matching DB CHECK constraints; this type stays the source of truth in app
+  // code.
+  | 'agent_principal';
 
 export interface MessageThread {
   id: string;
