@@ -27,8 +27,11 @@ interface SchoolSnapshot {
   last_guru_interaction: string | null;
   last_photo_at: string | null;
   signal: 'growing' | 'active' | 'quiet' | 'silent';
-  // Suggested action for Mira to surface.
+  // Suggested action — i18n key + params so client renders in user's locale.
+  // English text retained as `suggested_action` for back-compat fallback.
   suggested_action: string | null;
+  suggested_action_key: string | null;
+  suggested_action_params: Record<string, number> | null;
 }
 
 export async function GET(req: NextRequest) {
@@ -140,21 +143,31 @@ export async function GET(req: NextRequest) {
 
     let signal: SchoolSnapshot['signal'];
     let suggested_action: string | null = null;
+    let suggested_action_key: string | null = null;
+    let suggested_action_params: Record<string, number> | null = null;
     if (added7d >= 2) {
       signal = 'growing';
       suggested_action = `${added7d} new students added this week — message the principal to celebrate.`;
+      suggested_action_key = 'mira.action.growing';
+      suggested_action_params = { count: added7d };
     } else if (photos30d >= 20 || daysSinceActivity < 3) {
       signal = 'active';
       suggested_action = null;
     } else if (daysSinceActivity < 14) {
       signal = 'quiet';
       suggested_action = `Last activity ${daysSinceActivity}d ago — gentle check-in if the school feels stalled.`;
+      suggested_action_key = 'mira.action.quiet';
+      suggested_action_params = { days: daysSinceActivity };
     } else {
       signal = 'silent';
-      suggested_action =
-        daysSinceActivity === Infinity
-          ? 'No activity captured yet — message the principal about onboarding their first photo.'
-          : `Silent for ${daysSinceActivity}d. Reach out before they churn.`;
+      if (daysSinceActivity === Infinity) {
+        suggested_action = 'No activity captured yet — message the principal about onboarding their first photo.';
+        suggested_action_key = 'mira.action.silentNever';
+      } else {
+        suggested_action = `Silent for ${daysSinceActivity}d. Reach out before they churn.`;
+        suggested_action_key = 'mira.action.silentDays';
+        suggested_action_params = { days: daysSinceActivity };
+      }
     }
 
     return {
@@ -167,6 +180,8 @@ export async function GET(req: NextRequest) {
       last_photo_at: lastPhoto,
       signal,
       suggested_action,
+      suggested_action_key,
+      suggested_action_params,
     };
   });
 

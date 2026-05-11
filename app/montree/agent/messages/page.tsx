@@ -12,6 +12,8 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, MessageSquare, Plus, X, Send } from 'lucide-react';
+import { useI18n } from '@/lib/montree/i18n';
+import { getIntlLocale } from '@/lib/montree/i18n/locales';
 
 const T = {
   bg: '#0a1a0f',
@@ -53,6 +55,7 @@ interface SchoolBundle {
 }
 
 export default function AgentMessagesPage() {
+  const { t, locale } = useI18n();
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [threads, setThreads] = useState<ThreadRow[]>([]);
@@ -87,22 +90,23 @@ export default function AgentMessagesPage() {
   const formatTime = (iso: string) => {
     const d = new Date(iso);
     const now = new Date();
+    const intl = getIntlLocale(locale);
     if (d.toDateString() === now.toDateString())
-      return d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
-    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      return d.toLocaleTimeString(intl, { hour: 'numeric', minute: '2-digit' });
+    return d.toLocaleDateString(intl, { month: 'short', day: 'numeric' });
   };
 
   const threadTitle = (thread: ThreadRow): string => {
     if (thread.subject) return thread.subject;
     const principal = thread.participants.find((p) => p.role === 'principal');
-    const principalName = principal?.name || 'Principal';
+    const principalName = principal?.name || t('agentMessages.principalFallback');
     if (thread.school_name) return `${principalName} · ${thread.school_name}`;
     return principalName;
   };
 
   const senderLabel = (thread: ThreadRow): string => {
     if (!thread.last_sender_name) return '';
-    if (thread.last_sender_is_me) return 'You';
+    if (thread.last_sender_is_me) return t('agentMessages.you');
     return thread.last_sender_name;
   };
 
@@ -112,7 +116,7 @@ export default function AgentMessagesPage() {
         minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center',
         fontFamily: T.sans, color: T.textSecondary,
       }}>
-        <p style={{ fontSize: 14, color: T.textMuted }}>Loading messages…</p>
+        <p style={{ fontSize: 14, color: T.textMuted }}>{t('agentMessages.loadingMessages')}</p>
       </div>
     );
   }
@@ -129,7 +133,7 @@ export default function AgentMessagesPage() {
           }}
         >
           <ArrowLeft size={16} strokeWidth={1.75} />
-          Back
+          {t('common.back')}
         </button>
 
         <div style={{ marginBottom: 24 }}>
@@ -139,10 +143,10 @@ export default function AgentMessagesPage() {
             display: 'flex', alignItems: 'center', gap: 12,
           }}>
             <MessageSquare size={22} color={T.emerald} strokeWidth={1.75} />
-            Messages
+            {t('agentMessages.title')}
           </h1>
           <p style={{ fontSize: 13, color: T.textMuted, margin: '8px 0 0' }}>
-            Conversations with the principals of schools you&apos;ve referred.
+            {t('agentMessages.subtitle')}
           </p>
         </div>
 
@@ -158,10 +162,10 @@ export default function AgentMessagesPage() {
               <MessageSquare size={24} color={T.emerald} strokeWidth={1.75} />
             </div>
             <p style={{ fontSize: 15, fontWeight: 600, color: T.textSecondary, margin: '0 0 8px 0' }}>
-              No conversations yet
+              {t('agentMessages.emptyTitle')}
             </p>
             <p style={{ fontSize: 13, color: T.textMuted, margin: 0 }}>
-              Tap the + button to send a principal your first message.
+              {t('agentMessages.emptyHint')}
             </p>
           </div>
         ) : (
@@ -232,7 +236,7 @@ export default function AgentMessagesPage() {
           boxShadow: '0 12px 32px rgba(52,211,153,0.35)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
         }}
-        aria-label="New message"
+        aria-label={t('agentMessages.newMessage')}
       >
         <Plus size={24} strokeWidth={2} />
       </button>
@@ -257,6 +261,7 @@ function ComposeModal({
   onClose: () => void;
   onSent: (threadId: string) => void;
 }) {
+  const { t } = useI18n();
   const [schools, setSchools] = useState<SchoolBundle[]>([]);
   const [loading, setLoading] = useState(true);
   const [schoolId, setSchoolId] = useState('');
@@ -301,7 +306,7 @@ function ComposeModal({
       });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        setError(data.error || 'Failed to send message');
+        setError(data.error || t('agentMessages.failedToSend'));
         setSending(false);
         return;
       }
@@ -309,7 +314,7 @@ function ComposeModal({
       onSent(data.thread_id);
     } catch (err) {
       console.error('[agent compose] failed', err);
-      setError('Network error — please try again');
+      setError(t('agentMessages.networkError'));
       setSending(false);
     }
   };
@@ -342,7 +347,7 @@ function ComposeModal({
             margin: 0, fontSize: 16, fontWeight: 600,
             fontFamily: T.serif, color: T.textPrimary,
           }}>
-            New message to principal
+            {t('agentMessages.composeTitle')}
           </h2>
           <button
             onClick={onClose}
@@ -357,16 +362,16 @@ function ComposeModal({
 
         <div style={{ flex: 1, overflowY: 'auto', padding: 18, display: 'flex', flexDirection: 'column', gap: 14 }}>
           {loading ? (
-            <p style={{ fontSize: 13, color: T.textMuted }}>Loading your schools…</p>
+            <p style={{ fontSize: 13, color: T.textMuted }}>{t('agentMessages.loadingSchools')}</p>
           ) : schools.length === 0 ? (
             <p style={{ fontSize: 13, color: T.textMuted }}>
-              You haven&apos;t referred any schools yet. Once you do, you can message their principal here.
+              {t('agentMessages.noSchoolsYet')}
             </p>
           ) : (
             <>
               <div>
                 <label style={{ display: 'block', fontSize: 12, color: T.textMuted, marginBottom: 6 }}>
-                  School
+                  {t('agentMessages.schoolLabel')}
                 </label>
                 <select
                   value={schoolId}
@@ -377,31 +382,31 @@ function ComposeModal({
                     fontSize: 14, fontFamily: T.sans,
                   }}
                 >
-                  <option value="" style={{ background: '#0a1a0f' }}>Choose a school…</option>
+                  <option value="" style={{ background: '#0a1a0f' }}>{t('agentMessages.chooseSchool')}</option>
                   {schools.map((s) => (
                     <option key={s.school_id} value={s.school_id} style={{ background: '#0a1a0f' }}>
                       {s.school_name}
-                      {s.principal ? ` — ${s.principal.name}` : ' (no principal yet)'}
+                      {s.principal ? ` — ${s.principal.name}` : ` ${t('agentMessages.noPrincipalSuffix')}`}
                     </option>
                   ))}
                 </select>
                 {schoolId && selectedSchool && !selectedSchool.principal && (
                   <p style={{ fontSize: 12, color: '#f59e0b', margin: '6px 0 0 0' }}>
-                    This school hasn&apos;t set up a principal yet — wait until they sign up.
+                    {t('agentMessages.principalNotSetUp')}
                   </p>
                 )}
               </div>
 
               <div>
                 <label style={{ display: 'block', fontSize: 12, color: T.textMuted, marginBottom: 6 }}>
-                  Subject (optional)
+                  {t('agentMessages.subjectLabel')}
                 </label>
                 <input
                   type="text"
                   value={subject}
                   onChange={(e) => setSubject(e.target.value)}
                   maxLength={200}
-                  placeholder="What's this about?"
+                  placeholder={t('agentMessages.subjectPlaceholder')}
                   style={{
                     width: '100%', padding: '10px 12px', borderRadius: 10,
                     background: T.card, border: T.cardBorder, color: T.textPrimary,
@@ -412,14 +417,14 @@ function ComposeModal({
 
               <div>
                 <label style={{ display: 'block', fontSize: 12, color: T.textMuted, marginBottom: 6 }}>
-                  Message
+                  {t('agentMessages.messageLabel')}
                 </label>
                 <textarea
                   value={body}
                   onChange={(e) => setBody(e.target.value)}
                   maxLength={10000}
                   rows={6}
-                  placeholder="Write your message…"
+                  placeholder={t('agentMessages.messagePlaceholder')}
                   style={{
                     width: '100%', padding: '12px', borderRadius: 10,
                     background: T.card, border: T.cardBorder, color: T.textPrimary,
@@ -448,7 +453,7 @@ function ComposeModal({
               color: T.textSecondary, fontSize: 13, fontFamily: T.sans, cursor: 'pointer',
             }}
           >
-            Cancel
+            {t('common.cancel')}
           </button>
           <button
             onClick={handleSend}
@@ -463,7 +468,7 @@ function ComposeModal({
             }}
           >
             <Send size={14} strokeWidth={2} />
-            {sending ? 'Sending…' : 'Send'}
+            {sending ? t('agentMessages.sending') : t('agentMessages.send')}
           </button>
         </div>
       </div>

@@ -14,6 +14,7 @@
 // Plus a "🔄 Run check" button that re-fires the health endpoint.
 
 import { useCallback, useEffect, useState } from 'react';
+import { useI18n } from '@/lib/montree/i18n';
 
 interface HealthStep {
   name: string;
@@ -53,6 +54,7 @@ function fmtDate(iso: string | null | undefined): string {
 }
 
 export default function HealthTab({ sessionToken }: HealthTabProps) {
+  const { t } = useI18n();
   const [data, setData] = useState<HealthResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -66,14 +68,14 @@ export default function HealthTab({ sessionToken }: HealthTabProps) {
       });
       const j = await res.json();
       setData(j as HealthResponse);
-      if (!res.ok) setError(`Some checks failed (HTTP ${res.status})`);
+      if (!res.ok) setError(t('health.someChecksFailed', { code: res.status }));
     } catch (err) {
       console.error('[HealthTab] fetch', err);
-      setError('Health check failed');
+      setError(t('health.healthCheckFailed'));
     } finally {
       setLoading(false);
     }
-  }, [sessionToken]);
+  }, [sessionToken, t]);
 
   useEffect(() => {
     fetchHealth();
@@ -98,9 +100,9 @@ export default function HealthTab({ sessionToken }: HealthTabProps) {
     <div className="space-y-5">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-lg font-bold text-white">System health</h2>
+          <h2 className="text-lg font-bold text-white">{t('health.title')}</h2>
           <p className="text-xs text-slate-400">
-            {data?.generated_at && `Last check: ${fmtDate(data.generated_at)}`}
+            {data?.generated_at && t('health.lastCheck', { date: fmtDate(data.generated_at) })}
           </p>
         </div>
         <button
@@ -108,7 +110,7 @@ export default function HealthTab({ sessionToken }: HealthTabProps) {
           disabled={loading}
           className="px-3 py-1.5 bg-slate-800/60 hover:bg-slate-700/60 border border-slate-700 text-slate-300 rounded-lg text-sm font-medium disabled:opacity-50"
         >
-          {loading ? '⏳' : '🔄'} Run check
+          {loading ? '⏳' : '🔄'} {t('health.runCheck')}
         </button>
       </div>
 
@@ -129,9 +131,9 @@ export default function HealthTab({ sessionToken }: HealthTabProps) {
         >
           <p className="text-sm font-semibold">
             {data.ok ? (
-              <span className="text-emerald-300">✓ All systems operational</span>
+              <span className="text-emerald-300">{t('health.allOk')}</span>
             ) : (
-              <span className="text-amber-300">⚠ One or more checks failed — see below</span>
+              <span className="text-amber-300">{t('health.someFailed')}</span>
             )}
           </p>
         </div>
@@ -141,37 +143,37 @@ export default function HealthTab({ sessionToken }: HealthTabProps) {
         {/* DB */}
         <HealthCard
           icon="💾"
-          title="Database"
+          title={t('health.dbTitle')}
           status={dbPing?.ok ? 'ok' : dbPing?.ok === false ? 'fail' : 'loading'}
           metric={dbPing ? `${dbPing.ms}ms` : '—'}
-          subtitle="Round-trip to Supabase"
+          subtitle={t('health.dbSubtitle')}
           error={dbPing?.ok === false ? String(dbPing?.detail || '') : null}
         />
 
         {/* Stripe webhook */}
         <HealthCard
           icon="💳"
-          title="Stripe webhooks"
+          title={t('health.stripeTitle')}
           status={stripeStep?.ok ? (stripeDetail?.rows_last_7d ? 'ok' : 'idle') : 'fail'}
-          metric={`${stripeDetail?.rows_last_7d ?? '—'} rows`}
-          subtitle="Last 7 days"
+          metric={t('health.rowsCount', { count: stripeDetail?.rows_last_7d ?? 0 })}
+          subtitle={t('health.last7Days')}
           error={stripeStep?.ok === false ? String(stripeStep?.detail || '') : null}
         />
 
         {/* AI cost */}
         <HealthCard
           icon="🧠"
-          title="AI usage cost"
+          title={t('health.aiTitle')}
           status={aiStep?.ok ? 'ok' : 'fail'}
           metric={fmtUsd(aiDetail?.total_usd)}
-          subtitle={`${aiDetail?.rows ?? 0} calls · ${aiDetail?.schools_active ?? 0} schools · last 30d`}
+          subtitle={t('health.aiSubtitle', { calls: aiDetail?.rows ?? 0, schools: aiDetail?.schools_active ?? 0 })}
           error={aiStep?.ok === false ? String(aiStep?.detail || '') : null}
         />
 
         {/* Web Vitals */}
         <HealthCard
           icon="⚡"
-          title="LCP (dashboard)"
+          title={t('health.lcpTitle')}
           status={
             !vitalsStep?.ok
               ? 'fail'
@@ -182,27 +184,27 @@ export default function HealthTab({ sessionToken }: HealthTabProps) {
                   : 'warn'
           }
           metric={vitalsDetail?.p75_ms ? `${vitalsDetail.p75_ms}ms` : '—'}
-          subtitle={`p75 · ${vitalsDetail?.sample_size ?? 0} samples · last 7d`}
+          subtitle={t('health.lcpSubtitle', { samples: vitalsDetail?.sample_size ?? 0 })}
           error={vitalsStep?.ok === false ? String(vitalsStep?.detail || '') : null}
         />
 
         {/* Payout calc */}
         <HealthCard
           icon="💸"
-          title="Last payout calc"
+          title={t('health.payoutTitle')}
           status={payoutStep?.ok ? (payoutDetail?.most_recent_calc ? 'ok' : 'idle') : 'fail'}
-          metric={payoutDetail?.most_recent_calc ? fmtDate(payoutDetail.most_recent_calc) : 'Never'}
-          subtitle={payoutDetail?.recent_periods?.[0] ? `Latest: ${payoutDetail.recent_periods[0].period_month}` : ''}
+          metric={payoutDetail?.most_recent_calc ? fmtDate(payoutDetail.most_recent_calc) : t('health.never')}
+          subtitle={payoutDetail?.recent_periods?.[0] ? t('health.latestPeriod', { period: payoutDetail.recent_periods[0].period_month }) : ''}
           error={payoutStep?.ok === false ? String(payoutStep?.detail || '') : null}
         />
 
         {/* Schools */}
         <HealthCard
           icon="🏫"
-          title="Schools"
+          title={t('health.schoolsTitle')}
           status={schoolsStep?.ok ? 'ok' : 'fail'}
-          metric={`${schoolDetail?.total ?? 0} total`}
-          subtitle={`${schoolDetail?.trialing ?? 0} trialing · ${schoolDetail?.active ?? 0} active`}
+          metric={t('health.schoolsTotal', { count: schoolDetail?.total ?? 0 })}
+          subtitle={t('health.schoolsBreakdown', { trialing: schoolDetail?.trialing ?? 0, active: schoolDetail?.active ?? 0 })}
           error={schoolsStep?.ok === false ? String(schoolsStep?.detail || '') : null}
         />
       </div>
@@ -213,14 +215,14 @@ export default function HealthTab({ sessionToken }: HealthTabProps) {
       {/* Recent payout periods table */}
       {payoutDetail?.recent_periods && payoutDetail.recent_periods.length > 0 && (
         <div className="p-4 rounded-xl bg-slate-900/55 border border-slate-800">
-          <p className="text-xs uppercase tracking-wider text-slate-500 mb-3">Recent payout periods</p>
+          <p className="text-xs uppercase tracking-wider text-slate-500 mb-3">{t('health.recentPeriods')}</p>
           <table className="w-full text-sm">
             <thead>
               <tr className="text-left text-slate-500 text-xs uppercase tracking-wider">
-                <th className="py-2">Period</th>
-                <th className="py-2">Rows</th>
-                <th className="py-2">Total</th>
-                <th className="py-2">Last calc</th>
+                <th className="py-2">{t('health.colPeriod')}</th>
+                <th className="py-2">{t('health.colRows')}</th>
+                <th className="py-2">{t('health.colTotal')}</th>
+                <th className="py-2">{t('health.colLastCalc')}</th>
               </tr>
             </thead>
             <tbody>
@@ -244,6 +246,7 @@ export default function HealthTab({ sessionToken }: HealthTabProps) {
 // Manual fire buttons for each cron-endpoint. Useful when Railway crons aren't
 // configured yet — Tredoux can hit them himself with one click.
 function CronTriggers({ sessionToken, onComplete }: { sessionToken: string; onComplete: () => void }) {
+  const { t } = useI18n();
   const [busy, setBusy] = useState<string | null>(null);
   const [lastResult, setLastResult] = useState<{ name: string; ok: boolean; detail: string } | null>(null);
 
@@ -280,25 +283,25 @@ function CronTriggers({ sessionToken, onComplete }: { sessionToken: string; onCo
   const triggers: Array<{ id: string; label: string; icon: string; fire: () => Promise<void> }> = [
     {
       id: 'payouts',
-      label: 'Monthly payout calc',
+      label: t('health.cron.payouts'),
       icon: '💸',
       fire: () => fire('payouts', '/api/montree/super-admin/payouts/calculate', 'POST', {}),
     },
     {
       id: 'recurring',
-      label: 'Recurring op-expense run',
+      label: t('health.cron.recurring'),
       icon: '🔁',
       fire: () => fire('recurring', '/api/montree/super-admin/finance/recurring/run', 'POST'),
     },
     {
       id: 'trial-drip',
-      label: 'Trial drip campaign',
+      label: t('health.cron.trialDrip'),
       icon: '📧',
       fire: () => fire('trial-drip', '/api/montree/super-admin/trial-drip', 'POST'),
     },
     {
       id: 'warm',
-      label: 'Warm pre-ping',
+      label: t('health.cron.warm'),
       icon: '🔥',
       fire: () => fire('warm', '/api/warm', 'GET'),
     },
@@ -306,20 +309,19 @@ function CronTriggers({ sessionToken, onComplete }: { sessionToken: string; onCo
 
   return (
     <div className="p-4 rounded-xl bg-slate-900/55 border border-slate-800">
-      <p className="text-xs uppercase tracking-wider text-slate-500 mb-3">Manual cron triggers</p>
+      <p className="text-xs uppercase tracking-wider text-slate-500 mb-3">{t('health.manualCronTriggers')}</p>
       <p className="text-xs text-slate-400 mb-3">
-        Fire each cron endpoint now — useful before Railway crons are configured.
-        All are idempotent so retries are safe.
+        {t('health.cronTriggersHelp')}
       </p>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-        {triggers.map((t) => (
+        {triggers.map((trig) => (
           <button
-            key={t.id}
-            onClick={t.fire}
+            key={trig.id}
+            onClick={trig.fire}
             disabled={busy !== null}
             className="px-3 py-2 bg-slate-800/60 hover:bg-emerald-500/15 hover:border-emerald-500/30 border border-slate-700 text-slate-300 hover:text-emerald-300 rounded-lg text-xs font-medium disabled:opacity-50 transition-colors"
           >
-            {busy === t.id ? '⏳' : t.icon} {t.label}
+            {busy === trig.id ? '⏳' : trig.icon} {trig.label}
           </button>
         ))}
       </div>
@@ -332,7 +334,7 @@ function CronTriggers({ sessionToken, onComplete }: { sessionToken: string; onCo
           }`}
         >
           <p className="font-semibold mb-1">
-            {lastResult.ok ? '✓' : '✕'} {lastResult.name} — {lastResult.ok ? 'success' : 'failed'}
+            {lastResult.ok ? '✓' : '✕'} {lastResult.name} — {lastResult.ok ? t('health.success') : t('health.failed')}
           </p>
           <pre className="text-[10px] text-slate-300 overflow-x-auto max-h-[20vh] mt-2">
             {lastResult.detail}

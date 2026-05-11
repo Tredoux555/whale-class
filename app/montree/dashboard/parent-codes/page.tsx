@@ -72,7 +72,7 @@ export default function TeacherParentCodesPage() {
         return;
       }
       if (!res.ok) {
-        toast.error('Could not load parent codes');
+        toast.error(t('parentCodes.couldNotLoad'));
         setLoading(false);
         return;
       }
@@ -80,11 +80,11 @@ export default function TeacherParentCodesPage() {
       setCodes(data.codes || []);
     } catch (err) {
       console.error('[parent-codes page] load failed', err);
-      toast.error('Could not load parent codes');
+      toast.error(t('parentCodes.couldNotLoad'));
     } finally {
       setLoading(false);
     }
-  }, [router]);
+  }, [router, t]);
 
   useEffect(() => {
     fetchCodes();
@@ -102,25 +102,23 @@ export default function TeacherParentCodesPage() {
         });
         if (!res.ok) {
           const err = await res.json().catch(() => ({}));
-          toast.error(err.error || 'Could not create code');
+          toast.error(err.error || t('parentCodes.couldNotCreate'));
           return;
         }
-        toast.success('Code created');
+        toast.success(t('parentCodes.codeCreated'));
         await fetchCodes();
       } catch {
-        toast.error('Could not create code');
+        toast.error(t('parentCodes.couldNotCreate'));
       } finally {
         setBusyChildId(null);
       }
     },
-    [fetchCodes]
+    [fetchCodes, t]
   );
 
   const handleResetCode = useCallback(
     async (childId: string) => {
-      const confirmed = window.confirm(
-        'Reset this parent code? The old code stops working immediately. The parent will need the new code to access.'
-      );
+      const confirmed = window.confirm(t('parentCodes.resetConfirm'));
       if (!confirmed) return;
       setBusyChildId(childId);
       try {
@@ -132,18 +130,18 @@ export default function TeacherParentCodesPage() {
         });
         if (!res.ok) {
           const err = await res.json().catch(() => ({}));
-          toast.error(err.error || 'Could not reset code');
+          toast.error(err.error || t('parentCodes.couldNotReset'));
           return;
         }
-        toast.success('New code issued');
+        toast.success(t('parentCodes.newCodeIssued'));
         await fetchCodes();
       } catch {
-        toast.error('Could not reset code');
+        toast.error(t('parentCodes.couldNotReset'));
       } finally {
         setBusyChildId(null);
       }
     },
-    [fetchCodes]
+    [fetchCodes, t]
   );
 
   const handleCopy = useCallback(async (text: string, id: string) => {
@@ -166,9 +164,9 @@ export default function TeacherParentCodesPage() {
 
   const mailtoFor = (row: CodeRow) => {
     if (!row.code || !row.parent_url) return '#';
-    const subject = encodeURIComponent(`Montree access — ${row.child_name}`);
+    const subject = encodeURIComponent(t('parentCodes.emailSubject', { name: row.child_name }));
     const body = encodeURIComponent(
-      `Hi,\n\nYou can view ${row.child_name}'s Montree updates here:\n\n${row.parent_url}\n\nAccess code: ${row.code}\n\nKind regards`
+      t('parentCodes.emailBody', { name: row.child_name, url: row.parent_url, code: row.code })
     );
     return `mailto:?subject=${subject}&body=${body}`;
   };
@@ -195,7 +193,7 @@ export default function TeacherParentCodesPage() {
             animation: 'mpc-pulse 1.6s ease-in-out infinite',
             margin: '0 auto 16px',
           }} />
-          <p style={{ fontSize: 14, color: T.textMuted }}>{t('common.loading') || 'Loading…'}</p>
+          <p style={{ fontSize: 14, color: T.textMuted }}>{t('common.loading')}</p>
         </div>
         <style>{`@keyframes mpc-pulse { 0%,100% { opacity:.55 } 50% { opacity:1 } }`}</style>
       </div>
@@ -251,7 +249,7 @@ export default function TeacherParentCodesPage() {
             }}
           >
             <ArrowLeft size={16} strokeWidth={1.75} />
-            Back
+            {t('common.back')}
           </Link>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             <button
@@ -271,7 +269,7 @@ export default function TeacherParentCodesPage() {
               }}
             >
               <Printer size={14} strokeWidth={1.75} />
-              Print
+              {t('parentCodes.print')}
             </button>
             <LanguageToggle />
           </div>
@@ -295,12 +293,10 @@ export default function TeacherParentCodesPage() {
             }}
           >
             <Sparkles size={22} color={T.emerald} strokeWidth={1.75} />
-            Parent codes
+            {t('parentCodes.title')}
           </h1>
           <p style={{ fontSize: 14, color: T.textMuted, margin: '8px 0 0', lineHeight: 1.5 }}>
-            One code per child. Share it with the parent — they enter it at
-            montree.xyz/montree/parent to see their child&rsquo;s updates. The
-            principal can see all codes for the school too.
+            {t('parentCodes.subtitle')}
           </p>
         </div>
 
@@ -315,7 +311,7 @@ export default function TeacherParentCodesPage() {
             }}
           >
             <p style={{ fontSize: 15, color: T.textSecondary, margin: 0 }}>
-              No children in your classroom yet. Add students from the dashboard first.
+              {t('parentCodes.noChildrenYet')}
             </p>
           </div>
         ) : (
@@ -344,7 +340,7 @@ export default function TeacherParentCodesPage() {
                         {row.child_name}
                       </p>
                       <p style={{ margin: '2px 0 0', fontSize: 12, color: T.textMuted }}>
-                        Parent portal access
+                        {t('parentCodes.parentPortalAccess')}
                       </p>
                     </div>
                     {row.code && row.used && (
@@ -358,7 +354,7 @@ export default function TeacherParentCodesPage() {
                           fontWeight: 600,
                         }}
                       >
-                        Connected
+                        {t('parentCodes.connected')}
                       </span>
                     )}
                   </div>
@@ -376,7 +372,7 @@ export default function TeacherParentCodesPage() {
                         }}
                       >
                         <p style={{ margin: 0, fontSize: 11, color: T.emerald, letterSpacing: 1.4, fontWeight: 600 }}>
-                          ACCESS CODE
+                          {t('parentCodes.accessCodeLabel')}
                         </p>
                         <p
                           style={{
@@ -425,7 +421,7 @@ export default function TeacherParentCodesPage() {
                           }}
                         >
                           {copiedId === copyId ? <Check size={14} /> : <Copy size={14} />}
-                          {copiedId === copyId ? 'Copied' : 'Copy code'}
+                          {copiedId === copyId ? t('parentCodes.copied') : t('parentCodes.copyCode')}
                         </button>
                         <a
                           href={mailtoFor(row)}
@@ -447,12 +443,12 @@ export default function TeacherParentCodesPage() {
                           }}
                         >
                           <Mail size={14} />
-                          Email
+                          {t('parentCodes.email')}
                         </a>
                         <button
                           onClick={() => handleResetCode(row.child_id)}
                           disabled={busy}
-                          title="Reset code — revokes the old one"
+                          title={t('parentCodes.resetTooltip')}
                           style={{
                             flex: '0 0 auto',
                             display: 'inline-flex',
@@ -489,7 +485,7 @@ export default function TeacherParentCodesPage() {
                         opacity: busy ? 0.65 : 1,
                       }}
                     >
-                      {busy ? 'Creating…' : 'Create parent code'}
+                      {busy ? t('parentCodes.creating') : t('parentCodes.createCode')}
                     </button>
                   )}
                 </div>

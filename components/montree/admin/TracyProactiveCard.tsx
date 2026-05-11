@@ -5,6 +5,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useI18n } from '@/lib/montree/i18n';
 
 interface ClassroomSignal {
   classroom_id: string;
@@ -26,9 +27,11 @@ interface SnapshotData {
   teachers: TeacherSignal[];
   pending_photos_7d: number;
   suggestions: string[];
+  suggestion_keys?: Array<{ key: string; params: Record<string, number> }>;
 }
 
 export default function TracyProactiveCard() {
+  const { t } = useI18n();
   const [data, setData] = useState<SnapshotData | null>(null);
   const [dismissed, setDismissed] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -53,7 +56,13 @@ export default function TracyProactiveCard() {
   if (data.suggestions.length === 0) return null;
 
   const staleClassrooms = data.classrooms.filter((c) => c.signal === 'stale');
-  const idleTeachers = data.teachers.filter((t) => t.signal === 'idle');
+  const idleTeachers = data.teachers.filter((teacher) => teacher.signal === 'idle');
+
+  // Localized suggestion line: prefer suggestion_keys (i18n) over legacy English suggestions.
+  const localizedSuggestions =
+    data.suggestion_keys && data.suggestion_keys.length > 0
+      ? data.suggestion_keys.map(({ key, params }) => t(key as Parameters<typeof t>[0], params))
+      : data.suggestions;
 
   return (
     <div
@@ -68,15 +77,15 @@ export default function TracyProactiveCard() {
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, marginBottom: 10 }}>
         <div>
           <p style={{ margin: 0, fontSize: 11, letterSpacing: 1.2, textTransform: 'uppercase', color: '#f5d97a', fontWeight: 600 }}>
-            Tracy noticed
+            {t('tracy.noticed')}
           </p>
           <p style={{ margin: '4px 0 0', fontSize: 14, color: 'rgba(255,255,255,0.9)', lineHeight: 1.5 }}>
-            {data.suggestions.join(' · ')}.
+            {localizedSuggestions.join(' · ')}.
           </p>
         </div>
         <button
           onClick={() => setDismissed(true)}
-          aria-label="Dismiss"
+          aria-label={t('common.dismiss')}
           style={{
             background: 'transparent',
             border: 'none',
@@ -94,7 +103,7 @@ export default function TracyProactiveCard() {
       {staleClassrooms.length > 0 && (
         <div style={{ marginTop: 8 }}>
           <p style={{ margin: '0 0 6px', fontSize: 11, color: 'rgba(255,255,255,0.55)', fontWeight: 600 }}>
-            Classrooms without photos this week:
+            {t('tracy.staleClassrooms')}
           </p>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
             {staleClassrooms.map((c) => (
@@ -111,7 +120,7 @@ export default function TracyProactiveCard() {
                   textDecoration: 'none',
                 }}
               >
-                {c.classroom_name || 'Unnamed'} ({c.active_students})
+                {c.classroom_name || t('tracy.unnamed')} ({c.active_students})
               </Link>
             ))}
           </div>
@@ -121,12 +130,12 @@ export default function TracyProactiveCard() {
       {idleTeachers.length > 0 && (
         <div style={{ marginTop: 10 }}>
           <p style={{ margin: '0 0 6px', fontSize: 11, color: 'rgba(255,255,255,0.55)', fontWeight: 600 }}>
-            Teachers idle:
+            {t('tracy.teachersIdle')}
           </p>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-            {idleTeachers.map((t) => (
+            {idleTeachers.map((teacher) => (
               <span
-                key={t.teacher_id}
+                key={teacher.teacher_id}
                 style={{
                   padding: '4px 10px',
                   borderRadius: 999,
@@ -136,8 +145,8 @@ export default function TracyProactiveCard() {
                   fontSize: 12,
                 }}
               >
-                {t.teacher_name || 'Teacher'} ·{' '}
-                {t.days_since_login === null ? 'never' : `${t.days_since_login}d`}
+                {teacher.teacher_name || t('tracy.teacherFallback')} ·{' '}
+                {teacher.days_since_login === null ? t('tracy.never') : t('tracy.daysAgo', { days: teacher.days_since_login })}
               </span>
             ))}
           </div>
