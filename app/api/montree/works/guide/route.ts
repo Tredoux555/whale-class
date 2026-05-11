@@ -6,7 +6,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
-import { anthropic, AI_MODEL } from '@/lib/ai/anthropic';
+import { anthropic, HAIKU_MODEL } from '@/lib/ai/anthropic';
 import { findCurriculumWorkByName } from '@/lib/montree/curriculum-loader';
 import { SUPPORTED_LOCALES, DEFAULT_LOCALE, type Locale } from '@/lib/montree/i18n/locales';
 import { LOCALE_AI_CONFIG, getLanguageName } from '@/lib/montree/i18n/locale-config';
@@ -271,8 +271,11 @@ async function translateGuide(
     ?.replace(/Do not use any English except for proper nouns \(like Montessori work names\)\.\s*/g, '')
     ?.trim() || '';
 
+  // Session 103 Tier 0.3: Sonnet → Haiku. Translation is a structured
+  // task — Haiku handles JSON structural translation reliably at ~6x the
+  // throughput and ~25% the cost. Spot-check after deploy across zh/uk/ru.
   const response = await anthropic.messages.create({
-    model: AI_MODEL,
+    model: HAIKU_MODEL,
     max_tokens: 2048,
     messages: [{
       role: 'user',

@@ -11,6 +11,10 @@ import { anthropic, HAIKU_MODEL } from '@/lib/ai/anthropic';
 import { translateAllLocales } from '@/lib/montree/insert-curriculum-work';
 import { randomUUID } from 'crypto';
 
+// Session 103 Tier 0.1: AI routes need extended runtime budget. Railway's
+// default 15s timeout kills Sonnet/Haiku calls mid-flight, producing 503s.
+export const maxDuration = 120;
+
 // Escape special SQL wildcard characters for safe ILIKE usage
 function escapeIlike(str: string): string {
   return str.replace(/[%_\\]/g, '\\$&');

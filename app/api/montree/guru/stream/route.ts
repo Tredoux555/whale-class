@@ -10,6 +10,10 @@ import { buildChildContext } from '@/lib/montree/guru/context-builder';
 import { retrieveKnowledge } from '@/lib/montree/guru/knowledge-retriever';
 import { buildGuruPrompt } from '@/lib/montree/guru/prompt-builder';
 
+// Session 103 Tier 0.1: AI routes need extended runtime budget. Railway's
+// default 15s timeout kills Sonnet calls mid-flight, producing 503s.
+export const maxDuration = 120;
+
 export async function POST(request: NextRequest) {
   const startTime = Date.now();
 

@@ -141,10 +141,15 @@ export async function POST(req: NextRequest) {
         status: 'draft',
       })
       .select('id, child_id, note_text, status, created_by, created_at, updated_at')
-      .single();
+      // Session 103 Tier 0.9: maybeSingle() — a 0-row insert (race condition,
+      // RLS rejection) shouldn't surface as 500. Catch via null check instead.
+      .maybeSingle();
 
     if (insertErr) {
       console.error('[ConferenceNotes] Insert error:', insertErr);
+      return NextResponse.json({ error: 'Failed to create note' }, { status: 500 });
+    }
+    if (!note) {
       return NextResponse.json({ error: 'Failed to create note' }, { status: 500 });
     }
 
