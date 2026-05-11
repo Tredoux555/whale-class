@@ -202,11 +202,25 @@ Wave 1 sends bounced for these addresses. None of these are flagged as `bounced`
 
 ## RECENT STATUS (May 11, 2026)
 
-### ⚡ Session 104 — Phase 5 + Phase 6 (the real-money infrastructure) + parent invites + agent messaging + accountant export pack + cron docs (May 11, 2026, evening auto-run marathon)
+### ⚡ Session 104 — The marathon (25 commits, May 11, 2026, auto-run all evening + into the night)
 
-**8 commits pushed to main: `91be3908` → `19c1d04c` → `f9f23e99` → `c1dfb18d` → `0b7d02d4` → `a0ea3067` → `1913c2f1` (plus follow-ups).** Auto-run session. Real-money infrastructure is now end-to-end functional. Migrations 196 + 197 + 198 all RUN.
+**25 commits pushed to main across the session:** `91be3908` → `19c1d04c` → `f9f23e99` → `c1dfb18d` → `0b7d02d4` → `a0ea3067` → `1913c2f1` → `9387a9c4` → `65475a8e` → `6f58dd2a` → `a10e39a4` → `1c2bf948` → `c1ae4589` → `e0d33f2f` → `fe683f30` → `16c1b8fa` → `7d367dbb` → `698d1f53` → `fc28c603` → `77594ec0` → `7dd3e9af` → `af3a9127` → `72edd675` (plus a couple inside).
 
-**🚨 Canonical resume doc:** `docs/handoffs/SESSION_104_V2_HANDOFF.md` — comprehensive single source of truth with end-to-end smoke-test plan + architectural rules + deferred backlog.
+Real-money infrastructure end-to-end functional. **All 6 migrations 196–201 RUN.** The session ran across multiple v1→v5 incremental handoffs; the v5 doc at `docs/handoffs/SESSION_104_V5_HANDOFF.md` is the consolidated source of truth.
+
+**🚨 Canonical resume doc:** `docs/handoffs/SESSION_104_COMPLETE_HANDOFF.md` — the v5 doc renamed/extended to capture the full marathon picture.
+
+**🚨 Migrations all RUN (user confirmed each):**
+- ✅ 196 perf_vitals (Session 103)
+- ✅ 197 agent_messaging (Session 104, May 11)
+- ✅ 198 agent_payouts (Session 104, May 11)
+- ✅ 199 recurring_op_expenses (Session 104, May 11 evening)
+- ✅ 200 webhook_deadletter (Session 104, May 11 evening)
+- ✅ 201 server_errors (Session 104, May 11 night)
+
+No pending migrations.
+
+**Whole session captured in one block below. Subsequent agents: read the v5 handoff doc first for the test plan, the architectural rules, and the deferred backlog. This block is a brain-level summary, not a replacement.**
 
 **The headline:** Schools subscribe → AI costs auto-aggregate → calculator computes net + per-agent share → Money tab surfaces it → super-admin clicks ⚡ Wire (Stripe Connect with idempotency key) OR 💸 Mark paid → status flips → commission lands in finance_transactions → accountant pack CSV exports the whole story. The only manual step remaining is enabling Stripe Connect on the platform account at https://dashboard.stripe.com/connect.
 
@@ -350,7 +364,203 @@ Extends `/api/montree/super-admin/schools` to pull `montree_referral_codes` wher
 
 ---
 
+### ⚡ Session 104 — Extended marathon (commits 9–25) — May 11, 2026 late evening through night
 
+The first half of Session 104 shipped 8 commits (parent invites + agent messaging + Money tab + cron docs). The extended marathon kept going through commits 9–25. **Everything below was built AFTER the v2 handoff was written, in one continuous auto-run.**
+
+**H. Agent earnings actuals + payout-paid email + monthly digest + Stripe deep-links (`65475a8e`):**
+
+- `/api/montree/agent/earnings` rewritten as hybrid mode: reads actuals from `montree_agent_payouts` for past months + current month if calculator has run; falls back to estimate when no actual exists. Returns `paid_to_date_usd`, `pending_usd`, `payouts[]`, `payouts_by_month[]`.
+- `sendPayoutPaidEmail()` fires from wire route on success — agent gets branded HTML + plain text with amount + school + Stripe transfer ref + link to /agent/earnings. Fire-and-forget.
+- `sendMonthlyDigestEmail()` fires from calculate route when called via x-cron-secret AND `CRON_DIGEST_EMAIL` env var set. P&L summary + payout pending/paid + calculator stats + error count. Manual super-admin clicks do NOT send (avoids spam).
+- Stripe Dashboard deep-links on every paid row in Money tab. Links to `dashboard.stripe.com/connect/transfers/{id}`.
+
+**I. System health route + bulk parent-invite email + trial drip + trial-converted email (`6f58dd2a`):**
+
+- `/api/montree/super-admin/health` — 6 timed steps: DB ping, Stripe webhooks 7d, AI cost 30d, Web Vitals p75 LCP, payout runs, active schools. Returns 500 if any step fails.
+- `/api/montree/dashboard/parent-codes/bulk-email` — teacher sends invite emails to N parents in one call. 6-worker concurrency. Cross-pollination check on every child_id. Returns per-pair success/error.
+- `/api/montree/super-admin/trial-drip` — daily cron scans trial schools, sends day 7 / 14 / 25 emails. Idempotency via `montree_outreach_log` (action='trial_drip_dayN', metadata.school_id).
+- `handleSubscriptionUpsert` in `lib/montree/billing.ts` extended: detects `trialing → active` transition (NOT `past_due → active`, that's retry recovery) and fires `sendTrialConvertedEmail()` to the owner. Lazy import to keep webhook hot path slim.
+
+**J. Health UI tab + branded demo-request confirmation (`a10e39a4`):**
+
+- `HealthTab.tsx` — 6 status cards (Database / Stripe webhooks / AI cost / LCP p75 / Last payout calc / Schools), top banner ('All systems operational' OR '⚠ One or more checks failed'), recent payout periods table, 🔄 Run check button.
+- Wired into super-admin nav as 🩺 Health tab.
+- Demo-request confirmation upgraded from plain text → branded HTML + text fallback. Subject 'Montree — thanks for reaching out'.
+
+**K. Public /changelog page + in-app ChangelogModal (`1c2bf948`):**
+
+- `lib/montree/changelog.ts` — canonical CHANGELOG_ENTRIES array, single source. Each entry: id, date, title, summary, audience (all/principal/teacher/agent), highlights[].
+- `app/montree/changelog/page.tsx` — public-facing dark forest page. Lora serif + emerald accent. SEO-friendly.
+- `components/montree/ChangelogModal.tsx` — mount-time localStorage check, surfaces entries shipped since last seen. First-time visitors silently baseline to latest (no spam with full history). Audience-scoped.
+
+**L. ChangelogModal wired into 3 dashboards + landing nav (`c1ae4589`):**
+
+- Teacher dashboard (`/montree/dashboard`): audience='teacher' (or 'all' for homeschool parent)
+- Principal admin home (`/montree/admin`): audience='principal'
+- Agent dashboard (`/montree/agent/dashboard`): audience='agent'
+- Landing nav: "What's new" link added to `/montree/changelog`
+
+**M. Public agent leaderboard + backup-recovery doc + v3 handoff (`e0d33f2f`):**
+
+- `GET /api/montree/leaderboard` — top 20 agents by schools-referred + active-students. No auth. Surfaces aggregate-only data (display name + initials + country hint, no PII). 5-min Cloudflare cache.
+- `docs/operations/BACKUP_DISASTER_RECOVERY.md` — 5 recovery procedures (DB corruption, missing storage, Stripe transfer failures, missed webhooks, lost SSH). Monitoring + early-warning section. Quarterly checklist.
+
+**N. Recurring op-expense scheduler — migration 199 + CRUD + daily cron (`fe683f30`):**
+
+- Migration 199: `montree_recurring_op_expenses` table. Idempotency via `last_fired_period_month`. Partial index on (is_active, day_of_month).
+- `/api/montree/super-admin/finance/recurring` — GET/POST/PATCH/DELETE.
+- `/api/montree/super-admin/finance/recurring/run` — daily cron at 04:00 UTC. Auth x-cron-secret OR super-admin (dry_run mode). Skips templates not yet due OR already fired this period.
+- Cron docs updated (`docs/perf/CRON_SETUP.md`) with new section.
+
+**O. fx_adjustment manual entry + trial-expiring banner (`16c1b8fa`):**
+
+- Ledger POST widened: accepts `type='op_expense'` (default) OR `type='fx_adjustment'`. fx_adjustment categories: `wire_fx_delta` / `rate_revaluation` / `other_fx_adjustment`. fx amounts can be NEGATIVE (loss) or POSITIVE (gain).
+- Ledger DELETE widened: allows both op_expense + fx_adjustment manual rows.
+- `TrialExpiringBanner.tsx` on principal admin: shows when `subscription_status='trialing'` AND `trial_ends_at` within 14 days. Urgent (red) when ≤3d, warning (amber) when 4-14d. Per-day-per-days-remaining dismiss via localStorage. Reads from `/api/montree/billing/status`.
+
+**P. Stripe webhook dead-letter queue (`7d367dbb`):**
+
+- Migration 200: `montree_webhook_deadletter` table. UNIQUE on stripe_event_id prevents duplicate captures. Partial indexes on (status, created_at) WHERE status='pending'.
+- `lib/montree/webhook-deadletter.ts` — `captureToDeadLetter()` fire-and-forget. Truncates message/stack. Swallows 23505 (Stripe re-fired same event_id, already captured).
+- `/api/montree/super-admin/webhook-deadletter` — GET (filterable list + pending count) + PATCH (mark_resolved / mark_ignored with notes).
+- Hooked into `app/api/montree/billing/webhook/route.ts` catch block. Always returns 200 to Stripe (no retry storm). DLQ capture failure does NOT compound original error.
+
+**Q. Webhook DLQ admin tab UI + Recurring template panel + FX sub-tab (`fc28c603`):**
+
+- `WebhookDLQTab.tsx` — super-admin ⚠️ DLQ tab. Status filter + event_type filter + pending count. Per-row resolve/ignore actions with note prompts. 'Show payload' expands raw JSON + stack trace.
+- `RecurringOpExpensePanel.tsx` — embedded collapsed at top of Money → Op-expenses sub-tab. Per-row pause/resume/delete + last-fired tracking. Add form: category/amount/day-of-month/description/notes.
+- MoneyLedgerView gains 6th view: `fx_adjustments`. Form adapts based on view: negative amounts allowed for FX, positive-only for op_expense. Category options swap.
+- MoneyTab gets 💱 FX sub-tab pill.
+
+**R. Printable HTML accountant pack + server-errors logger (`77594ec0`):**
+
+- `/api/montree/super-admin/finance/export/print?period_month=YYYY-MM` returns styled HTML doc with 'Save as PDF' toolbar at top. A4 layout, Lora serif headings, emerald accent. No puppeteer dependency. Auth via header OR ?token= query param (window.open can't set headers).
+- MoneyTab '🖨 Print / PDF' button next to CSV button.
+- Migration 201: `montree_server_errors` table (sentry-lite). Origin / message / stack / context (JSONB) / severity / resolved tracking.
+- `lib/montree/server-errors.ts` — `logServerError()` + `logCaughtError()`. Fire-and-forget, NEVER throws (logger failure must not compound original error).
+- `/api/montree/super-admin/server-errors` — GET (filter state/origin/severity) + PATCH (mark resolved) + DELETE.
+
+**S. Server errors tab + Mira card + Tracy card + landing polish (`7dd3e9af`):**
+
+- `ServerErrorsTab.tsx` — super-admin 🐛 Errors tab. State filter (unresolved/resolved/all), severity badges, origin pills. Resolve/delete actions. Expand for stack + context.
+- `/api/montree/agent/snapshot` — per-school signals for agent: active students, students_added_7d, photos_30d, last_guru_interaction, last_photo_at. Computes `signal` (growing/active/quiet/silent) + `suggested_action`.
+- `MiraProactiveCard.tsx` — agent dashboard card surfacing actionable schools (growing first, then silent). Amber container with per-signal colored borders. Top 5 only. Dismissible.
+- `/api/montree/admin/snapshot` — per-classroom + per-teacher signals for principal: stale classrooms (no photos 7d), idle teachers (>7d no login), pending_photos_7d. Returns `suggestions[]` array.
+- `TracyProactiveCard.tsx` — principal Today page card. 'Tracy noticed:' + suggestions line + clickable chips for stale classrooms + idle teachers. Dismissible.
+- Landing page (`app/montree/page.tsx`) parallel-agent polish: added "Play is the work of the child." — Maria Montessori quote above "Change your life" (small italic Lora, muted color, attribution on own line). Removed duplicate "Get started" nav button.
+
+**T. Health tab manual cron triggers + Tracy/Mira changelog entry (`af3a9127`):**
+
+- `CronTriggers` component added inside HealthTab. 4 one-click buttons: monthly payout calc / recurring op-expense / trial drip / warm. Auth via x-super-admin-token (no cron-secret needed for manual). Shows response JSON in expandable result panel.
+- Useful BEFORE Railway crons are configured — Tredoux fires manually until then.
+- All endpoints already idempotent so retries safe.
+
+**U. Session 104 v5 final handoff (`72edd675`):**
+
+- `docs/handoffs/SESSION_104_V5_HANDOFF.md` — consolidated everything from this marathon. Migration status, where-every-thing-is table, deferred backlog.
+
+---
+
+**🚨 Architectural rules added during the extended marathon (preserve cumulatively):**
+
+14. **Trial-converted email triggers ONLY on `trialing → active`** (not on `past_due → active`).
+15. **Monthly digest email is cron-only** (gated on `CRON_DIGEST_EMAIL` env var). Manual super-admin clicks DON'T send.
+16. **All email helpers are fire-and-forget** — wire/webhook/etc. succeeds even if Resend is down.
+17. **Trial drip idempotency via `montree_outreach_log`** — `action='trial_drip_dayN'`, `metadata.school_id` is the dedup key.
+18. **ChangelogModal silently baselines first-time visitors** to the latest entry — no spam with full history.
+19. **Public leaderboard surfaces aggregate-only data** — no PII beyond display names + initials + country hint.
+20. **Storage buckets have no own-snapshot backup** (documented limitation in BACKUP_DISASTER_RECOVERY.md).
+21. **Recurring op-expense idempotency** via `last_fired_period_month` + `(source, source_ref)` unique constraint. Daily cron is safe.
+22. **DLQ capture is fire-and-forget** — webhook handler always returns 200 to Stripe, DLQ failure NEVER compounds original error.
+23. **fx_adjustment amounts can be NEGATIVE (FX loss) or POSITIVE (FX gain).** op_expense must be positive.
+24. **Trial-expiring banner dismisses per-day-per-days-remaining** — re-appears next day or when days count changes.
+25. **`logServerError()` NEVER throws.** Logger failure swallowed silently — must not compound original error.
+26. **Stripe Connect deep-links use `dashboard.stripe.com/connect/transfers/{id}`** (not the standalone /payouts/ path).
+
+---
+
+**🚨 Super-admin tabs (9 total) after this marathon:**
+
+🏫 Schools · 👋 Leads · 💬 Feedback · 📍 Visitors · 🤝 Agents · 💰 Money · 🩺 Health · ⚠️ DLQ · 🐛 Errors
+
+**🚨 Money tab sub-tabs (6):**
+💸 Payouts / 📈 Revenue / 📉 Direct costs / 🤝 Commissions / 🧾 Op-expenses / 💱 FX
+
+**🚨 New API routes (full list):**
+- `/api/montree/super-admin/payouts/calculate` (POST)
+- `/api/montree/super-admin/payouts` (GET, PATCH)
+- `/api/montree/super-admin/payouts/[id]/wire` (POST)
+- `/api/montree/super-admin/finance/ledger` (GET, POST, DELETE)
+- `/api/montree/super-admin/finance/export` (GET — CSV/JSON)
+- `/api/montree/super-admin/finance/export/print` (GET — printable HTML)
+- `/api/montree/super-admin/finance/recurring` (GET, POST, PATCH, DELETE)
+- `/api/montree/super-admin/finance/recurring/run` (POST — cron)
+- `/api/montree/super-admin/health` (GET)
+- `/api/montree/super-admin/webhook-deadletter` (GET, PATCH)
+- `/api/montree/super-admin/server-errors` (GET, PATCH, DELETE)
+- `/api/montree/super-admin/trial-drip` (POST — cron)
+- `/api/montree/super-admin/principals` (full CRUD per Session 87)
+- `/api/montree/admin/parent-codes` (GET) + `/generate-all` (POST)
+- `/api/montree/dashboard/parent-codes` (GET, POST, PUT)
+- `/api/montree/dashboard/parent-codes/bulk-email` (POST)
+- `/api/montree/agent/messages/*` (3 routes — list, detail, send)
+- `/api/montree/agent/messages/recipients` (GET)
+- `/api/montree/agent/snapshot` (GET)
+- `/api/montree/admin/snapshot` (GET)
+- `/api/montree/leaderboard` (GET — public)
+- `/api/warm` (GET — pre-warm)
+
+**🚨 New components:**
+- `MoneyTab`, `MoneyLedgerView`, `HealthTab`, `WebhookDLQTab`, `ServerErrorsTab`, `RecurringOpExpensePanel`, `ChangelogModal`, `TrialExpiringBanner`, `MiraProactiveCard`, `TracyProactiveCard`
+
+**🚨 New library modules:**
+- `lib/montree/payouts/calculator.ts` (idempotent UPSERT, race-safe)
+- `lib/montree/payouts/api-usage-aggregator.ts` (writes finance_tx direct_cost from api_usage)
+- `lib/montree/agent-messaging/access.ts` + `types.ts`
+- `lib/montree/webhook-deadletter.ts`
+- `lib/montree/server-errors.ts`
+- `lib/montree/changelog.ts`
+
+**🚨 New docs:**
+- `docs/agents/GLORIA_STRIPE_ONBOARDING.md`
+- `docs/agents/AGENT_DEDUCTION_EXPLAINER.md`
+- `docs/finance/HK_FINANCIAL_ADVISOR_SUMMARY.md`
+- `docs/perf/HOT_QUERIES_EXPLAIN_AUDIT.sql`
+- `docs/perf/CRON_SETUP.md`
+- `docs/operations/BACKUP_DISASTER_RECOVERY.md`
+- `docs/handoffs/SESSION_104_HANDOFF.md` (v1 — early)
+- `docs/handoffs/SESSION_104_FINAL_HANDOFF.md` (v1 — late)
+- `docs/handoffs/SESSION_104_V2_HANDOFF.md` (after Phase 5+6)
+- `docs/handoffs/SESSION_104_V3_HANDOFF.md` (after Tier 0 + cron)
+- `docs/handoffs/SESSION_104_V4_HANDOFF.md` (after DLQ)
+- `docs/handoffs/SESSION_104_V5_HANDOFF.md` (final — consolidated)
+- `docs/handoffs/SESSION_104_COMPLETE_HANDOFF.md` (post-refresh consolidated)
+
+**🚨 Tredoux operational still-to-do (after this session refresh):**
+
+1. ✅ All 6 migrations RUN (196 / 197 / 198 / 199 / 200 / 201)
+2. **Enable Stripe Connect** at https://dashboard.stripe.com/connect — the ONLY remaining blocker to wire Gloria's first payout
+3. **Set Railway env vars** — `CRON_SECRET` (generate via openssl rand), `CRON_DIGEST_EMAIL=tredoux555@gmail.com`
+4. **Set up 5 Railway crons** per `docs/perf/CRON_SETUP.md` OR use Health tab manual triggers in the meantime
+5. **Generate Gloria's Stripe Connect link** (super-admin Referrals → 💳) once Connect is on → send package
+6. **Send the HK accountant** the summary + first CSV export
+7. **Verify `montree.xyz` domain in Resend** so demo-request + drip emails actually deliver to recipients
+
+**🚨 Next session priorities (ordered):**
+
+1. Smoke-test end-to-end: Money tab all 6 sub-tabs / Health tab / DLQ / Errors / Mira card on agent / Tracy card on principal / parent-codes teacher page / agent messaging
+2. Enable Stripe Connect → wire Gloria's first real payout
+3. Send Gloria + HK accountant packages
+4. **i18n batch** — ~80+ keys × 12 locales via Haiku. The biggest remaining English-only surface debt: parent-codes teacher page, agent messaging UI, Money tab labels, MoneyLedgerView, Health tab, ChangelogModal, TrialExpiringBanner, ServerErrorsTab, Mira/Tracy proactive cards, WebhookDLQTab. ~1 hour focused.
+5. Mobile-first re-audit of all new pages — real-device testing
+6. Photo bank improvements (carry-over)
+7. Parent portal dark forest theme audit
+8. Stretch: Playwright smoke test suite, HeyGen explainer videos
+
+---
+
+### ⚡ Session 103 — Teacher messaging + super-admin "Log in as agent" + Tier 0 perf + Web Vitals + 3x audit cycle (May 11, 2026)
 
 **8 commits pushed to main: `cd6dcafc` → `82758a1e` → `297731bd` → `81df44ba` → `37e3ed38` → `0917449d` → `c90fc5ce` → `4aff0cd5`.** Closed three Session 102 gaps, started measurable perf work, then ran 3 audit cycles fix-then-re-audit until clean. Two latent multi-session bugs additionally closed. One regression from the latent-fix caught by post-fix audit and corrected.
 
