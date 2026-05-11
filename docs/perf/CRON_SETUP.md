@@ -63,7 +63,31 @@ Expected response: `{"ok": true, "total_ms": <50-300>, "steps": [...]}`. If `ok=
 
 ---
 
-## 3. Stripe quantity sweep (Phase 4 carry-over)
+## 3. Recurring op-expense scheduler
+
+**What:** Scans `montree_recurring_op_expenses` templates daily. For any active template where today's day-of-month ≥ template.day_of_month AND it hasn't fired yet this period, inserts a `finance_transactions` row with `type='op_expense'`. Idempotent via `last_fired_period_month`.
+
+**Schedule:** Daily at 04:00 UTC. `0 4 * * *`
+
+**Command:**
+
+```bash
+curl -sS -X POST 'https://montree.xyz/api/montree/super-admin/finance/recurring/run' \
+  -H "x-cron-secret: $CRON_SECRET"
+```
+
+**Why daily (not monthly):** if a template has `day_of_month=5` and we run on the 5th, we fire same day. If Railway is down on the 5th and we miss it, the next daily run catches it on the 6th. Same period_month, still fires once.
+
+**Manual dry-run** to test without writing:
+
+```bash
+curl -sS -X POST 'https://montree.xyz/api/montree/super-admin/finance/recurring/run?dry_run=1' \
+  -H "x-cron-secret: $CRON_SECRET"
+```
+
+---
+
+## 4. Stripe quantity sweep (Phase 4 carry-over)
 
 **What:** Re-syncs Stripe subscription quantities with the actual active-children count for every paid school. Catches drift if the in-app sync misses (rare — the in-app fire-and-forget pattern usually wins). Already shipped as `/api/montree/billing/sync-quantity` per Session 93.
 
