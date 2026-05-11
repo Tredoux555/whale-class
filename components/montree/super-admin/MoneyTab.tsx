@@ -497,7 +497,15 @@ export default function MoneyTab({ sessionToken }: MoneyTabProps) {
                     <span>💸 paid {fmtDate(row.paid_at)}</span>
                     {row.paid_by_method && <span>· {row.paid_by_method.replace('_', ' ')}</span>}
                     {row.stripe_transfer_id && (
-                      <span className="font-mono text-slate-500">· {row.stripe_transfer_id}</span>
+                      <a
+                        href={`https://dashboard.stripe.com/connect/transfers/${row.stripe_transfer_id}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="font-mono text-blue-400 hover:text-blue-300 underline"
+                        title="Open in Stripe Dashboard"
+                      >
+                        · 🔗 {row.stripe_transfer_id}
+                      </a>
                     )}
                   </div>
                 )}
