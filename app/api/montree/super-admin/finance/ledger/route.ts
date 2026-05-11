@@ -147,9 +147,15 @@ export async function GET(request: NextRequest) {
 // ── POST (manual op_expense entry) ──────────────────────────────────────────
 
 interface PostBody {
+  // Defaults to 'op_expense' for backward compat. Explicit 'fx_adjustment'
+  // allowed for currency drift entries (Stripe USD → Airwallex HKD wire delta).
+  type?: 'op_expense' | 'fx_adjustment';
   category: string;
   description: string;
-  usd_amount: number; // positive — cost magnitude
+  // For op_expense: positive cost magnitude.
+  // For fx_adjustment: can be NEGATIVE if the wire landed LESS than spot
+  // estimate (FX loss) or POSITIVE if better than spot (FX gain).
+  usd_amount: number;
   occurred_at?: string; // ISO; defaults to now
   notes?: string;
 }
@@ -167,6 +173,12 @@ const OP_EXPENSE_CATEGORIES = [
   'other_op_expense',
 ];
 
+const FX_ADJUSTMENT_CATEGORIES = [
+  'wire_fx_delta', // Stripe USD wire → Airwallex HKD diff from spot estimate
+  'rate_revaluation', // month-end USD-held-balance revaluation to local books
+  'other_fx_adjustment',
+];
+
 export async function POST(request: NextRequest) {
   try {
     const { valid } = await verifySuperAdminAuth(request.headers);
@@ -175,23 +187,31 @@ export async function POST(request: NextRequest) {
     const body = (await request.json().catch(() => null)) as PostBody | null;
     if (!body) return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
 
+    const txType = body.type === 'fx_adjustment' ? 'fx_adjustment' : 'op_expense';
+
     if (!body.category || !body.description || typeof body.usd_amount !== 'number') {
       return NextResponse.json(
         { error: 'category, description, usd_amount required' },
         { status: 400 }
       );
     }
-    if (body.usd_amount <= 0) {
+    if (txType === 'op_expense' && body.usd_amount <= 0) {
       return NextResponse.json(
-        { error: 'usd_amount must be positive (cost magnitude)' },
+        { error: 'op_expense usd_amount must be positive (cost magnitude)' },
         { status: 400 }
       );
     }
-    if (!OP_EXPENSE_CATEGORIES.includes(body.category)) {
+    if (txType === 'fx_adjustment' && body.usd_amount === 0) {
       return NextResponse.json(
-        {
-          error: `Unknown op_expense category. Valid: ${OP_EXPENSE_CATEGORIES.join(', ')}`,
-        },
+        { error: 'fx_adjustment usd_amount must be non-zero (positive for gain, negative for loss)' },
+        { status: 400 }
+      );
+    }
+
+    const validCategories = txType === 'op_expense' ? OP_EXPENSE_CATEGORIES : FX_ADJUSTMENT_CATEGORIES;
+    if (!validCategories.includes(body.category)) {
+      return NextResponse.json(
+        { error: `Unknown ${txType} category. Valid: ${validCategories.join(', ')}` },
         { status: 400 }
       );
     }
@@ -208,7 +228,7 @@ export async function POST(request: NextRequest) {
       .from('montree_finance_transactions')
       .insert({
         occurred_at: occurredAt,
-        type: 'op_expense',
+        type: txType,
         category: body.category,
         description: body.description.slice(0, 500),
         original_currency: 'USD',
@@ -260,13 +280,16 @@ export async function DELETE(request: NextRequest) {
     if (!existing) {
       return NextResponse.json({ error: 'Row not found' }, { status: 404 });
     }
-    if ((existing as { type: string; source: string }).type !== 'op_expense') {
+    const row = existing as { type: string; source: string };
+    // Only op_expense + fx_adjustment manual rows are deletable. Income +
+    // direct_cost + commission are immutable history.
+    if (row.type !== 'op_expense' && row.type !== 'fx_adjustment') {
       return NextResponse.json(
-        { error: 'Only op_expense rows can be deleted. Income/direct_cost/commission are immutable.' },
+        { error: 'Only op_expense and fx_adjustment rows can be deleted. Income/direct_cost/commission are immutable.' },
         { status: 403 }
       );
     }
-    if ((existing as { type: string; source: string }).source !== 'manual_entry') {
+    if (row.source !== 'manual_entry') {
       return NextResponse.json(
         { error: 'Only manual_entry rows can be deleted via this route.' },
         { status: 403 }
