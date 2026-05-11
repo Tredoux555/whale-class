@@ -202,7 +202,155 @@ Wave 1 sends bounced for these addresses. None of these are flagged as `bounced`
 
 ## RECENT STATUS (May 11, 2026)
 
-### ⚡ Session 103 — Teacher messaging + super-admin "Log in as agent" + Tier 0 perf + Web Vitals + 3x audit cycle (May 11, 2026)
+### ⚡ Session 104 — Phase 5 + Phase 6 (the real-money infrastructure) + parent invites + agent messaging + accountant export pack + cron docs (May 11, 2026, evening auto-run marathon)
+
+**8 commits pushed to main: `91be3908` → `19c1d04c` → `f9f23e99` → `c1dfb18d` → `0b7d02d4` → `a0ea3067` → `1913c2f1` (plus follow-ups).** Auto-run session. Real-money infrastructure is now end-to-end functional. Migrations 196 + 197 + 198 all RUN.
+
+**🚨 Canonical resume doc:** `docs/handoffs/SESSION_104_V2_HANDOFF.md` — comprehensive single source of truth with end-to-end smoke-test plan + architectural rules + deferred backlog.
+
+**The headline:** Schools subscribe → AI costs auto-aggregate → calculator computes net + per-agent share → Money tab surfaces it → super-admin clicks ⚡ Wire (Stripe Connect with idempotency key) OR 💸 Mark paid → status flips → commission lands in finance_transactions → accountant pack CSV exports the whole story. The only manual step remaining is enabling Stripe Connect on the platform account at https://dashboard.stripe.com/connect.
+
+**A. Parent invite system + agent → principal messaging + Gloria/HK docs (`91be3908`):**
+
+- Teacher-driven parent invite UI at `/montree/dashboard/parent-codes`. Per-classroom scope. Generate / Copy / Email / Reset / Print.
+- Principal admin parent-codes page now backed by working API (`/api/montree/admin/parent-codes` — was calling a route that didn't exist before).
+- Agent → Principal messaging end-to-end: 4 routes + 2 pages + access guard + types. Migration 197 widens four CHECK constraints to allow 'agent' role + 'agent_principal' thread type. `ai_drafted=false` forced server-side on agent posts.
+- `docs/agents/GLORIA_STRIPE_ONBOARDING.md` — 10-min Stripe Connect walkthrough for Gloria.
+- `docs/agents/AGENT_DEDUCTION_EXPLAINER.md` — plain-English math walkthrough.
+- `docs/finance/HK_FINANCIAL_ADVISOR_SUMMARY.md` — accountant one-pager with 8 numbered questions.
+- Feature toggle modal spacing pass.
+- Type widening: `ParticipantRole` includes 'agent', `ThreadType` includes 'agent_principal'. Drops unsafe casts.
+
+**B. Agent referral code chip on super-admin school rows (`19c1d04c`):**
+
+Extends `/api/montree/super-admin/schools` to pull `montree_referral_codes` where `status=redeemed AND redeemed_by_school_id IS NOT NULL`. New `LabelledCode.role='agent'` (sorted FIRST, rank 0). SchoolsTab UI: amber chip chrome + revenue share % suffix. Test School row now shows `🔑 Agent · Gloria · GLORIA-ZXNF · 50% | Principal · ... | Teacher · ...`.
+
+**C. Phase 5 + Phase 6 — the big one (`f9f23e99`):**
+
+**Migration 198:** `montree_agent_payouts` table (per agent/school/month row capturing gross/fees/AI/net/share%/payout + status state machine) + FK from `finance_transactions.agent_payout_id` (forward-ref deferred in migration 189, finalised here). Idempotent. UNIQUE on (agent_id, school_id, period_month).
+
+**Calculator (`lib/montree/payouts/calculator.ts`):** Reads `montree_finance_transactions` per (school, month), computes `gross - stripe_fee - anthropic - openai - other = net`, then `payout = MAX(0, net × pct)`. Idempotent UPSERT. Race-safe via 23505 unique_violation fallback that re-reads paid/override locks before overwriting.
+
+**API usage aggregator (`lib/montree/payouts/api-usage-aggregator.ts`):** Rolls `montree_api_usage` daily rows into per-(school, api, month) `direct_cost` rows in finance_transactions BEFORE the calculator runs. Without this, anthropic_cost + openai_cost would always read $0. Source_ref pattern: `${school_id}:${period_month}:${api}`. Idempotent via same 23505 fallback.
+
+**Routes:**
+- `POST /api/montree/super-admin/payouts/calculate` — fires aggregator → calculator. Auth: super-admin OR x-cron-secret. maxDuration=120.
+- `GET /api/montree/super-admin/payouts` — list payouts with hydrated agent/school names + Stripe Connect status. Filterable by period/agent/school/status. Returns period_totals (per-month total/pending/paid/cancelled/failed).
+- `PATCH /api/montree/super-admin/payouts` — state transitions: `mark_paid`/`mark_failed`/`cancel`/`manual_override`/`clear_override`. Paid rows are immutable (every action except mark_paid rejects paid status with 409).
+
+**MoneyTab UI** (`components/montree/super-admin/MoneyTab.tsx`): Dark slate theme, last-12-months period selector, ⚙️ Calculate now button, period totals header, per-school payout cards with full math + state actions inline.
+
+**D. Tier 0 carry-overs + lint cleanup (`c1dfb18d`):**
+
+- `/api/warm` route (Tier 0.14) — pre-warms DB pool + Anthropic/OpenAI/Stripe SDK module cache after each deploy. Auth: x-cron-secret in production.
+- `docs/perf/HOT_QUERIES_EXPLAIN_AUDIT.sql` — 8 hot-query EXPLAIN templates for Supabase SQL Editor (Tier 0.13).
+- DashboardHeader: closed pre-existing lint backlog (Bell unused import removed, useCallback deps fixed, intentional native img on Supabase URL annotated with eslint-disable).
+
+**E. Stripe Connect wire-out + Money tab P&L sub-tabs + cron docs (`0b7d02d4`):**
+
+**Wire-out (`POST /api/montree/super-admin/payouts/[id]/wire`):** Validates payout pending + agent's Stripe Connect payout-ready, calls `stripe.transfers.create(...)` **with idempotencyKey `montree_payout_${id}_${cents}`**. Stripe dedups for ~24h — CRITICAL fix for the double-click double-pay race. On success: auto-flips status to paid, records transfer_id + paid_at + paid_by_method='stripe_connect', writes commission row to finance_transactions (audit trail). On failure: flips status to failed with Stripe error in notes.
+
+**Stripe Connect status pill** on every Money tab row: Ready to wire (emerald) / Restricted (red) / Onboarding (amber) / Not set up (slate). Wire button disabled when not ready.
+
+**Money tab P&L sub-tabs:** Top header now shows full P&L (Revenue − Direct costs − Commissions − Op-expenses + FX = Margin). 5 sub-views with pill nav:
+- 💸 Payouts (existing payouts list)
+- 📈 Revenue (income rows from Stripe webhook)
+- 📉 Direct costs (Stripe fees + AI cost aggregates)
+- 🤝 Commissions (wired payouts — audit trail)
+- 🧾 Op-expenses (manual entry surface, 10 categories: hosting/domain/email_service/supabase/design_tools/ai_tooling/corporate_sec/marketing/professional_fees/other_op_expense). Per-row 🗑 Delete (manual_entry rows only — webhook/aggregator/commission rows immutable).
+
+**Ledger API (`/api/montree/super-admin/finance/ledger`):** GET filtered by type/category/period/source/school/agent + returns per-type totals + P&L summary. POST manual op_expense entry (validates category against the 10-value whitelist). DELETE refuses non-op_expense or non-manual_entry rows server-side.
+
+**Cron setup** (`docs/perf/CRON_SETUP.md`): Three Railway cron specs with curl snippets:
+1. Monthly payout calc — `0 2 1 * *` (02:00 UTC, 1st of every month, calculates PRIOR month)
+2. Post-deploy warm ping — Railway deploy hook (single fire after each deploy)
+3. Daily Stripe quantity sweep — `0 3 * * *` (already shipped Session 93, just documented here)
+
+**F. Monthly accountant export pack (`a0ea3067`):**
+
+`GET /api/montree/super-admin/finance/export?period_month=YYYY-MM&format=csv|json`. CSV is multi-section single file (5 sections with `# === MARKER ===` lines so Excel can split):
+1. P&L summary
+2. Per-school revenue
+3. Per-agent commission
+4. Stripe reconciliation
+5. Full ledger backup
+
+📥 Accountant pack (CSV) button in MoneyTab header → fetches with token + triggers browser download via blob URL.
+
+**G. Audit cycles run this session (across both halves):**
+
+- Round 1 (Session 104a build): caught ThreadType/ParticipantRole type-system hole (unsafe casts) — fixed
+- Round 2 + 3 (lint + tsc + semantic): clean
+- Phase 5+6 Round 1 (semantic): caught the missing api-usage-aggregator (anthropic_cost + openai_cost would always read $0) — fixed
+- Phase 5+6 Round 2 (independent fresh-eye): caught 2 CRITICAL race conditions in upsert paths (aggregator + calculator) + 2 HIGH server-side immutability gaps on PATCH actions + broken mark_failed UX — all fixed
+- Phase 5+6 Round 3 (verify race fixes + immutability): clean
+- Wire-out round: caught missing Stripe idempotencyKey (would have allowed double-pay on double-click) — fixed
+- Final round: clean
+
+**🚨 Architectural rules locked in this session (do NOT let future agents break these):**
+
+1. **Stripe `transfers.create` idempotencyKey is load-bearing.** Never remove. Key is `montree_payout_${payoutId}_${amountCents}` — Stripe dedups for 24h. Changing the amount mid-flight produces a new key (different intent → different transfer).
+
+2. **P&L formula**: `margin = income − direct_cost − commission − op_expense + fx_adjustment`. Commissions are real cash leaving the bank — they reduce margin. NOT double-counted; the calculator subtracts direct_cost only (not commission) when computing agent share, so the share IS the commission output.
+
+3. **Calculator math**: `agent_share = pct × (gross − direct_cost)`. Op-expenses are NOT in agent's calc — agents shouldn't bear Montree's hosting costs. Margin captures op-expenses; agent share doesn't.
+
+4. **Op-expense rows are the ONLY mutable ledger entries.** Webhook + aggregator + commission rows are immutable history. DELETE refuses non-op_expense + non-manual_entry server-side.
+
+5. **Calculator skips paid + override rows.** Wire route refuses re-wire on paid status. Cancel/mark_failed/manual_override all refuse paid rows server-side. Money flow is one-way through the state machine.
+
+6. **API usage aggregator runs BEFORE calculator** in every Calculate now click. Order is mandatory — without it, AI costs are $0.
+
+7. **Wire route writes a commission row** to finance_transactions on success. Source_ref is `payout:${payout.id}` — idempotent across retries.
+
+8. **CSV export is a single multi-section file** (5 sections with `# === MARKER ===` lines), not a ZIP. Easier for accountant's first email. JSON format available via `&format=json`.
+
+9. **Race-safe upserts** on both aggregator + calculator. 23505 unique_violation falls back to UPDATE, with re-read of paid/override locks before overwriting.
+
+10. **`CRON_SECRET` env var** authenticates all cron calls — payout calc + warm ping + Stripe sweep. Same secret. Document at `docs/perf/CRON_SETUP.md`.
+
+11. **Agent code chip on school row sorted FIRST** in `login_codes_labelled` (rank 0). Amber chip chrome. Shows revenue share %.
+
+12. **Negative net → $0 payout. Never clawback.** Enforced at calculator level (`Math.max(0, ...)`) AND at DB level (`CHECK (payout_usd >= 0)`).
+
+13. **revenue_share_pct is locked at calc time.** Stored on each payout row. Future % changes in `montree_referral_codes` don't retroactively alter past months.
+
+**Migrations status (all confirmed RUN by user):**
+- ✅ 196 perf_vitals (Session 103)
+- ✅ 197 agent_messaging (Session 104)
+- ✅ 198 agent_payouts (Session 104) — confirmed "done - run and success"
+
+**🚨 Tredoux operational still-to-do:**
+
+1. **Enable Stripe Connect** on the platform account at https://dashboard.stripe.com/connect. This is the ONLY blocker before Gloria can be wired.
+2. **Generate Gloria's onboarding link** (super-admin Referrals → 💳 button) once Connect is on.
+3. **Send Gloria** `docs/agents/GLORIA_STRIPE_ONBOARDING.md` + the link.
+4. **Send the HK accountant** `docs/finance/HK_FINANCIAL_ADVISOR_SUMMARY.md`. Wait for replies to questions 1–8 before locking categorisation in Phase 6.
+5. **Set up Railway crons** per `docs/perf/CRON_SETUP.md` (requires CRON_SECRET env var).
+6. **Optional:** pin Railway region to Singapore/HK.
+
+**Next session priorities (ordered):**
+
+1. **Smoke-test Money tab end-to-end** — 12-step plan in `SESSION_104_V2_HANDOFF.md`.
+2. **Agent dashboard reads actuals** — `/montree/agent/earnings` still shows estimates from Session 90. Switch to reading from `montree_agent_payouts`. ~half-day rewrite.
+3. **Email notification on payout paid** — when wire fires, email the agent with transfer reference. Resend integration exists. ~1 hour.
+4. **Email summary on monthly calc cron** — Tredoux gets a P&L digest on the 1st. ~30 min.
+5. **Stripe dashboard deep-links** — failed payouts surface error but don't link to Stripe. ~15 min.
+6. **System health page** at `/montree/super-admin/health` — last cron run, Stripe webhook delivery rate, AI cost trend, Web Vitals p75. ~1-2 hours.
+7. **Recurring op-expense entries** — "Repeat monthly" toggle on add form. ~1 hour.
+8. **Bulk parent-invite email** — "Email all parents" button on teacher parent-codes page. ~30 min.
+9. **Drip campaign for trial schools** — auto-emails on day 7, 14, 28 of trial. ~2 hours.
+10. **Trial-to-paid conversion email** — Stripe webhook flips status, send principal a welcome-to-paid email. ~30 min.
+11. **i18n batch** for parent-codes + agent messaging + Money tab + MoneyLedgerView. ~50 keys × 12 locales. ~1 hour focused.
+12. **fx_adjustment manual entry UI** — when Stripe USD → Airwallex HKD wire differs materially from spot. Lower priority. ~1 hour.
+13. **Demo request auto-response email** — landing-page form lands in super-admin but doesn't auto-acknowledge. ~30 min.
+14. **PDF accountant pack** — currently CSV+JSON only. Lower priority since CSV imports cleanly. ~half-day.
+15. **In-app changelog modal** — "Here's what's new since you last logged in." ~1 hour.
+16. **Public changelog page** at `/changelog`. ~2 hours.
+
+---
+
+
 
 **8 commits pushed to main: `cd6dcafc` → `82758a1e` → `297731bd` → `81df44ba` → `37e3ed38` → `0917449d` → `c90fc5ce` → `4aff0cd5`.** Closed three Session 102 gaps, started measurable perf work, then ran 3 audit cycles fix-then-re-audit until clean. Two latent multi-session bugs additionally closed. One regression from the latent-fix caught by post-fix audit and corrected.
 
