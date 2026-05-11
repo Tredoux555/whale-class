@@ -35,9 +35,12 @@ export interface School {
    */
   login_codes_labelled?: Array<{
     code: string;
-    role: 'principal' | 'lead_teacher' | 'teacher' | 'assistant_teacher';
+    // 'agent' = the referral code that signed the school up (e.g. GLORIA-ZXNF).
+    // Sorted first in the chip strip. Carries optional revenue share %.
+    role: 'agent' | 'principal' | 'lead_teacher' | 'teacher' | 'assistant_teacher';
     name: string;
     active: boolean;
+    pct?: number | null;
   }>;
   /**
    * Agent attribution. NULL when the school signed up directly (no referral

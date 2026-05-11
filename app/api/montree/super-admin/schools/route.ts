@@ -56,7 +56,7 @@ export async function GET(request: NextRequest) {
     // who forgot theirs. Mirrors the montree_teachers pattern. The
     // password_hash column remains as the auth path (SHA-256 of the same
     // code); login_code is the human-readable copy.
-    const [classroomRes, teacherRes, childrenRes, teacherCodesRes, principalCodesRes, agentsRes] = await Promise.all([
+    const [classroomRes, teacherRes, childrenRes, teacherCodesRes, principalCodesRes, agentsRes, referralCodesRes] = await Promise.all([
       supabase.from('montree_classrooms').select('school_id'),
       supabase.from('montree_teachers').select('school_id'),
       supabase.from('montree_children').select('school_id').not('school_id', 'is', null),
@@ -77,6 +77,14 @@ export async function GET(request: NextRequest) {
       supabase
         .from('montree_teachers')
         .select('id, name, email, is_agent'),
+      // Session 104 — surface the agent referral code that was redeemed for
+      // each school, so the super-admin schools row can show
+      // "🔑 Agent · Gloria · GLORIA-ZXNF" alongside the principal/teacher chips.
+      // Soft-fail if the table doesn't exist (graceful for older deploys).
+      supabase
+        .from('montree_referral_codes')
+        .select('code, agent_id, agent_display_name, agent_email, revenue_share_pct, status, redeemed_by_school_id')
+        .not('redeemed_by_school_id', 'is', null),
     ]);
 
     // Build count maps (O(N) instead of O(N²))
@@ -94,14 +102,16 @@ export async function GET(request: NextRequest) {
     });
 
     // Labelled login codes per school. Each entry: { code, role, name, active }.
-    // Sorted principals first, then lead teachers, then teachers, then assistants —
-    // so the super-admin row shows the most important codes first.
-    interface LabelledCode { code: string; role: 'principal' | 'lead_teacher' | 'teacher' | 'assistant_teacher'; name: string; active: boolean; }
+    // Sorted agent first (the referral code that signed the school up), then
+    // principals, then lead teachers, teachers, assistants — so the super-admin
+    // row tells the full story top-to-bottom.
+    interface LabelledCode { code: string; role: 'agent' | 'principal' | 'lead_teacher' | 'teacher' | 'assistant_teacher'; name: string; active: boolean; pct?: number | null; }
     const ROLE_RANK: Record<LabelledCode['role'], number> = {
-      principal: 0,
-      lead_teacher: 1,
-      teacher: 2,
-      assistant_teacher: 3,
+      agent: 0,
+      principal: 1,
+      lead_teacher: 2,
+      teacher: 3,
+      assistant_teacher: 4,
     };
     const codesBySchool: Record<string, LabelledCode[]> = {};
     const seenPerSchool: Record<string, Set<string>> = {};
@@ -114,7 +124,35 @@ export async function GET(request: NextRequest) {
       codesBySchool[schoolId].push(entry);
     };
 
-    // Push principal codes first so they sort to the top of the chip strip.
+    // Push the agent's referral code first (rank 0). Each redeemed referral
+    // code is bound to exactly one school via redeemed_by_school_id. Surfaced
+    // here so super-admin can see "Agent · Gloria · GLORIA-ZXNF · 50%" next to
+    // the principal/teacher chips without hunting through the Referrals tab.
+    interface RedeemedRefCode {
+      code: string;
+      agent_id: string | null;
+      agent_display_name: string | null;
+      agent_email: string | null;
+      revenue_share_pct: number | null;
+      status: string;
+      redeemed_by_school_id: string;
+    }
+    (referralCodesRes.data || []).forEach((rc: RedeemedRefCode) => {
+      if (!rc.code || !rc.redeemed_by_school_id) return;
+      const displayName =
+        rc.agent_display_name ||
+        rc.agent_email ||
+        'Agent';
+      pushCode(rc.redeemed_by_school_id, {
+        code: rc.code,
+        role: 'agent',
+        name: displayName,
+        active: rc.status === 'redeemed',
+        pct: rc.revenue_share_pct,
+      });
+    });
+
+    // Push principal codes next so they sort under the agent in the chip strip.
     // Backfilled via PrincipalsModal "Reset code" for legacy principals whose
     // login_code is still NULL (Session 98 migration 194 added the column).
     (principalCodesRes.data || []).forEach(p => {

@@ -508,32 +508,49 @@ export default function SchoolsTab({
                                 <div className="flex flex-wrap gap-x-2 gap-y-1">
                                   {school.login_codes_labelled.map((entry) => {
                                     const roleLabel =
-                                      entry.role === 'principal'
-                                        ? 'Principal'
-                                        : entry.role === 'lead_teacher'
-                                          ? 'Lead'
-                                          : entry.role === 'assistant_teacher'
-                                            ? 'Assistant'
-                                            : 'Teacher';
+                                      entry.role === 'agent'
+                                        ? 'Agent'
+                                        : entry.role === 'principal'
+                                          ? 'Principal'
+                                          : entry.role === 'lead_teacher'
+                                            ? 'Lead'
+                                            : entry.role === 'assistant_teacher'
+                                              ? 'Assistant'
+                                              : 'Teacher';
                                     const roleColor =
-                                      entry.role === 'principal'
-                                        ? 'text-amber-400'
-                                        : entry.role === 'lead_teacher'
-                                          ? 'text-emerald-400'
-                                          : entry.role === 'assistant_teacher'
-                                            ? 'text-slate-400'
-                                            : 'text-slate-300';
+                                      entry.role === 'agent'
+                                        ? 'text-amber-300'
+                                        : entry.role === 'principal'
+                                          ? 'text-amber-400'
+                                          : entry.role === 'lead_teacher'
+                                            ? 'text-emerald-400'
+                                            : entry.role === 'assistant_teacher'
+                                              ? 'text-slate-400'
+                                              : 'text-slate-300';
+                                    // Agent chips get a subtle amber border so they
+                                    // visually anchor as "the founder" alongside the
+                                    // principal/teacher chips.
+                                    const chipChrome =
+                                      entry.role === 'agent'
+                                        ? 'border-amber-700/40 bg-amber-900/15'
+                                        : 'border-slate-700/50 bg-slate-800/40';
                                     return (
                                       <span
                                         key={`${entry.code}-${entry.role}-${entry.name}`}
-                                        className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded border border-slate-700/50 bg-slate-800/40"
-                                        title={`${roleLabel}: ${entry.name}${entry.active ? '' : ' (inactive)'}`}
+                                        className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded border ${chipChrome}`}
+                                        title={`${roleLabel}: ${entry.name}${entry.pct != null ? ` · ${entry.pct}%` : ''}${entry.active ? '' : ' (inactive)'}`}
                                       >
                                         <span className={`font-medium ${roleColor}`}>{roleLabel}</span>
                                         <span className="text-slate-500">·</span>
                                         <span className="text-slate-300 max-w-[140px] truncate">{entry.name}</span>
                                         <span className="text-slate-500">·</span>
                                         <span className="font-mono text-slate-400">{entry.code}</span>
+                                        {entry.role === 'agent' && entry.pct != null && (
+                                          <>
+                                            <span className="text-slate-500">·</span>
+                                            <span className="text-amber-400 font-medium">{entry.pct}%</span>
+                                          </>
+                                        )}
                                         {!entry.active && (
                                           <span className="text-slate-600 text-[10px] uppercase tracking-wide">inactive</span>
                                         )}
