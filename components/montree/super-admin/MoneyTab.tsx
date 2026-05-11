@@ -346,6 +346,16 @@ export default function MoneyTab({ sessionToken }: MoneyTabProps) {
         >
           📥 Accountant pack (CSV)
         </button>
+        <button
+          onClick={() => {
+            const url = `/api/montree/super-admin/finance/export/print?period_month=${encodeURIComponent(periodMonth)}&token=${encodeURIComponent(sessionToken)}`;
+            window.open(url, '_blank', 'noopener');
+          }}
+          className="px-3 py-1.5 bg-purple-500/15 hover:bg-purple-500/25 border border-purple-500/30 text-purple-300 rounded-lg text-sm font-medium"
+          title="Open a printable HTML version. Cmd+P to save as PDF."
+        >
+          🖨 Print / PDF
+        </button>
       </div>
 
       {/* P&L summary header — the four columns of the monthly accounting story */}
