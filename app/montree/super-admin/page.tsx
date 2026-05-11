@@ -24,6 +24,7 @@ const AgentsTab = dynamic(() => import('@/components/montree/super-admin/Referra
 const MoneyTab = dynamic(() => import('@/components/montree/super-admin/MoneyTab'), { ssr: false });
 const HealthTab = dynamic(() => import('@/components/montree/super-admin/HealthTab'), { ssr: false });
 const WebhookDLQTab = dynamic(() => import('@/components/montree/super-admin/WebhookDLQTab'), { ssr: false });
+const ServerErrorsTab = dynamic(() => import('@/components/montree/super-admin/ServerErrorsTab'), { ssr: false });
 
 
 interface DmMessage {
@@ -34,7 +35,7 @@ interface DmMessage {
   created_at: string;
 }
 
-type TabType = 'schools' | 'feedback' | 'leads' | 'visitors' | 'agents' | 'money' | 'health' | 'dlq';
+type TabType = 'schools' | 'feedback' | 'leads' | 'visitors' | 'agents' | 'money' | 'health' | 'dlq' | 'errors';
 
 const SESSION_TIMEOUT_MS = 15 * 60 * 1000; // 15 minutes
 
@@ -506,6 +507,7 @@ export default function SuperAdminPage() {
           <SuperAdminTab active={activeTab === 'money'} onClick={() => setActiveTab('money')} icon="💰" label="Money" />
           <SuperAdminTab active={activeTab === 'health'} onClick={() => setActiveTab('health')} icon="🩺" label="Health" />
           <SuperAdminTab active={activeTab === 'dlq'} onClick={() => setActiveTab('dlq')} icon="⚠️" label="DLQ" />
+          <SuperAdminTab active={activeTab === 'errors'} onClick={() => setActiveTab('errors')} icon="🐛" label="Errors" />
         </div>
 
         {/* Tab Content */}
@@ -582,6 +584,10 @@ export default function SuperAdminPage() {
 
         {activeTab === 'dlq' && (
           <WebhookDLQTab sessionToken={saToken} />
+        )}
+
+        {activeTab === 'errors' && (
+          <ServerErrorsTab sessionToken={saToken} />
         )}
 
       </div>

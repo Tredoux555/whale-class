@@ -13,6 +13,7 @@ import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import AgentFirstRunOverlay from '@/components/montree/agent/AgentFirstRunOverlay';
 import AgentRedemptionBanner from '@/components/montree/agent/AgentRedemptionBanner';
+import MiraProactiveCard from '@/components/montree/agent/MiraProactiveCard';
 import ChangelogModal from '@/components/montree/ChangelogModal';
 
 interface Agent {
@@ -168,6 +169,9 @@ export default function AgentDashboardPage() {
 
       {/* ── What's new since last visit (agent-scoped) ─────────────────── */}
       <ChangelogModal audience="agent" />
+
+      {/* ── Mira proactive snapshot — actionable school signals ───────── */}
+      <MiraProactiveCard />
 
       {/* ── Redemption celebration (when school count went up) ─────────── */}
       <AgentRedemptionBanner

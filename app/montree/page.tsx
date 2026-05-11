@@ -197,6 +197,25 @@ export default function MontreeLanding() {
           padding: 120px 32px 140px;
         }
         .m-hero .m-label { margin-bottom: 40px; }
+        .m-hero-quote {
+          font-family: "Lora", Georgia, serif;
+          font-style: italic;
+          font-weight: 400;
+          font-size: clamp(14px, 1.6vw, 18px);
+          letter-spacing: 0.01em;
+          color: rgba(255,255,255,0.55);
+          margin-bottom: 28px;
+          max-width: 38ch;
+          line-height: 1.6;
+        }
+        .m-hero-quote-attr {
+          display: block;
+          margin-top: 6px;
+          font-style: normal;
+          font-size: 0.78rem;
+          color: rgba(255,255,255,0.38);
+          letter-spacing: 0.04em;
+        }
         .m-hero-kicker {
           font-family: "Lora", Georgia, serif;
           font-style: italic;
@@ -372,7 +391,6 @@ export default function MontreeLanding() {
               {t('landing.nav.login')}
             </Link>
             <LanguageToggle />
-            <a className="m-pill" href="/montree/login-select?signup=true">{t('landing.nav.getStarted')}</a>
           </div>
         </div>
       </nav>
@@ -380,6 +398,10 @@ export default function MontreeLanding() {
       {/* ── HERO ── Clean and clear: title + CTA, nothing else. ── */}
       <section className="m-hero">
         <div ref={addReveal} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          <p className="m-hero-quote">
+            &ldquo;Play is the work of the child.&rdquo;
+            <span className="m-hero-quote-attr">— Maria Montessori</span>
+          </p>
           <span className="m-hero-kicker">{t('landing.hero.kicker')}</span>
           <h1>{t('landing.hero.title')}</h1>
           <Link className="m-pill m-pill-lg" href="/montree/login-select?signup=true">
