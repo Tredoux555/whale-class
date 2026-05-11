@@ -8,6 +8,7 @@
 // has a "+ Add expense" form (the only writeable surface here).
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import RecurringOpExpensePanel from './RecurringOpExpensePanel';
 
 interface LedgerRow {
   id: string;
@@ -41,7 +42,7 @@ interface PnlSummary {
 
 interface MoneyLedgerViewProps {
   sessionToken: string;
-  view: 'revenue' | 'direct_costs' | 'commissions' | 'op_expenses';
+  view: 'revenue' | 'direct_costs' | 'commissions' | 'op_expenses' | 'fx_adjustments';
   periodMonth: string;
 }
 
@@ -73,6 +74,12 @@ const VIEW_CONFIG: Record<
     emptyMsg: 'No op-expense rows yet. Add hosting / tooling / marketing / professional fees here.',
     allowAdd: true,
   },
+  fx_adjustments: {
+    typeFilter: 'fx_adjustment',
+    title: 'FX adjustments',
+    emptyMsg: 'No FX adjustment rows yet. Add when Stripe USD → Airwallex HKD differs from spot.',
+    allowAdd: true,
+  },
 };
 
 const OP_EXPENSE_CATEGORIES = [
@@ -86,6 +93,12 @@ const OP_EXPENSE_CATEGORIES = [
   { value: 'marketing', label: 'Marketing spend' },
   { value: 'professional_fees', label: 'Accountant / legal fees' },
   { value: 'other_op_expense', label: 'Other' },
+];
+
+const FX_ADJUSTMENT_CATEGORIES = [
+  { value: 'wire_fx_delta', label: 'Wire FX delta (USD→HKD wire vs spot)' },
+  { value: 'rate_revaluation', label: 'Rate revaluation (month-end)' },
+  { value: 'other_fx_adjustment', label: 'Other FX adjustment' },
 ];
 
 function fmtUsd(n: number | null | undefined): string {
@@ -111,13 +124,24 @@ export default function MoneyLedgerView({ sessionToken, view, periodMonth }: Mon
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
-  // Op-expense add form
+  // Add-row form state (used for both op_expense and fx_adjustment views)
   const [showAdd, setShowAdd] = useState(false);
-  const [newCategory, setNewCategory] = useState<string>(OP_EXPENSE_CATEGORIES[0].value);
+  const isFx = view === 'fx_adjustments';
+  const categoryOptions = isFx ? FX_ADJUSTMENT_CATEGORIES : OP_EXPENSE_CATEGORIES;
+  const [newCategory, setNewCategory] = useState<string>(categoryOptions[0].value);
   const [newDescription, setNewDescription] = useState('');
   const [newAmount, setNewAmount] = useState('');
   const [newNotes, setNewNotes] = useState('');
   const [newDate, setNewDate] = useState('');
+
+  // Reset category when view changes so the dropdown matches the available
+  // categories for this type.
+  useEffect(() => {
+    setNewCategory(categoryOptions[0].value);
+    // intentionally NOT including categoryOptions to avoid recomputation
+    // every render — the value only meaningfully changes when view changes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [view]);
 
   const fetchLedger = useCallback(async () => {
     setLoading(true);
@@ -152,9 +176,22 @@ export default function MoneyLedgerView({ sessionToken, view, periodMonth }: Mon
 
   const handleAdd = useCallback(async () => {
     const amount = Number(newAmount);
-    if (!newDescription.trim() || Number.isNaN(amount) || amount <= 0) {
-      setError('Description + positive USD amount required');
+    // op_expense MUST be positive. fx_adjustment can be negative (FX loss) or
+    // positive (FX gain) but never zero.
+    if (!newDescription.trim() || Number.isNaN(amount)) {
+      setError('Description + numeric USD amount required');
       return;
+    }
+    if (isFx) {
+      if (amount === 0) {
+        setError('FX adjustment must be non-zero (negative for loss, positive for gain)');
+        return;
+      }
+    } else {
+      if (amount <= 0) {
+        setError('Op-expense USD amount must be positive');
+        return;
+      }
     }
     setBusy(true);
     setError(null);
@@ -166,6 +203,7 @@ export default function MoneyLedgerView({ sessionToken, view, periodMonth }: Mon
           'x-super-admin-token': sessionToken,
         },
         body: JSON.stringify({
+          type: isFx ? 'fx_adjustment' : 'op_expense',
           category: newCategory,
           description: newDescription.trim(),
           usd_amount: amount,
@@ -191,7 +229,7 @@ export default function MoneyLedgerView({ sessionToken, view, periodMonth }: Mon
     } finally {
       setBusy(false);
     }
-  }, [newCategory, newDescription, newAmount, newDate, newNotes, sessionToken, fetchLedger]);
+  }, [isFx, newCategory, newDescription, newAmount, newDate, newNotes, sessionToken, fetchLedger]);
 
   const handleDelete = useCallback(
     async (rowId: string) => {
@@ -261,22 +299,24 @@ export default function MoneyLedgerView({ sessionToken, view, periodMonth }: Mon
                 onChange={(e) => setNewCategory(e.target.value)}
                 className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-white"
               >
-                {OP_EXPENSE_CATEGORIES.map((c) => (
+                {categoryOptions.map((c) => (
                   <option key={c.value} value={c.value}>
                     {c.label}
                   </option>
                 ))}
               </select>
             </div>
-            <div className="w-full md:w-32">
-              <label className="text-xs uppercase tracking-wider text-slate-400 block mb-1">USD</label>
+            <div className="w-full md:w-40">
+              <label className="text-xs uppercase tracking-wider text-slate-400 block mb-1">
+                USD {isFx && <span className="text-slate-500 normal-case">(± allowed)</span>}
+              </label>
               <input
                 type="number"
                 step="0.01"
-                min="0"
+                {...(isFx ? {} : { min: '0' })}
                 value={newAmount}
                 onChange={(e) => setNewAmount(e.target.value)}
-                placeholder="0.00"
+                placeholder={isFx ? '-5.00 for loss' : '0.00'}
                 className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-white"
               />
             </div>
@@ -334,6 +374,11 @@ export default function MoneyLedgerView({ sessionToken, view, periodMonth }: Mon
             </button>
           </div>
         </div>
+      )}
+
+      {/* Recurring templates panel — only on the Op-expenses view */}
+      {view === 'op_expenses' && (
+        <RecurringOpExpensePanel sessionToken={sessionToken} />
       )}
 
       {error && (
