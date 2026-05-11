@@ -22,6 +22,7 @@ const VisitorsTab = dynamic(() => import('@/components/montree/super-admin/Visit
 const AgentsTab = dynamic(() => import('@/components/montree/super-admin/ReferralsTab'), { ssr: false });
 // Phase 6 — Money tab. Payouts list + Calculate trigger + state transitions.
 const MoneyTab = dynamic(() => import('@/components/montree/super-admin/MoneyTab'), { ssr: false });
+const HealthTab = dynamic(() => import('@/components/montree/super-admin/HealthTab'), { ssr: false });
 
 
 interface DmMessage {
@@ -32,7 +33,7 @@ interface DmMessage {
   created_at: string;
 }
 
-type TabType = 'schools' | 'feedback' | 'leads' | 'visitors' | 'agents' | 'money';
+type TabType = 'schools' | 'feedback' | 'leads' | 'visitors' | 'agents' | 'money' | 'health';
 
 const SESSION_TIMEOUT_MS = 15 * 60 * 1000; // 15 minutes
 
@@ -502,6 +503,7 @@ export default function SuperAdminPage() {
           <SuperAdminTab active={activeTab === 'visitors'} onClick={() => setActiveTab('visitors')} icon="📍" label="Visitors" />
           <SuperAdminTab active={activeTab === 'agents'} onClick={() => setActiveTab('agents')} icon="🤝" label="Agents" />
           <SuperAdminTab active={activeTab === 'money'} onClick={() => setActiveTab('money')} icon="💰" label="Money" />
+          <SuperAdminTab active={activeTab === 'health'} onClick={() => setActiveTab('health')} icon="🩺" label="Health" />
         </div>
 
         {/* Tab Content */}
@@ -570,6 +572,10 @@ export default function SuperAdminPage() {
 
         {activeTab === 'money' && (
           <MoneyTab sessionToken={saToken} />
+        )}
+
+        {activeTab === 'health' && (
+          <HealthTab sessionToken={saToken} />
         )}
 
       </div>
