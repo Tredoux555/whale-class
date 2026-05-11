@@ -25,6 +25,14 @@ export interface ChangelogEntry {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    id: '2026-05-11-tracy-mira-proactive',
+    date: '2026-05-11',
+    title: 'Tracy & Mira now notice things on their own',
+    summary:
+      "Tracy surfaces stale classrooms + idle teachers + pending photos on your Today page. Mira surfaces school growth signals + churn risk on the agent dashboard. Both are dismissible — they only show when there's actually something to do.",
+    audience: 'all',
+  },
+  {
     id: '2026-05-11-money-tab',
     date: '2026-05-11',
     title: 'Real money flows — Money tab + Stripe Connect payouts',
