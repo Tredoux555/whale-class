@@ -7,7 +7,7 @@ import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import {
   Camera, Mic, Square, MoreHorizontal, ChevronDown,
-  Bell, FileText, Target, Search, Sparkles, BookOpen,
+  FileText, Target, Search, Sparkles, BookOpen,
   LayoutGrid, CalendarDays, Images, FolderOpen, TrendingUp,
   Users, BookMarked, Globe, BarChart2, Settings2, LogOut, UserPlus,
   MessageSquare, KeyRound,
@@ -345,7 +345,7 @@ function DashboardHeader() {
         toast.error(t('dashboard.saveFailed'));
       }
     })();
-  }, [recordingBlob, session?.classroom?.id, locale]);
+  }, [recordingBlob, session?.classroom?.id, t]);
 
   useEffect(() => {
     const handle = (e: MouseEvent) => {
@@ -782,6 +782,7 @@ function DashboardHeader() {
                         transition: 'background 100ms ease',
                       }}>
                       {student.photo_url ? (
+                        // eslint-disable-next-line @next/next/no-img-element -- Supabase signed URL, native <img> is correct (avoid Next/Image config overhead for tiny avatars)
                         <img src={student.photo_url} alt="" loading="lazy" style={{ width: 28, height: 28, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
                       ) : (
                         <span style={{
