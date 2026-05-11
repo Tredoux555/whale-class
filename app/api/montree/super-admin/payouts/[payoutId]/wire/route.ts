@@ -19,6 +19,7 @@ import type Stripe from 'stripe';
 import { getSupabase } from '@/lib/supabase-client';
 import { verifySuperAdminAuth } from '@/lib/verify-super-admin';
 import { getStripe } from '@/lib/montree/stripe';
+import { sendPayoutPaidEmail } from '@/lib/montree/email';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
@@ -258,12 +259,28 @@ export async function POST(
       console.error('[payouts wire] commission ledger insert failed (non-fatal)', txErr);
     }
 
+    // ── 7. Fire-and-forget notification email to the agent. Never blocks
+    // the response — if Resend is down, the payout still succeeds.
+    if (agent.email) {
+      sendPayoutPaidEmail(
+        agent.email,
+        agent.name || agent.email.split('@')[0],
+        amountUsd,
+        school?.name || 'your referred school',
+        payout.period_month,
+        transfer.id
+      ).catch((emailErr) => {
+        console.error('[payouts wire] email send failed (non-fatal)', emailErr);
+      });
+    }
+
     return NextResponse.json({
       success: true,
       stripe_transfer_id: transfer.id,
       amount_usd: amountUsd,
       paid_at: paidAt,
       commission_logged: commissionLogged,
+      agent_email_sent: !!agent.email,
     });
   } catch (err) {
     console.error('[payouts wire] unexpected', err);
