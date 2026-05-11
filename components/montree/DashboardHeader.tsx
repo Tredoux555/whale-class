@@ -10,7 +10,7 @@ import {
   Bell, FileText, Target, Search, Sparkles, BookOpen,
   LayoutGrid, CalendarDays, Images, FolderOpen, TrendingUp,
   Users, BookMarked, Globe, BarChart2, Settings2, LogOut, UserPlus,
-  MessageSquare,
+  MessageSquare, KeyRound,
 } from 'lucide-react';
 import { getSession, clearSession, isHomeschoolParent, type MontreeSession } from '@/lib/montree/auth';
 import { HOME_THEME } from '@/lib/montree/home-theme';
@@ -187,6 +187,7 @@ function DashboardHeader() {
   // Derive active page from pathname for menu highlighting
   const activePage = useMemo(() => {
     if (pathname?.startsWith('/montree/dashboard/messages'))  return 'messages';
+    if (pathname === '/montree/dashboard/parent-codes')       return 'parent-codes';
     if (pathname === '/montree/dashboard/notes')              return 'notes';
     if (pathname === '/montree/dashboard/focus')              return 'focus-list';
     if (pathname?.startsWith('/montree/dashboard/photo-audit')) return 'photo-audit';
@@ -590,6 +591,14 @@ function DashboardHeader() {
                     label={t('nav.messages') || 'Messages'}
                     active={activePage === 'messages'}
                     onClick={() => { setShowMoreMenu(false); router.push('/montree/dashboard/messages'); }}
+                  />
+
+                  {/* Parent codes — teacher onboards parents from their classroom */}
+                  <MenuRow
+                    icon={KeyRound}
+                    label="Parent codes"
+                    active={activePage === 'parent-codes'}
+                    onClick={() => { setShowMoreMenu(false); router.push('/montree/dashboard/parent-codes'); }}
                   />
 
                   {/* Help — renamed from "Inbox", same Tredoux-DM channel underneath */}

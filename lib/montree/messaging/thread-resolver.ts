@@ -296,7 +296,9 @@ export async function createThreadWithParticipants(
     threadType: ThreadType;
     subject: string | null;
     groupId?: string | null;
-    createdBy: { role: 'teacher' | 'principal' | 'parent'; id: string };
+    // Session 104 — widened to include 'agent' so agent → principal threads
+    // can land without an unsafe cast. Mirrors the ParticipantRole union.
+    createdBy: { role: ParticipantRole; id: string };
     participants: Array<{
       role: ParticipantRole;
       id: string;
