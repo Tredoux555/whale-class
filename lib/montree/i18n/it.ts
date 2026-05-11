@@ -4336,7 +4336,7 @@ export const it: Record<string, string> = {
   'money.agentFallback': 'Guru',
   'money.agentFallbackLower': 'guru',
   'money.unknown': 'sconosciuto',
-  'money.confirmWire': 'Trasferire ${amount} a {name} tramite Stripe Connect?\\n\\nQuesto È un movimento di denaro reale. Lo stato si aggiornerà automaticamente a pagato.',
+  'money.confirmWire': 'Trasferire ${amount} a {name} tramite Stripe Connect?\n\nQuesto È un movimento di denaro reale. Lo stato si aggiornerà automaticamente a pagato.',
   'moneyLedger.revenue.title': 'Ricavi',
   'moneyLedger.revenue.empty': 'Nessuna riga di entrata per questo periodo. I webhook invoice.paid di Stripe vengono registrati qui automaticamente.',
   'moneyLedger.directCosts.title': 'Costi diretti',
@@ -4420,5 +4420,5 @@ export const it: Record<string, string> = {
   'parentCodes.newCodeIssued': 'Nuovo codice emesso',
   'parentCodes.resetConfirm': 'Reimpostare questo codice genitoriale? Il codice precedente smette di funzionare immediatamente. Il genitore avrà bisogno del nuovo codice per accedere.',
   'parentCodes.emailSubject': 'Accesso Montree — {name}',
-  'parentCodes.emailBody': 'Buongiorno,\\n\\nPuò visualizzare gli aggiornamenti di Montree di {name} qui:\\n\\n{url}\\n\\nCodice di accesso: {code}\\n\\nCordiali saluti',
+  'parentCodes.emailBody': 'Buongiorno,\n\nPuò visualizzare gli aggiornamenti di Montree di {name} qui:\n\n{url}\n\nCodice di accesso: {code}\n\nCordiali saluti',
 };

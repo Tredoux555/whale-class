@@ -4420,5 +4420,5 @@ export const nl: Record<string, string> = {
   'parentCodes.newCodeIssued': 'Nieuwe code aangemaakt',
   'parentCodes.resetConfirm': 'Deze oudercode resetten? De oude code stopt onmiddellijk met werken. De ouder heeft de nieuwe code nodig om toegang te krijgen.',
   'parentCodes.emailSubject': 'Montree-toegang — {name}',
-  'parentCodes.emailBody': 'Hallo,\\n\\nU kunt de Montree-updates van {name} hier bekijken:\\n\\n{url}\\n\\nToegangscode: {code}\\n\\nMet vriendelijke groeten',
+  'parentCodes.emailBody': 'Hallo,\n\nU kunt de Montree-updates van {name} hier bekijken:\n\n{url}\n\nToegangscode: {code}\n\nMet vriendelijke groeten',
 };

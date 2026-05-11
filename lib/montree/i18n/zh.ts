@@ -4739,7 +4739,7 @@ export const zh = {
   'money.agentFallback': '代理',
   'money.agentFallbackLower': '代理',
   'money.unknown': '未知',
-  'money.confirmWire': '通过 Stripe Connect 向 {name} 转账 ${amount} 吗？\\n\\n这是真实的资金转移。状态将自动更新为已支付。',
+  'money.confirmWire': '通过 Stripe Connect 向 {name} 转账 ${amount} 吗？\n\n这是真实的资金转移。状态将自动更新为已支付。',
   'moneyLedger.revenue.title': '收入',
   'moneyLedger.revenue.empty': '本期无收入记录。Stripe invoice.paid 触发器会自动记录到此处。',
   'moneyLedger.directCosts.title': '直接成本',
@@ -4823,5 +4823,5 @@ export const zh = {
   'parentCodes.newCodeIssued': '新码已发放',
   'parentCodes.resetConfirm': '重置此家长码？旧码将立即停用。家长需要新码才能继续访问。',
   'parentCodes.emailSubject': 'Montree 访问权限 — {name}',
-  'parentCodes.emailBody': '你好，\\n\\n你可以在这里查看 {name} 的 Montree 更新：\\n\\n{url}\\n\\n访问代码：{code}\\n\\n此致\\n敬礼',
+  'parentCodes.emailBody': '你好，\n\n你可以在这里查看 {name} 的 Montree 更新：\n\n{url}\n\n访问代码：{code}\n\n此致\n敬礼',
 } as const;

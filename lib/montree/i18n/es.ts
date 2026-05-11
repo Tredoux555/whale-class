@@ -4391,5 +4391,5 @@ export const es: Record<string, string> = {
   'parentCodes.newCodeIssued': 'Nuevo código emitido',
   'parentCodes.resetConfirm': '¿Restablecer este código de familia? El código anterior dejará de funcionar de inmediato. La familia va a necesitar el nuevo código para acceder.',
   'parentCodes.emailSubject': 'Acceso a Montree — {name}',
-  'parentCodes.emailBody': 'Hola,\\n\\nPodés ver las actualizaciones de {name} en Montree aquí:\\n\\n{url}\\n\\nCódigo de acceso: {code}\\n\\nSaludos cordiales',
+  'parentCodes.emailBody': 'Hola,\n\nPodés ver las actualizaciones de {name} en Montree aquí:\n\n{url}\n\nCódigo de acceso: {code}\n\nSaludos cordiales',
 };
