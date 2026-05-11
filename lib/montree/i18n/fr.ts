@@ -4421,4 +4421,9 @@ export const fr: Record<string, string> = {
   'parentCodes.resetConfirm': 'Réinitialiser ce code d\'accès famille ? L\'ancien code cessera de fonctionner immédiatement. La famille aura besoin du nouveau code pour accéder.',
   'parentCodes.emailSubject': 'Accès Montree — {name}',
   'parentCodes.emailBody': 'Bonjour,\n\nVous pouvez consulter les mises à jour de Montree de {name} ici :\n\n{url}\n\nCode d\'accès : {code}\n\nCordialement',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'money.resetFailedBtn': '🔄 Rétablir en attente',
+  'money.resetFailedTooltip': 'Rétablissez ce virement échoué en attente pour pouvoir le renvoyer. Les notes d\'échec sont conservées dans la piste d\'audit.',
+  'money.resetFailedConfirm': 'Rétablir ce virement échoué en attente ? Vous pourrez alors renvoyer le virement Stripe. Les notes d\'échec seront conservées.',
 };

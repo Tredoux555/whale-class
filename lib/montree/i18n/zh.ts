@@ -4824,4 +4824,9 @@ export const zh = {
   'parentCodes.resetConfirm': '重置此家长码？旧码将立即停用。家长需要新码才能继续访问。',
   'parentCodes.emailSubject': 'Montree 访问权限 — {name}',
   'parentCodes.emailBody': '你好，\n\n你可以在这里查看 {name} 的 Montree 更新：\n\n{url}\n\n访问代码：{code}\n\n此致\n敬礼',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'money.resetFailedBtn': '🔄 重置为待处理',
+  'money.resetFailedTooltip': '将失败的支付重置为待处理状态，以便重试转账。失败记录将保留在审计跟踪中。',
+  'money.resetFailedConfirm': '将此失败的支付重置为待处理状态？您随后可以重试 Stripe 转账。失败记录将被保留。',
 } as const;

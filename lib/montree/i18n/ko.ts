@@ -4421,4 +4421,9 @@ export const ko: Record<string, string> = {
   'parentCodes.resetConfirm': '이 보호자 코드를 초기화하시겠습니까? 이전 코드는 즉시 사용할 수 없게 됩니다. 보호자분은 새로운 코드가 필요합니다',
   'parentCodes.emailSubject': 'Montree 접근 — {name}',
   'parentCodes.emailBody': '안녕하세요,\n\n자녀분의 Montree 업데이트를 여기에서 확인할 수 있습니다:\n\n{url}\n\n접근 코드: {code}\n\n감사합니다',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'money.resetFailedBtn': '🔄 대기 중으로 재설정',
+  'money.resetFailedTooltip': '실패한 송금을 대기 중으로 재설정하여 송금을 재시도할 수 있습니다. 실패 기록은 감사 추적에 보존됩니다.',
+  'money.resetFailedConfirm': '실패한 송금을 대기 중으로 재설정하시겠습니까? 이후 Stripe 송금을 재시도할 수 있습니다. 실패 기록은 유지됩니다.',
 };

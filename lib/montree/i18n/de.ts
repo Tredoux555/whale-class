@@ -4421,4 +4421,9 @@ export const de: Record<string, string> = {
   'parentCodes.resetConfirm': 'Diesen Eltern-Code zurücksetzen? Der alte Code funktioniert sofort nicht mehr. Das Elternteil benötigt den neuen Code, um Zugriff zu erhalten.',
   'parentCodes.emailSubject': 'Montree-Zugang — {name}',
   'parentCodes.emailBody': 'Hallo,\n\nSie können die Montree-Aktualisierungen von {name} hier einsehen:\n\n{url}\n\nZugriffscode: {code}\n\nMit freundlichen Grüßen',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'money.resetFailedBtn': '🔄 Auf "Ausstehend" zurücksetzen',
+  'money.resetFailedTooltip': 'Eine fehlgeschlagene Auszahlung auf „Ausstehend" zurücksetzen, damit die Überweisung erneut versucht werden kann. Fehlernotizen werden in der Audit-Spur beibehalten.',
+  'money.resetFailedConfirm': 'Diese fehlgeschlagene Auszahlung auf „Ausstehend" zurücksetzen? Sie können dann die Stripe-Überweisung erneut versuchen. Fehlernotizen werden beibehalten.',
 };

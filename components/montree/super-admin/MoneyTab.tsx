@@ -248,7 +248,7 @@ export default function MoneyTab({ sessionToken }: MoneyTabProps) {
   const doPatch = useCallback(
     async (
       payoutId: string,
-      action: 'mark_paid' | 'mark_failed' | 'cancel' | 'manual_override' | 'clear_override',
+      action: 'mark_paid' | 'mark_failed' | 'cancel' | 'manual_override' | 'clear_override' | 'reset_failed',
       extra: Record<string, unknown> = {}
     ) => {
       setActionBusy(payoutId);
@@ -611,6 +611,20 @@ export default function MoneyTab({ sessionToken }: MoneyTabProps) {
                       className="px-2.5 py-1 bg-slate-700/40 hover:bg-slate-700/60 border border-slate-700 text-slate-300 rounded text-xs font-medium disabled:opacity-50"
                     >
                       {t('money.clearOverrideBtn')}
+                    </button>
+                  )}
+                  {row.status === 'failed' && (
+                    <button
+                      onClick={async () => {
+                        const confirmed = window.confirm(t('money.resetFailedConfirm'));
+                        if (!confirmed) return;
+                        await doPatch(row.id, 'reset_failed');
+                      }}
+                      disabled={actionBusy === row.id}
+                      className="px-2.5 py-1 bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/30 text-amber-200 rounded text-xs font-medium disabled:opacity-50"
+                      title={t('money.resetFailedTooltip')}
+                    >
+                      {t('money.resetFailedBtn')}
                     </button>
                   )}
                 </div>

@@ -4418,4 +4418,9 @@ export const uk: Record<string, string> = {
   'parentCodes.resetConfirm': 'Скинути цей код доступу батька? Старий код перестане працювати негайно. Батьку знадобиться новий код для доступу.',
   'parentCodes.emailSubject': 'Доступ до Montree — {name}',
   'parentCodes.emailBody': 'Привіт,\n\nВи можете переглядати оновлення Montree для {name} тут:\n\n{url}\n\nКод доступу: {code}\n\nЗ повагою',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'money.resetFailedBtn': '🔄 Повернути у стан очікування',
+  'money.resetFailedTooltip': 'Повернути невдалий переказ у стан очікування, щоб спробувати ще раз. Записи про помилки зберігаються в журналі аудиту.',
+  'money.resetFailedConfirm': 'Повернути цей невдалий переказ у стан очікування? Ви зможете повторити спробу переказу через Stripe. Записи про помилки будуть збережені.',
 };

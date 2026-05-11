@@ -4392,4 +4392,9 @@ export const es: Record<string, string> = {
   'parentCodes.resetConfirm': '¿Restablecer este código de familia? El código anterior dejará de funcionar de inmediato. La familia va a necesitar el nuevo código para acceder.',
   'parentCodes.emailSubject': 'Acceso a Montree — {name}',
   'parentCodes.emailBody': 'Hola,\n\nPodés ver las actualizaciones de {name} en Montree aquí:\n\n{url}\n\nCódigo de acceso: {code}\n\nSaludos cordiales',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'money.resetFailedBtn': '🔄 Reestablecer a pendiente',
+  'money.resetFailedTooltip': 'Reestablecé un pago fallido a pendiente para que puedas reintentar la transferencia. Las notas de error se conservan en el registro de auditoría.',
+  'money.resetFailedConfirm': '¿Reestablecer este pago fallido a pendiente? Luego podés reintentar la transferencia Stripe. Las notas de error se mantendrán.',
 };

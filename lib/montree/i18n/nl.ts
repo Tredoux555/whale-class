@@ -4421,4 +4421,9 @@ export const nl: Record<string, string> = {
   'parentCodes.resetConfirm': 'Deze oudercode resetten? De oude code stopt onmiddellijk met werken. De ouder heeft de nieuwe code nodig om toegang te krijgen.',
   'parentCodes.emailSubject': 'Montree-toegang — {name}',
   'parentCodes.emailBody': 'Hallo,\n\nU kunt de Montree-updates van {name} hier bekijken:\n\n{url}\n\nToegangscode: {code}\n\nMet vriendelijke groeten',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'money.resetFailedBtn': '🔄 Opnieuw in behandeling',
+  'money.resetFailedTooltip': 'Zet een mislukte uitbetaling terug naar in behandeling zodat de overboeking opnieuw kan worden geprobeerd. Foutnotities blijven behouden in het auditlogboek.',
+  'money.resetFailedConfirm': 'Deze mislukte uitbetaling terugzetten naar in behandeling? U kunt vervolgens de Stripe-overboeking opnieuw proberen. Foutnotities blijven behouden.',
 };
