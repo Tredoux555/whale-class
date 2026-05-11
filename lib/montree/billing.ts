@@ -720,15 +720,18 @@ export async function handleSubscriptionUpsert(
   subscription: Stripe.Subscription
 ): Promise<void> {
   const customerId = subscription.customer as string;
+  // Read prior status BEFORE update so we can detect the trialing→active
+  // transition for the conversion email.
   const { data: school } = await supabase
     .from('montree_schools')
-    .select('id')
+    .select('id, name, subscription_status, owner_email, owner_name')
     .eq('stripe_customer_id', customerId)
     .maybeSingle();
   if (!school) {
     console.warn('[billing] subscription event for unknown customer', customerId);
     return;
   }
+  const priorStatus = (school as { subscription_status: string | null }).subscription_status;
 
   const item = subscription.items.data[0];
   const status = subscription.status;
@@ -774,6 +777,29 @@ export async function handleSubscriptionUpsert(
   // Reference periodStart so it's not flagged as unused (currently unused
   // but useful for future Phase 6 period analysis).
   void currentPeriodStart;
+
+  // ── Trial → paid conversion email. Fire-and-forget.
+  // Trigger: status transitions from 'trialing' (or null/incomplete) → 'active'
+  // AND we have an owner email to write to.
+  const becameActive =
+    status === 'active' &&
+    priorStatus !== 'active' &&
+    priorStatus !== 'past_due'; // past_due → active is just retry recovery, not a conversion
+  if (becameActive) {
+    const owner = school as { owner_email?: string | null; owner_name?: string | null; name?: string | null };
+    if (owner.owner_email) {
+      // Lazy import to avoid pulling email module into hot webhook path on every event.
+      import('./email')
+        .then(({ sendTrialConvertedEmail }) =>
+          sendTrialConvertedEmail(
+            owner.owner_email as string,
+            owner.owner_name || (owner.owner_email as string).split('@')[0],
+            owner.name || 'your school'
+          )
+        )
+        .catch((err) => console.error('[billing] trial-converted email failed', err));
+    }
+  }
 }
 
 /**
