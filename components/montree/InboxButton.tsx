@@ -3,6 +3,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import { LifeBuoy } from 'lucide-react';
 import { useI18n } from '@/lib/montree/i18n';
 
 interface Message {
@@ -184,13 +185,14 @@ export default function InboxButton({ conversationId, userName, floating }: Inbo
       ) : (
         <button
           onClick={() => setOpen(!open)}
-          className="relative px-3 py-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors font-medium"
-          title={t('inbox.title')}
+          className="relative w-full flex items-center gap-3 px-3 py-2 bg-white/10 hover:bg-white/20 rounded-lg transition-colors font-medium text-white/85 text-sm"
+          title={t('inbox.helpTitle') || 'Help'}
           data-guide="nav-inbox"
         >
-          ✉️
+          <LifeBuoy size={16} strokeWidth={1.75} />
+          <span>{t('inbox.helpLabel') || 'Help'}</span>
           {unreadCount > 0 && (
-            <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center animate-pulse">
+            <span className="ml-auto inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 bg-red-500 text-white text-xs rounded-full font-bold">
               {unreadCount}
             </span>
           )}
@@ -208,7 +210,7 @@ export default function InboxButton({ conversationId, userName, floating }: Inbo
             {/* Header */}
             <div className="p-4 border-b border-slate-700 flex items-center justify-between">
               <div>
-                <h2 className="text-white font-semibold">{t('inbox.messages')}</h2>
+                <h2 className="text-white font-semibold">{t('inbox.helpTitle') || 'Help'}</h2>
                 <p className="text-slate-400 text-xs">{t('inbox.subtitle')}</p>
               </div>
               <button

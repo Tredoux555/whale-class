@@ -225,6 +225,8 @@ export const en = {
   'nav.capture': 'Capture',
   'nav.notes': 'Notes',
   'nav.inbox': 'Inbox',
+  'nav.messages': 'Messages',
+  'nav.help': 'Help',
   'nav.labels': 'Print Labels',
   'nav.week': 'Week',
   'nav.progress': 'Progress',
@@ -1573,6 +1575,11 @@ export const en = {
   // Phase 10 — Inbox
   'inbox.title': 'Messages',
   'inbox.messages': 'Messages',
+  // Session 103: relabel the Tredoux-DM chip to "Help" to disambiguate from
+  // the new principal/parent Messages surface (/montree/dashboard/messages).
+  // The slide-out panel header reuses helpTitle so the trigger and panel agree.
+  'inbox.helpTitle': 'Help',
+  'inbox.helpLabel': 'Help',
   'inbox.subtitle': 'Direct line to Montree',
   'inbox.loading': 'Loading...',
   'inbox.connectionError': 'Connection issue',
@@ -4475,6 +4482,36 @@ export const en = {
   'parentMessages.title': 'Messages',
   'parentMessages.toLabel': 'To',
   'parentMessages.you': 'You',
+
+  // teacherMessages.* — Session 103 teacher-facing messaging UI (principal +
+  // parents). Uses the same montree_message_threads schema as principal +
+  // parent surfaces; addPrincipalObserver() auto-attaches the principal to
+  // every parent_teacher thread for transparency.
+  'teacherMessages.backToDashboard': 'Back',
+  'teacherMessages.bodyLabel': 'Message',
+  'teacherMessages.bodyPlaceholder': 'Write a short message…',
+  'teacherMessages.emptyHint': 'Tap the + button to start a new conversation.',
+  'teacherMessages.emptyTitle': 'No conversations yet',
+  'teacherMessages.internalLabel': 'Staff conversation',
+  'teacherMessages.loadFailed': "Couldn't load messages. Please try again.",
+  'teacherMessages.newThread': 'New conversation',
+  'teacherMessages.noMessagesYet': 'No messages in this conversation yet.',
+  'teacherMessages.noParentsLinked': 'No parents linked to children in your classroom yet.',
+  'teacherMessages.noRecipients': 'No recipients available.',
+  'teacherMessages.parentLabel': 'Parent',
+  'teacherMessages.principalLabel': 'Principal',
+  'teacherMessages.replyPlaceholder': 'Write a reply…',
+  'teacherMessages.send': 'Send',
+  'teacherMessages.sendFailed': "Couldn't send. Please try again.",
+  'teacherMessages.sending': 'Sending…',
+  'teacherMessages.subjectLabel': 'Subject (optional)',
+  'teacherMessages.subjectPlaceholder': 'Subject (optional)',
+  'teacherMessages.subtitle': 'Conversations with your principal and parents.',
+  'teacherMessages.teacherLabel': 'Teacher',
+  'teacherMessages.title': 'Messages',
+  'teacherMessages.toLabel': 'To',
+  'teacherMessages.tracyDrafted': 'Tracy drafted',
+  'teacherMessages.you': 'You',
 
   // weeklyWrap.* — teacher-facing Weekly Wrap generation flow
   'weeklyWrap.childrenLabel': 'Children',

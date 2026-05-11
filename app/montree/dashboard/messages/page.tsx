@@ -1,344 +1,827 @@
 // /montree/dashboard/messages/page.tsx
-// Teacher messaging inbox - Academic-focused communication
+// Session 103 — Teacher threaded messaging (NEW).
+//
+// Mirrors the parent Session 98 rebuild for the teacher. The legacy March
+// 15 flat-table inbox (which queried the now-deleted montree_messages table)
+// is replaced.
+//
+// Threads live in montree_message_threads (Session 97 schema). The same
+// API endpoints serve principal, teacher, and parent — auth.role gates the
+// view. Principal sees all school threads as observer; teacher sees only
+// their own.
+//
+// Compose targets:
+//   - parent_teacher: about a specific child, to one of their parents
+//   - internal: to the school principal (no child)
+// `addPrincipalObserver()` runs automatically server-side on every
+// parent_teacher thread (Session 97), so the principal sees parent ↔ teacher
+// conversations in their Communication inbox without us doing anything here.
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { useI18n } from '@/lib/montree/i18n';
-import { getSession, type MontreeSession } from '@/lib/montree/auth';
-import { MessageCard } from '@/components/montree/messaging/MessageCard';
-import { MessageComposer } from '@/components/montree/messaging/MessageComposer';
-import { InboxHeader } from '@/components/montree/messaging/InboxHeader';
 import { toast, Toaster } from 'sonner';
+import { ArrowLeft, MessageSquare, Plus, Sparkles, X } from 'lucide-react';
+import { useI18n, getIntlLocale } from '@/lib/montree/i18n';
+import LanguageToggle from '@/components/montree/LanguageToggle';
 
-interface Message {
+// Dark forest tokens (same as dashboard)
+const T = {
+  bg: '#0a1a0f',
+  glow: 'radial-gradient(ellipse 1100px 900px at 88% 8%, rgba(39,129,90,0.48), transparent 60%)',
+  card: 'rgba(255,255,255,0.06)',
+  cardBorder: '1px solid rgba(52,211,153,0.15)',
+  cardBorderStrong: '1px solid rgba(52,211,153,0.35)',
+  cardRadius: 18,
+  blur: 'blur(18px) saturate(140%)',
+  emerald: '#34d399',
+  emeraldDeep: '#10b981',
+  emeraldStrong: 'rgba(52,211,153,0.18)',
+  emeraldSoft: 'rgba(52,211,153,0.10)',
+  amber: '#f59e0b',
+  amberSoft: 'rgba(245,158,11,0.18)',
+  textPrimary: 'rgba(255,255,255,0.95)',
+  textSecondary: 'rgba(255,255,255,0.65)',
+  textMuted: 'rgba(255,255,255,0.40)',
+  serif: '"Lora", Georgia, serif',
+  sans: '"Inter", -apple-system, BlinkMacSystemFont, sans-serif',
+};
+
+interface ThreadRow {
   id: string;
-  child_id: string;
-  sender_name: string;
-  sender_type: 'teacher' | 'parent';
-  subject?: string;
-  message_text: string;
-  is_read: boolean;
-  created_at: string;
+  child_id: string | null;
+  classroom_id: string | null;
+  thread_type: string;
+  subject: string | null;
+  last_message_at: string;
+  participants: Array<{ role: string; id: string; name: string | null; is_observer: boolean }>;
+  last_snippet: string | null;
+  last_sender_name: string | null;
+  last_sender_role: string | null;
+  unread_for_me: number;
 }
 
-interface Child {
+interface RecipientOption {
+  role: 'parent' | 'principal';
   id: string;
   name: string;
 }
 
-interface GroupedMessages {
-  [childId: string]: {
-    child: Child;
-    messages: Message[];
-  };
+interface ChildBundle {
+  child_id: string;
+  child_name: string;
+  parents: RecipientOption[];
+}
+
+interface RecipientsResponse {
+  classroom: { id: string; name: string } | null;
+  children: ChildBundle[];
+  principal: RecipientOption | null;
 }
 
 export default function TeacherMessagesPage() {
-  const { t } = useI18n();
   const router = useRouter();
-  const [session, setSession] = useState<MontreeSession | null>(null);
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [children, setChildren] = useState<Map<string, Child>>(new Map());
+  const { t, locale } = useI18n();
+
   const [loading, setLoading] = useState(true);
-  const [composing, setComposing] = useState(false);
-  const [selectedChild, setSelectedChild] = useState<Child | null>(null);
-  const [filter, setFilter] = useState<'all' | 'unread'>('all');
+  const [threads, setThreads] = useState<ThreadRow[]>([]);
+  const [composeOpen, setComposeOpen] = useState(false);
 
-  // Load session
+  // --- Initial load
   useEffect(() => {
-    const sess = getSession();
-    if (!sess) {
-      router.push('/montree/login');
-      return;
-    }
-    setSession(sess);
-  }, [router]);
-
-  // Load children and messages
-  useEffect(() => {
-    if (!session?.classroom?.id) {
-      setLoading(false);
-      return;
-    }
-
-    const loadData = async () => {
+    let active = true;
+    (async () => {
       try {
-        // Fetch children
-        const childRes = await fetch(
-          `/api/montree/children?classroom_id=${session.classroom!.id}`
-        );
-        const childData = await childRes.json();
-        const childMap = new Map<string, Child>();
-        childData.children?.forEach((child: Child) => {
-          childMap.set(child.id, child);
+        const res = await fetch('/api/montree/messages/threads', {
+          credentials: 'include',
         });
-        setChildren(childMap);
-
-        // Fetch messages
-        const msgRes = await fetch(
-          `/api/montree/messages?classroom_id=${session.classroom!.id}`
-        );
-        const msgData = await msgRes.json();
-        setMessages(msgData.messages || []);
-      } catch (error) {
-        console.error('Load error:', error);
-        toast.error(t('messages.loadError'));
-      } finally {
-        setLoading(false);
+        if (res.status === 401) {
+          router.replace('/montree/login');
+          return;
+        }
+        if (res.status === 403) {
+          // Wrong role for this surface — bounce back to dashboard.
+          router.replace('/montree/dashboard');
+          return;
+        }
+        if (!res.ok) {
+          if (active) {
+            toast.error(t('teacherMessages.loadFailed') || 'Could not load messages');
+            setLoading(false);
+          }
+          return;
+        }
+        const data = await res.json();
+        if (active) {
+          setThreads(data.threads || []);
+          setLoading(false);
+        }
+      } catch (err) {
+        console.error('[teacher messages] load failed', err);
+        if (active) setLoading(false);
       }
+    })();
+    return () => {
+      active = false;
     };
+  }, [router, t]);
 
-    loadData();
-  }, [session?.classroom?.id]);
-
-  // Mark message as read
-  const handleMarkRead = async (messageId: string) => {
-    try {
-      await fetch(`/api/montree/messages/${messageId}`, {
-        method: 'PATCH',
-      });
-
-      setMessages(msgs =>
-        msgs.map(m =>
-          m.id === messageId ? { ...m, is_read: true } : m
-        )
-      );
-    } catch (error) {
-      console.error('Mark read error:', error);
-    }
+  // --- Helpers
+  const formatTime = (iso: string) => {
+    const d = new Date(iso);
+    const now = new Date();
+    const sameDay = d.toDateString() === now.toDateString();
+    const dl = getIntlLocale(locale);
+    if (sameDay) return d.toLocaleTimeString(dl, { hour: 'numeric', minute: '2-digit' });
+    return d.toLocaleDateString(dl, { month: 'short', day: 'numeric' });
   };
 
-  // Handle compose
-  const handleSent = () => {
-    setComposing(false);
-    setSelectedChild(null);
-    // Reload messages
-    if (session?.classroom?.id) {
-      fetch(`/api/montree/messages?classroom_id=${session.classroom.id}`)
-        .then(r => { if (!r.ok) throw new Error(`Messages reload: ${r.status}`); return r.json(); })
-        .then(data => setMessages(data.messages || []))
-        .catch(error => console.error('Reload error:', error));
-    }
+  const senderLabel = (thread: ThreadRow): string => {
+    if (!thread.last_sender_name) return '';
+    if (thread.last_sender_role === 'teacher') return t('teacherMessages.you') || 'You';
+    return thread.last_sender_name;
   };
 
-  // Group messages by child
-  const grouped: GroupedMessages = {};
-  messages.forEach(msg => {
-    if (!grouped[msg.child_id]) {
-      grouped[msg.child_id] = {
-        child: children.get(msg.child_id) || { id: msg.child_id, name: 'Unknown' },
-        messages: [],
-      };
+  const threadTitle = (thread: ThreadRow): string => {
+    if (thread.subject) return thread.subject;
+    // Surface the non-me participant as the title fallback.
+    const others = thread.participants.filter(
+      (p) => p.role !== 'teacher' && !p.is_observer
+    );
+    if (others.length === 1) {
+      return others[0].name || (others[0].role === 'principal'
+        ? t('teacherMessages.principalLabel') || 'Principal'
+        : t('teacherMessages.parentLabel') || 'Parent');
     }
-    grouped[msg.child_id].messages.push(msg);
-  });
+    if (others.length > 1) return others.map((o) => o.name || o.role).join(', ');
+    if (thread.thread_type === 'internal') return t('teacherMessages.internalLabel') || 'Staff conversation';
+    return t('teacherMessages.title') || 'Conversation';
+  };
 
-  // Filter messages
-  let displayGroups = Object.entries(grouped);
-  if (filter === 'unread') {
-    displayGroups = displayGroups
-      .map(([id, group]) => ({
-        id,
-        ...group,
-        messages: group.messages.filter(m => !m.is_read),
-      }))
-      .filter(g => g.messages.length > 0);
-  }
-
-  const unreadCount = messages.filter(m => !m.is_read).length;
-
-  if (!session || loading) {
+  // --- Loading
+  if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-12 h-12 border-4 border-emerald-200 border-t-emerald-500 rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-gray-600 font-medium">{t('messages.loadingMessages')}</p>
+      <div style={{
+        minHeight: '100vh',
+        background: T.bg,
+        backgroundImage: T.glow,
+        backgroundAttachment: 'fixed',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        fontFamily: T.sans,
+        color: T.textSecondary,
+      }}>
+        <div style={{ textAlign: 'center' }}>
+          <div style={{
+            width: 48,
+            height: 48,
+            borderRadius: 12,
+            background: T.emeraldSoft,
+            animation: 'cg-pulse 1.6s ease-in-out infinite',
+            margin: '0 auto 16px',
+          }} />
+          <p style={{ fontSize: 14, color: T.textMuted }}>{t('common.loading') || 'Loading…'}</p>
         </div>
+        <style>{`
+          @keyframes cg-pulse {
+            0%, 100% { opacity: 0.55; }
+            50% { opacity: 1; }
+          }
+        `}</style>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50">
-      <Toaster position="top-right" />
+    <div style={{
+      minHeight: '100vh',
+      background: T.bg,
+      backgroundImage: T.glow,
+      backgroundAttachment: 'fixed',
+      color: T.textPrimary,
+      fontFamily: T.sans,
+    }}>
+      <Toaster position="top-center" />
 
-      {/* Header */}
-      <InboxHeader unreadCount={unreadCount} isTeacher={true} />
-
-      {/* Main content */}
-      <div className="max-w-6xl mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Messages list */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Controls */}
-            <div className="flex items-center justify-between">
-              <div className="flex gap-2">
-                <button
-                  onClick={() => setFilter('all')}
-                  className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors duration-200 ${
-                    filter === 'all'
-                      ? 'bg-emerald-500 text-white'
-                      : 'bg-white text-gray-700 border border-gray-200 hover:border-gray-300'
-                  }`}
-                >
-                  {t('messages.allMessages')}
-                </button>
-                <button
-                  onClick={() => setFilter('unread')}
-                  className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors duration-200 ${
-                    filter === 'unread'
-                      ? 'bg-emerald-500 text-white'
-                      : 'bg-white text-gray-700 border border-gray-200 hover:border-gray-300'
-                  }`}
-                >
-                  {t('messages.unread')} ({unreadCount})
-                </button>
-              </div>
-
-              <button
-                onClick={() => {
-                  setComposing(true);
-                  setSelectedChild(null);
-                }}
-                className="px-4 py-2 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white rounded-lg text-sm font-medium shadow-md transition-all duration-200 flex items-center gap-2"
-              >
-                <span>✉️</span>
-                {t('messages.newMessage')}
-              </button>
-            </div>
-
-            {/* Compose form */}
-            {composing && selectedChild && (
-              <div className="animate-slide-up">
-                <MessageComposer
-                  childId={selectedChild.id}
-                  childName={selectedChild.name}
-                  senderType="teacher"
-                  senderId={session.user?.id || ''}
-                  senderName={session.user?.email || 'Teacher'}
-                  onSent={handleSent}
-                  onCancel={() => {
-                    setComposing(false);
-                    setSelectedChild(null);
-                  }}
-                />
-              </div>
-            )}
-
-            {/* Messages grouped by child */}
-            {displayGroups.length === 0 ? (
-              <div className="text-center py-12">
-                <div className="text-5xl mb-4">📭</div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">{t('messages.noMessagesYet')}</h3>
-                <p className="text-gray-600 mb-6">
-                  {filter === 'unread'
-                    ? t('messages.allCaughtUp')
-                    : t('messages.communicationWillAppear')}
-                </p>
-                <button
-                  onClick={() => {
-                    setComposing(true);
-                    if (children.size > 0) {
-                      setSelectedChild(Array.from(children.values())[0]);
-                    }
-                  }}
-                  className="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg text-sm font-medium transition-colors duration-200"
-                >
-                  {t('messages.startConversation')}
-                </button>
-              </div>
-            ) : (
-              displayGroups.map(([childId, group]) => (
-                <div key={childId} className="space-y-3">
-                  {/* Child header */}
-                  <div className="flex items-center gap-3 px-4 py-2 bg-white rounded-lg border border-gray-200">
-                    <span className="text-2xl">👶</span>
-                    <div className="flex-1">
-                      <h3 className="font-semibold text-gray-900">{group.child.name}</h3>
-                      <p className="text-xs text-gray-500">
-                        {group.messages.length} {group.messages.length !== 1 ? t('messages.messages') : t('messages.message')}
-                      </p>
-                    </div>
-                    {group.messages.some(m => !m.is_read) && (
-                      <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
-                    )}
-                  </div>
-
-                  {/* Messages */}
-                  <div className="space-y-2">
-                    {group.messages.map(msg => (
-                      <MessageCard
-                        key={msg.id}
-                        message={msg}
-                        childName={group.child.name}
-                        onRead={() => handleMarkRead(msg.id)}
-                        onReply={() => {
-                          setSelectedChild(group.child);
-                          setComposing(true);
-                        }}
-                        isTeacher={true}
-                      />
-                    ))}
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
-
-          {/* Right sidebar */}
-          <div className="lg:col-span-1">
-            {/* Quick stats */}
-            <div className="bg-white rounded-xl border border-gray-200 p-5 mb-6 shadow-sm">
-              <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                <span>📊</span>
-                {t('messages.overview')}
-              </h3>
-              <div className="space-y-3">
-                <div className="flex justify-between items-center p-3 bg-emerald-50 rounded-lg border border-emerald-100">
-                  <span className="text-sm text-gray-700">{t('messages.totalMessages')}</span>
-                  <span className="font-bold text-emerald-700 text-lg">{messages.length}</span>
-                </div>
-                <div className="flex justify-between items-center p-3 bg-orange-50 rounded-lg border border-orange-100">
-                  <span className="text-sm text-gray-700">{t('messages.unread')}</span>
-                  <span className="font-bold text-orange-700 text-lg">{unreadCount}</span>
-                </div>
-                <div className="flex justify-between items-center p-3 bg-blue-50 rounded-lg border border-blue-100">
-                  <span className="text-sm text-gray-700">{t('messages.children')}</span>
-                  <span className="font-bold text-blue-700 text-lg">{displayGroups.length}</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Tips */}
-            <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
-              <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                <span>💡</span>
-                {t('messages.bestPractices')}
-              </h3>
-              <ul className="space-y-2 text-xs text-gray-600">
-                <li className="flex gap-2">
-                  <span>✓</span>
-                  <span>{t('messages.practiceFocused')}</span>
-                </li>
-                <li className="flex gap-2">
-                  <span>✓</span>
-                  <span>{t('messages.practiceObservations')}</span>
-                </li>
-                <li className="flex gap-2">
-                  <span>✓</span>
-                  <span>{t('messages.practiceRespond')}</span>
-                </li>
-                <li className="flex gap-2">
-                  <span>✓</span>
-                  <span>{t('messages.practiceLanguage')}</span>
-                </li>
-              </ul>
-            </div>
+      {/* ═══ Sticky Header ═══ */}
+      <header style={{
+        position: 'sticky',
+        top: 0,
+        zIndex: 20,
+        background: T.card,
+        backdropFilter: T.blur,
+        borderBottom: '1px solid rgba(255,255,255,0.05)',
+      }}>
+        <div style={{
+          maxWidth: 720,
+          margin: '0 auto',
+          padding: '12px 20px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+        }}>
+          <button
+            onClick={() => router.push('/montree/dashboard')}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8,
+              fontSize: 13,
+              fontWeight: 500,
+              color: T.textSecondary,
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+            }}
+          >
+            <ArrowLeft size={16} strokeWidth={1.75} />
+            {t('teacherMessages.backToDashboard') || 'Back'}
+          </button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+            <LanguageToggle />
           </div>
         </div>
+      </header>
+
+      <main style={{ maxWidth: 720, margin: '0 auto', padding: '24px 20px 80px' }}>
+        {/* Title */}
+        <div style={{ marginBottom: 24 }}>
+          <h1 style={{
+            margin: 0,
+            fontSize: 28,
+            fontWeight: 700,
+            fontFamily: T.serif,
+            color: T.textPrimary,
+            letterSpacing: -0.4,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 12,
+          }}>
+            <Sparkles size={22} color={T.emerald} strokeWidth={1.75} />
+            {t('teacherMessages.title') || 'Messages'}
+          </h1>
+          <p style={{ fontSize: 13, color: T.textMuted, margin: '8px 0 0' }}>
+            {t('teacherMessages.subtitle') || 'Conversations with your principal and parents.'}
+          </p>
+        </div>
+
+        {/* Thread list */}
+        {threads.length === 0 ? (
+          <div style={{
+            background: T.card,
+            border: T.cardBorder,
+            borderRadius: T.cardRadius,
+            padding: '40px 24px',
+            textAlign: 'center',
+          }}>
+            <div style={{
+              width: 56,
+              height: 56,
+              borderRadius: '50%',
+              background: T.emeraldSoft,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              margin: '0 auto 16px',
+            }}>
+              <MessageSquare size={24} color={T.emerald} strokeWidth={1.75} />
+            </div>
+            <p style={{
+              fontSize: 15,
+              fontWeight: 600,
+              color: T.textSecondary,
+              margin: '0 0 8px 0',
+            }}>
+              {t('teacherMessages.emptyTitle') || 'No conversations yet'}
+            </p>
+            <p style={{ fontSize: 13, color: T.textMuted, margin: 0 }}>
+              {t('teacherMessages.emptyHint') || 'Tap the + button to start a new conversation.'}
+            </p>
+          </div>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {threads.map((thread) => {
+              const unread = thread.unread_for_me > 0;
+              return (
+                <Link
+                  key={thread.id}
+                  href={`/montree/dashboard/messages/${thread.id}`}
+                  style={{
+                    display: 'block',
+                    padding: '16px 18px',
+                    borderRadius: T.cardRadius,
+                    background: unread ? T.emeraldSoft : T.card,
+                    border: unread ? T.cardBorderStrong : T.cardBorder,
+                    textDecoration: 'none',
+                    transition: 'all 140ms ease',
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                        <span style={{
+                          fontSize: 14,
+                          fontWeight: 600,
+                          color: T.textPrimary,
+                        }}>
+                          {threadTitle(thread)}
+                        </span>
+                        {unread && (
+                          <span style={{
+                            background: T.emerald,
+                            color: '#0a1a0f',
+                            borderRadius: 999,
+                            padding: '2px 7px',
+                            fontSize: 10,
+                            fontWeight: 700,
+                          }}>
+                            {thread.unread_for_me}
+                          </span>
+                        )}
+                      </div>
+                      {thread.last_snippet && (
+                        <p style={{
+                          fontSize: 13,
+                          color: T.textSecondary,
+                          margin: 0,
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          display: '-webkit-box',
+                          WebkitLineClamp: 2,
+                          WebkitBoxOrient: 'vertical',
+                          lineHeight: 1.4,
+                        }}>
+                          {senderLabel(thread) && (
+                            <span style={{ color: T.textMuted, fontWeight: 600 }}>
+                              {senderLabel(thread)}:{' '}
+                            </span>
+                          )}
+                          {thread.last_snippet}
+                        </p>
+                      )}
+                    </div>
+                    <span style={{ fontSize: 11, color: T.textMuted, flexShrink: 0 }}>
+                      {formatTime(thread.last_message_at)}
+                    </span>
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        )}
+      </main>
+
+      {/* Floating compose button */}
+      <button
+        onClick={() => setComposeOpen(true)}
+        style={{
+          position: 'fixed',
+          right: 24,
+          bottom: 24,
+          zIndex: 30,
+          width: 56,
+          height: 56,
+          borderRadius: '50%',
+          background: `linear-gradient(135deg, ${T.emerald}, ${T.emeraldDeep})`,
+          border: 'none',
+          color: '#0a1a0f',
+          cursor: 'pointer',
+          boxShadow: '0 12px 32px rgba(52,211,153,0.35)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+        aria-label={t('teacherMessages.newThread') || 'New conversation'}
+      >
+        <Plus size={24} strokeWidth={2} />
+      </button>
+
+      {composeOpen && (
+        <ComposeModal
+          onClose={() => setComposeOpen(false)}
+          onSent={(threadId) => {
+            setComposeOpen(false);
+            router.push(`/montree/dashboard/messages/${threadId}`);
+          }}
+        />
+      )}
+
+      <style>{`
+        @keyframes cg-pulse {
+          0%, 100% { opacity: 0.55; }
+          50% { opacity: 1; }
+        }
+      `}</style>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Compose modal — pick principal OR (child → parent), write, send.
+// ─────────────────────────────────────────────────────────────────────────────
+
+interface SelectedRecipient {
+  role: 'parent' | 'principal';
+  id: string;
+  name: string;
+  child_id?: string | null;
+}
+
+function ComposeModal({
+  onClose,
+  onSent,
+}: {
+  onClose: () => void;
+  onSent: (threadId: string) => void;
+}) {
+  const { t } = useI18n();
+  const [bundle, setBundle] = useState<RecipientsResponse | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [sending, setSending] = useState(false);
+  const [recipient, setRecipient] = useState<SelectedRecipient | null>(null);
+  const [subject, setSubject] = useState('');
+  const [body, setBody] = useState('');
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    (async () => {
+      try {
+        const res = await fetch('/api/montree/dashboard/messages/recipients', {
+          credentials: 'include',
+        });
+        if (!res.ok) {
+          if (active) setLoading(false);
+          return;
+        }
+        const data = (await res.json()) as RecipientsResponse;
+        if (active) {
+          setBundle(data);
+          setLoading(false);
+        }
+      } catch {
+        if (active) setLoading(false);
+      }
+    })();
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const handleSend = useCallback(async () => {
+    if (!recipient || !body.trim() || sending || !bundle) return;
+    setSending(true);
+    setError(null);
+    try {
+      const threadType: 'parent_teacher' | 'internal' =
+        recipient.role === 'parent' ? 'parent_teacher' : 'internal';
+
+      // 1. Create thread + participants.
+      const threadRes = await fetch('/api/montree/messages/threads', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          thread_type: threadType,
+          subject: subject.trim() || null,
+          classroom_id: bundle.classroom?.id || null,
+          child_id: recipient.child_id || null,
+          participants: [{ role: recipient.role, id: recipient.id }],
+        }),
+      });
+      if (!threadRes.ok) {
+        const err = await threadRes.json().catch(() => ({}));
+        throw new Error(err.error || (t('teacherMessages.sendFailed') || "Couldn't send"));
+      }
+      const { thread_id } = await threadRes.json();
+
+      // 2. Post the first message.
+      const msgRes = await fetch(`/api/montree/messages/threads/${thread_id}/messages`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ body: body.trim() }),
+      });
+      if (!msgRes.ok) {
+        const err = await msgRes.json().catch(() => ({}));
+        throw new Error(err.error || (t('teacherMessages.sendFailed') || "Couldn't send"));
+      }
+      onSent(thread_id);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : t('teacherMessages.sendFailed') || "Couldn't send";
+      setError(msg);
+      toast.error(msg);
+      setSending(false);
+    }
+  }, [recipient, body, subject, sending, bundle, onSent, t]);
+
+  const hasAnyParent = (bundle?.children || []).some((c) => c.parents.length > 0);
+
+  return (
+    <div
+      onClick={onClose}
+      style={{
+        position: 'fixed',
+        inset: 0,
+        zIndex: 50,
+        background: 'rgba(0,0,0,0.65)',
+        backdropFilter: 'blur(8px)',
+        display: 'flex',
+        alignItems: 'flex-end',
+        justifyContent: 'center',
+      }}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          background: '#0a1a0f',
+          width: '100%',
+          maxWidth: 560,
+          borderTopLeftRadius: 24,
+          borderTopRightRadius: 24,
+          border: T.cardBorder,
+          maxHeight: '92vh',
+          display: 'flex',
+          flexDirection: 'column',
+        }}
+      >
+        {/* Sticky header inside modal */}
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            padding: '20px 20px 12px',
+            borderBottom: '1px solid rgba(255,255,255,0.05)',
+            background: '#0a1a0f',
+          }}
+        >
+          <h2 style={{ margin: 0, fontFamily: T.serif, fontSize: 20, fontWeight: 700, color: T.textPrimary }}>
+            {t('teacherMessages.newThread') || 'New conversation'}
+          </h2>
+          <button
+            onClick={onClose}
+            style={{ background: 'none', border: 'none', color: T.textMuted, cursor: 'pointer' }}
+            aria-label={t('common.close') || 'Close'}
+          >
+            <X size={20} strokeWidth={1.75} />
+          </button>
+        </div>
+
+        {/* Scrollable body */}
+        <div
+          style={{
+            flex: 1,
+            overflowY: 'auto',
+            padding: '16px 20px',
+          }}
+        >
+          {loading ? (
+            <p style={{ color: T.textMuted, fontSize: 13 }}>{t('common.loading') || 'Loading…'}</p>
+          ) : !bundle ? (
+            <p style={{ color: T.textMuted, fontSize: 13 }}>
+              {t('teacherMessages.noRecipients') || 'No recipients available.'}
+            </p>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+              {/* Recipient picker */}
+              <div>
+                <label style={{ fontSize: 12, fontWeight: 600, color: T.textMuted, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8, display: 'block' }}>
+                  {t('teacherMessages.toLabel') || 'To'}
+                </label>
+
+                {/* Principal option */}
+                {bundle.principal && (
+                  <button
+                    onClick={() =>
+                      setRecipient({
+                        role: 'principal',
+                        id: bundle.principal!.id,
+                        name: bundle.principal!.name,
+                        child_id: null,
+                      })
+                    }
+                    style={{
+                      width: '100%',
+                      padding: '12px 14px',
+                      borderRadius: 12,
+                      textAlign: 'left',
+                      cursor: 'pointer',
+                      background:
+                        recipient?.role === 'principal' && recipient.id === bundle.principal.id
+                          ? T.emeraldSoft
+                          : T.card,
+                      border:
+                        recipient?.role === 'principal' && recipient.id === bundle.principal.id
+                          ? T.cardBorderStrong
+                          : T.cardBorder,
+                      color: T.textPrimary,
+                      fontSize: 14,
+                      marginBottom: 12,
+                    }}
+                  >
+                    <div style={{ fontWeight: 600 }}>{bundle.principal.name}</div>
+                    <div style={{ fontSize: 12, color: T.textMuted, marginTop: 2 }}>
+                      {t('teacherMessages.principalLabel') || 'Principal'}
+                    </div>
+                  </button>
+                )}
+
+                {/* Per-child parent groups */}
+                {!hasAnyParent ? (
+                  <p style={{ fontSize: 12, color: T.textMuted, margin: '0 0 0 2px' }}>
+                    {t('teacherMessages.noParentsLinked') ||
+                      'No parents linked to children in your classroom yet.'}
+                  </p>
+                ) : (
+                  bundle.children
+                    .filter((c) => c.parents.length > 0)
+                    .map((child) => (
+                      <div key={child.child_id} style={{ marginBottom: 12 }}>
+                        <div
+                          style={{
+                            fontSize: 11,
+                            fontWeight: 700,
+                            color: T.textMuted,
+                            textTransform: 'uppercase',
+                            letterSpacing: 0.5,
+                            marginBottom: 6,
+                          }}
+                        >
+                          {child.child_name}
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                          {child.parents.map((parent) => (
+                            <button
+                              key={`parent:${parent.id}:${child.child_id}`}
+                              onClick={() =>
+                                setRecipient({
+                                  role: 'parent',
+                                  id: parent.id,
+                                  name: parent.name,
+                                  child_id: child.child_id,
+                                })
+                              }
+                              style={{
+                                padding: '10px 12px',
+                                borderRadius: 10,
+                                textAlign: 'left',
+                                cursor: 'pointer',
+                                background:
+                                  recipient?.role === 'parent' &&
+                                  recipient.id === parent.id &&
+                                  recipient.child_id === child.child_id
+                                    ? T.emeraldSoft
+                                    : T.card,
+                                border:
+                                  recipient?.role === 'parent' &&
+                                  recipient.id === parent.id &&
+                                  recipient.child_id === child.child_id
+                                    ? T.cardBorderStrong
+                                    : T.cardBorder,
+                                color: T.textPrimary,
+                                fontSize: 13,
+                              }}
+                            >
+                              <div style={{ fontWeight: 600 }}>{parent.name}</div>
+                              <div style={{ fontSize: 11, color: T.textMuted, marginTop: 2 }}>
+                                {t('teacherMessages.parentLabel') || 'Parent'} ·{' '}
+                                {child.child_name}
+                              </div>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    ))
+                )}
+              </div>
+
+              {/* Subject + body */}
+              {recipient && (
+                <>
+                  <div>
+                    <label
+                      style={{
+                        fontSize: 12,
+                        fontWeight: 600,
+                        color: T.textMuted,
+                        textTransform: 'uppercase',
+                        letterSpacing: 0.5,
+                        marginBottom: 8,
+                        display: 'block',
+                      }}
+                    >
+                      {t('teacherMessages.subjectLabel') || 'Subject (optional)'}
+                    </label>
+                    <input
+                      type="text"
+                      value={subject}
+                      onChange={(e) => setSubject(e.target.value)}
+                      placeholder={t('teacherMessages.subjectPlaceholder') || 'Subject (optional)'}
+                      maxLength={200}
+                      style={{
+                        width: '100%',
+                        padding: '12px 14px',
+                        borderRadius: 12,
+                        background: T.card,
+                        border: T.cardBorder,
+                        color: T.textPrimary,
+                        fontSize: 14,
+                        fontFamily: T.sans,
+                        outline: 'none',
+                      }}
+                    />
+                  </div>
+                  <div>
+                    <label
+                      style={{
+                        fontSize: 12,
+                        fontWeight: 600,
+                        color: T.textMuted,
+                        textTransform: 'uppercase',
+                        letterSpacing: 0.5,
+                        marginBottom: 8,
+                        display: 'block',
+                      }}
+                    >
+                      {t('teacherMessages.bodyLabel') || 'Message'}
+                    </label>
+                    <textarea
+                      value={body}
+                      onChange={(e) => setBody(e.target.value)}
+                      placeholder={t('teacherMessages.bodyPlaceholder') || 'Write a short message…'}
+                      rows={5}
+                      maxLength={10000}
+                      style={{
+                        width: '100%',
+                        padding: '12px 14px',
+                        borderRadius: 12,
+                        background: T.card,
+                        border: T.cardBorder,
+                        color: T.textPrimary,
+                        fontSize: 14,
+                        fontFamily: T.sans,
+                        outline: 'none',
+                        resize: 'vertical',
+                        minHeight: 120,
+                      }}
+                    />
+                  </div>
+                </>
+              )}
+
+              {error && (
+                <div
+                  style={{
+                    padding: '10px 12px',
+                    background: 'rgba(220,38,38,0.12)',
+                    border: '1px solid rgba(220,38,38,0.32)',
+                    borderRadius: 10,
+                    color: '#fecaca',
+                    fontSize: 13,
+                  }}
+                >
+                  {error}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Sticky action footer (always visible — fixes Session 102 Send-off-screen bug) */}
+        {recipient && (
+          <div
+            style={{
+              padding: '12px 20px 20px',
+              borderTop: '1px solid rgba(255,255,255,0.05)',
+              background: '#0a1a0f',
+            }}
+          >
+            <button
+              onClick={handleSend}
+              disabled={sending || !body.trim()}
+              style={{
+                width: '100%',
+                padding: '14px 18px',
+                borderRadius: 12,
+                background: `linear-gradient(135deg, ${T.emerald}, ${T.emeraldDeep})`,
+                border: 'none',
+                color: '#0a1a0f',
+                fontSize: 15,
+                fontWeight: 700,
+                cursor: sending || !body.trim() ? 'not-allowed' : 'pointer',
+                opacity: sending || !body.trim() ? 0.5 : 1,
+              }}
+            >
+              {sending
+                ? t('teacherMessages.sending') || 'Sending…'
+                : t('teacherMessages.send') || 'Send'}
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

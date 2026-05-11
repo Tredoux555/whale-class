@@ -1102,90 +1102,123 @@ function ComposeModal({
         padding: 16,
       }}
     >
+      {/* Session 103: restructured into sticky-header / scroll-body / sticky-footer
+          so the Send button is always visible regardless of viewport height. */}
       <div
         style={{
           background: '#0a1a0f',
           border: T.cardBorder,
           borderRadius: 16,
-          padding: 24,
           width: '100%',
           maxWidth: 540,
           maxHeight: '90vh',
-          overflow: 'auto',
+          display: 'flex',
+          flexDirection: 'column',
+          overflow: 'hidden',
         }}
       >
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+        {/* Sticky header */}
+        <div
+          style={{
+            padding: '20px 24px 12px',
+            borderBottom: '1px solid rgba(255,255,255,0.05)',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            background: '#0a1a0f',
+          }}
+        >
           <h2 style={{ fontFamily: T.serif, fontSize: 20, fontWeight: 500, margin: 0 }}>{title}</h2>
           <button onClick={onClose} style={{ background: 'transparent', border: 'none', color: T.textMuted, cursor: 'pointer' }}>
             <X size={18} strokeWidth={1.75} />
           </button>
         </div>
 
-        {!isSingleRecipient && (
-          <div style={{ marginBottom: 14, padding: 10, background: 'rgba(0,0,0,0.25)', borderRadius: 10 }}>
-            <div style={{ fontSize: 11, color: T.emeraldDim, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 6 }}>
-              {recipients.length} recipients
+        {/* Scrollable body */}
+        <div
+          style={{
+            flex: 1,
+            overflowY: 'auto',
+            padding: '16px 24px',
+          }}
+        >
+          {!isSingleRecipient && (
+            <div style={{ marginBottom: 14, padding: 10, background: 'rgba(0,0,0,0.25)', borderRadius: 10 }}>
+              <div style={{ fontSize: 11, color: T.emeraldDim, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 6 }}>
+                {recipients.length} recipients
+              </div>
+              <div style={{ fontSize: 12, color: T.textSecondary, maxHeight: 80, overflow: 'auto' }}>
+                {recipients
+                  .slice(0, 12)
+                  .map((r) => r.name)
+                  .filter(Boolean)
+                  .join(', ')}
+                {recipients.length > 12 ? `, +${recipients.length - 12} more` : ''}
+              </div>
             </div>
-            <div style={{ fontSize: 12, color: T.textSecondary, maxHeight: 80, overflow: 'auto' }}>
-              {recipients
-                .slice(0, 12)
-                .map((r) => r.name)
-                .filter(Boolean)
-                .join(', ')}
-              {recipients.length > 12 ? `, +${recipients.length - 12} more` : ''}
-            </div>
+          )}
+
+          <div style={{ marginBottom: 12 }}>
+            <label style={{ display: 'block', fontSize: 11, color: T.emeraldDim, marginBottom: 6, textTransform: 'uppercase', letterSpacing: 1 }}>
+              Subject (optional)
+            </label>
+            <input
+              value={subject}
+              onChange={(e) => setSubject(e.target.value)}
+              placeholder="Add a subject"
+              style={{
+                width: '100%',
+                padding: '10px 12px',
+                background: T.inputBg,
+                border: T.cardBorder,
+                borderRadius: 10,
+                color: T.textPrimary,
+                fontFamily: T.sans,
+                fontSize: 14,
+                outline: 'none',
+              }}
+            />
           </div>
-        )}
 
-        <div style={{ marginBottom: 12 }}>
-          <label style={{ display: 'block', fontSize: 11, color: T.emeraldDim, marginBottom: 6, textTransform: 'uppercase', letterSpacing: 1 }}>
-            Subject (optional)
-          </label>
-          <input
-            value={subject}
-            onChange={(e) => setSubject(e.target.value)}
-            placeholder="Add a subject"
-            style={{
-              width: '100%',
-              padding: '10px 12px',
-              background: T.inputBg,
-              border: T.cardBorder,
-              borderRadius: 10,
-              color: T.textPrimary,
-              fontFamily: T.sans,
-              fontSize: 14,
-              outline: 'none',
-            }}
-          />
+          <div>
+            <label style={{ display: 'block', fontSize: 11, color: T.emeraldDim, marginBottom: 6, textTransform: 'uppercase', letterSpacing: 1 }}>
+              Message
+            </label>
+            <textarea
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              placeholder="Write your message…"
+              rows={6}
+              style={{
+                width: '100%',
+                padding: '12px 14px',
+                background: T.inputBg,
+                border: T.cardBorder,
+                borderRadius: 10,
+                color: T.textPrimary,
+                fontFamily: T.sans,
+                fontSize: 14,
+                outline: 'none',
+                resize: 'vertical',
+                minHeight: 140,
+              }}
+            />
+          </div>
+
+          {error && <div style={{ color: '#f87171', fontSize: 12, marginTop: 12 }}>{error}</div>}
         </div>
 
-        <div style={{ marginBottom: 14 }}>
-          <label style={{ display: 'block', fontSize: 11, color: T.emeraldDim, marginBottom: 6, textTransform: 'uppercase', letterSpacing: 1 }}>
-            Message
-          </label>
-          <textarea
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
-            placeholder="Write your message…"
-            rows={8}
-            style={{
-              width: '100%',
-              padding: '12px 14px',
-              background: T.inputBg,
-              border: T.cardBorder,
-              borderRadius: 10,
-              color: T.textPrimary,
-              fontFamily: T.sans,
-              fontSize: 14,
-              outline: 'none',
-              resize: 'vertical',
-            }}
-          />
-        </div>
-
-        {error && <div style={{ color: '#f87171', fontSize: 12, marginBottom: 12 }}>{error}</div>}
-
-        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
+        {/* Sticky footer — always visible */}
+        <div
+          style={{
+            padding: '12px 24px 20px',
+            borderTop: '1px solid rgba(255,255,255,0.05)',
+            background: '#0a1a0f',
+            display: 'flex',
+            justifyContent: 'flex-end',
+            gap: 8,
+          }}
+        >
           <button
             onClick={onClose}
             disabled={sending}
