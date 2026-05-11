@@ -173,8 +173,19 @@ export default function TeacherThreadDetailPage() {
     return () => { active = false; };
   }, [threadId, router, t]);
 
-  // Auto-scroll to bottom on new messages.
+  // Auto-scroll to bottom on new messages. Skip the initial mount — on
+  // mobile, smooth-scrolling into the bottom on first load drags the
+  // sticky header out of view. After messages arrive, future inserts
+  // (your own replies, polled incoming) scroll smoothly.
+  const isInitialScrollRef = useRef(true);
   useEffect(() => {
+    if (messages.length === 0) return;
+    if (isInitialScrollRef.current) {
+      isInitialScrollRef.current = false;
+      // Jump (no smooth animation) to the bottom on first paint.
+      messagesEndRef.current?.scrollIntoView({ behavior: 'auto', block: 'end' });
+      return;
+    }
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
   }, [messages.length]);
 
@@ -189,7 +200,10 @@ export default function TeacherThreadDetailPage() {
     if (teachers.length === 1) return teachers[0];
     return null;
   })();
-  const canReply = myParticipant?.can_reply ?? true;
+  // Default to false when we can't resolve our participant row — the server's
+  // POST handler is the authoritative gate, but optimistically showing the
+  // composer and then 403-erroring on Send is a worse UX than hiding it.
+  const canReply = myParticipant?.can_reply ?? false;
 
   const headerName = (() => {
     if (thread?.subject) return thread.subject;

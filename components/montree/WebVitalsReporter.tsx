@@ -17,7 +17,7 @@
 
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { usePathname } from 'next/navigation';
 
 interface VitalMetric {
@@ -129,6 +129,14 @@ function reportMetric(metric: VitalMetric, route: string) {
 
 export default function WebVitalsReporter() {
   const pathname = usePathname();
+  // Hold the current route in a ref so the web-vitals listeners (bound once
+  // on mount) read the latest pathname at report time, not a stale closure.
+  // web-vitals has no unsubscribe API, so re-binding on every pathname change
+  // would multiplicate listeners (CLS/INP fire multiple times per page).
+  const pathnameRef = useRef(pathname || '/');
+  useEffect(() => {
+    pathnameRef.current = pathname || '/';
+  }, [pathname]);
 
   useEffect(() => {
     // Dynamic import so the web-vitals bundle doesn't ship on SSR.
@@ -137,12 +145,13 @@ export default function WebVitalsReporter() {
       try {
         const wv = await import('web-vitals');
         if (cancelled) return;
-        const route = pathname || '/';
-        wv.onLCP?.((m) => reportMetric(m as VitalMetric, route));
-        wv.onINP?.((m) => reportMetric(m as VitalMetric, route));
-        wv.onCLS?.((m) => reportMetric(m as VitalMetric, route));
-        wv.onFCP?.((m) => reportMetric(m as VitalMetric, route));
-        wv.onTTFB?.((m) => reportMetric(m as VitalMetric, route));
+        const report = (m: VitalMetric) =>
+          reportMetric(m, pathnameRef.current);
+        wv.onLCP?.(report);
+        wv.onINP?.(report);
+        wv.onCLS?.(report);
+        wv.onFCP?.(report);
+        wv.onTTFB?.(report);
       } catch {
         /* web-vitals not installed yet or import failed — silently skip */
       }
@@ -150,10 +159,9 @@ export default function WebVitalsReporter() {
     return () => {
       cancelled = true;
     };
-    // We intentionally only re-bind on pathname change. web-vitals's onX
-    // listeners persist for the page's lifetime; we re-bind so each metric
-    // is tagged with the route at the time it stabilised.
-  }, [pathname]);
+    // Mount-only: bind web-vitals listeners ONCE. Each report reads
+    // pathnameRef.current at the moment the metric stabilises.
+  }, []);
 
   return null;
 }

@@ -96,8 +96,10 @@ export async function POST(
     role: 'agent',
   });
 
-  // Audit BOTH the agent-specific log (surfaced in super-admin Recent activity)
-  // AND the central super-admin audit (sensitive action trail). Fire-and-forget.
+  // Audit to the agent-specific log (surfaced in super-admin "Recent
+  // agent activity" panel). Fire-and-forget. We deliberately don't ALSO
+  // write to montree_super_admin_audit — the agent log is the canonical
+  // surface for agent-impacting events and Tredoux is the only super-admin.
   void logAgentAudit(supabase, {
     agent_id: agent.id,
     agent_display_name: agent.name,
