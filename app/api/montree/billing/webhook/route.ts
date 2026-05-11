@@ -104,9 +104,23 @@ export async function POST(request: NextRequest) {
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : 'Handler failed';
     console.error('[billing webhook] handler error for', event.type, ':', msg);
+    // Capture to dead-letter queue so super-admin can find + retry later.
+    // Fire-and-forget — DLQ failure must not compound the original error.
+    import('@/lib/montree/webhook-deadletter')
+      .then(({ captureToDeadLetter }) =>
+        captureToDeadLetter(supabase, {
+          source: 'stripe',
+          stripe_event_id: event.id,
+          event_type: event.type,
+          payload: event.data,
+          error: err,
+        })
+      )
+      .catch((dlqErr) => console.error('[billing webhook] DLQ capture failed', dlqErr));
     // Return 200 anyway — Stripe will retry on 500s and we'd rather not
-    // create a retry storm. The error is logged; reconciliation in Phase 6.
-    return NextResponse.json({ ok: false, handled: false, error: msg });
+    // create a retry storm. The error is captured in the DLQ for manual
+    // resolution.
+    return NextResponse.json({ ok: false, handled: false, error: msg, dlq: true });
   }
 
   return NextResponse.json({ ok: true, handled: true, event_type: event.type });
