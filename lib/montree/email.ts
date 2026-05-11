@@ -596,6 +596,122 @@ function escapeHtml(s: string): string {
 }
 
 // ============================================
+// TRIAL → PAID CONVERSION (Stripe webhook → principal)
+// ============================================
+
+export async function sendTrialConvertedEmail(
+  principalEmail: string,
+  principalName: string,
+  schoolName: string,
+): Promise<EmailResult> {
+  try {
+    const subject = `Welcome to Montree, ${escapeHtml(schoolName)}`;
+    const html = `<!doctype html>
+<html><body style="margin:0;padding:0;background:#f7f9f8;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#0a1a0f;">
+  <div style="max-width:540px;margin:24px auto;padding:28px;background:#fff;border-radius:14px;border:1px solid rgba(52,211,153,0.18);">
+    <h1 style="margin:0 0 12px;font-size:24px;font-family:Lora,Georgia,serif;font-weight:700;">Welcome to Montree</h1>
+    <p style="font-size:15px;line-height:1.55;margin:0 0 16px;">Hi ${escapeHtml(principalName)},</p>
+    <p style="font-size:15px;line-height:1.55;margin:0 0 16px;">Your trial just converted to a paid plan — thank you for trusting Montree with ${escapeHtml(schoolName)}.</p>
+    <p style="font-size:15px;line-height:1.55;margin:0 0 16px;">A few quick notes:</p>
+    <ul style="font-size:14px;line-height:1.7;color:#1f2d24;padding-left:20px;margin:0 0 16px;">
+      <li>Billing is $7 per active student, per month. Quantity syncs automatically as you add or remove children.</li>
+      <li>Cancel any time from your <a href="https://montree.xyz/montree/admin/billing" style="color:#10b981;">billing page</a> — Stripe customer portal.</li>
+      <li>Every AI feature (Tracy, photo identification, Weekly Wrap, parent narratives) is now unlocked.</li>
+      <li>Questions or anything off? Reply to this email — it goes directly to me.</li>
+    </ul>
+    <p style="font-size:14px;line-height:1.55;margin:24px 0 0;color:#5b6b73;">Kind regards,<br/>Tredoux<br/><a href="https://montree.xyz" style="color:#10b981;">montree.xyz</a></p>
+  </div>
+</body></html>`;
+    const text = `Hi ${principalName},\n\nYour trial just converted to a paid plan — thank you for trusting Montree with ${schoolName}.\n\nQuick notes:\n- Billing is $7 per active student, per month. Quantity auto-syncs.\n- Cancel any time from your billing page (Stripe customer portal).\n- Every AI feature is now unlocked.\n- Reply to this email if you have questions — it goes directly to me.\n\nKind regards,\nTredoux\nmontree.xyz`;
+    const { data, error } = await getResend().emails.send({
+      from: getFromEmail(),
+      to: principalEmail,
+      subject,
+      html,
+      text,
+    });
+    if (error) {
+      console.error('[sendTrialConvertedEmail] resend error', error);
+      return { success: false, error: error.message };
+    }
+    return { success: true, messageId: data?.id };
+  } catch (err) {
+    console.error('[sendTrialConvertedEmail] unexpected', err);
+    return { success: false, error: err instanceof Error ? err.message : 'unknown' };
+  }
+}
+
+// ============================================
+// TRIAL DRIP (day 7, 14, 25 of trial → principal)
+// ============================================
+
+export type TrialDripDay = 'day7' | 'day14' | 'day25';
+
+const DRIP_COPY: Record<TrialDripDay, { subject: string; greeting: string; body: string; cta: string }> = {
+  day7: {
+    subject: "How's your first week of Montree?",
+    greeting: "Hi {name},",
+    body: "It's been about a week since you set up {school} on Montree. Two quick things worth trying if you haven't yet:\n\n1. **Snap a few photos** from your classroom in the Photo Audit screen — Tracy auto-identifies the work in seconds.\n2. **Generate your first Weekly Wrap** — every parent gets a personal narrative their child's teacher would have written.\n\nIf anything's getting in the way, reply to this email. I read everything personally.",
+    cta: 'Open Montree → https://montree.xyz/montree/dashboard',
+  },
+  day14: {
+    subject: "Two weeks in — what's working?",
+    greeting: "Hi {name},",
+    body: "Halfway through your trial. Two weeks left.\n\nThe schools that get the most out of Montree at this stage are the ones who:\n\n- **Invited a parent or two** to see their child's portal — that's the moment Montree clicks for them.\n- **Voice-onboarded their students** so Tracy actually knows each child's history.\n\nIf you've done either, the second half of the trial just gets richer.\n\nQuestions or stuck on anything? Reply.",
+    cta: 'Open Montree → https://montree.xyz/montree/dashboard',
+  },
+  day25: {
+    subject: 'Your Montree trial ends in 5 days',
+    greeting: "Hi {name},",
+    body: "Just a heads up — your trial expires in 5 days. After that, the AI features pause (your photos and data stay safe).\n\nIf Montree's been useful for {school}, you can activate the full plan from your billing page. It's $7 per active student per month, cancel any time, no contracts.\n\nIf it's not been useful, no hard feelings — reply and tell me what's missing. I want to know.",
+    cta: 'Activate full plan → https://montree.xyz/montree/admin/billing',
+  },
+};
+
+export async function sendTrialDripEmail(
+  principalEmail: string,
+  principalName: string,
+  schoolName: string,
+  day: TrialDripDay,
+): Promise<EmailResult> {
+  try {
+    const tpl = DRIP_COPY[day];
+    const greeting = tpl.greeting.replace('{name}', principalName);
+    const body = tpl.body.replace(/{school}/g, schoolName).replace(/{name}/g, principalName);
+    // Markdown-ish bold → <strong>
+    const htmlBody = body
+      .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+      .split('\n\n')
+      .map((p) => `<p style="font-size:15px;line-height:1.6;margin:0 0 16px;color:#1f2d24;">${p.replace(/\n/g, '<br/>')}</p>`)
+      .join('');
+    const html = `<!doctype html>
+<html><body style="margin:0;padding:0;background:#f7f9f8;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#0a1a0f;">
+  <div style="max-width:540px;margin:24px auto;padding:28px;background:#fff;border-radius:14px;border:1px solid rgba(52,211,153,0.18);">
+    <p style="font-size:15px;line-height:1.6;margin:0 0 12px;color:#1f2d24;">${escapeHtml(greeting)}</p>
+    ${htmlBody}
+    <p style="font-size:14px;line-height:1.55;margin:24px 0 8px;color:#5b6b73;">Kind regards,<br/>Tredoux<br/><a href="https://montree.xyz" style="color:#10b981;">montree.xyz</a></p>
+  </div>
+</body></html>`;
+    const text = `${greeting}\n\n${body.replace(/\*\*/g, '')}\n\n${tpl.cta}\n\nKind regards,\nTredoux\nmontree.xyz`;
+    const { data, error } = await getResend().emails.send({
+      from: getFromEmail(),
+      to: principalEmail,
+      subject: tpl.subject,
+      html,
+      text,
+    });
+    if (error) {
+      console.error(`[sendTrialDripEmail ${day}] resend error`, error);
+      return { success: false, error: error.message };
+    }
+    return { success: true, messageId: data?.id };
+  } catch (err) {
+    console.error(`[sendTrialDripEmail ${day}] unexpected`, err);
+    return { success: false, error: err instanceof Error ? err.message : 'unknown' };
+  }
+}
+
+// ============================================
 // PAYOUT PAID NOTIFICATION (Phase 5 wire-out → agent)
 // ============================================
 
