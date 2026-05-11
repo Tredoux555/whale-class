@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef, CSSProperties } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef, CSSProperties } from 'react';
 import { ChevronDown, BookOpen, Check, Plus, X, Mic, Square } from 'lucide-react';
 import { AreaConfig } from '@/components/montree/curriculum/types';
 import GuruWorkGuide from '@/components/montree/guru/GuruWorkGuide';
@@ -197,7 +197,10 @@ export default function FocusWorksSection({
 }: FocusWorksSectionProps) {
   const { t, locale } = useI18n();
   const [expandedAdvice, setExpandedAdvice] = useState<string | null>(null);
-  const statusConfig = getStatusConfig(t);
+  // Session 103 Tier 0.5: memoize the status-config object so this component
+  // (and every Assignment row inside it) doesn't get a fresh reference on
+  // every keystroke / parent re-render. Cuts cascaded child re-renders.
+  const statusConfig = useMemo(() => getStatusConfig(t), [t]);
   const [refreshingPlan, setRefreshingPlan] = useState(false);
   const [fillingShelf, setFillingShelf] = useState(false);
   const [shelfFilled, setShelfFilled] = useState(false);

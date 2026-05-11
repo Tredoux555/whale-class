@@ -142,6 +142,10 @@ const nextConfig: NextConfig = {
   // View Transitions API for smooth page navigation
   experimental: {
     viewTransition: true,
+    // Session 103 Tier 0.7: tree-shake lucide-react. 75+ files import from
+    // it; Next.js can rewrite the imports to per-file paths so unused icons
+    // don't ship. Expected savings: 50-150 KB.
+    optimizePackageImports: ['lucide-react'],
   },
 
   // Webpack config for PWA

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Anthropic from '@anthropic-ai/sdk';
+import { AI_MODEL } from '@/lib/ai/anthropic';
 
 export const maxDuration = 60;
 import { buildSocialMediaGuruContext } from '@/lib/social-media-guru/context-builder';
@@ -42,8 +43,10 @@ export async function POST(request: NextRequest) {
     });
 
     // Call Claude API
+    // Session 103 Tier 0.6: use AI_MODEL alias so future Sonnet upgrades
+    // flow automatically (was pinned to claude-sonnet-4-20250514).
     const response = await anthropic.messages.create({
-      model: 'claude-sonnet-4-20250514',
+      model: AI_MODEL,
       max_tokens: 4096,
       system: `${knowledgeContext}
 

@@ -4,6 +4,7 @@
 import type { Metadata, Viewport } from "next";
 import I18nClientWrapper from "@/components/montree/I18nClientWrapper";
 import VisitorTracker from "@/components/montree/VisitorTracker";
+import WebVitalsReporter from "@/components/montree/WebVitalsReporter";
 
 export const metadata: Metadata = {
   title: {
@@ -76,6 +77,7 @@ export default function MontreeLayout({
   return (
     <I18nClientWrapper>
       <VisitorTracker />
+      <WebVitalsReporter />
       {children}
     </I18nClientWrapper>
   );

@@ -35,6 +35,10 @@ import Stripe from 'stripe';
 
 export const dynamic = 'force-dynamic';
 
+// Session 103 Tier 0.2: Stripe webhooks must respond within 30s. Railway's
+// default 15s timeout can cause Stripe to retry, producing duplicate events.
+export const maxDuration = 30;
+
 export async function POST(request: NextRequest) {
   const cfg = getBillingConfig();
 

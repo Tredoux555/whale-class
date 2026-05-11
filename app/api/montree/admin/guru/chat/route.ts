@@ -20,6 +20,10 @@ import {
 import { executePrincipalTool } from '@/lib/montree/admin/guru-executor';
 import { getSupabase } from '@/lib/supabase-client';
 
+// Session 103 Tier 0.1: AI routes need extended runtime budget. Railway's
+// default 15s timeout kills Sonnet calls mid-flight, producing 503s.
+export const maxDuration = 120;
+
 const client = new Anthropic();
 const MODEL = 'claude-sonnet-4-20250514';
 const MAX_TOOL_ROUNDS = 4;

@@ -3,6 +3,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import Anthropic from '@anthropic-ai/sdk';
+import { AI_MODEL } from '@/lib/ai/anthropic';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { maybeSyncStripeQuantity } from '@/lib/montree/billing';
 
@@ -197,8 +198,10 @@ async function extractDocxText(buffer: Buffer): Promise<string> {
 async function parseWithClaude(content: string): Promise<ParsedPlan> {
   const anthropic = getAnthropic();
 
+  // Session 103 Tier 0.6: use AI_MODEL alias so future Sonnet upgrades
+  // flow automatically (was pinned to claude-sonnet-4-20250514).
   const message = await anthropic.messages.create({
-    model: 'claude-sonnet-4-20250514',
+    model: AI_MODEL,
     max_tokens: 8000,
     messages: [{
       role: 'user',

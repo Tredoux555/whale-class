@@ -274,9 +274,11 @@ export async function POST(request: NextRequest) {
         message_text: messageText.trim(),
       })
       .select()
-      .single();
+      // Session 103 Tier 0.9: maybeSingle() — null check catches the
+      // 0-row case explicitly rather than throwing a generic 500.
+      .maybeSingle();
 
-    if (messageError) {
+    if (messageError || !message) {
       console.error('Failed to create message:', messageError);
       return NextResponse.json(
         { error: 'Failed to send message' },
