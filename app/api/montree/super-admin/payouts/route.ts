@@ -87,20 +87,36 @@ export async function GET(request: NextRequest) {
 
     const rows = (data || []) as PayoutRow[];
 
-    // Hydrate agent + school names in one round-trip each.
+    // Hydrate agent + school names in one round-trip each. Also pull each
+    // agent's Stripe Connect status so the Money tab can gate the Wire button
+    // and surface readiness at a glance.
     const agentIds = Array.from(new Set(rows.map((r) => r.agent_id)));
     const schoolIds = Array.from(new Set(rows.map((r) => r.school_id)));
     const [agentsRes, schoolsRes] = await Promise.all([
       agentIds.length
-        ? supabase.from('montree_teachers').select('id, name, email').in('id', agentIds)
+        ? supabase
+            .from('montree_teachers')
+            .select(
+              'id, name, email, stripe_connect_account_id, stripe_connect_status, charges_enabled, payouts_enabled'
+            )
+            .in('id', agentIds)
         : Promise.resolve({ data: [] }),
       schoolIds.length
         ? supabase.from('montree_schools').select('id, name').in('id', schoolIds)
         : Promise.resolve({ data: [] }),
     ]);
-    const agentNameById = new Map<string, { name: string | null; email: string | null }>();
-    for (const a of (agentsRes.data || []) as Array<{ id: string; name: string | null; email: string | null }>) {
-      agentNameById.set(a.id, { name: a.name, email: a.email });
+    interface AgentLite {
+      id: string;
+      name: string | null;
+      email: string | null;
+      stripe_connect_account_id: string | null;
+      stripe_connect_status: string | null;
+      charges_enabled: boolean | null;
+      payouts_enabled: boolean | null;
+    }
+    const agentById = new Map<string, AgentLite>();
+    for (const a of (agentsRes.data || []) as AgentLite[]) {
+      agentById.set(a.id, a);
     }
     const schoolNameById = new Map<string, string | null>();
     for (const s of (schoolsRes.data || []) as Array<{ id: string; name: string | null }>) {
@@ -138,14 +154,18 @@ export async function GET(request: NextRequest) {
       byMonth.set(r.period_month, existing);
     }
 
-    const enriched = rows.map((r) => ({
-      ...r,
-      agent_name:
-        agentNameById.get(r.agent_id)?.name ||
-        agentNameById.get(r.agent_id)?.email ||
-        null,
-      school_name: schoolNameById.get(r.school_id) || null,
-    }));
+    const enriched = rows.map((r) => {
+      const ag = agentById.get(r.agent_id);
+      return {
+        ...r,
+        agent_name: ag?.name || ag?.email || null,
+        school_name: schoolNameById.get(r.school_id) || null,
+        agent_stripe_connect_status: ag?.stripe_connect_status || null,
+        agent_payouts_enabled: ag?.payouts_enabled === true,
+        agent_charges_enabled: ag?.charges_enabled === true,
+        agent_has_connect_account: !!ag?.stripe_connect_account_id,
+      };
+    });
 
     return NextResponse.json({
       payouts: enriched,

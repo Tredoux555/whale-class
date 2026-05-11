@@ -16,6 +16,7 @@
 //   - Clear override (unlocks for next calc)
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import MoneyLedgerView from './MoneyLedgerView';
 
 interface PayoutRow {
   id: string;
@@ -44,6 +45,11 @@ interface PayoutRow {
   calculated_at: string;
   created_at: string;
   updated_at: string;
+  // Stripe Connect status (joined from agent row at GET time).
+  agent_stripe_connect_status: string | null;
+  agent_payouts_enabled: boolean;
+  agent_charges_enabled: boolean;
+  agent_has_connect_account: boolean;
 }
 
 interface PeriodTotal {
@@ -87,9 +93,21 @@ function fmtDate(iso: string | null): string {
   }
 }
 
+type SubView = 'payouts' | 'revenue' | 'direct_costs' | 'commissions' | 'op_expenses';
+
 export default function MoneyTab({ sessionToken }: MoneyTabProps) {
   const months = useMemo(() => recentMonths(12), []);
   const [periodMonth, setPeriodMonth] = useState<string>(months[0]);
+  const [subView, setSubView] = useState<SubView>('payouts');
+  // P&L summary for the current period — fetched whenever periodMonth changes.
+  const [pnlSummary, setPnlSummary] = useState<{
+    income: number;
+    direct_cost: number;
+    commission: number;
+    op_expense: number;
+    fx_adjustment: number;
+    margin: number;
+  } | null>(null);
   const [payouts, setPayouts] = useState<PayoutRow[]>([]);
   const [periodTotals, setPeriodTotals] = useState<PeriodTotal[]>([]);
   const [loading, setLoading] = useState(true);
@@ -128,6 +146,25 @@ export default function MoneyTab({ sessionToken }: MoneyTabProps) {
     fetchPayouts();
   }, [fetchPayouts]);
 
+  // Fetch the P&L summary alongside payouts so the header card stays accurate.
+  const fetchPnl = useCallback(async () => {
+    try {
+      const res = await fetch(
+        `/api/montree/super-admin/finance/ledger?period_month=${encodeURIComponent(periodMonth)}`,
+        { headers: { 'x-super-admin-token': sessionToken } }
+      );
+      if (!res.ok) return;
+      const data = await res.json();
+      setPnlSummary(data.pnl || null);
+    } catch {
+      /* non-fatal — the header just shows null */
+    }
+  }, [periodMonth, sessionToken]);
+
+  useEffect(() => {
+    fetchPnl();
+  }, [fetchPnl]);
+
   const calculate = useCallback(async () => {
     if (calculating) return;
     setCalculating(true);
@@ -154,6 +191,53 @@ export default function MoneyTab({ sessionToken }: MoneyTabProps) {
       setCalculating(false);
     }
   }, [calculating, periodMonth, sessionToken, fetchPayouts]);
+
+  const wirePayout = useCallback(
+    async (row: PayoutRow) => {
+      if (actionBusy === row.id) return;
+      if (!row.agent_has_connect_account) {
+        setErrorMessage(
+          `${row.agent_name || 'Agent'} hasn't set up Stripe Connect yet. Send them an onboarding link first.`
+        );
+        return;
+      }
+      if (!row.agent_payouts_enabled) {
+        setErrorMessage(
+          `${row.agent_name || 'Agent'}'s Stripe Connect isn't payout-ready yet (${
+            row.agent_stripe_connect_status || 'unknown'
+          }). Tell them to finish onboarding.`
+        );
+        return;
+      }
+      const confirmed = window.confirm(
+        `Wire $${row.payout_usd.toFixed(2)} to ${row.agent_name || 'agent'} via Stripe Connect?\n\nThis IS a real money movement. Status will auto-flip to paid.`
+      );
+      if (!confirmed) return;
+      setActionBusy(row.id);
+      setErrorMessage(null);
+      try {
+        const res = await fetch(`/api/montree/super-admin/payouts/${row.id}/wire`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-super-admin-token': sessionToken,
+          },
+        });
+        const j = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          setErrorMessage(j.error || `Wire failed (HTTP ${res.status})`);
+          return;
+        }
+        await fetchPayouts();
+      } catch (err) {
+        console.error('[MoneyTab] wire failed', err);
+        setErrorMessage('Wire request failed');
+      } finally {
+        setActionBusy(null);
+      }
+    },
+    [actionBusy, sessionToken, fetchPayouts]
+  );
 
   const doPatch = useCallback(
     async (
@@ -230,8 +314,40 @@ export default function MoneyTab({ sessionToken }: MoneyTabProps) {
         </button>
       </div>
 
-      {/* Period totals */}
-      {currentTotal && (
+      {/* P&L summary header — the four columns of the monthly accounting story */}
+      {pnlSummary && (
+        <div className="p-4 rounded-xl bg-gradient-to-br from-slate-900/70 to-slate-900/40 border border-slate-800">
+          <p className="text-[10px] uppercase tracking-wider text-slate-500 mb-3">
+            P&amp;L · {periodMonth}
+          </p>
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+            <Tile label="Revenue" value={fmtUsd(pnlSummary.income)} accent="emerald" />
+            <Tile label="− Direct costs" value={fmtUsd(pnlSummary.direct_cost)} accent="slate" />
+            <Tile label="− Commissions" value={fmtUsd(pnlSummary.commission)} accent="slate" />
+            <Tile label="− Op-expenses" value={fmtUsd(pnlSummary.op_expense)} accent="slate" />
+            <Tile
+              label="= Margin"
+              value={fmtUsd(pnlSummary.margin)}
+              accent={pnlSummary.margin >= 0 ? 'white' : 'red'}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Sub-view nav */}
+      <div
+        className="flex gap-1 overflow-x-auto pb-1"
+        style={{ borderBottom: '1px solid rgba(52,211,153,0.18)' }}
+      >
+        <SubViewPill active={subView === 'payouts'} onClick={() => setSubView('payouts')} label="💸 Payouts" />
+        <SubViewPill active={subView === 'revenue'} onClick={() => setSubView('revenue')} label="📈 Revenue" />
+        <SubViewPill active={subView === 'direct_costs'} onClick={() => setSubView('direct_costs')} label="📉 Direct costs" />
+        <SubViewPill active={subView === 'commissions'} onClick={() => setSubView('commissions')} label="🤝 Commissions" />
+        <SubViewPill active={subView === 'op_expenses'} onClick={() => setSubView('op_expenses')} label="🧾 Op-expenses" />
+      </div>
+
+      {/* Payouts period totals — only shown in payouts view */}
+      {subView === 'payouts' && currentTotal && (
         <div className="grid grid-cols-2 md:grid-cols-5 gap-3 p-4 rounded-xl bg-slate-900/50 border border-slate-800">
           <Tile label="Total" value={fmtUsd(currentTotal.total_payout_usd)} accent="white" />
           <Tile label="Pending" value={fmtUsd(currentTotal.pending_usd)} accent="amber" />
@@ -241,14 +357,20 @@ export default function MoneyTab({ sessionToken }: MoneyTabProps) {
         </div>
       )}
 
+      {/* Ledger views render their own everything */}
+      {subView !== 'payouts' && (
+        <MoneyLedgerView sessionToken={sessionToken} view={subView} periodMonth={periodMonth} />
+      )}
+
       {errorMessage && (
         <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/30 text-red-300 text-sm">
           {errorMessage}
         </div>
       )}
 
-      {/* Payouts list */}
-      {loading ? (
+      {/* Payouts list — only render in payouts sub-view */}
+      {subView === 'payouts' && (
+        loading ? (
         <div className="text-center py-10 text-slate-500 text-sm">Loading payouts…</div>
       ) : payouts.length === 0 ? (
         <div className="p-8 rounded-xl bg-slate-900/40 border border-slate-800 text-center">
@@ -292,6 +414,28 @@ export default function MoneyTab({ sessionToken }: MoneyTabProps) {
                       🤝 {row.agent_name || 'Unknown agent'} · {row.revenue_share_pct}% share ·{' '}
                       <span className="text-slate-500">{row.source_tx_count} tx</span>
                     </p>
+                    {/* Stripe Connect status pill — surfaces wire-readiness inline so super-admin
+                        doesn't try to wire to an agent who hasn't onboarded yet. */}
+                    <p className="text-[11px] mt-1 flex items-center gap-1.5 flex-wrap">
+                      <span className="text-slate-500">Stripe Connect:</span>
+                      {!row.agent_has_connect_account ? (
+                        <span className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-slate-700/40 text-slate-400 border border-slate-700">
+                          Not set up
+                        </span>
+                      ) : row.agent_payouts_enabled ? (
+                        <span className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
+                          ✓ Ready to wire
+                        </span>
+                      ) : row.agent_stripe_connect_status === 'restricted' ? (
+                        <span className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-red-500/15 text-red-300 border border-red-500/30">
+                          Restricted
+                        </span>
+                      ) : (
+                        <span className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-amber-500/15 text-amber-300 border border-amber-500/30">
+                          {row.agent_stripe_connect_status || 'Onboarding'}
+                        </span>
+                      )}
+                    </p>
                   </div>
                   <div className="text-right shrink-0">
                     <p className="text-emerald-400 text-lg font-bold leading-tight">{fmtUsd(row.payout_usd)}</p>
@@ -333,6 +477,27 @@ export default function MoneyTab({ sessionToken }: MoneyTabProps) {
                 <div className="flex flex-wrap gap-2">
                   {row.status === 'pending' && !isPaidMode && !isOverrideMode && (
                     <>
+                      {/* Wire via Stripe Connect — gated on agent.payouts_enabled.
+                          When ready, this is the one-click path that moves real money
+                          + auto-flips the row. Falls back to manual Mark paid below. */}
+                      <button
+                        onClick={() => wirePayout(row)}
+                        disabled={
+                          actionBusy === row.id ||
+                          !row.agent_has_connect_account ||
+                          !row.agent_payouts_enabled
+                        }
+                        title={
+                          !row.agent_has_connect_account
+                            ? 'Agent has no Stripe Connect account yet.'
+                            : !row.agent_payouts_enabled
+                              ? 'Stripe Connect not payout-ready yet.'
+                              : 'Wire via Stripe Connect (real money movement)'
+                        }
+                        className="px-2.5 py-1 bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/30 text-amber-200 rounded text-xs font-medium disabled:opacity-40 disabled:cursor-not-allowed"
+                      >
+                        ⚡ Wire via Stripe
+                      </button>
                       <button
                         onClick={() => {
                           setShowPaidFor(row.id);
@@ -341,6 +506,7 @@ export default function MoneyTab({ sessionToken }: MoneyTabProps) {
                         }}
                         disabled={actionBusy === row.id}
                         className="px-2.5 py-1 bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 text-emerald-300 rounded text-xs font-medium disabled:opacity-50"
+                        title="Manually mark paid — use if you wired outside Stripe Connect (manual bank wire, etc.)"
                       >
                         💸 Mark paid
                       </button>
@@ -491,12 +657,27 @@ export default function MoneyTab({ sessionToken }: MoneyTabProps) {
             );
           })}
         </div>
-      )}
+      ))}
     </div>
   );
 }
 
 // ─── Small atoms ────────────────────────────────────────────────────────────
+
+function SubViewPill({ active, onClick, label }: { active: boolean; onClick: () => void; label: string }) {
+  return (
+    <button
+      onClick={onClick}
+      className={`shrink-0 px-3 py-1.5 text-sm font-medium rounded-t-lg transition-colors ${
+        active
+          ? 'text-emerald-300 bg-emerald-500/15 border-b-2 border-emerald-400'
+          : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/40'
+      }`}
+    >
+      {label}
+    </button>
+  );
+}
 
 function Tile({ label, value, accent }: { label: string; value: string; accent: 'white' | 'amber' | 'emerald' | 'slate' | 'red' }) {
   const colorMap: Record<string, string> = {
