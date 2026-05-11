@@ -361,6 +361,11 @@ export default function MontreeLanding() {
               onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.55)')}>
               {t('landing.nav.forTeachers')}
             </Link>
+            <Link className="m-nav-link m-nav-link-secondary" href="/montree/changelog" style={{ fontSize: '0.875rem', color: 'rgba(255,255,255,0.55)', textDecoration: 'none', letterSpacing: '0.01em', transition: 'color 200ms ease' }}
+              onMouseEnter={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.85)' )}
+              onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.55)')}>
+              What&rsquo;s new
+            </Link>
             <Link className="m-nav-link m-nav-link-login" href="/montree/login-select" style={{ fontSize: '0.875rem', color: 'rgba(255,255,255,0.55)', textDecoration: 'none', letterSpacing: '0.01em', transition: 'color 200ms ease' }}
               onMouseEnter={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.85)' )}
               onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.55)')}>

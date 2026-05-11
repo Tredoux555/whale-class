@@ -13,6 +13,7 @@ import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import AgentFirstRunOverlay from '@/components/montree/agent/AgentFirstRunOverlay';
 import AgentRedemptionBanner from '@/components/montree/agent/AgentRedemptionBanner';
+import ChangelogModal from '@/components/montree/ChangelogModal';
 
 interface Agent {
   id: string;
@@ -164,6 +165,9 @@ export default function AgentDashboardPage() {
     <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
       {/* ── First-run overlay (once per device) ────────────────────────── */}
       <AgentFirstRunOverlay />
+
+      {/* ── What's new since last visit (agent-scoped) ─────────────────── */}
+      <ChangelogModal audience="agent" />
 
       {/* ── Redemption celebration (when school count went up) ─────────── */}
       <AgentRedemptionBanner
