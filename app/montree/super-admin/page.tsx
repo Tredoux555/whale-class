@@ -20,6 +20,8 @@ const VisitorsTab = dynamic(() => import('@/components/montree/super-admin/Visit
 // Super-admin Guru was retired this session; Tracy on the principal portal
 // does the equivalent, school-scoped, and cross-school queries weren't used.
 const AgentsTab = dynamic(() => import('@/components/montree/super-admin/ReferralsTab'), { ssr: false });
+// Phase 6 — Money tab. Payouts list + Calculate trigger + state transitions.
+const MoneyTab = dynamic(() => import('@/components/montree/super-admin/MoneyTab'), { ssr: false });
 
 
 interface DmMessage {
@@ -30,7 +32,7 @@ interface DmMessage {
   created_at: string;
 }
 
-type TabType = 'schools' | 'feedback' | 'leads' | 'visitors' | 'agents';
+type TabType = 'schools' | 'feedback' | 'leads' | 'visitors' | 'agents' | 'money';
 
 const SESSION_TIMEOUT_MS = 15 * 60 * 1000; // 15 minutes
 
@@ -499,6 +501,7 @@ export default function SuperAdminPage() {
           />
           <SuperAdminTab active={activeTab === 'visitors'} onClick={() => setActiveTab('visitors')} icon="📍" label="Visitors" />
           <SuperAdminTab active={activeTab === 'agents'} onClick={() => setActiveTab('agents')} icon="🤝" label="Agents" />
+          <SuperAdminTab active={activeTab === 'money'} onClick={() => setActiveTab('money')} icon="💰" label="Money" />
         </div>
 
         {/* Tab Content */}
@@ -563,6 +566,10 @@ export default function SuperAdminPage() {
 
         {activeTab === 'agents' && (
           <AgentsTab saToken={saToken} />
+        )}
+
+        {activeTab === 'money' && (
+          <MoneyTab sessionToken={saToken} />
         )}
 
       </div>
