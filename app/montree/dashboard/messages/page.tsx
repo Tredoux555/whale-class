@@ -60,6 +60,9 @@ interface ThreadRow {
   last_snippet: string | null;
   last_sender_name: string | null;
   last_sender_role: string | null;
+  // Session 103: server-computed "is this caller the last sender" flag —
+  // see ThreadListItem type for rationale.
+  last_sender_is_me: boolean;
   unread_for_me: number;
 }
 
@@ -140,7 +143,10 @@ export default function TeacherMessagesPage() {
 
   const senderLabel = (thread: ThreadRow): string => {
     if (!thread.last_sender_name) return '';
-    if (thread.last_sender_role === 'teacher') return t('teacherMessages.you') || 'You';
+    // Use last_sender_is_me (server-computed against the caller's userId)
+    // instead of guessing from role. A teacher viewing a multi-teacher thread
+    // should see other teachers' names, not "You".
+    if (thread.last_sender_is_me) return t('teacherMessages.you') || 'You';
     return thread.last_sender_name;
   };
 

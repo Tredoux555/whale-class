@@ -58,6 +58,10 @@ interface ThreadRow {
   last_snippet: string | null;
   last_sender_name: string | null;
   last_sender_role: string | null;
+  // Session 103: server-computed flag — a parent with two children in the
+  // same classroom (siblings) could share a thread with another parent in
+  // the future; role check alone would mislabel them as "You".
+  last_sender_is_me: boolean;
   unread_for_me: number;
 }
 
@@ -130,7 +134,9 @@ export default function ParentMessagesPage() {
 
   const senderLabel = (thread: ThreadRow): string => {
     if (!thread.last_sender_name) return '';
-    if (thread.last_sender_role === 'parent') return t('parentMessages.you') || 'You';
+    // Session 103 audit: use last_sender_is_me (server-computed) so a parent
+    // with siblings doesn't mislabel another parent's reply as "You".
+    if (thread.last_sender_is_me) return t('parentMessages.you') || 'You';
     return thread.last_sender_name;
   };
 

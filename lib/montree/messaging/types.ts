@@ -91,6 +91,12 @@ export interface ThreadListItem extends MessageThread {
   last_snippet: string | null;
   last_sender_name: string | null;
   last_sender_role: SenderRole | null;
+  // Session 103: id of the last message's sender + per-caller convenience flag.
+  // The client can render "You" when last_sender_is_me is true, independently
+  // of role — important for multi-participant threads where two callers share
+  // a role (e.g. multiple teachers in a broadcast thread).
+  last_sender_id: string | null;
+  last_sender_is_me: boolean;
   unread_for_me: number;
 }
 
