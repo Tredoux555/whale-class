@@ -93,7 +93,7 @@ function fmtDate(iso: string | null): string {
   }
 }
 
-type SubView = 'payouts' | 'revenue' | 'direct_costs' | 'commissions' | 'op_expenses';
+type SubView = 'payouts' | 'revenue' | 'direct_costs' | 'commissions' | 'op_expenses' | 'fx_adjustments';
 
 export default function MoneyTab({ sessionToken }: MoneyTabProps) {
   const months = useMemo(() => recentMonths(12), []);
@@ -378,6 +378,7 @@ export default function MoneyTab({ sessionToken }: MoneyTabProps) {
         <SubViewPill active={subView === 'direct_costs'} onClick={() => setSubView('direct_costs')} label="📉 Direct costs" />
         <SubViewPill active={subView === 'commissions'} onClick={() => setSubView('commissions')} label="🤝 Commissions" />
         <SubViewPill active={subView === 'op_expenses'} onClick={() => setSubView('op_expenses')} label="🧾 Op-expenses" />
+        <SubViewPill active={subView === 'fx_adjustments'} onClick={() => setSubView('fx_adjustments')} label="💱 FX" />
       </div>
 
       {/* Payouts period totals — only shown in payouts view */}
