@@ -312,6 +312,40 @@ export default function MoneyTab({ sessionToken }: MoneyTabProps) {
         >
           {loading ? '⏳' : '🔄'} Refresh
         </button>
+        {/* Accountant pack — CSV download for the period. Token goes in the URL
+            via a temporary form POST trick so the browser triggers the download
+            with proper Content-Disposition. Easier: just hit the URL with the
+            header via JS and create a blob. */}
+        <button
+          onClick={async () => {
+            try {
+              const res = await fetch(
+                `/api/montree/super-admin/finance/export?period_month=${encodeURIComponent(periodMonth)}&format=csv`,
+                { headers: { 'x-super-admin-token': sessionToken } }
+              );
+              if (!res.ok) {
+                setErrorMessage(`Export failed (HTTP ${res.status})`);
+                return;
+              }
+              const blob = await res.blob();
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement('a');
+              a.href = url;
+              a.download = `montree-finance-${periodMonth}.csv`;
+              document.body.appendChild(a);
+              a.click();
+              document.body.removeChild(a);
+              URL.revokeObjectURL(url);
+            } catch (err) {
+              console.error('[MoneyTab export]', err);
+              setErrorMessage('Export failed');
+            }
+          }}
+          className="px-3 py-1.5 bg-blue-500/15 hover:bg-blue-500/25 border border-blue-500/30 text-blue-300 rounded-lg text-sm font-medium"
+          title="Download the monthly accountant pack: P&L + per-school revenue + per-agent commission + Stripe reconciliation + full ledger backup (CSV, multi-section)."
+        >
+          📥 Accountant pack (CSV)
+        </button>
       </div>
 
       {/* P&L summary header — the four columns of the monthly accounting story */}
