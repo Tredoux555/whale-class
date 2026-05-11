@@ -35,7 +35,9 @@ export type AgentAuditEventType =
   | 'agent_code_generated'
   | 'agent_code_revoked'
   | 'agent_stripe_link_generated'
-  | 'agent_profile_changed';
+  | 'agent_profile_changed'
+  // Session 103: super-admin "Log in as agent" impersonation.
+  | 'agent_impersonated_by_super_admin';
 
 export type AgentAuditActorRole = 'super_admin' | 'agent' | 'system';
 

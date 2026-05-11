@@ -146,6 +146,9 @@ export default function ReferralsTab({ saToken }: ReferralsTabProps) {
 
   const [agentToggleLoadingId, setAgentToggleLoadingId] = useState<string | null>(null);
 
+  // Session 103: super-admin "Log in as agent" loading state.
+  const [loginAsLoadingId, setLoginAsLoadingId] = useState<string | null>(null);
+
   // Instant tooltip hover state. Keyed by `${referralId}:${action}` so each
   // row's icons are independent. Session 89 pattern.
   const [hoveredAction, setHoveredAction] = useState<string | null>(null);
@@ -422,6 +425,42 @@ export default function ReferralsTab({ saToken }: ReferralsTabProps) {
       setError(`Network error trying to ${action} agent.`);
     } finally {
       setAgentToggleLoadingId(null);
+    }
+  };
+
+  // Session 103: super-admin impersonates the agent. Mints a real agent JWT
+  // cookie and redirects to /montree/agent/dashboard. Audit-logged server-side.
+  // Whatever super-admin session existed in localStorage is preserved (the
+  // x-super-admin-token header still works), but the montree-auth cookie now
+  // points at the agent.
+  const loginAsAgent = async (agentId: string, agentName: string) => {
+    const ok = confirm(
+      `Log in as ${agentName}?\n\nYou will be redirected to their agent dashboard. The super-admin session in this tab is preserved — open Referrals in a new tab to come back.\n\nThe impersonation is logged in agent audit.`
+    );
+    if (!ok) return;
+    setLoginAsLoadingId(agentId);
+    setError(null);
+    try {
+      const res = await fetch(
+        `/api/montree/super-admin/agents/${encodeURIComponent(agentId)}/login-as`,
+        {
+          method: 'POST',
+          headers: headers(),
+        }
+      );
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setError(data.detail || data.error || `Could not log in as ${agentName}.`);
+        return;
+      }
+      // Cookie is set on the response. Navigate. Use window.location so a
+      // fresh request fires and verifySchoolRequest reads the new cookie.
+      window.location.href = data.redirect || '/montree/agent/dashboard';
+    } catch (err) {
+      console.error('[ReferralsTab] login-as error:', err);
+      setError(`Network error trying to log in as ${agentName}.`);
+    } finally {
+      setLoginAsLoadingId(null);
     }
   };
 
@@ -937,6 +976,31 @@ export default function ReferralsTab({ saToken }: ReferralsTabProps) {
                             {hoveredAction === `${r.id}:editpct` && (
                               <span style={iconTooltipStyle}>
                                 {`Edit default % (now ${r.agent_default_share_pct ?? '—'}%)`}
+                              </span>
+                            )}
+                          </span>
+                        )}
+                        {/* Log in as agent (🔓) — Session 103 */}
+                        {r.agent_id && r.agent_is_agent && (
+                          <span
+                            style={{ position: 'relative', display: 'inline-block', marginRight: 4 }}
+                            onMouseEnter={() => setHoveredAction(`${r.id}:loginas`)}
+                            onMouseLeave={() => setHoveredAction(null)}
+                          >
+                            <button
+                              onClick={() => loginAsAgent(
+                                r.agent_id as string,
+                                r.agent_display_name
+                              )}
+                              disabled={loginAsLoadingId === r.agent_id}
+                              className="px-2.5 py-1 text-xs rounded-md bg-cyan-500/15 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-500/30 disabled:opacity-50"
+                              aria-label={`Log in as ${r.agent_display_name}`}
+                            >
+                              {loginAsLoadingId === r.agent_id ? '…' : '🔓'}
+                            </button>
+                            {hoveredAction === `${r.id}:loginas` && (
+                              <span style={iconTooltipStyle}>
+                                {`Log in as ${r.agent_display_name}`}
                               </span>
                             )}
                           </span>
