@@ -288,18 +288,17 @@ Deferred to Session 104: 0.10 backdrop-filter audit, 0.11 Railway region pin (da
   - Round 2 (latent issues): senderLabel "You" mislabel + InboxButton eslint → fixed in `0917449d`, `c90fc5ce`.
   - Round 3 (post-latent-fix audit): caught regression — parent route was missing the new required `last_sender_is_me` field. tsbuildinfo had masked the TS error. Fixed in `4aff0cd5`.
   - Round 4: clean.
-- ⏳ Migration 196 awaiting Supabase SQL Editor run.
+- ✅ Migration 196 RUN in Supabase (May 11, 17:45). Table `montree_perf_vitals` + 3 indexes live. Awaiting first metrics to flow in once Railway settles the deploy and users browse.
 - ⏳ User to walk test plan in `docs/handoffs/SESSION_103_HANDOFF.md`.
 
 **🚨 Next session priorities (ordered):**
-1. **🚨 Run migration 196 in Supabase SQL Editor.**
-2. **Walk Session 103 test plan** — teacher messaging end-to-end (principal ↔ teacher ↔ parent), super-admin 🔓 Log in as agent, principal compose modal sticky footer on narrow viewports.
-3. **Verify Web Vitals reporting** in DevTools Network tab after migration 196.
-4. **Tier 0 remaining items** (0.10 backdrop-filter audit, 0.11 Railway region, 0.13 EXPLAIN audit, 0.14 pre-warm ping loop).
-5. **Watch Web Vitals baseline** for 1-2 days, set thresholds, then start Tier 1.1 SW SWR.
-6. **Onboard real Gloria as first agent** when ready (carry-over). Now even easier — Tredoux can use 🔓 to step into her dashboard.
-7. **Phase 5 Payout calculator** (~1.5d). **Phase 6 super-admin Money tab** (~2-3d).
-8. **Outreach follow-ups** — FAMM Argentina, Cambridge Montessori Global, Otari NZ, Lions Gate, Montessori Norge.
+1. **Walk Session 103 test plan** — teacher messaging end-to-end (principal ↔ teacher ↔ parent), super-admin 🔓 Log in as agent, principal compose modal sticky footer on narrow viewports.
+2. **Verify Web Vitals reporting** in DevTools Network tab after Railway settles `45886e2d`. Migration 196 already RUN.
+3. **Tier 0 remaining items** (0.10 backdrop-filter audit, 0.11 Railway region, 0.13 EXPLAIN audit, 0.14 pre-warm ping loop).
+4. **Watch Web Vitals baseline** for 1-2 days, set thresholds, then start Tier 1.1 SW SWR.
+5. **Onboard real Gloria as first agent** when ready (carry-over). Now even easier — Tredoux can use 🔓 to step into her dashboard.
+6. **Phase 5 Payout calculator** (~1.5d). **Phase 6 super-admin Money tab** (~2-3d).
+7. **Outreach follow-ups** — FAMM Argentina, Cambridge Montessori Global, Otari NZ, Lions Gate, Montessori Norge.
 
 ---
 
@@ -4802,6 +4801,9 @@ All migrations through 169 have been run. Key ones: 147 (smart learning columns)
 
 **Session 99 (May 10, 2026, 16:30) — Tracy persistent memory migration RUN:**
 - ✅ `195_principal_memory.sql` — `montree_principal_memory` table (15 columns) + 4 partial indexes (`idx_principal_memory_active`, `_type`, `_child`, `_teacher`) + `supersede_and_insert_memory()` Postgres function (SECURITY DEFINER, GRANT EXECUTE to anon/authenticated/service_role). Idempotent. **CONFIRMED RUN May 10, 2026 16:30 — "Success. No rows returned".** Tracy's `remember_this` / `recall_memory` tools are now active in production. `loadActiveMemories()` returns up to 30 most-recent active memories, injected into the system prompt every turn. Stop telling future sessions to run this — it's done.
+
+**Session 103 (May 11, 2026, 17:45) — Web Vitals telemetry migration RUN:**
+- ✅ `196_perf_vitals.sql` — `montree_perf_vitals` table (12 columns) + 3 partial indexes (`idx_perf_vitals_metric_route`, `_school`, `_recent`). No FK on `school_id` by design — measurements are append-only telemetry; school deletes must not wipe historical baseline data. Idempotent. **CONFIRMED RUN May 11, 2026 17:45 — "Success. No rows returned".** `POST /api/montree/perf/vitals` now persists Core Web Vitals (LCP, INP, CLS, FCP, TTFB) tagged with route + role + school_id + connection. Client-side `<WebVitalsReporter />` reports via `sendBeacon` on every route change. Stop telling future sessions to run this — it's done.
 
 ---
 
