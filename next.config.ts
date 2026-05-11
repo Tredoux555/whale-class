@@ -16,15 +16,7 @@ const nextConfig: NextConfig = {
   
   // Trailing slashes needed for static export
   trailingSlash: isCapacitorBuild,
-  
-  // Exclude dynamic routes from static export
-  ...(isCapacitorBuild ? {
-    experimental: {
-      // Exclude these pages from static export - they use query params in native
-      excludeDefaultMomentLocales: true,
-    }
-  } : {}),
-  
+
   // Ignore TypeScript errors during builds
   typescript: {
     ignoreBuildErrors: true,
@@ -139,13 +131,14 @@ const nextConfig: NextConfig = {
   // Enable Turbopack
   turbopack: {},
 
-  // View Transitions API for smooth page navigation
+  // Experimental — merged into a single block. Capacitor builds get
+  // excludeDefaultMomentLocales added; web + native both get
+  // viewTransition (smooth nav) and optimizePackageImports (Tier 0.7
+  // tree-shake for lucide-react).
   experimental: {
     viewTransition: true,
-    // Session 103 Tier 0.7: tree-shake lucide-react. 75+ files import from
-    // it; Next.js can rewrite the imports to per-file paths so unused icons
-    // don't ship. Expected savings: 50-150 KB.
     optimizePackageImports: ['lucide-react'],
+    ...(isCapacitorBuild ? { excludeDefaultMomentLocales: true } : {}),
   },
 
   // Webpack config for PWA
