@@ -4336,7 +4336,7 @@ export const fr: Record<string, string> = {
   'money.agentFallback': 'Guru',
   'money.agentFallbackLower': 'guru',
   'money.unknown': 'inconnu',
-  'money.confirmWire': 'Virer ${amount} à {name} via Stripe Connect ?<br/><br/>C\'est UN vrai mouvement d\'argent. Le statut basculera automatiquement à payé.',
+  'money.confirmWire': 'Virer ${amount} à {name} via Stripe Connect ?\n\nC\'est UN vrai mouvement d\'argent. Le statut basculera automatiquement à payé.',
   'moneyLedger.revenue.title': 'Revenus',
   'moneyLedger.revenue.empty': 'Aucune ligne de revenu pour cette période. Les webhooks invoice.paid de Stripe y arrivent automatiquement.',
   'moneyLedger.directCosts.title': 'Coûts directs',
@@ -4420,5 +4420,5 @@ export const fr: Record<string, string> = {
   'parentCodes.newCodeIssued': 'Nouveau code généré',
   'parentCodes.resetConfirm': 'Réinitialiser ce code d\'accès famille ? L\'ancien code cessera de fonctionner immédiatement. La famille aura besoin du nouveau code pour accéder.',
   'parentCodes.emailSubject': 'Accès Montree — {name}',
-  'parentCodes.emailBody': 'Bonjour,\\n\\nVous pouvez consulter les mises à jour de Montree de {name} ici :\\n\\n{url}\\n\\nCode d\'accès : {code}\\n\\nCordialement',
+  'parentCodes.emailBody': 'Bonjour,\n\nVous pouvez consulter les mises à jour de Montree de {name} ici :\n\n{url}\n\nCode d\'accès : {code}\n\nCordialement',
 };

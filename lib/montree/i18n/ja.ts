@@ -4336,7 +4336,7 @@ export const ja: Record<string, string> = {
   'money.agentFallback': 'エージェント',
   'money.agentFallbackLower': 'エージェント',
   'money.unknown': '不明',
-  'money.confirmWire': 'Stripe Connect経由で${amount}を{name}に送金しますか？\\\n\\\nこれは実際の送金です。ステータスは自動的に支払い済みに変わります。',
+  'money.confirmWire': 'Stripe Connect経由で${amount}を{name}に送金しますか？\n\nこれは実際の送金です。ステータスは自動的に支払い済みに変わります。',
   'moneyLedger.revenue.title': '収入',
   'moneyLedger.revenue.empty': 'この期間の収入行はありません。Stripe invoice.paidウェブフックが自動的にここに記録されます。',
   'moneyLedger.directCosts.title': '直接費用',
@@ -4420,5 +4420,5 @@ export const ja: Record<string, string> = {
   'parentCodes.newCodeIssued': '新しいコードが発行されました',
   'parentCodes.resetConfirm': 'この保護者コードをリセットしますか？古いコードはすぐに使えなくなります。保護者様はアクセスするために新しいコードが必要です。',
   'parentCodes.emailSubject': 'Montree アクセス — {name}さま',
-  'parentCodes.emailBody': 'いつもお世話になっております。\\n\\nお子さまの {name} さんの Montree 更新情報は、こちらからご確認いただけます：\\n\\n{url}\\n\\nアクセスコード：{code}\\n\\nよろしくお願いいたします',
+  'parentCodes.emailBody': 'いつもお世話になっております。\n\nお子さまの {name} さんの Montree 更新情報は、こちらからご確認いただけます：\n\n{url}\n\nアクセスコード：{code}\n\nよろしくお願いいたします',
 };

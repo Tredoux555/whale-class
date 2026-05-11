@@ -4333,7 +4333,7 @@ export const uk: Record<string, string> = {
   'money.agentFallback': 'Помічник',
   'money.agentFallbackLower': 'помічник',
   'money.unknown': 'невідомо',
-  'money.confirmWire': 'Перекласти ${amount} до {name} через Stripe Connect?\\n\\nЦЕ дійсна операція з грошима. Статус автоматично зміниться на сплачено.',
+  'money.confirmWire': 'Перекласти ${amount} до {name} через Stripe Connect?\n\nЦЕ дійсна операція з грошима. Статус автоматично зміниться на сплачено.',
   'moneyLedger.revenue.title': 'Дохід',
   'moneyLedger.revenue.empty': 'Немає рядків доходу за цей період. Вебхуки Stripe invoice.paid надходять сюди автоматично.',
   'moneyLedger.directCosts.title': 'Прямі витрати',
@@ -4417,5 +4417,5 @@ export const uk: Record<string, string> = {
   'parentCodes.newCodeIssued': 'Новий код видано',
   'parentCodes.resetConfirm': 'Скинути цей код доступу батька? Старий код перестане працювати негайно. Батьку знадобиться новий код для доступу.',
   'parentCodes.emailSubject': 'Доступ до Montree — {name}',
-  'parentCodes.emailBody': 'Привіт,\\n\\nВи можете переглядати оновлення Montree для {name} тут:\\n\\n{url}\\n\\nКод доступу: {code}\\n\\nЗ повагою',
+  'parentCodes.emailBody': 'Привіт,\n\nВи можете переглядати оновлення Montree для {name} тут:\n\n{url}\n\nКод доступу: {code}\n\nЗ повагою',
 };

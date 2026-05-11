@@ -4792,7 +4792,7 @@ export const en = {
   'money.agentFallback': 'Agent',
   'money.agentFallbackLower': 'agent',
   'money.unknown': 'unknown',
-  'money.confirmWire': 'Wire ${amount} to {name} via Stripe Connect?\\n\\nThis IS a real money movement. Status will auto-flip to paid.',
+  'money.confirmWire': 'Wire ${amount} to {name} via Stripe Connect?\n\nThis IS a real money movement. Status will auto-flip to paid.',
 
   // moneyLedger.* — MoneyLedgerView sub-views
   'moneyLedger.revenue.title': 'Revenue',
@@ -4886,7 +4886,7 @@ export const en = {
   'parentCodes.newCodeIssued': 'New code issued',
   'parentCodes.resetConfirm': 'Reset this parent code? The old code stops working immediately. The parent will need the new code to access.',
   'parentCodes.emailSubject': 'Montree access — {name}',
-  'parentCodes.emailBody': "Hi,\\n\\nYou can view {name}'s Montree updates here:\\n\\n{url}\\n\\nAccess code: {code}\\n\\nKind regards",
+  'parentCodes.emailBody': "Hi,\n\nYou can view {name}'s Montree updates here:\n\n{url}\n\nAccess code: {code}\n\nKind regards",
 
 } as const;
 

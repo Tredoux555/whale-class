@@ -4336,7 +4336,7 @@ export const ko: Record<string, string> = {
   'money.agentFallback': '상담원',
   'money.agentFallbackLower': '상담원',
   'money.unknown': '알 수 없음',
-  'money.confirmWire': '{name}님에게 ${amount}을 Stripe Connect를 통해 송금하시겠습니까?\\n\\n이는 실제 자금 이동입니다. 상태가 자동으로 지급됨으로 변경됩니다.',
+  'money.confirmWire': '{name}님에게 ${amount}을 Stripe Connect를 통해 송금하시겠습니까?\n\n이는 실제 자금 이동입니다. 상태가 자동으로 지급됨으로 변경됩니다.',
   'moneyLedger.revenue.title': '수익',
   'moneyLedger.revenue.empty': '이 기간에 수익 항목이 없습니다. Stripe invoice.paid 웹훅이 자동으로 여기에 기록됩니다.',
   'moneyLedger.directCosts.title': '직접 비용',
@@ -4420,5 +4420,5 @@ export const ko: Record<string, string> = {
   'parentCodes.newCodeIssued': '새로운 코드가 발급되었습니다',
   'parentCodes.resetConfirm': '이 보호자 코드를 초기화하시겠습니까? 이전 코드는 즉시 사용할 수 없게 됩니다. 보호자분은 새로운 코드가 필요합니다',
   'parentCodes.emailSubject': 'Montree 접근 — {name}',
-  'parentCodes.emailBody': '안녕하세요,\\n\\n자녀분의 Montree 업데이트를 여기에서 확인할 수 있습니다:\\n\\n{url}\\n\\n접근 코드: {code}\\n\\n감사합니다',
+  'parentCodes.emailBody': '안녕하세요,\n\n자녀분의 Montree 업데이트를 여기에서 확인할 수 있습니다:\n\n{url}\n\n접근 코드: {code}\n\n감사합니다',
 };
