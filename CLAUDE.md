@@ -200,6 +200,99 @@ Wave 1 sends bounced for these addresses. None of these are flagged as `bounced`
 
 ---
 
+## RECENT STATUS (May 11, 2026)
+
+### ⚡ Session 103 — Teacher messaging shipped + super-admin "Log in as agent" + Tier 0 perf batch + Web Vitals telemetry (May 11, 2026)
+
+**3 commits pushed to main: `cd6dcafc` → `82758a1e` → `297731bd`.** Closed three Session 102 gaps and started measurable perf work.
+
+**🚨 Canonical resume doc:** `docs/handoffs/SESSION_103_HANDOFF.md` — comprehensive test plan + architectural rules + carry-overs.
+
+**A. Teacher messaging rebuild (`cd6dcafc`):**
+
+Mirrors parent's Session 98 rebuild for the teacher. Replaces the March 15 flat-table inbox (which queried the deleted `montree_messages` table) with the threaded model used by `/montree/admin/communication` and `/montree/parent/messages`.
+
+New surfaces:
+- `/montree/dashboard/messages` — thread list with floating + compose modal. Dark forest theme. Empty state explains the + button.
+- `/montree/dashboard/messages/[threadId]` — iMessage-style detail with sticky reply composer. Auto-marks read on open. Renders "Tracy drafted" amber pill on incoming messages with `ai_drafted=true`.
+- `/api/montree/dashboard/messages/recipients` — children-in-classroom bundles (each with linked parents) + the school principal.
+
+Compose targets: `parent_teacher` (about a child, to one of their parents) and `internal` (to the school principal, no child). `addPrincipalObserver()` (Session 97) still runs server-side on every parent_teacher thread for transparency. Server forces `ai_drafted=false` on teacher posts.
+
+Plumbing:
+- `DashboardHeader`: new `MessageSquare` "Messages" entry at top of 3-dot menu. Active-page detection updated.
+- `InboxButton`: relabelled to "Help" with `LifeBuoy` icon. Tredoux-DM panel content unchanged. Disambiguates from new Messages entry.
+- 29 new i18n keys (`nav.messages`, `nav.help`, `inbox.helpTitle/helpLabel`, `teacherMessages.*`) added to `en.ts` and Haiku-backfilled across all 11 other locales. Pre-commit i18n strict check passes (4021/4021 per locale).
+
+Plus principal-side compose modal sticky-footer fix (Session 102 carry-over): `/montree/admin/communication` compose restructured with sticky header / scroll body / sticky footer so Cancel/Send always visible. `rows={8}` → `rows={6}` with `minHeight: 140` for graceful growth.
+
+**B. Super-admin "Log in as agent" (`82758a1e`):**
+
+User picked option 2 (mint a JWT directly) over option 1 (display plaintext code) because Phase 7a's architectural rule is that agent codes are SHA-256 hashed by design — never returned by GET, only revealed once on POST.
+
+`POST /api/montree/super-admin/agents/[id]/login-as`:
+- Auth: super-admin only.
+- Refuses `is_agent=false` accounts (guards Phase 7a contract).
+- Suspended agents CAN be impersonated (suspend only blocks self-login).
+- Mints token via `createMontreeToken({ sub, schoolId, classroomId, role: 'agent' })`.
+- `setMontreeAuthCookie` writes the httpOnly montree-auth cookie.
+- Audit fire-and-forget to `montree_agent_audit` with new `agent_impersonated_by_super_admin` event type.
+
+UI: cyan 🔓 button in ReferralsTab between 🔑 and ✏️, gated on `r.agent_id && r.agent_is_agent`. Confirmation prompt before redirect.
+
+**C. Tier 0 perf batch + Web Vitals telemetry (`297731bd`):**
+
+9 of 14 Tier 0 items from `docs/PERF_HEALTH_CHECK.md` shipped:
+- 0.1 `maxDuration=120` on 4 missing AI routes (guru/stream, admin/guru/chat, super-admin/guru, photo-insight/add-custom-work). Eliminates 503 class.
+- 0.2 `maxDuration=30` on billing/webhook. Prevents Stripe retry storms.
+- 0.3 `works/guide` Sonnet → Haiku. $30-80/mo + 1-2s off first-view in non-English locales.
+- 0.4 Manifest `start_url`: `/montree/parent/login` → `/montree`.
+- 0.5 `useMemo` on `getStatusConfig(t)` in FocusWorksSection.
+- 0.6 `social-guru` + `admin/import` pinned model id → `AI_MODEL` alias.
+- 0.7 `optimizePackageImports: ['lucide-react']` in next.config.
+- 0.8 Dropped unused `recharts` (~150 KB shipped saved).
+- 0.9 `.single()` → `.maybeSingle()` on conference-notes + messages.
+
+Deferred to Session 104: 0.10 backdrop-filter audit, 0.11 Railway region pin (dashboard config), 0.13 EXPLAIN audit (needs SQL access), 0.14 pre-warm ping loop (needs cron infra).
+
+**0.12 Web Vitals telemetry — BLOCKING for all future perf work:**
+- `migrations/196_perf_vitals.sql` — `montree_perf_vitals` table + 3 partial indexes. **🚨 Must be run in Supabase SQL Editor.**
+- `POST /api/montree/perf/vitals` — auth-free by design (we want anonymous visitor metrics too). Sanitized payload. Returns 200 always. Postgres `42P01` swallowed silently so client never retry-storms.
+- `<WebVitalsReporter />` wired into `app/montree/layout.tsx`. Dynamic-imports `web-vitals@4.2.4`. Reports LCP/INP/CLS/FCP/TTFB via `navigator.sendBeacon` on each route change. Tags each metric with route + role + schoolId + connection.
+
+🚨 **Architectural rules locked in this session:**
+
+1. **Teacher messaging lives at `/montree/dashboard/messages`** with the same threaded schema as principal + parent. Three roles, one schema.
+2. **Recipients API returns children-in-classroom bundles** (each with linked parents) + the school principal. NOT all parents in school — child-classroom-parent linkage is the security boundary.
+3. **InboxButton chip renders LifeBuoy + "Help"** in the dashboard 3-dot menu. Floating mode unchanged.
+4. **`agent_impersonated_by_super_admin` is the canonical audit event** for super-admin "Log in as agent". Don't reuse `agent_login_succeeded`.
+5. **Agent impersonation refuses non-agents** — `is_agent=true` is a precondition.
+6. **Suspended agents CAN be impersonated.** Suspend only blocks self-login.
+7. **AI-calling routes MUST declare `maxDuration`** (Session 81 rule, now consistently enforced).
+8. **Web Vitals telemetry is fire-and-forget** — never blocks, never retries, never throws.
+9. **The telemetry endpoint is auth-free by design.**
+10. **All Web Vitals payload fields from the client are untrusted** — analytics slicing only, never authorization.
+
+**Verification status:**
+- ✅ All 3 commits on `origin/main`.
+- ✅ Lint clean on all new files. TypeScript clean.
+- ✅ Pre-commit i18n strict check passes (4021/4021 × 12 locales).
+- ✅ `web-vitals@4.2.4` installed. `recharts` removed.
+- ⏳ Migration 196 awaiting Supabase SQL Editor run.
+- ⏳ User to walk test plan in `docs/handoffs/SESSION_103_HANDOFF.md`.
+
+**🚨 Next session priorities (ordered):**
+1. **🚨 Run migration 196 in Supabase SQL Editor.**
+2. **Walk Session 103 test plan** — teacher messaging end-to-end (principal ↔ teacher ↔ parent), super-admin 🔓 Log in as agent, principal compose modal sticky footer on narrow viewports.
+3. **Verify Web Vitals reporting** in DevTools Network tab after migration 196.
+4. **Tier 0 remaining items** (0.10 backdrop-filter audit, 0.11 Railway region, 0.13 EXPLAIN audit, 0.14 pre-warm ping loop).
+5. **Watch Web Vitals baseline** for 1-2 days, set thresholds, then start Tier 1.1 SW SWR.
+6. **Onboard real Gloria as first agent** when ready (carry-over). Now even easier — Tredoux can use 🔓 to step into her dashboard.
+7. **Phase 5 Payout calculator** (~1.5d). **Phase 6 super-admin Money tab** (~2-3d).
+8. **Outreach follow-ups** — FAMM Argentina, Cambridge Montessori Global, Otari NZ, Lions Gate, Montessori Norge.
+
+---
+
 ## RECENT STATUS (May 10, 2026)
 
 ### ⚡ Session 100 — THE MARATHON: Stripe LIVE + Communication 4-cycle audit + Tracy memory + Tracy proactivity v3 + Tracy warmth + Tracy thinking indicator + copy blocks + photo bank cleanup + landing kicker (May 10, 2026)
