@@ -2,7 +2,7 @@
 // Floating inbox button + slide-out message panel for teachers/principals
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { LifeBuoy } from 'lucide-react';
 import { useI18n } from '@/lib/montree/i18n';
 
@@ -40,7 +40,12 @@ export default function InboxButton({ conversationId, userName, floating }: Inbo
   }, []);
 
   // Fetch messages
-  const fetchMessages = async (fullFetch = true) => {
+  // Session 103 audit: wrapped in useCallback with [conversationId] so the
+  // reference is stable for as long as conversationId is, satisfying the
+  // effect's exhaustive-deps rule below. Functionally identical to the
+  // un-memoized version — the effect re-fires iff conversationId or open
+  // changes, never on unrelated re-renders.
+  const fetchMessages = useCallback(async (fullFetch = true) => {
     try {
       if (fullFetch) {
         setLoadingMessages(true);
@@ -79,7 +84,7 @@ export default function InboxButton({ conversationId, userName, floating }: Inbo
         setLoadingMessages(false);
       }
     }
-  };
+  }, [conversationId]);
 
   // Smart polling based on panel state
   useEffect(() => {
@@ -106,9 +111,12 @@ export default function InboxButton({ conversationId, userName, floating }: Inbo
       clearInterval(interval);
       document.removeEventListener('visibilitychange', onVisibility);
     };
-  }, [conversationId, open]);
+  }, [conversationId, open, fetchMessages]);
 
-  // Mark as read when opened
+  // Mark as read when opened. Intentionally NOT keyed on unreadCount —
+  // we want to PATCH exactly once per panel-open / conversation-switch,
+  // not every time the polling brings new unread messages in. The new-
+  // messages-while-panel-open case is handled by the polling refresh.
   useEffect(() => {
     if (open && unreadCount > 0) {
       fetch('/api/montree/dm', {
@@ -121,6 +129,7 @@ export default function InboxButton({ conversationId, userName, floating }: Inbo
         setMessages(prev => prev.map(m => ({ ...m, is_read: true })));
       }).catch(() => {}); // Silently handle — polling will retry
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, conversationId]);
 
   // Scroll to bottom on new messages
