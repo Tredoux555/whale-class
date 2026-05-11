@@ -207,6 +207,9 @@ export default function HealthTab({ sessionToken }: HealthTabProps) {
         />
       </div>
 
+      {/* Manual cron triggers — useful before Railway crons are configured */}
+      <CronTriggers sessionToken={sessionToken} onComplete={fetchHealth} />
+
       {/* Recent payout periods table */}
       {payoutDetail?.recent_periods && payoutDetail.recent_periods.length > 0 && (
         <div className="p-4 rounded-xl bg-slate-900/55 border border-slate-800">
@@ -231,6 +234,109 @@ export default function HealthTab({ sessionToken }: HealthTabProps) {
               ))}
             </tbody>
           </table>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Cron triggers ──────────────────────────────────────────────────────────
+// Manual fire buttons for each cron-endpoint. Useful when Railway crons aren't
+// configured yet — Tredoux can hit them himself with one click.
+function CronTriggers({ sessionToken, onComplete }: { sessionToken: string; onComplete: () => void }) {
+  const [busy, setBusy] = useState<string | null>(null);
+  const [lastResult, setLastResult] = useState<{ name: string; ok: boolean; detail: string } | null>(null);
+
+  const fire = async (name: string, url: string, method: 'GET' | 'POST', body?: Record<string, unknown>) => {
+    setBusy(name);
+    setLastResult(null);
+    try {
+      const res = await fetch(url, {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+          'x-super-admin-token': sessionToken,
+        },
+        body: body ? JSON.stringify(body) : undefined,
+      });
+      const j = await res.json().catch(() => ({}));
+      setLastResult({
+        name,
+        ok: res.ok,
+        detail: JSON.stringify(j, null, 2).slice(0, 800),
+      });
+      if (res.ok) onComplete();
+    } catch (err) {
+      setLastResult({
+        name,
+        ok: false,
+        detail: err instanceof Error ? err.message : 'unknown',
+      });
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  const triggers: Array<{ id: string; label: string; icon: string; fire: () => Promise<void> }> = [
+    {
+      id: 'payouts',
+      label: 'Monthly payout calc',
+      icon: '💸',
+      fire: () => fire('payouts', '/api/montree/super-admin/payouts/calculate', 'POST', {}),
+    },
+    {
+      id: 'recurring',
+      label: 'Recurring op-expense run',
+      icon: '🔁',
+      fire: () => fire('recurring', '/api/montree/super-admin/finance/recurring/run', 'POST'),
+    },
+    {
+      id: 'trial-drip',
+      label: 'Trial drip campaign',
+      icon: '📧',
+      fire: () => fire('trial-drip', '/api/montree/super-admin/trial-drip', 'POST'),
+    },
+    {
+      id: 'warm',
+      label: 'Warm pre-ping',
+      icon: '🔥',
+      fire: () => fire('warm', '/api/warm', 'GET'),
+    },
+  ];
+
+  return (
+    <div className="p-4 rounded-xl bg-slate-900/55 border border-slate-800">
+      <p className="text-xs uppercase tracking-wider text-slate-500 mb-3">Manual cron triggers</p>
+      <p className="text-xs text-slate-400 mb-3">
+        Fire each cron endpoint now — useful before Railway crons are configured.
+        All are idempotent so retries are safe.
+      </p>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+        {triggers.map((t) => (
+          <button
+            key={t.id}
+            onClick={t.fire}
+            disabled={busy !== null}
+            className="px-3 py-2 bg-slate-800/60 hover:bg-emerald-500/15 hover:border-emerald-500/30 border border-slate-700 text-slate-300 hover:text-emerald-300 rounded-lg text-xs font-medium disabled:opacity-50 transition-colors"
+          >
+            {busy === t.id ? '⏳' : t.icon} {t.label}
+          </button>
+        ))}
+      </div>
+      {lastResult && (
+        <div
+          className={`mt-3 p-3 rounded-lg border text-xs ${
+            lastResult.ok
+              ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300'
+              : 'bg-red-500/10 border-red-500/30 text-red-300'
+          }`}
+        >
+          <p className="font-semibold mb-1">
+            {lastResult.ok ? '✓' : '✕'} {lastResult.name} — {lastResult.ok ? 'success' : 'failed'}
+          </p>
+          <pre className="text-[10px] text-slate-300 overflow-x-auto max-h-[20vh] mt-2">
+            {lastResult.detail}
+          </pre>
         </div>
       )}
     </div>
