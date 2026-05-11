@@ -167,7 +167,14 @@ export async function GET(request: NextRequest) {
   // Pick the latest message per thread.
   const latestByThread = new Map<
     string,
-    { id: string; body: string; sender_role: SenderRole; sender_name: string; sent_at: string }
+    {
+      id: string;
+      body: string;
+      sender_role: SenderRole;
+      sender_id: string;
+      sender_name: string;
+      sent_at: string;
+    }
   >();
   for (const m of lastMessagesRes.data || []) {
     if (!latestByThread.has(m.thread_id)) {
@@ -175,6 +182,7 @@ export async function GET(request: NextRequest) {
         id: m.id,
         body: m.body,
         sender_role: m.sender_role as SenderRole,
+        sender_id: m.sender_id,
         sender_name: m.sender_name,
         sent_at: m.sent_at,
       });
@@ -215,6 +223,11 @@ export async function GET(request: NextRequest) {
       last_snippet: last ? last.body.slice(0, 240) : null,
       last_sender_name: last ? last.sender_name : null,
       last_sender_role: last ? last.sender_role : null,
+      // Session 103 audit: last_sender_is_me lets the client say "You" for the
+      // CALLER specifically, not any participant whose role happens to match.
+      // Matters for multi-teacher threads (broadcasts, future teacher-to-teacher).
+      last_sender_id: last ? last.sender_id : null,
+      last_sender_is_me: last ? last.sender_id === auth.userId : false,
       unread_for_me: unreadByThread.get(t.id) || 0,
     };
   });
