@@ -202,9 +202,9 @@ Wave 1 sends bounced for these addresses. None of these are flagged as `bounced`
 
 ## RECENT STATUS (May 11, 2026)
 
-### ⚡ Session 103 — Teacher messaging shipped + super-admin "Log in as agent" + Tier 0 perf batch + Web Vitals telemetry (May 11, 2026)
+### ⚡ Session 103 — Teacher messaging + super-admin "Log in as agent" + Tier 0 perf + Web Vitals + 3x audit cycle (May 11, 2026)
 
-**3 commits pushed to main: `cd6dcafc` → `82758a1e` → `297731bd`.** Closed three Session 102 gaps and started measurable perf work.
+**8 commits pushed to main: `cd6dcafc` → `82758a1e` → `297731bd` → `81df44ba` → `37e3ed38` → `0917449d` → `c90fc5ce` → `4aff0cd5`.** Closed three Session 102 gaps, started measurable perf work, then ran 3 audit cycles fix-then-re-audit until clean. Two latent multi-session bugs additionally closed. One regression from the latent-fix caught by post-fix audit and corrected.
 
 **🚨 Canonical resume doc:** `docs/handoffs/SESSION_103_HANDOFF.md` — comprehensive test plan + architectural rules + carry-overs.
 
@@ -272,12 +272,22 @@ Deferred to Session 104: 0.10 backdrop-filter audit, 0.11 Railway region pin (da
 8. **Web Vitals telemetry is fire-and-forget** — never blocks, never retries, never throws.
 9. **The telemetry endpoint is auth-free by design.**
 10. **All Web Vitals payload fields from the client are untrusted** — analytics slicing only, never authorization.
+11. **`last_sender_is_me` is the canonical "You" signal on thread list rows** — never role-based. Server compares `sender_id` to the authenticated userId/parentId.
+12. **Both `/api/montree/messages/threads` AND `/api/montree/parent/messages/threads` are canonical `ThreadListItem` sources.** Any field added to the type MUST be populated by both routes (parent uses `parent.parentId`, unified uses `auth.userId`).
+13. **Tracy's `scan_threads` tool builds its own anonymous shape**, not `ThreadListItem`. AI tools refer to participants by name, no "You" signal needed.
+14. **`useEffect` keyed on `pathname` re-runs on every SPA route change.** If you bind external listeners with no unsubscribe API (web-vitals, etc.), bind ONCE on mount and use a `pathnameRef` for the current route at fire time — never re-bind, otherwise listeners multiplicate.
+15. **`.tsbuildinfo` incremental cache masks type errors** when imported module shapes change. Always force `rm tsconfig.tsbuildinfo && npx tsc --noEmit` before declaring a type-shape change clean. `next build` won't catch it either because `typescript.ignoreBuildErrors=true` in this project.
 
 **Verification status:**
-- ✅ All 3 commits on `origin/main`.
-- ✅ Lint clean on all new files. TypeScript clean.
+- ✅ All 8 commits on `origin/main`.
+- ✅ Lint clean on all changed files (`--max-warnings=0`). TypeScript clean after forcing `rm tsconfig.tsbuildinfo && tsc` (incremental cache was masking a regression earlier — see Round 3 audit below).
 - ✅ Pre-commit i18n strict check passes (4021/4021 × 12 locales).
 - ✅ `web-vitals@4.2.4` installed. `recharts` removed.
+- ✅ Four audit cycles ran:
+  - Round 1 (build + first audit): 1 self-caught WebVitalsReporter bug + 3 from independent agent (next.config experimental clobber, scrollIntoView, canReply) → all fixed in `37e3ed38`.
+  - Round 2 (latent issues): senderLabel "You" mislabel + InboxButton eslint → fixed in `0917449d`, `c90fc5ce`.
+  - Round 3 (post-latent-fix audit): caught regression — parent route was missing the new required `last_sender_is_me` field. tsbuildinfo had masked the TS error. Fixed in `4aff0cd5`.
+  - Round 4: clean.
 - ⏳ Migration 196 awaiting Supabase SQL Editor run.
 - ⏳ User to walk test plan in `docs/handoffs/SESSION_103_HANDOFF.md`.
 

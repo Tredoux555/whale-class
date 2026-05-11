@@ -1,16 +1,44 @@
 # Session 103 Handoff — May 11, 2026
 
-**Tagline:** Teacher messaging shipped end-to-end. Super-admin can now Log in as agent. Tier 0 perf batch + Web Vitals telemetry live. Three clean commits on origin/main.
+**Tagline:** Teacher messaging shipped end-to-end. Super-admin can now Log in as agent. Tier 0 perf batch + Web Vitals telemetry live. Build → 3x audit → fix-cycle → clean. 8 commits on origin/main.
 
 ---
 
-## What shipped this session (3 commits on origin/main)
+## What shipped this session (8 commits on origin/main)
+
+### Build commits
 
 1. **`cd6dcafc` — Teacher messaging rebuild + compose modal sticky footer.** Replaces the March 15 flat-table inbox with the threaded model used by principal + parent surfaces. New recipients API + list page + thread detail + DashboardHeader menu wiring + InboxButton relabel to "Help". 18 files, +1973 / −356. All 12 i18n locales backfilled at 100% (4021/4021 keys each).
 
 2. **`82758a1e` — Super-admin "Log in as agent" button.** New `POST /api/montree/super-admin/agents/[id]/login-as` mints a real montree-auth JWT cookie with role='agent' and redirects. New 🔓 button per row in Referrals tab. Audit-logged via new `agent_impersonated_by_super_admin` event type. 3 files.
 
 3. **`297731bd` — Tier 0 perf batch + Web Vitals telemetry.** Punch list from `docs/PERF_HEALTH_CHECK.md` Tier 0. Items 0.1–0.9 + 0.12. 19 files, including a new migration, telemetry API, telemetry client component, and `web-vitals` package added.
+
+4. **`81df44ba` — Session 103 handoff (first draft) + CLAUDE.md status block.**
+
+### Audit-cycle commits (fix-then-re-audit)
+
+5. **`37e3ed38` — Audit pass #1: 4 fixes from independent fresh-eye review.**
+   - **HIGH-1: `next.config.ts` duplicate `experimental` key.** Conditional spread set `experimental.excludeDefaultMomentLocales` for Capacitor builds; the literal `experimental` block (which I extended with `optimizePackageImports`) silently clobbered it. Was a latent bug; my Tier 0.7 addition exacerbated it. Merged into a single computed block.
+   - **MEDIUM-1: scrollIntoView on initial mount dragged sticky header off-screen on mobile.** Added `isInitialScrollRef` + use `behavior: 'auto'` (instant jump) on first paint; subsequent reply inserts animate smoothly.
+   - **MEDIUM-2: `canReply` defaulted to `true`** when participant row couldn't be resolved — composer rendered and 403'd on Send. Changed default to `false`; server is authoritative.
+   - **WebVitalsReporter listener multiplication** (my own first-pass catch): `useEffect` keyed on `pathname` re-bound web-vitals listeners on every SPA route change. Cleanup couldn't unbind (no unsubscribe API). CLS/INP would have reported N copies after N route changes. Fixed: bind once on mount, use `pathnameRef` for current route at report time.
+   - login-as route audit comment: claimed both agent + central super-admin audit. Only writes agent log. Comment corrected.
+
+6. **`0917449d` — Latent `senderLabel` "You" bug for multi-participant threads.**
+   - Was: `if (thread.last_sender_role === 'teacher') return 'You'`. Mislabels any teacher's reply as "You" the moment a thread has two teachers (broadcasts will trigger this, future teacher-to-teacher will trigger this). Same shape on the parent side: parent with siblings sharing a thread → mislabel.
+   - Fix: server now computes `last_sender_is_me` by comparing the latest message's `sender_id` against the caller's userId. Both unified threads route and `ThreadListItem` type extended with `last_sender_id` + `last_sender_is_me`.
+   - Teacher + parent list pages switched from role-based to identity-based comparison.
+
+7. **`c90fc5ce` — Clear InboxButton eslint dep warnings.**
+   - `fetchMessages` wrapped in `useCallback([conversationId])` so the polling effect can list it as a dep without re-firing every render. Functionally identical.
+   - Mark-as-read effect: kept on `[open, conversationId]` with `eslint-disable` + comment explaining the intent (one PATCH per panel-open / conversation-switch, not per unread-count-change).
+
+8. **`4aff0cd5` — Audit pass #2: caught regression from `0917449d`.**
+   - The parent-side has its OWN threads route (`/api/montree/parent/messages/threads`) separate from the unified `/api/montree/messages/threads`. I updated the unified route to populate the new required fields on `ThreadListItem` but missed the parent route. TypeScript should have caught this; instead `tsc --noEmit` exited 0 because the `.tsbuildinfo` incremental cache was stale. Forcing `rm tsconfig.tsbuildinfo && npx tsc` from a clean state surfaced the error at `parent/messages/threads/route.ts:187`.
+   - Even on production it wouldn't have failed the build (`typescript: { ignoreBuildErrors: true }` in `next.config.ts`). The parent page would have silently broken: `last_sender_is_me` reads `undefined` → always falsy → always show parent's name, never "You".
+   - Fix: mirrored the same change in the parent route. Compute `last_sender_is_me = sender_id === parent.parentId` (NOT `auth.userId` — parent route uses a different session shape via `resolveMessagingParent`).
+   - **Lesson:** `.tsbuildinfo` will lie when imported module types change. Force a clean tsc run for type-shape changes.
 
 ---
 
@@ -218,6 +246,21 @@ CREATE TABLE IF NOT EXISTS montree_perf_vitals (
 - Manifest start_url: install the PWA fresh on a phone (Add to Home Screen). Tap the icon. Should land on `/montree` not `/montree/parent/login`.
 - Bundle size: check Railway build logs for the next deploy. `lucide-react` should be smaller, `recharts` should be gone.
 
+### "You" label correctness (multi-participant edge cases)
+
+Hard to test without engineered data — requires either a broadcast thread or two teachers in one thread. After Web Vitals telemetry is collecting, you can SQL-spot-check the threads list:
+
+```sql
+-- Pick any thread with 2+ teachers as participants
+SELECT mt.id, COUNT(*) AS teacher_count
+FROM montree_message_threads mt
+JOIN montree_message_thread_participants p ON p.thread_id = mt.id
+WHERE p.participant_role = 'teacher'
+GROUP BY mt.id HAVING COUNT(*) > 1;
+```
+
+If any exist, log in as Teacher A and confirm Teacher B's last reply renders as "Teacher B" not "You" in the list view. If none exist, this is a forward-looking fix — protects broadcasts and future teacher-to-teacher.
+
 ---
 
 ## Architectural rules locked in this session
@@ -234,6 +277,10 @@ CREATE TABLE IF NOT EXISTS montree_perf_vitals (
 10. **Web Vitals telemetry is fire-and-forget** — never blocks, never retries, never throws. Best-effort. Failures swallowed.
 11. **The telemetry endpoint is auth-free by design** — we want metrics from anonymous visitors too. Don't add auth without a discussion.
 12. **All Web Vitals payload fields from the client are untrusted** — used for analytics slicing only, never for authorization gates.
+13. **`last_sender_is_me` is the canonical "You" signal on thread list rows** — never use `last_sender_role === '<my role>'` because it mislabels any same-role participant as the caller. Server computes by comparing `sender_id` to the authenticated userId/parentId.
+14. **Tracy's `scan_threads` tool builds its own anonymous shape** (not `ThreadListItem`) and intentionally only exposes role + name to Sonnet — not `is_me`. AI tools don't need a "You" signal; they should refer to participants by name.
+15. **Both `/api/montree/messages/threads` AND `/api/montree/parent/messages/threads` are canonical sources of `ThreadListItem`.** Any field added to the type MUST be populated by both routes. The parent route uses `parent.parentId` (from `resolveMessagingParent`), the unified route uses `auth.userId` (from `verifySchoolRequest`).
+16. **`.tsbuildinfo` incremental cache will mask type errors** when imported module shapes change. Force `rm tsconfig.tsbuildinfo && npx tsc --noEmit` from a clean state to verify type-shape changes. `next build` also gates on `typescript.ignoreBuildErrors` which is `true` for this project — type errors don't fail the deploy.
 
 ---
 
@@ -259,15 +306,25 @@ CREATE TABLE IF NOT EXISTS montree_perf_vitals (
 
 ## Repo state at end of Session 103
 
-- 3 commits ahead of Session 102's last push: `cd6dcafc`, `82758a1e`, `297731bd`
-- All 12 i18n locales at 100% (4021 keys each, was 4014 + 7 new keys → 4021 because some keys had inconsistent numbering)
-- New migration awaiting Supabase run: **196_perf_vitals.sql**
-- New npm dep installed: `web-vitals@^4.2.4`
-- Dep removed: `recharts`
-- Teacher messaging gap from Session 102 → CLOSED
-- Compose modal Send-off-screen bug from Session 102 → FIXED
-- Agent impersonation request from Session 102 → SHIPPED via option 2
-- Tier 0 perf plan items 0.1-0.9 + 0.12 → SHIPPED (5 of 14 still pending)
+- 8 commits ahead of Session 102's last push.
+- All 12 i18n locales at 100% (4021 keys each).
+- New migration awaiting Supabase run: **196_perf_vitals.sql**.
+- New npm dep installed: `web-vitals@^4.2.4`. Dep removed: `recharts`.
+- Teacher messaging gap from Session 102 → CLOSED.
+- Compose modal Send-off-screen bug from Session 102 → FIXED.
+- Agent impersonation request from Session 102 → SHIPPED via option 2 (mint JWT, no plaintext exposure).
+- Tier 0 perf plan items 0.1–0.9 + 0.12 → SHIPPED (5 of 14 still pending; full list in carry-overs).
+- Two latent multi-session bugs closed (`senderLabel` "You" mislabel + InboxButton eslint warnings).
+- One regression from the latent-fix shipped, caught by post-fix audit, corrected in `4aff0cd5`.
+
+### Build → Audit cycles ran:
+
+| Pass | When | Found | Outcome |
+|------|------|-------|---------|
+| Round 1 | After 3 build commits | 1 self-caught (WebVitalsReporter), 1 HIGH + 2 MEDIUM from independent agent | All fixed in `37e3ed38` |
+| Round 2 (latent issues) | After Round 1 clean | 2 forward-looking bugs (senderLabel, eslint) | Fixed in `0917449d`, `c90fc5ce` |
+| Round 3 (audit of the latent-fix) | After Round 2 | 1 regression (parent route missing new required fields, masked by stale tsbuildinfo) | Fixed in `4aff0cd5` |
+| Round 4 (clean) | After all fixes | Nothing — lint clean, no `last_sender_*` type errors | Ship |
 
 ---
 
