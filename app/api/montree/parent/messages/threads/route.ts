@@ -150,7 +150,14 @@ export async function GET() {
   // Latest message per thread.
   const latestByThread = new Map<
     string,
-    { id: string; body: string; sender_role: SenderRole; sender_name: string; sent_at: string }
+    {
+      id: string;
+      body: string;
+      sender_role: SenderRole;
+      sender_id: string;
+      sender_name: string;
+      sent_at: string;
+    }
   >();
   for (const m of lastMessagesRes.data || []) {
     if (!latestByThread.has(m.thread_id)) {
@@ -158,6 +165,7 @@ export async function GET() {
         id: m.id,
         body: m.body,
         sender_role: m.sender_role as SenderRole,
+        sender_id: m.sender_id,
         sender_name: m.sender_name,
         sent_at: m.sent_at,
       });
@@ -194,6 +202,12 @@ export async function GET() {
       last_snippet: last ? last.body.slice(0, 240) : null,
       last_sender_name: last ? last.sender_name : null,
       last_sender_role: last ? last.sender_role : null,
+      // Session 103 audit: parent's "You" label depends on this server-
+      // computed flag (compared against parent.parentId). Without it, the
+      // parent list page reads undefined → always shows the parent's
+      // actual name instead of "You".
+      last_sender_id: last ? last.sender_id : null,
+      last_sender_is_me: last ? last.sender_id === parent.parentId : false,
       unread_for_me: unreadByThread.get(t.id) || 0,
     };
   });
