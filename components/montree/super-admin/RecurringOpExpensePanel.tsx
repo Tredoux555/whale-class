@@ -6,7 +6,8 @@
 //
 // CRUD via /api/montree/super-admin/finance/recurring.
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useI18n } from '@/lib/montree/i18n';
 
 interface RecurringRow {
   id: string;
@@ -19,24 +20,33 @@ interface RecurringRow {
   notes: string | null;
 }
 
-const OP_EXPENSE_CATEGORIES = [
-  { value: 'hosting', label: 'Hosting (Railway/Supabase compute)' },
-  { value: 'domain', label: 'Domain registration' },
-  { value: 'email_service', label: 'Email service (Resend)' },
-  { value: 'supabase', label: 'Supabase plan' },
-  { value: 'design_tools', label: 'Design tools' },
-  { value: 'ai_tooling', label: 'AI tooling (Cursor, agents)' },
-  { value: 'corporate_sec', label: 'Corporate secretary' },
-  { value: 'marketing', label: 'Marketing spend' },
-  { value: 'professional_fees', label: 'Accountant / legal' },
-  { value: 'other_op_expense', label: 'Other' },
-];
+const OP_EXPENSE_CATEGORY_VALUES = [
+  'hosting',
+  'domain',
+  'email_service',
+  'supabase',
+  'design_tools',
+  'ai_tooling',
+  'corporate_sec',
+  'marketing',
+  'professional_fees',
+  'other_op_expense',
+] as const;
 
 interface Props {
   sessionToken: string;
 }
 
 export default function RecurringOpExpensePanel({ sessionToken }: Props) {
+  const { t } = useI18n();
+  const OP_EXPENSE_CATEGORIES = useMemo(
+    () =>
+      OP_EXPENSE_CATEGORY_VALUES.map((value) => ({
+        value,
+        label: t(`opExpense.category.${value}` as Parameters<typeof t>[0]),
+      })),
+    [t]
+  );
   const [rows, setRows] = useState<RecurringRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAdd, setShowAdd] = useState(false);
@@ -45,7 +55,7 @@ export default function RecurringOpExpensePanel({ sessionToken }: Props) {
   const [collapsed, setCollapsed] = useState(true);
 
   // Add form
-  const [newCategory, setNewCategory] = useState(OP_EXPENSE_CATEGORIES[0].value);
+  const [newCategory, setNewCategory] = useState<string>(OP_EXPENSE_CATEGORY_VALUES[0]);
   const [newDescription, setNewDescription] = useState('');
   const [newAmount, setNewAmount] = useState('');
   const [newDay, setNewDay] = useState('1');
@@ -59,18 +69,18 @@ export default function RecurringOpExpensePanel({ sessionToken }: Props) {
         headers: { 'x-super-admin-token': sessionToken },
       });
       if (!res.ok) {
-        setError(`Failed to load (HTTP ${res.status})`);
+        setError(t('recurring.failedHttp', { code: res.status }));
         return;
       }
       const data = await res.json();
       setRows((data.rows || []) as RecurringRow[]);
     } catch (err) {
       console.error('[RecurringOpExpensePanel] fetch', err);
-      setError('Failed to load');
+      setError(t('recurring.failedToLoad'));
     } finally {
       setLoading(false);
     }
-  }, [sessionToken]);
+  }, [sessionToken, t]);
 
   useEffect(() => {
     fetchRows();
@@ -80,11 +90,11 @@ export default function RecurringOpExpensePanel({ sessionToken }: Props) {
     const amount = Number(newAmount);
     const day = Number(newDay);
     if (!newDescription.trim() || Number.isNaN(amount) || amount <= 0) {
-      setError('Description + positive amount required');
+      setError(t('recurring.errDescAmount'));
       return;
     }
     if (!Number.isInteger(day) || day < 1 || day > 28) {
-      setError('Day of month must be 1-28');
+      setError(t('recurring.errDayRange'));
       return;
     }
     setBusy('add');
@@ -103,7 +113,7 @@ export default function RecurringOpExpensePanel({ sessionToken }: Props) {
       });
       const j = await res.json().catch(() => ({}));
       if (!res.ok) {
-        setError(j.error || `HTTP ${res.status}`);
+        setError(j.error || t('recurring.httpError', { code: res.status }));
         return;
       }
       setShowAdd(false);
@@ -114,7 +124,7 @@ export default function RecurringOpExpensePanel({ sessionToken }: Props) {
       await fetchRows();
     } catch (err) {
       console.error('[RecurringOpExpensePanel] add', err);
-      setError('Add failed');
+      setError(t('recurring.addFailed'));
     } finally {
       setBusy(null);
     }
@@ -131,20 +141,20 @@ export default function RecurringOpExpensePanel({ sessionToken }: Props) {
       });
       const j = await res.json().catch(() => ({}));
       if (!res.ok) {
-        setError(j.error || `HTTP ${res.status}`);
+        setError(j.error || t('recurring.httpError', { code: res.status }));
         return;
       }
       await fetchRows();
     } catch (err) {
       console.error('[RecurringOpExpensePanel] toggle', err);
-      setError('Toggle failed');
+      setError(t('recurring.toggleFailed'));
     } finally {
       setBusy(null);
     }
   };
 
   const handleDelete = async (id: string) => {
-    if (!window.confirm('Delete this recurring template? Already-fired rows stay in the ledger; just stops future fires.')) return;
+    if (!window.confirm(t('recurring.deleteConfirm'))) return;
     setBusy(id);
     setError(null);
     try {
@@ -154,13 +164,13 @@ export default function RecurringOpExpensePanel({ sessionToken }: Props) {
       });
       const j = await res.json().catch(() => ({}));
       if (!res.ok) {
-        setError(j.error || `HTTP ${res.status}`);
+        setError(j.error || t('recurring.httpError', { code: res.status }));
         return;
       }
       await fetchRows();
     } catch (err) {
       console.error('[RecurringOpExpensePanel] delete', err);
-      setError('Delete failed');
+      setError(t('recurring.deleteFailed'));
     } finally {
       setBusy(null);
     }
@@ -176,9 +186,9 @@ export default function RecurringOpExpensePanel({ sessionToken }: Props) {
         className="w-full flex items-center justify-between text-left"
       >
         <div>
-          <p className="text-sm font-semibold text-white">🔁 Recurring templates</p>
+          <p className="text-sm font-semibold text-white">{t('recurring.title')}</p>
           <p className="text-xs text-slate-500 mt-0.5">
-            {activeCount} active · ${monthlyTotal.toFixed(2)}/mo · fires daily via cron
+            {t('recurring.summary', { active: activeCount, total: monthlyTotal.toFixed(2) })}
           </p>
         </div>
         <span className="text-slate-500 text-sm">{collapsed ? '▼' : '▲'}</span>
@@ -192,9 +202,9 @@ export default function RecurringOpExpensePanel({ sessionToken }: Props) {
             </div>
           )}
           {loading ? (
-            <p className="text-xs text-slate-500 text-center py-4">Loading…</p>
+            <p className="text-xs text-slate-500 text-center py-4">{t('common.loading')}</p>
           ) : rows.length === 0 ? (
-            <p className="text-xs text-slate-500 text-center py-4">No recurring templates yet.</p>
+            <p className="text-xs text-slate-500 text-center py-4">{t('recurring.emptyState')}</p>
           ) : (
             <div className="space-y-1.5">
               {rows.map((r) => (
@@ -210,17 +220,17 @@ export default function RecurringOpExpensePanel({ sessionToken }: Props) {
                     <div className="flex items-center gap-2 flex-wrap">
                       <span className="text-white font-medium">{r.description}</span>
                       <span className="px-1.5 py-0.5 rounded bg-slate-700/40 text-slate-400 text-[10px] font-medium">
-                        {r.category}
+                        {t(`opExpense.category.${r.category}` as Parameters<typeof t>[0])}
                       </span>
                       {!r.is_active && (
                         <span className="px-1.5 py-0.5 rounded bg-slate-700/40 text-slate-500 text-[10px] uppercase">
-                          paused
+                          {t('recurring.paused')}
                         </span>
                       )}
                     </div>
                     <p className="text-[11px] text-slate-500 mt-0.5">
-                      Day {r.day_of_month} · ${Number(r.usd_amount).toFixed(2)}
-                      {r.last_fired_period_month && ` · last fired ${r.last_fired_period_month}`}
+                      {t('recurring.rowMeta', { day: r.day_of_month, amount: Number(r.usd_amount).toFixed(2) })}
+                      {r.last_fired_period_month && t('recurring.lastFiredSuffix', { period: r.last_fired_period_month })}
                     </p>
                   </div>
                   <div className="flex gap-1 shrink-0">
@@ -233,7 +243,7 @@ export default function RecurringOpExpensePanel({ sessionToken }: Props) {
                           : 'bg-emerald-500/15 border-emerald-500/30 text-emerald-300 hover:bg-emerald-500/25'
                       } disabled:opacity-50`}
                     >
-                      {r.is_active ? '⏸ Pause' : '▶ Resume'}
+                      {r.is_active ? t('recurring.pause') : t('recurring.resume')}
                     </button>
                     <button
                       onClick={() => handleDelete(r.id)}
@@ -266,7 +276,7 @@ export default function RecurringOpExpensePanel({ sessionToken }: Props) {
                   min="0"
                   value={newAmount}
                   onChange={(e) => setNewAmount(e.target.value)}
-                  placeholder="USD/month"
+                  placeholder={t('recurring.placeholderAmount')}
                   className="px-2 py-1.5 bg-slate-800 border border-slate-700 rounded text-xs text-white"
                 />
                 <input
@@ -275,7 +285,7 @@ export default function RecurringOpExpensePanel({ sessionToken }: Props) {
                   max="28"
                   value={newDay}
                   onChange={(e) => setNewDay(e.target.value)}
-                  placeholder="Day of month"
+                  placeholder={t('recurring.placeholderDay')}
                   className="px-2 py-1.5 bg-slate-800 border border-slate-700 rounded text-xs text-white"
                 />
               </div>
@@ -283,14 +293,14 @@ export default function RecurringOpExpensePanel({ sessionToken }: Props) {
                 type="text"
                 value={newDescription}
                 onChange={(e) => setNewDescription(e.target.value)}
-                placeholder="Description (e.g. Railway hosting)"
+                placeholder={t('recurring.placeholderDescription')}
                 className="w-full px-2 py-1.5 bg-slate-800 border border-slate-700 rounded text-xs text-white"
               />
               <input
                 type="text"
                 value={newNotes}
                 onChange={(e) => setNewNotes(e.target.value)}
-                placeholder="Notes (optional)"
+                placeholder={t('recurring.placeholderNotes')}
                 className="w-full px-2 py-1.5 bg-slate-800 border border-slate-700 rounded text-xs text-white"
               />
               <div className="flex gap-2">
@@ -299,13 +309,13 @@ export default function RecurringOpExpensePanel({ sessionToken }: Props) {
                   disabled={busy === 'add'}
                   className="px-3 py-1.5 bg-emerald-500/25 border border-emerald-500/40 text-emerald-200 rounded text-xs font-semibold disabled:opacity-50"
                 >
-                  {busy === 'add' ? '⏳' : '✓ Add template'}
+                  {busy === 'add' ? '⏳' : t('recurring.addTemplate')}
                 </button>
                 <button
                   onClick={() => { setShowAdd(false); setError(null); }}
                   className="px-3 py-1.5 bg-slate-700/40 border border-slate-700 text-slate-300 rounded text-xs"
                 >
-                  Cancel
+                  {t('common.cancel')}
                 </button>
               </div>
             </div>
@@ -314,7 +324,7 @@ export default function RecurringOpExpensePanel({ sessionToken }: Props) {
               onClick={() => setShowAdd(true)}
               className="w-full px-3 py-2 bg-slate-800/40 hover:bg-slate-800/60 border border-dashed border-slate-700 text-slate-400 hover:text-slate-200 rounded-lg text-xs font-medium"
             >
-              + Add recurring template
+              {t('recurring.addTemplateBtn')}
             </button>
           )}
         </div>

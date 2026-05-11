@@ -14,6 +14,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useI18n } from '@/lib/montree/i18n';
 
 interface BillingStatus {
   subscription_status: string | null;
@@ -33,6 +34,7 @@ function todayKey(): string {
 }
 
 export default function TrialExpiringBanner() {
+  const { t } = useI18n();
   const [status, setStatus] = useState<BillingStatus | null>(null);
   const [daysLeft, setDaysLeft] = useState<number | null>(null);
   const [dismissed, setDismissed] = useState(false);
@@ -104,10 +106,10 @@ export default function TrialExpiringBanner() {
 
   const message =
     daysLeft === 0
-      ? 'Your trial expires today.'
+      ? t('trialBanner.expiresToday')
       : daysLeft === 1
-        ? 'Your trial expires tomorrow.'
-        : `Your trial expires in ${daysLeft} days.`;
+        ? t('trialBanner.expiresTomorrow')
+        : t('trialBanner.expiresInDays', { days: daysLeft });
 
   return (
     <div
@@ -129,7 +131,7 @@ export default function TrialExpiringBanner() {
         <div style={{ minWidth: 0 }}>
           <p style={{ margin: 0, color: accent, fontSize: 14, fontWeight: 600 }}>{message}</p>
           <p style={{ margin: '2px 0 0', color: 'rgba(255,255,255,0.7)', fontSize: 12 }}>
-            Activate the full plan to keep AI features running — $7 per active student per month.
+            {t('trialBanner.ctaText')}
           </p>
         </div>
       </div>
@@ -148,11 +150,11 @@ export default function TrialExpiringBanner() {
             whiteSpace: 'nowrap',
           }}
         >
-          Activate plan →
+          {t('trialBanner.activatePlan')} →
         </Link>
         <button
           onClick={handleDismiss}
-          aria-label="Dismiss for today"
+          aria-label={t('trialBanner.dismissForToday')}
           style={{
             background: 'transparent',
             border: 'none',

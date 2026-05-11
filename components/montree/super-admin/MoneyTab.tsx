@@ -17,6 +17,8 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import MoneyLedgerView from './MoneyLedgerView';
+import { useI18n } from '@/lib/montree/i18n';
+import { getIntlLocale } from '@/lib/montree/i18n/locales';
 
 interface PayoutRow {
   id: string;
@@ -84,18 +86,18 @@ function fmtUsd(n: number | null | undefined): string {
   return `$${v.toFixed(2)}`;
 }
 
-function fmtDate(iso: string | null): string {
-  if (!iso) return '—';
-  try {
-    return new Date(iso).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
-  } catch {
-    return iso;
-  }
-}
-
 type SubView = 'payouts' | 'revenue' | 'direct_costs' | 'commissions' | 'op_expenses' | 'fx_adjustments';
 
 export default function MoneyTab({ sessionToken }: MoneyTabProps) {
+  const { t, locale } = useI18n();
+  const fmtDate = useCallback((iso: string | null): string => {
+    if (!iso) return '—';
+    try {
+      return new Date(iso).toLocaleDateString(getIntlLocale(locale), { year: 'numeric', month: 'short', day: 'numeric' });
+    } catch {
+      return iso;
+    }
+  }, [locale]);
   const months = useMemo(() => recentMonths(12), []);
   const [periodMonth, setPeriodMonth] = useState<string>(months[0]);
   const [subView, setSubView] = useState<SubView>('payouts');
@@ -127,7 +129,7 @@ export default function MoneyTab({ sessionToken }: MoneyTabProps) {
       const url = `/api/montree/super-admin/payouts?period_month=${encodeURIComponent(periodMonth)}`;
       const res = await fetch(url, { headers: { 'x-super-admin-token': sessionToken } });
       if (!res.ok) {
-        setErrorMessage(`Failed to load payouts (HTTP ${res.status})`);
+        setErrorMessage(t('money.failedLoadHttp', { code: res.status }));
         setLoading(false);
         return;
       }
@@ -136,11 +138,11 @@ export default function MoneyTab({ sessionToken }: MoneyTabProps) {
       setPeriodTotals((data.period_totals || []) as PeriodTotal[]);
     } catch (err) {
       console.error('[MoneyTab] fetch failed', err);
-      setErrorMessage('Could not load payouts');
+      setErrorMessage(t('money.couldNotLoad'));
     } finally {
       setLoading(false);
     }
-  }, [periodMonth, sessionToken]);
+  }, [periodMonth, sessionToken, t]);
 
   useEffect(() => {
     fetchPayouts();
@@ -180,37 +182,41 @@ export default function MoneyTab({ sessionToken }: MoneyTabProps) {
       });
       if (!res.ok) {
         const j = await res.json().catch(() => ({}));
-        setErrorMessage(j.error || `Calculation failed (HTTP ${res.status})`);
+        setErrorMessage(j.error || t('money.calcFailedHttp', { code: res.status }));
         return;
       }
       await fetchPayouts();
     } catch (err) {
       console.error('[MoneyTab] calculate failed', err);
-      setErrorMessage('Could not calculate payouts');
+      setErrorMessage(t('money.couldNotCalculate'));
     } finally {
       setCalculating(false);
     }
-  }, [calculating, periodMonth, sessionToken, fetchPayouts]);
+  }, [calculating, periodMonth, sessionToken, fetchPayouts, t]);
 
   const wirePayout = useCallback(
     async (row: PayoutRow) => {
       if (actionBusy === row.id) return;
       if (!row.agent_has_connect_account) {
         setErrorMessage(
-          `${row.agent_name || 'Agent'} hasn't set up Stripe Connect yet. Send them an onboarding link first.`
+          t('money.errNoConnect', { name: row.agent_name || t('money.agentFallback') })
         );
         return;
       }
       if (!row.agent_payouts_enabled) {
         setErrorMessage(
-          `${row.agent_name || 'Agent'}'s Stripe Connect isn't payout-ready yet (${
-            row.agent_stripe_connect_status || 'unknown'
-          }). Tell them to finish onboarding.`
+          t('money.errNotReady', {
+            name: row.agent_name || t('money.agentFallback'),
+            status: row.agent_stripe_connect_status || t('money.unknown'),
+          })
         );
         return;
       }
       const confirmed = window.confirm(
-        `Wire $${row.payout_usd.toFixed(2)} to ${row.agent_name || 'agent'} via Stripe Connect?\n\nThis IS a real money movement. Status will auto-flip to paid.`
+        t('money.confirmWire', {
+          amount: row.payout_usd.toFixed(2),
+          name: row.agent_name || t('money.agentFallbackLower'),
+        })
       );
       if (!confirmed) return;
       setActionBusy(row.id);
@@ -225,18 +231,18 @@ export default function MoneyTab({ sessionToken }: MoneyTabProps) {
         });
         const j = await res.json().catch(() => ({}));
         if (!res.ok) {
-          setErrorMessage(j.error || `Wire failed (HTTP ${res.status})`);
+          setErrorMessage(j.error || t('money.wireFailedHttp', { code: res.status }));
           return;
         }
         await fetchPayouts();
       } catch (err) {
         console.error('[MoneyTab] wire failed', err);
-        setErrorMessage('Wire request failed');
+        setErrorMessage(t('money.wireRequestFailed'));
       } finally {
         setActionBusy(null);
       }
     },
-    [actionBusy, sessionToken, fetchPayouts]
+    [actionBusy, sessionToken, fetchPayouts, t]
   );
 
   const doPatch = useCallback(
@@ -258,24 +264,24 @@ export default function MoneyTab({ sessionToken }: MoneyTabProps) {
         });
         if (!res.ok) {
           const j = await res.json().catch(() => ({}));
-          setErrorMessage(j.error || `Action failed (HTTP ${res.status})`);
+          setErrorMessage(j.error || t('money.actionFailedHttp', { code: res.status }));
           return false;
         }
         await fetchPayouts();
         return true;
       } catch (err) {
         console.error('[MoneyTab] patch failed', err);
-        setErrorMessage('Action failed');
+        setErrorMessage(t('money.actionFailed'));
         return false;
       } finally {
         setActionBusy(null);
       }
     },
-    [sessionToken, fetchPayouts]
+    [sessionToken, fetchPayouts, t]
   );
 
   const currentTotal = useMemo(
-    () => periodTotals.find((t) => t.period_month === periodMonth),
+    () => periodTotals.find((row) => row.period_month === periodMonth),
     [periodTotals, periodMonth]
   );
 
@@ -284,7 +290,7 @@ export default function MoneyTab({ sessionToken }: MoneyTabProps) {
       {/* Header — period selector + calculate trigger */}
       <div className="flex flex-wrap items-center gap-3">
         <div className="flex items-center gap-2">
-          <span className="text-xs uppercase tracking-wider text-slate-400">Period</span>
+          <span className="text-xs uppercase tracking-wider text-slate-400">{t('money.period')}</span>
           <select
             value={periodMonth}
             onChange={(e) => setPeriodMonth(e.target.value)}
@@ -301,16 +307,16 @@ export default function MoneyTab({ sessionToken }: MoneyTabProps) {
           onClick={calculate}
           disabled={calculating}
           className="px-3 py-1.5 bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-500/30 text-emerald-300 rounded-lg text-sm font-medium disabled:opacity-50"
-          title="Recalculate payouts for the selected month from montree_finance_transactions. Already-paid rows are immutable; manually-overridden rows are skipped."
+          title={t('money.calculateNowTooltip')}
         >
-          {calculating ? '⏳ Calculating…' : '⚙️ Calculate now'}
+          {calculating ? t('money.calculating') : t('money.calculateNow')}
         </button>
         <button
           onClick={fetchPayouts}
           disabled={loading}
           className="px-3 py-1.5 bg-slate-800/60 hover:bg-slate-700/60 border border-slate-700 text-slate-300 rounded-lg text-sm font-medium disabled:opacity-50"
         >
-          {loading ? '⏳' : '🔄'} Refresh
+          {loading ? '⏳' : '🔄'} {t('common.refresh')}
         </button>
         {/* Accountant pack — CSV download for the period. Token goes in the URL
             via a temporary form POST trick so the browser triggers the download
@@ -324,7 +330,7 @@ export default function MoneyTab({ sessionToken }: MoneyTabProps) {
                 { headers: { 'x-super-admin-token': sessionToken } }
               );
               if (!res.ok) {
-                setErrorMessage(`Export failed (HTTP ${res.status})`);
+                setErrorMessage(t('money.exportFailedHttp', { code: res.status }));
                 return;
               }
               const blob = await res.blob();
@@ -338,13 +344,13 @@ export default function MoneyTab({ sessionToken }: MoneyTabProps) {
               URL.revokeObjectURL(url);
             } catch (err) {
               console.error('[MoneyTab export]', err);
-              setErrorMessage('Export failed');
+              setErrorMessage(t('money.exportFailed'));
             }
           }}
           className="px-3 py-1.5 bg-blue-500/15 hover:bg-blue-500/25 border border-blue-500/30 text-blue-300 rounded-lg text-sm font-medium"
-          title="Download the monthly accountant pack: P&L + per-school revenue + per-agent commission + Stripe reconciliation + full ledger backup (CSV, multi-section)."
+          title={t('money.accountantPackTooltip')}
         >
-          📥 Accountant pack (CSV)
+          {t('money.accountantPack')}
         </button>
         <button
           onClick={() => {
@@ -352,9 +358,9 @@ export default function MoneyTab({ sessionToken }: MoneyTabProps) {
             window.open(url, '_blank', 'noopener');
           }}
           className="px-3 py-1.5 bg-purple-500/15 hover:bg-purple-500/25 border border-purple-500/30 text-purple-300 rounded-lg text-sm font-medium"
-          title="Open a printable HTML version. Cmd+P to save as PDF."
+          title={t('money.printPdfTooltip')}
         >
-          🖨 Print / PDF
+          {t('money.printPdf')}
         </button>
       </div>
 
@@ -362,15 +368,15 @@ export default function MoneyTab({ sessionToken }: MoneyTabProps) {
       {pnlSummary && (
         <div className="p-4 rounded-xl bg-gradient-to-br from-slate-900/70 to-slate-900/40 border border-slate-800">
           <p className="text-[10px] uppercase tracking-wider text-slate-500 mb-3">
-            P&amp;L · {periodMonth}
+            {t('money.pnlLabel')} · {periodMonth}
           </p>
           <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-            <Tile label="Revenue" value={fmtUsd(pnlSummary.income)} accent="emerald" />
-            <Tile label="− Direct costs" value={fmtUsd(pnlSummary.direct_cost)} accent="slate" />
-            <Tile label="− Commissions" value={fmtUsd(pnlSummary.commission)} accent="slate" />
-            <Tile label="− Op-expenses" value={fmtUsd(pnlSummary.op_expense)} accent="slate" />
+            <Tile label={t('money.tileRevenue')} value={fmtUsd(pnlSummary.income)} accent="emerald" />
+            <Tile label={t('money.tileDirectCosts')} value={fmtUsd(pnlSummary.direct_cost)} accent="slate" />
+            <Tile label={t('money.tileCommissions')} value={fmtUsd(pnlSummary.commission)} accent="slate" />
+            <Tile label={t('money.tileOpExpenses')} value={fmtUsd(pnlSummary.op_expense)} accent="slate" />
             <Tile
-              label="= Margin"
+              label={t('money.tileMargin')}
               value={fmtUsd(pnlSummary.margin)}
               accent={pnlSummary.margin >= 0 ? 'white' : 'red'}
             />
@@ -383,22 +389,22 @@ export default function MoneyTab({ sessionToken }: MoneyTabProps) {
         className="flex gap-1 overflow-x-auto pb-1"
         style={{ borderBottom: '1px solid rgba(52,211,153,0.18)' }}
       >
-        <SubViewPill active={subView === 'payouts'} onClick={() => setSubView('payouts')} label="💸 Payouts" />
-        <SubViewPill active={subView === 'revenue'} onClick={() => setSubView('revenue')} label="📈 Revenue" />
-        <SubViewPill active={subView === 'direct_costs'} onClick={() => setSubView('direct_costs')} label="📉 Direct costs" />
-        <SubViewPill active={subView === 'commissions'} onClick={() => setSubView('commissions')} label="🤝 Commissions" />
-        <SubViewPill active={subView === 'op_expenses'} onClick={() => setSubView('op_expenses')} label="🧾 Op-expenses" />
-        <SubViewPill active={subView === 'fx_adjustments'} onClick={() => setSubView('fx_adjustments')} label="💱 FX" />
+        <SubViewPill active={subView === 'payouts'} onClick={() => setSubView('payouts')} label={t('money.subView.payouts')} />
+        <SubViewPill active={subView === 'revenue'} onClick={() => setSubView('revenue')} label={t('money.subView.revenue')} />
+        <SubViewPill active={subView === 'direct_costs'} onClick={() => setSubView('direct_costs')} label={t('money.subView.directCosts')} />
+        <SubViewPill active={subView === 'commissions'} onClick={() => setSubView('commissions')} label={t('money.subView.commissions')} />
+        <SubViewPill active={subView === 'op_expenses'} onClick={() => setSubView('op_expenses')} label={t('money.subView.opExpenses')} />
+        <SubViewPill active={subView === 'fx_adjustments'} onClick={() => setSubView('fx_adjustments')} label={t('money.subView.fx')} />
       </div>
 
       {/* Payouts period totals — only shown in payouts view */}
       {subView === 'payouts' && currentTotal && (
         <div className="grid grid-cols-2 md:grid-cols-5 gap-3 p-4 rounded-xl bg-slate-900/50 border border-slate-800">
-          <Tile label="Total" value={fmtUsd(currentTotal.total_payout_usd)} accent="white" />
-          <Tile label="Pending" value={fmtUsd(currentTotal.pending_usd)} accent="amber" />
-          <Tile label="Paid" value={fmtUsd(currentTotal.paid_usd)} accent="emerald" />
-          <Tile label="Cancelled" value={fmtUsd(currentTotal.cancelled_usd)} accent="slate" />
-          <Tile label="Failed" value={fmtUsd(currentTotal.failed_usd)} accent="red" />
+          <Tile label={t('money.totalTile')} value={fmtUsd(currentTotal.total_payout_usd)} accent="white" />
+          <Tile label={t('money.pendingTile')} value={fmtUsd(currentTotal.pending_usd)} accent="amber" />
+          <Tile label={t('money.paidTile')} value={fmtUsd(currentTotal.paid_usd)} accent="emerald" />
+          <Tile label={t('money.cancelledTile')} value={fmtUsd(currentTotal.cancelled_usd)} accent="slate" />
+          <Tile label={t('money.failedTile')} value={fmtUsd(currentTotal.failed_usd)} accent="red" />
         </div>
       )}
 
@@ -416,12 +422,12 @@ export default function MoneyTab({ sessionToken }: MoneyTabProps) {
       {/* Payouts list — only render in payouts sub-view */}
       {subView === 'payouts' && (
         loading ? (
-        <div className="text-center py-10 text-slate-500 text-sm">Loading payouts…</div>
+        <div className="text-center py-10 text-slate-500 text-sm">{t('money.loadingPayouts')}</div>
       ) : payouts.length === 0 ? (
         <div className="p-8 rounded-xl bg-slate-900/40 border border-slate-800 text-center">
-          <p className="text-slate-300 text-sm font-medium mb-1">No payouts for {periodMonth} yet.</p>
+          <p className="text-slate-300 text-sm font-medium mb-1">{t('money.noPayouts', { period: periodMonth })}</p>
           <p className="text-slate-500 text-xs">
-            Tap <span className="text-emerald-400">⚙️ Calculate now</span> to aggregate finance transactions for this month.
+            {t('money.noPayoutsHintPrefix')} <span className="text-emerald-400">{t('money.calculateNow')}</span> {t('money.noPayoutsHintSuffix')}
           </p>
         </div>
       ) : (
@@ -445,58 +451,58 @@ export default function MoneyTab({ sessionToken }: MoneyTabProps) {
                 <div className="flex items-start justify-between gap-3 mb-3">
                   <div className="min-w-0">
                     <div className="flex items-center gap-2 flex-wrap mb-1">
-                      <span className="text-white font-semibold text-sm">{row.school_name || 'Unknown school'}</span>
+                      <span className="text-white font-semibold text-sm">{row.school_name || t('money.unknownSchool')}</span>
                       <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide border ${statusColor}`}>
-                        {row.status}
+                        {t(`money.status.${row.status}` as Parameters<typeof t>[0])}
                       </span>
                       {row.is_manual_override && (
                         <span className="px-1.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide border border-purple-500/40 bg-purple-500/15 text-purple-300">
-                          override
+                          {t('money.overrideTag')}
                         </span>
                       )}
                     </div>
                     <p className="text-xs text-slate-400">
-                      🤝 {row.agent_name || 'Unknown agent'} · {row.revenue_share_pct}% share ·{' '}
-                      <span className="text-slate-500">{row.source_tx_count} tx</span>
+                      🤝 {row.agent_name || t('money.unknownAgent')} · {t('money.sharePct', { pct: row.revenue_share_pct })} ·{' '}
+                      <span className="text-slate-500">{t('money.txCount', { count: row.source_tx_count })}</span>
                     </p>
                     {/* Stripe Connect status pill — surfaces wire-readiness inline so super-admin
                         doesn't try to wire to an agent who hasn't onboarded yet. */}
                     <p className="text-[11px] mt-1 flex items-center gap-1.5 flex-wrap">
-                      <span className="text-slate-500">Stripe Connect:</span>
+                      <span className="text-slate-500">{t('money.stripeConnectLabel')}</span>
                       {!row.agent_has_connect_account ? (
                         <span className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-slate-700/40 text-slate-400 border border-slate-700">
-                          Not set up
+                          {t('money.connect.notSetUp')}
                         </span>
                       ) : row.agent_payouts_enabled ? (
                         <span className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
-                          ✓ Ready to wire
+                          {t('money.connect.ready')}
                         </span>
                       ) : row.agent_stripe_connect_status === 'restricted' ? (
                         <span className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-red-500/15 text-red-300 border border-red-500/30">
-                          Restricted
+                          {t('money.connect.restricted')}
                         </span>
                       ) : (
                         <span className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-amber-500/15 text-amber-300 border border-amber-500/30">
-                          {row.agent_stripe_connect_status || 'Onboarding'}
+                          {row.agent_stripe_connect_status || t('money.connect.onboarding')}
                         </span>
                       )}
                     </p>
                   </div>
                   <div className="text-right shrink-0">
                     <p className="text-emerald-400 text-lg font-bold leading-tight">{fmtUsd(row.payout_usd)}</p>
-                    <p className="text-[10px] text-slate-500 uppercase tracking-wide">payout</p>
+                    <p className="text-[10px] text-slate-500 uppercase tracking-wide">{t('money.payoutLabel')}</p>
                   </div>
                 </div>
 
                 {/* Math line */}
                 <div className="grid grid-cols-2 md:grid-cols-6 gap-2 mb-3 text-xs">
-                  <Stat label="Gross" value={fmtUsd(row.gross_revenue_usd)} color="text-emerald-300" />
-                  <Stat label="Stripe fee" value={`-${fmtUsd(row.stripe_fee_usd)}`} color="text-slate-400" />
-                  <Stat label="Anthropic" value={`-${fmtUsd(row.anthropic_cost_usd)}`} color="text-slate-400" />
-                  <Stat label="OpenAI" value={`-${fmtUsd(row.openai_cost_usd)}`} color="text-slate-400" />
-                  <Stat label="Other cost" value={`-${fmtUsd(row.other_direct_cost_usd)}`} color="text-slate-400" />
+                  <Stat label={t('money.statGross')} value={fmtUsd(row.gross_revenue_usd)} color="text-emerald-300" />
+                  <Stat label={t('money.statStripeFee')} value={`-${fmtUsd(row.stripe_fee_usd)}`} color="text-slate-400" />
+                  <Stat label={t('money.statAnthropic')} value={`-${fmtUsd(row.anthropic_cost_usd)}`} color="text-slate-400" />
+                  <Stat label={t('money.statOpenai')} value={`-${fmtUsd(row.openai_cost_usd)}`} color="text-slate-400" />
+                  <Stat label={t('money.statOtherCost')} value={`-${fmtUsd(row.other_direct_cost_usd)}`} color="text-slate-400" />
                   <Stat
-                    label="Net"
+                    label={t('money.statNet')}
                     value={fmtUsd(row.net_usd)}
                     color={row.net_usd < 0 ? 'text-red-400' : 'text-white'}
                   />
@@ -505,7 +511,7 @@ export default function MoneyTab({ sessionToken }: MoneyTabProps) {
                 {/* Paid details (if paid) */}
                 {row.status === 'paid' && (
                   <div className="text-xs text-slate-400 mb-3 flex flex-wrap items-center gap-x-3 gap-y-1">
-                    <span>💸 paid {fmtDate(row.paid_at)}</span>
+                    <span>{t('money.paidOn', { date: fmtDate(row.paid_at) })}</span>
                     {row.paid_by_method && <span>· {row.paid_by_method.replace('_', ' ')}</span>}
                     {row.stripe_transfer_id && (
                       <a
@@ -513,7 +519,7 @@ export default function MoneyTab({ sessionToken }: MoneyTabProps) {
                         target="_blank"
                         rel="noopener noreferrer"
                         className="font-mono text-blue-400 hover:text-blue-300 underline"
-                        title="Open in Stripe Dashboard"
+                        title={t('money.openInStripe')}
                       >
                         · 🔗 {row.stripe_transfer_id}
                       </a>
@@ -542,14 +548,14 @@ export default function MoneyTab({ sessionToken }: MoneyTabProps) {
                         }
                         title={
                           !row.agent_has_connect_account
-                            ? 'Agent has no Stripe Connect account yet.'
+                            ? t('money.wireTooltipNoAccount')
                             : !row.agent_payouts_enabled
-                              ? 'Stripe Connect not payout-ready yet.'
-                              : 'Wire via Stripe Connect (real money movement)'
+                              ? t('money.wireTooltipNotReady')
+                              : t('money.wireTooltipReady')
                         }
                         className="px-2.5 py-1 bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/30 text-amber-200 rounded text-xs font-medium disabled:opacity-40 disabled:cursor-not-allowed"
                       >
-                        ⚡ Wire via Stripe
+                        {t('money.wireBtn')}
                       </button>
                       <button
                         onClick={() => {
@@ -559,20 +565,20 @@ export default function MoneyTab({ sessionToken }: MoneyTabProps) {
                         }}
                         disabled={actionBusy === row.id}
                         className="px-2.5 py-1 bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 text-emerald-300 rounded text-xs font-medium disabled:opacity-50"
-                        title="Manually mark paid — use if you wired outside Stripe Connect (manual bank wire, etc.)"
+                        title={t('money.markPaidTooltip')}
                       >
-                        💸 Mark paid
+                        {t('money.markPaidBtn')}
                       </button>
                       <button
                         onClick={() => {
-                          const note = window.prompt('Cancel this payout — optional note:');
+                          const note = window.prompt(t('money.cancelPrompt'));
                           if (note === null) return;
                           doPatch(row.id, 'cancel', { notes: note || null });
                         }}
                         disabled={actionBusy === row.id}
                         className="px-2.5 py-1 bg-slate-700/40 hover:bg-slate-700/60 border border-slate-700 text-slate-300 rounded text-xs font-medium disabled:opacity-50"
                       >
-                        ✕ Cancel
+                        {t('money.cancelBtn')}
                       </button>
                       <button
                         onClick={() => {
@@ -582,21 +588,19 @@ export default function MoneyTab({ sessionToken }: MoneyTabProps) {
                         disabled={actionBusy === row.id}
                         className="px-2.5 py-1 bg-purple-500/15 hover:bg-purple-500/25 border border-purple-500/30 text-purple-300 rounded text-xs font-medium disabled:opacity-50"
                       >
-                        ✏️ Override
+                        {t('money.overrideBtn')}
                       </button>
                       <button
                         onClick={() => {
-                          const note = window.prompt(
-                            'Mark failed — optional note describing the failure (Stripe error, bank rejection, etc.):'
-                          );
+                          const note = window.prompt(t('money.markFailedPrompt'));
                           if (note === null) return;
                           doPatch(row.id, 'mark_failed', { notes: note || null });
                         }}
                         disabled={actionBusy === row.id}
                         className="px-2.5 py-1 bg-red-500/15 hover:bg-red-500/25 border border-red-500/30 text-red-300 rounded text-xs font-medium disabled:opacity-50"
-                        title="Mark as failed (e.g. Stripe transfer rejected). Doesn't move money; just flags for follow-up."
+                        title={t('money.markFailedTooltip')}
                       >
-                        ⚠ Mark failed
+                        {t('money.markFailedBtn')}
                       </button>
                     </>
                   )}
@@ -606,7 +610,7 @@ export default function MoneyTab({ sessionToken }: MoneyTabProps) {
                       disabled={actionBusy === row.id}
                       className="px-2.5 py-1 bg-slate-700/40 hover:bg-slate-700/60 border border-slate-700 text-slate-300 rounded text-xs font-medium disabled:opacity-50"
                     >
-                      ↩️ Clear override
+                      {t('money.clearOverrideBtn')}
                     </button>
                   )}
                 </div>
@@ -615,21 +619,21 @@ export default function MoneyTab({ sessionToken }: MoneyTabProps) {
                 {isPaidMode && (
                   <div className="mt-3 p-3 rounded-lg bg-emerald-500/8 border border-emerald-500/25 space-y-2">
                     <div className="flex flex-wrap gap-2 items-center">
-                      <label className="text-xs text-slate-400">Method:</label>
+                      <label className="text-xs text-slate-400">{t('money.methodLabel')}</label>
                       <select
                         value={paidMethod}
                         onChange={(e) => setPaidMethod(e.target.value as typeof paidMethod)}
                         className="px-2 py-1 bg-slate-800/70 border border-slate-700 rounded text-xs text-white"
                       >
-                        <option value="stripe_connect">Stripe Connect</option>
-                        <option value="manual_wire">Manual wire</option>
-                        <option value="other">Other</option>
+                        <option value="stripe_connect">{t('money.methodStripeConnect')}</option>
+                        <option value="manual_wire">{t('money.methodManualWire')}</option>
+                        <option value="other">{t('money.methodOther')}</option>
                       </select>
                       <input
                         type="text"
                         value={paidTransferId}
                         onChange={(e) => setPaidTransferId(e.target.value)}
-                        placeholder="stripe_transfer_id (optional)"
+                        placeholder={t('money.transferIdPlaceholder')}
                         className="flex-1 min-w-[160px] px-2 py-1 bg-slate-800/70 border border-slate-700 rounded text-xs text-white font-mono placeholder:text-slate-600"
                       />
                     </div>
@@ -648,13 +652,13 @@ export default function MoneyTab({ sessionToken }: MoneyTabProps) {
                         disabled={actionBusy === row.id}
                         className="px-3 py-1 bg-emerald-500/25 hover:bg-emerald-500/40 border border-emerald-500/40 text-emerald-200 rounded text-xs font-semibold disabled:opacity-50"
                       >
-                        ✓ Confirm paid
+                        {t('money.confirmPaidBtn')}
                       </button>
                       <button
                         onClick={() => setShowPaidFor(null)}
                         className="px-3 py-1 bg-slate-700/40 hover:bg-slate-700/60 border border-slate-700 text-slate-300 rounded text-xs"
                       >
-                        Cancel
+                        {t('common.cancel')}
                       </button>
                     </div>
                   </div>
@@ -664,7 +668,7 @@ export default function MoneyTab({ sessionToken }: MoneyTabProps) {
                 {isOverrideMode && (
                   <div className="mt-3 p-3 rounded-lg bg-purple-500/8 border border-purple-500/25 space-y-2">
                     <div className="flex flex-wrap gap-2 items-center">
-                      <label className="text-xs text-slate-400">New payout (USD):</label>
+                      <label className="text-xs text-slate-400">{t('money.newPayoutLabel')}</label>
                       <input
                         type="number"
                         step="0.01"
@@ -674,7 +678,7 @@ export default function MoneyTab({ sessionToken }: MoneyTabProps) {
                         className="px-2 py-1 bg-slate-800/70 border border-slate-700 rounded text-xs text-white w-32"
                       />
                       <span className="text-xs text-slate-500">
-                        Locks against future recalcs until cleared.
+                        {t('money.overrideLockNote')}
                       </span>
                     </div>
                     <div className="flex gap-2">
@@ -682,10 +686,10 @@ export default function MoneyTab({ sessionToken }: MoneyTabProps) {
                         onClick={async () => {
                           const v = Number(overrideValue);
                           if (Number.isNaN(v) || v < 0) {
-                            setErrorMessage('Payout must be a non-negative number');
+                            setErrorMessage(t('money.errPayoutNonNeg'));
                             return;
                           }
-                          const note = window.prompt('Optional override note:') || null;
+                          const note = window.prompt(t('money.overrideNotePrompt')) || null;
                           const ok = await doPatch(row.id, 'manual_override', {
                             payout_usd: v,
                             notes: note,
@@ -695,13 +699,13 @@ export default function MoneyTab({ sessionToken }: MoneyTabProps) {
                         disabled={actionBusy === row.id}
                         className="px-3 py-1 bg-purple-500/25 hover:bg-purple-500/40 border border-purple-500/40 text-purple-200 rounded text-xs font-semibold disabled:opacity-50"
                       >
-                        ✓ Save override
+                        {t('money.saveOverrideBtn')}
                       </button>
                       <button
                         onClick={() => setShowOverrideFor(null)}
                         className="px-3 py-1 bg-slate-700/40 hover:bg-slate-700/60 border border-slate-700 text-slate-300 rounded text-xs"
                       >
-                        Cancel
+                        {t('common.cancel')}
                       </button>
                     </div>
                   </div>

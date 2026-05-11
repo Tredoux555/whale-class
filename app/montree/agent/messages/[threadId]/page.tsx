@@ -7,6 +7,8 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { ArrowLeft, Send } from 'lucide-react';
+import { useI18n } from '@/lib/montree/i18n';
+import { getIntlLocale } from '@/lib/montree/i18n/locales';
 
 const T = {
   bg: '#0a1a0f',
@@ -64,6 +66,7 @@ interface ThreadResponse {
 }
 
 export default function AgentThreadDetailPage() {
+  const { t, locale } = useI18n();
   const router = useRouter();
   const params = useParams<{ threadId: string }>();
   const threadId = params?.threadId;
@@ -146,7 +149,7 @@ export default function AgentThreadDetailPage() {
       });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        setError(data.error || 'Failed to send');
+        setError(data.error || t('agentThread.failedToSend'));
         setSending(false);
         return;
       }
@@ -156,14 +159,14 @@ export default function AgentThreadDetailPage() {
       setSending(false);
     } catch (err) {
       console.error('[agent send] failed', err);
-      setError('Network error — please try again');
+      setError(t('agentThread.networkError'));
       setSending(false);
     }
-  }, [threadId, reply, sending]);
+  }, [threadId, reply, sending, t]);
 
   const formatTime = (iso: string) => {
     const d = new Date(iso);
-    return d.toLocaleString('en-US', {
+    return d.toLocaleString(getIntlLocale(locale), {
       month: 'short', day: 'numeric',
       hour: 'numeric', minute: '2-digit',
     });
@@ -171,7 +174,7 @@ export default function AgentThreadDetailPage() {
 
   const principal = participants.find((p) => p.role === 'principal');
   const subtitle = school?.name || '';
-  const title = thread?.subject || (principal?.name ? `${principal.name}` : 'Conversation');
+  const title = thread?.subject || (principal?.name ? `${principal.name}` : t('agentThread.conversation'));
 
   if (loading) {
     return (
@@ -179,7 +182,7 @@ export default function AgentThreadDetailPage() {
         minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center',
         fontFamily: T.sans, color: T.textSecondary,
       }}>
-        <p style={{ fontSize: 14, color: T.textMuted }}>Loading…</p>
+        <p style={{ fontSize: 14, color: T.textMuted }}>{t('common.loading')}</p>
       </div>
     );
   }
@@ -205,7 +208,7 @@ export default function AgentThreadDetailPage() {
               background: 'none', border: 'none', color: T.textSecondary,
               cursor: 'pointer', display: 'flex', padding: 4,
             }}
-            aria-label="Back"
+            aria-label={t('common.back')}
           >
             <ArrowLeft size={18} strokeWidth={1.75} />
           </button>
@@ -236,7 +239,7 @@ export default function AgentThreadDetailPage() {
       }}>
         {messages.length === 0 ? (
           <p style={{ textAlign: 'center', fontSize: 13, color: T.textMuted, marginTop: 60 }}>
-            No messages yet.
+            {t('agentThread.noMessages')}
           </p>
         ) : (
           messages.map((m) => {
@@ -265,7 +268,7 @@ export default function AgentThreadDetailPage() {
                       color: m.sender_role === 'principal' ? T.emerald : T.textMuted,
                       textTransform: 'uppercase', letterSpacing: 0.4,
                     }}>
-                      {m.sender_name} {m.sender_role === 'principal' && '· Principal'}
+                      {m.sender_name} {m.sender_role === 'principal' && `· ${t('agentThread.principalBadge')}`}
                     </p>
                   )}
                   {m.body}
@@ -297,7 +300,7 @@ export default function AgentThreadDetailPage() {
               onChange={(e) => setReply(e.target.value)}
               maxLength={10000}
               rows={1}
-              placeholder="Write a reply…"
+              placeholder={t('agentThread.replyPlaceholder')}
               style={{
                 flex: 1, padding: '10px 14px', borderRadius: 18,
                 background: T.card, border: T.cardBorder, color: T.textPrimary,
@@ -325,7 +328,7 @@ export default function AgentThreadDetailPage() {
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 flexShrink: 0,
               }}
-              aria-label="Send"
+              aria-label={t('agentThread.send')}
             >
               <Send size={16} strokeWidth={2} />
             </button>

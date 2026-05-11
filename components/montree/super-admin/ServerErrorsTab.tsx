@@ -4,6 +4,7 @@
 // Lightweight error log viewer (sentry-lite).
 
 import { useCallback, useEffect, useState } from 'react';
+import { useI18n } from '@/lib/montree/i18n';
 
 interface ErrorRow {
   id: string;
@@ -35,6 +36,7 @@ function fmtDate(iso: string | null): string {
 }
 
 export default function ServerErrorsTab({ sessionToken }: Props) {
+  const { t } = useI18n();
   const [rows, setRows] = useState<ErrorRow[]>([]);
   const [unresolvedCount, setUnresolvedCount] = useState(0);
   const [originCounts, setOriginCounts] = useState<Record<string, number>>({});
@@ -57,7 +59,7 @@ export default function ServerErrorsTab({ sessionToken }: Props) {
         headers: { 'x-super-admin-token': sessionToken },
       });
       if (!res.ok) {
-        setError(`Failed (HTTP ${res.status})`);
+        setError(t('serverErrors.failedHttp', { code: res.status }));
         return;
       }
       const data = await res.json();
@@ -66,18 +68,18 @@ export default function ServerErrorsTab({ sessionToken }: Props) {
       setOriginCounts(data.origin_counts || {});
     } catch (err) {
       console.error('[ServerErrorsTab] fetch', err);
-      setError('Failed to load');
+      setError(t('serverErrors.failedToLoad'));
     } finally {
       setLoading(false);
     }
-  }, [stateFilter, originFilter, severityFilter, sessionToken]);
+  }, [stateFilter, originFilter, severityFilter, sessionToken, t]);
 
   useEffect(() => {
     fetchRows();
   }, [fetchRows]);
 
   const handleResolve = async (id: string) => {
-    const notes = window.prompt('Resolution notes (optional):');
+    const notes = window.prompt(t('serverErrors.resolvePrompt'));
     if (notes === null) return;
     setBusyId(id);
     try {
@@ -88,7 +90,7 @@ export default function ServerErrorsTab({ sessionToken }: Props) {
       });
       const j = await res.json().catch(() => ({}));
       if (!res.ok) {
-        setError(j.error || `HTTP ${res.status}`);
+        setError(j.error || t('serverErrors.httpError', { code: res.status }));
         return;
       }
       await fetchRows();
@@ -98,7 +100,7 @@ export default function ServerErrorsTab({ sessionToken }: Props) {
   };
 
   const handleDelete = async (id: string) => {
-    if (!window.confirm('Permanently delete this error row?')) return;
+    if (!window.confirm(t('serverErrors.deleteConfirm'))) return;
     setBusyId(id);
     try {
       const res = await fetch(`/api/montree/super-admin/server-errors?id=${encodeURIComponent(id)}`, {
@@ -106,7 +108,7 @@ export default function ServerErrorsTab({ sessionToken }: Props) {
         headers: { 'x-super-admin-token': sessionToken },
       });
       if (!res.ok) {
-        setError(`Delete failed (HTTP ${res.status})`);
+        setError(t('serverErrors.deleteFailedHttp', { code: res.status }));
         return;
       }
       await fetchRows();
@@ -119,14 +121,14 @@ export default function ServerErrorsTab({ sessionToken }: Props) {
     <div className="space-y-5">
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
-          <h2 className="text-lg font-bold text-white">Server errors</h2>
+          <h2 className="text-lg font-bold text-white">{t('serverErrors.title')}</h2>
           <p className="text-xs text-slate-400 mt-1">
-            Lightweight error log — captures whatever code calls{' '}
+            {t('serverErrors.subtitlePrefix')}{' '}
             <code className="text-emerald-300">logServerError()</code>.{' '}
             {unresolvedCount > 0 ? (
-              <span className="text-amber-300 font-semibold">{unresolvedCount} unresolved</span>
+              <span className="text-amber-300 font-semibold">{t('serverErrors.unresolvedCount', { count: unresolvedCount })}</span>
             ) : (
-              <span className="text-emerald-400">No unresolved errors.</span>
+              <span className="text-emerald-400">{t('serverErrors.noneUnresolved')}</span>
             )}
           </p>
         </div>
@@ -135,7 +137,7 @@ export default function ServerErrorsTab({ sessionToken }: Props) {
           disabled={loading}
           className="px-3 py-1.5 bg-slate-800/60 hover:bg-slate-700/60 border border-slate-700 text-slate-300 rounded-lg text-xs font-medium disabled:opacity-50"
         >
-          {loading ? '⏳' : '🔄'} Refresh
+          {loading ? '⏳' : '🔄'} {t('common.refresh')}
         </button>
       </div>
 
@@ -151,7 +153,7 @@ export default function ServerErrorsTab({ sessionToken }: Props) {
                 : 'bg-slate-800/40 border-slate-700 text-slate-400 hover:text-slate-200'
             }`}
           >
-            {s}
+            {t(`serverErrors.state.${s}` as Parameters<typeof t>[0])}
           </button>
         ))}
         <span className="text-slate-600 mx-2">·</span>
@@ -167,7 +169,7 @@ export default function ServerErrorsTab({ sessionToken }: Props) {
                 : 'bg-slate-800/40 border-slate-700 text-slate-500'
             }`}
           >
-            {sv}
+            {t(`serverErrors.severity.${sv}` as Parameters<typeof t>[0])}
           </button>
         ))}
         {Object.keys(originCounts).length > 0 && (
@@ -178,7 +180,7 @@ export default function ServerErrorsTab({ sessionToken }: Props) {
               onChange={(e) => setOriginFilter(e.target.value || null)}
               className="px-2 py-1 bg-slate-800 border border-slate-700 rounded-lg text-xs text-white"
             >
-              <option value="">All origins</option>
+              <option value="">{t('serverErrors.allOrigins')}</option>
               {Object.entries(originCounts).map(([o, c]) => (
                 <option key={o} value={o}>{o} ({c})</option>
               ))}
@@ -194,11 +196,11 @@ export default function ServerErrorsTab({ sessionToken }: Props) {
       )}
 
       {loading ? (
-        <div className="text-center py-10 text-slate-500 text-sm">Loading…</div>
+        <div className="text-center py-10 text-slate-500 text-sm">{t('common.loading')}</div>
       ) : rows.length === 0 ? (
         <div className="p-8 rounded-xl bg-slate-900/40 border border-slate-800 text-center">
           <p className="text-slate-400 text-sm">
-            {stateFilter === 'unresolved' ? 'No unresolved errors. Everything clean.' : 'No errors match the current filters.'}
+            {stateFilter === 'unresolved' ? t('serverErrors.emptyClean') : t('serverErrors.emptyFiltered')}
           </p>
         </div>
       ) : (
@@ -216,14 +218,14 @@ export default function ServerErrorsTab({ sessionToken }: Props) {
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2 flex-wrap mb-1">
                       <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide border ${sevColor}`}>
-                        {row.severity}
+                        {t(`serverErrors.severity.${row.severity}` as Parameters<typeof t>[0])}
                       </span>
                       <span className="px-1.5 py-0.5 rounded bg-slate-700/40 text-slate-300 text-[10px] font-medium">
                         {row.origin}
                       </span>
                       {row.resolved_at && (
                         <span className="px-1.5 py-0.5 rounded bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-[10px]">
-                          ✓ resolved
+                          {t('serverErrors.resolvedTag')}
                         </span>
                       )}
                     </div>
@@ -235,7 +237,7 @@ export default function ServerErrorsTab({ sessionToken }: Props) {
                     <p className="text-[11px] text-slate-500 mt-1">{fmtDate(row.created_at)}</p>
                     {row.resolved_at && (
                       <p className="text-[11px] text-emerald-400 mt-0.5">
-                        Resolved {fmtDate(row.resolved_at)}{row.resolved_notes && ` — ${row.resolved_notes}`}
+                        {t('serverErrors.resolvedAt', { date: fmtDate(row.resolved_at) })}{row.resolved_notes && ` — ${row.resolved_notes}`}
                       </p>
                     )}
                   </div>
@@ -244,7 +246,7 @@ export default function ServerErrorsTab({ sessionToken }: Props) {
                       onClick={() => setExpandedId(isExpanded ? null : row.id)}
                       className="px-2 py-1 bg-slate-800/40 hover:bg-slate-700/60 border border-slate-700 text-slate-300 rounded text-[11px]"
                     >
-                      {isExpanded ? 'Hide' : 'Details'}
+                      {isExpanded ? t('serverErrors.hide') : t('serverErrors.details')}
                     </button>
                     {!row.resolved_at && (
                       <button
@@ -252,7 +254,7 @@ export default function ServerErrorsTab({ sessionToken }: Props) {
                         disabled={busyId === row.id}
                         className="px-2 py-1 bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 text-emerald-300 rounded text-[11px] font-medium disabled:opacity-50"
                       >
-                        ✓ Resolve
+                        ✓ {t('serverErrors.resolve')}
                       </button>
                     )}
                     <button

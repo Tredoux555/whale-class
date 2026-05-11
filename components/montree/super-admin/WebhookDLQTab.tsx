@@ -4,6 +4,7 @@
 // Read + resolve dead-letter webhook events.
 
 import { useCallback, useEffect, useState } from 'react';
+import { useI18n } from '@/lib/montree/i18n';
 
 interface DLQRow {
   id: string;
@@ -41,6 +42,7 @@ function fmtDate(iso: string | null): string {
 }
 
 export default function WebhookDLQTab({ sessionToken }: WebhookDLQTabProps) {
+  const { t } = useI18n();
   const [rows, setRows] = useState<DLQRow[]>([]);
   const [pendingCount, setPendingCount] = useState(0);
   const [statusFilter, setStatusFilter] = useState<'pending' | 'resolved' | 'ignored' | 'all'>('pending');
@@ -57,7 +59,7 @@ export default function WebhookDLQTab({ sessionToken }: WebhookDLQTabProps) {
         headers: { 'x-super-admin-token': sessionToken },
       });
       if (!res.ok) {
-        setError(`Failed to load (HTTP ${res.status})`);
+        setError(t('dlq.failedToLoadHttp', { code: res.status }));
         return;
       }
       const data = await res.json();
@@ -65,11 +67,11 @@ export default function WebhookDLQTab({ sessionToken }: WebhookDLQTabProps) {
       setPendingCount(data.pending_count || 0);
     } catch (err) {
       console.error('[WebhookDLQTab] fetch', err);
-      setError('Failed to load');
+      setError(t('dlq.failedToLoad'));
     } finally {
       setLoading(false);
     }
-  }, [statusFilter, sessionToken]);
+  }, [statusFilter, sessionToken, t]);
 
   useEffect(() => {
     fetchDLQ();
@@ -79,8 +81,8 @@ export default function WebhookDLQTab({ sessionToken }: WebhookDLQTabProps) {
     async (id: string, action: 'mark_resolved' | 'mark_ignored') => {
       const note = window.prompt(
         action === 'mark_resolved'
-          ? 'Notes on how this was resolved (optional):'
-          : 'Notes on why ignored (optional):'
+          ? t('dlq.resolvePrompt')
+          : t('dlq.ignorePrompt')
       );
       if (note === null) return; // user cancelled
       setBusyId(id);
@@ -95,30 +97,30 @@ export default function WebhookDLQTab({ sessionToken }: WebhookDLQTabProps) {
         });
         const j = await res.json().catch(() => ({}));
         if (!res.ok) {
-          setError(j.error || `HTTP ${res.status}`);
+          setError(j.error || t('dlq.httpError', { code: res.status }));
           return;
         }
         await fetchDLQ();
       } catch (err) {
         console.error('[WebhookDLQTab] action', err);
-        setError('Action failed');
+        setError(t('dlq.actionFailed'));
       } finally {
         setBusyId(null);
       }
     },
-    [sessionToken, fetchDLQ]
+    [sessionToken, fetchDLQ, t]
   );
 
   return (
     <div className="space-y-5">
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
-          <h2 className="text-lg font-bold text-white">Webhook dead-letter queue</h2>
+          <h2 className="text-lg font-bold text-white">{t('dlq.title')}</h2>
           <p className="text-xs text-slate-400 mt-1">
-            Stripe events that failed to process. {pendingCount > 0 ? (
-              <span className="text-amber-300 font-semibold">{pendingCount} pending</span>
+            {t('dlq.subtitle')} {pendingCount > 0 ? (
+              <span className="text-amber-300 font-semibold">{t('dlq.pendingCount', { count: pendingCount })}</span>
             ) : (
-              <span className="text-emerald-400">No pending events.</span>
+              <span className="text-emerald-400">{t('dlq.noPending')}</span>
             )}
           </p>
         </div>
@@ -133,7 +135,7 @@ export default function WebhookDLQTab({ sessionToken }: WebhookDLQTabProps) {
                   : 'bg-slate-800/40 border-slate-700 text-slate-400 hover:text-slate-200'
               }`}
             >
-              {s}
+              {t(`dlq.filter.${s}` as Parameters<typeof t>[0])}
             </button>
           ))}
           <button
@@ -153,13 +155,13 @@ export default function WebhookDLQTab({ sessionToken }: WebhookDLQTabProps) {
       )}
 
       {loading ? (
-        <div className="text-center py-10 text-slate-500 text-sm">Loading…</div>
+        <div className="text-center py-10 text-slate-500 text-sm">{t('common.loading')}</div>
       ) : rows.length === 0 ? (
         <div className="p-8 rounded-xl bg-slate-900/40 border border-slate-800 text-center">
           <p className="text-slate-400 text-sm">
             {statusFilter === 'pending'
-              ? 'No pending failed webhook events. System is healthy.'
-              : `No ${statusFilter} events.`}
+              ? t('dlq.noPendingHealthy')
+              : t('dlq.noStatusEvents', { status: statusFilter })}
           </p>
         </div>
       ) : (
@@ -194,7 +196,7 @@ export default function WebhookDLQTab({ sessionToken }: WebhookDLQTabProps) {
                     <p className="text-[11px] text-slate-500 mt-1">{fmtDate(row.created_at)}</p>
                     {row.resolved_at && (
                       <p className="text-[11px] text-emerald-400 mt-0.5">
-                        {row.status === 'resolved' ? '✓ Resolved' : '⊘ Ignored'} {fmtDate(row.resolved_at)}
+                        {row.status === 'resolved' ? t('dlq.resolvedBadge') : t('dlq.ignoredBadge')} {fmtDate(row.resolved_at)}
                         {row.resolved_notes && ` — ${row.resolved_notes}`}
                       </p>
                     )}
@@ -204,7 +206,7 @@ export default function WebhookDLQTab({ sessionToken }: WebhookDLQTabProps) {
                       onClick={() => setExpandedRow(isExpanded ? null : row.id)}
                       className="px-2 py-1 bg-slate-800/40 hover:bg-slate-700/60 border border-slate-700 text-slate-300 rounded text-[11px]"
                     >
-                      {isExpanded ? 'Hide' : 'Show payload'}
+                      {isExpanded ? t('dlq.hide') : t('dlq.showPayload')}
                     </button>
                     {row.status === 'pending' && (
                       <>
@@ -213,14 +215,14 @@ export default function WebhookDLQTab({ sessionToken }: WebhookDLQTabProps) {
                           disabled={busyId === row.id}
                           className="px-2 py-1 bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 text-emerald-300 rounded text-[11px] font-medium disabled:opacity-50"
                         >
-                          ✓ Resolve
+                          ✓ {t('dlq.resolve')}
                         </button>
                         <button
                           onClick={() => doAction(row.id, 'mark_ignored')}
                           disabled={busyId === row.id}
                           className="px-2 py-1 bg-slate-700/40 hover:bg-slate-700/60 border border-slate-700 text-slate-400 rounded text-[11px]"
                         >
-                          ⊘ Ignore
+                          ⊘ {t('dlq.ignore')}
                         </button>
                       </>
                     )}

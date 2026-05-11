@@ -9,6 +9,8 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import RecurringOpExpensePanel from './RecurringOpExpensePanel';
+import { useI18n } from '@/lib/montree/i18n';
+import { getIntlLocale } from '@/lib/montree/i18n/locales';
 
 interface LedgerRow {
   id: string;
@@ -46,60 +48,61 @@ interface MoneyLedgerViewProps {
   periodMonth: string;
 }
 
+// Static config that doesn't need translation (typeFilter values are server-side enums).
 const VIEW_CONFIG: Record<
   MoneyLedgerViewProps['view'],
-  { typeFilter: string; title: string; emptyMsg: string; allowAdd: boolean }
+  { typeFilter: string; titleKey: string; emptyMsgKey: string; allowAdd: boolean }
 > = {
   revenue: {
     typeFilter: 'income',
-    title: 'Revenue',
-    emptyMsg: 'No income rows for this period. Stripe invoice.paid webhooks land here automatically.',
+    titleKey: 'moneyLedger.revenue.title',
+    emptyMsgKey: 'moneyLedger.revenue.empty',
     allowAdd: false,
   },
   direct_costs: {
     typeFilter: 'direct_cost',
-    title: 'Direct costs',
-    emptyMsg: 'No direct cost rows yet. Stripe fees + aggregated AI costs land here.',
+    titleKey: 'moneyLedger.directCosts.title',
+    emptyMsgKey: 'moneyLedger.directCosts.empty',
     allowAdd: false,
   },
   commissions: {
     typeFilter: 'commission',
-    title: 'Commissions paid',
-    emptyMsg: 'No commission rows. Wired payouts via Stripe Connect land here as audit trail.',
+    titleKey: 'moneyLedger.commissions.title',
+    emptyMsgKey: 'moneyLedger.commissions.empty',
     allowAdd: false,
   },
   op_expenses: {
     typeFilter: 'op_expense',
-    title: 'Operating expenses',
-    emptyMsg: 'No op-expense rows yet. Add hosting / tooling / marketing / professional fees here.',
+    titleKey: 'moneyLedger.opExpenses.title',
+    emptyMsgKey: 'moneyLedger.opExpenses.empty',
     allowAdd: true,
   },
   fx_adjustments: {
     typeFilter: 'fx_adjustment',
-    title: 'FX adjustments',
-    emptyMsg: 'No FX adjustment rows yet. Add when Stripe USD → Airwallex HKD differs from spot.',
+    titleKey: 'moneyLedger.fxAdjustments.title',
+    emptyMsgKey: 'moneyLedger.fxAdjustments.empty',
     allowAdd: true,
   },
 };
 
-const OP_EXPENSE_CATEGORIES = [
-  { value: 'hosting', label: 'Hosting (Railway, Supabase compute)' },
-  { value: 'domain', label: 'Domain registration' },
-  { value: 'email_service', label: 'Email service (Resend)' },
-  { value: 'supabase', label: 'Supabase plan' },
-  { value: 'design_tools', label: 'Design tools (Canva, Figma)' },
-  { value: 'ai_tooling', label: 'AI tooling (Cursor, agents)' },
-  { value: 'corporate_sec', label: 'Corporate secretary (Richful)' },
-  { value: 'marketing', label: 'Marketing spend' },
-  { value: 'professional_fees', label: 'Accountant / legal fees' },
-  { value: 'other_op_expense', label: 'Other' },
-];
+const OP_EXPENSE_CATEGORY_VALUES = [
+  'hosting',
+  'domain',
+  'email_service',
+  'supabase',
+  'design_tools',
+  'ai_tooling',
+  'corporate_sec',
+  'marketing',
+  'professional_fees',
+  'other_op_expense',
+] as const;
 
-const FX_ADJUSTMENT_CATEGORIES = [
-  { value: 'wire_fx_delta', label: 'Wire FX delta (USD→HKD wire vs spot)' },
-  { value: 'rate_revaluation', label: 'Rate revaluation (month-end)' },
-  { value: 'other_fx_adjustment', label: 'Other FX adjustment' },
-];
+const FX_ADJUSTMENT_CATEGORY_VALUES = [
+  'wire_fx_delta',
+  'rate_revaluation',
+  'other_fx_adjustment',
+] as const;
 
 function fmtUsd(n: number | null | undefined): string {
   const v = Number(n) || 0;
@@ -107,16 +110,8 @@ function fmtUsd(n: number | null | undefined): string {
   return `${sign}$${Math.abs(v).toFixed(2)}`;
 }
 
-function fmtDate(iso: string | null): string {
-  if (!iso) return '—';
-  try {
-    return new Date(iso).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
-  } catch {
-    return iso;
-  }
-}
-
 export default function MoneyLedgerView({ sessionToken, view, periodMonth }: MoneyLedgerViewProps) {
+  const { t, locale } = useI18n();
   const config = VIEW_CONFIG[view];
   const [rows, setRows] = useState<LedgerRow[]>([]);
   const [pnl, setPnl] = useState<PnlSummary | null>(null);
@@ -124,11 +119,28 @@ export default function MoneyLedgerView({ sessionToken, view, periodMonth }: Mon
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
+  const fmtDate = useCallback((iso: string | null): string => {
+    if (!iso) return '—';
+    try {
+      return new Date(iso).toLocaleDateString(getIntlLocale(locale), { year: 'numeric', month: 'short', day: 'numeric' });
+    } catch {
+      return iso;
+    }
+  }, [locale]);
+
   // Add-row form state (used for both op_expense and fx_adjustment views)
   const [showAdd, setShowAdd] = useState(false);
   const isFx = view === 'fx_adjustments';
-  const categoryOptions = isFx ? FX_ADJUSTMENT_CATEGORIES : OP_EXPENSE_CATEGORIES;
-  const [newCategory, setNewCategory] = useState<string>(categoryOptions[0].value);
+  const categoryOptions = useMemo(() => {
+    const values = isFx ? FX_ADJUSTMENT_CATEGORY_VALUES : OP_EXPENSE_CATEGORY_VALUES;
+    return values.map((value) => ({
+      value,
+      label: t(`opExpense.category.${value}` as Parameters<typeof t>[0]),
+    }));
+  }, [isFx, t]);
+  const [newCategory, setNewCategory] = useState<string>(
+    isFx ? FX_ADJUSTMENT_CATEGORY_VALUES[0] : OP_EXPENSE_CATEGORY_VALUES[0]
+  );
   const [newDescription, setNewDescription] = useState('');
   const [newAmount, setNewAmount] = useState('');
   const [newNotes, setNewNotes] = useState('');
@@ -137,11 +149,10 @@ export default function MoneyLedgerView({ sessionToken, view, periodMonth }: Mon
   // Reset category when view changes so the dropdown matches the available
   // categories for this type.
   useEffect(() => {
-    setNewCategory(categoryOptions[0].value);
-    // intentionally NOT including categoryOptions to avoid recomputation
-    // every render — the value only meaningfully changes when view changes.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [view]);
+    setNewCategory(
+      isFx ? FX_ADJUSTMENT_CATEGORY_VALUES[0] : OP_EXPENSE_CATEGORY_VALUES[0]
+    );
+  }, [isFx, view]);
 
   const fetchLedger = useCallback(async () => {
     setLoading(true);
@@ -155,7 +166,7 @@ export default function MoneyLedgerView({ sessionToken, view, periodMonth }: Mon
         headers: { 'x-super-admin-token': sessionToken },
       });
       if (!res.ok) {
-        setError(`Failed to load (HTTP ${res.status})`);
+        setError(t('moneyLedger.failedToLoadHttp', { code: res.status }));
         setLoading(false);
         return;
       }
@@ -164,11 +175,11 @@ export default function MoneyLedgerView({ sessionToken, view, periodMonth }: Mon
       setPnl((data.pnl || null) as PnlSummary | null);
     } catch (err) {
       console.error('[MoneyLedgerView] fetch', err);
-      setError('Failed to load');
+      setError(t('moneyLedger.failedToLoad'));
     } finally {
       setLoading(false);
     }
-  }, [config.typeFilter, periodMonth, sessionToken]);
+  }, [config.typeFilter, periodMonth, sessionToken, t]);
 
   useEffect(() => {
     fetchLedger();
@@ -179,17 +190,17 @@ export default function MoneyLedgerView({ sessionToken, view, periodMonth }: Mon
     // op_expense MUST be positive. fx_adjustment can be negative (FX loss) or
     // positive (FX gain) but never zero.
     if (!newDescription.trim() || Number.isNaN(amount)) {
-      setError('Description + numeric USD amount required');
+      setError(t('moneyLedger.errDescAmount'));
       return;
     }
     if (isFx) {
       if (amount === 0) {
-        setError('FX adjustment must be non-zero (negative for loss, positive for gain)');
+        setError(t('moneyLedger.errFxNonZero'));
         return;
       }
     } else {
       if (amount <= 0) {
-        setError('Op-expense USD amount must be positive');
+        setError(t('moneyLedger.errPositive'));
         return;
       }
     }
@@ -213,7 +224,7 @@ export default function MoneyLedgerView({ sessionToken, view, periodMonth }: Mon
       });
       const j = await res.json().catch(() => ({}));
       if (!res.ok) {
-        setError(j.error || `HTTP ${res.status}`);
+        setError(j.error || t('moneyLedger.httpError', { code: res.status }));
         return;
       }
       // Reset form + refresh
@@ -225,15 +236,15 @@ export default function MoneyLedgerView({ sessionToken, view, periodMonth }: Mon
       await fetchLedger();
     } catch (err) {
       console.error('[MoneyLedgerView] add', err);
-      setError('Add failed');
+      setError(t('moneyLedger.addFailed'));
     } finally {
       setBusy(false);
     }
-  }, [isFx, newCategory, newDescription, newAmount, newDate, newNotes, sessionToken, fetchLedger]);
+  }, [isFx, newCategory, newDescription, newAmount, newDate, newNotes, sessionToken, fetchLedger, t]);
 
   const handleDelete = useCallback(
     async (rowId: string) => {
-      if (!window.confirm('Delete this op-expense row? Cannot undo.')) return;
+      if (!window.confirm(t('moneyLedger.deleteConfirm'))) return;
       setBusy(true);
       setError(null);
       try {
@@ -243,18 +254,18 @@ export default function MoneyLedgerView({ sessionToken, view, periodMonth }: Mon
         });
         const j = await res.json().catch(() => ({}));
         if (!res.ok) {
-          setError(j.error || `HTTP ${res.status}`);
+          setError(j.error || t('moneyLedger.httpError', { code: res.status }));
           return;
         }
         await fetchLedger();
       } catch (err) {
         console.error('[MoneyLedgerView] delete', err);
-        setError('Delete failed');
+        setError(t('moneyLedger.deleteFailed'));
       } finally {
         setBusy(false);
       }
     },
-    [sessionToken, fetchLedger]
+    [sessionToken, fetchLedger, t]
   );
 
   // Compute the right total for THIS view from the PnL summary.
@@ -272,10 +283,12 @@ export default function MoneyLedgerView({ sessionToken, view, periodMonth }: Mon
       {/* Total card for this view */}
       <div className="flex items-center justify-between p-4 rounded-xl bg-slate-900/55 border border-slate-800">
         <div>
-          <p className="text-xs uppercase tracking-wider text-slate-500">{config.title} · {periodMonth}</p>
+          <p className="text-xs uppercase tracking-wider text-slate-500">
+            {t(config.titleKey as Parameters<typeof t>[0])} · {periodMonth}
+          </p>
           <p className="text-2xl font-bold text-white mt-1">{fmtUsd(totalForView)}</p>
           {rows.length > 0 && (
-            <p className="text-xs text-slate-500 mt-1">{rows.length} row{rows.length === 1 ? '' : 's'}</p>
+            <p className="text-xs text-slate-500 mt-1">{t('moneyLedger.rowCount', { count: rows.length })}</p>
           )}
         </div>
         {config.allowAdd && !showAdd && (
@@ -283,7 +296,7 @@ export default function MoneyLedgerView({ sessionToken, view, periodMonth }: Mon
             onClick={() => setShowAdd(true)}
             className="px-3 py-1.5 bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-500/30 text-emerald-300 rounded-lg text-sm font-medium"
           >
-            + Add expense
+            {t('moneyLedger.addExpense')}
           </button>
         )}
       </div>
@@ -293,7 +306,7 @@ export default function MoneyLedgerView({ sessionToken, view, periodMonth }: Mon
         <div className="p-4 rounded-xl bg-emerald-500/5 border border-emerald-500/30 space-y-3">
           <div className="flex flex-col md:flex-row gap-3">
             <div className="flex-1">
-              <label className="text-xs uppercase tracking-wider text-slate-400 block mb-1">Category</label>
+              <label className="text-xs uppercase tracking-wider text-slate-400 block mb-1">{t('moneyLedger.fieldCategory')}</label>
               <select
                 value={newCategory}
                 onChange={(e) => setNewCategory(e.target.value)}
@@ -308,7 +321,7 @@ export default function MoneyLedgerView({ sessionToken, view, periodMonth }: Mon
             </div>
             <div className="w-full md:w-40">
               <label className="text-xs uppercase tracking-wider text-slate-400 block mb-1">
-                USD {isFx && <span className="text-slate-500 normal-case">(± allowed)</span>}
+                {t('moneyLedger.fieldUsd')} {isFx && <span className="text-slate-500 normal-case">{t('moneyLedger.fxSuffix')}</span>}
               </label>
               <input
                 type="number"
@@ -316,12 +329,12 @@ export default function MoneyLedgerView({ sessionToken, view, periodMonth }: Mon
                 {...(isFx ? {} : { min: '0' })}
                 value={newAmount}
                 onChange={(e) => setNewAmount(e.target.value)}
-                placeholder={isFx ? '-5.00 for loss' : '0.00'}
+                placeholder={isFx ? t('moneyLedger.placeholderFxAmount') : '0.00'}
                 className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-white"
               />
             </div>
             <div className="w-full md:w-44">
-              <label className="text-xs uppercase tracking-wider text-slate-400 block mb-1">Date (optional)</label>
+              <label className="text-xs uppercase tracking-wider text-slate-400 block mb-1">{t('moneyLedger.fieldDateOptional')}</label>
               <input
                 type="date"
                 value={newDate}
@@ -331,23 +344,23 @@ export default function MoneyLedgerView({ sessionToken, view, periodMonth }: Mon
             </div>
           </div>
           <div>
-            <label className="text-xs uppercase tracking-wider text-slate-400 block mb-1">Description</label>
+            <label className="text-xs uppercase tracking-wider text-slate-400 block mb-1">{t('moneyLedger.fieldDescription')}</label>
             <input
               type="text"
               value={newDescription}
               onChange={(e) => setNewDescription(e.target.value)}
-              placeholder="e.g. Railway hosting — May 2026"
+              placeholder={t('moneyLedger.placeholderDescription')}
               maxLength={500}
               className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-white"
             />
           </div>
           <div>
-            <label className="text-xs uppercase tracking-wider text-slate-400 block mb-1">Notes (optional)</label>
+            <label className="text-xs uppercase tracking-wider text-slate-400 block mb-1">{t('moneyLedger.fieldNotesOptional')}</label>
             <input
               type="text"
               value={newNotes}
               onChange={(e) => setNewNotes(e.target.value)}
-              placeholder="Invoice reference, vendor, etc."
+              placeholder={t('moneyLedger.placeholderNotes')}
               className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-white"
             />
           </div>
@@ -357,7 +370,7 @@ export default function MoneyLedgerView({ sessionToken, view, periodMonth }: Mon
               disabled={busy}
               className="px-3 py-1.5 bg-emerald-500/25 hover:bg-emerald-500/40 border border-emerald-500/40 text-emerald-200 rounded-lg text-sm font-semibold disabled:opacity-50"
             >
-              {busy ? '⏳ Adding…' : '✓ Add expense'}
+              {busy ? t('moneyLedger.adding') : t('moneyLedger.addExpenseSave')}
             </button>
             <button
               onClick={() => {
@@ -370,7 +383,7 @@ export default function MoneyLedgerView({ sessionToken, view, periodMonth }: Mon
               }}
               className="px-3 py-1.5 bg-slate-700/40 hover:bg-slate-700/60 border border-slate-700 text-slate-300 rounded-lg text-sm"
             >
-              Cancel
+              {t('common.cancel')}
             </button>
           </div>
         </div>
@@ -388,10 +401,10 @@ export default function MoneyLedgerView({ sessionToken, view, periodMonth }: Mon
       )}
 
       {loading ? (
-        <div className="text-center py-10 text-slate-500 text-sm">Loading…</div>
+        <div className="text-center py-10 text-slate-500 text-sm">{t('common.loading')}</div>
       ) : rows.length === 0 ? (
         <div className="p-8 rounded-xl bg-slate-900/40 border border-slate-800 text-center">
-          <p className="text-slate-400 text-sm">{config.emptyMsg}</p>
+          <p className="text-slate-400 text-sm">{t(config.emptyMsgKey as Parameters<typeof t>[0])}</p>
         </div>
       ) : (
         <div className="space-y-2">
@@ -410,7 +423,7 @@ export default function MoneyLedgerView({ sessionToken, view, periodMonth }: Mon
                     </span>
                     {isManual && (
                       <span className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-blue-500/15 text-blue-300 border border-blue-500/30">
-                        manual
+                        {t('moneyLedger.manualTag')}
                       </span>
                     )}
                   </div>
@@ -436,9 +449,9 @@ export default function MoneyLedgerView({ sessionToken, view, periodMonth }: Mon
                       onClick={() => handleDelete(row.id)}
                       disabled={busy}
                       className="text-[10px] text-slate-500 hover:text-red-400 mt-1 disabled:opacity-50"
-                      title="Delete this manual entry"
+                      title={t('moneyLedger.deleteManualTooltip')}
                     >
-                      🗑 Delete
+                      {t('moneyLedger.deleteBtn')}
                     </button>
                   )}
                 </div>

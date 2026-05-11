@@ -5,6 +5,8 @@
 // Shows 'growing' and 'silent' schools first — these are where Mira can help most.
 
 import { useCallback, useEffect, useState } from 'react';
+import { useI18n } from '@/lib/montree/i18n';
+import type { TranslationKey } from '@/lib/montree/i18n/en';
 
 interface Snapshot {
   school_id: string;
@@ -14,6 +16,8 @@ interface Snapshot {
   photos_30d: number;
   signal: 'growing' | 'active' | 'quiet' | 'silent';
   suggested_action: string | null;
+  suggested_action_key?: string | null;
+  suggested_action_params?: Record<string, number> | null;
 }
 
 interface SnapshotResponse {
@@ -22,6 +26,7 @@ interface SnapshotResponse {
 }
 
 export default function MiraProactiveCard() {
+  const { t } = useI18n();
   const [data, setData] = useState<SnapshotResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [dismissed, setDismissed] = useState(false);
@@ -54,25 +59,20 @@ export default function MiraProactiveCard() {
       <div className="flex items-start justify-between gap-3 mb-3">
         <div>
           <p className="text-xs uppercase tracking-wider text-amber-300 font-semibold">
-            🤝 Mira&rsquo;s snapshot
+            {t('mira.snapshotTitle')}
           </p>
           <p className="text-sm text-white mt-1">
-            {data.summary.total_growth_7d > 0 ? (
-              <>
-                <strong>{data.summary.total_growth_7d} new students</strong> this week across your{' '}
-                {data.summary.total_schools} schools.
-              </>
-            ) : (
-              <>
-                {actionable.length} school{actionable.length === 1 ? '' : 's'} need
-                {actionable.length === 1 ? 's' : ''} attention.
-              </>
-            )}
+            {data.summary.total_growth_7d > 0
+              ? t('mira.growthSummary', {
+                  growth: data.summary.total_growth_7d,
+                  schools: data.summary.total_schools,
+                })
+              : t('mira.attentionSummary', { count: actionable.length })}
           </p>
         </div>
         <button
           onClick={() => setDismissed(true)}
-          aria-label="Dismiss"
+          aria-label={t('common.dismiss')}
           className="text-slate-400 hover:text-white text-lg leading-none px-2 py-0.5"
         >
           ×
@@ -92,7 +92,7 @@ export default function MiraProactiveCard() {
             }`}
           >
             <div className="flex items-center justify-between gap-2 mb-1">
-              <span className="text-white font-medium text-sm">{s.school_name || 'School'}</span>
+              <span className="text-white font-medium text-sm">{s.school_name || t('mira.schoolFallback')}</span>
               <span
                 className={`px-1.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide ${
                   s.signal === 'growing'
@@ -102,12 +102,20 @@ export default function MiraProactiveCard() {
                       : 'bg-slate-700/40 text-slate-300 border border-slate-700'
                 }`}
               >
-                {s.signal}
+                {t(`mira.signal.${s.signal}` as TranslationKey)}
               </span>
             </div>
-            <p className="text-xs text-slate-300 mb-1">{s.suggested_action}</p>
+            <p className="text-xs text-slate-300 mb-1">
+              {s.suggested_action_key
+                ? t(s.suggested_action_key as TranslationKey, s.suggested_action_params || undefined)
+                : s.suggested_action}
+            </p>
             <p className="text-[11px] text-slate-500">
-              {s.active_students} active · +{s.students_added_7d} this week · {s.photos_30d} photos in 30d
+              {t('mira.schoolStats', {
+                active: s.active_students,
+                added: s.students_added_7d,
+                photos: s.photos_30d,
+              })}
             </p>
           </div>
         ))}

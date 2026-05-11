@@ -14,6 +14,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { getChangelogEntries, type ChangelogEntry } from '@/lib/montree/changelog';
+import { useI18n } from '@/lib/montree/i18n';
 
 const STORAGE_KEY = 'montree.changelog.lastSeenEntryId';
 
@@ -22,6 +23,7 @@ interface ChangelogModalProps {
 }
 
 export default function ChangelogModal({ audience = 'all' }: ChangelogModalProps) {
+  const { t } = useI18n();
   const [newEntries, setNewEntries] = useState<ChangelogEntry[]>([]);
   const [dismissed, setDismissed] = useState(false);
 
@@ -112,11 +114,11 @@ export default function ChangelogModal({ audience = 'all' }: ChangelogModalProps
               color: '#34d399',
             }}
           >
-            What&rsquo;s new
+            {t('changelog.whatsNew')}
           </h2>
           <button
             onClick={handleDismiss}
-            aria-label="Close"
+            aria-label={t('common.close')}
             style={{
               background: 'transparent',
               border: 'none',
@@ -183,7 +185,7 @@ export default function ChangelogModal({ audience = 'all' }: ChangelogModalProps
             }}
             onClick={handleDismiss}
           >
-            See full changelog →
+            {t('changelog.seeFull')} →
           </Link>
           <button
             onClick={handleDismiss}
@@ -198,7 +200,7 @@ export default function ChangelogModal({ audience = 'all' }: ChangelogModalProps
               cursor: 'pointer',
             }}
           >
-            Got it
+            {t('changelog.gotIt')}
           </button>
         </div>
       </div>

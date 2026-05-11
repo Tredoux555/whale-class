@@ -116,18 +116,22 @@ export async function GET(req: NextRequest) {
   const idleTeachers = teacherSignals.filter((t) => t.signal === 'idle');
 
   const suggestions: string[] = [];
+  const suggestion_keys: Array<{ key: string; params: Record<string, number> }> = [];
   if (staleClassrooms.length > 0) {
     suggestions.push(
       `${staleClassrooms.length} classroom${staleClassrooms.length === 1 ? '' : 's'} had no photos this week`
     );
+    suggestion_keys.push({ key: 'tracy.suggestion.staleClassrooms', params: { count: staleClassrooms.length } });
   }
   if (idleTeachers.length > 0) {
     suggestions.push(
       `${idleTeachers.length} teacher${idleTeachers.length === 1 ? '' : 's'} haven't logged in this week`
     );
+    suggestion_keys.push({ key: 'tracy.suggestion.idleTeachers', params: { count: idleTeachers.length } });
   }
   if ((pendingPhotos || 0) > 10) {
     suggestions.push(`${pendingPhotos} photos awaiting teacher confirmation`);
+    suggestion_keys.push({ key: 'tracy.suggestion.pendingPhotos', params: { count: pendingPhotos || 0 } });
   }
 
   return NextResponse.json({
@@ -135,5 +139,6 @@ export async function GET(req: NextRequest) {
     teachers: teacherSignals,
     pending_photos_7d: pendingPhotos || 0,
     suggestions,
+    suggestion_keys,
   });
 }
