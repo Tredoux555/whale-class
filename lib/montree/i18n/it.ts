@@ -4421,4 +4421,9 @@ export const it: Record<string, string> = {
   'parentCodes.resetConfirm': 'Reimpostare questo codice genitoriale? Il codice precedente smette di funzionare immediatamente. Il genitore avrà bisogno del nuovo codice per accedere.',
   'parentCodes.emailSubject': 'Accesso Montree — {name}',
   'parentCodes.emailBody': 'Buongiorno,\n\nPuò visualizzare gli aggiornamenti di Montree di {name} qui:\n\n{url}\n\nCodice di accesso: {code}\n\nCordiali saluti',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'money.resetFailedBtn': '🔄 Ripristina in sospeso',
+  'money.resetFailedTooltip': 'Ripristini questo pagamento non riuscito in sospeso affinché il trasferimento possa essere riprovato. Le note di errore vengono conservate nella traccia di audit.',
+  'money.resetFailedConfirm': 'Ripristinare questo pagamento non riuscito in sospeso? Potrà quindi riprovare il trasferimento Stripe. Le note di errore verranno conservate.',
 };

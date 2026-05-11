@@ -12,6 +12,7 @@
 //        - manual_override (sets payout_usd + is_manual_override=true; locks
 //                           the row against future calculator runs)
 //        - clear_override (clears is_manual_override; next calc will rewrite)
+//        - reset_failed (failed → pending so the wire can be retried)
 //
 // Auth: super-admin only.
 
@@ -181,7 +182,7 @@ export async function GET(request: NextRequest) {
 
 interface PatchBody {
   payout_id: string;
-  action: 'mark_paid' | 'mark_failed' | 'cancel' | 'manual_override' | 'clear_override';
+  action: 'mark_paid' | 'mark_failed' | 'cancel' | 'manual_override' | 'clear_override' | 'reset_failed';
   // mark_paid
   stripe_transfer_id?: string;
   paid_by_method?: 'stripe_connect' | 'manual_wire' | 'other';
@@ -309,6 +310,27 @@ export async function PATCH(request: NextRequest) {
         return NextResponse.json({ error: 'Failed to override' }, { status: 500 });
       }
       return NextResponse.json({ success: true, action: 'manual_override' });
+    }
+
+    if (body.action === 'reset_failed') {
+      // Recovery path: failed → pending, so the user can retry the wire
+      // after fixing whatever caused the failure (insufficient Stripe Connect
+      // verification, bank rejection, etc.). Preserves notes for audit trail.
+      if (existing.status !== 'failed') {
+        return NextResponse.json(
+          { error: 'Only failed payouts can be reset to pending.' },
+          { status: 409 }
+        );
+      }
+      const { error } = await supabase
+        .from('montree_agent_payouts')
+        .update({ status: 'pending' })
+        .eq('id', body.payout_id);
+      if (error) {
+        console.error('[payouts PATCH reset_failed]', error);
+        return NextResponse.json({ error: 'Failed to reset' }, { status: 500 });
+      }
+      return NextResponse.json({ success: true, action: 'reset_failed' });
     }
 
     if (body.action === 'clear_override') {

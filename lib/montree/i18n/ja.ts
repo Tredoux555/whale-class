@@ -4421,4 +4421,9 @@ export const ja: Record<string, string> = {
   'parentCodes.resetConfirm': 'この保護者コードをリセットしますか？古いコードはすぐに使えなくなります。保護者様はアクセスするために新しいコードが必要です。',
   'parentCodes.emailSubject': 'Montree アクセス — {name}さま',
   'parentCodes.emailBody': 'いつもお世話になっております。\n\nお子さまの {name} さんの Montree 更新情報は、こちらからご確認いただけます：\n\n{url}\n\nアクセスコード：{code}\n\nよろしくお願いいたします',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'money.resetFailedBtn': '🔄 保留中にリセット',
+  'money.resetFailedTooltip': '失敗した支払いを保留中にリセットして、ワイヤー送金を再試行できるようにします。失敗ノートは監査証跡に保存されます。',
+  'money.resetFailedConfirm': 'この失敗した支払いを保留中にリセットしますか？その後、Stripeのワイヤー送金を再試行できます。失敗ノートは保持されます。',
 };

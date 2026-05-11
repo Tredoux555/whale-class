@@ -4421,4 +4421,9 @@ export const pt: Record<string, string> = {
   'parentCodes.resetConfirm': 'Redefinir este código de responsável? O código antigo para de funcionar imediatamente. O responsável precisará do novo código para acessar.',
   'parentCodes.emailSubject': 'Acesso ao Montree — {name}',
   'parentCodes.emailBody': 'Olá,\n\nVocê pode visualizar as atualizações de {name} no Montree aqui:\n\n{url}\n\nCódigo de acesso: {code}\n\nAtenciosamente',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'money.resetFailedBtn': '🔄 Redefinir para pendente',
+  'money.resetFailedTooltip': 'Redefinir um pagamento falhado para pendente para que a transferência bancária possa ser retentada. As anotações de falha são preservadas na trilha de auditoria.',
+  'money.resetFailedConfirm': 'Redefinir este pagamento falhado para pendente? Você poderá então retentarjamento da Stripe. As anotações de falha serão mantidas.',
 };
