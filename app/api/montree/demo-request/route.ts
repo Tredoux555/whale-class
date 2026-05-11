@@ -48,16 +48,32 @@ export async function POST(req: NextRequest) {
         }),
       }).catch(err => console.error('[demo-request] Failed to send notification email:', err));
 
-      // Confirmation to requester
+      // Confirmation to requester — HTML + plain text fallback. The plain
+      // text version preserved verbatim for clients that can't render HTML.
       const firstName = name ? name.split(' ')[0] : null;
+      const greetingName = firstName || school || 'there';
+      const escapeFn = (s: string) =>
+        s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+      const confirmHtml = `<!doctype html>
+<html><body style="margin:0;padding:0;background:#f7f9f8;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#0a1a0f;">
+  <div style="max-width:520px;margin:32px auto;padding:28px;background:#fff;border-radius:14px;border:1px solid rgba(52,211,153,0.18);">
+    <h1 style="margin:0 0 12px;font-size:22px;font-family:Lora,Georgia,serif;font-weight:700;">Montree</h1>
+    <p style="font-size:15px;line-height:1.6;margin:0 0 14px;color:#1f2d24;">Dear ${escapeFn(greetingName)},</p>
+    <p style="font-size:15px;line-height:1.6;margin:0 0 14px;color:#1f2d24;">Thank you for reaching out. I'll be in touch within 24 hours to arrange a time to show you what Montree can do.</p>
+    <p style="font-size:15px;line-height:1.6;margin:0 0 14px;color:#1f2d24;">In the meantime, you can have a quick look at <a href="https://montree.xyz" style="color:#10b981;font-weight:600;text-decoration:none;">montree.xyz</a> — or simply reply to this email if you have a particular question.</p>
+    <p style="font-size:14px;line-height:1.55;margin:24px 0 0;color:#5b6b73;">Kind regards,<br/>Tredoux<br/><a href="https://montree.xyz" style="color:#10b981;">montree.xyz</a></p>
+  </div>
+</body></html>`;
+      const confirmText = `Dear ${greetingName},\n\nThank you for reaching out. I'll be in touch within 24 hours to arrange a time to show you what Montree can do.\n\nIn the meantime, you can have a quick look at montree.xyz — or simply reply to this email if you have a particular question.\n\nKind regards,\nTredoux\nmontree.xyz`;
       await fetch('https://api.resend.com/emails', {
         method: 'POST',
         headers: { Authorization: `Bearer ${resendKey}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({
           from: fromEmail,
           to: email.trim().toLowerCase(),
-          subject: 'Montree',
-          text: `Dear ${firstName || school || 'there'},\n\nThank you for reaching out. I'll be in touch within 24 hours to arrange a time to show you what Montree can do.\n\nKind regards,\nTredoux\nmontree.xyz`,
+          subject: 'Montree — thanks for reaching out',
+          html: confirmHtml,
+          text: confirmText,
         }),
       }).catch(err => console.error('[demo-request] Failed to send confirmation email:', err));
     }
