@@ -202,11 +202,62 @@ Wave 1 sends bounced for these addresses. None of these are flagged as `bounced`
 
 ## RECENT STATUS (May 12, 2026)
 
-### ⚡ Session 107 — PERF push (19/26 tiers) + Stripe Connect Express LIVE + Migration 202 RUN (May 12, 2026)
+### ⚡ Session 107 — PERF push (19/26 tiers) + Stripe Connect Express LIVE + Migration 202 RUN + Audit fix cycle (May 12, 2026)
 
-**23 commits pushed to main, ending `baa38292`. Working tree clean. Railway auto-deploys triggered throughout.** The big perf push + Stripe Connect activation on the live Montree Limited account. Gloria's first real payout is one super-admin click away.
+**24 commits pushed to main, ending `e4ad132d`. Working tree clean. Railway auto-deploys triggered throughout.** The big perf push + Stripe Connect activation on the live Montree Limited account + a deep audit-fix cycle (3 clean passes) that caught 2 real bugs the original 23-commit push missed. Gloria's first real payout is one super-admin click away.
 
-**🚨 Canonical resume doc:** `docs/handoffs/SESSION_107_HANDOFF.md` — 23-commit log table, Stripe Connect operational state table, architectural rules #36–48, 8-step smoke test for Session 108, full PERF_HEALTH_CHECK.md status.
+**🚨 Canonical resume docs:** `docs/handoffs/SESSION_107_HANDOFF.md` (the build push — 23-commit log, Stripe Connect operational state, architectural rules #36–48, 8-step smoke test) + `docs/handoffs/SESSION_107_AUDIT_HANDOFF.md` (the audit cycle — 2 fixes, 3 false positives dismissed, architectural takeaways).
+
+---
+
+### 🔍 Audit fix cycle — final commit `e4ad132d`
+
+After the 23-commit push landed, ran a three-pass deep audit. **Two real bugs found and fixed. Three false positives dismissed with verification.**
+
+**Real bug 1 — Lora literal sweep (79 files):** Architectural rule #42 said inline `fontFamily` must use `var(--font-lora)`. The rule was declared this session but **80 pre-existing files** still used literal `'Lora', Georgia, serif'`. `next/font/google` doesn't register `font-family: Lora` globally — it only exposes the hashed name via `--font-lora` CSS variable. Every literal `'Lora'` was silently falling back to Georgia. Swept 79 files via Python script. **`lib/montree/email.ts` deliberately preserved** — Gmail/Outlook ignore CSS vars in HTML email; literal stays. The Tier 1.3 perf win (~700KB gzip eliminated) is now fully realized.
+
+**Real bug 2 — Principal communication thread optimistic race:** `app/montree/admin/communication/threads/[threadId]/page.tsx` called `void load()` after send success, which `setMessages(replace entire array)`. Sending a SECOND optimistic message while the first was in flight could wipe message #2's bubble briefly until its own load resolved. Parent/teacher/agent threads already used the correct functional pattern. Fixed to read canonical row from POST response (`data.message`) and `setMessages(prev => prev.map(m => m.id === tempId ? data.message : m))` — defensive fallback to `load()` preserved if server response shape ever changes. All 4 messaging surfaces now consistent.
+
+**False positives dismissed (with verification):**
+
+1. **C1 (analysis route SELECT narrow):** Audit claimed dropped `duration_minutes` + `repetition_count` from the narrow caused silent zero durations in weekly reports. Verified across ALL migrations — those columns don't exist on `montree_child_progress` (they're on `montree_work_sessions`). Reads were always undefined regardless of narrow. Real duration data flows through `observationHistory` from the work-sessions query — unaffected.
+
+2. **H3 (webhook unit_amount):** Audit claimed webhook should write effective price from DB instead of Stripe's `item.price.unit_amount`. Stripe IS the source of truth post-sync. After override sync swaps the Price, the webhook correctly reflects the new value.
+
+3. **H4 (force not passed to syncSubscriptionQuantity):** Audit claimed the early-return at `billing.ts:568` suppresses price-only changes. Walked the condition with concrete scenario: `!force && !priceMismatch && !quantityMismatch` — when override changes price, `priceMismatch=true` makes `!priceMismatch=false`, condition fails, falls through to the swap. The Stripe Price swap fires correctly without `force`.
+
+### 🚨 Architectural takeaways from the audit cycle
+
+1. **Declaring a new architectural rule needs a same-session enforcement sweep.** Rule #42 was declared but 80 pre-existing files violated it. Future "lock a new rule" work should grep + sweep the existing codebase in the same commit.
+
+2. **`next/font/google` does NOT register `font-family: Lora` globally.** It generates a hashed family name + exposes only via `--font-lora` CSS variable + `lora.className`. Components hardcoding `'Lora'` fall back to system fonts. Inline `fontFamily` MUST reference `var(--font-lora)`. `lib/montree/email.ts` is the exception — mail clients ignore CSS vars.
+
+3. **`void load()` after a mutation is the WRONG optimistic-UI pattern.** It replaces all state and races with concurrent optimistics. The canonical pattern (now consistent across all 4 messaging surfaces) is: read canonical row from mutation response → `setMessages(prev => prev.map(m => m.id === tempId ? data.message : m))`. Defensive `load()` fallback only if response shape changes.
+
+4. **Audit findings need scenario walks before fix-or-dismiss.** Three false positives this cycle: each was an audit claim about a code path that didn't actually break under real values. Walking through with concrete inputs (e.g. "what happens when override sets price to $5 with quantity unchanged?") flipped HIGH severity claims to false positives.
+
+5. **Audit agents sometimes confuse tables.** C1 confused `montree_child_progress` with `montree_work_sessions`. When an audit flags a SELECT narrow as broken, verify the column exists on the narrowed table via migration grep before "restoring" it.
+
+### 🚨 Operational state unchanged from build push
+
+All operational state items (Migration 202 RUN, Stripe Connect LIVE, env vars deployed, Gloria onboarding pending, HK banker pending, 5 Railway crons pending, Resend domain pending, HK accountant package pending) are unchanged. The audit cycle didn't introduce new operational tasks.
+
+### 🚨 Next session priorities (unchanged from build push, ordered)
+
+1. **🚨🚨🚨 Generate Gloria's onboarding link** — Super-admin Referrals → 💳 → reveal-once URL → send to Gloria with `docs/agents/GLORIA_STRIPE_ONBOARDING.md`.
+2. **Walk the 8-step smoke test** in `docs/handoffs/SESSION_107_HANDOFF.md`.
+3. **Confirm with HK banker** about Stripe Connect Express + HKD wires.
+4. **Send HK accountant** `docs/finance/HK_FINANCIAL_ADVISOR_SUMMARY.md`.
+5. **Configure 5 Railway crons** per `docs/perf/CRON_SETUP.md`.
+6. **Verify `montree.xyz` in Resend**.
+7. **Deferred PERF items** (each its own dedicated session because of testing requirements): Tier 1.1 SW SWR (THE BIG ONE — ~80% returning-visit lag gone), Tier 2.2 retry-with-resume, Tier 5.1 remaining 80 imgs (needs JSX parser), Tier 5.3 NoteField extract, Tier 6.3 tap target audit.
+8. **Outreach carry-over:** FAMM Argentina · Cambridge Montessori Global · Otari NZ · Lions Gate · Montessori Norge · Paint Pots · Ardtona dead leads DB cleanup · 14+ Wave 1 bounces.
+
+---
+
+### Original Session 107 build push (23 commits, baa38292)
+
+**🚨 Canonical resume doc for the build push itself:** `docs/handoffs/SESSION_107_HANDOFF.md` — 23-commit log table, Stripe Connect operational state table, architectural rules #36–48, 8-step smoke test for Session 108, full PERF_HEALTH_CHECK.md status.
 
 **🚨 Migration 202 RUN** — `montree_schools.billing_override_usd` + `billing_override_note` columns live. Per-school early-adopter pricing functional via super-admin 💲 button. Stop telling future sessions to run this.
 
