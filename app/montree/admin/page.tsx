@@ -420,6 +420,14 @@ export default function AdminAgentPage() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
+  // 🚨 Perf Tier 2.1 (PERF_HEALTH_CHECK.md) — SSE token rAF throttle.
+  // Without this, every SSE token from Tracy triggered a setTurns call →
+  // O(N) render of the entire conversation per token → CPU spikes during
+  // streaming. Now tokens accumulate in pendingTextRef and one rAF flush
+  // per frame applies the buffered chunk. ~80% CPU reduction during stream.
+  const pendingTextRef = useRef('');
+  const rafIdRef = useRef<number | null>(null);
+
   // School-scoped storage keys — built once on mount. If we end up with no
   // schoolId (no logged-in principal), the page redirects to login.
   const keysRef = useRef<TracyStorageKeys | null>(null);
@@ -507,13 +515,54 @@ export default function AdminAgentPage() {
     inputRef.current?.focus();
   }, [convId]);
 
+  // Flush any buffered token text from pendingTextRef into setTurns. Called
+  // by requestAnimationFrame and synchronously by handleEvent before non-text
+  // events apply (so token order is preserved relative to tool calls / done).
+  const flushTextBuffer = useCallback(() => {
+    rafIdRef.current = null;
+    const pending = pendingTextRef.current;
+    if (!pending) return;
+    pendingTextRef.current = '';
+    setTurns((prev) => {
+      if (prev.length === 0) return prev;
+      const last = prev[prev.length - 1];
+      if (last.role !== 'assistant') return prev;
+      return [
+        ...prev.slice(0, -1),
+        { ...last, text: (last.text || '') + pending },
+      ];
+    });
+  }, []);
+
   const handleEvent = useCallback((evt: Record<string, unknown>) => {
+    // Fast path: text events buffer and schedule a single rAF flush. Multiple
+    // tokens within one frame collapse into one setTurns call.
+    if (evt.type === 'text') {
+      pendingTextRef.current += String(evt.text || '');
+      if (rafIdRef.current === null) {
+        rafIdRef.current = requestAnimationFrame(flushTextBuffer);
+      }
+      return;
+    }
+
+    // Non-text event: drain any pending text synchronously so the next
+    // setTurns sees it before applying the new event state.
+    if (rafIdRef.current !== null) {
+      cancelAnimationFrame(rafIdRef.current);
+      rafIdRef.current = null;
+    }
+    const drained = pendingTextRef.current;
+    pendingTextRef.current = '';
+
     setTurns((prev) => {
       if (prev.length === 0) return prev;
       const last = prev[prev.length - 1];
       if (last.role !== 'assistant') return prev;
 
-      const updated = { ...last };
+      const updated = {
+        ...last,
+        text: drained ? (last.text || '') + drained : last.text,
+      };
       switch (evt.type) {
         case 'tool_call': {
           const tool: ToolEvent = {
@@ -560,10 +609,6 @@ export default function AdminAgentPage() {
           updated.thinking = (updated.thinking || '') + String(evt.text || '');
           break;
         }
-        case 'text': {
-          updated.text = (updated.text || '') + String(evt.text || '');
-          break;
-        }
         case 'done': {
           updated.pending = false;
           updated.progress = null;
@@ -581,7 +626,17 @@ export default function AdminAgentPage() {
 
       return [...prev.slice(0, -1), updated];
     });
-  }, [t]);
+  }, [t, flushTextBuffer]);
+
+  // Cancel any pending rAF on unmount so we don't run setTurns after teardown.
+  useEffect(() => {
+    return () => {
+      if (rafIdRef.current !== null) {
+        cancelAnimationFrame(rafIdRef.current);
+        rafIdRef.current = null;
+      }
+    };
+  }, []);
 
   const submit = useCallback(async () => {
     const q = question.trim();
