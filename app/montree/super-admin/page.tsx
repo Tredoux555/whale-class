@@ -39,11 +39,23 @@ type TabType = 'schools' | 'feedback' | 'leads' | 'visitors' | 'agents' | 'money
 
 const SESSION_TIMEOUT_MS = 15 * 60 * 1000; // 15 minutes
 
-type DemoLead = { id: string; org_name: string; contact_person: string | null; email: string; created_at: string; status: string };
+type DemoLead = {
+  id: string;
+  org_name: string;
+  contact_person: string | null;
+  email: string;
+  created_at: string;
+  status: string;
+  drips_sent?: string[]; // e.g., ['day3', 'day7']
+};
+
+function daysSince(iso: string): number {
+  return Math.floor((Date.now() - new Date(iso).getTime()) / (1000 * 60 * 60 * 24));
+}
 
 function DemoRequestAlert({ saToken }: { saToken: string }) {
   const [leads, setLeads] = useState<DemoLead[]>([]);
-  const [dismissing, setDismissing] = useState<string | null>(null);
+  const [busy, setBusy] = useState<string | null>(null);
 
   const load = useCallback(() => {
     if (!saToken) return;
@@ -62,15 +74,15 @@ function DemoRequestAlert({ saToken }: { saToken: string }) {
 
   useEffect(() => { load(); }, [load]);
 
-  const markContacted = async (id: string) => {
-    setDismissing(id);
+  const setStatus = async (id: string, status: 'contacted' | 'not_interested') => {
+    setBusy(id);
     await fetch('/api/montree/super-admin/demo-requests', {
       method: 'PATCH',
       headers: { 'x-super-admin-token': saToken, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id, status: 'contacted' }),
-    }).catch(err => console.error('[SuperAdmin] Failed to mark lead contacted:', err));
+      body: JSON.stringify({ id, status }),
+    }).catch(err => console.error('[SuperAdmin] Failed to update lead status:', err));
     setLeads(prev => prev.filter(l => l.id !== id));
-    setDismissing(null);
+    setBusy(null);
   };
 
   if (leads.length === 0) return null;
@@ -84,26 +96,64 @@ function DemoRequestAlert({ saToken }: { saToken: string }) {
         </span>
       </div>
       <div className="space-y-2">
-        {leads.map(lead => (
-          <div key={lead.id} className="flex items-center justify-between bg-black/20 rounded-lg px-3 py-2 gap-3">
-            <div className="min-w-0">
-              <span className="text-white text-sm font-medium">{lead.org_name}</span>
-              {lead.contact_person && <span className="text-emerald-300/70 text-xs ml-2">— {lead.contact_person}</span>}
-              <div>
-                <a href={`mailto:${lead.email}`} className="text-emerald-400 text-xs hover:text-emerald-300 underline">
+        {leads.map(lead => {
+          const age = daysSince(lead.created_at);
+          const dripsSent = lead.drips_sent || [];
+          const stale = age > 14;
+          return (
+            <div
+              key={lead.id}
+              className={`flex items-start justify-between rounded-lg px-3 py-2 gap-3 ${
+                stale ? 'bg-amber-500/10 border border-amber-500/30' : 'bg-black/20'
+              }`}
+            >
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="text-white text-sm font-medium">{lead.org_name}</span>
+                  {lead.contact_person && (
+                    <span className="text-emerald-300/70 text-xs">— {lead.contact_person}</span>
+                  )}
+                  <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${
+                    stale
+                      ? 'bg-amber-500/20 text-amber-200 border border-amber-500/40'
+                      : 'bg-slate-700/50 text-slate-300 border border-slate-600'
+                  }`}>
+                    {age === 0 ? 'today' : age === 1 ? '1 day ago' : `${age} days ago`}
+                  </span>
+                  {dripsSent.length > 0 && (
+                    <span className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-blue-500/15 text-blue-300 border border-blue-500/30">
+                      📧 drips: {dripsSent.sort().map(d => d.replace('day', 'd')).join(', ')}
+                    </span>
+                  )}
+                </div>
+                <a
+                  href={`mailto:${lead.email}`}
+                  className="text-emerald-400 text-xs hover:text-emerald-300 underline mt-1 inline-block"
+                >
                   {lead.email}
                 </a>
               </div>
+              <div className="flex flex-col gap-1 shrink-0">
+                <button
+                  onClick={() => setStatus(lead.id, 'contacted')}
+                  disabled={busy === lead.id}
+                  className="text-xs px-2.5 py-1 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/35 text-emerald-300 border border-emerald-500/30 transition-colors disabled:opacity-50"
+                  title="Stops the drip and marks the lead as contacted"
+                >
+                  {busy === lead.id ? '...' : '✓ Contacted'}
+                </button>
+                <button
+                  onClick={() => setStatus(lead.id, 'not_interested')}
+                  disabled={busy === lead.id}
+                  className="text-[11px] px-2.5 py-1 rounded-lg bg-slate-700/40 hover:bg-slate-700/60 text-slate-400 border border-slate-700 transition-colors disabled:opacity-50"
+                  title="Mark as not interested. Drip stops."
+                >
+                  Not interested
+                </button>
+              </div>
             </div>
-            <button
-              onClick={() => markContacted(lead.id)}
-              disabled={dismissing === lead.id}
-              className="shrink-0 text-xs px-2.5 py-1 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/35 text-emerald-300 border border-emerald-500/30 transition-colors disabled:opacity-50"
-            >
-              {dismissing === lead.id ? '...' : 'Mark contacted'}
-            </button>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
@@ -159,7 +209,7 @@ export default function SuperAdminPage() {
         },
         body: JSON.stringify({ action, details, timestamp: new Date().toISOString() }),
       });
-    } catch (e) {
+    } catch {
       // Audit log failed
     }
   }, [saToken]);
