@@ -200,6 +200,162 @@ Wave 1 sends bounced for these addresses. None of these are flagged as `bounced`
 
 ---
 
+## RECENT STATUS (May 12, 2026)
+
+### ⚡ Session 105 — i18n full sweep + Money/Health/Demo operational layer + Photo audit polish (May 12, 2026)
+
+**16 commits pushed to main this session:** `bde404d8` → `5338a406` → `d99dfd31` → `48aa7b52` → `418ec51d` → `03fba586` → `00ada714` → `a3cd874f` → `317d585f` → `dc0a449e` → `2f4d5f04` → `0192bad6` → `c0c12a2c` → `453cd9b6` → `7cc53298` → (final handoff commit).
+
+**🚨 Canonical resume doc:** `docs/handoffs/SESSION_105_HANDOFF.md` — full 16-commit log, 14-step smoke test, architectural rules, deferred backlog. Pick up Session 106 cold from there.
+
+**The headline:** Every Session 104 surface (Money tab + Health tab + DLQ + Errors + Tracy/Mira cards + Changelog + TrialBanner + Recurring + parent-codes + agent messaging) is now translatable across all 12 locales. PLUS a comprehensive operational layer:
+- Stripe Connect + Customer **deep-links** from both Schools and Money tabs
+- **Failed-payout retry** via 🔄 Reset to pending
+- **Demo-request drip campaign** (day 3 / 7 / 14) with full visibility + one-click trial-link reply
+- **Tracy 402 → upgrade card** (vs red error toast)
+- **Top-3 candidate chips** on photo audit + **React.memo** to stop the 200-photo grid choking
+- **Billing page i18n** (closes trial→paid funnel for non-English principals)
+
+**A. i18n full sweep (`bde404d8` + `5338a406`):**
+
+327 new keys × 12 locales = ~3,597 Haiku translations across 13 Session 104 surfaces: MoneyTab (~83), MoneyLedgerView (~35), HealthTab, WebhookDLQTab, ServerErrorsTab, RecurringOpExpensePanel, ChangelogModal, TrialExpiringBanner, TracyProactiveCard, MiraProactiveCard, parent-codes teacher page, agent messages list + thread detail.
+
+**Two server routes refactored** so client can localize:
+- `/api/montree/agent/snapshot` returns `suggested_action_key` + `params`
+- `/api/montree/admin/snapshot` returns `suggestion_keys` array
+
+Both keep the legacy English `suggested_action` string for back-compat fallback.
+
+**Newline escape bug found + fixed (`5338a406`):** `money.confirmWire` and `parentCodes.emailBody` were stored with `\\n\\n` (escaped backslash + n) which TypeScript single-quote parsing produces as literal `\n\n` text at runtime — not newlines. Normalized to `\n\n` (single backslash) across 12 locales. The strict i18n parity check passes either way so this was a real runtime bug guard.
+
+**B. Stripe failed-payout retry (`d99dfd31`):**
+
+When a Stripe wire fails (Connect rejection, bank error, etc.) the row sits in `failed` status with no recovery path — super-admin had to manually SQL the row back to pending to retry. New `🔄 Reset to pending` button on every failed row flips status back after confirmation. Failure notes preserved as audit trail.
+
+- PATCH `/api/montree/super-admin/payouts` gains `action='reset_failed'`
+- Server refuses on non-failed rows (409)
+- 3 new i18n keys
+
+**C. Demo-request drip campaign (`48aa7b52` + `418ec51d` + `2f4d5f04` + `c0c12a2c`):**
+
+Closes a real gap: landing-page demo requests get one confirmation email, then sit waiting for Tredoux to manually reach out. If he's busy or forgets, the lead goes cold. The full pipeline now:
+
+1. **Auto-acknowledge** on form submit (existing)
+2. **Day 3 / 7 / 14 drip emails** (NEW) — fire automatically while `status='demo_requested'`. Stops the moment Tredoux flips status to anything else. Idempotent via `montree_outreach_log` (action='demo_request_drip_dayN', contact_id dedup key).
+3. **DemoRequestAlert visibility** — each pending row shows days since request (amber if > 14d), drips fired (e.g. "📧 drips: d3, d7"), and three actions:
+   - **📧 Reply with trial link** — opens default mail client with pre-filled warm reply containing `https://montree.xyz/montree/try`; also auto-marks contacted
+   - **✓ Contacted** — just stops the drip
+   - **Not interested** — also stops the drip
+4. **Health tab card** — pending count + drips fired last 7d + oldest unanswered (warn if > 14d)
+
+**🚨 Architectural rule:** Drips that gate on a status field auto-stop the moment the status flips. No separate unsubscribe state machine. Same pattern as trial-drip from Session 104.
+
+Cron: `0 10 * * *` (10:00 UTC daily, one hour after trial-drip). Manual trigger button on Health tab.
+
+New API route: `/api/montree/super-admin/demo-request-drip` (auth: x-cron-secret OR super-admin, dry_run via `?dry_run=1`).
+
+New email helper: `sendDemoRequestDripEmail()` in `lib/montree/email.ts` with 3 templates (warm tone, branded HTML + plain text fallback).
+
+**D. Stripe Dashboard deep-links (`03fba586` + `dc0a449e`):**
+
+Two new clickable surfaces save the multi-step navigation through Stripe's UI:
+- **Money tab payout rows** — Connect status pill (ready/restricted/onboarding) opens `dashboard.stripe.com/connect/accounts/{id}`. The "not set up" state stays as plain span (no account to link to).
+- **Schools tab rows** — 💳 Stripe pill (active/trial/past_due/canceled) opens `dashboard.stripe.com/customers/{id}` when `stripe_customer_id` is set. Color preserved per status; 🔗 emoji appended as visual deep-link hint.
+
+**🚨 Architectural rule (#30):** All three Stripe Dashboard URL patterns are now canonical:
+- Customer: `dashboard.stripe.com/customers/{id}`
+- Connect account: `dashboard.stripe.com/connect/accounts/{id}`
+- Connect transfer: `dashboard.stripe.com/connect/transfers/{id}` (existing from Session 104)
+
+**E. Billing page i18n (`00ada714`):**
+
+The principal-facing billing page at `/montree/admin/billing` was English-only — the weakest link in the trial→paid conversion funnel. A non-English-speaking principal hits the (translated) TrialExpiringBanner, clicks the CTA, and previously landed on an English page asking them to set up payment.
+
+Translated end-to-end: page title, pricing tagline, status pills (Active/Trial/Past due/Canceled), 3 metric tiles, 4 action buttons (Set up billing / Manage in Stripe / Update payment / Resubscribe), invoice history list + empty state, billing-not-configured fallback, quantity drift warning, success/canceled/error messages. HTML `<strong>` tag inside `notConfiguredPricing` preserved via `dangerouslySetInnerHTML` (Haiku kept the tag intact in every locale).
+
+36 new keys × 11 non-EN locales = 396 Haiku translations. Chinese spot-checked: 账单 / 当前计划 / 月度费用 / 设置账单 / 通过 Stripe 按月计费 — all natural.
+
+Also added locale-aware date + currency formatting via `getIntlLocale()`.
+
+**F. Health tab expansion (`a3cd874f` + `317d585f`):**
+
+Two new cards bring the Health tab to **8 status cards** total (DB · Stripe · AI · LCP · Payout calc · Schools · **Server errors** · **Demo requests**):
+
+1. **🐛 Server errors card** — queries `montree_server_errors` for unresolved count, fatal subset count, and last 7d total. Status escalates: fatal > 0 → fail (red), unresolved > 0 → warn (amber), all resolved → ok (emerald). Soft-fails if migration 201 not yet run.
+
+2. **Stripe webhook card upgrade** — subtitle now shows `⚠ N pending in DLQ — last 7d` when count > 0 (queries `montree_webhook_deadletter` where status='pending'). Card flips from ok → warn when any DLQ events are pending. The full chain (webhook delivery → DLQ resolution → ledger) is visible from one screen.
+
+**G. Tracy 402 → upgrade card (`0192bad6`):**
+
+Carry-over from Session 98 priority #14. When a Free-tier school hits Tracy, server returned 402 with generic error — client rendered as red error toast, treating a billing state like a bug.
+
+- Server adds `requires_upgrade: true` + `upgrade_url: '/montree/admin/billing'` + `feature: 'tracy'` to the 402 payload
+- `ConvTurn` type gains `requiresUpgrade?: boolean`
+- Frontend handler reads `requires_upgrade` from 402 body and routes to a friendly amber/gold upgrade card with "Set up billing" CTA — instead of the red error box
+- Plain transient errors still render as red (separate branch)
+
+**🚨 Architectural rule (#29):** All AI 402 routes should adopt the same shape (`requires_upgrade` + `upgrade_url` + `feature`). Tracy is the first; Weekly Wrap, Photo Identification, Snap Identify, etc. are deferred follow-up work.
+
+**H. Photo audit polish (`7cc53298`) — top-3 candidates + memo fix:**
+
+User feedback this session:
+1. *"It would be beneficial if Haiku matched the three most likely works for a quick tap on Wrap Up"*
+2. *"Today I was sorting through these works and the system choked"*
+
+Both addressed in one commit:
+
+**Top-3 chips:** `matchToCurriculumV2` was already computing top-3 fuzzy matches internally but only `bestMatch` was used. Now:
+- `TwoPassResult.identification.topCandidates: Array<{ workName, workKey, area, score }>` (best-first)
+- Both Pass 2 and Pass 2b populate it
+- Server persists to `sonnet_draft.top_candidates` JSONB on `montree_media`
+- Audit card renders the **top 2 siblings** (skipping the chosen one, since ✓ Correct does that) as inline pill chips on both `haiku_matched` (yellow) and `haiku_drafted` (teal) surfaces
+- New handler `handleConfirmCandidate(photo, candidate)` mirrors `handleConfirmHaikuDraft` — resolves workKey, calls `attachToExistingWork()`
+
+**Performance fix:** `AuditPhotoCard` wrapped in `React.memo` with custom comparator that checks only data props (photo, selected, processing, workStatus, rerunResult, unifiedTagger). Callbacks are intentionally excluded — they always read latest state via parent closures + functional setState, so stale-reference correctness is fine. With 200+ photos in the grid, unrelated state changes (note typing on another card, scroll, filter) no longer cascade re-renders through the entire grid.
+
+**🚨 Architectural rules (#32, #33):**
+- `matchToCurriculumV2` returns top-3 candidates — preserve the candidate-array contract.
+- `React.memo` on expensive list items must skip callback props in the comparator (callbacks always have new identity per parent render; including them defeats memo).
+
+**Architectural rules locked in this session (cumulative, 27-33):**
+
+27. **Drips that gate on a status field auto-stop** the moment status flips. No separate unsubscribe state machine.
+28. **`\n\n` in TypeScript single-quoted strings produces newlines at runtime.** Never use `\\n\\n`.
+29. **AI 402 responses include `requires_upgrade` + `upgrade_url` + `feature`.** Clients render upgrade card instead of red error.
+30. **Stripe Dashboard deep-link patterns:** customers/{id}, connect/accounts/{id}, connect/transfers/{id}.
+31. **`reset_failed` is the canonical recovery action for stuck payouts.** Server refuses non-failed rows.
+32. **`matchToCurriculumV2` returns top-3 candidates** — use them.
+33. **`React.memo` comparator must skip callback props.** Compare data props only.
+
+**Verification status:**
+- ✅ All 16 commits on `origin/main`. Railway auto-deploys triggered throughout.
+- ✅ Lint clean across all changed files. ESLint pre-commit hook passes.
+- ✅ Pre-commit i18n strict check passes — all 12 locales at 100% parity (4405 keys each).
+- ✅ TypeScript clean for all i18n changes (i18n errors gone; remaining tsc errors are pre-existing in lib/youtube + scripts/rotate-encryption-key).
+- ⏳ User to walk the 14-step smoke test in `docs/handoffs/SESSION_105_HANDOFF.md`.
+
+**🚨 Tredoux operational still-to-do (unchanged from Session 104):**
+
+1. **Enable Stripe Connect** at https://dashboard.stripe.com/connect — ONLY blocker to wire Gloria's first real payout
+2. **Generate Gloria's Stripe Connect link** (super-admin Referrals → 💳 button) once Connect is on → send `docs/agents/GLORIA_STRIPE_ONBOARDING.md`
+3. **Send the HK accountant** `docs/finance/HK_FINANCIAL_ADVISOR_SUMMARY.md`
+4. **Set Railway env vars** — `CRON_SECRET` + `CRON_DIGEST_EMAIL=tredoux555@gmail.com`
+5. **Configure 5 Railway crons** per `docs/perf/CRON_SETUP.md` — now includes **demo-request drip** at `0 10 * * *`
+6. **Verify `montree.xyz` in Resend** so demo + drip emails actually deliver
+
+**🚨 Next session priorities (Session 106, ordered):**
+
+1. **Walk the 14-step smoke test** in `SESSION_105_HANDOFF.md` after Railway settles. Verify each shipped surface works.
+2. **Apply Tracy 402 upgrade-card pattern to other AI routes** — Weekly Wrap, Photo Identification, Snap Identify all return generic 402 errors. Same `requires_upgrade` + `upgrade_url` shape + matching client cards. ~1-2 hours per surface.
+3. **Virtual scroll on photo-audit grid** — `React.memo` helps but 500 photos in DOM is still heavy. Add `react-window` or `react-virtuoso`. ~2-3 hours.
+4. **Agent dashboard polish** — Schools / Codes / Payouts / Settings pages. Mobile-first re-audit. ~half-day.
+5. **Top-3 chips on `sonnet_drafted` card** too (currently only on Haiku cards). `closest_existing_match` could be repurposed.
+6. **Photo bank improvements** (carry-over).
+7. **Parent portal dark forest theme audit** (carry-over).
+8. **Outreach follow-ups:** FAMM Argentina, Cambridge Montessori Global, Otari NZ, Lions Gate, Montessori Norge (all carry-over from Session 94).
+
+---
+
 ## RECENT STATUS (May 11, 2026)
 
 ### ⚡ Session 104 — The marathon (25 commits, May 11, 2026, auto-run all evening + into the night)
