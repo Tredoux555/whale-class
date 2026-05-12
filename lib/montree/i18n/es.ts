@@ -4424,6 +4424,7 @@ export const es: Record<string, string> = {
   'billing.tileStatus': 'Estado',
   'billing.daysCount': '{days} días',
   'billing.quantityDrift': 'Stripe fue facturado por última vez por {billed} estudiantes — tu cantidad activa ahora es {live}. La próxima sincronización reconciliará esto; la próxima factura se carga según la cantidad real.',
+  'billing.overrideBanner': 'Tienes una tarifa especial: ${price}/alumno/mes (la tarifa estándar es ${defaultPrice}/mes).',
   'billing.setUpBilling': 'Configurar facturación',
   'billing.starting': 'Iniciando…',
   'billing.manageInStripe': 'Administrar facturación en Stripe',

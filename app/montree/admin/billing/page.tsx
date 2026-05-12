@@ -51,6 +51,10 @@ interface BillingStatus {
   };
   pricing: {
     price_per_student_usd: number;
+    /** Platform default ($7). May differ from price_per_student_usd if an override is in effect. */
+    default_price_per_student_usd?: number;
+    /** True when billing_override_usd is set on the school. */
+    is_overridden?: boolean;
   };
   history: BillingHistoryRow[];
 }
@@ -180,6 +184,20 @@ function BillingPageContent() {
       <p className="mt-2 text-emerald-200/70 text-sm">
         {t('billing.pricingTagline', { price: data.pricing.price_per_student_usd })}
       </p>
+      {/* Override banner — only when a per-school custom rate is in effect.
+          Sits right under the tagline so the principal immediately sees their
+          actual rate. Gold accent matches the early-adopter / partner tone. */}
+      {data.pricing.is_overridden && data.pricing.default_price_per_student_usd !== undefined && (
+        <div className="mt-3 bg-amber-500/10 border border-amber-500/30 rounded-lg px-3 py-2 text-amber-100 text-xs flex items-center gap-2">
+          <span aria-hidden>💛</span>
+          <span>
+            {t('billing.overrideBanner', {
+              price: data.pricing.price_per_student_usd,
+              defaultPrice: data.pricing.default_price_per_student_usd,
+            })}
+          </span>
+        </div>
+      )}
 
       {actionMessage && (
         <div className="mt-4 bg-emerald-500/10 border border-emerald-500/30 rounded-lg p-3 text-emerald-200 text-sm flex justify-between items-start gap-3">

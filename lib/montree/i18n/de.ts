@@ -4453,6 +4453,7 @@ export const de: Record<string, string> = {
   'billing.tileStatus': 'Status',
   'billing.daysCount': '{days} Tage',
   'billing.quantityDrift': 'Stripe wurde zuletzt für {billed} Kinder berechnet — Ihre aktive Anzahl beträgt jetzt {live}. Die nächste Synchronisierung gleicht dies aus; die nächste Rechnung basiert auf der tatsächlichen Anzahl.',
+  'billing.overrideBanner': 'Sie haben einen Sondertarif: ${price}/Kind/Monat (Standardtarif: ${defaultPrice}/Monat).',
   'billing.setUpBilling': 'Abrechnung einrichten',
   'billing.starting': 'Wird gestartet…',
   'billing.manageInStripe': 'Abrechnung in Stripe verwalten',

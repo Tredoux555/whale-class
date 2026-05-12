@@ -19,7 +19,8 @@ import {
   loadSchoolBilling,
   countActiveStudents,
   PRICE_PER_STUDENT_USD,
-  PRICE_PER_STUDENT_CENTS,
+  effectivePricePerStudentUsd,
+  effectivePricePerStudentCents,
 } from '@/lib/montree/billing';
 
 export const dynamic = 'force-dynamic';
@@ -40,7 +41,12 @@ export async function GET(request: NextRequest) {
   }
 
   const liveStudentCount = await countActiveStudents(supabase, auth.schoolId);
-  const liveEstimateCents = liveStudentCount * PRICE_PER_STUDENT_CENTS;
+  // Effective price honours any per-school billing_override_usd. Estimates
+  // shown to the principal must use this, not the platform default.
+  const effectivePriceUsd = effectivePricePerStudentUsd(school);
+  const effectivePriceCents = effectivePricePerStudentCents(school);
+  const liveEstimateCents = liveStudentCount * effectivePriceCents;
+  const isOverridden = effectivePriceUsd !== PRICE_PER_STUDENT_USD;
 
   // Recent invoice timeline (most recent 12 — a year of monthly invoices).
   // Pull a wider buffer (40) so dedup-by-invoice-id doesn't accidentally
@@ -100,11 +106,17 @@ export async function GET(request: NextRequest) {
       // billing_quantity if a sync hasn't fired yet.
       live_student_count: liveStudentCount,
       live_monthly_charge_estimate_cents: liveEstimateCents,
-      live_monthly_charge_estimate_usd: liveStudentCount * PRICE_PER_STUDENT_USD,
+      live_monthly_charge_estimate_usd: liveStudentCount * effectivePriceUsd,
       trial_days_remaining: trialDaysRemaining,
     },
     pricing: {
-      price_per_student_usd: PRICE_PER_STUDENT_USD,
+      // The principal's actual rate. Equals platform default unless a
+      // per-school override is in effect.
+      price_per_student_usd: effectivePriceUsd,
+      // Platform default ($7). Surfaced so the UI can render "Your rate: $5
+      // (down from $7)" without recomputing it.
+      default_price_per_student_usd: PRICE_PER_STUDENT_USD,
+      is_overridden: isOverridden,
     },
     history: history || [],
   });

@@ -4856,6 +4856,7 @@ export const zh = {
   'billing.tileStatus': '状态',
   'billing.daysCount': '{days} 天',
   'billing.quantityDrift': 'Stripe 上次计费时有 {billed} 个学生 — 您的当前活跃人数为 {live}。下次同步将协调此差异；下次发票将根据实际人数收费。',
+  'billing.overrideBanner': '您享有特别费率：每位学生每月 ${price}（平台默认为每月 ${defaultPrice}）。',
   'billing.setUpBilling': '设置账单',
   'billing.starting': '正在启动…',
   'billing.manageInStripe': '在 Stripe 中管理账单',

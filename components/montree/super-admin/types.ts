@@ -61,6 +61,10 @@ export interface School {
   billing_quantity?: number | null;
   monthly_charge_estimate_cents?: number | null;
   last_synced_to_stripe_at?: string | null;
+  // Migration 202 — per-school billing override. NULL means "use platform
+  // default ($7/student/month)". Number = custom rate in USD.
+  billing_override_usd?: number | string | null;
+  billing_override_note?: string | null;
 }
 
 export interface Feedback {

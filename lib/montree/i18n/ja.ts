@@ -4453,6 +4453,7 @@ export const ja: Record<string, string> = {
   'billing.tileStatus': 'ステータス',
   'billing.daysCount': '{days} 日',
   'billing.quantityDrift': 'Stripe では {billed} 名のお子さまで最後に請求されていますが、アクティブ数は現在 {live} 名です。次回の同期で調整され、次の請求書は実際の人数に基づいて課金されます。',
+  'billing.overrideBanner': '特別料金が適用されています：お子さま1名につき月額 ${price}（標準料金は月額 ${defaultPrice}）。',
   'billing.setUpBilling': '請求を設定する',
   'billing.starting': '開始中…',
   'billing.manageInStripe': 'Stripe で請求を管理する',

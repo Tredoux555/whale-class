@@ -4450,6 +4450,7 @@ export const uk: Record<string, string> = {
   'billing.tileStatus': 'Статус',
   'billing.daysCount': '{days} днів',
   'billing.quantityDrift': 'Stripe було виставлено рахунок за {billed} учнів — зараз активних {live}. Наступна синхронізація вирівняє це; наступний рахунок розраховується на основі фактичної кількості.',
+  'billing.overrideBanner': 'У Вас особлива ставка: ${price}/учня/місяць (стандартна ставка: ${defaultPrice}/місяць).',
   'billing.setUpBilling': 'Налаштувати розрахунки',
   'billing.starting': 'Розпочинаємо…',
   'billing.manageInStripe': 'Керувати розрахунками в Stripe',

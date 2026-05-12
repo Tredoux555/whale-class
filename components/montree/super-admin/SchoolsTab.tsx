@@ -8,6 +8,11 @@ import { getCountryFlag } from '@/lib/ip-geolocation';
 
 const SchoolFeaturesModal = dynamic(() => import('./SchoolFeaturesModal'), { ssr: false });
 const PrincipalsModal = dynamic(() => import('./PrincipalsModal'), { ssr: false });
+const BillingOverrideModal = dynamic(() => import('./BillingOverrideModal'), { ssr: false });
+
+// Platform default per-student rate. Mirrors PRICE_PER_STUDENT_USD in
+// lib/montree/billing.ts. If that changes, change this too.
+const PLATFORM_DEFAULT_PRICE_USD = 7;
 
 interface SchoolsTabProps {
   schools: School[];
@@ -84,8 +89,24 @@ export default function SchoolsTab({
   const [confirmText, setConfirmText] = useState('');
   const [featuresSchool, setFeaturesSchool] = useState<{ id: string; name: string } | null>(null);
   const [principalsSchool, setPrincipalsSchool] = useState<{ id: string; name: string } | null>(null);
+  const [overrideSchool, setOverrideSchool] = useState<{ id: string; name: string; current: number | string | null | undefined; note: string | null | undefined } | null>(null);
   const [togglingAi, setTogglingAi] = useState<Set<string>>(new Set());
   const [tierOverrides, setTierOverrides] = useState<Record<string, 'free' | 'premium'>>({});
+  // Local override updates for optimistic display after the modal saves. Keyed
+  // by schoolId. `null` here means "cleared". Mirrors the pattern used for AI
+  // tier (tierOverrides above) — avoids a full schools refetch.
+  const [billingOverrideUpdates, setBillingOverrideUpdates] = useState<
+    Record<string, { override: number | null; note: string | null }>
+  >({});
+
+  const getEffectiveOverride = (school: School): number | null => {
+    if (school.id in billingOverrideUpdates) {
+      return billingOverrideUpdates[school.id].override;
+    }
+    const raw = school.billing_override_usd;
+    if (raw === null || raw === undefined) return null;
+    return typeof raw === 'string' ? Number(raw) : raw;
+  };
 
   // AI tier change handler (free / premium)
   const handleTierChange = useCallback(async (school: School, newTier: 'free' | 'premium') => {
@@ -698,6 +719,32 @@ export default function SchoolsTab({
                           >
                             ⚙️
                           </button>
+                          {(() => {
+                            const effOverride = getEffectiveOverride(school);
+                            const hasOverride = effOverride !== null;
+                            return (
+                              <button
+                                onClick={() => setOverrideSchool({
+                                  id: school.id,
+                                  name: school.name,
+                                  current: effOverride,
+                                  note: (school.id in billingOverrideUpdates ? billingOverrideUpdates[school.id].note : school.billing_override_note) ?? null,
+                                })}
+                                className={`px-2 py-1 rounded text-xs font-medium ${
+                                  hasOverride
+                                    ? 'bg-amber-500/30 text-amber-300 hover:bg-amber-500/40'
+                                    : 'bg-slate-700/40 text-slate-400 hover:bg-slate-700/60'
+                                }`}
+                                title={hasOverride
+                                  ? `Billing override: $${Number(effOverride).toFixed(2)}/student/month`
+                                  : 'Set per-school billing override'}
+                              >
+                                💲{hasOverride && (
+                                  <span className="ml-1 tabular-nums">${Number(effOverride).toFixed(2)}</span>
+                                )}
+                              </button>
+                            );
+                          })()}
                           <button
                             onClick={() => onLoginAs(school.id)}
                             className="px-2 py-1 bg-amber-500/20 text-amber-400 hover:bg-amber-500/30 rounded text-xs font-medium"
@@ -738,6 +785,31 @@ export default function SchoolsTab({
           schoolName={principalsSchool.name}
           sessionToken={sessionToken}
           onClose={() => setPrincipalsSchool(null)}
+        />
+      )}
+
+      {/* Per-school billing override modal (migration 202). Sets the rate
+          for this specific school, overriding the platform default. */}
+      {overrideSchool && sessionToken && (
+        <BillingOverrideModal
+          schoolId={overrideSchool.id}
+          schoolName={overrideSchool.name}
+          currentOverrideUsd={overrideSchool.current}
+          currentNote={overrideSchool.note}
+          defaultPriceUsd={PLATFORM_DEFAULT_PRICE_USD}
+          sessionToken={sessionToken}
+          onClose={() => setOverrideSchool(null)}
+          onSaved={(override, note) => {
+            // Optimistic local update so the row reflects the new override
+            // immediately (matches the tierOverrides pattern above). Next
+            // page reload pulls canonical values from the API.
+            if (overrideSchool) {
+              setBillingOverrideUpdates(prev => ({
+                ...prev,
+                [overrideSchool.id]: { override, note },
+              }));
+            }
+          }}
         />
       )}
     </>

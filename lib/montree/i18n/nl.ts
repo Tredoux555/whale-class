@@ -4453,6 +4453,7 @@ export const nl: Record<string, string> = {
   'billing.tileStatus': 'Status',
   'billing.daysCount': '{days} dagen',
   'billing.quantityDrift': 'Stripe is voor het laatst gefactureerd voor {billed} leerlingen — uw actieve aantal is nu {live}. De volgende synchronisatie zal dit afstellen; de volgende factuur wordt gebaseerd op het werkelijke aantal.',
+  'billing.overrideBanner': 'U heeft een speciaal tarief: ${price}/leerling/maand (standaardtarief: ${defaultPrice}/maand).',
   'billing.setUpBilling': 'Facturering instellen',
   'billing.starting': 'Starten…',
   'billing.manageInStripe': 'Facturering beheren in Stripe',
