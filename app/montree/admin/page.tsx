@@ -428,6 +428,15 @@ export default function AdminAgentPage() {
   const pendingTextRef = useRef('');
   const rafIdRef = useRef<number | null>(null);
 
+  // 🚨 Perf Tier 2.2 (safe half — PERF_HEALTH_CHECK.md): AbortController
+  // for the in-flight SSE stream. Aborted on unmount, on "New conversation"
+  // (convId change), and at the start of every submit() so a previous slow
+  // stream doesn't interleave tokens into the new conversation.
+  //
+  // The retry-with-resume part of Tier 2.2 is deferred — it needs real VPN-
+  // drop testing. This commit lands the memory-leak fix only.
+  const streamControllerRef = useRef<AbortController | null>(null);
+
   // School-scoped storage keys — built once on mount. If we end up with no
   // schoolId (no logged-in principal), the page redirects to login.
   const keysRef = useRef<TracyStorageKeys | null>(null);
@@ -653,10 +662,32 @@ export default function AdminAgentPage() {
     };
   }, []);
 
+  // 🚨 Tier 2.2 (safe half) — abort the SSE stream on unmount + on every
+  // convId change. Without this, navigating to /classrooms mid-stream leaves
+  // the fetch reading from a dead reader until the server times out — a real
+  // memory + connection leak.
+  useEffect(() => {
+    return () => {
+      if (streamControllerRef.current) {
+        streamControllerRef.current.abort();
+        streamControllerRef.current = null;
+      }
+    };
+  }, [convId]);
+
   const submit = useCallback(async () => {
     const q = question.trim();
     if (!q || submitting || !convId) return;
     setSubmitting(true);
+
+    // 🚨 Tier 2.2 (safe half) — abort any previous in-flight stream before
+    // starting a new one. Prevents stale tokens from a slow previous request
+    // bleeding into the new turn's bubble.
+    if (streamControllerRef.current) {
+      streamControllerRef.current.abort();
+    }
+    const controller = new AbortController();
+    streamControllerRef.current = controller;
 
     const userTurn: ConvTurn = { role: 'user', text: q };
     const assistantTurn: ConvTurn = {
@@ -681,6 +712,7 @@ export default function AdminAgentPage() {
       const res = await fetch('/api/montree/admin/principal-agent', {
         method: 'POST',
         credentials: 'include',
+        signal: controller.signal,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           question: q,
@@ -763,6 +795,18 @@ export default function AdminAgentPage() {
         }
       }
     } catch (err) {
+      // 🚨 Tier 2.2 (safe half) — AbortError is intentional (we cancelled).
+      // Don't surface it to the user as an error toast.
+      if (err instanceof Error && err.name === 'AbortError') {
+        // Caller (nav-away or new conversation) wanted this stream gone.
+        // Drop the pending turn so the bubble doesn't stay stuck spinning.
+        setTurns((prev) =>
+          prev.map((tt, i) =>
+            i === prev.length - 1 ? { ...tt, pending: false } : tt
+          )
+        );
+        return;
+      }
       console.error('[admin agent] stream error', err);
       setTurns((prev) =>
         prev.map((tt, i) =>
@@ -776,6 +820,11 @@ export default function AdminAgentPage() {
         )
       );
     } finally {
+      // Clear the controller if it's still the one we created — protects
+      // against a brand-new submit() racing with this finally block.
+      if (streamControllerRef.current === controller) {
+        streamControllerRef.current = null;
+      }
       setSubmitting(false);
     }
   }, [question, submitting, convId, turns, handleEvent, locale, t]);

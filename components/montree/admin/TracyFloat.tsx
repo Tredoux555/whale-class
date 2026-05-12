@@ -230,6 +230,11 @@ export default function TracyFloat() {
   const pendingTextRef = useRef('');
   const rafIdRef = useRef<number | null>(null);
 
+  // 🚨 Tier 2.2 (safe half) — AbortController for the SSE stream.
+  // Aborted on unmount + on every new conversation. The retry-with-resume
+  // half of Tier 2.2 is deferred until real VPN-drop testing.
+  const streamControllerRef = useRef<AbortController | null>(null);
+
   // School-scoped storage keys — built once on mount from localStorage's
   // montree_school. If we end up with no schoolId (no logged-in principal),
   // we never fire a greeting and the panel stays inert until next mount.
@@ -528,6 +533,19 @@ export default function TracyFloat() {
     };
   }, []);
 
+  // 🚨 Tier 2.2 (safe half) — abort the SSE stream on unmount + on every
+  // convId change ("New conversation" button). Stops the fetch reader from
+  // sitting on a dead stream when the float unmounts or the user starts a
+  // fresh thread.
+  useEffect(() => {
+    return () => {
+      if (streamControllerRef.current) {
+        streamControllerRef.current.abort();
+        streamControllerRef.current = null;
+      }
+    };
+  }, [convId]);
+
   const sendMessage = useCallback(
     async (
       questionText: string,
@@ -571,10 +589,20 @@ export default function TracyFloat() {
       let succeeded = false;
       const kickoff = isKickoff(questionText);
 
+      // 🚨 Tier 2.2 (safe half) — abort any in-flight previous stream
+      // before firing a new one. Stops stale tokens from leaking into the
+      // new turn's bubble.
+      if (streamControllerRef.current) {
+        streamControllerRef.current.abort();
+      }
+      const controller = new AbortController();
+      streamControllerRef.current = controller;
+
       try {
         const res = await fetch('/api/montree/admin/principal-agent', {
           method: 'POST',
           credentials: 'include',
+          signal: controller.signal,
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             question: questionText,
@@ -705,6 +733,17 @@ export default function TracyFloat() {
           }
         }
       } catch (err) {
+        // 🚨 Tier 2.2 (safe half) — AbortError is intentional. Don't show
+        // a connection-error toast when the user navigated away or started
+        // a new conversation.
+        if (err instanceof Error && err.name === 'AbortError') {
+          setTurns((prev) =>
+            prev.map((tt, i) =>
+              i === prev.length - 1 ? { ...tt, pending: false } : tt
+            )
+          );
+          return;
+        }
         console.error('[TracyFloat] stream error', err);
         setTurns((prev) =>
           prev.map((tt, i) =>
@@ -718,6 +757,12 @@ export default function TracyFloat() {
               : tt
           )
         );
+      } finally {
+        // Clear the controller if it's still the one we created — protects
+        // against a brand-new sendMessage() racing with this finally block.
+        if (streamControllerRef.current === controller) {
+          streamControllerRef.current = null;
+        }
       }
     },
     [turns, locale, t, handleEvent, open]
