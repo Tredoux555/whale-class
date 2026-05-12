@@ -4485,4 +4485,9 @@ export const nl: Record<string, string> = {
   'health.errorsUnresolved': '{count} onopgelost',
   'health.errorsFatal': '⚠ {count} fataal — zie tabblad Fouten',
   'health.errorsLast7d': '{count} geregistreerd · laatste 7 dagen',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'tracy.upgrade.title': 'Activeer Tracy',
+  'tracy.upgrade.body': 'Tracy en de AI-functies maken deel uit van het volledige Montree-plan. Stel uw facturering in om deze in te schakelen — € 7 per actieve leerling per maand, geen contracten.',
+  'tracy.upgrade.cta': 'Facturering instellen',
 };

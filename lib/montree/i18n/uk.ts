@@ -4482,4 +4482,9 @@ export const uk: Record<string, string> = {
   'health.errorsUnresolved': '{count} невирішені',
   'health.errorsFatal': '⚠ {count} критичні — див. вкладку Помилки',
   'health.errorsLast7d': '{count} зареєстровані · останні 7 днів',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'tracy.upgrade.title': 'Активувати Трейсі',
+  'tracy.upgrade.body': 'Трейсі та функції штучного інтелекту є частиною повного плану Montree. Налаштуйте оплату, щоб розблокувати їх — $7 за активного учня на місяць, без контрактів.',
+  'tracy.upgrade.cta': 'Налаштувати оплату',
 };

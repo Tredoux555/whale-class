@@ -4485,4 +4485,9 @@ export const de: Record<string, string> = {
   'health.errorsUnresolved': '{count} ungelöst',
   'health.errorsFatal': '⚠ {count} kritisch — siehe Fehler-Reiter',
   'health.errorsLast7d': '{count} protokolliert · letzte 7 Tage',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'tracy.upgrade.title': 'Tracy aktivieren',
+  'tracy.upgrade.body': 'Tracy und die KI-Funktionen sind Teil des vollständigen Montree-Plans. Richten Sie die Abrechnung ein, um sie freizuschalten — 7 € pro aktivem Schüler pro Monat, ohne Verträge.',
+  'tracy.upgrade.cta': 'Abrechnung einrichten',
 };

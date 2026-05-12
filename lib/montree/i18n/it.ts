@@ -4485,4 +4485,9 @@ export const it: Record<string, string> = {
   'health.errorsUnresolved': '{count} non risolti',
   'health.errorsFatal': '⚠ {count} critici — consultare la scheda Errori',
   'health.errorsLast7d': '{count} registrati · ultimi 7 giorni',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'tracy.upgrade.title': 'Attiva Tracy',
+  'tracy.upgrade.body': 'Tracy e le funzionalità di intelligenza artificiale fanno parte del piano completo Montree. Configuri la fatturazione per sbloccarli — $7 per studente attivo al mese, senza contratti vincolanti.',
+  'tracy.upgrade.cta': 'Configura fatturazione',
 };

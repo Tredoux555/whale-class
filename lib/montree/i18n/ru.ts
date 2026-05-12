@@ -4482,4 +4482,9 @@ export const ru: Record<string, string> = {
   'health.errorsUnresolved': '{count} неразрешённых',
   'health.errorsFatal': '⚠ {count} критических — см. вкладку Ошибки',
   'health.errorsLast7d': '{count} записано · за последние 7 дней',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'tracy.upgrade.title': 'Активировать Tracy',
+  'tracy.upgrade.body': 'Tracy и функции искусственного интеллекта являются частью полного плана Montree. Установите платёж для разблокировки — 7 USD за активного ученика в месяц, без контрактов.',
+  'tracy.upgrade.cta': 'Установить платёж',
 };

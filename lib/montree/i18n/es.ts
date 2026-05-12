@@ -4456,4 +4456,9 @@ export const es: Record<string, string> = {
   'health.errorsUnresolved': '{count} sin resolver',
   'health.errorsFatal': '⚠ {count} fatal — mirá la pestaña de Errores',
   'health.errorsLast7d': '{count} registrados · últimos 7 días',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'tracy.upgrade.title': 'Activa Tracy',
+  'tracy.upgrade.body': 'Tracy y las características de IA son parte del plan completo de Montree. Configurá la facturación para desbloquearlo — $7 por estudiante activo por mes, sin contratos.',
+  'tracy.upgrade.cta': 'Configurar facturación',
 };

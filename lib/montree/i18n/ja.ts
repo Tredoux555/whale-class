@@ -4485,4 +4485,9 @@ export const ja: Record<string, string> = {
   'health.errorsUnresolved': '{count}件未解決',
   'health.errorsFatal': '⚠ {count}件致命的エラー — エラータブをご確認ください',
   'health.errorsLast7d': '{count}件記録 · 過去7日間',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'tracy.upgrade.title': 'Tracyを有効化',
+  'tracy.upgrade.body': 'TracyとAI機能はMontreeフルプランに含まれています。課金設定をして利用を開始してください — アクティブなお子さまあたり月額$7、契約期間の縛りなし。',
+  'tracy.upgrade.cta': '課金設定をする',
 };
