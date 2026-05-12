@@ -4429,4 +4429,10 @@ export const ja: Record<string, string> = {
 
   // ─── Auto-filled missing keys (from Apr 30 audit) ───
   'health.cron.demoRequestDrip': 'デモリクエストドリップ',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'health.demoTitle': 'デモリクエスト',
+  'health.demoPending': '{count}件待機中',
+  'health.demoSubtitle': '{drips}件のドリップ・最古{days}日前',
+  'health.demoSubtitleNoneOldest': '{drips}件のドリップを送信済み・直近7日間',
 };

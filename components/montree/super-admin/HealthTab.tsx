@@ -89,12 +89,19 @@ export default function HealthTab({ sessionToken }: HealthTabProps) {
   const vitalsStep = stepByName('web_vitals_p75_lcp');
   const payoutStep = stepByName('payout_runs');
   const schoolsStep = stepByName('active_schools');
+  const demoStep = stepByName('demo_requests');
 
   const stripeDetail = (stripeStep?.detail as { rows_last_7d?: number } | undefined) || undefined;
   const aiDetail = (aiStep?.detail as { total_usd?: number; rows?: number; schools_active?: number; most_recent?: string } | undefined) || undefined;
   const vitalsDetail = (vitalsStep?.detail as { p75_ms?: number | null; sample_size?: number } | undefined) || undefined;
   const payoutDetail = (payoutStep?.detail as { most_recent_calc?: string; recent_periods?: Array<{ period_month: string; row_count: number; total_usd: number; latest_calc: string }> } | undefined) || undefined;
   const schoolDetail = (schoolsStep?.detail as { total?: number; trialing?: number; active?: number } | undefined) || undefined;
+  const demoDetail = (demoStep?.detail as { pending_count?: number; drips_sent_7d?: number; oldest_pending?: { created_at: string; org_name: string | null; email: string | null } | null } | undefined) || undefined;
+
+  // Compute days-since for oldest pending demo request, if any
+  const oldestPendingDays = demoDetail?.oldest_pending
+    ? Math.floor((Date.now() - new Date(demoDetail.oldest_pending.created_at).getTime()) / (1000 * 60 * 60 * 24))
+    : null;
 
   return (
     <div className="space-y-5">
@@ -206,6 +213,31 @@ export default function HealthTab({ sessionToken }: HealthTabProps) {
           metric={t('health.schoolsTotal', { count: schoolDetail?.total ?? 0 })}
           subtitle={t('health.schoolsBreakdown', { trialing: schoolDetail?.trialing ?? 0, active: schoolDetail?.active ?? 0 })}
           error={schoolsStep?.ok === false ? String(schoolsStep?.detail || '') : null}
+        />
+
+        {/* Demo requests */}
+        <HealthCard
+          icon="📬"
+          title={t('health.demoTitle')}
+          status={
+            !demoStep?.ok
+              ? 'fail'
+              : (demoDetail?.pending_count ?? 0) === 0
+                ? 'ok'
+                : oldestPendingDays !== null && oldestPendingDays > 14
+                  ? 'warn'
+                  : 'idle'
+          }
+          metric={t('health.demoPending', { count: demoDetail?.pending_count ?? 0 })}
+          subtitle={
+            demoDetail?.oldest_pending && oldestPendingDays !== null
+              ? t('health.demoSubtitle', {
+                  drips: demoDetail?.drips_sent_7d ?? 0,
+                  days: oldestPendingDays,
+                })
+              : t('health.demoSubtitleNoneOldest', { drips: demoDetail?.drips_sent_7d ?? 0 })
+          }
+          error={demoStep?.ok === false ? String(demoStep?.detail || '') : null}
         />
       </div>
 

@@ -4400,4 +4400,10 @@ export const es: Record<string, string> = {
 
   // ─── Auto-filled missing keys (from Apr 30 audit) ───
   'health.cron.demoRequestDrip': 'Goteo de solicitud de demostración',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'health.demoTitle': 'Solicitudes de demostración',
+  'health.demoPending': '{count} pendientes',
+  'health.demoSubtitle': '{drips} demostraciones · la más antigua {days}d',
+  'health.demoSubtitleNoneOldest': '{drips} demostraciones enviadas · últimos 7d',
 };

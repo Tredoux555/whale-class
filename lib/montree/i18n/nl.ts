@@ -4429,4 +4429,10 @@ export const nl: Record<string, string> = {
 
   // ─── Auto-filled missing keys (from Apr 30 audit) ───
   'health.cron.demoRequestDrip': 'Demoaanvraag-druppelaar',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'health.demoTitle': 'Demoverzoeken',
+  'health.demoPending': '{count} in afwachting',
+  'health.demoSubtitle': '{drips} sessies · oudste {days}d',
+  'health.demoSubtitleNoneOldest': '{drips} sessies verzonden · afgelopen 7d',
 };

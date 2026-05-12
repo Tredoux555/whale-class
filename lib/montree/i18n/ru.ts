@@ -4426,4 +4426,10 @@ export const ru: Record<string, string> = {
 
   // ─── Auto-filled missing keys (from Apr 30 audit) ───
   'health.cron.demoRequestDrip': 'Демонстрационный запрос',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'health.demoTitle': 'Демо-запросы',
+  'health.demoPending': '{count} ожидающих',
+  'health.demoSubtitle': '{drips} капли · самые старые {days}д',
+  'health.demoSubtitleNoneOldest': '{drips} капли отправлены · за последние 7д',
 };
