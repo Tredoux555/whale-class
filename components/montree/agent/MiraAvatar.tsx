@@ -43,9 +43,14 @@ export default function MiraAvatar({ size = 56, className, style }: MiraAvatarPr
   }
 
   return (
+    // 🚨 Perf Tier 5.1 — explicit width/height attrs prevent CLS when the
+    // avatar PNG finishes loading. Parity with TracyAvatar.
+    // eslint-disable-next-line @next/next/no-img-element
     <img
       src="/mira-avatar.png"
       alt="Mira"
+      width={size}
+      height={size}
       onError={() => setImgError(true)}
       className={className}
       style={{
