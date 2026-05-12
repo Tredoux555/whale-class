@@ -4432,4 +4432,7 @@ export const uk: Record<string, string> = {
   'health.demoPending': '{count} очікуються',
   'health.demoSubtitle': '{drips} потоків · найстарішому {days}д',
   'health.demoSubtitleNoneOldest': '{drips} потоків надіслано · за останні 7д',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'money.openConnectInStripe': 'Відкрити цей Connect-акаунт у Stripe Dashboard',
 };

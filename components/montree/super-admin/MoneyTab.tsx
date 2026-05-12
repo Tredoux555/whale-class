@@ -49,6 +49,7 @@ interface PayoutRow {
   updated_at: string;
   // Stripe Connect status (joined from agent row at GET time).
   agent_stripe_connect_status: string | null;
+  agent_stripe_connect_account_id: string | null;
   agent_payouts_enabled: boolean;
   agent_charges_enabled: boolean;
   agent_has_connect_account: boolean;
@@ -474,17 +475,35 @@ export default function MoneyTab({ sessionToken }: MoneyTabProps) {
                           {t('money.connect.notSetUp')}
                         </span>
                       ) : row.agent_payouts_enabled ? (
-                        <span className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
+                        <a
+                          href={`https://dashboard.stripe.com/connect/accounts/${row.agent_stripe_connect_account_id}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          title={t('money.openConnectInStripe')}
+                          className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 hover:bg-emerald-500/25 hover:underline"
+                        >
                           {t('money.connect.ready')}
-                        </span>
+                        </a>
                       ) : row.agent_stripe_connect_status === 'restricted' ? (
-                        <span className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-red-500/15 text-red-300 border border-red-500/30">
-                          {t('money.connect.restricted')}
-                        </span>
+                        <a
+                          href={`https://dashboard.stripe.com/connect/accounts/${row.agent_stripe_connect_account_id}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          title={t('money.openConnectInStripe')}
+                          className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-red-500/15 text-red-300 border border-red-500/30 hover:bg-red-500/25 hover:underline"
+                        >
+                          {t('money.connect.restricted')} 🔗
+                        </a>
                       ) : (
-                        <span className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-amber-500/15 text-amber-300 border border-amber-500/30">
-                          {row.agent_stripe_connect_status || t('money.connect.onboarding')}
-                        </span>
+                        <a
+                          href={`https://dashboard.stripe.com/connect/accounts/${row.agent_stripe_connect_account_id}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          title={t('money.openConnectInStripe')}
+                          className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-amber-500/15 text-amber-300 border border-amber-500/30 hover:bg-amber-500/25 hover:underline"
+                        >
+                          {row.agent_stripe_connect_status || t('money.connect.onboarding')} 🔗
+                        </a>
                       )}
                     </p>
                   </div>

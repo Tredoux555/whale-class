@@ -4432,4 +4432,7 @@ export const ru: Record<string, string> = {
   'health.demoPending': '{count} ожидающих',
   'health.demoSubtitle': '{drips} капли · самые старые {days}д',
   'health.demoSubtitleNoneOldest': '{drips} капли отправлены · за последние 7д',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'money.openConnectInStripe': 'Открыть этот аккаунт Connect в панели управления Stripe',
 };

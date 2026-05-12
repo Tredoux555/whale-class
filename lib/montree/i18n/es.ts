@@ -4406,4 +4406,7 @@ export const es: Record<string, string> = {
   'health.demoPending': '{count} pendientes',
   'health.demoSubtitle': '{drips} demostraciones · la más antigua {days}d',
   'health.demoSubtitleNoneOldest': '{drips} demostraciones enviadas · últimos 7d',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'money.openConnectInStripe': 'Abrir esta cuenta Connect en el Panel de Stripe',
 };

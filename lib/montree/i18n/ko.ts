@@ -4435,4 +4435,7 @@ export const ko: Record<string, string> = {
   'health.demoPending': '{count}개 대기 중',
   'health.demoSubtitle': '{drips}개 드립 · 가장 오래된 {days}일',
   'health.demoSubtitleNoneOldest': '{drips}개 드립 전송 · 최근 7일',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'money.openConnectInStripe': 'Stripe Dashboard에서 이 Connect 계정을 열어요.',
 };
