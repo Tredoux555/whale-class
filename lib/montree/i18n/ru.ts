@@ -3689,6 +3689,12 @@ export const ru: Record<string, string> = {
   'photoBank.deleteConfirm': 'Удалить это изображение из банка? Это действие нельзя отменить.',
   'photoBank.deleting': 'Удаление…',
   'photoBank.deleteFailed': 'Не удалось удалить изображение. Попробуйте ещё раз.',
+  'photoBank.bulkDeleteButton': 'Удалить {count}',
+  'photoBank.bulkDeleteConfirm': 'Удалить {count} изображений из библиотеки? Это действие нельзя отменить.',
+  'photoBank.bulkDeleteTitle': 'Удалить все выбранные изображения',
+  'photoBank.sortBy': 'Сортировка:',
+  'photoBank.sortName': 'A–Я',
+  'photoBank.sortRecent': 'Новые',
 
   // ─── Auto-filled missing keys (from Apr 30 audit) ───
   'auth.noCode': 'Нет кода? Начните прямо сейчас →',

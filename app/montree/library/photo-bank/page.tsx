@@ -40,6 +40,10 @@ export default function PhotoBankPage() {
   const selectedIds = React.useMemo(() => new Set(selectedPhotos.keys()), [selectedPhotos]);
   // Per-session deletion log so the grid hides removed rows immediately
   const [deletedIds, setDeletedIds] = useState<Set<string>>(new Set());
+  // Sort + bulk-delete state. Sort is forwarded to PhotoBankPicker via the new
+  // `sort` prop and lands at /api/montree/photo-bank as ?sort=…
+  const [sort, setSort] = useState<'label' | 'recent'>('label');
+  const [bulkDeleting, setBulkDeleting] = useState(false);
 
   const handleDeletePhoto = useCallback(async (photo: PhotoBankPhoto) => {
     if (typeof window !== 'undefined') {
@@ -116,6 +120,48 @@ export default function PhotoBankPage() {
     setSelectedPhotos(new Map());
     setShowExportMenu(false);
   }, []);
+
+  // Bulk delete the currently-selected photos. Confirms with the count,
+  // then POSTs the ids array to /api/montree/photo-bank in one round-trip.
+  // On success, all selected ids are added to deletedIds so the grid hides
+  // them immediately, and the selection is cleared.
+  const handleBulkDelete = useCallback(async () => {
+    const ids = Array.from(selectedPhotos.keys());
+    if (ids.length === 0) return;
+    if (typeof window !== 'undefined') {
+      const confirmed = window.confirm(
+        t('photoBank.bulkDeleteConfirm', { count: String(ids.length) })
+      );
+      if (!confirmed) return;
+    }
+    setBulkDeleting(true);
+    try {
+      const res = await fetch('/api/montree/photo-bank', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ids }),
+      });
+      if (!res.ok) {
+        let msg = t('photoBank.deleteFailed');
+        try { const d = await res.json(); if (d?.error) msg = d.error; } catch { /* ignore */ }
+        if (typeof window !== 'undefined') window.alert(msg);
+        return;
+      }
+      // Optimistically hide every deleted id + clear selection.
+      setDeletedIds((prev) => {
+        const next = new Set(prev);
+        ids.forEach((id) => next.add(id));
+        return next;
+      });
+      setSelectedPhotos(new Map());
+      setShowExportMenu(false);
+    } catch (err) {
+      console.error('Bulk delete error:', err);
+      if (typeof window !== 'undefined') window.alert(t('photoBank.deleteFailed'));
+    } finally {
+      setBulkDeleting(false);
+    }
+  }, [selectedPhotos, t]);
 
   // CRITICAL: Prevent browser from opening dropped files as new tabs
   // This must be on the window level to catch ALL drag events on the page
@@ -351,6 +397,33 @@ export default function PhotoBankPage() {
               boxShadow: '0 8px 32px rgba(0,0,0,0.3)',
             }}
           >
+            {/* Sort toggle — sits above the picker. Keeps the picker
+                component generic; the photo-bank page is the only consumer
+                that wants this row visible. */}
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '6px', marginBottom: '10px' }}>
+              <span style={{ fontSize: '11px', color: '#888', alignSelf: 'center', marginRight: '4px' }}>
+                {t('photoBank.sortBy')}
+              </span>
+              {(['label', 'recent'] as const).map((mode) => (
+                <button
+                  key={mode}
+                  onClick={() => setSort(mode)}
+                  style={{
+                    padding: '4px 12px',
+                    borderRadius: '14px',
+                    border: 'none',
+                    fontSize: '11px',
+                    fontWeight: sort === mode ? '700' : '500',
+                    cursor: 'pointer',
+                    backgroundColor: sort === mode ? '#10b981' : '#f0f0f0',
+                    color: sort === mode ? '#fff' : '#555',
+                    transition: 'all 0.15s',
+                  }}
+                >
+                  {mode === 'label' ? t('photoBank.sortName') : t('photoBank.sortRecent')}
+                </button>
+              ))}
+            </div>
             <PhotoBankPicker
               onSelectPhoto={(dataUrl, label) => {
                 // Fallback: download if no raw select mode
@@ -363,6 +436,8 @@ export default function PhotoBankPage() {
               selectedIds={selectedIds}
               deletedIds={deletedIds}
               onDeletePhoto={handleDeletePhoto}
+              showCategories={true}
+              sort={sort}
               maxHeight={600}
             />
           </div>
@@ -418,6 +493,31 @@ export default function PhotoBankPage() {
                 {t('photoBank.clear')}
               </button>
             </div>
+
+            {/* Bulk delete button — sits next to Export-to so common destructive
+                action is reachable from the same floating bar. */}
+            <button
+              onClick={handleBulkDelete}
+              disabled={bulkDeleting}
+              style={{
+                padding: '8px 16px',
+                borderRadius: '10px',
+                border: '1px solid rgba(220,38,38,0.4)',
+                backgroundColor: 'rgba(220,38,38,0.15)',
+                color: '#fca5a5',
+                fontSize: '13px',
+                fontWeight: '600',
+                cursor: bulkDeleting ? 'wait' : 'pointer',
+                opacity: bulkDeleting ? 0.6 : 1,
+                marginRight: '8px',
+                transition: 'all 0.15s',
+              }}
+              title={t('photoBank.bulkDeleteTitle')}
+            >
+              {bulkDeleting
+                ? `${t('photoBank.deleting')}…`
+                : `🗑 ${t('photoBank.bulkDeleteButton', { count: String(selectedPhotos.size) })}`}
+            </button>
 
             {/* Export-to button + dropdown */}
             <div style={{ position: 'relative' }}>

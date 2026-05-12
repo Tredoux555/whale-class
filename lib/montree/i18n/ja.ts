@@ -3691,6 +3691,12 @@ export const ja: Record<string, string> = {
   'photoBank.deleteConfirm': 'この画像をバンクから削除しますか？この操作は取り消せません。',
   'photoBank.deleting': '削除中…',
   'photoBank.deleteFailed': '画像を削除できませんでした。もう一度お試しください。',
+  'photoBank.bulkDeleteButton': '{count}件を削除',
+  'photoBank.bulkDeleteConfirm': 'バンクから{count}件の画像を削除しますか？この操作は元に戻せません。',
+  'photoBank.bulkDeleteTitle': '選択したすべての画像を削除',
+  'photoBank.sortBy': '並び替え:',
+  'photoBank.sortName': 'A–Z',
+  'photoBank.sortRecent': '新しい順',
 
 
   // ─── Auto-filled missing keys (from Apr 30 audit) ───
