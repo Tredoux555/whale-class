@@ -4490,4 +4490,8 @@ export const de: Record<string, string> = {
   'tracy.upgrade.title': 'Tracy aktivieren',
   'tracy.upgrade.body': 'Tracy und die KI-Funktionen sind Teil des vollständigen Montree-Plans. Richten Sie die Abrechnung ein, um sie freizuschalten — 7 € pro aktivem Schüler pro Monat, ohne Verträge.',
   'tracy.upgrade.cta': 'Abrechnung einrichten',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'audit.autoTaggedHint': 'Von der KI automatisch kategorisiert — bitte überprüfen Sie dies vor der Bestätigung.',
+  'audit.orPick': 'oder wählen Sie',
 };

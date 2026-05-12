@@ -333,6 +333,8 @@ export async function POST(request: NextRequest) {
               confidence: ident.confidence,
               area: ident.area,
               auto_matched: true,
+              // Top 3 candidates for quick-tap chips in the audit UI.
+              top_candidates: ident.topCandidates,
             },
           })
           .eq('id', mediaId);
@@ -386,6 +388,8 @@ export async function POST(request: NextRequest) {
           haiku_work_name: ident.haikuWorkName,
           confidence: ident.confidence,
           area: ident.area,
+          // Top 3 candidates for quick-tap chips in the audit UI.
+          top_candidates: ident.topCandidates,
         },
       };
       const { error: haikuDraftErr } = await supabase

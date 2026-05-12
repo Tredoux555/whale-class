@@ -4893,4 +4893,8 @@ export const zh = {
   'tracy.upgrade.title': '激活 Tracy',
   'tracy.upgrade.body': 'Tracy 和 AI 功能是完整 Montree 计划的一部分。设置计费以解锁它们 — 每个活跃学生每月 $7，无合同。',
   'tracy.upgrade.cta': '设置计费',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'audit.autoTaggedHint': '由 AI 自动标记 — 请在确认前验证。',
+  'audit.orPick': '或选择',
 } as const;

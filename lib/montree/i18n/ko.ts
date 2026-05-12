@@ -4490,4 +4490,8 @@ export const ko: Record<string, string> = {
   'tracy.upgrade.title': '트레이시 활성화하기',
   'tracy.upgrade.body': '트레이시와 AI 기능은 Montree 전체 플랜에 포함되어 있습니다. 청구 설정을 하면 이용할 수 있습니다 — 활성 학생 1명당 월 $7, 계약 없음.',
   'tracy.upgrade.cta': '청구 설정하기',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'audit.autoTaggedHint': 'AI가 자동으로 태그했습니다 — 확인하기 전에 검증해주세요.',
+  'audit.orPick': '또는 선택',
 };

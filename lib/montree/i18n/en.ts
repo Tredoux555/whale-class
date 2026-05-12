@@ -3682,6 +3682,8 @@ export const en = {
   'audit.allTime': 'All time',
   'audit.noPhotos': 'No photos to review',
   'audit.untaggedWork': 'Untagged',
+  'audit.autoTaggedHint': 'Auto-tagged by AI — please verify before confirming.',
+  'audit.orPick': 'or pick',
   'audit.confirm': 'Correct',
   'audit.fix': 'Fix',
   'audit.pickArea': 'Choose an area',

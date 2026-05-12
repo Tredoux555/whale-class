@@ -4,7 +4,7 @@
 // page is classroom-wide. If needed later, could render one popup per visible child.
 'use client';
 
-import { useState, useEffect, useCallback, useRef, useMemo, CSSProperties } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo, memo, CSSProperties } from 'react';
 import dynamic from 'next/dynamic';
 import { toast } from 'sonner';
 import { useI18n } from '@/lib/montree/i18n';
@@ -81,6 +81,13 @@ interface AuditPhoto {
     confidence?: number;
     work_key?: string;
     drafted_at?: string;
+    /** Top 3 fuzzy-match candidates (best-first). Powers the quick-tap chips. */
+    top_candidates?: Array<{
+      workName: string;
+      workKey: string | null;
+      area: string | null;
+      score: number;
+    }>;
   } | null;
 }
 
@@ -1356,6 +1363,30 @@ export default function PhotoAuditPage() {
     }
   };
 
+  // Quick-tap chip handler — teacher picks one of the top-3 candidates returned
+  // by matchToCurriculumV2. Resolves the candidate to a curriculum work and
+  // attaches the photo. If the chip is the AI's primary guess (workName matches
+  // proposed_name), this is equivalent to ✓ Correct. If it's a sibling
+  // candidate, it's a one-tap correction without typing.
+  const handleConfirmCandidate = (
+    photo: AuditPhoto,
+    candidate: { workName: string; workKey: string | null; area: string | null }
+  ) => {
+    if (!photo.child_id) {
+      toast.error('Photo has no child tagged — tag a child first');
+      return;
+    }
+    const resolved = findWorkByName(candidate.workName, candidate.area || undefined);
+    if (resolved) {
+      console.log(`[ChipPick] Teacher tapped candidate "${candidate.workName}" → attaching`);
+      attachToExistingWork(photo, resolved.work, resolved.areaKey);
+    } else {
+      // Candidate name not in curriculum — fall through to sheet so teacher can resolve
+      console.warn(`[ChipPick] Candidate "${candidate.workName}" not found in curriculum — opening sheet`);
+      openThisIsSheet(photo, true);
+    }
+  };
+
   // "This is..." — one button, one sheet, three resolution paths (existing / new_custom / confirm_ai).
   // Replaces the old Fix + Accept + AcceptDraftModal tangle.
   //
@@ -2393,6 +2424,7 @@ export default function PhotoAuditPage() {
               onAcceptResult={() => handleAcceptResult(photo)}
               onAcceptDraft={() => openThisIsSheet(photo)}
               onConfirmDraft={() => handleConfirmHaikuDraft(photo)}
+              onConfirmCandidate={(cand) => handleConfirmCandidate(photo, cand)}
               onTellAI={() => setTellAiPhoto(photo)}
               onPhotoTap={() => photo.url && setLightboxUrl(photo.url)}
               onSaveNote={(caption) => handleSaveNote(photo.id, caption)}
@@ -2806,7 +2838,12 @@ const iconTooltipStyle: CSSProperties = {
 };
 
 // ─── AuditPhotoCard ───
-function AuditPhotoCard({ photo, selected, onToggle, onConfirm, onCorrect, onUseAsReference, onTagChildren, onDelete, onMarkAsPaperwork, onToggleDiscussion, rerunResult, onAcceptResult, onAcceptDraft, onConfirmDraft, onTellAI, onPhotoTap, onSaveNote, processing, workStatus, onSetStatus, unifiedTagger, t }: {
+// Wrapped in memo() at the bottom — unrelated state changes in the parent
+// (note typing on a different card, filter changes, pagination) no longer
+// cascade re-renders into every card. Critical when 200-500 photos are
+// loaded on one page. The custom comparator on memo skips re-render unless
+// the photo data, selection state, processing flag, or workStatus changed.
+function AuditPhotoCardInner({ photo, selected, onToggle, onConfirm, onCorrect, onUseAsReference, onTagChildren, onDelete, onMarkAsPaperwork, onToggleDiscussion, rerunResult, onAcceptResult, onAcceptDraft, onConfirmDraft, onConfirmCandidate, onTellAI, onPhotoTap, onSaveNote, processing, workStatus, onSetStatus, unifiedTagger, t }: {
   photo: AuditPhoto;
   selected: boolean;
   onToggle: () => void;
@@ -2821,6 +2858,9 @@ function AuditPhotoCard({ photo, selected, onToggle, onConfirm, onCorrect, onUse
   onAcceptResult: () => void;
   onAcceptDraft: () => void;
   onConfirmDraft: () => void;
+  /** Quick-tap chip: teacher picks one of the top-3 candidates from
+   *  matchToCurriculumV2. Resolves to a curriculum work + attaches the photo. */
+  onConfirmCandidate: (candidate: { workName: string; workKey: string | null; area: string | null }) => void;
   onTellAI: () => void;
   onPhotoTap: () => void;
   onSaveNote: (caption: string) => void;
@@ -3002,6 +3042,36 @@ function AuditPhotoCard({ photo, selected, onToggle, onConfirm, onCorrect, onUse
             <p style={{ fontSize: 9, color: 'rgba(94,234,212,0.65)', textTransform: 'capitalize', margin: 0 }}>{photo.sonnet_draft.suggested_area.replace(/_/g, ' ')}</p>
           )}
           <p style={{ fontSize: 9, color: 'rgba(94,234,212,0.65)', marginTop: 4, fontStyle: 'italic' }}>Haiku identified this, but has low confidence — ask Sonnet for deeper analysis.</p>
+          {/* Top-3 candidate sibling chips — same pattern as haiku_matched */}
+          {(() => {
+            const proposed = (photo.sonnet_draft?.proposed_name || photo.work_name || '').toLowerCase().trim();
+            const siblings = (photo.sonnet_draft?.top_candidates || []).filter(
+              (c) => c.workName.toLowerCase().trim() !== proposed
+            ).slice(0, 2);
+            if (siblings.length === 0) return null;
+            return (
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 6 }}>
+                <span style={{ fontSize: 9, color: 'rgba(94,234,212,0.55)', alignSelf: 'center', marginRight: 2 }}>{t('audit.orPick')}:</span>
+                {siblings.map((cand) => (
+                  <button
+                    key={cand.workKey || cand.workName}
+                    onClick={() => onConfirmCandidate(cand)}
+                    disabled={processing}
+                    style={{
+                      fontSize: 10, padding: '4px 10px', borderRadius: 999,
+                      background: 'rgba(20,184,166,0.10)', border: '1px solid rgba(20,184,166,0.30)',
+                      color: 'rgba(204,251,241,0.92)', fontWeight: 500,
+                      cursor: processing ? 'wait' : 'pointer', opacity: processing ? 0.5 : 1,
+                      maxWidth: '100%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                    }}
+                    title={`${cand.workName} (${Math.round((cand.score || 0) * 100)}%)`}
+                  >
+                    {cand.workName}
+                  </button>
+                ))}
+              </div>
+            );
+          })()}
           {/* Always show ✓ Correct + ✏️ Wrong — same pattern as haiku_matched */}
           <div style={{ display: 'flex', gap: 6, marginTop: 8 }}>
             <button onClick={onConfirmDraft} disabled={processing} style={{ flex: 1, fontSize: 12, padding: '8px 0', borderRadius: 8, background: 'rgba(20,184,166,0.20)', border: '1px solid rgba(20,184,166,0.40)', color: 'rgba(94,234,212,0.90)', fontWeight: 600, cursor: processing ? 'wait' : 'pointer', opacity: processing ? 0.5 : 1 }}>
@@ -3057,7 +3127,39 @@ function AuditPhotoCard({ photo, selected, onToggle, onConfirm, onCorrect, onUse
             )}
           </div>
           <p style={{ fontSize: 12, fontWeight: 600, color: 'rgba(254,243,199,0.95)', lineHeight: 1.3, margin: '0 0 4px' }}>{photo.work_name}</p>
-          <p style={{ fontSize: 9, color: 'rgba(253,230,138,0.65)', fontStyle: 'italic', margin: 0 }}>Auto-tagged by AI — please verify before confirming.</p>
+          <p style={{ fontSize: 9, color: 'rgba(253,230,138,0.65)', fontStyle: 'italic', margin: 0 }}>{t('audit.autoTaggedHint')}</p>
+          {/* Top-3 candidate chips — only render the SIBLINGS (skip the one
+              the AI already picked, since ✓ Correct does the same thing).
+              Saves the teacher typing when Haiku's #2 or #3 is actually right. */}
+          {(() => {
+            const chosenName = (photo.work_name || '').toLowerCase().trim();
+            const siblings = (photo.sonnet_draft?.top_candidates || []).filter(
+              (c) => c.workName.toLowerCase().trim() !== chosenName
+            ).slice(0, 2);
+            if (siblings.length === 0) return null;
+            return (
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 6 }}>
+                <span style={{ fontSize: 9, color: 'rgba(253,230,138,0.55)', alignSelf: 'center', marginRight: 2 }}>{t('audit.orPick')}:</span>
+                {siblings.map((cand) => (
+                  <button
+                    key={cand.workKey || cand.workName}
+                    onClick={() => onConfirmCandidate(cand)}
+                    disabled={processing}
+                    style={{
+                      fontSize: 10, padding: '4px 10px', borderRadius: 999,
+                      background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.30)',
+                      color: 'rgba(254,243,199,0.92)', fontWeight: 500,
+                      cursor: processing ? 'wait' : 'pointer', opacity: processing ? 0.5 : 1,
+                      maxWidth: '100%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                    }}
+                    title={`${cand.workName} (${Math.round((cand.score || 0) * 100)}%)`}
+                  >
+                    {cand.workName}
+                  </button>
+                ))}
+              </div>
+            );
+          })()}
           <div style={{ display: 'flex', gap: 6, marginTop: 8 }}>
             <button onClick={onConfirm} disabled={processing} style={{ flex: 1, fontSize: 12, padding: '8px 0', borderRadius: 8, background: 'rgba(245,158,11,0.20)', border: '1px solid rgba(245,158,11,0.40)', color: 'rgba(253,230,138,0.90)', fontWeight: 600, cursor: processing ? 'wait' : 'pointer', opacity: processing ? 0.5 : 1 }}>
               {processing ? '...' : '✓ Correct'}
@@ -3279,3 +3381,21 @@ function AuditPhotoCard({ photo, selected, onToggle, onConfirm, onCorrect, onUse
     </div>
   );
 }
+
+// memo() with a shallow comparator: re-render the card only when its OWN
+// inputs change. Skips cascading renders when sibling cards mutate state
+// (note typing, processing flips, selection toggles elsewhere in the grid).
+// `t` is stable across the i18n locale lifetime, so we skip it from the
+// comparison. Callbacks (onConfirm, onToggle, etc.) get new identities every
+// parent render — we ignore them too: the parent passes them by closure and
+// they always read the latest state from React's closure tree.
+const AuditPhotoCard = memo(AuditPhotoCardInner, (prev, next) => {
+  return (
+    prev.photo === next.photo &&
+    prev.selected === next.selected &&
+    prev.processing === next.processing &&
+    prev.workStatus === next.workStatus &&
+    prev.rerunResult === next.rerunResult &&
+    prev.unifiedTagger === next.unifiedTagger
+  );
+});

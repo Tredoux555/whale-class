@@ -152,6 +152,18 @@ export interface TwoPassResult {
     masteryEvidence: string;
     observation: string;
     suggestedCrop: { x: number; y: number; width: number; height: number } | null;
+    /**
+     * Top 3 fuzzy-match candidates from matchToCurriculumV2, ordered by score.
+     * The audit UI renders these as quick-tap chips so the teacher can confirm
+     * any of the top 3 without typing. The bestMatch (above) is always
+     * candidates[0]. Includes the chosen one for symmetry.
+     */
+    topCandidates: Array<{
+      workName: string;
+      workKey: string | null;
+      area: string | null;
+      score: number;
+    }>;
   } | null;
   /**
    * True if the FUZZY-MATCHED canonical work name (identification.workName,
@@ -459,6 +471,14 @@ Match this description to the correct Montessori work. Use the visual identifica
         const finalArea = matchResult.bestMatch?.area_key || (validated.area !== 'unknown' ? validated.area : null);
         const finalWorkKey = matchResult.bestMatch?.work_key || null;
 
+        // Extract top 3 candidates for the audit UI quick-tap chips.
+        const topCandidates = (matchResult.candidates || []).slice(0, 3).map((c) => ({
+          workName: c.work.name,
+          workKey: c.work.work_key || null,
+          area: c.work.area_key || null,
+          score: c.score,
+        }));
+
         identification = {
           workName: finalWorkName,
           haikuWorkName: validated.work_name,
@@ -469,6 +489,7 @@ Match this description to the correct Montessori work. Use the visual identifica
           masteryEvidence: validated.mastery_evidence,
           observation: validated.observation,
           suggestedCrop: validated.suggested_crop,
+          topCandidates,
         };
 
         hasVisualMemoryForMatch = hasVisualMemoryFor(context, finalWorkName);
@@ -561,6 +582,13 @@ Which work is most likely based on the visual evidence? If none match well, you 
             const newArea = matchResult.bestMatch?.area_key || (validated.area !== 'unknown' ? validated.area : null);
             const newWorkKey = matchResult.bestMatch?.work_key || null;
 
+            const newTopCandidates = (matchResult.candidates || []).slice(0, 3).map((c) => ({
+              workName: c.work.name,
+              workKey: c.work.work_key || null,
+              area: c.work.area_key || null,
+              score: c.score,
+            }));
+
             identification = {
               workName: newWorkName,
               haikuWorkName: validated.work_name,
@@ -571,6 +599,7 @@ Which work is most likely based on the visual evidence? If none match well, you 
               masteryEvidence: validated.mastery_evidence,
               observation: validated.observation,
               suggestedCrop: validated.suggested_crop,
+              topCandidates: newTopCandidates,
             };
 
             hasVisualMemoryForMatch = hasVisualMemoryFor(context, newWorkName);
