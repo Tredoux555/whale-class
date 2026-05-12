@@ -2,9 +2,11 @@
 // Montree PWA layout with manifest for "Add to Home Screen"
 // Enhanced metadata for SEO + bilingual i18n provider
 import type { Metadata, Viewport } from "next";
+import { cookies } from "next/headers";
 import I18nClientWrapper from "@/components/montree/I18nClientWrapper";
 import VisitorTracker from "@/components/montree/VisitorTracker";
 import WebVitalsReporter from "@/components/montree/WebVitalsReporter";
+import { isValidLocale, DEFAULT_LOCALE, type Locale } from "@/lib/montree/i18n/locales";
 
 export const metadata: Metadata = {
   title: {
@@ -69,13 +71,47 @@ export const viewport: Viewport = {
   themeColor: "#10b981",
 };
 
-export default function MontreeLayout({
+// Server-side locale file loaders. Each `import()` call is a separate code-
+// split chunk that Node loads only when needed. For non-en initial locales,
+// we await one of these and pass the message data to the client provider —
+// no English flash, no extra round trip. See PERF_HEALTH_CHECK.md Tier 1.4.
+async function loadServerLocale(locale: Locale): Promise<Record<string, string> | undefined> {
+  switch (locale) {
+    case 'en': return undefined; // en is already in the client bundle
+    case 'zh': return (await import('@/lib/montree/i18n/zh')).zh;
+    case 'es': return (await import('@/lib/montree/i18n/es')).es;
+    case 'de': return (await import('@/lib/montree/i18n/de')).de;
+    case 'fr': return (await import('@/lib/montree/i18n/fr')).fr;
+    case 'pt': return (await import('@/lib/montree/i18n/pt')).pt;
+    case 'nl': return (await import('@/lib/montree/i18n/nl')).nl;
+    case 'it': return (await import('@/lib/montree/i18n/it')).it;
+    case 'ja': return (await import('@/lib/montree/i18n/ja')).ja;
+    case 'ko': return (await import('@/lib/montree/i18n/ko')).ko;
+    case 'uk': return (await import('@/lib/montree/i18n/uk')).uk;
+    case 'ru': return (await import('@/lib/montree/i18n/ru')).ru;
+    default: return undefined;
+  }
+}
+
+export default async function MontreeLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  // Read the mt_locale cookie server-side so the client provider starts with
+  // the right locale on first paint. Saves ~700KB of locale data per session
+  // (only en + the user's locale ship, not all 12) and eliminates the
+  // English-flash that would otherwise happen for non-en users on cold load.
+  // See PERF_HEALTH_CHECK.md Tier 1.4.
+  const cookieStore = await cookies();
+  const rawLocale = cookieStore.get('mt_locale')?.value;
+  const initialLocale: Locale = isValidLocale(rawLocale) ? rawLocale : DEFAULT_LOCALE;
+  // For non-en users we also load the locale data here so the provider seeds
+  // the cache before render. en is already statically imported on the client.
+  const initialMessages = await loadServerLocale(initialLocale);
+
   return (
-    <I18nClientWrapper>
+    <I18nClientWrapper initialLocale={initialLocale} initialMessages={initialMessages}>
       <VisitorTracker />
       <WebVitalsReporter />
       {children}
