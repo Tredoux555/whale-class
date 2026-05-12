@@ -27,19 +27,34 @@ export async function GET(request: NextRequest) {
     const page = parseInt(searchParams.get('page') || '1');
     const limit = Math.min(parseInt(searchParams.get('limit') || '50'), 200);
     const offset = (page - 1) * limit;
+    // sort: 'label' (default, alpha) | 'recent' (newest upload first)
+    const sort = searchParams.get('sort') === 'recent' ? 'recent' : 'label';
 
     let query = supabase
       .from('montree_photo_bank')
       .select('*', { count: 'exact' })
       .eq('is_public', true)
-      .eq('is_approved', true)
-      .order('label', { ascending: true });
+      .eq('is_approved', true);
 
-    // Full-text search on label, tags, category
+    // Sort
+    if (sort === 'recent') {
+      query = query.order('created_at', { ascending: false, nullsFirst: false });
+    } else {
+      query = query.order('label', { ascending: true });
+    }
+
+    // Full-text search on label, tags, category.
+    // 🚨 SQL injection / pattern-injection guard: escape Postgres ILIKE
+    // metacharacters (% _ \). Without this, a search for "50%" would match
+    // everything starting with "50", and a malicious "_" wildcard could
+    // poison the index lookup.
     if (q) {
-      // Use ilike for simple substring matching (more intuitive for users)
-      // Also search tags array
-      query = query.or(`label.ilike.%${q}%,tags.cs.{${q.toLowerCase()}}`);
+      const escaped = q.replace(/[%_\\]/g, '\\$&');
+      // Curly braces are reserved in PostgREST .or() syntax for array literal
+      // values — strip them from the tag lookup so they can't break out of
+      // the filter expression.
+      const tagSafe = q.toLowerCase().replace(/[{}()*,\\]/g, '');
+      query = query.or(`label.ilike.%${escaped}%,tags.cs.{${tagSafe}}`);
     }
 
     if (category && category !== 'all') {
@@ -204,32 +219,117 @@ export async function POST(request: NextRequest) {
 }
 
 /**
- * DELETE /api/montree/photo-bank?id=<uuid>
- * Remove a picture from the bank (storage + DB row).
- * Auth: any authenticated school user (the picture bank is shared across schools,
- * so we don't enforce per-school ownership — matches the POST gate).
+ * DELETE /api/montree/photo-bank
+ *
+ * Two modes:
+ *   1. Single delete: `?id=<uuid>` (legacy, preserved for back-compat)
+ *   2. Bulk delete:   POST-style body `{ ids: [<uuid>, …] }` (max 100 per call)
+ *
+ * Both flows: look up storage_path + thumbnail_path, remove from storage,
+ * then delete the DB row(s). Per-row failures don't compound — bulk mode
+ * returns a summary `{ deleted, failed, results }` so the caller can show
+ * partial success.
+ *
+ * Auth: any authenticated school user (the picture bank is shared across
+ * schools, so we don't enforce per-school ownership — matches the POST gate).
  */
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const MAX_BULK_DELETE = 100;
+
 export async function DELETE(request: NextRequest) {
   try {
     const { verifySchoolRequest } = await import('@/lib/montree/verify-request');
     const auth = await verifySchoolRequest(request);
     if (auth instanceof NextResponse) return auth;
 
+    const supabase = getSupabase();
     const { searchParams } = new URL(request.url);
-    const id = searchParams.get('id')?.trim() || '';
+    const singleId = searchParams.get('id')?.trim() || '';
 
-    // Reject anything that isn't a UUID before hitting the DB
-    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)) {
-      return NextResponse.json({ error: 'Invalid id' }, { status: 400 });
+    // Bulk mode: accept JSON body with { ids: [...] }
+    let bulkIds: string[] = [];
+    if (!singleId) {
+      try {
+        const body = await request.json();
+        if (Array.isArray(body?.ids)) {
+          bulkIds = body.ids.filter((x: unknown): x is string => typeof x === 'string').map((x: string) => x.trim()).filter(Boolean);
+        }
+      } catch {
+        // No JSON body — fall through to single mode handling (which will 400 on missing id)
+      }
     }
 
-    const supabase = getSupabase();
+    if (bulkIds.length > 0) {
+      // Bulk delete path
+      if (bulkIds.length > MAX_BULK_DELETE) {
+        return NextResponse.json({ error: `Max ${MAX_BULK_DELETE} ids per bulk delete` }, { status: 400 });
+      }
+      // Validate every id is a UUID before the DB hit.
+      const invalid = bulkIds.find((id) => !UUID_RE.test(id));
+      if (invalid) {
+        return NextResponse.json({ error: 'One or more ids are not valid UUIDs' }, { status: 400 });
+      }
+
+      // Look up all rows in one query so we can collect storage paths.
+      const { data: rows, error: fetchError } = await supabase
+        .from('montree_photo_bank')
+        .select('id, storage_path, thumbnail_path')
+        .in('id', bulkIds);
+
+      if (fetchError) {
+        console.error('Photo bank bulk fetch error:', fetchError);
+        return NextResponse.json({ error: 'Failed to look up photos' }, { status: 500 });
+      }
+
+      const foundIds = new Set((rows || []).map((r) => r.id));
+      const notFound = bulkIds.filter((id) => !foundIds.has(id));
+
+      // Collect every storage path in one shot. Each row contributes up to 2
+      // paths (the photo + its thumbnail).
+      const storagePaths: string[] = [];
+      (rows || []).forEach((r) => {
+        if (r.storage_path) storagePaths.push(r.storage_path);
+        if (r.thumbnail_path) storagePaths.push(r.thumbnail_path);
+      });
+
+      // Best-effort storage cleanup. We don't fail the request if storage
+      // removal hiccups — the DB row deletion is what matters for the user.
+      if (storagePaths.length > 0) {
+        const { error: storageError } = await supabase.storage.from(BUCKET).remove(storagePaths);
+        if (storageError) {
+          console.warn('[photo-bank] bulk storage cleanup warning:', storageError);
+        }
+      }
+
+      // One bulk DB delete via .in().
+      const { error: deleteError, count } = await supabase
+        .from('montree_photo_bank')
+        .delete({ count: 'exact' })
+        .in('id', bulkIds);
+
+      if (deleteError) {
+        console.error('Photo bank bulk DB delete error:', deleteError);
+        return NextResponse.json({ error: 'Failed to delete photos' }, { status: 500 });
+      }
+
+      return NextResponse.json({
+        success: true,
+        deleted: count ?? foundIds.size,
+        failed: 0,
+        not_found: notFound,
+      });
+    }
+
+    // Single delete path (legacy).
+    if (!UUID_RE.test(singleId)) {
+      return NextResponse.json({ error: 'Invalid id' }, { status: 400 });
+    }
 
     // Look up the row to get its storage_path before we delete the DB row
     const { data: row, error: fetchError } = await supabase
       .from('montree_photo_bank')
       .select('id, storage_path, thumbnail_path')
-      .eq('id', id)
+      .eq('id', singleId)
       .maybeSingle();
 
     if (fetchError) {
@@ -246,7 +346,7 @@ export async function DELETE(request: NextRequest) {
       const { error: storageError } = await supabase.storage.from(BUCKET).remove(paths);
       if (storageError) {
         // Don't block the DB delete on a missing storage object — just log.
-        console.warn('Photo bank storage cleanup warning for', id, storageError);
+        console.warn('Photo bank storage cleanup warning for', singleId, storageError);
       }
     }
 
@@ -254,14 +354,14 @@ export async function DELETE(request: NextRequest) {
     const { error: deleteError } = await supabase
       .from('montree_photo_bank')
       .delete()
-      .eq('id', id);
+      .eq('id', singleId);
 
     if (deleteError) {
       console.error('Photo bank DB delete error:', deleteError);
       return NextResponse.json({ error: 'Failed to delete photo' }, { status: 500 });
     }
 
-    return NextResponse.json({ success: true, id });
+    return NextResponse.json({ success: true, id: singleId });
   } catch (err) {
     console.error('Photo bank DELETE error:', err);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

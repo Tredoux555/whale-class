@@ -3691,6 +3691,12 @@ export const it: Record<string, string> = {
   'photoBank.deleteConfirm': 'Eliminare questa immagine dalla banca? L\'operazione non può essere annullata.',
   'photoBank.deleting': 'Eliminazione…',
   'photoBank.deleteFailed': 'Impossibile eliminare l\'immagine. Riprova.',
+  'photoBank.bulkDeleteButton': 'Elimina {count}',
+  'photoBank.bulkDeleteConfirm': 'Eliminare {count} immagini dalla raccolta? Questa azione non può essere annullata.',
+  'photoBank.bulkDeleteTitle': 'Elimina tutte le immagini selezionate',
+  'photoBank.sortBy': 'Ordina:',
+  'photoBank.sortName': 'A–Z',
+  'photoBank.sortRecent': 'Più recenti',
 
 
   // ─── Auto-filled missing keys (from Apr 30 audit) ───

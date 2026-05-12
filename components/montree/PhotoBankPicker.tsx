@@ -48,6 +48,13 @@ interface PhotoBankPickerProps {
   onDeletePhoto?: (photo: PhotoBankPhoto) => void;
   /** Set of photo IDs that have been deleted client-side (hides them from the grid) */
   deletedIds?: Set<string>;
+  /**
+   * Sort order for the gallery. Forwarded to /api/montree/photo-bank as ?sort=…
+   * 'label' (default) sorts alphabetically by label, 'recent' sorts by upload
+   * date descending. Consumer tools that don't need sorting can leave this
+   * undefined; the photo-bank management page is the canonical consumer.
+   */
+  sort?: 'label' | 'recent';
 }
 
 export type { PhotoBankPhoto };
@@ -62,6 +69,7 @@ export default function PhotoBankPicker({
   searchPlaceholder,
   onDeletePhoto,
   deletedIds,
+  sort,
 }: PhotoBankPickerProps) {
   const { t } = useI18n();
   const resolvedPlaceholder = searchPlaceholder
@@ -90,6 +98,7 @@ export default function PhotoBankPicker({
       });
       if (query) params.set('q', query);
       if (category && category !== 'all') params.set('category', category);
+      if (sort === 'recent') params.set('sort', 'recent');
 
       const res = await fetch(`/api/montree/photo-bank?${params}`);
       if (!res.ok) throw new Error('Failed to fetch');
@@ -107,7 +116,7 @@ export default function PhotoBankPicker({
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [sort]);
 
   // Fetch photos for multiple words in parallel
   const fetchMultiWord = useCallback(async (words: string[], category: string) => {

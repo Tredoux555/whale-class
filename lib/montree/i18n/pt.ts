@@ -3691,6 +3691,12 @@ export const pt: Record<string, string> = {
   'photoBank.deleteConfirm': 'Excluir esta imagem do banco? Esta ação não pode ser desfeita.',
   'photoBank.deleting': 'Excluindo…',
   'photoBank.deleteFailed': 'Não foi possível excluir esta imagem. Tente novamente.',
+  'photoBank.bulkDeleteButton': 'Excluir {count}',
+  'photoBank.bulkDeleteConfirm': 'Excluir {count} imagens do banco? Esta ação não pode ser desfeita.',
+  'photoBank.bulkDeleteTitle': 'Excluir todas as imagens selecionadas',
+  'photoBank.sortBy': 'Ordenar:',
+  'photoBank.sortName': 'A–Z',
+  'photoBank.sortRecent': 'Mais recentes',
 
 
   // ─── Auto-filled missing keys (from Apr 30 audit) ───

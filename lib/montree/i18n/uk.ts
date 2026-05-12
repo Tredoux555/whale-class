@@ -3689,6 +3689,12 @@ export const uk: Record<string, string> = {
   'photoBank.deleteConfirm': 'Видалити це зображення з банку? Цю дію не можна скасувати.',
   'photoBank.deleting': 'Видалення…',
   'photoBank.deleteFailed': 'Не вдалося видалити зображення. Спробуйте ще раз.',
+  'photoBank.bulkDeleteButton': 'Видалити {count}',
+  'photoBank.bulkDeleteConfirm': 'Видалити {count} зображень з бібліотеки? Цю дію не можна скасувати.',
+  'photoBank.bulkDeleteTitle': 'Видалити всі вибрані зображення',
+  'photoBank.sortBy': 'Сортувати:',
+  'photoBank.sortName': 'A–Я',
+  'photoBank.sortRecent': 'Найновіші',
 
   // ─── Auto-filled missing keys (from Apr 30 audit) ───
   'auth.noCode': 'Немає коду? Почніть →',

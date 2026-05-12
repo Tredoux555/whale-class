@@ -3691,6 +3691,12 @@ export const nl: Record<string, string> = {
   'photoBank.deleteConfirm': 'Deze afbeelding uit de bank verwijderen? Dit kan niet ongedaan worden gemaakt.',
   'photoBank.deleting': 'Verwijderen…',
   'photoBank.deleteFailed': 'Kon deze afbeelding niet verwijderen. Probeer het opnieuw.',
+  'photoBank.bulkDeleteButton': '{count} verwijderen',
+  'photoBank.bulkDeleteConfirm': '{count} afbeeldingen uit de bibliotheek verwijderen? Dit kan niet ongedaan worden gemaakt.',
+  'photoBank.bulkDeleteTitle': 'Alle geselecteerde afbeeldingen verwijderen',
+  'photoBank.sortBy': 'Sorteren:',
+  'photoBank.sortName': 'A–Z',
+  'photoBank.sortRecent': 'Nieuwste',
 
 
   // ─── Auto-filled missing keys (from Apr 30 audit) ───

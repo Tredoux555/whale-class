@@ -4192,6 +4192,12 @@ export const zh = {
   'photoBank.deleteConfirm': '从图库中删除此图片？此操作无法撤消。',
   'photoBank.deleting': '正在删除…',
   'photoBank.deleteFailed': '无法删除此图片，请重试。',
+  'photoBank.bulkDeleteButton': '删除 {count} 张',
+  'photoBank.bulkDeleteConfirm': '从图库中删除 {count} 张图片？此操作不可撤销。',
+  'photoBank.bulkDeleteTitle': '删除所有选中的图片',
+  'photoBank.sortBy': '排序：',
+  'photoBank.sortName': 'A–Z',
+  'photoBank.sortRecent': '最新',
 
   // ─── Auto-filled missing keys (from Apr 30 audit) ───
   'voiceOnboarding.welcome.title': '在开始之前',

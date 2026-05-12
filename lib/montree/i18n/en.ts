@@ -4309,6 +4309,12 @@ export const en = {
   'photoBank.deleteConfirm': 'Delete this picture from the bank? This cannot be undone.',
   'photoBank.deleting': 'Deleting…',
   'photoBank.deleteFailed': 'Could not delete this picture. Please try again.',
+  'photoBank.bulkDeleteButton': 'Delete {count}',
+  'photoBank.bulkDeleteConfirm': 'Delete {count} pictures from the bank? This cannot be undone.',
+  'photoBank.bulkDeleteTitle': 'Delete all selected pictures',
+  'photoBank.sortBy': 'Sort:',
+  'photoBank.sortName': 'A–Z',
+  'photoBank.sortRecent': 'Newest',
 
   // ── Tracy (principal home agent at /montree/admin) ────────────────────
   // Greeting + prompt are intentionally short and warm. Tracy responds in

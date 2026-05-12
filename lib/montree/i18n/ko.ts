@@ -3691,6 +3691,12 @@ export const ko: Record<string, string> = {
   'photoBank.deleteConfirm': '이 사진을 은행에서 삭제하시겠습니까? 이 작업은 취소할 수 없습니다.',
   'photoBank.deleting': '삭제 중…',
   'photoBank.deleteFailed': '사진을 삭제할 수 없습니다. 다시 시도해 주세요.',
+  'photoBank.bulkDeleteButton': '{count}개 삭제',
+  'photoBank.bulkDeleteConfirm': '뱅크에서 {count}개의 사진을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.',
+  'photoBank.bulkDeleteTitle': '선택한 모든 사진 삭제',
+  'photoBank.sortBy': '정렬:',
+  'photoBank.sortName': 'A–Z',
+  'photoBank.sortRecent': '최신순',
 
 
   // ─── Auto-filled missing keys (from Apr 30 audit) ───

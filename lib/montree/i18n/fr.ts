@@ -3691,6 +3691,12 @@ export const fr: Record<string, string> = {
   'photoBank.deleteConfirm': 'Supprimer cette image de la banque ? Cette action est irréversible.',
   'photoBank.deleting': 'Suppression…',
   'photoBank.deleteFailed': 'Impossible de supprimer cette image. Veuillez réessayer.',
+  'photoBank.bulkDeleteButton': 'Supprimer {count}',
+  'photoBank.bulkDeleteConfirm': 'Supprimer {count} images de la bibliothèque ? Cette action est irréversible.',
+  'photoBank.bulkDeleteTitle': 'Supprimer toutes les images sélectionnées',
+  'photoBank.sortBy': 'Trier :',
+  'photoBank.sortName': 'A–Z',
+  'photoBank.sortRecent': 'Plus récents',
 
 
   // ─── Auto-filled missing keys (from Apr 30 audit) ───

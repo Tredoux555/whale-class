@@ -3691,6 +3691,12 @@ export const de: Record<string, string> = {
   'photoBank.deleteConfirm': 'Dieses Bild aus der Datenbank entfernen? Dies kann nicht rückgängig gemacht werden.',
   'photoBank.deleting': 'Wird entfernt…',
   'photoBank.deleteFailed': 'Bild konnte nicht entfernt werden. Bitte erneut versuchen.',
+  'photoBank.bulkDeleteButton': '{count} löschen',
+  'photoBank.bulkDeleteConfirm': '{count} Bilder aus der Bank löschen? Dies kann nicht rückgängig gemacht werden.',
+  'photoBank.bulkDeleteTitle': 'Alle ausgewählten Bilder löschen',
+  'photoBank.sortBy': 'Sortieren:',
+  'photoBank.sortName': 'A–Z',
+  'photoBank.sortRecent': 'Neueste',
 
 
   // ─── Auto-filled missing keys (from Apr 30 audit) ───
