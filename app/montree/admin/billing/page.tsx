@@ -13,6 +13,9 @@
 import { Suspense, useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
+import { useI18n } from '@/lib/montree/i18n';
+import { getIntlLocale } from '@/lib/montree/i18n/locales';
+import type { TranslationKey } from '@/lib/montree/i18n/en';
 
 interface BillingHistoryRow {
   id: string;
@@ -52,25 +55,27 @@ interface BillingStatus {
   history: BillingHistoryRow[];
 }
 
-const fmtUSD = (cents: number): string =>
-  (cents / 100).toLocaleString(undefined, { style: 'currency', currency: 'USD', maximumFractionDigits: 2 });
-
-const fmtDate = (d: string | null): string => {
-  if (!d) return '—';
-  return new Date(d).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
-};
-
 function BillingPageContent() {
+  const { t, locale } = useI18n();
   const searchParams = useSearchParams();
   const initialStatus = searchParams?.get('status'); // 'success' | 'canceled' | null
+
+  const fmtUSD = (cents: number): string =>
+    (cents / 100).toLocaleString(getIntlLocale(locale), { style: 'currency', currency: 'USD', maximumFractionDigits: 2 });
+
+  const fmtDate = (d: string | null): string => {
+    if (!d) return '—';
+    return new Date(d).toLocaleDateString(getIntlLocale(locale), { year: 'numeric', month: 'short', day: 'numeric' });
+  };
+
   const [data, setData] = useState<BillingStatus | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [actionMessage, setActionMessage] = useState<string | null>(
     initialStatus === 'success'
-      ? "Thanks — your subscription is active. It can take a minute for the new status to appear here."
+      ? t('billing.checkoutSuccess')
       : initialStatus === 'canceled'
-        ? 'Checkout canceled. No charge was made.'
+        ? t('billing.checkoutCanceled')
         : null
   );
 
@@ -90,9 +95,9 @@ function BillingPageContent() {
       setData(d);
     } catch (e) {
       console.error('[billing page] load error:', e);
-      setError(e instanceof Error ? e.message : 'Could not load billing status.');
+      setError(e instanceof Error ? e.message : t('billing.couldNotLoad'));
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => { load(); }, [load]);
 
@@ -107,7 +112,7 @@ function BillingPageContent() {
           await openPortal();
           return;
         }
-        setError(d.detail || d.error || 'Could not start checkout.');
+        setError(d.detail || d.error || t('billing.couldNotStartCheckout'));
         return;
       }
       if (d.checkout_url) {
@@ -115,7 +120,7 @@ function BillingPageContent() {
       }
     } catch (e) {
       console.error('[billing page] checkout error:', e);
-      setError('Network error.');
+      setError(t('billing.networkError'));
     } finally {
       setBusy(false);
     }
@@ -128,7 +133,7 @@ function BillingPageContent() {
       const res = await fetch('/api/montree/billing/portal-session', { method: 'POST' });
       const d = await res.json();
       if (!res.ok) {
-        setError(d.detail || d.error || 'Could not open billing portal.');
+        setError(d.detail || d.error || t('billing.couldNotOpenPortal'));
         return;
       }
       if (d.portal_url) {
@@ -136,14 +141,14 @@ function BillingPageContent() {
       }
     } catch (e) {
       console.error('[billing page] portal error:', e);
-      setError('Network error.');
+      setError(t('billing.networkError'));
     } finally {
       setBusy(false);
     }
   };
 
   if (!data && !error) {
-    return <div className="p-8 text-slate-400">Loading…</div>;
+    return <div className="p-8 text-slate-400">{t('common.loading')}</div>;
   }
   if (error && !data) {
     return (
@@ -169,11 +174,11 @@ function BillingPageContent() {
   return (
     <div className="max-w-3xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
       <Link href="/montree/admin" className="text-emerald-300/70 hover:text-emerald-200 text-xs">
-        ← Back to admin
+        ← {t('billing.backToAdmin')}
       </Link>
-      <h1 className="mt-2 text-3xl sm:text-4xl font-light text-white tracking-tight">Billing</h1>
+      <h1 className="mt-2 text-3xl sm:text-4xl font-light text-white tracking-tight">{t('billing.title')}</h1>
       <p className="mt-2 text-emerald-200/70 text-sm">
-        ${data.pricing.price_per_student_usd} per active student per month. Billed monthly via Stripe.
+        {t('billing.pricingTagline', { price: data.pricing.price_per_student_usd })}
       </p>
 
       {actionMessage && (
@@ -190,23 +195,27 @@ function BillingPageContent() {
           {/* Current state card */}
           <section className="mt-6 bg-white/5 border border-white/10 rounded-xl p-5">
             <div className="flex items-baseline justify-between gap-3 flex-wrap">
-              <h2 className="text-white text-lg font-light">Current plan</h2>
-              <StatusPill status={status} />
+              <h2 className="text-white text-lg font-light">{t('billing.currentPlan')}</h2>
+              <StatusPill status={status} t={t} />
             </div>
 
             <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 gap-4 text-sm">
-              <Tile label="Active students" value={String(data.school.live_student_count)} />
+              <Tile label={t('billing.tileActiveStudents')} value={String(data.school.live_student_count)} />
               <Tile
-                label="Monthly charge"
+                label={t('billing.tileMonthlyCharge')}
                 value={fmtUSD(data.school.live_monthly_charge_estimate_cents)}
                 accent
               />
               {data.school.trial_days_remaining !== null && data.school.trial_days_remaining > 0 ? (
-                <Tile label="Trial ends in" value={`${data.school.trial_days_remaining} days`} accent2 />
+                <Tile
+                  label={t('billing.tileTrialEndsIn')}
+                  value={t('billing.daysCount', { days: data.school.trial_days_remaining })}
+                  accent2
+                />
               ) : data.school.current_period_end ? (
-                <Tile label="Next bill" value={fmtDate(data.school.current_period_end)} />
+                <Tile label={t('billing.tileNextBill')} value={fmtDate(data.school.current_period_end)} />
               ) : (
-                <Tile label="Status" value={prettyStatus(status)} />
+                <Tile label={t('billing.tileStatus')} value={t(prettyStatusKey(status))} />
               )}
             </div>
 
@@ -214,10 +223,10 @@ function BillingPageContent() {
             {data.school.billing_quantity !== null &&
               data.school.live_student_count !== data.school.billing_quantity && (
                 <p className="mt-3 text-amber-200/80 text-xs">
-                  Stripe was last billed for {data.school.billing_quantity} student
-                  {data.school.billing_quantity === 1 ? '' : 's'} — your active count is now{' '}
-                  {data.school.live_student_count}. The next sync will reconcile this; the next
-                  invoice charges based on actual count.
+                  {t('billing.quantityDrift', {
+                    billed: data.school.billing_quantity,
+                    live: data.school.live_student_count,
+                  })}
                 </p>
               )}
 
@@ -229,7 +238,7 @@ function BillingPageContent() {
                   disabled={busy}
                   className="px-5 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-white font-medium rounded-lg text-sm disabled:opacity-50 transition-colors"
                 >
-                  {busy ? 'Starting…' : 'Set up billing'}
+                  {busy ? t('billing.starting') : t('billing.setUpBilling')}
                 </button>
               )}
               {isActive && (
@@ -238,7 +247,7 @@ function BillingPageContent() {
                   disabled={busy}
                   className="px-5 py-2.5 bg-white/10 hover:bg-white/20 text-white font-medium rounded-lg text-sm disabled:opacity-50 transition-colors"
                 >
-                  {busy ? 'Opening…' : 'Manage billing in Stripe'}
+                  {busy ? t('billing.opening') : t('billing.manageInStripe')}
                 </button>
               )}
               {isPastDue && (
@@ -247,7 +256,7 @@ function BillingPageContent() {
                   disabled={busy}
                   className="px-5 py-2.5 bg-red-500 hover:bg-red-400 text-white font-medium rounded-lg text-sm disabled:opacity-50 transition-colors"
                 >
-                  {busy ? 'Opening…' : 'Update payment method'}
+                  {busy ? t('billing.opening') : t('billing.updatePayment')}
                 </button>
               )}
               {isCanceled && (
@@ -256,7 +265,7 @@ function BillingPageContent() {
                   disabled={busy}
                   className="px-5 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-white font-medium rounded-lg text-sm disabled:opacity-50 transition-colors"
                 >
-                  {busy ? 'Starting…' : 'Resubscribe'}
+                  {busy ? t('billing.starting') : t('billing.resubscribe')}
                 </button>
               )}
             </div>
@@ -270,20 +279,20 @@ function BillingPageContent() {
 
           {/* Invoice history */}
           <section className="mt-6">
-            <h2 className="text-white text-lg font-light mb-3">Invoice history</h2>
+            <h2 className="text-white text-lg font-light mb-3">{t('billing.invoiceHistory')}</h2>
             {data.history.length === 0 ? (
               <div className="bg-white/5 border border-white/10 rounded-xl p-6 text-center text-emerald-200/60 text-sm">
-                No invoices yet.
+                {t('billing.noInvoices')}
               </div>
             ) : (
               <ul className="bg-white/5 border border-white/10 rounded-xl divide-y divide-white/5 overflow-hidden">
                 {data.history.map(h => (
                   <li key={h.id} className="px-4 py-3 flex items-center justify-between gap-3">
                     <div className="min-w-0 flex-1">
-                      <p className="text-white text-sm">{h.description || 'Subscription invoice'}</p>
+                      <p className="text-white text-sm">{h.description || t('billing.subscriptionInvoice')}</p>
                       <p className="text-white/40 text-xs mt-0.5">
                         {fmtDate(h.created_at)}
-                        {h.quantity !== null && ` · ${h.quantity} student${h.quantity === 1 ? '' : 's'}`}
+                        {h.quantity !== null && ` · ${t('billing.studentsCount', { count: h.quantity })}`}
                       </p>
                     </div>
                     <div className="text-right shrink-0">
@@ -303,7 +312,7 @@ function BillingPageContent() {
                         rel="noopener noreferrer"
                         className="text-emerald-300/80 hover:text-emerald-200 text-xs"
                       >
-                        PDF →
+                        {t('billing.pdfLink')}
                       </a>
                     )}
                   </li>
@@ -318,26 +327,28 @@ function BillingPageContent() {
 }
 
 function BillingNotConfigured() {
+  const { t } = useI18n();
   return (
     <section className="mt-6 bg-white/5 border border-white/10 rounded-xl p-5">
-      <h2 className="text-white text-lg font-light">Billing isn&apos;t set up yet</h2>
+      <h2 className="text-white text-lg font-light">{t('billing.notConfiguredTitle')}</h2>
       <p className="mt-2 text-emerald-200/70 text-sm leading-relaxed">
-        We&apos;re finalising payment processing. Tredoux will reach out before any
-        billing kicks in — there&apos;s nothing for you to do here right now. Keep
-        using Montree as normal.
+        {t('billing.notConfiguredBody')}
       </p>
-      <p className="mt-3 text-white/50 text-xs">
-        Pricing model when billing goes live: <strong className="text-white">$7 per
-        active student per month</strong>, billed monthly. No setup fee, no
-        contracts, cancel any time. The first 30 days are free.
-      </p>
+      <p
+        className="mt-3 text-white/50 text-xs"
+        dangerouslySetInnerHTML={{ __html: t('billing.notConfiguredPricing') }}
+      />
     </section>
   );
 }
 
-function StatusPill({ status }: { status: string | null }) {
+function StatusPill({ status, t }: { status: string | null; t: (key: TranslationKey) => string }) {
   if (!status) {
-    return <span className="text-xs px-2 py-0.5 rounded-full bg-slate-700 text-slate-300 border border-slate-600">Not subscribed</span>;
+    return (
+      <span className="text-xs px-2 py-0.5 rounded-full bg-slate-700 text-slate-300 border border-slate-600">
+        {t('billing.status.notSubscribed')}
+      </span>
+    );
   }
   const style = (() => {
     switch (status) {
@@ -351,20 +362,20 @@ function StatusPill({ status }: { status: string | null }) {
   })();
   return (
     <span className={`text-xs px-2 py-0.5 rounded-full border ${style}`}>
-      {prettyStatus(status)}
+      {t(prettyStatusKey(status))}
     </span>
   );
 }
 
-function prettyStatus(status: string | null): string {
-  if (!status) return 'Not subscribed';
+function prettyStatusKey(status: string | null): TranslationKey {
+  if (!status) return 'billing.status.notSubscribed';
   switch (status) {
-    case 'active': return 'Active';
-    case 'trialing': return 'Trial';
-    case 'past_due': return 'Past due';
-    case 'canceled': return 'Canceled';
-    case 'inactive': return 'Not subscribed';
-    default: return status;
+    case 'active': return 'billing.status.active';
+    case 'trialing': return 'billing.status.trialing';
+    case 'past_due': return 'billing.status.pastDue';
+    case 'canceled': return 'billing.status.canceled';
+    case 'inactive': return 'billing.status.notSubscribed';
+    default: return 'billing.status.notSubscribed';
   }
 }
 
@@ -378,10 +389,15 @@ function Tile({ label, value, accent, accent2 }: { label: string; value: string;
   );
 }
 
-export default function AdminBillingPage() {
+function BillingPageWithSuspense() {
+  const { t } = useI18n();
   return (
-    <Suspense fallback={<div className="p-8 text-slate-400">Loading…</div>}>
+    <Suspense fallback={<div className="p-8 text-slate-400">{t('common.loading')}</div>}>
       <BillingPageContent />
     </Suspense>
   );
+}
+
+export default function AdminBillingPage() {
+  return <BillingPageWithSuspense />;
 }
