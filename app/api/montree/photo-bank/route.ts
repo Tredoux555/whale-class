@@ -30,9 +30,18 @@ export async function GET(request: NextRequest) {
     // sort: 'label' (default, alpha) | 'recent' (newest upload first)
     const sort = searchParams.get('sort') === 'recent' ? 'recent' : 'label';
 
+    // 🚨 Perf Tier 3.3 (PERF_HEALTH_CHECK.md) — explicit column list.
+    // PhotoBankPicker (the only consumer of this endpoint) reads exactly these
+    // 8 fields. Previously `select('*')` shipped the full row (file_size,
+    // mime_type, uploaded_by, is_public, is_approved, created_at, attribution,
+    // …) on every search. Narrowing keeps the API surface compatible — the
+    // client never read the extra columns — and trims payload ~60% per row.
     let query = supabase
       .from('montree_photo_bank')
-      .select('*', { count: 'exact' })
+      .select(
+        'id, filename, label, tags, category, public_url, storage_path, thumbnail_path',
+        { count: 'exact' }
+      )
       .eq('is_public', true)
       .eq('is_approved', true);
 

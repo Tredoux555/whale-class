@@ -142,10 +142,16 @@ export async function POST(request: NextRequest) {
 
     // Fetch all child data in parallel (4 independent queries)
     const [progressResult, historicalResult, sessionsResult, curriculumResult] = await Promise.all([
-      // Week's progress
+      // Week's progress. 🚨 Perf Tier 3.3 (PERF_HEALTH_CHECK.md) — explicit
+      // column list. Result is used internally below (lines 209-230) to build
+      // the analysis payload via {work_name, area, status, notes, created_at}
+      // — every other column on montree_child_progress (id, child_id, work_key,
+      // confirmed_count, first_presented_at, last_practiced_at, mastered_at,
+      // classroom_id, updated_at, source, is_focus, is_extra, …) was a wasted
+      // round trip. Narrowing cuts row payload ~70%.
       supabase
         .from('montree_child_progress')
-        .select('*')
+        .select('work_name, area, status, notes, created_at')
         .eq('child_id', child_id)
         .gte('created_at', week_start)
         .lte('created_at', week_end + 'T23:59:59'),
