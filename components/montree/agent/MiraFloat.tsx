@@ -529,8 +529,6 @@ export default function MiraFloat() {
         aria-label="Open Mira"
         style={{
           position: 'fixed',
-          top: 16,
-          right: 16,
           zIndex: 35,
           width: 56,
           height: 56,
@@ -565,11 +563,31 @@ export default function MiraFloat() {
             }}
           />
         )}
+        {/*
+          MOBILE: float sits BOTTOM-RIGHT so it doesn't collide with the
+            AgentNav hamburger (which is also top-right). 16px from the bottom
+            + a safe-area-inset bump for notched devices.
+          DESKTOP (md+): float sits TOP-RIGHT 16px — matches the design language
+            of TracyFloat in the principal dashboard. No hamburger conflict
+            because desktop renders the full nav inline.
+        */}
         <style jsx>{`
+          .mira-float-trigger {
+            bottom: calc(env(safe-area-inset-bottom, 0px) + 16px);
+            right: 16px;
+            top: auto;
+          }
           .mira-float-trigger:hover {
             transform: translateY(-1px);
             box-shadow: 0 8px 26px rgba(0, 0, 0, 0.5),
               0 0 0 4px rgba(232, 201, 106, 0.12);
+          }
+          @media (min-width: 768px) {
+            .mira-float-trigger {
+              top: 16px;
+              right: 16px;
+              bottom: auto;
+            }
           }
         `}</style>
       </button>
@@ -581,13 +599,12 @@ export default function MiraFloat() {
     <div
       role="dialog"
       aria-label="Mira"
+      className="mira-float-panel"
       style={{
         position: 'fixed',
-        top: 16,
-        right: 16,
         zIndex: 35,
         width: 'min(380px, calc(100vw - 32px))',
-        maxHeight: 'calc(100vh - 32px)',
+        maxHeight: 'calc(100dvh - 32px)',
         background: T.cardBg,
         backdropFilter: 'blur(22px)',
         border: T.cardBorder,
@@ -600,6 +617,22 @@ export default function MiraFloat() {
         color: T.textSoft,
       }}
     >
+      {/* MOBILE: opens from bottom-right (matches trigger position).
+          DESKTOP (md+): opens from top-right. Same responsive rule as trigger. */}
+      <style jsx>{`
+        .mira-float-panel {
+          bottom: calc(env(safe-area-inset-bottom, 0px) + 16px);
+          right: 16px;
+          top: auto;
+        }
+        @media (min-width: 768px) {
+          .mira-float-panel {
+            top: 16px;
+            right: 16px;
+            bottom: auto;
+          }
+        }
+      `}</style>
       {/* Header */}
       <div
         style={{
@@ -725,7 +758,9 @@ export default function MiraFloat() {
               background: 'transparent',
               color: T.textSoft,
               fontFamily: T.sans,
-              fontSize: 14,
+              // 16px prevents iOS Safari zoom-in on focus. The float is small
+              // so a zoom-in would be especially disruptive.
+              fontSize: 16,
               lineHeight: 1.5,
               resize: 'none',
               padding: '6px 0',

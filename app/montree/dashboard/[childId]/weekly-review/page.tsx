@@ -11,6 +11,7 @@ import Link from 'next/link';
 import { montreeApi } from '@/lib/montree/api';
 import { useI18n } from '@/lib/montree/i18n';
 import { toast, Toaster } from 'sonner';
+import UpgradeCard, { extractUpgradeFromResponse } from '@/components/montree/UpgradeCard';
 
 type Tab = 'teacher' | 'parent';
 type Status = 'idle' | 'generating' | 'ready' | 'refining' | 'applying' | 'sending';
@@ -56,6 +57,9 @@ export default function WeeklyReviewPage() {
   // AbortController for cleanup
   const abortRef = useRef<AbortController | null>(null);
 
+  // 402 + requires_upgrade → render UpgradeCard at top instead of error toast.
+  const [upgrade, setUpgrade] = useState<{ feature: string; upgradeUrl: string } | null>(null);
+
   useEffect(() => {
     return () => { abortRef.current?.abort(); };
   }, []);
@@ -74,6 +78,7 @@ export default function WeeklyReviewPage() {
     setReport('');
     setShelfResult(null);
     setSendResult(null);
+    setUpgrade(null);
 
     try {
       abortRef.current = new AbortController();
@@ -83,6 +88,15 @@ export default function WeeklyReviewPage() {
         body: JSON.stringify({ type, locale }),
         signal: abortRef.current.signal,
       });
+
+      if (res.status === 402) {
+        const u = await extractUpgradeFromResponse(res);
+        if (u) {
+          setUpgrade({ feature: u.feature, upgradeUrl: u.upgradeUrl });
+          setStatus('idle');
+          return;
+        }
+      }
 
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
@@ -111,6 +125,7 @@ export default function WeeklyReviewPage() {
     const setReport = activeTab === 'teacher' ? setTeacherReport : setParentReport;
 
     setStatus('refining');
+    setUpgrade(null);
     try {
       abortRef.current = new AbortController();
       const res = await montreeApi(`/api/montree/weekly-review/${childId}`, {
@@ -124,6 +139,15 @@ export default function WeeklyReviewPage() {
         }),
         signal: abortRef.current.signal,
       });
+
+      if (res.status === 402) {
+        const u = await extractUpgradeFromResponse(res);
+        if (u) {
+          setUpgrade({ feature: u.feature, upgradeUrl: u.upgradeUrl });
+          setStatus('ready');
+          return;
+        }
+      }
 
       if (!res.ok) throw new Error('Refinement failed');
 
@@ -274,6 +298,12 @@ export default function WeeklyReviewPage() {
 
       {/* Content */}
       <div className="max-w-2xl mx-auto px-4 py-4 space-y-4">
+
+        {/* Tier-gate upgrade prompt — replaces the toast.error red banner so a
+            free-tier school sees a clear "set up billing" CTA instead. */}
+        {upgrade && (
+          <UpgradeCard feature={upgrade.feature} upgradeUrl={upgrade.upgradeUrl} />
+        )}
 
         {/* Generate button (when idle) */}
         {currentStatus === 'idle' && (

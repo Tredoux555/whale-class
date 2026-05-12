@@ -202,6 +202,83 @@ Wave 1 sends bounced for these addresses. None of these are flagged as `bounced`
 
 ## RECENT STATUS (May 12, 2026)
 
+### ⚡ Session 106 — Tracy 402 universal + sonnet chips + agent mobile + parent audit + bulk-reply demo leads (May 12, 2026)
+
+**0 commits pushed yet — 32 files in working tree, 0 errors, i18n 100% parity (4430/4430 × 12 locales).** Five clean workstreams ready for `git add . && git commit && git push`. **No SQL — all migrations through 201 remain run.**
+
+**🚨 Canonical resume doc:** `docs/handoffs/SESSION_106_HANDOFF.md` — full file-by-file change list, 7-step Stripe Connect playbook, 11-step smoke test, architectural rules, deferred backlog.
+
+---
+
+### 🚨🚨🚨 TOP CALL TO ACTION FOR NEXT SESSION — STRIPE CONNECT 🚨🚨🚨
+
+**The codebase has had Stripe Connect ready since Session 90.** The only blocker to wiring Gloria's first real payout is **4 toggles in Stripe Dashboard + 3 env vars in Railway** — totaling ~15-20 minutes of Tredoux's time.
+
+**📋 Full 7-step playbook in `docs/handoffs/SESSION_106_HANDOFF.md` section "STRIPE CONNECT ACTIVATION PLAYBOOK".** Summary:
+
+1. **Verify `STRIPE_SECRET_KEY` is in Railway** (almost certainly yes — school billing has used it since Phase 4).
+2. **Enable Stripe Connect on the platform account** at `https://dashboard.stripe.com/connect/overview` → Get started → **Platform or marketplace** → **Express**. (Anthropic can't drive `dashboard.stripe.com` — financial UI policy.)
+3. **Create Connect-mode webhook** at `https://dashboard.stripe.com/webhooks`. URL `https://montree.xyz/api/stripe/connect-webhook`, **"Events on Connected accounts"** mode (NOT Account events), event `account.updated`. Copy signing secret → Railway env var `STRIPE_CONNECT_WEBHOOK_SECRET=whsec_…`.
+4. **Set cron env vars** in Railway:
+   ```
+   CRON_SECRET=hn57BkFBTMTic3ByvZY183T0s/YzBJyqSHsRyMvrFCc=
+   CRON_DIGEST_EMAIL=tredoux555@gmail.com
+   ```
+   (CRON_SECRET generated fresh via `openssl rand -base64 32` during Session 106.)
+5. **Confirm with banker (Wallex/HK)** that Stripe Connect Express + Wallex HKD account is compatible (one email or call).
+6. **Generate Gloria's onboarding link** via super-admin Referrals tab → 💳 button on Gloria's row (code `GLORIA-3KD5`). Send her the link + `docs/agents/GLORIA_STRIPE_ONBOARDING.md`.
+7. **(Optional, later)** Configure 5 Railway crons per `docs/perf/CRON_SETUP.md`. Most important: **#1 monthly payout calculator** (`0 2 1 * *`). Health tab → Cron triggers panel can fire each manually until wired.
+
+**What lights up when this lands:** Gloria's `/montree/agent/payouts` page flips from "Set up payouts now" → green ✓ verified pill within a minute of her completing Stripe's form. Next month-end, payout calculator computes her share, Money tab gets ⚡ Wire button on her row, one click → Stripe wires to her bank → row flips `paid` → email to Gloria with transfer ref. Year-end → Stripe issues her 1099-NEC automatically.
+
+---
+
+### Five workstreams shipped this session
+
+**A. Tracy 402 pattern universally applied** — Architectural rule #29 fully realized. 13 server routes + 11 client surfaces patched. Every paid AI feature now returns `{ requires_upgrade: true, upgrade_url: '/montree/admin/billing', feature: '<key>', tier, error }` on 402, and every client renders the warm UpgradeCard (gold/amber, matches Tracy's design from Session 105) instead of a red error toast. Features covered: weekly_wrap, snap_identify, weekly_review (POST + PATCH), language_presentation, language_semester, teaching_instructions, generate_work_content, child_briefing, parent_question, tracy_scan, tracy_draft, vault_transcribe (+ tracy already done Session 105). New shared component at `components/montree/UpgradeCard.tsx` with helper `extractUpgradeFromResponse(res)`. 27 i18n keys × 12 locales = 324 translations.
+
+**🚨 Photo Identification deliberately NOT tier-gated** per Session 57 architectural decision — free schools still need basic photo capture working.
+
+**B. Sonnet-drafted top-3 chips** — extends Session 105 rule #32. The Sonnet-drafted teal card now surfaces top-2 sibling candidates as inline pill chips. One tap → confirms via `handleConfirmCandidate`. Falls back to shape-adapting `closest_existing_match` if `top_candidates` is empty (older drafts). All three identification surfaces now have chips: haiku_matched, haiku_drafted, sonnet_drafted.
+
+**C. Agent dashboard mobile polish** — fixed the core collision: MiraFloat trigger (top-right zIndex 35) was overlapping AgentNav hamburger (top-right zIndex 30). MiraFloat now sits **bottom-right on mobile** (with `env(safe-area-inset-bottom)` for notched devices), **top-right on desktop** (`md:` breakpoint matches TracyFloat). Plus iOS zoom-on-focus killed across every agent input (16px font), touch targets bumped to 44pt on primary CTAs, earnings table → per-school cards below 640px.
+
+**D. Parent portal dark forest theme audit** — the real find: `STATUS_META` map was using Tailwind class strings (`text-emerald-700`, `bg-emerald-50`) as inline `style.color` values — these silently never worked. On report page, status badges inherited default text color; on dashboard, value was bypassed entirely (hardcoded amber). Replaced with real CSS hex values. Now status pills are emerald (mastered), blue (practicing), gold (presented) — gives parents a quicker scan signal. Plus iOS zoom on parent messaging + sign-out tap target.
+
+**E. Bulk-reply stale demo leads** — super-admin DemoRequestAlert gains "📨 Reply to all stale (N)" header button + per-row checkboxes + "📧 Reply to N selected" action. Server-side batch endpoint at `/api/montree/super-admin/demo-requests/bulk-reply` (NEW) sends the same personalised trial-link email as the per-row mailto button via Resend. Caps at 100 leads per call. Per-email failures don't block the batch — returns `{ sent, failed, skipped, outcomes }`. New email helper `sendDemoTrialLinkReply()` in `lib/montree/email.ts`.
+
+### Architectural rules locked in this session
+
+- **Rule #29 (Session 105) fully realized:** AI 402 routes MUST return `{ requires_upgrade: true, upgrade_url, feature, tier, error }`. Clients render `<UpgradeCard feature={feature} />` instead of red error. 14 routes + 11 client consumers compliant.
+- **Rule #34 (NEW):** Bulk operations against contactable status fields skip non-eligible rows server-side rather than failing the batch. Reply-to-not_interested-lead is a footgun.
+- **Rule #35 (NEW):** Per-email failures inside a batch don't compound original errors. Each fail is logged to `montree_outreach_log` with `action='bulk_reply_trial_link_failed'`, batch moves on.
+- **Mobile iOS zoom:** every input/textarea on customer-facing surfaces MUST be ≥16px font. Pattern: `text-base sm:text-sm` (Tailwind) or `fontSize: 16` (inline). Comment block explains the why.
+- **Touch targets:** primary CTAs use `py-3 sm:py-2` to hit 44pt on mobile without ballooning desktop.
+- **`STATUS_META` records used inside inline `style={{ color: ... }}`** MUST use real CSS hex values, not Tailwind class strings (silent fail).
+
+### Files changed (32 total)
+
+See `docs/handoffs/SESSION_106_HANDOFF.md` "Files changed this session" section for the full list. Summary: 13 API routes patched + 1 new bulk-reply route + 1 new UpgradeCard component + 11 client consumers + agent dashboard (10 files) + parent portal (4 files) + super-admin DemoRequestAlert extension + `lib/montree/email.ts` extension + 12 locale files for i18n + this handoff doc.
+
+### 🚨 Tredoux's operational to-do (priority-ordered)
+
+1. **🚨🚨🚨 Stripe Connect activation — Steps 2–6 of the playbook above.** Single biggest unlock — wires Gloria's real payout.
+2. `git add . && git commit -m "<message>" && git push origin main` — 32 files in working tree ready to ship.
+3. **Send the HK accountant** `docs/finance/HK_FINANCIAL_ADVISOR_SUMMARY.md` — categorization decisions need their reply.
+4. **Verify `montree.xyz` in Resend** so demo/drip/bulk-reply emails actually deliver (currently `onboarding@resend.dev` test address only delivers to Resend account owner).
+5. **After Stripe Connect:** configure 5 Railway crons per `docs/perf/CRON_SETUP.md`.
+
+### Next session priorities (ordered)
+
+1. **🚨 Walk the Stripe Connect playbook end-to-end + onboard Gloria.** Highest-leverage step in the project right now.
+2. **`git push` + walk the 11-step smoke test** in `docs/handoffs/SESSION_106_HANDOFF.md` after Railway redeploys.
+3. **Per-school billing override** (~2h) — super-admin sets custom price for early-adopter schools (e.g. $5 instead of $7 for first 10). New `billing_override_usd` column + UI + Stripe override on next cycle.
+4. **Photo bank improvements** (half-day) — direct-Supabase-URL inconsistency, delete UX, search filter, export-to-tool shortcut.
+5. **Apply UpgradeCard to any new AI surfaces** — pattern is canonical, new AI routes should reach for `<UpgradeCard feature={...} />` rather than re-inventing.
+6. **Outreach follow-ups (carry-over):** FAMM Argentina · Cambridge Montessori Global · Otari NZ · Lions Gate · Montessori Norge · Paint Pots · Ardtona dead leads cleanup in DB.
+
+---
+
 ### ⚡ Session 105 — i18n full sweep + Money/Health/Demo operational layer + Photo audit polish (May 12, 2026)
 
 **16 commits pushed to main this session:** `bde404d8` → `5338a406` → `d99dfd31` → `48aa7b52` → `418ec51d` → `03fba586` → `00ada714` → `a3cd874f` → `317d585f` → `dc0a449e` → `2f4d5f04` → `0192bad6` → `c0c12a2c` → `453cd9b6` → `7cc53298` → (final handoff commit).

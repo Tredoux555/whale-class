@@ -42,9 +42,14 @@ export async function POST(request: NextRequest) {
   // Tier-gate. Free schools get 402.
   const tier = await resolveReportModel(supabase, auth.schoolId);
   if (tier.tier === 'free' || !tier.model) {
-    const supportEmail = process.env.SUPPORT_EMAIL || 'tredoux555@gmail.com';
     return NextResponse.json(
-      { error: `AI features require an active tier. Email ${supportEmail} to enable.` },
+      {
+        error: 'Tracy thread scan requires an active AI tier.',
+        tier: tier.tier,
+        requires_upgrade: true,
+        upgrade_url: '/montree/admin/billing',
+        feature: 'tracy_scan',
+      },
       { status: 402 }
     );
   }

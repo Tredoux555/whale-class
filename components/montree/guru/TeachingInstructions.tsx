@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { montreeApi } from '@/lib/montree/api';
 import { useI18n } from '@/lib/montree/i18n';
+import UpgradeCard, { extractUpgradeFromResponse } from '@/components/montree/UpgradeCard';
 
 interface TeachingInstructionsProps {
   childId: string;
@@ -16,6 +17,7 @@ export default function TeachingInstructions({ childId, workName, area }: Teachi
   const [instructions, setInstructions] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
+  const [upgrade, setUpgrade] = useState<{ feature: string; upgradeUrl: string } | null>(null);
   const [generatedAt, setGeneratedAt] = useState<string | null>(null);
   const [cached, setCached] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
@@ -35,6 +37,7 @@ export default function TeachingInstructions({ childId, workName, area }: Teachi
 
     setLoading(true);
     setError(false);
+    setUpgrade(null);
 
     try {
       const res = await montreeApi('/api/montree/guru/teaching-instructions', {
@@ -43,6 +46,14 @@ export default function TeachingInstructions({ childId, workName, area }: Teachi
         body: JSON.stringify({ child_id: childId, work_name: workName, area, regenerate }),
         signal: controller.signal,
       });
+
+      if (res.status === 402) {
+        const u = await extractUpgradeFromResponse(res);
+        if (u) {
+          setUpgrade({ feature: u.feature, upgradeUrl: u.upgradeUrl });
+          return;
+        }
+      }
 
       if (!res.ok) {
         throw new Error('Failed to fetch');
@@ -156,7 +167,11 @@ export default function TeachingInstructions({ childId, workName, area }: Teachi
             </div>
           )}
 
-          {error && !loading && (
+          {upgrade && !loading && (
+            <UpgradeCard feature={upgrade.feature} upgradeUrl={upgrade.upgradeUrl} />
+          )}
+
+          {error && !loading && !upgrade && (
             <div className="text-center py-4">
               <p className="text-sm text-gray-500 mb-2">{t('guru.instructionsError')}</p>
               <button

@@ -2998,6 +2998,53 @@ function AuditPhotoCardInner({ photo, selected, onToggle, onConfirm, onCorrect, 
               )}
             </p>
           )}
+          {/* Top-3 candidate sibling chips — same pattern as haiku_matched / haiku_drafted.
+              `matchToCurriculumV2` persists top_candidates to sonnet_draft (Session 105
+              rule #32) so Sonnet drafts can also offer one-tap fixes when the #1 was
+              wrong but #2 or #3 is right. Falls back to closest_existing_match if no
+              top_candidates available. */}
+          {(() => {
+            const proposed = (photo.sonnet_draft?.proposed_name || '').toLowerCase().trim();
+            const fromTop = (photo.sonnet_draft?.top_candidates || []).filter(
+              (c) => c.workName.toLowerCase().trim() !== proposed
+            ).slice(0, 2);
+            // Fall back to closest_existing_match if top_candidates is empty but Sonnet
+            // surfaced one alternative anyway. Shape-adapt so onConfirmCandidate works.
+            const closest = photo.sonnet_draft?.closest_existing_match;
+            const fromClosest =
+              fromTop.length === 0 && closest?.work_name
+                ? [{
+                    workName: closest.work_name,
+                    workKey: closest.work_name,
+                    area: photo.sonnet_draft?.suggested_area || 'language',
+                    score: closest.similarity ?? 0,
+                  }]
+                : [];
+            const siblings = fromTop.length > 0 ? fromTop : fromClosest;
+            if (siblings.length === 0) return null;
+            return (
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 6 }}>
+                <span style={{ fontSize: 9, color: 'rgba(196,181,253,0.55)', alignSelf: 'center', marginRight: 2 }}>{t('audit.orPick')}:</span>
+                {siblings.map((cand) => (
+                  <button
+                    key={cand.workKey || cand.workName}
+                    onClick={() => onConfirmCandidate(cand)}
+                    disabled={processing}
+                    style={{
+                      fontSize: 10, padding: '4px 10px', borderRadius: 999,
+                      background: 'rgba(139,92,246,0.10)', border: '1px solid rgba(139,92,246,0.32)',
+                      color: 'rgba(233,213,255,0.92)', fontWeight: 500,
+                      cursor: processing ? 'wait' : 'pointer', opacity: processing ? 0.5 : 1,
+                      maxWidth: '100%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                    }}
+                    title={`${cand.workName} (${Math.round((cand.score || 0) * 100)}%)`}
+                  >
+                    {cand.workName}
+                  </button>
+                ))}
+              </div>
+            );
+          })()}
           {unifiedTagger ? (
             <div style={{ display: 'flex', gap: 6, marginTop: 8 }}>
               <button onClick={onConfirmDraft} disabled={processing} style={{ flex: 1, fontSize: 11, padding: '8px 0', borderRadius: 8, background: 'linear-gradient(180deg, #34d399, #10b981)', border: '1px solid rgba(52,211,153,0.55)', color: '#06281a', fontWeight: 600, cursor: processing ? 'wait' : 'pointer', opacity: processing ? 0.5 : 1 }}>

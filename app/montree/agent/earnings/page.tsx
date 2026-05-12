@@ -123,48 +123,95 @@ export default function AgentEarningsPage() {
                 No referred schools yet.
               </div>
             ) : (
-              <div className="bg-white/5 border border-white/10 rounded-xl overflow-hidden">
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm">
-                    <thead className="bg-black/20 text-white/40 uppercase tracking-wider text-[10px]">
-                      <tr>
-                        <th className="px-3 py-3 text-left">School</th>
-                        <th className="px-3 py-3 text-right">Students</th>
-                        <th className="px-3 py-3 text-right">Gross</th>
-                        <th className="px-3 py-3 text-right">Fees</th>
-                        <th className="px-3 py-3 text-right">Costs</th>
-                        <th className="px-3 py-3 text-right">Net</th>
-                        <th className="px-3 py-3 text-right">Your %</th>
-                        <th className="px-3 py-3 text-right">Your share</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-white/5">
-                      {data.per_school.map(p => (
-                        <tr key={p.school_id} className="hover:bg-white/5">
-                          <td className="px-3 py-3 text-white">
-                            <Link
-                              href={`/montree/agent/schools/${p.school_id}`}
-                              className="hover:text-emerald-300 transition-colors"
-                            >
-                              {p.school_name || 'Unnamed'}
-                            </Link>
+              <>
+                {/* Desktop table — 8 columns wide. Hidden on mobile because
+                    the columns squash the data unreadable below ~640px. */}
+                <div className="hidden md:block bg-white/5 border border-white/10 rounded-xl overflow-hidden">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead className="bg-black/20 text-white/40 uppercase tracking-wider text-[10px]">
+                        <tr>
+                          <th className="px-3 py-3 text-left">School</th>
+                          <th className="px-3 py-3 text-right">Students</th>
+                          <th className="px-3 py-3 text-right">Gross</th>
+                          <th className="px-3 py-3 text-right">Fees</th>
+                          <th className="px-3 py-3 text-right">Costs</th>
+                          <th className="px-3 py-3 text-right">Net</th>
+                          <th className="px-3 py-3 text-right">Your %</th>
+                          <th className="px-3 py-3 text-right">Your share</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-white/5">
+                        {data.per_school.map(p => (
+                          <tr key={p.school_id} className="hover:bg-white/5">
+                            <td className="px-3 py-3 text-white">
+                              <Link
+                                href={`/montree/agent/schools/${p.school_id}`}
+                                className="hover:text-emerald-300 transition-colors"
+                              >
+                                {p.school_name || 'Unnamed'}
+                              </Link>
+                              {!p.revenue_share_active && (
+                                <span className="ml-2 text-[10px] uppercase text-amber-300">Paused</span>
+                              )}
+                            </td>
+                            <td className="px-3 py-3 text-right text-white tabular-nums">{p.student_count}</td>
+                            <td className="px-3 py-3 text-right text-white/70 tabular-nums">{USD(p.gross_estimate_usd)}</td>
+                            <td className="px-3 py-3 text-right text-white/40 tabular-nums">−{USD(p.stripe_fee_estimate_usd)}</td>
+                            <td className="px-3 py-3 text-right text-white/40 tabular-nums">−{USD(p.api_cost_usd)}</td>
+                            <td className="px-3 py-3 text-right text-white tabular-nums">{USD(p.net_estimate_usd)}</td>
+                            <td className="px-3 py-3 text-right text-amber-300 tabular-nums">{p.revenue_share_pct}%</td>
+                            <td className="px-3 py-3 text-right text-emerald-300 font-medium tabular-nums">{USD(p.estimated_share_usd)}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                {/* Mobile card view — same data, single column. Shows the
+                    headline figure (your share) prominently with the math
+                    in a smaller grid below for transparency. Tap the school
+                    name to drill into the per-school page. */}
+                <div className="md:hidden space-y-3">
+                  {data.per_school.map(p => (
+                    <Link
+                      key={p.school_id}
+                      href={`/montree/agent/schools/${p.school_id}`}
+                      className="block bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl p-4 transition-colors"
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0 flex-1">
+                          <p className="text-white font-medium truncate">{p.school_name || 'Unnamed'}</p>
+                          <p className="text-emerald-200/60 text-xs mt-0.5">
+                            {p.student_count} {p.student_count === 1 ? 'student' : 'students'} · <span className="text-amber-300">{p.revenue_share_pct}%</span> your share
                             {!p.revenue_share_active && (
                               <span className="ml-2 text-[10px] uppercase text-amber-300">Paused</span>
                             )}
-                          </td>
-                          <td className="px-3 py-3 text-right text-white tabular-nums">{p.student_count}</td>
-                          <td className="px-3 py-3 text-right text-white/70 tabular-nums">{USD(p.gross_estimate_usd)}</td>
-                          <td className="px-3 py-3 text-right text-white/40 tabular-nums">−{USD(p.stripe_fee_estimate_usd)}</td>
-                          <td className="px-3 py-3 text-right text-white/40 tabular-nums">−{USD(p.api_cost_usd)}</td>
-                          <td className="px-3 py-3 text-right text-white tabular-nums">{USD(p.net_estimate_usd)}</td>
-                          <td className="px-3 py-3 text-right text-amber-300 tabular-nums">{p.revenue_share_pct}%</td>
-                          <td className="px-3 py-3 text-right text-emerald-300 font-medium tabular-nums">{USD(p.estimated_share_usd)}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                          </p>
+                        </div>
+                        <div className="text-right shrink-0">
+                          <p className="text-emerald-300 font-medium tabular-nums text-lg">
+                            {USD(p.estimated_share_usd)}
+                          </p>
+                          <p className="text-white/40 text-[10px] mt-0.5">/ mo est.</p>
+                        </div>
+                      </div>
+                      {/* Math breakdown — small numbers so it doesn't dominate */}
+                      <div className="mt-3 pt-3 border-t border-white/5 grid grid-cols-2 gap-x-3 gap-y-1.5 text-[11px] tabular-nums">
+                        <span className="text-white/40">Gross</span>
+                        <span className="text-white/70 text-right">{USD(p.gross_estimate_usd)}</span>
+                        <span className="text-white/40">Fees</span>
+                        <span className="text-white/50 text-right">−{USD(p.stripe_fee_estimate_usd)}</span>
+                        <span className="text-white/40">Costs</span>
+                        <span className="text-white/50 text-right">−{USD(p.api_cost_usd)}</span>
+                        <span className="text-white/40">Net</span>
+                        <span className="text-white/80 text-right">{USD(p.net_estimate_usd)}</span>
+                      </div>
+                    </Link>
+                  ))}
                 </div>
-              </div>
+              </>
             )}
           </section>
         </>

@@ -13,6 +13,7 @@ import {
 import { getSession, recoverSession, type MontreeSession } from '@/lib/montree/auth';
 import { getProxyUrl } from '@/lib/montree/media/proxy-url';
 import { useI18n } from '@/lib/montree/i18n/context';
+import UpgradeCard, { extractUpgradeFromResponse } from '@/components/montree/UpgradeCard';
 
 interface Child {
   id: string;
@@ -215,6 +216,7 @@ export default function LanguageSemesterPage() {
   const [gettingText, setGettingText] = useState(false);
   const [progress, setProgress] = useState<string>('');
   const [error, setError] = useState<string | null>(null);
+  const [upgrade, setUpgrade] = useState<{ feature: string; upgradeUrl: string } | null>(null);
   const [textResult, setTextResult] = useState<TextResponse | null>(null);
   const [months, setMonths] = useState<1 | 6>(6);
   const textResultRef = useRef<HTMLDivElement>(null);
@@ -285,6 +287,7 @@ export default function LanguageSemesterPage() {
     if (selected.size === 0) return;
     setGenerating(true);
     setError(null);
+    setUpgrade(null);
     setProgress(t('languageSemester.generatingProgress', { count: selected.size }));
     try {
       const res = await fetch('/api/montree/reports/language-semester/generate', {
@@ -297,6 +300,14 @@ export default function LanguageSemesterPage() {
           months,
         }),
       });
+      if (res.status === 402) {
+        const u = await extractUpgradeFromResponse(res);
+        if (u) {
+          setUpgrade({ feature: u.feature, upgradeUrl: u.upgradeUrl });
+          setProgress('');
+          return;
+        }
+      }
       if (!res.ok) {
         let msg = `Generation failed (${res.status})`;
         try {
@@ -341,6 +352,7 @@ export default function LanguageSemesterPage() {
     if (selected.size === 0) return;
     setGettingText(true);
     setError(null);
+    setUpgrade(null);
     setTextResult(null);
     setProgress('Generating text… this takes about 30s per child.');
     try {
@@ -355,6 +367,14 @@ export default function LanguageSemesterPage() {
           months,
         }),
       });
+      if (res.status === 402) {
+        const u = await extractUpgradeFromResponse(res);
+        if (u) {
+          setUpgrade({ feature: u.feature, upgradeUrl: u.upgradeUrl });
+          setProgress('');
+          return;
+        }
+      }
       if (!res.ok) {
         let msg = `Generation failed (${res.status})`;
         try {
@@ -755,7 +775,13 @@ export default function LanguageSemesterPage() {
               })}
             </div>
 
-            {error && (
+            {upgrade && (
+              <div style={{ marginBottom: 12 }}>
+                <UpgradeCard feature={upgrade.feature} upgradeUrl={upgrade.upgradeUrl} />
+              </div>
+            )}
+
+            {error && !upgrade && (
               <div style={{
                 marginBottom: 12,
                 padding: '12px 14px',
@@ -770,7 +796,7 @@ export default function LanguageSemesterPage() {
               </div>
             )}
 
-            {progress && !error && (
+            {progress && !error && !upgrade && (
               <div style={{
                 marginBottom: 12,
                 padding: '12px 14px',

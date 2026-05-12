@@ -56,6 +56,14 @@ function daysSince(iso: string): number {
 function DemoRequestAlert({ saToken }: { saToken: string }) {
   const [leads, setLeads] = useState<DemoLead[]>([]);
   const [busy, setBusy] = useState<string | null>(null);
+  // Selection set for bulk-reply. Cleared whenever leads reload so a stale
+  // checked-state can't leak across refresh cycles.
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  // Bulk-reply in flight. Server processes serially so this can take several
+  // seconds with 10+ leads. Buttons disabled while true.
+  const [bulkSending, setBulkSending] = useState(false);
+  // Surface server-returned bulk outcomes as a transient banner after each run.
+  const [lastBulk, setLastBulk] = useState<{ sent: number; failed: number; skipped: number } | null>(null);
 
   const load = useCallback(() => {
     if (!saToken) return;
@@ -67,6 +75,7 @@ function DemoRequestAlert({ saToken }: { saToken: string }) {
         if (d?.requests) {
           // Only show truly new/pending leads
           setLeads(d.requests.filter((r: DemoLead) => r.status === 'demo_requested'));
+          setSelected(new Set()); // refresh-side reset so stale checks can't leak
         }
       })
       .catch(err => console.error('[SuperAdmin] Failed to load demo leads:', err));
@@ -82,8 +91,60 @@ function DemoRequestAlert({ saToken }: { saToken: string }) {
       body: JSON.stringify({ id, status }),
     }).catch(err => console.error('[SuperAdmin] Failed to update lead status:', err));
     setLeads(prev => prev.filter(l => l.id !== id));
+    setSelected(prev => {
+      if (!prev.has(id)) return prev;
+      const next = new Set(prev);
+      next.delete(id);
+      return next;
+    });
     setBusy(null);
   };
+
+  /** Toggle one lead in/out of the bulk selection. */
+  const toggleSelect = (id: string) => {
+    setSelected(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  /** POST the bulk-reply endpoint with either an explicit lead_ids list or
+   *  all_stale=true. Refreshes the list afterwards (server already marked
+   *  successful leads as 'contacted' so they drop from the demo_requested
+   *  filter naturally). */
+  const bulkReply = async (payload: { lead_ids?: string[]; all_stale?: boolean }) => {
+    setBulkSending(true);
+    setLastBulk(null);
+    try {
+      const res = await fetch('/api/montree/super-admin/demo-requests/bulk-reply', {
+        method: 'POST',
+        headers: { 'x-super-admin-token': saToken, 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        console.error('[SuperAdmin] bulk-reply failed:', data);
+        setLastBulk({ sent: 0, failed: 0, skipped: 0 });
+        return;
+      }
+      const data = await res.json();
+      setLastBulk({
+        sent: data.sent || 0,
+        failed: data.failed || 0,
+        skipped: data.skipped || 0,
+      });
+      load(); // refresh — successful sends are now status='contacted' and drop out
+    } catch (err) {
+      console.error('[SuperAdmin] bulk-reply error:', err);
+    } finally {
+      setBulkSending(false);
+    }
+  };
+
+  const staleCount = leads.filter(l => daysSince(l.created_at) > 14).length;
+  const selectedCount = selected.size;
 
   /** Open the default mail client with a pre-written warm reply containing
    *  the trial signup link. Marks the lead as 'contacted' in the same click
@@ -115,17 +176,56 @@ function DemoRequestAlert({ saToken }: { saToken: string }) {
 
   return (
     <div className="mb-4 p-4 bg-emerald-500/15 border border-emerald-500/40 rounded-xl">
-      <div className="flex items-center gap-2 mb-3">
+      <div className="flex items-center gap-2 mb-3 flex-wrap">
         <span className="text-emerald-400 text-lg">🎯</span>
         <span className="text-emerald-300 font-semibold text-sm">
           {leads.length} new demo request{leads.length > 1 ? 's' : ''} from the landing page
         </span>
+        {staleCount > 0 && (
+          <span className="ml-auto flex items-center gap-2 flex-wrap">
+            {/* Bulk-reply actions. Header surface so the principal sees the
+                affordance without scrolling. Server-side batch sends the same
+                personalised "trial link" email as the per-row mailto button,
+                marks each lead as 'contacted', and stops the drip. */}
+            {selectedCount > 0 && (
+              <button
+                onClick={() => bulkReply({ lead_ids: Array.from(selected) })}
+                disabled={bulkSending}
+                className="text-xs px-3 py-1.5 rounded-lg bg-amber-500/25 hover:bg-amber-500/40 text-amber-100 border border-amber-500/50 font-medium transition-colors disabled:opacity-50"
+                title="Send the trial-link reply email to all selected leads. Each one is marked as contacted and dropped from the drip."
+              >
+                {bulkSending ? 'Sending…' : `📧 Reply to ${selectedCount} selected`}
+              </button>
+            )}
+            <button
+              onClick={() => {
+                if (!confirm(`Send the trial-link reply email to all ${staleCount} stale lead${staleCount > 1 ? 's' : ''} (>14 days)? Each will be marked as contacted.`)) return;
+                bulkReply({ all_stale: true });
+              }}
+              disabled={bulkSending}
+              className="text-xs px-3 py-1.5 rounded-lg bg-amber-500/15 hover:bg-amber-500/30 text-amber-200 border border-amber-500/40 transition-colors disabled:opacity-50"
+              title={`${staleCount} lead${staleCount > 1 ? 's are' : ' is'} older than 14 days. One click sends them all the trial-link email.`}
+            >
+              {bulkSending ? 'Sending…' : `📨 Reply to all stale (${staleCount})`}
+            </button>
+          </span>
+        )}
       </div>
+
+      {lastBulk && (
+        <div className="mb-3 px-3 py-2 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-xs text-emerald-200">
+          Bulk reply: {lastBulk.sent} sent
+          {lastBulk.failed > 0 && <span className="text-red-300">, {lastBulk.failed} failed</span>}
+          {lastBulk.skipped > 0 && <span className="text-amber-300">, {lastBulk.skipped} skipped</span>}
+        </div>
+      )}
+
       <div className="space-y-2">
         {leads.map(lead => {
           const age = daysSince(lead.created_at);
           const dripsSent = lead.drips_sent || [];
           const stale = age > 14;
+          const isChecked = selected.has(lead.id);
           return (
             <div
               key={lead.id}
@@ -133,6 +233,17 @@ function DemoRequestAlert({ saToken }: { saToken: string }) {
                 stale ? 'bg-amber-500/10 border border-amber-500/30' : 'bg-black/20'
               }`}
             >
+              {/* Bulk-select checkbox. Sits inline at the start of the row,
+                  large hit-target (28x28) so it's tappable on mobile. */}
+              <label className="flex items-center shrink-0 cursor-pointer mt-0.5" title="Select for bulk reply">
+                <input
+                  type="checkbox"
+                  checked={isChecked}
+                  onChange={() => toggleSelect(lead.id)}
+                  disabled={bulkSending}
+                  className="w-4 h-4 accent-emerald-500 cursor-pointer disabled:opacity-50"
+                />
+              </label>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2 flex-wrap">
                   <span className="text-white text-sm font-medium">{lead.org_name}</span>

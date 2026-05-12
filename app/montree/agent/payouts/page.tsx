@@ -213,13 +213,13 @@ export default function AgentPayoutsPage() {
               </p>
             )}
 
-            {/* CTA */}
+            {/* CTA — primary action so it gets the 44pt mobile touch target. */}
             {data.stripe_connect_status !== 'verified' && (
               <div className="mt-5">
                 <button
                   onClick={generateLink}
                   disabled={linkLoading}
-                  className="inline-block px-4 py-2 bg-amber-500 hover:bg-amber-400 text-white font-medium rounded-lg text-sm disabled:opacity-50 transition-colors"
+                  className="inline-block px-4 py-3 sm:py-2 bg-amber-500 hover:bg-amber-400 text-white font-medium rounded-lg text-base sm:text-sm disabled:opacity-50 transition-colors"
                 >
                   {linkLoading
                     ? 'Generating…'
@@ -248,13 +248,13 @@ export default function AgentPayoutsPage() {
                   href={link.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-block px-4 py-2 bg-indigo-500 hover:bg-indigo-400 text-white font-medium rounded-lg text-sm transition-colors"
+                  className="inline-block px-4 py-3 sm:py-2 bg-indigo-500 hover:bg-indigo-400 text-white font-medium rounded-lg text-base sm:text-sm transition-colors"
                 >
                   Open Stripe →
                 </a>
                 <button
                   onClick={() => copy(link.url)}
-                  className="px-3 py-2 bg-white/10 hover:bg-white/20 text-white text-xs rounded-lg"
+                  className="px-3 py-3 sm:py-2 bg-white/10 hover:bg-white/20 text-white text-sm sm:text-xs rounded-lg"
                 >
                   {linkCopied ? '✓ Copied' : 'Copy link'}
                 </button>

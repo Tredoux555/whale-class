@@ -12,6 +12,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { ArrowLeft, Send, RefreshCw } from 'lucide-react';
+import UpgradeCard, { extractUpgradeFromResponse } from '@/components/montree/UpgradeCard';
 
 const T = {
   emerald: '#34d399',
@@ -67,6 +68,10 @@ export default function ChildBriefingPage() {
   const [briefing, setBriefing] = useState<BriefingResponse | null>(null);
   const [briefingLoading, setBriefingLoading] = useState(true);
   const [briefingError, setBriefingError] = useState<string | null>(null);
+  // 402 + requires_upgrade → render UpgradeCard at top instead of treating the
+  // tier-gate as an error. Covers BOTH the briefing fetch and parent-question
+  // POST since they share the same tier.
+  const [upgrade, setUpgrade] = useState<{ feature: string; upgradeUrl: string } | null>(null);
 
   const [question, setQuestion] = useState('');
   const [exchanges, setExchanges] = useState<AnswerExchange[]>([]);
@@ -88,9 +93,14 @@ export default function ChildBriefingPage() {
           return null;
         }
         if (res.status === 402) {
-          setBriefingError(
-            'AI briefings require a paid AI tier. Please contact support to upgrade.'
-          );
+          const u = await extractUpgradeFromResponse(res);
+          if (u) {
+            setUpgrade({ feature: u.feature, upgradeUrl: u.upgradeUrl });
+          } else {
+            setBriefingError(
+              'AI briefings require a paid AI tier. Please contact support to upgrade.'
+            );
+          }
           return null;
         }
         if (res.status === 403) {
@@ -146,18 +156,27 @@ export default function ChildBriefingPage() {
       });
 
       if (res.status === 402) {
-        setExchanges((prev) =>
-          prev.map((ex) =>
-            ex.asked_at === askedAt
-              ? {
-                  ...ex,
-                  pending: false,
-                  error:
-                    'Answers require a paid AI tier. Please contact support to upgrade.',
-                }
-              : ex
-          )
-        );
+        const u = await extractUpgradeFromResponse(res);
+        if (u) {
+          // Promote the tier-gate to a page-level UpgradeCard rather than
+          // a per-exchange error — same tier blocks every future question.
+          setUpgrade({ feature: u.feature, upgradeUrl: u.upgradeUrl });
+          // Drop the optimistic placeholder we added before the fetch.
+          setExchanges((prev) => prev.filter((ex) => ex.asked_at !== askedAt));
+        } else {
+          setExchanges((prev) =>
+            prev.map((ex) =>
+              ex.asked_at === askedAt
+                ? {
+                    ...ex,
+                    pending: false,
+                    error:
+                      'Answers require a paid AI tier. Please contact support to upgrade.',
+                  }
+                : ex
+            )
+          );
+        }
         return;
       }
 
@@ -250,6 +269,15 @@ export default function ChildBriefingPage() {
         child={briefing?.child || null}
       />
 
+      {/* Tier-gate upgrade card — sits above the briefing body when set.
+          Covers both briefing 402 and parent-question 402 since they share
+          the same tier. Replaces the red ErrorBlock for that case. */}
+      {upgrade && (
+        <div style={{ marginBottom: 22 }}>
+          <UpgradeCard feature={upgrade.feature} upgradeUrl={upgrade.upgradeUrl} />
+        </div>
+      )}
+
       {/* Briefing body */}
       <div
         style={{
@@ -264,7 +292,7 @@ export default function ChildBriefingPage() {
       >
         {briefingLoading ? (
           <BriefingSkeleton />
-        ) : briefingError ? (
+        ) : briefingError && !upgrade ? (
           <ErrorBlock
             message={briefingError}
             onRetry={() => loadBriefing(true)}

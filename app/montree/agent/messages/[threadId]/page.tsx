@@ -304,8 +304,10 @@ export default function AgentThreadDetailPage() {
               style={{
                 flex: 1, padding: '10px 14px', borderRadius: 18,
                 background: T.card, border: T.cardBorder, color: T.textPrimary,
-                fontSize: 14, fontFamily: T.sans, boxSizing: 'border-box',
-                resize: 'none', maxHeight: 120, minHeight: 40,
+                // 16px prevents iOS Safari from zooming-in on focus. The 1px
+                // jump from desktop's 14px is invisible.
+                fontSize: 16, fontFamily: T.sans, boxSizing: 'border-box',
+                resize: 'none', maxHeight: 120, minHeight: 44,
               }}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {

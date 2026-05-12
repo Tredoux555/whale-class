@@ -31,6 +31,7 @@ import {
   type EncryptedRecord,
   type PlaintextRecord,
 } from '@/lib/montree/vault-crypto';
+import UpgradeCard, { extractUpgradeFromResponse } from '@/components/montree/UpgradeCard';
 
 const T = {
   emerald: '#34d399',
@@ -898,6 +899,8 @@ function NewConversation({
   const [transcribing, setTranscribing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // 402 from the Sonnet summary path → render UpgradeCard instead of red error.
+  const [upgrade, setUpgrade] = useState<{ feature: string; upgradeUrl: string } | null>(null);
 
   const [transcript, setTranscript] = useState('');
   const [summary, setSummary] = useState('');
@@ -962,6 +965,7 @@ function NewConversation({
   const transcribeAudio = useCallback(async () => {
     if (!audioBlob) return;
     setError(null);
+    setUpgrade(null);
     setTranscribing(true);
     try {
       const fd = new FormData();
@@ -972,6 +976,13 @@ function NewConversation({
         method: 'POST',
         body: fd,
       });
+      if (res.status === 402) {
+        const u = await extractUpgradeFromResponse(res);
+        if (u) {
+          setUpgrade({ feature: u.feature, upgradeUrl: u.upgradeUrl });
+          return;
+        }
+      }
       if (!res.ok) {
         const j = await res.json().catch(() => ({}));
         setError(j.error || 'Transcription failed.');
@@ -1339,7 +1350,13 @@ function NewConversation({
         )}
       </div>
 
-      {error && (
+      {upgrade && (
+        <div style={{ marginBottom: 14 }}>
+          <UpgradeCard feature={upgrade.feature} upgradeUrl={upgrade.upgradeUrl} />
+        </div>
+      )}
+
+      {error && !upgrade && (
         <div
           style={{
             padding: '10px 14px',

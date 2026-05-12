@@ -465,7 +465,8 @@ export default function MiraChatPage() {
                 borderRadius: 10,
                 color: T.textPrimary,
                 fontFamily: T.sans,
-                fontSize: 14,
+                // 16px prevents iOS Safari zoom-in on focus.
+                fontSize: 16,
                 outline: 'none',
                 resize: 'vertical',
                 marginBottom: 8,

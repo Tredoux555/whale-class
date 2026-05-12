@@ -123,7 +123,7 @@ export default function AgentSettingsPage() {
             <button
               onClick={signOut}
               disabled={signingOut}
-              className="mt-4 inline-block px-4 py-2 bg-red-500/20 hover:bg-red-500/35 text-red-200 font-medium rounded-lg text-sm border border-red-500/30 disabled:opacity-50 transition-colors"
+              className="mt-4 inline-block px-4 py-3 sm:py-2 bg-red-500/20 hover:bg-red-500/35 text-red-200 font-medium rounded-lg text-base sm:text-sm border border-red-500/30 disabled:opacity-50 transition-colors"
             >
               {signingOut ? 'Signing out…' : 'Sign out'}
             </button>
