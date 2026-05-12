@@ -6,6 +6,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
+import dynamic from 'next/dynamic';
 import {
   Home,
   GraduationCap,
@@ -15,7 +16,16 @@ import {
   X,
   Lock,
 } from 'lucide-react';
-import TracyFloat from '@/components/montree/admin/TracyFloat';
+// 🚨 Perf Tier 2.4 (PERF_HEALTH_CHECK.md) — Tracy panel is 1,200 lines and
+// mounted on every /montree/admin/* page. Loading it eagerly added ~30-50 KB
+// of JS to the cockpit's initial bundle even for principals who never open
+// Tracy. Dynamic-import with ssr:false defers the load until first client
+// paint. Tracy's static greeting (Tier 2.3) means there's no AI call on mount
+// either way, so a 100-300ms delayed render is invisible to the user.
+const TracyFloat = dynamic(() => import('@/components/montree/admin/TracyFloat'), {
+  ssr: false,
+  loading: () => null,
+});
 // "Sparkles" (Ask Guru) was previously in the sidebar but Tracy IS the
 // principal's chief-of-staff AI surface — Guru is the per-child Maria
 // Montessori in your pocket for teachers, and Tracy can call it as a
