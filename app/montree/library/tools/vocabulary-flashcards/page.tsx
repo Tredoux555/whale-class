@@ -4,7 +4,10 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { escapeHtml, sanitizeImageUrl } from '@/lib/sanitize';
-import JSZip from 'jszip';
+// 🚨 Perf Tier 5.4 (PERF_HEALTH_CHECK.md) — JSZip is ~1.7MB (raw) / ~100KB
+// (gzip). Only used when the user uploads a ZIP file of photos, which most
+// teachers never do. Dynamic-imported inside the upload handler so the page
+// bundle doesn't include it on every load.
 import PhotoBankPicker from '@/components/montree/PhotoBankPicker';
 import LanguageToggle from '@/components/montree/LanguageToggle';
 
@@ -111,6 +114,7 @@ const VocabularyFlashcardGenerator = () => {
   const processZipFile = async (file: File) => {
     setProcessing(true);
     try {
+      const { default: JSZip } = await import('jszip');
       const zip = await JSZip.loadAsync(file);
       const newCards: FlashCard[] = [];
 
