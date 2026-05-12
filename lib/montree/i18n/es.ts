@@ -4461,4 +4461,8 @@ export const es: Record<string, string> = {
   'tracy.upgrade.title': 'Activa Tracy',
   'tracy.upgrade.body': 'Tracy y las características de IA son parte del plan completo de Montree. Configurá la facturación para desbloquearlo — $7 por estudiante activo por mes, sin contratos.',
   'tracy.upgrade.cta': 'Configurar facturación',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'audit.autoTaggedHint': 'Etiquetado automáticamente por IA — verificá antes de confirmar.',
+  'audit.orPick': 'o elegí',
 };

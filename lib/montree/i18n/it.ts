@@ -4490,4 +4490,8 @@ export const it: Record<string, string> = {
   'tracy.upgrade.title': 'Attiva Tracy',
   'tracy.upgrade.body': 'Tracy e le funzionalità di intelligenza artificiale fanno parte del piano completo Montree. Configuri la fatturazione per sbloccarli — $7 per studente attivo al mese, senza contratti vincolanti.',
   'tracy.upgrade.cta': 'Configura fatturazione',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'audit.autoTaggedHint': 'Etichettato automaticamente dall\'AI — si prega di verificare prima di confermare.',
+  'audit.orPick': 'oppure scegli',
 };

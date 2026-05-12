@@ -4487,4 +4487,8 @@ export const uk: Record<string, string> = {
   'tracy.upgrade.title': 'Активувати Трейсі',
   'tracy.upgrade.body': 'Трейсі та функції штучного інтелекту є частиною повного плану Montree. Налаштуйте оплату, щоб розблокувати їх — $7 за активного учня на місяць, без контрактів.',
   'tracy.upgrade.cta': 'Налаштувати оплату',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'audit.autoTaggedHint': 'Позначено штучним інтелектом — будь ласка, перевірте перед підтвердженням.',
+  'audit.orPick': 'або виберіть',
 };

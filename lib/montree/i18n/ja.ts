@@ -4490,4 +4490,8 @@ export const ja: Record<string, string> = {
   'tracy.upgrade.title': 'Tracyを有効化',
   'tracy.upgrade.body': 'TracyとAI機能はMontreeフルプランに含まれています。課金設定をして利用を開始してください — アクティブなお子さまあたり月額$7、契約期間の縛りなし。',
   'tracy.upgrade.cta': '課金設定をする',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'audit.autoTaggedHint': 'AIによって自動タグ付けされました — 確認する前にご確認ください。',
+  'audit.orPick': 'または選択',
 };
