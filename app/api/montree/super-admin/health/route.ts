@@ -185,7 +185,39 @@ export async function GET(request: NextRequest) {
     });
     steps.push(schools.step);
 
-    // 7. Demo-request pipeline — pending leads + drip activity last 7d
+    // 7. Server errors — unresolved count + fatal breakdown. Soft-fails
+    // if migration 201 hasn't been run.
+    const serverErrors = await timed('server_errors', async () => {
+      try {
+        const { count: unresolved, error: uErr } = await supabase
+          .from('montree_server_errors')
+          .select('id', { count: 'exact', head: true })
+          .is('resolved_at', null);
+        if (uErr) throw new Error(uErr.message);
+
+        const { count: fatalCount } = await supabase
+          .from('montree_server_errors')
+          .select('id', { count: 'exact', head: true })
+          .is('resolved_at', null)
+          .eq('severity', 'fatal');
+
+        const { count: errors7d } = await supabase
+          .from('montree_server_errors')
+          .select('id', { count: 'exact', head: true })
+          .gte('created_at', sevenDaysAgo);
+
+        return {
+          unresolved_count: unresolved || 0,
+          fatal_count: fatalCount || 0,
+          errors_last_7d: errors7d || 0,
+        };
+      } catch {
+        return { unresolved_count: 0, fatal_count: 0, errors_last_7d: 0, table_missing: true };
+      }
+    });
+    steps.push(serverErrors.step);
+
+    // 8. Demo-request pipeline — pending leads + drip activity last 7d
     const demoRequests = await timed('demo_requests', async () => {
       const { count: pending, error: pErr } = await supabase
         .from('montree_outreach_contacts')

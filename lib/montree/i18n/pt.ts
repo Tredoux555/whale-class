@@ -4479,4 +4479,10 @@ export const pt: Record<string, string> = {
 
   // ─── Auto-filled missing keys (from Apr 30 audit) ───
   'health.stripeDlqPending': '⚠ {count} pendentes na DLQ — últimos 7d',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'health.errorsTitle': 'Erros do servidor',
+  'health.errorsUnresolved': '{count} não resolvidos',
+  'health.errorsFatal': '⚠ {count} fatais — consulte a aba Erros',
+  'health.errorsLast7d': '{count} registrados · últimos 7 dias',
 };
