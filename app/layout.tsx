@@ -1,11 +1,25 @@
 import type { Metadata, Viewport } from "next";
-import { Inter } from "next/font/google";
+import { Inter, Lora } from "next/font/google";
 import { headers } from "next/headers";
 import "./globals.css";
 
 const inter = Inter({
   subsets: ["latin"],
   variable: "--font-inter",
+  display: "swap",
+});
+
+// Lora is the canonical Montree serif for school identity / hero text. Was
+// loaded via inline `@import url('fonts.googleapis.com')` in 4 places (admin
+// layout, super-admin page, montree landing, for-teachers) — each of those
+// blocked first paint until the font CSS fetched. Centralising here means
+// Next preloads the font at build time, the bytes land in the HTML head, and
+// every page that references `var(--font-lora)` paints with the right
+// glyph without a render-blocking waterfall.
+const lora = Lora({
+  subsets: ["latin"],
+  weight: ["400", "500", "600"],
+  variable: "--font-lora",
   display: "swap",
 });
 
@@ -167,7 +181,7 @@ export default async function RootLayout({
 
   return (
     <html lang="en">
-      <body className={`${inter.variable} antialiased`}>
+      <body className={`${inter.variable} ${lora.variable} antialiased`}>
         {!isTeacherPotato && (
           <script
             type="application/ld+json"

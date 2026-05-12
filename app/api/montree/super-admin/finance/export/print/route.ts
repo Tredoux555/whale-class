@@ -229,8 +229,8 @@ export async function GET(request: NextRequest) {
       line-height: 1.4;
     }
     .doc { max-width: 800px; margin: 0 auto; padding: 16px 24px 32px; }
-    h1 { font-family: 'Lora', Georgia, serif; font-size: 26pt; margin: 0 0 4px; font-weight: 700; }
-    h2 { font-family: 'Lora', Georgia, serif; font-size: 16pt; margin: 28px 0 8px; font-weight: 700; padding-bottom: 4px; border-bottom: 2px solid #34d399; }
+    h1 { font-family: var(--font-lora), Georgia, serif; font-size: 26pt; margin: 0 0 4px; font-weight: 700; }
+    h2 { font-family: var(--font-lora), Georgia, serif; font-size: 16pt; margin: 28px 0 8px; font-weight: 700; padding-bottom: 4px; border-bottom: 2px solid #34d399; }
     .meta { color: #5b6b73; font-size: 11pt; margin-bottom: 24px; }
     table { width: 100%; border-collapse: collapse; font-size: 10pt; margin-top: 8px; }
     thead th { text-align: left; padding: 8px 6px; border-bottom: 2px solid #1a1f2e; font-weight: 700; }

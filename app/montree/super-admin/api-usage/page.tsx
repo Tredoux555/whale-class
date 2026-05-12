@@ -134,7 +134,7 @@ export default function ApiUsageDashboard() {
             >
               ← Back to super admin
             </Link>
-            <h1 className="text-3xl font-light tracking-tight text-white" style={{ fontFamily: '"Lora", Georgia, serif' }}>
+            <h1 className="text-3xl font-light tracking-tight text-white" style={{ fontFamily: 'var(--font-lora), Georgia, serif' }}>
               API Usage &amp; Budgets
             </h1>
             <p className="text-slate-400 text-sm mt-1">
@@ -243,7 +243,7 @@ export default function ApiUsageDashboard() {
             const daily = school?.usage?.daily || [];
             return (
               <div className="mt-4 bg-slate-800/40 border border-slate-700/60 rounded-xl p-6 backdrop-blur">
-                <h3 className="text-lg font-medium text-white mb-4" style={{ fontFamily: '"Lora", Georgia, serif' }}>
+                <h3 className="text-lg font-medium text-white mb-4" style={{ fontFamily: 'var(--font-lora), Georgia, serif' }}>
                   {school?.name} — classroom breakdown
                 </h3>
 
@@ -306,7 +306,7 @@ function StatTile({ label, value, accent }) {
   return (
     <div className="bg-slate-800/40 border border-slate-700/60 rounded-xl p-5 backdrop-blur">
       <p className="text-xs uppercase tracking-wide text-slate-400 mb-2">{label}</p>
-      <p className={`text-3xl font-light ${accent}`} style={{ fontFamily: '"Lora", Georgia, serif' }}>
+      <p className={`text-3xl font-light ${accent}`} style={{ fontFamily: 'var(--font-lora), Georgia, serif' }}>
         {value}
       </p>
     </div>

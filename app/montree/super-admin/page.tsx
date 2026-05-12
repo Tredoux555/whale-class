@@ -564,7 +564,7 @@ export default function SuperAdminPage() {
         >
           <div className="text-center mb-6">
             <span className="text-4xl block mb-3">🔐</span>
-            <h1 className="text-xl font-medium text-white" style={{ fontFamily: '"Lora", Georgia, serif' }}>
+            <h1 className="text-xl font-medium text-white" style={{ fontFamily: 'var(--font-lora), Georgia, serif' }}>
               Master Admin
             </h1>
             <p className="text-slate-400 text-sm mt-1">Enter password to continue</p>
@@ -614,7 +614,7 @@ export default function SuperAdminPage() {
           <div>
             <h1
               className="text-3xl font-medium text-white flex items-center gap-3"
-              style={{ fontFamily: '"Lora", Georgia, serif', letterSpacing: '-0.4px' }}
+              style={{ fontFamily: 'var(--font-lora), Georgia, serif', letterSpacing: '-0.4px' }}
             >
               <span>🌳</span> Montree Admin
             </h1>
@@ -804,8 +804,7 @@ export default function SuperAdminPage() {
           the same import in /montree/admin/layout.tsx — this page is its own
           shell (no layout file under /super-admin) so we load fonts inline. */}
       <style jsx global>{`
-        @import url('https://fonts.googleapis.com/css2?family=Lora:wght@400;500;600&display=swap');
-      `}</style>
+`}</style>
     </div>
   );
 }

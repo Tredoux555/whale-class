@@ -1017,7 +1017,7 @@ export default function VoiceOnboardingPage() {
           ) : (
             <div style={avatarStyle}>
               <span style={{
-                fontFamily: "'Lora', Georgia, serif", fontSize: 56,
+                fontFamily: "var(--font-lora), Georgia, serif", fontSize: 56,
                 color: '#fff',
               }}>
                 {firstName.charAt(0)}
@@ -1175,7 +1175,7 @@ export default function VoiceOnboardingPage() {
             <MontreeLogo size={120} showBackground={true} />
           </div>
           <p style={{
-            fontFamily: "'Lora', Georgia, serif",
+            fontFamily: "var(--font-lora), Georgia, serif",
             fontSize: 28,
             fontWeight: 500,
             color: '#fff',
@@ -1713,7 +1713,7 @@ const centerStyle: React.CSSProperties = {
 };
 
 const titleStyle: React.CSSProperties = {
-  fontFamily: "'Lora', Georgia, serif",
+  fontFamily: "var(--font-lora), Georgia, serif",
   fontSize: 36,
   fontWeight: 500,
   lineHeight: 1.2,

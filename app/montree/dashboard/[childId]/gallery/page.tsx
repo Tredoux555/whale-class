@@ -1303,7 +1303,7 @@ export default function GalleryPage() {
       {filteredPhotos.length === 0 ? (
         <div style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(52,211,153,0.15)', borderRadius: 18, padding: '32px 24px', textAlign: 'center', backdropFilter: 'blur(18px) saturate(140%)', WebkitBackdropFilter: 'blur(18px) saturate(140%)' }}>
           <div className="text-4xl mb-3">📷</div>
-          <h2 style={{ fontFamily: '"Lora", Georgia, serif', fontSize: 18, fontWeight: 500, color: 'rgba(255,255,255,0.90)', marginBottom: 6 }}>
+          <h2 style={{ fontFamily: 'var(--font-lora), Georgia, serif', fontSize: 18, fontWeight: 500, color: 'rgba(255,255,255,0.90)', marginBottom: 6 }}>
             {selectedArea
               ? t('review.noPhotosInArea')
               : t('review.noPhotos')}
@@ -1353,7 +1353,7 @@ export default function GalleryPage() {
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between mb-4">
-              <h3 style={{ fontFamily: '"Lora", serif', fontWeight: 500, fontSize: 18, color: 'rgba(255,255,255,0.95)' }}>{t('gallery.chooseArea')}</h3>
+              <h3 style={{ fontFamily: 'var(--font-lora), serif', fontWeight: 500, fontSize: 18, color: 'rgba(255,255,255,0.95)' }}>{t('gallery.chooseArea')}</h3>
               <button
                 onClick={() => { setShowAreaPicker(false); setAreaPickerPhotoId(null); }}
                 style={{ padding: 8, color: 'rgba(255,255,255,0.45)', fontSize: 16 }}
@@ -1396,7 +1396,7 @@ export default function GalleryPage() {
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between mb-3">
-              <h3 style={{ fontFamily: '"Lora", serif', fontWeight: 500, fontSize: 18, color: 'rgba(255,255,255,0.95)' }}>🎉 {t('gallery.tagSpecialEvent')}</h3>
+              <h3 style={{ fontFamily: 'var(--font-lora), serif', fontWeight: 500, fontSize: 18, color: 'rgba(255,255,255,0.95)' }}>🎉 {t('gallery.tagSpecialEvent')}</h3>
               <button
                 onClick={() => { setShowSpecialEventsPicker(false); setSpecialEventsPhotoId(null); setCustomEventName(''); }}
                 style={{ padding: 8, color: 'rgba(255,255,255,0.45)', fontSize: 16 }}
@@ -1655,7 +1655,7 @@ export default function GalleryPage() {
             <div className="p-4" style={{ borderBottom: '1px solid rgba(52,211,153,0.15)', background: 'linear-gradient(180deg, rgba(39,129,90,0.35) 0%, rgba(10,26,15,0.00) 100%)' }}>
               <div className="flex items-center justify-between mb-3">
                 <div>
-                  <h3 style={{ fontFamily: '"Lora", serif', fontWeight: 500, fontSize: 18, color: 'rgba(255,255,255,0.95)', margin: 0 }}>📋 {t('reports.reportPreview')}</h3>
+                  <h3 style={{ fontFamily: 'var(--font-lora), serif', fontWeight: 500, fontSize: 18, color: 'rgba(255,255,255,0.95)', margin: 0 }}>📋 {t('reports.reportPreview')}</h3>
                   <p style={{ fontFamily: '"Inter", sans-serif', fontSize: 13, color: 'rgba(52,211,153,0.70)', margin: '2px 0 0' }}>{t('reports.thisIsWhatParentsSee')}</p>
                 </div>
                 <button onClick={() => setShowReportPreview(false)} style={{ color: 'rgba(255,255,255,0.45)', fontSize: 22, background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}>×</button>
@@ -1681,7 +1681,7 @@ export default function GalleryPage() {
                       {reportChildName.charAt(0)}
                     </div>
                     <div className="flex-1">
-                      <h2 style={{ fontFamily: '"Lora", serif', fontWeight: 500, fontSize: 20, color: 'rgba(255,255,255,0.95)', margin: '0 0 4px' }}>
+                      <h2 style={{ fontFamily: 'var(--font-lora), serif', fontWeight: 500, fontSize: 20, color: 'rgba(255,255,255,0.95)', margin: '0 0 4px' }}>
                         {t('gallery.learningReport', { name: reportChildName })}
                       </h2>
                       <p style={{ fontFamily: '"Inter", sans-serif', fontSize: 13, color: 'rgba(52,211,153,0.75)', margin: 0 }}>
@@ -1916,7 +1916,7 @@ export default function GalleryPage() {
             <div className="p-4" style={{ borderBottom: '1px solid rgba(52,211,153,0.15)', background: 'linear-gradient(180deg, rgba(39,129,90,0.30) 0%, transparent 100%)' }}>
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 style={{ fontFamily: '"Lora", serif', fontWeight: 500, fontSize: 18, color: 'rgba(255,255,255,0.95)', margin: 0 }}>📄 {t('reports.lastSentReport')}</h3>
+                  <h3 style={{ fontFamily: 'var(--font-lora), serif', fontWeight: 500, fontSize: 18, color: 'rgba(255,255,255,0.95)', margin: 0 }}>📄 {t('reports.lastSentReport')}</h3>
                   <p style={{ fontFamily: '"Inter", sans-serif', fontSize: 13, color: 'rgba(52,211,153,0.70)', margin: '2px 0 0' }}>
                     {t('reports.sentOn')} {new Date(lastReport.sent_at || lastReport.published_at || lastReport.created_at).toLocaleDateString()}
                   </p>
@@ -1931,7 +1931,7 @@ export default function GalleryPage() {
                     <div className="w-16 h-16 rounded-full mx-auto mb-2 flex items-center justify-center text-2xl font-bold" style={{ background: 'rgba(52,211,153,0.15)', color: '#34d399', border: '1px solid rgba(52,211,153,0.30)' }}>
                       {lastReport.content.child?.name?.charAt(0) || reportChildName.charAt(0) || '?'}
                     </div>
-                    <h2 style={{ fontFamily: '"Lora", serif', fontWeight: 500, fontSize: 20, color: 'rgba(255,255,255,0.95)', margin: '0 0 4px' }}>
+                    <h2 style={{ fontFamily: 'var(--font-lora), serif', fontWeight: 500, fontSize: 20, color: 'rgba(255,255,255,0.95)', margin: '0 0 4px' }}>
                       {lastReport.content.child?.name || reportChildName}&apos;s {t('reports.progress')}
                     </h2>
                     <p style={{ fontFamily: '"Inter", sans-serif', fontSize: 13, color: 'rgba(255,255,255,0.45)', margin: 0 }}>
@@ -2063,7 +2063,7 @@ export default function GalleryPage() {
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between" style={{ padding: '12px 16px', borderBottom: '1px solid rgba(52,211,153,0.12)' }}>
-              <h3 style={{ fontFamily: '"Lora", serif', fontWeight: 500, fontSize: 16, color: 'rgba(255,255,255,0.95)', margin: 0 }}>
+              <h3 style={{ fontFamily: 'var(--font-lora), serif', fontWeight: 500, fontSize: 16, color: 'rgba(255,255,255,0.95)', margin: 0 }}>
                 {'👤 ' + t('gallery.editTaggedChildren')}
               </h3>
               <button

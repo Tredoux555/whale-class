@@ -227,7 +227,7 @@ export default function CurriculumPage() {
       <div style={{ background: 'rgba(7,18,12,0.95)', borderBottom: '1px solid rgba(52,211,153,0.12)', padding: '12px 16px', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', position: 'sticky', top: 0, zIndex: 10 }}>
         <div className="max-w-4xl mx-auto flex items-center justify-between">
           <div>
-            <h1 style={{ fontFamily: '"Lora", Georgia, serif', fontSize: 20, fontWeight: 500, color: 'rgba(255,255,255,0.95)', margin: 0, letterSpacing: -0.3 }}>{t('curriculum.title')}</h1>
+            <h1 style={{ fontFamily: 'var(--font-lora), Georgia, serif', fontSize: 20, fontWeight: 500, color: 'rgba(255,255,255,0.95)', margin: 0, letterSpacing: -0.3 }}>{t('curriculum.title')}</h1>
             <p style={{ fontFamily: '"Inter", -apple-system, sans-serif', fontSize: 12, color: 'rgba(255,255,255,0.40)', margin: '2px 0 0' }}>{curriculum.length} {t('curriculum.worksAvailable')}</p>
           </div>
           <div className="flex items-center gap-2">
@@ -278,7 +278,7 @@ export default function CurriculumPage() {
         {curriculum.length === 0 ? (
           <div style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(52,211,153,0.15)', borderRadius: 18, padding: '32px 24px', textAlign: 'center', backdropFilter: 'blur(18px) saturate(140%)', WebkitBackdropFilter: 'blur(18px) saturate(140%)' }}>
             <span className="text-5xl mb-4 block">📚</span>
-            <h2 style={{ fontFamily: '"Lora", Georgia, serif', fontSize: 22, fontWeight: 500, color: 'rgba(255,255,255,0.95)', marginBottom: 8 }}>{t('curriculum.noCurriculum')}</h2>
+            <h2 style={{ fontFamily: 'var(--font-lora), Georgia, serif', fontSize: 22, fontWeight: 500, color: 'rgba(255,255,255,0.95)', marginBottom: 8 }}>{t('curriculum.noCurriculum')}</h2>
             <p style={{ fontFamily: '"Inter", sans-serif', fontSize: 14, color: 'rgba(255,255,255,0.45)', marginBottom: 24 }}>{t('curriculum.noCurriculumDesc')}</p>
             <button onClick={handleImportCurriculum} disabled={importing}
               style={{ background: 'linear-gradient(180deg, #34d399, #10b981)', border: '1px solid rgba(52,211,153,0.55)', borderRadius: 14, padding: '14px 32px', color: '#06281a', fontFamily: '"Inter", sans-serif', fontWeight: 700, fontSize: 15, cursor: 'pointer', boxShadow: '0 4px 20px rgba(16,185,129,0.30)', opacity: importing ? 0.5 : 1 }}>

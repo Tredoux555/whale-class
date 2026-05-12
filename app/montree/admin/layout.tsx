@@ -42,7 +42,7 @@ const T = {
   textPrimary: 'rgba(255,255,255,0.92)',
   textSecondary: 'rgba(255,255,255,0.62)',
   textMuted: 'rgba(255,255,255,0.40)',
-  serif: '"Lora", Georgia, serif',
+  serif: 'var(--font-lora), Georgia, serif',
   sans: '"Inter", -apple-system, BlinkMacSystemFont, sans-serif',
 };
 
@@ -418,9 +418,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       <TracyFloat />
 
       <style jsx global>{`
-        @import url('https://fonts.googleapis.com/css2?family=Lora:wght@400;500;600&display=swap');
-
-        @media (min-width: 960px) {
+@media (min-width: 960px) {
           .admin-mobile-bar {
             display: none !important;
           }

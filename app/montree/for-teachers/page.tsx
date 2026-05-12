@@ -42,8 +42,7 @@ export default function ForTeachersPage() {
   return (
     <>
       <style jsx global>{`
-        @import url('https://fonts.googleapis.com/css2?family=Lora:wght@400;500&display=swap');
-        * { box-sizing: border-box; margin: 0; padding: 0; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
         html { scroll-behavior: smooth; }
         body {
           font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
@@ -95,7 +94,7 @@ export default function ForTeachersPage() {
         .ft-logo {
           display: inline-flex; align-items: center; gap: 10px;
           text-decoration: none;
-          font-family: "Lora", Georgia, serif;
+          font-family: var(--font-lora), Georgia, serif;
           font-weight: 500; font-size: 1.125rem;
           background: linear-gradient(90deg, #62C396 0%, #47AB7E 100%);
           -webkit-background-clip: text; background-clip: text;
@@ -108,7 +107,7 @@ export default function ForTeachersPage() {
           text-align: center; padding: 120px 32px 140px;
         }
         .ft-hero h1 {
-          font-family: "Lora", Georgia, serif;
+          font-family: var(--font-lora), Georgia, serif;
           font-weight: 400;
           font-size: clamp(3rem, 7.5vw, 5.5rem);
           line-height: 1.06; letter-spacing: -0.025em;
@@ -123,7 +122,7 @@ export default function ForTeachersPage() {
           max-width: 720px; margin: 0 auto;
         }
         .ft-section h2 {
-          font-family: "Lora", Georgia, serif;
+          font-family: var(--font-lora), Georgia, serif;
           font-weight: 400;
           font-size: clamp(1.875rem, 3.6vw, 2.5rem);
           line-height: 1.18; letter-spacing: -0.018em;
@@ -148,12 +147,12 @@ export default function ForTeachersPage() {
           background: linear-gradient(135deg, rgba(39,129,90,0.4) 0%, rgba(12,36,25,0.7) 100%);
           border: 1px solid rgba(130,217,174,0.22);
           display: flex; align-items: center; justify-content: center;
-          font-family: "Lora", Georgia, serif;
+          font-family: var(--font-lora), Georgia, serif;
           font-size: 1.125rem; color: rgba(130,217,174,0.85);
           flex-shrink: 0;
         }
         .ft-step h3 {
-          font-family: "Lora", Georgia, serif;
+          font-family: var(--font-lora), Georgia, serif;
           font-weight: 400; font-size: 1.375rem;
           color: rgba(255,255,255,0.90); margin-bottom: 10px;
           letter-spacing: -0.012em;
@@ -205,7 +204,7 @@ export default function ForTeachersPage() {
           border-top: 1px solid rgba(255,255,255,0.06);
         }
         .ft-closing h2 {
-          font-family: "Lora", Georgia, serif;
+          font-family: var(--font-lora), Georgia, serif;
           font-weight: 400; font-size: clamp(2.25rem, 5vw, 3.2rem);
           line-height: 1.1; letter-spacing: -0.022em;
           color: #ffffff; margin-bottom: 24px;
