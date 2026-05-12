@@ -1,10 +1,20 @@
 // components/montree/PhotoBankPicker.tsx
 // Reusable picture bank picker component for embedding in content creation tools
 // Provides search, category filter, scrollable gallery grid, and selection/drag support
+//
+// 🚨 URL strategy (Session 107):
+//   Photo bank images flow through the Cloudflare-cached proxy via
+//   getProxyUrl(storage_path, 'photo-bank'). The DB's public_url column holds
+//   the raw Supabase Storage URL and is intentionally NOT read here — every
+//   thumbnail render, dataUrl fetch, drag-drop payload, and selection callback
+//   uses the proxy URL exclusively. Consumer tools (card-generator,
+//   vocabulary-flashcards, phonics-fast, picture-bingo, my-first-dictionary,
+//   sorting-mat) receive proxy URLs through the sessionStorage export pipe.
 'use client';
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useI18n } from '@/lib/montree/i18n';
+import { getProxyUrl, getThumbnailUrl, getThumbnailSrcSet } from '@/lib/montree/media/proxy-url';
 
 interface PhotoBankPhoto {
   id: string;
@@ -12,8 +22,30 @@ interface PhotoBankPhoto {
   label: string;
   tags: string[];
   category: string;
+  /**
+   * Legacy raw Supabase Storage URL. Still present in API responses for
+   * back-compat with any consumer that hasn't migrated, but DO NOT read this
+   * field inside this component — use storage_path + getProxyUrl() instead.
+   */
   public_url: string;
+  /** Canonical storage key inside the photo-bank bucket. Source of truth. */
+  storage_path: string;
+  /** Legacy raw thumbnail URL; not used — proxy generates thumbnails on demand. */
   thumbnail_url?: string;
+}
+
+/**
+ * Resolve a photo bank photo to its Cloudflare-cached proxy URL. Centralised
+ * so the bucket choice ('photo-bank') is referenced in exactly one place.
+ */
+function photoToProxyUrl(photo: PhotoBankPhoto): string {
+  if (!photo.storage_path) {
+    // Defensive fallback for any legacy row that landed without a
+    // storage_path. Shouldn't happen — every upload writes one — but cheaper
+    // than rendering a broken image.
+    return photo.public_url || '';
+  }
+  return getProxyUrl(photo.storage_path, 'photo-bank');
 }
 
 interface PhotoBankCategory {
@@ -190,7 +222,10 @@ export default function PhotoBankPicker({
     }
     setLoadingPhoto(photo.id);
     try {
-      const response = await fetch(photo.public_url);
+      // Fetch via the Cloudflare-cached proxy. Repeat selections of the same
+      // photo hit the edge cache instead of round-tripping to Supabase
+      // Storage every time.
+      const response = await fetch(photoToProxyUrl(photo));
       const blob = await response.blob();
 
       return new Promise<void>((resolve) => {
@@ -215,11 +250,13 @@ export default function PhotoBankPicker({
     if (onDeletePhoto) onDeletePhoto(photo);
   };
 
-  // Handle drag start for drag-and-drop into tools
+  // Handle drag start for drag-and-drop into tools.
+  // The `url` field carries a proxy URL so the drop target hits the Cloudflare
+  // cache, not Supabase directly.
   const handleDragStart = (e: React.DragEvent, photo: PhotoBankPhoto) => {
     e.dataTransfer.setData('application/json', JSON.stringify({
       type: 'photo-bank',
-      url: photo.public_url,
+      url: photoToProxyUrl(photo),
       label: photo.label,
       filename: photo.filename,
     }));
@@ -431,9 +468,12 @@ export default function PhotoBankPicker({
                         }}
                       >
                         <img
-                          src={photo.thumbnail_url || photo.public_url}
+                          src={photo.storage_path ? getThumbnailUrl(photo.storage_path, 240, 70, 'photo-bank') : photoToProxyUrl(photo)}
+                          srcSet={photo.storage_path ? getThumbnailSrcSet(photo.storage_path, 120, 70, 'photo-bank') : undefined}
+                          sizes="(max-width: 640px) 33vw, 120px"
                           alt={photo.label}
                           loading="lazy"
+                          decoding="async"
                           style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
                         />
                         <div style={{
@@ -533,9 +573,12 @@ export default function PhotoBankPicker({
                   }}
                 >
                   <img
-                    src={photo.thumbnail_url || photo.public_url}
+                    src={photo.storage_path ? getThumbnailUrl(photo.storage_path, 240, 70, 'photo-bank') : photoToProxyUrl(photo)}
+                    srcSet={photo.storage_path ? getThumbnailSrcSet(photo.storage_path, 120, 70, 'photo-bank') : undefined}
+                    sizes="(max-width: 640px) 33vw, 120px"
                     alt={photo.label}
                     loading="lazy"
+                    decoding="async"
                     style={{
                       width: '100%',
                       height: '100%',

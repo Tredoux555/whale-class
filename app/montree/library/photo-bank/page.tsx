@@ -9,10 +9,18 @@ import PhotoBankPicker from '@/components/montree/PhotoBankPicker';
 import type { PhotoBankPhoto } from '@/components/montree/PhotoBankPicker';
 import LanguageToggle from '@/components/montree/LanguageToggle';
 import { useI18n } from '@/lib/montree/i18n';
+import { getProxyUrl } from '@/lib/montree/media/proxy-url';
 
 interface SelectedPhoto {
   id: string;
   label: string;
+  /**
+   * URL the downstream consumer tool should fetch. Holds the Cloudflare-cached
+   * proxy URL (not the raw Supabase URL) so card-generator, vocabulary-flashcards,
+   * phonics-fast, picture-bingo, my-first-dictionary, and sorting-mat all read
+   * cached responses. Existing consumers continue reading `public_url` — they
+   * just get a faster URL inside it now.
+   */
   public_url: string;
   filename: string;
 }
@@ -87,10 +95,18 @@ export default function PhotoBankPage() {
       if (next.has(photo.id)) {
         next.delete(photo.id);
       } else {
+        // Pass the Cloudflare-cached proxy URL downstream so consumer tools
+        // (card-generator, vocabulary-flashcards, phonics-fast, picture-bingo,
+        // my-first-dictionary, sorting-mat) fetch through the edge cache.
+        // Falls back to the raw public_url for any legacy row missing a
+        // storage_path.
+        const proxyUrl = photo.storage_path
+          ? getProxyUrl(photo.storage_path, 'photo-bank')
+          : photo.public_url;
         next.set(photo.id, {
           id: photo.id,
           label: photo.label,
-          public_url: photo.public_url,
+          public_url: proxyUrl,
           filename: photo.filename,
         });
       }
