@@ -378,8 +378,25 @@ export default function SnapIdentifyPage() {
 
       if (!res.ok) {
         let errMsg = 'Analysis failed';
-        try { const d = await res.json(); if (d?.error) errMsg = d.error; } catch { /* */ }
-        toast.error(`❌ ${child.name}: ${errMsg}`, { duration: 6000 });
+        let requiresUpgrade = false;
+        try {
+          const d = await res.json();
+          if (d?.error) errMsg = d.error;
+          if (d?.requires_upgrade === true) requiresUpgrade = true;
+        } catch { /* */ }
+
+        // Free-tier tier gate. Make the toast actionable instead of "failed".
+        // Snap is a fast interaction so a toast (not a card) is the right
+        // pattern. The principal will see the full UpgradeCard inside the
+        // billing surfaces; this toast just tells the teacher to flag it.
+        if (res.status === 402 || requiresUpgrade) {
+          toast.error(
+            `✨ ${t('upgrade.feature.snap_identify.title')} — ${t('upgrade.body')}`,
+            { duration: 8000 },
+          );
+        } else {
+          toast.error(`❌ ${child.name}: ${errMsg}`, { duration: 6000 });
+        }
         URL.revokeObjectURL(snap.preview);
         if (mountedRef.current) setPendingAnalyses(prev => prev.filter(p => p.id !== analysisId));
         return;

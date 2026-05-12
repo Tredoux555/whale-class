@@ -411,7 +411,9 @@ export default function ParentThreadDetailPage() {
                 background: T.card,
                 border: T.cardBorder,
                 color: T.textPrimary,
-                fontSize: 14,
+                // 16px prevents iOS Safari zoom-in on focus — parents are
+                // overwhelmingly on mobile so this matters here.
+                fontSize: 16,
                 fontFamily: T.sans,
                 outline: 'none',
                 resize: 'none',

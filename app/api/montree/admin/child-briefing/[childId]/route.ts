@@ -79,6 +79,9 @@ export async function GET(request: NextRequest, context: RouteContext) {
         {
           error: 'AI briefings require an active AI tier.',
           tier: aiTier.tier,
+          requires_upgrade: true,
+          upgrade_url: '/montree/admin/billing',
+          feature: 'child_briefing',
         },
         { status: 402 }
       );

@@ -85,7 +85,14 @@ export async function POST(request: NextRequest) {
     const aiTier = await resolveReportModel(supabase, auth.schoolId);
     if (aiTier.tier === 'free' || !aiTier.model) {
       return NextResponse.json(
-        { success: false, error: 'Generating work content requires an active AI tier' },
+        {
+          success: false,
+          error: 'Generating work content requires an active AI tier',
+          tier: aiTier.tier,
+          requires_upgrade: true,
+          upgrade_url: '/montree/admin/billing',
+          feature: 'generate_work_content',
+        },
         { status: 402 }
       );
     }

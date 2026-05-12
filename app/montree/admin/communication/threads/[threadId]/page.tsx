@@ -10,6 +10,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { ArrowLeft, Send, Sparkles, Eye, MessageSquare, Loader2 } from 'lucide-react';
+import UpgradeCard, { extractUpgradeFromResponse } from '@/components/montree/UpgradeCard';
 
 const T = {
   emerald: '#34d399',
@@ -76,6 +77,8 @@ export default function ThreadPage() {
   const [tracyLoading, setTracyLoading] = useState<'scan' | 'draft' | null>(null);
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // 402 + requires_upgrade → render UpgradeCard instead of red error.
+  const [upgrade, setUpgrade] = useState<{ feature: string; upgradeUrl: string } | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const load = useCallback(async () => {
@@ -156,6 +159,7 @@ export default function ThreadPage() {
   async function tracyScan() {
     setTracyLoading('scan');
     setError(null);
+    setUpgrade(null);
     try {
       const res = await fetch('/api/montree/admin/tracy/scan-thread', {
         method: 'POST',
@@ -163,6 +167,10 @@ export default function ThreadPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ thread_id: threadId }),
       });
+      if (res.status === 402) {
+        const u = await extractUpgradeFromResponse(res);
+        if (u) { setUpgrade({ feature: u.feature, upgradeUrl: u.upgradeUrl }); return; }
+      }
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
         throw new Error(data?.error || 'Tracy could not scan');
@@ -179,6 +187,7 @@ export default function ThreadPage() {
   async function tracyDraft() {
     setTracyLoading('draft');
     setError(null);
+    setUpgrade(null);
     try {
       const res = await fetch('/api/montree/admin/tracy/draft-response', {
         method: 'POST',
@@ -186,6 +195,10 @@ export default function ThreadPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ thread_id: threadId }),
       });
+      if (res.status === 402) {
+        const u = await extractUpgradeFromResponse(res);
+        if (u) { setUpgrade({ feature: u.feature, upgradeUrl: u.upgradeUrl }); return; }
+      }
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
         throw new Error(data?.error || 'Tracy could not draft');
@@ -461,7 +474,12 @@ export default function ThreadPage() {
             marginBottom: 12,
           }}
         />
-        {error && <div style={{ color: '#f87171', fontSize: 12, marginBottom: 8 }}>{error}</div>}
+        {upgrade && (
+          <div style={{ marginBottom: 8 }}>
+            <UpgradeCard feature={upgrade.feature} upgradeUrl={upgrade.upgradeUrl} />
+          </div>
+        )}
+        {error && !upgrade && <div style={{ color: '#f87171', fontSize: 12, marginBottom: 8 }}>{error}</div>}
         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
           <button
             onClick={() => void send()}

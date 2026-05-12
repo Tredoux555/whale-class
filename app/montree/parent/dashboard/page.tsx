@@ -264,12 +264,14 @@ export default function ParentDashboardPage() {
     presented: { en: 'Introduced', zh: '已展示', es: 'Presentado' },
     default: { en: 'Documented', zh: '已记录', es: 'Documentado' },
   };
+  // Dark-forest-correct status colors. Real CSS values (not Tailwind classes)
+  // so they work inside inline `style={{ color: ... }}` props.
   const STATUS_META: Record<string, { icon: string; color: string; bg: string }> = {
-    mastered: { icon: '⭐', color: 'text-emerald-700', bg: 'bg-emerald-50' },
-    completed: { icon: '⭐', color: 'text-emerald-700', bg: 'bg-emerald-50' },
-    practicing: { icon: '🔄', color: 'text-blue-700', bg: 'bg-blue-50' },
-    presented: { icon: '🌱', color: 'text-amber-700', bg: 'bg-amber-50' },
-    default: { icon: '📸', color: 'text-purple-700', bg: 'bg-purple-50' },
+    mastered: { icon: '⭐', color: '#34d399', bg: 'rgba(52,211,153,0.12)' },
+    completed: { icon: '⭐', color: '#34d399', bg: 'rgba(52,211,153,0.12)' },
+    practicing: { icon: '🔄', color: '#93c5fd', bg: 'rgba(59,130,246,0.12)' },
+    presented: { icon: '🌱', color: '#fcd34d', bg: 'rgba(245,158,11,0.12)' },
+    default: { icon: '📸', color: '#c4b5fd', bg: 'rgba(139,92,246,0.12)' },
   };
   const getStatusInfo = (status: string) => {
     const key = STATUS_LABELS[status] ? status : 'default';
@@ -384,6 +386,10 @@ export default function ParentDashboardPage() {
                 display: 'flex',
                 alignItems: 'center',
                 gap: 6,
+                // Padding gives a 40+px touch target on mobile without adding
+                // visual weight. fontSize stays at 13 because the visible
+                // affordance is small by design (parent isn't here to log out).
+                padding: '10px 8px',
                 fontSize: 13,
                 fontWeight: 500,
                 color: T.textMuted,
@@ -668,8 +674,11 @@ export default function ParentDashboardPage() {
                               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 6 }}>
                                 <span style={{ fontSize: 12, color: T.textMuted }}>{getAreaLabel(work.area)}</span>
                                 <span style={{ color: T.textMuted, fontSize: 11 }}>·</span>
-                                <span style={{ fontSize: 12, fontWeight: 600, color: T.amber }}>
-                                  {getStatusInfo(work.status).label}
+                                {/* Status color now varies per state (emerald for mastered,
+                                    blue for practicing, gold for presented) instead of
+                                    always amber — gives the parent a quicker scan signal. */}
+                                <span style={{ fontSize: 12, fontWeight: 600, color: getStatusInfo(work.status).color }}>
+                                  {getStatusInfo(work.status).icon} {getStatusInfo(work.status).label}
                                 </span>
                               </div>
                             </div>

@@ -779,6 +779,65 @@ export async function sendDemoRequestDripEmail(
 }
 
 // ============================================
+// DEMO REQUEST — BULK REPLY WITH TRIAL LINK
+// ============================================
+//
+// Super-admin "Reply to all stale leads" action. Sends the same warm,
+// personalised body that the per-row "Reply with trial link" mailto opens —
+// just via Resend instead of the user's mail client. Keeps the copy
+// identical so a lead reading both never feels they got a template.
+//
+// Used by /api/montree/super-admin/demo-requests/bulk-reply.
+
+export async function sendDemoTrialLinkReply(
+  recipientEmail: string,
+  contactPerson: string | null,
+  orgName: string,
+): Promise<EmailResult> {
+  try {
+    const firstName = (contactPerson || '').split(/\s+/)[0] || 'there';
+    const trialUrl = 'https://montree.xyz/montree/try';
+    const subject = `Re: Montree — for ${orgName}`;
+    const text =
+      `Hi ${firstName},\n\n` +
+      `Thanks for reaching out about Montree.\n\n` +
+      `The fastest way to see it in action is to start a free 30-day trial — full Montree, one classroom, no credit card. ` +
+      `You can try every AI feature at your own pace and we can chat afterwards.\n\n` +
+      `Start your trial here: ${trialUrl}\n\n` +
+      `Or if you'd prefer a 20-minute walkthrough on a call first, reply with a few times that work for you this week and I'll send a calendar invite.\n\n` +
+      `Kind regards,\nTredoux\nmontree.xyz`;
+    const html = `<!doctype html>
+<html><body style="margin:0;padding:0;background:#f7f9f8;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#0a1a0f;">
+  <div style="max-width:540px;margin:24px auto;padding:28px;background:#fff;border-radius:14px;border:1px solid rgba(52,211,153,0.18);">
+    <p style="font-size:15px;line-height:1.6;margin:0 0 16px;color:#1f2d24;">Hi ${escapeHtml(firstName)},</p>
+    <p style="font-size:15px;line-height:1.6;margin:0 0 16px;color:#1f2d24;">Thanks for reaching out about Montree.</p>
+    <p style="font-size:15px;line-height:1.6;margin:0 0 16px;color:#1f2d24;">The fastest way to see it in action is to start a free 30-day trial — full Montree, one classroom, no credit card. You can try every AI feature at your own pace and we can chat afterwards.</p>
+    <p style="font-size:15px;line-height:1.6;margin:0 0 24px;color:#1f2d24;text-align:center;">
+      <a href="${trialUrl}" style="display:inline-block;padding:12px 24px;background:#10b981;color:#fff;font-weight:600;text-decoration:none;border-radius:10px;">Start your free trial →</a>
+    </p>
+    <p style="font-size:15px;line-height:1.6;margin:0 0 24px;color:#1f2d24;">Or if you'd prefer a 20-minute walkthrough on a call first, reply with a few times that work for you this week and I'll send a calendar invite.</p>
+    <p style="font-size:14px;line-height:1.55;margin:24px 0 8px;color:#5b6b73;">Kind regards,<br/>Tredoux<br/><a href="https://montree.xyz" style="color:#10b981;">montree.xyz</a></p>
+  </div>
+</body></html>`;
+    const { data, error } = await getResend().emails.send({
+      from: getFromEmail(),
+      to: recipientEmail,
+      subject,
+      html,
+      text,
+    });
+    if (error) {
+      console.error('[sendDemoTrialLinkReply] resend error', error);
+      return { success: false, error: error.message };
+    }
+    return { success: true, messageId: data?.id };
+  } catch (err) {
+    console.error('[sendDemoTrialLinkReply] unexpected', err);
+    return { success: false, error: err instanceof Error ? err.message : 'unknown' };
+  }
+}
+
+// ============================================
 // PAYOUT PAID NOTIFICATION (Phase 5 wire-out → agent)
 // ============================================
 

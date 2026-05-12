@@ -12,6 +12,7 @@ import { getAreaLabel as getAreaLabelI18n, AREA_LABELS_EN } from '@/lib/montree/
 import { getIntlLocale } from '@/lib/montree/i18n/locales';
 import WorkWheelPicker from '@/components/montree/WorkWheelPicker';
 import InviteParentModal from '@/components/montree/InviteParentModal';
+import UpgradeCard, { extractUpgradeFromResponse } from '@/components/montree/UpgradeCard';
 import { ChevronLeft, ChevronRight, Loader2, AlertCircle } from 'lucide-react';
 
 // ─── Types ────────────────────────────────────────────────────
@@ -391,6 +392,9 @@ export default function WeeklyWrapTab({ classroomId, view: externalView }: Weekl
   const [reports, setReports] = useState<ReportResult[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  // Upgrade prompt when the AI tier gate returns 402 (Free tier hitting a
+  // paid feature). Rendered as a warm UpgradeCard instead of a red error.
+  const [upgrade, setUpgrade] = useState<{ feature: string; upgradeUrl: string } | null>(null);
 
   // Sub-view — external prop overrides internal state
   const [internalSubView, setInternalSubView] = useState<'teacher' | 'parents'>('teacher');
@@ -609,6 +613,8 @@ export default function WeeklyWrapTab({ classroomId, view: externalView }: Weekl
     setGenProgress(t('weeklyWrap.preparing'));
     setGenDone(0);
     setGenTotal(0);
+    setError('');
+    setUpgrade(null);
 
     try {
       const payload: Record<string, unknown> = {
@@ -626,6 +632,15 @@ export default function WeeklyWrapTab({ classroomId, view: externalView }: Weekl
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
+
+      // Free-tier tier gate. Show the warm UpgradeCard instead of a red error.
+      if (res.status === 402) {
+        const u = await extractUpgradeFromResponse(res);
+        if (u) {
+          setUpgrade({ feature: u.feature, upgradeUrl: u.upgradeUrl });
+          return;
+        }
+      }
 
       if (!res.ok) throw new Error('Generation failed');
       if (!res.body) throw new Error('No stream');
@@ -979,7 +994,13 @@ export default function WeeklyWrapTab({ classroomId, view: externalView }: Weekl
         </div>
       )}
 
-      {error && (
+      {upgrade && (
+        <div style={{ margin: '12px 16px 0' }}>
+          <UpgradeCard feature={upgrade.feature} upgradeUrl={upgrade.upgradeUrl} />
+        </div>
+      )}
+
+      {error && !upgrade && (
         <div style={{
           margin: '12px 16px 0',
           padding: '10px 14px',

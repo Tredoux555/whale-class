@@ -66,7 +66,13 @@ export async function POST(request: NextRequest) {
   const aiTier = await resolveReportModel(supabase, auth.schoolId);
   if (aiTier.tier === 'free') {
     return NextResponse.json(
-      { error: 'Vault transcription requires an active AI tier.' },
+      {
+        error: 'Vault transcription requires an active AI tier.',
+        tier: aiTier.tier,
+        requires_upgrade: true,
+        upgrade_url: '/montree/admin/billing',
+        feature: 'vault_transcribe',
+      },
       { status: 402 }
     );
   }

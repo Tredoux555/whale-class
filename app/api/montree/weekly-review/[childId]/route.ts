@@ -452,7 +452,13 @@ export async function POST(
     const aiTier = await resolveReportModel(supabase, auth.schoolId);
     if (aiTier.tier === 'free' || !aiTier.model) {
       return NextResponse.json(
-        { error: 'Weekly Review requires an active AI tier' },
+        {
+          error: 'Weekly Review requires an active AI tier',
+          tier: aiTier.tier,
+          requires_upgrade: true,
+          upgrade_url: '/montree/admin/billing',
+          feature: 'weekly_review',
+        },
         { status: 402 }
       );
     }
@@ -555,7 +561,13 @@ export async function PATCH(
     const aiTier = await resolveReportModel(supabase, auth.schoolId);
     if (aiTier.tier === 'free' || !aiTier.model) {
       return NextResponse.json(
-        { error: 'Weekly Review refinement requires an active AI tier' },
+        {
+          error: 'Weekly Review refinement requires an active AI tier',
+          tier: aiTier.tier,
+          requires_upgrade: true,
+          upgrade_url: '/montree/admin/billing',
+          feature: 'weekly_review',
+        },
         { status: 402 }
       );
     }

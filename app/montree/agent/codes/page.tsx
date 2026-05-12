@@ -222,6 +222,9 @@ export default function AgentCodesPage() {
           )}
         </p>
 
+        {/* Mobile note: input must be ≥16px to prevent iOS Safari from
+            zooming-in on focus. text-base = 16px. Buttons get py-3 on mobile
+            so the touch target hits Apple's 44pt minimum. */}
         <form onSubmit={generate} className="mt-4 flex flex-col sm:flex-row gap-2">
           <input
             type="text"
@@ -230,12 +233,12 @@ export default function AgentCodesPage() {
             placeholder="e.g. Greenfield Montessori — May 2026"
             disabled={defaultPct === null}
             maxLength={200}
-            className="flex-1 px-3 py-2 bg-black/30 border border-white/10 rounded-lg text-white text-sm focus:border-emerald-500 outline-none disabled:opacity-50"
+            className="flex-1 px-3 py-3 sm:py-2 bg-black/30 border border-white/10 rounded-lg text-white text-base sm:text-sm focus:border-emerald-500 outline-none disabled:opacity-50"
           />
           <button
             type="submit"
             disabled={generating || defaultPct === null || pitchLabel.trim().length < 3}
-            className="px-4 py-2 bg-emerald-500 hover:bg-emerald-400 text-white font-medium rounded-lg text-sm disabled:opacity-50 transition-colors"
+            className="px-4 py-3 sm:py-2 bg-emerald-500 hover:bg-emerald-400 text-white font-medium rounded-lg text-base sm:text-sm disabled:opacity-50 transition-colors"
           >
             {generating ? 'Generating…' : 'Generate code'}
           </button>
@@ -299,10 +302,12 @@ export default function AgentCodesPage() {
                 </p>
               </div>
 
+              {/* Action row — py-2.5 on mobile gives ~40px touch target, near
+                  Apple's 44pt minimum without ballooning desktop layout. */}
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => copy(c.code)}
-                  className="px-3 py-1.5 bg-white/5 hover:bg-white/10 text-white/80 text-xs rounded-lg border border-white/10"
+                  className="px-3 py-2.5 sm:py-1.5 bg-white/5 hover:bg-white/10 text-white/80 text-xs rounded-lg border border-white/10"
                   title="Copy code"
                 >
                   📋 Copy
@@ -310,7 +315,7 @@ export default function AgentCodesPage() {
                 {c.redeemed_by_school_id && (
                   <Link
                     href={`/montree/agent/schools/${c.redeemed_by_school_id}`}
-                    className="px-3 py-1.5 bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 text-xs rounded-lg border border-emerald-500/30"
+                    className="px-3 py-2.5 sm:py-1.5 bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 text-xs rounded-lg border border-emerald-500/30"
                   >
                     School →
                   </Link>
@@ -319,7 +324,7 @@ export default function AgentCodesPage() {
                   <button
                     onClick={() => revoke(c.id, c.code)}
                     disabled={revokingId === c.id}
-                    className="px-3 py-1.5 bg-red-500/15 hover:bg-red-500/25 text-red-300 text-xs rounded-lg border border-red-500/30 disabled:opacity-50"
+                    className="px-3 py-2.5 sm:py-1.5 bg-red-500/15 hover:bg-red-500/25 text-red-300 text-xs rounded-lg border border-red-500/30 disabled:opacity-50"
                   >
                     {revokingId === c.id ? '…' : 'Revoke'}
                   </button>

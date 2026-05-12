@@ -83,7 +83,7 @@ export default function AgentSchoolsPage() {
           </p>
           <Link
             href="/montree/agent/codes"
-            className="inline-block px-4 py-2 bg-emerald-500 hover:bg-emerald-400 text-white font-medium rounded-lg text-sm transition-colors"
+            className="inline-block px-4 py-3 sm:py-2 bg-emerald-500 hover:bg-emerald-400 text-white font-medium rounded-lg text-base sm:text-sm transition-colors"
           >
             Generate your first code →
           </Link>

@@ -87,6 +87,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({
         error: 'AI report generation requires an AI tier (haiku or sonnet). Contact support to enable.',
         tier: 'free',
+        requires_upgrade: true,
+        upgrade_url: '/montree/admin/billing',
+        feature: 'weekly_wrap',
       }, { status: 402 });
     }
     console.log(`[WeeklyWrap] School ${classroom.school_id} — tier=${aiTier.tier} model=${aiTier.model}`);

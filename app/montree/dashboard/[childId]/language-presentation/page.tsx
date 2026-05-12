@@ -9,6 +9,7 @@ import { useParams, useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { toast, Toaster } from 'sonner';
 import { useI18n } from '@/lib/montree/i18n';
+import UpgradeCard, { extractUpgradeFromResponse } from '@/components/montree/UpgradeCard';
 
 interface PresentationSlide {
   id: string;
@@ -49,6 +50,8 @@ export default function LanguagePresentationPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [draftCaption, setDraftCaption] = useState('');
   const [presentIdx, setPresentIdx] = useState(0);
+  // 402 + requires_upgrade → render UpgradeCard above the slides view.
+  const [upgrade, setUpgrade] = useState<{ feature: string; upgradeUrl: string } | null>(null);
 
   const t = useCallback(
     (en: string, zh: string, es?: string) => {
@@ -85,6 +88,7 @@ export default function LanguagePresentationPage() {
   const handleGenerate = useCallback(async () => {
     if (generating) return;
     setGenerating(true);
+    setUpgrade(null);
     try {
       const res = await fetch(`/api/montree/reports/language-presentation/${childId}`, {
         method: 'POST',
@@ -92,6 +96,13 @@ export default function LanguagePresentationPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({}),
       });
+      if (res.status === 402) {
+        const u = await extractUpgradeFromResponse(res);
+        if (u) {
+          setUpgrade({ feature: u.feature, upgradeUrl: u.upgradeUrl });
+          return;
+        }
+      }
       const data = await res.json();
       if (!res.ok) {
         toast.error(data.error || 'Generation failed');
@@ -301,6 +312,12 @@ export default function LanguagePresentationPage() {
       </div>
 
       <div className="max-w-4xl mx-auto px-4 py-6">
+        {upgrade && (
+          <div style={{ marginBottom: 16 }}>
+            <UpgradeCard feature={upgrade.feature} upgradeUrl={upgrade.upgradeUrl} />
+          </div>
+        )}
+
         {loading ? (
           <div className="text-center py-20 text-gray-500">{t('Loading…', '加载中…')}</div>
         ) : !plan ? (

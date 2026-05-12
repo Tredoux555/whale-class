@@ -41,9 +41,14 @@ export async function POST(request: NextRequest) {
   const supabase = getSupabase();
   const tier = await resolveReportModel(supabase, auth.schoolId);
   if (tier.tier === 'free' || !tier.model) {
-    const supportEmail = process.env.SUPPORT_EMAIL || 'tredoux555@gmail.com';
     return NextResponse.json(
-      { error: `AI features require an active tier. Email ${supportEmail} to enable.` },
+      {
+        error: 'Tracy reply drafting requires an active AI tier.',
+        tier: tier.tier,
+        requires_upgrade: true,
+        upgrade_url: '/montree/admin/billing',
+        feature: 'tracy_draft',
+      },
       { status: 402 }
     );
   }

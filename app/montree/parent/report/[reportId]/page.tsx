@@ -206,12 +206,17 @@ export default function ParentReportPage() {
     presented: { en: 'Introduced', zh: '已展示', es: 'Presentado' },
     default: { en: 'Documented', zh: '已记录', es: 'Documentado' },
   };
+  // Dark-forest-correct status colors. Used as inline CSS values
+  // (statusInfo.color appears directly in `style={{ color: ... }}` below),
+  // so these MUST be real CSS colors — Tailwind class strings ("text-emerald-700")
+  // silently fail when used in inline styles. The bg values match each color's
+  // soft tinted background for dark contexts.
   const STATUS_META: Record<string, { icon: string; color: string; bg: string }> = {
-    mastered: { icon: '⭐', color: 'text-emerald-700', bg: 'bg-emerald-50' },
-    completed: { icon: '⭐', color: 'text-emerald-700', bg: 'bg-emerald-50' },
-    practicing: { icon: '🔄', color: 'text-blue-700', bg: 'bg-blue-50' },
-    presented: { icon: '🌱', color: 'text-amber-700', bg: 'bg-amber-50' },
-    default: { icon: '📸', color: 'text-purple-700', bg: 'bg-purple-50' },
+    mastered: { icon: '⭐', color: '#34d399', bg: 'rgba(52,211,153,0.12)' },
+    completed: { icon: '⭐', color: '#34d399', bg: 'rgba(52,211,153,0.12)' },
+    practicing: { icon: '🔄', color: '#93c5fd', bg: 'rgba(59,130,246,0.12)' },
+    presented: { icon: '🌱', color: '#fcd34d', bg: 'rgba(245,158,11,0.12)' },
+    default: { icon: '📸', color: '#c4b5fd', bg: 'rgba(139,92,246,0.12)' },
   };
   const getStatusInfo = (status: string) => {
     const key = STATUS_LABELS[status] ? status : 'default';

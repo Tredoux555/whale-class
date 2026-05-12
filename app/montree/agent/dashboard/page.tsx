@@ -334,7 +334,7 @@ function StripeBanner({ status }: { status: PayoutsResponse['stripe_connect_stat
       <p className="text-white/80 text-sm leading-relaxed mb-3">{body}</p>
       <Link
         href="/montree/agent/payouts"
-        className="inline-block px-4 py-2 bg-amber-500 hover:bg-amber-400 text-white font-medium rounded-lg text-sm transition-colors"
+        className="inline-block px-4 py-3 sm:py-2 bg-amber-500 hover:bg-amber-400 text-white font-medium rounded-lg text-base sm:text-sm transition-colors"
       >
         {cta} →
       </Link>
@@ -352,7 +352,7 @@ function EmptySchools() {
       </p>
       <Link
         href="/montree/agent/codes"
-        className="inline-block px-4 py-2 bg-emerald-500 hover:bg-emerald-400 text-white font-medium rounded-lg text-sm transition-colors"
+        className="inline-block px-4 py-3 sm:py-2 bg-emerald-500 hover:bg-emerald-400 text-white font-medium rounded-lg text-base sm:text-sm transition-colors"
       >
         Generate your first code →
       </Link>

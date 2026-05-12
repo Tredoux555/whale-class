@@ -12,6 +12,7 @@ import { useI18n } from '@/lib/montree/i18n';
 import { montreeApi } from '@/lib/montree/api';
 import AreaBadge from '@/components/montree/shared/AreaBadge';
 import { AREA_CONFIG } from '@/lib/montree/types';
+import UpgradeCard, { extractUpgradeFromResponse } from '@/components/montree/UpgradeCard';
 
 interface TeachGuruWorkModalProps {
   isOpen: boolean;
@@ -74,6 +75,7 @@ export default function TeachGuruWorkModal({
   const [teacherPrompt, setTeacherPrompt] = useState('');
   const [generating, setGenerating] = useState(false);
   const [generateError, setGenerateError] = useState(false);
+  const [upgrade, setUpgrade] = useState<{ feature: string; upgradeUrl: string } | null>(null);
 
   // Review state (mode === 'review')
   const [content, setContent] = useState<GeneratedContent | null>(null);
@@ -236,6 +238,7 @@ export default function TeachGuruWorkModal({
     if (!workName.trim() || generating) return;
     setGenerating(true);
     setGenerateError(false);
+    setUpgrade(null);
 
     const abortController = new AbortController();
     abortRef.current = abortController;
@@ -253,6 +256,16 @@ export default function TeachGuruWorkModal({
       });
 
       if (!mountedRef.current) return;
+
+      if (res.status === 402) {
+        const u = await extractUpgradeFromResponse(res);
+        if (u) {
+          if (mountedRef.current) {
+            setUpgrade({ feature: u.feature, upgradeUrl: u.upgradeUrl });
+          }
+          return;
+        }
+      }
 
       const data = await res.json();
       if (data.success && data.content
@@ -591,7 +604,11 @@ export default function TeachGuruWorkModal({
                 />
               </div>
 
-              {generateError && (
+              {upgrade && (
+                <UpgradeCard feature={upgrade.feature} upgradeUrl={upgrade.upgradeUrl} />
+              )}
+
+              {generateError && !upgrade && (
                 <p className="text-xs text-red-600 text-center">{t('common.networkError')}</p>
               )}
 

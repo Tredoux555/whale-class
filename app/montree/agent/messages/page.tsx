@@ -408,9 +408,10 @@ function ComposeModal({
                   maxLength={200}
                   placeholder={t('agentMessages.subjectPlaceholder')}
                   style={{
-                    width: '100%', padding: '10px 12px', borderRadius: 10,
+                    width: '100%', padding: '12px', borderRadius: 10,
                     background: T.card, border: T.cardBorder, color: T.textPrimary,
-                    fontSize: 14, fontFamily: T.sans, boxSizing: 'border-box',
+                    // 16px prevents iOS Safari zoom-in on focus.
+                    fontSize: 16, fontFamily: T.sans, boxSizing: 'border-box',
                   }}
                 />
               </div>
@@ -428,7 +429,8 @@ function ComposeModal({
                   style={{
                     width: '100%', padding: '12px', borderRadius: 10,
                     background: T.card, border: T.cardBorder, color: T.textPrimary,
-                    fontSize: 14, fontFamily: T.sans, boxSizing: 'border-box',
+                    // 16px prevents iOS Safari zoom-in on focus.
+                    fontSize: 16, fontFamily: T.sans, boxSizing: 'border-box',
                     resize: 'vertical', minHeight: 140,
                   }}
                 />

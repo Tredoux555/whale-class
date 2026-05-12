@@ -614,7 +614,8 @@ function ComposeModal({ onClose, onSent }: { onClose: () => void; onSent: (threa
                       background: T.card,
                       border: T.cardBorder,
                       color: T.textPrimary,
-                      fontSize: 14,
+                      // 16px prevents iOS Safari zoom-in on focus.
+                      fontSize: 16,
                       fontFamily: T.sans,
                       outline: 'none',
                     }}
@@ -637,7 +638,8 @@ function ComposeModal({ onClose, onSent }: { onClose: () => void; onSent: (threa
                       background: T.card,
                       border: T.cardBorder,
                       color: T.textPrimary,
-                      fontSize: 14,
+                      // 16px prevents iOS Safari zoom-in on focus.
+                      fontSize: 16,
                       fontFamily: T.sans,
                       outline: 'none',
                       resize: 'vertical',

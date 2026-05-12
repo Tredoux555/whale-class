@@ -76,6 +76,9 @@ export async function POST(request: NextRequest) {
         {
           error: 'Parent-question answers require an active AI tier.',
           tier: aiTier.tier,
+          requires_upgrade: true,
+          upgrade_url: '/montree/admin/billing',
+          feature: 'parent_question',
         },
         { status: 402 }
       );

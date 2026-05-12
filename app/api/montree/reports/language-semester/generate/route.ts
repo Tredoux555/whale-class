@@ -703,7 +703,13 @@ export async function POST(request: NextRequest) {
   const aiTier = await resolveReportModel(supabase, auth.schoolId);
   if (aiTier.tier === 'free' || !aiTier.model) {
     return NextResponse.json(
-      { error: 'Language Semester reports require an active AI tier' },
+      {
+        error: 'Language Semester reports require an active AI tier',
+        tier: aiTier.tier,
+        requires_upgrade: true,
+        upgrade_url: '/montree/admin/billing',
+        feature: 'language_semester',
+      },
       { status: 402 }
     );
   }

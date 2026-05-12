@@ -40,7 +40,14 @@ export async function POST(request: NextRequest) {
     const aiTier = await resolveReportModel(supabase, auth.schoolId);
     if (aiTier.tier === 'free' || !aiTier.model) {
       return NextResponse.json(
-        { success: false, error: 'Teaching instructions require an active AI tier' },
+        {
+          success: false,
+          error: 'Teaching instructions require an active AI tier',
+          tier: aiTier.tier,
+          requires_upgrade: true,
+          upgrade_url: '/montree/admin/billing',
+          feature: 'teaching_instructions',
+        },
         { status: 402 }
       );
     }
