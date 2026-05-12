@@ -246,7 +246,7 @@ function AreaPickerWithSearch({
       <div style={{ background: 'rgba(7,18,12,0.97)', backdropFilter: 'blur(20px)', border: '1px solid rgba(52,211,153,0.18)', borderRadius: 18, padding: 20, width: '100%', maxWidth: 380, maxHeight: '85vh', display: 'flex', flexDirection: 'column' }}
         onClick={e => e.stopPropagation()}
       >
-        <h3 style={{ fontFamily: "'Lora', Georgia, serif", fontSize: 18, fontWeight: 500, color: 'rgba(255,255,255,0.95)', margin: '0 0 14px', letterSpacing: -0.2 }}>
+        <h3 style={{ fontFamily: "var(--font-lora), Georgia, serif", fontSize: 18, fontWeight: 500, color: 'rgba(255,255,255,0.95)', margin: '0 0 14px', letterSpacing: -0.2 }}>
           {showAddForm ? (t('audit.addCustomWork') || 'Add Custom Work') : t('audit.pickArea')}
         </h3>
 
@@ -2258,7 +2258,7 @@ export default function PhotoAuditPage() {
       {/* Header */}
       <div style={{ position: 'sticky', top: 0, zIndex: 10, background: 'linear-gradient(180deg, rgba(7,18,12,0.97), rgba(7,18,12,0.92))', borderBottom: '1px solid rgba(52,211,153,0.12)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', padding: '12px 16px' }}>
         <div className="flex items-center justify-between gap-2">
-          <h1 style={{ fontFamily: "'Lora', Georgia, serif", fontSize: 20, fontWeight: 500, color: 'rgba(255,255,255,0.95)', margin: 0, letterSpacing: -0.3 }}>{t('photoAudit.wrapUpHeader')}</h1>
+          <h1 style={{ fontFamily: "var(--font-lora), Georgia, serif", fontSize: 20, fontWeight: 500, color: 'rgba(255,255,255,0.95)', margin: 0, letterSpacing: -0.3 }}>{t('photoAudit.wrapUpHeader')}</h1>
           <div className="flex items-center gap-2">
             <button
               type="button"
@@ -2400,7 +2400,7 @@ export default function PhotoAuditPage() {
       {isPhotoZone && !loading && filteredPhotos.length === 0 && (
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 14, padding: '80px 24px', textAlign: 'center' }}>
           <div style={{ width: 60, height: 60, borderRadius: 16, background: 'rgba(52,211,153,0.10)', border: '1px solid rgba(52,211,153,0.22)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 26 }}>📷</div>
-          <div style={{ fontFamily: "'Lora', Georgia, serif", fontSize: 20, fontWeight: 500, color: 'rgba(255,255,255,0.90)', letterSpacing: -0.2 }}>{t('audit.noPhotos')}</div>
+          <div style={{ fontFamily: "var(--font-lora), Georgia, serif", fontSize: 20, fontWeight: 500, color: 'rgba(255,255,255,0.90)', letterSpacing: -0.2 }}>{t('audit.noPhotos')}</div>
         </div>
       )}
 
@@ -2626,7 +2626,7 @@ export default function PhotoAuditPage() {
           onClick={() => setCropChoicePhoto(null)}>
           <div style={{ background: 'rgba(7,18,12,0.95)', backdropFilter: 'blur(20px)', border: '1px solid rgba(52,211,153,0.20)', borderRadius: 18, maxWidth: 380, width: '100%', padding: 20 }}
             onClick={e => e.stopPropagation()}>
-            <h3 style={{ fontFamily: "'Lora', Georgia, serif", fontSize: 16, fontWeight: 500, color: 'rgba(255,255,255,0.95)', margin: '0 0 8px' }}>🧠 {t('audit.teachAI')}</h3>
+            <h3 style={{ fontFamily: "var(--font-lora), Georgia, serif", fontSize: 16, fontWeight: 500, color: 'rgba(255,255,255,0.95)', margin: '0 0 8px' }}>🧠 {t('audit.teachAI')}</h3>
             <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.50)', marginBottom: 14 }}>{cropChoicePhoto.work_name}</p>
 
             {cropChoicePhoto.url && (
@@ -2688,7 +2688,7 @@ export default function PhotoAuditPage() {
           onClick={() => setTaggingPhoto(null)}>
           <div style={{ background: 'rgba(7,18,12,0.95)', backdropFilter: 'blur(20px)', border: '1px solid rgba(52,211,153,0.18)', borderRadius: 18, maxWidth: 380, width: '100%', maxHeight: '85vh', display: 'flex', flexDirection: 'column', padding: 20 }}
             onClick={e => e.stopPropagation()}>
-            <h3 style={{ fontFamily: "'Lora', Georgia, serif", fontSize: 16, fontWeight: 500, color: 'rgba(255,255,255,0.95)', margin: '0 0 5px' }}>👶 {t('audit.tagChildren')}</h3>
+            <h3 style={{ fontFamily: "var(--font-lora), Georgia, serif", fontSize: 16, fontWeight: 500, color: 'rgba(255,255,255,0.95)', margin: '0 0 5px' }}>👶 {t('audit.tagChildren')}</h3>
             <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.40)', marginBottom: 12, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{taggingPhoto.work_name || t('audit.untaggedWork')}</p>
 
             {/* Thumbnail */}
@@ -2744,7 +2744,7 @@ export default function PhotoAuditPage() {
           onClick={handleCancelReference}>
           <div style={{ background: 'rgba(7,18,12,0.95)', backdropFilter: 'blur(20px)', border: '1px solid rgba(52,211,153,0.18)', borderRadius: 18, maxWidth: 460, width: '100%', maxHeight: '85vh', overflowY: 'auto', padding: 16 }}
             onClick={e => e.stopPropagation()}>
-            <h3 style={{ fontFamily: "'Lora', Georgia, serif", fontSize: 16, fontWeight: 500, color: 'rgba(255,255,255,0.95)', margin: '0 0 12px' }}>
+            <h3 style={{ fontFamily: "var(--font-lora), Georgia, serif", fontSize: 16, fontWeight: 500, color: 'rgba(255,255,255,0.95)', margin: '0 0 12px' }}>
               🧠 {t('audit.teachAI')}
             </h3>
             <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.45)', marginBottom: 8 }}>{describingPhoto.work_name}</p>

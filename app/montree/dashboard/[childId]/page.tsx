@@ -842,7 +842,7 @@ export default function WeekPage() {
       {/* FOCUS WORKS — Unified area view, merged with Game Plan when available */}
       <div data-tutorial="focus-section">
       <div style={{ marginBottom: 22, display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 16 }}>
-        <h2 style={{ margin: 0, fontFamily: "'Lora', Georgia, serif", fontSize: 30, fontWeight: 500, color: 'rgba(255,255,255,0.95)', letterSpacing: -0.4 }}>
+        <h2 style={{ margin: 0, fontFamily: "var(--font-lora), Georgia, serif", fontSize: 30, fontWeight: 500, color: 'rgba(255,255,255,0.95)', letterSpacing: -0.4 }}>
           {t('focusWorks.title')}
         </h2>
         <span style={{ fontFamily: "'Inter', -apple-system, system-ui, sans-serif", fontSize: 13, color: 'rgba(255,255,255,0.65)', flexShrink: 0 }}>

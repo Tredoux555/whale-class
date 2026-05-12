@@ -50,7 +50,7 @@ export default function ChangelogPage() {
             style={{
               margin: 0,
               fontSize: 40,
-              fontFamily: '"Lora", Georgia, serif',
+              fontFamily: 'var(--font-lora), Georgia, serif',
               fontWeight: 700,
               letterSpacing: -0.5,
               lineHeight: 1.1,
@@ -92,7 +92,7 @@ export default function ChangelogPage() {
                 style={{
                   margin: '6px 0 12px',
                   fontSize: 22,
-                  fontFamily: '"Lora", Georgia, serif',
+                  fontFamily: 'var(--font-lora), Georgia, serif',
                   fontWeight: 700,
                   letterSpacing: -0.3,
                   color: '#fff',

@@ -40,9 +40,7 @@ export default function MontreeLanding() {
   return (
     <>
       <style jsx global>{`
-        @import url('https://fonts.googleapis.com/css2?family=Lora:wght@400;500&display=swap');
-
-        * { box-sizing: border-box; margin: 0; padding: 0; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
         html { scroll-behavior: smooth; }
         html, body { min-height: 100%; }
 
@@ -172,7 +170,7 @@ export default function MontreeLanding() {
           box-shadow: 0 0 8px rgba(232,201,106,0.55), 0 0 0 1px rgba(8,26,18,0.6);
         }
         .m-logo-word {
-          font-family: "Lora", Georgia, serif;
+          font-family: var(--font-lora), Georgia, serif;
           font-weight: 500;
           font-size: 1.125rem;
           letter-spacing: -0.01em;
@@ -198,7 +196,7 @@ export default function MontreeLanding() {
         }
         .m-hero .m-label { margin-bottom: 40px; }
         .m-hero-quote {
-          font-family: "Lora", Georgia, serif;
+          font-family: var(--font-lora), Georgia, serif;
           font-style: italic;
           font-weight: 400;
           font-size: clamp(14px, 1.6vw, 18px);
@@ -217,7 +215,7 @@ export default function MontreeLanding() {
           letter-spacing: 0.04em;
         }
         .m-hero-kicker {
-          font-family: "Lora", Georgia, serif;
+          font-family: var(--font-lora), Georgia, serif;
           font-style: italic;
           font-weight: 400;
           font-size: clamp(18px, 2.5vw, 28px);
@@ -227,7 +225,7 @@ export default function MontreeLanding() {
           text-shadow: 0 0 24px rgba(232,201,106,0.18);
         }
         .m-hero h1 {
-          font-family: "Lora", Georgia, serif;
+          font-family: var(--font-lora), Georgia, serif;
           font-weight: 400;
           font-size: clamp(3.25rem, 8vw, 6rem);
           line-height: 1.04;
@@ -266,7 +264,7 @@ export default function MontreeLanding() {
         .m-block:last-child { border-bottom: 0; }
         .m-block .m-label { display: block; margin-bottom: 22px; }
         .m-block h2 {
-          font-family: "Lora", Georgia, serif;
+          font-family: var(--font-lora), Georgia, serif;
           font-weight: 400;
           font-size: clamp(1.875rem, 3.6vw, 2.5rem);
           line-height: 1.18;
@@ -287,7 +285,7 @@ export default function MontreeLanding() {
           border-top: 1px solid rgba(255,255,255,0.06);
         }
         .m-closing h2 {
-          font-family: "Lora", Georgia, serif;
+          font-family: var(--font-lora), Georgia, serif;
           font-weight: 400;
           font-size: clamp(2.25rem, 5.2vw, 3.4rem);
           line-height: 1.1;

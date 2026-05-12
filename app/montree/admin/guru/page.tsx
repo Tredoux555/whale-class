@@ -548,7 +548,7 @@ export default function PrincipalAdminGuruPage() {
         <div>
           <h2
             style={{
-              fontFamily: '"Lora", Georgia, serif',
+              fontFamily: 'var(--font-lora), Georgia, serif',
               fontSize: 22,
               fontWeight: 500,
               color: 'rgba(255,255,255,0.92)',

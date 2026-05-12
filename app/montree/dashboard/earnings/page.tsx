@@ -64,7 +64,7 @@ export default function EarningsPage() {
     return (
       <div style={{ maxWidth: 560, margin: '0 auto', padding: '80px 32px', textAlign: 'center' }}>
         <div style={{ fontSize: 48, marginBottom: 24 }}>🌿</div>
-        <h1 style={{ fontFamily: '"Lora", Georgia, serif', fontWeight: 400, fontSize: '1.875rem', color: 'rgba(255,255,255,0.9)', marginBottom: 16, letterSpacing: '-0.015em' }}>
+        <h1 style={{ fontFamily: 'var(--font-lora), Georgia, serif', fontWeight: 400, fontSize: '1.875rem', color: 'rgba(255,255,255,0.9)', marginBottom: 16, letterSpacing: '-0.015em' }}>
           Revenue Share
         </h1>
         <p style={{ color: 'rgba(255,255,255,0.4)', lineHeight: 1.8, marginBottom: 32 }}>
@@ -102,7 +102,7 @@ export default function EarningsPage() {
         <span style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.14em', color: '#E8C96A', fontWeight: 500 }}>
           Teacher revenue share
         </span>
-        <h1 style={{ fontFamily: '"Lora", Georgia, serif', fontWeight: 400, fontSize: 'clamp(2rem, 5vw, 2.75rem)', color: '#ffffff', lineHeight: 1.1, letterSpacing: '-0.022em', marginTop: 12 }}>
+        <h1 style={{ fontFamily: 'var(--font-lora), Georgia, serif', fontWeight: 400, fontSize: 'clamp(2rem, 5vw, 2.75rem)', color: '#ffffff', lineHeight: 1.1, letterSpacing: '-0.022em', marginTop: 12 }}>
           Your earnings
         </h1>
         {d.school && (

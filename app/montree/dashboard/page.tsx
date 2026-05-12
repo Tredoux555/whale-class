@@ -147,7 +147,7 @@ function StudentAvatarCard({ child }: { child: Child }) {
         />
       ) : (
         <span style={{
-          fontFamily: "'Lora', Georgia, serif", fontWeight: 500,
+          fontFamily: "var(--font-lora), Georgia, serif", fontWeight: 500,
           fontSize: size * 0.46, color: '#fff', lineHeight: 1,
           textShadow: '0 0 14px rgba(167,243,208,0.35)',
         }}>
@@ -669,7 +669,7 @@ export default function DashboardPage() {
               </div>
               <p style={{
                 margin: '0 0 6px',
-                fontFamily: '"Lora", Georgia, serif',
+                fontFamily: 'var(--font-lora), Georgia, serif',
                 fontSize: 22,
                 fontWeight: 500,
                 color: 'rgba(255,255,255,0.95)',
