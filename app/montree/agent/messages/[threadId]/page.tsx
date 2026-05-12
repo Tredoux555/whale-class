@@ -52,6 +52,9 @@ interface Message {
   body: string;
   ai_drafted: boolean;
   sent_at: string;
+  // 🚨 Perf Tier 4.3 — optimistic state for locally-added bubbles.
+  optimistic?: boolean;
+  sendFailed?: boolean;
 }
 
 interface School {
@@ -141,24 +144,45 @@ export default function AgentThreadDetailPage() {
     if (!threadId || !reply.trim() || sending) return;
     setSending(true);
     setError(null);
+
+    // 🚨 Perf Tier 4.3 — optimistic send.
+    const bodyText = reply.trim();
+    const tempId = `optimistic-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    const optimistic: Message = {
+      id: tempId,
+      thread_id: threadId,
+      sender_role: 'agent',
+      sender_id: 'me',
+      sender_name: 'You',
+      body: bodyText,
+      ai_drafted: false,
+      sent_at: new Date().toISOString(),
+      optimistic: true,
+    };
+    setMessages((prev) => [...prev, optimistic]);
+    setReply('');
+
     try {
       const res = await fetch(`/api/montree/agent/messages/threads/${threadId}/messages`, {
         method: 'POST', credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ body: reply.trim() }),
+        body: JSON.stringify({ body: bodyText }),
       });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
+        setMessages((prev) => prev.map((m) => (m.id === tempId ? { ...m, sendFailed: true, optimistic: false } : m)));
+        setReply(bodyText);
         setError(data.error || t('agentThread.failedToSend'));
         setSending(false);
         return;
       }
       const data = await res.json();
-      setMessages((prev) => [...prev, data.message]);
-      setReply('');
+      setMessages((prev) => prev.map((m) => (m.id === tempId ? data.message : m)));
       setSending(false);
     } catch (err) {
       console.error('[agent send] failed', err);
+      setMessages((prev) => prev.map((m) => (m.id === tempId ? { ...m, sendFailed: true, optimistic: false } : m)));
+      setReply(bodyText);
       setError(t('agentThread.networkError'));
       setSending(false);
     }
