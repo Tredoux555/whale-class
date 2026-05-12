@@ -91,16 +91,63 @@ export async function montreeApi(
     fetchOptions.signal.addEventListener('abort', () => controller.abort(), { once: true });
   }
 
+  // 🚨 Perf Tier 4.1 (PERF_HEALTH_CHECK.md) — auto-retry on transient network
+  // errors for IDEMPOTENT methods only. POST/PATCH/PUT/DELETE NEVER retry —
+  // they could create duplicate writes (double-charge, double-message, etc.).
+  // GET and HEAD are safe to retry because they have no side effects.
+  //
+  // Retry schedule (only fires on network errors, not on HTTP error statuses):
+  //   attempt 1 → immediate
+  //   attempt 2 → +1s   (first VPN flap recovery window)
+  //   attempt 3 → +3s   (second flap, slow handshake)
+  //
+  // We only retry on the fetch() throwing (TypeError 'Failed to fetch',
+  // network reset, etc.) — NOT on response.status >= 500. Servers returning
+  // errors should be handled by the caller, not silently retried.
+  //
+  // The caller's own AbortController signal short-circuits the retry loop.
+  const isRetryable = method === 'GET' || method === 'HEAD';
+  const NETWORK_RETRY_DELAYS = isRetryable ? [0, 1000, 3000] : [0];
+
   const fetchPromise = (async () => {
-    let response: Response;
-    try {
-      response = await fetch(url, {
-        ...fetchOptions,
-        headers,
-        signal: controller.signal,
-      });
-    } finally {
-      clearTimeout(timeoutId);
+    let response: Response | null = null;
+    let lastError: unknown = null;
+
+    for (let attempt = 0; attempt < NETWORK_RETRY_DELAYS.length; attempt++) {
+      // Bail early if the caller already aborted (signal short-circuit).
+      if (controller.signal.aborted) break;
+
+      const delay = NETWORK_RETRY_DELAYS[attempt];
+      if (delay > 0) {
+        await new Promise((resolve) => setTimeout(resolve, delay));
+        if (controller.signal.aborted) break;
+      }
+
+      try {
+        response = await fetch(url, {
+          ...fetchOptions,
+          headers,
+          signal: controller.signal,
+        });
+        // Got a response (even 5xx). Don't retry — caller decides.
+        lastError = null;
+        break;
+      } catch (err) {
+        // Network-level failure: fetch() throws TypeError ('Failed to fetch'),
+        // AbortError on signal, etc. Only retry the TypeError case.
+        lastError = err;
+        const isAbort = err instanceof Error && err.name === 'AbortError';
+        if (isAbort) break; // Don't retry an explicit abort
+        // Otherwise loop continues to next retry attempt
+      }
+    }
+
+    clearTimeout(timeoutId);
+
+    if (!response) {
+      // All attempts failed with network error — rethrow the last one so the
+      // caller's catch() handles it.
+      throw lastError || new Error('Network request failed');
     }
 
     // If server returns 401, the token is expired or invalid
