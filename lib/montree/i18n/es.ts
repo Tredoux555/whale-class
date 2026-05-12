@@ -4397,4 +4397,7 @@ export const es: Record<string, string> = {
   'money.resetFailedBtn': '🔄 Reestablecer a pendiente',
   'money.resetFailedTooltip': 'Reestablecé un pago fallido a pendiente para que puedas reintentar la transferencia. Las notas de error se conservan en el registro de auditoría.',
   'money.resetFailedConfirm': '¿Reestablecer este pago fallido a pendiente? Luego podés reintentar la transferencia Stripe. Las notas de error se mantendrán.',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'health.cron.demoRequestDrip': 'Goteo de solicitud de demostración',
 };

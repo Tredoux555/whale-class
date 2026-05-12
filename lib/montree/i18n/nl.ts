@@ -4426,4 +4426,7 @@ export const nl: Record<string, string> = {
   'money.resetFailedBtn': '🔄 Opnieuw in behandeling',
   'money.resetFailedTooltip': 'Zet een mislukte uitbetaling terug naar in behandeling zodat de overboeking opnieuw kan worden geprobeerd. Foutnotities blijven behouden in het auditlogboek.',
   'money.resetFailedConfirm': 'Deze mislukte uitbetaling terugzetten naar in behandeling? U kunt vervolgens de Stripe-overboeking opnieuw proberen. Foutnotities blijven behouden.',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'health.cron.demoRequestDrip': 'Demoaanvraag-druppelaar',
 };

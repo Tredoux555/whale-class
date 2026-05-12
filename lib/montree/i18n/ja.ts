@@ -4426,4 +4426,7 @@ export const ja: Record<string, string> = {
   'money.resetFailedBtn': '🔄 保留中にリセット',
   'money.resetFailedTooltip': '失敗した支払いを保留中にリセットして、ワイヤー送金を再試行できるようにします。失敗ノートは監査証跡に保存されます。',
   'money.resetFailedConfirm': 'この失敗した支払いを保留中にリセットしますか？その後、Stripeのワイヤー送金を再試行できます。失敗ノートは保持されます。',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'health.cron.demoRequestDrip': 'デモリクエストドリップ',
 };

@@ -4426,4 +4426,7 @@ export const fr: Record<string, string> = {
   'money.resetFailedBtn': '🔄 Rétablir en attente',
   'money.resetFailedTooltip': 'Rétablissez ce virement échoué en attente pour pouvoir le renvoyer. Les notes d\'échec sont conservées dans la piste d\'audit.',
   'money.resetFailedConfirm': 'Rétablir ce virement échoué en attente ? Vous pourrez alors renvoyer le virement Stripe. Les notes d\'échec seront conservées.',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'health.cron.demoRequestDrip': 'Flux de requêtes de démonstration',
 };

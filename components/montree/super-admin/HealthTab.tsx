@@ -300,6 +300,12 @@ function CronTriggers({ sessionToken, onComplete }: { sessionToken: string; onCo
       fire: () => fire('trial-drip', '/api/montree/super-admin/trial-drip', 'POST'),
     },
     {
+      id: 'demo-request-drip',
+      label: t('health.cron.demoRequestDrip'),
+      icon: '📬',
+      fire: () => fire('demo-request-drip', '/api/montree/super-admin/demo-request-drip', 'POST'),
+    },
+    {
       id: 'warm',
       label: t('health.cron.warm'),
       icon: '🔥',

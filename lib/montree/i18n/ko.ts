@@ -4426,4 +4426,7 @@ export const ko: Record<string, string> = {
   'money.resetFailedBtn': '🔄 대기 중으로 재설정',
   'money.resetFailedTooltip': '실패한 송금을 대기 중으로 재설정하여 송금을 재시도할 수 있습니다. 실패 기록은 감사 추적에 보존됩니다.',
   'money.resetFailedConfirm': '실패한 송금을 대기 중으로 재설정하시겠습니까? 이후 Stripe 송금을 재시도할 수 있습니다. 실패 기록은 유지됩니다.',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'health.cron.demoRequestDrip': '데모 요청 드립',
 };

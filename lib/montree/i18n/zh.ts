@@ -4829,4 +4829,7 @@ export const zh = {
   'money.resetFailedBtn': '🔄 重置为待处理',
   'money.resetFailedTooltip': '将失败的支付重置为待处理状态，以便重试转账。失败记录将保留在审计跟踪中。',
   'money.resetFailedConfirm': '将此失败的支付重置为待处理状态？您随后可以重试 Stripe 转账。失败记录将被保留。',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'health.cron.demoRequestDrip': '演示请求滴灌',
 } as const;

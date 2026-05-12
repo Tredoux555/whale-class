@@ -4426,4 +4426,7 @@ export const pt: Record<string, string> = {
   'money.resetFailedBtn': '🔄 Redefinir para pendente',
   'money.resetFailedTooltip': 'Redefinir um pagamento falhado para pendente para que a transferência bancária possa ser retentada. As anotações de falha são preservadas na trilha de auditoria.',
   'money.resetFailedConfirm': 'Redefinir este pagamento falhado para pendente? Você poderá então retentarjamento da Stripe. As anotações de falha serão mantidas.',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'health.cron.demoRequestDrip': 'Gotejamento de solicitação de demonstração',
 };

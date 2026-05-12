@@ -4606,6 +4606,7 @@ export const en = {
   'health.cron.payouts': 'Monthly payout calc',
   'health.cron.recurring': 'Recurring op-expense run',
   'health.cron.trialDrip': 'Trial drip campaign',
+  'health.cron.demoRequestDrip': 'Demo-request drip',
   'health.cron.warm': 'Warm pre-ping',
   'health.success': 'success',
   'health.failed': 'failed',
