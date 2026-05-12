@@ -4479,4 +4479,10 @@ export const nl: Record<string, string> = {
 
   // ─── Auto-filled missing keys (from Apr 30 audit) ───
   'health.stripeDlqPending': '⚠ {count} in wachtrij — afgelopen 7 dagen',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'health.errorsTitle': 'Serverfouten',
+  'health.errorsUnresolved': '{count} onopgelost',
+  'health.errorsFatal': '⚠ {count} fataal — zie tabblad Fouten',
+  'health.errorsLast7d': '{count} geregistreerd · laatste 7 dagen',
 };

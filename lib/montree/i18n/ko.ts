@@ -4479,4 +4479,10 @@ export const ko: Record<string, string> = {
 
   // ─── Auto-filled missing keys (from Apr 30 audit) ───
   'health.stripeDlqPending': '⚠ {count}개 대기 중 (DLQ) — 지난 7일',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'health.errorsTitle': '서버 오류',
+  'health.errorsUnresolved': '{count}개 미해결',
+  'health.errorsFatal': '⚠ {count}개 중대 오류 — 오류 탭을 확인해주세요',
+  'health.errorsLast7d': '{count}개 기록됨 · 지난 7일',
 };

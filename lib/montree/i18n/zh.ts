@@ -4882,4 +4882,10 @@ export const zh = {
 
   // ─── Auto-filled missing keys (from Apr 30 audit) ───
   'health.stripeDlqPending': '⚠ {count} 条待处理 —— 过去 7 天',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'health.errorsTitle': '服务器错误',
+  'health.errorsUnresolved': '{count} 未解决',
+  'health.errorsFatal': '⚠ {count} 严重错误 — 查看错误标签页',
+  'health.errorsLast7d': '{count} 已记录 · 过去 7 天',
 } as const;

@@ -4479,4 +4479,10 @@ export const ja: Record<string, string> = {
 
   // ─── Auto-filled missing keys (from Apr 30 audit) ───
   'health.stripeDlqPending': '⚠ {count} 件が DLQ で保留中です — 過去 7 日間',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'health.errorsTitle': 'サーバーエラー',
+  'health.errorsUnresolved': '{count}件未解決',
+  'health.errorsFatal': '⚠ {count}件致命的エラー — エラータブをご確認ください',
+  'health.errorsLast7d': '{count}件記録 · 過去7日間',
 };

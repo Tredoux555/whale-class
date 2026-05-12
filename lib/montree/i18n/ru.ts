@@ -4476,4 +4476,10 @@ export const ru: Record<string, string> = {
 
   // ─── Auto-filled missing keys (from Apr 30 audit) ───
   'health.stripeDlqPending': '⚠ {count} ожидают в очереди DLQ — последние 7 дней',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'health.errorsTitle': 'Ошибки сервера',
+  'health.errorsUnresolved': '{count} неразрешённых',
+  'health.errorsFatal': '⚠ {count} критических — см. вкладку Ошибки',
+  'health.errorsLast7d': '{count} записано · за последние 7 дней',
 };

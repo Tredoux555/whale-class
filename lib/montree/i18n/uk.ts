@@ -4476,4 +4476,10 @@ export const uk: Record<string, string> = {
 
   // ─── Auto-filled missing keys (from Apr 30 audit) ───
   'health.stripeDlqPending': '⚠ {count} очікує обробки в DLQ — останні 7 днів',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'health.errorsTitle': 'Помилки сервера',
+  'health.errorsUnresolved': '{count} невирішені',
+  'health.errorsFatal': '⚠ {count} критичні — див. вкладку Помилки',
+  'health.errorsLast7d': '{count} зареєстровані · останні 7 днів',
 };

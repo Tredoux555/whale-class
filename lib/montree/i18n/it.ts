@@ -4479,4 +4479,10 @@ export const it: Record<string, string> = {
 
   // ─── Auto-filled missing keys (from Apr 30 audit) ───
   'health.stripeDlqPending': '⚠ {count} in sospeso in DLQ — ultimi 7 giorni',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'health.errorsTitle': 'Errori del server',
+  'health.errorsUnresolved': '{count} non risolti',
+  'health.errorsFatal': '⚠ {count} critici — consultare la scheda Errori',
+  'health.errorsLast7d': '{count} registrati · ultimi 7 giorni',
 };
