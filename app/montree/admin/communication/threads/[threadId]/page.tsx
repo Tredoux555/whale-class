@@ -59,6 +59,11 @@ interface Message {
   ai_draft_source: string | null;
   approved_by_id: string | null;
   sent_at: string;
+  // 🚨 Perf Tier 4.3 — optimistic send state. Set on locally-added
+  // bubbles before the server confirms. Cleared when load() re-fetches.
+  // Real messages from the server never carry these fields.
+  optimistic?: boolean;
+  sendFailed?: boolean;
 }
 
 export default function ThreadPage() {
@@ -131,25 +136,60 @@ export default function ThreadPage() {
     if (!draft.trim()) return;
     setSending(true);
     setError(null);
+
+    // 🚨 Perf Tier 4.3 (PERF_HEALTH_CHECK.md) — optimistic send.
+    // Insert the message into the thread immediately so the bubble appears
+    // instantly. Capture the values now (state may reset before the request
+    // resolves). The temp id starts with `optimistic-` so the load() re-fetch
+    // can dedupe against the server's real row by checking sent_at + body.
+    const draftBody = draft.trim();
+    const aiDraftedNow = aiDrafted;
+    const tempId = `optimistic-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    const optimisticMessage: Message = {
+      id: tempId,
+      sender_role: 'principal',  // best-guess; server response replaces this
+      sender_id: 'me',
+      sender_name: 'You',
+      body: draftBody,
+      ai_drafted: aiDraftedNow,
+      ai_draft_source: aiDraftedNow ? 'tracy.draft_parent_response' : null,
+      approved_by_id: null,
+      sent_at: new Date().toISOString(),
+      optimistic: true,
+    };
+    setMessages((prev) => [...prev, optimisticMessage]);
+    // Clear the input right away — feels instant.
+    setDraft('');
+    setAiDrafted(false);
+
     try {
       const res = await fetch(`/api/montree/messages/threads/${threadId}/messages`, {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          body: draft,
-          ai_drafted: aiDrafted,
-          ai_draft_source: aiDrafted ? 'tracy.draft_parent_response' : undefined,
+          body: draftBody,
+          ai_drafted: aiDraftedNow,
+          ai_draft_source: aiDraftedNow ? 'tracy.draft_parent_response' : undefined,
         }),
       });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
         throw new Error(data?.error || 'Send failed');
       }
-      setDraft('');
-      setAiDrafted(false);
+      // Success — re-fetch the thread so we replace the optimistic bubble
+      // with the canonical server row (real id, real sender attribution).
       void load();
     } catch (err: unknown) {
+      // Failure — keep the bubble visible but mark it as failed so the user
+      // can see what went wrong + retry. Restore the draft so they can edit.
+      setMessages((prev) =>
+        prev.map((m) =>
+          m.id === tempId ? { ...m, sendFailed: true, optimistic: false } : m
+        )
+      );
+      setDraft(draftBody);
+      setAiDrafted(aiDraftedNow);
       setError(err instanceof Error ? err.message : 'Send failed');
     } finally {
       setSending(false);
@@ -519,8 +559,11 @@ export default function ThreadPage() {
 }
 
 function MessageBubble({ message }: { message: Message }) {
+  // 🚨 Perf Tier 4.3 — optimistic / failed visual state.
+  const isOptimistic = !!message.optimistic;
+  const isFailed = !!message.sendFailed;
   return (
-    <div style={{ marginBottom: 14 }}>
+    <div style={{ marginBottom: 14, opacity: isOptimistic ? 0.65 : 1, transition: 'opacity 0.2s ease' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 4 }}>
         <div style={{ fontSize: 12, fontWeight: 600, color: T.textPrimary, display: 'flex', alignItems: 'center', gap: 6 }}>
           {message.sender_name}
@@ -545,12 +588,14 @@ function MessageBubble({ message }: { message: Message }) {
             </span>
           )}
         </div>
-        <span style={{ fontSize: 11, color: T.textMuted }}>{formatDateTime(message.sent_at)}</span>
+        <span style={{ fontSize: 11, color: isFailed ? '#fca5a5' : T.textMuted }}>
+          {isOptimistic ? 'Sending…' : isFailed ? 'Failed — tap retry above' : formatDateTime(message.sent_at)}
+        </span>
       </div>
       <div
         style={{
-          background: T.cardBgStrong,
-          border: T.cardBorder,
+          background: isFailed ? 'rgba(239,68,68,0.08)' : T.cardBgStrong,
+          border: isFailed ? '1px solid rgba(239,68,68,0.30)' : T.cardBorder,
           borderRadius: 12,
           padding: '10px 14px',
           fontSize: 14,
