@@ -127,34 +127,51 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, error: 'Media has no child' }, { status: 400 });
     }
 
-    const childAccess = await verifyChildBelongsToSchool(childId, auth.schoolId);
+    // 🚨 Perf Tier 3.4 (PERF_HEALTH_CHECK.md) — parallelize the two reads that
+    // happen after the mediaRow fetch. They're independent: child-access check
+    // hits montree_children, original-work lookup hits curriculum_works.
+    // Previously sequential they cost ~300-400ms. Now ~150-200ms.
+    //
+    // The denial branch costs an extra (cheap) curriculum lookup we don't end
+    // up using — fine, denial is rare and the success path is the common one.
+    const originalWorkId: string | null = (mediaRow.work_id as string) || null;
+    let originalWorkName: string | null = null;
+    let originalArea: string | null = null;
+
+    const [childAccess, originalWorkRes] = await Promise.all([
+      verifyChildBelongsToSchool(childId, auth.schoolId),
+      originalWorkId
+        ? supabase
+            .from('montree_classroom_curriculum_works')
+            .select('id, name, area_id, montree_classroom_curriculum_areas!inner(area_key)')
+            .eq('id', originalWorkId)
+            .maybeSingle()
+        : Promise.resolve({ data: null as null | { name: string; montree_classroom_curriculum_areas: unknown } }),
+    ]);
+
     if (!childAccess.allowed) {
       return NextResponse.json({ success: false, error: 'Access denied' }, { status: 403 });
     }
 
-    // Resolve current work for the "original_*" fields when delegating to corrections.
-    // If the media already has a work_id, look up its name/area. Otherwise fall back
-    // to the Sonnet draft's closest_existing_match or proposed_name.
-    let originalWorkId: string | null = (mediaRow.work_id as string) || null;
-    let originalWorkName: string | null = null;
-    let originalArea: string | null = null;
-    if (originalWorkId) {
-      const { data: wRow } = await supabase
-        .from('montree_classroom_curriculum_works')
-        .select('id, name, area_id, montree_classroom_curriculum_areas!inner(area_key)')
-        .eq('id', originalWorkId)
-        .maybeSingle();
-      if (wRow) {
-        originalWorkName = (wRow.name as string) || null;
-        const areasRel = (wRow as any).montree_classroom_curriculum_areas;
-        originalArea = Array.isArray(areasRel) ? areasRel[0]?.area_key : areasRel?.area_key || null;
-      }
+    // Resolve current work for the "original_*" fields when delegating to
+    // corrections. If the media already has a work_id, look up its name/area.
+    // Otherwise fall back to the Sonnet draft's closest_existing_match or
+    // proposed_name.
+    if (originalWorkId && originalWorkRes.data) {
+      const wRow = originalWorkRes.data;
+      originalWorkName = (wRow.name as string) || null;
+      const areasRel = (wRow as { montree_classroom_curriculum_areas?: unknown }).montree_classroom_curriculum_areas;
+      originalArea = Array.isArray(areasRel)
+        ? (areasRel[0] as { area_key?: string })?.area_key || null
+        : (areasRel as { area_key?: string } | null)?.area_key || null;
     }
     if (!originalWorkName) {
-      const draft = (mediaRow.sonnet_draft as Record<string, any>) || null;
+      const draft = (mediaRow.sonnet_draft as Record<string, unknown>) || null;
       originalWorkName =
-        draft?.closest_existing_match?.work_name || draft?.proposed_name || null;
-      originalArea = originalArea || draft?.suggested_area || null;
+        ((draft?.closest_existing_match as { work_name?: string } | undefined)?.work_name) ||
+        ((draft?.proposed_name as string | undefined)) ||
+        null;
+      originalArea = originalArea || ((draft?.suggested_area as string | undefined) || null);
     }
 
     // ========== Path C: confirm_ai ==========
