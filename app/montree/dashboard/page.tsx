@@ -12,6 +12,11 @@ import { useI18n } from '@/lib/montree/i18n';
 import { toast, Toaster } from 'sonner';
 import { montreeApi } from '@/lib/montree/api';
 import { useMontreeData, setCacheData } from '@/lib/montree/cache';
+// 🚨 Perf Tier 6.1 (PERF_HEALTH_CHECK.md) — pull-to-refresh.
+// Reuses Session 95's touch-only hook + indicator. Iphone PWA users get the
+// native iOS gesture for re-fetching their class list.
+import { usePullToRefresh } from '@/lib/story/use-pull-to-refresh';
+import PullRefreshIndicator from '@/lib/story/PullRefreshIndicator';
 import { useFeatures } from '@/hooks/useFeatures';
 import { DashboardSkeleton } from '@/components/montree/Skeletons';
 import { getProxyUrl } from '@/lib/montree/media/proxy-url';
@@ -219,6 +224,14 @@ export default function DashboardPage() {
   const { data: childrenData, loading, error: childrenError, refetch: refetchChildren } =
     useMontreeData<{ children: Child[] }>(childrenUrl);
   const children = childrenData?.children || [];
+
+  // 🚨 Perf Tier 6.1 — pull-to-refresh. Re-fetches the children list on
+  // touch-pull-down at scrollY=0. Hook is touch-only by design (desktop
+  // uses the browser refresh). Disabled while no classroom is loaded.
+  const pullRefresh = usePullToRefresh({
+    onRefresh: async () => { await refetchChildren(); },
+    disabled: !session?.classroom?.id,
+  });
 
   // ── High-water-mark watch on children count ──
   // Update the watermark whenever the API gives us a positive count, AND log
@@ -524,6 +537,15 @@ export default function DashboardPage() {
   return (
     <div className={`min-h-screen ${isParent ? HOME_THEME.pageBgGradient : ''}`}
       style={!isParent ? { background: '#0a1a0f', color: '#fff' } : {}}>
+      {/* 🚨 Perf Tier 6.1 — touch-only pull-to-refresh indicator. Renders
+          nothing on desktop. iPhone PWA users pull down at top to re-fetch
+          children list. */}
+      <PullRefreshIndicator
+        pullDistance={pullRefresh.pullDistance}
+        isRefreshing={pullRefresh.isRefreshing}
+        threshold={pullRefresh.threshold}
+        variant="admin"
+      />
       {/* Off-centre radial glow — matches landing page */}
       {!isParent && <>
         <div aria-hidden="true" style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 0, background: 'radial-gradient(ellipse 1100px 900px at 88% 8%, rgba(39,129,90,0.48), rgba(39,129,90,0.18) 30%, transparent 60%)' }}/>
