@@ -4426,4 +4426,7 @@ export const it: Record<string, string> = {
   'money.resetFailedBtn': '🔄 Ripristina in sospeso',
   'money.resetFailedTooltip': 'Ripristini questo pagamento non riuscito in sospeso affinché il trasferimento possa essere riprovato. Le note di errore vengono conservate nella traccia di audit.',
   'money.resetFailedConfirm': 'Ripristinare questo pagamento non riuscito in sospeso? Potrà quindi riprovare il trasferimento Stripe. Le note di errore verranno conservate.',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'health.cron.demoRequestDrip': 'Goccia di richiesta demo',
 };

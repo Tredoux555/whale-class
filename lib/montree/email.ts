@@ -712,6 +712,73 @@ export async function sendTrialDripEmail(
 }
 
 // ============================================
+// DEMO-REQUEST DRIP (day 3, 7, 14 after landing-page demo request)
+// → fires only if super-admin hasn't marked the lead 'contacted' yet
+// ============================================
+
+export type DemoDripDay = 'day3' | 'day7' | 'day14';
+
+const DEMO_DRIP_COPY: Record<DemoDripDay, { subject: string; greeting: string; body: string }> = {
+  day3: {
+    subject: 'Following up on your Montree demo request',
+    greeting: 'Hi {name},',
+    body: "Just a quick follow-up on your demo request from a few days ago. I've been working through the queue and want to make sure I get to you properly.\n\nIf you'd like to skip the wait, the fastest path is to **start a free 30-day trial** — full Montree, no credit card, one classroom. You can poke around at your own pace and we can chat afterwards.\n\nOtherwise reply with a few times that work for you this week and I'll send a calendar invite.",
+  },
+  day7: {
+    subject: "Haven't forgotten you — Montree",
+    greeting: 'Hi {name},',
+    body: "A week ago you asked for a Montree demo. I haven't forgotten you — life got in the way.\n\nIf the interest is still live, two ways forward:\n\n1. **Start the free trial** at montree.xyz — one classroom, 30 days, no credit card.\n2. **Reply with a 20-minute slot** and I'll come on a call.\n\nEither way, no pressure.",
+  },
+  day14: {
+    subject: 'Last note from Montree',
+    greeting: 'Hi {name},',
+    body: "Two weeks since your demo request. I'll stop chasing after this email — promise.\n\nIf Montree isn't the right fit for {school}, no hard feelings. If you'd like to take another look, the door's always open: just reply or start the free trial at montree.xyz.\n\nThank you for the look.",
+  },
+};
+
+export async function sendDemoRequestDripEmail(
+  recipientEmail: string,
+  recipientName: string,
+  schoolName: string,
+  day: DemoDripDay,
+): Promise<EmailResult> {
+  try {
+    const tpl = DEMO_DRIP_COPY[day];
+    const greeting = tpl.greeting.replace('{name}', recipientName);
+    const body = tpl.body.replace(/{school}/g, schoolName).replace(/{name}/g, recipientName);
+    const htmlBody = body
+      .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+      .split('\n\n')
+      .map((p) => `<p style="font-size:15px;line-height:1.6;margin:0 0 16px;color:#1f2d24;">${p.replace(/\n/g, '<br/>')}</p>`)
+      .join('');
+    const html = `<!doctype html>
+<html><body style="margin:0;padding:0;background:#f7f9f8;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#0a1a0f;">
+  <div style="max-width:540px;margin:24px auto;padding:28px;background:#fff;border-radius:14px;border:1px solid rgba(52,211,153,0.18);">
+    <p style="font-size:15px;line-height:1.6;margin:0 0 12px;color:#1f2d24;">${escapeHtml(greeting)}</p>
+    ${htmlBody}
+    <p style="font-size:14px;line-height:1.55;margin:24px 0 8px;color:#5b6b73;">Kind regards,<br/>Tredoux<br/><a href="https://montree.xyz" style="color:#10b981;">montree.xyz</a></p>
+  </div>
+</body></html>`;
+    const text = `${greeting}\n\n${body.replace(/\*\*/g, '')}\n\nKind regards,\nTredoux\nmontree.xyz`;
+    const { data, error } = await getResend().emails.send({
+      from: getFromEmail(),
+      to: recipientEmail,
+      subject: tpl.subject,
+      html,
+      text,
+    });
+    if (error) {
+      console.error(`[sendDemoRequestDripEmail ${day}] resend error`, error);
+      return { success: false, error: error.message };
+    }
+    return { success: true, messageId: data?.id };
+  } catch (err) {
+    console.error(`[sendDemoRequestDripEmail ${day}] unexpected`, err);
+    return { success: false, error: err instanceof Error ? err.message : 'unknown' };
+  }
+}
+
+// ============================================
 // PAYOUT PAID NOTIFICATION (Phase 5 wire-out → agent)
 // ============================================
 

@@ -4423,4 +4423,7 @@ export const ru: Record<string, string> = {
   'money.resetFailedBtn': '🔄 Вернуть в ожидание',
   'money.resetFailedTooltip': 'Вернуть неудавшийся платёж в статус ожидания, чтобы повторить попытку перевода. Записи об ошибках сохраняются в журнале аудита.',
   'money.resetFailedConfirm': 'Вернуть этот платёж в статус ожидания? Вы сможете повторить попытку перевода через Stripe. Записи об ошибках будут сохранены.',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'health.cron.demoRequestDrip': 'Демонстрационный запрос',
 };

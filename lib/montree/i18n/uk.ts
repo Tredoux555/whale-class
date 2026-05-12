@@ -4423,4 +4423,7 @@ export const uk: Record<string, string> = {
   'money.resetFailedBtn': '🔄 Повернути у стан очікування',
   'money.resetFailedTooltip': 'Повернути невдалий переказ у стан очікування, щоб спробувати ще раз. Записи про помилки зберігаються в журналі аудиту.',
   'money.resetFailedConfirm': 'Повернути цей невдалий переказ у стан очікування? Ви зможете повторити спробу переказу через Stripe. Записи про помилки будуть збережені.',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'health.cron.demoRequestDrip': 'Капельниця демо-запиту',
 };

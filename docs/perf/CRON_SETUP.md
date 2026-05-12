@@ -87,7 +87,24 @@ curl -sS -X POST 'https://montree.xyz/api/montree/super-admin/finance/recurring/
 
 ---
 
-## 4. Stripe quantity sweep (Phase 4 carry-over)
+## 4. Demo-request drip campaign
+
+**What:** Scans `montree_outreach_contacts` for landing-page demo requests still in `status='demo_requested'` (meaning Tredoux hasn't marked them 'contacted' yet). Fires day-3, day-7, day-14 follow-up emails to leads that haven't been picked up. Auto-stops the moment Tredoux flips the status to anything other than `demo_requested`.
+
+**Schedule:** Once a day at 10:00 UTC. `0 10 * * *` (one hour after trial-drip to spread API load).
+
+**Command:**
+
+```bash
+curl -sS -X POST 'https://montree.xyz/api/montree/super-admin/demo-request-drip' \
+  -H "x-cron-secret: $CRON_SECRET"
+```
+
+Idempotent via `montree_outreach_log` rows tagged `demo_request_drip_dayN` with `contact_id` as the dedup key. Safe to fire manually any number of times.
+
+---
+
+## 5. Stripe quantity sweep (Phase 4 carry-over)
 
 **What:** Re-syncs Stripe subscription quantities with the actual active-children count for every paid school. Catches drift if the in-app sync misses (rare — the in-app fire-and-forget pattern usually wins). Already shipped as `/api/montree/billing/sync-quantity` per Session 93.
 
