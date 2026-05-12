@@ -412,14 +412,36 @@ export async function POST(request: NextRequest) {
               })),
             });
 
-            let totalTokens = { input: 0, output: 0 };
+            const totalTokens = { input: 0, output: 0 };
             const now = new Date().toISOString();
             const upsertFailures: string[] = [];
 
-            // ─── Generate Teacher Report ───
-            // TIER-GATE: core tier skips teacher reports entirely (only replan runs)
-            let teacherReportContent: Record<string, unknown> | null = null;
-            if (!skipTeacherReports && !existingTeacherReports.has(child.id)) {
+            // ─── Generate Teacher + Parent Reports IN PARALLEL ───
+            // 🚨 Perf Tier 3.1 (PERF_HEALTH_CHECK.md): per-child wall-clock
+            // was teacher-Sonnet → parent-Sonnet sequentially. Now both fire
+            // concurrently via Promise.all — saves ~half the per-child time.
+            // Across 20 children, ~3-5 minutes off a Weekly Wrap.
+            //
+            // CRITICAL: replan already ran in Stage 0 BEFORE the try{} block
+            // (see top of processChild). This parallelize covers ONLY the
+            // teacher + parent report generation. The Stage 0 ordering rule
+            // (Session 74) is preserved.
+            //
+            // Each IIFE captures its own side effects (logApiUsage, supabase
+            // upsert) and returns the values needed by the outer merge. JS
+            // is single-threaded so even though both IIFEs touch the closure
+            // they can't interleave — the closure mutations are merged in
+            // the post-Promise.all block instead.
+            type ReportIIFEResult<T> = {
+              tokens: { input: number; output: number } | null | undefined;
+              upsertError: string | null;
+              value: T;
+            };
+
+            const teacherIIFE: Promise<ReportIIFEResult<Record<string, unknown> | null>> = (async () => {
+              if (skipTeacherReports || existingTeacherReports.has(child.id)) {
+                return { tokens: null, upsertError: null, value: null };
+              }
               const teacherResult = await generateTeacherReport({
                 child: {
                   name: child.name,
@@ -437,8 +459,6 @@ export async function POST(request: NextRequest) {
               });
 
               if (teacherResult.tokensUsed) {
-                totalTokens.input += teacherResult.tokensUsed.input;
-                totalTokens.output += teacherResult.tokensUsed.output;
                 logApiUsage({
                   schoolId: classroom.school_id,
                   classroomId: classroom_id,
@@ -450,14 +470,13 @@ export async function POST(request: NextRequest) {
                 });
               }
 
-              teacherReportContent = {
+              const localContent: Record<string, unknown> = {
                 ...teacherResult.report,
                 generated_at: teacherResult.generatedAt,
                 model: teacherResult.model || 'template',
                 tokens_used: teacherResult.tokensUsed,
               };
 
-              // Upsert teacher report
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               const { error: teacherUpsertErr } = await (supabase.from('montree_weekly_reports') as any).upsert({
                 school_id: classroom.school_id,
@@ -469,19 +488,24 @@ export async function POST(request: NextRequest) {
                 report_year: reportYear,
                 report_type: 'teacher',
                 status: 'draft',
-                content: teacherReportContent,
+                content: localContent,
                 generated_at: now,
               }, { onConflict: 'child_id,week_start,report_type' });
               if (teacherUpsertErr) {
                 console.error(`Teacher report upsert failed for ${child.name}:`, teacherUpsertErr.message);
-                upsertFailures.push(`teacher: ${teacherUpsertErr.message}`);
               }
-            }
 
-            // ─── Generate Parent Report ───
-            // TIER-GATE: only premium tier generates parent narratives (Sonnet quality)
-            let parentNarrative = '';
-            if (!skipParentReports && !existingParentReports.has(child.id)) {
+              return {
+                tokens: teacherResult.tokensUsed,
+                upsertError: teacherUpsertErr ? teacherUpsertErr.message : null,
+                value: localContent,
+              };
+            })();
+
+            const parentIIFE: Promise<ReportIIFEResult<string>> = (async () => {
+              if (skipParentReports || existingParentReports.has(child.id)) {
+                return { tokens: null, upsertError: null, value: '' };
+              }
               const narrativeResult = await generateWeeklyNarrative({
                 child: {
                   name: child.name,
@@ -503,10 +527,7 @@ export async function POST(request: NextRequest) {
                 model: aiTier.model ?? undefined,
               });
 
-              parentNarrative = narrativeResult.narrative;
               if (narrativeResult.tokensUsed) {
-                totalTokens.input += narrativeResult.tokensUsed.input;
-                totalTokens.output += narrativeResult.tokensUsed.output;
                 logApiUsage({
                   schoolId: classroom.school_id,
                   classroomId: classroom_id,
@@ -555,7 +576,6 @@ export async function POST(request: NextRequest) {
                 report_locale: locale,
               };
 
-              // Upsert parent report
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               const { error: parentUpsertErr } = await (supabase.from('montree_weekly_reports') as any).upsert({
                 school_id: classroom.school_id,
@@ -572,9 +592,33 @@ export async function POST(request: NextRequest) {
               }, { onConflict: 'child_id,week_start,report_type' });
               if (parentUpsertErr) {
                 console.error(`Parent report upsert failed for ${child.name}:`, parentUpsertErr.message);
-                upsertFailures.push(`parent: ${parentUpsertErr.message}`);
               }
+
+              return {
+                tokens: narrativeResult.tokensUsed,
+                upsertError: parentUpsertErr ? parentUpsertErr.message : null,
+                value: narrativeResult.narrative,
+              };
+            })();
+
+            // Wait for both reports to complete. Promise.all surfaces the
+            // first rejection if either IIFE throws unhandled — wrapped by
+            // the surrounding try/catch.
+            const [teacherRes, parentRes] = await Promise.all([teacherIIFE, parentIIFE]);
+
+            // Merge side effects from both IIFEs into outer scope.
+            const teacherReportContent = teacherRes.value;
+            const parentNarrative = parentRes.value;
+            if (teacherRes.tokens) {
+              totalTokens.input += teacherRes.tokens.input;
+              totalTokens.output += teacherRes.tokens.output;
             }
+            if (parentRes.tokens) {
+              totalTokens.input += parentRes.tokens.input;
+              totalTokens.output += parentRes.tokens.output;
+            }
+            if (teacherRes.upsertError) upsertFailures.push(`teacher: ${teacherRes.upsertError}`);
+            if (parentRes.upsertError) upsertFailures.push(`parent: ${parentRes.upsertError}`);
 
             const keyInsight = (teacherReportContent as any)?.key_insight || '';
             const flagsCount = (analysis.red_flags.length + analysis.yellow_flags.length);
