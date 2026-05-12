@@ -4,7 +4,8 @@ import React, { useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { escapeHtml, sanitizeImageUrl } from '@/lib/sanitize';
-import JSZip from 'jszip';
+// 🚨 Perf Tier 5.4 — JSZip lazy-loaded inside processZipFile (~1.7MB raw).
+import type JSZip from 'jszip';
 import { CIRCLE_TIME_CURRICULUM } from '@/lib/circle-time/curriculum-data';
 
 interface FlashCard {
@@ -92,7 +93,8 @@ const VocabularyFlashcardGenerator = () => {
   const processZipFile = async (file: File) => {
     setProcessingZip(true);
     try {
-      const zip = await JSZip.loadAsync(file);
+      const { default: JSZipModule } = await import('jszip');
+      const zip = await JSZipModule.loadAsync(file);
       const newCards: FlashCard[] = [];
       
       // Get all image files from zip

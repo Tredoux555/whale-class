@@ -9,7 +9,11 @@ import React, { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { slugify } from '@/lib/slugify';
-import JSZip from 'jszip';
+// 🚨 Perf Tier 5.4 — JSZip lazy-loaded inside the bulk-download handler.
+// Single-QR generation never needs it; only the "download all as zip" path.
+// import type kept for the `new JSZip()` constructor usage below — the
+// runtime is loaded via dynamic import inside generateBulk.
+import type JSZipType from 'jszip';
 import QRCode from 'qrcode';
 
 type Mode = 'single' | 'song' | 'bulk';
@@ -301,7 +305,8 @@ export default function QrGeneratorPage() {
     setBulkProgress({ done: 0, total: rows.length });
 
     try {
-      const zip = new JSZip();
+      const { default: JSZip } = await import('jszip');
+      const zip: JSZipType = new JSZip();
       const usedNames = new Set<string>();
       const written: Array<{ label: string; url: string; filename: string }> = [];
       const errors: string[] = [];

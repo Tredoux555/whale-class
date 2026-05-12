@@ -1,7 +1,10 @@
 "use client";
 
 import React, { useState, useCallback } from 'react';
-import JSZip from 'jszip';
+// 🚨 Perf Tier 5.4 (PERF_HEALTH_CHECK.md) — JSZip is ~1.7MB raw. Type-only
+// import so the JSZip.JSZipObject reference type-checks; runtime is loaded
+// via dynamic import() inside processZipFile().
+import type JSZip from 'jszip';
 import { CIRCLE_TIME_CURRICULUM } from '@/lib/circle-time/curriculum-data';
 import { escapeHtml, sanitizeImageUrl } from '@/lib/sanitize';
 import { useI18n } from '@/lib/montree/i18n/context';
@@ -91,7 +94,8 @@ const VocabularyFlashcardGenerator = () => {
   const processZipFile = async (file: File) => {
     setProcessingZip(true);
     try {
-      const zip = await JSZip.loadAsync(file);
+      const { default: JSZipModule } = await import('jszip');
+      const zip = await JSZipModule.loadAsync(file);
       const newCards: FlashCard[] = [];
       
       // Get all image files from zip
