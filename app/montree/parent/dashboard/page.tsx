@@ -474,9 +474,16 @@ export default function ParentDashboardPage() {
                   boxShadow: `0 20px 48px rgba(52,211,153,0.25)`,
                 }}>
                   {selectedChild.photo_url ? (
+                    // 🚨 Perf Tier 5.1 — child portrait. Parent dashboard
+                    // hero photo, the single biggest visible image on the
+                    // parent's home. Loading="eager" because it's above the
+                    // fold; explicit aspectRatio prevents CLS while it loads.
+                    // eslint-disable-next-line @next/next/no-img-element
                     <img
                       src={selectedChild.photo_url}
-                      style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }}
+                      style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover', aspectRatio: '1 / 1' }}
+                      loading="eager"
+                      decoding="async"
                       alt=""
                     />
                   ) : (

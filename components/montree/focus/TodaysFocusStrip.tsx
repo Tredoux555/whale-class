@@ -45,9 +45,16 @@ function Avatar({ name, photoUrl, size = 40 }: { name: string; photoUrl: string 
   const initial = name.charAt(0).toUpperCase();
   if (!fallback && photoUrl) {
     return (
+      // 🚨 Perf Tier 5.1 — explicit width/height attrs eliminate CLS shift
+      // while the avatar loads. Strip mounts on every dashboard return.
+      // eslint-disable-next-line @next/next/no-img-element
       <img
         src={photoUrl}
         alt={name}
+        width={size}
+        height={size}
+        loading="lazy"
+        decoding="async"
         onError={() => setFallback(true)}
         style={{
           width: size,
