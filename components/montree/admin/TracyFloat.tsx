@@ -85,6 +85,11 @@ interface ConvTurn {
   progress?: ProgressEvent | null;
   pending?: boolean;
   error?: string;
+  // Session 107 — when the principal-agent route returns 402 with
+  // requires_upgrade=true, set this flag instead of a generic error. The
+  // bubble then renders a gold upgrade card with a CTA to /montree/admin/
+  // billing, matching the main admin/page.tsx Tracy chat pattern.
+  requiresUpgrade?: boolean;
   costUsd?: number;
 }
 
@@ -494,16 +499,20 @@ export default function TracyFloat() {
             );
             if (!open) setHasUnread(true);
           } else {
-            // User typed a question against a Free-tier school. Show a
-            // friendly tier-message error so they know what to do.
+            // User typed a question against a Free-tier school. Read the
+            // requires_upgrade flag from the 402 payload — when set (the
+            // canonical Session 105/106 shape), render the gold upgrade card
+            // with a CTA to /montree/admin/billing instead of a red error.
+            const payload = await res.json().catch(() => ({}));
+            const wantsUpgrade = payload?.requires_upgrade === true;
             setTurns((prev) =>
               prev.map((tt, i) =>
                 i === prev.length - 1
                   ? {
                       ...tt,
                       pending: false,
-                      error:
-                        "AI features aren't active for this school yet. Email tredoux555@gmail.com to switch them on.",
+                      error: payload?.error || t('tracy.errors.tier') || 'AI features aren\'t active for this school yet.',
+                      requiresUpgrade: wantsUpgrade,
                     }
                   : tt
               )
@@ -1052,7 +1061,47 @@ function AssistantBubble({
             </button>
           </div>
         )}
-        {turn.error && (
+        {/* Upgrade prompt — when school is Free tier, render a friendly gold
+            card with a CTA to activate billing. Replaces the red error for
+            the 402 case, which is a billing state not a bug. Mirrors the
+            inline upgrade card on the main admin/page.tsx Tracy chat. */}
+        {turn.error && turn.requiresUpgrade && (
+          <div
+            style={{
+              marginTop: body ? 10 : 0,
+              padding: '12px 14px',
+              background: 'rgba(232,201,106,0.10)',
+              border: '1px solid rgba(232,201,106,0.32)',
+              borderRadius: 12,
+              color: 'rgba(255,255,255,0.92)',
+              fontSize: 13,
+              lineHeight: 1.5,
+            }}
+          >
+            <p style={{ margin: 0, fontWeight: 600, color: '#E8C96A' }}>
+              ✨ {t('tracy.upgrade.title') || 'Activate Tracy'}
+            </p>
+            <p style={{ margin: '6px 0 10px', color: 'rgba(255,255,255,0.78)' }}>
+              {t('tracy.upgrade.body') || 'Set up billing to unlock Tracy and the rest of your AI features.'}
+            </p>
+            <a
+              href="/montree/admin/billing"
+              style={{
+                display: 'inline-block',
+                padding: '8px 14px',
+                background: 'linear-gradient(135deg, #34d399, #10b981)',
+                color: '#0a1a0f',
+                fontWeight: 600,
+                fontSize: 12.5,
+                textDecoration: 'none',
+                borderRadius: 9,
+              }}
+            >
+              {t('tracy.upgrade.cta') || 'Set up billing'} →
+            </a>
+          </div>
+        )}
+        {turn.error && !turn.requiresUpgrade && (
           <div
             style={{
               marginTop: body ? 10 : 0,
