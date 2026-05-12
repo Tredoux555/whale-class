@@ -4838,4 +4838,7 @@ export const zh = {
   'health.demoPending': '{count} 个待处理',
   'health.demoSubtitle': '{drips} 个滴管 · 最早 {days}d',
   'health.demoSubtitleNoneOldest': '{drips} 个滴管已发送 · 最近 7d',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'money.openConnectInStripe': '在 Stripe 仪表板中打开此 Connect 账户',
 } as const;

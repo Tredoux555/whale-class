@@ -4435,4 +4435,7 @@ export const nl: Record<string, string> = {
   'health.demoPending': '{count} in afwachting',
   'health.demoSubtitle': '{drips} sessies · oudste {days}d',
   'health.demoSubtitleNoneOldest': '{drips} sessies verzonden · afgelopen 7d',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'money.openConnectInStripe': 'Dit Connect-account openen in het Stripe Dashboard',
 };

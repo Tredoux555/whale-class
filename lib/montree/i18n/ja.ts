@@ -4435,4 +4435,7 @@ export const ja: Record<string, string> = {
   'health.demoPending': '{count}件待機中',
   'health.demoSubtitle': '{drips}件のドリップ・最古{days}日前',
   'health.demoSubtitleNoneOldest': '{drips}件のドリップを送信済み・直近7日間',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'money.openConnectInStripe': 'このConnect アカウントをStripe ダッシュボードで開きます',
 };

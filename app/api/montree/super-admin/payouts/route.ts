@@ -162,6 +162,7 @@ export async function GET(request: NextRequest) {
         agent_name: ag?.name || ag?.email || null,
         school_name: schoolNameById.get(r.school_id) || null,
         agent_stripe_connect_status: ag?.stripe_connect_status || null,
+        agent_stripe_connect_account_id: ag?.stripe_connect_account_id || null,
         agent_payouts_enabled: ag?.payouts_enabled === true,
         agent_charges_enabled: ag?.charges_enabled === true,
         agent_has_connect_account: !!ag?.stripe_connect_account_id,

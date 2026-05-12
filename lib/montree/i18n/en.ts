@@ -4749,6 +4749,7 @@ export const en = {
   'money.connect.ready': '✓ Ready to wire',
   'money.connect.restricted': 'Restricted',
   'money.connect.onboarding': 'Onboarding',
+  'money.openConnectInStripe': 'Open this Connect account in the Stripe Dashboard',
   'money.payoutLabel': 'payout',
   'money.statGross': 'Gross',
   'money.statStripeFee': 'Stripe fee',

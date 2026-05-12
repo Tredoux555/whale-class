@@ -4435,4 +4435,7 @@ export const de: Record<string, string> = {
   'health.demoPending': '{count} ausstehend',
   'health.demoSubtitle': '{drips} Anfragen · älteste {days}T',
   'health.demoSubtitleNoneOldest': '{drips} Anfragen versendet · letzte 7T',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'money.openConnectInStripe': 'Öffnen Sie dieses Connect-Konto im Stripe-Dashboard',
 };
