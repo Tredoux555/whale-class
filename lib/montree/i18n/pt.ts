@@ -4453,6 +4453,7 @@ export const pt: Record<string, string> = {
   'billing.tileStatus': 'Status',
   'billing.daysCount': '{days} dias',
   'billing.quantityDrift': 'O Stripe foi cobrado pela última vez para {billed} alunos — sua contagem ativa agora é {live}. A próxima sincronização reconciliará isso; a próxima fatura cobra com base na contagem real.',
+  'billing.overrideBanner': 'Você tem uma tarifa especial: ${price}/aluno/mês (tarifa padrão: ${defaultPrice}/mês).',
   'billing.setUpBilling': 'Configurar cobrança',
   'billing.starting': 'Iniciando…',
   'billing.manageInStripe': 'Gerenciar cobrança no Stripe',

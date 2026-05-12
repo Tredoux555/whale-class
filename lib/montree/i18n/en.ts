@@ -4666,6 +4666,7 @@ export const en = {
   'billing.tileStatus': 'Status',
   'billing.daysCount': '{days} days',
   'billing.quantityDrift': 'Stripe was last billed for {billed} students — your active count is now {live}. The next sync will reconcile this; the next invoice charges based on actual count.',
+  'billing.overrideBanner': 'You have a special rate: ${price}/student/month (platform default is ${defaultPrice}/month).',
   'billing.setUpBilling': 'Set up billing',
   'billing.starting': 'Starting…',
   'billing.manageInStripe': 'Manage billing in Stripe',

@@ -358,7 +358,20 @@ export async function PATCH(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { schoolId, subscription_tier, subscription_status, monthly_ai_budget_usd, ai_budget_action, ai_tier } = body;
+    const {
+      schoolId,
+      subscription_tier,
+      subscription_status,
+      monthly_ai_budget_usd,
+      ai_budget_action,
+      ai_tier,
+      // Migration 202 — per-school billing override.
+      // billing_override_usd: number (0..100) sets a custom rate. Pass null to
+      //   clear the override and return the school to the platform default.
+      // billing_override_note: free-text reason (max 200 chars). Optional.
+      billing_override_usd,
+      billing_override_note,
+    } = body;
 
     if (!schoolId) {
       return NextResponse.json({ error: 'schoolId required' }, { status: 400 });
@@ -439,6 +452,34 @@ export async function PATCH(request: NextRequest) {
       updateData.ai_budget_action = ai_budget_action;
     }
 
+    // ── Per-school billing override (migration 202) ────────────────────
+    // Accept null to CLEAR the override (back to platform default). Accept
+    // a number 0..100 to set the override. Anything else is a 400.
+    if (billing_override_usd !== undefined) {
+      if (billing_override_usd === null) {
+        updateData.billing_override_usd = null;
+      } else {
+        const n = Number(billing_override_usd);
+        if (Number.isNaN(n) || n < 0 || n > 100) {
+          return NextResponse.json({ error: 'billing_override_usd must be null or a number between 0 and 100' }, { status: 400 });
+        }
+        // Round to 2dp — matches DECIMAL(5,2) column precision.
+        updateData.billing_override_usd = Math.round(n * 100) / 100;
+      }
+    }
+
+    if (billing_override_note !== undefined) {
+      if (billing_override_note === null || billing_override_note === '') {
+        updateData.billing_override_note = null;
+      } else if (typeof billing_override_note !== 'string') {
+        return NextResponse.json({ error: 'billing_override_note must be a string' }, { status: 400 });
+      } else if (billing_override_note.length > 200) {
+        return NextResponse.json({ error: 'billing_override_note max length 200' }, { status: 400 });
+      } else {
+        updateData.billing_override_note = billing_override_note.trim();
+      }
+    }
+
     if (Object.keys(updateData).length === 0) {
       return NextResponse.json({ error: 'No fields to update' }, { status: 400 });
     }
@@ -462,6 +503,21 @@ export async function PATCH(request: NextRequest) {
     // Clear budget cache if budget fields changed
     if (monthly_ai_budget_usd !== undefined || ai_budget_action !== undefined) {
       clearBudgetCache(schoolId);
+    }
+
+    // If the billing override changed AND the school has an active Stripe
+    // subscription, fire syncSubscriptionQuantity in the background so the
+    // Price swaps on Stripe's side. The principal sees the new rate on next
+    // page load.
+    if (billing_override_usd !== undefined) {
+      void (async () => {
+        try {
+          const { maybeSyncStripeQuantity } = await import('@/lib/montree/billing');
+          maybeSyncStripeQuantity(schoolId);
+        } catch (e) {
+          console.error('[super-admin] post-override sync trigger failed:', e);
+        }
+      })();
     }
 
     return NextResponse.json({ school: data });

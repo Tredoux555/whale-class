@@ -85,8 +85,38 @@ function getStripeClient(): Stripe {
 }
 
 // Pricing constant. $7/student/month = 700 cents.
+// This is the PLATFORM DEFAULT. Schools can carry a per-school override
+// (montree_schools.billing_override_usd, migration 202). Always resolve the
+// effective price via effectivePricePerStudentUsd() / Cents() — never read
+// these constants directly when computing a charge.
 export const PRICE_PER_STUDENT_USD = 7;
 export const PRICE_PER_STUDENT_CENTS = 700;
+
+/**
+ * Resolve the effective per-student price (USD) for a school, honouring any
+ * `billing_override_usd` override. Returns the platform default ($7) when no
+ * override is set.
+ *
+ * Use this anywhere you'd be tempted to use PRICE_PER_STUDENT_USD directly —
+ * Stripe Checkout line items, monthly charge estimates, principal-facing
+ * billing copy.
+ */
+export function effectivePricePerStudentUsd(
+  school: Pick<SchoolBillingRow, 'billing_override_usd'> | null | undefined
+): number {
+  const override = school?.billing_override_usd;
+  if (override !== null && override !== undefined && override >= 0) {
+    return Number(override);
+  }
+  return PRICE_PER_STUDENT_USD;
+}
+
+/** Same as effectivePricePerStudentUsd, in cents. */
+export function effectivePricePerStudentCents(
+  school: Pick<SchoolBillingRow, 'billing_override_usd'> | null | undefined
+): number {
+  return Math.round(effectivePricePerStudentUsd(school) * 100);
+}
 
 // ── School row helpers ────────────────────────────────────────────────────
 
@@ -104,10 +134,16 @@ export interface SchoolBillingRow {
   billing_quantity: number | null;
   monthly_charge_estimate_cents: number | null;
   last_synced_to_stripe_at: string | null;
+  // Migration 202 — per-school override.
+  // billing_override_usd is stored as a numeric DECIMAL in Postgres; Supabase
+  // returns it as `number | string` depending on driver. We accept either
+  // and normalise inside effectivePricePerStudentUsd().
+  billing_override_usd: number | string | null;
+  billing_override_note: string | null;
 }
 
 const BILLING_FIELDS =
-  'id, name, owner_email, billing_email, stripe_customer_id, stripe_subscription_id, stripe_price_id_active, subscription_status, trial_ends_at, current_period_end, billing_quantity, monthly_charge_estimate_cents, last_synced_to_stripe_at';
+  'id, name, owner_email, billing_email, stripe_customer_id, stripe_subscription_id, stripe_price_id_active, subscription_status, trial_ends_at, current_period_end, billing_quantity, monthly_charge_estimate_cents, last_synced_to_stripe_at, billing_override_usd, billing_override_note';
 
 export async function loadSchoolBilling(
   supabase: SupabaseClient,
@@ -134,6 +170,129 @@ export async function countActiveStudents(
     .eq('school_id', schoolId)
     .eq('is_active', true);
   return count || 0;
+}
+
+// ── Override Price resolution ─────────────────────────────────────────────
+//
+// When a school has billing_override_usd set, we need a Stripe Price object
+// at that amount. Stripe Prices are immutable, so we either reuse an existing
+// Montree-tagged override Price or create a new one. Process-lifetime cache
+// keeps lookups cheap.
+
+const OVERRIDE_PRICE_CACHE = new Map<number, string>();  // unit_amount_cents → price_id
+let PRODUCT_ID_CACHE: string | null = null;              // resolved once per process
+
+/**
+ * Resolve the Stripe Product ID from the configured default Price. Cached for
+ * the lifetime of the process. Returns null if Stripe isn't configured or the
+ * lookup fails.
+ */
+async function getStripeProductId(stripe: Stripe): Promise<string | null> {
+  if (PRODUCT_ID_CACHE) return PRODUCT_ID_CACHE;
+  const defaultPriceId = process.env.STRIPE_PRICE_PER_STUDENT;
+  if (!defaultPriceId) return null;
+  try {
+    const price = await stripe.prices.retrieve(defaultPriceId);
+    const productId = typeof price.product === 'string' ? price.product : price.product?.id;
+    if (productId) PRODUCT_ID_CACHE = productId;
+    return productId || null;
+  } catch (err) {
+    console.error('[billing] failed to resolve product id from default price:', err);
+    return null;
+  }
+}
+
+/**
+ * Get or create a Stripe Price for a per-school override amount. Looks up
+ * existing Montree-tagged override prices first to avoid creating duplicates.
+ *
+ * Returns null on any failure — callers should fall back to the default
+ * price or surface the error.
+ */
+async function getOrCreateOverridePriceId(
+  stripe: Stripe,
+  unitAmountCents: number
+): Promise<string | null> {
+  if (unitAmountCents <= 0) return null;
+  const cached = OVERRIDE_PRICE_CACHE.get(unitAmountCents);
+  if (cached) return cached;
+
+  const productId = await getStripeProductId(stripe);
+  if (!productId) return null;
+
+  try {
+    // Look up existing Montree override Prices with matching amount. Stripe's
+    // prices.list paginates at 100 max; we paginate manually if needed.
+    let starting_after: string | undefined;
+    for (let page = 0; page < 5; page++) {
+      const list = await stripe.prices.list({
+        product: productId,
+        active: true,
+        limit: 100,
+        type: 'recurring',
+        ...(starting_after ? { starting_after } : {}),
+      });
+      const found = list.data.find(p =>
+        p.unit_amount === unitAmountCents &&
+        p.recurring?.interval === 'month' &&
+        p.currency === 'usd' &&
+        p.metadata?.montree_override === 'true'
+      );
+      if (found) {
+        OVERRIDE_PRICE_CACHE.set(unitAmountCents, found.id);
+        return found.id;
+      }
+      if (!list.has_more) break;
+      starting_after = list.data[list.data.length - 1]?.id;
+      if (!starting_after) break;
+    }
+
+    // No match — create a new Price.
+    const price = await stripe.prices.create({
+      product: productId,
+      unit_amount: unitAmountCents,
+      currency: 'usd',
+      recurring: { interval: 'month' },
+      nickname: `Montree override $${(unitAmountCents / 100).toFixed(2)}/student/month`,
+      metadata: {
+        montree_override: 'true',
+        amount_cents: String(unitAmountCents),
+        source: 'montree_phase4_override',
+      },
+    });
+    OVERRIDE_PRICE_CACHE.set(unitAmountCents, price.id);
+    console.log('[billing] created override Price', price.id, 'at', unitAmountCents, 'cents');
+    return price.id;
+  } catch (err) {
+    console.error('[billing] override price resolve failed for', unitAmountCents, 'cents:', err);
+    return null;
+  }
+}
+
+/**
+ * Resolve the Stripe Price ID to use for a school — override Price if a
+ * custom amount is set AND it differs from the platform default, otherwise
+ * the configured STRIPE_PRICE_PER_STUDENT.
+ */
+async function resolvePriceIdForSchool(
+  stripe: Stripe,
+  school: Pick<SchoolBillingRow, 'billing_override_usd'>
+): Promise<{ priceId: string | null; isOverride: boolean; reason?: string }> {
+  const effectiveCents = effectivePricePerStudentCents(school);
+  const defaultPriceId = process.env.STRIPE_PRICE_PER_STUDENT;
+  if (!defaultPriceId) return { priceId: null, isOverride: false, reason: 'STRIPE_PRICE_PER_STUDENT missing' };
+  if (effectiveCents === PRICE_PER_STUDENT_CENTS) {
+    return { priceId: defaultPriceId, isOverride: false };
+  }
+  const overrideId = await getOrCreateOverridePriceId(stripe, effectiveCents);
+  if (!overrideId) {
+    return {
+      priceId: null,
+      isOverride: true,
+      reason: `Could not resolve override Price at ${effectiveCents} cents`,
+    };
+  }
+  return { priceId: overrideId, isOverride: true };
 }
 
 // ── Customer + subscription lifecycle ─────────────────────────────────────
@@ -235,8 +394,31 @@ export async function createSchoolCheckoutSession(
   // Stripe accepts the line item — the next sync will reconcile.
   const quantity = Math.max(1, await countActiveStudents(supabase, schoolId));
 
-  const priceId = process.env.STRIPE_PRICE_PER_STUDENT!;
   const stripe = getStripeClient();
+
+  // Reload school here so we have the latest billing_override_usd (the school
+  // we read at the top of this function via getOrCreateStripeCustomer was a
+  // pre-customer fetch; the override could've been set in between).
+  const schoolForPrice = await loadSchoolBilling(supabase, schoolId);
+  if (!schoolForPrice) {
+    return { ok: false, configured: true, reason: 'School not found' };
+  }
+  const priceResult = await resolvePriceIdForSchool(stripe, schoolForPrice);
+  if (!priceResult.priceId) {
+    return {
+      ok: false,
+      configured: true,
+      reason: priceResult.reason || 'Failed to resolve Price for checkout',
+    };
+  }
+  const priceId = priceResult.priceId;
+  if (priceResult.isOverride) {
+    console.log(
+      '[billing] checkout for school', schoolId,
+      'using override Price', priceId,
+      'at', effectivePricePerStudentCents(schoolForPrice), 'cents'
+    );
+  }
 
   const successPath = options.successPath || '/montree/admin/billing?status=success';
   const cancelPath = options.cancelPath || '/montree/admin/billing?status=canceled';
@@ -326,7 +508,7 @@ export async function syncSubscriptionQuantity(
   supabase: SupabaseClient,
   schoolId: string,
   options: { force?: boolean } = {}
-): Promise<BillingResult<{ previous_quantity: number | null; new_quantity: number; updated: boolean }>> {
+): Promise<BillingResult<{ previous_quantity: number | null; new_quantity: number; updated: boolean; price_changed: boolean }>> {
   const cfg = getBillingConfig();
   if (!cfg.configured) {
     return { ok: false, configured: false, reason: cfg.reason };
@@ -334,48 +516,91 @@ export async function syncSubscriptionQuantity(
 
   const school = await loadSchoolBilling(supabase, schoolId);
   if (!school) return { ok: false, configured: true, reason: 'School not found' };
+
+  // Effective price per student in cents — honours billing_override_usd.
+  const effectiveCents = effectivePricePerStudentCents(school);
+
   if (!school.stripe_subscription_id) {
     // Not subscribed — nothing to sync. We DO update billing_quantity in our
     // DB so the dashboard's "monthly estimate" stays current, but no Stripe
-    // call.
+    // call. Estimate uses the effective (override-aware) price so the principal
+    // sees their actual rate even before checkout.
     const headcount = await countActiveStudents(supabase, schoolId);
     await supabase
       .from('montree_schools')
       .update({
         billing_quantity: headcount,
-        monthly_charge_estimate_cents: headcount * PRICE_PER_STUDENT_CENTS,
+        monthly_charge_estimate_cents: headcount * effectiveCents,
       })
       .eq('id', schoolId);
     return {
       ok: true,
       configured: true,
-      data: { previous_quantity: school.billing_quantity, new_quantity: headcount, updated: false },
+      data: {
+        previous_quantity: school.billing_quantity,
+        new_quantity: headcount,
+        updated: false,
+        price_changed: false,
+      },
     };
   }
 
   const newQuantity = await countActiveStudents(supabase, schoolId);
   const previousQuantity = school.billing_quantity;
 
-  // Skip the Stripe round-trip if quantity unchanged AND we synced recently.
-  if (!options.force && previousQuantity === newQuantity) {
-    return {
-      ok: true,
-      configured: true,
-      data: { previous_quantity: previousQuantity, new_quantity: newQuantity, updated: false },
-    };
-  }
-
   const stripe = getStripeClient();
+  let priceChanged = false;
   try {
-    // Fetch the subscription to get the item ID we need to update.
+    // Fetch the subscription to get the item ID we need to update + check if
+    // the item's current price matches the effective price (override may have
+    // changed since last sync).
     const subscription = await stripe.subscriptions.retrieve(school.stripe_subscription_id);
     const item = subscription.items.data[0];
     if (!item) {
       return { ok: false, configured: true, reason: 'Subscription has no items — Stripe configuration broken' };
     }
 
+    const currentItemUnitAmount = item.price.unit_amount;
+    const priceMismatch = currentItemUnitAmount !== effectiveCents;
+    const quantityMismatch = previousQuantity !== newQuantity;
+
+    // Skip the Stripe round-trip when nothing's changed.
+    if (!options.force && !priceMismatch && !quantityMismatch) {
+      return {
+        ok: true,
+        configured: true,
+        data: {
+          previous_quantity: previousQuantity,
+          new_quantity: newQuantity,
+          updated: false,
+          price_changed: false,
+        },
+      };
+    }
+
+    // Resolve target Price ID (default or override) when the price needs to change.
+    let targetPriceId: string | undefined;
+    if (priceMismatch) {
+      const priceResult = await resolvePriceIdForSchool(stripe, school);
+      if (!priceResult.priceId) {
+        return {
+          ok: false,
+          configured: true,
+          reason: priceResult.reason || 'Failed to resolve Price during sync',
+        };
+      }
+      targetPriceId = priceResult.priceId;
+      priceChanged = true;
+      console.log(
+        '[billing] sync swapping price for school', schoolId,
+        'from', currentItemUnitAmount, 'to', effectiveCents, 'cents',
+        priceResult.isOverride ? '(override)' : '(default)'
+      );
+    }
+
     await stripe.subscriptionItems.update(item.id, {
       quantity: Math.max(1, newQuantity),  // Stripe rejects quantity=0; floor to 1
+      ...(targetPriceId ? { price: targetPriceId } : {}),
       proration_behavior: 'create_prorations',
     });
   } catch (err: unknown) {
@@ -388,7 +613,7 @@ export async function syncSubscriptionQuantity(
     .from('montree_schools')
     .update({
       billing_quantity: newQuantity,
-      monthly_charge_estimate_cents: newQuantity * PRICE_PER_STUDENT_CENTS,
+      monthly_charge_estimate_cents: newQuantity * effectiveCents,
       last_synced_to_stripe_at: new Date().toISOString(),
     })
     .eq('id', schoolId);
@@ -396,7 +621,12 @@ export async function syncSubscriptionQuantity(
   return {
     ok: true,
     configured: true,
-    data: { previous_quantity: previousQuantity, new_quantity: newQuantity, updated: true },
+    data: {
+      previous_quantity: previousQuantity,
+      new_quantity: newQuantity,
+      updated: true,
+      price_changed: priceChanged,
+    },
   };
 }
 
@@ -745,6 +975,12 @@ export async function handleSubscriptionUpsert(
     ? new Date(subscription.trial_end * 1000).toISOString()
     : null;
 
+  // Compute estimate from Stripe's actual unit_amount (which reflects any
+  // override Price already in effect), not the platform default. Falls back
+  // to the platform default only if Stripe didn't return a unit_amount.
+  const itemUnitAmount = item?.price.unit_amount ?? PRICE_PER_STUDENT_CENTS;
+  const quantity = item?.quantity || 0;
+
   await supabase
     .from('montree_schools')
     .update({
@@ -754,7 +990,7 @@ export async function handleSubscriptionUpsert(
       current_period_end: currentPeriodEnd,
       trial_ends_at: trialEnd,
       billing_quantity: item?.quantity || null,
-      monthly_charge_estimate_cents: (item?.quantity || 0) * PRICE_PER_STUDENT_CENTS,
+      monthly_charge_estimate_cents: quantity * itemUnitAmount,
       // Don't overwrite last_synced_to_stripe_at — that tracks our outbound
       // syncs, not Stripe's inbound webhooks.
     })

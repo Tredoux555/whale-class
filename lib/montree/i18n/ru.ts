@@ -4450,6 +4450,7 @@ export const ru: Record<string, string> = {
   'billing.tileStatus': 'Статус',
   'billing.daysCount': '{days} дней',
   'billing.quantityDrift': 'Stripe выставил счёт на {billed} учеников — Ваше текущее количество {live}. Следующая синхронизация согласует это; следующий счёт будет рассчитан на основе фактического количества.',
+  'billing.overrideBanner': 'У Вас особый тариф: ${price}/ученика/месяц (стандартный тариф: ${defaultPrice}/месяц).',
   'billing.setUpBilling': 'Настроить расчёты',
   'billing.starting': 'Запуск…',
   'billing.manageInStripe': 'Управлять расчётами в Stripe',

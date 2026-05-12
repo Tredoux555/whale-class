@@ -4453,6 +4453,7 @@ export const ko: Record<string, string> = {
   'billing.tileStatus': '상태',
   'billing.daysCount': '{days}일',
   'billing.quantityDrift': 'Stripe에서 마지막으로 청구한 학생 수: {billed}명 — 현재 활동 중인 학생: {live}명입니다. 다음 동기화에서 이를 조정할 것이며, 다음 청구서는 실제 인원수에 따라 청구됩니다.',
+  'billing.overrideBanner': '특별 요율이 적용됩니다: 학생당 월 ${price} (기본 요율은 월 ${defaultPrice}).',
   'billing.setUpBilling': '청구 설정',
   'billing.starting': '시작 중…',
   'billing.manageInStripe': 'Stripe에서 청구 관리',
