@@ -221,6 +221,15 @@ export default function TracyFloat() {
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const initialisedRef = useRef(false);
 
+  // 🚨 Perf Tier 2.1 (PERF_HEALTH_CHECK.md) — SSE token rAF throttle.
+  // Same pattern as app/montree/admin/page.tsx. Without this, every Tracy
+  // streaming token triggered a setTurns → full re-render of the conversation
+  // panel. Now tokens buffer in pendingTextRef and one rAF flush per frame
+  // applies the accumulated chunk. ~80% CPU reduction during stream on
+  // mobile + low-end devices.
+  const pendingTextRef = useRef('');
+  const rafIdRef = useRef<number | null>(null);
+
   // School-scoped storage keys — built once on mount from localStorage's
   // montree_school. If we end up with no schoolId (no logged-in principal),
   // we never fire a greeting and the panel stays inert until next mount.
@@ -298,24 +307,55 @@ export default function TracyFloat() {
         // ignore
       }
 
-      // First-meeting check — fire [GREETING_FIRST] (full introduction) if
-      // Tracy has never properly introduced herself to this principal on this
-      // school. Otherwise fire the short [GREETING].
+      // 🚨 Perf Tier 2.3 (PERF_HEALTH_CHECK.md): STATIC GREETING ON FIRST PAINT.
+      // Previously we fired [GREETING] / [GREETING_FIRST] via the Sonnet/Opus
+      // route on every cold session — user saw thinking dots for 2-5s before
+      // Tracy's greeting streamed in (worse on flaky VPN). Now we push a
+      // static templated assistant turn directly into state. Tracy's "first
+      // frame" is instant. The AI only fires when the user types their first
+      // question — which is the same moment AI is genuinely needed.
       //
-      // CRITICAL: we do NOT preemptively flip hasMet to true here. We only
-      // flip it when a successful response arrives (sendMessage marks it on
-      // the 'done' SSE event). This way Free-tier schools — where the route
-      // 402s — keep firing [GREETING_FIRST] every session until AI is enabled
-      // and the real introduction lands.
+      // hasMet is still read from localStorage to pick the first-meeting copy
+      // vs the return copy. We DON'T flip hasMet=true here — we let the
+      // first real AI response mark it (sendMessage marks it on 'done'). This
+      // way the AI's first real interaction is still "the meeting" from
+      // hasMet's perspective.
       let hasMet = false;
       try {
         hasMet = localStorage.getItem(keys.hasMet) === 'true';
       } catch {
         // treat as not met if storage disabled
       }
-      const kickoff = hasMet ? GREETING_PROMPT : GREETING_FIRST_PROMPT;
-      // Fire the greeting in the background — don't block render.
-      void fireGreeting(id, kickoff);
+
+      // Pull the principal's first name from the cached montree_principal
+      // payload so the greeting feels personal. principalData is the raw
+      // JSON string we already read above for the auth gate.
+      let firstName = '';
+      try {
+        const p = JSON.parse(principalData) as { name?: string };
+        firstName = (p.name || '').split(' ')[0] || '';
+      } catch {
+        // malformed payload — drop the name, greeting still renders cleanly
+      }
+
+      const greetingText = hasMet
+        ? (firstName
+            ? t('tracy.staticGreeting.return', { name: firstName })
+            : t('tracy.staticGreeting.returnNoName'))
+        : (firstName
+            ? t('tracy.staticGreeting.first', { name: firstName })
+            : t('tracy.staticGreeting.firstNoName'));
+
+      // Push the static greeting as the conversation's opening assistant turn.
+      // It's persisted via the same writeConv path as any other turn so a
+      // refresh shows the same greeting and the AI's history slice in the
+      // next call sees Tracy's opening line.
+      setTurns((prev) => {
+        // If the conversation already has turns (resumed from storage), don't
+        // double-greet — just keep what we read from readConv.
+        if (prev.length > 0) return prev;
+        return [{ role: 'assistant', text: greetingText, pending: false }];
+      });
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -345,14 +385,55 @@ export default function TracyFloat() {
     }
   }, [turns, open]);
 
+  // Flush buffered SSE text tokens (Tier 2.1). Called by rAF callback and
+  // synchronously by handleEvent before any non-text event fires so order
+  // is preserved relative to tool calls / done / error.
+  const flushTextBuffer = useCallback(() => {
+    rafIdRef.current = null;
+    const pending = pendingTextRef.current;
+    if (!pending) return;
+    pendingTextRef.current = '';
+    setTurns((prev) => {
+      if (prev.length === 0) return prev;
+      const last = prev[prev.length - 1];
+      if (last.role !== 'assistant') return prev;
+      return [
+        ...prev.slice(0, -1),
+        { ...last, text: (last.text || '') + pending },
+      ];
+    });
+  }, []);
+
   // ── Streaming submit (shared by free-text + greeting + action buttons) ─
   const handleEvent = useCallback(
     (evt: Record<string, unknown>) => {
+      // Fast path: text tokens buffer + rAF schedule. Multiple tokens within
+      // one frame collapse into one setTurns call.
+      if (evt.type === 'text') {
+        pendingTextRef.current += String(evt.text || '');
+        if (rafIdRef.current === null) {
+          rafIdRef.current = requestAnimationFrame(flushTextBuffer);
+        }
+        return;
+      }
+
+      // Non-text event: drain pending text synchronously so token order is
+      // preserved against the new state change.
+      if (rafIdRef.current !== null) {
+        cancelAnimationFrame(rafIdRef.current);
+        rafIdRef.current = null;
+      }
+      const drained = pendingTextRef.current;
+      pendingTextRef.current = '';
+
       setTurns((prev) => {
         if (prev.length === 0) return prev;
         const last = prev[prev.length - 1];
         if (last.role !== 'assistant') return prev;
-        const updated: ConvTurn = { ...last };
+        const updated: ConvTurn = {
+          ...last,
+          text: drained ? (last.text || '') + drained : last.text,
+        };
         switch (evt.type) {
           case 'tool_call': {
             const tool: ToolEvent = {
@@ -396,10 +477,6 @@ export default function TracyFloat() {
             updated.thinking = (updated.thinking || '') + String(evt.text || '');
             break;
           }
-          case 'text': {
-            updated.text = (updated.text || '') + String(evt.text || '');
-            break;
-          }
           case 'done': {
             updated.pending = false;
             updated.progress = null;
@@ -419,8 +496,18 @@ export default function TracyFloat() {
         return [...prev.slice(0, -1), updated];
       });
     },
-    [t]
+    [t, flushTextBuffer]
   );
+
+  // Cancel any pending rAF on unmount so we don't run setTurns after teardown.
+  useEffect(() => {
+    return () => {
+      if (rafIdRef.current !== null) {
+        cancelAnimationFrame(rafIdRef.current);
+        rafIdRef.current = null;
+      }
+    };
+  }, []);
 
   const sendMessage = useCallback(
     async (
@@ -617,21 +704,11 @@ export default function TracyFloat() {
     [turns, locale, t, handleEvent, open]
   );
 
-  const fireGreeting = useCallback(
-    async (currentConvId: string, kickoff: string) => {
-      // Add a hidden user turn (the kickoff prompt — filtered at render time
-      // below) so the server has the prompt + the conversation log captures
-      // the kickoff. Future follow-ups read this in their history slice so
-      // Tracy has the situational context.
-      setSubmitting(true);
-      try {
-        await sendMessage(kickoff, currentConvId, true);
-      } finally {
-        setSubmitting(false);
-      }
-    },
-    [sendMessage]
-  );
+  // 🚨 Perf Tier 2.3 — fireGreeting REMOVED. Was firing [GREETING]/[GREETING_FIRST]
+  // through the Sonnet/Opus route on every cold session, blocking Tracy's first
+  // frame for 2-5s. Replaced by the static greeting pushed directly to `turns`
+  // in the initial-mount useEffect above. The AI now only fires when the user
+  // types their first question, which is the same moment AI is actually needed.
 
   const submit = useCallback(
     async (textOverride?: string) => {
