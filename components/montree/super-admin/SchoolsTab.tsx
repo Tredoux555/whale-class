@@ -484,22 +484,48 @@ export default function SchoolsTab({
                             {(school.stripe_subscription_id || (school.subscription_status && ['active', 'trialing', 'past_due', 'canceled'].includes(school.subscription_status))) && (
                               <p className="text-xs flex items-center gap-1.5">
                                 <span aria-hidden>💳</span>
-                                <span className={
-                                  school.subscription_status === 'active' ? 'text-emerald-400' :
-                                  school.subscription_status === 'trialing' ? 'text-amber-300' :
-                                  school.subscription_status === 'past_due' ? 'text-red-400' :
-                                  school.subscription_status === 'canceled' ? 'text-slate-500' :
-                                  'text-slate-400'
-                                }>
-                                  {school.subscription_status === 'active' ? 'Stripe — active' :
-                                   school.subscription_status === 'trialing' ? 'Stripe — trial' :
-                                   school.subscription_status === 'past_due' ? 'Stripe — past due' :
-                                   school.subscription_status === 'canceled' ? 'Stripe — canceled' :
-                                   'Stripe — pending'}
-                                  {school.billing_quantity !== null && school.billing_quantity !== undefined && (
-                                    <span className="text-slate-500"> · qty {school.billing_quantity}</span>
-                                  )}
-                                </span>
+                                {school.stripe_customer_id ? (
+                                  <a
+                                    href={`https://dashboard.stripe.com/customers/${school.stripe_customer_id}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    title="Open this customer in the Stripe Dashboard"
+                                    className={`hover:underline ${
+                                      school.subscription_status === 'active' ? 'text-emerald-400 hover:text-emerald-300' :
+                                      school.subscription_status === 'trialing' ? 'text-amber-300 hover:text-amber-200' :
+                                      school.subscription_status === 'past_due' ? 'text-red-400 hover:text-red-300' :
+                                      school.subscription_status === 'canceled' ? 'text-slate-500 hover:text-slate-400' :
+                                      'text-slate-400 hover:text-slate-300'
+                                    }`}
+                                  >
+                                    {school.subscription_status === 'active' ? 'Stripe — active' :
+                                     school.subscription_status === 'trialing' ? 'Stripe — trial' :
+                                     school.subscription_status === 'past_due' ? 'Stripe — past due' :
+                                     school.subscription_status === 'canceled' ? 'Stripe — canceled' :
+                                     'Stripe — pending'}
+                                    {school.billing_quantity !== null && school.billing_quantity !== undefined && (
+                                      <span className="text-slate-500"> · qty {school.billing_quantity}</span>
+                                    )}
+                                    {' 🔗'}
+                                  </a>
+                                ) : (
+                                  <span className={
+                                    school.subscription_status === 'active' ? 'text-emerald-400' :
+                                    school.subscription_status === 'trialing' ? 'text-amber-300' :
+                                    school.subscription_status === 'past_due' ? 'text-red-400' :
+                                    school.subscription_status === 'canceled' ? 'text-slate-500' :
+                                    'text-slate-400'
+                                  }>
+                                    {school.subscription_status === 'active' ? 'Stripe — active' :
+                                     school.subscription_status === 'trialing' ? 'Stripe — trial' :
+                                     school.subscription_status === 'past_due' ? 'Stripe — past due' :
+                                     school.subscription_status === 'canceled' ? 'Stripe — canceled' :
+                                     'Stripe — pending'}
+                                    {school.billing_quantity !== null && school.billing_quantity !== undefined && (
+                                      <span className="text-slate-500"> · qty {school.billing_quantity}</span>
+                                    )}
+                                  </span>
+                                )}
                               </p>
                             )}
                             {(school.login_codes_labelled && school.login_codes_labelled.length > 0) ? (
