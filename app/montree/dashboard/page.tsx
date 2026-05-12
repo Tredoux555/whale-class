@@ -11,7 +11,7 @@ import { HOME_THEME } from '@/lib/montree/home-theme';
 import { useI18n } from '@/lib/montree/i18n';
 import { toast, Toaster } from 'sonner';
 import { montreeApi } from '@/lib/montree/api';
-import { useMontreeData, setCacheData } from '@/lib/montree/cache';
+import { useMontreeData, setCacheData, prefetchUrl } from '@/lib/montree/cache';
 // 🚨 Perf Tier 6.1 (PERF_HEALTH_CHECK.md) — pull-to-refresh.
 // Reuses Session 95's touch-only hook + indicator. Iphone PWA users get the
 // native iOS gesture for re-fetching their class list.
@@ -764,21 +764,35 @@ export default function DashboardPage() {
                       rowGap: 28, columnGap: 8,
                     }}
                   >
-                    {filteredChildren.map((child, index) => (
-                      <Link
-                        key={child.id}
-                        href={`/montree/dashboard/${child.id}`}
-                        data-tutorial="student-card"
-                        {...(index === 0 ? { 'data-guide': 'first-child' } : {})}
-                        className="active:scale-95 transition-all flex flex-col items-center justify-center min-h-0"
-                        style={{ background: 'transparent', border: 0, gap: 10, padding: '8px 4px', borderRadius: 12 }}
-                      >
-                        <StudentAvatarCard child={child} />
-                        <p style={{ fontSize: 12, fontWeight: 500, color: 'rgba(255,255,255,0.78)', textAlign: 'center', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', width: '100%', margin: 0, fontFamily: 'Inter, system-ui, sans-serif' }}>
-                          {child.name.split(' ')[0]}
-                        </p>
-                      </Link>
-                    ))}
+                    {filteredChildren.map((child, index) => {
+                      // 🚨 Perf Tier 4.4 (PERF_HEALTH_CHECK.md) — prefetch on
+                      // hover/focus. The child page's heaviest fetch is the
+                      // progress query; warming it before the tap means the
+                      // page hydrates with cached data instead of waiting on
+                      // the network. ~200-500ms perceived instant-nav.
+                      // prefetchUrl no-ops if the URL is already cached or
+                      // in-flight, so re-firing on every hover is cheap.
+                      const prefetchProgress = () =>
+                        prefetchUrl(`/api/montree/progress?child_id=${child.id}`);
+                      return (
+                        <Link
+                          key={child.id}
+                          href={`/montree/dashboard/${child.id}`}
+                          data-tutorial="student-card"
+                          {...(index === 0 ? { 'data-guide': 'first-child' } : {})}
+                          onMouseEnter={prefetchProgress}
+                          onFocus={prefetchProgress}
+                          onTouchStart={prefetchProgress}
+                          className="active:scale-95 transition-all flex flex-col items-center justify-center min-h-0"
+                          style={{ background: 'transparent', border: 0, gap: 10, padding: '8px 4px', borderRadius: 12 }}
+                        >
+                          <StudentAvatarCard child={child} />
+                          <p style={{ fontSize: 12, fontWeight: 500, color: 'rgba(255,255,255,0.78)', textAlign: 'center', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', width: '100%', margin: 0, fontFamily: 'Inter, system-ui, sans-serif' }}>
+                            {child.name.split(' ')[0]}
+                          </p>
+                        </Link>
+                      );
+                    })}
 
                     {/* Add students via Classroom Builder in ··· menu */}
                   </div>
