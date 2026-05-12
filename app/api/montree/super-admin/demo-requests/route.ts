@@ -27,12 +27,44 @@ export async function GET(req: NextRequest) {
     .order('created_at', { ascending: false })
     .limit(50);
 
+  // Drip activity per request — which dayN drips have fired for each contact
+  const reqIds = (requests || []).map((r) => (r as { id: string }).id);
+  const dripsByContact: Record<string, string[]> = {};
+  if (reqIds.length > 0) {
+    const { data: dripRows } = await supabase
+      .from('montree_outreach_log')
+      .select('contact_id, action, created_at')
+      .in('action', [
+        'demo_request_drip_day3',
+        'demo_request_drip_day7',
+        'demo_request_drip_day14',
+      ])
+      .in('contact_id', reqIds);
+    for (const row of (dripRows || []) as Array<{ contact_id: string; action: string }>) {
+      if (!row.contact_id) continue;
+      const dayKey = row.action.replace('demo_request_drip_', ''); // 'day3' | 'day7' | 'day14'
+      if (!dripsByContact[row.contact_id]) dripsByContact[row.contact_id] = [];
+      if (!dripsByContact[row.contact_id].includes(dayKey)) {
+        dripsByContact[row.contact_id].push(dayKey);
+      }
+    }
+  }
+
+  // Enrich each request with its drip activity
+  const enrichedRequests = (requests || []).map((r) => {
+    const id = (r as { id: string }).id;
+    return {
+      ...r,
+      drips_sent: dripsByContact[id] || [], // e.g., ['day3', 'day7']
+    };
+  });
+
   return NextResponse.json({
-    requests: requests || [],
+    requests: enrichedRequests,
     logs: logs || [],
-    total: requests?.length || 0,
-    pending: requests?.filter((r: Record<string, unknown>) => r.status === 'demo_requested').length || 0,
-    contacted: requests?.filter((r: Record<string, unknown>) => r.status === 'contacted').length || 0,
+    total: enrichedRequests.length,
+    pending: enrichedRequests.filter((r: Record<string, unknown>) => r.status === 'demo_requested').length,
+    contacted: enrichedRequests.filter((r: Record<string, unknown>) => r.status === 'contacted').length,
   }, {
     headers: { 'Cache-Control': 'no-store' },
   });
