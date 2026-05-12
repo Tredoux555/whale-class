@@ -120,7 +120,9 @@ export default function CurriculumWorkList({
                 >
                   {/* Photo thumbnail or color bar */}
                   {work.photo_url ? (
-                    <img src={work.photo_url} alt="" style={{ width: 40, height: 40, borderRadius: 10, objectFit: 'cover', flexShrink: 0, border: '1px solid rgba(52,211,153,0.20)' }} />
+                    // 🚨 Tier 5.1 — explicit width/height attrs prevent CLS.
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={work.photo_url} alt="" width={40} height={40} loading="lazy" decoding="async" style={{ width: 40, height: 40, borderRadius: 10, objectFit: 'cover', flexShrink: 0, border: '1px solid rgba(52,211,153,0.20)' }} />
                   ) : (
                     <div className={`w-2 h-8 rounded-full bg-gradient-to-b ${AREA_COLORS[selectedArea]}`} />
                   )}
@@ -247,7 +249,9 @@ function ExpandedWorkDetails({
       <div className="flex items-start gap-3">
         {currentPhotoUrl ? (
           <div className="relative group">
-            <img src={currentPhotoUrl} alt={work.name} style={{ width: 128, height: 96, objectFit: 'cover', borderRadius: 12, border: '1px solid rgba(52,211,153,0.20)' }} />
+            {/* 🚨 Tier 5.1 — explicit width/height attrs prevent CLS. */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={currentPhotoUrl} alt={work.name} width={128} height={96} loading="lazy" decoding="async" style={{ width: 128, height: 96, objectFit: 'cover', borderRadius: 12, border: '1px solid rgba(52,211,153,0.20)' }} />
             <button
               onClick={handleRemovePhoto}
               className="absolute top-1 right-1 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity"

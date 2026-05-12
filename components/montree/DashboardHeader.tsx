@@ -783,7 +783,8 @@ function DashboardHeader() {
                       }}>
                       {student.photo_url ? (
                         // eslint-disable-next-line @next/next/no-img-element -- Supabase signed URL, native <img> is correct (avoid Next/Image config overhead for tiny avatars)
-                        <img src={student.photo_url} alt="" loading="lazy" style={{ width: 28, height: 28, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
+                        // 🚨 Tier 5.1 — explicit width/height attrs prevent CLS while the avatar loads.
+                        <img src={student.photo_url} alt="" width={28} height={28} loading="lazy" decoding="async" style={{ width: 28, height: 28, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
                       ) : (
                         <span style={{
                           width: 28, height: 28, borderRadius: '50%', flexShrink: 0,

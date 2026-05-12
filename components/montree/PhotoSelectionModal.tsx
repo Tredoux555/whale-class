@@ -111,14 +111,18 @@ export default function PhotoSelectionModal({
                   >
                     {/* Photo Image */}
                     <div className="aspect-square w-full">
+                      {/* 🚨 Tier 5.1 — aspect-square on parent reserves space; lazy/async tuning. */}
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
                         src={photo.url}
                         alt={photo.caption || 'Photo'}
+                        loading="lazy"
+                        decoding="async"
                         className="w-full h-full object-cover"
                       />
                     </div>
 
-                    {/* Checkbox Overlay */}
+                    {/* Checkbox Overlay (selected variant) */}
                     <div className="absolute top-2 right-2">
                       <div className="w-6 h-6 bg-emerald-500 rounded-full border-2 border-white flex items-center justify-center">
                         <span className="text-white text-sm font-bold">✓</span>
