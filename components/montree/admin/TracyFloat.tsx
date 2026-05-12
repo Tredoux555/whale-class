@@ -385,6 +385,25 @@ export default function TracyFloat() {
     }
   }, [turns, open]);
 
+  // 🚨 Perf Tier 6.2 (PERF_HEALTH_CHECK.md) — iOS keyboard handling.
+  // When the soft keyboard slides in, window.visualViewport shrinks while
+  // window.innerHeight stays the same — Tracy's fixed panel can end up with
+  // its input hidden behind the keyboard. Listen on visualViewport.resize
+  // and re-scroll the conversation to bottom so the user always sees the
+  // most recent message + the input.
+  useEffect(() => {
+    if (!open) return;
+    if (typeof window === 'undefined' || !window.visualViewport) return;
+    const vv = window.visualViewport;
+    const handler = () => {
+      if (scrollRef.current) {
+        scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+      }
+    };
+    vv.addEventListener('resize', handler);
+    return () => vv.removeEventListener('resize', handler);
+  }, [open]);
+
   // Flush buffered SSE text tokens (Tier 2.1). Called by rAF callback and
   // synchronously by handleEvent before any non-text event fires so order
   // is preserved relative to tool calls / done / error.
@@ -956,6 +975,14 @@ export default function TracyFloat() {
             value={question}
             onChange={(e) => setQuestion(e.target.value)}
             onKeyDown={handleKeyDown}
+            onFocus={(e) => {
+              // Tier 6.2: nudge the input into view after the iOS keyboard
+              // animates in. 300ms is empirically the keyboard's slide duration.
+              const target = e.currentTarget;
+              setTimeout(() => {
+                target.scrollIntoView({ block: 'end', behavior: 'smooth' });
+              }, 300);
+            }}
             placeholder="Ask Tracy…"
             rows={1}
             maxLength={1500}

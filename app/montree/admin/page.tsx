@@ -499,6 +499,21 @@ export default function AdminAgentPage() {
     }
   }, [turns]);
 
+  // 🚨 Perf Tier 6.2 (PERF_HEALTH_CHECK.md) — iOS keyboard handling.
+  // When the soft keyboard slides in, visualViewport shrinks. Re-scroll to
+  // bottom so the latest message + input stay visible above the keyboard.
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.visualViewport) return;
+    const vv = window.visualViewport;
+    const handler = () => {
+      if (scrollRef.current) {
+        scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+      }
+    };
+    vv.addEventListener('resize', handler);
+    return () => vv.removeEventListener('resize', handler);
+  }, []);
+
   const startNewConversation = useCallback(() => {
     const id = newConvId();
     setConvId(id);
@@ -881,6 +896,13 @@ export default function AdminAgentPage() {
           value={question}
           onChange={(e) => setQuestion(e.target.value)}
           onKeyDown={handleKeyDown}
+          onFocus={(e) => {
+            // Tier 6.2: nudge the input into view after iOS keyboard animates in.
+            const target = e.currentTarget;
+            setTimeout(() => {
+              target.scrollIntoView({ block: 'end', behavior: 'smooth' });
+            }, 300);
+          }}
           placeholder={t('tracy.placeholder')}
           rows={2}
           maxLength={1500}
