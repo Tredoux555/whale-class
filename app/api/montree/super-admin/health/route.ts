@@ -57,7 +57,9 @@ export async function GET(request: NextRequest) {
     steps.push(dbPing.step);
 
     // 2. Stripe webhook deliveries last 7d (count of finance_transactions
-    // rows with source='stripe_webhook')
+    // rows with source='stripe_webhook') + DLQ pending count. The DLQ
+    // captures any webhook event that threw — if any are pending, the
+    // card flips to warn.
     const stripeWebhook = await timed('stripe_webhook_7d', async () => {
       const { count, error } = await supabase
         .from('montree_finance_transactions')
@@ -65,7 +67,23 @@ export async function GET(request: NextRequest) {
         .eq('source', 'stripe_webhook')
         .gte('created_at', sevenDaysAgo);
       if (error) throw new Error(error.message);
-      return { rows_last_7d: count || 0 };
+
+      // DLQ pending count — soft-fail if table missing (pre-migration 200).
+      let dlqPending = 0;
+      try {
+        const { count: dlqCount } = await supabase
+          .from('montree_webhook_deadletter')
+          .select('id', { count: 'exact', head: true })
+          .eq('status', 'pending');
+        dlqPending = dlqCount || 0;
+      } catch {
+        /* table doesn't exist yet — leave at 0 */
+      }
+
+      return {
+        rows_last_7d: count || 0,
+        dlq_pending: dlqPending,
+      };
     });
     steps.push(stripeWebhook.step);
 

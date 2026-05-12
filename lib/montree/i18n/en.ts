@@ -4586,6 +4586,7 @@ export const en = {
   'health.stripeTitle': 'Stripe webhooks',
   'health.rowsCount': '{count} rows',
   'health.last7Days': 'Last 7 days',
+  'health.stripeDlqPending': '⚠ {count} pending in DLQ — last 7d',
   'health.aiTitle': 'AI usage cost',
   'health.aiSubtitle': '{calls} calls · {schools} schools · last 30d',
   'health.lcpTitle': 'LCP (dashboard)',

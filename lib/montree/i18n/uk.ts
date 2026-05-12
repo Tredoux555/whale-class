@@ -4473,4 +4473,7 @@ export const uk: Record<string, string> = {
   'billing.status.trialing': 'Пробний період',
   'billing.status.pastDue': 'Прострочено',
   'billing.status.canceled': 'Скасовано',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'health.stripeDlqPending': '⚠ {count} очікує обробки в DLQ — останні 7 днів',
 };

@@ -4476,4 +4476,7 @@ export const ko: Record<string, string> = {
   'billing.status.trialing': '체험판',
   'billing.status.pastDue': '연체됨',
   'billing.status.canceled': '취소됨',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'health.stripeDlqPending': '⚠ {count}개 대기 중 (DLQ) — 지난 7일',
 };

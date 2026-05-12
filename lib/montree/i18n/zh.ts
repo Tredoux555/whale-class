@@ -4879,4 +4879,7 @@ export const zh = {
   'billing.status.trialing': '试用',
   'billing.status.pastDue': '逾期',
   'billing.status.canceled': '已取消',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'health.stripeDlqPending': '⚠ {count} 条待处理 —— 过去 7 天',
 } as const;

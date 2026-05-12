@@ -4476,4 +4476,7 @@ export const it: Record<string, string> = {
   'billing.status.trialing': 'Prova',
   'billing.status.pastDue': 'Scaduto',
   'billing.status.canceled': 'Annullato',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'health.stripeDlqPending': '⚠ {count} in sospeso in DLQ — ultimi 7 giorni',
 };
