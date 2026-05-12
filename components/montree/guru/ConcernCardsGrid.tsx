@@ -25,7 +25,7 @@ export default function ConcernCardsGrid({ childId, childName }: ConcernCardsGri
       <div style={{ marginBottom: 12, fontFamily: '"Inter", sans-serif' }}>
         <h2 style={{
           margin: 0,
-          fontFamily: '"Lora", Georgia, serif',
+          fontFamily: 'var(--font-lora), Georgia, serif',
           fontSize: 18,
           fontWeight: 500,
           color: 'rgba(255,255,255,0.95)',

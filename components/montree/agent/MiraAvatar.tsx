@@ -29,7 +29,7 @@ export default function MiraAvatar({ size = 56, className, style }: MiraAvatarPr
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          fontFamily: '"Lora", Georgia, serif',
+          fontFamily: 'var(--font-lora), Georgia, serif',
           fontSize: Math.round(size * 0.42),
           fontWeight: 600,
           letterSpacing: -1,

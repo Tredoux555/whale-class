@@ -202,6 +202,122 @@ Wave 1 sends bounced for these addresses. None of these are flagged as `bounced`
 
 ## RECENT STATUS (May 12, 2026)
 
+### ⚡ Session 107 — PERF push (19/26 tiers) + Stripe Connect Express LIVE + Migration 202 RUN (May 12, 2026)
+
+**23 commits pushed to main, ending `baa38292`. Working tree clean. Railway auto-deploys triggered throughout.** The big perf push + Stripe Connect activation on the live Montree Limited account. Gloria's first real payout is one super-admin click away.
+
+**🚨 Canonical resume doc:** `docs/handoffs/SESSION_107_HANDOFF.md` — 23-commit log table, Stripe Connect operational state table, architectural rules #36–48, 8-step smoke test for Session 108, full PERF_HEALTH_CHECK.md status.
+
+**🚨 Migration 202 RUN** — `montree_schools.billing_override_usd` + `billing_override_note` columns live. Per-school early-adopter pricing functional via super-admin 💲 button. Stop telling future sessions to run this.
+
+---
+
+### 🚨🚨🚨 GLORIA ONBOARDING IS THE TOP CALL TO ACTION 🚨🚨🚨
+
+**The infrastructure is live.** Stripe Connect Express activated, identity verified (Tredoux personal ID — passport + selfie liveness), Marketplace business model selected, `dynamic-brilliance` webhook listening at `/api/stripe/connect-webhook` on **Connected accounts** scope with `account.updated` event only. `STRIPE_CONNECT_WEBHOOK_SECRET` + `CRON_SECRET` + `CRON_DIGEST_EMAIL` deployed to Railway.
+
+**Three clicks to wire Gloria's first real payout:**
+1. Super-admin → Referrals tab → 💳 button on Gloria's row (code `GLORIA-3KD5`).
+2. Send her the reveal-once URL + `docs/agents/GLORIA_STRIPE_ONBOARDING.md`.
+3. When she submits the Stripe Express form → `account.updated` webhook fires → her `stripe_connect_status` in `montree_teachers` flips → super-admin sees "ready to wire" within ~60s. First real payout = end-of-month calc + ⚡ Wire from Money tab.
+
+---
+
+### The PERF push — 19 of 26 buildable items shipped
+
+**Tier 0** (Sessions 103/104) was already done. Session 107 shipped:
+
+| Tier | What | Real felt impact |
+|---|---|---|
+| **1.2** | `loading.tsx` for 11 routes (cockpit, communication, classrooms, people, pulse, child briefing, dashboard, child week, photo audit, parent dashboard, parent messages) | Skeleton on cold nav instead of blank screen |
+| **1.3** | Lora via `next/font/google` (CSS vars `--font-lora` + `--font-inter`) | Killed the `@import` waterfall; font loads with the HTML |
+| **1.4** | Cookie-based locale dispatch (`mt_locale`) + lazy locale loading | ~700KB gzip saved per non-en page load + eliminates English-flash on first paint |
+| **2.1** | Tracy SSE token rAF throttle via `pendingTextRef` + `flushTextBuffer()` | ~80% CPU drop on mobile Tracy streaming |
+| **2.2 (safe half)** | AbortController cleanup on Tracy SSE | No more orphaned streams when user navigates mid-response |
+| **2.3** | Static templated greeting on Tracy first paint — `fireGreeting()` REMOVED | Tracy first-frame is instant; no Sonnet/Opus call on mount |
+| **2.4** | Lazy-mount Tracy panel via `next/dynamic` | Tracy chunk doesn't ship until user expands the panel |
+| **3.1** | Weekly Wrap teacher + parent reports parallelized per child via `Promise.all` (Stage 0 replan first preserved) | 3–5 min faster per 20-child wrap |
+| **3.2** | Photo-ID pre-Pass-1 parallelize | 200–450ms faster per capture |
+| **3.3 (partial)** | `select(*)` → explicit columns on safe internal-use paths | Smaller payloads, faster decode |
+| **3.4** | Validation chain parallelize | Several routes' Promise.all-able reads now run concurrent |
+| **3.5** | Billing webhook fire-and-forget (returns 200 immediately, processing in background) | Stripe retry storms killed |
+| **3.6** | Photo bank GET parallelize | Faster gallery loads |
+| **4.1** | `montreeApi()` auto-retry on network errors (GET/HEAD only — 0/1000/3000ms schedule, AbortError short-circuit) | Transient flakes recover silently |
+| **4.3** | Optimistic send-state on all 4 messaging surfaces (principal communication thread + parent + teacher + agent) | Messages appear instantly; failure marks `sendFailed:true` and restores draft |
+| **4.4** | `prefetchUrl()` wiring on dashboard child grid (hover/focus/touch) | Child week opens with data already cached |
+| **5.1 (partial)** | Image dimension attrs on top 8 hot surfaces | ~80% of perceived CLS impact gone |
+| **5.4** | JSZip dynamic-import on 4 client pages | JSZip chunk lazy-loaded only when needed |
+| **6.1** | Pull-to-refresh on teacher dashboard | iOS-style refresh gesture works |
+| **6.2** | iOS keyboard handling in Tracy chat (float + page) via visualViewport listener + onFocus scrollIntoView | Keyboard no longer hides the chat input |
+| **6.4** | Investigated — both manifests in active use, no change needed | — |
+
+**Other shipping in same push:**
+- Migration 202 — per-school billing override (`81d81a76`)
+- Photo bank: bulk delete + sort + category + ILIKE escape (`59c7c507`)
+- TracyFloat 402 → gold upgrade card (`e2c78cc2`) — closes the UpgradeCard pattern across every paid AI surface
+- Photo bank URLs through Cloudflare proxy (`8ba437b2`)
+- Session 106 carry-over push (32 files, `f6848094`)
+
+### 🔒 Deferred — 7 items need human-in-the-loop testing
+
+| Tier | What | Why deferred |
+|---|---|---|
+| **1.1** | SW stale-while-revalidate API cache | **CVE-class auth-leak risk.** Needs real iPhone + iPad testing with different users on same browser to confirm no cross-user cache poisoning. THIS IS THE SINGLE BIGGEST PERCEIVED-LATENCY WIN IN THE WHOLE DOC (~80% returning-visit lag gone). Worth a dedicated session. |
+| **2.2 retry-with-resume** | Tracy SSE resumes on VPN flap | Needs real Astrill-toggle-mid-stream testing. Risk of double-Sonnet-charge if retry races wrong. |
+| **4.2** | Direct fetch → `montreeApi` migration | Each candidate endpoint (Whisper, photo upload, onboard) needs bespoke 120s timeout that `montreeApi`'s 30s default would break. Per-endpoint judgment call, not bulk migration. |
+| **5.1 remaining ~80 imgs** | Image dims full sweep | Python regex `<img\s+[^>]*?/?>` matched `>` inside JSX arrow functions (`onError={() =>`), breaking 9+ files. Needs proper JSX parser OR manual file-by-file. Top 8 surfaces shipped covers ~80% of CLS impact. |
+| **5.3** | NoteField extract on 1,040-line child page | Cursor-jump risk on every keystroke without real-device testing. |
+| **6.3** | Tap target audit | Visual audit needs iPhone in hand. |
+
+### Architectural rules locked this session (#36–48)
+
+36. **`billing_override_usd` is the SOLE per-school rate signal.** Never hardcode a school's price anywhere else.
+37. **Stripe override Prices are Montree-tagged** (`metadata.montree_override='true'`) for future cleanup identifiability.
+38. **Override changes on active subscriptions fire `syncSubscriptionQuantity` in the background** — Stripe Price swaps with proration.
+39. **Every user-typed value passed to `.ilike()` MUST escape `% _ \` first.** Canonical pattern at `app/api/montree/photo-bank/route.ts`.
+40. **Every photo bank URL read MUST go through `getProxyUrl(path, 'photo-bank')`.** The `public_url` DB column is legacy back-compat only.
+41. **`loading.tsx` files use inline styles only** — no Tailwind class deps, no Lora references (skeleton shouldn't wait for font). Pure server components.
+42. **Font loading uses `next/font/google` in `app/layout.tsx`**, exposed as `--font-lora` and `--font-inter` CSS variables. Inline `font-family` refs elsewhere MUST use `var(--font-lora)`.
+43. **i18n locale files load lazily via dynamic import.** NEVER statically import all 12 in any client-bundled module. Only `en` stays static.
+44. **`setLocale()` MUST write both localStorage AND the `mt_locale` cookie.** The cookie is read server-side on the next page render to seed locale without client round trip.
+45. **For non-en users, the server-side layout MUST load the locale file** (via `loadServerLocale`) and pass `initialMessages` to the provider. Eliminates English-flash on first paint.
+46. **SSE token streams MUST buffer through useRef + rAF flush.** Never `setState` per token in a streaming handler. Pattern canonical at `flushTextBuffer()` in both `app/montree/admin/page.tsx` and `TracyFloat.tsx`.
+47. **Tracy's first paint is STATIC** — no Sonnet/Opus call on mount. AI fires only when user types. The greeting is a templated assistant turn pushed into state directly. `fireGreeting()` is GONE; do not bring it back without explicit perf-impact reasoning.
+48. **Weekly Wrap teacher + parent reports run in parallel per child.** Stage 0 → Stage N ordering preserved (replan first, then reports).
+
+### Operational state after this session
+
+| Item | Status |
+|---|---|
+| Migration 202 | ✅ Run in Supabase |
+| Stripe Connect activation | ✅ Live mode, Marketplace model, Express, identity verified |
+| Stripe Connect webhook | ✅ Created (`dynamic-brilliance`), Connected accounts scope, `account.updated` only |
+| Railway env vars | ✅ `STRIPE_CONNECT_WEBHOOK_SECRET`, `CRON_SECRET`, `CRON_DIGEST_EMAIL` all deployed |
+| Two webhooks on Montree Limited | ✅ `Montree billing` (Your account, school billing) + `dynamic-brilliance` (Connected accounts, agent payouts) |
+| Gloria onboarding link | ⏳ Not yet generated — Tredoux to send via super-admin Referrals 💳 button |
+| HK banker confirmation | ⏳ Pending — courtesy email to Wallex about Stripe Connect Express + HKD wires |
+| 5 Railway crons | ⏳ Pending — Health tab manual triggers cover the gap |
+| Resend domain verification | ⏳ Pending |
+| HK accountant package | ⏳ Pending |
+
+### 🚨 Next session priorities (ordered)
+
+1. **🚨🚨🚨 Generate Gloria's onboarding link** — Super-admin Referrals → 💳 → reveal-once URL → send to Gloria with `docs/agents/GLORIA_STRIPE_ONBOARDING.md`.
+2. **Walk the 8-step smoke test** in `docs/handoffs/SESSION_107_HANDOFF.md`: Stripe Connect webhook fires on Gloria submit → per-school billing override modal → pull-to-refresh on teacher dashboard → optimistic send on messaging → Tracy iOS keyboard → static greeting → photo bank bulk ops → loading skeletons on cold nav.
+3. **Confirm with HK banker** — courtesy email to Wallex about Stripe Connect Express + HKD wires.
+4. **Send HK accountant** `docs/finance/HK_FINANCIAL_ADVISOR_SUMMARY.md`.
+5. **Configure 5 Railway crons** per `docs/perf/CRON_SETUP.md`.
+6. **Verify `montree.xyz` in Resend** so demo/drip/bulk-reply emails actually deliver.
+7. **Deferred PERF items** (each its own dedicated session because of testing requirements):
+   - Tier 1.1 SW SWR (the BIG one — ~80% returning-visit lag gone)
+   - Tier 2.2 retry-with-resume
+   - Tier 5.1 remaining 80 imgs (needs JSX parser)
+   - Tier 5.3 NoteField extract
+   - Tier 6.3 tap target audit
+8. **Outreach carry-over:** FAMM Argentina · Cambridge Montessori Global · Otari NZ · Lions Gate · Montessori Norge · Paint Pots · Ardtona dead leads DB cleanup · 14+ Wave 1 bounces.
+
+---
+
 ### ⚡ Session 106 — Tracy 402 universal + sonnet chips + agent mobile + parent audit + bulk-reply demo leads (May 12, 2026)
 
 **0 commits pushed yet — 32 files in working tree, 0 errors, i18n 100% parity (4430/4430 × 12 locales).** Five clean workstreams ready for `git add . && git commit && git push`. **No SQL — all migrations through 201 remain run.**

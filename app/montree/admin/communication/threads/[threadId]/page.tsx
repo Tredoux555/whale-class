@@ -24,7 +24,7 @@ const T = {
   textPrimary: 'rgba(255,255,255,0.92)',
   textSecondary: 'rgba(255,255,255,0.62)',
   textMuted: 'rgba(255,255,255,0.40)',
-  serif: '"Lora", Georgia, serif',
+  serif: 'var(--font-lora), Georgia, serif',
   sans: '"Inter", -apple-system, BlinkMacSystemFont, sans-serif',
   inputBg: 'rgba(0,0,0,0.30)',
 };
@@ -177,9 +177,20 @@ export default function ThreadPage() {
         const data = await res.json().catch(() => ({}));
         throw new Error(data?.error || 'Send failed');
       }
-      // Success — re-fetch the thread so we replace the optimistic bubble
-      // with the canonical server row (real id, real sender attribution).
-      void load();
+      // Success — replace JUST the optimistic temp with the canonical server
+      // row using a functional update. Previously this called `void load()`
+      // which setMessages(replace entire array) and could wipe a SECOND
+      // optimistic-message-in-flight (Session 107 audit M3 fix). Pattern
+      // canonical at parent/teacher/agent thread pages.
+      const data = await res.json();
+      if (data?.message) {
+        setMessages((prev) =>
+          prev.map((m) => (m.id === tempId ? data.message : m))
+        );
+      } else {
+        // Defensive: if server response shape changes, fall back to refetch.
+        void load();
+      }
     } catch (err: unknown) {
       // Failure — keep the bubble visible but mark it as failed so the user
       // can see what went wrong + retry. Restore the draft so they can edit.

@@ -41,7 +41,7 @@ const T = {
   textMuted: 'rgba(255,255,255,0.40)',
   cardBg: 'rgba(8,20,12,0.55)',
   cardBorder: '1px solid rgba(52,211,153,0.18)',
-  serif: '"Lora", Georgia, serif',
+  serif: 'var(--font-lora), Georgia, serif',
   sans: '"Inter", -apple-system, BlinkMacSystemFont, sans-serif',
 };
 

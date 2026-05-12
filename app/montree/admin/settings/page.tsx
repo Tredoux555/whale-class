@@ -29,7 +29,7 @@ const T = {
   textPrimary: 'rgba(255,255,255,0.92)',
   textSecondary: 'rgba(255,255,255,0.62)',
   textMuted: 'rgba(255,255,255,0.40)',
-  serif: '"Lora", Georgia, serif',
+  serif: 'var(--font-lora), Georgia, serif',
   sans: '"Inter", -apple-system, BlinkMacSystemFont, sans-serif',
 };
 

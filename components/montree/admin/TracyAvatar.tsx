@@ -26,7 +26,7 @@ export const TRACY_AVATAR_SHAPE: 'square' | 'circle' = 'square';
 
 const GOLD = '#E8C96A';
 const GOLD_ON_GOLD = '#2a1f08';
-const SERIF = '"Lora", Georgia, serif';
+const SERIF = 'var(--font-lora), Georgia, serif';
 
 export default function TracyAvatar({ size = 36 }: { size?: number }) {
   const [imgFailed, setImgFailed] = useState(false);

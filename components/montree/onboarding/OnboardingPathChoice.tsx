@@ -144,7 +144,7 @@ const pageStyle: React.CSSProperties = {
 };
 
 const titleStyle: React.CSSProperties = {
-  fontFamily: "'Lora', Georgia, serif",
+  fontFamily: "var(--font-lora), Georgia, serif",
   fontSize: 36,
   fontWeight: 500,
   lineHeight: 1.2,
@@ -192,7 +192,7 @@ function iconCircleStyle(bg: string, border: string): React.CSSProperties {
 }
 
 const cardTitleStyle: React.CSSProperties = {
-  fontFamily: "'Lora', Georgia, serif",
+  fontFamily: "var(--font-lora), Georgia, serif",
   fontSize: 20,
   fontWeight: 500,
   margin: 0,

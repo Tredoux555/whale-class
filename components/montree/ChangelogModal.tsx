@@ -109,7 +109,7 @@ export default function ChangelogModal({ audience = 'all' }: ChangelogModalProps
             style={{
               margin: 0,
               fontSize: 20,
-              fontFamily: '"Lora", Georgia, serif',
+              fontFamily: 'var(--font-lora), Georgia, serif',
               fontWeight: 700,
               color: '#34d399',
             }}

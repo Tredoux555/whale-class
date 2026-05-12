@@ -41,7 +41,7 @@ const MENU_ITEMS: MenuItem[] = [
 ];
 
 const SANS = "'Inter', -apple-system, system-ui, sans-serif";
-const SERIF = "'Lora', Georgia, serif";
+const SERIF = "var(--font-lora), Georgia, serif";
 
 export default function MenuSetupPage() {
   const router = useRouter();

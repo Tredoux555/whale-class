@@ -35,7 +35,7 @@ const T = {
   violetBorder: 'rgba(139,92,246,0.30)',
   violet: '#c4b5fd',
   blur: 'blur(18px) saturate(140%)',
-  serif: '"Lora", Georgia, serif',
+  serif: 'var(--font-lora), Georgia, serif',
   sans: '"Inter", -apple-system, BlinkMacSystemFont, sans-serif',
 };
 

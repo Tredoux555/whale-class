@@ -44,7 +44,7 @@ const T = {
   textMuted: 'rgba(255,255,255,0.40)',
   inputBg: 'rgba(0,0,0,0.30)',
   inputBorder: 'rgba(52,211,153,0.20)',
-  serif: '"Lora", Georgia, serif',
+  serif: 'var(--font-lora), Georgia, serif',
   sans: '"Inter", -apple-system, BlinkMacSystemFont, sans-serif',
 };
 
