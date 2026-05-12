@@ -38,7 +38,7 @@ const C = {
   textDanger:   'rgba(239,100,100,0.8)',
   menuBg:       'rgba(8,20,12,0.95)',
 };
-const SERIF = "'Lora', 'Iowan Old Style', Georgia, serif";
+const SERIF = "var(--font-lora), 'Iowan Old Style', Georgia, serif";
 const SANS  = "'Inter', -apple-system, system-ui, sans-serif";
 
 // ── Types ─────────────────────────────────────────────────────────────────────

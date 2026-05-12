@@ -33,7 +33,7 @@ const TEXT_SOFT = 'rgba(255,255,255,0.95)';
 const CARD_BG = 'rgba(8,20,12,0.55)';
 const CARD_BORDER = 'rgba(52,211,153,0.28)';
 const SANS = '"Inter", -apple-system, BlinkMacSystemFont, sans-serif';
-const SERIF = '"Lora", Georgia, serif';
+const SERIF = 'var(--font-lora), Georgia, serif';
 
 export default function CopyableMessageCard({
   text,

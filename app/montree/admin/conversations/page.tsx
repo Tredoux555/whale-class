@@ -47,7 +47,7 @@ const T = {
   textSoft: '#eaf1e6',
   textSecondary: 'rgba(234,241,230,0.55)',
   textMuted: 'rgba(255,255,255,0.40)',
-  serif: '"Lora", Georgia, serif',
+  serif: 'var(--font-lora), Georgia, serif',
   sans:
     '-apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, sans-serif',
   bgGradient:

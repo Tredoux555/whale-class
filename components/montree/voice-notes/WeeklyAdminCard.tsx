@@ -66,7 +66,7 @@ export default function WeeklyAdminCard({ children }: Props) {
           <div style={{ minWidth: 0 }}>
             <h3 style={{
               margin: 0,
-              fontFamily: '"Lora", Georgia, serif',
+              fontFamily: 'var(--font-lora), Georgia, serif',
               fontSize: 14,
               fontWeight: 500,
               color: 'rgba(255,255,255,0.95)',

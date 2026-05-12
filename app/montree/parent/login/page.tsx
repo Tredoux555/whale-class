@@ -12,7 +12,7 @@ const T = {
   emerald: '#34d399',
   textPrimary: 'rgba(255,255,255,0.95)',
   textSecondary: 'rgba(255,255,255,0.65)',
-  serif: '"Lora", Georgia, serif',
+  serif: 'var(--font-lora), Georgia, serif',
   sans: '"Inter", -apple-system, BlinkMacSystemFont, sans-serif',
 };
 

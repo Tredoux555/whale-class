@@ -69,7 +69,7 @@ export default function CurriculumWorkList({
   return (
     <div style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(52,211,153,0.15)', borderRadius: 18, padding: 16, backdropFilter: 'blur(18px) saturate(140%)', WebkitBackdropFilter: 'blur(18px) saturate(140%)' }}>
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-bold capitalize flex items-center gap-2" style={{ fontFamily: '"Lora", Georgia, serif', fontWeight: 500, color: 'rgba(255,255,255,0.95)', fontSize: 18 }}>
+        <h3 className="text-lg font-bold capitalize flex items-center gap-2" style={{ fontFamily: 'var(--font-lora), Georgia, serif', fontWeight: 500, color: 'rgba(255,255,255,0.95)', fontSize: 18 }}>
           <AreaBadge area={selectedArea} size="md" /> {t(('area.' + selectedArea) as any)}
         </h3>
         <span className="flex items-center gap-1" style={{ fontFamily: '"Inter", sans-serif', fontSize: 11, color: 'rgba(255,255,255,0.35)' }}>

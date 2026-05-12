@@ -94,7 +94,7 @@ const T = {
   textMuted: 'rgba(255,255,255,0.40)',
   blur: 'blur(16px) saturate(140%)',
   sans: '"Inter", -apple-system, BlinkMacSystemFont, sans-serif',
-  serif: '"Lora", Georgia, serif',
+  serif: 'var(--font-lora), Georgia, serif',
 };
 
 // AREA_LABELS_ZH and AREA_LABELS_EN imported from @/lib/montree/i18n/area-labels
@@ -1423,7 +1423,7 @@ export default function WeeklyWrapTab({ classroomId, view: externalView }: Weekl
                         }}>
                           <h3 style={{
                             margin: '0 0 8px',
-                            fontFamily: '"Lora", Georgia, serif',
+                            fontFamily: 'var(--font-lora), Georgia, serif',
                             fontSize: 12,
                             fontWeight: 500,
                             color: 'rgba(255,255,255,0.95)',
@@ -1835,7 +1835,7 @@ export default function WeeklyWrapTab({ classroomId, view: externalView }: Weekl
                       <div style={{ flex: 1 }}>
                         <h2 style={{
                           margin: 0,
-                          fontFamily: '"Lora", Georgia, serif',
+                          fontFamily: 'var(--font-lora), Georgia, serif',
                           fontSize: 18,
                           fontWeight: 500,
                           color: 'rgba(255,255,255,0.95)',

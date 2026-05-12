@@ -86,7 +86,7 @@ const C = {
   glass:       'rgba(255,255,255,0.06)',
 };
 const SANS  = "'Inter', -apple-system, system-ui, sans-serif";
-const SERIF = "'Lora', 'Iowan Old Style', Georgia, serif";
+const SERIF = "var(--font-lora), 'Iowan Old Style', Georgia, serif";
 
 const AREAS = ['practical_life', 'sensorial', 'mathematics', 'language', 'cultural'];
 

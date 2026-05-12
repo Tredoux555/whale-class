@@ -19,7 +19,7 @@ const C = {
   textMd:      'rgba(255,255,255,0.85)',
   textMute:    'rgba(255,255,255,0.50)',
 };
-const SERIF = "'Lora', 'Iowan Old Style', Georgia, serif";
+const SERIF = "var(--font-lora), 'Iowan Old Style', Georgia, serif";
 const SANS  = "'Inter', -apple-system, system-ui, sans-serif";
 
 interface ChildInfo {

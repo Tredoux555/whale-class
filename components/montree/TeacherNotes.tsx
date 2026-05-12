@@ -69,7 +69,7 @@ const T = {
   textPlaceholder: 'rgba(255,255,255,0.35)',
   inputBg: 'rgba(0,0,0,0.25)',
   inputBorder: 'rgba(52,211,153,0.18)',
-  serif: '"Lora", Georgia, serif',
+  serif: 'var(--font-lora), Georgia, serif',
   sans: '"Inter", -apple-system, BlinkMacSystemFont, sans-serif',
 };
 

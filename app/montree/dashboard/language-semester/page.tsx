@@ -67,7 +67,7 @@ const T = {
   textSecondary: 'rgba(255,255,255,0.65)',
   textMuted: 'rgba(255,255,255,0.40)',
   textPlaceholder: 'rgba(255,255,255,0.35)',
-  serif: '"Lora", Georgia, serif',
+  serif: 'var(--font-lora), Georgia, serif',
   sans: '"Inter", -apple-system, BlinkMacSystemFont, sans-serif',
   mono: '"SF Mono", Menlo, Consolas, monospace',
 };
