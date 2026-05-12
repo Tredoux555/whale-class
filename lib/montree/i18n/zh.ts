@@ -4832,4 +4832,10 @@ export const zh = {
 
   // ─── Auto-filled missing keys (from Apr 30 audit) ───
   'health.cron.demoRequestDrip': '演示请求滴灌',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'health.demoTitle': '演示请求',
+  'health.demoPending': '{count} 个待处理',
+  'health.demoSubtitle': '{drips} 个滴管 · 最早 {days}d',
+  'health.demoSubtitleNoneOldest': '{drips} 个滴管已发送 · 最近 7d',
 } as const;

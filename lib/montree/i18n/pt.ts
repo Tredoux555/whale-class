@@ -4429,4 +4429,10 @@ export const pt: Record<string, string> = {
 
   // ─── Auto-filled missing keys (from Apr 30 audit) ───
   'health.cron.demoRequestDrip': 'Gotejamento de solicitação de demonstração',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'health.demoTitle': 'Solicitações de demonstração',
+  'health.demoPending': '{count} pendentes',
+  'health.demoSubtitle': '{drips} gotas · mais antiga {days}d',
+  'health.demoSubtitleNoneOldest': '{drips} gotas enviadas · últimos 7d',
 };

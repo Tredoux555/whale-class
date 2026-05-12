@@ -4429,4 +4429,10 @@ export const ko: Record<string, string> = {
 
   // ─── Auto-filled missing keys (from Apr 30 audit) ───
   'health.cron.demoRequestDrip': '데모 요청 드립',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'health.demoTitle': '데모 요청',
+  'health.demoPending': '{count}개 대기 중',
+  'health.demoSubtitle': '{drips}개 드립 · 가장 오래된 {days}일',
+  'health.demoSubtitleNoneOldest': '{drips}개 드립 전송 · 최근 7일',
 };

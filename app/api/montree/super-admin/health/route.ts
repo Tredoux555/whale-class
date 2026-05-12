@@ -167,6 +167,46 @@ export async function GET(request: NextRequest) {
     });
     steps.push(schools.step);
 
+    // 7. Demo-request pipeline — pending leads + drip activity last 7d
+    const demoRequests = await timed('demo_requests', async () => {
+      const { count: pending, error: pErr } = await supabase
+        .from('montree_outreach_contacts')
+        .select('id', { count: 'exact', head: true })
+        .eq('source', 'landing_page')
+        .eq('status', 'demo_requested');
+      if (pErr) throw new Error(pErr.message);
+
+      // Oldest pending request — surfaces stale leads at risk of churn
+      const { data: oldestRows } = await supabase
+        .from('montree_outreach_contacts')
+        .select('created_at, org_name, email')
+        .eq('source', 'landing_page')
+        .eq('status', 'demo_requested')
+        .order('created_at', { ascending: true })
+        .limit(1);
+      const oldest = (oldestRows && oldestRows[0]) || null;
+
+      // Drip activity last 7d (any of the 3 drip days)
+      const { count: dripCount } = await supabase
+        .from('montree_outreach_log')
+        .select('id', { count: 'exact', head: true })
+        .in('action', ['demo_request_drip_day3', 'demo_request_drip_day7', 'demo_request_drip_day14'])
+        .gte('created_at', sevenDaysAgo);
+
+      return {
+        pending_count: pending || 0,
+        drips_sent_7d: dripCount || 0,
+        oldest_pending: oldest
+          ? {
+              created_at: oldest.created_at,
+              org_name: oldest.org_name,
+              email: oldest.email,
+            }
+          : null,
+      };
+    });
+    steps.push(demoRequests.step);
+
     const allOk = steps.every((s) => s.ok);
     return NextResponse.json(
       {

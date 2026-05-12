@@ -4426,4 +4426,10 @@ export const uk: Record<string, string> = {
 
   // ─── Auto-filled missing keys (from Apr 30 audit) ───
   'health.cron.demoRequestDrip': 'Капельниця демо-запиту',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'health.demoTitle': 'Демо-запити',
+  'health.demoPending': '{count} очікуються',
+  'health.demoSubtitle': '{drips} потоків · найстарішому {days}д',
+  'health.demoSubtitleNoneOldest': '{drips} потоків надіслано · за останні 7д',
 };
