@@ -305,9 +305,15 @@ export default function AttendanceWidget() {
                   >
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
                       {child.photo_url ? (
+                        // 🚨 Tier 5.1 — explicit width/height attrs.
+                        // eslint-disable-next-line @next/next/no-img-element
                         <img
                           src={child.photo_url}
                           alt={child.name}
+                          width={28}
+                          height={28}
+                          loading="lazy"
+                          decoding="async"
                           style={{
                             width: 28,
                             height: 28,
@@ -407,9 +413,15 @@ export default function AttendanceWidget() {
                     }}
                   >
                     {child.photo_url ? (
+                      // 🚨 Tier 5.1 — explicit width/height attrs.
+                      // eslint-disable-next-line @next/next/no-img-element
                       <img
                         src={child.photo_url}
                         alt={child.name}
+                        width={22}
+                        height={22}
+                        loading="lazy"
+                        decoding="async"
                         style={{
                           width: 22,
                           height: 22,
