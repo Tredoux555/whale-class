@@ -85,6 +85,32 @@ function DemoRequestAlert({ saToken }: { saToken: string }) {
     setBusy(null);
   };
 
+  /** Open the default mail client with a pre-written warm reply containing
+   *  the trial signup link. Marks the lead as 'contacted' in the same click
+   *  to stop the drip. The user can edit the email before sending. */
+  const replyWithTrialLink = (lead: DemoLead) => {
+    const firstName = (lead.contact_person || '').split(/\s+/)[0] || 'there';
+    const trialUrl = 'https://montree.xyz/montree/try';
+    const subject = `Re: Montree — for ${lead.org_name}`;
+    const body =
+      `Hi ${firstName},\n\n` +
+      `Thanks for reaching out about Montree.\n\n` +
+      `The fastest way to see it in action is to start a free 30-day trial — full Montree, one classroom, no credit card. ` +
+      `You can try every AI feature at your own pace and we can chat afterwards.\n\n` +
+      `Start your trial here: ${trialUrl}\n\n` +
+      `Or if you'd prefer a 20-minute walkthrough on a call first, reply with a few times that work for you this week and I'll send a calendar invite.\n\n` +
+      `Kind regards,\nTredoux\nmontree.xyz`;
+    const mailto = `mailto:${encodeURIComponent(lead.email)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    // Open the mail client via window.open (a fresh tab — closes itself
+    // immediately after handing off the mailto). Avoids leaving the
+    // super-admin page. Parallel setStatus stops the drip the moment
+    // status flips.
+    const w = window.open(mailto, '_blank');
+    // Some browsers leave the blank tab open after handing off. Close it.
+    if (w) setTimeout(() => { try { w.close(); } catch { /* */ } }, 500);
+    setStatus(lead.id, 'contacted');
+  };
+
   if (leads.length === 0) return null;
 
   return (
@@ -134,6 +160,14 @@ function DemoRequestAlert({ saToken }: { saToken: string }) {
                 </a>
               </div>
               <div className="flex flex-col gap-1 shrink-0">
+                <button
+                  onClick={() => replyWithTrialLink(lead)}
+                  disabled={busy === lead.id}
+                  className="text-xs px-2.5 py-1 rounded-lg bg-amber-500/20 hover:bg-amber-500/35 text-amber-200 border border-amber-500/40 transition-colors disabled:opacity-50"
+                  title="Opens your mail client with a pre-written reply containing the trial signup link. Also marks the lead as contacted (stops drip)."
+                >
+                  📧 Reply with trial link
+                </button>
                 <button
                   onClick={() => setStatus(lead.id, 'contacted')}
                   disabled={busy === lead.id}
