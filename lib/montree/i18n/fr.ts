@@ -4485,4 +4485,9 @@ export const fr: Record<string, string> = {
   'health.errorsUnresolved': '{count} non résolu(s)',
   'health.errorsFatal': '⚠ {count} fatal(e)(s) — consultez l\'onglet Erreurs',
   'health.errorsLast7d': '{count} enregistré(s) · 7 derniers jours',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'tracy.upgrade.title': 'Activer Tracy',
+  'tracy.upgrade.body': 'Tracy et les fonctionnalités IA font partie du plan Montree complet. Configurez la facturation pour les déverrouiller — 7 $ par enfant actif par mois, sans contrat.',
+  'tracy.upgrade.cta': 'Configurer la facturation',
 };

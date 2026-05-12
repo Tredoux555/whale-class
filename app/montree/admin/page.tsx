@@ -98,6 +98,9 @@ interface ConvTurn {
   progress?: ProgressEvent | null;
   pending?: boolean;
   error?: string;
+  /** When set, the assistant turn renders an "Activate Tracy" upgrade card
+   *  instead of a plain red error toast. Triggered by 402 responses. */
+  requiresUpgrade?: boolean;
   costUsd?: number;
 }
 
@@ -335,8 +338,48 @@ function AssistantBubble({ turn }: { turn: ConvTurn }) {
           </div>
         )}
 
-        {/* Error path — quiet but visible */}
-        {turn.error && (
+        {/* Upgrade prompt — when school is Free tier, render a friendly card
+            with a CTA to activate billing. Replaces the red error toast for
+            the 402 case, which is a billing state not a bug. */}
+        {turn.error && turn.requiresUpgrade && (
+          <div
+            style={{
+              marginTop: body ? 12 : 0,
+              padding: '16px 18px',
+              background: 'rgba(232,201,106,0.10)',
+              border: '1px solid rgba(232,201,106,0.32)',
+              borderRadius: 14,
+              color: 'rgba(255,255,255,0.92)',
+              fontSize: 13.5,
+              lineHeight: 1.55,
+            }}
+          >
+            <p style={{ margin: 0, fontWeight: 600, color: '#E8C96A' }}>
+              ✨ {t('tracy.upgrade.title')}
+            </p>
+            <p style={{ margin: '8px 0 14px', color: 'rgba(255,255,255,0.78)' }}>
+              {t('tracy.upgrade.body')}
+            </p>
+            <a
+              href="/montree/admin/billing"
+              style={{
+                display: 'inline-block',
+                padding: '10px 18px',
+                background: 'linear-gradient(135deg, #34d399, #10b981)',
+                color: '#0a1a0f',
+                fontWeight: 600,
+                fontSize: 13.5,
+                textDecoration: 'none',
+                borderRadius: 10,
+              }}
+            >
+              {t('tracy.upgrade.cta')} →
+            </a>
+          </div>
+        )}
+
+        {/* Error path — quiet but visible (non-upgrade errors only) */}
+        {turn.error && !turn.requiresUpgrade && (
           <div
             style={{
               marginTop: body ? 12 : 0,
@@ -464,7 +507,7 @@ export default function AdminAgentPage() {
     inputRef.current?.focus();
   }, [convId]);
 
-  const handleEvent = useCallback((evt: Record<string, unknown>) => { // eslint-disable-line react-hooks/exhaustive-deps
+  const handleEvent = useCallback((evt: Record<string, unknown>) => {
     setTurns((prev) => {
       if (prev.length === 0) return prev;
       const last = prev[prev.length - 1];
@@ -538,7 +581,7 @@ export default function AdminAgentPage() {
 
       return [...prev.slice(0, -1), updated];
     });
-  }, []);
+  }, [t]);
 
   const submit = useCallback(async () => {
     const q = question.trim();
@@ -579,6 +622,7 @@ export default function AdminAgentPage() {
 
       if (res.status === 402) {
         const payload = await res.json().catch(() => ({}));
+        const wantsUpgrade = payload?.requires_upgrade === true;
         setTurns((prev) =>
           prev.map((tt, i) =>
             i === prev.length - 1
@@ -586,6 +630,7 @@ export default function AdminAgentPage() {
                   ...tt,
                   pending: false,
                   error: payload?.error || t('tracy.errors.tier'),
+                  requiresUpgrade: wantsUpgrade,
                 }
               : tt
           )
@@ -632,7 +677,6 @@ export default function AdminAgentPage() {
         buffer += decoder.decode(value, { stream: true });
 
         let nlIdx;
-        // eslint-disable-next-line no-cond-assign
         while ((nlIdx = buffer.indexOf('\n\n')) !== -1) {
           const raw = buffer.slice(0, nlIdx);
           buffer = buffer.slice(nlIdx + 2);
@@ -664,7 +708,6 @@ export default function AdminAgentPage() {
     } finally {
       setSubmitting(false);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [question, submitting, convId, turns, handleEvent, locale, t]);
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {

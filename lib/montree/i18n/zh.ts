@@ -4888,4 +4888,9 @@ export const zh = {
   'health.errorsUnresolved': '{count} 未解决',
   'health.errorsFatal': '⚠ {count} 严重错误 — 查看错误标签页',
   'health.errorsLast7d': '{count} 已记录 · 过去 7 天',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'tracy.upgrade.title': '激活 Tracy',
+  'tracy.upgrade.body': 'Tracy 和 AI 功能是完整 Montree 计划的一部分。设置计费以解锁它们 — 每个活跃学生每月 $7，无合同。',
+  'tracy.upgrade.cta': '设置计费',
 } as const;

@@ -4327,6 +4327,9 @@ export const en = {
   // Error fallbacks. Server errors that come back with a localized `error`
   // field are preferred over these — these are the catch-all client copies.
   'tracy.errors.tier': 'AI features need an active plan — please contact support.',
+  'tracy.upgrade.title': 'Activate Tracy',
+  'tracy.upgrade.body': 'Tracy and the AI features are part of the full Montree plan. Set up billing to unlock them — $7 per active student per month, no contracts.',
+  'tracy.upgrade.cta': 'Set up billing',
   'tracy.errors.transient': 'Something stopped me there — give me a second and try again.',
   'tracy.errors.noStream': 'No response stream — try again in a second.',
   'tracy.errors.connection': 'Connection failed — try again in a moment.',

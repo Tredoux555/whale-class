@@ -200,7 +200,13 @@ export async function POST(request: NextRequest) {
   const aiTier = await resolveReportModel(supabase, auth.schoolId);
   if (aiTier.tier === 'free' || !aiTier.model || !anthropic) {
     return NextResponse.json(
-      { error: 'The home agent requires an active AI tier.', tier: aiTier.tier },
+      {
+        error: 'The home agent requires an active AI tier.',
+        tier: aiTier.tier,
+        requires_upgrade: true,
+        upgrade_url: '/montree/admin/billing',
+        feature: 'tracy',
+      },
       { status: 402 }
     );
   }
