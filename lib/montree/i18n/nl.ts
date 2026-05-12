@@ -4476,4 +4476,7 @@ export const nl: Record<string, string> = {
   'billing.status.trialing': 'Proefperiode',
   'billing.status.pastDue': 'Vervallen',
   'billing.status.canceled': 'Geannuleerd',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'health.stripeDlqPending': '⚠ {count} in wachtrij — afgelopen 7 dagen',
 };

@@ -4476,4 +4476,7 @@ export const ja: Record<string, string> = {
   'billing.status.trialing': 'トライアル',
   'billing.status.pastDue': '支払い期限超過',
   'billing.status.canceled': 'キャンセル済み',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'health.stripeDlqPending': '⚠ {count} 件が DLQ で保留中です — 過去 7 日間',
 };

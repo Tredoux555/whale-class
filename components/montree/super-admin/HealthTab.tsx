@@ -91,7 +91,7 @@ export default function HealthTab({ sessionToken }: HealthTabProps) {
   const schoolsStep = stepByName('active_schools');
   const demoStep = stepByName('demo_requests');
 
-  const stripeDetail = (stripeStep?.detail as { rows_last_7d?: number } | undefined) || undefined;
+  const stripeDetail = (stripeStep?.detail as { rows_last_7d?: number; dlq_pending?: number } | undefined) || undefined;
   const aiDetail = (aiStep?.detail as { total_usd?: number; rows?: number; schools_active?: number; most_recent?: string } | undefined) || undefined;
   const vitalsDetail = (vitalsStep?.detail as { p75_ms?: number | null; sample_size?: number } | undefined) || undefined;
   const payoutDetail = (payoutStep?.detail as { most_recent_calc?: string; recent_periods?: Array<{ period_month: string; row_count: number; total_usd: number; latest_calc: string }> } | undefined) || undefined;
@@ -161,9 +161,21 @@ export default function HealthTab({ sessionToken }: HealthTabProps) {
         <HealthCard
           icon="💳"
           title={t('health.stripeTitle')}
-          status={stripeStep?.ok ? (stripeDetail?.rows_last_7d ? 'ok' : 'idle') : 'fail'}
+          status={
+            !stripeStep?.ok
+              ? 'fail'
+              : (stripeDetail?.dlq_pending ?? 0) > 0
+                ? 'warn'
+                : (stripeDetail?.rows_last_7d ?? 0) > 0
+                  ? 'ok'
+                  : 'idle'
+          }
           metric={t('health.rowsCount', { count: stripeDetail?.rows_last_7d ?? 0 })}
-          subtitle={t('health.last7Days')}
+          subtitle={
+            (stripeDetail?.dlq_pending ?? 0) > 0
+              ? t('health.stripeDlqPending', { count: stripeDetail?.dlq_pending ?? 0 })
+              : t('health.last7Days')
+          }
           error={stripeStep?.ok === false ? String(stripeStep?.detail || '') : null}
         />
 
