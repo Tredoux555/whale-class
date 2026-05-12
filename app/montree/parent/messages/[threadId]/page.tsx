@@ -59,6 +59,10 @@ interface Message {
   body: string;
   ai_drafted: boolean;
   sent_at: string;
+  // 🚨 Perf Tier 4.3 — optimistic send state. Set on locally-added bubbles
+  // until the server confirms. Cleared when load() refetches.
+  optimistic?: boolean;
+  sendFailed?: boolean;
 }
 
 interface Child {
@@ -165,24 +169,49 @@ export default function ParentThreadDetailPage() {
   const handleSend = useCallback(async () => {
     if (!reply.trim() || !threadId || sending) return;
     setSending(true);
+
+    // 🚨 Perf Tier 4.3 — optimistic send. Insert the bubble locally first.
+    // On VPN flap the parent still sees their message land while the round
+    // trip resolves in the background. On failure, mark the bubble failed
+    // and restore the draft to the input for retry.
+    const bodyText = reply.trim();
+    const tempId = `optimistic-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    const optimistic: Message = {
+      id: tempId,
+      thread_id: threadId,
+      sender_role: 'parent',
+      sender_id: 'me',
+      sender_name: 'You',
+      body: bodyText,
+      ai_drafted: false,
+      sent_at: new Date().toISOString(),
+      optimistic: true,
+    };
+    setMessages((prev) => [...prev, optimistic]);
+    setReply('');
+
     try {
       const res = await fetch(`/api/montree/parent/messages/threads/${threadId}/messages`, {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ body: reply.trim() }),
+        body: JSON.stringify({ body: bodyText }),
       });
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
+        setMessages((prev) => prev.map((m) => (m.id === tempId ? { ...m, sendFailed: true, optimistic: false } : m)));
+        setReply(bodyText);
         toast.error(err.error || (t('parentMessages.sendFailed') || 'Could not send'));
         setSending(false);
         return;
       }
       const data = await res.json();
-      setMessages((prev) => [...prev, data.message]);
-      setReply('');
+      // Replace the optimistic temp with the canonical server row.
+      setMessages((prev) => prev.map((m) => (m.id === tempId ? data.message : m)));
       setSending(false);
     } catch {
+      setMessages((prev) => prev.map((m) => (m.id === tempId ? { ...m, sendFailed: true, optimistic: false } : m)));
+      setReply(bodyText);
       toast.error(t('parentMessages.sendFailed') || 'Could not send');
       setSending(false);
     }

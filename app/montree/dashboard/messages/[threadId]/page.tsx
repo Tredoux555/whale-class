@@ -63,6 +63,9 @@ interface Message {
   body: string;
   ai_drafted: boolean;
   sent_at: string;
+  // 🚨 Perf Tier 4.3 — optimistic state for locally-added bubbles.
+  optimistic?: boolean;
+  sendFailed?: boolean;
 }
 
 interface Child {
@@ -226,24 +229,45 @@ export default function TeacherThreadDetailPage() {
   const handleSend = useCallback(async () => {
     if (!reply.trim() || !threadId || sending) return;
     setSending(true);
+
+    // 🚨 Perf Tier 4.3 — optimistic send.
+    const bodyText = reply.trim();
+    const tempId = `optimistic-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    const optimistic: Message = {
+      id: tempId,
+      thread_id: threadId,
+      sender_role: 'teacher',
+      sender_id: 'me',
+      sender_name: 'You',
+      body: bodyText,
+      ai_drafted: false,
+      sent_at: new Date().toISOString(),
+      optimistic: true,
+    };
+    setMessages((prev) => [...prev, optimistic]);
+    setReply('');
+
     try {
       const res = await fetch(`/api/montree/messages/threads/${threadId}/messages`, {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ body: reply.trim() }),
+        body: JSON.stringify({ body: bodyText }),
       });
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
+        setMessages((prev) => prev.map((m) => (m.id === tempId ? { ...m, sendFailed: true, optimistic: false } : m)));
+        setReply(bodyText);
         toast.error(err.error || (t('teacherMessages.sendFailed') || "Couldn't send"));
         setSending(false);
         return;
       }
       const data = await res.json();
-      setMessages((prev) => [...prev, data.message]);
-      setReply('');
+      setMessages((prev) => prev.map((m) => (m.id === tempId ? data.message : m)));
       setSending(false);
     } catch {
+      setMessages((prev) => prev.map((m) => (m.id === tempId ? { ...m, sendFailed: true, optimistic: false } : m)));
+      setReply(bodyText);
       toast.error(t('teacherMessages.sendFailed') || "Couldn't send");
       setSending(false);
     }
