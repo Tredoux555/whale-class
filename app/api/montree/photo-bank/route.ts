@@ -63,18 +63,25 @@ export async function GET(request: NextRequest) {
 
     query = query.range(offset, offset + limit - 1);
 
-    const { data: photos, count, error } = await query;
+    // 🚨 Perf Tier 3.6 (PERF_HEALTH_CHECK.md) — fire the photos query and the
+    // categories query in parallel. Independent tables, independent results.
+    // Photo bank page mounts trigger both on every load; serialising them
+    // cost an extra round-trip for no reason.
+    const [photosRes, categoriesRes] = await Promise.all([
+      query,
+      supabase
+        .from('montree_photo_categories')
+        .select('*')
+        .order('sort_order', { ascending: true }),
+    ]);
+
+    const { data: photos, count, error } = photosRes;
+    const { data: categories } = categoriesRes;
 
     if (error) {
       console.error('Photo bank query error:', error);
       return NextResponse.json({ error: 'Failed to fetch photos' }, { status: 500 });
     }
-
-    // Also fetch categories for the filter UI
-    const { data: categories } = await supabase
-      .from('montree_photo_categories')
-      .select('*')
-      .order('sort_order', { ascending: true });
 
     return NextResponse.json({
       photos: photos || [],

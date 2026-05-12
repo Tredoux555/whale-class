@@ -186,71 +186,89 @@ export async function POST(request: NextRequest) {
       .eq('id', mediaId);
   }
 
-  // Load child for context (name + age)
-  let childName = 'the child';
-  let childAge: number | string = 0;
-  if (media.child_id) {
-    const { data: child } = await supabase
-      .from('montree_children')
-      .select('name, birthdate')
-      .eq('id', media.child_id)
-      .maybeSingle();
-    if (child) {
-      childName = child.name || childName;
-      childAge = ageFromBirthdate(child.birthdate);
-    }
-  }
-
   // Build photo URL (Anthropic needs a publicly fetchable URL)
   const photoUrl = getPublicUrl(MEDIA_BUCKET, media.storage_path);
 
-  // Mark attempted_at NOW so concurrent calls don't double-process
+  // 🚨 Perf Tier 3.2 (PERF_HEALTH_CHECK.md) — pre-Pass-1 parallelize.
+  // Previously these ran sequentially:
+  //   1. child fetch (200ms)
+  //   2. attempted_at write (50-100ms)
+  //   3. inside try: classroom works fetch (100-200ms)
+  //   4. inside try: loadIdentificationContext (100-150ms)
+  // Total: 450-650ms before the first Pass-1 Haiku call.
+  //
+  // Now all four fire in parallel via Promise.all. They're independent (each
+  // hits a different table / file) so concurrency is safe. ~200-450ms saved
+  // per photo. Photos are taken constantly so this compounds fast.
   const attemptedAtIso = new Date().toISOString();
-  await supabase
-    .from('montree_media')
-    .update({ identification_attempted_at: attemptedAtIso })
-    .eq('id', mediaId);
+  const [childRes, _attemptedRes, classroomWorksRes, identificationContext] = await Promise.all([
+    // (1) Load child for context (name + age). Skip when no child_id.
+    media.child_id
+      ? supabase
+          .from('montree_children')
+          .select('name, birthdate')
+          .eq('id', media.child_id)
+          .maybeSingle()
+      : Promise.resolve({ data: null as { name: string | null; birthdate: string | null } | null }),
+    // (2) Mark attempted_at NOW so concurrent calls don't double-process.
+    // The await-ignored `_attemptedRes` ensures Supabase actually fires the
+    // update before we proceed, but the result body is irrelevant.
+    supabase
+      .from('montree_media')
+      .update({ identification_attempted_at: attemptedAtIso })
+      .eq('id', mediaId),
+    // (3) Load custom classroom works so matchToCurriculumV2 finds them by
+    // exact name. Without this, custom works like "Popsicle Letter Sorting"
+    // fall through to weak word matches against the static curriculum.
+    media.classroom_id
+      ? supabase
+          .from('montree_classroom_curriculum_works')
+          .select('name, work_key, area:montree_classroom_curriculum_areas!area_id(area_key)')
+          .eq('classroom_id', media.classroom_id)
+          .eq('is_custom', true)
+      : Promise.resolve({ data: [] as Array<{ name: string; work_key: string; area: { area_key: string } | null }> }),
+    // (4) Visual memory + recent corrections context. This is the priciest
+    // setup step (multiple queries inside loadIdentificationContext) — biggest
+    // beneficiary of parallelization.
+    loadIdentificationContext(supabase, { classroomId: media.classroom_id }),
+  ]);
+  void _attemptedRes; // Result intentionally unused — fire-and-resolve write.
+
+  let childName = 'the child';
+  let childAge: number | string = 0;
+  if (childRes.data) {
+    childName = childRes.data.name || childName;
+    childAge = ageFromBirthdate(childRes.data.birthdate);
+  }
 
   // ----- Load curriculum + run identification (wrapped in try-catch) -----
   // Without this try-catch, any unhandled throw (timeout, API error, etc.)
   // leaves the photo stuck at 'pending' forever because the 'failed' status
   // write at the bottom only runs on controlled failures, not crashes.
   try {
-    // Start with the static curriculum (329 works across 5 areas)
+    // Start with the static curriculum (329 works across 5 areas) + extend
+    // with custom classroom works fetched in the Promise.all above.
     const curriculum = [...loadAllCurriculumWorks()];
-
-    // Extend with custom classroom works so matchToCurriculumV2 finds them
-    // by exact name (score=1.0) instead of garbage word-level matches.
-    // Root cause of Apr 28 regression: Haiku correctly identified custom works
-    // (e.g. "Popsicle Letter Sorting Work") but matchToCurriculumV2 had no
-    // entry for them → weak word match returned "Sorting Grains" instead.
-    if (media.classroom_id) {
-      const { data: classroomWorks } = await supabase
-        .from('montree_classroom_curriculum_works')
-        .select('name, work_key, area:montree_classroom_curriculum_areas!area_id(area_key)')
-        .eq('classroom_id', media.classroom_id)
-        .eq('is_custom', true);
-
-      if (classroomWorks && classroomWorks.length > 0) {
-        const existingKeys = new Set(curriculum.map(w => w.work_key));
-        for (const cw of classroomWorks) {
-          if (!existingKeys.has(cw.work_key)) {
-            curriculum.push({
-              area_key: (cw.area as { area_key: string } | null)?.area_key || 'unknown',
-              work_key: cw.work_key,
-              name: cw.name,
-              aliases: [],
-              sequence: 999999,
-              category_name: 'Custom',
-              age_range: '3-6',
-            });
-          }
+    const classroomWorks = classroomWorksRes.data;
+    if (classroomWorks && classroomWorks.length > 0) {
+      const existingKeys = new Set(curriculum.map(w => w.work_key));
+      for (const cw of classroomWorks) {
+        if (!existingKeys.has(cw.work_key)) {
+          curriculum.push({
+            area_key: (cw.area as { area_key: string } | null)?.area_key || 'unknown',
+            work_key: cw.work_key,
+            name: cw.name,
+            aliases: [],
+            sequence: 999999,
+            category_name: 'Custom',
+            age_range: '3-6',
+          });
         }
-        console.log(`[PhotoIdentification] Loaded ${classroomWorks.length} custom classroom works into curriculum (total: ${curriculum.length})`);
       }
+      console.log(`[PhotoIdentification] Loaded ${classroomWorks.length} custom classroom works into curriculum (total: ${curriculum.length})`);
     }
 
-    const context = await loadIdentificationContext(supabase, { classroomId: media.classroom_id });
+    const context = identificationContext;
 
     // ----- Step 1: Two-pass Haiku identification -----
     const twoPassResult = await runTwoPassIdentification({
