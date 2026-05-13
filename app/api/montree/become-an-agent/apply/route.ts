@@ -90,32 +90,93 @@ export async function POST(req: NextRequest) {
 
     const supabase = getSupabase();
 
-    // UPSERT on email — if someone applies twice we update the latest application
-    // rather than fail with a unique-constraint error. Newest pitch wins.
-    const { error: upsertErr } = await supabase
-      .from('montree_outreach_contacts')
-      .upsert(
-        {
-          org_name: cleanAffiliation || 'Independent',
-          contact_person: cleanName,
-          email: cleanEmail,
-          country: cleanCountry,
-          contact_type: 'agent_application',
-          status: 'agent_applied',
-          priority: 'warm',
-          source: 'become_an_agent_form',
-          notes: cleanPitch,
-          application_details: {
-            current_role: cleanRole,
-            why_good_fit: cleanPitch,
-          },
-        },
-        { onConflict: 'email', ignoreDuplicates: false }
-      );
+    // Build the row payload once — used by INSERT and the resubmit UPDATE path.
+    const applicationPayload = {
+      org_name: cleanAffiliation || 'Independent',
+      contact_person: cleanName,
+      email: cleanEmail,
+      country: cleanCountry,
+      contact_type: 'agent_application',
+      status: 'agent_applied',
+      priority: 'warm',
+      source: 'become_an_agent_form',
+      notes: cleanPitch,
+      application_details: {
+        current_role: cleanRole,
+        why_good_fit: cleanPitch,
+      },
+    };
 
-    if (upsertErr) {
-      console.error('[become-an-agent/apply] upsert failed:', upsertErr.message);
-      return NextResponse.json({ error: 'Could not record application' }, { status: 500 });
+    // INSERT cleanly. We deliberately do NOT do an upsert-on-email here.
+    // The unique constraint on montree_outreach_contacts(email) blocks duplicates,
+    // and we handle the 23505 case explicitly:
+    //   - If existing row IS an agent_application → it's a legitimate resubmit,
+    //     update with the new pitch (newest wins).
+    //   - If existing row is a different contact_type (demo_request, individual_school,
+    //     etc.) → those are different conversations. Return a friendly 409 so the
+    //     applicant uses a different email or contacts Tredoux directly. We never
+    //     silently mutate one row type into another — that loses CRM history.
+    const { error: insertErr } = await supabase
+      .from('montree_outreach_contacts')
+      .insert(applicationPayload);
+
+    if (insertErr) {
+      const pgCode = (insertErr as { code?: string }).code;
+      if (pgCode === '23505') {
+        // Email already exists — figure out which kind of row it is.
+        const { data: existing } = await supabase
+          .from('montree_outreach_contacts')
+          .select('id, contact_type, status')
+          .eq('email', cleanEmail)
+          .maybeSingle();
+
+        if (!existing) {
+          // Unique violation but no visible row? Race condition or RLS oddity.
+          console.error('[become-an-agent/apply] 23505 but no existing row visible — race?');
+          return NextResponse.json(
+            { error: 'Could not record application', detail: insertErr.message },
+            { status: 500 }
+          );
+        }
+
+        if ((existing as { contact_type: string }).contact_type === 'agent_application') {
+          // Legitimate resubmit by the same applicant. Update with the new pitch.
+          const { error: updateErr } = await supabase
+            .from('montree_outreach_contacts')
+            .update({
+              ...applicationPayload,
+              // Reset status to 'agent_applied' in case it was previously declined —
+              // the applicant is trying again, give them a fresh review.
+              status: 'agent_applied',
+              updated_at: new Date().toISOString(),
+            })
+            .eq('id', (existing as { id: string }).id);
+
+          if (updateErr) {
+            console.error('[become-an-agent/apply] resubmit update failed:', updateErr.message);
+            return NextResponse.json(
+              { error: 'Could not update existing application', detail: updateErr.message },
+              { status: 500 }
+            );
+          }
+          // Fall through — auto-ack + log still fire below.
+        } else {
+          // Email is on a different row type. Don't silently mutate.
+          return NextResponse.json(
+            {
+              error:
+                'This email is already on file with us. Please use a different email address, or reach out to tredoux555@gmail.com directly.',
+            },
+            { status: 409 }
+          );
+        }
+      } else {
+        console.error('[become-an-agent/apply] insert failed:', insertErr.message);
+        return NextResponse.json(
+          { error: 'Could not record application', detail: insertErr.message },
+          { status: 500 }
+        );
+      }
     }
 
     // Log the event (best-effort — fire and forget)
