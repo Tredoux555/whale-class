@@ -101,7 +101,7 @@ export default function AgentDashboardPage() {
         fetch('/api/montree/agent/payouts'),
       ]);
       if (!meRes.ok) {
-        if (meRes.status === 401) {
+        if ((meRes.status === 401 || meRes.status === 403)) {
           window.location.href = '/montree/login-select';
           return;
         }

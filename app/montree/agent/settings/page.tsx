@@ -42,7 +42,7 @@ export default function AgentSettingsPage() {
     fetch('/api/montree/agent/me')
       .then(async r => {
         if (!r.ok) {
-          if (r.status === 401) {
+          if ((r.status === 401 || r.status === 403)) {
             window.location.href = '/montree/login-select';
             return null;
           }

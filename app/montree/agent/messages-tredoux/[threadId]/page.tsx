@@ -67,7 +67,7 @@ export default function AgentThreadDetailPage() {
         fetch(`/api/montree/agent/messages-tredoux/threads/${threadId}`, { credentials: 'include' }),
         fetch(`/api/montree/agent/messages-tredoux/threads/${threadId}/messages`, { credentials: 'include' }),
       ]);
-      if (threadRes.status === 401) {
+      if ((threadRes.status === 401 || threadRes.status === 403)) {
         router.replace('/montree/login-select');
         return;
       }

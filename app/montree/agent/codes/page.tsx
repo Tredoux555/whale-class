@@ -51,7 +51,7 @@ export default function AgentCodesPage() {
         fetch('/api/montree/agent/me'),
       ]);
       if (!codesRes.ok) {
-        if (codesRes.status === 401) {
+        if ((codesRes.status === 401 || codesRes.status === 403)) {
           window.location.href = '/montree/login-select';
           return;
         }
