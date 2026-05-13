@@ -74,7 +74,12 @@ export default function AgentNav() {
       className="sticky top-0 z-30 backdrop-blur-md border-b border-white/5"
       style={{ background: 'rgba(8,20,12,0.65)' }}
     >
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-3 flex items-center gap-3">
+      {/*
+       * 🚨 Right-side padding on md+ reserves space for MiraFloat's trigger
+       * (top-right, ~56px square). Without it, Sign out collides with Mira's
+       * avatar on narrow desktop viewports.
+       */}
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 md:pr-20 py-3 flex items-center gap-3">
         <Link href="/montree/agent/dashboard" className="flex items-center gap-2 shrink-0">
           <span className="inline-flex items-center justify-center w-8 h-8 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-lg shadow-md shadow-emerald-500/20">
             <span className="text-sm">🌳</span>
@@ -85,7 +90,7 @@ export default function AgentNav() {
         </Link>
 
         {/* Desktop links */}
-        <div className="hidden md:flex items-center gap-1 ml-2">
+        <div className="hidden md:flex items-center gap-1 ml-2 flex-wrap">
           {NAV_LINKS.map(l => (
             <Link key={l.href} href={l.href} className={linkClasses(l.href)}>
               {l.label}
@@ -93,16 +98,16 @@ export default function AgentNav() {
           ))}
         </div>
 
-        <div className="ml-auto flex items-center gap-2">
-          {agentName && (
-            <span className="hidden sm:inline text-emerald-200/80 text-sm">
-              {agentName}
-            </span>
-          )}
+        <div className="ml-auto flex items-center gap-2 shrink-0">
+          {/* Agent name dropped from inline nav — it's already shown on the
+              dashboard hero ("Good afternoon, Tredoux."), and including it
+              here was causing "Tredoux Agent" to wrap into two lines on
+              narrow desktop because of the 9-item nav + MiraFloat collision.
+              Still shown in the mobile hamburger sheet below. */}
           <button
             onClick={signOut}
             disabled={signOutLoading}
-            className="hidden md:inline-flex px-3 py-1.5 rounded-lg text-xs font-medium text-white/70 hover:text-white border border-white/10 hover:border-white/30 transition-colors disabled:opacity-50"
+            className="hidden md:inline-flex px-3 py-1.5 rounded-lg text-xs font-medium text-white/70 hover:text-white border border-white/10 hover:border-white/30 transition-colors disabled:opacity-50 whitespace-nowrap"
           >
             {signOutLoading ? 'Signing out…' : 'Sign out'}
           </button>
@@ -126,6 +131,11 @@ export default function AgentNav() {
           style={{ background: 'rgba(8,20,12,0.95)' }}
         >
           <div className="max-w-6xl mx-auto px-4 py-3 flex flex-col gap-1">
+            {agentName && (
+              <div className="text-emerald-200/80 text-xs uppercase tracking-wider px-3 pb-2 pt-1">
+                {agentName}
+              </div>
+            )}
             {NAV_LINKS.map(l => (
               <Link key={l.href} href={l.href} className={linkClasses(l.href)}>
                 {l.label}
