@@ -270,6 +270,11 @@ Reading the route at `app/api/montree/agent/connect-status/route.ts`, the ONLY 4
 54. The PATCH endpoint for agent applications validates `contact_type='agent_application'` server-side before mutating. Won't accidentally update a demo_request or outreach contact.
 55. `MIRA_PNG_AVAILABLE` flag in `MiraAvatar.tsx` — flip to true once `/public/mira-avatar.png` exists. Until then, CSS monogram only.
 56. `/montree/for-teachers` is a permanent redirect to `/montree/become-an-agent`. Keep the file so inbound links don't 404.
+57. **Don't hard-delete agents in production.** Suspend (`agent_suspended_at = NOW(), is_agent = FALSE`) — preserves audit trail, finance ledger continuity, RESTRICT FK on pending payouts. Hard delete reserved for test state only via `scripts/cleanup-test-agent.sql` (`is_agent=true` safety check enforces this).
+58. **Never UPSERT on a shared-key column when multiple semantic row types coexist on the same table.** `montree_outreach_contacts` mixes demo_request + agent_application + outreach by email-uniqueness. UPSERT-on-email silently mutates row types. Use explicit INSERT + 23505 handling: same-type collision → UPDATE (legitimate resubmit); cross-type → 409 friendly error; other DB errors → surface `detail: insertErr.message` in 500 response. Canonical at `app/api/montree/become-an-agent/apply/route.ts`.
+59. **`/montree/changelog` is internal-use only.** Route exists; no link from public landing nav.
+60. **`.m-hero-kicker` ("Change your life") sits below the CTA, not above the title.** `.m-hero-kicker-below` modifier swaps the margin.
+61. **Agent application success state signs `— Montree`**, not a personal name. Brand voice from a brand surface.
 
 **🚨 User-discoverable confusion noted (not a bug, but UX worth fixing later):**
 
@@ -277,10 +282,34 @@ Tredoux typed `TREDOUX-PXQ9` (a referral code he generated earlier in the sessio
 
 **Verification status:**
 - ✅ Three audit passes per phase, all clean
-- ✅ Both migrations RUN in production Supabase, "Success. No rows returned" confirmed
-- ✅ 27 files staged via `git add` (10 new API routes, 6 new pages/components, 6 modifications, 2 migrations, 3 docs, 1 cleanup script)
-- ⏳ Code commit + push pending at time of brain update
-- ⏳ Phase 3 + Phase 4 acceptance tests pending (need Railway deploy first)
+- ✅ Both migrations RUN in production Supabase
+- ✅ All commits pushed to `origin/main` (ending at `57057257`). Railway auto-deployed.
+- ✅ Phase 3 acceptance: application form **verified working end-to-end** with `Tredouxtest@gmail.com` after route fix
+- ⏳ Phase 4 acceptance: agent↔super-admin thread walkthrough pending (requires Tredoux to log in as test agent first)
+
+**🚨 Post-deploy fix cycle — 3 follow-up commits after the main push:**
+
+The initial Session 108 push (`30836e8e`) landed clean, but real-world testing surfaced three issues, each fixed and pushed:
+
+1. **`e83e7490` — AgentNav top-right crowding.** Adding the "Tredoux" nav entry made it 9 links — combined with the inline agent name + Sign out button at the right edge, the cluster collided with MiraFloat's fixed trigger (`top: 16px; right: 16px`). "Tredoux Agent" wrapped to two lines and Sign out got pinched under Mira. **Fix:** dropped the inline agent name (redundant — dashboard hero already greets them by name), added `md:pr-20` to reserve space for MiraFloat, `whitespace-nowrap` on Sign out, `shrink-0` on the right cluster, moved the agent name into the mobile hamburger sheet as a small header.
+
+2. **`3ef7ddc3` — Agent application route 500.** First real submission via `/montree/become-an-agent` returned 500. Root cause investigation revealed the UPSERT-on-email pattern was silently trying to mutate a pre-existing `montree_outreach_contacts` row (from earlier demo-request testing) into an `agent_application`, but something in the implicit ON CONFLICT DO UPDATE was tripping a constraint. **Fix:** replaced UPSERT with explicit INSERT + 23505 unique-violation handling. If same-type collision → UPDATE (legitimate resubmit, resets status to `agent_applied` so previously-declined applicants get fresh review). If cross-type collision → 409 with friendly message ("This email is already on file. Please use a different email address, or reach out to tredoux555@gmail.com directly."). Other DB errors now surface `detail: insertErr.message` in the 500 response so future debugging doesn't need Railway log diving. **Verified working** — Tredoux successfully submitted with `Tredouxtest@gmail.com` after the conflicting row was DELETEd.
+
+3. **`57057257` — Landing + agent-app polish (3 surgical edits):**
+   - **`What's new` link removed from landing nav.** `/montree/changelog` is internal-use only now per directive. Route still exists for direct access.
+   - **"Change your life" hero kicker moved BELOW the "Try it" CTA** (was above the title). Acts as a punctuation flourish after the call to action. New `.m-hero-kicker-below` modifier swaps the margin.
+   - **Application success screen signs `— Montree`** instead of `— Tredoux`. Brand voice from a brand surface.
+
+**🚨 The "delete vs suspend agents" conversation (lesson logged as rule #57):**
+
+User asked if it's a good idea to delete agents. Walked through why suspend is the right primary path for production agents:
+- Audit trail value (montree_agent_audit goes SET NULL on delete → orphan rows)
+- Finance ledger continuity (`montree_finance_transactions.agent_id` same)
+- RESTRICT FK on `montree_agent_payouts` literally blocks delete when pending payouts exist — by design
+- Suspend is reversible; delete cascades destroy test schools
+- Hard delete reserved for test state via `scripts/cleanup-test-agent.sql`
+
+Recommendation accepted: **no UI 🗑 button.** Operator judgment via SQL only. Gloria was about-to-be-deleted as a clean test account but the rule logged for any non-test agents going forward.
 
 **🚨 What's NOT in this session (intentional):**
 
