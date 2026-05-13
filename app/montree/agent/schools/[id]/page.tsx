@@ -54,7 +54,7 @@ export default function AgentSchoolDetailPage() {
           return null;
         }
         if (!r.ok) {
-          if (r.status === 401) {
+          if ((r.status === 401 || r.status === 403)) {
             window.location.href = '/montree/login-select';
             return null;
           }

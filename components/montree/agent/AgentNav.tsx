@@ -32,17 +32,37 @@ export default function AgentNav() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [signOutLoading, setSignOutLoading] = useState(false);
 
+  // Session 110: auth probe runs in AgentNav (which mounts on every
+  // /montree/agent/* page via the layout). On 401/403 we redirect away
+  // from the entire agent tree — no individual page needs to handle the
+  // raw "Forbidden — agent role required" JSON blob anymore.
+  //
+  // Excluded: /montree/agent/onboarding (Stripe return URL — agent may
+  // not be logged in there yet, redirecting would create a loop).
   useEffect(() => {
+    if (pathname === '/montree/agent/onboarding') return;
     let cancelled = false;
     fetch('/api/montree/agent/me')
-      .then(r => (r.ok ? r.json() : null))
+      .then(async (r) => {
+        if (cancelled) return;
+        if (r.status === 401 || r.status === 403) {
+          // Not signed in as an agent. Could be: (a) signed out, (b) signed
+          // in as principal/super-admin, (c) impersonation cookie expired.
+          // Send back to login-select with a hint so login-select can
+          // show a friendly "agent login required" message (if it wants).
+          router.replace('/montree/login-select?reason=agent_required');
+          return null;
+        }
+        if (!r.ok) return null;
+        return r.json();
+      })
       .then((data: MeResponse | null) => {
         if (cancelled || !data) return;
         setAgentName(data.agent?.name || data.agent?.email || null);
       })
-      .catch(() => { /* nav can render without name */ });
+      .catch(() => { /* network error — nav can render without name */ });
     return () => { cancelled = true; };
-  }, []);
+  }, [pathname, router]);
 
   // Close mobile menu on route change. The setState-in-effect is intentional
   // — the menu state lives in the nav, but the trigger is route change which

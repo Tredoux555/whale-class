@@ -54,7 +54,7 @@ export default function AgentMessagesTredouxPage() {
   const load = async () => {
     try {
       const res = await fetch('/api/montree/agent/messages-tredoux/threads', { credentials: 'include' });
-      if (res.status === 401) {
+      if ((res.status === 401 || res.status === 403)) {
         router.replace('/montree/login-select');
         return;
       }

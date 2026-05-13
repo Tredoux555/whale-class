@@ -125,8 +125,12 @@ export default function AgentPayoutsPage() {
     try {
       const res = await fetch('/api/montree/agent/payouts');
       if (!res.ok) {
-        if (res.status === 401) {
-          window.location.href = '/montree/login-select';
+        // Session 110: both 401 (signed out) and 403 (not agent role)
+        // mean the user isn't an agent here. AgentNav will redirect, but
+        // we also bail out silently so this page doesn't flash the raw
+        // "Forbidden — agent role required" JSON blob in the meantime.
+        if (res.status === 401 || res.status === 403) {
+          window.location.href = '/montree/login-select?reason=agent_required';
           return;
         }
         const t = await res.text();
