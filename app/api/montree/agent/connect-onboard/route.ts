@@ -17,6 +17,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { createConnectAccount, createOnboardingLink } from '@/lib/montree/referral/stripe-connect';
+import { isStripeConnectSupported, countryDisplayName } from '@/lib/montree/referral/payout-country-support';
 import { logAgentAudit } from '@/lib/montree/referral/agent-audit';
 import { getClientIP, getUserAgent } from '@/lib/montree/audit-logger';
 
@@ -29,6 +30,7 @@ interface AgentRow {
   is_agent: boolean | null;
   agent_suspended_at: string | null;
   stripe_connect_account_id: string | null;
+  payout_method: string | null;
 }
 
 export async function POST(req: NextRequest) {
@@ -40,9 +42,20 @@ export async function POST(req: NextRequest) {
 
   const supabase = getSupabase();
 
+  // Session 109: body may carry country for new-account creation.
+  let bodyCountry: string | null = null;
+  try {
+    const body = await req.json();
+    if (body && typeof body.country === 'string' && body.country.trim()) {
+      bodyCountry = body.country.trim().toUpperCase();
+    }
+  } catch {
+    /* no body → bodyCountry stays null; we'll error below if needed */
+  }
+
   const { data: agentRaw, error: lookupErr } = await supabase
     .from('montree_teachers')
-    .select('id, name, email, is_agent, agent_suspended_at, stripe_connect_account_id')
+    .select('id, name, email, is_agent, agent_suspended_at, stripe_connect_account_id, payout_method')
     .eq('id', auth.userId)
     .maybeSingle();
 
@@ -61,14 +74,38 @@ export async function POST(req: NextRequest) {
     }, { status: 400 });
   }
 
+  // 🚨 Session 109: manual-wire agents don't use Stripe Connect.
+  if (agent.payout_method === 'manual_wire') {
+    return NextResponse.json({
+      error: 'Your payouts are set up as manual wire transfers — Stripe Connect onboarding does not apply. Bank details are on file already; message Tredoux from the Tredoux tab if anything needs updating.',
+    }, { status: 409 });
+  }
+
   // Step 1: ensure Stripe Connect account exists.
   let accountId = agent.stripe_connect_account_id;
   let createdNew = false;
 
   if (!accountId) {
+    // 🚨 Session 109: country is required for new accounts so Stripe doesn't
+    // default to the platform's HK locking the agent to wrong jurisdiction.
+    if (!bodyCountry) {
+      return NextResponse.json({
+        error: 'Country required',
+        detail: 'Pick the country where your bank account is, then try again.',
+        country_required: true,
+      }, { status: 400 });
+    }
+    if (!isStripeConnectSupported(bodyCountry)) {
+      return NextResponse.json({
+        error: `Stripe Connect doesn't support ${countryDisplayName(bodyCountry)} (${bodyCountry}). Reach out to Tredoux — he'll switch your payouts to manual wire (Wise / SWIFT) instead.`,
+        country_unsupported: true,
+      }, { status: 400 });
+    }
+
     try {
       const account = await createConnectAccount({
         email: agent.email,
+        country: bodyCountry,
         display_name: agent.name || agent.email,
       });
       accountId = account.id;

@@ -79,6 +79,9 @@ export default function AgentPayoutsPage() {
   const [linkLoading, setLinkLoading] = useState(false);
   const [refreshLoading, setRefreshLoading] = useState(false);
   const [linkCopied, setLinkCopied] = useState(false);
+  // Session 109: country picker for first-time Connect account creation.
+  // Empty string = no selection. The picker only appears when no account exists.
+  const [selectedCountry, setSelectedCountry] = useState<string>('');
 
   const load = useCallback(async () => {
     setError(null);
@@ -103,10 +106,24 @@ export default function AgentPayoutsPage() {
   useEffect(() => { load(); }, [load]);
 
   const generateLink = async () => {
+    // Session 109: when creating a NEW Connect account, pass the agent's
+    // country so Stripe creates it in the right jurisdiction (not platform's
+    // default HK). If an account already exists, no country needed (we just
+    // generate a fresh onboarding LINK against the existing account).
+    const needsCountry = !data?.stripe_connect_account_id;
+    if (needsCountry && !selectedCountry) {
+      setError('Pick your country first — that determines which Stripe rules apply.');
+      return;
+    }
+
     setLinkLoading(true);
     setError(null);
     try {
-      const res = await fetch('/api/montree/agent/connect-onboard', { method: 'POST' });
+      const res = await fetch('/api/montree/agent/connect-onboard', {
+        method: 'POST',
+        headers: needsCountry ? { 'Content-Type': 'application/json' } : undefined,
+        body: needsCountry ? JSON.stringify({ country: selectedCountry }) : undefined,
+      });
       const d = await res.json();
       if (!res.ok) {
         setError(d.detail || d.error || 'Could not generate onboarding link.');
@@ -296,12 +313,67 @@ export default function AgentPayoutsPage() {
               </p>
             )}
 
+            {/* Country picker — only shown when no Connect account exists yet.
+                Stripe locks the account to whatever country it's created in,
+                so getting this right at first-issue is critical. */}
+            {data.stripe_connect_status !== 'verified' && !data.stripe_connect_account_id && (
+              <div className="mt-5">
+                <label className="block text-white/80 text-sm font-medium mb-2">
+                  Your country
+                </label>
+                <select
+                  value={selectedCountry}
+                  onChange={(e) => setSelectedCountry(e.target.value)}
+                  className="w-full sm:w-auto px-3 py-2 bg-slate-900 border border-white/15 rounded-lg text-white text-sm focus:border-emerald-500 outline-none"
+                >
+                  <option value="">— Pick your country —</option>
+                  <option value="US">United States</option>
+                  <option value="GB">United Kingdom</option>
+                  <option value="ZA">South Africa</option>
+                  <option value="AE">United Arab Emirates</option>
+                  <option value="AU">Australia</option>
+                  <option value="NZ">New Zealand</option>
+                  <option value="CA">Canada</option>
+                  <option value="SG">Singapore</option>
+                  <option value="HK">Hong Kong</option>
+                  <option value="JP">Japan</option>
+                  <option value="KR">South Korea</option>
+                  <option value="IN">India</option>
+                  <option value="MY">Malaysia</option>
+                  <option value="TH">Thailand</option>
+                  <option value="DE">Germany</option>
+                  <option value="FR">France</option>
+                  <option value="NL">Netherlands</option>
+                  <option value="IE">Ireland</option>
+                  <option value="ES">Spain</option>
+                  <option value="IT">Italy</option>
+                  <option value="PT">Portugal</option>
+                  <option value="BE">Belgium</option>
+                  <option value="AT">Austria</option>
+                  <option value="SE">Sweden</option>
+                  <option value="NO">Norway</option>
+                  <option value="DK">Denmark</option>
+                  <option value="FI">Finland</option>
+                  <option value="CH">Switzerland</option>
+                  <option value="MX">Mexico</option>
+                  <option value="BR">Brazil</option>
+                  <option value="BH">Bahrain</option>
+                </select>
+                <p className="mt-2 text-white/40 text-[11px]">
+                  Pick the country where your bank account is. Stripe locks the
+                  account to this country permanently — be careful. If your
+                  country isn&apos;t listed, message Tredoux from the Tredoux
+                  tab — he&apos;ll set you up with manual payouts via Wise.
+                </p>
+              </div>
+            )}
+
             {/* CTA — primary action so it gets the 44pt mobile touch target. */}
             {data.stripe_connect_status !== 'verified' && (
               <div className="mt-5">
                 <button
                   onClick={generateLink}
-                  disabled={linkLoading}
+                  disabled={linkLoading || (!data.stripe_connect_account_id && !selectedCountry)}
                   className="inline-block px-4 py-3 sm:py-2 bg-amber-500 hover:bg-amber-400 text-white font-medium rounded-lg text-base sm:text-sm disabled:opacity-50 transition-colors"
                 >
                   {linkLoading
