@@ -202,6 +202,39 @@ Wave 1 sends bounced for these addresses. None of these are flagged as `bounced`
 
 ## RECENT STATUS (May 13, 2026)
 
+### 🚧 NEXT SESSION — Inbound payments build (theorize-complete, ready to execute)
+
+**🚨 Canonical anchor doc:** `docs/handoffs/INBOUND_PAYMENTS_PLAN.md` — comprehensive theorize-first plan for the three-rail inbound payments system (mirror of Session 109's outbound architecture).
+
+**The gap being closed:** Chinese mainland schools (and others without foreign credit cards) cannot pay via Stripe Checkout. The current single-rail (`stripe_subscription`) is functionally broken for ~half the addressable market.
+
+**The three rails to build:**
+1. `stripe_subscription` — Western credit card, auto-renewing (✅ already shipped Phase 4 / Session 93)
+2. `alipay_invoice` — Mainland China + HK + Macau + Taiwan, monthly Stripe invoice with Alipay/WeChat Pay QR codes (❌ build this)
+3. `manual_invoice` — Russia / Argentina / Iran / restricted countries, PDF invoice → SWIFT wire → super-admin records (❌ build this)
+
+**Sequenced as 5 phases (~1 day focused work + operational setup):**
+- Phase A: schema migration 209 + super-admin payment-method flip UI (~1 hour)
+- Phase B: Alipay/WeChat cron + invoice generation + webhook handling (~half-day)
+- Phase C: manual invoice PDF gen + ⚡ Record incoming wire UI (~half-day)
+- Phase D: annual billing cadence with 10% discount support (~1 hour)
+- Phase E: i18n batch (~50 keys × 12 locales) + 15-step acceptance walkthrough (~1 hour)
+
+**Architectural rules to lock in:** #80-89 (single rail per school, alipay = invoices not subscriptions, period locking applies symmetrically, AI tier auto-flip works across all rails, annual prepay writes 12 monthly periods at once, etc.)
+
+**🚨 Operational pre-requisites Tredoux to handle before Phase B starts:**
+1. Enable Alipay + WeChat Pay payment methods on Stripe Account (Settings → Payment methods)
+2. Verify `montree.xyz` domain in Resend (HARD BLOCKER — invoice emails won't deliver otherwise; carry-over from Session 83)
+3. Confirm with HK banker (Wallex) that the existing HKD account receives Alipay/WeChat payouts from Stripe
+4. Create Supabase Storage bucket `inbound-invoices` (super-admin / service-role only)
+5. Decide on strategic questions in the plan doc: annual discount %, monthly default vs annual, whether Whale Class flips to real-customer status
+
+**Next session opening prompt** (copy-paste when fresh session starts):
+
+> "Continue with the inbound payments build per `docs/handoffs/INBOUND_PAYMENTS_PLAN.md`. Run Phase A first, audit, then B, C, D, E sequentially. Don't stop — build, audit, build, audit until done. Migration to run in Supabase: 209 (after Phase A). I've made the strategic decisions on annual=[X]% / both Alipay+WeChat enabled / [N]-day grace / 30-day trial uniform / Whale Class flips to annual alipay_invoice / Resend domain verification done."
+
+---
+
 ### ⚡ Session 110 — Agent self-service payout-method switch (May 13, 2026, evening)
 
 **Closes the friction Bayan would have hit otherwise.** Agents in Stripe-unsupported countries no longer need to message Tredoux to flip to manual_wire — they do it themselves on `/montree/agent/payouts`, save their bank details once via a friendly modal, and the page renders the manual-wire panel without any human round-trip.
