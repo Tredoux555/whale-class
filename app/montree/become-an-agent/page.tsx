@@ -534,7 +534,7 @@ export default function BecomeAnAgentPage() {
                 Thanks for applying. I read every application personally — you'll hear back from me within a few days. If we're a good fit, I'll send your agent code and walk you through getting set up.
               </p>
               <p style={{ marginTop: 18, fontSize: '0.8125rem', color: 'rgba(255,255,255,0.4)' }}>
-                — Tredoux
+                — Montree
               </p>
             </div>
           ) : (
