@@ -25,6 +25,8 @@ const MoneyTab = dynamic(() => import('@/components/montree/super-admin/MoneyTab
 const HealthTab = dynamic(() => import('@/components/montree/super-admin/HealthTab'), { ssr: false });
 const WebhookDLQTab = dynamic(() => import('@/components/montree/super-admin/WebhookDLQTab'), { ssr: false });
 const ServerErrorsTab = dynamic(() => import('@/components/montree/super-admin/ServerErrorsTab'), { ssr: false });
+const AgentApplicationAlert = dynamic(() => import('@/components/montree/super-admin/AgentApplicationAlert'), { ssr: false });
+const AgentInboxTab = dynamic(() => import('@/components/montree/super-admin/AgentInboxTab'), { ssr: false });
 
 
 interface DmMessage {
@@ -35,7 +37,7 @@ interface DmMessage {
   created_at: string;
 }
 
-type TabType = 'schools' | 'feedback' | 'leads' | 'visitors' | 'agents' | 'money' | 'health' | 'dlq' | 'errors';
+type TabType = 'schools' | 'feedback' | 'leads' | 'visitors' | 'agents' | 'agent-inbox' | 'money' | 'health' | 'dlq' | 'errors';
 
 const SESSION_TIMEOUT_MS = 15 * 60 * 1000; // 15 minutes
 
@@ -333,6 +335,20 @@ export default function SuperAdminPage() {
   }, []);
   const [sessionWarning, setSessionWarning] = useState(false);
   const [activeTab, setActiveTab] = useState<TabType>('schools');
+
+  // Phase 3 (agent system fix plan): read `?tab=...` on mount so external
+  // links (e.g. AgentApplicationAlert "Accept" button) can deep-link to a
+  // specific tab. We don't strip the param here — ReferralsTab reads its
+  // own prefill params and strips them after consuming.
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const sp = new URLSearchParams(window.location.search);
+    const tab = sp.get('tab');
+    const valid: TabType[] = ['schools', 'feedback', 'leads', 'visitors', 'agents', 'agent-inbox', 'money', 'health', 'dlq', 'errors'];
+    if (tab && (valid as string[]).includes(tab)) {
+      setActiveTab(tab as TabType);
+    }
+  }, []);
   const [editingSchool, setEditingSchool] = useState<string | null>(null);
   const [editingNotes, setEditingNotes] = useState<string | null>(null);
   const [notesText, setNotesText] = useState('');
@@ -670,6 +686,9 @@ export default function SuperAdminPage() {
         {/* Demo Request Alert */}
         <DemoRequestAlert saToken={saToken} />
 
+        {/* Agent Application Alert */}
+        <AgentApplicationAlert saToken={saToken} />
+
         {/* Tabs */}
         <div
           className="flex gap-1 mb-6 overflow-x-auto pb-1"
@@ -699,6 +718,7 @@ export default function SuperAdminPage() {
           />
           <SuperAdminTab active={activeTab === 'visitors'} onClick={() => setActiveTab('visitors')} icon="📍" label="Visitors" />
           <SuperAdminTab active={activeTab === 'agents'} onClick={() => setActiveTab('agents')} icon="🤝" label="Agents" />
+          <SuperAdminTab active={activeTab === 'agent-inbox'} onClick={() => setActiveTab('agent-inbox')} icon="📬" label="Agent Inbox" />
           <SuperAdminTab active={activeTab === 'money'} onClick={() => setActiveTab('money')} icon="💰" label="Money" />
           <SuperAdminTab active={activeTab === 'health'} onClick={() => setActiveTab('health')} icon="🩺" label="Health" />
           <SuperAdminTab active={activeTab === 'dlq'} onClick={() => setActiveTab('dlq')} icon="⚠️" label="DLQ" />
@@ -767,6 +787,10 @@ export default function SuperAdminPage() {
 
         {activeTab === 'agents' && (
           <AgentsTab saToken={saToken} />
+        )}
+
+        {activeTab === 'agent-inbox' && (
+          <AgentInboxTab saToken={saToken} />
         )}
 
         {activeTab === 'money' && (

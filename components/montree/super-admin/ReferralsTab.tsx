@@ -162,6 +162,13 @@ export default function ReferralsTab({ saToken }: ReferralsTabProps) {
   // Filters.
   const [statusFilter, setStatusFilter] = useState<'all' | Referral['status']>('all');
 
+  // Phase 3 (agent system fix plan): when an agent application is accepted
+  // from AgentApplicationAlert, super-admin lands here with prefill query
+  // params. We open the issue-code form pre-filled, and after the code is
+  // created we mark the application 'sent' so it falls out of the pending
+  // alert banner.
+  const [fromApplicationId, setFromApplicationId] = useState<string | null>(null);
+
   const headers = useCallback(
     () => ({
       'Content-Type': 'application/json',
@@ -191,6 +198,30 @@ export default function ReferralsTab({ saToken }: ReferralsTabProps) {
   useEffect(() => {
     load();
   }, [load]);
+
+  // Phase 3: read prefill from URL on mount (set by AgentApplicationAlert
+  // "Accept" button). Open the issue-code form pre-filled with applicant
+  // details. We strip the params from the URL after reading so a manual
+  // refresh doesn't re-open the form.
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const sp = new URLSearchParams(window.location.search);
+    const prefillName = sp.get('prefill_name');
+    const prefillEmail = sp.get('prefill_email');
+    const appId = sp.get('from_application');
+    if (prefillName || prefillEmail || appId) {
+      if (prefillName) setAgentName(prefillName);
+      if (prefillEmail) setAgentEmail(prefillEmail);
+      if (appId) setFromApplicationId(appId);
+      setShowForm(true);
+      // Strip the params so a refresh doesn't loop. Preserve tab=agents.
+      const cleaned = new URL(window.location.href);
+      cleaned.searchParams.delete('prefill_name');
+      cleaned.searchParams.delete('prefill_email');
+      cleaned.searchParams.delete('from_application');
+      window.history.replaceState(null, '', cleaned.toString());
+    }
+  }, []);
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -225,6 +256,19 @@ export default function ReferralsTab({ saToken }: ReferralsTabProps) {
       }
       setRevealed({ code: data.code, agent: data.referral.agent_display_name });
       setCopied(false);
+      // Phase 3: if this code was issued in response to an agent application,
+      // mark the application 'sent' so it drops out of the pending alert.
+      // Fire-and-forget — failure here doesn't undo the code creation.
+      if (fromApplicationId) {
+        void fetch('/api/montree/super-admin/agent-applications', {
+          method: 'PATCH',
+          headers: headers(),
+          body: JSON.stringify({ id: fromApplicationId, status: 'sent' }),
+        }).catch((err) =>
+          console.error('[ReferralsTab] failed to mark application sent:', err)
+        );
+        setFromApplicationId(null);
+      }
       // Reset form
       setAgentName('');
       setAgentEmail('');
