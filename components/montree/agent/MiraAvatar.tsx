@@ -1,10 +1,21 @@
 // components/montree/agent/MiraAvatar.tsx
 //
 // Mira's avatar. Mirror of TracyAvatar — falls back to a CSS-rendered
-// monogram if the PNG isn't on disk yet. Drop a 1024×1024 PNG at
-// /public/mira-avatar.png to activate the image variant.
+// monogram if the PNG isn't on disk yet.
+//
+// 🚨 Phase 5 polish: by default we render the CSS monogram only, to silence
+// the 6+ console 404s per agent page load. When you actually drop a
+// 1024×1024 PNG at /public/mira-avatar.png, flip MIRA_PNG_AVAILABLE to true
+// (one-line change) and the <img> tag activates. The onError fallback path
+// stays so it remains resilient.
 
 import { useState } from 'react';
+
+/**
+ * Flip to `true` once `/public/mira-avatar.png` exists. Until then, the
+ * component renders the CSS monogram only (no <img> request, no 404 noise).
+ */
+const MIRA_PNG_AVAILABLE = false;
 
 interface MiraAvatarProps {
   size?: number;
@@ -16,7 +27,7 @@ export default function MiraAvatar({ size = 56, className, style }: MiraAvatarPr
   const [imgError, setImgError] = useState(false);
   const radius = Math.round(size * 0.22); // rounded square — same as Tracy
 
-  if (imgError) {
+  if (!MIRA_PNG_AVAILABLE || imgError) {
     return (
       <div
         className={className}

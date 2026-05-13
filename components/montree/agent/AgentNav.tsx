@@ -17,6 +17,7 @@ const NAV_LINKS: Array<{ href: string; label: string }> = [
   { href: '/montree/agent/dashboard', label: 'Dashboard' },
   { href: '/montree/agent/mira', label: 'Mira' },
   { href: '/montree/agent/messages', label: 'Messages' },
+  { href: '/montree/agent/messages-tredoux', label: 'Tredoux' },
   { href: '/montree/agent/schools', label: 'Schools' },
   { href: '/montree/agent/codes', label: 'Codes' },
   { href: '/montree/agent/earnings', label: 'Earnings' },
