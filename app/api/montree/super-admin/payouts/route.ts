@@ -98,7 +98,7 @@ export async function GET(request: NextRequest) {
         ? supabase
             .from('montree_teachers')
             .select(
-              'id, name, email, stripe_connect_account_id, stripe_connect_status, charges_enabled, payouts_enabled'
+              'id, name, email, stripe_connect_account_id, stripe_connect_status, charges_enabled, payouts_enabled, payout_method'
             )
             .in('id', agentIds)
         : Promise.resolve({ data: [] }),
@@ -114,6 +114,7 @@ export async function GET(request: NextRequest) {
       stripe_connect_status: string | null;
       charges_enabled: boolean | null;
       payouts_enabled: boolean | null;
+      payout_method: string | null;
     }
     const agentById = new Map<string, AgentLite>();
     for (const a of (agentsRes.data || []) as AgentLite[]) {
@@ -166,6 +167,9 @@ export async function GET(request: NextRequest) {
         agent_payouts_enabled: ag?.payouts_enabled === true,
         agent_charges_enabled: ag?.charges_enabled === true,
         agent_has_connect_account: !!ag?.stripe_connect_account_id,
+        // Session 109 — drives whether MoneyTab shows ⚡ Wire (stripe_connect)
+        // or ⚡ Record manual wire (manual_wire) button on the row.
+        agent_payout_method: (ag?.payout_method as 'stripe_connect' | 'manual_wire' | null) || 'stripe_connect',
       };
     });
 
