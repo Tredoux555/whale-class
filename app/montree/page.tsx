@@ -224,6 +224,12 @@ export default function MontreeLanding() {
           margin-bottom: 18px;
           text-shadow: 0 0 24px rgba(232,201,106,0.18);
         }
+        /* When the kicker sits BELOW the CTA, swap the top/bottom margin so it
+           breathes underneath the button instead of crowding the title above. */
+        .m-hero-kicker.m-hero-kicker-below {
+          margin-bottom: 0;
+          margin-top: 28px;
+        }
         .m-hero h1 {
           font-family: var(--font-lora), Georgia, serif;
           font-weight: 400;
@@ -378,11 +384,9 @@ export default function MontreeLanding() {
               onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.55)')}>
               {t('landing.nav.forTeachers')}
             </Link>
-            <Link className="m-nav-link m-nav-link-secondary" href="/montree/changelog" style={{ fontSize: '0.875rem', color: 'rgba(255,255,255,0.55)', textDecoration: 'none', letterSpacing: '0.01em', transition: 'color 200ms ease' }}
-              onMouseEnter={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.85)' )}
-              onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.55)')}>
-              What&rsquo;s new
-            </Link>
+            {/* "What's new" link removed from public landing nav per Session 108 directive —
+                /montree/changelog is internal-use only now. The route still exists for direct
+                access. */}
             <Link className="m-nav-link m-nav-link-login" href="/montree/login-select" style={{ fontSize: '0.875rem', color: 'rgba(255,255,255,0.55)', textDecoration: 'none', letterSpacing: '0.01em', transition: 'color 200ms ease' }}
               onMouseEnter={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.85)' )}
               onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.55)')}>
@@ -400,11 +404,13 @@ export default function MontreeLanding() {
             &ldquo;Play is the work of the child.&rdquo;
             <span className="m-hero-quote-attr">— Maria Montessori</span>
           </p>
-          <span className="m-hero-kicker">{t('landing.hero.kicker')}</span>
           <h1>{t('landing.hero.title')}</h1>
           <Link className="m-pill m-pill-lg" href="/montree/login-select?signup=true">
             {t('landing.hero.cta')}
           </Link>
+          {/* "Change your life" moved below the Try-it CTA per Session 108 directive —
+              acts as a punctuation flourish AFTER the call to action, not before the title. */}
+          <span className="m-hero-kicker m-hero-kicker-below">{t('landing.hero.kicker')}</span>
         </div>
       </section>
 
