@@ -409,7 +409,7 @@ export default function BecomeAnAgentPage() {
         <nav className="ba-nav">
           <div className="ba-nav-inner">
             <a className="ba-logo" href="/montree">🌿 Montree</a>
-            <a className="ba-pill ba-pill-ghost" href="/montree/login-select">Log in</a>
+            <a className="ba-pill" href="/montree/login-select">Log in</a>
           </div>
         </nav>
 
