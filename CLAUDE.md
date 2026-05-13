@@ -202,6 +202,66 @@ Wave 1 sends bounced for these addresses. None of these are flagged as `bounced`
 
 ## RECENT STATUS (May 13, 2026)
 
+### ⚡ Session 109 — Manual payout architecture + financial books foundation (May 13, 2026)
+
+**Headline:** Stripe Connect Express ZA support confirmed non-existent (verified via Stripe API). Built the manual_wire alternative rail for agents in any Stripe-unsupported country (China, ZA, Palestine, Lebanon, Argentina, Ukraine, etc.). Plus laid the foundation for clean external books — manual wire UI, annual agent statements, period locking, three-way reconciliation report, Xero sync scaffold + Health card, tax-form scaffold.
+
+**🚨 Canonical resume doc:** `docs/handoffs/SESSION_109_HANDOFF.md` — 9 commits, 4 migrations, 11-step smoke test, all deferred items + next session priorities.
+
+**🚨 4 Supabase migrations to run:**
+
+```
+migrations/205_agent_payout_method.sql     — payout_method + manual_payout_details on montree_teachers
+migrations/206_period_locks.sql            — closed-month immutability
+migrations/207_agent_tax_form.sql          — W-8BEN-E / W-9 columns
+migrations/208_xero_sync_log.sql           — Xero sync idempotency log
+```
+
+Each idempotent. Safe to re-run.
+
+**Commits shipped (9, all on origin/main):**
+- `5910b39a` — Manual payout architecture + Stripe Connect country fix (createConnectAccount requires country; routes validate against STRIPE_CONNECT_SUPPORTED_COUNTRIES; 💸 button + payout-config modal; agent /payouts branches on payout_method)
+- `80cdce22` — Become-an-agent nav match landing proportions (thin Log in text link, not chunky pill)
+- `7628016c` — Financial architecture plan + B1 manual wire recording UI
+- `1e4bdc8f` — B2 Annual agent statement (CSV + printable HTML)
+- `3c193a5a` — B3 Period locking (migration 206 + assertPeriodOpen + 🔒 UI)
+- `a20e1bc0` — B4 Reconciliation report (Stripe-side vs billing_history vs bank-side diff with findings)
+- `cc2c9a94` — Phase C scaffold (Xero sync + Health card + mapper + script)
+- `0d7788b5` — B5 scaffold (agent tax-form migration 207 + API)
+- (post-deploy AgentNav + agent app fixes from Session 108 also rolled in)
+
+**Critical Stripe-policy discoveries this session:**
+
+- **ZA NOT supported** by Stripe Connect Express. Verified via real API error: "ZA is not currently supported by Stripe."
+- **US Connect requires `card_payments` capability alongside `transfers`** — different rule than HK. Discovered when Tredoux tried US as a workaround. Patched the supported countries list, but the US capability bug remains as a follow-up item (not blocking — only triggers when an actual US agent onboards).
+- **Mainland China, Palestine, Lebanon, Argentina, Ukraine** all confirmed unsupported. Path for all of them is `payout_method='manual_wire'`.
+
+**Bayan's outcome:** stays on manual_wire. The Stripe HK-locked test account she had needs cleanup (reject in Stripe Dashboard + clear stripe_connect_account_id in DB), then 💸 → manual_wire + paste bank JSON. Money flows via Wise/Wallex; ⚡ Record manual wire captures the result. Annual statement covers her tax/source-of-funds documentation needs.
+
+**Architectural rules locked #62–78 — full list in handoff doc.** Highlights:
+
+- #62 Period-locked months immutable (`assertPeriodOpen()` guard)
+- #63 Every paid payout writes a commission row regardless of method
+- #64 Annual statements source from `montree_agent_payouts` where status='paid'
+- #65 Reconciliation is multi-source diff (Stripe + ledger + bank)
+- #68 `createConnectAccount(country)` is REQUIRED
+- #69 `STRIPE_CONNECT_SUPPORTED_COUNTRIES` is canonical
+- #71 Agent /payouts branches on payout_method
+- #73 Montree = operational truth; Xero = statutory truth (one-way sync)
+- #74 Xero sync idempotent via partial unique index
+- #78 Bayan/ZA test case proves the system
+
+**What's deferred to next session:**
+- Walk the 11-step smoke test
+- ReferralsTab 📋 tax-form button + modal (30 min, UI on top of B5 API)
+- Wallex CSV upload + `montree_bank_statements` table (half-day, finishes B4)
+- Real Xero API calls in `scripts/sync-to-xero.mjs` (one-line flip after accountant confirms account codes)
+- Phase A operational setup (Xero account, accountant, Stripe-Xero integration, env vars)
+- Translation sweep (72 pages identified in Session 108 audit still English-only)
+- Mira + Tracy AI tool extensions (Phase 4.7 + 4.8 from Session 108 plan)
+
+---
+
 ### ⚡ Session 108 — Agent System Fix Phases 3 + 4 + 5 (May 13, 2026)
 
 **3×3×3 plan executed end-to-end. Phases 1 + 2 of the plan are user-action gates (E2E test with real Stripe + conditional 404 hot-fix). Phases 3, 4, 5 — all pure code — shipped this session. Migrations 203 + 204 RUN.** Plus the cleanup SQL script and E2E test plan from earlier in the same session.
@@ -275,6 +335,23 @@ Reading the route at `app/api/montree/agent/connect-status/route.ts`, the ONLY 4
 59. **`/montree/changelog` is internal-use only.** Route exists; no link from public landing nav.
 60. **`.m-hero-kicker` ("Change your life") sits below the CTA, not above the title.** `.m-hero-kicker-below` modifier swaps the margin.
 61. **Agent application success state signs `— Montree`**, not a personal name. Brand voice from a brand surface.
+62. **Period-locked months are immutable.** `assertPeriodOpen()` gates every mutation to finance_transactions + agent_payouts. Reopening requires explicit super-admin action with notes captured for audit trail.
+63. **Every paid agent payout writes a commission row to `montree_finance_transactions`** regardless of payout method. Stripe Connect: `source='stripe_webhook', source_ref='payout:<id>'`. Manual: `source='manual_entry', source_ref='manual_wire:<wire_ref>'`. Both idempotent on re-runs.
+64. **Annual agent statements source from `montree_agent_payouts` where status='paid'**, not from finance_transactions. The payout table is the canonical "what we paid this agent" record.
+65. **Reconciliation is a multi-source diff**, not a single source of truth. Stripe webhooks + ledger + bank statements must agree within $1 — anything more is a finding to investigate.
+66. **W-8BEN-E (or jurisdiction equivalent) collected at agent onboarding** — not blocking initial code issuance but checked before first payout (future enforcement).
+67. **Manual wire records use the wire ref as `source_ref`** for idempotency. Re-recording the same wire ref returns the existing record, no duplicate ledger entry.
+68. **`createConnectAccount(country)` is REQUIRED.** Without it Stripe defaults to platform country (HK) and locks every agent to wrong jurisdiction. ReferralsTab 💳 + agent /payouts both prompt for country before creating an account.
+69. **`STRIPE_CONNECT_SUPPORTED_COUNTRIES` is the canonical list** in `lib/montree/referral/payout-country-support.ts`. Agents in unsupported countries (China, Palestine, Lebanon, ZA, Argentina, Ukraine) MUST go on `payout_method='manual_wire'`.
+70. **Verified Stripe Connect agents cannot be silently switched to manual_wire.** Payout-config PATCH refuses with 409 — operator must reject the Stripe account first, otherwise the system state diverges.
+71. **Agent /payouts page branches on `payout_method`.** stripe_connect → Stripe Connect onboarding UI with country picker. manual_wire → "Bank details on file" read-only view. Payout history common to both.
+72. **MoneyTab wire button branches on `agent_payout_method`.** stripe_connect → amber ⚡ Wire (Stripe `transfers.create` with idempotency key). manual_wire → violet ⚡ Record manual wire (inline form with wire ref + FX rate + local amount).
+73. **Montree operational ledger is the real-time truth.** Xero (when activated) is the statutory truth — read-only mirror via daily sync. The accountant's adjusting entries stay in Xero only; operational books in Montree stay simple.
+74. **Xero sync is idempotent via partial unique index** on `montree_xero_sync_log(finance_tx_id, xero_object_type) WHERE status='success'`. Re-running the script never duplicates Xero objects. Failed attempts don't occupy a slot so retries are unblocked.
+75. **Xero refresh tokens rotate on use.** When `refreshAccessToken()` returns a new refresh_token, it's logged loudly so the operator updates Railway env. Phase D will auto-persist.
+76. **Xero account codes in `mapper.ts` are placeholders** (200/310/320/400/491/090/404). The accountant maps these to the actual Xero chart of accounts before flipping the sync script from scaffold to live.
+77. **Agent annual statement footer states explicit independent-contractor + non-withholding posture.** Doubles as bank source-of-funds documentation for receiving banks in restricted countries.
+78. **`assertPeriodOpen()` fails-open when the period_locks table doesn't exist** (Postgres 42P01). Migration 206 must be run before locks become active — but the wire routes deploy cleanly without it.
 
 **🚨 User-discoverable confusion noted (not a bug, but UX worth fixing later):**
 
@@ -5699,6 +5776,12 @@ All migrations through 169 have been run. Key ones: 147 (smart learning columns)
 **Session 108 (May 13, 2026) — Agent system Phases 3 + 4 migrations RUN:**
 - ✅ `203_agent_applications.sql` — extends `montree_outreach_contacts` with `application_details JSONB` column, `agent_application` in `contact_type` CHECK, `agent_applied` + `declined` in `status` CHECK (preserves prior values including `demo_requested`/`contacted`/`not_interested` from migration 183). Partial index on pending applications. **CONFIRMED RUN — "Success. No rows returned".** Phase 3 inbound application pipeline now live.
 - ✅ `204_agent_super_admin_messaging.sql` — extends 4 messaging CHECK constraints (`thread_type`, `created_by_role`, `participant_role`, `sender_role`) to include `agent_super_admin` / `super_admin`. Drops NOT NULL on `montree_message_threads.school_id` + adds gated CHECK (only `agent_super_admin` threads may have NULL school_id; every other type stays mandatorily school-scoped). Partial index on `agent_super_admin` inbox lookups. **CONFIRMED RUN — "Success. No rows returned".** Phase 4 agent↔super-admin threaded messaging schema live. Stop telling future sessions to run these — they're done.
+
+**Session 109 (May 13, 2026) — Manual payout architecture + financial books foundation. ⏳ 4 migrations pending Tredoux's Supabase run:**
+- ⏳ `205_agent_payout_method.sql` — `montree_teachers.payout_method` (CHECK IN 'stripe_connect','manual_wire'), `manual_payout_details` JSONB, `manual_payout_details_updated_at` TIMESTAMPTZ. Partial index on active manual_wire agents. Idempotent. **REQUIRED for 💸 button + agent /payouts manual_wire branch.**
+- ⏳ `206_period_locks.sql` — `montree_period_locks` table (period_month PK in YYYY-MM, closed_at, closed_by, notes, timestamps + trigger). Partial index on closed periods. Idempotent. **REQUIRED for Close month / Reopen UI + assertPeriodOpen() guards on wire routes.**
+- ⏳ `207_agent_tax_form.sql` — `montree_teachers.tax_form_url`, `tax_form_type` (CHECK IN 'w8ben','w8ben_e','w9','jurisdiction_other','declaration_attached'), `tax_form_uploaded_at`, `tax_residency_country` (ISO2), `is_us_person`. Partial index on agents missing tax form. Idempotent. **REQUIRED for tax-form scaffold + future first-payout gate.**
+- ⏳ `208_xero_sync_log.sql` — `montree_xero_sync_log` table (finance_tx_id, xero_object_type CHECK IN 'Invoice','Bill','BankTransaction','ManualJournal','CreditNote', xero_object_id, status, error, attempt, timestamps). Partial UNIQUE index on (finance_tx_id, xero_object_type) WHERE status='success' for idempotency. Recent + failures indexes. Idempotent. **REQUIRED for Xero sync engine; sync stays INACTIVE without XERO_CLIENT_ID/SECRET/TENANT_ID/REFRESH_TOKEN env vars regardless of migration state.**
 
 ---
 

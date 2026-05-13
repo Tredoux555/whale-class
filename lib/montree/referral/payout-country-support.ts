@@ -31,10 +31,11 @@ export const STRIPE_CONNECT_SUPPORTED_COUNTRIES: readonly string[] = [
   'AE', 'BH',
   // Latin America
   'BR',
-  // Africa — Stripe started rolling out in 2024. ZA is a known recent addition
-  // but its Connect Express support is borderline; we mark it supported and let
-  // Stripe's API return an error if creation fails.
-  'ZA',
+  // Africa — confirmed NOT supported by Stripe Connect Express (verified via
+  // Stripe API error May 2026 — "ZA is not currently supported by Stripe").
+  // Stripe has been rolling out African coverage but Connect Express specifically
+  // remains unsupported. When Stripe adds it, just add 'ZA' back to this list.
+  // For now: ZA agents use payout_method='manual_wire'.
 ];
 
 const SUPPORTED_SET = new Set(STRIPE_CONNECT_SUPPORTED_COUNTRIES);
