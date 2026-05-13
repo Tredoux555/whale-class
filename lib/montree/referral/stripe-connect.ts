@@ -40,20 +40,27 @@ function getAppBaseUrl(): string {
 
 /**
  * Create a new Stripe Connect Express account for the given agent.
- * The agent's email is pre-filled so they don't have to retype it.
  *
- * NOTE on country: Stripe Connect requires us to know the agent's country.
- * For Phase 3 we leave country UNSPECIFIED (Stripe defaults to the platform
- * account's country) — agents anywhere Stripe supports Express can complete
- * onboarding. If we ever need country gating per agent, accept it as a param.
+ * 🚨 country is REQUIRED. Without it, Stripe falls back to the platform
+ * account's country (HK) and locks the agent's onboarding form to that
+ * country — even when the agent lives elsewhere. Session 109 fix.
+ *
+ * Pass the agent's ISO 3166-1 alpha-2 country code (e.g. 'US', 'GB', 'ZA',
+ * 'AE'). Use `isStripeConnectSupported(country)` from
+ * `./payout-country-support.ts` to validate BEFORE calling — Stripe will
+ * 400 with "country not supported" otherwise. Agents in unsupported
+ * countries (China, Palestine, Lebanon, etc.) should be on payout_method
+ * 'manual_wire' and never reach this function.
  */
 export async function createConnectAccount(params: {
   email: string;
+  country: string;
   display_name?: string;
 }): Promise<Stripe.Account> {
   const stripe = getStripe();
   return stripe.accounts.create({
     type: 'express',
+    country: params.country.toUpperCase(),
     email: params.email,
     business_type: 'individual',
     capabilities: {
