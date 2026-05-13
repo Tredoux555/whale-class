@@ -72,6 +72,35 @@ const STATUS_DISPLAY: Record<NonNullable<PayoutsResponse['stripe_connect_status'
   disabled: { label: 'Disabled', tone: 'red', tip: 'Account disabled. Reach out to Tredoux.' },
 };
 
+// Session 110 — self-service manual wire form fields.
+interface ManualWireForm {
+  account_holder_name: string;
+  bank_name: string;
+  account_number: string;
+  swift_code: string;
+  branch_code: string;
+  branch_name: string;
+  iban: string;
+  routing_number: string;
+  currency: string;
+  country: string;
+  notes: string;
+}
+
+const EMPTY_WIRE_FORM: ManualWireForm = {
+  account_holder_name: '',
+  bank_name: '',
+  account_number: '',
+  swift_code: '',
+  branch_code: '',
+  branch_name: '',
+  iban: '',
+  routing_number: '',
+  currency: '',
+  country: '',
+  notes: '',
+};
+
 export default function AgentPayoutsPage() {
   const [data, setData] = useState<PayoutsResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -82,6 +111,14 @@ export default function AgentPayoutsPage() {
   // Session 109: country picker for first-time Connect account creation.
   // Empty string = no selection. The picker only appears when no account exists.
   const [selectedCountry, setSelectedCountry] = useState<string>('');
+  // Session 110: self-service "switch to manual wire" flow.
+  // unsupportedCountry: holds the country code that just failed → triggers
+  // friendly fallback banner instead of generic red error.
+  const [unsupportedCountry, setUnsupportedCountry] = useState<string | null>(null);
+  const [manualModalOpen, setManualModalOpen] = useState(false);
+  const [manualForm, setManualForm] = useState<ManualWireForm>(EMPTY_WIRE_FORM);
+  const [manualSubmitting, setManualSubmitting] = useState(false);
+  const [manualError, setManualError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     setError(null);
@@ -118,6 +155,7 @@ export default function AgentPayoutsPage() {
 
     setLinkLoading(true);
     setError(null);
+    setUnsupportedCountry(null);
     try {
       const res = await fetch('/api/montree/agent/connect-onboard', {
         method: 'POST',
@@ -126,6 +164,13 @@ export default function AgentPayoutsPage() {
       });
       const d = await res.json();
       if (!res.ok) {
+        // Session 110: friendly fallback for unsupported-country case.
+        // Server returns { country_unsupported: true } — instead of a generic
+        // red error, show a banner with "Switch to manual wire" CTA.
+        if (d.country_unsupported && needsCountry) {
+          setUnsupportedCountry(selectedCountry);
+          return;
+        }
         setError(d.detail || d.error || 'Could not generate onboarding link.');
         return;
       }
@@ -137,6 +182,78 @@ export default function AgentPayoutsPage() {
       setError('Network error.');
     } finally {
       setLinkLoading(false);
+    }
+  };
+
+  // Session 110 — self-service flip to manual_wire.
+  const openManualModal = (prefillCountry: string | null) => {
+    setManualForm({
+      ...EMPTY_WIRE_FORM,
+      country: prefillCountry || '',
+    });
+    setManualError(null);
+    setManualModalOpen(true);
+  };
+
+  const submitManualWire = async () => {
+    // Friendly client-side validation. Server enforces the same rule + the
+    // verified-Stripe guardrail.
+    const accountNumber = manualForm.account_number.trim();
+    const iban = manualForm.iban.trim();
+    if (!accountNumber && !iban) {
+      setManualError('Add either an account number or IBAN so the bank can find your account.');
+      return;
+    }
+    if (!manualForm.account_holder_name.trim()) {
+      setManualError('Add the account holder name (exactly as it appears on your ID).');
+      return;
+    }
+    if (!manualForm.bank_name.trim()) {
+      setManualError('Add the bank name.');
+      return;
+    }
+    if (!manualForm.country.trim()) {
+      setManualError('Add the country.');
+      return;
+    }
+
+    // Strip empty strings before sending — keeps the JSONB tidy.
+    const details: Record<string, string> = {};
+    (Object.keys(manualForm) as (keyof ManualWireForm)[]).forEach((k) => {
+      const v = manualForm[k].trim();
+      if (v) details[k] = v;
+    });
+    // Convention used by super-admin path — default to swift if unspecified.
+    if (!('method' in details)) details['method'] = iban ? 'swift' : 'swift';
+
+    setManualSubmitting(true);
+    setManualError(null);
+    try {
+      const res = await fetch('/api/montree/agent/payout-method', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          payout_method: 'manual_wire',
+          manual_payout_details: details,
+        }),
+      });
+      const d = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        // verified_stripe_blocked → friendly explanation, leave modal open
+        // so the agent can read it and choose to message Tredoux.
+        setManualError(d.detail || d.error || 'Could not save bank details.');
+        return;
+      }
+      // Success — close modal, clear unsupported state, reload page state.
+      setManualModalOpen(false);
+      setUnsupportedCountry(null);
+      setLink(null);
+      await load();
+    } catch (err) {
+      console.error('[payouts] manual wire submit error:', err);
+      setManualError('Network error. Try again.');
+    } finally {
+      setManualSubmitting(false);
     }
   };
 
@@ -188,9 +305,29 @@ export default function AgentPayoutsPage() {
           : 'We use Stripe Connect Express. Bank and tax details go directly to Stripe — we never see them. Once you’re verified, monthly payouts land automatically.'}
       </p>
 
-      {error && (
+      {error && !unsupportedCountry && (
         <div className="mt-6 bg-red-500/15 border border-red-500/40 rounded-xl p-4 text-red-200 text-sm">
           {error}
+        </div>
+      )}
+
+      {/* Session 110: friendly fallback when Stripe doesn't support the
+          agent's country. Replaces the old "reach out to Tredoux" dead end
+          with a self-service "Switch to manual wire" CTA. */}
+      {unsupportedCountry && (
+        <div className="mt-6 bg-amber-500/10 border border-amber-500/40 rounded-xl p-5">
+          <p className="text-amber-200 uppercase tracking-wider text-[10px] font-semibold">
+            Stripe doesn&apos;t cover {unsupportedCountry}
+          </p>
+          <p className="mt-1 text-white text-sm leading-relaxed">
+            Stripe Connect doesn&apos;t support payouts to {unsupportedCountry} yet. No problem — we&apos;ll wire your monthly commissions directly via SWIFT / Wise instead. Add your bank details below and you&apos;re set.
+          </p>
+          <button
+            onClick={() => openManualModal(unsupportedCountry)}
+            className="mt-4 inline-block px-4 py-3 sm:py-2 bg-emerald-500 hover:bg-emerald-400 text-white font-medium rounded-lg text-base sm:text-sm transition-colors"
+          >
+            Add bank details for manual wire
+          </button>
         </div>
       )}
 
@@ -209,6 +346,34 @@ export default function AgentPayoutsPage() {
             </div>
 
             {data.manual_payout_details ? (
+              <>
+                <div className="mt-3">
+                  <button
+                    onClick={() => {
+                      // Pre-fill the modal with current details so this acts
+                      // as an Edit flow (Session 110).
+                      const d = data.manual_payout_details!;
+                      setManualForm({
+                        account_holder_name: (d.account_holder_name as string) || '',
+                        bank_name: (d.bank_name as string) || '',
+                        account_number: (d.account_number as string) || '',
+                        swift_code: (d.swift_code as string) || '',
+                        branch_code: (d.branch_code as string) || '',
+                        branch_name: (d.branch_name as string) || '',
+                        iban: (d.iban as string) || '',
+                        routing_number: (d.routing_number as string) || '',
+                        currency: (d.currency as string) || '',
+                        country: (d.country as string) || '',
+                        notes: (d.notes as string) || '',
+                      });
+                      setManualError(null);
+                      setManualModalOpen(true);
+                    }}
+                    className="text-emerald-300/80 hover:text-emerald-200 text-xs underline underline-offset-2"
+                  >
+                    Update bank details →
+                  </button>
+                </div>
               <div className="mt-4 space-y-2 text-sm">
                 {data.manual_payout_details.account_holder_name && (
                   <div className="flex gap-2"><span className="text-white/50 w-32 shrink-0">Account holder</span><span className="text-white">{data.manual_payout_details.account_holder_name}</span></div>
@@ -244,14 +409,23 @@ export default function AgentPayoutsPage() {
                   <div className="flex gap-2"><span className="text-white/50 w-32 shrink-0">Rail</span><span className="text-white capitalize">{data.manual_payout_details.method}</span></div>
                 )}
               </div>
+              </>
             ) : (
-              <div className="mt-4 text-amber-300 text-sm">
-                No bank details on file yet. Send your details to Tredoux directly (name as per ID, bank, account number, SWIFT, branch code) and he&apos;ll enter them here. Once on file, monthly payouts arrive automatically.
+              <div className="mt-4">
+                <p className="text-amber-300 text-sm">
+                  No bank details on file yet. Add them now — Tredoux uses these to wire your monthly commissions.
+                </p>
+                <button
+                  onClick={() => openManualModal(null)}
+                  className="mt-3 inline-block px-4 py-2 bg-emerald-500 hover:bg-emerald-400 text-white font-medium rounded-lg text-sm transition-colors"
+                >
+                  Add bank details
+                </button>
               </div>
             )}
 
             <p className="mt-4 text-white/40 text-xs leading-relaxed">
-              These details are visible only to Tredoux (super-admin) and you. To update them, message Tredoux from the &quot;Tredoux&quot; tab in the nav — he&apos;ll update on his end.
+              These details are visible only to Tredoux (super-admin) and you. Updating them here saves directly — no need to message anyone.
             </p>
           </section>
         </>
@@ -324,7 +498,7 @@ export default function AgentPayoutsPage() {
                 <select
                   value={selectedCountry}
                   onChange={(e) => setSelectedCountry(e.target.value)}
-                  className="w-full sm:w-auto px-3 py-2 bg-slate-900 border border-white/15 rounded-lg text-white text-sm focus:border-emerald-500 outline-none"
+                  className="w-full sm:w-auto px-3 py-2 bg-slate-900 border border-white/15 rounded-lg text-white text-base sm:text-sm focus:border-emerald-500 outline-none"
                 >
                   <option value="">— Pick your country —</option>
                   <option value="US">United States</option>
@@ -362,9 +536,14 @@ export default function AgentPayoutsPage() {
                 <p className="mt-2 text-white/40 text-[11px]">
                   Pick the country where your bank account is. Stripe locks the
                   account to this country permanently — be careful. If your
-                  country isn&apos;t listed, message Tredoux from the Tredoux
-                  tab — he&apos;ll set you up with manual payouts via Wise.
+                  country isn&apos;t listed, use the manual wire option below.
                 </p>
+                <button
+                  onClick={() => openManualModal(null)}
+                  className="mt-3 text-emerald-300/80 hover:text-emerald-200 text-xs underline underline-offset-2"
+                >
+                  My country isn&apos;t here — set me up with manual wire instead →
+                </button>
               </div>
             )}
 
@@ -457,6 +636,213 @@ export default function AgentPayoutsPage() {
             </div>
           )}
         </section>
+      )}
+
+      {/* Session 110: Self-service manual wire modal. Friendly fields
+          (no raw JSON). Handles both "first add" and "edit existing"
+          via prefill in openManualModal. */}
+      {manualModalOpen && (
+        <div
+          className="fixed inset-0 z-50 bg-black/70 flex items-start justify-center px-4 py-6 overflow-y-auto"
+          onClick={(e) => {
+            // Click outside to close — but only if not submitting.
+            if (e.target === e.currentTarget && !manualSubmitting) {
+              setManualModalOpen(false);
+            }
+          }}
+        >
+          <div className="bg-slate-900 border border-emerald-500/30 rounded-2xl p-6 sm:p-8 max-w-xl w-full my-auto">
+            <div className="flex items-baseline justify-between gap-2">
+              <h2 className="text-white text-xl font-light">
+                {data?.manual_payout_details ? 'Update bank details' : 'Bank details for manual wire'}
+              </h2>
+              <button
+                onClick={() => !manualSubmitting && setManualModalOpen(false)}
+                disabled={manualSubmitting}
+                className="text-white/40 hover:text-white text-2xl leading-none disabled:opacity-30"
+                aria-label="Close"
+              >
+                ×
+              </button>
+            </div>
+            <p className="mt-1 text-emerald-200/60 text-xs leading-relaxed">
+              Tredoux uses these to wire your monthly commissions via SWIFT or Wise. Visible only to Tredoux and you.
+            </p>
+
+            {manualError && (
+              <div className="mt-4 bg-red-500/15 border border-red-500/40 rounded-lg p-3 text-red-200 text-sm">
+                {manualError}
+              </div>
+            )}
+
+            <div className="mt-5 space-y-4">
+              <div>
+                <label className="block text-white/80 text-sm font-medium mb-1">
+                  Account holder name <span className="text-amber-300">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={manualForm.account_holder_name}
+                  onChange={(e) => setManualForm({ ...manualForm, account_holder_name: e.target.value })}
+                  placeholder="Exactly as on your government ID"
+                  className="w-full px-3 py-2 bg-slate-950 border border-white/15 rounded-lg text-white text-base sm:text-sm focus:border-emerald-500 outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-white/80 text-sm font-medium mb-1">
+                  Bank name <span className="text-amber-300">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={manualForm.bank_name}
+                  onChange={(e) => setManualForm({ ...manualForm, bank_name: e.target.value })}
+                  placeholder="e.g. First National Bank"
+                  className="w-full px-3 py-2 bg-slate-950 border border-white/15 rounded-lg text-white text-base sm:text-sm focus:border-emerald-500 outline-none"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-white/80 text-sm font-medium mb-1">
+                    Account number
+                  </label>
+                  <input
+                    type="text"
+                    value={manualForm.account_number}
+                    onChange={(e) => setManualForm({ ...manualForm, account_number: e.target.value })}
+                    placeholder="Local account number"
+                    className="w-full px-3 py-2 bg-slate-950 border border-white/15 rounded-lg text-white font-mono text-base sm:text-sm focus:border-emerald-500 outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-white/80 text-sm font-medium mb-1">
+                    SWIFT / BIC
+                  </label>
+                  <input
+                    type="text"
+                    value={manualForm.swift_code}
+                    onChange={(e) => setManualForm({ ...manualForm, swift_code: e.target.value.toUpperCase() })}
+                    placeholder="e.g. FIRNZAJJ"
+                    className="w-full px-3 py-2 bg-slate-950 border border-white/15 rounded-lg text-white font-mono text-base sm:text-sm focus:border-emerald-500 outline-none"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-white/80 text-sm font-medium mb-1">
+                    Branch code
+                  </label>
+                  <input
+                    type="text"
+                    value={manualForm.branch_code}
+                    onChange={(e) => setManualForm({ ...manualForm, branch_code: e.target.value })}
+                    placeholder="If your country uses one"
+                    className="w-full px-3 py-2 bg-slate-950 border border-white/15 rounded-lg text-white font-mono text-base sm:text-sm focus:border-emerald-500 outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-white/80 text-sm font-medium mb-1">
+                    Branch name
+                  </label>
+                  <input
+                    type="text"
+                    value={manualForm.branch_name}
+                    onChange={(e) => setManualForm({ ...manualForm, branch_name: e.target.value })}
+                    placeholder="e.g. Sandton"
+                    className="w-full px-3 py-2 bg-slate-950 border border-white/15 rounded-lg text-white text-base sm:text-sm focus:border-emerald-500 outline-none"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-white/80 text-sm font-medium mb-1">
+                    IBAN <span className="text-white/40 text-xs">(EU agents)</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={manualForm.iban}
+                    onChange={(e) => setManualForm({ ...manualForm, iban: e.target.value.toUpperCase() })}
+                    placeholder="If your bank gives you one"
+                    className="w-full px-3 py-2 bg-slate-950 border border-white/15 rounded-lg text-white font-mono text-base sm:text-sm focus:border-emerald-500 outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-white/80 text-sm font-medium mb-1">
+                    Routing # <span className="text-white/40 text-xs">(US agents)</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={manualForm.routing_number}
+                    onChange={(e) => setManualForm({ ...manualForm, routing_number: e.target.value })}
+                    placeholder="9-digit ABA routing"
+                    className="w-full px-3 py-2 bg-slate-950 border border-white/15 rounded-lg text-white font-mono text-base sm:text-sm focus:border-emerald-500 outline-none"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-white/80 text-sm font-medium mb-1">
+                    Currency
+                  </label>
+                  <input
+                    type="text"
+                    value={manualForm.currency}
+                    onChange={(e) => setManualForm({ ...manualForm, currency: e.target.value.toUpperCase() })}
+                    placeholder="e.g. ZAR, USD, EUR"
+                    className="w-full px-3 py-2 bg-slate-950 border border-white/15 rounded-lg text-white font-mono text-base sm:text-sm focus:border-emerald-500 outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-white/80 text-sm font-medium mb-1">
+                    Country <span className="text-amber-300">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={manualForm.country}
+                    onChange={(e) => setManualForm({ ...manualForm, country: e.target.value.toUpperCase() })}
+                    placeholder="ISO code, e.g. ZA"
+                    maxLength={2}
+                    className="w-full px-3 py-2 bg-slate-950 border border-white/15 rounded-lg text-white font-mono text-base sm:text-sm focus:border-emerald-500 outline-none"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-white/80 text-sm font-medium mb-1">
+                  Notes <span className="text-white/40 text-xs">(optional)</span>
+                </label>
+                <textarea
+                  value={manualForm.notes}
+                  onChange={(e) => setManualForm({ ...manualForm, notes: e.target.value })}
+                  placeholder="Anything Tredoux needs to know — preferred rail, intermediary bank, etc."
+                  rows={2}
+                  className="w-full px-3 py-2 bg-slate-950 border border-white/15 rounded-lg text-white text-base sm:text-sm focus:border-emerald-500 outline-none"
+                />
+              </div>
+            </div>
+
+            <div className="mt-6 flex gap-2 justify-end">
+              <button
+                onClick={() => setManualModalOpen(false)}
+                disabled={manualSubmitting}
+                className="px-4 py-3 sm:py-2 text-white/70 hover:text-white text-base sm:text-sm disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={submitManualWire}
+                disabled={manualSubmitting}
+                className="px-5 py-3 sm:py-2 bg-emerald-500 hover:bg-emerald-400 text-white font-medium rounded-lg text-base sm:text-sm disabled:opacity-50 transition-colors"
+              >
+                {manualSubmitting ? 'Saving…' : (data?.manual_payout_details ? 'Save changes' : 'Save bank details')}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

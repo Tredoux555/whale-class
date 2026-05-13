@@ -202,6 +202,61 @@ Wave 1 sends bounced for these addresses. None of these are flagged as `bounced`
 
 ## RECENT STATUS (May 13, 2026)
 
+### ⚡ Session 110 — Agent self-service payout-method switch (May 13, 2026, evening)
+
+**Closes the friction Bayan would have hit otherwise.** Agents in Stripe-unsupported countries no longer need to message Tredoux to flip to manual_wire — they do it themselves on `/montree/agent/payouts`, save their bank details once via a friendly modal, and the page renders the manual-wire panel without any human round-trip.
+
+**🚨 Canonical resume doc:** `docs/handoffs/SESSION_110_HANDOFF.md` — full file-by-file, audit log, 6 verification tests.
+
+**What shipped (1 commit, 2 files):**
+
+- **NEW route `PATCH /api/montree/agent/payout-method`** — agent flips their own `payout_method` + bank details. Auth: `verifySchoolRequest` + `role === 'agent'`. JWT.sub is the only identity (cross-pollination contract preserved). Guardrail: 409 `verified_stripe_blocked` when `charges_enabled || payouts_enabled` (rule #70 mirror). Verified-Stripe flips still go through super-admin so the Stripe account can be rejected first. Validation: ALLOWED_METHODS check, 4KB JSONB cap, requires at least account_number OR iban when method is manual_wire. Audit log fires with `actor_role='agent'` + `self_service: true` flag — distinguishes from super-admin changes. IP + User-Agent captured.
+
+- **Three entry points to the modal on `/montree/agent/payouts`:**
+  1. **Unsupported-country friendly banner** — server returns `country_unsupported: true` → amber banner with "Add bank details for manual wire" CTA replaces the old red error / "reach out to Tredoux" dead end. Country prefilled when CTA opens modal.
+  2. **Discreet "My country isn't here" link** — below the country picker. For agents in China / Argentina / etc. who already know they don't want to try Stripe at all.
+  3. **"Update bank details →" edit link** — appears on existing manual_wire panel when details on file. Pre-fills modal with current values. Manual_wire agents can now edit their own bank info.
+
+- **Modal with friendly fields (not raw JSON)** — Account holder, Bank, Account #, SWIFT, Branch code, Branch name, IBAN, **Routing #** (US agents), Currency, Country, Notes. Mobile-first sizing (`text-base sm:text-sm` everywhere — prevents iOS keyboard zoom). 44pt mobile tap targets on Cancel + Save. Click-outside-to-close (when not submitting).
+
+- **Empty-state CTA** — when manual_wire agent has no details on file yet, "No bank details on file yet" message now ships with green "Add bank details" button instead of "send your details to Tredoux."
+
+- **Footer copy updated** — manual_wire panel footer changed from "message Tredoux from the Tredoux tab" → "Updating them here saves directly — no need to message anyone."
+
+**🚨 Audit trail — three rounds, all fixes shipped:**
+1. TS 5.x narrowed `supabase.update(updates)` to `never` when supabase comes from helper → cast `updates as never` (runtime payload unchanged, matches super-admin pattern)
+2. iOS keyboard zoom — all 11 inputs + textarea were `text-sm` (14px), violating Session 106 rule #44 → bulk-replaced to `text-base sm:text-sm`
+3. Form missed `routing_number` for US-agent edge case → added Routing # field next to IBAN
+
+Lint clean (`--max-warnings=0` exit 0). TypeScript clean on both files (rest of project has pre-existing unrelated errors).
+
+**🚨 Architectural rule locked in (do NOT let future agents break):**
+
+**79. Agents self-service their own payout method UNLESS verified with Stripe.** `PATCH /api/montree/agent/payout-method` accepts agent-initiated flips to manual_wire + bank-details edits. Verified-Stripe agents (`charges_enabled || payouts_enabled`) get 409 — those flips still go through super-admin so the Stripe account can be rejected first and system state doesn't diverge. Audit log uses `actor_role='agent'` + `self_service: true` to distinguish from super-admin changes. Manual_wire agents can edit their own bank details freely (no Stripe-account drift risk).
+
+**🚨 Bayan onboarding — now even easier:**
+
+Session 109 said: super-admin → 💸 → paste her bank JSON. This session ADDS an alternative: have Bayan log in, visit `/montree/agent/payouts`, pick ZA → friendly banner appears → click CTA → fills bank details → done. Tredoux is out of the loop except for: (a) rejecting her HK Stripe account in Stripe Dashboard for cleanup, (b) running the SQL to clear her stale `stripe_connect_*` columns. Both still required (Session 109 handoff has the SQL).
+
+**Files changed (1 commit):**
+- NEW `app/api/montree/agent/payout-method/route.ts` (223 lines)
+- MODIFIED `app/montree/agent/payouts/page.tsx` — modal, friendly banner, edit link, 3 entry points, US routing field
+
+**Verification status:**
+- ✅ Lint clean across both files
+- ✅ TypeScript clean on both files
+- ⏳ Production verification per `docs/handoffs/SESSION_110_HANDOFF.md` Tests 1-6
+- ⏳ Bayan onboarding self-service test
+
+**Next session priorities (ordered):**
+1. **Bayan onboarding** — now a 5-minute self-service flow on her end after Tredoux: (a) Reject HK Stripe account in Stripe Dashboard, (b) Run SQL to clear stale stripe_connect_* columns, (c) Send her agent login code
+2. **Walk Tests 1-6** from Session 110 handoff after Railway settles
+3. **ReferralsTab 📋 tax-form UI** — 30 min, builds on B5 API from Session 109
+4. **Wallex CSV upload + montree_bank_statements** — closes third leg of reconciliation
+5. **Phase A operational setup** — Xero account + accountant
+
+---
+
 ### ⚡ Session 109 — Manual payout architecture + financial books foundation (May 13, 2026)
 
 **Headline:** Stripe Connect Express ZA support confirmed non-existent (verified via Stripe API). Built the manual_wire alternative rail for agents in any Stripe-unsupported country (China, ZA, Palestine, Lebanon, Argentina, Ukraine, etc.). Plus laid the foundation for clean external books — manual wire UI, annual agent statements, period locking, three-way reconciliation report, Xero sync scaffold + Health card, tax-form scaffold.
