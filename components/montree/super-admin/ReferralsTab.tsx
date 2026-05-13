@@ -1152,6 +1152,52 @@ export default function ReferralsTab({ saToken }: ReferralsTabProps) {
                             )}
                           </span>
                         )}
+                        {/* Annual statement (📄) — Session 109 Phase B2.
+                            Opens current year's HTML statement in new tab.
+                            HTML page has toolbar with Print → PDF + Download CSV. */}
+                        {r.agent_id && r.agent_is_agent && (
+                          <span
+                            style={{ position: 'relative', display: 'inline-block', marginRight: 4 }}
+                            onMouseEnter={() => setHoveredAction(`${r.id}:statement`)}
+                            onMouseLeave={() => setHoveredAction(null)}
+                          >
+                            <a
+                              href={`/api/montree/super-admin/agents/${encodeURIComponent(r.agent_id)}/annual-statement?year=${new Date().getFullYear()}&format=html`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              onClick={(e) => {
+                                // Inject the super-admin token via a fetch + blob URL,
+                                // because the raw href can't carry the x-super-admin-token header.
+                                e.preventDefault();
+                                void (async () => {
+                                  const res = await fetch(
+                                    `/api/montree/super-admin/agents/${encodeURIComponent(r.agent_id as string)}/annual-statement?year=${new Date().getFullYear()}&format=html`,
+                                    { headers: { 'x-super-admin-token': saToken } }
+                                  );
+                                  if (!res.ok) {
+                                    setError(`Could not load statement (HTTP ${res.status})`);
+                                    return;
+                                  }
+                                  const html = await res.text();
+                                  const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+                                  const url = URL.createObjectURL(blob);
+                                  window.open(url, '_blank');
+                                  // Revoke after a delay so the new window has time to load.
+                                  setTimeout(() => URL.revokeObjectURL(url), 60_000);
+                                })();
+                              }}
+                              className="inline-block px-2.5 py-1 text-xs rounded-md bg-emerald-500/15 hover:bg-emerald-500/30 text-emerald-200 border border-emerald-500/30 no-underline"
+                              aria-label="Annual statement"
+                            >
+                              📄
+                            </a>
+                            {hoveredAction === `${r.id}:statement` && (
+                              <span style={iconTooltipStyle}>
+                                Annual statement ({new Date().getFullYear()})
+                              </span>
+                            )}
+                          </span>
+                        )}
                         {/* Payout config (💸) — Session 109 — manual_wire vs stripe_connect */}
                         {r.agent_id && r.agent_is_agent && (
                           <span
