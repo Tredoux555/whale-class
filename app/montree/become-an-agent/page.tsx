@@ -403,13 +403,27 @@ export default function BecomeAnAgentPage() {
       </div>
 
       <div style={{ position: 'relative', zIndex: 1 }}>
-        {/* Nav — top-right is Log in (the Apply CTA is in the hero below;
-            two "Apply now" pills was redundant). Agents who already have
-            their code go straight to /montree/login-select from here. */}
+        {/* Nav — top-right is a thin text Log in link to match landing nav
+            proportions. Apply CTA lives in the hero below; two solid pills
+            on the same screen was wrong. */}
         <nav className="ba-nav">
           <div className="ba-nav-inner">
             <a className="ba-logo" href="/montree">🌿 Montree</a>
-            <a className="ba-pill" href="/montree/login-select">Log in</a>
+            <a
+              className="ba-nav-login"
+              href="/montree/login-select"
+              style={{
+                fontSize: '0.875rem',
+                color: 'rgba(255,255,255,0.55)',
+                textDecoration: 'none',
+                letterSpacing: '0.01em',
+                transition: 'color 200ms ease',
+              }}
+              onMouseEnter={(e) => (e.currentTarget.style.color = 'rgba(255,255,255,0.85)')}
+              onMouseLeave={(e) => (e.currentTarget.style.color = 'rgba(255,255,255,0.55)')}
+            >
+              Log in
+            </a>
           </div>
         </nav>
 
