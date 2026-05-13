@@ -53,6 +53,8 @@ interface PayoutRow {
   agent_payouts_enabled: boolean;
   agent_charges_enabled: boolean;
   agent_has_connect_account: boolean;
+  // Session 109 — payout_method drives the wire-button branch.
+  agent_payout_method: 'stripe_connect' | 'manual_wire';
 }
 
 interface PeriodTotal {
@@ -122,6 +124,17 @@ export default function MoneyTab({ sessionToken }: MoneyTabProps) {
   const [showPaidFor, setShowPaidFor] = useState<string | null>(null);
   const [paidTransferId, setPaidTransferId] = useState<string>('');
   const [paidMethod, setPaidMethod] = useState<'stripe_connect' | 'manual_wire' | 'other'>('stripe_connect');
+
+  // Session 109 — manual wire recording modal (for manual_wire agents). Mirrors
+  // the showOverrideFor / showPaidFor modal pattern but captures wire ref +
+  // FX details + local-currency amount so the ledger entry is complete.
+  const [showManualWireFor, setShowManualWireFor] = useState<string | null>(null);
+  const [mwWireRef, setMwWireRef] = useState<string>('');
+  const [mwPaidAt, setMwPaidAt] = useState<string>(''); // ISO date input
+  const [mwCurrency, setMwCurrency] = useState<string>('USD');
+  const [mwFxRate, setMwFxRate] = useState<string>('1.0');
+  const [mwLocalAmount, setMwLocalAmount] = useState<string>('');
+  const [mwNotes, setMwNotes] = useState<string>('');
 
   const fetchPayouts = useCallback(async () => {
     setLoading(true);
@@ -195,9 +208,71 @@ export default function MoneyTab({ sessionToken }: MoneyTabProps) {
     }
   }, [calculating, periodMonth, sessionToken, fetchPayouts, t]);
 
+  // Session 109 — opens the manual-wire-record modal pre-populated with sensible
+  // defaults (today's date, USD, FX rate 1.0). Submit POSTs to the new route.
+  const openManualWireModal = useCallback((row: PayoutRow) => {
+    setShowManualWireFor(row.id);
+    setMwWireRef('');
+    // YYYY-MM-DD for the <input type="date">
+    setMwPaidAt(new Date().toISOString().slice(0, 10));
+    setMwCurrency('USD');
+    setMwFxRate('1.0');
+    setMwLocalAmount(row.payout_usd.toFixed(2));
+    setMwNotes('');
+  }, []);
+
+  const submitManualWire = useCallback(
+    async (row: PayoutRow) => {
+      if (actionBusy === row.id) return;
+      const wireRef = mwWireRef.trim();
+      if (!wireRef) {
+        setErrorMessage('Wire reference is required (Wise ID, SWIFT ref, etc.)');
+        return;
+      }
+      setActionBusy(row.id);
+      setErrorMessage(null);
+      try {
+        const res = await fetch(`/api/montree/super-admin/payouts/${row.id}/record-wire`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-super-admin-token': sessionToken,
+          },
+          body: JSON.stringify({
+            wire_ref: wireRef,
+            paid_at: mwPaidAt ? new Date(mwPaidAt).toISOString() : undefined,
+            payout_currency: mwCurrency.trim().toUpperCase() || 'USD',
+            fx_rate_used: Number(mwFxRate) || 1.0,
+            payout_local_amount: mwLocalAmount ? Number(mwLocalAmount) : undefined,
+            notes: mwNotes.trim() || undefined,
+          }),
+        });
+        const j = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          setErrorMessage(j.detail || j.error || `Record-wire failed (HTTP ${res.status})`);
+          return;
+        }
+        setShowManualWireFor(null);
+        await fetchPayouts();
+      } catch (err) {
+        console.error('[MoneyTab] record-wire failed', err);
+        setErrorMessage('Network error recording wire.');
+      } finally {
+        setActionBusy(null);
+      }
+    },
+    [actionBusy, sessionToken, fetchPayouts, mwWireRef, mwPaidAt, mwCurrency, mwFxRate, mwLocalAmount, mwNotes]
+  );
+
   const wirePayout = useCallback(
     async (row: PayoutRow) => {
       if (actionBusy === row.id) return;
+      // Session 109 — block Stripe wire on manual_wire agents; surface the
+      // manual-wire modal instead.
+      if (row.agent_payout_method === 'manual_wire') {
+        openManualWireModal(row);
+        return;
+      }
       if (!row.agent_has_connect_account) {
         setErrorMessage(
           t('money.errNoConnect', { name: row.agent_name || t('money.agentFallback') })
@@ -436,6 +511,7 @@ export default function MoneyTab({ sessionToken }: MoneyTabProps) {
           {payouts.map((row) => {
             const isOverrideMode = showOverrideFor === row.id;
             const isPaidMode = showPaidFor === row.id;
+            const isManualWireMode = showManualWireFor === row.id;
             const statusColor =
               row.status === 'paid'
                 ? 'text-emerald-400 bg-emerald-500/15 border-emerald-500/30'
@@ -555,27 +631,39 @@ export default function MoneyTab({ sessionToken }: MoneyTabProps) {
                 <div className="flex flex-wrap gap-2">
                   {row.status === 'pending' && !isPaidMode && !isOverrideMode && (
                     <>
-                      {/* Wire via Stripe Connect — gated on agent.payouts_enabled.
-                          When ready, this is the one-click path that moves real money
-                          + auto-flips the row. Falls back to manual Mark paid below. */}
-                      <button
-                        onClick={() => wirePayout(row)}
-                        disabled={
-                          actionBusy === row.id ||
-                          !row.agent_has_connect_account ||
-                          !row.agent_payouts_enabled
-                        }
-                        title={
-                          !row.agent_has_connect_account
-                            ? t('money.wireTooltipNoAccount')
-                            : !row.agent_payouts_enabled
-                              ? t('money.wireTooltipNotReady')
-                              : t('money.wireTooltipReady')
-                        }
-                        className="px-2.5 py-1 bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/30 text-amber-200 rounded text-xs font-medium disabled:opacity-40 disabled:cursor-not-allowed"
-                      >
-                        {t('money.wireBtn')}
-                      </button>
+                      {/* Wire button — Session 109 branches by payout_method:
+                          - stripe_connect → ⚡ Wire via Stripe Connect (one-click, automated)
+                          - manual_wire → ⚡ Record manual wire (you wire externally via Wise/SWIFT,
+                            paste the ref here to mark paid + write the ledger row) */}
+                      {row.agent_payout_method === 'manual_wire' ? (
+                        <button
+                          onClick={() => openManualWireModal(row)}
+                          disabled={actionBusy === row.id}
+                          title="You wire this manually (Wise / SWIFT). Click to record the wire reference and mark paid."
+                          className="px-2.5 py-1 bg-violet-500/15 hover:bg-violet-500/25 border border-violet-500/30 text-violet-200 rounded text-xs font-medium disabled:opacity-40 disabled:cursor-not-allowed"
+                        >
+                          ⚡ Record manual wire
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => wirePayout(row)}
+                          disabled={
+                            actionBusy === row.id ||
+                            !row.agent_has_connect_account ||
+                            !row.agent_payouts_enabled
+                          }
+                          title={
+                            !row.agent_has_connect_account
+                              ? t('money.wireTooltipNoAccount')
+                              : !row.agent_payouts_enabled
+                                ? t('money.wireTooltipNotReady')
+                                : t('money.wireTooltipReady')
+                          }
+                          className="px-2.5 py-1 bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/30 text-amber-200 rounded text-xs font-medium disabled:opacity-40 disabled:cursor-not-allowed"
+                        >
+                          {t('money.wireBtn')}
+                        </button>
+                      )}
                       <button
                         onClick={() => {
                           setShowPaidFor(row.id);
@@ -649,6 +737,108 @@ export default function MoneyTab({ sessionToken }: MoneyTabProps) {
                 </div>
 
                 {/* Paid input row (inline) */}
+                {/* Session 109 — Manual wire recording inline form. Mirrors the
+                    isPaidMode form but captures the structured fields we need
+                    for the ledger row (wire ref, FX rate, local currency). */}
+                {isManualWireMode && (
+                  <div className="mt-3 p-3 rounded-lg bg-violet-500/8 border border-violet-500/25 space-y-3">
+                    <div className="text-xs text-violet-200 font-medium">
+                      Record manual wire for {row.agent_name || 'agent'} — ${row.payout_usd.toFixed(2)} USD
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      <div>
+                        <label className="block text-[10px] uppercase tracking-wider text-slate-400 mb-1">
+                          Wire reference *
+                        </label>
+                        <input
+                          type="text"
+                          value={mwWireRef}
+                          onChange={(e) => setMwWireRef(e.target.value)}
+                          placeholder="Wise ID / SWIFT ref / etc."
+                          className="w-full px-2 py-1 bg-slate-800/70 border border-slate-700 rounded text-xs text-white font-mono placeholder:text-slate-600"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] uppercase tracking-wider text-slate-400 mb-1">
+                          Paid at
+                        </label>
+                        <input
+                          type="date"
+                          value={mwPaidAt}
+                          onChange={(e) => setMwPaidAt(e.target.value)}
+                          className="w-full px-2 py-1 bg-slate-800/70 border border-slate-700 rounded text-xs text-white"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] uppercase tracking-wider text-slate-400 mb-1">
+                          Payout currency
+                        </label>
+                        <input
+                          type="text"
+                          value={mwCurrency}
+                          onChange={(e) => setMwCurrency(e.target.value)}
+                          maxLength={3}
+                          placeholder="ZAR / EUR / USD / etc."
+                          className="w-full px-2 py-1 bg-slate-800/70 border border-slate-700 rounded text-xs text-white font-mono uppercase"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] uppercase tracking-wider text-slate-400 mb-1">
+                          FX rate used (USD → local)
+                        </label>
+                        <input
+                          type="number"
+                          step="0.000001"
+                          min="0"
+                          value={mwFxRate}
+                          onChange={(e) => setMwFxRate(e.target.value)}
+                          className="w-full px-2 py-1 bg-slate-800/70 border border-slate-700 rounded text-xs text-white font-mono"
+                        />
+                      </div>
+                      <div className="sm:col-span-2">
+                        <label className="block text-[10px] uppercase tracking-wider text-slate-400 mb-1">
+                          Local amount sent (optional — auto-computed from FX otherwise)
+                        </label>
+                        <input
+                          type="number"
+                          step="0.01"
+                          min="0"
+                          value={mwLocalAmount}
+                          onChange={(e) => setMwLocalAmount(e.target.value)}
+                          className="w-full px-2 py-1 bg-slate-800/70 border border-slate-700 rounded text-xs text-white font-mono"
+                        />
+                      </div>
+                      <div className="sm:col-span-2">
+                        <label className="block text-[10px] uppercase tracking-wider text-slate-400 mb-1">
+                          Notes (optional)
+                        </label>
+                        <input
+                          type="text"
+                          value={mwNotes}
+                          onChange={(e) => setMwNotes(e.target.value)}
+                          placeholder="Anything else worth remembering"
+                          className="w-full px-2 py-1 bg-slate-800/70 border border-slate-700 rounded text-xs text-white"
+                        />
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => submitManualWire(row)}
+                        disabled={actionBusy === row.id || !mwWireRef.trim()}
+                        className="px-3 py-1 bg-violet-500/25 hover:bg-violet-500/40 border border-violet-500/40 text-violet-200 rounded text-xs font-semibold disabled:opacity-40"
+                      >
+                        {actionBusy === row.id ? 'Recording…' : 'Confirm — mark paid'}
+                      </button>
+                      <button
+                        onClick={() => setShowManualWireFor(null)}
+                        className="px-3 py-1 bg-slate-700/40 hover:bg-slate-700/60 border border-slate-700 text-slate-300 rounded text-xs"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                )}
+
                 {isPaidMode && (
                   <div className="mt-3 p-3 rounded-lg bg-emerald-500/8 border border-emerald-500/25 space-y-2">
                     <div className="flex flex-wrap gap-2 items-center">
