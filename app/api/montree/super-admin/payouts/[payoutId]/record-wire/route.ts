@@ -19,6 +19,7 @@ import { getSupabase } from '@/lib/supabase-client';
 import { verifySuperAdminAuth } from '@/lib/verify-super-admin';
 import { sendPayoutPaidEmail } from '@/lib/montree/email';
 import { logAgentAudit } from '@/lib/montree/referral/agent-audit';
+import { assertPeriodOpen } from '@/lib/montree/finance/period-lock';
 
 export const dynamic = 'force-dynamic';
 
@@ -146,6 +147,10 @@ export async function POST(
         { status: 400 }
       );
     }
+
+    // 🚨 Session 109 — period lock guard. Refuses if the period is closed.
+    const lockErr = await assertPeriodOpen(supabase, payout.period_month);
+    if (lockErr) return lockErr;
 
     // ── 2. Load the agent + sanity-check method.
     const { data: agentRaw } = await supabase

@@ -136,6 +136,11 @@ export default function MoneyTab({ sessionToken }: MoneyTabProps) {
   const [mwLocalAmount, setMwLocalAmount] = useState<string>('');
   const [mwNotes, setMwNotes] = useState<string>('');
 
+  // Session 109 Phase B3 — period locks. Map of period_month → closed_at.
+  const [periodLocks, setPeriodLocks] = useState<Map<string, string>>(new Map());
+  const isCurrentPeriodClosed = periodLocks.has(periodMonth);
+  const [lockBusy, setLockBusy] = useState(false);
+
   const fetchPayouts = useCallback(async () => {
     setLoading(true);
     setErrorMessage(null);
@@ -207,6 +212,94 @@ export default function MoneyTab({ sessionToken }: MoneyTabProps) {
       setCalculating(false);
     }
   }, [calculating, periodMonth, sessionToken, fetchPayouts, t]);
+
+  // Session 109 B3 — fetch all period locks (cheap query, fires alongside payouts).
+  const fetchPeriodLocks = useCallback(async () => {
+    try {
+      const res = await fetch('/api/montree/super-admin/finance/period-locks', {
+        headers: { 'x-super-admin-token': sessionToken },
+      });
+      if (!res.ok) return;
+      const data = await res.json();
+      const m = new Map<string, string>();
+      for (const lock of data.locks || []) {
+        if (lock.closed_at) m.set(lock.period_month, lock.closed_at);
+      }
+      setPeriodLocks(m);
+    } catch (err) {
+      console.error('[MoneyTab] period-locks fetch failed', err);
+    }
+  }, [sessionToken]);
+
+  useEffect(() => {
+    fetchPeriodLocks();
+  }, [fetchPeriodLocks]);
+
+  const closePeriod = useCallback(async () => {
+    if (lockBusy) return;
+    const notes = window.prompt(
+      `Close period ${periodMonth}?\n\nOnce closed, mutations to payouts and finance_transactions for this period will be refused. Enter notes (optional):`,
+      ''
+    );
+    if (notes === null) return;
+    setLockBusy(true);
+    try {
+      const res = await fetch('/api/montree/super-admin/finance/period-locks', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-super-admin-token': sessionToken,
+        },
+        body: JSON.stringify({ period_month: periodMonth, notes: notes.trim() || undefined }),
+      });
+      const j = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setErrorMessage(j.error || `Close failed (HTTP ${res.status})`);
+        return;
+      }
+      await fetchPeriodLocks();
+    } catch (err) {
+      console.error('[MoneyTab] close period failed', err);
+      setErrorMessage('Network error closing period.');
+    } finally {
+      setLockBusy(false);
+    }
+  }, [periodMonth, sessionToken, fetchPeriodLocks, lockBusy]);
+
+  const reopenPeriod = useCallback(async () => {
+    if (lockBusy) return;
+    const notes = window.prompt(
+      `Reopen period ${periodMonth}?\n\nAudit trail requires a reason — why are you reopening?`,
+      ''
+    );
+    if (notes === null) return;
+    if (!notes.trim()) {
+      setErrorMessage('Notes required when reopening a period (audit trail).');
+      return;
+    }
+    setLockBusy(true);
+    try {
+      const res = await fetch('/api/montree/super-admin/finance/period-locks', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-super-admin-token': sessionToken,
+        },
+        body: JSON.stringify({ period_month: periodMonth, notes: notes.trim() }),
+      });
+      const j = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setErrorMessage(j.error || `Reopen failed (HTTP ${res.status})`);
+        return;
+      }
+      await fetchPeriodLocks();
+    } catch (err) {
+      console.error('[MoneyTab] reopen period failed', err);
+      setErrorMessage('Network error reopening period.');
+    } finally {
+      setLockBusy(false);
+    }
+  }, [periodMonth, sessionToken, fetchPeriodLocks, lockBusy]);
 
   // Session 109 — opens the manual-wire-record modal pre-populated with sensible
   // defaults (today's date, USD, FX rate 1.0). Submit POSTs to the new route.
@@ -374,10 +467,30 @@ export default function MoneyTab({ sessionToken }: MoneyTabProps) {
           >
             {months.map((m) => (
               <option key={m} value={m}>
-                {m}
+                {m}{periodLocks.has(m) ? ' 🔒' : ''}
               </option>
             ))}
           </select>
+          {/* Session 109 B3 — period lock state + toggle. */}
+          {isCurrentPeriodClosed ? (
+            <button
+              onClick={reopenPeriod}
+              disabled={lockBusy}
+              className="px-2.5 py-1 bg-amber-500/15 hover:bg-amber-500/30 border border-amber-500/40 text-amber-200 rounded text-xs font-medium disabled:opacity-50"
+              title={`Closed ${new Date(periodLocks.get(periodMonth) || '').toLocaleDateString()} — reopen to edit (audit-logged)`}
+            >
+              🔒 Reopen
+            </button>
+          ) : (
+            <button
+              onClick={closePeriod}
+              disabled={lockBusy}
+              className="px-2.5 py-1 bg-slate-700/40 hover:bg-slate-700/60 border border-slate-700 text-slate-300 rounded text-xs disabled:opacity-50"
+              title="Close this period so mutations are refused (audit-friendly immutability)"
+            >
+              🔓 Close month
+            </button>
+          )}
         </div>
         <button
           onClick={calculate}

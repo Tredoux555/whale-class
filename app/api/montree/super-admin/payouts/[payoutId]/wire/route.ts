@@ -20,6 +20,7 @@ import { getSupabase } from '@/lib/supabase-client';
 import { verifySuperAdminAuth } from '@/lib/verify-super-admin';
 import { getStripe } from '@/lib/montree/stripe';
 import { sendPayoutPaidEmail } from '@/lib/montree/email';
+import { assertPeriodOpen } from '@/lib/montree/finance/period-lock';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
@@ -100,6 +101,10 @@ export async function POST(
         { status: 400 }
       );
     }
+
+    // 🚨 Session 109 — period lock guard. Refuses wires for closed periods.
+    const lockErr = await assertPeriodOpen(supabase, payout.period_month);
+    if (lockErr) return lockErr;
 
     // ── 2. Load + validate the agent's Stripe Connect status.
     const { data: agentRaw } = await supabase
