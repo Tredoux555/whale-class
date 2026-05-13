@@ -1,8 +1,22 @@
-# Session 108 Handoff — Agent System Phases 3, 4, 5 shipped
+# Session 108 Handoff — Agent System Phases 3, 4, 5 shipped + post-deploy fixes
 
-> **State at end of session:** Migrations 203 + 204 run in Supabase. All code committed and pushed to `origin/main`. Railway auto-deploy triggered.
+> **State at end of session:** Migrations 203 + 204 run in Supabase. All code committed and pushed to `origin/main` (ending at `57057257`). Railway auto-deploy settled. Application form **verified working end-to-end** with `Tredouxtest@gmail.com`.
 >
-> **One real-world finding logged:** when Tredoux typed `TREDOUX-PXQ9` (a referral code he generated earlier in the session) into the unified login screen expecting it to log him into an agent dashboard, he was correctly redirected to `/montree/try?ref=TREDOUX-PXQ9` (school signup flow). Working as designed — referral codes route to school signup. But the `<FIRSTNAME>-XXXX` format reads to humans like "this is MY login code." Agent login is a separate 6-char hash issued via Super-admin → Agents → 🔑. Future polish opportunity to disambiguate at the login screen. Not a bug.
+> **Commits in this session, in order on origin/main:**
+> 1. `30836e8e` — Session 108: Phases 3 + 4 + 5 (recruitment funnel, agent↔super-admin messaging, polish) — 28 files, +4972/-395
+> 2. `e83e7490` — AgentNav: fix top-right crowding (drop inline agent name, reserve MiraFloat space)
+> 3. `3ef7ddc3` — Agent application route: replace UPSERT-on-email with explicit INSERT + 23505 handling
+> 4. `57057257` — Landing + agent-app polish: drop What's new from nav, reposition kicker, sign Application screen as Montree
+>
+> **Two real-world findings logged this session:**
+>
+> 1. When Tredoux typed `TREDOUX-PXQ9` (a referral code he generated earlier in the session) into the unified login screen expecting to log into an agent dashboard, he was correctly redirected to `/montree/try?ref=TREDOUX-PXQ9` (school signup flow). Working as designed — referral codes route to school signup. The `<FIRSTNAME>-XXXX` format reads to humans like "this is MY login code." Agent login is a separate 6-char hash issued via Super-admin → Agents → 🔑. Future polish: disambiguate at the login screen. Not a bug.
+>
+> 2. First real submission via `/montree/become-an-agent` returned 500. Root cause: the original UPSERT-on-email pattern was trying to mutate a pre-existing row from earlier session testing into an `agent_application`, silently overwriting CRM history. Patched in `3ef7ddc3` — now a clean INSERT with explicit 23505 handling: legitimate resubmits update the same agent_application row, cross-type collisions return 409 with a friendly message, all other DB errors surface their `detail` in the response. Verified working end-to-end.
+>
+> **One architectural posture confirmed this session:**
+>
+> **Don't hard-delete agents.** Suspend instead (`agent_suspended_at = NOW(), is_agent = FALSE`). Hard delete is reserved for test state only — via `scripts/cleanup-test-agent.sql` with the `is_agent=true` safety check. Real agents accumulate audit history, finance ledger entries, and potentially earned payouts. The schema enforces this: `montree_agent_payouts.agent_id` is ON DELETE RESTRICT. Don't build a UI 🗑 Delete button — it invites misuse.
 
 
 Per `docs/handoffs/AGENT_SYSTEM_FIX_PLAN.md` (the 3×3×3 plan). Phases 1 (E2E test) and Phase 2 (impersonation 404 hot-fix) remain blocked on Tredoux at the keyboard — those are user-action phases. Phases 3, 4, 5 are pure code and are now shipped.
@@ -102,6 +116,16 @@ Until these land, the new features either degrade gracefully (Phase 3 applicatio
 54. **The PATCH endpoint for agent applications double-checks `contact_type='agent_application'`** before mutating (defense in depth — won't accidentally update a demo_request or outreach contact).
 55. **`MIRA_PNG_AVAILABLE` flag in `MiraAvatar.tsx`** — flip to true when the PNG ships. Until then, CSS monogram only (no 404 storm).
 56. **`/montree/for-teachers` is a 301-style redirect to `/montree/become-an-agent`** (reversed from Session 98). Keep the file so existing inbound links don't 404.
+
+57. **Don't hard-delete agents in production.** Suspend (`agent_suspended_at = NOW(), is_agent = FALSE`) preserves audit trail, finance ledger continuity, and the RESTRICT FK on pending payouts. Hard delete is reserved for test state only, via `scripts/cleanup-test-agent.sql` which has an `is_agent=true` safety check. The schema's design forces this: `montree_agent_payouts.agent_id` is ON DELETE RESTRICT specifically because pending payouts are earned money. No UI 🗑 button — operator judgment via SQL only.
+
+58. **Never UPSERT on a shared-key column when multiple semantic row types coexist on the same table.** `montree_outreach_contacts` holds both `demo_request` rows AND `agent_application` rows AND outreach contacts — all keyed by email uniqueness. UPSERT-on-email silently mutates one row type into another, losing CRM history. Pattern: INSERT explicitly, catch 23505, lookup the existing row's `contact_type`, UPDATE only if same-type (legitimate resubmit), return 409 if cross-type. Surfaces real errors with `detail: insertErr.message` in the 500 response so future debugging doesn't need Railway log diving. Canonical in `app/api/montree/become-an-agent/apply/route.ts`.
+
+59. **`What's new` / `/montree/changelog` is internal-use only on the public landing.** The route exists (and the page renders) for direct-link access during internal demos, but no link to it from the public landing nav. Public visitors don't need to see the release log.
+
+60. **The "Change your life" hero kicker sits BELOW the CTA, not above the title.** Acts as a punctuation flourish after the call to action. `.m-hero-kicker-below` modifier swaps the margin so it breathes underneath the button. Don't revert to pre-title placement without explicit reason.
+
+61. **Agent application success state signs `— Montree`, not a personal name.** Brand voice from a brand surface. The body of the message can use first person ("I read every application personally") — that's a brand speaking warmly — but the closing signature is the brand name. Same posture applies to any future public-facing transactional UI.
 
 ---
 
