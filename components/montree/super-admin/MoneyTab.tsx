@@ -141,6 +141,33 @@ export default function MoneyTab({ sessionToken }: MoneyTabProps) {
   const isCurrentPeriodClosed = periodLocks.has(periodMonth);
   const [lockBusy, setLockBusy] = useState(false);
 
+  // Session 109 Phase B4 — reconciliation report. Auto-fetches per period.
+  interface ReconReport {
+    period_month: string;
+    stripe_side: {
+      gross_revenue_usd: number;
+      stripe_fees_usd: number;
+      net_received_usd: number;
+    };
+    internal_ledger: {
+      total_rows: number;
+      breakdown: {
+        commissions_paid: number;
+        api_anthropic: number;
+        api_openai: number;
+      };
+    };
+    billing_history_cross_check: {
+      paid_invoices_count: number;
+      paid_total_usd: number;
+      diff_vs_stripe_side_usd: number;
+    };
+    bank_side: { total_usd: number | null; diff_vs_stripe_net_usd: number | null } | null;
+    findings: string[];
+  }
+  const [recon, setRecon] = useState<ReconReport | null>(null);
+  const [reconLoading, setReconLoading] = useState(false);
+
   const fetchPayouts = useCallback(async () => {
     setLoading(true);
     setErrorMessage(null);
@@ -234,6 +261,32 @@ export default function MoneyTab({ sessionToken }: MoneyTabProps) {
   useEffect(() => {
     fetchPeriodLocks();
   }, [fetchPeriodLocks]);
+
+  // Session 109 B4 — reconciliation report fetcher.
+  const fetchReconciliation = useCallback(async () => {
+    setReconLoading(true);
+    try {
+      const res = await fetch(
+        `/api/montree/super-admin/finance/reconciliation?period_month=${encodeURIComponent(periodMonth)}`,
+        { headers: { 'x-super-admin-token': sessionToken } }
+      );
+      if (!res.ok) {
+        setRecon(null);
+        return;
+      }
+      const data = await res.json();
+      setRecon(data);
+    } catch (err) {
+      console.error('[MoneyTab] reconciliation fetch failed', err);
+      setRecon(null);
+    } finally {
+      setReconLoading(false);
+    }
+  }, [periodMonth, sessionToken]);
+
+  useEffect(() => {
+    fetchReconciliation();
+  }, [fetchReconciliation]);
 
   const closePeriod = useCallback(async () => {
     if (lockBusy) return;
@@ -605,6 +658,62 @@ export default function MoneyTab({ sessionToken }: MoneyTabProps) {
       {errorMessage && (
         <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/30 text-red-300 text-sm">
           {errorMessage}
+        </div>
+      )}
+
+      {/* Session 109 B4 — Reconciliation panel. Shows Stripe-side ledger vs
+          billing-history cross-check, surfaces findings (silent drift, missing
+          bank statement). Only renders on the payouts sub-view. */}
+      {subView === 'payouts' && recon && (
+        <div className="p-4 rounded-xl bg-slate-900/60 border border-slate-800">
+          <div className="flex items-baseline justify-between mb-3 flex-wrap gap-2">
+            <h3 className="text-white text-sm font-semibold">🧮 Reconciliation — {periodMonth}</h3>
+            <button
+              onClick={fetchReconciliation}
+              disabled={reconLoading}
+              className="text-xs text-slate-400 hover:text-slate-200 disabled:opacity-50"
+            >
+              {reconLoading ? '…' : '↻'} Refresh
+            </button>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
+            <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-3">
+              <div className="text-[10px] uppercase tracking-wider text-slate-400 mb-1">Stripe side (ledger)</div>
+              <div className="text-white font-mono text-sm">${recon.stripe_side.gross_revenue_usd.toFixed(2)} gross</div>
+              <div className="text-slate-500 text-xs">−${recon.stripe_side.stripe_fees_usd.toFixed(2)} fees</div>
+              <div className="text-emerald-300 font-mono text-sm mt-1">= ${recon.stripe_side.net_received_usd.toFixed(2)} net</div>
+            </div>
+            <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-3">
+              <div className="text-[10px] uppercase tracking-wider text-slate-400 mb-1">Billing history</div>
+              <div className="text-white font-mono text-sm">${recon.billing_history_cross_check.paid_total_usd.toFixed(2)} paid</div>
+              <div className="text-slate-500 text-xs">{recon.billing_history_cross_check.paid_invoices_count} invoices</div>
+              <div className={`font-mono text-sm mt-1 ${recon.billing_history_cross_check.diff_vs_stripe_side_usd > 1 ? 'text-red-300' : 'text-emerald-300'}`}>
+                Δ ${recon.billing_history_cross_check.diff_vs_stripe_side_usd.toFixed(2)}
+              </div>
+            </div>
+            <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-3">
+              <div className="text-[10px] uppercase tracking-wider text-slate-400 mb-1">Bank side (Wallex)</div>
+              {recon.bank_side ? (
+                <>
+                  <div className="text-white font-mono text-sm">${(recon.bank_side.total_usd || 0).toFixed(2)}</div>
+                  <div className={`font-mono text-sm mt-1 ${(recon.bank_side.diff_vs_stripe_net_usd || 0) > 1 ? 'text-red-300' : 'text-emerald-300'}`}>
+                    Δ ${(recon.bank_side.diff_vs_stripe_net_usd || 0).toFixed(2)}
+                  </div>
+                </>
+              ) : (
+                <div className="text-slate-500 text-xs italic">No statement uploaded</div>
+              )}
+            </div>
+          </div>
+          {recon.findings.length > 0 && (
+            <ul className="space-y-1">
+              {recon.findings.map((f, i) => (
+                <li key={i} className="text-xs text-amber-300 bg-amber-500/5 border border-amber-500/20 rounded px-2 py-1.5">
+                  ⚠ {f}
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
       )}
 
