@@ -13,6 +13,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { verifySuperAdminAuth } from '@/lib/verify-super-admin';
 import { createConnectAccount, createOnboardingLink } from '@/lib/montree/referral/stripe-connect';
+import { isStripeConnectSupported, countryDisplayName } from '@/lib/montree/referral/payout-country-support';
 
 export const dynamic = 'force-dynamic';
 
@@ -21,6 +22,7 @@ interface AgentRow {
   name: string | null;
   email: string | null;
   stripe_connect_account_id: string | null;
+  payout_method: string | null;
 }
 
 export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string }> }) {
@@ -34,10 +36,23 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string
 
   const supabase = getSupabase();
 
+  // Body may include country (ISO 3166-1 alpha-2). REQUIRED for new accounts —
+  // Stripe defaults to platform country (HK) otherwise, locking agent to wrong
+  // jurisdiction. See Session 109 fix.
+  let bodyCountry: string | null = null;
+  try {
+    const body = await req.json();
+    if (body && typeof body.country === 'string' && body.country.trim()) {
+      bodyCountry = body.country.trim().toUpperCase();
+    }
+  } catch {
+    /* no body → bodyCountry stays null; we'll error below if needed */
+  }
+
   // Pull the agent. We use montree_teachers as the agent table for Phase 1.
   const { data: agentRaw, error: lookupErr } = await supabase
     .from('montree_teachers')
-    .select('id, name, email, stripe_connect_account_id')
+    .select('id, name, email, stripe_connect_account_id, payout_method')
     .eq('id', agentId)
     .maybeSingle();
 
@@ -56,14 +71,35 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string
     }, { status: 400 });
   }
 
+  // 🚨 Manual-wire agents don't use Stripe Connect — refuse politely.
+  if (agent.payout_method === 'manual_wire') {
+    return NextResponse.json({
+      error: 'This agent is set up for manual wire payouts (Wise / SWIFT). Stripe Connect onboarding does not apply. Update their bank details directly in their agent dashboard or via the super-admin manual-payout form.',
+    }, { status: 409 });
+  }
+
   // Step 1: ensure a Stripe Connect account exists for this agent.
   let accountId = agent.stripe_connect_account_id;
   let createdNew = false;
 
   if (!accountId) {
+    // 🚨 Need a country for new accounts. Without it, Stripe locks to platform
+    // country (HK). The caller must pass `country` in the POST body.
+    if (!bodyCountry) {
+      return NextResponse.json({
+        error: 'country is required when creating a new Stripe Connect account. Pass it in the POST body as { "country": "US" } (ISO 3166-1 alpha-2).',
+      }, { status: 400 });
+    }
+    if (!isStripeConnectSupported(bodyCountry)) {
+      return NextResponse.json({
+        error: `Stripe Connect Express does not support ${countryDisplayName(bodyCountry)} (${bodyCountry}). Switch this agent to payout_method='manual_wire' and pay them via Wise / SWIFT instead.`,
+      }, { status: 400 });
+    }
+
     try {
       const account = await createConnectAccount({
         email: agent.email,
+        country: bodyCountry,
         display_name: agent.name || agent.email,
       });
       accountId = account.id;

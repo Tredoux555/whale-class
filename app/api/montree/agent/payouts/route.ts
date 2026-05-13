@@ -24,6 +24,12 @@ interface AgentRow {
   stripe_connect_details_submitted: boolean | null;
   stripe_connect_disabled_reason: string | null;
   stripe_connect_completed_at: string | null;
+  // Session 109 — manual payout architecture for Stripe-Connect-unsupported
+  // countries. Older agent rows (pre-migration 205) won't have these fields
+  // populated; safe defaults below.
+  payout_method: string | null;
+  manual_payout_details: Record<string, unknown> | null;
+  manual_payout_details_updated_at: string | null;
 }
 
 export async function GET(req: NextRequest) {
@@ -37,7 +43,7 @@ export async function GET(req: NextRequest) {
 
   const { data: agentRaw, error } = await supabase
     .from('montree_teachers')
-    .select('id, is_agent, agent_suspended_at, stripe_connect_account_id, stripe_connect_status, stripe_connect_charges_enabled, stripe_connect_payouts_enabled, stripe_connect_details_submitted, stripe_connect_disabled_reason, stripe_connect_completed_at')
+    .select('id, is_agent, agent_suspended_at, stripe_connect_account_id, stripe_connect_status, stripe_connect_charges_enabled, stripe_connect_payouts_enabled, stripe_connect_details_submitted, stripe_connect_disabled_reason, stripe_connect_completed_at, payout_method, manual_payout_details, manual_payout_details_updated_at')
     .eq('id', auth.userId)
     .maybeSingle();
 
@@ -96,6 +102,10 @@ export async function GET(req: NextRequest) {
   }
 
   return NextResponse.json({
+    // Default to 'stripe_connect' for rows that pre-date migration 205.
+    payout_method: (agent.payout_method as 'stripe_connect' | 'manual_wire' | null) || 'stripe_connect',
+    manual_payout_details: agent.manual_payout_details || null,
+    manual_payout_details_updated_at: agent.manual_payout_details_updated_at || null,
     stripe_connect_account_id: agent.stripe_connect_account_id || null,
     stripe_connect_status: (agent.stripe_connect_status as
       | 'pending'

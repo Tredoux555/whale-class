@@ -20,7 +20,25 @@ interface PayoutRow {
   paid_at: string | null;
 }
 
+interface ManualPayoutDetails {
+  method?: 'wise' | 'swift' | 'paypal' | 'other';
+  currency?: string;
+  country?: string;
+  account_holder_name?: string;
+  bank_name?: string;
+  account_number?: string;
+  swift_code?: string;
+  branch_code?: string;
+  branch_name?: string;
+  iban?: string;
+  routing_number?: string;
+  notes?: string;
+}
+
 interface PayoutsResponse {
+  payout_method: 'stripe_connect' | 'manual_wire';
+  manual_payout_details: ManualPayoutDetails | null;
+  manual_payout_details_updated_at: string | null;
   stripe_connect_account_id: string | null;
   stripe_connect_status:
     | 'pending'
@@ -148,7 +166,9 @@ export default function AgentPayoutsPage() {
       </Link>
       <h1 className="mt-2 text-3xl sm:text-4xl font-light text-white tracking-tight">Payouts</h1>
       <p className="mt-2 text-emerald-200/60 text-sm">
-        We use Stripe Connect Express. Bank and tax details go directly to Stripe — we never see them. Once you&apos;re verified, monthly payouts land automatically.
+        {data?.payout_method === 'manual_wire'
+          ? 'Tredoux pays you monthly via bank wire. Your details below are used for each payout — they go from Tredoux directly to your bank, not through Stripe.'
+          : 'We use Stripe Connect Express. Bank and tax details go directly to Stripe — we never see them. Once you’re verified, monthly payouts land automatically.'}
       </p>
 
       {error && (
@@ -157,7 +177,70 @@ export default function AgentPayoutsPage() {
         </div>
       )}
 
-      {data && (
+      {data && data.payout_method === 'manual_wire' && (
+        <>
+          {/* Manual wire — bank details on file, view-only for the agent.
+              Updates flow through super-admin (Tredoux owns this data). */}
+          <section className="mt-6 bg-white/5 border border-white/10 rounded-xl p-5">
+            <div className="flex items-baseline justify-between gap-2 flex-wrap">
+              <h2 className="text-white text-lg font-light">Bank details on file</h2>
+              {data.manual_payout_details_updated_at && (
+                <span className="text-white/40 text-xs">
+                  Updated {fmtDate(data.manual_payout_details_updated_at)}
+                </span>
+              )}
+            </div>
+
+            {data.manual_payout_details ? (
+              <div className="mt-4 space-y-2 text-sm">
+                {data.manual_payout_details.account_holder_name && (
+                  <div className="flex gap-2"><span className="text-white/50 w-32 shrink-0">Account holder</span><span className="text-white">{data.manual_payout_details.account_holder_name}</span></div>
+                )}
+                {data.manual_payout_details.bank_name && (
+                  <div className="flex gap-2"><span className="text-white/50 w-32 shrink-0">Bank</span><span className="text-white">{data.manual_payout_details.bank_name}</span></div>
+                )}
+                {data.manual_payout_details.account_number && (
+                  <div className="flex gap-2"><span className="text-white/50 w-32 shrink-0">Account #</span><code className="text-white font-mono">{data.manual_payout_details.account_number}</code></div>
+                )}
+                {data.manual_payout_details.swift_code && (
+                  <div className="flex gap-2"><span className="text-white/50 w-32 shrink-0">SWIFT</span><code className="text-white font-mono">{data.manual_payout_details.swift_code}</code></div>
+                )}
+                {data.manual_payout_details.branch_code && (
+                  <div className="flex gap-2"><span className="text-white/50 w-32 shrink-0">Branch code</span><code className="text-white font-mono">{data.manual_payout_details.branch_code}</code></div>
+                )}
+                {data.manual_payout_details.branch_name && (
+                  <div className="flex gap-2"><span className="text-white/50 w-32 shrink-0">Branch</span><span className="text-white">{data.manual_payout_details.branch_name}</span></div>
+                )}
+                {data.manual_payout_details.iban && (
+                  <div className="flex gap-2"><span className="text-white/50 w-32 shrink-0">IBAN</span><code className="text-white font-mono">{data.manual_payout_details.iban}</code></div>
+                )}
+                {data.manual_payout_details.routing_number && (
+                  <div className="flex gap-2"><span className="text-white/50 w-32 shrink-0">Routing #</span><code className="text-white font-mono">{data.manual_payout_details.routing_number}</code></div>
+                )}
+                {data.manual_payout_details.currency && (
+                  <div className="flex gap-2"><span className="text-white/50 w-32 shrink-0">Currency</span><span className="text-white">{data.manual_payout_details.currency}</span></div>
+                )}
+                {data.manual_payout_details.country && (
+                  <div className="flex gap-2"><span className="text-white/50 w-32 shrink-0">Country</span><span className="text-white">{data.manual_payout_details.country}</span></div>
+                )}
+                {data.manual_payout_details.method && (
+                  <div className="flex gap-2"><span className="text-white/50 w-32 shrink-0">Rail</span><span className="text-white capitalize">{data.manual_payout_details.method}</span></div>
+                )}
+              </div>
+            ) : (
+              <div className="mt-4 text-amber-300 text-sm">
+                No bank details on file yet. Send your details to Tredoux directly (name as per ID, bank, account number, SWIFT, branch code) and he&apos;ll enter them here. Once on file, monthly payouts arrive automatically.
+              </div>
+            )}
+
+            <p className="mt-4 text-white/40 text-xs leading-relaxed">
+              These details are visible only to Tredoux (super-admin) and you. To update them, message Tredoux from the &quot;Tredoux&quot; tab in the nav — he&apos;ll update on his end.
+            </p>
+          </section>
+        </>
+      )}
+
+      {data && data.payout_method !== 'manual_wire' && (
         <>
           {/* Status card */}
           <section className="mt-6 bg-white/5 border border-white/10 rounded-xl p-5">
@@ -261,44 +344,47 @@ export default function AgentPayoutsPage() {
               </div>
             </section>
           )}
-
-          {/* Payout history */}
-          <section className="mt-6">
-            <h2 className="text-white text-lg font-light mb-3">Payout history</h2>
-            {data.payouts_pending_phase5 && data.payout_history.length === 0 ? (
-              <div className="bg-white/5 border border-white/10 rounded-xl p-6 text-center">
-                <p className="text-white/80 text-sm">Monthly payouts are coming soon.</p>
-                <p className="mt-2 text-emerald-200/60 text-xs leading-relaxed">
-                  We&apos;re finalising the automated payment pipeline. Once it&apos;s live, every closed month will appear here with the exact share you were paid.
-                </p>
-              </div>
-            ) : data.payout_history.length === 0 ? (
-              <div className="bg-white/5 border border-white/10 rounded-xl p-6 text-center text-emerald-200/60 text-sm">
-                No payouts yet.
-              </div>
-            ) : (
-              <div className="bg-white/5 border border-white/10 rounded-xl overflow-hidden">
-                <ul className="divide-y divide-white/5">
-                  {data.payout_history.map(p => (
-                    <li key={p.id} className="px-4 py-3 flex items-center justify-between gap-3">
-                      <div>
-                        <p className="text-white text-sm">{p.school_name || 'Multiple schools'}</p>
-                        <p className="text-white/40 text-xs mt-0.5">
-                          {fmtDate(p.period_start)} — {fmtDate(p.period_end)}
-                          {p.paid_at && ` · paid ${fmtDate(p.paid_at)}`}
-                        </p>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-emerald-300 tabular-nums">{USD(p.agent_payout_usd)}</p>
-                        <p className="text-white/40 text-[10px] mt-0.5">{p.status}</p>
-                      </div>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-          </section>
         </>
+      )}
+
+      {/* Payout history — shown for both methods. Source: montree_agent_payouts
+          regardless of paid_by_method. */}
+      {data && (
+        <section className="mt-6">
+          <h2 className="text-white text-lg font-light mb-3">Payout history</h2>
+          {data.payouts_pending_phase5 && data.payout_history.length === 0 ? (
+            <div className="bg-white/5 border border-white/10 rounded-xl p-6 text-center">
+              <p className="text-white/80 text-sm">Monthly payouts are coming soon.</p>
+              <p className="mt-2 text-emerald-200/60 text-xs leading-relaxed">
+                We&apos;re finalising the automated payment pipeline. Once it&apos;s live, every closed month will appear here with the exact share you were paid.
+              </p>
+            </div>
+          ) : data.payout_history.length === 0 ? (
+            <div className="bg-white/5 border border-white/10 rounded-xl p-6 text-center text-emerald-200/60 text-sm">
+              No payouts yet.
+            </div>
+          ) : (
+            <div className="bg-white/5 border border-white/10 rounded-xl overflow-hidden">
+              <ul className="divide-y divide-white/5">
+                {data.payout_history.map(p => (
+                  <li key={p.id} className="px-4 py-3 flex items-center justify-between gap-3">
+                    <div>
+                      <p className="text-white text-sm">{p.school_name || 'Multiple schools'}</p>
+                      <p className="text-white/40 text-xs mt-0.5">
+                        {fmtDate(p.period_start)} — {fmtDate(p.period_end)}
+                        {p.paid_at && ` · paid ${fmtDate(p.paid_at)}`}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-emerald-300 tabular-nums">{USD(p.agent_payout_usd)}</p>
+                      <p className="text-white/40 text-[10px] mt-0.5">{p.status}</p>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </section>
       )}
     </div>
   );

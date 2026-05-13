@@ -169,6 +169,20 @@ export default function ReferralsTab({ saToken }: ReferralsTabProps) {
   // alert banner.
   const [fromApplicationId, setFromApplicationId] = useState<string | null>(null);
 
+  // Session 109 — manual payout architecture. Modal for setting payout_method
+  // + manual_payout_details for agents in Stripe-Connect-unsupported countries
+  // (China, Palestine, etc.) or who prefer manual wires.
+  const [payoutConfigModal, setPayoutConfigModal] = useState<
+    | null
+    | {
+        agentId: string;
+        agentName: string;
+        method: 'stripe_connect' | 'manual_wire';
+        detailsJson: string;
+        loading: boolean;
+      }
+  >(null);
+
   const headers = useCallback(
     () => ({
       'Content-Type': 'application/json',
@@ -284,17 +298,40 @@ export default function ReferralsTab({ saToken }: ReferralsTabProps) {
     }
   };
 
-  const handleGenerateConnectLink = async (agentId: string, agentName: string) => {
+  const handleGenerateConnectLink = async (
+    agentId: string,
+    agentName: string,
+    existingAccountId: string | null
+  ) => {
     if (!agentId) {
       setError('This referral predates agent linkage; cannot generate a Stripe link. Re-issue the code.');
       return;
     }
+
+    // Session 109 — country is required when creating a NEW Connect account.
+    // If the agent already has an account, we're just generating a fresh
+    // onboarding link, so country isn't needed. Prompt only when needed.
+    let country: string | null = null;
+    if (!existingAccountId) {
+      const raw = window.prompt(
+        `Stripe Connect needs ${agentName}'s country. Enter the ISO 3166-1 alpha-2 code (e.g. US, GB, ZA, AE, AU). For agents in mainland China, Palestine, etc. — cancel here and switch their payout method to "manual_wire" via the 💸 button.`,
+        ''
+      );
+      if (raw === null) return; // user cancelled
+      country = raw.trim().toUpperCase();
+      if (!/^[A-Z]{2}$/.test(country)) {
+        setError('Country must be an ISO 3166-1 alpha-2 code (two letters, e.g. US, GB, ZA).');
+        return;
+      }
+    }
+
     setConnectLoadingAgentId(agentId);
     setError(null);
     try {
       const res = await fetch(`/api/montree/super-admin/agents/${encodeURIComponent(agentId)}/connect-onboard`, {
         method: 'POST',
         headers: headers(),
+        body: country ? JSON.stringify({ country }) : undefined,
       });
       const data = await res.json();
       if (!res.ok) {
@@ -505,6 +542,97 @@ export default function ReferralsTab({ saToken }: ReferralsTabProps) {
       setError(`Network error trying to log in as ${agentName}.`);
     } finally {
       setLoginAsLoadingId(null);
+    }
+  };
+
+  // Session 109 — open the payout-config modal, fetching current state from
+  // the server so the modal starts with the right values.
+  const openPayoutConfigModal = async (r: Referral) => {
+    if (!r.agent_id) return;
+    setError(null);
+    // Open in loading state immediately so the user sees feedback.
+    setPayoutConfigModal({
+      agentId: r.agent_id,
+      agentName: r.agent_display_name,
+      method: 'stripe_connect',
+      detailsJson: '',
+      loading: true,
+    });
+    try {
+      const res = await fetch(
+        `/api/montree/super-admin/agents/${encodeURIComponent(r.agent_id)}/payout-config`,
+        { headers: { 'x-super-admin-token': saToken } }
+      );
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error || 'Could not load payout config.');
+        setPayoutConfigModal(null);
+        return;
+      }
+      setPayoutConfigModal({
+        agentId: r.agent_id,
+        agentName: r.agent_display_name,
+        method: (data.payout_method as 'stripe_connect' | 'manual_wire') || 'stripe_connect',
+        detailsJson: data.manual_payout_details
+          ? JSON.stringify(data.manual_payout_details, null, 2)
+          : '',
+        loading: false,
+      });
+    } catch (err) {
+      console.error('[ReferralsTab] payout-config load:', err);
+      setError('Network error loading payout config.');
+      setPayoutConfigModal(null);
+    }
+  };
+
+  const submitPayoutConfigModal = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!payoutConfigModal || payoutConfigModal.loading) return;
+
+    // Parse JSON if provided. Empty string → null (clear the details).
+    let parsedDetails: Record<string, unknown> | null = null;
+    const trimmed = payoutConfigModal.detailsJson.trim();
+    if (trimmed && payoutConfigModal.method === 'manual_wire') {
+      try {
+        const parsed = JSON.parse(trimmed);
+        if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
+          setError('Manual payout details must be a JSON object.');
+          return;
+        }
+        parsedDetails = parsed as Record<string, unknown>;
+      } catch {
+        setError('Invalid JSON in manual payout details.');
+        return;
+      }
+    }
+
+    setPayoutConfigModal((m) => (m ? { ...m, loading: true } : m));
+    try {
+      const res = await fetch(
+        `/api/montree/super-admin/agents/${encodeURIComponent(payoutConfigModal.agentId)}/payout-config`,
+        {
+          method: 'PATCH',
+          headers: headers(),
+          body: JSON.stringify({
+            payout_method: payoutConfigModal.method,
+            manual_payout_details:
+              payoutConfigModal.method === 'manual_wire' ? parsedDetails : null,
+          }),
+        }
+      );
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.detail || data.error || 'Could not update payout config.');
+        setPayoutConfigModal((m) => (m ? { ...m, loading: false } : m));
+        return;
+      }
+      setPayoutConfigModal(null);
+      await load();
+      if (activityOpen) await loadActivity();
+    } catch (err) {
+      console.error('[ReferralsTab] payout-config save:', err);
+      setError('Network error saving payout config.');
+      setPayoutConfigModal((m) => (m ? { ...m, loading: false } : m));
     }
   };
 
@@ -964,7 +1092,7 @@ export default function ReferralsTab({ saToken }: ReferralsTabProps) {
                             onMouseLeave={() => setHoveredAction(null)}
                           >
                             <button
-                              onClick={() => handleGenerateConnectLink(r.agent_id as string, r.agent_display_name)}
+                              onClick={() => handleGenerateConnectLink(r.agent_id as string, r.agent_display_name, r.agent_stripe_connect_account_id)}
                               disabled={isLoadingConnect}
                               className="px-2.5 py-1 text-xs rounded-md bg-indigo-500/20 hover:bg-indigo-500/35 text-indigo-300 border border-indigo-500/30 disabled:opacity-50"
                               aria-label={connect?.label === 'In progress' ? 'Resume Stripe onboarding' : 'Send Stripe onboarding link'}
@@ -1020,6 +1148,27 @@ export default function ReferralsTab({ saToken }: ReferralsTabProps) {
                             {hoveredAction === `${r.id}:editpct` && (
                               <span style={iconTooltipStyle}>
                                 {`Edit default % (now ${r.agent_default_share_pct ?? '—'}%)`}
+                              </span>
+                            )}
+                          </span>
+                        )}
+                        {/* Payout config (💸) — Session 109 — manual_wire vs stripe_connect */}
+                        {r.agent_id && r.agent_is_agent && (
+                          <span
+                            style={{ position: 'relative', display: 'inline-block', marginRight: 4 }}
+                            onMouseEnter={() => setHoveredAction(`${r.id}:payoutcfg`)}
+                            onMouseLeave={() => setHoveredAction(null)}
+                          >
+                            <button
+                              onClick={() => openPayoutConfigModal(r)}
+                              className="px-2.5 py-1 text-xs rounded-md bg-violet-500/15 hover:bg-violet-500/30 text-violet-200 border border-violet-500/30"
+                              aria-label="Edit payout method + bank details"
+                            >
+                              💸
+                            </button>
+                            {hoveredAction === `${r.id}:payoutcfg` && (
+                              <span style={iconTooltipStyle}>
+                                Payout method + bank details
                               </span>
                             )}
                           </span>
@@ -1299,6 +1448,133 @@ export default function ReferralsTab({ saToken }: ReferralsTabProps) {
                 className="px-4 py-2 bg-emerald-500 hover:bg-emerald-400 text-white font-medium rounded-lg text-sm disabled:opacity-50"
               >
                 {editPctLoading ? 'Saving…' : 'Save default %'}
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
+
+      {/* ── Session 109 — Payout config modal ──────────────────────────────── */}
+      {payoutConfigModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4"
+          role="dialog"
+          aria-modal="true"
+        >
+          <form
+            onSubmit={submitPayoutConfigModal}
+            className="w-full max-w-lg bg-slate-900 border border-slate-700 rounded-xl shadow-2xl p-6 max-h-[90vh] overflow-y-auto"
+          >
+            <h3 className="text-white text-lg font-bold">💸 Payout config</h3>
+            <p className="text-slate-300 text-sm mt-2">
+              For <span className="font-semibold text-white">{payoutConfigModal.agentName}</span>.
+              {' '}Set how this agent gets paid each month.
+            </p>
+
+            {payoutConfigModal.loading ? (
+              <div className="text-slate-400 text-sm py-8 text-center">Loading…</div>
+            ) : (
+              <>
+                <div className="mt-5">
+                  <label className="block text-slate-300 text-xs uppercase tracking-wider font-semibold mb-2">
+                    Payout method
+                  </label>
+                  <div className="space-y-2">
+                    <label className="flex items-start gap-2 cursor-pointer p-3 rounded-lg border border-slate-700 hover:bg-slate-800/60">
+                      <input
+                        type="radio"
+                        name="payout-method"
+                        value="stripe_connect"
+                        checked={payoutConfigModal.method === 'stripe_connect'}
+                        onChange={() =>
+                          setPayoutConfigModal((m) =>
+                            m ? { ...m, method: 'stripe_connect' } : m
+                          )
+                        }
+                        className="mt-1 accent-emerald-500"
+                      />
+                      <div className="min-w-0">
+                        <div className="text-white text-sm font-medium">Stripe Connect Express</div>
+                        <div className="text-slate-400 text-xs mt-1">
+                          Automated. Use for US / UK / EU / AU / NZ / HK / SG / JP / UAE / ZA / etc.
+                          Stripe handles bank + tax. They onboard via a hosted form.
+                        </div>
+                      </div>
+                    </label>
+                    <label className="flex items-start gap-2 cursor-pointer p-3 rounded-lg border border-slate-700 hover:bg-slate-800/60">
+                      <input
+                        type="radio"
+                        name="payout-method"
+                        value="manual_wire"
+                        checked={payoutConfigModal.method === 'manual_wire'}
+                        onChange={() =>
+                          setPayoutConfigModal((m) =>
+                            m ? { ...m, method: 'manual_wire' } : m
+                          )
+                        }
+                        className="mt-1 accent-violet-500"
+                      />
+                      <div className="min-w-0">
+                        <div className="text-white text-sm font-medium">Manual wire (Wise / SWIFT)</div>
+                        <div className="text-slate-400 text-xs mt-1">
+                          You wire monthly via Wise or SWIFT. Use for agents in mainland China,
+                          Palestine, Lebanon, or anywhere Stripe Connect doesn&apos;t support.
+                        </div>
+                      </div>
+                    </label>
+                  </div>
+                </div>
+
+                {payoutConfigModal.method === 'manual_wire' && (
+                  <div className="mt-5">
+                    <label className="block text-slate-300 text-xs uppercase tracking-wider font-semibold mb-1">
+                      Bank details (JSON)
+                    </label>
+                    <textarea
+                      value={payoutConfigModal.detailsJson}
+                      onChange={(e) =>
+                        setPayoutConfigModal((m) =>
+                          m ? { ...m, detailsJson: e.target.value } : m
+                        )
+                      }
+                      rows={12}
+                      placeholder={`{
+  "method": "wise",
+  "currency": "ZAR",
+  "country": "ZA",
+  "account_holder_name": "Full name as per ID",
+  "bank_name": "First National Bank",
+  "account_number": "1234567890",
+  "swift_code": "FIRNZAJJ",
+  "branch_code": "250655",
+  "branch_name": "Sandton",
+  "notes": "anything else"
+}`}
+                      className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white text-xs font-mono focus:border-violet-500 outline-none"
+                    />
+                    <p className="text-slate-500 text-xs mt-1">
+                      Free-form JSON object. The agent sees these fields on their /payouts page.
+                      Leave empty to clear the details.
+                    </p>
+                  </div>
+                )}
+              </>
+            )}
+
+            <div className="flex justify-end gap-2 mt-6">
+              <button
+                type="button"
+                onClick={() => setPayoutConfigModal(null)}
+                className="px-4 py-2 text-slate-400 hover:text-white text-sm"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={payoutConfigModal.loading}
+                className="px-4 py-2 bg-violet-500 hover:bg-violet-400 text-white font-medium rounded-lg text-sm disabled:opacity-50"
+              >
+                {payoutConfigModal.loading ? 'Saving…' : 'Save payout config'}
               </button>
             </div>
           </form>
