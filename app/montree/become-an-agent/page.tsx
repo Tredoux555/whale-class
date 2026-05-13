@@ -403,11 +403,13 @@ export default function BecomeAnAgentPage() {
       </div>
 
       <div style={{ position: 'relative', zIndex: 1 }}>
-        {/* Nav */}
+        {/* Nav — top-right is Log in (the Apply CTA is in the hero below;
+            two "Apply now" pills was redundant). Agents who already have
+            their code go straight to /montree/login-select from here. */}
         <nav className="ba-nav">
           <div className="ba-nav-inner">
             <a className="ba-logo" href="/montree">🌿 Montree</a>
-            <button className="ba-pill" onClick={scrollToForm}>Apply now</button>
+            <a className="ba-pill ba-pill-ghost" href="/montree/login-select">Log in</a>
           </div>
         </nav>
 
