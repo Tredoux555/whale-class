@@ -275,6 +275,9 @@ export default function HealthTab({ sessionToken }: HealthTabProps) {
           }
           error={demoStep?.ok === false ? String(demoStep?.detail || '') : null}
         />
+
+        {/* Session 109 Phase C — Xero sync card */}
+        <XeroSyncCard sessionToken={sessionToken} />
       </div>
 
       {/* Manual cron triggers — useful before Railway crons are configured */}
@@ -308,6 +311,71 @@ export default function HealthTab({ sessionToken }: HealthTabProps) {
       )}
     </div>
   );
+}
+
+// ─── Xero sync card (Session 109 Phase C) ──────────────────────────────────
+// Surfaces last sync time + 7d counts + queue depth. Inactive (yellow) when
+// Xero env vars aren't set; surfaces "set up Xero credentials in Railway" copy.
+function XeroSyncCard({ sessionToken }: { sessionToken: string }) {
+  interface XeroStatus {
+    configured: boolean;
+    migration_missing: boolean;
+    last_successful_sync_at: string | null;
+    successes_7d: number;
+    failures_7d: number;
+    skipped_7d: number;
+    queue_depth_approx: number;
+    status: 'not_configured' | 'migration_pending' | 'has_failures' | 'queue_high' | 'ok';
+  }
+  const [data, setData] = useState<XeroStatus | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  const load = useCallback(async () => {
+    try {
+      const res = await fetch('/api/montree/super-admin/finance/xero-sync-status', {
+        headers: { 'x-super-admin-token': sessionToken },
+      });
+      if (res.ok) setData(await res.json());
+    } catch (err) {
+      console.error('[XeroSyncCard] fetch failed', err);
+    } finally {
+      setLoading(false);
+    }
+  }, [sessionToken]);
+
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  if (loading || !data) {
+    return (
+      <HealthCard icon="📒" title="Xero sync" status="idle" metric="…" subtitle="Checking" error={null} />
+    );
+  }
+
+  let status: 'ok' | 'warn' | 'fail' | 'idle' = 'idle';
+  let subtitle = '';
+  let metric = '';
+
+  if (!data.configured) {
+    status = 'idle';
+    metric = 'Not configured';
+    subtitle = 'Set XERO_CLIENT_ID / SECRET / TENANT_ID / REFRESH_TOKEN in Railway to activate';
+  } else if (data.migration_missing) {
+    status = 'warn';
+    metric = 'Migration pending';
+    subtitle = 'Run migration 208 (montree_xero_sync_log)';
+  } else {
+    const fail = data.failures_7d > 0;
+    const queueHigh = data.queue_depth_approx > 100;
+    status = fail ? 'fail' : queueHigh ? 'warn' : 'ok';
+    metric = data.last_successful_sync_at
+      ? `Last: ${fmtDate(data.last_successful_sync_at)}`
+      : 'Never synced';
+    subtitle = `${data.successes_7d}✓ / ${data.failures_7d}✗ / ${data.skipped_7d}⏭ last 7d · queue ~${data.queue_depth_approx}`;
+  }
+
+  return <HealthCard icon="📒" title="Xero sync" status={status} metric={metric} subtitle={subtitle} error={null} />;
 }
 
 // ─── Cron triggers ──────────────────────────────────────────────────────────
