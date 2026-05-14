@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Whale Class — Writing-and-Reading Making Guide</title>
+<style>
+  @page { size: A4; margin: 2cm; }
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, Helvetica, Arial, sans-serif;
+    font-size: 11pt;
+    line-height: 1.55;
+    color: #1a1a1a;
+    max-width: 760px;
+    margin: 40px auto;
+    padding: 0 24px;
+    background: #fafaf7;
+  }
+  h1 { font-family: 'Lora', Georgia, serif; font-size: 28pt; color: #0a1a0f; margin: 0 0 6px; }
+  h2 { font-family: 'Lora', Georgia, serif; font-size: 18pt; color: #2a6a44; margin: 32px 0 12px; padding-bottom: 6px; border-bottom: 1px solid #d4d4cc; }
+  h3 { font-family: 'Lora', Georgia, serif; font-size: 14pt; color: #0a1a0f; margin: 24px 0 6px; }
+  h4 { font-size: 11pt; font-weight: 700; color: #2a6a44; margin: 14px 0 4px; text-transform: none; }
+  .sub { color: #888; font-style: italic; font-size: 10pt; margin: 0 0 28px; }
+  p { margin: 8px 0; }
+  ul, ol { margin: 6px 0 12px 0; padding-left: 22px; }
+  li { margin-bottom: 3px; }
+  .quote {
+    border-left: 3px solid #B8923A;
+    padding: 4px 0 4px 16px;
+    margin: 16px 0;
+    color: #555;
+    font-style: italic;
+    font-size: 10.5pt;
+  }
+  .kv { margin: 2px 0; }
+  .kv b { color: #2a6a44; }
+  .work {
+    background: #fff;
+    border: 1px solid #e0e0d8;
+    border-radius: 6px;
+    padding: 14px 18px;
+    margin: 16px 0;
+  }
+  .work h3 { margin-top: 0; color: #2a6a44; }
+  .pill {
+    display: inline-block;
+    background: #2a6a44;
+    color: #fff;
+    font-size: 9pt;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 3px;
+    margin-left: 8px;
+    vertical-align: 1px;
+  }
+  .pill.buy { background: #486ba8; }
+  .pill.gen { background: #B8923A; }
+  .pill.buybuild { background: #6a4ca8; }
+  .note {
+    background: #fffaef;
+    border: 1px solid #e8d6a0;
+    padding: 10px 14px;
+    border-radius: 4px;
+    margin: 14px 0;
+    font-size: 10.5pt;
+  }
+  hr { border: none; border-top: 1px solid #d4d4cc; margin: 32px 0; }
+  table { border-collapse: collapse; margin: 12px 0; width: 100%; font-size: 10pt; }
+  td, th { border: 1px solid #d4d4cc; padding: 6px 10px; text-align: left; vertical-align: top; }
+  th { background: #f0eada; color: #0a1a0f; }
+  .shelf-sketch {
+    background: #fff;
+    border: 1px solid #d4d4cc;
+    padding: 14px;
+    margin: 14px 0;
+    font-family: 'SF Mono', Menlo, monospace;
+    font-size: 9pt;
+    line-height: 1.4;
+    color: #444;
+    white-space: pre;
+    overflow-x: auto;
+  }
+  @media print {
+    body { background: #fff; margin: 0; padding: 0; }
+    .work { break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+
+<h1>Whale Class — Writing-and-Reading Making Guide</h1>
+<p class="sub">Companion to the Whale Reading Framework. Simple version: one shelf, 13 works, writing first.</p>
+
+<h2>The whole idea in one paragraph</h2>
+<p>Maria Montessori said the child learns to write before she learns to read. Writing erupts around age 4½ if the materials are out — the child composes <em>M-A-M-A</em> on the movable alphabet by ear, and is genuinely surprised the next day to find she can also read it. The UFLI reading sequence we're using respects this: in every lesson, the child builds the word with the movable alphabet <em>before</em> she reads it from a card. Encoding precedes decoding. So this shelf is a <strong>writing shelf first, a reading shelf second</strong>, even though the framework calls it reading.</p>
+
+<div class="quote">"The hand is the instrument of the mind." — Maria Montessori</div>
+
+<h2>What to make this week</h2>
+<p>You don't need everything on day one. Here's a sane order:</p>
+<ol>
+  <li><strong>Monday</strong> — order the movable alphabet, metal insets, mirror, sandpaper, cardstock, sand, mini chalkboards. (Most arrive by Thursday.)</li>
+  <li><strong>Tuesday</strong> — set up 3 classified baskets with the figurines you already have. Set up the sound games tray.</li>
+  <li><strong>Wednesday-Thursday</strong> — make the first 12 sandpaper letters (SATPIN + m d g o c k).</li>
+  <li><strong>Friday</strong> — print Pink Phase lessons 1-10 from the generator. Fold a few story-paper booklets. Set up the writing corner (sand tray + chalkboard + paper).</li>
+  <li><strong>Weekend</strong> — make the last 14 sandpaper letters + 5 digraphs.</li>
+  <li><strong>Following week</strong> — print whatever the kids reach for. ESL minimal-pair cards from generator. Done.</li>
+</ol>
+<p>The rest grows organically. Blue and Green phase materials get printed when children reach them — months from now.</p>
+
+<h2>The four shelves — what it looks like</h2>
+<p>Four short shelf units along one wall — each about 70-90 cm wide and 90 cm tall, with 3 levels. They can be four separate units or one long shelf you mentally divide into four sections. The point is that each shelf has <strong>one clear job</strong>, so the child reads the room by walking past it. Children move from left to right as their development moves: oral → ear → hand → eye.</p>
+
+<div style="background:#fff; border:1px solid #e0e0d8; border-radius:6px; padding:14px; margin:16px 0;">
+<svg viewBox="0 0 820 540" xmlns="http://www.w3.org/2000/svg" style="width:100%; height:auto; display:block;">
+  <defs>
+    <linearGradient id="wall" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f7f0e0"/>
+      <stop offset="100%" stop-color="#ede4cf"/>
+    </linearGradient>
+    <linearGradient id="floor" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#caa775"/>
+      <stop offset="100%" stop-color="#b89460"/>
+    </linearGradient>
+    <linearGradient id="shelfFrame" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#c0935a"/>
+      <stop offset="100%" stop-color="#a87a44"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Wall and floor -->
+  <rect x="0" y="0" width="820" height="380" fill="url(#wall)"/>
+  <rect x="0" y="380" width="820" height="160" fill="url(#floor)"/>
+  <line x1="0" y1="380" x2="820" y2="380" stroke="#7a5630" stroke-width="1.2"/>
+  <!-- Floor planks -->
+  <line x1="0" y1="430" x2="820" y2="430" stroke="#a07a3a" stroke-width="0.5"/>
+  <line x1="0" y1="475" x2="820" y2="475" stroke="#a07a3a" stroke-width="0.5"/>
+  <line x1="0" y1="515" x2="820" y2="515" stroke="#a07a3a" stroke-width="0.5"/>
+
+  <!-- Section labels above shelves -->
+  <text x="115" y="38" font-family="Lora, Georgia, serif" font-size="16" font-weight="700" fill="#2a6a44" text-anchor="middle">① Oral</text>
+  <text x="115" y="56" font-family="Inter, sans-serif" font-size="10" fill="#666" text-anchor="middle">classified baskets, books</text>
+
+  <text x="305" y="38" font-family="Lora, Georgia, serif" font-size="16" font-weight="700" fill="#2a6a44" text-anchor="middle">② Sound</text>
+  <text x="305" y="56" font-family="Inter, sans-serif" font-size="10" fill="#666" text-anchor="middle">sound games, mirror, ESL</text>
+
+  <text x="495" y="38" font-family="Lora, Georgia, serif" font-size="16" font-weight="700" fill="#2a6a44" text-anchor="middle">③ Writing</text>
+  <text x="495" y="56" font-family="Inter, sans-serif" font-size="10" fill="#666" text-anchor="middle">letters → alphabet → pencil</text>
+
+  <text x="710" y="38" font-family="Lora, Georgia, serif" font-size="16" font-weight="700" fill="#2a6a44" text-anchor="middle">④ Reading</text>
+  <text x="710" y="56" font-family="Inter, sans-serif" font-size="10" fill="#666" text-anchor="middle">cards, booklets, heart words</text>
+
+  <!-- ============ SHELF 1: ORAL ============ -->
+  <g>
+    <!-- Frame -->
+    <rect x="35" y="75" width="160" height="305" fill="url(#shelfFrame)" stroke="#6d4818" stroke-width="1"/>
+    <rect x="40" y="80" width="150" height="295" fill="#e8d8b8"/>
+    <!-- Shelf dividers -->
+    <line x1="40" y1="175" x2="190" y2="175" stroke="#7a5630" stroke-width="1.5"/>
+    <line x1="40" y1="275" x2="190" y2="275" stroke="#7a5630" stroke-width="1.5"/>
+
+    <!-- Top shelf: 3 baskets -->
+    <ellipse cx="75" cy="148" rx="22" ry="8" fill="#9e7546" stroke="#6d4818" stroke-width="0.8"/>
+    <path d="M53 148 Q53 165 75 168 Q97 165 97 148" fill="#b88c5a" stroke="#6d4818" stroke-width="0.8"/>
+    <circle cx="68" cy="143" r="4" fill="#888"/>
+    <circle cx="78" cy="141" r="4" fill="#a04444"/>
+    <circle cx="84" cy="146" r="4" fill="#5a8845"/>
+
+    <ellipse cx="115" cy="148" rx="22" ry="8" fill="#9e7546" stroke="#6d4818" stroke-width="0.8"/>
+    <path d="M93 148 Q93 165 115 168 Q137 165 137 148" fill="#b88c5a" stroke="#6d4818" stroke-width="0.8"/>
+    <circle cx="108" cy="143" r="4" fill="#d4a040"/>
+    <circle cx="118" cy="141" r="4" fill="#c06030"/>
+    <circle cx="124" cy="146" r="4" fill="#5a8845"/>
+
+    <ellipse cx="155" cy="148" rx="22" ry="8" fill="#9e7546" stroke="#6d4818" stroke-width="0.8"/>
+    <path d="M133 148 Q133 165 155 168 Q177 165 177 148" fill="#b88c5a" stroke="#6d4818" stroke-width="0.8"/>
+    <circle cx="148" cy="143" r="4" fill="#4a6a98"/>
+    <circle cx="158" cy="141" r="4" fill="#888"/>
+    <circle cx="164" cy="146" r="4" fill="#a04444"/>
+
+    <!-- Middle shelf: matching tray -->
+    <rect x="55" y="225" width="120" height="42" fill="#d4b890" stroke="#7a5630" stroke-width="0.8" rx="2"/>
+    <rect x="62" y="232" width="22" height="28" fill="#fff" stroke="#888" stroke-width="0.5"/>
+    <circle cx="73" cy="246" r="6" fill="#a04444" opacity="0.6"/>
+    <rect x="88" y="232" width="22" height="28" fill="#fff" stroke="#888" stroke-width="0.5"/>
+    <circle cx="99" cy="246" r="6" fill="#a04444" opacity="0.6"/>
+    <rect x="114" y="232" width="22" height="28" fill="#fff" stroke="#888" stroke-width="0.5"/>
+    <rect x="140" y="232" width="22" height="28" fill="#fff" stroke="#888" stroke-width="0.5"/>
+
+    <!-- Bottom shelf: book basket -->
+    <rect x="55" y="295" width="125" height="72" fill="#a87a44" stroke="#6d4818" stroke-width="0.8" rx="2"/>
+    <rect x="62" y="302" width="14" height="55" fill="#c84848" stroke="#882828"/>
+    <rect x="78" y="302" width="14" height="55" fill="#4080a0" stroke="#205070"/>
+    <rect x="94" y="302" width="14" height="55" fill="#d4a040" stroke="#a07020"/>
+    <rect x="110" y="302" width="14" height="55" fill="#7aa050" stroke="#507030"/>
+    <rect x="126" y="302" width="14" height="55" fill="#a04080" stroke="#702058"/>
+    <rect x="142" y="302" width="14" height="55" fill="#c84848" stroke="#882828"/>
+    <rect x="158" y="302" width="14" height="55" fill="#4080a0" stroke="#205070"/>
+  </g>
+
+  <!-- ============ SHELF 2: SOUND ============ -->
+  <g>
+    <rect x="225" y="75" width="160" height="305" fill="url(#shelfFrame)" stroke="#6d4818" stroke-width="1"/>
+    <rect x="230" y="80" width="150" height="295" fill="#e8d8b8"/>
+    <line x1="230" y1="175" x2="380" y2="175" stroke="#7a5630" stroke-width="1.5"/>
+    <line x1="230" y1="275" x2="380" y2="275" stroke="#7a5630" stroke-width="1.5"/>
+
+    <!-- Top shelf: sound games tray -->
+    <rect x="245" y="120" width="120" height="48" fill="#d4b890" stroke="#7a5630" stroke-width="0.8" rx="3"/>
+    <circle cx="262" cy="144" r="6" fill="#9c9c9c" stroke="#666"/>
+    <circle cx="280" cy="144" r="6" fill="#c08040" stroke="#704020"/>
+    <circle cx="298" cy="144" r="6" fill="#d4a040" stroke="#a07020"/>
+    <circle cx="316" cy="144" r="6" fill="#4080a0" stroke="#205070"/>
+    <circle cx="334" cy="144" r="6" fill="#a04444" stroke="#702828"/>
+    <circle cx="352" cy="144" r="6" fill="#5a8845" stroke="#406030"/>
+
+    <!-- Middle shelf: mirror -->
+    <rect x="265" y="195" width="80" height="62" fill="#c8d8d8" stroke="#2a6a44" stroke-width="2"/>
+    <rect x="270" y="200" width="70" height="52" fill="#e0eef0"/>
+    <line x1="275" y1="208" x2="335" y2="208" stroke="#fff" stroke-width="2" opacity="0.7"/>
+    <line x1="275" y1="220" x2="320" y2="220" stroke="#fff" stroke-width="1.5" opacity="0.5"/>
+    <text x="305" y="237" font-family="Inter, sans-serif" font-size="8" fill="#5a7a7a" text-anchor="middle">mirror</text>
+
+    <!-- Bottom shelf: ESL cards stacks -->
+    <rect x="245" y="295" width="55" height="70" fill="#fff" stroke="#888" stroke-width="0.8" rx="2"/>
+    <line x1="245" y1="305" x2="300" y2="305" stroke="#aaa" stroke-width="0.3"/>
+    <line x1="245" y1="315" x2="300" y2="315" stroke="#aaa" stroke-width="0.3"/>
+    <line x1="245" y1="325" x2="300" y2="325" stroke="#aaa" stroke-width="0.3"/>
+    <line x1="245" y1="335" x2="300" y2="335" stroke="#aaa" stroke-width="0.3"/>
+    <text x="272" y="350" font-family="Inter, sans-serif" font-size="8" fill="#666" text-anchor="middle">ESL pairs</text>
+
+    <rect x="312" y="295" width="55" height="70" fill="#fff" stroke="#888" stroke-width="0.8" rx="2"/>
+    <line x1="312" y1="305" x2="367" y2="305" stroke="#aaa" stroke-width="0.3"/>
+    <line x1="312" y1="315" x2="367" y2="315" stroke="#aaa" stroke-width="0.3"/>
+    <line x1="312" y1="325" x2="367" y2="325" stroke="#aaa" stroke-width="0.3"/>
+    <text x="340" y="350" font-family="Inter, sans-serif" font-size="8" fill="#666" text-anchor="middle">TH · R/L</text>
+  </g>
+
+  <!-- ============ SHELF 3: WRITING ============ -->
+  <g>
+    <rect x="415" y="75" width="160" height="305" fill="url(#shelfFrame)" stroke="#6d4818" stroke-width="1"/>
+    <rect x="420" y="80" width="150" height="295" fill="#e8d8b8"/>
+    <line x1="420" y1="175" x2="570" y2="175" stroke="#7a5630" stroke-width="1.5"/>
+    <line x1="420" y1="275" x2="570" y2="275" stroke="#7a5630" stroke-width="1.5"/>
+
+    <!-- Top shelf: sandpaper letters rack -->
+    <rect x="430" y="105" width="130" height="62" fill="#a87a44" stroke="#6d4818" stroke-width="0.5"/>
+    <!-- Letter cards standing up -->
+    <rect x="435" y="113" width="14" height="48" fill="#f5c5d0" stroke="#a04060"/>
+    <text x="442" y="142" font-family="Lora, serif" font-size="12" font-weight="700" fill="#5a3030" text-anchor="middle">s</text>
+    <rect x="451" y="113" width="14" height="48" fill="#b8d8e8" stroke="#4060a0"/>
+    <text x="458" y="142" font-family="Lora, serif" font-size="12" font-weight="700" fill="#1a3a5a" text-anchor="middle">a</text>
+    <rect x="467" y="113" width="14" height="48" fill="#f5c5d0" stroke="#a04060"/>
+    <text x="474" y="142" font-family="Lora, serif" font-size="12" font-weight="700" fill="#5a3030" text-anchor="middle">t</text>
+    <rect x="483" y="113" width="14" height="48" fill="#f5c5d0" stroke="#a04060"/>
+    <text x="490" y="142" font-family="Lora, serif" font-size="12" font-weight="700" fill="#5a3030" text-anchor="middle">p</text>
+    <rect x="499" y="113" width="14" height="48" fill="#b8d8e8" stroke="#4060a0"/>
+    <text x="506" y="142" font-family="Lora, serif" font-size="12" font-weight="700" fill="#1a3a5a" text-anchor="middle">i</text>
+    <rect x="515" y="113" width="14" height="48" fill="#f5c5d0" stroke="#a04060"/>
+    <text x="522" y="142" font-family="Lora, serif" font-size="12" font-weight="700" fill="#5a3030" text-anchor="middle">n</text>
+    <rect x="531" y="113" width="14" height="48" fill="#f5c5d0" stroke="#a04060"/>
+    <text x="538" y="142" font-family="Lora, serif" font-size="12" font-weight="700" fill="#5a3030" text-anchor="middle">m</text>
+    <rect x="547" y="113" width="14" height="48" fill="#f5c5d0" stroke="#a04060"/>
+    <text x="554" y="142" font-family="Lora, serif" font-size="12" font-weight="700" fill="#5a3030" text-anchor="middle">d</text>
+
+    <!-- Middle shelf: movable alphabet box -->
+    <rect x="435" y="195" width="120" height="60" fill="#a87a44" stroke="#6d4818" stroke-width="0.8"/>
+    <!-- Compartment grid -->
+    <g stroke="#6d4818" stroke-width="0.4" fill="none">
+      <line x1="450" y1="195" x2="450" y2="255"/>
+      <line x1="465" y1="195" x2="465" y2="255"/>
+      <line x1="480" y1="195" x2="480" y2="255"/>
+      <line x1="495" y1="195" x2="495" y2="255"/>
+      <line x1="510" y1="195" x2="510" y2="255"/>
+      <line x1="525" y1="195" x2="525" y2="255"/>
+      <line x1="540" y1="195" x2="540" y2="255"/>
+      <line x1="435" y1="225" x2="555" y2="225"/>
+    </g>
+    <!-- Letters visible -->
+    <text x="442" y="218" font-family="Lora,serif" font-size="9" font-weight="700" fill="#a04444" text-anchor="middle">a</text>
+    <text x="457" y="218" font-family="Lora,serif" font-size="9" font-weight="700" fill="#4060a0" text-anchor="middle">b</text>
+    <text x="472" y="218" font-family="Lora,serif" font-size="9" font-weight="700" fill="#4060a0" text-anchor="middle">c</text>
+    <text x="487" y="218" font-family="Lora,serif" font-size="9" font-weight="700" fill="#4060a0" text-anchor="middle">d</text>
+    <text x="502" y="218" font-family="Lora,serif" font-size="9" font-weight="700" fill="#a04444" text-anchor="middle">e</text>
+    <text x="517" y="218" font-family="Lora,serif" font-size="9" font-weight="700" fill="#4060a0" text-anchor="middle">f</text>
+    <text x="532" y="218" font-family="Lora,serif" font-size="9" font-weight="700" fill="#4060a0" text-anchor="middle">g</text>
+    <text x="547" y="218" font-family="Lora,serif" font-size="9" font-weight="700" fill="#4060a0" text-anchor="middle">h</text>
+    <text x="442" y="248" font-family="Lora,serif" font-size="9" font-weight="700" fill="#a04444" text-anchor="middle">i</text>
+    <text x="457" y="248" font-family="Lora,serif" font-size="9" font-weight="700" fill="#4060a0" text-anchor="middle">j</text>
+    <text x="472" y="248" font-family="Lora,serif" font-size="9" font-weight="700" fill="#4060a0" text-anchor="middle">k</text>
+    <text x="487" y="248" font-family="Lora,serif" font-size="9" font-weight="700" fill="#4060a0" text-anchor="middle">l</text>
+    <text x="502" y="248" font-family="Lora,serif" font-size="9" font-weight="700" fill="#4060a0" text-anchor="middle">m</text>
+    <text x="517" y="248" font-family="Lora,serif" font-size="9" font-weight="700" fill="#4060a0" text-anchor="middle">n</text>
+    <text x="532" y="248" font-family="Lora,serif" font-size="9" font-weight="700" fill="#a04444" text-anchor="middle">o</text>
+    <text x="547" y="248" font-family="Lora,serif" font-size="9" font-weight="700" fill="#4060a0" text-anchor="middle">p</text>
+
+    <!-- Bottom shelf: sand tray + chalkboard -->
+    <rect x="430" y="295" width="60" height="50" fill="#c8a878" stroke="#7a5630" stroke-width="1" rx="2"/>
+    <rect x="435" y="300" width="50" height="40" fill="#e8d9a8"/>
+    <text x="460" y="324" font-family="cursive" font-size="20" font-weight="700" fill="#7a5a2a" text-anchor="middle" opacity="0.65">a</text>
+    <text x="460" y="357" font-family="Inter, sans-serif" font-size="8" fill="#666" text-anchor="middle">sand tray</text>
+
+    <rect x="500" y="295" width="60" height="50" fill="#2a2a2a" stroke="#7a5630" stroke-width="2" rx="2"/>
+    <text x="530" y="328" font-family="cursive" font-size="20" font-weight="700" fill="#fff" text-anchor="middle">M</text>
+    <text x="530" y="357" font-family="Inter, sans-serif" font-size="8" fill="#666" text-anchor="middle">chalkboard</text>
+  </g>
+
+  <!-- Metal insets stand to the right of shelf 3 -->
+  <g>
+    <rect x="588" y="280" width="32" height="100" fill="#a87a44" stroke="#6d4818" stroke-width="0.8"/>
+    <!-- Slanted display top -->
+    <polygon points="588,280 620,280 620,300 588,310" fill="#b88c5a" stroke="#6d4818" stroke-width="0.6"/>
+    <!-- Inset frames stacked -->
+    <rect x="591" y="313" width="26" height="12" fill="#f5c5d0" stroke="#a04060" stroke-width="0.6"/>
+    <rect x="591" y="328" width="26" height="12" fill="#f5c5d0" stroke="#a04060" stroke-width="0.6"/>
+    <rect x="591" y="343" width="26" height="12" fill="#f5c5d0" stroke="#a04060" stroke-width="0.6"/>
+    <rect x="591" y="358" width="26" height="12" fill="#f5c5d0" stroke="#a04060" stroke-width="0.6"/>
+    <!-- inset shapes -->
+    <circle cx="604" cy="290" r="6" fill="#b8d8e8" stroke="#4060a0" stroke-width="0.5"/>
+    <text x="604" y="396" font-family="Inter, sans-serif" font-size="8" fill="#666" text-anchor="middle">insets</text>
+  </g>
+
+  <!-- ============ SHELF 4: READING ============ -->
+  <g transform="translate(35,0)">
+    <rect x="605" y="75" width="160" height="305" fill="url(#shelfFrame)" stroke="#6d4818" stroke-width="1"/>
+    <rect x="610" y="80" width="150" height="295" fill="#e8d8b8"/>
+    <line x1="610" y1="175" x2="760" y2="175" stroke="#7a5630" stroke-width="1.5"/>
+    <line x1="610" y1="275" x2="760" y2="275" stroke="#7a5630" stroke-width="1.5"/>
+
+    <!-- Top shelf: card sets in pouches -->
+    <rect x="625" y="105" width="45" height="58" fill="#d4c098" stroke="#7a5630" stroke-width="0.5" rx="2"/>
+    <text x="647" y="132" font-family="Inter, sans-serif" font-size="8" font-weight="700" fill="#666" text-anchor="middle">L 12</text>
+    <text x="647" y="146" font-family="Inter, sans-serif" font-size="7" fill="#888" text-anchor="middle">cards</text>
+
+    <rect x="678" y="105" width="45" height="58" fill="#d4c098" stroke="#7a5630" stroke-width="0.5" rx="2"/>
+    <text x="700" y="132" font-family="Inter, sans-serif" font-size="8" font-weight="700" fill="#666" text-anchor="middle">L 13</text>
+    <text x="700" y="146" font-family="Inter, sans-serif" font-size="7" fill="#888" text-anchor="middle">cards</text>
+
+    <rect x="730" y="105" width="22" height="58" fill="#d4c098" stroke="#7a5630" stroke-width="0.5" rx="2"/>
+    <text x="741" y="135" font-family="Inter, sans-serif" font-size="7" font-weight="700" fill="#666" text-anchor="middle">L14</text>
+
+    <!-- Middle shelf: decodable booklets -->
+    <rect x="620" y="195" width="40" height="60" fill="#f5c5d0" stroke="#a04060" stroke-width="0.5"/>
+    <text x="640" y="225" font-family="Inter, sans-serif" font-size="9" font-weight="700" fill="#5a3030" text-anchor="middle">Pink</text>
+    <rect x="664" y="195" width="40" height="60" fill="#b8d8e8" stroke="#4060a0" stroke-width="0.5"/>
+    <text x="684" y="225" font-family="Inter, sans-serif" font-size="9" font-weight="700" fill="#1a3a5a" text-anchor="middle">Blue</text>
+    <rect x="708" y="195" width="40" height="60" fill="#bdd8b0" stroke="#406030" stroke-width="0.5"/>
+    <text x="728" y="225" font-family="Inter, sans-serif" font-size="9" font-weight="700" fill="#2a4a20" text-anchor="middle">Green</text>
+
+    <!-- Bottom shelf: heart words ring -->
+    <circle cx="650" cy="325" r="22" fill="none" stroke="#a87a44" stroke-width="2"/>
+    <!-- Cards on ring -->
+    <rect x="630" y="298" width="40" height="14" fill="#fff" stroke="#888" stroke-width="0.5" transform="rotate(-12 650 305)"/>
+    <text x="650" y="309" font-family="Lora,serif" font-size="9" fill="#000" text-anchor="middle" transform="rotate(-12 650 305)">th<tspan fill="#dc2626">e</tspan></text>
+
+    <rect x="630" y="312" width="40" height="14" fill="#fff" stroke="#888" stroke-width="0.5" transform="rotate(6 650 319)"/>
+    <text x="650" y="323" font-family="Lora,serif" font-size="9" fill="#000" text-anchor="middle" transform="rotate(6 650 319)">s<tspan fill="#dc2626">ai</tspan>d</text>
+
+    <text x="650" y="362" font-family="Inter, sans-serif" font-size="8" fill="#666" text-anchor="middle">heart words</text>
+
+    <!-- Story paper rack -->
+    <rect x="700" y="295" width="50" height="60" fill="#d4b890" stroke="#7a5630" stroke-width="0.5" rx="2"/>
+    <rect x="705" y="300" width="40" height="50" fill="#fff" stroke="#aaa" stroke-width="0.4"/>
+    <line x1="708" y1="332" x2="742" y2="332" stroke="#bbb" stroke-width="0.3"/>
+    <line x1="708" y1="340" x2="742" y2="340" stroke="#bbb" stroke-width="0.3"/>
+    <line x1="708" y1="348" x2="742" y2="348" stroke="#bbb" stroke-width="0.3"/>
+    <circle cx="715" cy="318" r="3" fill="#c84848" opacity="0.5"/>
+    <text x="725" y="370" font-family="Inter, sans-serif" font-size="8" fill="#666" text-anchor="middle">story paper</text>
+  </g>
+
+  <!-- Rug in front of writing shelf -->
+  <ellipse cx="510" cy="475" rx="120" ry="22" fill="#9c5a4a" opacity="0.5"/>
+  <ellipse cx="510" cy="473" rx="115" ry="20" fill="#b87060" stroke="#6a3828" stroke-width="0.5"/>
+  <line x1="410" y1="470" x2="610" y2="470" stroke="#9c5a4a" stroke-width="0.5" opacity="0.6"/>
+  <line x1="410" y1="478" x2="610" y2="478" stroke="#9c5a4a" stroke-width="0.5" opacity="0.6"/>
+
+  <!-- Child silhouette working on rug -->
+  <g transform="translate(490, 425)">
+    <!-- Head -->
+    <circle cx="20" cy="14" r="11" fill="#e0b890" stroke="#a8845a" stroke-width="0.6"/>
+    <!-- Hair -->
+    <path d="M9 14 Q9 4 20 3 Q31 4 31 14 Q31 9 27 9 Q23 8 20 8 Q14 8 9 14" fill="#553318"/>
+    <!-- Body -->
+    <path d="M11 24 L8 50 L32 50 L29 24 Q25 22 20 22 Q15 22 11 24" fill="#7c95c0" stroke="#4a6090" stroke-width="0.6"/>
+    <!-- Arms reaching forward -->
+    <path d="M11 30 Q7 38 14 46" fill="none" stroke="#7c95c0" stroke-width="4" stroke-linecap="round"/>
+    <path d="M29 30 Q33 38 26 46" fill="none" stroke="#7c95c0" stroke-width="4" stroke-linecap="round"/>
+  </g>
+
+  <!-- Movable alphabet letters on rug (composing CAT) -->
+  <g transform="translate(530, 458)" font-family="Lora,serif" font-size="18" font-weight="700">
+    <rect x="0" y="0" width="16" height="20" fill="#b8d8e8" stroke="#4060a0" stroke-width="0.5" rx="1"/>
+    <text x="8" y="15" fill="#1a3a5a" text-anchor="middle">c</text>
+    <rect x="18" y="0" width="16" height="20" fill="#f5c5d0" stroke="#a04060" stroke-width="0.5" rx="1"/>
+    <text x="26" y="15" fill="#5a3030" text-anchor="middle">a</text>
+    <rect x="36" y="0" width="16" height="20" fill="#f5c5d0" stroke="#a04060" stroke-width="0.5" rx="1"/>
+    <text x="44" y="15" fill="#5a3030" text-anchor="middle">t</text>
+  </g>
+
+  <!-- Small plant on top of shelf 1 for warmth -->
+  <g transform="translate(60, 75)">
+    <rect x="0" y="-12" width="14" height="12" fill="#9c5a4a" stroke="#6a3828" stroke-width="0.5"/>
+    <path d="M7 -12 Q-1 -22 3 -28 Q7 -22 7 -18" fill="#5a8845" stroke="#406030" stroke-width="0.4"/>
+    <path d="M7 -12 Q15 -22 11 -28 Q7 -22 7 -18" fill="#5a8845" stroke="#406030" stroke-width="0.4"/>
+    <path d="M7 -14 Q7 -25 7 -30" fill="none" stroke="#5a8845" stroke-width="0.6"/>
+  </g>
+
+  <!-- Small caption -->
+  <text x="410" y="525" font-family="Lora,Georgia,serif" font-size="11" font-style="italic" fill="#5a4030" text-anchor="middle">A child composes "cat" on the rug in front of the writing shelf.</text>
+</svg>
+</div>
+
+<div class="shelf-sketch">
+   ① ORAL              ② SOUND             ③ WRITING           ④ READING
+   ┌──────────┐        ┌──────────┐        ┌──────────┐        ┌──────────┐
+   │ basket   │        │ sound    │        │ sandpaper│        │ current  │
+   │ basket   │        │ games    │        │ letters  │        │ lesson   │
+   │ basket   │        │ tray     │        │ rack     │        │ cards    │
+   ├──────────┤        ├──────────┤        ├──────────┤        ├──────────┤
+   │ matching │        │ mirror   │        │ movable  │        │ decodable│
+   │ +        │        │ +        │        │ alphabet │        │ booklets │
+   │ sequence │        │ ESL cards│        │ box      │        │ basket   │
+   ├──────────┤        ├──────────┤        ├──────────┤        ├──────────┤
+   │ read-    │        │ articu-  │        │ sand tray│        │ heart    │
+   │ aloud    │        │ lation   │        │ chalk-   │        │ words    │
+   │ books    │        │ cards    │        │ boards   │        │ ring     │
+   └──────────┘        └──────────┘        └──────────┘        └──────────┘
+                                            + metal insets       +story
+                                              on a stand          paper
+                                              beside it           rack
+
+       ← oral language        listening         writing track       reading →
+         (baskets +           (ear training      (sandpaper →       (the eye
+          books)              + ESL drill)        movable alpha →    reads what
+                                                  pencil)            the hand
+                                                                     wrote)
+</div>
+
+<h3>What each shelf does</h3>
+<p><strong>Shelf 1 — Oral.</strong> Where every child starts. Three classified baskets, a matching/sequencing tray, the read-aloud book basket. No letters yet. Stays useful through Pink Phase — older children still come back to baskets for sentence-building.</p>
+<p><strong>Shelf 2 — Sound.</strong> The listening shelf. Sound games tray, mirror at child-eye-level, ESL minimal-pair cards, articulation cards. The teacher pulls each Mandarin-L1 child here for 5 minutes a day — that's the one fixed appointment.</p>
+<p><strong>Shelf 3 — Writing.</strong> The biggest and most active shelf. The sequence the hand follows: sandpaper letters → movable alphabet → sand tray → chalkboards → story paper. Metal insets sit on their own wooden stand to the side. A child mid-explosion lives on this shelf for weeks.</p>
+<p><strong>Shelf 4 — Reading.</strong> Per-lesson card sets, decodable booklets, heart words ring. Stays mostly empty during the writing-bridge weeks. Fills as the children start reading back what they've written.</p>
+
+<div class="note">
+  <strong>Why four shelves and not one.</strong> Each shelf has a single developmental identity, so the child knows what to expect when she walks to it. A two-year-old gravitates to Shelf 1 without prompting. A four-year-old in the writing explosion lives on Shelf 3. The teacher can see across the room and know within a second where each child is developmentally just by where they're standing. One giant shelf hides that signal.
+</div>
+
+<h2>The 13 works</h2>
+
+<!-- 1 -->
+<div class="work">
+  <h3>1. Classified language baskets <span class="pill">BUILD</span></h3>
+  <p>Real miniature objects grouped by category. The child handles a cow before she ever sees the word "cow."</p>
+  <div class="kv"><b>Lives on:</b> Shelf 1 (Oral), top level · <b>Used from:</b> day one</div>
+  <h4>Materials</h4>
+  <ul>
+    <li>3 open baskets to start (animals, food, transport). Add more later as you find figurines.</li>
+    <li>5-7 mini-objects per basket. Whatever you already have works — Schleich, Safari Ltd, or local toy figurines.</li>
+    <li>One photo + bilingual label per basket.</li>
+  </ul>
+  <h4>How to make it</h4>
+  <ol>
+    <li>Pick the 3 categories you have the most figurines for already.</li>
+    <li>Print a small label (English on top, 中文 below). Stick it on the front of the basket.</li>
+    <li>Put it on the shelf. Rotate one basket out every couple of weeks to a different category as you build up.</li>
+  </ol>
+  <h4>How to present it</h4>
+  <p>This is your three-period lesson, but with real things instead of cards. Plan 5-7 minutes per session, with 2 or 3 sessions across a week.</p>
+  <ol>
+    <li>Invite one child. "Would you like to see something with me?" Bring the basket to a small table or rug. Sit beside her, not opposite.</li>
+    <li>Take out the objects one at a time and place them in a row between you. Don't name them yet — just place them.</li>
+    <li><strong>Period 1 — Naming.</strong> Touch the first object. "This is a cow." Have her touch it and say the word. Repeat for two more. Three at a time, no more.</li>
+    <li><strong>Period 2 — Recognition.</strong> "Show me the cow." Wait. "Show me the pig." If she's confident, ask in a different order. Keep going until she points to all three reliably.</li>
+    <li><strong>Period 3 — Recall.</strong> Hold up the cow. "What is this?" Only ask after she's solid on Period 2 — sometimes the next day.</li>
+    <li>When she knows three, add the next three. The basket grows over weeks.</li>
+  </ol>
+  <p><em>For Mandarin L1:</em> say the English word once clearly, never the Mandarin translation at the same moment. The label on the basket has both; spoken work is English only.</p>
+</div>
+
+<!-- 2 -->
+<div class="work">
+  <h3>2. Matching / sequencing tray <span class="pill">BUILD</span></h3>
+  <p>One tray that does double duty. Visual discrimination — the foundation skill that becomes letter discrimination later.</p>
+  <div class="kv"><b>Lives on:</b> Shelf 1 (Oral), middle level · <b>Used from:</b> day one</div>
+  <h4>Materials</h4>
+  <ul>
+    <li>1 wooden tray (~25 × 35 cm).</li>
+    <li>8 photo pairs — print and laminate. Rotate.</li>
+    <li>A few 3-card sequences (plant growing, baking bread). Add 4-card and 5-card sequences as the children grow into them.</li>
+  </ul>
+  <h4>How to make it</h4>
+  <p>Print, laminate, slice. Sequences go in a small envelope on the tray. Numbered on the back so children can self-check.</p>
+  <h4>How to present it</h4>
+  <p><strong>Matching:</strong></p>
+  <ol>
+    <li>Invite the child. Carry the tray to a table. Sit beside her.</li>
+    <li>Take all the cards out. Place 4 cards in a column on the left. Spread the remaining 4 cards on the right, scrambled.</li>
+    <li>Point at the top-left card. "I'm looking for one that matches." Slowly scan the right side. When you find the match, pick it up and place it directly to the right of its partner.</li>
+    <li>Do one more, slowly, then hand the work over. "Would you like to try?"</li>
+    <li>Walk away. Come back at the end to admire the finished work, then have her return the cards to the tray.</li>
+  </ol>
+  <p><strong>Sequencing:</strong></p>
+  <ol>
+    <li>Place all the cards from one sequence in a row, scrambled.</li>
+    <li>"I wonder which one comes first." Pick the first card with quiet confidence and slide it to the top.</li>
+    <li>"And then what?" Lay the rest in order with small pauses. Don't narrate the story — let the cards speak.</li>
+    <li>Mix them up. "Your turn." She self-checks by flipping the cards over — the numbers on the back tell her if she's right.</li>
+  </ol>
+</div>
+
+<!-- 3 -->
+<div class="work">
+  <h3>3. Sound games tray <span class="pill">BUILD</span></h3>
+  <p>Dwyer's five sound games. The child hears sounds in spoken words long before she sees a letter.</p>
+  <div class="kv"><b>Lives on:</b> Shelf 2 (Sound), top level · <b>Used from:</b> day one</div>
+  <h4>Materials</h4>
+  <ul>
+    <li>1 wooden tray.</li>
+    <li>6-8 mini-objects with short English names (sock, top, pig, cup, ball, fish, sun, bus).</li>
+    <li>A small storage box behind the shelf with 20-30 extra objects to rotate.</li>
+  </ul>
+  <h4>How to make it</h4>
+  <p>Pick 6-8 objects whose English names are short and clearly contrast in initial sound. Lay them out in a row on the tray. Rotate the set every week or two.</p>
+  <h4>How to present it</h4>
+  <p>The five stages move from easy to hard. Each stage runs for weeks or months before the next is introduced. <strong>Never name the letter</strong> — only the sound.</p>
+  <ol>
+    <li><strong>Stage 1 — one object.</strong> Place one object. "I spy with my little eye, something starting with /s/." Child picks it up. This is just to learn the game.</li>
+    <li><strong>Stage 2 — different sounds.</strong> 3-5 objects, all clearly different initials (sock, pig, cup, ball). "I spy something starting with /p/." She picks the pig.</li>
+    <li><strong>Stage 3 — similar sounds.</strong> 6-8 objects with contrasting close sounds (b/p, d/t, m/n). Pig vs ball, top vs dog. Harder. Spend a long time here.</li>
+    <li><strong>Stage 4 — ending sounds.</strong> Same objects. "I spy something ending with /g/." Mandarin L1 children will fail this for weeks. Stay patient. Have her say the word slowly, hold the final sound.</li>
+    <li><strong>Stage 5 — middle sounds.</strong> Only for CVC words. "I spy something with /o/ in the middle." Hardest stage. Often coincides with the start of formal letter work.</li>
+  </ol>
+  <p>Each stage is a game, not a test. If she gets it wrong, say the answer cheerfully and move on. Three or four tries per sitting is plenty.</p>
+</div>
+
+<!-- 4 -->
+<div class="work">
+  <h3>4. Mirror <span class="pill buy">BUY</span></h3>
+  <p>30 × 40 cm wall-mounted or stand mirror at child-eye-level. For watching your own mouth make a /th/ or an /r/. Critical for Mandarin learners — sounds they can't hear they can sometimes still produce by watching the lips.</p>
+  <div class="kv"><b>Lives on:</b> Shelf 2 (Sound), middle level · wall-mounted at child-eye height</div>
+  <h4>How to present it</h4>
+  <p>Use the mirror any time a child is wrestling with a sound she can't produce. 30 seconds at a time, not a sit-down lesson.</p>
+  <ol>
+    <li>Bring the child to the mirror. Stand or sit beside her so you're both looking at your own reflections.</li>
+    <li>"Watch my mouth." Make the sound slowly, exaggerated. For /th/ — stick your tongue tip between your teeth, blow gently. "See my tongue? It comes out a little."</li>
+    <li>"Now you try. Watch your mouth." She watches her own reflection while attempting.</li>
+    <li>If she's putting her tongue behind her teeth (the Mandarin substitution for /th/), gently touch your own tongue: "Tongue out, like this." No correction of her — model on yourself.</li>
+    <li>Stop when she gets one good attempt. Don't drill. The mirror is a tool to come back to.</li>
+  </ol>
+  <p>Three sounds need the mirror most for Mandarin learners: <strong>/th/</strong>, <strong>/r/</strong> vs /l/, and <strong>/v/</strong> vs /w/. The articulation cards (in the same shelf) tell her where the tongue and lips go.</p>
+</div>
+
+<!-- 5 -->
+<div class="work">
+  <h3>5. Metal insets <span class="pill buy">BUY</span></h3>
+  <p>The hand-prep for writing. The 10 geometric shapes train every motion the hand needs for letters — the up-stroke, the curve, the loop. The child does these alongside everything else; not before, not after.</p>
+  <div class="kv"><b>Lives on:</b> beside Shelf 3 (Writing), on its own wooden stand · <b>Used from:</b> day one</div>
+  <h4>What you need</h4>
+  <ul>
+    <li>Standard AMI 10-frame set (pink frames, blue insets). Order from a Montessori supplier.</li>
+    <li>Pre-cut 14 × 14 cm coloured paper. A guillotine cut of regular printer paper.</li>
+    <li>Sharpened coloured pencils in an open cup.</li>
+  </ul>
+  <h4>How to present it</h4>
+  <p>Five stages. Each stage gets weeks of practice before the next is shown. The child stays on Stage 1 longer than feels reasonable — that's correct.</p>
+  <ol>
+    <li><strong>Bring the work to the table.</strong> Show her how to carry the frame, the inset, a paper square, and a pencil — one trip if she can manage it, otherwise two.</li>
+    <li><strong>Stage 1 — trace the frame.</strong> Place the frame on the paper. Hold it firm with the non-dominant hand. With the dominant hand, slowly trace inside the frame with the pencil. Lift the frame to reveal the shape. Set the frame aside. "Beautiful." She does the same.</li>
+    <li><strong>Stage 2 — fill with parallel lines.</strong> When Stage 1 is fluent (~2-3 weeks of work), show her how to fill the shape with parallel vertical lines, edge to edge, no gaps. Slow down. The lines should touch each side. This is wrist control training.</li>
+    <li><strong>Stage 3 — two shapes, two colours.</strong> Trace one shape, then overlap a second shape on top. Fill with two colours. Lines now go in different directions.</li>
+    <li><strong>Stage 4 — patterns and decoration.</strong> Borders, patterns inside the shape, free decoration. She's now a small artist.</li>
+    <li><strong>Stage 5 — letters inside the shapes.</strong> Once she knows several sandpaper letters, show her how to write the letter inside an inset shape. The hand has all the motions ready.</li>
+  </ol>
+  <p>This work runs <em>alongside</em> everything else. A child mid-Stage 2 inset work is also doing sandpaper letters and movable alphabet — three tracks at once, all preparing the hand and ear.</p>
+</div>
+
+<!-- 6 -->
+<div class="work">
+  <h3>6. Sandpaper letters <span class="pill">BUILD</span></h3>
+  <p>The bridge between sound and symbol. The finger learns the letter shape through tactile tracing — in the writing direction — while the voice makes the sound. This is pre-pencil writing.</p>
+  <div class="kv"><b>Lives on:</b> Shelf 3 (Writing), top level · <b>Used from:</b> Pink Phase lesson 5</div>
+  <h4>Materials</h4>
+  <ul>
+    <li>Pink and blue cardstock (300gsm) — pink for consonants, blue for vowels.</li>
+    <li>P120-P150 sandpaper sheets (~5 sheets do the whole alphabet).</li>
+    <li>PVA glue, sharp craft knife, scissors.</li>
+    <li>Letter templates printed at ~14 cm tall, in print (not cursive — matches the readers).</li>
+  </ul>
+  <h4>How to make one</h4>
+  <ol>
+    <li>Cut cardstock to 16 × 18 cm.</li>
+    <li>Print the letter, cut it out as a paper stencil.</li>
+    <li>Trace the stencil on the back of the sandpaper, then cut out the sandpaper letter.</li>
+    <li>Glue to the centre of the card. Weight with a book for 30 minutes.</li>
+    <li>Write the letter name on the back in pencil.</li>
+  </ol>
+  <h4>What to make in what order</h4>
+  <p>SATPIN first: <strong>s, a, t, p, i, n</strong>. With these six the children can build sat, pat, tip, nap, pin, sit on the movable alphabet at lesson 5. Then m, d, g, o, c, k. Then the rest. Digraphs (sh, ch, th, wh, ck) come at the end of Pink Phase.</p>
+  <h4>How to present it</h4>
+  <p>This is the classic three-period lesson. The most important habit: <strong>say the sound, never the letter name</strong>. /sss/, not "ess." Letter names come later, around Phase 4. And always trace with two fingers — index and middle — in the writing direction (top down, left to right).</p>
+  <ol>
+    <li>Invite one child. Bring 3 letter cards to a small table — pick letters that don't sound similar (s, a, t works well; b, d, p does not).</li>
+    <li>Sit beside her on her dominant side. Place the three cards in a row.</li>
+    <li><strong>Period 1 — Naming.</strong> Pick up the first card. Trace the letter slowly with your two fingers <em>in the writing direction</em>. Say "/sss/" while you trace. Hand the card to her. "Your turn." She traces and says it.</li>
+    <li>Repeat with the other two cards.</li>
+    <li><strong>Period 2 — Recognition.</strong> Place all three back on the table. "Show me /sss/." She points or hands you the card. "Show me /aaa/." If she's confident, mix the order. Stay in Period 2 until she's solid — this can be the whole session, or several sessions.</li>
+    <li><strong>Period 3 — Recall.</strong> Hold up one card. "What is this?" She says /sss/. Period 3 only when Period 2 is automatic. If she hesitates, drop back to Period 2.</li>
+    <li>When all three are mastered (often a week later), introduce the next three.</li>
+  </ol>
+  <p><em>The tracing direction matters.</em> The finger learns the letter shape. If she traces an "a" starting at the bottom, she'll write it that way too. Gently re-trace it correctly on your own finger — don't grab hers — and ask her to copy.</p>
+  <p><em>Tactile-blind children:</em> if she can't feel the difference between the letter and the card, dim the lights and have her close her eyes while tracing. The texture becomes louder.</p>
+</div>
+
+<!-- 7 -->
+<div class="work">
+  <h3>7. Movable alphabet <span class="pill buy">BUY</span></h3>
+  <p>The single most important material in the writing track. The child hears a word, isolates the sounds, finds the letters, arranges them. Writing without the motor demand of holding a pencil.</p>
+  <div class="kv"><b>Lives on:</b> Shelf 3 (Writing), middle level · <b>Used from:</b> Pink Phase lesson 5</div>
+  <h4>What you need</h4>
+  <ul>
+    <li>A wooden movable alphabet, vowels red and consonants blue (or reverse — pick one). Spend up here; cheap plastic sets slide on the rug and frustrate children. A wooden Nienhuis-equivalent lasts decades.</li>
+    <li>Generous quantities — 12+ of each vowel, 10 of each common consonant. Children mid-explosion compose 6-8 letter words.</li>
+    <li>A floor rug (~80 × 120 cm) rolled up beside the box.</li>
+  </ul>
+  <p>Sort all the letters into compartments on arrival. Label each compartment. Put the box on the lowest shelf so a child can carry it onto a rug.</p>
+  <h4>How to present it</h4>
+  <p>This is where the writing actually starts. The first time you do this with a child she will probably never forget — it's the moment language becomes hers to build, not just receive.</p>
+  <p>Only present once she knows at least 6 sandpaper letters (SATPIN). Plan ~15 minutes per session.</p>
+  <ol>
+    <li>Invite the child. "I have something to show you." Take the alphabet box off the shelf together. Unroll the rug. Place the box at the top of the rug. Sit beside her on the rug.</li>
+    <li>Choose a short word she <em>knows the meaning of</em> and that uses only letters she knows. <strong>pin</strong> or <strong>sat</strong> are perfect for SATPIN.</li>
+    <li>Say the whole word, slowly. "Pin." Then say it stretched out, hearing each sound: "p... i... n." Encourage her to say it with you.</li>
+    <li>"What sound do you hear first?" Wait. /p/. "Yes — let's find the /p/." Go to the box together, lift out one p, place it at the left of the rug.</li>
+    <li>Say the word again, exaggerating the middle. "What's the next sound?" /i/. Find one i, place it next to the p.</li>
+    <li>"And the last sound?" /n/. Find an n.</li>
+    <li>"You wrote <em>pin</em>." Read it back slowly, sliding your finger left to right under the letters. Big pause. Let it land.</li>
+    <li>Mix the letters up. "Can you do it again?" Step back and let her work.</li>
+  </ol>
+  <p><em>Don't say "spell."</em> Say "build" or "make." We're not testing memorisation — we're encoding sound by sound.</p>
+  <p><em>Phonetic spelling is correct.</em> If she writes KAT for cat, FRENDZ for friends, SMUTHEEK for smoothie — that means she's hearing every sound. Do not correct. Standard spelling comes much later, after the encoding habit is rock solid.</p>
+  <p><em>When the explosion comes:</em> she'll start composing words on her own at free-choice time. Provide more rug space, more time, more letters. Step back. This is the heart of the writing-first philosophy in action.</p>
+</div>
+
+<!-- 8 -->
+<div class="work">
+  <h3>8. Sand tray <span class="pill">BUILD</span></h3>
+  <p>The pencil-bridge. After tracing the sandpaper letter, the child "writes" the same letter in the sand with her finger. Shakes to erase. Writes again. No paper wasted, no fear of mistakes.</p>
+  <div class="kv"><b>Lives on:</b> Shelf 3 (Writing), bottom level · <b>Used from:</b> Pink Phase lesson 5</div>
+  <h4>Materials</h4>
+  <ul>
+    <li>1-2 wooden trays (~30 × 20 cm, 1-2 cm deep). Sanded smooth, sealed.</li>
+    <li>Fine play sand (~500g per tray).</li>
+  </ul>
+  <p>Pour the sand in. Done. Pair each sand tray with the sandpaper letter being learned that week.</p>
+  <h4>How to present it</h4>
+  <p>The sand tray is always paired with the sandpaper letter. Both materials come to the table together.</p>
+  <ol>
+    <li>Invite the child. Carry the sand tray and the matching sandpaper letter to a table.</li>
+    <li>"Let's feel /sss/ first." She traces the sandpaper letter with two fingers, saying the sound.</li>
+    <li>"Now we'll write it in the sand." Smooth the sand flat with the side of your hand.</li>
+    <li>Use your index finger only (not two). Trace the same letter in the sand, slowly, in the writing direction. Say the sound while you trace.</li>
+    <li>Gently shake the tray side to side to smooth the sand. The letter disappears. Magic.</li>
+    <li>"Your turn." She traces. Shakes. Traces. The repetition is the whole point — muscle memory, no pencil pressure, no fear.</li>
+  </ol>
+  <p>Children who are reluctant about pencils will pour themselves into the sand tray. It's the easiest writing surface — no mistakes possible, infinite redos.</p>
+</div>
+
+<!-- 9 -->
+<div class="work">
+  <h3>9. Chalkboards <span class="pill buy">BUY</span></h3>
+  <p>Mini wooden-framed chalkboards (~25 × 35 cm). One or two on the shelf for the children currently in the writing explosion. Chalk in a small jar.</p>
+  <div class="kv"><b>Lives on:</b> Shelf 3 (Writing), bottom level, beside the sand tray</div>
+  <h4>How to present it</h4>
+  <p>The chalkboard is the step between sand-tray finger writing and paper-pencil writing. The child holds chalk for the first time — but mistakes still wipe away.</p>
+  <ol>
+    <li>Invite the child. Bring her chalkboard, a piece of chalk, and a cloth.</li>
+    <li>Show her how to hold the chalk lightly — between thumb and first two fingers, not gripped tight. "Like a butterfly. Don't crush it."</li>
+    <li>Pick a letter she already knows from the sandpaper. Demonstrate it on YOUR own chalkboard sitting beside her — same direction as hers, so she can copy.</li>
+    <li>Trace slowly, saying the sound. Stop. "Your turn." She copies on her board.</li>
+    <li>If she wants to wipe and redo, she wipes and redoes. No comment. The wiping is part of the work.</li>
+    <li>When she's confident with single letters, build up to short words she can already encode on the movable alphabet.</li>
+  </ol>
+  <p>Chalk on a chalkboard has a beautiful resistance — slightly draggy, very different from pencil on paper. Some children prefer it for months before they touch a pencil.</p>
+</div>
+
+<!-- 10 -->
+<div class="work">
+  <h3>10. Story paper booklets <span class="pill">BUILD</span></h3>
+  <p>The first "book" the child has made herself. Story paper splits the page in half — top blank for the picture, bottom lined for the words. When the writing erupts the child wants to keep what she wrote.</p>
+  <div class="kv"><b>Lives on:</b> Shelf 4 (Reading), bottom level (or a small dedicated rack between Shelves 3 and 4) · <b>Used from:</b> Pink Phase lesson 5 onwards</div>
+  <h4>Materials</h4>
+  <ul>
+    <li>Story-paper sheets (top blank, bottom lined). Wide rule first, narrower later.</li>
+    <li>Coloured cardstock for covers.</li>
+    <li>Long-arm stapler.</li>
+    <li>Triangular-grip pencils (Stabilo EASYgraph) — trains tripod grasp from the start.</li>
+  </ul>
+  <h4>How to fold one</h4>
+  <p>Take 4 sheets + a cardstock cover. Fold in half, staple along the spine. 8-page booklet. ~5 minutes. Write the child's name on the front. Make a few of these at a time.</p>
+  <h4>How to present it</h4>
+  <p>Give a booklet to a child once she's writing words on the chalkboard with some confidence. This is her first <em>kept</em> writing — a real little book she has made.</p>
+  <ol>
+    <li>Hand her the booklet. "This is your book. It has your name on the cover."</li>
+    <li>Open to the first page. Point at the top half: "You can draw a picture here." Point at the lined bottom: "And here you can write about it."</li>
+    <li>Show her the writing tools: triangular pencil, a few coloured pencils. Demonstrate the tripod grasp briefly if she needs it.</li>
+    <li>Step away. Don't dictate what she should draw or write.</li>
+    <li>When she comes to show you her page, listen. Ask "What did you write?" and let her read it back to you in her own voice. Don't read it yourself — her reading-back is the first reading.</li>
+    <li><strong>Do not correct spelling.</strong> KAT for cat, FRENDZ for friends — write your own response below or beside in the standard spelling if she asks. Otherwise, leave it.</li>
+    <li>When the booklet is full, put it on a special shelf or in her cubby. Give her a new one.</li>
+  </ol>
+  <p>The first booklet a child fills is a moment. Photograph it (with the parents' permission) for her family at the end of the term.</p>
+</div>
+
+<!-- 11 -->
+<div class="work">
+  <h3>11. Per-lesson card sets <span class="pill gen">GENERATE</span></h3>
+  <p>For each UFLI lesson the Whale platform prints: a word list, 12 picture-word matching pairs, 10 phrase cards, 8-10 sentence cards, plus one 8-page decodable mini-booklet. Hit "generate" the day before each lesson. Print on 240gsm card, laminate, slice.</p>
+  <div class="kv"><b>Lives on:</b> Shelf 4 (Reading), top and middle levels · <b>Used from:</b> Pink Phase lesson 5 onwards</div>
+  <p>Keep only the current lesson and the two prior lessons on the shelf at any time. Archive the older ones in a drawer behind the shelf — they come back when a new younger cohort reaches them.</p>
+  <p>For the decodable booklet: print A4 double-sided, fold in half twice, cut the top fold. 8-page booklet, about 10 × 14 cm. Make 3-5 copies per lesson so multiple children can read at once.</p>
+  <h4>How to present it — in order</h4>
+  <p>A child works through these cards in a fixed order. Each step is a separate work session. Don't compress them.</p>
+  <ol>
+    <li><strong>Picture-word matching first.</strong> Lay out all 12 picture cards on the table. Give her the word cards in a pile. She picks up a word, reads it, finds the picture, lays them side by side. She can self-check by flipping cards over.</li>
+    <li><strong>Word list reading.</strong> A sheet with 20-30 single words. She reads down the column slowly, sounding out any unfamiliar ones. Sit beside her the first time and model one or two.</li>
+    <li><strong>Phrase cards.</strong> Short 2-3 word combinations ("a tin pan", "pit a top"). She reads each one and places it face-down once read. Mostly silent work.</li>
+    <li><strong>Sentence cards.</strong> Short decodable sentences using only known letters and heart words. Same routine — read, set aside.</li>
+    <li><strong>Decodable booklet.</strong> The reward for getting through the cards. She takes a copy to a quiet spot and reads it cover to cover. When she's done she can read it to a friend, a parent, or you. The first time a child reads a whole booklet by herself is a real moment.</li>
+  </ol>
+  <p><em>If she stumbles on a word</em> — don't say the word. Point at the first letter. "What sound?" Then the next letter. Let her build it. The encoding habit kicks in to help the decoding.</p>
+  <p><em>Heart words inside sentences</em> — when she hits a heart word she's already met (see Material 12), let her say it from memory. New heart words get pre-taught before she tackles the sentence card.</p>
+</div>
+
+<!-- 12 -->
+<div class="work">
+  <h3>12. Heart word cards <span class="pill gen">GENERATE</span></h3>
+  <p>High-frequency words like <em>the, said, was, of</em>. Mostly decodable; only one or two letters are irregular. Modern Science of Reading says don't memorise them as whole-word blobs — decode the regular parts, only "learn by heart" the irregular letters.</p>
+  <div class="kv"><b>Lives on:</b> Shelf 4 (Reading), bottom level, on a binder ring · <b>Used from:</b> Pink Phase lesson 5 onwards</div>
+  <p>The generator prints them with regular letters in <strong>black</strong> and irregular letters in <strong style="color:#dc2626;">red</strong>, with a small red heart icon under each red letter. Card size ~10 × 6 cm. Laminate, hole-punch top-left, thread on a binder ring. Add 2-3 new ones per week.</p>
+  <h4>How to present it</h4>
+  <p>Introduce 2-3 new heart words per week, never more. Each one needs a proper introduction — don't just hand them over.</p>
+  <ol>
+    <li>Invite the child. Sit beside her with the new heart word card visible.</li>
+    <li>Point at the regular (black) letters first. "These letters say their normal sounds." Sound them out. For <em>said</em>: point at the /s/. "/sss/." Point at the /d/. "/d/."</li>
+    <li>Point at the red letters. "But these letters — they don't say their normal sounds. We learn them by heart." Touch each red letter with a finger and read the whole word: "<em>said</em>."</li>
+    <li>Have her trace each red letter with her finger while saying the whole word. Three times.</li>
+    <li>Add the card to the binder ring at the front so it stays visible all week.</li>
+    <li>Each morning the first week, hold up the new card. She reads it. Quick. 5 seconds. Then move on. By the end of the week it's automatic.</li>
+  </ol>
+  <p>Heart words that look almost identical (<em>was/saw, then/them, of/off</em>) — separate them by weeks. Introducing them together confuses everyone.</p>
+</div>
+
+<!-- 13 -->
+<div class="work">
+  <h3>13. ESL minimal-pair cards <span class="pill gen">GENERATE</span></h3>
+  <p>The Mandarin-specific daily drill. Mandarin doesn't have most English lax vowels and final consonants. Without explicit drill, "ship" stays "sheep" and "cat" stays "ca."</p>
+  <div class="kv"><b>Lives on:</b> Shelf 2 (Sound), bottom level · <b>Used from:</b> Stage 0 onwards, 5 minutes daily per child</div>
+  <h4>What you need</h4>
+  <ul>
+    <li><strong>Vowel pairs:</strong> sit/set · sheep/ship · cat/cot · bag/bug · pen/pin · pool/pull</li>
+    <li><strong>Final-consonant triplets:</strong> cat/cap/can · pot/pop/pod · hat/hack/ham</li>
+    <li><strong>TH cards:</strong> thin/tin · thick/tick · thumb/dumb</li>
+    <li><strong>R/L and V/W cards:</strong> red/led · right/light · van/wan · vest/best</li>
+  </ul>
+  <p>Generator prints all of these. Laminate, sort into a small box. The teacher pulls one or two children to the shelf for 5 minutes a day. That's the only fixed daily appointment.</p>
+  <h4>How to present it</h4>
+  <p>The drill has three rounds. Five minutes total. Same child can do this every day for a year — it never gets stale because the pairs rotate.</p>
+  <ol>
+    <li>Sit beside the child at the Sound shelf. Lay out 3-5 cards face up — pick one category for today (today: vowels; tomorrow: TH; etc).</li>
+    <li><strong>Round 1 — listening.</strong> "I'm going to say a word. Point at the picture I'm saying." Say <em>ship</em>. Wait. She points. Then <em>sheep</em>. Then <em>ship</em> again. Vary order. About 10 words across 5 cards.</li>
+    <li><strong>Round 2 — speaking.</strong> "Now you say one and I'll point." She picks a card and says a word; you point. If her <em>ship</em> sounds like <em>sheep</em>, point at <em>sheep</em>. She'll try again — that mismatch is the whole lesson.</li>
+    <li><strong>Round 3 — mirror reinforcement</strong> (if Round 2 was rough). Bring her to the mirror beside the shelf. Watch your own mouths make the contrast. /ee/ — wide grin. /i/ — relaxed mouth. She copies.</li>
+    <li>Tomorrow, pick the next category. Cycle through vowels, finals, TH, R/L, V/W across the week.</li>
+  </ol>
+  <p><em>Don't drill for accuracy first.</em> The goal is for her to <strong>hear the contrast</strong>. Production will lag perception by months. If she can reliably point to the right picture, that's the win — even if her own pronunciation is still <em>sheep</em> for <em>ship</em>.</p>
+</div>
+
+<hr>
+
+<h2>What the writing explosion looks like</h2>
+<p>One day a child you've been quietly watching for weeks picks up the movable alphabet at free-choice time and builds the word for her own name. The next day she writes <em>M-A-M-A</em> on the chalkboard. Then for two weeks she writes on every available surface — letter-attempts, word-attempts, KAT for cat, FRENDZ for friends. This is Maria's <em>esplosione della scrittura</em>, the explosion into writing.</p>
+
+<h3>What to do when it happens</h3>
+<ul>
+  <li><strong>Stop teaching new lessons</strong> for that child. Step back.</li>
+  <li><strong>Provide more paper.</strong> More chalk. More time. Make her a hardcover writing journal once the loose-paper phase peaks.</li>
+  <li><strong>Don't correct her spelling.</strong> KAT for cat means she's hearing every phoneme — exactly the skill UFLI is trying to build. Correcting too soon shuts the encoding loop down.</li>
+  <li><strong>Don't redirect her to reading.</strong> Reading will come on its own — usually within a few weeks. She'll start by reading back what she wrote, then pick up a decodable booklet voluntarily.</li>
+</ul>
+
+<p>For Mandarin-L1 children this phase runs longer — six to nine months of writing-led work before reading takes the lead. Trust it.</p>
+
+<hr>
+
+<h2>Cost and time, rough</h2>
+<table>
+  <tr><th>Item</th><th>Cost (USD)</th><th>Make-time</th></tr>
+  <tr><td>Movable alphabet (wooden)</td><td>$200-400</td><td>buy</td></tr>
+  <tr><td>Metal insets (10-frame set)</td><td>$150-300</td><td>buy</td></tr>
+  <tr><td>Mirror</td><td>$30-60</td><td>buy</td></tr>
+  <tr><td>Chalkboards + sand + paper + pencils</td><td>$50-100</td><td>buy</td></tr>
+  <tr><td>Mini figurines for 3 baskets</td><td>$60-120</td><td>buy</td></tr>
+  <tr><td>Sandpaper letters (full set)</td><td>$30-50 materials</td><td>~12 hours over 2 weeks</td></tr>
+  <tr><td>Sound games + matching tray builds</td><td>$30-50</td><td>~3 hours</td></tr>
+  <tr><td>Generator printing (year one)</td><td>$50-100</td><td>~15 min per lesson</td></tr>
+  <tr><th>Total to open</th><th>~$600-1,100</th><th>~15-20 hours over 2 weeks</th></tr>
+</table>
+
+<p class="sub">Companion to the Whale Reading Framework v2.0 · May 2026</p>
+
+</body>
+</html>

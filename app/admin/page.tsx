@@ -36,6 +36,7 @@ const TOOLS: Tool[] = [
   { id: 'circle-planner', title: 'Circle Time', href: '/admin/circle-planner', icon: '⭕', color: 'bg-amber-500', description: 'Plan activities' },
   { id: 'description-review', title: 'Description Review', href: '/admin/description-review', icon: '📝', color: 'bg-emerald-500', description: 'Work descriptions' },
   { id: 'english-guide', title: 'English Guide', href: '/admin/english-guide', icon: '📖', color: 'bg-blue-500', description: 'How to teach' },
+  { id: 'reading-framework', title: 'Reading Framework', href: '/admin/reading-framework', icon: '📗', color: 'bg-emerald-600', description: '13 works · 4 shelves · writing first' },
   { id: 'english-setup', title: 'English Setup', href: '/admin/english-setup', icon: '🗄️', color: 'bg-teal-500', description: 'Shelf layout' },
   { id: 'english-progress', title: 'English Progress', href: '/admin/english-progress', icon: '📊', color: 'bg-indigo-500', description: 'Parent reports' },
   { id: 'phonics-planner', title: 'Phonics', href: '/admin/phonics-planner', icon: '🔤', color: 'bg-red-500', description: 'Phonics lessons' },
