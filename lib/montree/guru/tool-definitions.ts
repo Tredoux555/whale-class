@@ -507,6 +507,30 @@ export const GURU_TOOLS: Tool[] = [
     }
   },
 
+  // --- Per-Work Roster Cross-Check (Session 111) ---
+  // Closes the gap that hit the user with bingo: get_weekly_area_summary
+  // answers per-AREA but not per-WORK. This tool answers "who hasn't done X
+  // this week" where X is a specific work name.
+
+  {
+    name: "find_children_missing_work",
+    description: "Find which children in the classroom have NOT done a specific Montessori work in the past N days. Use when teachers ask 'who hasn't done bingo this week' / 'who missed the chair lesson' / 'who needs Pink Tower presentation' / 'who hasn't been tagged for X'. Fuzzy-matches the work name against the curriculum, then checks confirmed photos AND progress entries. Returns both the children who DID it and those who DIDN'T. Pairs well with group_students for planning a session for the missing children.",
+    input_schema: {
+      type: "object" as const,
+      properties: {
+        work_name: {
+          type: "string",
+          description: "Name of the Montessori work to check (e.g. 'Bingo', 'Pink Tower', 'Sandpaper Letters'). Fuzzy ILIKE match — partial names work ('bing', 'sandpaper', etc.). The tool will report which curriculum work names actually matched so you can verify."
+        },
+        days: {
+          type: "number",
+          description: "Number of days to look back. Default 7 (one week). Max 30."
+        }
+      },
+      required: ["work_name"]
+    }
+  },
+
   // --- Daily Activity Tools (read-only, classroom-wide or per-child) ---
 
   {

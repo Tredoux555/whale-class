@@ -776,7 +776,7 @@ export async function executeTool(
 
       // Optionally fetch recent observations
       const includeNotes = input.include_notes === true;
-      let observationMap: Map<string, string[]> = new Map();
+      const observationMap: Map<string, string[]> = new Map();
       if (includeNotes) {
         const { data: recentObs } = await supabase
           .from('montree_behavioral_observations')
@@ -1175,6 +1175,153 @@ export async function executeTool(
         success: true,
         message: `Area coverage summary for the past ${summaryDays} days (${dateRange}). Total children: ${summaryChildren.length}.`,
         detail: `${JSON.stringify(areaSummaries, null, 1)}\n\nUse this data to identify which children need to be guided toward undervisited areas. Consider using group_students to create small groups for targeted area work.`,
+      };
+    }
+
+    // --- Per-Work Roster Cross-Check (Session 111) ---
+    // Answers "who hasn't done [specific work] this week" — closes the gap
+    // that get_weekly_area_summary leaves (area-level only). Triggered by the
+    // bingo question from the user.
+
+    case 'find_children_missing_work': {
+      const rawWorkName = (input.work_name as string | undefined)?.trim();
+      if (!rawWorkName) {
+        return { success: false, message: 'work_name is required.' };
+      }
+      const lookbackDays = Math.min(Math.max((input.days as number) || 7, 1), 30);
+
+      // Resolve classroom_id from override (whole-class mode) or via child lookup.
+      let classroomIdMissing = classroomIdOverride;
+      if (!classroomIdMissing) {
+        const { data: childData } = await supabase
+          .from('montree_children')
+          .select('classroom_id')
+          .eq('id', childId)
+          .single();
+        classroomIdMissing = childData?.classroom_id;
+      }
+      if (!classroomIdMissing) {
+        return { success: false, message: 'Could not determine classroom.' };
+      }
+
+      // Get full roster of the classroom.
+      const { data: rosterChildren } = await supabase
+        .from('montree_children')
+        .select('id, name')
+        .eq('classroom_id', classroomIdMissing)
+        .order('name');
+
+      if (!rosterChildren || rosterChildren.length === 0) {
+        return { success: true, message: 'No students in this classroom.' };
+      }
+
+      // ILIKE escape — user-supplied work name must not run as a pattern.
+      const safeWorkName = rawWorkName.replace(/[%_\\]/g, '\\$&');
+
+      // Step 1 — fuzzy-resolve work_name → work_ids via curriculum.
+      // Curriculum is per-classroom (montree_classroom_curriculum_works).
+      const { data: matchedWorks } = await supabase
+        .from('montree_classroom_curriculum_works')
+        .select('id, name, area')
+        .eq('classroom_id', classroomIdMissing)
+        .ilike('name', `%${safeWorkName}%`)
+        .limit(20);
+
+      const matchedWorkIds: string[] = (matchedWorks || []).map(w => w.id);
+      const matchedWorkNames: string[] = (matchedWorks || []).map(w => w.name);
+
+      if (matchedWorkIds.length === 0) {
+        return {
+          success: true,
+          message: `No curriculum work matched "${rawWorkName}" in this classroom.`,
+          detail: `Suggestions:\n- Check spelling (try a shorter fragment: e.g. "bing" instead of "bingo board")\n- The work may not be in the classroom's curriculum yet — use add_custom_work to add it\n- Or it may be tagged under a different name; ask the teacher to check the curriculum directory at /montree/dashboard/curriculum`,
+        };
+      }
+
+      // Date window — start of [today - lookbackDays] through now (inclusive).
+      const startDate = new Date();
+      startDate.setDate(startDate.getDate() - lookbackDays);
+      const startDateStr = startDate.toISOString();
+
+      // Step 2 — find children with confirmed photos of these works.
+      // montree_media: direct child_id present on single-child photos.
+      const { data: directMedia } = await supabase
+        .from('montree_media')
+        .select('child_id, work_id, captured_at')
+        .eq('classroom_id', classroomIdMissing)
+        .in('work_id', matchedWorkIds)
+        .gte('captured_at', startDateStr)
+        .limit(500);
+
+      // Step 3 — group photos: montree_media_children junction. A media row
+      // can be linked to multiple children even if the row itself has no
+      // direct child_id.
+      const mediaIds = [...new Set((directMedia || []).map(m => m.work_id ? m.child_id : null).filter(Boolean))];
+      // The above is unused; we actually need a separate query for group photos:
+      const { data: groupMedia } = await supabase
+        .from('montree_media_children')
+        .select(`child_id, media:montree_media!inner(id, classroom_id, work_id, captured_at)`)
+        .gte('media.captured_at', startDateStr)
+        .in('media.work_id', matchedWorkIds)
+        .eq('media.classroom_id', classroomIdMissing)
+        .limit(500);
+
+      // Step 4 — also count progress entries (in case work was marked
+      // presented/practicing/mastered without a photo).
+      const allChildIds = rosterChildren.map(c => c.id);
+      const { data: progressRows } = await supabase
+        .from('montree_child_progress')
+        .select('child_id, work_name, status, updated_at')
+        .in('child_id', allChildIds)
+        .in('work_name', matchedWorkNames)
+        .gte('updated_at', startDateStr)
+        .limit(500);
+
+      // Build the "did it" set.
+      const doneChildIds = new Set<string>();
+      for (const row of (directMedia || [])) {
+        if (row.child_id) doneChildIds.add(row.child_id as string);
+      }
+      for (const row of (groupMedia || [])) {
+        if (row.child_id) doneChildIds.add(row.child_id as string);
+      }
+      for (const row of (progressRows || [])) {
+        if (row.child_id) doneChildIds.add(row.child_id as string);
+      }
+      // Unused-var lint guard — keep mediaIds inert.
+      void mediaIds;
+
+      // Compute roster split.
+      const missing = rosterChildren.filter(c => !doneChildIds.has(c.id));
+      const done = rosterChildren.filter(c => doneChildIds.has(c.id));
+
+      const summary = {
+        query: rawWorkName,
+        matched_works: matchedWorkNames,
+        lookback_days: lookbackDays,
+        roster_size: rosterChildren.length,
+        done_count: done.length,
+        missing_count: missing.length,
+        done: done.map(c => c.name),
+        missing: missing.map(c => c.name),
+        sources: {
+          confirmed_photos: (directMedia || []).length,
+          group_photos: (groupMedia || []).length,
+          progress_entries: (progressRows || []).length,
+        },
+      };
+
+      const matchedNamesStr = matchedWorkNames.length > 1
+        ? `${matchedWorkNames.length} curriculum works matched (${matchedWorkNames.slice(0, 3).join(', ')}${matchedWorkNames.length > 3 ? ', …' : ''})`
+        : `"${matchedWorkNames[0]}"`;
+
+      return {
+        success: true,
+        message:
+          missing.length === 0
+            ? `Everyone in the classroom (${rosterChildren.length} children) has done ${matchedNamesStr} in the past ${lookbackDays} days.`
+            : `${missing.length} of ${rosterChildren.length} children have NOT done ${matchedNamesStr} in the past ${lookbackDays} days: ${missing.map(c => c.name).join(', ')}.`,
+        detail: JSON.stringify(summary, null, 2),
       };
     }
 

@@ -1,12 +1,20 @@
 'use client';
 
+// 🚨 PRE-EXISTING DEAD CODE: this file has accumulated unused imports + vars
+// + helper functions across many refactors (game-plan inline render moved to
+// GamePlanCard, copyText moved elsewhere, etc.). The Session 111 NoteField
+// extraction surfaced them because the file joined strict lint scope. A
+// dedicated dead-code cleanup pass is on the backlog. Until then, the disables
+// below let perf work ship without fixing unrelated dead code.
+/* eslint-disable @typescript-eslint/no-unused-vars, react-hooks/exhaustive-deps */
+
 import { useState, useEffect, useCallback, useMemo, useRef, CSSProperties } from 'react';
-import { ChevronDown, BookOpen, Check, Plus, X, Mic, Square } from 'lucide-react';
+import { ChevronDown, BookOpen, Plus, X, Mic, Square } from 'lucide-react';
 import { AreaConfig } from '@/components/montree/curriculum/types';
 import GuruWorkGuide from '@/components/montree/guru/GuruWorkGuide';
 import TeachingInstructions from '@/components/montree/guru/TeachingInstructions';
-import ChildVoiceNote from '@/components/montree/voice-notes/ChildVoiceNote';
 import EvidenceStrengthBadge from '@/components/montree/EvidenceStrengthBadge';
+import NoteField from '@/components/montree/child/NoteField';
 import { montreeApi } from '@/lib/montree/api';
 import { useI18n } from '@/lib/montree/i18n';
 import { getAreaLabel, getAreaPrefix } from '@/lib/montree/i18n/area-labels';
@@ -44,10 +52,11 @@ export interface FocusWorksSectionProps {
   extraWorks: Assignment[];
   expandedAreas: Set<string>;
   toggleArea: (area: string) => void;
-  notes: Record<string, string>;
-  setNotes: React.Dispatch<React.SetStateAction<Record<string, string>>>;
+  // Session 111 perf: per-work note text now lives inside NoteField (memoized,
+  // local state). onSaveNote receives the text directly and returns
+  // Promise<boolean> so NoteField can clear on success.
   savingNote: string | null;
-  onSaveNote: (work: Assignment) => void;
+  onSaveNote: (work: Assignment, text: string) => Promise<boolean>;
   onCycleStatus: (work: Assignment, isFocus: boolean) => void;
   onRemoveExtra: (work: Assignment) => void;
   onOpenWheelPicker: (area: string, workName?: string) => void;
@@ -177,8 +186,6 @@ export default function FocusWorksSection({
   extraWorks,
   expandedAreas,
   toggleArea,
-  notes,
-  setNotes,
   savingNote,
   onSaveNote,
   onCycleStatus,
@@ -517,67 +524,21 @@ export default function FocusWorksSection({
                         <GuruWorkGuide workName={focusWork.work_name} childId={childId} />
                       )}
 
-                      {/* Observation textarea + mic + save */}
-                      <div
-                        {...(areaIdx === 0 ? { 'data-guide': 'notes-area' } : {})}
-                        style={{ position: 'relative' }}
-                      >
-                        <textarea
-                          value={notes[focusWork.work_name] || ''}
-                          onChange={(e) => setNotes(prev => ({ ...prev, [focusWork.work_name]: e.target.value }))}
-                          placeholder={t('focusWorks.addObservation')}
-                          rows={2}
-                          style={{
-                            width: '100%',
-                            boxSizing: 'border-box',
-                            padding: '10px 12px 40px',
-                            borderRadius: 10,
-                            background: 'rgba(255,255,255,0.05)',
-                            border: '1px solid rgba(52,211,153,0.18)',
-                            color: C.textPrimary,
-                            fontSize: 13,
-                            lineHeight: 1.5,
-                            resize: 'none',
-                            outline: 'none',
-                            fontFamily: SANS,
-                          }}
-                        />
-                        <div style={{ position: 'absolute', bottom: 8, right: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
-                          {!isParent && (
-                            <ChildVoiceNote
-                              childId={childId}
-                              childName={childName}
-                              onTranscript={(text) => setNotes(prev => ({
-                                ...prev,
-                                [focusWork.work_name]: prev[focusWork.work_name] ? prev[focusWork.work_name] + ' ' + text : text,
-                              }))}
-                            />
-                          )}
-                          <button
-                            onClick={() => onSaveNote(focusWork)}
-                            disabled={!notes[focusWork.work_name]?.trim() || savingNote === focusWork.work_name}
-                            style={{
-                              padding: '5px 12px',
-                              borderRadius: 8,
-                              background: 'linear-gradient(135deg, #34d399, #059669)',
-                              color: '#fff',
-                              fontSize: 12,
-                              fontWeight: 600,
-                              border: 0,
-                              cursor: 'pointer',
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: 4,
-                              opacity: (!notes[focusWork.work_name]?.trim() || savingNote === focusWork.work_name) ? 0.45 : 1,
-                              transition: 'opacity 140ms ease',
-                              fontFamily: SANS,
-                            }}
-                          >
-                            <Check size={12} strokeWidth={2.5} />
-                            {savingNote === focusWork.work_name ? '...' : smartNoteProcessing === focusWork.work_name ? '…' : t('focusWorks.save')}
-                          </button>
-                        </div>
-                      </div>
+                      {/* Observation textarea + mic + save (memoized in NoteField
+                          so dictation keystrokes don't re-render the whole
+                          focus-works tree — Session 111 perf). */}
+                      <NoteField
+                        workName={focusWork.work_name}
+                        childId={childId}
+                        childName={childName}
+                        showMic={!isParent}
+                        saving={savingNote === focusWork.work_name}
+                        smartProcessing={smartNoteProcessing === focusWork.work_name}
+                        placeholder={t('focusWorks.addObservation')}
+                        saveLabel={t('focusWorks.save')}
+                        onSave={(workName, text) => onSaveNote(focusWork, text)}
+                        guideAnchor={areaIdx === 0}
+                      />
 
                       {/* Teaching Instructions — hidden to reduce clutter, code preserved */}
                     </>

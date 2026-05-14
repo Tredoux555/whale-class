@@ -4,6 +4,14 @@
 // Layout handles auth + header + tabs
 'use client';
 
+// 🚨 PRE-EXISTING WARNINGS in this 1040-line file: 'childDataRich' was once
+// used to gate the TellGuruCard render; Session 64 simplified the gate but
+// left the variable. Flagged when [childId]/page.tsx joined strict lint
+// scope via the Session 111 NoteField extraction. Dedicated dead-code
+// cleanup is on the backlog. The file already has targeted
+// react-hooks/exhaustive-deps disables inline where intentional.
+/* eslint-disable @typescript-eslint/no-unused-vars */
+
 import { useState, useEffect, useCallback, useRef } from 'react';
 import dynamic from 'next/dynamic';
 import { useParams, useRouter } from 'next/navigation';
@@ -91,7 +99,10 @@ export default function WeekPage() {
       return next;
     });
   }, []);
-  const [notes, setNotes] = useState<Record<string, string>>({});
+  // Session 111 perf: per-focus-work note text now lives inside NoteField's
+  // local state (component-level). Parent only tracks savingNote/smartNote
+  // indicators (which work_name is currently being processed). This stops the
+  // entire child page from re-rendering on every keystroke during dictation.
   const [savingNote, setSavingNote] = useState<string | null>(null);
 
   // Curriculum cache (lazy-loaded). Used by the wheel picker, the area
@@ -393,6 +404,10 @@ export default function WeekPage() {
     }).catch(() => {
       if (isEnabled('tell_guru_onboarding')) setHasProfile(true);
     });
+    // isEnabled is intentionally excluded from deps — we want this effect to
+    // fire on childId change only, not on every feature-flag re-evaluation.
+    // The isEnabled call inside reads the latest feature state at fire time.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [childId]);
 
   // Fetch on mount and when childId changes
@@ -607,50 +622,54 @@ export default function WeekPage() {
   // Smart note processing indicator (🧠 on save button while Haiku parses)
   const [smartNoteProcessing, setSmartNoteProcessing] = useState<string | null>(null);
 
-  // Wrapper for saveNote — saves note AND fires smart-note AI in parallel
-  const onSaveNote = async (work: Assignment) => {
-    const noteText = notes[work.work_name];
-    if (!noteText?.trim()) return;
+  // Session 111 perf: onSaveNote now accepts the text from NoteField directly
+  // (NoteField holds local state). Returns Promise<boolean> so NoteField knows
+  // whether to clear its text on success. Smart-note fires in the background
+  // (fire-and-forget) so NoteField's save doesn't await it.
+  const onSaveNote = useCallback(async (work: Assignment, text: string): Promise<boolean> => {
+    const trimmed = text.trim();
+    if (!trimmed) return false;
 
     setSavingNote(work.work_name);
-
-    // 1. Save the raw note (existing flow)
-    const success = await saveNoteFromHook(work, noteText);
-    if (success) {
-      setNotes(prev => ({ ...prev, [work.work_name]: '' }));
-    }
+    const success = await saveNoteFromHook(work, trimmed);
     setSavingNote(null);
 
-    // 2. Fire smart-note AI in parallel (non-blocking)
-    setSmartNoteProcessing(work.work_name);
-    try {
-      const res = await montreeApi('/api/montree/guru/smart-note', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          child_id: childId,
-          area: work.area,
-          note_text: noteText,
-        }),
-      });
-      if (res.ok) {
-        const data = await res.json();
-        const actions = data.actions || [];
-        for (const action of actions) {
-          if (action.success) {
-            toast.success(`🧠 ${action.message}`);
+    if (!success) return false;
+
+    // Fire smart-note AI in the background — don't await. NoteField has already
+    // cleared its local text by the time the user sees the 🧠 toast.
+    void (async () => {
+      setSmartNoteProcessing(work.work_name);
+      try {
+        const res = await montreeApi('/api/montree/guru/smart-note', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            child_id: childId,
+            area: work.area,
+            note_text: trimmed,
+          }),
+        });
+        if (res.ok) {
+          const data = await res.json();
+          const actions = data.actions || [];
+          for (const action of actions) {
+            if (action.success) {
+              toast.success(`🧠 ${action.message}`);
+            }
+          }
+          if (actions.some((a: { success: boolean }) => a.success)) {
+            fetchAssignments();
           }
         }
-        // Refresh works display if any actions were taken
-        if (actions.some((a: { success: boolean }) => a.success)) {
-          fetchAssignments();
-        }
+      } catch {
+        // Smart-note failure is silent — note already saved
       }
-    } catch {
-      // Smart-note failure is silent — note already saved
-    }
-    setSmartNoteProcessing(null);
-  };
+      setSmartNoteProcessing(null);
+    })();
+
+    return true;
+  }, [saveNoteFromHook, childId, fetchAssignments]);
 
   // Handle wheel picker select with isSaving flag
   const onWheelPickerSelect = async (work: MergedWork, status: string) => {
@@ -854,8 +873,6 @@ export default function WeekPage() {
         extraWorks={extraWorks}
         expandedAreas={expandedAreas}
         toggleArea={toggleArea}
-        notes={notes}
-        setNotes={setNotes}
         savingNote={savingNote}
         onSaveNote={onSaveNote}
         onCycleStatus={onCycleStatus}

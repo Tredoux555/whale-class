@@ -60,6 +60,68 @@ const DEFAULT_LOAD_LIMIT = 30;
 /** Hard cap on recall_memory result count, even if caller asks for more. */
 const RECALL_HARD_CAP = 50;
 
+// ── Process-local memory cache (Session 111 perf push) ──────────────────
+//
+// Tracy used to re-read up to 30 memory rows on EVERY message via
+// loadActiveMemories. With Opus 4.6 latency on top, first-token felt 3-8s.
+// This module caches the load by principal_id with a 5-minute TTL.
+//
+// Cache scope: the Railway Node process. Cleared on redeploy (acceptable —
+// fresh deploy = stale memory cache miss = one extra DB read on first turn).
+// Multi-instance Railway: each instance has its own cache. Worst case:
+// principal writes a memory on instance A, then talks to Tracy on instance B
+// with up to 5 min stale view. Memory writes invalidate cache on the SAME
+// instance via invalidateMemoryCache(); cross-instance staleness self-heals
+// at TTL expiry.
+//
+// Bounded size: 1000 entries (~30 memories × ~250 chars each = ~7.5MB ceiling).
+// On overflow we delete the oldest-entered entry. FIFO not LRU — simpler and
+// the access pattern (Tracy turns) doesn't favor LRU much.
+const MEMORY_CACHE_TTL_MS = 5 * 60 * 1000;
+const MEMORY_CACHE_MAX_ENTRIES = 1000;
+const memoryCache = new Map<string, { memories: PrincipalMemory[]; expires: number }>();
+
+function getCached(principalId: string): PrincipalMemory[] | null {
+  const entry = memoryCache.get(principalId);
+  if (!entry) return null;
+  if (entry.expires < Date.now()) {
+    memoryCache.delete(principalId);
+    return null;
+  }
+  return entry.memories;
+}
+
+function setCached(principalId: string, memories: PrincipalMemory[]): void {
+  // FIFO eviction when at cap. Map preserves insertion order.
+  if (memoryCache.size >= MEMORY_CACHE_MAX_ENTRIES && !memoryCache.has(principalId)) {
+    const oldestKey = memoryCache.keys().next().value;
+    if (oldestKey !== undefined) memoryCache.delete(oldestKey);
+  }
+  memoryCache.set(principalId, {
+    memories,
+    expires: Date.now() + MEMORY_CACHE_TTL_MS,
+  });
+}
+
+/**
+ * Invalidate the cached memory list for a principal. Called automatically by
+ * writeMemory() after a successful insert/supersede so the next turn rebuilds
+ * the system-prompt header from the canonical DB state.
+ *
+ * Exported for callers that mutate principal_memory rows outside writeMemory()
+ * (e.g. an admin script). Safe to call with unknown principal_ids — no-ops.
+ */
+export function invalidateMemoryCache(principalId: string): void {
+  if (principalId) memoryCache.delete(principalId);
+}
+
+/**
+ * Drain the entire memory cache. Used by tests; not normally called in prod.
+ */
+export function clearMemoryCache(): void {
+  memoryCache.clear();
+}
+
 export interface PrincipalMemory {
   id: string;
   memory_type: PrincipalMemoryType;
@@ -144,6 +206,15 @@ export async function loadActiveMemories(
   if (!principalId) return [];
   const cap = Math.max(1, Math.min(limit, 100));
 
+  // 🚨 PERF (Session 111): consult the process-local cache. Cache stores up to
+  // DEFAULT_LOAD_LIMIT memories per principal. If caller asks for ≤cached
+  // count, slice and return. If caller asks for more than what's cached,
+  // bypass cache (rare — only if a future caller passes limit > 30).
+  const cached = getCached(principalId);
+  if (cached && cap <= cached.length) {
+    return cap === cached.length ? cached : cached.slice(0, cap);
+  }
+
   const { data, error } = await supabase
     .from('montree_principal_memory')
     .select(
@@ -152,15 +223,19 @@ export async function loadActiveMemories(
     .eq('principal_id', principalId)
     .is('superseded_at', null)
     .order('created_at', { ascending: false })
-    .limit(cap);
+    .limit(Math.max(cap, DEFAULT_LOAD_LIMIT)); // Always fetch ≥ default so subsequent calls with the default limit hit cache.
 
   if (error) {
     // Don't crash the agent if the table doesn't exist yet (pre-migration)
-    // or the read fails. Tracy degrades to no-memory mode silently.
+    // or the read fails. Tracy degrades to no-memory mode silently. Don't
+    // cache an empty result on error — next turn retries.
     console.warn('[tracy/memory] loadActiveMemories error:', error.message);
     return [];
   }
-  return (data || []) as PrincipalMemory[];
+
+  const fetched = (data || []) as PrincipalMemory[];
+  setCached(principalId, fetched);
+  return cap >= fetched.length ? fetched : fetched.slice(0, cap);
 }
 
 /**
@@ -298,6 +373,10 @@ export async function writeMemory(
     if (!newId) {
       return { ok: false, error: 'supersede rpc returned no id' };
     }
+    // 🚨 PERF (Session 111): invalidate process-local cache so the next
+    // loadActiveMemories call rebuilds from canonical DB state (which now
+    // includes the new + superseded rows).
+    invalidateMemoryCache(principalId);
     return { ok: true, id: newId };
   }
 
@@ -321,6 +400,8 @@ export async function writeMemory(
     console.warn('[tracy/memory] insert error:', error.message);
     return { ok: false, error: error.message };
   }
+  // 🚨 PERF (Session 111): same as the supersede path — invalidate cache.
+  invalidateMemoryCache(principalId);
   return { ok: true, id: (data as { id: string }).id };
 }
 
