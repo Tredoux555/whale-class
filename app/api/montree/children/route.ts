@@ -250,11 +250,17 @@ export async function GET(request: NextRequest) {
     // resolved synchronously from the browser HTTP cache before the network
     // even saw it.
     //
-    // Disabling the cache adds ~1 small JSON request per dashboard mount.
-    // Worth it for correctness. The in-memory SWR cache + dashboard skeleton
-    // still give instant perceived load on revisits within the same session.
+    // Session 111 perf revision: the no-store sledgehammer (Session 88) was killing
+    // back-nav perceived speed for PWA mobile users — every return-to-dashboard fired
+    // a fresh Supabase round-trip (600-1500ms on 3G/4G). The original bug Session 88
+    // fixed was a 120s stale-empty-cache poisoning bulk-import flow. With max-age=5
+    // we cap the stale window at 5 seconds — far shorter than the 6-15s bulk import
+    // typically takes, so the empty-cache race cannot recur. stale-while-revalidate=30
+    // lets the browser serve cached + refetch in background on revisits within the
+    // session (instant felt UX). The in-memory SWR cache + Session 86 race-condition
+    // guard (fetchStartTime defer) still protect against any mid-flight clobber.
     const response = NextResponse.json({ children: data || [] });
-    response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+    response.headers.set('Cache-Control', 'private, max-age=5, stale-while-revalidate=30');
     return response;
 
   } catch (error) {

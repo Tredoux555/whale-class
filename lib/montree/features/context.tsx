@@ -3,7 +3,7 @@
 // Pattern: mirrors i18n context (I18nProvider + useI18n)
 'use client';
 
-import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, useMemo, type ReactNode } from 'react';
 import type { MontreeFeature, FeatureKey } from './types';
 import { fetchFeatures, getCachedFeaturesSync, invalidateFeatures as invalidateFeaturesCache } from './cache';
 
@@ -54,6 +54,12 @@ export function FeaturesProvider({ schoolId, children }: FeaturesProviderProps) 
   }, [schoolId]);
 
   useEffect(() => {
+    // Intentional: load features on mount and when schoolId changes via loadFeatures
+    // dep. The set-state-in-effect rule flags this as a cascade risk, but the
+    // pattern is legitimate client-side fetch-on-mount. Network IO must live in
+    // effects; refactoring to render-phase fetch would require Suspense + a Data
+    // API rewrite for the entire features layer. Pragma here is the right call.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadFeatures();
   }, [loadFeatures]);
 
@@ -87,8 +93,19 @@ export function FeaturesProvider({ schoolId, children }: FeaturesProviderProps) 
     }
   }, [schoolId, loadFeatures]);
 
+  // 🚨 PERF: memoize the context value so the dashboard's 4+ useFeatures() consumers
+  // (DashboardHeader, sections, photo-audit tabs, focus shelf, etc.) only re-render
+  // when features/loading/isEnabled actually change. Without this, every parent
+  // render rebuilds the value object, cascading re-renders through every consumer
+  // on every parent state change. Mirror of i18n context's useMemo pattern.
+  // (Session 76 fixed i18n context but missed this; surfaced in Session 111 lag audit.)
+  const value = useMemo(
+    () => ({ features, loading, isEnabled, invalidate }),
+    [features, loading, isEnabled, invalidate]
+  );
+
   return (
-    <FeaturesContext.Provider value={{ features, loading, isEnabled, invalidate }}>
+    <FeaturesContext.Provider value={value}>
       {children}
     </FeaturesContext.Provider>
   );
