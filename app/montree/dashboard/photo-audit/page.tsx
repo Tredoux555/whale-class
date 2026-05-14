@@ -640,6 +640,10 @@ export default function PhotoAuditPage() {
 
   // Track photos confirmed in this session — prevents server refetch from overwriting optimistic green status
   const confirmedIdsRef = useRef<Set<string>>(new Set());
+  // Track photos.length for load-more offset without making fetchPhotos depend
+  // on photos.length (which made the callback identity churn on every confirm,
+  // and was implicated in the Session 111 emergency regression).
+  const photosLengthRef = useRef<number>(0);
 
   // Classroom (for WeeklyWrapTab)
   const [classroomIdState, setClassroomIdState] = useState<string>('');
@@ -959,9 +963,11 @@ export default function PhotoAuditPage() {
     const effectiveZone = isDiscussion ? 'all' : zone;
     const includeConfirmedParam = (isTodayAll || isDiscussion) ? '&include_confirmed=1' : '';
     // On append, offset starts where photos[] currently ends. On initial fetch, 0.
-    // Reading photos.length here is intentional — append only fires from a button
-    // click after state has settled, so the snapshot is stable.
-    const offsetParam = append ? photos.length : 0;
+    // Read via ref so fetchPhotos callback identity stays stable across photo
+    // state changes (critical: photos.length in deps caused the callback to
+    // re-create on every confirm, which broke the memoized AuditPhotoCard's
+    // event handlers — Session 111 emergency regression).
+    const offsetParam = append ? photosLengthRef.current : 0;
 
     try {
       const res = await fetch(
@@ -1059,10 +1065,11 @@ export default function PhotoAuditPage() {
       }
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [zone, dateRange, todayFilter, photos.length]);
+  }, [zone, dateRange, todayFilter]);
 
-  // Load-more handler — passes append=true. Photos.length is captured fresh
-  // each click via the photos.length dep on fetchPhotos.
+  // Load-more handler — passes append=true. Photos.length is read via
+  // photosLengthRef inside fetchPhotos so we don't need to re-create the
+  // callback on every confirm (Session 111 emergency fix).
   const loadMorePhotos = useCallback(() => {
     if (loadingMore || loading || !hasMore) return;
     fetchPhotos(true);
@@ -1077,6 +1084,10 @@ export default function PhotoAuditPage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [zone, dateRange, todayFilter]);
   useEffect(() => { return () => { abortRef.current?.abort(); }; }, []);
+
+  // Keep photosLengthRef in sync so the load-more append path can read offset
+  // without putting photos.length in fetchPhotos deps (Session 111 fix).
+  useEffect(() => { photosLengthRef.current = photos.length; }, [photos.length]);
 
   // One-shot recovery sweep on mount: ask the server for a list of stuck
   // photo-identification jobs (status null/pending/failed + stale attempted_at),
@@ -1348,6 +1359,10 @@ export default function PhotoAuditPage() {
     const removedZone = photo.zone || 'untagged';
     const photoSnapshot = photo;
     // 1. Optimistic — vanish from grid + decrement counts now.
+    // Add to confirmedIdsRef so a server refetch (Session 111 emergency fix)
+    // won't resurface the photo before the corrections POST writes
+    // teacher_confirmed=true on the server.
+    confirmedIdsRef.current.add(photo.id);
     setPhotos(prev => prev.filter(p => p.id !== photo.id));
     setCounts(prev => ({
       ...prev,
@@ -1384,6 +1399,7 @@ export default function PhotoAuditPage() {
     } catch (err) {
       console.error('[AttachExisting] Failed:', err);
       // 3. API failed — restore the photo + counts, surface the error.
+      confirmedIdsRef.current.delete(photo.id);
       setPhotos(prev => (prev.some(p => p.id === photoSnapshot.id) ? prev : [photoSnapshot, ...prev]));
       setCounts(prev => ({
         ...prev,
@@ -1515,6 +1531,9 @@ export default function PhotoAuditPage() {
     const removedZone = photo.zone || 'untagged';
     const photoSnapshot = photo;
     // 1. Optimistic — vanish from grid + decrement counts now.
+    // Add to confirmedIdsRef so a refetch can't resurface this photo before
+    // the resolve POST persists teacher_confirmed=true on the server.
+    confirmedIdsRef.current.add(photo.id);
     setPhotos(prev => prev.filter(p => p.id !== photo.id));
     setCounts(prev => ({
       ...prev,
@@ -1559,6 +1578,7 @@ export default function PhotoAuditPage() {
     } catch (err) {
       console.error('[ResolvePhoto] Failed:', err);
       // 3. API failed — restore the photo + counts.
+      confirmedIdsRef.current.delete(photo.id);
       setPhotos(prev => (prev.some(p => p.id === photoSnapshot.id) ? prev : [photoSnapshot, ...prev]));
       setCounts(prev => ({
         ...prev,
