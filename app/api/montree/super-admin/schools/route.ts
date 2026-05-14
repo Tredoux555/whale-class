@@ -371,10 +371,32 @@ export async function PATCH(request: NextRequest) {
       // billing_override_note: free-text reason (max 200 chars). Optional.
       billing_override_usd,
       billing_override_note,
+      // Session 111 / migration 209 — three-rail inbound payments.
+      // billing_cadence: 'monthly' | 'annual'. No safety guard needed; cadence
+      //   is purely a billing-frequency setting (annual = 10% discount, 12 monthly
+      //   finance_tx rows on prepayment per rule #86).
+      // payment_method: refused here — flip via /api/montree/super-admin/schools/[id]/payment-config
+      //   which carries the active-Stripe safety guard (rule #80 + #70 mirror).
+      billing_cadence,
+      payment_method,
     } = body;
 
     if (!schoolId) {
       return NextResponse.json({ error: 'schoolId required' }, { status: 400 });
+    }
+
+    // 🚨 Rule #80 enforcement: payment_method flips MUST go through the dedicated
+    // payment-config route so the active-Stripe safety guard fires. Refuse here
+    // with a friendly redirect rather than silently flipping a school's rail and
+    // letting Stripe keep auto-charging a now-orphaned subscription.
+    if (payment_method !== undefined) {
+      return NextResponse.json(
+        {
+          error: 'payment_method must be flipped via /api/montree/super-admin/schools/[id]/payment-config (carries active-Stripe safety guard). PATCH on /schools accepts billing_cadence only.',
+          use_endpoint: `/api/montree/super-admin/schools/${schoolId}/payment-config`,
+        },
+        { status: 400 }
+      );
     }
 
     // ── AI tier change: toggle feature flags + set budget ──────────
@@ -478,6 +500,19 @@ export async function PATCH(request: NextRequest) {
       } else {
         updateData.billing_override_note = billing_override_note.trim();
       }
+    }
+
+    // ── billing_cadence (Session 111, migration 209) ───────────────────
+    // No safety guard needed; cadence is a billing-frequency setting. Annual =
+    // 10% discount; the next invoice the cron generates (alipay rail) OR the
+    // next manual wire recording (manual_invoice rail) will write 12 monthly
+    // finance_tx rows per rule #86. Stripe subscription rail honors the
+    // setting on the next sync.
+    if (billing_cadence !== undefined) {
+      if (billing_cadence !== 'monthly' && billing_cadence !== 'annual') {
+        return NextResponse.json({ error: 'billing_cadence must be monthly or annual' }, { status: 400 });
+      }
+      updateData.billing_cadence = billing_cadence;
     }
 
     if (Object.keys(updateData).length === 0) {
