@@ -202,6 +202,31 @@ Wave 1 sends bounced for these addresses. None of these are flagged as `bounced`
 
 ## RECENT STATUS (May 14, 2026)
 
+### ⚡ Session 111 perf bundle — photo-audit load-more + dead-code cleanup (commit `edd90e22`)
+
+15 files, net -28 lines. Two parallel general-purpose agents under principal-agent supervision.
+
+**A. Photo-audit fetch limit + load-more pagination** (`app/montree/dashboard/photo-audit/page.tsx` + 12 i18n files)
+
+Lowered initial fetch from 200 (most zones) / 500 (today filter) to `FETCH_LIMIT=100`. New "Load more photos" button when `hasMore=true` (response was full-size). Append + id-dedup on subsequent fetches. Reset on `zone/dateRange/todayFilter` change. Server route already supported `offset` so no backend changes. `hasMore` derived from RAW response length (not confirmedIdsRef-filtered) so session-dedup doesn't falsely terminate pagination. 2 new i18n keys (`audit.loadMore`, `audit.loadingMore`) translated into all 12 locales (real translations, not English fallback). Mobile 3G/4G initial paint ~5× faster.
+
+**B. Dead-code cleanup — FocusWorksSection + [childId]/page.tsx**
+
+Removed ~20 lurking unused imports/vars/helpers from past refactors that were hidden behind tactical file-level `eslint-disable` headers in the prior commit (`624b2aab`).
+
+`FocusWorksSection.tsx` removed: `Mic`/`Square`/`TeachingInstructions`/`getAreaLabel`/`AreaConfig`/`resolveLocalized`/`resolveLocalizedArray` imports; `SERIF` const; `AreaDetail` interface; `getAreaConfig`/`guruAreaDetails`/`onShelfFilled` props; `expandedAdvice`/`fillingShelf`/`shelfFilled` state + `resetShelfFilled` useEffect; `planNudge`/`planWorks`/`planWorksEn`/`planDirection`/`hasEmptySlots`/`guruDetail`/`isLast` vars; `handleFillShelf` useCallback + `copyText` + `CopyButton` functions.
+
+`[childId]/page.tsx` removed: `childDataRich`/`setChildDataRich` state + setter call sites; `getAreaConfig` function (only consumer was the removed FocusWorksSection prop); `AREA_CONFIG`/`AreaConfig` imports; matching JSX prop passes.
+
+**LEFT INTACT** (with reasoning):
+- `refreshingPlan`/`handleRefreshPlan`/`planDaysSinceUpdate` — used inside `SHOW_GAME_PLAN && gamePlan` footer (flag is false today but the symbols keep the toggle live for documented re-enable path)
+- `eslint-disable-next-line react-hooks/exhaustive-deps` at `[childId]/page.tsx` ~line 405 — the intentional `isEnabled` exclusion from TellGuruCard load useEffect
+- Bonus: `locale` added to `handleRefreshPlan` deps (was going to surface as exhaustive-deps warning once file-level disable lifted)
+
+**File-level eslint-disable headers REMOVED on both files.** Lint clean (--max-warnings=0) on both. Pre-existing 53 warnings on photo-audit page (native `<img>` for direct Supabase URLs + 3 unused props) unchanged — agents introduced zero new lint issues.
+
+---
+
 ### ⚡ Session 111 perf push — PWA mobile lag fixes (commits `19de89fb` + `624b2aab`)
 
 User reported the app felt laggy on PWA mobile (dashboard + photo audit + Tracy). Dispatched a parallel investigation agent which ranked 5 causes by severity. Shipped 6 of the 7 actionable items across two commits.
