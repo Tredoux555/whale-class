@@ -202,6 +202,74 @@ Wave 1 sends bounced for these addresses. None of these are flagged as `bounced`
 
 ## RECENT STATUS (May 14, 2026)
 
+### 📚 Session 112 — Reading Framework Making Guide + Pink Phase Lesson Content (May 14, 2026, evening)
+
+**3 commits pushed to main: `e42d1035`, `5332b3c3`, `63d3b4ed`.** Closes the Whale-Class reading-framework loop with two new admin documents — the *making guide* (how to set up the room and present each work) and the *lesson content* (UFLI L1-53 word lists, phrases, sentences, picture prompts, heart words). Both auth-gated, iframed into admin, print-friendly.
+
+**🚨 Canonical resume doc:** `docs/handoffs/SESSION_112_HANDOFF.md`.
+
+**What's live in the admin hub:**
+
+| Tile | Route | Static | Pages |
+|---|---|---|---|
+| 📗 Reading Framework | `/admin/reading-framework` | `public/whale-reading-framework-guide.html` | ~30 pages with 4-shelf SVG |
+| 📕 Pink Phase Lessons | `/admin/reading-content` | `public/whale-reading-content.html` | ~99 pages |
+
+**A. Reading Framework Making Guide (`e42d1035` + subtitle fix `5332b3c3`):**
+
+Writing-and-reading framing per Maria Montessori. 13 work families across 4 shelf zones (Oral / Sound / Writing / Reading, with the ESL drill station folded into Sound). For each work: purpose, where it lives, materials, how to make, and a full teacher-to-teacher *how to present it* guide. Three-period lesson for sandpaper letters. Five-stage Dwyer sound games. First movable-alphabet word-building moment (the *esplosione della scrittura* — writing-before-reading). Daily ESL drill mechanics. Inline SVG of the wall showing 4 shelves with materials drawn on each level + a child composing CAT on the rug.
+
+**B. Pink Phase Lesson Content (`63d3b4ed`):**
+
+Closes the gap "the per-lesson card sets exist but no doc says what's IN them." UFLI lessons 1-53, lesson by lesson:
+
+- **Phase 1 — The Alphabet (L1-34):** 30 letter lessons in UFLI's SATPIN-first order (s, a, t, p, i, n, m, d, g, o, c, k, ck, e, u, r, h, b, f, l, j, v, w, x, y, z, qu). Each lesson: articulation note, spelling words (encoding — movable alphabet), reading words (decoding — word cards), phrase cards, sentence cards, picture-sourcing prompts for Canva/Google, heart words introduced, Mandarin-L1 articulation note.
+- **Phase 2 — CVC consolidation + FLSZ (L35-41):** Vowel-by-vowel drill, then mixed minimal pairs (L40 — the Mandarin-critical lesson), then the FLSZ doubling rule (L41).
+- **Phase 3 — Digraphs + Blends (L42-53):** sh, ch, th (voiceless and voiced), wh, then ending blends, beginning blends (s-, l-, r-), triple blends (str, spl, thr, shr).
+- **First-50 heart word schedule** with intro lesson and irregular letters flagged for the red-letter coding convention.
+- **Picture sourcing playbook** for Canva and Google with concrete search prompts per word type.
+- **References** (Boyer & Ehri 2011, Ehri 2009, Gough & Tunmer 1986, Lane et al. 2025, NRP 2000, Kou et al. 2024, UFLI Foundations).
+
+**Built via Python generator** at `outputs/lesson-content/build.py` (sandbox-only, not in git). ~95 KB output. **Two-round audit, both clean:**
+
+1. **Letter-pool audit** — every word's letters must be in the cumulative pool of letters taught up to and including that lesson. First run caught 3 lesson violations (back/rock at L17, bed/red at L18, fun/bug at L19). Fixed by swapping to constructible alternatives.
+2. **Blend audit** — no 2-consonant clusters before L47 (when blends are formally taught). First run caught L13 ('and'), L32 ('jump'/'best'/'help'/'sand'), L41 ('fluff'/'still'). Fixed: 'and' moved to a heart-word at L13 (UFLI's pragmatic compromise — too high-frequency to skip); L32 swapped to clean CVC review; L41 trimmed to pure FLSZ doublings.
+
+**🚨 Architectural rules locked in this session (apply to all future lesson content — Blue Phase L54-83, Green Phase L84-128):**
+
+90. **Every word in every lesson MUST be decodable from the cumulative letter pool** introduced through that lesson. No "preview" words except 'and' (function word, introduced as heart word at L13 only).
+91. **No blends (2-consonant clusters) before L47** in any lesson content. Phase 1 and Phase 2 are strictly CVC + permitted digraphs (ck, qu, x as single graphemes). The Mandarin-L1 cluster-acquisition curve is the slowest part of the program; pre-exposure teaches bad habits.
+92. **Encoding before decoding, every lesson.** Spelling words list (for movable alphabet) appears BEFORE reading words list (for word cards) in the document. Children build before they read on the same day. UFLI Step 5 then Step 6.
+93. **Mandarin-L1 articulation notes are mandatory** on any lesson teaching a sound with documented L1 transfer problems. Currently 14+ lessons flagged in Pink Phase.
+94. **Heart word coding is canonical.** Regular letters BLACK, irregular letters RED, small red heart icon below each red letter. Card ~10×6 cm laminated, on binder ring on Shelf 4.
+95. **The 4 shelves are the canonical English-area layout** — Oral / Sound / Writing / Reading, left to right. Built around this layout regardless of physical furniture (one long shelf divided in four, or four small units).
+
+**Admin auth pattern:** both new pages call `/api/videos` on mount, 401 redirects to `/admin/login`. Same pattern as the rest of `/admin/*`.
+
+**Files changed (3 commits, 5 files):**
+- `public/whale-reading-framework-guide.html` (61 KB) — the making guide
+- `public/whale-reading-content.html` (94 KB) — Pink Phase lesson content
+- `app/admin/reading-framework/page.tsx` — iframe wrapper for making guide
+- `app/admin/reading-content/page.tsx` — iframe wrapper for lesson content
+- `app/admin/page.tsx` — two new tiles in the admin hub (📗 emerald, 📕 pink)
+
+**🚨 Next session priorities (ordered):**
+
+1. **Verify on production after Railway settles.** Hit `/admin` → tap the pink 📕 Pink Phase Lessons tile → confirm L9 renders with full content. Also verify 📗 Reading Framework tile shows the 4-shelf SVG.
+2. **Blue Phase lesson content (L54-83).** Same structure as Pink, ~3 hours focused work via the same Python generator. VCe first, then multisyllabic compounds, then R-controlled vowels, then ending patterns (-tch, -dge, -le).
+3. **Green Phase lesson content (L84-128).** Vowel teams, diphthongs, suffixes/prefixes, Greek/Latin roots. ~3-4 hours.
+4. **Per-lesson visual sketches** — Pink content is text-heavy. Could add small SVGs of mouth shape per articulation, sample card layouts. Half-day.
+5. **Move audit script into the repo** as `scripts/audit-lesson-content.py` for re-runs as content evolves.
+6. **Carry-overs from Session 111** (still pending):
+   - "Correct" button modal regression on photo audit — needs clarification which card type triggers it
+   - "Other" category build for photos not in curriculum
+   - Stripe webhook event subscription (Step 1 post-migration operational walkthrough)
+   - Railway crons for generate-alipay-invoices + dunning-alipay
+   - HK banker email re Wallex + Alipay/WeChat payouts
+   - Haiku i18n batch for 10 non-zh locales
+
+---
+
 ### 🚑 Session 111 hotfix + weekly-summary cap (commits `80552411` + `0be047d7` + `5ab8a8be`)
 
 Real-user emergency caught + fixed within hours of deploy. Plus a quick UX cap on weekly summary length.
