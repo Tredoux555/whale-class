@@ -9,6 +9,8 @@ import { getCountryFlag } from '@/lib/ip-geolocation';
 const SchoolFeaturesModal = dynamic(() => import('./SchoolFeaturesModal'), { ssr: false });
 const PrincipalsModal = dynamic(() => import('./PrincipalsModal'), { ssr: false });
 const BillingOverrideModal = dynamic(() => import('./BillingOverrideModal'), { ssr: false });
+const PaymentConfigModal = dynamic(() => import('./PaymentConfigModal'), { ssr: false });
+const RecordIncomingWireModal = dynamic(() => import('./RecordIncomingWireModal'), { ssr: false });
 
 // Platform default per-student rate. Mirrors PRICE_PER_STUDENT_USD in
 // lib/montree/billing.ts. If that changes, change this too.
@@ -90,6 +92,7 @@ export default function SchoolsTab({
   const [featuresSchool, setFeaturesSchool] = useState<{ id: string; name: string } | null>(null);
   const [principalsSchool, setPrincipalsSchool] = useState<{ id: string; name: string } | null>(null);
   const [overrideSchool, setOverrideSchool] = useState<{ id: string; name: string; current: number | string | null | undefined; note: string | null | undefined } | null>(null);
+  const [paymentConfigSchool, setPaymentConfigSchool] = useState<{ id: string; name: string } | null>(null);
   const [togglingAi, setTogglingAi] = useState<Set<string>>(new Set());
   const [tierOverrides, setTierOverrides] = useState<Record<string, 'free' | 'premium'>>({});
   // Local override updates for optimistic display after the modal saves. Keyed
@@ -98,6 +101,17 @@ export default function SchoolsTab({
   const [billingOverrideUpdates, setBillingOverrideUpdates] = useState<
     Record<string, { override: number | null; note: string | null }>
   >({});
+  // Phase A inbound payments — optimistic display updates for payment-method
+  // and billing-cadence after PaymentConfigModal saves. Same pattern as
+  // billingOverrideUpdates / tierOverrides. Refresh on next page load pulls
+  // canonical values via SELECT * from /api/montree/super-admin/schools.
+  const [paymentMethodUpdates, setPaymentMethodUpdates] = useState<
+    Record<string, { method: 'stripe_subscription' | 'alipay_invoice' | 'manual_invoice'; cadence: 'monthly' | 'annual' }>
+  >({});
+  // Phase C inbound payments — ⚡ Record incoming wire modal state. Only
+  // opened from manual_invoice schools (separate state from paymentConfigSchool
+  // so opening the wire-record modal doesn't conflict with editing the rail).
+  const [recordWireSchool, setRecordWireSchool] = useState<{ id: string; name: string } | null>(null);
 
   const getEffectiveOverride = (school: School): number | null => {
     if (school.id in billingOverrideUpdates) {
@@ -745,6 +759,62 @@ export default function SchoolsTab({
                               </button>
                             );
                           })()}
+                          {/* Phase A inbound payments — payment-method config.
+                              Click opens PaymentConfigModal where super-admin
+                              can flip the rail (stripe_subscription /
+                              alipay_invoice / manual_invoice) + cadence
+                              (monthly / annual). Color hint:
+                                stripe_subscription → indigo (Western default)
+                                alipay_invoice      → red    (China rail)
+                                manual_invoice      → amber  (manual wire)
+                              Phase C: for manual_invoice schools, a second
+                              ⚡ button surfaces to record an incoming wire. */}
+                          {(() => {
+                            const effMethod =
+                              paymentMethodUpdates[school.id]?.method ||
+                              school.payment_method ||
+                              'stripe_subscription';
+                            const effCadence =
+                              paymentMethodUpdates[school.id]?.cadence ||
+                              school.billing_cadence ||
+                              'monthly';
+                            const chrome =
+                              effMethod === 'alipay_invoice'
+                                ? 'bg-red-500/20 text-red-300 hover:bg-red-500/30'
+                                : effMethod === 'manual_invoice'
+                                  ? 'bg-amber-500/20 text-amber-300 hover:bg-amber-500/30'
+                                  : 'bg-indigo-500/20 text-indigo-300 hover:bg-indigo-500/30';
+                            const railLabel =
+                              effMethod === 'alipay_invoice'
+                                ? 'Alipay'
+                                : effMethod === 'manual_invoice'
+                                  ? 'Manual'
+                                  : 'Stripe';
+                            const isManual = effMethod === 'manual_invoice';
+                            return (
+                              <>
+                                <button
+                                  onClick={() => setPaymentConfigSchool({ id: school.id, name: school.name })}
+                                  className={`px-2 py-1 rounded text-xs font-medium ${chrome}`}
+                                  title={`Payment rail: ${railLabel} · ${effCadence === 'annual' ? 'Annual' : 'Monthly'}`}
+                                >
+                                  💳<span className="ml-1 text-[10px] uppercase tracking-wide">{railLabel}</span>
+                                  {effCadence === 'annual' && (
+                                    <span className="ml-1 text-[10px] opacity-70">·Yr</span>
+                                  )}
+                                </button>
+                                {isManual && (
+                                  <button
+                                    onClick={() => setRecordWireSchool({ id: school.id, name: school.name })}
+                                    className="px-2 py-1 bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30 rounded text-xs font-medium"
+                                    title="Record incoming SWIFT wire from this school"
+                                  >
+                                    ⚡<span className="ml-1 text-[10px] uppercase tracking-wide">Wire</span>
+                                  </button>
+                                )}
+                              </>
+                            );
+                          })()}
                           <button
                             onClick={() => onLoginAs(school.id)}
                             className="px-2 py-1 bg-amber-500/20 text-amber-400 hover:bg-amber-500/30 rounded text-xs font-medium"
@@ -809,6 +879,48 @@ export default function SchoolsTab({
                 [overrideSchool.id]: { override, note },
               }));
             }
+          }}
+        />
+      )}
+
+      {/* Phase A inbound payments — payment-method + cadence config (migration 209).
+          Super-admin flips the rail (Stripe / Alipay / Manual) and cadence
+          (monthly / annual). PATCH route refuses silent flip away from active
+          stripe_subscription; modal surfaces the warning and a force-confirm. */}
+      {paymentConfigSchool && sessionToken && (
+        <PaymentConfigModal
+          schoolId={paymentConfigSchool.id}
+          schoolName={paymentConfigSchool.name}
+          sessionToken={sessionToken}
+          onClose={() => setPaymentConfigSchool(null)}
+          onSaved={(method, cadence) => {
+            if (paymentConfigSchool) {
+              setPaymentMethodUpdates(prev => ({
+                ...prev,
+                [paymentConfigSchool.id]: { method, cadence },
+              }));
+            }
+          }}
+        />
+      )}
+
+      {/* Phase C inbound payments — ⚡ Record incoming wire (manual_invoice rail).
+          Captures wire_ref + amount + FX + paid_at + notes, calls record-incoming-wire
+          route which: writes income row(s) to montree_finance_transactions
+          (12 monthly rows for annual cadence per rule #86), flips subscription_status
+          to active, bumps current_period_end forward, flips AI tier to premium.
+          Idempotent on wire_ref via source_ref='inbound_wire:<ref>'. */}
+      {recordWireSchool && sessionToken && (
+        <RecordIncomingWireModal
+          schoolId={recordWireSchool.id}
+          schoolName={recordWireSchool.name}
+          token={sessionToken}
+          onClose={() => setRecordWireSchool(null)}
+          onRecorded={() => {
+            // Modal close handles itself. The row's status/period will reflect
+            // canonical state on next page load. Optimistic update not needed
+            // here since the change is bookkeeping, not visible identity.
+            setRecordWireSchool(null);
           }}
         />
       )}

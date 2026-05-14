@@ -108,6 +108,10 @@ export async function GET(request: NextRequest) {
       live_monthly_charge_estimate_cents: liveEstimateCents,
       live_monthly_charge_estimate_usd: liveStudentCount * effectivePriceUsd,
       trial_days_remaining: trialDaysRemaining,
+      // Phase B/C — three-rail inbound payments (migration 209).
+      payment_method: school.payment_method || 'stripe_subscription',
+      billing_cadence: school.billing_cadence || 'monthly',
+      next_invoice_due_at: school.next_invoice_due_at,
     },
     pricing: {
       // The principal's actual rate. Equals platform default unless a

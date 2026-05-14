@@ -48,6 +48,11 @@ interface BillingStatus {
     live_monthly_charge_estimate_cents: number;
     live_monthly_charge_estimate_usd: number;
     trial_days_remaining: number | null;
+    /** Phase B/C — three-rail inbound payments. Defaults to stripe_subscription. */
+    payment_method?: 'stripe_subscription' | 'alipay_invoice' | 'manual_invoice' | string;
+    /** monthly | annual. */
+    billing_cadence?: 'monthly' | 'annual' | string;
+    next_invoice_due_at?: string | null;
   };
   pricing: {
     price_per_student_usd: number;
@@ -174,6 +179,16 @@ function BillingPageContent() {
   const isActive = (status === 'active' || status === 'trialing') && hasStripeCustomer;
   const isPastDue = status === 'past_due';
   const isCanceled = status === 'canceled';
+  // Phase B/C rail awareness. Default to stripe_subscription.
+  const paymentMethod = (data.school.payment_method || 'stripe_subscription') as
+    | 'stripe_subscription'
+    | 'alipay_invoice'
+    | 'manual_invoice';
+  const billingCadence = (data.school.billing_cadence || 'monthly') as 'monthly' | 'annual';
+  const isAlipayRail = paymentMethod === 'alipay_invoice';
+  const isManualRail = paymentMethod === 'manual_invoice';
+  const isStripeRail = paymentMethod === 'stripe_subscription';
+  const latestOpenInvoice = data.history.find((h) => h.status === 'open') || null;
 
   return (
     <div className="max-w-3xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
@@ -248,9 +263,9 @@ function BillingPageContent() {
                 </p>
               )}
 
-            {/* Action */}
+            {/* Action — rail-aware */}
             <div className="mt-5 flex flex-wrap gap-2">
-              {!isActive && !isCanceled && (
+              {isStripeRail && !isActive && !isCanceled && (
                 <button
                   onClick={startCheckout}
                   disabled={busy}
@@ -259,7 +274,7 @@ function BillingPageContent() {
                   {busy ? t('billing.starting') : t('billing.setUpBilling')}
                 </button>
               )}
-              {isActive && (
+              {isStripeRail && isActive && (
                 <button
                   onClick={openPortal}
                   disabled={busy}
@@ -268,7 +283,7 @@ function BillingPageContent() {
                   {busy ? t('billing.opening') : t('billing.manageInStripe')}
                 </button>
               )}
-              {isPastDue && (
+              {isStripeRail && isPastDue && (
                 <button
                   onClick={openPortal}
                   disabled={busy}
@@ -277,7 +292,7 @@ function BillingPageContent() {
                   {busy ? t('billing.opening') : t('billing.updatePayment')}
                 </button>
               )}
-              {isCanceled && (
+              {isStripeRail && isCanceled && (
                 <button
                   onClick={startCheckout}
                   disabled={busy}
@@ -286,7 +301,77 @@ function BillingPageContent() {
                   {busy ? t('billing.starting') : t('billing.resubscribe')}
                 </button>
               )}
+              {isAlipayRail && latestOpenInvoice?.invoice_pdf_url && (
+                <a
+                  href={latestOpenInvoice.invoice_pdf_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-5 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-white font-medium rounded-lg text-sm transition-colors"
+                >
+                  {t('billing.openInvoice')}
+                </a>
+              )}
             </div>
+
+            {/* Alipay / WeChat — pending invoice banner */}
+            {isAlipayRail && latestOpenInvoice && (
+              <div className="mt-4 bg-amber-500/10 border border-amber-500/30 rounded-lg px-4 py-3 text-amber-100 text-sm">
+                <p className="font-medium">{t('billing.invoicePending')}</p>
+                <p className="mt-1 text-amber-100/80 text-xs leading-relaxed">
+                  {t('billing.alipayInstructions')}
+                </p>
+              </div>
+            )}
+
+            {/* Alipay / WeChat — explanatory card when no open invoice */}
+            {isAlipayRail && !latestOpenInvoice && (
+              <div className="mt-4 bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white/70 text-sm">
+                {t('billing.alipayRailExplain')}
+              </div>
+            )}
+
+            {/* Manual invoice — bank details card */}
+            {isManualRail && (
+              <div className="mt-4 bg-white/5 border border-white/10 rounded-lg px-4 py-4 text-white/80 text-sm space-y-2">
+                <p className="font-medium text-white">{t('billing.wireDetailsLabel')}</p>
+                <dl className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                  <div>
+                    <dt className="text-white/40 uppercase tracking-wider text-[10px]">{t('billing.wireDetailsBankName')}</dt>
+                    <dd className="text-white">DBS Bank (Hong Kong) Limited</dd>
+                  </div>
+                  <div>
+                    <dt className="text-white/40 uppercase tracking-wider text-[10px]">{t('billing.wireDetailsAccountHolder')}</dt>
+                    <dd className="text-white">Montree Limited</dd>
+                  </div>
+                  <div>
+                    <dt className="text-white/40 uppercase tracking-wider text-[10px]">{t('billing.wireDetailsAccountNumber')}</dt>
+                    <dd className="text-white tabular-nums">7949855392</dd>
+                  </div>
+                  <div>
+                    <dt className="text-white/40 uppercase tracking-wider text-[10px]">{t('billing.wireDetailsSwift')}</dt>
+                    <dd className="text-white tabular-nums">DHBKHKHH</dd>
+                  </div>
+                  <div className="sm:col-span-2">
+                    <dt className="text-white/40 uppercase tracking-wider text-[10px]">{t('billing.wireDetailsReferenceNumber')}</dt>
+                    <dd className="text-white font-mono text-[11px]">
+                      MONTREE-{data.school.id.slice(0, 8).toUpperCase()}-
+                      {new Date().toISOString().slice(0, 7).replace('-', '')}
+                    </dd>
+                  </div>
+                </dl>
+                <p className="text-white/60 text-xs mt-2">
+                  {t('billing.manualRailExplain')}
+                </p>
+              </div>
+            )}
+
+            {/* Annual savings pill */}
+            {billingCadence === 'annual' && isActive && (
+              <p className="mt-3 inline-flex items-center gap-1.5 bg-emerald-500/15 border border-emerald-500/40 rounded-full px-3 py-1 text-emerald-200 text-xs">
+                <span aria-hidden>🎉</span>
+                <span>{t('billing.annualSavings')}</span>
+              </p>
+            )}
 
             {error && (
               <div className="mt-3 bg-red-500/15 border border-red-500/40 rounded-lg p-3 text-red-200 text-sm">
