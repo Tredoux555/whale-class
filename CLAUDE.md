@@ -202,6 +202,65 @@ Wave 1 sends bounced for these addresses. None of these are flagged as `bounced`
 
 ## RECENT STATUS (May 14, 2026)
 
+### 🚑 Session 111 hotfix + weekly-summary cap (commits `80552411` + `0be047d7` + `5ab8a8be`)
+
+Real-user emergency caught + fixed within hours of deploy. Plus a quick UX cap on weekly summary length.
+
+**A. EMERGENCY hotfix — photo-audit (commit `80552411`):**
+
+Real user mid-audit reported (1) clicking "Wrong" on Haiku auto-match cards did nothing, (2) photos confirmed in session came back as UNCONFIRMED after page refresh. Both regressions from `edd90e22` (load-more pagination). The confirms DID reach the DB (teacher_confirmed flag IS true server-side) but the UI was lying — refetch was serving them as still-pending before the optimistic-add to confirmedIdsRef could protect them.
+
+Root causes:
+
+1. **`photos.length` in `fetchPhotos` useCallback deps caused callback identity churn** on every confirm/correct (each calls `setPhotos(prev => prev.filter(...))`). `AuditPhotoCard` is `memo()`'d with a comparator that DELIBERATELY skips callback comparison — so cached cards held stale closures over old `openThisIsSheet`/`handleConfirm` refs. Wrong button silently no-op'd because its cached arrow function called a stale `openThisIsSheet` whose `setThisIsPhoto` closure-state was confused.
+
+2. **`attachToExistingWork` + `handleResolvePhoto` never added the photo to `confirmedIdsRef`** — pre-existing gap that only mattered after `edd90e22` lowered the fetch limit 200/500 → 100. With the smaller window, refetch happened more often, and `confirmedIdsRef` is the only guard against re-serving an optimistically-confirmed photo before the server-side flip lands. Without the add, confirms vanished on refresh.
+
+Surgical fix (load-more pagination preserved):
+- Added `photosLengthRef = useRef<number>(0)` for stable offset calc
+- Replaced `photos.length` with `photosLengthRef.current` in `fetchPhotos`
+- Removed `photos.length` from `fetchPhotos` deps (callback identity now stable)
+- Added `useEffect` to keep `photosLengthRef` in sync with `photos.length`
+- Added `confirmedIdsRef.current.add(photo.id)` in `attachToExistingWork` (+ `.delete` on error rollback)
+- Added `confirmedIdsRef.current.add(photo.id)` in `handleResolvePhoto` (+ `.delete` on error rollback)
+
+**🚨 Architectural rule locked in:** when an `AuditPhotoCard`-style memo comparator skips callback comparison (which is intentional for perf), the parent's callbacks MUST have stable identity. State-derived values in `useCallback` deps (like `photos.length`) break this. Use a ref-mirror updated via `useEffect`.
+
+**🚨 Architectural rule locked in:** every code path that optimistically removes a photo from the audit grid MUST add its id to `confirmedIdsRef` BEFORE the server confirm fires, and `.delete()` it on rollback. The three canonical paths are `handleConfirm` (Session 105), `attachToExistingWork` (Session 111), and `handleResolvePhoto` (Session 111). Add a 4th, you add the ref bookkeeping.
+
+**B. Weekly summary 40-word cap (commits `0be047d7` then `5ab8a8be`):**
+
+User flagged weekly summary auto-fill was ~50-60 words; tightened first to 50 then to 40 per follow-up.
+
+Changes to `app/api/montree/weekly-admin-docs/auto-fill/route.ts`:
+- New `WEEKLY_SUMMARY_MAX_WORDS = 40` constant (was 50 momentarily; user requested tighter)
+- Prompt rewritten: replaced "2-3 sentence warm narrative paragraph" with explicit `STRICT LIMIT: 40 words total`. Asks for 1-2 sentences, reminds twice.
+- `max_tokens` lowered 280 → 100 (~75-word ceiling at AI layer — leaves room for trim if Haiku overshoots).
+- Added local `trimToWords()` (mirror of canonical impl from `language-semester/generate/route.ts`) as safety net. Snaps to last sentence-ending punctuation within word budget.
+- Applied `trimToWords(narrative, WEEKLY_SUMMARY_MAX_WORDS)` to Haiku output before assigning to `s.summaryEnglish`.
+
+3 pre-existing lint warnings on the file fixed incidentally (let→const, two unused-vars with TODO comments). Single source of truth — flipping the constant flows through prompt + token budget + hard trim.
+
+**Architectural rule:** AI-generated user-facing copy with word caps uses three layers of enforcement (prompt, max_tokens, post-process trim) plus a single shared constant. Canonical in `auto-fill/route.ts` + `language-semester/generate/route.ts`.
+
+**Verification status:**
+- ✅ `80552411` + `0be047d7` + `5ab8a8be` all pushed to `origin/main`, Railway redeploying
+- ✅ Lint clean on all changed files
+- ✅ User verified photo audit working again after hotfix
+- ⏳ User to verify 40-word cap on next Weekly Summary Auto-fill
+
+**🚨 Carried-over items (in flight, picking up next session):**
+1. **"Correct" button opens modal regression** — user reported this AFTER the hotfix landed. Need to clarify which card type triggered it (Haiku Auto-Match / Haiku Drafted / Sonnet Drafted) before fixing. The haiku_matched Correct binding goes to `handleConfirm` (one-tap) per code audit — so the regression is on a different card variant, or user clicked Wrong by accident.
+2. **"Other" category** — user wants a totally-separate "Other" bucket for photos not in curriculum but saved to the child. Build was scoped but not started. Schema: probably just `montree_media` with `work_id=null, work_name='Other', area='other'` — no curriculum row created. UI: button in `ThisIsSheet`'s no-match state. Resolve route: new `type: 'other'` handler.
+3. **Stripe webhook event subscription** (Step 1 of post-migration operational walkthrough) — paused. The user opened `dashboard.stripe.com/webhooks` but we paused before they added the 4 events (`invoice.payment_succeeded`, `invoice.payment_failed`, `invoice.finalized`, `invoice.sent`).
+4. **Railway crons** (Step 2) — schedule `generate-alipay-invoices` @ 06:00 UTC + `dunning-alipay` @ 08:00 UTC.
+5. **HK banker email** — confirm Wallex accepts Alipay/WeChat payouts.
+6. **Haiku i18n batch** for 10 non-zh locales (`scripts/fill-missing-i18n-keys.mjs`).
+
+All 5 SQL migrations (205-209) confirmed run by user via verification query. Inbound payments system is code-complete, just needs the Stripe/Railway operational wiring above.
+
+---
+
 ### ⚡ Session 111 perf bundle — photo-audit load-more + dead-code cleanup (commit `edd90e22`)
 
 15 files, net -28 lines. Two parallel general-purpose agents under principal-agent supervision.
