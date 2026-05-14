@@ -22,7 +22,12 @@
 // the cached v6 T-monogram avatar on next activation.
 // (v5 = M-monogram favicon/PWA brand uniform; v6 = T-monogram tracy avatar
 // with fixed borders; v7 = watercolor face tracy avatar.)
-const CACHE_NAME = 'montree-v7';
+// Bumped to v8 (May 14, 2026) — 10 days of accumulated shipped code since v7
+// (Sessions 108-111: agent dashboard, manual payout, agent self-service,
+// inbound payments). PWA users on stale v7 were running 10-day-old shell with
+// new APIs underneath, causing felt lag on dashboard + photo audit + Tracy.
+// PWA users need to close + reopen the app once for v8 to activate.
+const CACHE_NAME = 'montree-v8';
 const OFFLINE_URL = '/montree/offline';
 
 // Only cache immutable assets — static files that change with build hashes.
