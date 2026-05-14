@@ -200,6 +200,175 @@ Wave 1 sends bounced for these addresses. None of these are flagged as `bounced`
 
 ---
 
+## RECENT STATUS (May 14, 2026)
+
+### ⚡ Session 111 — Inbound Payments Build SHIPPED (Phases A-E, commit `49fd0037`)
+
+**28 files changed (15 code + 12 i18n locale files + 1 migration), +3,624 / −11 lines. Pushed to `origin/main`. Railway auto-deploying.** The three-rail inbound billing system Session 110 theorized is now live in code. Mirror of Session 109's outbound architecture, inverted onto schools. Phase A built personally; Phases B-E built by general-purpose subagent under supervision with three audit cycles + integration-point verification by principal agent before commit.
+
+**🚨 Canonical anchor doc:** `docs/handoffs/INBOUND_PAYMENTS_PLAN.md` — the theorize-first plan from Session 110, now executed.
+
+**🚨 Migration 209 still pending Supabase run.** Until run, the new routes will surface clear "column does not exist" errors and the 💳 button will 500 on PATCH. UI is non-destructive on existing flows (existing Stripe subscription path unchanged). Run via Supabase SQL Editor: `migrations/209_school_payment_method.sql` — adds `payment_method` + `manual_invoice_details` + `manual_invoice_details_updated_at` + `billing_cadence` + `next_invoice_due_at` columns to `montree_schools`, plus CHECK constraints + 2 partial indexes. Idempotent. Safe to re-run.
+
+**Strategic decisions locked at session start:**
+- Annual prepayment discount: **10%** (math: 20 students × $7 × 12 × 0.9 = $1,512.00, verified at 151,200 cents)
+- Grace period: **14 days** past_due → canceled (email reminders at day 1 / 7 / 13)
+- **Both Alipay AND WeChat Pay** enabled on every alipay_invoice (`payment_method_types: ['alipay', 'wechat_pay']`)
+- **30-day trial uniform** across all rails (no cron-generated invoices during trial)
+- Whale Class flips to `annual + alipay_invoice` when Tredoux is ready (not in this commit)
+- Resend `montree.xyz` domain verification done (user confirmed)
+- Stripe Alipay + WeChat Pay methods enabled in Stripe Dashboard (user confirmed)
+- Supabase Storage bucket `inbound-invoices` created — private, service-role-only (user confirmed)
+
+**A. Phase A — Schema + super-admin payment-method flip UI (principal agent):**
+
+5 files:
+- `migrations/209_school_payment_method.sql` — `payment_method` CHECK in `('stripe_subscription', 'alipay_invoice', 'manual_invoice')`, `billing_cadence` CHECK in `('monthly', 'annual')`. `idx_schools_alipay_active` partial index for daily cron pickup. `idx_schools_manual_invoice_active` partial index for super-admin filter. Idempotent BEGIN/COMMIT.
+- `app/api/montree/super-admin/schools/[id]/payment-config/route.ts` — GET + PATCH. ALLOWED_METHODS Set + ALLOWED_CADENCES Set validation. 4KB cap on manual_invoice_details JSONB. **🚨 Refuses silent flip away from active stripe_subscription** (rule #70 mirror) — returns 409 with friendly error unless `force: true` body flag is passed (audited). Audit log fires via `logAudit()` on every method/cadence/details change.
+- `components/montree/super-admin/PaymentConfigModal.tsx` — Full editor with method radio (3 rails, color-coded), cadence radio (monthly/annual), JSONB textarea for manual_invoice_details (only when rail is manual). 409 force-confirm dialog renders a warning + Cancel/Confirm-force buttons. Loads current config via GET on mount.
+- `components/montree/super-admin/SchoolsTab.tsx` — 💳 button between 💲 and Login → with color-coded pill (indigo=stripe, red=alipay, amber=manual). `paymentMethodUpdates` state for optimistic display. After Phase C: also ⚡ Wire button for manual_invoice schools.
+- `components/montree/super-admin/types.ts` — `payment_method` + `billing_cadence` + `next_invoice_due_at` + `manual_invoice_details` added to `School` interface (all optional for back-compat).
+
+**B. Phase B — Alipay/WeChat invoice generation + cron + webhook (subagent):**
+
+- `lib/montree/billing.ts` (MOD, +606 / −0) — `SchoolBillingRow` extended with 4 new fields + BILLING_FIELDS SELECT widened. New exported constants: `ANNUAL_DISCOUNT_FACTOR=0.9`, `DEFAULT_INVOICE_TERMS_DAYS=14`, `DUNNING_REMINDER_DAYS=[1, 7, 13] as const`, `DUNNING_CANCEL_DAY=14`. New exported functions: `computeAlipayInvoiceTotalCents()`, `createAlipayInvoice()`, `routeInvoicePaid()`, `routeInvoicePaymentFailed()`, `handleAlipayInvoicePaid()`, `handleAlipayInvoicePaymentFailed()`, `writeAnnualIncomeRows()`, `isAlipayOrWeChatInvoice()`.
+- `lib/montree/billing/alipay-invoice-email.ts` (NEW, 297 lines) — `sendAlipayInvoiceEmail()` + `sendDunningReminderEmail()` bilingual EN+ZH Resend templates. Hardcoded copy in this commit; future i18n migration trivial.
+- `app/api/montree/cron/generate-alipay-invoices/route.ts` (NEW, 165 lines) — daily cron. Auth via `x-cron-secret` OR super-admin. `maxDuration=120`. Filters by `payment_method='alipay_invoice'` AND `subscription_status IN ('active','past_due','trialing')` AND `next_invoice_due_at <= NOW() + INTERVAL '7 days'`. Trial-pre-filter (no invoices during trial). Dry-run support via `?dry_run=1`.
+- `app/api/montree/cron/dunning-alipay/route.ts` (NEW, 288 lines) — daily dunning. Reads past_due schools, derives day-since-failure from oldest unresolved `billing_history` row. Reminders at day 1 / 7 / 13. At day 14: flip `subscription_status='canceled'` AND `setSchoolAiTier(supabase, schoolId, 'free')`. Idempotency via `montree_outreach_log` action keys.
+- `app/api/montree/billing/webhook/route.ts` (MOD) — `invoice.paid` AND `invoice.payment_succeeded` both routed through `routeInvoicePaid()` which forks by rail (reads `metadata.montree_rail` or `payment_method_types` to detect alipay/wechat). Plus defensive `invoice.finalized` + `invoice.sent` acks added in Phase C closure (prevents DLQ pollution from void-and-resend flows). Existing fire-and-forget IIFE + DLQ capture preserved.
+- `app/api/montree/billing/status/route.ts` (MOD) — extended response with `payment_method`, `billing_cadence`, `next_invoice_due_at` so principal billing page can branch by rail.
+- `app/montree/admin/billing/page.tsx` (MOD, +95) — rail-aware variants. Alipay variant: pending invoice banner + "Open invoice" CTA (read latest from `montree_billing_history` where status='open'). Manual variant: "Bank details for your treasurer" card with DBS HK / Wallex / SWIFT / reference number reminder. Annual cadence: "Annual prepayment — saved $X with 10% discount" pill.
+
+**C. Phase C — Manual invoice + ⚡ Record incoming wire (subagent + principal closeout):**
+
+- `lib/montree/billing/manual-invoice.ts` (NEW, 270 lines) — `generateManualInvoiceHtml()`, `buildReferenceNumber()`, `computeManualInvoiceTotalUsd()`. Branded HTML with Lora serif, embedded DBS HK / Wallex bank details (DBS Bank HK Ltd, code 016, branch 478, account 7949855392, SWIFT DHBKHKHH, holder "Montree Limited"), `MONTREE-{8char}-{YYYYMM}` reference, print-CSS-styled for `Cmd+P → Save as PDF` workflow.
+- `app/api/montree/super-admin/schools/[id]/issue-manual-invoice/route.ts` (NEW, 257 lines) — GET renders printable HTML in browser tab (token-auth via query param supported for `window.open`). POST records billing_history row + audit log + returns print URL.
+- `app/api/montree/super-admin/schools/[id]/record-incoming-wire/route.ts` (NEW, 308 lines) — POST. Imports `assertPeriodOpen, periodMonthOf` from `lib/montree/finance/period-lock.ts` + `logAudit, getClientIP, getUserAgent` from `lib/montree/audit-logger.ts` + `loadSchoolBilling, setSchoolAiTier` from `lib/montree/billing.ts`. Period-lock guard returns 409 on closed period. Idempotency: `source_ref='inbound_wire:<wire_ref>'` on `montree_finance_transactions` (monthly) or `inbound_wire:<wire_ref>:annual:<i>` (annual writes 12 monthly rows per rule #86). On success: bumps `subscription_status='active'`, advances `current_period_end` 30 or 365 days, auto-flips tier to premium, audit log entry.
+- `components/montree/super-admin/RecordIncomingWireModal.tsx` (NEW, 250 lines) — mobile-first form. Fields: wire_ref, paid_at (date), currency_received, fx_rate_used, usd_amount_received, notes. `text-base sm:text-sm` everywhere prevents iOS keyboard zoom. 44pt mobile tap targets. Sends `authorization: Bearer ${token}` header (verifySuperAdminAuth accepts both Bearer and x-super-admin-token patterns).
+- ⚡ Wire button on SchoolsTab rows — visible only when `effMethod === 'manual_invoice'`. Opens RecordIncomingWireModal.
+
+**D. Phase D — Annual cadence (10% discount) (subagent, math verified by principal agent):**
+
+- `computeAlipayInvoiceTotalCents()` accepts cadence: monthly returns `qty × 700`, annual returns `qty × 700 × 12 × 0.9` (rounded).
+- Math verified: `20 × 700 × 12 × 0.9 = 151,200 cents = $1,512.00`.
+- `writeAnnualIncomeRows()` writes 12 monthly `montree_finance_transactions` rows with `period_month` set per month. Webhook handler advances `current_period_end` 365 days on annual.
+- `record-incoming-wire/route.ts` mirrors: writes 1 row for monthly, 12 rows for annual (each idempotent via `inbound_wire:<ref>:annual:<i>` source_refs).
+- Constant `ANNUAL_RECOGNITION_MODE: 'monthly' | 'single' = 'monthly'` — locks current behavior. Flip to `'single'` if HK accountant prefers (per plan doc deferred Q2).
+
+**E. Phase E — i18n (subagent):**
+
+- 12 new `billing.*` keys added to `lib/montree/i18n/en.ts` + `zh.ts` (real Mandarin) + 10 other locales (English fallback).
+- Pre-commit i18n strict completeness check passes — 4,453 keys × 12 locales = 100% parity.
+- **Operational:** to fill English fallback in non-zh locales, run `ANTHROPIC_API_KEY=sk-... node scripts/fill-missing-i18n-keys.mjs` (existing batch script). Acceptable to ship fallback — keys exist, strict check passes.
+
+**Audit trail (principal agent, three consecutive clean passes):**
+- Phase A cross-file consistency: method/cadence values match across migration / route / modal / SchoolsTab / types
+- Lint clean (eslint --max-warnings=0) across all 16 changed code files
+- i18n strict parity passes
+- Integration-point existence verified: `lib/montree/finance/period-lock.ts` exports `assertPeriodOpen` + `periodMonthOf`, `lib/montree/audit-logger.ts` exports `logAudit` + `getClientIP` + `getUserAgent`, `lib/montree/email.ts` has the Resend integration patterns the agent followed
+- Real-money paths spot-read: webhook switch cases (8 events handled), `assertPeriodOpen` guard at line 135 of record-incoming-wire, `inbound_wire:${wireRef}` source_ref pattern enforces idempotency
+
+**🚨 Architectural rules #80-89 locked in (do NOT let future agents break these):**
+
+80. **Every school pays via exactly ONE payment_method at a time.** Flipping requires explicit super-admin action with audit. Schools cannot self-flip (unlike agents) — too easy to game by switching mid-month.
+
+81. **`payment_method='stripe_subscription'` is the canonical default.** New schools default here unless super-admin sets otherwise.
+
+82. **Alipay/WeChat invoices are NOT subscriptions** — they're recurring one-time invoices generated by cron. Stripe's recurring rails require card or SEPA; Alipay/WeChat are `payment_method_types=['alipay','wechat_pay']` on `stripe.invoices.create()` with `collection_method='send_invoice'`.
+
+83. **Every paid rail writes ONE finance_tx income row** regardless of method. Stripe webhook: `source='stripe_webhook', source_ref='invoice:<id>'`. Manual wire: `source='manual_entry', source_ref='inbound_wire:<ref>'`. Both idempotent on `(source, source_ref)` UNIQUE constraint.
+
+84. **Period locking applies symmetrically.** `assertPeriodOpen()` guards manual wire receipt-recording the same way it guards outbound wire payment-recording (Session 109 rule #62). Closed periods refuse 409.
+
+85. **AI tier auto-flip works identically across all three rails.** `setSchoolAiTier(supabase, schoolId, 'premium')` fires on every successful payment. Stripe-canonical-truth rule #9 from Session 98 generalizes: "any rail's payment success is canonical source of truth for AI tier."
+
+86. **Annual prepayment writes 12 monthly periods at once.** Single $1,512 annual transaction generates 12 monthly finance_tx rows with `period_month` set to each month being paid for. Recognises revenue ratably even though cash came in once. The school's `current_period_end` advances 365 days. `ANNUAL_RECOGNITION_MODE='monthly'` constant locks this; flip to `'single'` per accountant decision later.
+
+87. **`manual_invoice_details` is optional.** Even manual_invoice schools can fall back to using `billing_email` for invoice delivery. Details JSONB only stores deviations from default (e.g. specific billing contact different from school owner, preferred currency, longer payment terms).
+
+88. **Stripe Alipay/WeChat invoice payment IS Stripe.** All Stripe-side architectural rules apply: idempotency on event_id, 200-on-error to prevent retry storms, customer ID match before action.
+
+89. **Cross-pollination contract:** every billing-mutating endpoint operates only on the school_id derived from the authenticated principal's JWT (or from super-admin with explicit school_id param). Never trust school_id from a webhook body without verifying it matches a known Stripe customer.
+
+**🚨 Other architectural rules surfaced during build:**
+
+- **`logAudit` is the canonical audit logger** for super-admin actions (NOT `logAgentAudit` — that's the agent-specific table). All school-mutating super-admin endpoints use it.
+- **`assertPeriodOpen()` returns an error object** (not throws) — caller must check the returned value and return 409 if error. Mirror of Session 109 pattern.
+- **The webhook handler MUST return 200 on errors** — preserves existing fire-and-forget IIFE + DLQ capture pattern. Don't change response codes.
+- **`invoice.finalized` + `invoice.sent` are defensive acks** — `createAlipayInvoice()` finalizes synchronously, so post-hoc finalize events for our invoices are no-ops. But void-and-resend flows can fire these; ack cleanly to keep them out of the DLQ.
+
+**🚨 Pending operational steps before this is functional in production (Tredoux to handle):**
+
+1. **Run migration 209 in Supabase SQL Editor** — required. Until run, payment-config route 500s on PATCH (column doesn't exist). The 💳 button surfaces but is non-functional.
+2. **Stripe Dashboard webhook event subscription:** add the following events to the existing Account-mode webhook (`montree.xyz/api/montree/billing/webhook`) if not already subscribed:
+   - `invoice.payment_succeeded` (canonical for non-subscription invoices — Alipay/WeChat fire this, NOT `invoice.paid`)
+   - `invoice.payment_failed` (dunning trigger)
+   - `invoice.finalized` (defensive ack)
+   - `invoice.sent` (defensive ack)
+3. **Add Railway crons:**
+   - `POST /api/montree/cron/generate-alipay-invoices` at `0 6 * * *` (06:00 UTC daily)
+   - `POST /api/montree/cron/dunning-alipay` at `0 8 * * *` (08:00 UTC daily)
+   - Both need `x-cron-secret` header set to `CRON_SECRET` env var
+4. **Run Haiku batch translation** for 10 non-zh locales (English fallback currently): `cd ~/Desktop/Master\ Brain/ACTIVE/whale && ANTHROPIC_API_KEY=sk-... node scripts/fill-missing-i18n-keys.mjs`
+5. **Confirm with HK banker (Wallex)** that the existing HKD Global Account receives Alipay/WeChat payouts from Stripe (one email — Stripe pays USD which converts to HKD on the way in).
+6. **E2E smoke test** against Stripe test-mode Alipay flow: flip Whale Class to `alipay_invoice` via super-admin 💳 → manually trigger cron → expect test invoice generated → open invoice URL → pay with Stripe test Alipay → webhook should flip status active + advance period 30d + write finance_tx row + flip tier Pro.
+
+**Files changed (28 total):**
+
+| Path | Status | Phase |
+|------|--------|-------|
+| `migrations/209_school_payment_method.sql` | NEW (86 lines) | A |
+| `app/api/montree/super-admin/schools/[id]/payment-config/route.ts` | NEW (251 lines) | A |
+| `components/montree/super-admin/PaymentConfigModal.tsx` | NEW (460 lines) | A |
+| `components/montree/super-admin/SchoolsTab.tsx` | MOD (+112) | A + C |
+| `components/montree/super-admin/types.ts` | MOD (+7) | A |
+| `lib/montree/billing.ts` | MOD (+606) | B, D |
+| `lib/montree/billing/alipay-invoice-email.ts` | NEW (297 lines) | B |
+| `app/api/montree/cron/generate-alipay-invoices/route.ts` | NEW (165 lines) | B |
+| `app/api/montree/cron/dunning-alipay/route.ts` | NEW (288 lines) | B |
+| `app/api/montree/billing/webhook/route.ts` | MOD | B + C closure |
+| `app/api/montree/billing/status/route.ts` | MOD | B |
+| `app/montree/admin/billing/page.tsx` | MOD (+95) | B + C |
+| `lib/montree/billing/manual-invoice.ts` | NEW (270 lines) | C |
+| `app/api/montree/super-admin/schools/[id]/issue-manual-invoice/route.ts` | NEW (257 lines) | C |
+| `app/api/montree/super-admin/schools/[id]/record-incoming-wire/route.ts` | NEW (308 lines) | C |
+| `components/montree/super-admin/RecordIncomingWireModal.tsx` | NEW (250 lines) | C |
+| `lib/montree/i18n/{en,zh,es,de,fr,pt,nl,it,ja,ko,uk,ru}.ts` | MOD × 12 (+12 each) | E |
+
+**Verification status:**
+- ✅ Commit `49fd0037` pushed to `origin/main`
+- ✅ Lint clean (eslint --max-warnings=0) across all 16 code files
+- ✅ i18n strict parity passes (4,453 keys × 12 locales)
+- ✅ Three consecutive clean audit passes by principal agent
+- ✅ Integration-point existence verified (period-lock, audit-logger, email helpers)
+- ✅ Architectural rules #80-89 implemented (verified via grep)
+- ✅ Real-money math verified ($1,512.00 for 20 students × $7 × 12 × 0.9)
+- ⏳ Migration 209 pending Supabase run
+- ⏳ Operational pre-reqs above (Stripe events, Railway crons, Haiku batch, banker confirm, E2E test)
+
+**🚨 Risk flags surfaced:**
+
+1. **`invoice.payment_succeeded` event subscription** — must be added in Stripe Dashboard alongside existing `invoice.paid`. If only `invoice.paid` is subscribed, alipay invoices won't trigger tier flips (Alipay fires `payment_succeeded`, not `invoice.paid` — they're not subscription invoices).
+2. **i18n English fallback** for 10 non-zh non-en locales until Haiku batch runs. Acceptable (keys exist, strict check passes) but worth filling promptly for non-Mandarin Chinese schools.
+3. **Annual recognition mode locked at `'monthly'`** (12 finance_tx rows per annual prepayment) pending HK accountant input. Flip the constant in `record-incoming-wire/route.ts` to `'single'` once decided.
+4. **Webhook handler modified** — highest-risk file for breaking existing Western customer billing. Mitigation: routeInvoicePaid still calls existing `handleInvoicePaid` for stripe_subscription rail; the fork only diverts alipay/wechat traffic. Regression test: any existing Stripe test-mode subscription payment should still flow normally.
+
+**🚨 Next session priorities (ordered):**
+
+1. **🚨 Run migration 209 in Supabase SQL Editor** — single biggest blocker. Until run, nothing works.
+2. **Add 4 Stripe webhook events** (payment_succeeded, payment_failed, finalized, sent) on Account-mode webhook in Stripe Dashboard.
+3. **Add Railway crons** for generate-alipay-invoices + dunning-alipay.
+4. **Walk E2E smoke test** end-to-end on production: flip Whale Class to alipay_invoice → trigger cron via Health tab → expect test invoice → pay via Stripe test Alipay → verify status flip + tier flip + ledger row.
+5. **Run Haiku i18n batch** to fill 10 non-zh fallbacks (~$0.50 spend).
+6. **Confirm with HK banker** about Wallex receiving Alipay/WeChat payouts (one email).
+7. **Bayan onboarding** (Session 110 carry-over) — Stripe HK account rejection + agent self-service flow for SA.
+8. **ReferralsTab 📋 tax-form UI** (Session 109 carry-over) — 30 min, builds on B5 API.
+9. **Wallex CSV upload + montree_bank_statements** (Session 109 carry-over) — closes third leg of reconciliation.
+10. **Phase A operational setup** for Xero (Session 109 carry-over) — Xero account + accountant.
+11. **Outreach follow-ups** (Session 94 carry-over): FAMM Argentina, Cambridge Montessori Global, Otari NZ, Lions Gate, Montessori Norge.
+
+---
+
 ## RECENT STATUS (May 13, 2026)
 
 ### 🚧 NEXT SESSION — Inbound payments build (theorize-complete, ready to execute)
@@ -5870,6 +6039,9 @@ All migrations through 169 have been run. Key ones: 147 (smart learning columns)
 - ⏳ `206_period_locks.sql` — `montree_period_locks` table (period_month PK in YYYY-MM, closed_at, closed_by, notes, timestamps + trigger). Partial index on closed periods. Idempotent. **REQUIRED for Close month / Reopen UI + assertPeriodOpen() guards on wire routes.**
 - ⏳ `207_agent_tax_form.sql` — `montree_teachers.tax_form_url`, `tax_form_type` (CHECK IN 'w8ben','w8ben_e','w9','jurisdiction_other','declaration_attached'), `tax_form_uploaded_at`, `tax_residency_country` (ISO2), `is_us_person`. Partial index on agents missing tax form. Idempotent. **REQUIRED for tax-form scaffold + future first-payout gate.**
 - ⏳ `208_xero_sync_log.sql` — `montree_xero_sync_log` table (finance_tx_id, xero_object_type CHECK IN 'Invoice','Bill','BankTransaction','ManualJournal','CreditNote', xero_object_id, status, error, attempt, timestamps). Partial UNIQUE index on (finance_tx_id, xero_object_type) WHERE status='success' for idempotency. Recent + failures indexes. Idempotent. **REQUIRED for Xero sync engine; sync stays INACTIVE without XERO_CLIENT_ID/SECRET/TENANT_ID/REFRESH_TOKEN env vars regardless of migration state.**
+
+**Session 111 (May 14, 2026) — Inbound payments three-rail billing. ⏳ 1 migration pending Tredoux's Supabase run:**
+- ⏳ `209_school_payment_method.sql` — `montree_schools.payment_method` (CHECK IN 'stripe_subscription','alipay_invoice','manual_invoice'), `manual_invoice_details` JSONB, `manual_invoice_details_updated_at` TIMESTAMPTZ, `billing_cadence` (CHECK IN 'monthly','annual'), `next_invoice_due_at` TIMESTAMPTZ. Two partial indexes (`idx_schools_alipay_active` for daily cron pickup, `idx_schools_manual_invoice_active` for super-admin filter). Idempotent BEGIN/COMMIT. **REQUIRED for 💳 button (PaymentConfigModal PATCH) + alipay invoice cron + manual ⚡ Wire route + record-incoming-wire idempotency. Until run, payment-config 500s on PATCH (column does not exist) and the new 💳 + ⚡ buttons surface but are non-functional. Existing Stripe subscription path unchanged.**
 
 ---
 
