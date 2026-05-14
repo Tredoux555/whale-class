@@ -16,6 +16,38 @@ import { anthropic, HAIKU_MODEL, AI_ENABLED } from '@/lib/ai/anthropic';
 export const maxDuration = 60;
 
 const AREAS = AREA_KEYS;
+
+// 🚨 Session 111 — weekly summaries are HARD-CAPPED at 50 words total.
+// The prompt asks for ≤50, max_tokens leaves no room for runaway output,
+// and trimToWords() is the safety net that snaps to the last sentence
+// boundary if Haiku still overshoots.
+const WEEKLY_SUMMARY_MAX_WORDS = 50;
+
+/**
+ * Sentence-boundary-aware word trimmer. Mirror of the canonical trimToWords
+ * in app/api/montree/reports/language-semester/generate/route.ts. Snaps to
+ * the last sentence-ending punctuation within the word budget. Falls back to
+ * a clean word-boundary cut + trailing period if no sentence end fits.
+ */
+function trimToWords(text: string, maxWords: number): string {
+  const words = text.split(/\s+/).filter(Boolean);
+  if (words.length <= maxWords) return text;
+  const joined = words.slice(0, maxWords).join(' ');
+  const sentenceEnd = Math.max(
+    joined.lastIndexOf('. '),
+    joined.lastIndexOf('! '),
+    joined.lastIndexOf('? '),
+    joined.endsWith('.') ? joined.length - 1 : -1,
+    joined.endsWith('!') ? joined.length - 1 : -1,
+    joined.endsWith('?') ? joined.length - 1 : -1,
+  );
+  if (sentenceEnd > joined.length * 0.3) {
+    return joined.slice(0, sentenceEnd + 1);
+  }
+  const trimmed = joined.replace(/[,;:\s—\-]+$/, '');
+  return trimmed.endsWith('.') ? trimmed : trimmed + '.';
+}
+
 const AREA_LABELS: Record<string, { en: string; zh: string }> = Object.fromEntries(
   AREA_KEYS.map(k => [k, { en: AREA_LABELS_EN[k], zh: AREA_LABELS_ZH[k] }])
 );
@@ -332,7 +364,7 @@ export async function GET(request: NextRequest) {
       }
 
       // Flat paragraph format: "did X, Y, and Z this week. Next week: ..."
-      let body = text.replace(/^did\s+/i, '').replace(/\s+this\s+week\.?\s*(Next\s+week:.*)?\s*$/i, '');
+      const body = text.replace(/^did\s+/i, '').replace(/\s+this\s+week\.?\s*(Next\s+week:.*)?\s*$/i, '');
       const parts = body.split(/,\s+(?:and\s+)?|\s+and\s+/).map(s => s.trim()).filter(Boolean);
       for (const part of parts) {
         const lower = part.toLowerCase();
@@ -418,6 +450,8 @@ export async function GET(request: NextRequest) {
         wrapWorksByChild.set(report.child_id, areaMap);
       }
     }
+    // hasWrapData was once consumed downstream; kept inert for future re-use.
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const hasWrapData = wrapWorksByChild.size > 0;
 
     // Build photo-based area works (fallback): childId -> area -> [work names]
@@ -576,6 +610,9 @@ export async function GET(request: NextRequest) {
       // Compact paragraph: "Work (P); Work (Pr). key_insight. Next week: X"
       const STATUS_SHORT_EN: Record<string, string> = { presented: 'P', practicing: 'Pr', mastered: 'M' };
       const STATUS_SHORT_ZH: Record<string, string> = { presented: '呈现', practicing: '练习', mastered: '掌握' };
+      // STATUS_SHORT was used in an earlier flat-tag render path; retained for
+      // back-compat if that path returns.
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const STATUS_SHORT = ({ zh: STATUS_SHORT_ZH, en: STATUS_SHORT_EN } as Record<string, Record<string, string>>)[locale] || STATUS_SHORT_EN;
 
       let summaryEnglish = '';
@@ -735,23 +772,29 @@ export async function GET(request: NextRequest) {
         try {
           const res = await anthropic.messages.create({
             model: HAIKU_MODEL,
-            max_tokens: 280,
+            // 🚨 Session 111: tight max_tokens cap. 100 tokens ≈ 75 words ceiling
+            // at the AI layer, but the prompt asks for ≤50. trimToWords() below
+            // is the hard cap if Haiku still overshoots.
+            max_tokens: 100,
             messages: [{
               role: 'user',
-              content: `Write a 2-3 sentence warm narrative paragraph about ${s.childName}'s ${areaLabel}work this week for the teacher's printable summary. Use ONLY the works listed below — do NOT mention any other curriculum area, materials, or activities not on this list. Keep it factual, observational, Montessori-aligned in tone — never invent details, never use "loves" or "enjoys" without evidence. Always phrase the time frame as "this week" regardless of how many weeks of data are listed below. End with one short sentence about what's next.
+              content: `Write a SHORT summary about ${s.childName}'s ${areaLabel}work this week for the teacher's printable summary. STRICT LIMIT: ${WEEKLY_SUMMARY_MAX_WORDS} words total. Aim for 1-2 sentences. Be concise — every word must earn its place.
+
+Use ONLY the works listed below. Do NOT mention any other curriculum area, materials, or activities not on this list. Factual, observational, Montessori-aligned tone. Never invent details. Never use "loves" or "enjoys" without evidence. Always phrase the time frame as "this week" regardless of how many weeks of data are listed below. End with one short clause about what's next.
 
 Works this week:
 ${worksByArea.join('\n')}
 
 Next focus${focusList ? `: ${focusList}` : ' — none specified'}.
 
-Output ONLY the paragraph. No preamble, no markdown, no quotes around it. Start with the child's name.`
+Output ONLY the summary text. No preamble, no markdown, no quotes. Start with the child's name. STAY UNDER ${WEEKLY_SUMMARY_MAX_WORDS} WORDS.`
             }],
           });
           const block = res.content?.[0];
           if (block && block.type === 'text' && block.text.trim()) {
-            const narrative = block.text.trim();
-            // Replace the flat-tag summaryEnglish on the suggestion in-place.
+            // Safety net: enforce the hard cap with sentence-boundary trimming
+            // even if Haiku ignored the prompt instruction.
+            const narrative = trimToWords(block.text.trim(), WEEKLY_SUMMARY_MAX_WORDS);
             s.summaryEnglish = narrative;
           }
         } catch (err) {
