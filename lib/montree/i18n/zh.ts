@@ -4890,6 +4890,18 @@ export const zh = {
   'billing.status.trialing': '试用',
   'billing.status.pastDue': '逾期',
   'billing.status.canceled': '已取消',
+  'billing.openInvoice': '打开账单 / Open invoice',
+  'billing.invoicePending': '账单待支付',
+  'billing.alipayInstructions': '点击"打开账单"查看二维码,然后使用支付宝或微信支付扫码完成付款。',
+  'billing.alipayRailExplain': '您的学校已设置为使用支付宝或微信支付。下次账单到期时,我们将发送到您的账单邮箱。',
+  'billing.manualRailExplain': '您的学校已设置为银行转账付款。我们每月都会签发一张包含以下详细信息的账单。请在汇款备注中注明参考编号,以便我们将付款与您的学校匹配。',
+  'billing.wireDetailsLabel': '汇款详情(供您的财务部门使用)',
+  'billing.wireDetailsBankName': '银行',
+  'billing.wireDetailsAccountHolder': '账户持有人',
+  'billing.wireDetailsAccountNumber': '账号',
+  'billing.wireDetailsSwift': 'SWIFT / BIC',
+  'billing.wireDetailsReferenceNumber': '参考编号(请在汇款备注中注明)',
+  'billing.annualSavings': '年度预付 — 已节省 10%',
 
   // ─── Auto-filled missing keys (from Apr 30 audit) ───
   'health.stripeDlqPending': '⚠ {count} 条待处理 —— 过去 7 天',

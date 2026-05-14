@@ -65,6 +65,13 @@ export interface School {
   // default ($7/student/month)". Number = custom rate in USD.
   billing_override_usd?: number | string | null;
   billing_override_note?: string | null;
+  // Migration 209 (Phase A inbound payments) — three-rail billing.
+  // Default 'stripe_subscription' for back-compat. New columns surface via
+  // SELECT * in /api/montree/super-admin/schools (no API change needed).
+  payment_method?: 'stripe_subscription' | 'alipay_invoice' | 'manual_invoice';
+  billing_cadence?: 'monthly' | 'annual';
+  next_invoice_due_at?: string | null;
+  manual_invoice_details?: Record<string, unknown> | null;
 }
 
 export interface Feedback {

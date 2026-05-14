@@ -25,8 +25,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import {
   getBillingConfig,
-  handleInvoicePaid,
-  handleInvoicePaymentFailed,
+  routeInvoicePaid,
+  routeInvoicePaymentFailed,
   handleSubscriptionUpsert,
   handleSubscriptionDeleted,
   handleChargeRefunded,
@@ -95,12 +95,19 @@ export async function POST(request: NextRequest) {
   void (async () => {
     try {
       switch (event.type) {
-        case 'invoice.paid': {
-          await handleInvoicePaid(supabase, event.data.object as Stripe.Invoice, event.id);
+        case 'invoice.paid':
+        case 'invoice.payment_succeeded': {
+          // Both event types fire for Alipay/WeChat invoices in Stripe's API
+          // — payment_succeeded is the canonical one for non-subscription
+          // invoices, paid is fired on subscription invoices. Handle both.
+          // routeInvoicePaid forks to handleAlipayInvoicePaid when the
+          // invoice carries Alipay/WeChat payment_method_types or the
+          // montree_rail=alipay_invoice metadata flag.
+          await routeInvoicePaid(supabase, event.data.object as Stripe.Invoice, event.id);
           break;
         }
         case 'invoice.payment_failed': {
-          await handleInvoicePaymentFailed(supabase, event.data.object as Stripe.Invoice);
+          await routeInvoicePaymentFailed(supabase, event.data.object as Stripe.Invoice);
           break;
         }
         case 'customer.subscription.created':
@@ -114,6 +121,23 @@ export async function POST(request: NextRequest) {
         }
         case 'charge.refunded': {
           await handleChargeRefunded(supabase, event.data.object as Stripe.Charge, event.id);
+          break;
+        }
+        case 'invoice.finalized':
+        case 'invoice.sent': {
+          // Defensive ack — createAlipayInvoice() finalizes synchronously, so
+          // post-hoc invoice.finalized events for our invoices are no-ops. But
+          // void-and-resend flows can fire these; ack cleanly so they don't
+          // land in the DLQ as "unhandled."
+          const inv = event.data.object as Stripe.Invoice;
+          console.log(
+            '[billing webhook]',
+            event.type,
+            'ack',
+            inv.id,
+            'school=', inv.metadata?.montree_school_id ?? 'unknown',
+            'rail=', inv.metadata?.montree_rail ?? 'stripe_subscription'
+          );
           break;
         }
         default:

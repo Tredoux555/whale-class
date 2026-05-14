@@ -4484,6 +4484,18 @@ export const uk: Record<string, string> = {
   'billing.status.trialing': 'Пробний період',
   'billing.status.pastDue': 'Прострочено',
   'billing.status.canceled': 'Скасовано',
+  'billing.openInvoice': 'Open invoice / 打开账单',
+  'billing.invoicePending': 'Invoice ready to pay',
+  'billing.alipayInstructions': 'Tap "Open invoice" to view the QR code. Scan with Alipay or WeChat Pay to complete payment.',
+  'billing.alipayRailExplain': 'Your school is set up to pay via Alipay or WeChat Pay. The next invoice will be sent to your billing email when it is due.',
+  'billing.manualRailExplain': 'Your school is set up to pay by bank transfer. Each month we will issue an invoice with the details below. Please include the reference number in your wire memo so we can match the payment to your school.',
+  'billing.wireDetailsLabel': 'Bank details for your treasurer',
+  'billing.wireDetailsBankName': 'Bank',
+  'billing.wireDetailsAccountHolder': 'Account holder',
+  'billing.wireDetailsAccountNumber': 'Account number',
+  'billing.wireDetailsSwift': 'SWIFT / BIC',
+  'billing.wireDetailsReferenceNumber': 'Reference (include in wire memo)',
+  'billing.annualSavings': 'Annual prepayment — you saved 10%',
 
   // ─── Auto-filled missing keys (from Apr 30 audit) ───
   'health.stripeDlqPending': '⚠ {count} очікує обробки в DLQ — останні 7 днів',
