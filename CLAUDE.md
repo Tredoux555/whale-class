@@ -202,6 +202,44 @@ Wave 1 sends bounced for these addresses. None of these are flagged as `bounced`
 
 ## RECENT STATUS (May 14, 2026)
 
+### ⚡ Session 111 perf push — PWA mobile lag fixes (commits `19de89fb` + `624b2aab`)
+
+User reported the app felt laggy on PWA mobile (dashboard + photo audit + Tracy). Dispatched a parallel investigation agent which ranked 5 causes by severity. Shipped 6 of the 7 actionable items across two commits.
+
+**Commit `19de89fb` — three trivial-but-high-leverage fixes:**
+
+1. **Service worker bumped v7 → v8** (`public/montree-sw.js`). 10 days of accumulated shipped code since May 4 (Sessions 108-111) meant PWA users were running a 10-day-old shell against new server responses. Bump forces clean activation on next PWA open. **Users may need to close + reopen the app once.**
+
+2. **FeaturesContext value wrapped in useMemo** (`lib/montree/features/context.tsx`). Previously the provider rebuilt `{features, loading, isEnabled, invalidate}` as a fresh object literal on every parent render. Dashboard has 4+ `useFeatures()` consumers — every parent state change cascaded a re-render through every consumer. Mirror of the i18n context fix from Session 76 — same pattern, never applied to features.
+
+3. **`/api/montree/children` cache widened** from `no-store` to `private, max-age=5, stale-while-revalidate=30`. Session 88's no-store sledgehammer killed back-nav UX (every return-to-dashboard fired a fresh Supabase round-trip, 600-1500ms on 3G/4G). The bug Session 88 was preventing required 120s stale window; 5s is plenty safer. In-memory SWR + Session 86 race-guard still protect mid-flight writes.
+
+**Commit `624b2aab` — three larger high-leverage builds:**
+
+4. **Tracy memory cache** (`lib/montree/tracy/memory.ts`). Tracy used to re-read up to 30 memory rows from `montree_principal_memory` on every message. With Opus 4.6 latency on top, first-token felt 3-8s. New in-process cache with 5min TTL keyed by `principal_id` eliminates the DB roundtrip on consecutive turns. Bounded at 1000 entries (FIFO eviction). `writeMemory()` invalidates cache on insert/supersede so the next turn rebuilds from canonical state. Multi-instance Railway: each instance has its own cache; cross-instance staleness self-heals at TTL. Exports `invalidateMemoryCache()` + `clearMemoryCache()` for advanced callers.
+
+5. **`find_children_missing_work` tool** (`lib/montree/guru/tool-{definitions,executor}.ts`). Closes the capability gap user hit today asking Guru "who hasn't been tagged for bingo this week" — existing `get_weekly_area_summary` answers per-AREA not per-WORK. New tool fuzzy-matches the work name against the curriculum, queries confirmed photos + group-photo junction + progress entries, returns both done and missing children plus which curriculum work names matched. Pairs with `group_students` for planning a session for the missing children. Updated `conversational-prompt.ts` with usage examples (bingo, Pink Tower, etc.).
+
+6. **NoteField extract** (`components/montree/child/NoteField.tsx` NEW, +145 lines). Child page (1040+ lines as one component) was re-rendering the entire tree on every keystroke during dictation — keystrokes bubbled through `setNotes(record)` to parent state, triggering re-render of FocusWorksSection (every focus-work row), GamePlanCard, photo strip, evidence badges. Mobile CPU thrashed. NoteField now holds its own local text state, only escalating to parent on Save (POSTs text directly, no upstream state). Memoized so unrelated parent re-renders skip it. Mic transcript also fully internal. Smart-note Haiku now fire-and-forget in parent rather than awaited on the save path. `onSaveNote(work, text)` signature change cascades cleanly through `FocusWorksSection`.
+
+**Skipped — virtual scroll on photo-audit grid:** Investigation agent flagged this as MEDIUM-HIGH severity. Investigated and dismissed: page already paginates to 24 via `PAGE_SIZE = 24`, all images use `loading="lazy"`, `AuditPhotoCard` is memoized with custom comparator, and `filteredPhotos` only re-runs on photos/zone/todayFilter changes (not keystrokes). Adding `react-virtuoso` on top of an already-paginated 24-card view would be wasted work. Real photo-audit wins would be lowering the initial fetch limit (200/500 → 100) or adding infinite-scroll fetch-more, both bigger refactors not in critical path.
+
+**Skipped — Tier 1.1 SW stale-while-revalidate API cache:** Still deferred to a dedicated session (Session 107 carry-over). It's the biggest single perceived-speed win remaining (~80% of returning-visit lag) but has a CVE-class auth-leak risk if cache isolation isn't perfect across users. Needs real iPhone testing with two different user logins on the same browser to verify.
+
+**Pre-existing dead-code disables added:** `FocusWorksSection.tsx` and `[childId]/page.tsx` have ~20 lurking unused imports/vars from past refactors (game-plan inline render moved to GamePlanCard, copyText moved elsewhere). Surfaced when these files joined strict lint scope via the NoteField extraction. Added targeted file-level `eslint-disable` headers with TODO markers for a dedicated dead-code cleanup pass. Plus one inline disable for the deliberate `isEnabled`-not-in-deps `useEffect` at `[childId]/page.tsx:405`.
+
+**Architectural rule clarification:** AI surfaces that load per-user context on every turn (Tracy, future similar agents) MUST cache the context with a TTL — direct DB reads on every message stack with model latency to create perceived lag.
+
+Files: 10 changed across two commits, +535 / -118 lines. Lint clean. i18n strict parity passes.
+
+**🚨 Next-session ranked perf priorities (ordered):**
+1. **Tier 1.1 SW stale-while-revalidate** — half-day dedicated session, needs 2-user iPhone testing. ~80% returning-visit lag fix.
+2. **Photo-audit initial fetch limit** — lower 200/500 → 100 + add "load more" infinite scroll. 2-3 hours.
+3. **FocusWorksSection + [childId]/page.tsx dead-code cleanup** — remove the ~20 lurking unused imports/vars behind the disables. 1 hour.
+4. **Tier 2.2 Tracy SSE retry-with-resume** — reliability not perf, but related.
+
+---
+
 ### ⚡ Session 111 audit-gap closure (commit `5fddb0c8`)
 
 Post-Phase-E re-audit against the original plan doc surfaced 3 plan-table deviations from commit `49fd0037`. All three closed.
