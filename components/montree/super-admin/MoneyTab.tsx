@@ -16,9 +16,15 @@
 //   - Clear override (unlocks for next calc)
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import dynamic from 'next/dynamic';
 import MoneyLedgerView from './MoneyLedgerView';
 import { useI18n } from '@/lib/montree/i18n';
 import { getIntlLocale } from '@/lib/montree/i18n/locales';
+
+// Phase C / Session 111 — manual_invoice rail wire-recording modal.
+// Lazy-loaded so the modal bundle only ships when super-admin opens the
+// inbound_wires sub-view.
+const RecordIncomingWireModal = dynamic(() => import('./RecordIncomingWireModal'), { ssr: false });
 
 interface PayoutRow {
   id: string;
@@ -89,7 +95,20 @@ function fmtUsd(n: number | null | undefined): string {
   return `$${v.toFixed(2)}`;
 }
 
-type SubView = 'payouts' | 'revenue' | 'direct_costs' | 'commissions' | 'op_expenses' | 'fx_adjustments';
+type SubView = 'payouts' | 'revenue' | 'direct_costs' | 'commissions' | 'op_expenses' | 'fx_adjustments' | 'inbound_wires';
+
+// Session 111 — minimal shape for manual_invoice schools surfaced in the
+// inbound_wires sub-view. Pulled from /api/montree/super-admin/schools and
+// filtered client-side by payment_method='manual_invoice'.
+interface InboundWireSchool {
+  id: string;
+  name: string;
+  subscription_status: string | null;
+  current_period_end: string | null;
+  billing_cadence: string | null;
+  next_invoice_due_at: string | null;
+  billing_quantity: number | null;
+}
 
 export default function MoneyTab({ sessionToken }: MoneyTabProps) {
   const { t, locale } = useI18n();
@@ -115,6 +134,10 @@ export default function MoneyTab({ sessionToken }: MoneyTabProps) {
   } | null>(null);
   const [payouts, setPayouts] = useState<PayoutRow[]>([]);
   const [periodTotals, setPeriodTotals] = useState<PeriodTotal[]>([]);
+  // Session 111 — manual_invoice schools list + ⚡ Wire modal state.
+  const [inboundSchools, setInboundSchools] = useState<InboundWireSchool[]>([]);
+  const [inboundLoading, setInboundLoading] = useState(false);
+  const [recordWireSchool, setRecordWireSchool] = useState<{ id: string; name: string } | null>(null);
   const [loading, setLoading] = useState(true);
   const [calculating, setCalculating] = useState(false);
   const [actionBusy, setActionBusy] = useState<string | null>(null);
@@ -287,6 +310,61 @@ export default function MoneyTab({ sessionToken }: MoneyTabProps) {
   useEffect(() => {
     fetchReconciliation();
   }, [fetchReconciliation]);
+
+  // Session 111 — Inbound wires sub-view fetch. Reads /super-admin/schools
+  // (returns SELECT *), filters client-side to payment_method='manual_invoice'.
+  // Cheap enough not to need a dedicated endpoint at this scale.
+  const fetchInboundSchools = useCallback(async (force: boolean = false) => {
+    if (inboundLoading && !force) return;
+    setInboundLoading(true);
+    try {
+      const res = await fetch('/api/montree/super-admin/schools', {
+        headers: { 'x-super-admin-token': sessionToken },
+      });
+      if (!res.ok) {
+        setInboundSchools([]);
+        return;
+      }
+      const data = await res.json();
+      const allSchools: Array<Record<string, unknown>> = Array.isArray(data?.schools) ? data.schools : [];
+      const manual: InboundWireSchool[] = allSchools
+        .filter((s) => (s.payment_method as string | undefined) === 'manual_invoice')
+        .map((s) => ({
+          id: s.id as string,
+          name: (s.name as string) || '(unnamed)',
+          subscription_status: (s.subscription_status as string | null) ?? null,
+          current_period_end: (s.current_period_end as string | null) ?? null,
+          billing_cadence: (s.billing_cadence as string | null) ?? null,
+          next_invoice_due_at: (s.next_invoice_due_at as string | null) ?? null,
+          billing_quantity: (s.billing_quantity as number | null) ?? null,
+        }))
+        .sort((a, b) => {
+          // Sort: past_due first (urgent), then active, then trialing, then canceled,
+          // then alphabetical within each group.
+          const order: Record<string, number> = { past_due: 0, active: 1, trialing: 2, canceled: 3 };
+          const oa = order[a.subscription_status || ''] ?? 9;
+          const ob = order[b.subscription_status || ''] ?? 9;
+          if (oa !== ob) return oa - ob;
+          return (a.name || '').localeCompare(b.name || '');
+        });
+      setInboundSchools(manual);
+    } catch (err) {
+      console.error('[MoneyTab] inbound schools fetch failed', err);
+      setInboundSchools([]);
+    } finally {
+      setInboundLoading(false);
+    }
+  }, [sessionToken, inboundLoading]);
+
+  // Auto-fetch on first switch into inbound_wires sub-view (and idempotent
+  // refresh on each tab-back). Skip if not on the sub-view to avoid the
+  // GET cost when super-admin is on payouts/revenue/etc.
+  useEffect(() => {
+    if (subView === 'inbound_wires') {
+      fetchInboundSchools(true);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [subView]);
 
   const closePeriod = useCallback(async () => {
     if (lockBusy) return;
@@ -464,7 +542,7 @@ export default function MoneyTab({ sessionToken }: MoneyTabProps) {
         setActionBusy(null);
       }
     },
-    [actionBusy, sessionToken, fetchPayouts, t]
+    [actionBusy, sessionToken, fetchPayouts, t, openManualWireModal]
   );
 
   const doPatch = useCallback(
@@ -637,6 +715,10 @@ export default function MoneyTab({ sessionToken }: MoneyTabProps) {
         <SubViewPill active={subView === 'commissions'} onClick={() => setSubView('commissions')} label={t('money.subView.commissions')} />
         <SubViewPill active={subView === 'op_expenses'} onClick={() => setSubView('op_expenses')} label={t('money.subView.opExpenses')} />
         <SubViewPill active={subView === 'fx_adjustments'} onClick={() => setSubView('fx_adjustments')} label={t('money.subView.fx')} />
+        {/* Session 111 — Inbound wires sub-view. Lists manual_invoice schools
+            with ⚡ Wire button to record incoming SWIFT receipts. Mirror of the
+            outbound payout ⚡ Wire on the Payouts sub-view. */}
+        <SubViewPill active={subView === 'inbound_wires'} onClick={() => setSubView('inbound_wires')} label={t('money.subView.inbound')} />
       </div>
 
       {/* Payouts period totals — only shown in payouts view */}
@@ -650,9 +732,111 @@ export default function MoneyTab({ sessionToken }: MoneyTabProps) {
         </div>
       )}
 
-      {/* Ledger views render their own everything */}
-      {subView !== 'payouts' && (
+      {/* Ledger views render their own everything (5 of 6 sub-views: revenue,
+          direct_costs, commissions, op_expenses, fx_adjustments). Inbound
+          wires has its own renderer below. */}
+      {subView !== 'payouts' && subView !== 'inbound_wires' && (
         <MoneyLedgerView sessionToken={sessionToken} view={subView} periodMonth={periodMonth} />
+      )}
+
+      {/* Session 111 — Inbound wires sub-view. Lists manual_invoice schools.
+          One ⚡ Wire button per row → opens RecordIncomingWireModal → POST
+          to /record-incoming-wire which writes finance_tx (1 monthly OR 12
+          annual rows per rule #86), advances current_period_end, flips tier
+          to premium. Idempotent on wire_ref. */}
+      {subView === 'inbound_wires' && (
+        <div className="p-4 rounded-xl bg-slate-900/60 border border-slate-800 space-y-3">
+          <div className="flex items-baseline justify-between flex-wrap gap-2">
+            <div>
+              <h3 className="text-white text-sm font-semibold">{t('money.inbound.title')}</h3>
+              <p className="text-slate-400 text-xs mt-0.5">{t('money.inbound.helpText')}</p>
+            </div>
+            <button
+              onClick={() => fetchInboundSchools(true)}
+              disabled={inboundLoading}
+              className="text-xs text-slate-400 hover:text-slate-200 disabled:opacity-50"
+            >
+              {inboundLoading ? '…' : '↻'} Refresh
+            </button>
+          </div>
+
+          {inboundLoading ? (
+            <div className="p-6 text-center text-slate-500 text-xs animate-pulse">Loading manual_invoice schools…</div>
+          ) : inboundSchools.length === 0 ? (
+            <div className="p-6 text-center text-slate-500 text-sm italic">
+              {t('money.inbound.empty')}
+            </div>
+          ) : (
+            <div className="overflow-x-auto -mx-1 px-1">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="text-left text-[10px] uppercase tracking-wider text-slate-400 border-b border-slate-800">
+                    <th className="py-2 pr-3">School</th>
+                    <th className="py-2 pr-3">Status</th>
+                    <th className="py-2 pr-3">Cadence</th>
+                    <th className="py-2 pr-3">Students</th>
+                    <th className="py-2 pr-3">{t('money.inbound.currentPeriodEnds')}</th>
+                    <th className="py-2 pr-1 text-right">Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {inboundSchools.map((s) => {
+                    const status = s.subscription_status || 'unknown';
+                    const cadence = s.billing_cadence || 'monthly';
+                    const statusColor =
+                      status === 'active'
+                        ? 'text-emerald-300'
+                        : status === 'past_due'
+                          ? 'text-red-300'
+                          : status === 'canceled'
+                            ? 'text-slate-500'
+                            : status === 'trialing'
+                              ? 'text-amber-300'
+                              : 'text-slate-400';
+                    return (
+                      <tr key={s.id} className="border-b border-slate-800/50 hover:bg-slate-800/30">
+                        <td className="py-2.5 pr-3 text-white text-sm">{s.name}</td>
+                        <td className={`py-2.5 pr-3 text-xs uppercase tracking-wide ${statusColor}`}>{status}</td>
+                        <td className="py-2.5 pr-3 text-slate-300 text-xs">
+                          {cadence === 'annual' ? '🗓 Annual' : 'Monthly'}
+                        </td>
+                        <td className="py-2.5 pr-3 text-slate-300 text-xs tabular-nums">{s.billing_quantity ?? '—'}</td>
+                        <td className="py-2.5 pr-3 text-slate-300 text-xs">{fmtDate(s.current_period_end)}</td>
+                        <td className="py-2.5 pr-1 text-right">
+                          <button
+                            onClick={() => setRecordWireSchool({ id: s.id, name: s.name })}
+                            className="px-3 py-1.5 bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30 rounded text-xs font-medium"
+                            title="Record incoming SWIFT wire from this school"
+                          >
+                            {t('money.inbound.recordWire')}
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Phase C wire-record modal — opened from the inbound_wires table above.
+          Same modal also surfaces from SchoolsTab ⚡ button (multi-entry-point
+          discoverability). On success, refresh inbound list to reflect new
+          status + period_end. */}
+      {recordWireSchool && (
+        <RecordIncomingWireModal
+          schoolId={recordWireSchool.id}
+          schoolName={recordWireSchool.name}
+          token={sessionToken}
+          onClose={() => setRecordWireSchool(null)}
+          onRecorded={() => {
+            setRecordWireSchool(null);
+            // Refresh the inbound list so the row reflects the new period_end.
+            fetchInboundSchools(true);
+          }}
+        />
       )}
 
       {errorMessage && (
