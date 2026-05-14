@@ -3226,6 +3226,8 @@ export const nl: Record<string, string> = {
   'audit.loadFailed': 'Foto\'s laden mislukt',
   'audit.correctionFailed': 'Correctie mislukt',
   'audit.fetchError': 'Foto\'s laden mislukt',
+  'audit.loadMore': 'Meer foto\'s laden',
+  'audit.loadingMore': 'Laden…',
   'audit.useAsReference': 'Als referentie gebruiken',
   'audit.describing': 'AI analyseert deze foto...',
   'audit.visualDescription': 'Visuele beschrijving',

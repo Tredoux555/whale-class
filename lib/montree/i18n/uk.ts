@@ -3226,6 +3226,8 @@ export const uk: Record<string, string> = {
   'audit.loadFailed': 'Не вдалося завантажити фото',
   'audit.correctionFailed': 'Не вдалося виправити',
   'audit.fetchError': 'Не вдалося завантажити фото',
+  'audit.loadMore': 'Завантажити ще фото',
+  'audit.loadingMore': 'Завантаження…',
   'audit.useAsReference': 'Використати як еталон',
   'audit.describing': 'ШІ аналізує це фото...',
   'audit.visualDescription': 'Візуальний опис',

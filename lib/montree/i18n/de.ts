@@ -3226,6 +3226,8 @@ export const de: Record<string, string> = {
   'audit.loadFailed': 'Fotos konnten nicht geladen werden',
   'audit.correctionFailed': 'Korrektur fehlgeschlagen',
   'audit.fetchError': 'Fotos konnten nicht geladen werden',
+  'audit.loadMore': 'Mehr Fotos laden',
+  'audit.loadingMore': 'Lädt…',
   'audit.useAsReference': 'Als Referenz verwenden',
   'audit.describing': 'KI analysiert dieses Foto...',
   'audit.visualDescription': 'Visuelle Beschreibung',

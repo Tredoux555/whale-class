@@ -3701,6 +3701,8 @@ export const en = {
   'audit.loadFailed': 'Failed to load photos',
   'audit.correctionFailed': 'Correction failed',
   'audit.fetchError': 'Failed to load photos',
+  'audit.loadMore': 'Load more photos',
+  'audit.loadingMore': 'Loading…',
   'audit.useAsReference': 'Use as Reference',
   'audit.describing': 'AI is analyzing this photo...',
   'audit.visualDescription': 'Visual Description',

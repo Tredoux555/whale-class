@@ -649,6 +649,12 @@ export default function PhotoAuditPage() {
   const [photos, setPhotos] = useState<AuditPhoto[]>([]);
   const [counts, setCounts] = useState({ green: 0, amber: 0, red: 0, untagged: 0 });
   const [loading, setLoading] = useState(true);
+  // Server-side load-more pagination. Initial fetch limit is 100 (was 500/200) to
+  // keep mobile JSON payloads small. `hasMore` = server returned exactly `limit`
+  // rows, suggesting more may exist. `loadingMore` gates the Load more button.
+  // Distinct from client-side `PAGE_SIZE` pagination through fetched photos.
+  const [hasMore, setHasMore] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [zone, setZone] = useState<Zone>('all');
   const [dateRange, setDateRange] = useState<DateRange>('7d');
   // "Today" filter chip on the Confirm tab — when on, shows every photo in the
@@ -912,17 +918,28 @@ export default function PhotoAuditPage() {
     }
   };
 
-  // Fetch photos when zone/date/page changes
-  const fetchPhotos = useCallback(async () => {
+  // Initial fetch limit — lowered from 500/200 (Session 111) to 100 to keep
+  // mobile JSON payloads small. ~50KB → ~10KB on the first paint. Subsequent
+  // batches come on demand via the "Load more" button (see loadMorePhotos).
+  const FETCH_LIMIT = 100;
+
+  // Fetch photos when zone/date/page changes. `append=true` is the load-more
+  // continuation path — appends to existing photos[] using offset = photos.length.
+  const fetchPhotos = useCallback(async (append = false) => {
     // Non-photo tabs manage their own data — skip photo fetch to avoid count flicker.
     if (zone === 'pending_review' || zone === 'weekly_wrap' || zone === 'weekly_admin' || zone === 'get_advice') {
       setLoading(false);
       return;
     }
-    abortRef.current?.abort();
+    // Load-more shares this function but does NOT abort the initial fetch
+    // (that would cancel the photos[] state we're trying to extend).
+    if (!append) {
+      abortRef.current?.abort();
+    }
     const controller = new AbortController();
-    abortRef.current = controller;
-    setLoading(true);
+    if (!append) abortRef.current = controller;
+    if (append) setLoadingMore(true);
+    else setLoading(true);
 
     // "Today" filter chip on the Confirm tab — overrides the date range to show
     // every photo from the last 24h regardless of teacher_confirmed status
@@ -941,11 +958,14 @@ export default function PhotoAuditPage() {
       : '2020-01-01T00:00:00Z';
     const effectiveZone = isDiscussion ? 'all' : zone;
     const includeConfirmedParam = (isTodayAll || isDiscussion) ? '&include_confirmed=1' : '';
-    const limitParam = isTodayAll ? 500 : 200;
+    // On append, offset starts where photos[] currently ends. On initial fetch, 0.
+    // Reading photos.length here is intentional — append only fires from a button
+    // click after state has settled, so the snapshot is stable.
+    const offsetParam = append ? photos.length : 0;
 
     try {
       const res = await fetch(
-        `/api/montree/audit/photos?zone=${effectiveZone}&date_from=${dateFrom}&limit=${limitParam}&offset=0${includeConfirmedParam}`,
+        `/api/montree/audit/photos?zone=${effectiveZone}&date_from=${dateFrom}&limit=${FETCH_LIMIT}&offset=${offsetParam}${includeConfirmedParam}`,
         { signal: controller.signal }
       );
       if (controller.signal.aborted) return;
@@ -953,15 +973,31 @@ export default function PhotoAuditPage() {
       const data = await res.json();
       // Filter out photos confirmed in this session — they're "done" and should
       // not reappear even if the server returns stale confidence data (race condition)
-      const mergedPhotos = (data.photos || []).filter((p: AuditPhoto) =>
+      const incomingPhotos = (data.photos || []).filter((p: AuditPhoto) =>
         !confirmedIdsRef.current.has(p.id)
       );
-      setPhotos(mergedPhotos);
+      // hasMore is derived from RAW response length, not the post-filter list —
+      // filtering out confirmed photos shouldn't make us think we've hit the end.
+      const rawCount = (data.photos || []).length;
+      setHasMore(rawCount >= FETCH_LIMIT);
+      // Append vs replace based on the fetch mode. Functional setState so concurrent
+      // optimistic updates (confirm/correct firing during a load-more) are preserved.
+      if (append) {
+        setPhotos(prev => {
+          // Dedup by id in case the server returned overlapping rows (e.g. a row
+          // got freshly captured_at-updated between page 1 and page 2).
+          const existingIds = new Set(prev.map(p => p.id));
+          const newOnes = incomingPhotos.filter((p: AuditPhoto) => !existingIds.has(p.id));
+          return [...prev, ...newOnes];
+        });
+      } else {
+        setPhotos(incomingPhotos);
+      }
       // Seed work statuses from DB, defaulting to 'practicing' for any identified photo
       // (if a teacher photographed a child doing a work, they're at minimum practicing it)
       const initialStatuses: Record<string, string> = {};
       const needsDefault: Array<{ child_id: string; work_name: string; area: string | null }> = [];
-      mergedPhotos.forEach((p: AuditPhoto) => {
+      incomingPhotos.forEach((p: AuditPhoto) => {
         if (p.child_id && p.work_name) {
           const key = `${p.child_id}:${p.work_name}`;
           if (p.status) {
@@ -989,31 +1025,57 @@ export default function PhotoAuditPage() {
       setWorkStatuses(prev => {
         // Merge: DB seeds first, then session overrides win (teacher edits this session
         // should not be reverted by a refetch returning stale DB values)
-        return { ...initialStatuses, ...prev };
+        return append ? { ...prev, ...initialStatuses } : { ...initialStatuses, ...prev };
       });
-      // Recalculate counts excluding confirmed photos
-      if (confirmedIdsRef.current.size > 0) {
-        const recounted = { green: 0, amber: 0, red: 0, untagged: 0 };
-        mergedPhotos.forEach((p: AuditPhoto) => {
-          const z = p.zone as keyof typeof recounted;
-          if (recounted[z] !== undefined) recounted[z]++;
-        });
-        setCounts(recounted);
-      } else {
-        setCounts(data.counts);
+      // Counts represent the FULL classification across the current batch of fetched
+      // photos. On initial fetch they're authoritative for the visible set; on append
+      // they refresh from the server-side count snapshot. Excluding confirmed-this-session
+      // is best-effort recount when applicable.
+      if (!append) {
+        if (confirmedIdsRef.current.size > 0) {
+          const recounted = { green: 0, amber: 0, red: 0, untagged: 0 };
+          incomingPhotos.forEach((p: AuditPhoto) => {
+            const z = p.zone as keyof typeof recounted;
+            if (recounted[z] !== undefined) recounted[z]++;
+          });
+          setCounts(recounted);
+        } else {
+          setCounts(data.counts);
+        }
       }
     } catch (err: any) {
       if (err?.name === 'AbortError') return;
-      setPhotos([]);
-      setCounts({ green: 0, amber: 0, red: 0, untagged: 0 });
+      if (!append) {
+        setPhotos([]);
+        setCounts({ green: 0, amber: 0, red: 0, untagged: 0 });
+        setHasMore(false);
+      }
       toast.error(t('audit.fetchError'));
     } finally {
-      if (!controller.signal.aborted) setLoading(false);
+      if (append) {
+        setLoadingMore(false);
+      } else if (!controller.signal.aborted) {
+        setLoading(false);
+      }
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [zone, dateRange, todayFilter]);
+  }, [zone, dateRange, todayFilter, photos.length]);
 
-  useEffect(() => { fetchPhotos(); }, [fetchPhotos]);
+  // Load-more handler — passes append=true. Photos.length is captured fresh
+  // each click via the photos.length dep on fetchPhotos.
+  const loadMorePhotos = useCallback(() => {
+    if (loadingMore || loading || !hasMore) return;
+    fetchPhotos(true);
+  }, [fetchPhotos, hasMore, loading, loadingMore]);
+
+  useEffect(() => {
+    // Initial fetch only — append path triggered by user click, never by deps.
+    // Reset hasMore optimistically so the new zone/range starts with a fresh
+    // assumption that more may be available.
+    setHasMore(false);
+    fetchPhotos(false);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [zone, dateRange, todayFilter]);
   useEffect(() => { return () => { abortRef.current?.abort(); }; }, []);
 
   // One-shot recovery sweep on mount: ask the server for a list of stuck
@@ -2458,6 +2520,29 @@ export default function PhotoAuditPage() {
           >
             →
           </button>
+        </div>
+      )}
+
+      {/* Load more photos from server. Only shown on photo zones with photos
+          already loaded AND server signalled more may be available. Sits below
+          client-side pagination so the natural read order is: scroll → page →
+          load more from server. Padding-bottom buffers above the floating
+          action bar (zIndex 20) which sits at viewport bottom. */}
+      {isPhotoZone && !loading && photos.length > 0 && hasMore && (
+        <div style={{ display: 'flex', justifyContent: 'center', padding: '8px 16px 80px' }}>
+          {loadingMore ? (
+            <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.55)', padding: '8px 16px' }}>
+              {t('audit.loadingMore')}
+            </span>
+          ) : (
+            <button
+              type="button"
+              onClick={loadMorePhotos}
+              style={{ padding: '8px 18px', borderRadius: 8, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(52,211,153,0.25)', color: 'rgba(255,255,255,0.78)', fontFamily: "'Inter', sans-serif", fontSize: 13, fontWeight: 500, cursor: 'pointer', transition: 'all 120ms ease' }}
+            >
+              {t('audit.loadMore')}
+            </button>
+          )}
         </div>
       )}
 

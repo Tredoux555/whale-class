@@ -3226,6 +3226,8 @@ export const ko: Record<string, string> = {
   'audit.loadFailed': '사진 로드에 실패했습니다',
   'audit.correctionFailed': '수정에 실패했습니다',
   'audit.fetchError': '사진 로드에 실패했습니다',
+  'audit.loadMore': '사진 더 불러오기',
+  'audit.loadingMore': '불러오는 중…',
   'audit.useAsReference': '참고 자료로 사용',
   'audit.describing': 'AI가 이 사진을 분석 중입니다...',
   'audit.visualDescription': '시각적 설명',

@@ -3672,6 +3672,8 @@ export const zh = {
   'audit.loadFailed': '加载照片失败',
   'audit.correctionFailed': '修正失败',
   'audit.fetchError': '加载照片失败',
+  'audit.loadMore': '加载更多照片',
+  'audit.loadingMore': '正在加载…',
   'audit.useAsReference': '设为参考照片',
   'audit.describing': 'AI正在分析这张照片...',
   'audit.visualDescription': '视觉描述',

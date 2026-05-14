@@ -3226,6 +3226,8 @@ export const ja: Record<string, string> = {
   'audit.loadFailed': '写真の読み込みに失敗しました',
   'audit.correctionFailed': '修正に失敗しました',
   'audit.fetchError': '写真の読み込みに失敗しました',
+  'audit.loadMore': 'もっと写真を読み込む',
+  'audit.loadingMore': '読み込み中…',
   'audit.useAsReference': '参照として使用する',
   'audit.describing': 'AIがこの写真を分析中です...',
   'audit.visualDescription': 'ビジュアルの説明',
