@@ -202,6 +202,22 @@ Wave 1 sends bounced for these addresses. None of these are flagged as `bounced`
 
 ## RECENT STATUS (May 14, 2026)
 
+### ⚡ Session 111 audit-gap closure (commit `5fddb0c8`)
+
+Post-Phase-E re-audit against the original plan doc surfaced 3 plan-table deviations from commit `49fd0037`. All three closed.
+
+1. **`app/api/montree/super-admin/schools/route.ts` PATCH** — plan said EXTEND for `payment_method` + `billing_cadence`, original commit didn't touch this file. Now: PATCH accepts `billing_cadence` directly (no safety guard needed — pure billing-frequency setting). PATCH explicitly REJECTS `payment_method` with 400 + redirect to `/schools/[id]/payment-config` route which carries the active-Stripe safety guard (rule #80 + #70 mirror). Avoids duplicating safety logic in two places.
+
+2. **`docs/STRIPE_BILLING_SETUP.md`** — plan said EXTEND with Alipay/WeChat enablement, original commit didn't touch this file. Now: stale "Annual billing — monthly only for v1" line corrected to ✅ shipped. New "Three-rail billing setup (Session 111)" section added covering: enable Alipay+WeChat on Stripe Dashboard, subscribe to 3 additional webhook events, confirm with HK banker, Supabase Storage bucket pre-req, Railway cron schedules, operational flow per rail (3 detailed walkthroughs), annual cadence math + `ANNUAL_RECOGNITION_MODE` constant explained. Failure modes table extended with 7 new alipay/manual rows (covering migration-not-run 500, missing event subscription, 409 on stripe-active flip, Resend domain, cron secret, period-lock 409, idempotency, dunning grace).
+
+3. **`components/montree/super-admin/MoneyTab.tsx` inbound_wires sub-view** — plan said EXTEND MoneyTab, original commit put ⚡ Wire button on SchoolsTab only. Now: BOTH surfaces have it (SchoolsTab as super-admin quick access, MoneyTab as money-canonical surface). New 7th sub-view "💸 Inbound" between fx_adjustments and end. Lists manual_invoice schools fetched from `/super-admin/schools`, filtered client-side, sorted past_due → active → trialing → canceled then alpha. Per-row: school name + status pill + cadence + students + period_end + ⚡ Wire button → opens RecordIncomingWireModal → on success, refetches list. 6 new `money.inbound.*` i18n keys × 12 locales (parity 4,459 × 12 = 100%). Bonus: fixed pre-existing `react-hooks/exhaustive-deps` warning on `doWire` callback that was lurking but invisible because MoneyTab wasn't in Session 111's targeted lint scope.
+
+**Architectural rule clarification locked:** `payment_method` flips MUST go through `/api/montree/super-admin/schools/[id]/payment-config`. The schools/route.ts PATCH refuses with 400 + endpoint redirect rather than silently flipping (which could leave Stripe auto-charging an orphaned subscription). Single source of safety-guard logic.
+
+Files: 15 changed (1 route MOD + 1 doc MOD + 1 component MOD + 12 i18n MOD), +384 / −5. Lint clean (--max-warnings=0). i18n strict parity 4,459 keys × 12 locales = 100%. Pre-commit hook passed.
+
+---
+
 ### ⚡ Session 111 — Inbound Payments Build SHIPPED (Phases A-E, commit `49fd0037`)
 
 **28 files changed (15 code + 12 i18n locale files + 1 migration), +3,624 / −11 lines. Pushed to `origin/main`. Railway auto-deploying.** The three-rail inbound billing system Session 110 theorized is now live in code. Mirror of Session 109's outbound architecture, inverted onto schools. Phase A built personally; Phases B-E built by general-purpose subagent under supervision with three audit cycles + integration-point verification by principal agent before commit.
