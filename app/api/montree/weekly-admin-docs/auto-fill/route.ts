@@ -17,11 +17,12 @@ export const maxDuration = 60;
 
 const AREAS = AREA_KEYS;
 
-// 🚨 Session 111 — weekly summaries are HARD-CAPPED at 50 words total.
-// The prompt asks for ≤50, max_tokens leaves no room for runaway output,
+// 🚨 Session 111 — weekly summaries are HARD-CAPPED at 40 words total.
+// (Reduced from 50 after user feedback that even 50 was too long.)
+// The prompt asks for ≤40, max_tokens leaves no room for runaway output,
 // and trimToWords() is the safety net that snaps to the last sentence
 // boundary if Haiku still overshoots.
-const WEEKLY_SUMMARY_MAX_WORDS = 50;
+const WEEKLY_SUMMARY_MAX_WORDS = 40;
 
 /**
  * Sentence-boundary-aware word trimmer. Mirror of the canonical trimToWords
