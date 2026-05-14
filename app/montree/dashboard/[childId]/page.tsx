@@ -4,14 +4,6 @@
 // Layout handles auth + header + tabs
 'use client';
 
-// 🚨 PRE-EXISTING WARNINGS in this 1040-line file: 'childDataRich' was once
-// used to gate the TellGuruCard render; Session 64 simplified the gate but
-// left the variable. Flagged when [childId]/page.tsx joined strict lint
-// scope via the Session 111 NoteField extraction. Dedicated dead-code
-// cleanup is on the backlog. The file already has targeted
-// react-hooks/exhaustive-deps disables inline where intentional.
-/* eslint-disable @typescript-eslint/no-unused-vars */
-
 import { useState, useEffect, useCallback, useRef } from 'react';
 import dynamic from 'next/dynamic';
 import { useParams, useRouter } from 'next/navigation';
@@ -19,13 +11,12 @@ import Link from 'next/link';
 import { Images, ChevronDown, ClipboardList, Camera, Mic, Square } from 'lucide-react';
 import { toast, Toaster } from 'sonner';
 import { getSession, isHomeschoolParent } from '@/lib/montree/auth';
-import { AREA_CONFIG } from '@/lib/montree/types';
 import { useI18n } from '@/lib/montree/i18n';
 import { SUPPORTED_LOCALES, DEFAULT_LOCALE } from '@/lib/montree/i18n/locales';
 import { montreeApi } from '@/lib/montree/api';
 import { mergeWorksWithCurriculum } from '@/lib/montree/work-matching';
 import { WeekViewSkeleton } from '@/components/montree/Skeletons';
-import { AreaConfig, QuickGuideData, MergedWork } from '@/components/montree/curriculum/types';
+import { QuickGuideData, MergedWork } from '@/components/montree/curriculum/types';
 import FocusWorksSection from '@/components/montree/child/FocusWorksSection';
 import { useWorkOperations } from '@/hooks/useWorkOperations';
 import GuruContextBubble from '@/components/montree/guru/GuruContextBubble';
@@ -111,10 +102,10 @@ export default function WeekPage() {
   // been removed — works flow through the photo-capture pipeline now.
   const [curriculum, setCurriculum] = useState<Record<string, CurriculumWork[]>>({});
 
-  // "Tell Guru" onboarding — show card when system doesn't know child well
-  // Condition: no mental profile AND fewer than 5 confirmed photos (i.e. limited data)
+  // "Tell Guru" onboarding — show card when system doesn't have a mental profile.
+  // Once the teacher submits the intro via TellGuruCard, hasProfile flips to true
+  // and the card never shows again. (Session 64 simplified the gate to profile-only.)
   const [hasProfile, setHasProfile] = useState<boolean | null>(null); // null = loading
-  const [childDataRich, setChildDataRich] = useState(false); // true if enough photos exist to skip onboarding
   const [onboardingChildName, setOnboardingChildName] = useState<string>('');
   // Game plan — stored in child.settings.game_plan
   const [gamePlan, setGamePlan] = useState<GamePlan | null>(null);
@@ -382,16 +373,11 @@ export default function WeekPage() {
 
     if (isEnabled('tell_guru_onboarding')) {
       setHasProfile(null); // reset while loading
-      setChildDataRich(false);
     }
 
     Promise.all([fetchProfile, fetchChild]).then(([profileData, childData]) => {
       if (isEnabled('tell_guru_onboarding')) {
         setHasProfile(!!profileData?.profile);
-        // childDataRich is no longer used for TellGuruCard visibility — profile presence is the
-        // only signal. Left here as it still gates BigMicPanel display.
-        const photoCount = childData?.photos?.length ?? 0;
-        setChildDataRich(photoCount >= 5);
       }
       if (childData?.child?.name) setOnboardingChildName(childData.child.name);
       else if (childData?.name) setOnboardingChildName(childData.name);
@@ -711,11 +697,6 @@ export default function WeekPage() {
     }
   };
 
-  // Get area config
-  const getAreaConfig = (area: string): AreaConfig => {
-    return AREA_CONFIG[area] || AREA_CONFIG[area.replace('mathematics', 'math')] || { name: area, icon: '📋', color: '#888' };
-  };
-
   if (loading) {
     return <WeekViewSkeleton />;
   }
@@ -881,13 +862,10 @@ export default function WeekPage() {
         onOpenQuickGuide={openQuickGuide}
         childId={childId}
         childName={session?.classroom?.children?.find((c: Child) => c.id === childId)?.name}
-        getAreaConfig={getAreaConfig}
         isHomeschoolParent={isHomeschoolParent(session)}
-        guruAreaDetails={guruSettings.areaDetails}
         smartNoteProcessing={smartNoteProcessing}
         gamePlan={gamePlan}
         onRefreshGamePlan={(updatedPlan) => setGamePlan(updatedPlan)}
-        onShelfFilled={fetchAssignments}
       />
       </div>
 

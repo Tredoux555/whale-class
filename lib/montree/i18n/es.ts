@@ -3294,6 +3294,8 @@ export const es: Record<string, string> = {
   'audit.loadFailed': 'Error al cargar las fotos',
   'audit.correctionFailed': 'Error al corregir',
   'audit.fetchError': 'No se pudieron cargar las fotos',
+  'audit.loadMore': 'Cargar más fotos',
+  'audit.loadingMore': 'Cargando…',
   'audit.useAsReference': 'Usar como Referencia',
   'audit.describing': 'La IA está analizando esta foto...',
   'audit.visualDescription': 'Descripción Visual',

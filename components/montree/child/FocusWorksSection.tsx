@@ -1,25 +1,14 @@
 'use client';
 
-// 🚨 PRE-EXISTING DEAD CODE: this file has accumulated unused imports + vars
-// + helper functions across many refactors (game-plan inline render moved to
-// GamePlanCard, copyText moved elsewhere, etc.). The Session 111 NoteField
-// extraction surfaced them because the file joined strict lint scope. A
-// dedicated dead-code cleanup pass is on the backlog. Until then, the disables
-// below let perf work ship without fixing unrelated dead code.
-/* eslint-disable @typescript-eslint/no-unused-vars, react-hooks/exhaustive-deps */
-
 import { useState, useEffect, useCallback, useMemo, useRef, CSSProperties } from 'react';
-import { ChevronDown, BookOpen, Plus, X, Mic, Square } from 'lucide-react';
-import { AreaConfig } from '@/components/montree/curriculum/types';
+import { ChevronDown, BookOpen, Plus, X } from 'lucide-react';
 import GuruWorkGuide from '@/components/montree/guru/GuruWorkGuide';
-import TeachingInstructions from '@/components/montree/guru/TeachingInstructions';
 import EvidenceStrengthBadge from '@/components/montree/EvidenceStrengthBadge';
 import NoteField from '@/components/montree/child/NoteField';
 import { montreeApi } from '@/lib/montree/api';
 import { useI18n } from '@/lib/montree/i18n';
-import { getAreaLabel, getAreaPrefix } from '@/lib/montree/i18n/area-labels';
+import { getAreaPrefix } from '@/lib/montree/i18n/area-labels';
 import { GamePlan } from '@/components/montree/child/GamePlanCard';
-import { resolveLocalized, resolveLocalizedArray } from '@/lib/montree/i18n/localized-types';
 
 export interface Assignment {
   work_name: string;
@@ -41,12 +30,6 @@ export interface Assignment {
   ruName?: string;
 }
 
-interface AreaDetail {
-  work: string;
-  this_week: string;
-  next_week: string;
-}
-
 export interface FocusWorksSectionProps {
   focusWorks: Assignment[];
   extraWorks: Assignment[];
@@ -63,13 +46,10 @@ export interface FocusWorksSectionProps {
   onOpenQuickGuide: (workName: string, localizedNames?: Record<string, string | undefined>) => void;
   childId: string;
   childName?: string;
-  getAreaConfig: (area: string) => AreaConfig;
   isHomeschoolParent?: boolean;
-  guruAreaDetails?: Record<string, AreaDetail> | null;
   smartNoteProcessing?: string | null;
   gamePlan?: GamePlan | null;
   onRefreshGamePlan?: (newPlan: GamePlan) => void;
-  onShelfFilled?: () => void;
 }
 
 // Status config with translated labels — dark forest inline styles
@@ -95,7 +75,6 @@ const C = {
   glass:       'rgba(255,255,255,0.06)',
 };
 const SANS  = "'Inter', -apple-system, system-ui, sans-serif";
-const SERIF = "var(--font-lora), 'Iowan Old Style', Georgia, serif";
 
 const AREAS = ['practical_life', 'sensorial', 'mathematics', 'language', 'cultural'];
 
@@ -194,70 +173,22 @@ export default function FocusWorksSection({
   onOpenQuickGuide,
   childId,
   childName,
-  getAreaConfig,
   isHomeschoolParent: isParent = false,
-  guruAreaDetails,
   smartNoteProcessing,
   gamePlan,
   onRefreshGamePlan,
-  onShelfFilled,
 }: FocusWorksSectionProps) {
   const { t, locale } = useI18n();
-  const [expandedAdvice, setExpandedAdvice] = useState<string | null>(null);
   // Session 103 Tier 0.5: memoize the status-config object so this component
   // (and every Assignment row inside it) doesn't get a fresh reference on
   // every keystroke / parent re-render. Cuts cascaded child re-renders.
   const statusConfig = useMemo(() => getStatusConfig(t), [t]);
   const [refreshingPlan, setRefreshingPlan] = useState(false);
-  const [fillingShelf, setFillingShelf] = useState(false);
-  const [shelfFilled, setShelfFilled] = useState(false);
 
-  // Reset shelf-filled state when switching children or game plan changes
-  useEffect(() => {
-    setShelfFilled(false);
-  }, [childId, gamePlan]);
-
-  // Compute game plan display values first (used by callbacks below)
+  // Compute game plan display value used by the (currently gated) footer
   const planDaysSinceUpdate = gamePlan ? Math.floor(
     (Date.now() - new Date(gamePlan.updated_at || gamePlan.generated_at).getTime()) / 86400000
   ) : 0;
-  // Resolve bilingual fields — resolveLocalized handles both new { en, zh }
-  // objects and legacy plain strings seamlessly
-  const planNudge = resolveLocalized(gamePlan?.nudge, locale) || gamePlan?.headline || '';
-  const planWorks = resolveLocalizedArray(gamePlan?.works, locale) || gamePlan?.phases?.[0]?.works || [];
-  // For fill-shelf, always use English works (canonical for DB matching)
-  const planWorksEn = resolveLocalizedArray(gamePlan?.works, 'en') || gamePlan?.phases?.[0]?.works || [];
-  const planDirection = resolveLocalized(gamePlan?.direction, locale) || gamePlan?.priority_areas?.join(' → ') || '';
-
-  // No longer needed — locale resolution is handled by resolveLocalized/resolveLocalizedArray
-  // at the point where planNudge, planWorks, planDirection are computed above.
-
-  // Check if there are empty area slots that plan works could fill
-  const hasEmptySlots = gamePlan && planWorks.length > 0 &&
-    AREAS.some(area => !focusWorks.find(w => normalizeArea(w.area) === area));
-
-  const handleFillShelf = useCallback(async () => {
-    if (!planWorksEn.length) return;
-    setFillingShelf(true);
-    try {
-      // Always send English canonical names for DB matching
-      const res = await montreeApi(`/api/montree/children/${childId}/fill-shelf`, {
-        method: 'POST',
-        body: JSON.stringify({ works: planWorksEn }),
-      });
-      if (res.ok) {
-        const data = await res.json();
-        if (data.filled?.length > 0) {
-          setShelfFilled(true);
-          onShelfFilled?.(); // parent refreshes focus works
-        }
-      }
-    } catch (err) {
-      console.error('[FillShelf] Error:', err);
-    } finally {
-      setFillingShelf(false);
-    }
-  }, [childId, planWorksEn, onShelfFilled]);
 
   const handleRefreshPlan = useCallback(async () => {
     if (!onRefreshGamePlan) return;
@@ -276,7 +207,7 @@ export default function FocusWorksSection({
     } finally {
       setRefreshingPlan(false);
     }
-  }, [childId, onRefreshGamePlan]);
+  }, [childId, locale, onRefreshGamePlan]);
 
   // Evidence tracking — loaded once per child, cached in state
   const [evidenceMap, setEvidenceMap] = useState<Record<string, {
@@ -340,22 +271,6 @@ export default function FocusWorksSection({
     }
   }, [expandedAreas, evidenceLoaded, fetchEvidence]);
 
-  // Copy text to clipboard
-  const copyText = async (text: string) => {
-    try {
-      await navigator.clipboard.writeText(text);
-    } catch {
-      const ta = document.createElement('textarea');
-      ta.value = text;
-      ta.style.position = 'fixed';
-      ta.style.opacity = '0';
-      document.body.appendChild(ta);
-      ta.select();
-      document.execCommand('copy');
-      document.body.removeChild(ta);
-    }
-  };
-
   return (
     <div style={{
       display: 'flex',
@@ -373,8 +288,6 @@ export default function FocusWorksSection({
             ? (statusConfig[focusWork.status] || statusConfig.not_started)
             : statusConfig.not_started;
           const isExpanded = expandedAreas.has(area);
-          const guruDetail = guruAreaDetails?.[area] || null;
-          const isLast = areaIdx === AREAS.length - 1;
 
           return (
             <div
@@ -641,31 +554,3 @@ export default function FocusWorksSection({
   );
 }
 
-// Inline copy button component
-function CopyButton({ text, onCopy }: { text: string; onCopy: (text: string) => Promise<void> }) {
-  const [copied, setCopied] = useState(false);
-  return (
-    <button
-      onClick={async () => {
-        await onCopy(text);
-        setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
-      }}
-      style={{
-        padding: '2px 8px',
-        borderRadius: 6,
-        fontSize: 11,
-        fontWeight: 500,
-        cursor: 'pointer',
-        border: `1px solid ${copied ? 'rgba(52,211,153,0.30)' : 'rgba(255,255,255,0.15)'}`,
-        background: copied ? 'rgba(52,211,153,0.12)' : 'rgba(255,255,255,0.07)',
-        color: copied ? '#34d399' : 'rgba(255,255,255,0.60)',
-        transition: 'all 140ms ease',
-        fontFamily: "'Inter', -apple-system, system-ui, sans-serif",
-      }}
-      title="Copy"
-    >
-      {copied ? '✓' : '⎘'}
-    </button>
-  );
-}

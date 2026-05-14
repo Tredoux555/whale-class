@@ -3226,6 +3226,8 @@ export const ru: Record<string, string> = {
   'audit.loadFailed': 'Ошибка загрузки фотографий',
   'audit.correctionFailed': 'Ошибка исправления',
   'audit.fetchError': 'Ошибка загрузки фотографий',
+  'audit.loadMore': 'Загрузить ещё фото',
+  'audit.loadingMore': 'Загрузка…',
   'audit.useAsReference': 'Использовать как образец',
   'audit.describing': 'ИИ анализирует эту фотографию...',
   'audit.visualDescription': 'Визуальное описание',
