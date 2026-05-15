@@ -11,6 +11,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 1.0,
     },
     {
+      url: `${baseUrl}/montree/about`,
+      lastModified: new Date('2026-05-15'),
+      changeFrequency: 'monthly',
+      priority: 0.8,
+    },
+    {
       url: `${baseUrl}/montree/try`,
       lastModified: new Date(),
       changeFrequency: 'monthly',
