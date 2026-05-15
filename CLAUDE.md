@@ -202,18 +202,21 @@ Wave 1 sends bounced for these addresses. None of these are flagged as `bounced`
 
 ## RECENT STATUS (May 14, 2026)
 
-### 📚 Session 112 — Reading Framework Making Guide + Pink Phase Lesson Content (May 14, 2026, evening)
+### 📚 Session 112 — Reading framework making guide + Pink Phase lesson content + Montree library presence (May 14-15, 2026)
 
-**3 commits pushed to main: `e42d1035`, `5332b3c3`, `63d3b4ed`.** Closes the Whale-Class reading-framework loop with two new admin documents — the *making guide* (how to set up the room and present each work) and the *lesson content* (UFLI L1-53 word lists, phrases, sentences, picture prompts, heart words). Both auth-gated, iframed into admin, print-friendly.
+**6 commits pushed to main:** `e42d1035`, `5332b3c3`, `63d3b4ed`, `a6e1cc8d`, `64228377`, `cdce68fa`. Closes the reading-framework loop with two new documents (setup guide + Pink Phase lesson content), wires them into both the Whale admin (Whale-branded) AND the public Montree library (neutral "The Complete Language Area" branding).
 
 **🚨 Canonical resume doc:** `docs/handoffs/SESSION_112_HANDOFF.md`.
 
-**What's live in the admin hub:**
+**What's live now:**
 
-| Tile | Route | Static | Pages |
+| Surface | Route | Static file | Branding |
 |---|---|---|---|
-| 📗 Reading Framework | `/admin/reading-framework` | `public/whale-reading-framework-guide.html` | ~30 pages with 4-shelf SVG |
-| 📕 Pink Phase Lessons | `/admin/reading-content` | `public/whale-reading-content.html` | ~99 pages |
+| Admin 📗 | `/admin/reading-framework` | `public/whale-reading-framework-guide.html` | Whale-branded (internal) |
+| Admin 📕 | `/admin/reading-content` | `public/whale-reading-content.html` | Whale-branded (internal) |
+| Library tile | `/montree/library/language-area` | `public/language-area-{guide,lessons}.html` | Neutral — "The Complete Language Area" (public) |
+
+Two parallel surfaces, same content. Whale-branded for the user's own use; neutral copies for Montree SaaS subscribers.
 
 **A. Reading Framework Making Guide (`e42d1035` + subtitle fix `5332b3c3`):**
 
@@ -244,14 +247,22 @@ Closes the gap "the per-lesson card sets exist but no doc says what's IN them." 
 94. **Heart word coding is canonical.** Regular letters BLACK, irregular letters RED, small red heart icon below each red letter. Card ~10×6 cm laminated, on binder ring on Shelf 4.
 95. **The 4 shelves are the canonical English-area layout** — Oral / Sound / Writing / Reading, left to right. Built around this layout regardless of physical furniture (one long shelf divided in four, or four small units).
 
-**Admin auth pattern:** both new pages call `/api/videos` on mount, 401 redirects to `/admin/login`. Same pattern as the rest of `/admin/*`.
+**🚨 CSP gotcha (commit `64228377`):** initial admin pages used iframes to embed the static HTML. Blocked by the site's `Content-Security-Policy: frame-ancestors 'none'` — refuses to render any page inside an iframe, including same-origin ones. Fix: switched both admin pages to a redirect-only pattern (`window.location.replace('/whale-reading-{...}.html')`). Browser back returns to `/admin`.
 
-**Files changed (3 commits, 5 files):**
-- `public/whale-reading-framework-guide.html` (61 KB) — the making guide
-- `public/whale-reading-content.html` (94 KB) — Pink Phase lesson content
-- `app/admin/reading-framework/page.tsx` — iframe wrapper for making guide
-- `app/admin/reading-content/page.tsx` — iframe wrapper for lesson content
-- `app/admin/page.tsx` — two new tiles in the admin hub (📗 emerald, 📕 pink)
+**🚨 Architectural rule #96 locked in:** Don't use iframes anywhere on montree.xyz. The CSP `frame-ancestors 'none'` is a site-wide clickjacking defense. "Embed a static HTML page" patterns must be either a redirect (admin pages) or a direct `<a href="...">` link (library cards). Both patterns are now canonical.
+
+**Montree library tile (commit `cdce68fa`):** added third tile to `/montree/library` between Picture Bank and the footer, emerald accent: "The Complete Language Area." Tile links to a new sub-page `/montree/library/language-area` with two cards (Setup Guide / Pink Phase Lessons) opening the rebranded HTML files. All Whale references stripped via Python `replace` chain, regex-verified clean.
+
+**Files changed (6 commits, 9 files):**
+- `public/whale-reading-framework-guide.html` (61 KB) — Whale-branded setup guide
+- `public/whale-reading-content.html` (94 KB) — Whale-branded Pink Phase lessons
+- `public/language-area-guide.html` (60 KB) — NEUTRAL setup guide for Montree library
+- `public/language-area-lessons.html` (95 KB) — NEUTRAL Pink Phase lessons for Montree library
+- `app/admin/reading-framework/page.tsx` — redirect-only admin wrapper
+- `app/admin/reading-content/page.tsx` — redirect-only admin wrapper
+- `app/admin/page.tsx` — two admin tiles (📗 emerald, 📕 pink)
+- `app/montree/library/page.tsx` — third library tile (emerald)
+- `app/montree/library/language-area/page.tsx` — NEW library landing page with two sub-cards
 
 **🚨 Next session priorities (ordered):**
 
