@@ -7,6 +7,29 @@
 
 ---
 
+## ⚠️ READ THIS FIRST — Significant scope revision (added 15 May 2026 23:xx)
+
+After writing this plan, the auto-run investigation discovered the codebase is **MUCH further along than this document assumes**. Specifically:
+
+- **Phase A (offline photo queue) is essentially already built and shipped.** A production-hardened system lives at `lib/montree/offline/*` with explicit "10x health check audit" hardening from Mar 18 2026. Wired into the capture page, dashboard layout, and photo-audit page.
+- **Capacitor is fully scaffolded** for both iOS and Android with a thin-webview architecture. Both platforms have build outputs. Whether deployed to stores is unknown.
+- **An older orphan offline system exists at `lib/media/*`** from Feb 2026 — should be deleted as part of cleanup.
+- **The REAL gap is UI surfacing** of the existing offline queue (pending-photos pill, offline indicator) + **persistent read cache (Phase B from below)**.
+
+**🚨 Before executing the plan below, read the companion doc:**
+
+`docs/handoffs/EXISTING_OFFLINE_AND_CAPACITOR_STATE.md`
+
+It contains the corrected scope and four questions to answer before deciding which tracks to run this weekend. The Phase A section below is OBSOLETE — the work is largely done. The Phase B and Phase C sections are still accurate.
+
+The Saturday/Sunday hour-by-hour sequence at the bottom of this plan was written before the investigation and should be REPLACED by the "Revised weekend scope" section in the companion doc.
+
+The rest of this plan (architectural decisions, schemas, files-to-touch lists) is still valid and useful as reference material.
+
+---
+
+---
+
 ## Goal
 
 Push Montree from "online-only cloud SaaS" toward "works when school WiFi drops." Cover the credibility queue from Session 113 (LinkedIn, Cloudflare email routing, sitemap, og-image) in parallel as quick wins so the weekend ships both deep work AND polish.
