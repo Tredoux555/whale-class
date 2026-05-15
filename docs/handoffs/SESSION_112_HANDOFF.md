@@ -1,15 +1,16 @@
 # Session 112 — Reading Framework Making Guide + Pink Phase Lesson Content (May 14, 2026)
 
-Three deliverables shipped this session, all live on the teacher-potato admin site.
+Six commits this session, five distinct deliverables. Whale-internal admin pages PLUS public Montree library presence.
 
 ## What's live
 
-| Admin tile | Route | Static file | Pages | Pushed |
+| Surface | Route | Static file | Pages | Branding |
 |---|---|---|---|---|
-| 📗 Reading Framework | `/admin/reading-framework` | `public/whale-reading-framework-guide.html` | ~30 web pages | `e42d1035` → `5332b3c3` |
-| 📕 Pink Phase Lessons | `/admin/reading-content` | `public/whale-reading-content.html` | ~99 print-pages | `63d3b4ed` |
+| Admin tile 📗 | `/admin/reading-framework` | `public/whale-reading-framework-guide.html` | ~30 pages | Whale-branded |
+| Admin tile 📕 | `/admin/reading-content` | `public/whale-reading-content.html` | ~99 pages | Whale-branded |
+| Library tile | `/montree/library/language-area` | `public/language-area-{guide,lessons}.html` | same content, neutral | Generic — "The Complete Language Area" |
 
-Both pages are auth-gated through the existing `/api/videos` 401 redirect, framed by a small admin header with Print / Open in new tab / ← Admin buttons, and serve a self-contained HTML document via iframe.
+Both admin tiles redirect (no longer iframe — see CSP note below) to their static file. The Montree library landing page shows two sub-cards linking to the rebranded versions.
 
 ## Commit log this session
 
@@ -17,7 +18,40 @@ Both pages are auth-gated through the existing `/api/videos` 401 redirect, frame
 e42d1035  Admin: Reading Framework making guide
 5332b3c3  Reading framework guide: fix stale 'one shelf' subtitle
 63d3b4ed  Admin: Pink Phase lesson content (UFLI L1-53)
+a6e1cc8d  Session 112 handoff + brain update
+64228377  Admin reading pages: redirect instead of iframe (CSP fix)
+cdce68fa  Montree library: The Complete Language Area
 ```
+
+## CSP gotcha (commit `64228377`)
+
+The original admin pages tried to iframe the static HTML. Got blocked by the site's `Content-Security-Policy: frame-ancestors 'none'` header — that header refuses to render any page inside an iframe, including same-origin ones. Switched both admin pages to a redirect-only pattern: tile click → admin page mounts → `window.location.replace('/whale-reading-{...}.html')` → user lands on the static HTML directly. Browser back button returns them to `/admin`.
+
+**🚨 Architectural rule locked in:** Don't use iframes anywhere on montree.xyz. The CSP `frame-ancestors 'none'` is a site-wide clickjacking defense and won't be relaxed. Any "embed a static HTML page" pattern needs to be a redirect (admin pages) or a direct anchor `<a href="...">` (library cards). Both patterns work and are now canonical.
+
+## Montree library presence (commit `cdce68fa`)
+
+The library at `/montree/library` had two cards (Content Creation Tools, Picture Bank). Added a third — emerald accent, tile title "The Complete Language Area," sublabel "Setup guide & lesson-by-lesson word bank · writing first · UFLI L1-53." Tile links to a new landing page `/montree/library/language-area` with two sub-cards (Setup Guide / Pink Phase Lessons) each opening the corresponding HTML.
+
+**Branding cleanup:** the public library copies are scrubbed of all Whale references. Naming swept via Python `replace` chain — verified by regex grep, zero Whale matches remaining. Specific changes:
+
+| Original | Replacement |
+|---|---|
+| "Whale Class — Writing-and-Reading Making Guide" | "The Complete Language Area — Setup Guide" |
+| "Whale Reading Framework — Pink Phase Lesson Content" | "The Complete Language Area — Pink Phase Lessons" |
+| "the Whale platform prints" | "your lesson generator prints" |
+| "the Whale framework" | "this framework" |
+| "Made for Whale Class, Beijing." | (removed) |
+| "Companion document to the Whale Reading Framework v2.0." | "A self-contained Language Area reference." |
+| "Whale Class" | "the classroom" |
+| Solo "Whale" mentions | context-appropriate replacement |
+
+**Two parallel surfaces now exist:**
+
+- Whale-branded copies in `/public/whale-reading-{framework-guide,content}.html` — wired into `/admin/*` for the user's own classroom use. These stay Whale-branded.
+- Neutral copies in `/public/language-area-{guide,lessons}.html` — wired into `/montree/library/language-area` for the public Montree user base.
+
+Source of truth: edits to lesson content should be made via `outputs/lesson-content/build.py` (the Python generator). To regenerate the public neutral version: run the rebranding Python snippet against the newly-built file.
 
 ## The making guide — what's in it
 
