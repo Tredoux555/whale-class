@@ -202,9 +202,9 @@ Wave 1 sends bounced for these addresses. None of these are flagged as `bounced`
 
 ## RECENT STATUS (May 16, 2026)
 
-### 🔥 Session 113 V2 — Saturday burn: Blue + Green Phase + 5 deep audits (Photo + Tracy/Mira + Finance + Agent + Parent + Story) + Save as Other + outreach (May 16, 2026)
+### 🔥 Session 113 V2 — Saturday burn: 8 deep audits (Photo + Tracy/Mira + Finance + Agent + Parent + Story + Whale-Class + Outreach + Legacy-API + Photo-AI-Quality) — closed 10 CRITICAL + 30+ HIGH + 10+ MED across the whole product (May 16-17, 2026)
 
-**26 commits pushed to main:** `2f5b5643` → `25f88e3c`. Continuous Saturday burn day. User explicitly asked to "burn through usage in next 48 hours" then kept saying "keep burning" / "keep going" through every fork.
+**51 commits pushed to main:** `2f5b5643` → `fe68f0c2`. Continuous Saturday-into-Sunday burn. User explicitly asked to "burn through usage in next 48 hours" then kept saying "keep burning" / "burn burn burn" through every fork. **The single highest-leverage 48-hour security + correctness push the project has had.**
 
 **🚨 Canonical resume doc:** `docs/handoffs/SESSION_113_V2_HANDOFF.md` — comprehensive single source of truth for cold-start resume.
 
@@ -331,6 +331,74 @@ After the headline work landed, three more deep audits were dispatched (agent da
 
 **Commit `25f88e3c` — Story HIGH F-2.2:**
 - **HIGH F-2.2** — Vault soft-delete now hard-deletes the underlying Supabase Storage object. Previously the storage object remained at its public URL forever; anyone with the URL from old logs / CSV exports / DB backups could still GET the encrypted blob and brute-force the password offline. factory_reset + clear_vault already removed storage; soft-delete was the only inconsistent path. Audit row now includes `storage_removed=` flag for forensic clarity.
+
+**Commit `99a69bba` — Story HIGH F-2.1 (vault token now load-bearing):**
+- **HIGH F-2.1** — `/api/story/admin/vault/{list,download,upload,delete,save-from-message}` now ALL require `x-vault-token` header in addition to the admin session cookie. Previously the unlock route issued a JWT but no downstream route checked it — vault password was theater, stealing the admin JWT was equivalent to knowing the vault password. New `verifyVaultToken()` helper in `lib/story-db.ts` checks signature + `vaultAccess=true` + 1h TTL. Client-side `useVault` hook captures the token in a `useRef` (NEVER localStorage), wipes on lock/refresh, sends via `vaultHeaders()` on every call. `useMessages.saveMessageToVault` threaded through via `getVaultToken` callback. Hook ordering swapped on dashboard page so useVault initializes BEFORE useMessages. Closes the long-standing "stolen admin cookie = full vault" hole.
+
+**Whale-Class admin deep audit (`docs/WHALE_CLASS_ADMIN_AUDIT.md` — 750 lines, 3 CRITICAL + 7 HIGH + 12 MED + 2 LOW = 24 findings).**
+
+**Outreach + campaign manager deep audit (`docs/OUTREACH_AUDIT.md` — 470 lines, 2 CRITICAL + 6 HIGH + 8 MED + 6 LOW = 22 findings).**
+
+**Commit `bde23f1a` — Whale-Class admin CRITICAL + outreach CRITICALs:**
+- **WHALE-CLASS CRITICAL** — Auth bypass on all `/api/admin/*` routes. Middleware matcher only included `/api/whale/*`. video-manager, media-library, curriculum/sync-all + any future routes accepted GET/POST/PATCH/DELETE from anonymous callers. Anyone with the URL could wipe homepage videos, upload arbitrary files into Supabase Storage, or corrupt `child_work_progress` for every Whale Class student. Closed: `/api/admin/:path*` added to matcher + extended `requiresAdminJWT` check.
+- **WHALE-CLASS HIGH** — Login route wires `ADMIN_USERNAME` + `ADMIN_PASSWORD` env vars (documented in CLAUDE.md but were not actually used).
+- **OUTREACH CRITICAL F-1.1** — `/api/montree/super-admin/npo-outreach` accepted `SUPER_ADMIN_PASSWORD` via query string + body, writing cleartext password to every access/CDN/proxy log. Sole route in the surface bypassing `verifySuperAdminAuth`. One leaked log row = entire super-admin owned. Switched GET/POST/PATCH to canonical `verifySuperAdminAuth(headers)`.
+- **OUTREACH CRITICAL F-2.1** — `DELETE /api/montree/leads` accepted `{ status: 'new' }` body and hard-deleted every lead + every associated DM thread with no confirmation, no audit row, no rate-limit, no actor recorded. Now requires explicit `x-confirm-bulk-delete: yes` header + writes `leads_bulk_deleted` to `montree_outreach_log` BEFORE destruction (target_ids, mode, status_filter, IP, user-agent). Client `useLeadOperations.bulkDeleteLeadsByStatus` updated to send the header.
+- **OUTREACH HIGH F-3.2** — Demo-request UPSERT flipped to `ignoreDuplicates: true`. The public form's prior upsert overwrote notes/priority/contact_person/status on existing curated contacts when their email submitted the form. Unscrupulous visitor could POST other people's emails to erase the outreach team's hand-curated notes.
+
+**Commit `e8f24bd7` — Outreach HIGH F-4.1 + Story F-4.1:**
+- **OUTREACH HIGH F-4.1** — Campaign-manager bulk PATCH audit log was writing `{previous_status: 'unknown'}` for every row, making the audit trail useless. Now does SELECT-then-UPDATE: reads prior status per target id BEFORE the update, logs the real `{previous_status, new_status}` transition.
+- **STORY HIGH F-4.1** — `/api/story/admin/send` now accepts `acknowledge_overwrite: true`. When NOT acknowledged AND an existing `hidden_message` exists for the current week, route returns 409 with the existing message (decrypted) + author + updated_at + a hint to retry. Admins can no longer silently overwrite the week's message before parents have read it.
+
+**Commit `67afc278` — Demo-request rate-limit + drip pagination + timing-safe password:**
+- **OUTREACH HIGH F-3.1** — `/api/montree/demo-request` was publicly callable with zero rate-limit, zero captcha, zero length caps. Trivial loop could flood Tredoux's inbox / burn Resend quota / seed DB junk that the drip cron re-mailed for 14 days from the brand domain. Closed: 5 requests / 15 minutes per IP via `checkRateLimit` + email cap 320 chars + name/school caps 200 chars + empty-catch replaced with logged error.
+- **OUTREACH HIGH F-5.1** — Drip crons (`demo-request-drip` + `trial-drip`) read `montree_outreach_log` with a single SELECT relying on PostgREST's default 1000-row cap. After ~6-12 months of drip rows the idempotency Set would truncate and the cron would silently re-fire already-sent emails. Closed: paginated read with PAGE_SIZE=1000, MAX_ROWS=100_000 ceiling, while-loop drains via `.range()`.
+- **WHALE-CLASS HIGH (password timing)** — `/api/auth/login` compared admin passwords with `===` which short-circuits on first byte mismatch (length leak). Replaced with `constantTimePasswordEqual()` using Node's `timingSafeEqual`. Practical risk capped by 5/15min rate limit but defense in depth costs nothing.
+
+**Legacy /api/* groups deep audit (`docs/LEGACY_API_AUDIT.md` — 480 lines, 3 CRITICAL + 11 HIGH + 8 MED + 5 LOW = 27 findings).**
+
+**Commit `03da7a23` — Legacy API CRITICALs via middleware gate:**
+- **LEGACY CRITICAL F-1.1** — `/api/classroom/[id]/curriculum` PATCH accepted arbitrary workId body with no path-scope check. Any anonymous caller could mutate any classroom's curriculum or rewrite any work in production.
+- **LEGACY CRITICAL F-2.1** — `/api/students/[id]/quick-place` POST wrote to `child_work_progress` via Supabase RPC for any student. Body-supplied `recordedBy` forged audit trail.
+- **LEGACY CRITICAL F-3.1** — `/api/weekly-planning/upload` POST accepted multipart .docx, called Sonnet at ~$0.05–0.10/call, hardcoded a stale classroom_id, DELETEd ALL existing assignments for the week before re-inserting AI output. Anonymous attacker could burn Anthropic quota AND corrupt every Whale Class child's plan.
+
+Closed via single 5-line middleware edit: matcher + `requiresAdminJWT` extended to include `/api/weekly-planning/*`, `/api/curriculum-import/*`, `/api/students/*`, `/api/classroom/*`, `/api/onboard/*`. All callers verified in `/app/admin/*` and `/app/teacher/*` (legacy teacher portal) which use the same admin JWT cookie — Montree multi-tenant uses `/api/montree/*` so no breakage.
+
+**Commit `66788b06` — Outreach MED F-7.6 + F-7.8:**
+- **MED F-7.6** — `outreach POST action=log` whitelist. Previously any string went into `montree_outreach_log.action`. Drip crons match on exact strings — a typo'd `demo_request_drip_day3` could cause infinite drip loops. Now requires membership in `ALLOWED_LOG_ACTIONS` Set.
+- **MED F-7.8** — Health card flips to FAIL when oldest pending demo-request is >30 days old. Previously the card surfaced `oldest_pending` in the response payload but never flipped `step.ok=false` — stale leads silently rotted past 14 days.
+
+**Photo identification AI quality audit (`docs/PHOTO_AI_QUALITY_AUDIT.md` — 640 lines, 6 HIGH + 10 MED + 7 LOW + 1 INFO = 24 findings).** Different lens than Session 74's infrastructure audit — prompt engineering, accuracy patterns, false-positive/false-negative classes, the visual-memory moat.
+
+**Commit `d2536fc4` — Photo AI Q-14 + Q-8:**
+- **Q-14 HIGH** — MATERIAL_NOUNS list defanged. The whitelist had 19 of ~80 entries as colors/sizes/textures (`red`, `blue`, `small`, `thick`). Sonnet hallucinations like "small red object" standalone-validated as coherent negatives and poisoned `negative_descriptions[]`. Closed: split into MATERIAL_NOUNS (real materials only) + DESCRIPTOR_QUALIFIERS Set (kept as reference, no longer participates in gate). 25-char floor + 120-char specificity fallback unchanged.
+- **Q-8 HIGH** — Custom-work threshold collision. The `teacher_new_work` seed at `description_confidence=0.85` collided with `HAIKU_TRUST_CONFIDENCE=0.85`. Haiku's 0.6-0.85 self-reported confidence on the second photo of a custom work fell EXACTLY into the haiku_drafted fall-through — every Path B custom work permanently in audit queue. Lowered seed to 0.80; memory enrichment still applies because `is_custom=true` is whitelisted regardless.
+
+**Commit `da701b07` — Photo AI Q-1 (non-curriculum escape hatch):**
+- **Q-1 HIGH** — Pass 2 used `tool_choice={ name: 'tag_photo' }` which FORCES Haiku to pick some work every time. With ~5-20% of teacher captures not being curriculum works (snack time, group photos, classroom decor, child's face only, free play, transitions), Haiku produced confidently-wrong haiku_drafted entries that filled the audit queue. The manual 'Save as Other' button shipped earlier this session was the cleanup; this is the AI escape hatch.
+  - TAG_PHOTO_TOOL gains required `is_curriculum_work: boolean` field. Schema description tells Haiku to set false for snack/group/face-only/free-play/transitions/paperwork photos.
+  - Pass 2 system prompt opens with explicit `IS THIS A CURRICULUM WORK?` section listing disqualifying photo types and the expected field-set when not (work_name='Other', area='unknown', etc.).
+  - `/api/montree/photo-identification/process/route.ts` checks `ident.is_curriculum_work` BEFORE the haikuTrusted branch. False → writes `identification_status='confirmed'` (confirmed as not-a-work), `work_id=null`, `sonnet_draft.is_other=true`. Matches the schema used by the manual 'Save as Other' button so gallery 📌 + audit-queue exclusion + Brain learning skip all apply automatically.
+  - TwoPassResult.identification gains `is_curriculum_work` (defaults true for back-compat with cached responses). Pass 2b preserves the Pass 2 value.
+
+**Commit `fe68f0c2` — Photo AI Q-9 (negative cap raised):**
+- **Q-9 HIGH** — `MAX_NEGATIVES` raised from 8 → 50. FIFO eviction of old durable negatives let "previously-fixed confusions slowly drift back" (mis-diagnosed as Haiku regression, actually moat erosion). 50 entries × ~400 chars ≈ 20 KB per work row — trivial storage. 60-char-prefix dedupe already prevents copy-spam.
+
+**🚨 Architectural rules locked in this late-late session (do NOT let future agents break these):**
+
+121. **Vault token (1h-TTL JWT) is mandatory on every sensitive vault route.** Both admin session AND vault token must verify. Client-side vault token lives ONLY in `useRef` (never localStorage / sessionStorage). Wipe on lock + on session change. The bare `verifyAdminToken` is not sufficient gate.
+122. **`/api/admin/*` MUST be in the middleware admin-JWT gate.** Route handlers that "forget" to check auth must not expose data to anonymous callers. Same for `/api/weekly-planning/*`, `/api/curriculum-import/*`, `/api/students/*`, `/api/classroom/*`, `/api/onboard/*`.
+123. **NEVER accept auth credentials in URL query strings or request bodies.** Password / token MUST come from a header (Authorization, x-super-admin-token, x-vault-token). Otherwise every access log + CDN log + browser history is a credential leak.
+124. **Bulk destructive operations require explicit confirmation header + audit log BEFORE destruction.** Pattern: `x-confirm-bulk-delete: yes` header + `montree_outreach_log` row written before the delete fires. Logging failure is non-blocking; the audit trail itself is the non-repudiation guarantee.
+125. **Public form endpoints MUST be rate-limited.** Demo-request, signup, login — all at 5 requests / 15 minutes per IP via `checkRateLimit`. Length caps on all string fields. Without these, every public route is an inbox-flood / quota-burn vector.
+126. **Drip cron idempotency checks MUST paginate.** Single SELECT without `.range()` relies on PostgREST's 1000-row default; once exceeded, the check silently truncates and the cron re-fires. PAGE_SIZE=1000 + MAX_ROWS ceiling is the canonical pattern.
+127. **Admin overwrite of broadcast surfaces requires confirmation.** Story admin send → 409 with current message + `requires_overwrite_confirm: true` when an existing message would be replaced. Acknowledge via `acknowledge_overwrite: true` in body.
+128. **`log_action` enums require server-side whitelist.** Drip crons match on exact action strings; an arbitrary string from the client could induce typo'd action names that bypass idempotency.
+129. **`MATERIAL_NOUNS` is REAL NOUNS only — no colors / sizes / textures.** Otherwise Sonnet hallucinations standalone-validate as coherent negatives. Color/size/texture words live in `DESCRIPTOR_QUALIFIERS` Set as reference but never participate in the gate.
+130. **`teacher_new_work` seed at `description_confidence=0.80`, NEVER at `HAIKU_TRUST_CONFIDENCE` (0.85).** Threshold collision = Haiku self-confidence on a second photo falls exactly into haiku_drafted fall-through. Subsequent corrections lift confidence toward 1.0.
+131. **`tool_choice` on the photo Pass 2 is the schema's `is_curriculum_work` field — NOT the forced-tool API option.** Forcing tool_choice means the AI cannot signal "this isn't a work photo." The `is_curriculum_work=false` branch routes the photo to the 'Other' bucket automatically.
+132. **`negative_descriptions[]` cap is 50, not 8.** Old negatives are durable signal; new ones are more likely to be one-off oddities. Eviction backwards.
+133. **Passwords are timing-safe-compared.** `crypto.timingSafeEqual` with same-length buffers + zero-buffer compare on length mismatch. Practical risk capped by rate limit but defense in depth.
 
 **🚨 Architectural rules locked in this late session:**
 
