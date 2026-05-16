@@ -5,6 +5,29 @@ import { createAdminToken } from '@/lib/auth';
 import { checkRateLimit } from '@/lib/rate-limiter';
 import { logAudit, getClientIP, getUserAgent } from '@/lib/montree/audit-logger';
 import { getSupabase } from '@/lib/supabase-client';
+import { timingSafeEqual } from 'crypto';
+
+// 🚨 Session 113 V2 Whale-Class admin audit HIGH — timing-safe password
+// compare. The legacy `cred.password === password` short-circuits on the
+// first byte mismatch, which leaks the correct password's length and
+// gives an attacker a tiny but measurable side-channel. timingSafeEqual
+// runs in constant time relative to the longer of the two buffers.
+//
+// Note: this only matters for the offline-style attack where someone
+// can fire thousands of requests to time them; the rate limiter caps
+// at 5/15min already, so the practical risk is low. Defense in depth.
+function constantTimePasswordEqual(a: string, b: string): boolean {
+  const bufA = Buffer.from(a, 'utf8');
+  const bufB = Buffer.from(b, 'utf8');
+  // timingSafeEqual requires same-length buffers — if they differ in
+  // length, compare against a same-length zero buffer to keep the
+  // timing predictable, then return false.
+  if (bufA.length !== bufB.length) {
+    timingSafeEqual(bufA, Buffer.alloc(bufA.length));
+    return false;
+  }
+  return timingSafeEqual(bufA, bufB);
+}
 
 // Build admin credentials from environment (skip accounts with missing passwords).
 //
@@ -67,10 +90,19 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check against configured credentials (accounts with unset env vars are disabled)
-    const isValid = getAdminCredentials().some(
-      cred => cred.username === username && cred.password === password
-    );
+    // Check against configured credentials (accounts with unset env vars are disabled).
+    // 🚨 Session 113 V2 Whale-Class admin audit HIGH — timing-safe compare.
+    const creds = getAdminCredentials();
+    let isValid = false;
+    for (const cred of creds) {
+      if (
+        cred.username === username &&
+        constantTimePasswordEqual(cred.password, password)
+      ) {
+        isValid = true;
+        break;
+      }
+    }
 
     if (!isValid) {
       await logAudit(supabase, {

@@ -1,15 +1,49 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
+import { checkRateLimit } from '@/lib/rate-limiter';
+import { getClientIP } from '@/lib/montree/audit-logger';
+
+// 🚨 Session 113 V2 Outreach audit HIGH F-3.1 — input caps to prevent
+// inbox-flood / Resend-quota-burn / DB-junk attacks via the public form.
+// Real demo requesters never need anywhere near these limits.
+const MAX_NAME_LEN = 200;
+const MAX_SCHOOL_LEN = 200;
+const MAX_EMAIL_LEN = 320; // RFC 5321 max
 
 export async function POST(req: NextRequest) {
   try {
-    const { name, school, email } = await req.json();
+    const supabase = getSupabase();
 
-    if (!email || !email.includes('@')) {
-      return NextResponse.json({ error: 'Valid email required' }, { status: 400 });
+    // 🚨 Session 113 V2 Outreach audit HIGH F-3.1 — rate limit. The legacy
+    // route was publicly callable with zero rate-limit, zero captcha, zero
+    // length caps. A trivial loop could flood Tredoux's inbox, burn Resend
+    // quota, and seed the DB with junk that the drip cron then re-mailed
+    // for 14 days from the Montree brand domain. 5 requests / 15 minutes
+    // per IP is generous for legitimate users + tight for abuse.
+    const ip = getClientIP(req.headers);
+    const { allowed, retryAfterSeconds } = await checkRateLimit(
+      supabase, ip, '/api/montree/demo-request', 5, 15
+    );
+    if (!allowed) {
+      return NextResponse.json(
+        { error: 'Too many requests. Please try again later.' },
+        { status: 429, headers: { 'Retry-After': String(retryAfterSeconds) } }
+      );
     }
 
-    const supabase = getSupabase();
+    const { name, school, email } = await req.json();
+
+    if (!email || typeof email !== 'string' || !email.includes('@')) {
+      return NextResponse.json({ error: 'Valid email required' }, { status: 400 });
+    }
+    // 🚨 Session 113 V2 Outreach audit HIGH F-3.1 — length caps.
+    if (
+      email.length > MAX_EMAIL_LEN ||
+      (typeof name === 'string' && name.length > MAX_NAME_LEN) ||
+      (typeof school === 'string' && school.length > MAX_SCHOOL_LEN)
+    ) {
+      return NextResponse.json({ error: 'Input exceeds maximum length' }, { status: 400 });
+    }
 
     // 🚨 Session 113 V2 Outreach audit HIGH F-3.2 — ignoreDuplicates: TRUE.
     // The legacy upsert overwrote every field on existing curated contacts
@@ -87,7 +121,10 @@ export async function POST(req: NextRequest) {
     }
 
     return NextResponse.json({ success: true });
-  } catch {
+  } catch (err) {
+    // 🚨 Session 113 V2 — surface the error to logs for debugging (was
+    // silently swallowed with `catch {}` before). Still 500s to the user.
+    console.error('[demo-request POST] failed:', err);
     return NextResponse.json({ error: 'Something went wrong' }, { status: 500 });
   }
 }
