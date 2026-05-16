@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
-import { verifyParentSession } from '@/lib/montree/verify-parent-request';
+import { resolveAuthorizedParent } from '@/lib/montree/verify-parent-request';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 import { getChineseNameForWork } from '@/lib/montree/curriculum-loader';
@@ -137,21 +137,24 @@ export async function GET(
     const supabase = getSupabase();
     const locale = getLocaleFromRequest(request.url);
 
-    // SECURITY: Authenticate parent via session cookie
-    const session = await verifyParentSession();
+    // 🚨 Session 113 V2 Parent audit F-1.1 — re-verify parent↔child link
+    // at request time. Supports multi-child families via authorizedChildIds.
+    const session = await resolveAuthorizedParent(supabase);
     if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Get report (include content field which has saved works/photos)
+    // Get report. 🚨 Session 113 V2 Parent audit F-3.1 — filter status='sent'.
+    // Unpublished/draft reports must NOT be visible to parents.
     const { data: report, error: reportError } = await supabase
       .from('montree_weekly_reports')
       .select(`
         id, week_number, report_year, week_start, week_end, parent_summary,
         highlights, areas_of_growth, recommendations,
-        created_at, child_id, classroom_id, content
+        created_at, child_id, classroom_id, content, status
       `)
       .eq('id', reportId)
+      .eq('status', 'sent')
       .maybeSingle();
 
     if (reportError) {
@@ -162,8 +165,10 @@ export async function GET(
       return NextResponse.json({ error: 'Report not found' }, { status: 404 });
     }
 
-    // SECURITY: Verify the report belongs to the authenticated child
-    if (report.child_id !== session.childId) {
+    // SECURITY: Verify the report belongs to one of the parent's authorized
+    // children. Uses authorizedChildIds (multi-child safe) instead of the
+    // bare session.childId (single-child).
+    if (!session.authorizedChildIds.includes(report.child_id)) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 

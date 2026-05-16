@@ -3,7 +3,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
-import { verifyParentSession } from '@/lib/montree/verify-parent-request';
+import { resolveAuthorizedParent } from '@/lib/montree/verify-parent-request';
 import { getProxyUrl } from '@/lib/montree/media/proxy-url';
 
 // Area icon mapping
@@ -119,24 +119,17 @@ export async function GET(request: NextRequest) {
   try {
     const supabase = getSupabase();
 
-    // Get child ID from authenticated session
-    let childId: string | null = null;
-
-    const session = await verifyParentSession();
+    // 🚨 Session 113 V2 Parent audit F-1.1 — re-verify parent↔child link
+    // at request time. JWT-only verification would let a 30-day stale
+    // cookie keep working after invite revocation / parent unlink.
+    const session = await resolveAuthorizedParent(supabase);
     if (!session) {
       return NextResponse.json({
         success: false,
         error: 'Not authenticated'
       }, { status: 401 });
     }
-    childId = session.childId;
-    
-    if (!childId) {
-      return NextResponse.json({ 
-        success: false, 
-        error: 'No child ID' 
-      }, { status: 400 });
-    }
+    const childId = session.childId;
     
     // Fetch child info
     const { data: child, error: childError } = await supabase

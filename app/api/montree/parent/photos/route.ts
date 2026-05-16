@@ -3,7 +3,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
-import { verifyParentSession } from '@/lib/montree/verify-parent-request';
+import { resolveAuthorizedParent } from '@/lib/montree/verify-parent-request';
 import { getProxyUrl } from '@/lib/montree/media/proxy-url';
 
 
@@ -19,26 +19,31 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'child_id required' }, { status: 400 });
     }
 
-    // SECURITY: Authenticate parent via session cookie
-    const session = await verifyParentSession();
+    // 🚨 Session 113 V2 Parent audit F-1.1 — re-verify parent↔child link.
+    const session = await resolveAuthorizedParent(supabase);
     if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // SECURITY: Verify the requested child matches the authenticated session
-    if (session.childId !== childId) {
+    // Multi-child safe: requested child must be in the parent's authorized
+    // set, not just the JWT-stamped one.
+    if (!session.authorizedChildIds.includes(childId)) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    // Get approved photos for this child
+    // 🚨 Session 113 V2 Parent audit F-3.2 + F-3.3 — only return:
+    //   1. media_type = 'photo' (no videos / documents)
+    //   2. teacher_confirmed = true (NOT the weaker
+    //      identification_status.neq.pending_review filter, which let
+    //      haiku_drafted + sonnet_drafted + failed rows through to parents)
+    //   3. parent_visible != false (default-true with explicit-hide override)
     const { data: photos, error, count } = await supabase
       .from('montree_media')
       .select('id, storage_path, thumbnail_path, caption, captured_at, work_id', { count: 'exact' })
       .eq('child_id', childId)
-      .neq('parent_visible', false)  // Only parent-visible photos (neq false = true + null for backward compat)
-      // Exclude pending_review photos — not yet teacher-approved, must not be
-      // visible to parents. NULL-safe via .or() (Postgres .neq excludes NULL).
-      .or('identification_status.is.null,identification_status.neq.pending_review')
+      .eq('media_type', 'photo')
+      .eq('teacher_confirmed', true)
+      .neq('parent_visible', false)
       .order('captured_at', { ascending: false })
       .range(offset, offset + limit - 1);
 

@@ -1,40 +1,31 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
-import { verifyParentSession } from '@/lib/montree/verify-parent-request';
+import { resolveAuthorizedParent } from '@/lib/montree/verify-parent-request';
 
 
 export async function GET(request: NextRequest) {
   try {
     const supabase = getSupabase();
 
-    // SECURITY: Authenticate parent via session cookie
-    const session = await verifyParentSession();
+    // 🚨 Session 113 V2 Parent audit F-1.1 — re-verify parent↔child link.
+    const session = await resolveAuthorizedParent(supabase);
     if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // For invite-based access, only return the invited child
-    if (session.inviteId && session.childId) {
-      const { data: child, error: childError } = await supabase
-        .from('montree_children')
-        .select('id, name, nickname')
-        .eq('id', session.childId)
-        .single();
+    // Full-account multi-child families: return all authorized children.
+    // Invite-based sessions: single-element authorizedChildIds.
+    const { data: children, error: childErr } = await supabase
+      .from('montree_children')
+      .select('id, name, nickname')
+      .in('id', session.authorizedChildIds);
 
-      if (childError || !child) {
-        return NextResponse.json({
-          error: 'Failed to load child'
-        }, { status: 500 });
-      }
-
-      const response = NextResponse.json({ children: [child] });
-      response.headers.set('Cache-Control', 'private, max-age=120, stale-while-revalidate=300');
-      return response;
+    if (childErr) {
+      console.error('Get children error:', childErr.message);
+      return NextResponse.json({ error: 'Failed to load children' }, { status: 500 });
     }
 
-    // For standard login, this endpoint should not be used
-    // The frontend should track authenticated children from the login response
-    const response = NextResponse.json({ children: [] });
+    const response = NextResponse.json({ children: children || [] });
     response.headers.set('Cache-Control', 'private, max-age=120, stale-while-revalidate=300');
     return response;
   } catch (error: unknown) {
