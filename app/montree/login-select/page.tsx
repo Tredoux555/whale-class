@@ -215,7 +215,7 @@ function UnifiedLoginContent() {
               href="/pricing"
               className="text-white/30 hover:text-white/50 text-xs inline-block transition-colors"
             >
-              30 days free · See pricing →
+              See pricing →
             </a>
           </div>
         </div>
