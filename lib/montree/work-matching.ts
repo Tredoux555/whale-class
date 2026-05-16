@@ -156,6 +156,55 @@ export const mergeWorksWithCurriculum = (
 };
 
 // ================================================================
+// CROSS-AREA CONFUSION PAIRS — names that look similar but live in different areas
+// ================================================================
+//
+// Session 113 V2 photo AI quality audit Q-11: the `area_constrained_first`
+// matching strategy in matchToCurriculumV2 is silent on the exact case the
+// visual ID guide warns about. When Haiku Pass 2 returns one of these names,
+// the area filter happily resolves it within the picked area at high
+// confidence — even though the photo may show the OTHER (cross-area) work.
+//
+// Example: photo of NUMBER RODS (Mathematics, red+blue alternating). Pass 1
+// describes "graduated rods, colors alternating." Pass 2 sees colors weakly,
+// says area='sensorial', work_name='Red Rods', confidence 0.86. Gate A fires.
+// Wrong match auto-recorded.
+//
+// Fix: any name in this Set means the matcher MAY be hiding a cross-area
+// failure. The two-pass orchestrator uses this signal to FORCE Pass 2b
+// discrimination (image re-examination), which has the visual evidence
+// needed to choose correctly across areas.
+//
+// Add to this list when the visual ID guide documents a new "AREA vs AREA"
+// confusion. Keep entries lowercased to match the case-insensitive lookup.
+// Scope rule: ONLY include names where the visual ID guide documents the two
+// works as living in DIFFERENT areas. Same-area confusions (Color Box 1 vs 2
+// vs 3, Golden Beads vs Short Bead Stair) belong to the per-area pool and are
+// covered by Pass 2b's existing low-confidence trigger — NOT here. Putting a
+// same-area pair here just forces Pass 2b on every photo of that work, which
+// is a cost regression with no quality win.
+export const CROSS_AREA_CONFUSION_WORK_NAMES: ReadonlySet<string> = new Set<string>([
+  // Sensorial ↔ Mathematics — all-red rods vs red+blue alternating rods
+  // (visual-id-guide.ts:35 "RED RODS (Sensorial) vs NUMBER RODS (Mathematics)")
+  'red rods',
+  'number rods',
+  // Language ↔ Sensorial — square frames in a vertical rack (language, writing prep)
+  // vs a wide drawer cabinet of flat shape insets (sensorial, shape matching).
+  // (visual-id-guide.ts:48 "METAL INSETS (Language — writing preparation) vs GEOMETRIC CABINET (Sensorial — shape matching)")
+  'metal insets',
+  'geometric cabinet',
+]);
+
+/** Returns true if either the raw Haiku name OR the matcher's resolved name appears in the cross-area confusion list. */
+export function isCrossAreaConfusable(...names: Array<string | null | undefined>): boolean {
+  for (const n of names) {
+    if (!n) continue;
+    if (CROSS_AREA_CONFUSION_WORK_NAMES.has(n.toLowerCase().trim())) return true;
+  }
+  return false;
+}
+
+// ================================================================
 // JARO-WINKLER SIMILARITY — For disambiguating near-identical names
 // Used as tiebreaker when fuzzyScore gives equal scores (e.g., "Color Box 1" vs "Color Box 2")
 // ================================================================
