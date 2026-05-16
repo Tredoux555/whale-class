@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
-import { encryptMessage } from '@/lib/message-encryption';
+import { encryptMessage, decryptMessage } from '@/lib/message-encryption';
 import {
   getCurrentWeekStart,
   verifyStoryAdminToken,
@@ -156,7 +156,7 @@ export async function POST(req: NextRequest) {
     // --- TEXT MESSAGE (JSON body) ---
     if (contentType.includes('application/json')) {
       const body = await req.json();
-      const { message } = body;
+      const { message, acknowledge_overwrite } = body;
 
       if (!message || typeof message !== 'string' || message.trim().length === 0) {
         return NextResponse.json({ error: 'Message is required' }, { status: 400 });
@@ -168,6 +168,45 @@ export async function POST(req: NextRequest) {
       // Removes a low-effort DoS vector on the parent page render path.
       if (message.length > 5000) {
         return NextResponse.json({ error: 'Message too long (max 5,000 characters)' }, { status: 400 });
+      }
+
+      // 🚨 Session 113 V2 Story audit HIGH F-4.1 — overwrite confirmation.
+      // The legacy code blindly upserted into secret_stories.hidden_message
+      // for the current week with NO warning that there was already a
+      // message there. Admins could silently lose a previous message that
+      // parents hadn't read yet. Now: if the week already has a hidden
+      // message AND the client didn't send acknowledge_overwrite: true,
+      // refuse with 409 + return the existing message so the UI can show
+      // 'Currently showing to parents: ... Overwrite?' before retrying.
+      if (!acknowledge_overwrite) {
+        const { data: existingRow } = await supabase
+          .from('secret_stories')
+          .select('hidden_message, message_author, updated_at')
+          .eq('week_start_date', weekStartDate)
+          .maybeSingle();
+        if (existingRow && (existingRow as { hidden_message: string | null }).hidden_message) {
+          let existingPlaintext: string | null = null;
+          try {
+            existingPlaintext = decryptMessage(
+              (existingRow as { hidden_message: string }).hidden_message
+            );
+          } catch {
+            existingPlaintext = null;
+          }
+          return NextResponse.json(
+            {
+              error: 'There is already a message for this week. Sending will overwrite it.',
+              requires_overwrite_confirm: true,
+              existing: {
+                message: existingPlaintext,
+                author: (existingRow as { message_author: string | null }).message_author,
+                updated_at: (existingRow as { updated_at: string | null }).updated_at,
+              },
+              hint: 'Send again with `acknowledge_overwrite: true` to replace.',
+            },
+            { status: 409 }
+          );
+        }
       }
 
       const trimmedMessage = message.trim();

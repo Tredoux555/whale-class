@@ -100,6 +100,23 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ error: 'id or ids required' }, { status: 400 });
   }
 
+  // 🚨 Session 113 V2 Outreach audit HIGH F-4.1 — capture previous_status
+  // BEFORE the UPDATE so the audit log actually records the transition.
+  // The legacy code wrote 'unknown' for every row, making the audit trail
+  // useless. SELECT-then-UPDATE is racey under contention (two PATCH calls
+  // could both read the original status and both report it as previous);
+  // for outreach status changes this is acceptable because the operator
+  // is single-threaded (Tredoux) and the audit log is for forensic
+  // reconstruction, not concurrency control.
+  const { data: priorRows } = await supabase
+    .from('montree_outreach_contacts')
+    .select('id, status')
+    .in('id', targetIds);
+  const priorStatusById = new Map<string, string>();
+  for (const row of (priorRows || []) as Array<{ id: string; status: string | null }>) {
+    priorStatusById.set(row.id, row.status || 'null');
+  }
+
   const updateData: Record<string, unknown> = {
     status,
     updated_at: new Date().toISOString(),
@@ -135,12 +152,16 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  // Log the action
+  // Log the action — now with the REAL previous_status per contact.
   for (const contactId of targetIds) {
     await supabase.from('montree_outreach_log').insert({
       contact_id: contactId,
       action: `status_${status}`,
-      details: { notes, previous_status: 'unknown' },
+      details: {
+        notes,
+        previous_status: priorStatusById.get(contactId) || 'unknown',
+        new_status: status,
+      },
     }).catch(err => console.error('[campaign-manager] Failed to log action:', err));
   }
 
