@@ -227,6 +227,24 @@ export const GURU_TOOLS: Tool[] = [
     }
   },
   {
+    name: "update_child_tenure",
+    description: "Update how long this child has been in the program. Call when the teacher mentions tenure naturally in conversation — e.g. 'Amy's been with us for two years' or 'Jake just started last month' or 'she's been here about 6 months'. The tool updates the child's enrolled_at date so it appears correctly on the Edit Student form and informs Guru's age/experience-aware advice. Only call when the teacher explicitly states tenure for a specific child. Don't call this on vague mentions like 'they've been here a while'.",
+    input_schema: {
+      type: "object" as const,
+      properties: {
+        months_in_program: {
+          type: "number",
+          description: "How long the child has been in this Montessori program, in months. Use 0 for 'just started', 1-2 for 'a few weeks', 3-6 for 'a few months', 9-12 for 'most of the year', 12-23 for 'about a year', 24+ for 'two years or more'. Round to the closest whole month."
+        },
+        student_name: {
+          type: "string",
+          description: "Name of the student. Omit when the conversation is already scoped to one child."
+        }
+      },
+      required: ["months_in_program"]
+    }
+  },
+  {
     name: "save_parent_state",
     description: "Silently record the parent's emotional state during the conversation. Call this when you detect emotional content — overwhelm, guilt, joy, anxiety, confidence changes. Do NOT announce that you're calling this tool.",
     input_schema: {

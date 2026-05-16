@@ -389,6 +389,53 @@ Create a warm summary that confirms back to the teacher what you understood. The
       }
     }
 
+    // 🚨 Session 113 V2 polish — write enrolled_at back to montree_children
+    // when voice onboarding extracts an experience_level. Previously this
+    // signal drove curriculum seeding ONLY and was never reflected in the
+    // child's Time-in-Program field on the Edit Student modal. Teachers
+    // who said 'Amy's been with us for two years' on the voice intro
+    // would see Time in Program stuck at 'Just started'.
+    //
+    // Mapping aligns with the existing TENURE_OPTIONS in students/page.tsx:
+    //   new          → 0 months   (just enrolled)
+    //   some         → 2 months   (a few months)
+    //   experienced  → 15 months  (1+ years — matches '1_year_plus' tenure)
+    //   advanced     → 24 months  (2+ years)
+    //
+    // Only writes when enrolled_at is currently NULL — never overwrites a
+    // date the teacher set manually via Edit Student. Voice extraction is
+    // a best-guess; manual edits are ground truth.
+    try {
+      const { data: childRow } = await supabase
+        .from('montree_children')
+        .select('enrolled_at')
+        .eq('id', childId)
+        .maybeSingle();
+      const enrolledAtCurrent = (childRow as { enrolled_at: string | null } | null)?.enrolled_at;
+      if (!enrolledAtCurrent) {
+        const monthsBack = expLevel === 'advanced' ? 24
+                         : expLevel === 'experienced' ? 15
+                         : expLevel === 'some' ? 2
+                         : 0;
+        const enrolledAt = new Date();
+        enrolledAt.setMonth(enrolledAt.getMonth() - monthsBack);
+        const isoDate = enrolledAt.toISOString().slice(0, 10); // YYYY-MM-DD
+        const { error: enrolErr } = await supabase
+          .from('montree_children')
+          .update({ enrolled_at: isoDate })
+          .eq('id', childId);
+        if (enrolErr) {
+          console.error('[Onboard] enrolled_at update error (non-fatal):', enrolErr);
+        } else {
+          console.log(`[Onboard] enrolled_at set to ${isoDate} for ${childName} (expLevel=${expLevel}, ~${monthsBack} months)`);
+        }
+      } else {
+        console.log(`[Onboard] enrolled_at already set for ${childName} (${enrolledAtCurrent}) — preserving teacher's manual value`);
+      }
+    } catch (enrolErr) {
+      console.error('[Onboard] enrolled_at branch error (non-fatal):', enrolErr);
+    }
+
     // ── ALWAYS seed the 5 focus works (one per area) regardless of expLevel ──
     // Sonnet's job above was to guarantee non-null focus_<area> picks. We now
     // upsert each one as a montree_child_progress row with is_focus=true so
