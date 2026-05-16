@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 
 // /app/pricing/page.tsx — Montree public pricing page
-// One plan. One trial. No tiers.
+// One plan. Subscription from day 1. First month on us.
 
 export default function PricingPage() {
   const revealRefs = useRef<HTMLElement[]>([]);
@@ -89,7 +89,7 @@ export default function PricingPage() {
               <a href="/montree" style={{ fontSize: 13, fontWeight: 500, color: '#78716c', textDecoration: 'none' }}>Home</a>
               <a href="/montree/login-select" style={{ fontSize: 13, fontWeight: 500, color: '#78716c', textDecoration: 'none' }}>Log in</a>
               <a href="/montree/login-select" style={{ fontSize: 13, fontWeight: 600, padding: '9px 20px', borderRadius: 10, background: '#064e3b', color: 'white', textDecoration: 'none', letterSpacing: '0.2px' }}>
-                Start free trial
+                Get started
               </a>
             </div>
           </div>
@@ -103,10 +103,10 @@ export default function PricingPage() {
             </div>
             <h1 style={{ fontFamily: "'Playfair Display', serif", fontSize: 'clamp(2.2rem, 6vw, 3.4rem)', fontWeight: 700, color: '#064e3b', lineHeight: 1.1, letterSpacing: '-1.5px', marginBottom: 20 }}>
               One plan.<br />
-              <em style={{ color: '#10b981', fontStyle: 'italic' }}>30 days free to try it.</em>
+              <em style={{ color: '#10b981', fontStyle: 'italic' }}>Your first month is on us.</em>
             </h1>
             <p style={{ fontSize: '1.05rem', color: '#78716c', fontWeight: 300, lineHeight: 1.7, maxWidth: 480, margin: '0 auto' }}>
-              The full experience — AI photo identification, parent letters, teacher reports, Smart Shelf — from day one. One classroom, 30 days, no credit card.
+              The full experience — AI photo identification, parent letters, teacher reports, Smart Shelf — from day one. Card on file at signup. No charge for the first month while you set up.
             </p>
           </div>
         </section>
@@ -124,7 +124,7 @@ export default function PricingPage() {
               <div style={{ position: 'absolute', top: -80, right: -80, width: 280, height: 280, background: 'radial-gradient(circle, rgba(16,185,129,0.18) 0%, transparent 70%)', borderRadius: '50%', pointerEvents: 'none' }} />
               <div style={{ position: 'absolute', bottom: -60, left: -40, width: 200, height: 200, background: 'radial-gradient(circle, rgba(110,231,183,0.07) 0%, transparent 70%)', borderRadius: '50%', pointerEvents: 'none' }} />
 
-              {/* Trial badge */}
+              {/* First-month-included badge */}
               <div style={{
                 position: 'absolute', top: 24, right: 28,
                 background: 'rgba(110,231,183,0.15)', border: '1px solid rgba(110,231,183,0.3)',
@@ -132,7 +132,7 @@ export default function PricingPage() {
                 fontSize: 11, fontWeight: 700, color: '#6ee7b7',
                 letterSpacing: 1, textTransform: 'uppercase',
               }}>
-                30-day free trial
+                First month included
               </div>
 
               <div style={{ fontSize: 11, fontWeight: 700, color: '#6ee7b7', textTransform: 'uppercase', letterSpacing: 2, marginBottom: 20, position: 'relative' }}>Bloom</div>
@@ -159,25 +159,25 @@ export default function PricingPage() {
                 </div>
               </div>
 
-              {/* Trial terms — prominent and honest */}
+              {/* How it works — clear and honest */}
               <div style={{ padding: '14px 18px', borderRadius: 12, background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.08)', marginBottom: 24, position: 'relative' }}>
-                <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', fontWeight: 500, marginBottom: 8, textTransform: 'uppercase', letterSpacing: 1 }}>Trial includes</div>
+                <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', fontWeight: 500, marginBottom: 8, textTransform: 'uppercase', letterSpacing: 1 }}>How it works</div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                     <span style={{ color: '#6ee7b7', fontSize: 14 }}>✓</span>
-                    <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.75)' }}>Everything in Bloom — the full experience</span>
+                    <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.75)' }}>Card on file at signup</span>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                     <span style={{ color: '#6ee7b7', fontSize: 14 }}>✓</span>
-                    <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.75)' }}>One classroom only</span>
+                    <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.75)' }}>First month on us — no charge while you set up</span>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                     <span style={{ color: '#6ee7b7', fontSize: 14 }}>✓</span>
-                    <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.75)' }}>30 days — then $7/student/mo</span>
+                    <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.75)' }}>$7 per active student / month, billed monthly</span>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                     <span style={{ color: '#6ee7b7', fontSize: 14 }}>✓</span>
-                    <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.75)' }}>No credit card required to start</span>
+                    <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.75)' }}>Cancel anytime — no contracts</span>
                   </div>
                 </div>
               </div>
@@ -211,10 +211,10 @@ export default function PricingPage() {
                 boxShadow: '0 4px 20px rgba(0,0,0,0.2)',
                 position: 'relative',
               }}>
-                Start 30-day free trial
+                Get started
               </a>
               <p style={{ textAlign: 'center', fontSize: 11, color: 'rgba(255,255,255,0.25)', marginTop: 12, position: 'relative' }}>
-                One classroom · 30 days · No credit card
+                One subscription · Card on file · First month included
               </p>
             </div>
           </div>
@@ -265,7 +265,7 @@ export default function PricingPage() {
           </div>
         </section>
 
-        {/* ── TRIAL CLARITY BANNER ── */}
+        {/* ── FIRST-MONTH CLARITY BANNER ── */}
         <section ref={addReveal} style={{ padding: '0 24px 72px' }}>
           <div style={{
             maxWidth: 680, margin: '0 auto',
@@ -279,16 +279,16 @@ export default function PricingPage() {
             <div style={{ position: 'absolute', bottom: -60, left: -60, width: 220, height: 220, background: 'radial-gradient(circle, rgba(110,231,183,0.08) 0%, transparent 70%)', borderRadius: '50%', pointerEvents: 'none' }} />
             <div style={{ position: 'relative' }}>
               <div style={{ display: 'inline-block', padding: '5px 16px', borderRadius: 20, background: 'rgba(110,231,183,0.12)', border: '1px solid rgba(110,231,183,0.25)', marginBottom: 20 }}>
-                <span style={{ fontSize: 12, fontWeight: 600, color: '#6ee7b7', letterSpacing: 1.5, textTransform: 'uppercase' }}>30-day free trial</span>
+                <span style={{ fontSize: 12, fontWeight: 600, color: '#6ee7b7', letterSpacing: 1.5, textTransform: 'uppercase' }}>First month included</span>
               </div>
               <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: 'clamp(1.5rem, 3.5vw, 2.2rem)', color: 'white', marginBottom: 16, letterSpacing: '-0.5px' }}>
-                Feel the magic. Then decide.
+                Feel the magic from day one.
               </h2>
               <p style={{ fontSize: '0.95rem', color: 'rgba(255,255,255,0.6)', lineHeight: 1.75, maxWidth: 460, margin: '0 auto 12px' }}>
-                Your first 30 days are the full Bloom experience — every report, every parent letter, every AI feature. One classroom to start.
+                Card on file at signup. No charge for your first month while you set up. The full Montree experience — every report, every parent letter, every AI feature — from the first day.
               </p>
               <p style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.35)', lineHeight: 1.6, maxWidth: 400, margin: '0 auto 28px' }}>
-                After 30 days it&apos;s $7/student/month. If you choose not to continue, your classroom data stays intact — nothing is ever deleted.
+                $7 per active student per month. Cancel anytime before day 30 and never get charged. Your classroom data is never deleted.
               </p>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, justifyContent: 'center' }}>
                 <a href="/montree/login-select" className="cta-btn" style={{
@@ -296,7 +296,7 @@ export default function PricingPage() {
                   color: '#064e3b', fontWeight: 700, fontSize: 14,
                   textDecoration: 'none', letterSpacing: '0.2px',
                 }}>
-                  Start free trial
+                  Get started
                 </a>
                 <a href="/montree" className="cta-btn" style={{
                   padding: '14px 32px', borderRadius: 12,
@@ -307,7 +307,7 @@ export default function PricingPage() {
                   See how it works
                 </a>
               </div>
-              <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.25)', marginTop: 18 }}>One classroom · 30 days · No credit card · No contracts.</p>
+              <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.25)', marginTop: 18 }}>One subscription · Card on file · First month on us · No contracts.</p>
             </div>
           </div>
         </section>
@@ -321,16 +321,20 @@ export default function PricingPage() {
             <div ref={addReveal} style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
               {[
                 {
-                  q: 'What does "one classroom" mean for the trial?',
-                  a: 'During your 30-day trial you can set up one classroom with as many students as you like. Everything works — AI photo identification, parent letters, teacher reports, the Guru, Smart Shelf. After your trial, subscribing at $7/student/month unlocks additional classrooms.',
+                  q: 'How does the first month work?',
+                  a: 'You sign up with a card on file. We do not charge that card for the first 30 days. Use everything — AI photo identification, parent letters, teacher reports, the Guru, Smart Shelf — to set up your classroom and feel the magic. On day 31, the first month\'s subscription begins at $7 per active student. Cancel anytime before then and you are never charged.',
                 },
                 {
-                  q: 'What happens after the 30-day trial?',
-                  a: 'At day 30, you\'ll be asked to subscribe at $7/student/month. If you choose not to, you can export your data or keep it safely stored — nothing is ever deleted. There\'s no free tier to fall back to; Montree is an AI product and without the AI it isn\'t really Montree.',
+                  q: 'Why do you ask for a card upfront?',
+                  a: 'Two reasons. Honest: we are a real subscription service, not a freemium product, and we want the relationship to start as one. Practical: it removes a friction at month-end so the work you set up keeps running without anyone having to remember to add a card. If you decide Montree is not for you, cancel from your dashboard before day 30 and the card is never charged.',
+                },
+                {
+                  q: 'What does "one classroom" mean?',
+                  a: 'Your subscription covers your whole school — every classroom, every student in those classrooms. The pricing is per active student across the school. If you start with one classroom, you pay only for those students; add a second classroom and your bill grows by exactly those new students.',
                 },
                 {
                   q: 'Why is there only one plan?',
-                  a: 'Because the AI is the product. A watered-down free tier that strips out the AI doesn\'t give you a real impression of what Montree does — it just gives you a slightly prettier spreadsheet. We\'d rather you experience the full thing for 30 days and decide honestly. No decision fatigue, no tier-comparison headaches.',
+                  a: 'Because the AI is the product. A watered-down free tier that strips out the AI does not give you a real impression of what Montree does — it just gives you a slightly prettier spreadsheet. We would rather you experience the full thing for a month and decide honestly. No decision fatigue, no tier-comparison headaches.',
                 },
                 {
                   q: 'What is Claude Sonnet?',
@@ -342,7 +346,7 @@ export default function PricingPage() {
                 },
                 {
                   q: 'Is pricing per classroom or per school?',
-                  a: 'Per student across your school. If you have 40 students across two classrooms, you pay for 40 students — not per classroom. The trial covers one classroom to start; additional classrooms are included once you subscribe.',
+                  a: 'Per active student across your whole school. If you have 40 students across two classrooms, you pay for 40 students — not per classroom. Add or close classrooms freely; the bill follows your actual student count.',
                 },
                 {
                   q: 'Can I cancel at any time?',
@@ -377,7 +381,7 @@ export default function PricingPage() {
                 textDecoration: 'none', letterSpacing: '0.3px',
                 boxShadow: '0 8px 24px rgba(6,78,59,0.15)',
               }}>
-                Start free trial
+                Get started
               </a>
               <a href="/montree" className="cta-btn" style={{
                 padding: '14px 32px', borderRadius: 12,
