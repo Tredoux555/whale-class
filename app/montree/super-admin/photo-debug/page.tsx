@@ -109,6 +109,15 @@ export default function PhotoDebugLanding() {
           </button>
         </form>
 
+        <div style={{ marginTop: 18, padding: 14, background: C.cardBg, border: C.border, borderRadius: 8 }}>
+          <button
+            onClick={() => router.push('/montree/super-admin/photo-debug/recent')}
+            style={{ width: '100%', padding: '10px 14px', background: 'transparent', border: '1px solid rgba(52,211,153,0.30)', color: C.emerald, borderRadius: 6, fontSize: 13, cursor: 'pointer', textAlign: 'left' }}
+          >
+            📊 Recent decisions — top-down view of the last 50 pipeline decisions across all schools →
+          </button>
+        </div>
+
         <div style={{ marginTop: 24, fontSize: 12, color: C.textMuted, lineHeight: 1.7 }}>
           <p style={{ margin: '0 0 6px' }}><b style={{ color: C.textSecondary }}>How to get a media_id:</b></p>
           <ul style={{ margin: 0, paddingLeft: 18 }}>
