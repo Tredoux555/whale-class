@@ -333,6 +333,24 @@ export async function DELETE(req: NextRequest) {
       if (!validStatuses.includes(body.status)) {
         return NextResponse.json({ error: 'Invalid status' }, { status: 400 });
       }
+      // 🚨 Session 113 V2 Outreach audit CRITICAL F-2.1 — status-purge mode
+      // hard-deleted every matching lead + every associated DM thread with
+      // NO confirmation token, NO audit row, NO actor recorded. A single
+      // API call destroyed the funnel. Require an explicit
+      // x-confirm-bulk-delete: yes header to defend against trivial CSRF or
+      // accidental client bug — the operator must demonstrate intent.
+      const confirmHeader = req.headers.get('x-confirm-bulk-delete');
+      if (confirmHeader !== 'yes') {
+        return NextResponse.json(
+          {
+            error:
+              'Bulk delete by status requires explicit x-confirm-bulk-delete: yes header. ' +
+              'This is a destructive operation with no soft-delete recovery.',
+            confirm_header_required: 'x-confirm-bulk-delete: yes',
+          },
+          { status: 400 }
+        );
+      }
       const { data: rows, error: lookupErr } = await supabase
         .from('montree_leads')
         .select('id')
@@ -351,6 +369,27 @@ export async function DELETE(req: NextRequest) {
 
     if (targetIds.length === 0) {
       return NextResponse.json({ success: true, deleted: 0 });
+    }
+
+    // 🚨 Session 113 V2 Outreach audit F-2.1 — audit log the bulk delete
+    // BEFORE destruction so the act itself is non-repudiable. Best-effort —
+    // logging failure does not block the delete (since failure to log
+    // shouldn't trap the operator in an unrecoverable state), but the warn
+    // surfaces in Railway logs.
+    try {
+      await supabase.from('montree_outreach_log').insert({
+        action: 'leads_bulk_deleted',
+        metadata: {
+          target_ids: targetIds,
+          count: targetIds.length,
+          mode: queryLeadId ? 'single_id' : Array.isArray(body.lead_ids) ? 'id_list' : 'status_purge',
+          status_filter: typeof body.status === 'string' ? body.status : null,
+          ip_address: req.headers.get('x-forwarded-for') || 'unknown',
+          user_agent: req.headers.get('user-agent') || 'unknown',
+        },
+      });
+    } catch (logErr) {
+      console.warn('[leads DELETE] audit log write failed (non-blocking)', logErr);
     }
 
     // Clean up DMs for every targeted lead (best-effort)
