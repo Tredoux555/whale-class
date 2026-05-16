@@ -257,6 +257,42 @@ export async function GET(request: NextRequest) {
     });
     steps.push(demoRequests.step);
 
+    // 9. Cost-model drift — surfaces silently-wrong cost_usd logging from
+    // Tracy + Mira routes. assertSupportedCostModel writes a server_errors
+    // row when OPUS_MODEL diverges from the hardcoded COST_MODEL constant
+    // (audit Tracy + Mira Session 113 V2 quick win). If any drift row
+    // appears in the last 7 days, the health card flips to warn so we
+    // notice within hours instead of at end-of-month reconciliation.
+    const costModelDrift = await timed('cost_model_drift_7d', async () => {
+      try {
+        const { count } = await supabase
+          .from('montree_server_errors')
+          .select('id', { count: 'exact', head: true })
+          .gte('created_at', sevenDaysAgo)
+          .in('origin', ['mira/route', 'principal-agent/route'])
+          .ilike('message', '%Cost-model drift%');
+        const driftCount = count || 0;
+        return {
+          drift_events_7d: driftCount,
+          ok: driftCount === 0,
+        };
+      } catch {
+        // Table missing or query failed — degrade gracefully.
+        return { drift_events_7d: 0, ok: true, table_missing: true };
+      }
+    });
+    // Manually flip the step.ok flag based on the drift count (timed()
+    // always reports ok:true on a successful query — we override to surface
+    // any nonzero drift as a health-card warning).
+    if (
+      costModelDrift.result &&
+      typeof (costModelDrift.result as { drift_events_7d: number }).drift_events_7d === 'number' &&
+      (costModelDrift.result as { drift_events_7d: number }).drift_events_7d > 0
+    ) {
+      costModelDrift.step.ok = false;
+    }
+    steps.push(costModelDrift.step);
+
     const allOk = steps.every((s) => s.ok);
     return NextResponse.json(
       {

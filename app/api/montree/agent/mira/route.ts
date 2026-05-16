@@ -46,11 +46,32 @@ const COST_MODEL = 'claude-opus-4-6';
 const OPUS_INPUT_USD_PER_MTOK = 15;
 const OPUS_OUTPUT_USD_PER_MTOK = 75;
 
+// 🚨 Session 113 V2 Tracy + Mira audit quick win: cost-model drift now logs
+// to montree_server_errors in addition to console. Without the DB write, a
+// silently-wrong cost_usd in audit logs is invisible until end-of-month
+// reconciliation. With it, a single drift event surfaces in the super-admin
+// errors view within seconds. Module-scoped guard prevents log spam from a
+// single hot route.
+let _miraDriftLogged = false;
 function assertSupportedCostModel(model: string): void {
   if (model !== COST_MODEL) {
-    console.error(
-      `[mira] cost model drift: model="${model}" but cost constants are for "${COST_MODEL}".`
+    console.warn(
+      `[mira] cost model drift: model="${model}" but cost constants are for "${COST_MODEL}". Logging to montree_server_errors.`
     );
+    if (!_miraDriftLogged) {
+      _miraDriftLogged = true;
+      // Lazy-import to avoid loading the logger on the hot path.
+      import('@/lib/montree/server-errors').then(({ logServerError }) => {
+        logServerError({
+          origin: 'mira/route',
+          message: `Cost-model drift: model="${model}" vs COST_MODEL="${COST_MODEL}"`,
+          severity: 'warn',
+          context: { model, cost_model: COST_MODEL },
+        });
+      }).catch(err => {
+        console.error('[mira] failed to load server-errors logger (non-fatal):', err);
+      });
+    }
   }
 }
 
