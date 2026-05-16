@@ -47,27 +47,72 @@ function ParentPhotosContent() {
   const [hasMore, setHasMore] = useState(false);
   const [offset, setOffset] = useState(0);
 
+  // 🚨 Session 113 V2 Parent audit F-1.3 — cookie-based auth gate.
+  // The localStorage entry was forgeable and out-of-sync with the cookie.
+  // The httpOnly cookie is the only authority on parent identity.
   useEffect(() => {
-    const sessionStr = localStorage.getItem('montree_parent_session');
-    if (!sessionStr) {
-      router.push('/montree/parent/login');
-      return;
-    }
+    let cancelled = false;
+    (async () => {
+      try {
+        const sessionRes = await fetch('/api/montree/parent/auth/access-code', {
+          credentials: 'same-origin',
+        });
+        if (cancelled) return;
+        if (!sessionRes.ok) {
+          router.push('/montree/parent/login');
+          return;
+        }
+        const sessionData = await sessionRes.json();
+        if (!sessionData?.authenticated) {
+          router.push('/montree/parent/login');
+          return;
+        }
 
-    if (childIdParam) {
-      loadPhotos(childIdParam);
-    } else {
-      const selectedChildStr = localStorage.getItem('montree_selected_child');
-      if (selectedChildStr) {
-        const child = JSON.parse(selectedChildStr);
-        setChildName(child.name);
-        loadPhotos(child.id);
-      } else {
-        toast.error(t('common.noChildSelected'));
-        router.push('/montree/parent/dashboard');
+        // Resolve which child's photos to load. Priority:
+        //   1. ?child_id= URL param (explicit user navigation)
+        //   2. localStorage hint (multi-child parent's last selection — UX
+        //      only, server still validates via cookie)
+        //   3. The session's JWT-stamped child as a final fallback
+        let resolvedChildId: string | null = null;
+        let resolvedName: string | null = null;
+        if (childIdParam) {
+          resolvedChildId = childIdParam;
+        } else {
+          try {
+            const hint = localStorage.getItem('montree_selected_child');
+            if (hint) {
+              const parsed = JSON.parse(hint);
+              if (parsed?.id) {
+                resolvedChildId = parsed.id;
+                resolvedName = parsed.name || null;
+              }
+            }
+          } catch {}
+          if (!resolvedChildId && sessionData.child_id) {
+            resolvedChildId = sessionData.child_id;
+            resolvedName = sessionData.child_name || null;
+          }
+        }
+
+        if (!resolvedChildId) {
+          toast.error(t('common.noChildSelected'));
+          router.push('/montree/parent/dashboard');
+          return;
+        }
+
+        if (resolvedName) setChildName(resolvedName);
+        loadPhotos(resolvedChildId);
+      } catch (err) {
+        if (cancelled) return;
+        console.error('Parent photos auth check failed:', err);
+        router.push('/montree/parent/login');
       }
-    }
-  }, [router, childIdParam]);
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [router, childIdParam, t]);
 
   const loadPhotos = async (childId: string, append = false) => {
     try {
