@@ -48,6 +48,18 @@ export async function verifyUserToken(authHeader: string | null): Promise<string
     const { jwtVerify } = await import('jose');
     const token = authHeader.replace('Bearer ', '');
     const { payload } = await jwtVerify(token, getJWTSecret());
+    // 🚨 Session 113 V2 Story audit F-1.4 — role gate. Without this,
+    // an admin JWT (role='admin') was happily accepted as a user token.
+    // The result: admins showed up in /api/story/visits, /online,
+    // /api/story/message under their admin username, and admin tokens
+    // could be used anywhere a user token was expected.
+    //
+    // Negative-check pattern (REJECT admins) rather than positive-require
+    // (role='user') because legacy user JWTs (commit 8b26c5b0 and earlier)
+    // were minted with no role claim at all. We can tighten to positive
+    // require once we add role: 'user' to the mint AND old tokens expire
+    // (max 24h TTL).
+    if (payload.role === 'admin') return null;
     return payload.username as string;
   } catch {
     return null;

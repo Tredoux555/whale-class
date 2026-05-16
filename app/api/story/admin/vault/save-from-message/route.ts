@@ -54,7 +54,48 @@ export async function POST(req: NextRequest) {
       fileBuffer = Buffer.from(await fileData.arrayBuffer());
       contentType = fileData.type || 'application/octet-stream';
     } else {
-      // Absolute URL — fetch directly
+      // 🚨 Session 113 V2 Story audit F-1.3 SSRF — refuse arbitrary URLs.
+      // The legacy code accepted ANY string the admin POSTed and fetched it
+      // server-side, which let an admin (or anyone who held an admin token)
+      // exfiltrate Railway/AWS metadata, file://, or any internal endpoint
+      // by encrypting the response into the vault.
+      //
+      // Whitelist:
+      //  1. Relative /api/montree/media/proxy/ URLs (handled above)
+      //  2. Absolute URLs that resolve to montree.xyz / teacherpotato.xyz
+      //     hosts on https. NOTHING else.
+      const ALLOWED_HOSTS = new Set([
+        'montree.xyz', 'www.montree.xyz',
+        'teacherpotato.xyz', 'www.teacherpotato.xyz',
+      ]);
+      let parsed: URL;
+      try {
+        parsed = new URL(mediaUrl);
+      } catch {
+        return NextResponse.json({ error: 'mediaUrl is not a valid URL' }, { status: 400 });
+      }
+      if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') {
+        return NextResponse.json(
+          { error: 'mediaUrl must be http or https' },
+          { status: 400 }
+        );
+      }
+      if (!ALLOWED_HOSTS.has(parsed.hostname)) {
+        console.warn('[Vault Save] Refused non-allowlisted host', { host: parsed.hostname });
+        return NextResponse.json(
+          { error: 'mediaUrl host not allowed' },
+          { status: 400 }
+        );
+      }
+      // Defense in depth — also refuse file://, gopher://, etc. via protocol
+      // check above + IPv4-literal hostnames just in case (no allowed host
+      // is numeric).
+      if (/^\d/.test(parsed.hostname)) {
+        return NextResponse.json(
+          { error: 'mediaUrl host not allowed' },
+          { status: 400 }
+        );
+      }
       const response = await fetch(mediaUrl);
       if (!response.ok) {
         return NextResponse.json({ error: 'Failed to fetch media' }, { status: 400 });
