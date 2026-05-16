@@ -378,6 +378,28 @@ function BillingPageContent() {
                 {error}
               </div>
             )}
+
+            {/*
+              Alternative payment path. Original prompt: "they need a clean
+              and clear path to both" — i.e. Stripe Checkout for cards
+              + a direct line to Tredoux for everything else (wire transfers,
+              Chinese schools that can't use Stripe, fapiao questions,
+              custom invoicing arrangements). Always visible regardless
+              of subscription status so it works for paying schools too
+              who have billing questions.
+            */}
+            <div className="mt-5 border-t border-white/5 pt-4 text-center">
+              <p className="text-white/55 text-xs">
+                Card not an option? Need a custom invoice, wire transfer, or fapiao?{' '}
+                <a
+                  href="mailto:tredoux555@gmail.com?subject=Montree%20billing%20—%20alternative%20payment&body=Hi%20Tredoux,%0A%0AI%27d%20like%20to%20talk%20about%20paying%20for%20Montree%20outside%20Stripe%20Checkout.%20Our%20situation%20is:%0A%0A"
+                  className="text-emerald-300 hover:text-emerald-200 underline underline-offset-2"
+                >
+                  Email me directly
+                </a>{' '}
+                — I&apos;ll set up the right arrangement for your school.
+              </p>
+            </div>
           </section>
 
           {/* Invoice history */}
