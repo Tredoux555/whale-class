@@ -4,6 +4,7 @@ import { useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useI18n } from '@/lib/montree/i18n';
 import LanguageToggle from '@/components/montree/LanguageToggle';
+import MontreeMark from '@/components/montree/MontreeMark';
 
 // /montree/page.tsx — Montree landing page (v2 — deep forest palette)
 
@@ -142,33 +143,8 @@ export default function MontreeLanding() {
           gap: 10px;
           text-decoration: none;
         }
-        .m-logo-mark {
-          position: relative;
-          width: 28px;
-          height: 28px;
-          border-radius: 8px;
-          background: linear-gradient(135deg, #1D6B48 0%, #0c2419 100%);
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          border: 1px solid rgba(130,217,174,0.22);
-          box-shadow:
-            0 1px 0 rgba(130,217,174,0.18) inset,
-            0 6px 18px -6px rgba(6,20,14,0.8);
-          flex-shrink: 0;
-        }
-        /* Tiny gold dot — the star from the icon */
-        .m-logo-mark::after {
-          content: "";
-          position: absolute;
-          top: -2px;
-          right: -2px;
-          width: 6px;
-          height: 6px;
-          border-radius: 50%;
-          background: radial-gradient(circle at 35% 35%, #FFF6D6 0%, #E8C96A 55%, #b88f25 100%);
-          box-shadow: 0 0 8px rgba(232,201,106,0.55), 0 0 0 1px rgba(8,26,18,0.6);
-        }
+        /* .m-logo-mark and ::after rules removed — replaced by the
+           <MontreeMark> component which carries its own styling + spark. */
         .m-logo-word {
           font-family: var(--font-lora), Georgia, serif;
           font-weight: 500;
@@ -379,9 +355,12 @@ export default function MontreeLanding() {
         }
 
         @media (max-width: 640px) {
-          /* Hide secondary nav links on mobile (Library, Become an agent),
-             but keep Log in visible — users MUST be able to find it. */
+          /* Hide secondary nav links on mobile (Become an ambassador,
+             About) but keep Library (m-nav-link-library) visible on the
+             left and Log in on the right — per user directive these are
+             the always-reachable links. */
           .m-nav-link-secondary { display: none; }
+          .m-nav-link-library { font-size: 0.875rem; }
           .m-nav-link-login { font-size: 0.875rem; }
           .m-nav-inner { padding: 14px 20px; }
           .m-hero { padding: 80px 24px 100px; }
@@ -411,19 +390,38 @@ export default function MontreeLanding() {
       {/* ── PAGE CONTENT — sits above the fixed gradient div ── */}
       <div style={{ position: 'relative', zIndex: 1 }}>
 
-      {/* ── NAV ── */}
+      {/* ── NAV ──
+          LEFT cluster:  brand mark + 'Montree' wordmark + Library link
+          RIGHT cluster: Become an ambassador · About · Log in · LanguageToggle
+          On mobile (≤640px): Library STAYS visible on the left (user
+          directive — Library must be reachable everywhere). Become an
+          ambassador + About collapse via .m-nav-link-secondary. Log in +
+          LanguageToggle remain visible on the right.
+      */}
       <nav className="m-nav" aria-label="Primary">
         <div className="m-nav-inner">
-          <a className="m-logo" href="/montree" aria-label="Montree home">
-            <span className="m-logo-mark" aria-hidden="true" style={{ fontSize: '15px', lineHeight: 1 }}>🌿</span>
-            <span className="m-logo-word">Montree</span>
-          </a>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-            <Link className="m-nav-link m-nav-link-secondary" href="/montree/library" style={{ fontSize: '0.875rem', color: 'rgba(255,255,255,0.55)', textDecoration: 'none', letterSpacing: '0.01em', transition: 'color 200ms ease' }}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+            <a className="m-logo" href="/montree" aria-label="Montree home">
+              <MontreeMark size={28} />
+              <span className="m-logo-word">Montree</span>
+            </a>
+            <Link
+              className="m-nav-link m-nav-link-library"
+              href="/montree/library"
+              style={{
+                fontSize: '0.875rem',
+                color: 'rgba(255,255,255,0.55)',
+                textDecoration: 'none',
+                letterSpacing: '0.01em',
+                transition: 'color 200ms ease',
+              }}
               onMouseEnter={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.85)' )}
-              onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.55)')}>
+              onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.55)')}
+            >
               {t('landing.nav.library')}
             </Link>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
             <Link className="m-nav-link m-nav-link-secondary" href="/montree/become-an-agent" style={{ fontSize: '0.875rem', color: 'rgba(255,255,255,0.55)', textDecoration: 'none', letterSpacing: '0.01em', transition: 'color 200ms ease' }}
               onMouseEnter={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.85)' )}
               onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.55)')}>
@@ -512,7 +510,7 @@ export default function MontreeLanding() {
       {/* ── FOOTER ── */}
       <footer className="m-footer">
         <div className="m-footer-inner">
-          <span className="m-footer-mark" aria-hidden="true" style={{ fontSize: '9px', lineHeight: 1 }}>🌿</span>
+          <MontreeMark size={14} withSpark={false} />
           <span>Montree · montree.xyz</span>
         </div>
       </footer>

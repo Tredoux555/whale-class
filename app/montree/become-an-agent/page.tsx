@@ -19,6 +19,7 @@
 // Honeypot field `website_url_hp` for bot filtering.
 
 import { useRef, useEffect, useState, FormEvent } from 'react';
+import MontreeMark from '@/components/montree/MontreeMark';
 
 interface FormState {
   name: string;
@@ -408,7 +409,10 @@ export default function BecomeAnAgentPage() {
             on the same screen was wrong. */}
         <nav className="ba-nav">
           <div className="ba-nav-inner">
-            <a className="ba-logo" href="/montree">🌿 Montree</a>
+            <a className="ba-logo" href="/montree" style={{ display: 'inline-flex', alignItems: 'center', gap: '10px', textDecoration: 'none' }}>
+              <MontreeMark size={28} />
+              <span>Montree</span>
+            </a>
             <a
               className="ba-nav-login"
               href="/montree/login-select"
@@ -672,8 +676,9 @@ export default function BecomeAnAgentPage() {
         </section>
 
         {/* Footer */}
-        <footer className="ba-footer">
-          🌿 Montree · <a href="https://montree.xyz" style={{ color: 'rgba(130,217,174,0.7)', textDecoration: 'none' }}>montree.xyz</a>
+        <footer className="ba-footer" style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+          <MontreeMark size={14} withSpark={false} />
+          <span>Montree · <a href="https://montree.xyz" style={{ color: 'rgba(130,217,174,0.7)', textDecoration: 'none' }}>montree.xyz</a></span>
         </footer>
       </div>
     </>

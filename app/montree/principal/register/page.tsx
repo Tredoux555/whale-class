@@ -6,6 +6,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useI18n } from '@/lib/montree/i18n';
+import MontreeMark from '@/components/montree/MontreeMark';
 
 export default function PrincipalRegisterPage() {
   const router = useRouter();
@@ -223,8 +224,9 @@ export default function PrincipalRegisterPage() {
 
       {/* Footer */}
       <div className="absolute bottom-6 text-center">
-        <p className="text-slate-500 text-xs">
-          🌳 Montree • montree.xyz
+        <p className="text-slate-500 text-xs inline-flex items-center justify-center gap-1.5">
+          <MontreeMark size={12} withSpark={false} />
+          <span>Montree • montree.xyz</span>
         </p>
       </div>
     </div>
