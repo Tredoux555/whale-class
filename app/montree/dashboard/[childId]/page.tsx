@@ -107,6 +107,13 @@ export default function WeekPage() {
   // and the card never shows again. (Session 64 simplified the gate to profile-only.)
   const [hasProfile, setHasProfile] = useState<boolean | null>(null); // null = loading
   const [onboardingChildName, setOnboardingChildName] = useState<string>('');
+  // Per-classroom "Just start with photos" opt-out (Session 81 OnboardingPathChoice).
+  // When the teacher tapped "Just start with photos" on the dashboard, we set
+  // localStorage `montree.onboardingChoice.<classroomId> = 'photo'`. That same flag
+  // now also suppresses TellGuruCard on every child page in that classroom — per
+  // user directive Session 113 V2: they don't want voice intro pushed in their face
+  // after they've already chosen the photo-first path.
+  const [photoPathChosen, setPhotoPathChosen] = useState(false);
   // Game plan — stored in child.settings.game_plan
   const [gamePlan, setGamePlan] = useState<GamePlan | null>(null);
 
@@ -358,6 +365,19 @@ export default function WeekPage() {
     if (!childId) return;
     fetchGuruSettings();
   }, [childId, fetchGuruSettings]);
+
+  // Read the per-classroom "Just start with photos" opt-out flag and use it to
+  // suppress TellGuruCard. Same key as the dashboard's OnboardingPathChoice gate.
+  useEffect(() => {
+    const cid = session?.classroom?.id;
+    if (!cid || typeof window === 'undefined') return;
+    try {
+      const flag = window.localStorage.getItem(`montree.onboardingChoice.${cid}`);
+      if (flag === 'photo') setPhotoPathChosen(true);
+    } catch {
+      /* private browsing / disabled storage — non-fatal */
+    }
+  }, [session?.classroom?.id]);
 
   // Check if child has a mental profile (for Tell Guru onboarding) + fetch game plan
   useEffect(() => {
@@ -821,8 +841,11 @@ export default function WeekPage() {
       )}
 
       {/* Tell Guru onboarding — shown once, for brand-new students with no mental profile.
-          Once the teacher submits the intro, hasProfile flips to true and this never shows again. */}
-      {isEnabled('tell_guru_onboarding') && hasProfile === false && (
+          Once the teacher submits the intro, hasProfile flips to true and this never shows again.
+          🚨 ALSO gated on photoPathChosen — if the teacher tapped "Just start with photos"
+          on the dashboard OnboardingPathChoice, we never push the voice intro at them.
+          User directive Session 113 V2: don't push voice in their face after they opted out. */}
+      {isEnabled('tell_guru_onboarding') && hasProfile === false && !photoPathChosen && (
         <TellGuruCard
           childId={childId}
           childName={onboardingChildName || 'this child'}
