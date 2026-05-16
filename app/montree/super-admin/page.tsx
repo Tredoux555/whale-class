@@ -158,9 +158,9 @@ function DemoRequestAlert({ saToken }: { saToken: string }) {
     const body =
       `Hi ${firstName},\n\n` +
       `Thanks for reaching out about Montree.\n\n` +
-      `The fastest way to see it in action is to start a free 30-day trial — full Montree, one classroom, no credit card. ` +
-      `You can try every AI feature at your own pace and we can chat afterwards.\n\n` +
-      `Start your trial here: ${trialUrl}\n\n` +
+      `The fastest way to see it in action is to get started today — full Montree, one classroom, your first month is on us while you set up. ` +
+      `Card on file at signup, no charge for the first 30 days. You can try every AI feature at your own pace and we can chat afterwards.\n\n` +
+      `Get started here: ${trialUrl}\n\n` +
       `Or if you'd prefer a 20-minute walkthrough on a call first, reply with a few times that work for you this week and I'll send a calendar invite.\n\n` +
       `Kind regards,\nTredoux\nmontree.xyz`;
     const mailto = `mailto:${encodeURIComponent(lead.email)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;

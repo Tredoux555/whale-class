@@ -611,7 +611,7 @@ export async function sendTrialConvertedEmail(
   <div style="max-width:540px;margin:24px auto;padding:28px;background:#fff;border-radius:14px;border:1px solid rgba(52,211,153,0.18);">
     <h1 style="margin:0 0 12px;font-size:24px;font-family:Lora,Georgia,serif;font-weight:700;">Welcome to Montree</h1>
     <p style="font-size:15px;line-height:1.55;margin:0 0 16px;">Hi ${escapeHtml(principalName)},</p>
-    <p style="font-size:15px;line-height:1.55;margin:0 0 16px;">Your trial just converted to a paid plan — thank you for trusting Montree with ${escapeHtml(schoolName)}.</p>
+    <p style="font-size:15px;line-height:1.55;margin:0 0 16px;">Your first month has finished and billing has started — thank you for trusting Montree with ${escapeHtml(schoolName)}.</p>
     <p style="font-size:15px;line-height:1.55;margin:0 0 16px;">A few quick notes:</p>
     <ul style="font-size:14px;line-height:1.7;color:#1f2d24;padding-left:20px;margin:0 0 16px;">
       <li>Billing is $7 per active student, per month. Quantity syncs automatically as you add or remove children.</li>
@@ -622,7 +622,7 @@ export async function sendTrialConvertedEmail(
     <p style="font-size:14px;line-height:1.55;margin:24px 0 0;color:#5b6b73;">Kind regards,<br/>Tredoux<br/><a href="https://montree.xyz" style="color:#10b981;">montree.xyz</a></p>
   </div>
 </body></html>`;
-    const text = `Hi ${principalName},\n\nYour trial just converted to a paid plan — thank you for trusting Montree with ${schoolName}.\n\nQuick notes:\n- Billing is $7 per active student, per month. Quantity auto-syncs.\n- Cancel any time from your billing page (Stripe customer portal).\n- Every AI feature is now unlocked.\n- Reply to this email if you have questions — it goes directly to me.\n\nKind regards,\nTredoux\nmontree.xyz`;
+    const text = `Hi ${principalName},\n\nYour first month has finished and billing has started — thank you for trusting Montree with ${schoolName}.\n\nQuick notes:\n- Billing is $7 per active student, per month. Quantity auto-syncs.\n- Cancel any time from your billing page (Stripe customer portal).\n- Every AI feature is now unlocked.\n- Reply to this email if you have questions — it goes directly to me.\n\nKind regards,\nTredoux\nmontree.xyz`;
     const { data, error } = await getResend().emails.send({
       from: getFromEmail(),
       to: principalEmail,
@@ -657,14 +657,14 @@ const DRIP_COPY: Record<TrialDripDay, { subject: string; greeting: string; body:
   day14: {
     subject: "Two weeks in — what's working?",
     greeting: "Hi {name},",
-    body: "Halfway through your trial. Two weeks left.\n\nThe schools that get the most out of Montree at this stage are the ones who:\n\n- **Invited a parent or two** to see their child's portal — that's the moment Montree clicks for them.\n- **Voice-onboarded their students** so Tracy actually knows each child's history.\n\nIf you've done either, the second half of the trial just gets richer.\n\nQuestions or stuck on anything? Reply.",
+    body: "Halfway through your first month. Two weeks until billing starts.\n\nThe schools that get the most out of Montree at this stage are the ones who:\n\n- **Invited a parent or two** to see their child's portal — that's the moment Montree clicks for them.\n- **Voice-onboarded their students** so Tracy actually knows each child's history.\n\nIf you've done either, the second half just gets richer.\n\nQuestions or stuck on anything? Reply.",
     cta: 'Open Montree → https://montree.xyz/montree/dashboard',
   },
   day25: {
-    subject: 'Your Montree trial ends in 5 days',
+    subject: 'Billing starts in 5 days',
     greeting: "Hi {name},",
-    body: "Just a heads up — your trial expires in 5 days. After that, the AI features pause (your photos and data stay safe).\n\nIf Montree's been useful for {school}, you can activate the full plan from your billing page. It's $7 per active student per month, cancel any time, no contracts.\n\nIf it's not been useful, no hard feelings — reply and tell me what's missing. I want to know.",
-    cta: 'Activate full plan → https://montree.xyz/montree/admin/billing',
+    body: "Just a heads up — your first month wraps in 5 days and billing begins after that. Your card on file will be charged at $7 per active student, per month.\n\nIf Montree's been useful for {school}, there's nothing you need to do — everything continues seamlessly.\n\nIf you'd like to cancel before billing starts, you can do that from your billing page. And if it's not been useful, no hard feelings — reply and tell me what's missing. I want to know.",
+    cta: 'Open billing → https://montree.xyz/montree/admin/billing',
   },
 };
 
@@ -722,17 +722,17 @@ const DEMO_DRIP_COPY: Record<DemoDripDay, { subject: string; greeting: string; b
   day3: {
     subject: 'Following up on your Montree demo request',
     greeting: 'Hi {name},',
-    body: "Just a quick follow-up on your demo request from a few days ago. I've been working through the queue and want to make sure I get to you properly.\n\nIf you'd like to skip the wait, the fastest path is to **start a free 30-day trial** — full Montree, no credit card, one classroom. You can poke around at your own pace and we can chat afterwards.\n\nOtherwise reply with a few times that work for you this week and I'll send a calendar invite.",
+    body: "Just a quick follow-up on your demo request from a few days ago. I've been working through the queue and want to make sure I get to you properly.\n\nIf you'd like to skip the wait, the fastest path is to **get started at montree.xyz** — full Montree, one classroom, your first month is on us while you set up. Card on file at signup, no charge for the first 30 days. You can poke around at your own pace and we can chat afterwards.\n\nOtherwise reply with a few times that work for you this week and I'll send a calendar invite.",
   },
   day7: {
     subject: "Haven't forgotten you — Montree",
     greeting: 'Hi {name},',
-    body: "A week ago you asked for a Montree demo. I haven't forgotten you — life got in the way.\n\nIf the interest is still live, two ways forward:\n\n1. **Start the free trial** at montree.xyz — one classroom, 30 days, no credit card.\n2. **Reply with a 20-minute slot** and I'll come on a call.\n\nEither way, no pressure.",
+    body: "A week ago you asked for a Montree demo. I haven't forgotten you — life got in the way.\n\nIf the interest is still live, two ways forward:\n\n1. **Get started at montree.xyz** — one classroom, your first month on us, card on file at signup.\n2. **Reply with a 20-minute slot** and I'll come on a call.\n\nEither way, no pressure.",
   },
   day14: {
     subject: 'Last note from Montree',
     greeting: 'Hi {name},',
-    body: "Two weeks since your demo request. I'll stop chasing after this email — promise.\n\nIf Montree isn't the right fit for {school}, no hard feelings. If you'd like to take another look, the door's always open: just reply or start the free trial at montree.xyz.\n\nThank you for the look.",
+    body: "Two weeks since your demo request. I'll stop chasing after this email — promise.\n\nIf Montree isn't the right fit for {school}, no hard feelings. If you'd like to take another look, the door's always open: just reply or get started at montree.xyz.\n\nThank you for the look.",
   },
 };
 
@@ -801,9 +801,9 @@ export async function sendDemoTrialLinkReply(
     const text =
       `Hi ${firstName},\n\n` +
       `Thanks for reaching out about Montree.\n\n` +
-      `The fastest way to see it in action is to start a free 30-day trial — full Montree, one classroom, no credit card. ` +
-      `You can try every AI feature at your own pace and we can chat afterwards.\n\n` +
-      `Start your trial here: ${trialUrl}\n\n` +
+      `The fastest way to see it in action is to get started today — full Montree, one classroom, your first month is on us while you set up. ` +
+      `Card on file at signup, no charge for the first 30 days. You can try every AI feature at your own pace and we can chat afterwards.\n\n` +
+      `Get started here: ${trialUrl}\n\n` +
       `Or if you'd prefer a 20-minute walkthrough on a call first, reply with a few times that work for you this week and I'll send a calendar invite.\n\n` +
       `Kind regards,\nTredoux\nmontree.xyz`;
     const html = `<!doctype html>
@@ -811,9 +811,9 @@ export async function sendDemoTrialLinkReply(
   <div style="max-width:540px;margin:24px auto;padding:28px;background:#fff;border-radius:14px;border:1px solid rgba(52,211,153,0.18);">
     <p style="font-size:15px;line-height:1.6;margin:0 0 16px;color:#1f2d24;">Hi ${escapeHtml(firstName)},</p>
     <p style="font-size:15px;line-height:1.6;margin:0 0 16px;color:#1f2d24;">Thanks for reaching out about Montree.</p>
-    <p style="font-size:15px;line-height:1.6;margin:0 0 16px;color:#1f2d24;">The fastest way to see it in action is to start a free 30-day trial — full Montree, one classroom, no credit card. You can try every AI feature at your own pace and we can chat afterwards.</p>
+    <p style="font-size:15px;line-height:1.6;margin:0 0 16px;color:#1f2d24;">The fastest way to see it in action is to get started today — full Montree, one classroom, your first month is on us while you set up. Card on file at signup, no charge for the first 30 days. You can try every AI feature at your own pace and we can chat afterwards.</p>
     <p style="font-size:15px;line-height:1.6;margin:0 0 24px;color:#1f2d24;text-align:center;">
-      <a href="${trialUrl}" style="display:inline-block;padding:12px 24px;background:#10b981;color:#fff;font-weight:600;text-decoration:none;border-radius:10px;">Start your free trial →</a>
+      <a href="${trialUrl}" style="display:inline-block;padding:12px 24px;background:#10b981;color:#fff;font-weight:600;text-decoration:none;border-radius:10px;">Get started →</a>
     </p>
     <p style="font-size:15px;line-height:1.6;margin:0 0 24px;color:#1f2d24;">Or if you'd prefer a 20-minute walkthrough on a call first, reply with a few times that work for you this week and I'll send a calendar invite.</p>
     <p style="font-size:14px;line-height:1.55;margin:24px 0 8px;color:#5b6b73;">Kind regards,<br/>Tredoux<br/><a href="https://montree.xyz" style="color:#10b981;">montree.xyz</a></p>
