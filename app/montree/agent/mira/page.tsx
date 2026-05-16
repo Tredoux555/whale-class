@@ -11,6 +11,8 @@ import { useRouter } from 'next/navigation';
 import MiraAvatar from '@/components/montree/agent/MiraAvatar';
 import { miraKeys } from '@/lib/montree/mira/storage-keys';
 import { Send, Sparkles } from 'lucide-react';
+// Canonical action-line parser — Session 113 V2 audit MED-5.
+import { splitActionLine } from '@/lib/montree/ai/split-action-line';
 
 const T = {
   bg: '#0a1a0f',
@@ -526,7 +528,10 @@ function UserBubble({ text }: { text: string }) {
 }
 
 function AssistantBubble({ turn }: { turn: Turn }) {
-  const { mainText, actionLine } = splitActionLine(turn.text || '');
+  // Session 113 V2 audit MED-5 — canonical splitActionLine returns
+  // { body, action: string | null }. Local aliases preserved for backward
+  // compat with the existing JSX below.
+  const { body: mainText, action: actionLine } = splitActionLine(turn.text || '');
   return (
     <div style={{ display: 'flex', gap: 10 }}>
       <MiraAvatar size={32} />
@@ -610,18 +615,5 @@ function AssistantBubble({ turn }: { turn: Turn }) {
   );
 }
 
-function splitActionLine(text: string): { mainText: string; actionLine: string } {
-  // Tracy/Mira's action line is on its own paragraph prefixed with "→ ".
-  const arrowIdx = text.lastIndexOf('\n→ ');
-  if (arrowIdx === -1) {
-    // Also handle the case where the whole response IS just the action.
-    if (text.trimStart().startsWith('→ ')) {
-      return { mainText: '', actionLine: text.trimStart().slice(2).trim() };
-    }
-    return { mainText: text.trim(), actionLine: '' };
-  }
-  return {
-    mainText: text.slice(0, arrowIdx).trim(),
-    actionLine: text.slice(arrowIdx + 3).trim(),
-  };
-}
+// splitActionLine is imported from the canonical helper at the top of this file.
+// Session 113 V2 audit MED-5 — drift across 4 copies eliminated.
