@@ -43,7 +43,7 @@ export default function LanguageAreaLandingPage() {
           </h1>
 
           <p className="text-white/40 mt-5 text-lg max-w-md mx-auto leading-relaxed">
-            Two documents. The first tells you how to set the room up. The second tells you what to teach every day.
+            Four documents. The first tells you how to set the room up. The next three tell you what to teach every day — phase by phase from first letters to fluent reading.
           </p>
 
           <div className="mt-14 space-y-4">
@@ -100,6 +100,62 @@ export default function LanguageAreaLandingPage() {
                 </div>
               </div>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="relative z-10 text-pink-400/30 group-hover:text-pink-400 group-hover:translate-x-1 transition-all shrink-0">
+                <path d="M5 12h14M12 5l7 7-7 7" />
+              </svg>
+            </a>
+
+            {/* Blue Phase Lessons — blue */}
+            <a
+              href="/language-area-blue.html"
+              className="group relative flex items-center gap-5 w-full p-6 rounded-2xl border transition-all duration-300 hover:scale-[1.01] active:scale-[0.99]"
+              style={{
+                background: 'linear-gradient(135deg, rgba(59,130,246,0.10), rgba(30,64,175,0.04))',
+                borderColor: 'rgba(59,130,246,0.18)',
+              }}
+            >
+              <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" style={{ background: 'linear-gradient(135deg, rgba(59,130,246,0.14), rgba(30,64,175,0.06))' }} />
+
+              <div className="relative z-10 w-14 h-14 rounded-xl flex items-center justify-center shrink-0 transition-colors duration-300" style={{ background: 'rgba(59,130,246,0.18)' }}>
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-blue-400">
+                  <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+                  <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+                </svg>
+              </div>
+              <div className="relative z-10 flex-1 text-left">
+                <div className="text-white font-semibold text-lg">Blue Phase Lessons</div>
+                <div className="text-blue-200/40 text-sm mt-0.5">
+                  UFLI L54-83 · Magic-e · soft c/g · y as vowel · inflections · 2-syllable · r-controlled
+                </div>
+              </div>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="relative z-10 text-blue-400/30 group-hover:text-blue-400 group-hover:translate-x-1 transition-all shrink-0">
+                <path d="M5 12h14M12 5l7 7-7 7" />
+              </svg>
+            </a>
+
+            {/* Green Phase Lessons — deep green */}
+            <a
+              href="/language-area-green.html"
+              className="group relative flex items-center gap-5 w-full p-6 rounded-2xl border transition-all duration-300 hover:scale-[1.01] active:scale-[0.99]"
+              style={{
+                background: 'linear-gradient(135deg, rgba(34,197,94,0.10), rgba(21,128,61,0.04))',
+                borderColor: 'rgba(34,197,94,0.18)',
+              }}
+            >
+              <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" style={{ background: 'linear-gradient(135deg, rgba(34,197,94,0.14), rgba(21,128,61,0.06))' }} />
+
+              <div className="relative z-10 w-14 h-14 rounded-xl flex items-center justify-center shrink-0 transition-colors duration-300" style={{ background: 'rgba(34,197,94,0.18)' }}>
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-green-400">
+                  <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+                  <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+                </svg>
+              </div>
+              <div className="relative z-10 flex-1 text-left">
+                <div className="text-white font-semibold text-lg">Green Phase Lessons</div>
+                <div className="text-green-200/40 text-sm mt-0.5">
+                  UFLI L84-128 · vowel teams · silent letters · suffixes · prefixes · Greek + Latin roots
+                </div>
+              </div>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="relative z-10 text-green-400/30 group-hover:text-green-400 group-hover:translate-x-1 transition-all shrink-0">
                 <path d="M5 12h14M12 5l7 7-7 7" />
               </svg>
             </a>
