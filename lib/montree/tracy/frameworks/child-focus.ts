@@ -28,6 +28,72 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type Anthropic from '@anthropic-ai/sdk';
 import { randomBytes } from 'crypto';
+
+// 🚨 Session 113 V2 Tracy + Mira audit MED-6: localized compose fallback strings.
+// When Sonnet returns empty or errors mid-compose, Tracy previously fell through
+// to a hardcoded English sentence. Multilingual users (zh/es/fr/de/etc.) saw
+// English-in-Mandarin-UI on the rare failure. Now we pick a locale-appropriate
+// fallback. Real human translations — no Google output.
+//
+// Two variants: SOFT (Sonnet returned empty) is gentler than HARD (Sonnet
+// threw). Both end with "ask the teacher" since the teacher is always the
+// next move when Tracy can't compose.
+function getComposeFallback(locale: string, variant: 'soft' | 'hard', childName: string): string {
+  const key = (locale || 'en').toLowerCase().slice(0, 2);
+  const t = COMPOSE_FALLBACKS[key] || COMPOSE_FALLBACKS.en;
+  return variant === 'soft' ? t.soft(childName) : t.hard(childName);
+}
+
+const COMPOSE_FALLBACKS: Record<string, { soft: (n: string) => string; hard: (n: string) => string }> = {
+  en: {
+    soft: (n) => `I have ${n}'s file open but the system didn't put together a clean answer just now. I'd want to ask the teacher directly before we go further.`,
+    hard: (n) => `I had ${n}'s file open but couldn't pull the answer together just now. Worth asking the teacher directly while I sort this out.`,
+  },
+  zh: {
+    soft: (n) => `我已经打开了${n}的档案，但系统暂时没能整理出清晰的答复。在我们继续之前，建议直接问问老师。`,
+    hard: (n) => `我打开了${n}的档案，但暂时整理不出答复。我处理这边的同时，建议直接问问老师。`,
+  },
+  es: {
+    soft: (n) => `Tengo el expediente de ${n} abierto, pero el sistema no logró armar una respuesta clara en este momento. Mejor pregúntale directamente a la maestra antes de seguir.`,
+    hard: (n) => `Tenía el expediente de ${n} abierto, pero no pude armar la respuesta ahora. Vale la pena preguntarle directamente a la maestra mientras lo resuelvo.`,
+  },
+  de: {
+    soft: (n) => `Ich habe die Akte von ${n} geöffnet, aber das System konnte gerade keine klare Antwort zusammenstellen. Frag die Lehrerin direkt, bevor wir weitermachen.`,
+    hard: (n) => `Ich hatte die Akte von ${n} offen, konnte die Antwort aber gerade nicht zusammenstellen. Frag am besten die Lehrerin direkt, während ich das hier kläre.`,
+  },
+  fr: {
+    soft: (n) => `Le dossier de ${n} est ouvert, mais le système n'a pas pu formuler une réponse claire à l'instant. Il vaut mieux demander directement à l'enseignante avant d'aller plus loin.`,
+    hard: (n) => `J'avais ouvert le dossier de ${n}, mais je n'arrive pas à formuler la réponse en ce moment. Demande directement à l'enseignante pendant que je règle ça.`,
+  },
+  pt: {
+    soft: (n) => `O arquivo de ${n} está aberto, mas o sistema não conseguiu montar uma resposta clara agora. Vale perguntar à professora diretamente antes de seguir.`,
+    hard: (n) => `Tinha o arquivo de ${n} aberto, mas não consegui montar a resposta agora. Pergunte diretamente à professora enquanto eu resolvo isto.`,
+  },
+  nl: {
+    soft: (n) => `Het dossier van ${n} staat open, maar het systeem kreeg net geen helder antwoord op een rij. Vraag het de juf even rechtstreeks voordat we verdergaan.`,
+    hard: (n) => `Het dossier van ${n} stond open, maar ik kreeg het antwoord net niet rond. Vraag het de juf rechtstreeks terwijl ik het hier oplos.`,
+  },
+  it: {
+    soft: (n) => `Ho aperto la scheda di ${n}, ma il sistema non è riuscito a comporre una risposta chiara in questo momento. Meglio chiedere direttamente alla maestra prima di andare avanti.`,
+    hard: (n) => `Avevo aperto la scheda di ${n}, ma non sono riuscita a mettere insieme la risposta. Vale la pena chiedere direttamente alla maestra mentre risolvo.`,
+  },
+  ja: {
+    soft: (n) => `${n}さんのファイルは開いていますが、システムが今すぐにはきちんとした答えをまとめられませんでした。続ける前に、先生に直接聞いていただくのがよさそうです。`,
+    hard: (n) => `${n}さんのファイルは開いていましたが、今は答えをまとめられませんでした。こちらで対処している間、先生に直接聞いていただくのがよさそうです。`,
+  },
+  ko: {
+    soft: (n) => `${n}의 파일을 열어두었지만 시스템이 지금 깔끔한 답을 정리하지 못했습니다. 더 진행하기 전에 선생님께 직접 여쭤보시는 게 좋겠습니다.`,
+    hard: (n) => `${n}의 파일을 열어두었지만 지금 답을 정리하기 어려웠습니다. 제가 정리하는 동안 선생님께 직접 여쭤보시는 걸 권합니다.`,
+  },
+  uk: {
+    soft: (n) => `Файл ${n} відкритий, але система щойно не змогла зібрати чітку відповідь. Краще запитайте вчительку напряму, перш ніж рухатися далі.`,
+    hard: (n) => `Я мала відкритий файл ${n}, але зараз не вдалося зібрати відповідь. Варто запитати вчительку напряму, поки я з цим розберуся.`,
+  },
+  ru: {
+    soft: (n) => `Файл ${n} открыт, но система сейчас не смогла собрать чёткий ответ. Лучше спросите учителя напрямую, прежде чем двигаться дальше.`,
+    hard: (n) => `Файл ${n} был открыт, но мне не удалось собрать ответ сейчас. Стоит спросить учителя напрямую, пока я с этим разберусь.`,
+  },
+};
 import { HAIKU_MODEL } from '@/lib/ai/anthropic';
 import { getAILanguageInstruction } from '@/lib/montree/i18n/locale-config';
 
@@ -634,8 +700,9 @@ ${endFence}`;
 
     if (!text) {
       // Defensive fallback — Sonnet returned nothing usable.
+      // 🚨 Session 113 V2 audit MED-6: locale-aware fallback string.
       return {
-        text: `I have ${childName}'s file open but the system didn't put together a clean answer just now. I'd want to ask the teacher directly before we go further.`,
+        text: getComposeFallback(locale, 'soft', childName),
         sparse,
         grounded_in,
       };
@@ -645,8 +712,9 @@ ${endFence}`;
   } catch (err) {
     if (timeoutHandle) clearTimeout(timeoutHandle);
     console.error('[child_focus/compose] Sonnet compose failed', err);
+    // 🚨 Session 113 V2 audit MED-6: locale-aware fallback string.
     return {
-      text: `I had ${childName}'s file open but couldn't pull the answer together just now. Worth asking the teacher directly while I sort this out.`,
+      text: getComposeFallback(locale, 'hard', childName),
       sparse,
       grounded_in,
     };
