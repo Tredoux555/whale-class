@@ -132,11 +132,34 @@ export interface TwoPassInput {
   abortSignal?: AbortSignal;
 }
 
+// Sentinel — exported so the route can detect the placeholder-fallback case
+// without duplicating the string. Bumped to a distinctive marker rather than
+// a natural-sounding sentence so it can never accidentally match a real Haiku
+// output. See F-7 fix below.
+export const PASS1_FAILED_SENTINEL = '__PASS_1_UNAVAILABLE__';
+
 export interface TwoPassResult {
   /** True if Pass 2 produced a usable identification */
   success: boolean;
   /** Pass 1 visual description (always present, even on Pass 2 failure) */
   visualDescription: string;
+  /**
+   * True if Pass 1 failed (no usable visual description was produced). When
+   * true, Pass 2 was skipped entirely — there is nothing to match on. The
+   * route MUST treat this as a terminal failure (status='failed') instead of
+   * writing a haiku_drafted draft with garbage matches.
+   *
+   * AUDIT FIX (Session 113, F-7): previously, Pass 1 failure fell back to a
+   * placeholder string and Pass 2 produced confidently-wrong matches against
+   * the placeholder. Teachers saw drafts referencing curriculum works the
+   * photo couldn't possibly contain.
+   *
+   * Optional (?) for back-compat with the pre-existing early-return paths
+   * (no-anthropic-client + Pass 2 failed) — those still set success=false
+   * but pass1Failed remains undefined since Pass 1 wasn't the proximate
+   * cause. Treat `pass1Failed === true` as the only positive signal.
+   */
+  pass1Failed?: boolean;
   /** Structured Pass 2 result (null if Pass 2 failed) */
   identification: {
     /** The classroom-canonical work name (after matchToCurriculumV2) */
@@ -405,8 +428,25 @@ Just describe the physical scene in 2-4 sentences. Lead with the PRIMARY work th
     }
   }
 
+  // 🚨 F-7 (Session 113 photo pipeline audit): if Pass 1 failed (Anthropic
+  // couldn't fetch the photo, hit a 403/timeout, or returned an empty body),
+  // there is NOTHING TO MATCH. Previously we fell back to a soft placeholder
+  // and let Pass 2 produce garbage. Now: bail with a clear sentinel so the
+  // route writes status='failed' and the teacher sees an honest red error
+  // card instead of a confidently-wrong draft.
   if (!visualDescription) {
-    visualDescription = 'Unable to describe photo contents.';
+    return {
+      success: false,
+      visualDescription: PASS1_FAILED_SENTINEL,
+      pass1Failed: true,
+      identification: null,
+      hasVisualMemoryForMatch: false,
+      pass2bFired: false,
+      pass2bImproved: false,
+      modelUsed: HAIKU_MODEL,
+      errors: errors.length > 0 ? errors : ['Pass 1 produced no description — photo may be unfetchable by Anthropic.'],
+      context,
+    };
   }
 
   // ----- PASS 2: MATCH -----
