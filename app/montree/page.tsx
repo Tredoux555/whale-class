@@ -239,7 +239,15 @@ export default function MontreeLanding() {
            breathes underneath the button instead of crowding the title above. */
         .m-hero-kicker.m-hero-kicker-below {
           margin-bottom: 0;
-          margin-top: 28px;
+          margin-top: 36px;
+        }
+        /* Vertical stack with proportional spacing between title → CTA → kicker.
+           Title margin-bottom (44px) > CTA → kicker margin-top (36px) so the
+           negative space tapers naturally as the eye moves down. */
+        .m-hero-stack {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
         }
         .m-hero h1 {
           font-family: var(--font-lora), Georgia, serif;
@@ -248,7 +256,7 @@ export default function MontreeLanding() {
           line-height: 1.04;
           letter-spacing: -0.025em;
           color: #ffffff;
-          margin-bottom: 28px;
+          margin: 0 0 44px 0;
           max-width: 14ch;
         }
         .m-hero-sub {
@@ -421,6 +429,11 @@ export default function MontreeLanding() {
               onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.55)')}>
               {t('landing.nav.forTeachers')}
             </Link>
+            <Link className="m-nav-link m-nav-link-secondary" href="/montree/about" style={{ fontSize: '0.875rem', color: 'rgba(255,255,255,0.55)', textDecoration: 'none', letterSpacing: '0.01em', transition: 'color 200ms ease' }}
+              onMouseEnter={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.85)' )}
+              onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.55)')}>
+              About
+            </Link>
             {/* "What's new" link removed from public landing nav per Session 108 directive —
                 /montree/changelog is internal-use only now. The route still exists for direct
                 access. */}
@@ -435,19 +448,20 @@ export default function MontreeLanding() {
       </nav>
 
       {/* ── HERO ──
-          Session 113 V2: "Evolve your classroom. Evolve your school." now leads
-          the page per user directive. The Maria Montessori quote moved out of
-          the hero and lives in its own quiet block at the bottom of the page.
+          Session 113 V2 (revised): three elements, spaced cleanly.
+            1. The magic of Montree.   — title, leading the page
+            2. Try it                  — primary CTA
+            3. Change your life        — italic gold kicker beneath
+          The "Evolve your classroom" preheader added earlier today was
+          reverted per user directive. The Maria Montessori quote stays in
+          its own quiet block at the bottom of the page.
       */}
       <section className="m-hero">
-        <div ref={addReveal} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-          <p className="m-hero-evolve">{t('landing.hero.evolve')}</p>
+        <div ref={addReveal} className="m-hero-stack">
           <h1>{t('landing.hero.title')}</h1>
           <Link className="m-pill m-pill-lg" href="/montree/login-select?signup=true">
             {t('landing.hero.cta')}
           </Link>
-          {/* "Change your life" moved below the Try-it CTA per Session 108 directive —
-              acts as a punctuation flourish AFTER the call to action, not before the title. */}
           <span className="m-hero-kicker m-hero-kicker-below">{t('landing.hero.kicker')}</span>
         </div>
       </section>
