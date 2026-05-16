@@ -155,14 +155,24 @@ export default function ThisIsSheet({
       setMergeResult(null);
       setMergedLoserIds(new Set());
     } else {
-      // Pre-seed the search bar with Sonnet's proposed_name (editable),
-      // BUT only when confidence is reasonable (>= 0.4). Low-confidence
-      // suggestions mislead the teacher into one-tap creating a wrong
-      // work name — better to start with an empty search bar so they
-      // type the correct name from scratch.
+      // Pre-seed the search bar with the AI's proposed_name (editable).
+      //
+      // Session 113 photo pipeline audit recommendation #10: only pre-seed
+      // for Sonnet drafts (sonnet_drafted), NOT for Haiku drafts. Sonnet's
+      // proposed_name is the result of deep deliberation with all context
+      // — when it suggests a work name, it has thought about it. Haiku's
+      // proposed_name is faster + cheaper but more guessy; pre-seeding
+      // Haiku output into the search bar nudges the teacher toward
+      // accidental duplicate-work creation when Haiku's guess is wrong
+      // but PLAUSIBLE-sounding. Better to start with an empty search bar
+      // for Haiku drafts so the teacher types the real name.
+      //
+      // Confidence floor (>= 0.4) preserved — below that, neither source
+      // should pre-seed.
+      const isSonnetDraft = photo?.sonnet_draft?._source !== 'haiku_pass2' && photo?.sonnet_draft?._source !== 'haiku_pass2_matched';
       const proposed = photo?.sonnet_draft?.proposed_name?.trim() || '';
       const confidence = photo?.sonnet_draft?.confidence ?? 0;
-      if (proposed && confidence >= 0.4) setQuery(proposed);
+      if (proposed && confidence >= 0.4 && isSonnetDraft) setQuery(proposed);
       // Autofocus and select-all so a quick edit is one keypress away.
       // Using setTimeout to ensure DOM has rendered and focus can persist.
       setTimeout(() => {

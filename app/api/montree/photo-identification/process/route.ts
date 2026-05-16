@@ -298,6 +298,39 @@ export async function POST(request: NextRequest) {
       if (failedWriteErr) {
         console.error('[PhotoIdentification] Failed to write Pass-1-failed status:', failedWriteErr);
       }
+
+      // Telemetry row for the Pass 1 failure path (audit rec #5).
+      // Fire-and-forget; pipeline never waits.
+      void (async () => {
+        try {
+          const { error: telemErr } = await supabase
+            .from('montree_pipeline_telemetry')
+            .insert({
+              media_id: mediaId,
+              school_id: auth.schoolId,
+              classroom_id: media.classroom_id,
+              outcome: 'pass1_failed',
+              decision: 'pass1_failed',
+              pass1_failed: true,
+              pass1_description_len: 0,
+              pass2_success: false,
+              has_visual_memory_for_match: false,
+              visual_memory_set_size: identificationContext.visualMemoryWorkNames.size,
+              visual_memory_injected_count: identificationContext.visualMemoryInjectedCount,
+              pass2b_fired: false,
+              pass2b_improved: false,
+              haiku_trust_confidence_threshold: HAIKU_TRUST_CONFIDENCE,
+              auto_sonnet_queued: false,
+              errors: twoPassResult.errors.length > 0 ? twoPassResult.errors : null,
+            });
+          if (telemErr && (telemErr as { code?: string }).code !== '42P01') {
+            console.error('[PhotoIdentification] Telemetry insert failed on pass1_failed (non-fatal):', telemErr);
+          }
+        } catch (e) {
+          console.error('[PhotoIdentification] Telemetry insert threw on pass1_failed (non-fatal):', e);
+        }
+      })();
+
       return NextResponse.json({
         success: false,
         outcome: 'pass1_failed',
@@ -336,6 +369,61 @@ export async function POST(request: NextRequest) {
       threshold: HAIKU_TRUST_CONFIDENCE,
       outcome: haikuTrusted ? 'trusted' : 'sonnet_fallback',
     }));
+
+    // 🚨 Session 113 photo pipeline audit recommendation #5: write a per-
+    // photo telemetry row to montree_pipeline_telemetry so future threshold
+    // tuning becomes a DB query instead of a Railway-log grep. Architectural
+    // rule: NO FKs on this table (preserves data through media-delete).
+    //
+    // Fire-and-forget. The pipeline never waits for this write. If the
+    // table doesn't exist (migration 211 not yet run), the .then() catches
+    // the 42P01 and logs once — pipeline continues.
+    const determinedOutcome =
+      haikuTrusted && ident && media.classroom_id
+        ? 'haiku_matched'
+        : twoPassResult.success && ident
+          ? 'haiku_drafted'
+          : 'failed';
+    void (async () => {
+      try {
+        const { error: telemErr } = await supabase
+          .from('montree_pipeline_telemetry')
+          .insert({
+            media_id: mediaId,
+            school_id: auth.schoolId,
+            classroom_id: media.classroom_id,
+            outcome: determinedOutcome,
+            decision: haikuTrusted ? 'trusted' : (twoPassResult.success ? 'sonnet_fallback' : 'no_match'),
+            pass1_failed: false,
+            pass1_description_len: twoPassResult.visualDescription.length,
+            pass2_success: twoPassResult.success,
+            pass2_confidence: ident?.confidence ?? null,
+            pass2_work_name: ident?.workName ?? null,
+            pass2_haiku_raw_work_name: ident?.haikuWorkName ?? null,
+            pass2_match_score: ident?.matchScore ?? null,
+            pass2_area: ident?.area ?? null,
+            has_visual_memory_for_match: twoPassResult.hasVisualMemoryForMatch,
+            visual_memory_set_size: context.visualMemoryWorkNames.size,
+            visual_memory_injected_count: context.visualMemoryInjectedCount,
+            pass2b_fired: twoPassResult.pass2bFired,
+            pass2b_improved: twoPassResult.pass2bImproved,
+            haiku_trust_confidence_threshold: HAIKU_TRUST_CONFIDENCE,
+            auto_sonnet_queued: !haikuTrusted && twoPassResult.success && ident !== null && ident.confidence < AUTO_SONNET_CONFIDENCE_THRESHOLD,
+            errors: twoPassResult.errors.length > 0 ? twoPassResult.errors : null,
+          });
+        if (telemErr) {
+          // 42P01 = relation does not exist. Migration 211 not run yet.
+          // Log once at warn and bail — pipeline continues uninterrupted.
+          if ((telemErr as { code?: string }).code === '42P01') {
+            console.warn('[PhotoIdentification] Telemetry table missing — run migration 211. Suppressing further warnings.');
+          } else {
+            console.error('[PhotoIdentification] Telemetry insert failed (non-fatal):', telemErr);
+          }
+        }
+      } catch (e) {
+        console.error('[PhotoIdentification] Telemetry insert threw (non-fatal):', e);
+      }
+    })();
 
     if (haikuTrusted && ident && media.classroom_id) {
       const workId = await resolveClassroomWorkId(supabase, media.classroom_id, ident.workName);
