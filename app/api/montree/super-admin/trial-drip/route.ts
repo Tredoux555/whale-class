@@ -147,6 +147,57 @@ export async function POST(request: NextRequest) {
       continue;
     }
 
+    // 🚨 Session 113 V2 Outreach audit MED F-7.4 — INSERT-then-send.
+    //
+    // The legacy pattern raced when two cron triggers fired concurrently
+    // (manual + scheduled, or Railway retry). Both saw "not sent yet" and
+    // both sent — recipients got duplicate day7/day14/day25 emails.
+    //
+    // The fix is to INSERT the idempotency-claim row first (the partial
+    // UNIQUE on idempotency_key from migration 213 rejects the second
+    // runner's insert with 23505), then fire the email only after winning
+    // the claim. Trial-drip uses school_id as subject since this table
+    // tracks schools not contacts.
+    const idempotencyKey = `trial_drip_${drip.key}::${s.id}`;
+    const { error: claimErr } = await supabase
+      .from('montree_outreach_log')
+      .insert({
+        action: `trial_drip_${drip.key}`,
+        notes: `Trial drip ${drip.key} claim for ${s.owner_email}`,
+        idempotency_key: idempotencyKey,
+        metadata: {
+          school_id: s.id,
+          day: drip.day,
+          days_since_signup: daysSince,
+          claim_phase: 'pre_send',
+        },
+      });
+    if (claimErr) {
+      const code = (claimErr as { code?: string }).code;
+      if (code === '23505') {
+        outcomes.push({
+          school_id: s.id,
+          school_name: s.name || s.id,
+          day: drip.key,
+          ok: false,
+          skipped: 'already_sent',
+        });
+        continue;
+      }
+      console.error(
+        '[trial-drip] claim insert failed (run migration 213?):',
+        claimErr
+      );
+      outcomes.push({
+        school_id: s.id,
+        school_name: s.name || s.id,
+        day: drip.key,
+        ok: false,
+        error: claimErr.message,
+      });
+      continue;
+    }
+
     try {
       const r = await sendTrialDripEmail(
         s.owner_email,
@@ -155,14 +206,11 @@ export async function POST(request: NextRequest) {
         drip.key
       );
       if (r.success) {
-        // Log idempotency record.
-        await supabase.from('montree_outreach_log').insert({
-          action: `trial_drip_${drip.key}`,
-          notes: `Drip ${drip.key} sent to ${s.owner_email}`,
-          metadata: { school_id: s.id, day: drip.day, days_since_signup: daysSince, message_id: r.messageId },
-        });
         outcomes.push({ school_id: s.id, school_name: s.name || s.id, day: drip.key, ok: true });
       } else {
+        // Send failed AFTER the claim was inserted. Leave the claim in
+        // place so a re-run doesn't double-fire if the upstream eventually
+        // succeeds asynchronously.
         outcomes.push({
           school_id: s.id,
           school_name: s.name || s.id,

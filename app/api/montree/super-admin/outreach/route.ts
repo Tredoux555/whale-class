@@ -9,6 +9,59 @@ import { getSupabase } from '@/lib/supabase-client';
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
+// 🚨 Session 113 V2 Outreach audit MED F-7.2 — whitelist of columns that
+// upsert_contact and bulk_import are allowed to write. Without this, the
+// route was upserting the request body verbatim, meaning any future
+// sensitive column (stripe_customer_id, internal_priority_score, etc.)
+// could be set or overwritten by anything in a request body. The DB-level
+// CHECK constraints on contact_type / status / priority / email_status
+// still apply on top of the whitelist; this is defense in depth at the
+// route layer.
+const ALLOWED_CONTACT_COLUMNS = new Set<string>([
+  'id',
+  'org_name',
+  'contact_person',
+  'email',
+  'phone',
+  'website',
+  'country',
+  'region',
+  'contact_type',
+  'priority',
+  'est_schools_reached',
+  'status',
+  'email_subject',
+  'gmail_draft_id',
+  'draft_date',
+  'sent_date',
+  'bounce_date',
+  'reply_date',
+  'follow_up_count',
+  'last_follow_up',
+  'next_follow_up',
+  'email_status',
+  'mx_verified',
+  'notes',
+  'reply_summary',
+  'source',
+  'batch_tag',
+  'created_at',
+  'updated_at',
+]);
+
+function pickContactColumns(
+  raw: Record<string, unknown> | null | undefined
+): Record<string, unknown> {
+  if (!raw || typeof raw !== 'object') return {};
+  const out: Record<string, unknown> = {};
+  for (const key of Object.keys(raw)) {
+    if (ALLOWED_CONTACT_COLUMNS.has(key)) {
+      out[key] = raw[key];
+    }
+  }
+  return out;
+}
+
 // GET — dashboard stats + contacts with optional filters
 export async function GET(request: NextRequest) {
   const { valid } = await verifySuperAdminAuth(request.headers);
@@ -102,9 +155,10 @@ export async function GET(request: NextRequest) {
     }
 
     return NextResponse.json({ error: 'Invalid view' }, { status: 400 });
-  } catch (e: any) {
+  } catch (e) {
+    const message = e instanceof Error ? e.message : 'unknown error';
     console.error('[outreach] GET error:', e);
-    return NextResponse.json({ error: e.message }, { status: 500 });
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
 
@@ -119,10 +173,16 @@ export async function POST(request: NextRequest) {
 
   try {
     // Upsert a single contact
+    //
+    // 🚨 Session 113 V2 Outreach audit MED F-7.2 — pickContactColumns()
+    // narrows the body to the whitelist BEFORE the upsert. Without this,
+    // the route was writing the raw body verbatim and any future sensitive
+    // column on the table could be set/overwritten by anything in the body.
     if (action === 'upsert_contact') {
-      const { contact } = body;
-      if (!contact?.org_name) return NextResponse.json({ error: 'org_name required' }, { status: 400 });
+      const rawContact = body.contact as Record<string, unknown> | undefined;
+      if (!rawContact?.org_name) return NextResponse.json({ error: 'org_name required' }, { status: 400 });
 
+      const contact = pickContactColumns(rawContact);
       contact.updated_at = new Date().toISOString();
       const { data, error } = await supabase
         .from('montree_outreach_contacts')
@@ -134,6 +194,11 @@ export async function POST(request: NextRequest) {
     }
 
     // Bulk import contacts
+    //
+    // 🚨 Session 113 V2 Outreach audit MED F-7.2 + MED F-7.3 — narrow body
+    // to whitelist, and split the per-row error count by Postgres error code
+    // so real DB errors (anything other than 23505 unique_violation) are
+    // surfaced rather than silently bucketed as "skipped duplicate".
     if (action === 'bulk_import') {
       const { contacts } = body;
       if (!Array.isArray(contacts) || contacts.length === 0) {
@@ -141,15 +206,19 @@ export async function POST(request: NextRequest) {
       }
 
       const now = new Date().toISOString();
-      const rows = contacts.map((c: any) => ({
-        ...c,
+      const rows = contacts.map((c: Record<string, unknown>) => ({
+        ...pickContactColumns(c),
         created_at: now,
         updated_at: now,
       }));
 
       // Insert in batches of 50
       let inserted = 0;
-      let skipped = 0;
+      let duplicates = 0;
+      let errors = 0;
+      const errorSamples: Array<{ code: string | null; message: string }> = [];
+      const MAX_ERROR_SAMPLES = 5;
+
       for (let i = 0; i < rows.length; i += 50) {
         const batch = rows.slice(i, i + 50);
         const { data, error } = await supabase
@@ -157,13 +226,25 @@ export async function POST(request: NextRequest) {
           .upsert(batch, { onConflict: 'id', ignoreDuplicates: true })
           .select('id');
         if (error) {
-          // Try inserting one by one to skip duplicates
+          // Try inserting one by one to classify each failure.
           for (const row of batch) {
             const { error: singleErr } = await supabase
               .from('montree_outreach_contacts')
               .insert(row);
             if (singleErr) {
-              skipped++;
+              const code = (singleErr as { code?: string }).code || null;
+              if (code === '23505') {
+                // Unique violation — legitimate duplicate skip.
+                duplicates++;
+              } else {
+                errors++;
+                if (errorSamples.length < MAX_ERROR_SAMPLES) {
+                  errorSamples.push({
+                    code,
+                    message: singleErr.message || 'unknown DB error',
+                  });
+                }
+              }
             } else {
               inserted++;
             }
@@ -173,13 +254,38 @@ export async function POST(request: NextRequest) {
         }
       }
 
-      // Log the import
+      // Log the import. If real errors occurred, log a separate row so the
+      // operator can see partial-failure imports in the activity log.
       await supabase.from('montree_outreach_log').insert({
         action: 'bulk_import',
-        details: { count: inserted, skipped, source: body.source || 'manual' },
+        details: { count: inserted, duplicates, errors, source: body.source || 'manual' },
       });
+      if (errors > 0) {
+        await supabase
+          .from('montree_outreach_log')
+          .insert({
+            action: 'import_partial',
+            details: {
+              inserted,
+              duplicates,
+              errors,
+              error_samples: errorSamples,
+              source: body.source || 'manual',
+            },
+          })
+          .then(({ error: logErr }) => {
+            if (logErr) console.error('[outreach] import_partial log failed:', logErr);
+          });
+      }
 
-      return NextResponse.json({ inserted, skipped });
+      // legacy `skipped` retained for backward-compat with existing UI consumers.
+      return NextResponse.json({
+        inserted,
+        duplicates,
+        errors,
+        error_samples: errorSamples,
+        skipped: duplicates,
+      });
     }
 
     // Log an action (bounce detected, reply detected, etc.).
@@ -236,7 +342,7 @@ export async function POST(request: NextRequest) {
     // Update contact status
     if (action === 'update_status') {
       const { contact_id, status, extra } = body;
-      const update: any = { status, updated_at: new Date().toISOString() };
+      const update: Record<string, unknown> = { status, updated_at: new Date().toISOString() };
       if (status === 'bounced') update.bounce_date = new Date().toISOString();
       if (status === 'replied') update.reply_date = new Date().toISOString();
       if (status === 'sent') update.sent_date = new Date().toISOString();
@@ -258,8 +364,9 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json({ error: 'Unknown action' }, { status: 400 });
-  } catch (e: any) {
+  } catch (e) {
+    const message = e instanceof Error ? e.message : 'unknown error';
     console.error('[outreach] POST error:', e);
-    return NextResponse.json({ error: e.message }, { status: 500 });
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
