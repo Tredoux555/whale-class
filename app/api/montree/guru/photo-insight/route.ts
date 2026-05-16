@@ -2225,15 +2225,22 @@ Match this description to the correct Montessori work. Use the visual identifica
                     area: finalArea,
                     is_custom: true,
                     visual_description: desc,
-                    source: 'first_capture',
+                    // Renamed 'first_capture' → 'auto_first_capture' (Session 113
+                    // audit quick win). Behavior unchanged; the new name makes the
+                    // architectural exclusion explicit: this source is filtered OUT
+                    // of Pass 2 injection because it's auto-generated, not teacher-
+                    // validated. Pass 2's filter is teacher_setup>=1.0 OR
+                    // correction>=0.9 OR is_custom=true — confidence 0.7 here means
+                    // is_custom=true is what gets it through, not the source value.
+                    source: 'auto_first_capture',
                     source_media_id: media_id,
                     photo_url: photoUrl,
                     description_confidence: 0.7,
                     updated_at: new Date().toISOString(),
                   }, { onConflict: 'classroom_id,work_name' })
                   .then(({ error }) => {
-                    if (error) console.error('[VisualMemory] First-capture upsert error:', error);
-                    else console.log(`[VisualMemory] First-capture stored for custom work "${finalWorkName}"`);
+                    if (error) console.error(`[VisualMemory] auto_first_capture upsert error (media=${media_id}):`, error);
+                    else console.log(`[VisualMemory] auto_first_capture stored for custom work "${finalWorkName}" (media=${media_id})`);
                   });
               }
             }).catch((err) => {

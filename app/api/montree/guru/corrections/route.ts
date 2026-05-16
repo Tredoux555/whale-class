@@ -369,7 +369,12 @@ export async function POST(request: NextRequest) {
         })
       );
     } else if (aiTier.tier === 'free' && corrected_work_name) {
-      console.log('[Corrections] Skipping Sonnet enrichment for free-tier school — correction itself still saved');
+      // Session 113 audit quick-win: bumped from console.log to console.warn so
+      // this surfaces in Railway log-level filters. Free-tier schools save the
+      // correction (photo update, work assignment, teacher_confirmed flip) but
+      // do NOT accrue visual memory moat data — that's intentional architecture
+      // (moat compounds for paying customers per Session 57 rule #29).
+      console.warn(`[Corrections] Skipping Sonnet enrichment for free-tier school=${auth.schoolId} — correction saved but no visual memory write fired.`);
     }
 
     // Step 6: Feed into brain learning system
@@ -812,9 +817,9 @@ Analyze the photo and call the correction_analysis tool.` },
                 area: originalArea,
                 negative: richNegative,
               });
-              console.log(`[VisualMemory] Sonnet correction analysis: negative on "${originalWorkName}" — ${mistakeReason.slice(0, 80)}`);
+              console.log(`[VisualMemory] (media=${mediaId}) Sonnet correction analysis: negative on "${originalWorkName}" — ${mistakeReason.slice(0, 80)}`);
             } else if (!coherent) {
-              console.warn(`[VisualMemory] SKIPPED moat-poisoning negative on "${originalWorkName || '?'}" — Sonnet reasoning lacked concrete material references. raw="${richNegative.slice(0, 120)}"`);
+              console.warn(`[VisualMemory] (media=${mediaId}) SKIPPED moat-poisoning negative on "${originalWorkName || '?'}" — Sonnet reasoning lacked concrete material references. raw="${richNegative.slice(0, 120)}"`);
             }
             // Bidirectional: also record a reverse negative on the CORRECT work so Haiku
             // knows that THIS work can be confused with the original guess. Same gate.
@@ -827,9 +832,9 @@ Analyze the photo and call the correction_analysis tool.` },
       }
     } catch (err) {
       if (apiAbortController.signal.aborted) {
-        console.error('[VisualMemory] Sonnet correction analysis timed out');
+        console.error(`[VisualMemory] (media=${mediaId}) Sonnet correction analysis timed out`);
       } else {
-        console.error('[VisualMemory] Sonnet correction analysis failed (non-fatal):', err);
+        console.error(`[VisualMemory] (media=${mediaId}) Sonnet correction analysis failed (non-fatal):`, err);
       }
       // Fall through — we may still have a cached visualDescription from step 1
     } finally {
@@ -838,7 +843,7 @@ Analyze the photo and call the correction_analysis tool.` },
   }
 
   if (!visualDescription || visualDescription.length < 10) {
-    console.warn(`[VisualMemory] No usable description for "${correctedWorkName}"`);
+    console.warn(`[VisualMemory] (media=${mediaId}) No usable description for "${correctedWorkName}"`);
     return;
   }
   visualDescription = visualDescription.slice(0, 800);
@@ -889,7 +894,7 @@ Analyze the photo and call the correction_analysis tool.` },
     }
   }
 
-  console.log(`[VisualMemory] Enriched "${correctedWorkName}" via ${descriptionSource}${isRealCorrection ? ` + negative on "${originalWorkName}"` : ''}`);
+  console.log(`[VisualMemory] (media=${mediaId}) Enriched "${correctedWorkName}" via ${descriptionSource}${isRealCorrection ? ` + negative on "${originalWorkName}"` : ''}`);
   invalidateClassroomEmbeddings(classroomId);
 }
 
@@ -1121,7 +1126,7 @@ async function generateAndStoreVisualMemory({
   } catch (err) {
     // Check if OUR AbortController fired (the 45s timeout) — most reliable signal
     if (apiAbortController.signal.aborted) {
-      console.error(`[VisualMemory] Haiku vision call timed out after 45s (${Date.now() - haikuStartMs}ms) — skipping visual memory generation`);
+      console.error(`[VisualMemory] (media=${mediaId}) Haiku vision call timed out after 45s (${Date.now() - haikuStartMs}ms) — skipping visual memory generation`);
       return; // Non-fatal: correction still saved, only visual learning skipped
     }
     throw err;
@@ -1144,7 +1149,7 @@ async function generateAndStoreVisualMemory({
   }
 
   if (!visualDescription || visualDescription.length < 10) {
-    console.warn(`[VisualMemory] Haiku returned empty/short description for "${workName}"`);
+    console.warn(`[VisualMemory] (media=${mediaId}) Haiku returned empty/short description for "${workName}"`);
     return;
   }
 

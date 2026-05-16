@@ -265,7 +265,12 @@ export async function POST(request: NextRequest) {
           });
         }
       }
-      console.log(`[PhotoIdentification] Loaded ${classroomWorks.length} custom classroom works into curriculum (total: ${curriculum.length})`);
+      console.log(`[PhotoIdentification] (media=${mediaId}) Loaded ${classroomWorks.length} custom classroom works into curriculum (total: ${curriculum.length})`);
+    } else {
+      // Session 113 audit quick win: also log on the no-custom-works branch
+      // so "is the classroom's curriculum even loaded?" is one grep away
+      // instead of inferred-from-silence.
+      console.log(`[PhotoIdentification] (media=${mediaId}) No custom classroom works for classroom=${media.classroom_id} (curriculum=${curriculum.length} from static)`);
     }
 
     const context = identificationContext;
