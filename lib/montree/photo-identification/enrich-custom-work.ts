@@ -46,8 +46,23 @@ export async function enrichCustomWorkInBackground(input: EnrichInput): Promise<
       : [];
 
     // 2. Seed montree_visual_memory immediately so the next photo of this
-    //    work gets injected into Pass 2 right away. Confidence 1.0 because
-    //    the teacher just told us this is the ground truth.
+    //    work gets injected into Pass 2 right away.
+    //
+    // Session 113 photo pipeline audit, recommendation #8: lowered
+    // description_confidence from 1.0 → 0.85. The teacher confirms the
+    // WORK NAME is right ("yes this is Popsicle Letter Sorting") but
+    // the single captured photo is one archetype — the visual_description
+    // generated from it captures one camera angle, one lighting, one
+    // child's hand position. At 1.0 confidence Pass 2 trusts this single
+    // archetype as canonical for the work and the moat builds up mono-bias
+    // — every future capture of the work has to look like the FIRST
+    // capture to trigger Gate A trust.
+    //
+    // 0.85 keeps the entry trusted for injection (Pass 2 filter is
+    // teacher_setup≥1.0 OR correction≥0.9 OR is_custom=true) AND leaves
+    // room for the entry to be ENRICHED by subsequent corrections without
+    // overwriting a 1.0 ceiling. Future teacher corrections will bump
+    // upward toward 1.0 as the moat for this work matures across photos.
     if (seedVisual) {
       await supabase
         .from('montree_visual_memory')
@@ -57,7 +72,7 @@ export async function enrichCustomWorkInBackground(input: EnrichInput): Promise<
             work_name: workName,
             visual_description: seedVisual,
             key_materials: seedMaterials,
-            description_confidence: 1.0,
+            description_confidence: 0.85,
             source: 'teacher_new_work',
             source_media_id: mediaId,
             is_custom: true,
