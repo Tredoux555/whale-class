@@ -492,9 +492,14 @@ export async function POST(request: NextRequest) {
 // and Weekly Wrap see current-day work without waiting for reports.
 //
 // Rules:
-//   - No row exists → insert status='presenting' (minimum claim: "I saw this child do this")
-//   - Row exists with status='presenting' → refresh updated_at so it stays current
+//   - No row exists → insert status='presented' (minimum claim: "I saw this child do this")
+//   - Row exists with status='presented' → refresh updated_at so it stays current
 //   - Row exists with status='practicing' or 'mastered' → leave completely alone (never downgrade)
+//
+// (Comment fix Session 113 — the code uses 'presented' per migration 081's
+// enum. The earlier comment said 'presenting' which never matched reality.
+// Mastery is teacher-decision-only per Session 66 architectural rule —
+// photo count never implies mastered.)
 // ========================================================
 
 async function upsertProgressObservation({
@@ -569,31 +574,67 @@ async function upsertProgressObservation({
 // occasional negative example is much cheaper than letting hallucinated
 // distinguishing logic corrupt the corpus.
 const MATERIAL_NOUNS = [
+  // Materials of construction
   'wooden', 'wood', 'metal', 'plastic', 'fabric', 'cloth', 'paper', 'cardboard',
   'sandpaper', 'glass', 'ceramic', 'rubber', 'felt', 'leather', 'cork', 'bamboo',
+  // Common Montessori components
   'beads', 'cylinders', 'tablets', 'cards', 'frames', 'tray', 'mat', 'bowl',
   'pitcher', 'pegs', 'sticks', 'rods', 'cubes', 'prisms', 'spheres', 'circles',
   'squares', 'triangles', 'rectangles', 'letters', 'numbers', 'numerals',
-  'sandpaper letter', 'sandpaper number', 'red', 'blue', 'yellow', 'pink',
-  'green', 'orange', 'purple', 'black', 'white', 'gray', 'rough', 'smooth',
-  'rigid', 'soft', 'hard', 'thick', 'thin', 'large', 'small',
+  'sandpaper letter', 'sandpaper number', 'sandpaper letters',
+  // Session 113 F-9 expansion — high-value Montessori-specific nouns the
+  // original list missed. Each one I confirmed shows up in real classroom
+  // observations + makes a negative concretely-grounded.
+  'knobs', 'knobbed', 'spindles', 'spindle box', 'chips', 'counters',
+  'puzzle', 'globe', 'map', 'binomial', 'trinomial', 'hierarchical',
+  'fraction', 'fractions', 'geometric', 'inset', 'insets', 'pouring',
+  'transferring', 'tongs', 'tweezers', 'sponge', 'sponges', 'brush', 'brushes',
+  'jug', 'spoon', 'scissors', 'lock', 'locks', 'bell', 'bells',
+  'cylinder block', 'pink tower', 'brown stair', 'red rods', 'movable alphabet',
+  // Color, texture, shape qualifiers
+  'red', 'blue', 'yellow', 'pink', 'green', 'orange', 'purple', 'black', 'white', 'gray',
+  'rough', 'smooth', 'rigid', 'soft', 'hard', 'thick', 'thin', 'large', 'small',
 ];
 
+/**
+ * 🚨 F-9 (Session 113 photo pipeline audit): softer coherence gate.
+ *
+ * Previous gate was `length >= 60 AND material_noun_present`. Rejected
+ * legitimate distinguishing reasoning that was short-and-concrete OR
+ * long-and-specific-but-using-unlisted-vocabulary.
+ *
+ * New gate: accept whenever EITHER condition is satisfied —
+ *   (1) a concrete material noun appears (from corrected work's
+ *       key_materials OR the standard MATERIAL_NOUNS list), OR
+ *   (2) the text is long enough (>= 120 chars) that Sonnet had room to
+ *       BE specific, even without an exact noun match in our list.
+ *
+ * Floor still rejects pure noise (< 25 chars).
+ *
+ * Trade-off: slightly more permissive, occasional generic-long-ramble
+ * leaks in. The negatives directory still acts as one signal among
+ * many — visual_description, key_materials, and the LOOKS LIKE field
+ * dominate Pass 2. Better to grow the moat with occasional noise than
+ * starve it.
+ */
 function isCoherentNegative(negative: string, knownMaterials: string[]): boolean {
   const text = negative.toLowerCase();
-  // Floor: a real material reference takes more than a generic phrase.
-  if (text.length < 60) return false;
+  // Pure-noise floor — must be more than 25 chars
+  if (text.length < 25) return false;
 
-  // 1. Direct hit on a known key_material from the corrected work
+  // (1) Direct hit on a known key_material from the corrected work
   for (const m of knownMaterials) {
     const ml = m.toLowerCase().trim();
     if (ml.length >= 3 && text.includes(ml)) return true;
   }
-  // 2. Direct hit on any standard Montessori material noun
+  // (2) Direct hit on any standard Montessori material noun
   for (const noun of MATERIAL_NOUNS) {
     if (text.includes(noun)) return true;
   }
-  // 3. No concrete material referenced — Sonnet is generalising. Reject.
+  // (3) Length-only fallback — long, specific-sounding negatives without
+  // an exact material-word match. Set the bar high so true ramblings
+  // still get filtered. 120 chars ≈ 1-2 sentences of specific reasoning.
+  if (text.length >= 120) return true;
   return false;
 }
 

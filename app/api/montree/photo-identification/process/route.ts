@@ -281,7 +281,30 @@ export async function POST(request: NextRequest) {
       context,
     });
 
-    console.log(`[PhotoIdentification] media=${mediaId} pass1="${twoPassResult.visualDescription.slice(0, 80)}" pass2.success=${twoPassResult.success} confidence=${twoPassResult.identification?.confidence ?? 'n/a'} hasVM=${twoPassResult.hasVisualMemoryForMatch} pass2b.fired=${twoPassResult.pass2bFired} pass2b.improved=${twoPassResult.pass2bImproved}`);
+    console.log(`[PhotoIdentification] media=${mediaId} pass1="${twoPassResult.visualDescription.slice(0, 80)}" pass2.success=${twoPassResult.success} confidence=${twoPassResult.identification?.confidence ?? 'n/a'} hasVM=${twoPassResult.hasVisualMemoryForMatch} pass2b.fired=${twoPassResult.pass2bFired} pass2b.improved=${twoPassResult.pass2bImproved} pass1Failed=${twoPassResult.pass1Failed ?? false}`);
+
+    // 🚨 F-7 (Session 113 photo pipeline audit): if Pass 1 failed (Anthropic
+    // couldn't fetch the photo URL, hit a 403/CORS/timeout, returned empty),
+    // there is NOTHING TO MATCH. The previous placeholder-fallback path let
+    // Pass 2 produce drafts referencing works the photo couldn't possibly
+    // contain. Now we treat Pass 1 failure as terminal: write `failed` and
+    // return so the audit UI shows an honest error card.
+    if (twoPassResult.pass1Failed) {
+      console.log(`[PhotoIdentification] Pass 1 failed terminal — media=${mediaId} errors=${JSON.stringify(twoPassResult.errors)}`);
+      const { error: failedWriteErr } = await supabase
+        .from('montree_media')
+        .update({ identification_status: 'failed' })
+        .eq('id', mediaId);
+      if (failedWriteErr) {
+        console.error('[PhotoIdentification] Failed to write Pass-1-failed status:', failedWriteErr);
+      }
+      return NextResponse.json({
+        success: false,
+        outcome: 'pass1_failed',
+        media_id: mediaId,
+        errors: twoPassResult.errors,
+      }, { status: 500 });
+    }
 
     // ----- Routing decision -----
 
