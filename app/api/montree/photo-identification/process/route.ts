@@ -422,6 +422,21 @@ export async function POST(request: NextRequest) {
 
       // Auto-Sonnet: if confidence is very low, enrich immediately in the background.
       // This saves the teacher from having to click "Ask Sonnet" for genuinely uncertain photos.
+      //
+      // 🚨 RACE GUARD — see Photo Pipeline Audit (Session 113) finding #2.
+      //
+      // The IIFE runs AFTER the response returns. Sonnet takes 5-15s. In that
+      // window, the teacher may already have actioned the photo via Photo
+      // Audit (Correct → confirmed, This is X → confirmed, Skip → skipped,
+      // delete, etc.). If we blindly write sonnet_drafted, we clobber the
+      // teacher's confirmation back to a draft state — silently regressing
+      // the audit queue.
+      //
+      // Fix: defense in depth, two layers:
+      //   (1) Re-read the row before writing and bail if status moved.
+      //   (2) Conditional UPDATE filtered on identification_status='haiku_drafted'
+      //       AND teacher_confirmed=false, so even if a race wins between our
+      //       read and write, the UPDATE simply matches zero rows.
       if (ident.confidence < AUTO_SONNET_CONFIDENCE_THRESHOLD) {
         const sonnetContext = twoPassResult.context;
         generateSonnetDraft({
@@ -434,21 +449,51 @@ export async function POST(request: NextRequest) {
           context: sonnetContext,
           locale,
         }).then(async (sonnetResult) => {
-          if (sonnetResult.success && sonnetResult.draft) {
-            const { error: sonnetWriteErr } = await supabase
-              .from('montree_media')
-              .update({
-                sonnet_draft: sonnetResult.draft,
-                identification_status: 'sonnet_drafted',
-              })
-              .eq('id', mediaId);
-            if (sonnetWriteErr) {
-              console.error('[PhotoIdentification] Auto-Sonnet write failed (non-fatal):', sonnetWriteErr);
-            } else {
-              console.log(`[PhotoIdentification] Auto-Sonnet complete for media=${mediaId}: "${sonnetResult.draft.proposed_name}" conf=${sonnetResult.draft.confidence}`);
-            }
-          } else {
+          if (!sonnetResult.success || !sonnetResult.draft) {
             console.error('[PhotoIdentification] Auto-Sonnet generation failed (non-fatal):', sonnetResult.errors);
+            return;
+          }
+
+          // Race guard layer 1: re-read current state before writing
+          const { data: currentRow } = await supabase
+            .from('montree_media')
+            .select('identification_status, teacher_confirmed, work_id')
+            .eq('id', mediaId)
+            .maybeSingle();
+
+          if (!currentRow) {
+            console.log(`[PhotoIdentification] Auto-Sonnet skipped — media=${mediaId} no longer exists (deleted?)`);
+            return;
+          }
+          if (
+            currentRow.identification_status !== 'haiku_drafted' ||
+            currentRow.teacher_confirmed === true
+          ) {
+            console.log(`[PhotoIdentification] Auto-Sonnet RACE-GUARDED — media=${mediaId} already actioned by teacher (status=${currentRow.identification_status}, confirmed=${currentRow.teacher_confirmed}). Skipping Sonnet write to preserve teacher decision.`);
+            return;
+          }
+
+          // Race guard layer 2: conditional UPDATE — only if status still
+          // matches AND teacher hasn't touched. If a teacher action lands
+          // between our SELECT above and this UPDATE, the WHERE clause
+          // simply matches zero rows, no clobber.
+          const { error: sonnetWriteErr, data: written } = await supabase
+            .from('montree_media')
+            .update({
+              sonnet_draft: sonnetResult.draft,
+              identification_status: 'sonnet_drafted',
+            })
+            .eq('id', mediaId)
+            .eq('identification_status', 'haiku_drafted')
+            .eq('teacher_confirmed', false)
+            .select('id');
+
+          if (sonnetWriteErr) {
+            console.error('[PhotoIdentification] Auto-Sonnet write failed (non-fatal):', sonnetWriteErr);
+          } else if (!written || written.length === 0) {
+            console.log(`[PhotoIdentification] Auto-Sonnet RACE-GUARDED on write — media=${mediaId} no longer in haiku_drafted state. Race won by teacher. Skipping clobber.`);
+          } else {
+            console.log(`[PhotoIdentification] Auto-Sonnet complete for media=${mediaId}: "${sonnetResult.draft.proposed_name}" conf=${sonnetResult.draft.confidence}`);
           }
         }).catch(err => {
           console.error('[PhotoIdentification] Auto-Sonnet threw (non-fatal):', err);
