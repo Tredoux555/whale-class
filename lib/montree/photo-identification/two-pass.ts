@@ -27,7 +27,7 @@ import { getAILanguageInstruction } from '@/lib/montree/i18n/locale-config';
 
 import type { Locale } from '@/lib/montree/i18n/locales';
 import { anthropic, HAIKU_MODEL } from '@/lib/ai/anthropic';
-import { matchToCurriculumV2 } from '@/lib/montree/work-matching';
+import { matchToCurriculumV2, isCrossAreaConfusable } from '@/lib/montree/work-matching';
 import type { CurriculumWork } from '@/lib/montree/curriculum-loader';
 import { VISUAL_ID_GUIDE } from './visual-id-guide';
 import {
@@ -422,8 +422,22 @@ Focus on:
 4. SETUP: How are materials arranged? (in a frame, on a tray, in a box, on a mat, in pairs, in a sequence, etc.)
 5. KEY DETAILS: Any closures (buttons, zippers, bows, laces, snaps)? Any colors/patterns? Any numbers/letters? If letters or words visible, specify: are they individual LETTERS on boards, or WORDS/SENTENCES on cards/strips? If colored pieces, specify: are they hard/rigid TABLETS or soft FABRIC swatches?
 
+EXAMPLES — what GOOD vs BAD descriptions look like:
+
+Example 1 — Pink Tower, overhead photo, busy classroom in background:
+GOOD: "The child's hands are stacking small pink wooden cubes on a green mat. The cubes graduate in size from large to small, and several are already stacked into a vertical tower. A few unstacked cubes sit on the mat beside the tower. All pieces are rigid solid wood, painted pink."
+BAD (leaks background): "The child is working with pink cubes. Behind them I can see red rods on a shelf and another child working with golden beads nearby. There are also colored cards on the wall."
+
+Example 2 — Sandpaper Letter "m", angled photo:
+GOOD: "The child's fingers are tracing a single lowercase letter 'm' made of red sandpaper, mounted on a pink rectangular wooden board. The board is resting flat on a small mat. No other letters or cards are on the mat."
+BAD (over-interprets): "The child is doing a phonics activity, learning the letter m. They are practicing letter formation as part of pre-writing work."
+
+Example 3 — child sitting on the rug, no materials in hand, looking at the camera:
+GOOD: "The child is sitting on a green rug with empty hands resting in their lap. No materials are visible on the rug in front of them or in their hands."
+BAD (invents materials): "The child appears to be taking a break from a sensorial work, with hands ready to begin another activity."
+
 Be specific and factual. Do NOT guess the name of the activity. Do NOT say "Montessori work" or name any work.
-Just describe the physical scene in 2-4 sentences. Lead with the PRIMARY work the hands are engaged with. ALWAYS state what the pieces are MADE OF.`,
+Just describe the physical scene in 2-4 sentences. Lead with the PRIMARY work the hands are engaged with. ALWAYS state what the pieces are MADE OF. If the child is NOT actively working with materials, say so plainly.`,
         messages: [{
           role: 'user',
           content: [
@@ -617,11 +631,29 @@ Match this description to the correct Montessori work. Use the visual identifica
     }
   }
 
-  // ----- PASS 2B: Image re-examination (optional, triggered by low confidence or no visual memory) -----
+  // ----- PASS 2B: Image re-examination (optional, triggered by low confidence, no visual memory, or cross-area confusion) -----
   let pass2bFired = false;
   let pass2bImproved = false;
 
-  if (identification && (identification.confidence < PASS2B_CONFIDENCE_THRESHOLD || !hasVisualMemoryForMatch)) {
+  // 🚨 Session 113 V2 photo AI quality audit Q-11: when Pass 2's resolved work
+  // is documented as cross-area-confusable (Red Rods ↔ Number Rods, Metal Insets
+  // ↔ Geometric Cabinet, etc.) the area-constrained matcher may be hiding a
+  // cross-area failure. The matcher trusts Pass 2's `area`; the only thing that
+  // can disambiguate across areas is the photo itself. Force Pass 2b so the
+  // image-re-examination pass gets a chance, regardless of Pass 2 confidence.
+  const forcePass2bCrossArea = !!identification && isCrossAreaConfusable(
+    identification.workName,
+    identification.haikuWorkName,
+  );
+
+  if (
+    identification &&
+    (
+      forcePass2bCrossArea ||
+      identification.confidence < PASS2B_CONFIDENCE_THRESHOLD ||
+      !hasVisualMemoryForMatch
+    )
+  ) {
     const pass2bCandidates = buildPass2bCandidates({ identification }, context);
 
     if (pass2bCandidates.length >= 2) {
@@ -688,7 +720,23 @@ Which work is most likely based on the visual evidence? If none match well, you 
 
           // Use Pass 2b result only if it's meaningfully MORE confident than Pass 2
           // (requires +0.05 margin to prevent marginal overrides — e.g. 0.83 > 0.82
-          // was enough to swap Sandpaper Letters → Blue Series in Apr 28 incident)
+          // was enough to swap Sandpaper Letters → Blue Series in Apr 28 incident).
+          //
+          // 🚨 Session 113 V2 photo AI quality audit Q-12 — symmetry: when Pass 2b
+          // does NOT override but its confidence is meaningfully LOWER than Pass 2's,
+          // we previously IGNORED Pass 2b entirely and kept Pass 2's high confidence.
+          // That made the +0.05 ratchet a one-way trust gate ("Pass 2b can lift
+          // confidence but never lower it") — Gate A would fire on Pass 2's stale
+          // high confidence even when the second opinion explicitly disagreed.
+          //
+          // Fix: if Pass 2b ran cleanly, did not override, and its confidence is
+          // ≥0.10 LOWER than Pass 2's, CAP the stored confidence at Pass 2b's value.
+          // The work name + area stay with Pass 2 (Pass 2b doesn't propose an
+          // override) but the confidence reflects the second opinion's caution.
+          // This downgrades Gate A trust when the second look is less sure.
+          // (Symmetric ratchet floor of 0.10 mirrors the +0.05 override margin
+          // — slightly higher because lowering confidence is more conservative.)
+          const PASS2B_DOWNGRADE_FLOOR = 0.10;
           if (validated.confidence >= identification.confidence + 0.05) {
             const newWorkName = matchResult.bestMatch?.name || validated.work_name;
             const newArea = matchResult.bestMatch?.area_key || (validated.area !== 'unknown' ? validated.area : null);
@@ -725,6 +773,16 @@ Which work is most likely based on the visual evidence? If none match well, you 
             pass2bImproved = true;
 
             console.log(`[PhotoIdentification] Pass 2b improved: "${identification.haikuWorkName}" (${identification.confidence.toFixed(2)}) → "${newWorkName}" (${validated.confidence.toFixed(2)})`);
+          } else if (identification.confidence - validated.confidence >= PASS2B_DOWNGRADE_FLOOR) {
+            // Q-12: Pass 2b did not override but signalled meaningfully LOWER
+            // confidence. Treat as a confidence ceiling — cap the stored
+            // confidence at Pass 2b's value so Gate A trust may not fire on
+            // Pass 2's stale high confidence. Work name + area + match score
+            // remain Pass 2's; only the confidence is downgraded.
+            const cappedConfidence = validated.confidence;
+            const priorConfidence = identification.confidence;
+            identification = { ...identification, confidence: cappedConfidence };
+            console.log(`[PhotoIdentification] Pass 2b downgraded confidence (no override): ${priorConfidence.toFixed(2)} → ${cappedConfidence.toFixed(2)} (work "${identification.workName}" unchanged)`);
           }
         }
       } catch (err) {
