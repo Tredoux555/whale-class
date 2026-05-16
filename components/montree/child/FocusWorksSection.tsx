@@ -255,13 +255,15 @@ export default function FocusWorksSection({
     }
   }, [childId, evidenceLoaded]);
 
-  // Reset evidence cache when child changes + abort in-flight fetch
+  // Reset evidence cache when child changes + abort in-flight fetch.
+  // Session 111 removed `expandedAdvice` state (commit 624b2aab) but left
+  // this stale setter call — broke the child page with ReferenceError when
+  // a user navigated. Setter removed; the rest of the reset still applies.
   useEffect(() => {
     childIdRef.current = childId;
     evidenceAbortRef.current?.abort();
     setEvidenceLoaded(false);
     setEvidenceMap({});
-    setExpandedAdvice(null);
   }, [childId]);
 
   // Fetch evidence when any work card is expanded
