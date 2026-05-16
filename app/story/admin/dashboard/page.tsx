@@ -68,16 +68,9 @@ export default function AdminDashboard() {
   const { getSession, verifySession, handleLogout } = useAuthSession();
   const { onlineUsers, onlineCount, totalUsers, loadOnlineUsers } = useOnlineUsers(getSession);
   const { loginLogs, visits, loginLogsError, loadLoginLogs } = useLoginLogs(getSession);
-  const {
-    messages,
-    statistics,
-    showExpired,
-    setShowExpired,
-    savedToVault,
-    savingToVault,
-    loadMessages,
-    saveMessageToVault
-  } = useMessages(getSession);
+  // 🚨 Session 113 V2 Story audit F-2.1 — useVault must come BEFORE
+  // useMessages so saveMessageToVault can read the live vault token via
+  // getVaultToken. Reordering only — no behaviour change for other hooks.
   const {
     vaultPassword,
     setVaultPassword,
@@ -103,7 +96,18 @@ export default function AdminDashboard() {
     failedThumbnails,
     navigateAlbum,
     loadThumbnail,
+    getVaultToken,
   } = useVault(getSession);
+  const {
+    messages,
+    statistics,
+    showExpired,
+    setShowExpired,
+    savedToVault,
+    savingToVault,
+    loadMessages,
+    saveMessageToVault
+  } = useMessages(getSession, getVaultToken);
   const {
     sharedFiles,
     selectedFile,
