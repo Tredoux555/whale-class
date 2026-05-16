@@ -58,14 +58,32 @@ export async function createConnectAccount(params: {
   display_name?: string;
 }): Promise<Stripe.Account> {
   const stripe = getStripe();
+  const country = params.country.toUpperCase();
+
+  // 🚨 US-specific Stripe rule (Session 109 carry-over now closed):
+  // Stripe refuses to create an Express account in the US with only
+  // `transfers` requested — the API errors "You cannot request the
+  // `transfers` capability without the `card_payments` capability
+  // for accounts in US." HK/GB/CA/AU/EU/etc. do not enforce this.
+  //
+  // We never actually accept card payments on behalf of US agents
+  // (the platform charges schools, then transfers USD to agents),
+  // but Stripe requires the capability to be REQUESTED for US.
+  // Stripe will still verify the account; we just won't use the
+  // card_payments capability beyond satisfying the API constraint.
+  const capabilities: Stripe.AccountCreateParams.Capabilities = {
+    transfers: { requested: true },
+  };
+  if (country === 'US') {
+    capabilities.card_payments = { requested: true };
+  }
+
   return stripe.accounts.create({
     type: 'express',
-    country: params.country.toUpperCase(),
+    country,
     email: params.email,
     business_type: 'individual',
-    capabilities: {
-      transfers: { requested: true }, // we transfer USD from platform balance to them
-    },
+    capabilities,
     metadata: {
       source: 'agent_referral_programme',
       display_name: params.display_name || '',
