@@ -238,56 +238,18 @@ export const useAdminMessage = (getSession: () => string | null, onMessageSent: 
           setMessageError(data.error || 'Failed to send image');
         }
       } else {
-        // Text-only send. Server may 409 with requires_overwrite_confirm:true
-        // when there's already a hidden_message for the current week
-        // (Session 113 V2 Story F-4.1 / architectural rule #127). When that
-        // happens we show the existing message + ask the admin to confirm
-        // overwrite, then re-POST with acknowledge_overwrite:true.
-        const sendOnce = async (acknowledge: boolean): Promise<Response> => {
-          return fetch('/api/story/admin/send', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${session}`,
-            },
-            body: JSON.stringify(
-              acknowledge
-                ? { message: adminMessage.trim(), acknowledge_overwrite: true }
-                : { message: adminMessage.trim() }
-            ),
-          });
-        };
-
-        let res = await sendOnce(false);
-        let data = await safeJson(res);
-
-        if (res.status === 409 && (data as { requires_overwrite_confirm?: boolean }).requires_overwrite_confirm) {
-          const existing = (data as {
-            existing?: { message?: string; author?: string | null; updated_at?: string | null };
-          }).existing || {};
-          const preview = (existing.message || '').trim();
-          const author = existing.author ? ` (from ${existing.author})` : '';
-          const when = existing.updated_at
-            ? ` on ${new Date(existing.updated_at).toLocaleString()}`
-            : '';
-          const truncated = preview.length > 400 ? preview.slice(0, 400) + '…' : preview;
-          const ok = typeof window !== 'undefined'
-            ? window.confirm(
-                `There's already a message for this week${author}${when}:\n\n` +
-                `"${truncated}"\n\n` +
-                `Sending will OVERWRITE it. Continue?`
-              )
-            : false;
-
-          if (!ok) {
-            setMessageError('Send cancelled — existing message kept.');
-            return;
-          }
-
-          res = await sendOnce(true);
-          data = await safeJson(res);
-        }
-
+        // Text-only send. The 409 overwrite-confirm guard (Session 113 V2
+        // F-4.1) was reverted per user directive — sends now go through
+        // cleanly without an intermediate confirmation step.
+        const res = await fetch('/api/story/admin/send', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session}`,
+          },
+          body: JSON.stringify({ message: adminMessage.trim() }),
+        });
+        const data = await safeJson(res);
         if (res.ok) {
           setAdminMessage('');
           setMessageSent(true);
