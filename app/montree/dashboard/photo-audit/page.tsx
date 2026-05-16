@@ -1372,7 +1372,6 @@ export default function PhotoAuditPage() {
       ...(removedZone === 'untagged' ? { untagged: Math.max(0, prev.untagged - 1) } : {}),
     }));
     setSelectedIds(prev => { const next = new Set(prev); next.delete(photo.id); return next; });
-    setAcceptingPhoto(null);
     // 2. Fire API in background.
     try {
       const res = await fetch('/api/montree/guru/corrections', {
