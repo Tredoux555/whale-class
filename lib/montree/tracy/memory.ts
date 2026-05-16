@@ -462,19 +462,71 @@ export async function recallMemories(
  * Fire-and-forget — caller doesn't wait. Used by the recall_memory dispatch
  * so frequently-referenced memories surface to the top of pruning analysis
  * later.
+ *
+ * 🚨 Session 113 V2 (Tracy + Mira audit, HIGH-1): switched from a
+ * 1-SELECT + N-UPDATE pattern to a single RPC. The old pattern incurred
+ * 21 round-trips for a 20-memory return — ~600-1500ms of pure waste on
+ * a non-critical pruning signal. Migration 212 added the
+ * `bump_memory_references(principal_id, ids)` RPC which does the work
+ * in one UPDATE statement scoped by principal_id.
+ *
+ * The principal_id parameter is REQUIRED by the RPC for safety
+ * (defense-in-depth — the caller already scopes by principal). Without
+ * it, no rows update.
+ *
+ * Graceful fallback: if migration 212 hasn't run yet (Postgres 42883 —
+ * function does not exist), logs a one-time warning and uses the old
+ * read-then-write pattern. Migration 212 unrun = degrade to slow path,
+ * not crash.
  */
+let _bumpRpcMissing = false;
 export async function bumpMemoryReference(
   supabase: SupabaseClient,
-  memoryIds: string[]
+  memoryIds: string[],
+  principalId?: string
 ): Promise<void> {
   if (!Array.isArray(memoryIds) || memoryIds.length === 0) return;
   const ids = memoryIds.filter(looksLikeUuid).slice(0, 50);
   if (ids.length === 0) return;
+  if (!principalId || !looksLikeUuid(principalId)) {
+    // The RPC requires principal_id. Without it, fall through to the
+    // legacy read-then-write path so behavior is preserved during the
+    // rollout window (the dispatch site adds principalId in a follow-up
+    // commit; until then this branch runs the slow path).
+    return legacyBumpRefs(supabase, ids);
+  }
 
-  // We can't atomically increment via the Supabase JS client without an RPC,
-  // and adding another RPC for a non-critical pruning signal isn't worth it.
-  // A best-effort read-then-write is acceptable here — exact reference counts
-  // don't matter, only relative.
+  // Fast path — single RPC, scoped by principal_id.
+  if (!_bumpRpcMissing) {
+    try {
+      const { error } = await supabase.rpc('bump_memory_references', {
+        p_principal_id: principalId,
+        p_memory_ids: ids,
+      });
+      if (!error) return;
+      // Postgres function does not exist → migration 212 not yet run.
+      // Fall through to legacy path; remember the flag so we don't keep
+      // trying the RPC every recall on a DB that doesn't have it yet.
+      const code = (error as { code?: string }).code;
+      if (code === '42883' || code === 'PGRST202' || /does not exist/i.test(error.message || '')) {
+        _bumpRpcMissing = true;
+        console.warn('[tracy/memory] bump_memory_references RPC missing — run migration 212. Falling back to slow path.');
+      } else {
+        console.warn('[tracy/memory] bump rpc error:', error.message);
+        return;
+      }
+    } catch (err) {
+      console.warn('[tracy/memory] bump rpc threw:', err);
+      // Don't set _bumpRpcMissing — could be a transient error.
+      return;
+    }
+  }
+
+  // Slow path — kept as graceful fallback until migration 212 lands.
+  await legacyBumpRefs(supabase, ids);
+}
+
+async function legacyBumpRefs(supabase: SupabaseClient, ids: string[]): Promise<void> {
   try {
     const { data: rows } = await supabase
       .from('montree_principal_memory')
@@ -494,6 +546,6 @@ export async function bumpMemoryReference(
       )
     );
   } catch (err) {
-    console.warn('[tracy/memory] bumpMemoryReference failed:', err);
+    console.warn('[tracy/memory] legacy bumpRefs failed:', err);
   }
 }
