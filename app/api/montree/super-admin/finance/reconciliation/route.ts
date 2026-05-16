@@ -30,8 +30,13 @@ interface FinanceTxRow {
 }
 
 interface BillingHistoryRow {
-  amount_paid_cents: number | null;
-  paid_at: string | null;
+  // 🚨 Session 113 V2 Finance audit CRITICAL fix: schema columns are
+  // amount_cents + created_at, not amount_paid_cents + paid_at. The
+  // typo silently made billingPaidUsd always 0 and the drift detector
+  // flagged 'Stripe-side ledger and billing history disagree' for every
+  // period with revenue. See migration 189 lines 131-144.
+  amount_cents: number | null;
+  created_at: string | null;
   status: string | null;
 }
 
@@ -112,16 +117,26 @@ export async function GET(req: NextRequest) {
 
   // ── 2. Internal cross-check via montree_billing_history ──
   // billing_history is per-invoice — sums paid status only.
+  //
+  // 🚨 Session 113 V2 Finance audit CRITICAL fix: the real columns per
+  // migration 189 are `amount_cents` and `created_at`. The previous
+  // code queried non-existent `amount_paid_cents` + `paid_at`, so the
+  // SELECT returned rows with all-undefined fields and billingPaidUsd
+  // was ALWAYS 0 — making the drift detector report "Stripe vs billing
+  // history disagree" for every period that had revenue. (`paid_at`
+  // doesn't exist; `created_at` is the row-write timestamp which the
+  // webhook handler stamps at payment-success time, so it's the right
+  // column to match the finance_transactions occurred_at filter.)
   const { data: billingRaw } = await supabase
     .from('montree_billing_history')
-    .select('amount_paid_cents, paid_at, status')
-    .gte('paid_at', start)
-    .lt('paid_at', end);
+    .select('amount_cents, created_at, status')
+    .gte('created_at', start)
+    .lt('created_at', end);
 
   const billing = (billingRaw as BillingHistoryRow[] | null) || [];
   const billingPaidUsd = billing
-    .filter((b) => b.status === 'paid' && b.amount_paid_cents != null)
-    .reduce((sum, b) => sum + (Number(b.amount_paid_cents) || 0), 0) / 100;
+    .filter((b) => b.status === 'paid' && b.amount_cents != null)
+    .reduce((sum, b) => sum + (Number(b.amount_cents) || 0), 0) / 100;
   const billingPaidCount = billing.filter((b) => b.status === 'paid').length;
 
   // ── 3. Bank-side from uploaded statement (if any) ──
