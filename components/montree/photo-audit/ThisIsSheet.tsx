@@ -375,6 +375,16 @@ export default function ThisIsSheet({
     onClose();
   };
 
+  // Session 113: "Save as Other" — photo is worth keeping but isn't a
+  // Montessori curriculum work (snack time, art moment, group activity,
+  // parent pickup, etc.). No curriculum row created. No visual memory
+  // write. No progress observation. The photo is just removed from the
+  // audit queue with sonnet_draft.is_other=true as the discriminator.
+  const handleSaveAsOther = () => {
+    if (submitting) return;
+    fireAndClose({ type: 'other' });
+  };
+
   // --- Merge handlers ---
   const toggleMergeSelect = useCallback((workId: string) => {
     setMergeSelected(prev => {
@@ -1083,6 +1093,40 @@ export default function ThisIsSheet({
                   </button>
                 </div>
               )}
+
+              {/* Session 113: Save as Other.
+                  Subtle fallback for photos that are worth keeping but
+                  aren't curriculum (snack time, art, group photo, parent
+                  pickup, classroom event). Muted styling — not competing
+                  with the primary "this work" CTAs above. */}
+              <div style={{ marginTop: 12, paddingTop: 10, borderTop: '1px dashed #e5e7eb' }}>
+                <button
+                  onClick={handleSaveAsOther}
+                  disabled={submitting}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 10,
+                    width: '100%',
+                    padding: '10px 12px',
+                    background: '#f9fafb',
+                    border: '1px solid #e5e7eb',
+                    borderRadius: 10,
+                    cursor: submitting ? 'wait' : 'pointer',
+                    textAlign: 'left',
+                  }}
+                >
+                  <div style={{ fontSize: 18, color: '#6b7280' }}>📌</div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: 13, color: '#374151', fontWeight: 600 }}>
+                      Save as Other
+                    </div>
+                    <div style={{ fontSize: 11, color: '#6b7280', marginTop: 1 }}>
+                      Not curriculum — snack time, art, group photo, etc. Keeps the photo on the child without tagging a work.
+                    </div>
+                  </div>
+                </button>
+              </div>
             </>
           )}
 

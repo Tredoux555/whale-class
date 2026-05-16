@@ -74,7 +74,16 @@ async function upsertProgressObservation({
 type Resolution =
   | { type: 'existing'; work_id: string; work_name: string; area_key: string }
   | { type: 'new_custom'; name: string; area_key: string }
-  | { type: 'confirm_ai'; work_id?: string; work_name: string; area_key: string };
+  | { type: 'confirm_ai'; work_id?: string; work_name: string; area_key: string }
+  // Session 113: "Other" bucket — photos worth keeping (snack time, art
+  // moments, group activity, parent pickup, etc.) but NOT pedagogically
+  // tagged against the Montessori curriculum. Result: photo is removed
+  // from the audit queue (teacher_confirmed=true), work_id stays null,
+  // sonnet_draft.is_other = true acts as the discriminator for filtering
+  // gallery/report queries. No curriculum row is created. No visual
+  // memory / negative example / brain learning fires (Other photos
+  // shouldn't pollute the moat).
+  | { type: 'other'; note?: string };
 
 export async function POST(request: NextRequest) {
   const startedAt = Date.now();
@@ -370,6 +379,59 @@ export async function POST(request: NextRequest) {
         success: true,
         path: 'new_custom',
         work: { id: newWorkId, name, area_key: areaKey },
+      });
+    }
+
+    // ========== Path D: other ==========
+    //
+    // Session 113 carry-over from Session 111. The teacher takes a photo
+    // worth keeping but it's NOT a Montessori work — snack time, art,
+    // group photo, parent pickup, classroom event. The audit queue is
+    // for curriculum decisions; this bucket handles the rest.
+    //
+    // Implementation: no curriculum row, no progress observation, no
+    // visual memory write, no negative example. Just clear work_id, set
+    // teacher_confirmed=true, set sonnet_draft.is_other=true as the
+    // filter discriminator. Optional note stored on sonnet_draft.other_note.
+    //
+    // Photo flows naturally into the child gallery (which filters on
+    // teacher_confirmed=true). Pedagogical report queries filter on
+    // work_id IS NOT NULL and skip these. Weekly Wrap doesn't see them.
+    if (resolution.type === 'other') {
+      const note = typeof resolution.note === 'string' ? resolution.note.trim().slice(0, 200) : '';
+      // Preserve any existing sonnet_draft fields the pipeline wrote — we
+      // don't want to lose visual_description / proposed_name / etc.
+      // Just merge the is_other flag (+ optional note) on top.
+      const existingDraft = (mediaRow.sonnet_draft as Record<string, unknown>) || {};
+      const newDraft = {
+        ...existingDraft,
+        is_other: true,
+        other_note: note || null,
+        other_classified_at: new Date().toISOString(),
+      };
+
+      const { error: otherUpdErr } = await supabase
+        .from('montree_media')
+        .update({
+          work_id: null,
+          teacher_confirmed: true,
+          identification_status: 'confirmed',
+          sonnet_draft: newDraft,
+        })
+        .eq('id', media_id)
+        .eq('school_id', auth.schoolId);
+
+      if (otherUpdErr) {
+        console.error('[PhotoAuditResolve] other update failed:', otherUpdErr);
+        return NextResponse.json({ success: false, error: 'Failed to save as Other' }, { status: 500 });
+      }
+
+      const elapsed = Date.now() - startedAt;
+      console.log(`[PhotoAuditResolve] other OK: media=${media_id} (${elapsed}ms)`);
+      return NextResponse.json({
+        success: true,
+        path: 'other',
+        media_id,
       });
     }
 
