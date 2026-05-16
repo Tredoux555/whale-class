@@ -123,58 +123,98 @@ export default function ParentDashboardPage() {
   const [lightboxIndex, setLightboxIndex] = useState(0);
 
   // --- Auth & Init ---
+  // 🚨 Session 113 V2 Parent audit F-1.3 — auth check is now cookie-based,
+  // not localStorage-based. The httpOnly cookie is the only authority on
+  // whether the parent is logged in. localStorage was forgeable (a user
+  // could write arbitrary JSON via DevTools) AND went out of sync with
+  // the cookie (server can revoke independently).
+  //
+  // Flow: call /parent/auth/access-code GET → if not authenticated, bounce
+  // to /montree/parent. Otherwise, call /parent/children to get the
+  // authorized child list (server uses resolveAuthorizedParent which
+  // re-checks parent_children linkage on every request).
   useEffect(() => {
-    const sessionStr = localStorage.getItem('montree_parent_session');
-    if (!sessionStr) { router.push('/montree/parent'); return; }
+    let cancelled = false;
+    (async () => {
+      try {
+        const sessionRes = await fetch('/api/montree/parent/auth/access-code', {
+          credentials: 'same-origin',
+        });
+        if (cancelled) return;
+        if (!sessionRes.ok) {
+          router.push('/montree/parent');
+          return;
+        }
+        const sessionData = await sessionRes.json();
+        if (!sessionData?.authenticated) {
+          // Stale localStorage cleanup (non-load-bearing — pure hygiene).
+          try {
+            localStorage.removeItem('montree_parent_session');
+            localStorage.removeItem('montree_selected_child');
+          } catch {}
+          router.push('/montree/parent');
+          return;
+        }
 
-    try {
-      const session = JSON.parse(sessionStr);
-      if (session.expires < Date.now()) {
-        localStorage.removeItem('montree_parent_session');
-        localStorage.removeItem('montree_selected_child');
-        router.push('/montree/parent');
-        return;
-      }
+        // Get the full authorized child list from server. Single-child
+        // invite sessions return one element; multi-child full-account
+        // parents return all linked children.
+        const childrenRes = await fetch('/api/montree/parent/children', {
+          credentials: 'same-origin',
+        });
+        if (cancelled) return;
+        if (!childrenRes.ok) {
+          if (childrenRes.status === 401) {
+            router.push('/montree/parent');
+            return;
+          }
+          toast.error(t('parent.dashboard.failedToLoadChildren'));
+          setLoading(false);
+          return;
+        }
+        const childrenData = await childrenRes.json();
+        const list = (childrenData.children as Child[]) || [];
 
-      if (session.childId && session.childName) {
-        const directChild: Child = { id: session.childId, name: session.childName, nickname: session.childName };
-        setChildren([directChild]);
-        setSelectedChild(directChild);
-        loadReports(session.childId);
+        if (cancelled) return;
+        if (list.length === 0) {
+          router.push('/montree/parent');
+          return;
+        }
+
+        setChildren(list);
+        // Default-select the JWT's childId if present in the list,
+        // otherwise the first child.
+        const sessionChildId: string | undefined = sessionData.child_id;
+        const initial =
+          (sessionChildId && list.find((c) => c.id === sessionChildId)) ||
+          list[0];
+        setSelectedChild(initial);
+        // Local hint for cross-page selection persistence (non-auth).
+        try {
+          localStorage.setItem(
+            'montree_selected_child',
+            JSON.stringify({ id: initial.id, name: initial.nickname || initial.name })
+          );
+        } catch {}
+        loadReports(initial.id);
         setLoading(false);
-      } else if (session.parentId) {
-        loadChildren(session.parentId);
-      } else {
-        localStorage.removeItem('montree_parent_session');
+      } catch (err) {
+        if (cancelled) return;
+        console.error('Parent dashboard auth check failed:', err);
         router.push('/montree/parent');
       }
-    } catch {
-      router.push('/montree/parent');
-    }
-  }, [router]);
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [router, t]);
 
   // --- Data Loading ---
-  const loadChildren = async (parentId: string) => {
-    try {
-      const res = await fetch(`/api/montree/parent/children?parentId=${parentId}`);
-      if (!res.ok) { toast.error(t('parent.dashboard.failedToLoadChildren')); setLoading(false); return; }
-      const data = await res.json();
-      if (data.children) {
-        setChildren(data.children);
-        if (data.children.length === 1) {
-          const child = data.children[0];
-          setSelectedChild(child);
-          localStorage.setItem('montree_selected_child', JSON.stringify({ id: child.id, name: child.nickname || child.name }));
-          loadReports(child.id);
-        }
-      }
-    } catch (err) {
-      console.error('Failed to load children:', err);
-      toast.error(t('parent.dashboard.failedToLoadChildren'));
-    } finally {
-      setLoading(false);
-    }
-  };
+  // (Session 113 V2 F-1.3: legacy loadChildren() removed — the auth-and-init
+  // effect above now calls /parent/children directly via the cookie-based
+  // resolver. Its only consumer was the JWT.parentId branch, which no
+  // longer exists.)
 
   const loadReports = async (childId: string) => {
     try {

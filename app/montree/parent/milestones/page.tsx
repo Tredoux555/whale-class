@@ -79,27 +79,63 @@ function ParentMilestonesContent() {
   const [totalMilestones, setTotalMilestones] = useState(0);
   const [childName, setChildName] = useState('');
 
+  // 🚨 Session 113 V2 Parent audit F-1.3 — cookie-based auth gate.
   useEffect(() => {
-    const sessionStr = localStorage.getItem('montree_parent_session');
-    if (!sessionStr) {
-      router.push('/montree/parent/login');
-      return;
-    }
+    let cancelled = false;
+    (async () => {
+      try {
+        const sessionRes = await fetch('/api/montree/parent/auth/access-code', {
+          credentials: 'same-origin',
+        });
+        if (cancelled) return;
+        if (!sessionRes.ok) {
+          router.push('/montree/parent/login');
+          return;
+        }
+        const sessionData = await sessionRes.json();
+        if (!sessionData?.authenticated) {
+          router.push('/montree/parent/login');
+          return;
+        }
 
-    if (childIdParam) {
-      loadMilestones(childIdParam);
-    } else {
-      const selectedChildStr = localStorage.getItem('montree_selected_child');
-      if (selectedChildStr) {
-        const child = JSON.parse(selectedChildStr);
-        setChildName(child.name);
-        loadMilestones(child.id);
-      } else {
-        toast.error(t('common.noChildSelected'));
-        router.push('/montree/parent/dashboard');
+        let resolvedChildId: string | null = null;
+        let resolvedName: string | null = null;
+        if (childIdParam) {
+          resolvedChildId = childIdParam;
+        } else {
+          try {
+            const hint = localStorage.getItem('montree_selected_child');
+            if (hint) {
+              const parsed = JSON.parse(hint);
+              if (parsed?.id) {
+                resolvedChildId = parsed.id;
+                resolvedName = parsed.name || null;
+              }
+            }
+          } catch {}
+          if (!resolvedChildId && sessionData.child_id) {
+            resolvedChildId = sessionData.child_id;
+            resolvedName = sessionData.child_name || null;
+          }
+        }
+
+        if (!resolvedChildId) {
+          toast.error(t('common.noChildSelected'));
+          router.push('/montree/parent/dashboard');
+          return;
+        }
+        if (resolvedName) setChildName(resolvedName);
+        loadMilestones(resolvedChildId);
+      } catch (err) {
+        if (cancelled) return;
+        console.error('Parent milestones auth check failed:', err);
+        router.push('/montree/parent/login');
       }
-    }
-  }, [router, childIdParam]);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [router, childIdParam, t]);
 
   const loadMilestones = async (childId: string) => {
     try {

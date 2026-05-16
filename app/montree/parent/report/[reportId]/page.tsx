@@ -135,13 +135,35 @@ export default function ParentReportPage() {
     }
   }, [reportId, locale, t]);
 
+  // 🚨 Session 113 V2 Parent audit F-1.3 — cookie-based auth gate.
+  // localStorage was forgeable. The httpOnly cookie is the only authority.
   useEffect(() => {
-    const sessionStr = localStorage.getItem('montree_parent_session');
-    if (!sessionStr) {
-      router.push('/montree/parent/login');
-      return;
-    }
-    loadReport();
+    let cancelled = false;
+    (async () => {
+      try {
+        const sessionRes = await fetch('/api/montree/parent/auth/access-code', {
+          credentials: 'same-origin',
+        });
+        if (cancelled) return;
+        if (!sessionRes.ok) {
+          router.push('/montree/parent/login');
+          return;
+        }
+        const sessionData = await sessionRes.json();
+        if (!sessionData?.authenticated) {
+          router.push('/montree/parent/login');
+          return;
+        }
+        loadReport();
+      } catch (err) {
+        if (cancelled) return;
+        console.error('Parent report auth check failed:', err);
+        router.push('/montree/parent/login');
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, [reportId, router, loadReport]);
 
   // Build linear work list (all works with photos first, then without)

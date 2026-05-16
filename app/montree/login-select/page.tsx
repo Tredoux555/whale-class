@@ -99,11 +99,12 @@ function UnifiedLoginContent() {
         localStorage.setItem('montree_principal', JSON.stringify(data.principal));
         localStorage.setItem('montree_school', JSON.stringify(data.school));
       } else if (data.role === 'parent') {
-        localStorage.setItem('montree_parent_session', JSON.stringify({
-          childId: data.child.id,
-          childName: data.child.name,
-          expires: Date.now() + (30 * 24 * 60 * 60 * 1000),
-        }));
+        // 🚨 Session 113 V2 Parent audit F-1.3 — DO NOT write a forgeable
+        // localStorage('montree_parent_session') auth blob. The httpOnly
+        // cookie set by the server is the only authority. We do still
+        // write 'montree_selected_child' as a NON-AUTH cross-page hint
+        // (which child to show in multi-child families); server validates
+        // every access via the cookie regardless.
         if (data.child) {
           localStorage.setItem('montree_selected_child', JSON.stringify({
             id: data.child.id,
