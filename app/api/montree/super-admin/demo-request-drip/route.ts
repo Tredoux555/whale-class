@@ -173,6 +173,65 @@ export async function POST(request: NextRequest) {
       continue;
     }
 
+    // 🚨 Session 113 V2 Outreach audit MED F-7.4 — INSERT-then-send.
+    //
+    // The legacy "read priorSends, fire email, log it" pattern raced when
+    // two cron triggers fired in the same minute (manual + scheduled, or
+    // Railway retry). Both runners saw "not sent yet" and both fired the
+    // email — recipients got two day3 emails on the same day.
+    //
+    // The fix is to INSERT the idempotency-claim row first (the partial
+    // UNIQUE on idempotency_key from migration 213 will reject the second
+    // runner's insert with 23505), and only fire the email after winning
+    // the claim. Failure to claim means another runner is already sending
+    // it — skip cleanly.
+    const idempotencyKey = `demo_request_drip_${drip.key}::${c.id}`;
+    const { error: claimErr } = await supabase
+      .from('montree_outreach_log')
+      .insert({
+        action: `demo_request_drip_${drip.key}`,
+        contact_id: c.id,
+        notes: `Demo-request drip ${drip.key} claim for ${c.email}`,
+        idempotency_key: idempotencyKey,
+        metadata: {
+          contact_id: c.id,
+          day: drip.day,
+          days_since_request: daysSince,
+          claim_phase: 'pre_send',
+        },
+      });
+    if (claimErr) {
+      const code = (claimErr as { code?: string }).code;
+      if (code === '23505') {
+        // Another runner already claimed this drip. Skip silently.
+        outcomes.push({
+          contact_id: c.id,
+          contact_email: c.email,
+          org_name: c.org_name || c.id,
+          day: drip.key,
+          ok: false,
+          skipped: 'already_sent',
+        });
+        continue;
+      }
+      // 42703 = idempotency_key column missing → migration 213 not run yet.
+      // Fail loudly so the operator notices, rather than re-introducing the
+      // race for an indeterminate window.
+      console.error(
+        '[demo-request-drip] claim insert failed (run migration 213?):',
+        claimErr
+      );
+      outcomes.push({
+        contact_id: c.id,
+        contact_email: c.email,
+        org_name: c.org_name || c.id,
+        day: drip.key,
+        ok: false,
+        error: claimErr.message,
+      });
+      continue;
+    }
+
     try {
       const recipientName = c.contact_person || c.email.split('@')[0];
       const r = await sendDemoRequestDripEmail(
@@ -182,17 +241,6 @@ export async function POST(request: NextRequest) {
         drip.key,
       );
       if (r.success) {
-        await supabase.from('montree_outreach_log').insert({
-          action: `demo_request_drip_${drip.key}`,
-          contact_id: c.id,
-          notes: `Demo-request drip ${drip.key} sent to ${c.email}`,
-          metadata: {
-            contact_id: c.id,
-            day: drip.day,
-            days_since_request: daysSince,
-            message_id: r.messageId,
-          },
-        });
         outcomes.push({
           contact_id: c.id,
           contact_email: c.email,
@@ -201,6 +249,10 @@ export async function POST(request: NextRequest) {
           ok: true,
         });
       } else {
+        // Send failed AFTER the claim was inserted. Leave the claim row in
+        // place to prevent re-attempts on the next cron run (avoids double-
+        // sending if the upstream eventually succeeds asynchronously) and
+        // surface the error in the outcome.
         outcomes.push({
           contact_id: c.id,
           contact_email: c.email,
