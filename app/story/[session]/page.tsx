@@ -227,10 +227,30 @@ export default function StoryViewer() {
     loadSharedFiles();
     loadRecentMessages();
     
-    // Auto-logout on window close
+    // Auto-logout on window close.
+    // 🚨 Session 113 V2 Story audit F-6.1 — the legacy DELETE fetch had no
+    // auth header AND was fired during page unload (when fetch is unreliable
+    // per spec). The server-side handler reads the auth header, finds none,
+    // and silently skips the logout — sessions appeared online for ~10
+    // minutes after every real logout.
+    //
+    // Fix: capture the token BEFORE clearing sessionStorage, then use
+    // navigator.sendBeacon() (designed for unload-time requests) with the
+    // token in the body. The server-side handler is extended to accept
+    // either an Authorization header OR a body { token } so the beacon
+    // path verifies cleanly.
     const handleUnload = () => {
+      const token = sessionStorage.getItem('story_session');
       sessionStorage.removeItem('story_session');
-      fetch('/api/story/auth', { method: 'DELETE' }).catch(() => {});
+      if (token && typeof navigator !== 'undefined' && navigator.sendBeacon) {
+        try {
+          const blob = new Blob([JSON.stringify({ token })], { type: 'application/json' });
+          // POST to dedicated /auth/logout endpoint — sendBeacon is POST-only.
+          navigator.sendBeacon('/api/story/auth/logout', blob);
+        } catch {
+          // sendBeacon failures are silent; nothing useful to do during unload.
+        }
+      }
     };
     
     window.addEventListener('beforeunload', handleUnload);

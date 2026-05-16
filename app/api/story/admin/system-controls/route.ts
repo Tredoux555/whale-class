@@ -8,7 +8,10 @@ async function verifyAdmin(request: NextRequest): Promise<boolean> {
 }
 
 export async function POST(request: NextRequest) {
-  if (!await verifyAdmin(request)) {
+  // 🚨 Session 113 V2 Story audit F-2.5 — capture the admin username so
+  // factory_reset can write a final 'fired by X' audit row before the wipe.
+  const adminUsername = await verifyAdminToken(request.headers.get('Authorization'));
+  if (!adminUsername) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
@@ -151,7 +154,24 @@ export async function POST(request: NextRequest) {
       }
 
       case 'factory_reset': {
-        // Nuclear option - clear everything
+        // 🚨 Session 113 V2 Story audit F-2.5 — preserve audit logs through
+        // factory_reset. The whole point of audit non-repudiation is that
+        // admins (or anyone holding an admin token) can't cover their tracks.
+        // Previously this deleted vault_audit_log + vault_unlock_attempts;
+        // those are now PRESERVED. Write a final 'factory_reset fired' row
+        // before the rest of the wipe so the act itself is logged.
+        const ipAddress = request.headers.get('x-forwarded-for') || 'unknown';
+        await supabase.from('vault_audit_log').insert({
+          action: 'factory_reset',
+          admin_username: adminUsername,
+          ip_address: ipAddress,
+          details: 'Factory reset fired — all non-audit Story data cleared',
+          success: true,
+        }).then(({ error }) => {
+          if (error) console.error('[System Controls] factory_reset audit log write failed', error);
+        });
+
+        // Nuclear option - clear everything EXCEPT the audit trail.
         await supabase.from('story_message_history').delete().not('id', 'is', null);
         await supabase.from('story_login_logs').delete().not('id', 'is', null);
 
@@ -165,11 +185,12 @@ export async function POST(request: NextRequest) {
           }
         }
         await supabase.from('vault_files').delete().not('id', 'is', null);
-        await supabase.from('vault_audit_log').delete().not('id', 'is', null);
-        await supabase.from('vault_unlock_attempts').delete().not('id', 'is', null);
+        // 🚨 INTENTIONALLY NOT DELETING vault_audit_log + vault_unlock_attempts.
+        // These survive factory_reset by design — they're the only record of
+        // who fired the reset and what they could have accessed beforehand.
         await supabase.from('story_users').delete().not('id', 'is', null);
 
-        result = { success: true, message: 'Factory reset complete - all data cleared', affected: 0 };
+        result = { success: true, message: 'Factory reset complete - all data cleared (audit logs preserved)', affected: 0 };
         break;
       }
 
