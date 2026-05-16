@@ -21,10 +21,39 @@ export const dynamic = 'force-dynamic';
 export async function POST(request: NextRequest) {
   const auth = await verifySchoolRequest(request);
   if (auth instanceof NextResponse) return auth;
+
+  // Principal role gate. Defensive: if the JWT role is NOT 'principal' but the
+  // userId actually belongs to an active row in montree_school_admins for the
+  // current school, treat them as a principal anyway. Mirrors the canonical
+  // fallback pattern from app/api/montree/admin/principal-agent/route.ts
+  // (Session 86 commit ca1e13bc). Without this, founder-principals whose JWT
+  // got mis-stamped as 'teacher' by the unified login (because their login
+  // code matches BOTH a teacher row and a school_admin row) hard-403 here
+  // and cannot start checkout for their own school — exactly what the
+  // user just hit on Test2.
   if (auth.role !== 'principal') {
-    return NextResponse.json(
-      { error: 'Only the principal can start a checkout for their school.' },
-      { status: 403 }
+    const supabaseForCheck = getSupabase();
+    const { data: schoolAdmin } = await supabaseForCheck
+      .from('montree_school_admins')
+      .select('id, role, is_active')
+      .eq('id', auth.userId)
+      .eq('school_id', auth.schoolId)
+      .eq('is_active', true)
+      .maybeSingle();
+    if (!schoolAdmin || (schoolAdmin as { role: string }).role !== 'principal') {
+      console.warn(
+        `[billing/checkout] 403: JWT role="${auth.role}", userId=${auth.userId} ` +
+        `not an active principal in school_admins for school=${auth.schoolId}`,
+      );
+      return NextResponse.json(
+        { error: 'Only the principal can start a checkout for their school.' },
+        { status: 403 }
+      );
+    }
+    console.warn(
+      `[billing/checkout] JWT role mis-stamp recovered: userId=${auth.userId} ` +
+      `JWT.role="${auth.role}" but montree_school_admins.role='principal'. ` +
+      `Proceeding with checkout. Upstream login flow needs the swap from Session 86.`,
     );
   }
 

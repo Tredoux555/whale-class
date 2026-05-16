@@ -14,10 +14,26 @@ export const dynamic = 'force-dynamic';
 export async function POST(request: NextRequest) {
   const auth = await verifySchoolRequest(request);
   if (auth instanceof NextResponse) return auth;
+  // Defensive principal-role fallback — see checkout/route.ts for full
+  // rationale. Canonical pattern from Session 86 commit ca1e13bc.
   if (auth.role !== 'principal') {
-    return NextResponse.json(
-      { error: 'Only the principal can manage their school billing.' },
-      { status: 403 }
+    const supabaseForCheck = getSupabase();
+    const { data: schoolAdmin } = await supabaseForCheck
+      .from('montree_school_admins')
+      .select('id, role, is_active')
+      .eq('id', auth.userId)
+      .eq('school_id', auth.schoolId)
+      .eq('is_active', true)
+      .maybeSingle();
+    if (!schoolAdmin || (schoolAdmin as { role: string }).role !== 'principal') {
+      return NextResponse.json(
+        { error: 'Only the principal can manage their school billing.' },
+        { status: 403 }
+      );
+    }
+    console.warn(
+      `[billing/portal-session] JWT role mis-stamp recovered: userId=${auth.userId} ` +
+      `JWT.role="${auth.role}" but montree_school_admins.role='principal'.`,
     );
   }
 
