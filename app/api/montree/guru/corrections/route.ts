@@ -1021,7 +1021,19 @@ async function appendNegativeExample({
   area: string | null;
   negative: string;
 }) {
-  const MAX_NEGATIVES = 8;
+  // 🚨 Session 113 V2 photo AI quality audit Q-9 — raised from 8 → 50.
+  // The previous FIFO cap evicted old durable negatives when new ones
+  // arrived. But old negatives represent ACCUMULATED LEARNING; newer
+  // ones are more likely to be one-off oddities (unusual photo angle,
+  // transient material similarity). Evicting the old ones was throwing
+  // away durable signal in favor of recent noise — the moat eroded in
+  // a way that surfaced as "previously-fixed confusions slowly drift
+  // back" (mis-diagnosed as Haiku regression).
+  //
+  // 50 entries × ~400 chars each ≈ 20 KB per work row — trivial storage.
+  // Deduplication by 60-char prefix already prevents copy-spam, so the
+  // 50 entries are 50 DISTINCT durable signals.
+  const MAX_NEGATIVES = 50;
 
   const { data: existing } = await supabase
     .from('montree_visual_memory')
@@ -1041,7 +1053,7 @@ async function appendNegativeExample({
     return;
   }
 
-  // FIFO cap
+  // FIFO cap — only triggers above 50 distinct negatives per work.
   const nextNegatives = [...currentNegatives, negative].slice(-MAX_NEGATIVES);
 
   if (!existing) {
