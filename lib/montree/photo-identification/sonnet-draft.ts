@@ -250,9 +250,14 @@ export async function generateSonnetDraft(input: SonnetDraftInput): Promise<Sonn
 
   const curriculumHint = buildCurriculumHint(input.curriculum);
 
-  const systemPrompt = `You are a senior Montessori curriculum expert reviewing a classroom photo that a fast model could not confidently identify. Your job is to use the draft_work_writeup tool to produce a complete, teacher-ready proposal.
-
-${langInstruction}
+  // 🚨 Session 113 V2 photo AI quality audit Q-4 — prompt caching for Sonnet
+  // draft. Same architecture as Pass 2 in two-pass.ts: cached static prefix
+  // (boilerplate rules + VISUAL_ID_GUIDE) + dynamic suffix (langInstruction +
+  // curriculum hint + per-classroom corrections/visualMemory). Sonnet 4.6 is
+  // $3/$15 per MTok so each cached call saves more $$$ than Haiku — the same
+  // 3-4K token prefix that costs ~$0.012 uncached costs ~$0.001 cached.
+  // Auto-Sonnet fires on ~20-40% of haiku_drafted photos so volume is real.
+  const SONNET_STATIC_INSTRUCTIONS = `You are a senior Montessori curriculum expert reviewing a classroom photo that a fast model could not confidently identify. Your job is to use the draft_work_writeup tool to produce a complete, teacher-ready proposal.
 
 CRITICAL RULES:
 1. LOOK AT THE PHOTO FIRST — describe what is actually visible, not what you expect to see
@@ -262,7 +267,9 @@ CRITICAL RULES:
 5. Write why_it_matters with developmental substance — what capacity is this building, and why does it matter for THIS child's age?
 6. key_materials must list ITEMS YOU CAN ACTUALLY SEE, not abstract categories
 
-${VISUAL_ID_GUIDE}
+${VISUAL_ID_GUIDE}`;
+
+  const sonnetSystemDynamic = `${langInstruction}
 
 STANDARD CURRICULUM WORKS (use exact names for closest_existing_match):
 
@@ -285,7 +292,14 @@ Look at the photo and produce a complete teacher-ready write-up using the draft_
     const msg = await anthropic.messages.create({
       model: AI_MODEL,
       max_tokens: 2048,
-      system: systemPrompt,
+      system: [
+        // Cached prefix: boilerplate rules + VISUAL_ID_GUIDE. Identical across
+        // every Sonnet draft call platform-wide.
+        { type: 'text', text: SONNET_STATIC_INSTRUCTIONS, cache_control: { type: 'ephemeral' } },
+        // Dynamic suffix: langInstruction + curriculum hint + per-classroom
+        // corrections/visualMemory. Re-sent in full each call.
+        { type: 'text', text: sonnetSystemDynamic },
+      ],
       tools: [DRAFT_WORK_WRITEUP_TOOL],
       tool_choice: { type: 'tool', name: 'draft_work_writeup' },
       messages: [{

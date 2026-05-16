@@ -483,9 +483,22 @@ Just describe the physical scene in 2-4 sentences. Lead with the PRIMARY work th
     ? aiLangInstruction
     : 'Write the observation in English.';
 
-  const pass2System = `You are a Montessori curriculum expert. A classroom photo was described by an observer. Match the description to the correct Montessori work name using the tag_photo tool.
-
-${langInstruction}
+  // 🚨 Session 113 V2 photo AI quality audit Q-4 — prompt caching for Pass 2.
+  // The system prompt is split into a CACHED static prefix (boilerplate
+  // instructions + VISUAL_ID_GUIDE ≈ 3-4K tokens, identical across all calls)
+  // and a DYNAMIC suffix (per-locale langInstruction + per-classroom
+  // correctionsContext + visualMemoryContext). Anthropic's prompt caching pays
+  // the full cost on the first call and ~10% on subsequent prefix-matching
+  // calls. At ~50 photos/day per school × 7 schools × ~$0.005/photo cached →
+  // ~$5/day per active school in Haiku spend saved. Required prefix size for
+  // caching to activate is ≥1024 tokens; VISUAL_ID_GUIDE alone is ~3K tokens
+  // so this is comfortably above the threshold.
+  //
+  // STRUCTURE: cached block FIRST (largest invariant prefix), dynamic block
+  // AFTER. langInstruction is per-locale (12 distinct values) so we keep it
+  // dynamic — moving it before the cache breakpoint would invalidate the
+  // cache on every locale switch.
+  const PASS2_STATIC_INSTRUCTIONS = `You are a Montessori curriculum expert. A classroom photo was described by an observer. Match the description to the correct Montessori work name using the tag_photo tool.
 
 🚨 IS THIS A CURRICULUM WORK?
 First decide whether the photo shows a child doing a Montessori curriculum work AT ALL. Many classroom photos do NOT:
@@ -515,7 +528,9 @@ CRITICAL RULES (for curriculum work photos):
 5. Keep the observation to ONE warm, specific sentence about the child's engagement
 6. COMPOSITION: Suggest a crop if the description mentions a child and materials together. Use normalized 0-1 coordinates.
 
-${VISUAL_ID_GUIDE}${context.correctionsContext}${context.visualMemoryContext}`;
+${VISUAL_ID_GUIDE}`;
+
+  const pass2SystemDynamic = `${langInstruction}${context.correctionsContext}${context.visualMemoryContext}`;
 
   let identification: TwoPassResult['identification'] = null;
   let hasVisualMemoryForMatch = false;
@@ -530,7 +545,15 @@ ${VISUAL_ID_GUIDE}${context.correctionsContext}${context.visualMemoryContext}`;
       const msg = await anthropic.messages.create({
         model: HAIKU_MODEL,
         max_tokens: 500,
-        system: pass2System,
+        system: [
+          // Cached prefix: boilerplate + VISUAL_ID_GUIDE. Identical across
+          // every Pass 2 call platform-wide. cache_control marks the
+          // breakpoint — everything UP TO AND INCLUDING this block is
+          // cached as a single ephemeral prefix.
+          { type: 'text', text: PASS2_STATIC_INSTRUCTIONS, cache_control: { type: 'ephemeral' } },
+          // Dynamic suffix: per-locale + per-classroom. Always re-sent in full.
+          { type: 'text', text: pass2SystemDynamic },
+        ],
         tools: [TAG_PHOTO_TOOL],
         tool_choice: { type: 'tool', name: 'tag_photo' },
         messages: [{
