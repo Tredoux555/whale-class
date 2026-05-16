@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import { useI18n } from '@/lib/montree/i18n';
 import PrincipalSetupGuide from '@/components/montree/onboarding/PrincipalSetupGuide';
 import TracyAvatar from '@/components/montree/admin/TracyAvatar';
+import MontreeMark from '@/components/montree/MontreeMark';
 
 
 const EMOJI_OPTIONS = ['🌳', '🐼', '🦁', '🐘', '🦋', '🌟', '🌈', '🌻', '🍎', '🎨', '📚', '🎵'];
@@ -286,11 +287,11 @@ export default function PrincipalSetupPage() {
             className="relative z-10 text-center px-6"
             style={{ animation: 'welcome-enter 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards' }}
           >
-            {/* Tree icon with glow ring */}
+            {/* Montree M monogram with glow ring (Session 113 V2 brand work) */}
             <div className="relative inline-block mb-8">
               <div className="absolute inset-0 w-24 h-24 rounded-full bg-emerald-400/20 blur-xl" style={{ animation: 'welcome-pulse 3s ease-in-out infinite' }} />
-              <div className="relative w-24 h-24 mx-auto bg-gradient-to-br from-emerald-400 to-teal-500 rounded-3xl shadow-2xl shadow-emerald-500/40 flex items-center justify-center">
-                <span className="text-5xl">🌳</span>
+              <div className="relative flex items-center justify-center">
+                <MontreeMark size={96} />
               </div>
             </div>
 
@@ -741,8 +742,9 @@ export default function PrincipalSetupPage() {
 
       {/* Footer */}
       <div className="absolute bottom-6 left-0 right-0 text-center">
-        <p className="text-slate-500 text-xs">
-          🌳 Montree • montree.xyz
+        <p className="text-slate-500 text-xs inline-flex items-center justify-center gap-1.5">
+          <MontreeMark size={12} withSpark={false} />
+          <span>Montree • montree.xyz</span>
         </p>
       </div>
     </div>

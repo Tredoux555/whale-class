@@ -8,6 +8,7 @@
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import MontreeMark from '@/components/montree/MontreeMark';
 
 interface MeResponse {
   agent: { id: string; name: string | null; email: string | null };
@@ -101,11 +102,9 @@ export default function AgentNav() {
        */}
       <div className="max-w-6xl mx-auto px-4 sm:px-6 md:pr-20 py-3 flex items-center gap-3">
         <Link href="/montree/agent/dashboard" className="flex items-center gap-2 shrink-0">
-          <span className="inline-flex items-center justify-center w-8 h-8 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-lg shadow-md shadow-emerald-500/20">
-            <span className="text-sm">🌳</span>
-          </span>
+          <MontreeMark size={32} />
           <span className="text-white font-light tracking-wide hidden sm:inline">
-            Agent
+            Ambassador
           </span>
         </Link>
 

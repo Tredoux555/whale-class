@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useI18n } from '@/lib/montree/i18n';
 import { getSession, recoverSession } from '@/lib/montree/auth';
 import LanguageToggle from '@/components/montree/LanguageToggle';
+import MontreeMark from '@/components/montree/MontreeMark';
 
 function UnifiedLoginContent() {
   const router = useRouter();
@@ -143,10 +144,10 @@ function UnifiedLoginContent() {
       </div>
 
       <div className="relative z-10 w-full max-w-sm">
-        {/* Logo */}
+        {/* Logo — canonical Montree M monogram per Session 113 V2 brand work */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-2xl shadow-2xl shadow-emerald-500/30 mb-4">
-            <span className="text-4xl">🌳</span>
+          <div className="inline-flex justify-center mb-4">
+            <MontreeMark size={80} />
           </div>
           <h1 className="text-3xl font-light text-white mb-1">
             {t('app.name')}
@@ -223,7 +224,10 @@ function UnifiedLoginContent() {
 
       {/* Footer — respects safe area on iPhones */}
       <div className="absolute text-center left-0 right-0" style={{ bottom: 'max(24px, env(safe-area-inset-bottom, 24px))' }}>
-        <p className="text-slate-500 text-xs">🌳 Montree • montree.xyz</p>
+        <p className="text-slate-500 text-xs inline-flex items-center justify-center gap-1.5">
+          <MontreeMark size={12} withSpark={false} />
+          <span>Montree • montree.xyz</span>
+        </p>
       </div>
     </div>
   );
