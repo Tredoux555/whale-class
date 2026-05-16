@@ -351,6 +351,53 @@ export async function executeTool(
       return { success: true, message: 'Child profile saved' };
     }
 
+    case 'update_child_tenure': {
+      // 🚨 Session 113 V2 polish — when the teacher mentions a child's
+      // tenure naturally in conversation ('Amy's been with us for two years'),
+      // Guru should reflect that in montree_children.enrolled_at so it
+      // appears on the Edit Student form and feeds future age/experience-
+      // aware advice. Before this tool existed, Guru could nod and forget.
+      const monthsRaw = input.months_in_program as number | undefined;
+      if (typeof monthsRaw !== 'number' || !isFinite(monthsRaw) || monthsRaw < 0) {
+        return { success: false, message: 'months_in_program must be a non-negative number' };
+      }
+      // Cap at 10 years — anything more is almost certainly a model misread.
+      const months = Math.min(Math.round(monthsRaw), 120);
+
+      const resolved = await resolveTargetChild(input, childId);
+      if (resolved.error) return { success: false, message: resolved.error };
+      const effectiveChildId = resolved.childId;
+
+      const enrolledAt = new Date();
+      enrolledAt.setMonth(enrolledAt.getMonth() - months);
+      const isoDate = enrolledAt.toISOString().slice(0, 10); // YYYY-MM-DD
+
+      const { error: updateErr } = await supabase
+        .from('montree_children')
+        .update({ enrolled_at: isoDate })
+        .eq('id', effectiveChildId);
+
+      if (updateErr) {
+        console.error('[Guru] update_child_tenure DB error:', updateErr);
+        return { success: false, message: 'Could not update tenure' };
+      }
+
+      // Human-readable summary that mirrors the Edit Student dropdown options
+      // so Guru's response feels accurate to what the teacher sees in the UI.
+      const tenureLabel = months >= 24 ? `${Math.round(months / 12)} years`
+                        : months >= 12 ? '1+ year'
+                        : months >= 6  ? '6-12 months'
+                        : months >= 3  ? '3-6 months'
+                        : months >= 1  ? '1-3 months'
+                        : 'just started';
+
+      return {
+        success: true,
+        message: `Time in Program updated → ${tenureLabel}`,
+        detail: `enrolled_at set to ${isoDate} (${months} months ago)`,
+      };
+    }
+
     case 'save_parent_state': {
       const themes = input.emotional_themes as string[];
       const confidence = input.confidence_level as string;
