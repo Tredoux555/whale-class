@@ -159,9 +159,9 @@ const montreeJsonLd = {
   operatingSystem: "Web",
   offers: {
     "@type": "Offer",
-    price: "0",
+    price: "7",
     priceCurrency: "USD",
-    description: "Free trial available",
+    description: "$7 per active student per month. First month included.",
   },
   author: {
     "@type": "Organization",
