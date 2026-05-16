@@ -43,6 +43,22 @@ export async function GET(req: NextRequest) {
 
   const supabase = getSupabase();
 
+  // 🚨 Session 113 V2 — Defense in depth: verify the JWT subject is still
+  // an active, non-suspended agent at the DB layer. A token issued before
+  // suspension would otherwise pass role check at JWT level. Mirrors the
+  // pattern from /agent/me + /agent/codes.
+  const { data: agentRow } = await supabase
+    .from('montree_teachers')
+    .select('id, is_agent, agent_suspended_at')
+    .eq('id', auth.userId)
+    .maybeSingle();
+  if (!agentRow || !agentRow.is_agent) {
+    return NextResponse.json({ error: 'Forbidden — not an agent' }, { status: 403 });
+  }
+  if (agentRow.agent_suspended_at) {
+    return NextResponse.json({ error: 'Agent suspended' }, { status: 403 });
+  }
+
   // Schools founded by this agent.
   const { data: schoolsRaw } = await supabase
     .from('montree_schools')
