@@ -15,6 +15,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { verifySuperAdminAuth } from '@/lib/verify-super-admin';
+import { assertPeriodOpen, periodMonthOf } from '@/lib/montree/finance/period-lock';
 
 export const dynamic = 'force-dynamic';
 
@@ -222,6 +223,13 @@ export async function POST(request: NextRequest) {
     }
 
     const supabase = getSupabase();
+
+    // 🚨 Session 113 V2 — Period lock guard (Finance audit F-P-1).
+    // Refuse manual ledger writes to a closed period. The whole point of
+    // period locks is the audit guarantee that closed months don't change.
+    const lockErr = await assertPeriodOpen(supabase, periodMonthOf(occurredAt));
+    if (lockErr) return lockErr;
+
     const usd = Math.round(body.usd_amount * 10000) / 10000;
 
     const { data, error } = await supabase
@@ -273,14 +281,14 @@ export async function DELETE(request: NextRequest) {
     // webhook / aggregator / commission rows (immutable audit trail).
     const { data: existing } = await supabase
       .from('montree_finance_transactions')
-      .select('id, type, source')
+      .select('id, type, source, occurred_at')
       .eq('id', rowId)
       .maybeSingle();
 
     if (!existing) {
       return NextResponse.json({ error: 'Row not found' }, { status: 404 });
     }
-    const row = existing as { type: string; source: string };
+    const row = existing as { type: string; source: string; occurred_at: string };
     // Only op_expense + fx_adjustment manual rows are deletable. Income +
     // direct_cost + commission are immutable history.
     if (row.type !== 'op_expense' && row.type !== 'fx_adjustment') {
@@ -295,6 +303,11 @@ export async function DELETE(request: NextRequest) {
         { status: 403 }
       );
     }
+
+    // 🚨 Session 113 V2 — Period lock guard (Finance audit F-P-1).
+    // Refuse delete if the row's period is closed. Audit guarantee.
+    const lockErr = await assertPeriodOpen(supabase, periodMonthOf(row.occurred_at));
+    if (lockErr) return lockErr;
 
     const { error: delErr } = await supabase
       .from('montree_finance_transactions')

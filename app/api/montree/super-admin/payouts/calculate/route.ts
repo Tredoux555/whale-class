@@ -18,6 +18,7 @@ import { verifySuperAdminAuth } from '@/lib/verify-super-admin';
 import { calculatePayouts, formatPeriod, monthRange } from '@/lib/montree/payouts/calculator';
 import { aggregateApiUsage } from '@/lib/montree/payouts/api-usage-aggregator';
 import { sendMonthlyDigestEmail } from '@/lib/montree/email';
+import { assertPeriodOpen } from '@/lib/montree/finance/period-lock';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 120;
@@ -71,6 +72,13 @@ export async function POST(request: NextRequest) {
     }
 
     const supabase = getSupabase();
+
+    // 🚨 Session 113 V2 Finance audit F-P-1 — period lock guard.
+    // Refuse to recalculate payouts in a closed period — would silently
+    // mutate already-paid commission rows on the ledger and break the
+    // audit guarantee.
+    const lockErr = await assertPeriodOpen(supabase, periodMonth);
+    if (lockErr) return lockErr;
 
     // Step 1 — roll up api_usage into finance_transactions for the period.
     // Without this, anthropic_cost_usd + openai_cost_usd would always read $0

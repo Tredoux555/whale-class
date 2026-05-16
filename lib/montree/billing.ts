@@ -22,6 +22,7 @@ import Stripe from 'stripe';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { getSupabase } from '@/lib/supabase-client';
 import { clearBudgetCache } from '@/lib/montree/api-usage';
+import { isPeriodClosed } from '@/lib/montree/finance/period-lock';
 
 // ── Configuration ─────────────────────────────────────────────────────────
 
@@ -682,6 +683,37 @@ async function insertFinanceTx(
   supabase: SupabaseClient,
   entry: FinanceTxInsert
 ): Promise<void> {
+  // 🚨 Session 113 V2 Finance audit F-P-1 — surface late writes to closed
+  // periods. Webhooks and the aggregator can land days after period close;
+  // we intentionally allow the write (real money events MUST be recorded)
+  // but log loudly so the accountant can spot post-close adjustments. The
+  // hard refusal lives at the route layer for manual + cron writes; this
+  // is the soft-audit layer for system writes that can't be rejected.
+  try {
+    const periodMonth = periodMonthOfDate(new Date(entry.occurred_at));
+    const closed = await isPeriodClosed(supabase, periodMonth);
+    if (closed) {
+      console.warn(
+        '[billing] LATE WRITE TO CLOSED PERIOD — finance_tx',
+        JSON.stringify({
+          period_month: periodMonth,
+          source: entry.source,
+          source_ref: entry.source_ref,
+          type: entry.type,
+          usd_amount: entry.usd_amount,
+          occurred_at: entry.occurred_at,
+          school_id: entry.school_id ?? null,
+          agent_id: entry.agent_id ?? null,
+        })
+      );
+      // Audit hook: still write the row. Accountant scans logs for this
+      // string and decides whether to reopen the period for adjustment.
+    }
+  } catch (auditErr) {
+    // Defensive — never let the audit hook block a real money write.
+    console.error('[billing] period-lock audit hook failed (non-fatal)', auditErr);
+  }
+
   const { error } = await supabase.from('montree_finance_transactions').insert({
     occurred_at: entry.occurred_at,
     type: entry.type,
