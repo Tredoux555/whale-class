@@ -10,6 +10,12 @@ export const useVault = (getSession: () => string | null) => {
   const [vaultError, setVaultError] = useState('');
   const [viewingImage, setViewingImage] = useState<{ url: string; filename: string } | null>(null);
   const [loadingView, setLoadingView] = useState(false);
+  // 🚨 Session 113 V2 Story audit F-2.1 — vault token state. Captured from
+  // the unlock response and sent on every subsequent vault fetch via the
+  // x-vault-token header. Lives in a ref (NOT localStorage / sessionStorage)
+  // so it's wiped on lock / refresh / tab close. The token itself is a 1h-TTL
+  // JWT — even if it leaked it'd auto-expire.
+  const vaultTokenRef = useRef<string | null>(null);
   // Album state
   const [albumIndex, setAlbumIndex] = useState(0);
   const [thumbnails, setThumbnails] = useState<Record<number, string>>({});
@@ -19,20 +25,38 @@ export const useVault = (getSession: () => string | null) => {
   const requestedRef = useRef<Set<number>>(new Set()); // track which IDs we've already requested
   const abortRef = useRef<AbortController | null>(null); // cancel batch loading on lock
 
-  const loadVaultFiles = useCallback(async () => {
+  // Build the standard vault-call headers. Admin session + vault token.
+  // Returns null if either is missing — callers should bail in that case
+  // (typically by re-locking the UI, since the server will 401 anyway).
+  const vaultHeaders = useCallback((extra: Record<string, string> = {}): Record<string, string> | null => {
     const session = getSession();
+    const vaultToken = vaultTokenRef.current;
+    if (!session || !vaultToken) return null;
+    return {
+      Authorization: `Bearer ${session}`,
+      'x-vault-token': vaultToken,
+      ...extra,
+    };
+  }, [getSession]);
+
+  const loadVaultFiles = useCallback(async () => {
+    const headers = vaultHeaders();
+    if (!headers) return;
     try {
-      const res = await fetch('/api/story/admin/vault/list', {
-        headers: { 'Authorization': `Bearer ${session}` }
-      });
+      const res = await fetch('/api/story/admin/vault/list', { headers });
       if (res.ok) {
         const data = await res.json();
         setVaultFiles(data.files || []);
+      } else if (res.status === 401) {
+        // Vault token expired or invalid — bounce to locked state so the
+        // operator can re-enter the password.
+        vaultTokenRef.current = null;
+        setVaultUnlocked(false);
       }
     } catch {
       console.error('Failed to load vault files');
     }
-  }, [getSession]);
+  }, [vaultHeaders]);
 
   // Revoke all cached object URLs
   const revokeAllThumbnails = useCallback(() => {
@@ -52,9 +76,13 @@ export const useVault = (getSession: () => string | null) => {
     requestedRef.current.add(fileId);
     setLoadingThumbnails(prev => ({ ...prev, [fileId]: true }));
     try {
-      const session = getSession();
+      const headers = vaultHeaders();
+      if (!headers) {
+        setLoadingThumbnails(prev => ({ ...prev, [fileId]: false }));
+        return;
+      }
       const res = await fetch(`/api/story/admin/vault/download/${fileId}`, {
-        headers: { 'Authorization': `Bearer ${session}` },
+        headers,
         signal,
       });
       if (res.ok) {
@@ -73,7 +101,7 @@ export const useVault = (getSession: () => string | null) => {
     } finally {
       setLoadingThumbnails(prev => ({ ...prev, [fileId]: false }));
     }
-  }, [getSession]);
+  }, [vaultHeaders]);
 
   // Load all image thumbnails progressively (cancellable)
   const loadAllThumbnails = useCallback(async (files: VaultFile[]) => {
@@ -101,19 +129,29 @@ export const useVault = (getSession: () => string | null) => {
         },
         body: JSON.stringify({ password: vaultPassword })
       });
-      await res.json();
+      const data = await res.json();
       if (res.ok) {
+        // 🚨 Session 113 V2 Story audit F-2.1 — capture the vault token from
+        // the unlock response. Every subsequent vault call sends this as
+        // x-vault-token. Lives only in memory (ref) — wiped on lock, refresh,
+        // or tab close.
+        vaultTokenRef.current = data.vaultToken || null;
+        if (!vaultTokenRef.current) {
+          setVaultError('Unlock succeeded but no vault token returned. Try again.');
+          return;
+        }
         setVaultUnlocked(true);
         setVaultPassword('');
-        const listRes = await fetch('/api/story/admin/vault/list', {
-          headers: { 'Authorization': `Bearer ${session}` }
-        });
-        if (listRes.ok) {
-          const listData = await listRes.json();
-          const files = listData.files || [];
-          setVaultFiles(files);
-          // Start loading thumbnails in background
-          loadAllThumbnails(files);
+        const headers = vaultHeaders();
+        if (headers) {
+          const listRes = await fetch('/api/story/admin/vault/list', { headers });
+          if (listRes.ok) {
+            const listData = await listRes.json();
+            const files = listData.files || [];
+            setVaultFiles(files);
+            // Start loading thumbnails in background
+            loadAllThumbnails(files);
+          }
         }
       } else {
         setVaultError('Invalid password');
@@ -121,13 +159,17 @@ export const useVault = (getSession: () => string | null) => {
     } catch {
       setVaultError('Error unlocking vault');
     }
-  }, [getSession, vaultPassword, loadAllThumbnails]);
+  }, [getSession, vaultPassword, loadAllThumbnails, vaultHeaders]);
 
   const handleVaultLock = useCallback(() => {
     // Cancel any in-flight thumbnail loads
     if (abortRef.current) abortRef.current.abort();
     // Revoke all object URLs to free memory
     revokeAllThumbnails();
+    // 🚨 Session 113 V2 Story audit F-2.1 — wipe the vault token on lock.
+    // Even though it's a 1h-TTL JWT, locking should immediately invalidate
+    // access from the client side so a re-unlock is required.
+    vaultTokenRef.current = null;
     setVaultUnlocked(false);
     setVaultPassword('');
     setViewingImage(null);
@@ -138,13 +180,19 @@ export const useVault = (getSession: () => string | null) => {
     setVaultError('');
 
     try {
-      const session = getSession();
+      // 🚨 Session 113 V2 Story audit F-2.1 — vault token mandatory.
+      const headers = vaultHeaders();
+      if (!headers) {
+        setVaultError('Vault locked — please re-enter password');
+        setUploadingVault(false);
+        return;
+      }
       const formData = new FormData();
       formData.append('file', file);
 
       const res = await fetch('/api/story/admin/vault/upload', {
         method: 'POST',
-        headers: { 'Authorization': `Bearer ${session}` },
+        headers,
         body: formData
       });
 
@@ -163,13 +211,17 @@ export const useVault = (getSession: () => string | null) => {
     } finally {
       setUploadingVault(false);
     }
-  }, [getSession, loadVaultFiles, loadThumbnail]);
+  }, [vaultHeaders, loadVaultFiles, loadThumbnail]);
 
   const handleVaultDownload = useCallback(async (fileId: number, filename: string) => {
     try {
-      const session = getSession();
+      const headers = vaultHeaders();
+      if (!headers) {
+        alert('Vault locked — please re-enter password');
+        return;
+      }
       const res = await fetch(`/api/story/admin/vault/download/${fileId}`, {
-        headers: { 'Authorization': `Bearer ${session}` }
+        headers,
       });
       if (res.ok) {
         const blob = await res.blob();
@@ -188,15 +240,19 @@ export const useVault = (getSession: () => string | null) => {
       console.error('Download error:', err);
       alert('Download failed');
     }
-  }, [getSession]);
+  }, [vaultHeaders]);
 
   const handleVaultDelete = useCallback(async (fileId: number) => {
     if (!confirm('Delete this file?')) return;
-    const session = getSession();
+    const headers = vaultHeaders();
+    if (!headers) {
+      setVaultError('Vault locked — please re-enter password');
+      return;
+    }
     try {
       const res = await fetch(`/api/story/admin/vault/delete/${fileId}`, {
         method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${session}` }
+        headers,
       });
       if (res.ok) {
         // Clean up thumbnail URL
@@ -223,7 +279,7 @@ export const useVault = (getSession: () => string | null) => {
     } catch {
       setVaultError('Delete failed');
     }
-  }, [getSession, loadVaultFiles, viewingImage, vaultFiles, albumIndex]);
+  }, [vaultHeaders, loadVaultFiles, viewingImage, vaultFiles, albumIndex]);
 
   const handleVaultView = useCallback(async (fileId: number, filename: string) => {
     // If we already have the thumbnail, use it directly
@@ -238,9 +294,14 @@ export const useVault = (getSession: () => string | null) => {
 
     setLoadingView(true);
     try {
-      const session = getSession();
+      const headers = vaultHeaders();
+      if (!headers) {
+        setVaultError('Vault locked — please re-enter password');
+        setLoadingView(false);
+        return;
+      }
       const res = await fetch(`/api/story/admin/vault/download/${fileId}`, {
-        headers: { 'Authorization': `Bearer ${session}` }
+        headers,
       });
       if (res.ok) {
         const blob = await res.blob();
@@ -260,7 +321,7 @@ export const useVault = (getSession: () => string | null) => {
     } finally {
       setLoadingView(false);
     }
-  }, [getSession, vaultFiles]);
+  }, [vaultHeaders, vaultFiles]);
 
   // Album navigation
   const navigateAlbum = useCallback(async (direction: 'prev' | 'next') => {
@@ -280,9 +341,14 @@ export const useVault = (getSession: () => string | null) => {
       // Load on demand
       setLoadingView(true);
       try {
-        const session = getSession();
+        const headers = vaultHeaders();
+        if (!headers) {
+          setVaultError('Vault locked — please re-enter password');
+          setLoadingView(false);
+          return;
+        }
         const res = await fetch(`/api/story/admin/vault/download/${targetFile.id}`, {
-          headers: { 'Authorization': `Bearer ${session}` }
+          headers,
         });
         if (res.ok) {
           const blob = await res.blob();
@@ -300,7 +366,7 @@ export const useVault = (getSession: () => string | null) => {
         setLoadingView(false);
       }
     }
-  }, [getSession, vaultFiles, albumIndex]);
+  }, [vaultHeaders, vaultFiles, albumIndex]);
 
   const handleCloseViewer = useCallback(() => {
     setViewingImage(null);
@@ -332,5 +398,9 @@ export const useVault = (getSession: () => string | null) => {
     failedThumbnails,
     navigateAlbum,
     loadThumbnail,
+    // 🚨 Session 113 V2 Story audit F-2.1 — expose the vault token so
+    // other hooks (useMessages -> saveMessageToVault) can include it on
+    // their own vault calls. Read-only — returns null when locked.
+    getVaultToken: () => vaultTokenRef.current,
   };
 };

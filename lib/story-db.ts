@@ -73,6 +73,32 @@ export function getSessionToken(authHeader: string | null): string | null {
   return token.substring(0, 50);
 }
 
+// 🚨 Session 113 V2 Story audit F-2.1 — vault token verifier.
+//
+// The unlock route issues a 1h-TTL JWT with { vaultAccess: true } when the
+// vault password is correct. Until this fix every vault route ignored that
+// token and gated only on the admin session — so stealing an admin JWT was
+// equivalent to knowing the vault password.
+//
+// All sensitive vault routes (list, download, upload, save-from-message,
+// delete) now require BOTH the admin token AND a fresh vault token. The
+// vault token is sent in the `x-vault-token` header. It auto-expires after
+// 1 hour; the operator must re-enter the password to refresh.
+export async function verifyVaultToken(headerValue: string | null): Promise<boolean> {
+  if (!headerValue) return false;
+  try {
+    const { jwtVerify } = await import('jose');
+    const token = headerValue.trim();
+    const { payload } = await jwtVerify(token, getJWTSecret());
+    if (payload.vaultAccess !== true) return false;
+    // jwtVerify already enforces `exp` (we set 1h on the unlock route), so a
+    // successful verify here means the token is still in its TTL window.
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 // Get login_log_id for a session token
 export async function getLoginLogId(sessionToken: string | null): Promise<number | null> {
   if (!sessionToken) return null;

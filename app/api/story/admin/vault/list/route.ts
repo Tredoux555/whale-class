@@ -1,11 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getSupabase, verifyAdminToken } from '@/lib/story-db';
+import { getSupabase, verifyAdminToken, verifyVaultToken } from '@/lib/story-db';
 
 export async function GET(req: NextRequest) {
   try {
     const adminUsername = await verifyAdminToken(req.headers.get('authorization'));
     if (!adminUsername) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    // 🚨 Session 113 V2 Story audit F-2.1 — vault token mandatory. Admin
+    // session alone is not sufficient to list vault files; the operator
+    // must have unlocked the vault within the last hour. Closes the
+    // 'stealing an admin JWT = unrestricted vault access' hole.
+    const vaultTokenValid = await verifyVaultToken(req.headers.get('x-vault-token'));
+    if (!vaultTokenValid) {
+      return NextResponse.json(
+        { error: 'Vault not unlocked', vault_locked: true },
+        { status: 401 }
+      );
     }
 
     const supabase = getSupabase();
