@@ -6,6 +6,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useI18n } from '@/lib/montree/i18n';
 import PrincipalSetupGuide from '@/components/montree/onboarding/PrincipalSetupGuide';
+import TracyAvatar from '@/components/montree/admin/TracyAvatar';
 
 
 const EMOJI_OPTIONS = ['🌳', '🐼', '🦁', '🐘', '🦋', '🌟', '🌈', '🌻', '🍎', '🎨', '📚', '🎵'];
@@ -594,6 +595,59 @@ export default function PrincipalSetupPage() {
               <p className="text-emerald-200">
                 {t('principal.setup.success.shareWithTeachers')}
               </p>
+            </div>
+
+            {/*
+              Tracy celebration card — appears at the setup-complete moment.
+              No AI call; static greeting that uses Tracy's visual voice
+              (avatar + gold action-line arrow) to congratulate the principal
+              and point them at the next concrete step.
+              Per user directive: 'I want Tracy to pop up here congratulating
+              the principal on creating her classrooms and guiding her to
+              the next step of making a message to send to the teachers.'
+            */}
+            <div
+              style={{
+                background: 'rgba(8,20,12,0.65)',
+                border: '1px solid rgba(232,201,106,0.32)',
+                borderRadius: '18px',
+                padding: '18px 18px 20px 18px',
+                display: 'flex',
+                gap: '14px',
+                alignItems: 'flex-start',
+                backdropFilter: 'blur(18px)',
+              }}
+            >
+              <TracyAvatar size={44} />
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <p
+                  style={{
+                    fontFamily: 'var(--font-lora), Georgia, serif',
+                    fontSize: '17px',
+                    color: '#f5f8ef',
+                    margin: 0,
+                    lineHeight: 1.45,
+                  }}
+                >
+                  {principalName ? `Beautiful work, ${principalName.split(/\s+/)[0]}.` : 'Beautiful work.'}{' '}
+                  {classrooms.length === 1
+                    ? "Your first classroom is ready."
+                    : `All ${classrooms.length} of your classrooms are ready.`}{' '}
+                  Now your teachers just need their codes — and the message below is already written for you.
+                </p>
+                <p
+                  style={{
+                    marginTop: '14px',
+                    fontSize: '14.5px',
+                    lineHeight: 1.55,
+                    color: '#f0d68a',
+                    fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif',
+                  }}
+                >
+                  <span style={{ color: 'rgba(232,201,106,0.55)', marginRight: '6px' }}>→</span>
+                  Tap <strong style={{ color: '#f5f8ef', fontWeight: 600 }}>{t('principal.setup.copyMessage')}</strong> below, then paste it into your teachers&apos; group chat.
+                </p>
+              </div>
             </div>
 
             {/* Teacher Codes */}
