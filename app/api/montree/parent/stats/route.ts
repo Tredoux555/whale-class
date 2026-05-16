@@ -2,7 +2,7 @@
 // Get child stats for parent dashboard
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
-import { verifyParentSession } from '@/lib/montree/verify-parent-request';
+import { resolveAuthorizedParent } from '@/lib/montree/verify-parent-request';
 
 
 export async function GET(request: NextRequest) {
@@ -15,14 +15,14 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'child_id required' }, { status: 400 });
     }
 
-    // SECURITY: Authenticate parent via session cookie
-    const session = await verifyParentSession();
+    // 🚨 Session 113 V2 Parent audit F-1.1 — re-verify parent↔child link.
+    const session = await resolveAuthorizedParent(supabase);
     if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // SECURITY: Verify the requested child matches the authenticated session
-    if (session.childId !== childId) {
+    // Multi-child safe.
+    if (!session.authorizedChildIds.includes(childId)) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 

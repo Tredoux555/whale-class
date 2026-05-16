@@ -4,7 +4,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
-import { verifyParentSession } from '@/lib/montree/verify-parent-request';
+import { resolveAuthorizedParent } from '@/lib/montree/verify-parent-request';
 import { getChineseNameForWork } from '@/lib/montree/curriculum-loader';
 
 // Area icons for display
@@ -102,24 +102,15 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const weekParam = searchParams.get('week');
 
-    // Get child ID from session cookie (secure - no test mode bypass)
-    let childId: string | null = null;
-
-    const session = await verifyParentSession();
+    // 🚨 Session 113 V2 Parent audit F-1.1 — re-verify parent↔child link.
+    const session = await resolveAuthorizedParent(supabase);
     if (!session) {
       return NextResponse.json({
         success: false,
         error: 'Not authenticated'
       }, { status: 401 });
     }
-    childId = session.childId;
-    
-    if (!childId) {
-      return NextResponse.json({ 
-        success: false, 
-        error: 'No child ID' 
-      }, { status: 400 });
-    }
+    const childId = session.childId;
     
     // Fetch child info
     const { data: child, error: childError } = await supabase

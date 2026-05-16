@@ -2,7 +2,7 @@
 // Get weekly reports for a parent's child
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
-import { verifyParentSession } from '@/lib/montree/verify-parent-request';
+import { resolveAuthorizedParent } from '@/lib/montree/verify-parent-request';
 
 
 export async function GET(request: NextRequest) {
@@ -14,18 +14,18 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    // SECURITY: Authenticate parent via session cookie
-    const session = await verifyParentSession();
+    const supabase = getSupabase();
+
+    // 🚨 Session 113 V2 Parent audit F-1.1 — re-verify parent↔child link.
+    const session = await resolveAuthorizedParent(supabase);
     if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // SECURITY: Verify the requested child matches the authenticated session
-    if (session.childId !== childId) {
+    // Multi-child safe: requested child must be in the parent's set.
+    if (!session.authorizedChildIds.includes(childId)) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
-
-    const supabase = getSupabase();
 
     // Get weekly reports for this child
     // Accept: status='sent' (new way) OR generated_at is set (old way - indicates report was sent)

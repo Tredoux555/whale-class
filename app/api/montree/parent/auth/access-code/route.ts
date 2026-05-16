@@ -7,7 +7,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { cookies } from 'next/headers';
 import { createParentToken } from '@/lib/montree/server-auth';
-import { verifyParentSession } from '@/lib/montree/verify-parent-request';
+import { resolveAuthorizedParent } from '@/lib/montree/verify-parent-request';
 import { checkRateLimit } from '@/lib/rate-limiter';
 import { logAudit, getClientIP, getUserAgent } from '@/lib/montree/audit-logger';
 
@@ -182,8 +182,11 @@ export async function POST(request: NextRequest) {
 
 export async function GET() {
   try {
-    // Verify JWT session (with legacy base64 fallback)
-    const session = await verifyParentSession();
+    // 🚨 Session 113 V2 Parent audit F-1.1 — session-check endpoint must
+    // re-verify parent↔child link. Without this, a stale 30-day cookie
+    // continues to report "authenticated: true" after invite revocation.
+    const supabase = getSupabase();
+    const session = await resolveAuthorizedParent(supabase);
 
     if (!session) {
       return NextResponse.json({
