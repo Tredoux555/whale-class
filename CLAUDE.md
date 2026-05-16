@@ -206,7 +206,9 @@ Wave 1 sends bounced for these addresses. None of these are flagged as `bounced`
 
 **51 commits pushed to main:** `2f5b5643` → `fe68f0c2`. Continuous Saturday-into-Sunday burn. User explicitly asked to "burn through usage in next 48 hours" then kept saying "keep burning" / "burn burn burn" through every fork. **The single highest-leverage 48-hour security + correctness push the project has had.**
 
-**🚨 Canonical resume doc:** `docs/handoffs/SESSION_113_V2_HANDOFF.md` — comprehensive single source of truth for cold-start resume.
+**🚨 Canonical resume docs:**
+- `docs/handoffs/SESSION_113_V2_HANDOFF.md` — Saturday-afternoon burn (Blue+Green Phase + photo pipeline infrastructure audit + Save as Other)
+- `docs/handoffs/SESSION_113_V2_BURN_HANDOFF.md` — late-Saturday-into-Sunday burn (8 deep audits, 10 CRITICAL + 30+ HIGH closed, 38 commits, 24-step production verification checklist, full next-session burn list)
 
 **🚨 Two migrations pending Tredoux Supabase run:**
 - `migrations/210_fix_identification_status_constraint.sql` — CRITICAL photo pipeline fix (adds `haiku_drafted` to the CHECK constraint enum; closes the "photos stuck at NULL forever" class of failures)
