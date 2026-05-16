@@ -6,7 +6,14 @@ import { checkRateLimit } from '@/lib/rate-limiter';
 import { logAudit, getClientIP, getUserAgent } from '@/lib/montree/audit-logger';
 import { getSupabase } from '@/lib/supabase-client';
 
-// Build admin credentials from environment (skip accounts with missing passwords)
+// Build admin credentials from environment (skip accounts with missing passwords).
+//
+// 🚨 Session 113 V2 Whale-Class admin audit CRITICAL #2 — ADMIN_USERNAME +
+// ADMIN_PASSWORD env vars are documented in CLAUDE.md but were previously
+// not wired. Either the docs lie or the third login is needed. Wired now:
+// if both env vars are set AND the username is not already a reserved one
+// ('Tredoux' / 'Teacher'), the admin can log in with this custom pair.
+// Useful for a backup admin account without touching code.
 function getAdminCredentials() {
   const creds: { username: string; password: string }[] = [];
   if (process.env.SUPER_ADMIN_PASSWORD) {
@@ -14,6 +21,14 @@ function getAdminCredentials() {
   }
   if (process.env.TEACHER_ADMIN_PASSWORD) {
     creds.push({ username: 'Teacher', password: process.env.TEACHER_ADMIN_PASSWORD });
+  }
+  if (
+    process.env.ADMIN_USERNAME &&
+    process.env.ADMIN_PASSWORD &&
+    process.env.ADMIN_USERNAME !== 'Tredoux' &&
+    process.env.ADMIN_USERNAME !== 'Teacher'
+  ) {
+    creds.push({ username: process.env.ADMIN_USERNAME, password: process.env.ADMIN_PASSWORD });
   }
   return creds;
 }

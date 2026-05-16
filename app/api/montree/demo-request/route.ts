@@ -11,7 +11,15 @@ export async function POST(req: NextRequest) {
 
     const supabase = getSupabase();
 
-    // Save to outreach contacts
+    // 🚨 Session 113 V2 Outreach audit HIGH F-3.2 — ignoreDuplicates: TRUE.
+    // The legacy upsert overwrote every field on existing curated contacts
+    // (notes, priority, contact_person, status) whenever a real contact's
+    // email happened to also submit the landing-page demo form. The form
+    // is public, so an unscrupulous visitor could repeatedly POST other
+    // people's emails and erase the outreach team's hand-curated notes.
+    // Now: insert only if the email is new; existing rows are untouched.
+    // The standalone montree_outreach_log entry below preserves the
+    // demo-request signal even when the contact already exists.
     await supabase.from('montree_outreach_contacts').upsert(
       {
         org_name: school || 'Unknown School',
@@ -23,7 +31,7 @@ export async function POST(req: NextRequest) {
         source: 'landing_page',
         notes: `Demo requested via landing page. Name: ${name || 'N/A'}. School: ${school || 'N/A'}.`,
       },
-      { onConflict: 'email', ignoreDuplicates: false }
+      { onConflict: 'email', ignoreDuplicates: true }
     );
 
     // Log the request (contact_email not a column — use details JSONB)

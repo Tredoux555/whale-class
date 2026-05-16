@@ -113,6 +113,10 @@ export function useLeadOperations({
         headers: {
           'Content-Type': 'application/json',
           'x-super-admin-token': password,
+          // 🚨 Session 113 V2 Outreach audit CRITICAL F-2.1 — server now
+          // requires this header on bulk-by-status deletes as a guard
+          // against trivial CSRF / accidental clients.
+          'x-confirm-bulk-delete': 'yes',
         },
         body: JSON.stringify({ status }),
       });

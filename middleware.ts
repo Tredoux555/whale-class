@@ -170,13 +170,26 @@ export async function middleware(req: NextRequest) {
   // CRITICAL: API routes - NEVER redirect, let them handle their own auth
   // This MUST be first to ensure API routes are never intercepted
   if (pathname.startsWith('/api/')) {
-    // Whale admin API routes require admin JWT
-    // Exception: /api/whale/parent/* and /api/whale/teacher/* have their own Supabase auth
-    if (
-      pathname.startsWith('/api/whale/') &&
-      !pathname.startsWith('/api/whale/parent/') &&
-      !pathname.startsWith('/api/whale/teacher/')
-    ) {
+    // 🚨 Session 113 V2 Whale-Class admin audit CRITICAL — extend the
+    // admin-JWT gate to ALL /api/admin/* and /api/whale/* routes. Until
+    // this fix, /api/admin/video-manager, /api/admin/media-library, and
+    // /api/admin/curriculum/sync-all (and every other /api/admin/* route)
+    // were completely unauthenticated — anyone with the URL could wipe
+    // homepage videos, upload arbitrary files into Supabase Storage, or
+    // corrupt the curriculum for every Whale Class student.
+    //
+    // Exception: /api/whale/parent/* and /api/whale/teacher/* have their
+    // own Supabase auth.
+    // Exception: /api/admin/login MUST stay public — it's the auth
+    // entrypoint itself.
+    const requiresAdminJWT =
+      (pathname.startsWith('/api/admin/') && !pathname.startsWith('/api/admin/login')) ||
+      (
+        pathname.startsWith('/api/whale/') &&
+        !pathname.startsWith('/api/whale/parent/') &&
+        !pathname.startsWith('/api/whale/teacher/')
+      );
+    if (requiresAdminJWT) {
       const whaleAdminToken = req.cookies.get('admin-token')?.value;
       if (!whaleAdminToken || !(await verifyAdminToken(whaleAdminToken))) {
         return new NextResponse(
@@ -391,5 +404,9 @@ export const config = {
     '/((?!api|_next/static|_next/image|favicon.ico|games|.*\\.(?:svg|png|jpg|jpeg|gif|webp|html|avif|json|webmanifest)$).*)',
     // Whale admin API routes — middleware enforces admin JWT auth
     '/api/whale/:path*',
+    // 🚨 Session 113 V2 Whale-Class admin audit CRITICAL — also gate
+    // /api/admin/* so route handlers that forgot to check auth don't
+    // expose the operation to anonymous callers.
+    '/api/admin/:path*',
   ],
 };

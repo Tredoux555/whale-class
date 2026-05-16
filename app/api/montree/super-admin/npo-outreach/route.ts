@@ -1,14 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
+import { verifySuperAdminAuth } from '@/lib/verify-super-admin';
 
-const ADMIN_PASSWORD = process.env.SUPER_ADMIN_PASSWORD || '';
+// 🚨 Session 113 V2 Outreach audit CRITICAL F-1.1 — SUPER_ADMIN_PASSWORD
+// was being accepted via query string AND request body. Every request
+// wrote the cleartext password to every access log, CDN log, and
+// browser history entry. A single leaked log row owned the whole
+// super-admin surface. Closed by switching to verifySuperAdminAuth
+// (canonical token header).
 
 // GET - Fetch all outreach entries
 export async function GET(request: NextRequest) {
-  const { searchParams } = new URL(request.url);
-  const password = searchParams.get('password');
-
-  if (password !== ADMIN_PASSWORD) {
+  const { valid } = await verifySuperAdminAuth(request.headers);
+  if (!valid) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
@@ -52,12 +56,13 @@ export async function GET(request: NextRequest) {
 // POST - Add a new outreach entry
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
-    const { password, organizationName, organizationType, country, region, city, website, contactEmail, contactName, description, communityServed, source, priority } = body;
-
-    if (password !== ADMIN_PASSWORD) {
+    const { valid } = await verifySuperAdminAuth(request.headers);
+    if (!valid) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
+
+    const body = await request.json();
+    const { organizationName, organizationType, country, region, city, website, contactEmail, contactName, description, communityServed, source, priority } = body;
 
     if (!organizationName || !country) {
       return NextResponse.json({ error: 'Organization name and country are required' }, { status: 400 });
@@ -98,12 +103,13 @@ export async function POST(request: NextRequest) {
 // PATCH - Update outreach status
 export async function PATCH(request: NextRequest) {
   try {
-    const body = await request.json();
-    const { password, outreachId, status, contactNotes } = body;
-
-    if (password !== ADMIN_PASSWORD) {
+    const { valid } = await verifySuperAdminAuth(request.headers);
+    if (!valid) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
+
+    const body = await request.json();
+    const { outreachId, status, contactNotes } = body;
 
     if (!outreachId) {
       return NextResponse.json({ error: 'Outreach ID is required' }, { status: 400 });
