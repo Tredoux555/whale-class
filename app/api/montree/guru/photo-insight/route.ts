@@ -1,5 +1,32 @@
 // app/api/montree/guru/photo-insight/route.ts
-// Smart Capture — Two-tier Haiku→Sonnet vision router
+//
+// 🚨🚨🚨 DEPRECATED — DO NOT EXTEND 🚨🚨🚨
+//
+// PHOTO_PIPELINE_AUDIT.md (Session 113) finding F-1.3 + recommendation #6:
+// Two parallel pipelines is the biggest architectural debt in the photo
+// pipeline. This route is the LEGACY one. The CANONICAL one is:
+//
+//   POST /api/montree/photo-identification/process
+//        (uses lib/montree/photo-identification/{two-pass,context-loader,
+//         sonnet-draft}.ts — all the Session 113 fixes apply there:
+//         migration 210 CHECK constraint, IIFE race guard, F-7 Pass 1
+//         terminal, F-9 softer gate, F-10 preseed scope, telemetry,
+//         photo-debug page.)
+//
+// Bugs fixed in the new pipeline DO NOT apply here. Adding features here
+// adds maintenance debt. Future work should:
+//   1. ADD features ONLY to the new pipeline.
+//   2. Migrate the 4 remaining callers in app/montree/dashboard/photo-audit/
+//      page.tsx (lines ~1786, 1800, 1909, 1923) to call the new pipeline
+//      with a single media_id per request.
+//   3. Once telemetry shows no callers remain, delete this file + the
+//      /add-custom-work sub-route.
+//
+// Deprecation telemetry is logged on every entry (search Railway:
+// `[PhotoInsight DEPRECATED]`). Call volume tells us when decommission
+// is safe. Until then, this route is FROZEN — no new features.
+//
+// Smart Capture — Two-tier Haiku→Sonnet vision router (legacy):
 // Haiku tries first (4× cheaper). If confident, skip Sonnet. Else escalate.
 // Returns structured data: work name, area, mastery status, brief observation
 // Auto-updates: media tagging (work_id) + progress (teacher can override)
@@ -404,7 +431,22 @@ const HAIKU_ACCEPT_CONFIDENCE = 0.80;
 const HAIKU_ACCEPT_MATCH = 0.80;
 const HAIKU_TIMEOUT_MS = 10_000; // 10s — leaves 35s headroom for Sonnet fallback
 
+// Deprecation call counter — module-scoped so it survives across requests
+// in a single Railway instance. Logs every Nth call to keep noise down.
+let deprecationCallCount = 0;
+
 export async function POST(request: NextRequest) {
+  // 🚨 Session 113 audit rec #6 — deprecation telemetry. Per-call counter
+  // surfaced in Railway logs so we can quantify call volume before deciding
+  // when to fully decommission this route. Grep for [PhotoInsight DEPRECATED]
+  // to see usage. First call every Railway instance start is loud; subsequent
+  // calls log every 10th hit to keep logs readable.
+  deprecationCallCount += 1;
+  if (deprecationCallCount === 1 || deprecationCallCount % 10 === 0) {
+    const referer = request.headers.get('referer') || 'unknown';
+    console.warn(`[PhotoInsight DEPRECATED] call #${deprecationCallCount} on this instance. referer=${referer}. Migrate to /api/montree/photo-identification/process per PHOTO_PIPELINE_AUDIT.md rec #6.`);
+  }
+
   // Route-level timeout: 45s hard wall. If anything hangs, we bail with 504.
   // Individual sub-operations (CLIP, Haiku, Sonnet) have their own shorter timeouts.
   const ROUTE_TIMEOUT_MS = 45_000;
