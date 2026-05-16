@@ -11,12 +11,65 @@
 // Boxes). Edits should be made HERE only — there should never be a duplicate copy
 // of the guide elsewhere in the codebase.
 //
+// 🚨 Session 113 V2 photo AI quality audit Q-7 — STRUCTURE: confusion pairs FIRST.
+// The audit found that the most-confused pairs (Sandpaper Letters ↔ Blue Series,
+// Color Box ↔ Fabric Matching, Red Rods ↔ Number Rods) carry the highest signal
+// per token but were BURIED at the end of each per-area section. Haiku attention
+// drops sharply across long prompts; the highest-value content was getting the
+// lowest attention. The guide now LEADS with a consolidated "MOST COMMON
+// CONFUSIONS" block before the per-area listings.
+//
 // The constant intentionally starts with the "VISUAL IDENTIFICATION GUIDE" header
 // so that callers (such as the legacy route's Pass 2 prompt assembly which does
 // `systemPrompt.slice(systemPrompt.indexOf('VISUAL IDENTIFICATION GUIDE'))`)
 // continue to work without modification.
 
-export const VISUAL_ID_GUIDE = `VISUAL IDENTIFICATION GUIDE — Identify by the PRIMARY TOOL/MATERIAL visible:
+export const VISUAL_ID_GUIDE = `VISUAL IDENTIFICATION GUIDE — Identify by the PRIMARY TOOL/MATERIAL visible.
+
+🚨🚨🚨 MOST COMMON CONFUSIONS — CHECK THESE FIRST BEFORE ANYTHING ELSE 🚨🚨🚨
+
+Before matching any photo, scan this list. These are the pairs that look similar but are DIFFERENT works. Every one of them has caused repeated misclassifications. If the description even partially matches a pair below, read the DISCRIMINATOR carefully and pick the correct side.
+
+SENSORIAL — the #1 confusion zone:
+- COLOR BOX vs FABRIC MATCHING. DISCRIMINATOR: rigid WOODEN/PLASTIC painted squares matched by COLOR (child LOOKS) → Color Box. Soft CLOTH/FABRIC swatches matched by TEXTURE (child FEELS with eyes closed) → Fabric Matching. If pieces are rigid colored squares → COLOR BOX. If pieces are soft foldable fabric → FABRIC MATCHING. This is the #1 most confused pair in the entire curriculum.
+- RED RODS (Sensorial) vs NUMBER RODS (Mathematics). DISCRIMINATOR: all red → Red Rods. Red AND blue alternating → Number Rods. CHECK FOR BLUE SECTIONS — they determine the area as well as the work.
+- CYLINDER BLOCKS vs KNOBLESS CYLINDERS. DISCRIMINATOR: cylinders with knobs in a wooden block → Cylinder Blocks. Cylinders without knobs, free-standing in colored boxes → Knobless Cylinders.
+- BINOMIAL CUBE vs TRINOMIAL CUBE. DISCRIMINATOR: 8 pieces → Binomial. 27 pieces → Trinomial.
+- PINK TOWER vs BROWN STAIR vs RED RODS. DISCRIMINATOR: cubes → Pink Tower. Prisms/rectangular blocks → Brown Stair. Long thin rods → Red Rods.
+- SOUND BOXES vs SMELLING BOTTLES. DISCRIMINATOR: shaking cylinders → Sound Boxes. Sniffing bottles → Smelling Bottles.
+- TOUCH BOARDS vs TOUCH TABLETS. DISCRIMINATOR: flat boards → Touch Boards. Small paired tablets in a box → Touch Tablets.
+
+LANGUAGE — second most-confused area:
+- SANDPAPER LETTERS vs GRAMMAR BOXES. DISCRIMINATOR: individual raised LETTERS on pink/blue BOARDS stored in a wooden box, child TRACES them → Sandpaper Letters. Colored compartment BOXES with WORD CARDS and SENTENCE STRIPS, grammar analysis → Grammar Boxes. If you see individual letters on colored boards → ALWAYS Sandpaper Letters, NEVER Grammar Boxes.
+- SANDPAPER LETTERS vs PHONOGRAM INTRODUCTION. DISCRIMINATOR: individual letters → Sandpaper Letters. Letter PAIRS like sh, ch, th → Phonogram Introduction.
+- MOVEABLE ALPHABET vs SANDPAPER LETTERS. DISCRIMINATOR: loose letters building words on a mat → Moveable Alphabet. Tracing letters fixed on boards → Sandpaper Letters.
+- PINK / BLUE / GREEN OBJECT BOXES + SERIES. DISCRIMINATOR: identify by the COLOR of the labels/box. Pink = CVC. Blue = blends. Green = phonograms.
+- CLASSIFIED CARDS (vocabulary, oral language) vs PINK/BLUE/GREEN SERIES (reading, phonetic progression). DISCRIMINATOR: nomenclature/categorisation cards → Classified. Phonetic progression cards or objects → Series.
+- METAL INSETS (Language — writing preparation) vs GEOMETRIC CABINET (Sensorial — shape matching). DISCRIMINATOR: SQUARE FRAMES with one shape each, held in a VERTICAL RACK, often with traced pencil designs → Metal Insets. WIDE cabinet with PULL-OUT DRAWERS containing multiple flat shape insets → Geometric Cabinet.
+
+MATHEMATICS:
+- NUMBER RODS (Math, red+blue alternating) vs RED RODS (Sensorial, all red). See sensorial list above.
+- GOLDEN BEADS (uniform gold colour) vs SHORT BEAD STAIR (each bar a different colour, 1-9).
+- STAMP GAME (small printed tiles) vs LARGE NUMBER CARDS (big wooden cards).
+- SMALL BEAD FRAME (4 wires) vs LARGE BEAD FRAME (7 wires) — count the rows.
+- ADDITION STRIP BOARD vs SUBTRACTION STRIP BOARD — same board, different strips. Use the operation context (digits visible, ordering) to choose.
+- HUNDRED BOARD (1-100 grid with number tiles) vs MULTIPLICATION BOARD (single bead/disc moved along a grid of 100 holes).
+- SHORT BEAD CHAIN (squared, shorter — n×n beads) vs LONG BEAD CHAIN (cubed, very long — n×n×n beads). Check chain length relative to mat.
+- HUNDRED CHAIN and SHORT BEAD CHAIN OF 10 are the same physical chain (100 gold beads). Use whichever name the classroom prefers.
+- BEAD CHAINS — ALWAYS identify the bead COLOR to determine the NUMBER: 1=red, 2=green, 3=pink, 4=yellow, 5=light blue, 6=purple, 7=white, 8=brown, 9=dark blue, 10=gold.
+
+PRACTICAL LIFE:
+- TABLE SCRUBBING vs DISH WASHING. DISCRIMINATOR: wet table with suds + brush + no dishes → Table Scrubbing. Dishes visible in basin → Dish Washing.
+- EYE DROPPER vs BASTER. DISCRIMINATOR: pipette with bulb tip (small) → Eye Dropper. Large turkey baster → Basting.
+- DRESSING FRAMES all look similar — identify ONLY by the CLOSURE TYPE on the fabric (buttons / zipper / bows / buckles / lacing / snaps / safety pins / velcro / hook & eye).
+
+CULTURAL:
+- SANDPAPER GLOBE (rough/smooth, no colours) vs COLORED GLOBE (painted continents).
+- PUZZLE MAP WORLD (all continents in one map) vs INDIVIDUAL CONTINENT MAP (one continent broken into countries).
+- BOTANY PUZZLES (plant parts) vs ZOOLOGY PUZZLES (animal parts). Look at the SUBJECT.
+- LAND AND WATER FORMS (clay/water trays of geographical forms) vs SINK AND FLOAT (objects in water basin).
+
+If the description matches none of the above, proceed with full identification using the per-area reference below. The reference is grouped by area for orientation; the confusion pairs above are the highest-value information in this guide and override the per-area listings when they conflict.
 
 === PRACTICAL LIFE ===
 
@@ -74,11 +127,6 @@ FOOD PREPARATION:
 - Grating cheese/soap on grater → "Grating"
 - Rolling dough with rolling pin → "Rolling and Kneading Dough"
 
-⚠️ PRACTICAL LIFE CONFUSION PAIRS:
-- Table with suds + brush = "Table Scrubbing" NOT "Dish Washing" (dishes visible = Dish Washing)
-- Eye Dropper = pipette with bulb tip. Baster = large turkey baster. DIFFERENT works.
-- Dressing frames all look similar — identify by the CLOSURE TYPE on the fabric
-
 === SENSORIAL ===
 
 VISUAL — DIMENSION (graduated materials, usually natural wood or painted):
@@ -121,15 +169,6 @@ AUDITORY/OLFACTORY/GUSTATORY:
 STEREOGNOSTIC:
 - Cloth bag, child reaching in blindfolded → "Mystery Bag"
 - Blindfolded child sorting objects into containers → "Sorting Objects Stereognostically"
-
-⚠️ SENSORIAL CONFUSION PAIRS:
-- COLOR BOX / COLOR TABLETS (rigid WOODEN/PLASTIC painted squares matched by COLOR — child LOOKS at colors) vs FABRIC MATCHING (soft CLOTH/FABRIC swatches matched by TEXTURE — child FEELS with eyes closed). If pieces are rigid colored squares → COLOR BOX. If pieces are soft foldable fabric → FABRIC MATCHING. This is the #1 most confused pair.
-- RED RODS (all red, Sensorial) vs NUMBER RODS (red AND blue alternating, Mathematics) — check for blue sections!
-- CYLINDER BLOCKS (knobbed, in wooden block) vs KNOBLESS CYLINDERS (no knobs, colored, free-standing)
-- BINOMIAL CUBE (smaller, 8 pieces) vs TRINOMIAL CUBE (larger, 27 pieces)
-- PINK TOWER (cubes) vs BROWN STAIR (prisms/rectangular) vs RED RODS (long thin rods)
-- SOUND BOXES (shaking cylinders) vs SMELLING BOTTLES (sniffing bottles)
-- TOUCH BOARDS (flat boards) vs TOUCH TABLETS (small paired tablets in box)
 
 === MATHEMATICS ===
 
@@ -183,17 +222,6 @@ FRACTIONS:
 - Red metal circle cut into fraction pieces (½, ⅓, ¼, etc.) in green frame → "Fraction Circles"
 - Colored skittles (fraction visualization) → "Fraction Skittles"
 
-⚠️ MATHEMATICS CONFUSION PAIRS:
-- NUMBER RODS (red+blue, Math) vs RED RODS (all red, Sensorial)
-- GOLDEN BEADS (gold colored) vs SHORT BEAD STAIR (colored 1-9)
-- STAMP GAME (small tiles) vs LARGE NUMBER CARDS (big wooden cards)
-- SMALL BEAD FRAME (4 wires) vs LARGE BEAD FRAME (7 wires)
-- ADDITION STRIP BOARD vs SUBTRACTION STRIP BOARD (same board, different strips — check operation context)
-- HUNDRED BOARD (1-100 grid) vs MULTIPLICATION BOARD (bead on grid)
-- SHORT BEAD CHAIN (squared, shorter) vs LONG BEAD CHAIN (cubed, very long) — check chain length relative to mat
-- HUNDRED CHAIN (gold, 100 beads) vs SHORT BEAD CHAIN OF 10 (also gold, also 100 beads) — these are the same work
-- BEAD CHAINS: always identify the bead COLOR to determine the NUMBER (see color code above)
-
 === LANGUAGE ===
 
 ORAL LANGUAGE:
@@ -229,14 +257,6 @@ GRAMMAR (identify by GRAMMAR SYMBOL if visible):
 - Small orange circle → "Introduction to the Adverb"
 - Colored compartment BOXES with WORD CARDS and SENTENCE STRIPS inside (NOT individual letters on boards) → "Grammar Boxes" (specify number if visible)
 - Sentence analysis charts with arrows → "Sentence Analysis"
-
-⚠️ LANGUAGE CONFUSION PAIRS:
-- PINK Object Box (CVC objects) vs BLUE Object Box (blends) vs GREEN Object Box (phonograms) — identify by COLOR of labels/box
-- SANDPAPER LETTERS (individual letters) vs PHONOGRAM INTRODUCTION (letter pairs like sh, ch, th)
-- MOVEABLE ALPHABET (loose letters building words) vs SANDPAPER LETTERS (tracing on boards)
-- CLASSIFIED CARDS (vocabulary, oral) vs PINK/BLUE/GREEN SERIES (reading, phonetic progression)
-- METAL INSETS (geometric frames for pencil control) vs GEOMETRIC CABINET (Sensorial shape matching)
-- SANDPAPER LETTERS (individual raised LETTERS on pink/blue BOARDS in a wooden box — child TRACES letters) vs GRAMMAR BOXES (colored compartment BOXES with WORD CARDS and SENTENCE STRIPS — grammar analysis, NOT letter tracing). If you see individual letters on colored boards → it is ALWAYS Sandpaper Letters, NEVER Grammar Boxes.
 
 === CULTURAL ===
 
@@ -286,12 +306,6 @@ ART & MUSIC:
 - Cutting/gluing paper collage → "Collage"
 - Clay/playdough + tools → "Clay and Playdough"
 - Rhythm instruments (shakers, drums, sticks) → "Rhythm Instruments"
-
-⚠️ CULTURAL CONFUSION PAIRS:
-- SANDPAPER GLOBE (rough/smooth, no colors) vs COLORED GLOBE (painted continents)
-- PUZZLE MAP WORLD (all continents) vs INDIVIDUAL CONTINENT MAP (one continent with countries)
-- BOTANY PUZZLES (plant parts) vs ZOOLOGY PUZZLES (animal parts) — look at the SUBJECT of the puzzle
-- LAND AND WATER FORMS (clay trays with water) vs "Sink and Float" (objects in water basin)
 
 CONFIDENCE CALIBRATION (CRITICAL — your confidence score has real consequences):
 - 0.85+ : ONLY use when the material is unmistakable and you are CERTAIN of the exact work name
