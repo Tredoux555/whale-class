@@ -162,8 +162,12 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: 'Message is required' }, { status: 400 });
       }
 
-      if (message.length > 50000) {
-        return NextResponse.json({ error: 'Message too long (max 50,000 characters)' }, { status: 400 });
+      // 🚨 Session 113 V2 Story audit F-4.3 — cap admin text at 5,000 chars.
+      // The legacy 50K limit produced ~100KB encrypted rows; the parent
+      // letter-reveal UX is a single paragraph, never anywhere near that.
+      // Removes a low-effort DoS vector on the parent page render path.
+      if (message.length > 5000) {
+        return NextResponse.json({ error: 'Message too long (max 5,000 characters)' }, { status: 400 });
       }
 
       const trimmedMessage = message.trim();
