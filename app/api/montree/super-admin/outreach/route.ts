@@ -182,9 +182,48 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ inserted, skipped });
     }
 
-    // Log an action (bounce detected, reply detected, etc.)
+    // Log an action (bounce detected, reply detected, etc.).
+    //
+    // 🚨 Session 113 V2 Outreach audit MED F-7.6 — whitelist log_action.
+    // Without this, any string the caller supplied went into the action
+    // column. Idempotency checks in drip crons match on exact action
+    // strings, so a misnamed/forged entry was invisible to them — and a
+    // typo'd 'demo_request_drip_day3' could cause infinite drip loops.
+    // Whitelist is the canonical-action set used elsewhere in this surface.
     if (action === 'log') {
       const { log_action, contact_id, details } = body;
+      const ALLOWED_LOG_ACTIONS = new Set([
+        'bulk_import',
+        'import_partial',
+        'bounce_detected',
+        'reply_detected',
+        'status_promoted',
+        'demo_requested',
+        'demo_request_drip_day3',
+        'demo_request_drip_day7',
+        'demo_request_drip_day14',
+        'trial_drip_day7',
+        'trial_drip_day14',
+        'trial_drip_day25',
+        'leads_bulk_deleted',
+        'manual_note',
+        'reply_drafted',
+        'demo_call_scheduled',
+        'follow_up_scheduled',
+        'pitch_sent',
+        'partnership_offered',
+      ]);
+      if (typeof log_action !== 'string' || !ALLOWED_LOG_ACTIONS.has(log_action)) {
+        return NextResponse.json(
+          {
+            error:
+              'log_action must be one of the whitelisted canonical actions. ' +
+              'See ALLOWED_LOG_ACTIONS in app/api/montree/super-admin/outreach/route.ts.',
+            received: typeof log_action === 'string' ? log_action : null,
+          },
+          { status: 400 }
+        );
+      }
       const { error } = await supabase.from('montree_outreach_log').insert({
         action: log_action,
         contact_id,
