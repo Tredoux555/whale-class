@@ -202,9 +202,9 @@ Wave 1 sends bounced for these addresses. None of these are flagged as `bounced`
 
 ## RECENT STATUS (May 16, 2026)
 
-### 🔥 Session 113 V2 — Saturday burn: Blue + Green Phase + 4 deep audits (Photo + Tracy/Mira + Finance + Agent + Parent) + Save as Other + outreach (May 16, 2026)
+### 🔥 Session 113 V2 — Saturday burn: Blue + Green Phase + 5 deep audits (Photo + Tracy/Mira + Finance + Agent + Parent + Story) + Save as Other + outreach (May 16, 2026)
 
-**18 commits pushed to main:** `2f5b5643` → `7072021c`. Continuous Saturday burn day. User explicitly asked to "burn through usage in next 48 hours" then kept saying "keep burning" / "keep going" through every fork.
+**26 commits pushed to main:** `2f5b5643` → `25f88e3c`. Continuous Saturday burn day. User explicitly asked to "burn through usage in next 48 hours" then kept saying "keep burning" / "keep going" through every fork.
 
 **🚨 Canonical resume doc:** `docs/handoffs/SESSION_113_V2_HANDOFF.md` — comprehensive single source of truth for cold-start resume.
 
@@ -307,6 +307,31 @@ After the headline work landed, three more deep audits were dispatched (agent da
 - **HIGH F-6.1** — Signup link-creation rollback. Previously: parent insert succeeded, `parent_children` link failed silently, invite was still marked consumed. Result: working email+password login but empty children list. Fix: link insert FIRST; if it fails, DELETE the parent row + return 500 (invite stays unconsumed) so user can retry.
 - **HIGH F-6.2** — Signup now respects `is_reusable` + `max_uses` + `use_count` semantics matching access-code login. Family invites (is_reusable=true, max_uses=2) now correctly give both parents full accounts instead of just one.
 
+**Commits `590fec64` + `412fddc9` + `0538b19c` — parent HIGH + MED batch 3:**
+- **HIGH F-1.3** (`590fec64`) — Dropped localStorage as auth source. Every parent client page (dashboard, photos, milestones, report/[id]) now calls `GET /api/montree/parent/auth/access-code` on mount; if not authenticated, redirect to login. The httpOnly cookie is the only authority. login-select no longer writes `montree_parent_session` to localStorage. Stale + tampered + forged-cookie edge cases all fixed.
+- **MED F-3.7** (`412fddc9`) — Group photos via `montree_media_children` junction now surface to parents. Previously photos only attributed via the junction (child_id=NULL OR pointing at a different child) were invisible. Applied to both `/parent/photos` and `/parent/dashboard`.
+- **MED F-3.6** (`0538b19c`) — Single-report endpoint tightened: junction-linked photos now enforce `media_type='photo' AND teacher_confirmed=true AND parent_visible != false` (was only filtering by id). Fallback date-range query also upgraded from over-permissive identification_status filter to canonical triple-gate.
+
+**Story system deep audit (`docs/STORY_AUDIT.md` — 640 lines, 1 CRITICAL + 9 HIGH + 16 MED + 12 LOW = 38 findings).**
+
+**Commit `856ba3fa` — Story CRITICAL + 2 HIGH:**
+- **CRITICAL F-1.1** — Author impersonation on `/api/story/message`. Any logged-in parent could POST `{ message, author: 'Tredoux' }` and that arbitrary string was written verbatim to `secret_stories.message_author`. Fix: drop `author` from request body; server derives from verified JWT username with no fallback.
+- **HIGH F-1.4** — `verifyUserToken` had no role gate. Admin JWTs (`role='admin'`) were happily accepted as user tokens. Admins showed up in /visits + /online lists; stolen admin tokens worked anywhere a user token was expected. Negative-check `role !== 'admin'` adopted for backward compat with legacy no-role tokens; new user JWT mints now stamp `role: 'user'` so we can tighten to positive require after 24h TTL rollover.
+- **HIGH F-1.3** — SSRF in `/api/story/admin/vault/save-from-message`. Admin POSTed `{ mediaUrl: 'http://169.254.169.254/latest/meta-data/' }` and the server fetched + encrypted + stored the response in the vault. Closed via allowlist (montree.xyz + teacherpotato.xyz with www variants) + protocol whitelist + IPv4-literal hostname rejection.
+
+**Commit `ec80311c` — Story MED + HIGH batch 2:**
+- **MED F-2.5** — `factory_reset` now preserves `vault_audit_log` + `vault_unlock_attempts`. Previously an admin (or attacker with stolen admin token) could nuke their tracks with one click. Audit tables now outlive every reset; a 'factory_reset fired by X' row is written BEFORE the wipe so the act itself is non-repudiable.
+- **HIGH F-6.1** — Beacon-friendly logout endpoint. Legacy `beforeunload` fired `fetch('/api/story/auth', { method: 'DELETE' })` with no auth header AND during page unload (when fetch is unreliable per spec). Sessions appeared online for ~10 minutes after every real logout. Fix: new POST `/api/story/auth/logout` accepts beacon JSON body `{ token }`; client switched to `navigator.sendBeacon` (the spec's unload-safe primitive). Token captured BEFORE clearing sessionStorage so the beacon body has something to verify.
+
+**Commit `7a537f1b` — Story MED batch 3:**
+- **MED F-3.2** — `decryptMessage` returns `DECRYPT_FAILURE_SENTINEL = '[Message could not be decrypted]'` on failure instead of leaking ciphertext. Mid-rotation of `MESSAGE_ENCRYPTION_KEY` now produces a visible sentinel the operator can spot.
+- **LOW F-3.4** — Strict format check on decrypt. Legacy 'no colon → return verbatim' was a covert plaintext channel. Tightened to only recognise gcm: and legacy CBC iv:data formats.
+- **MED F-3.3** — `/recent-messages` now belt-and-braces filters expires_at NOT NULL + > NOW() on top of the is_expired flag. Defense in depth against lagging expire-marker cron.
+- **MED F-4.3** — Admin text + parent text capped at 5,000 chars (was 50,000). The letter-reveal UX is a single paragraph; 50K produced ~100KB encrypted rows. DoS vector removed.
+
+**Commit `25f88e3c` — Story HIGH F-2.2:**
+- **HIGH F-2.2** — Vault soft-delete now hard-deletes the underlying Supabase Storage object. Previously the storage object remained at its public URL forever; anyone with the URL from old logs / CSV exports / DB backups could still GET the encrypted blob and brute-force the password offline. factory_reset + clear_vault already removed storage; soft-delete was the only inconsistent path. Audit row now includes `storage_removed=` flag for forensic clarity.
+
 **🚨 Architectural rules locked in this late session:**
 
 103. **`is_period_closed` check inside `insertFinanceTx` is the canonical soft-audit hook** for webhook/aggregator writes that can't be rejected. Logs `[billing] LATE WRITE TO CLOSED PERIOD` with full JSON metadata. Accountant scans for this string. Don't remove.
@@ -318,6 +343,15 @@ After the headline work landed, three more deep audits were dispatched (agent da
 109. **Agent dashboard routes do defense-in-depth `is_agent + agent_suspended_at` DB rechecks** on top of the JWT `role='agent'` claim. Suspended agents with cached cookies must not retain access to their own historical data.
 110. **Parent signup uses link-first + rollback-on-failure pattern** when chaining `parents → parent_children → invite consume`. The link is the load-bearing step; if it fails, roll back the parent row so the user can retry instead of being stranded.
 111. **Forgeable session-encoding formats are removed once the migration window expires.** Don't ship indefinite legacy fallbacks for security-critical token paths.
+112. **httpOnly cookies are the only auth authority.** Client-side localStorage entries written next to a cookie are at best UX hints (which child is selected in a multi-child family), never auth. Pages MUST validate auth via a server cookie-check on every load, not via localStorage presence.
+113. **Group photo attribution flows through `montree_media_children` junction.** Every parent photo endpoint MUST also pull `media_id FROM montree_media_children WHERE child_id = $1` and OR them into the canonical media filter — never just `child_id` on `montree_media`.
+114. **Story system author identity comes from the verified JWT, never from request body.** This rule mirrors the parent + agent contracts; broadcast surfaces (where a single row reaches many readers) must NEVER trust client-supplied author strings.
+115. **`verifyUserToken` rejects admin tokens.** Role gate is mandatory on user-token verifiers; admin JWTs must NOT pass user-token checks even if the JWT signature verifies. Same posture applies to any future role separation.
+116. **Server-side fetch from arbitrary user-supplied URLs is SSRF.** Every endpoint that takes a `mediaUrl` (or similar) and server-side fetches it MUST host-allowlist + protocol-whitelist. The Story vault save-from-message route is the canonical pattern.
+117. **Audit tables outlive every destructive system action.** `factory_reset` preserves `vault_audit_log` + `vault_unlock_attempts`; the destructive act itself is logged BEFORE the wipe. Non-repudiation is the load-bearing property.
+118. **Page-unload network calls use `navigator.sendBeacon`, not `fetch`.** Fetch during `beforeunload` is unreliable per spec. Beacon endpoints accept JSON body `{ token }` since beacon can't set headers.
+119. **`decryptMessage` returns a sentinel on failure, not the ciphertext.** Mid-key-rotation silently rendering gibberish in user-visible bubbles is the failure mode this prevents. Sentinel: `DECRYPT_FAILURE_SENTINEL = '[Message could not be decrypted]'`.
+120. **Soft-delete in a public-bucket model MUST hard-delete the storage object.** Any path that flips `deleted_at` on a DB row without removing the underlying Supabase Storage object leaves an exfiltration window forever. Mirror the regex pattern used by `clear_vault` / `factory_reset`.
 
 **🚨 Next session priorities:**
 1. **Run migrations 210 + 211 in Supabase SQL Editor.**
