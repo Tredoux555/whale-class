@@ -202,9 +202,9 @@ Wave 1 sends bounced for these addresses. None of these are flagged as `bounced`
 
 ## RECENT STATUS (May 16, 2026)
 
-### 🔥 Session 113 V2 — Saturday burn: Blue + Green Phase + Photo Pipeline Audit + Save as Other + outreach (May 16, 2026)
+### 🔥 Session 113 V2 — Saturday burn: Blue + Green Phase + 4 deep audits (Photo + Tracy/Mira + Finance + Agent + Parent) + Save as Other + outreach (May 16, 2026)
 
-**14 commits pushed to main:** `2f5b5643` → `920d8437`. Continuous Saturday burn day. User explicitly asked to "burn through usage in next 48 hours" then kept saying "keep burning" / "keep going" through every fork.
+**18 commits pushed to main:** `2f5b5643` → `7072021c`. Continuous Saturday burn day. User explicitly asked to "burn through usage in next 48 hours" then kept saying "keep burning" / "keep going" through every fork.
 
 **🚨 Canonical resume doc:** `docs/handoffs/SESSION_113_V2_HANDOFF.md` — comprehensive single source of truth for cold-start resume.
 
@@ -280,13 +280,56 @@ Future query for "show me Other photos": `WHERE work_id IS NULL AND teacher_conf
 - Lions Gate (Ingrid) — 200+ family multi-campus
 - Montessori Norge (Nina) — Norwegian opener, association revenue share
 
+**E. Late-session burn (commits `439aeab1`, `d472633e`, `b31a3a01`, `7072021c`) — Agent + Finance + Parent audit fixes:**
+
+After the headline work landed, three more deep audits were dispatched (agent dashboard, finance/billing, parent portal). Each surfaced CRITICAL + HIGH findings closed in code the same session.
+
+**Agent dashboard audit (commit `439aeab1`):**
+- **CRITICAL** — Referral redemption race (`/api/montree/try/instant`). Concurrent `?ref=CODE` signups could both win the redemption and create orphan schools. New `redeemReferralCode()` helper does atomic conditional UPDATE with `.eq('status', 'pending')` + `.select('id')` race-detection. Awaited (not fire-and-forget). School-stamp failure rolls back the redeem with `.eq('redeemed_by_school_id', schoolId)` guard so we don't trample another signup's claim. Applied to all 3 redemption call sites.
+- **MED #3** — JWT carries `role='agent'` but routes weren't defense-in-depth checking `is_agent` + `agent_suspended_at` at request time. Suspended agents with cached cookies could still pull data via `/agent/snapshot` + `/agent/schools/[id]` + `/agent/schools` (list) + `/agent/earnings`. All 4 routes now do a DB-layer recheck mirroring the canonical `/agent/me` + `/agent/codes` pattern.
+
+**Finance/billing audit (commit `d472633e`):**
+- **HIGH F-P-1** — `assertPeriodOpen` was missing on 4 of 7 ledger write paths. Closed periods could be silently mutated by manual writes, recurring cron, payouts calculator, and webhook arrivals.
+  - HARD guard (returns 409): `/finance/ledger POST + DELETE`, `/finance/recurring/run` (skips all templates if current period closed), `/super-admin/payouts/calculate` (refuses recalculation of closed periods).
+  - SOFT audit (loud-log + still write): `lib/montree/billing.ts insertFinanceTx` — every webhook/aggregator write now derives period_month from occurred_at and logs `[billing] LATE WRITE TO CLOSED PERIOD` with full metadata. Webhook writes can't be rejected (real money events); accountant scans logs for this string and decides whether to reopen the period.
+- **Bonus**: recurring/run upgraded to canonical trim+length-after-trim cron secret check (F-A-1 pattern).
+
+**Parent portal deep audit (`docs/PARENT_PORTAL_AUDIT.md` — 498 lines, 1 CRITICAL + 10 HIGH + 13 MED + 9 LOW/INFO).**
+
+**Commit `b31a3a01` — parent CRITICAL + 4 HIGH:**
+- **CRITICAL F-1.1** — Parent JWT carried `childId` for 30 days with no DB recheck. Revoking an invite / unlinking a parent / deactivating a parent had NO effect until the cookie expired. Custody disputes / child transfers / policy violations invisible. NEW `resolveAuthorizedParent(supabase)` helper — verifies JWT then re-queries child existence + invite `is_active` + invite `expires_at` + parent `is_active` + `montree_parent_children` linkage. Migrated 10 routes: `dashboard, children, reports, report/[reportId], photos, stats, milestones, weekly-review, announcements, auth/access-code GET`. Bonus: multi-child families now correctly use `session.authorizedChildIds` instead of single `session.childId`.
+- **HIGH F-1.2** — Removed the forgeable base64 legacy session fallback in `verifyParentSession()`. The JWT migration was Feb 10, 2026 — the 30-day fallback window expired ~Mar 12. Anyone could craft `btoa(JSON.stringify({ child_id: '<uuid>' }))` and claim that child. Deleted.
+- **HIGH F-3.1** — Single-report endpoint now filters `status='sent'`. Drafts no longer visible to parents.
+- **HIGH F-3.2 + F-3.3** — `/parent/photos` switched from over-permissive `.or('identification_status.is.null,identification_status.neq.pending_review')` to canonical `.eq('teacher_confirmed', true)` + `.eq('media_type', 'photo')`. Was letting haiku_drafted + sonnet_drafted + failed rows through to parents.
+
+**Commit `7072021c` — parent HIGH batch 2:**
+- **HIGH F-3.3 + F-3.4 + F-3.5** — Same triple-gate (`media_type='photo' + teacher_confirmed=true + parent_visible != false`) applied to dashboard recent-9 photos strip. Dashboard was missing all three filters.
+- **HIGH F-6.1** — Signup link-creation rollback. Previously: parent insert succeeded, `parent_children` link failed silently, invite was still marked consumed. Result: working email+password login but empty children list. Fix: link insert FIRST; if it fails, DELETE the parent row + return 500 (invite stays unconsumed) so user can retry.
+- **HIGH F-6.2** — Signup now respects `is_reusable` + `max_uses` + `use_count` semantics matching access-code login. Family invites (is_reusable=true, max_uses=2) now correctly give both parents full accounts instead of just one.
+
+**🚨 Architectural rules locked in this late session:**
+
+103. **`is_period_closed` check inside `insertFinanceTx` is the canonical soft-audit hook** for webhook/aggregator writes that can't be rejected. Logs `[billing] LATE WRITE TO CLOSED PERIOD` with full JSON metadata. Accountant scans for this string. Don't remove.
+104. **Every ledger MUTATION path must check `assertPeriodOpen()`** derived from `occurred_at`, OR write the soft-audit log if the path is a real-money system event that can't be refused.
+105. **`resolveAuthorizedParent()` is the canonical parent identity check.** Every parent route that returns child data or accepts a parent mutation MUST funnel through it — never the bare `verifyParentSession()`. The bare version remains only for the session-check endpoint and the messaging access helper (which wraps its own DB recheck).
+106. **Multi-child parents resolved via `session.authorizedChildIds`** — never the single `session.childId`. Invite-based sessions get a 1-element array (single-child by design); full-account sessions get all linked children from `montree_parent_children`.
+107. **Parent photo queries use the canonical triple-gate**: `media_type='photo' AND teacher_confirmed=true AND parent_visible != false`. The legacy `identification_status` filter is over-permissive and should never appear on a parent-facing query.
+108. **Referral redemption uses atomic conditional UPDATE** (`.eq('status', 'pending') + .select('id')`). Race-loss is detected by empty array. Awaited, not fire-and-forget. Cleanup roll-back is filtered by `.eq('redeemed_by_school_id', schoolId)` so we don't trample another concurrent signup.
+109. **Agent dashboard routes do defense-in-depth `is_agent + agent_suspended_at` DB rechecks** on top of the JWT `role='agent'` claim. Suspended agents with cached cookies must not retain access to their own historical data.
+110. **Parent signup uses link-first + rollback-on-failure pattern** when chaining `parents → parent_children → invite consume`. The link is the load-bearing step; if it fails, roll back the parent row so the user can retry instead of being stranded.
+111. **Forgeable session-encoding formats are removed once the migration window expires.** Don't ship indefinite legacy fallbacks for security-critical token paths.
+
 **🚨 Next session priorities:**
 1. **Run migrations 210 + 211 in Supabase SQL Editor.**
 2. **Review + send the 5 Gmail outreach drafts.**
 3. **Verify on production:** `/admin` Blue/Green tiles, `/montree/library/language-area` 4 cards, `/montree/super-admin/photo-debug` with a real media_id.
-4. **Decommission photo-insight legacy** — wait for ~1 week of deprecation-telemetry data first, then migrate the 4 callers in `app/montree/dashboard/photo-audit/page.tsx` and delete the route.
-5. **"Correct" button modal regression** (Session 111 carry-over) — still needs user clarification on which card type triggers it.
-6. **Outreach follow-ups** if any of the 5 drafts go quiet for >1 week.
+4. **Verify parent portal CRITICAL on production:** flip an invite to `is_active=false` while a parent is logged in → next request should 401. Same with `montree_parents.is_active=false` for a full-account parent. Same with revoking a row from `montree_parent_children`. All three should boot the parent to login within one request, not 30 days.
+5. **Verify finance period-lock on production:** close period 2026-04 via super-admin → try to add an op_expense dated 2026-04-15 → should 409. Then add one dated current period → should succeed.
+6. **Decommission photo-insight legacy** — wait for ~1 week of deprecation-telemetry data first, then migrate the 4 callers in `app/montree/dashboard/photo-audit/page.tsx` and delete the route.
+7. **"Correct" button modal regression** (Session 111 carry-over) — still needs user clarification on which card type triggers it.
+8. **Outreach follow-ups** if any of the 5 drafts go quiet for >1 week.
+9. **Remaining parent audit findings**: F-1.3 (drop localStorage as auth source on 3 client pages — needs client-side rewrite), F-1.4/1.5/1.6/1.7 (MED), F-4.x messaging, F-5.x UX, F-6.4/6.5 locale debt.
+10. **Story / Whale-Class admin deep audit** — not yet audited.
 
 ---
 
