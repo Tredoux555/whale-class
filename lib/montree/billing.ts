@@ -429,6 +429,38 @@ export async function createSchoolCheckoutSession(
   const successPath = options.successPath || '/montree/admin/billing?status=success';
   const cancelPath = options.cancelPath || '/montree/admin/billing?status=canceled';
 
+  // 🚨 Session 113 V2 — "Your first month is on us" semantics.
+  // If the school is still inside their initial 30-day setup window
+  // (subscription_status='trialing' AND trial_ends_at in the future),
+  // pass that remaining time through to Stripe as `trial_period_days`.
+  // Stripe will:
+  //   - Collect the card now (no charge)
+  //   - Surface the subscription as `status='trialing'` with the same
+  //     trial_end timestamp we already have locally
+  //   - First charge fires on that trial_end date, NOT today
+  //
+  // So a principal who set up the school on day 1 and adds their card
+  // on day 15 doesn't get charged 15 days early — they still get to
+  // the end of their "first month" before billing starts. Matches the
+  // user-facing copy ("first month on us while you set up") exactly.
+  //
+  // If trial_ends_at is in the past OR null, no trial passed → Stripe
+  // charges immediately on Checkout completion (correct behaviour for
+  // late activators / canceled-then-resubscribe schools).
+  let trialPeriodDays: number | undefined;
+  if (
+    schoolForPrice.subscription_status === 'trialing' &&
+    schoolForPrice.trial_ends_at
+  ) {
+    const trialEnd = new Date(schoolForPrice.trial_ends_at).getTime();
+    const now = Date.now();
+    if (trialEnd > now) {
+      const days = Math.ceil((trialEnd - now) / (24 * 60 * 60 * 1000));
+      // Stripe's max trial_period_days is 730 (~2 years). Cap defensively.
+      trialPeriodDays = Math.min(days, 730);
+    }
+  }
+
   let session: Stripe.Checkout.Session;
   try {
     session = await stripe.checkout.sessions.create({
@@ -437,11 +469,17 @@ export async function createSchoolCheckoutSession(
       line_items: [{ price: priceId, quantity }],
       subscription_data: {
         metadata: { school_id: schoolId, source: 'montree_phase4' },
+        ...(trialPeriodDays ? { trial_period_days: trialPeriodDays } : {}),
       },
       success_url: `${cfg.app_url}${successPath}`,
       cancel_url: `${cfg.app_url}${cancelPath}`,
       automatic_tax: { enabled: false },
       allow_promotion_codes: true,
+      // 🚨 Card required upfront — even when subscription enters trial mode,
+      // Stripe collects + validates the payment method at Checkout. This is
+      // the canonical "subscription from day 1" posture per the pricing
+      // model change: no free-trial window without card-on-file.
+      payment_method_collection: 'always',
       metadata: { school_id: schoolId },
     });
   } catch (err: unknown) {
