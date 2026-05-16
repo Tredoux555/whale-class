@@ -152,8 +152,40 @@ export async function GET(request: NextRequest) {
     const today = new Date();
     const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate()).toISOString();
     const todayEnd = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1).toISOString();
-    
-    // Fetch today's progress, recent analyses, and photos in parallel (was 3 sequential queries)
+
+    // 🚨 Session 113 V2 Parent audit F-3.7 — include group photos via the
+    // montree_media_children junction (same pattern as /parent/photos).
+    // Capped at 500 most recent junction rows per child.
+    const { data: junctionRows } = await supabase
+      .from('montree_media_children')
+      .select('media_id')
+      .eq('child_id', childId)
+      .limit(500);
+    const junctionIds = Array.from(
+      new Set((junctionRows || []).map((r) => (r as { media_id: string }).media_id))
+    );
+
+    let photosQuery = supabase
+      .from('montree_media')
+      .select('id, storage_path, work_id, captured_at, thumbnail_path')
+      // 🚨 Session 113 V2 Parent audit F-3.3 + F-3.4 + F-3.5 — only return:
+      //   1. media_type = 'photo' (no videos / documents in the photo strip)
+      //   2. teacher_confirmed = true (NOT the over-permissive
+      //      identification_status filter, which let haiku_drafted +
+      //      sonnet_drafted + failed rows through to parents)
+      //   3. parent_visible != false (default-true with explicit-hide override)
+      .eq('media_type', 'photo')
+      .eq('teacher_confirmed', true)
+      .neq('parent_visible', false);
+
+    if (junctionIds.length > 0) {
+      const idList = junctionIds.join(',');
+      photosQuery = photosQuery.or(`child_id.eq.${childId},id.in.(${idList})`);
+    } else {
+      photosQuery = photosQuery.eq('child_id', childId);
+    }
+
+    // Fetch today's progress, recent analyses, and photos in parallel
     const [todayProgressResult, analysesResult, photosResult] = await Promise.all([
       supabase
         .from('montree_child_progress')
@@ -168,19 +200,7 @@ export async function GET(request: NextRequest) {
         .eq('child_id', childId)
         .order('week_start', { ascending: false })
         .limit(5),
-      supabase
-        .from('montree_media')
-        .select('id, storage_path, work_id, captured_at, thumbnail_path')
-        .eq('child_id', childId)
-        // 🚨 Session 113 V2 Parent audit F-3.3 + F-3.4 + F-3.5 — only return:
-        //   1. media_type = 'photo' (no videos / documents in the photo strip)
-        //   2. teacher_confirmed = true (NOT the over-permissive
-        //      identification_status filter, which let haiku_drafted +
-        //      sonnet_drafted + failed rows through to parents)
-        //   3. parent_visible != false (default-true with explicit-hide override)
-        .eq('media_type', 'photo')
-        .eq('teacher_confirmed', true)
-        .neq('parent_visible', false)
+      photosQuery
         .order('captured_at', { ascending: false })
         .limit(9),
     ]);
