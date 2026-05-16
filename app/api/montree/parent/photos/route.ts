@@ -31,19 +31,46 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
+    // 🚨 Session 113 V2 Parent audit F-3.7 — include group photos attributed
+    // via montree_media_children junction. Group photos may have child_id
+    // pointing at child A while montree_media_children also lists child B;
+    // B's parent should see them too. Some group photos have child_id=NULL
+    // and rely on the junction exclusively.
+    //
+    // Fetch junction media_ids first (small set per child — capped 500),
+    // then OR them into the main media filter alongside child_id=$1.
+    const { data: junctionRows } = await supabase
+      .from('montree_media_children')
+      .select('media_id')
+      .eq('child_id', childId)
+      .limit(500);
+    const junctionIds = Array.from(
+      new Set((junctionRows || []).map((r) => (r as { media_id: string }).media_id))
+    );
+
     // 🚨 Session 113 V2 Parent audit F-3.2 + F-3.3 — only return:
     //   1. media_type = 'photo' (no videos / documents)
     //   2. teacher_confirmed = true (NOT the weaker
     //      identification_status.neq.pending_review filter, which let
     //      haiku_drafted + sonnet_drafted + failed rows through to parents)
     //   3. parent_visible != false (default-true with explicit-hide override)
-    const { data: photos, error, count } = await supabase
+    let query = supabase
       .from('montree_media')
       .select('id, storage_path, thumbnail_path, caption, captured_at, work_id', { count: 'exact' })
-      .eq('child_id', childId)
       .eq('media_type', 'photo')
       .eq('teacher_confirmed', true)
-      .neq('parent_visible', false)
+      .neq('parent_visible', false);
+
+    if (junctionIds.length > 0) {
+      // Postgrest .or() filter: child_id matches OR id is in junction set.
+      // Single-quote-escape each UUID; PostgREST accepts ( ... ) for in().
+      const idList = junctionIds.map((id) => id).join(',');
+      query = query.or(`child_id.eq.${childId},id.in.(${idList})`);
+    } else {
+      query = query.eq('child_id', childId);
+    }
+
+    const { data: photos, error, count } = await query
       .order('captured_at', { ascending: false })
       .range(offset, offset + limit - 1);
 
