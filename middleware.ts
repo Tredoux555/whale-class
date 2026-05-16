@@ -178,17 +178,35 @@ export async function middleware(req: NextRequest) {
     // homepage videos, upload arbitrary files into Supabase Storage, or
     // corrupt the curriculum for every Whale Class student.
     //
+    // 🚨 Session 113 V2 LEGACY-API audit CRITICAL — extended again to
+    // cover the legacy /api/* groups that predate the multi-tenant
+    // /api/montree/* and /api/whale/* layout and were never explicitly
+    // gated. Three CRITICAL anyone-can-mutate-production-data routes
+    // close at once:
+    //   - /api/classroom/[id]/curriculum (PATCH could rewrite any
+    //     work in any classroom)
+    //   - /api/students/[id]/quick-place (POST forged child_work_progress)
+    //   - /api/weekly-planning/upload (Sonnet burn + DB wipe per call)
+    //
     // Exception: /api/whale/parent/* and /api/whale/teacher/* have their
     // own Supabase auth.
     // Exception: /api/admin/login MUST stay public — it's the auth
     // entrypoint itself.
+    // Exception: /api/auth/* is the auth entrypoint suite (login, logout).
+    // Exception: /api/health, /api/warm, /api/public, /api/stripe,
+    // /api/guides — public-by-design.
     const requiresAdminJWT =
       (pathname.startsWith('/api/admin/') && !pathname.startsWith('/api/admin/login')) ||
       (
         pathname.startsWith('/api/whale/') &&
         !pathname.startsWith('/api/whale/parent/') &&
         !pathname.startsWith('/api/whale/teacher/')
-      );
+      ) ||
+      pathname.startsWith('/api/weekly-planning/') ||
+      pathname.startsWith('/api/curriculum-import/') ||
+      pathname.startsWith('/api/students/') ||
+      pathname.startsWith('/api/classroom/') ||
+      pathname.startsWith('/api/onboard/');
     if (requiresAdminJWT) {
       const whaleAdminToken = req.cookies.get('admin-token')?.value;
       if (!whaleAdminToken || !(await verifyAdminToken(whaleAdminToken))) {
@@ -408,5 +426,13 @@ export const config = {
     // /api/admin/* so route handlers that forgot to check auth don't
     // expose the operation to anonymous callers.
     '/api/admin/:path*',
+    // 🚨 Session 113 V2 LEGACY-API audit CRITICAL — gate legacy top-level
+    // groups that predate /api/admin and were never explicitly authed.
+    // Closes 3 CRITICAL anyone-can-mutate-production-data routes at once.
+    '/api/weekly-planning/:path*',
+    '/api/curriculum-import/:path*',
+    '/api/students/:path*',
+    '/api/classroom/:path*',
+    '/api/onboard/:path*',
   ],
 };
