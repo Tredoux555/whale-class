@@ -738,13 +738,41 @@ export default function DashboardPage() {
                     </button>
                   )}
                 </div>
-                {/* Student count */}
-                <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)', marginTop: 6, marginLeft: 4 }}>
-                  {searchQuery
-                    ? `${filteredChildren.length} of ${children.length} ${t('common.students')}`
-                    : `${children.length} ${t('common.students')}`
-                  }
-                </p>
+                {/* Student count + Present button.
+                    🎞 Present opens the parent-night slideshow view at
+                    /montree/dashboard/present. Built for Tredoux's first
+                    in-person parent night (May 17, 2026) — full-bleed photos,
+                    no dates / captions / work names visible. Separate from
+                    the gallery editing surface. */}
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 6, marginLeft: 4, marginRight: 4 }}>
+                  <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)', margin: 0 }}>
+                    {searchQuery
+                      ? `${filteredChildren.length} of ${children.length} ${t('common.students')}`
+                      : `${children.length} ${t('common.students')}`
+                    }
+                  </p>
+                  <Link
+                    href="/montree/dashboard/present"
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: 6,
+                      minHeight: 32,
+                      padding: '6px 12px',
+                      borderRadius: 999,
+                      background: 'rgba(52,211,153,0.10)',
+                      border: '1px solid rgba(52,211,153,0.35)',
+                      color: 'rgba(255,255,255,0.92)',
+                      fontSize: 12,
+                      fontFamily: 'Inter, system-ui, sans-serif',
+                      textDecoration: 'none',
+                      letterSpacing: 0.2,
+                    }}
+                  >
+                    <span style={{ fontSize: 13 }}>🎞</span>
+                    Present
+                  </Link>
+                </div>
               </div>
 
               {/* Birthday Banner, Daily Brief, Teacher Notes — moved out of main grid view */}
