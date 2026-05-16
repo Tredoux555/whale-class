@@ -48,21 +48,24 @@ export async function enrichCustomWorkInBackground(input: EnrichInput): Promise<
     // 2. Seed montree_visual_memory immediately so the next photo of this
     //    work gets injected into Pass 2 right away.
     //
-    // Session 113 photo pipeline audit, recommendation #8: lowered
-    // description_confidence from 1.0 → 0.85. The teacher confirms the
-    // WORK NAME is right ("yes this is Popsicle Letter Sorting") but
-    // the single captured photo is one archetype — the visual_description
-    // generated from it captures one camera angle, one lighting, one
-    // child's hand position. At 1.0 confidence Pass 2 trusts this single
-    // archetype as canonical for the work and the moat builds up mono-bias
-    // — every future capture of the work has to look like the FIRST
-    // capture to trigger Gate A trust.
+    // 🚨 Session 113 V2 photo AI quality audit Q-8 — lowered seed from
+    // 0.85 → 0.80. The previous 0.85 value collided with
+    // HAIKU_TRUST_CONFIDENCE = 0.85 (Pass 2 trusts a Haiku match when
+    // confidence >= 0.85). For custom works specifically, this meant
+    // Haiku's typical 0.6-0.85 self-reported confidence on a second
+    // photo of the work fell exactly into the haiku_drafted fall-through
+    // — every Path B custom work was permanently in the audit queue.
     //
-    // 0.85 keeps the entry trusted for injection (Pass 2 filter is
-    // teacher_setup≥1.0 OR correction≥0.9 OR is_custom=true) AND leaves
-    // room for the entry to be ENRICHED by subsequent corrections without
-    // overwriting a 1.0 ceiling. Future teacher corrections will bump
-    // upward toward 1.0 as the moat for this work matures across photos.
+    // 0.80 gives Pass 2 inject-headroom (memory enrichment still applies
+    // because is_custom=true is whitelisted regardless of confidence)
+    // while letting subsequent teacher corrections lift the canonical
+    // confidence toward 1.0 as the moat matures across photos. Future
+    // corrections via enrichVisualMemoryFromCorrection use 0.95.
+    //
+    // The original Q-8 finding from the photo pipeline audit
+    // (recommendation #8: lower from 1.0 → 0.85) is preserved: a single
+    // archetype shouldn't anchor canonical at 1.0. We're just adjusting
+    // the seed value to clear the threshold collision.
     if (seedVisual) {
       await supabase
         .from('montree_visual_memory')
@@ -72,7 +75,7 @@ export async function enrichCustomWorkInBackground(input: EnrichInput): Promise<
             work_name: workName,
             visual_description: seedVisual,
             key_materials: seedMaterials,
-            description_confidence: 0.85,
+            description_confidence: 0.80,
             source: 'teacher_new_work',
             source_media_id: mediaId,
             is_custom: true,
