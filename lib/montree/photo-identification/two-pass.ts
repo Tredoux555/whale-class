@@ -53,16 +53,29 @@ const TAG_PHOTO_TOOL = {
   input_schema: {
     type: 'object' as const,
     properties: {
-      work_name: { type: 'string', description: 'The name of the Montessori work/activity matching the description.' },
+      // 🚨 Session 113 V2 photo AI quality audit Q-1 — is_curriculum_work
+      // escape hatch. Up to 20% of teacher captures aren\'t curriculum
+      // works (snack time, group photos, child\'s face, classroom decor,
+      // play moments). Forcing tool_choice on tag_photo meant Haiku
+      // ALWAYS picked some work, producing false-positive haiku_drafted
+      // entries. Now Haiku can signal a non-curriculum photo via
+      // is_curriculum_work=false and the route routes to the "Save as
+      // Other" path automatically.
+      is_curriculum_work: {
+        type: 'boolean',
+        description:
+          'Set to TRUE when the photo clearly shows a Montessori curriculum work being done. Set to FALSE when the photo is NOT a curriculum work — e.g. snack time, group photo, classroom decoration, child\'s face only, free play, transitions, paperwork. When false, the work_name field MUST be set to "Other".',
+      },
+      work_name: { type: 'string', description: 'The name of the Montessori work/activity matching the description. When is_curriculum_work=false, set to "Other".' },
       area: {
         type: 'string',
         enum: ['practical_life', 'sensorial', 'mathematics', 'language', 'cultural', 'unknown'],
-        description: 'The Montessori curriculum area this work belongs to.',
+        description: 'The Montessori curriculum area this work belongs to. When is_curriculum_work=false, set to "unknown".',
       },
       mastery_evidence: {
         type: 'string',
         enum: ['mastered', 'practicing', 'presented', 'unclear'],
-        description: 'Evidence of mastery level visible in the description.',
+        description: 'Evidence of mastery level visible in the description. When is_curriculum_work=false, set to "unclear".',
       },
       confidence: { type: 'number', description: 'Confidence in the identification (0.0–1.0).' },
       observation: { type: 'string', description: 'Brief 1-sentence warm observation about the child\'s engagement.' },
@@ -78,7 +91,7 @@ const TAG_PHOTO_TOOL = {
         required: ['x', 'y', 'width', 'height'],
       },
     },
-    required: ['work_name', 'area', 'mastery_evidence', 'confidence', 'observation'],
+    required: ['is_curriculum_work', 'work_name', 'area', 'mastery_evidence', 'confidence', 'observation'],
   },
 };
 
@@ -100,7 +113,14 @@ function validateToolOutput(rawInput: Record<string, unknown>) {
       suggested_crop = { x: Math.min(x, 1 - w), y: Math.min(y, 1 - h), width: w, height: h };
     }
   }
+  // 🚨 Session 113 V2 photo AI quality audit Q-1 — surface is_curriculum_work.
+  // Default true to preserve backward-compat with cached responses minted
+  // before the field was added. Pass 2 prompt explicitly teaches Haiku
+  // to set it to false for non-curriculum photos.
+  const isCurriculumWork =
+    typeof rawInput.is_curriculum_work === 'boolean' ? rawInput.is_curriculum_work : true;
   return {
+    is_curriculum_work: isCurriculumWork,
     work_name: typeof rawInput.work_name === 'string' ? rawInput.work_name.trim().slice(0, 255) : '',
     area: typeof rawInput.area === 'string' && VALID_AREAS.includes(rawInput.area) ? rawInput.area : 'unknown',
     mastery_evidence: typeof rawInput.mastery_evidence === 'string' && VALID_MASTERY.includes(rawInput.mastery_evidence) ? rawInput.mastery_evidence : 'unclear',
@@ -162,6 +182,14 @@ export interface TwoPassResult {
   pass1Failed?: boolean;
   /** Structured Pass 2 result (null if Pass 2 failed) */
   identification: {
+    /**
+     * 🚨 Session 113 V2 photo AI quality audit Q-1 — non-curriculum
+     * escape hatch. When false, the photo is NOT a curriculum work
+     * (snack time, group photo, child's face only, free play, etc.).
+     * The route routes such photos straight to the 'Other' bucket
+     * instead of generating a false-positive haiku_drafted entry.
+     */
+    is_curriculum_work: boolean;
     /** The classroom-canonical work name (after matchToCurriculumV2) */
     workName: string;
     /** The raw work name Haiku produced (pre-fuzzy-match) */
@@ -459,7 +487,27 @@ Just describe the physical scene in 2-4 sentences. Lead with the PRIMARY work th
 
 ${langInstruction}
 
-CRITICAL RULES:
+🚨 IS THIS A CURRICULUM WORK?
+First decide whether the photo shows a child doing a Montessori curriculum work AT ALL. Many classroom photos do NOT:
+- Snack time / eating
+- Group photos / class pictures
+- A child's face only (no work materials visible)
+- Free play / outdoor play
+- Classroom decoration / setup shots
+- Transitions / lining up / sitting in circle
+- Paperwork / certificates / artwork on a wall
+
+When the photo is NOT a curriculum work, set:
+- is_curriculum_work: false
+- work_name: "Other"
+- area: "unknown"
+- mastery_evidence: "unclear"
+- confidence: 0.9 (you're confident it's NOT a work)
+- observation: A short warm sentence describing what you see anyway ("Eric enjoying snack with friends.").
+
+When the photo IS a curriculum work, set is_curriculum_work=true and follow the rules below to identify it.
+
+CRITICAL RULES (for curriculum work photos):
 1. Match based on the MATERIALS DESCRIBED — the specific tool/material determines the work name
 2. Use the VISUAL IDENTIFICATION GUIDE below as your primary matching reference
 3. If CLASSROOM-VERIFIED WORKS are listed at the end, check if any match — they use classroom-specific names that may differ from the standard guide. Use classroom-specific names when the materials match closely.
@@ -520,6 +568,7 @@ Match this description to the correct Montessori work. Use the visual identifica
         }));
 
         identification = {
+          is_curriculum_work: validated.is_curriculum_work,
           workName: finalWorkName,
           haikuWorkName: validated.work_name,
           area: finalArea,
@@ -630,6 +679,13 @@ Which work is most likely based on the visual evidence? If none match well, you 
             }));
 
             identification = {
+              // Pass 2b is a curriculum-work discriminator (it picks
+              // between A/B/C real works) — the Sonnet prompt doesn't
+              // expose is_curriculum_work to it, so preserve the
+              // previous Pass 2 value (which already said true; we'd
+              // never have reached Pass 2b if Pass 2 said it wasn't a
+              // curriculum work).
+              is_curriculum_work: identification?.is_curriculum_work ?? true,
               workName: newWorkName,
               haikuWorkName: validated.work_name,
               area: newArea,

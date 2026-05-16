@@ -430,6 +430,51 @@ export async function POST(request: NextRequest) {
       }
     })();
 
+    // 🚨 Session 113 V2 photo AI quality audit Q-1 — non-curriculum-photo
+    // escape hatch. When Haiku flags is_curriculum_work=false we route
+    // straight to the 'Other' classification instead of generating a
+    // false-positive haiku_drafted entry. This matches the manual
+    // 'Save as Other' button shipped earlier this session.
+    //
+    // sonnet_draft.is_other=true is the discriminator everywhere else in
+    // the system (gallery 📌 label, audit queue exclusion, Brain learning
+    // skip). work_id stays null; identification_status='confirmed' since
+    // Haiku's own confidence on "not a curriculum work" passes Gate B
+    // for us automatically.
+    if (twoPassResult.success && ident && ident.is_curriculum_work === false) {
+      const { error: otherErr } = await supabase
+        .from('montree_media')
+        .update({
+          work_id: null,
+          identification_status: 'confirmed',
+          identification_confidence: ident.confidence,
+          teacher_confirmed: false, // teacher hasn't seen it yet — Other is provisional
+          sonnet_draft: {
+            _source: 'haiku_pass2_not_curriculum',
+            visual_description: twoPassResult.visualDescription,
+            is_other: true,
+            other_classified_at: new Date().toISOString(),
+            other_note: ident.observation || null,
+            haiku_confidence: ident.confidence,
+          },
+        })
+        .eq('id', mediaId);
+
+      if (otherErr) {
+        console.error('[PhotoIdentification] Failed to write "Other" routing:', otherErr);
+        // Don't 500 the request — fall through to the normal haiku_drafted
+        // path so the teacher still sees the photo in their audit queue.
+      } else {
+        return NextResponse.json({
+          success: true,
+          outcome: 'other',
+          media_id: mediaId,
+          confidence: ident.confidence,
+          observation: ident.observation || null,
+        });
+      }
+    }
+
     if (haikuTrusted && ident && media.classroom_id) {
       const workId = await resolveClassroomWorkId(supabase, media.classroom_id, ident.workName);
       if (workId) {
