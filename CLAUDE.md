@@ -200,6 +200,96 @@ Wave 1 sends bounced for these addresses. None of these are flagged as `bounced`
 
 ---
 
+## RECENT STATUS (May 16, 2026)
+
+### 🔥 Session 113 V2 — Saturday burn: Blue + Green Phase + Photo Pipeline Audit + Save as Other + outreach (May 16, 2026)
+
+**14 commits pushed to main:** `2f5b5643` → `920d8437`. Continuous Saturday burn day. User explicitly asked to "burn through usage in next 48 hours" then kept saying "keep burning" / "keep going" through every fork.
+
+**🚨 Canonical resume doc:** `docs/handoffs/SESSION_113_V2_HANDOFF.md` — comprehensive single source of truth for cold-start resume.
+
+**🚨 Two migrations pending Tredoux Supabase run:**
+- `migrations/210_fix_identification_status_constraint.sql` — CRITICAL photo pipeline fix (adds `haiku_drafted` to the CHECK constraint enum; closes the "photos stuck at NULL forever" class of failures)
+- `migrations/211_pipeline_telemetry.sql` — `montree_pipeline_telemetry` table for per-Gate-A decision telemetry. Unblocks the photo-debug page's telemetry section + future threshold tuning.
+
+**🚨 5 Gmail outreach drafts awaiting Tredoux send** — FAMM Argentina, Cambridge Montessori Global, Otari NZ, Lions Gate, Montessori Norge. All pre-send dedup-checked clean. Time-sensitive.
+
+**A. Reading framework completed end-to-end (commits `2f5b5643` + Pink SVG injection in `4c948bd5`):**
+
+- **Blue Phase (UFLI L54-83, 30 lessons, 61 KB):** VCe Magic-e · soft c/g · -tch/-dge · y as vowel · plurals + -ing + -ed · compounds + 2-syl + doubling · r-controlled vowels (ar/or/er/ir/ur) · open syllables · -ind/-ild/-old · consonant-le · w-influenced · -all/-alk family.
+- **Green Phase (UFLI L84-128, 45 lessons, 87 KB):** vowel teams (ai/ay, ee/ea, oa/ow) · igh · ow/ou/oi/oy diphthongs · oo two sounds · au/aw, ew, ie · ea alternate · r-controlled vowel teams (ear, are, air, ore) · silent letters (kn, wr, mb, gn, ph) · -tion/-sion · schwa + stress · suffixes (-ly/-er/-est/-ful/-less/-ness/-ment) · prefixes (un-/re-/pre-/dis-/mis-/sub-) · Greek + Latin roots · contractions · Green consolidation.
+- **Wiring:** admin tiles (📘 Blue, 📗 Green) at `/admin/reading-content-{blue,green}` (Whale-branded) + Montree library sub-cards at `/montree/library/language-area` (4 cards now: Setup, Pink, Blue, Green).
+- **Python generators** in `scripts/lesson-content/build_{blue,green,pink}.py` + README. Blue + Green re-runnable; Pink is a pointer (canonical generator lives in Session 112 sandbox).
+- **Pink Phase SVG visuals** injected into both `public/whale-reading-content.html` (admin) AND `public/language-area-lessons.html` (library): 6 mouth-shape diagrams for Mandarin-critical sounds (/ă/, /t/ final, /ĭ/ vs /ē/, /r/, /v/, /θ/ TH) + 3 sample card layouts (sandpaper letter, movable alphabet, heart word with red-irregular convention).
+- **Two-round audit clean** on both phases. Blue: 7 round-1 violations (soft-c/g before introduction, consonant-le before L79, y-long-e before L64) → all fixed. Green: 5 round-1 violations (igh before L90, kn silent before L104) → all fixed. Round 2 clean. Structural: 75 lesson cards, 75 Mandarin notes, all TOC entries.
+
+**B. Photo pipeline triple audit — Session 74 carry-over DELIVERED (commits `4c948bd5`, `78f6d3b2`, `f23d538c`, `0df9d3b0`, `819e89ab`, `24383730`, `e49dd556`):**
+
+`docs/PHOTO_PIPELINE_AUDIT.md` landed via a parallel general-purpose subagent. 9 of 10 audit recommendations closed in code today; rec #6 (decommission legacy photo-insight) started with deprecation telemetry awaiting call-volume data.
+
+| Rec | What | Status |
+|---|---|---|
+| #1 | Migration 210: drop+recreate CHECK constraint | ✅ shipped (pending Supabase run) |
+| #2 | Auto-Sonnet IIFE race guard (read-then-write + conditional UPDATE on `haiku_drafted` + `teacher_confirmed=false`) | ✅ shipped |
+| #3 | top_candidates chips on audit card | ✅ verified already shipped Sessions 105/106 |
+| #4 | Super-admin photo-debug page (`/montree/super-admin/photo-debug/[mediaId]`) | ✅ shipped |
+| #5 | Migration 211 telemetry table + per-Gate-A write | ✅ shipped (pending Supabase run) |
+| #6 | Decommission legacy photo-insight | 🟡 Step 1 deprecation telemetry shipped; full migration deferred until call-volume data lands |
+| #7 | Pass 1 failure terminal (new `pass1Failed` flag + sentinel + route bail) | ✅ shipped |
+| #8 | Lower teacher_new_work confidence 1.0 → 0.85 (prevents mono-bias from single archetype photo) | ✅ shipped |
+| #9 | Softer negative coherence gate (length OR material noun, not AND; expanded MATERIAL_NOUNS list) | ✅ shipped |
+| #10 | Pre-seed ThisIsSheet ONLY for sonnet_drafted, not haiku_drafted | ✅ shipped |
+
+**Plus quick wins (commit `24383730`):** `auto_first_capture` rename (architectural clarity) · free-tier moat-skip log upgraded to `console.warn` with school_id · `(media=${mediaId})` added to 8 high-value `[VisualMemory]` log lines · curriculum-load count on no-custom-works branch too.
+
+**Top 3 CRITICAL/HIGH audit findings (from audit doc):**
+1. **CRITICAL** — `haiku_drafted` missing from production CHECK constraint → photos silently 23514-fail back to NULL. Migration 210 closes.
+2. **HIGH** — Auto-Sonnet IIFE race could clobber teacher confirmations. IIFE race guard from `78f6d3b2` closes.
+3. **HIGH** — Two parallel pipelines (legacy photo-insight + new process). Deprecation telemetry from `e49dd556` measures volume; full decommission later.
+
+**Architectural rules locked in this session (#97-102 — DO NOT let future agents break):**
+
+97. **`pass1Failed` is the only positive signal for terminal Pass-1 failure.** The pre-existing `success=false` early-return paths (no-anthropic-client + Pass 2 failed) leave `pass1Failed` undefined.
+98. **Auto-Sonnet IIFE writes use conditional UPDATE filtered on `identification_status='haiku_drafted'` AND `teacher_confirmed=false`.** Defense in depth — re-read before write + conditional update both layers preserve teacher decisions.
+99. **`montree_pipeline_telemetry` has NO FKs.** Telemetry is append-only — must survive media deletes for historical threshold tuning. Same rule as migration 196 perf_vitals.
+100. **`description_confidence=0.85` (not 1.0) for `teacher_new_work` source** — prevents mono-bias from single archetype photos. Pass 2 injection still fires because `is_custom=true` is in VALID_SOURCES whitelist independently of confidence.
+101. **Soft-coherence gate: 25-char noise floor + (material_noun OR ≥120-char specificity).** Replaces the old `length≥60 AND material_noun_present` AND-gate that rejected legitimate concrete short reasoning.
+102. **Photo-insight is FROZEN.** No new features. Deprecation telemetry surfaces call volume in Railway logs. Migration plan deferred to a future session with data.
+
+**C. Save as Other photo category (commit `11d7f2c5`) — Session 111 carry-over closed:**
+
+User-asked feature for photos worth keeping but not curriculum (snack time, art moments, group photos, parent pickup, classroom events). No migration — JSONB-flag driven:
+- `work_id` = null, `teacher_confirmed` = true, `identification_status` = 'confirmed'
+- `sonnet_draft.is_other` = true (the discriminator)
+- `sonnet_draft.other_note` = optional ≤200 chars
+- `sonnet_draft.other_classified_at` = timestamp
+- Existing sonnet_draft fields preserved.
+
+What does NOT happen: no curriculum row, no progress observation, no visual memory write, no negative example. Weekly Wrap / reports filter on `work_id IS NOT NULL` → these photos auto-skipped. Brain learning / moat enrichment doesn't fire.
+
+What DOES happen: photo flows naturally into the child gallery (`teacher_confirmed=true`), audit queue drops it, auto-Sonnet IIFE race-guard correctly skips it.
+
+UI: subtle 📌 "Save as Other" button at the bottom of `ThisIsSheet`'s `!addMode` state. Muted styling so it doesn't compete with primary CTAs. Copy: *"Not curriculum — snack time, art, group photo, etc. Keeps the photo on the child without tagging a work."*
+
+Future query for "show me Other photos": `WHERE work_id IS NULL AND teacher_confirmed=true AND sonnet_draft->>'is_other' = 'true'`.
+
+**D. 5 hot-lead outreach Gmail drafts** — all pre-send dedup-checked clean. Awaiting Tredoux review + send:
+- FAMM Argentina (Marisa) — bilingual ES/EN, partnership-framed
+- Cambridge Montessori Global (Manish) — Indian Montessori expansion angle + Hindi support
+- Otari NZ (Susan West) — sabbatical follow-up window now open
+- Lions Gate (Ingrid) — 200+ family multi-campus
+- Montessori Norge (Nina) — Norwegian opener, association revenue share
+
+**🚨 Next session priorities:**
+1. **Run migrations 210 + 211 in Supabase SQL Editor.**
+2. **Review + send the 5 Gmail outreach drafts.**
+3. **Verify on production:** `/admin` Blue/Green tiles, `/montree/library/language-area` 4 cards, `/montree/super-admin/photo-debug` with a real media_id.
+4. **Decommission photo-insight legacy** — wait for ~1 week of deprecation-telemetry data first, then migrate the 4 callers in `app/montree/dashboard/photo-audit/page.tsx` and delete the route.
+5. **"Correct" button modal regression** (Session 111 carry-over) — still needs user clarification on which card type triggers it.
+6. **Outreach follow-ups** if any of the 5 drafts go quiet for >1 week.
+
+---
+
 ## RECENT STATUS (May 14, 2026)
 
 ### 📚 Session 112 — Reading framework making guide + Pink Phase lesson content + Montree library presence (May 14-15, 2026)
