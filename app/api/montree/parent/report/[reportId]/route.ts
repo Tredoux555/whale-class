@@ -356,13 +356,17 @@ export async function GET(
     if (reportMedia && reportMedia.length > 0) {
       // Get the actual media records for selected photos
       const mediaIds = reportMedia.map(rm => rm.media_id);
+      // 🚨 Session 113 V2 Parent audit F-3.6 — enforce media_type='photo' +
+      // teacher_confirmed=true even on junction-linked photos. Teachers should
+      // never be able to add an unconfirmed photo or a video to a report via
+      // the junction table; this is the defensive backstop.
       const { data: selectedPhotos } = await supabase
         .from('montree_media')
         .select('id, storage_path, work_id, caption, captured_at')
         .in('id', mediaIds)
-        // Defensive: exclude pending_review photos even if somehow linked to a
-        // report (should be impossible via normal UI flow, but parent-facing).
-        .or('identification_status.is.null,identification_status.neq.pending_review');
+        .eq('media_type', 'photo')
+        .eq('teacher_confirmed', true)
+        .neq('parent_visible', false);
 
       if (selectedPhotos && selectedPhotos.length > 0) {
         // Sort by display_order from junction table
@@ -375,13 +379,15 @@ export async function GET(
 
     // Fallback: if no photos in junction table, query by date range (backwards compatibility)
     if (mediaPhotos.length === 0) {
+      // 🚨 Session 113 V2 Parent audit F-3.2 + F-3.6 — canonical triple-gate
+      // matching /parent/photos and /parent/dashboard.
       const { data: fallbackPhotos } = await supabase
         .from('montree_media')
         .select('id, storage_path, work_id, caption, captured_at')
         .eq('child_id', report.child_id)
         .eq('media_type', 'photo')
-        // Exclude pending_review photos — not yet teacher-approved.
-        .or('identification_status.is.null,identification_status.neq.pending_review')
+        .eq('teacher_confirmed', true)
+        .neq('parent_visible', false)
         .gte('captured_at', startOfWeek.toISOString())
         .lt('captured_at', endOfWeek.toISOString());
 
