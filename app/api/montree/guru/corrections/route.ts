@@ -578,49 +578,61 @@ async function upsertProgressObservation({
 // on the corrected work is the more important learning signal — losing the
 // occasional negative example is much cheaper than letting hallucinated
 // distinguishing logic corrupt the corpus.
+// 🚨 Session 113 V2 Photo AI quality audit Q-14 — MATERIAL_NOUNS is now
+// REAL MATERIALS / OBJECT NOUNS ONLY. The previous list included colors,
+// sizes, and textures ('red', 'blue', 'small', 'thick') which let Sonnet
+// hallucinations like "small red object" pass the coherence gate and
+// poison negative_descriptions[]. Color/size/texture descriptors moved
+// to DESCRIPTOR_QUALIFIERS — they're allowed as supporting evidence
+// (they make a real-noun negative MORE specific) but never as the SOLE
+// signal that distinguishes a coherent negative from a hallucination.
 const MATERIAL_NOUNS = [
   // Materials of construction
   'wooden', 'wood', 'metal', 'plastic', 'fabric', 'cloth', 'paper', 'cardboard',
   'sandpaper', 'glass', 'ceramic', 'rubber', 'felt', 'leather', 'cork', 'bamboo',
-  // Common Montessori components
+  // Common Montessori components — physical objects, not adjectives
   'beads', 'cylinders', 'tablets', 'cards', 'frames', 'tray', 'mat', 'bowl',
   'pitcher', 'pegs', 'sticks', 'rods', 'cubes', 'prisms', 'spheres', 'circles',
   'squares', 'triangles', 'rectangles', 'letters', 'numbers', 'numerals',
   'sandpaper letter', 'sandpaper number', 'sandpaper letters',
-  // Session 113 F-9 expansion — high-value Montessori-specific nouns the
-  // original list missed. Each one I confirmed shows up in real classroom
-  // observations + makes a negative concretely-grounded.
+  // Session 113 F-9 expansion — high-value Montessori-specific nouns
   'knobs', 'knobbed', 'spindles', 'spindle box', 'chips', 'counters',
   'puzzle', 'globe', 'map', 'binomial', 'trinomial', 'hierarchical',
   'fraction', 'fractions', 'geometric', 'inset', 'insets', 'pouring',
   'transferring', 'tongs', 'tweezers', 'sponge', 'sponges', 'brush', 'brushes',
   'jug', 'spoon', 'scissors', 'lock', 'locks', 'bell', 'bells',
   'cylinder block', 'pink tower', 'brown stair', 'red rods', 'movable alphabet',
-  // Color, texture, shape qualifiers
-  'red', 'blue', 'yellow', 'pink', 'green', 'orange', 'purple', 'black', 'white', 'gray',
-  'rough', 'smooth', 'rigid', 'soft', 'hard', 'thick', 'thin', 'large', 'small',
 ];
+
+// Descriptor qualifiers — color/texture/size words that DO appear in
+// real-world distinguishing negatives, but can ALSO appear in pure
+// hallucinations. Kept separate so they enrich a real-material-noun
+// negative without ever standalone-validating a hallucination.
+const DESCRIPTOR_QUALIFIERS = new Set([
+  'red', 'blue', 'yellow', 'pink', 'green', 'orange', 'purple', 'black',
+  'white', 'gray', 'rough', 'smooth', 'rigid', 'soft', 'hard', 'thick',
+  'thin', 'large', 'small',
+]);
+// Reference DESCRIPTOR_QUALIFIERS so the symbol isn't dropped by tree-shaking
+// before a future audit consumes it. Read-only — not used by the gate today
+// but documents the architectural decision.
+void DESCRIPTOR_QUALIFIERS;
 
 /**
  * 🚨 F-9 (Session 113 photo pipeline audit): softer coherence gate.
+ * 🚨 Q-14 (Session 113 V2 photo AI quality audit): MATERIAL_NOUNS now
+ *    REAL nouns only — color/size/texture descriptors that previously
+ *    standalone-validated a negative ("small red object") are removed
+ *    from the noun list. They live in DESCRIPTOR_QUALIFIERS as a
+ *    reference but never as the sole pass condition.
  *
- * Previous gate was `length >= 60 AND material_noun_present`. Rejected
- * legitimate distinguishing reasoning that was short-and-concrete OR
- * long-and-specific-but-using-unlisted-vocabulary.
- *
- * New gate: accept whenever EITHER condition is satisfied —
+ * Gate accepts a negative whenever EITHER condition is satisfied:
  *   (1) a concrete material noun appears (from corrected work's
- *       key_materials OR the standard MATERIAL_NOUNS list), OR
+ *       key_materials OR the curated MATERIAL_NOUNS list), OR
  *   (2) the text is long enough (>= 120 chars) that Sonnet had room to
  *       BE specific, even without an exact noun match in our list.
  *
  * Floor still rejects pure noise (< 25 chars).
- *
- * Trade-off: slightly more permissive, occasional generic-long-ramble
- * leaks in. The negatives directory still acts as one signal among
- * many — visual_description, key_materials, and the LOOKS LIKE field
- * dominate Pass 2. Better to grow the moat with occasional noise than
- * starve it.
  */
 function isCoherentNegative(negative: string, knownMaterials: string[]): boolean {
   const text = negative.toLowerCase();
