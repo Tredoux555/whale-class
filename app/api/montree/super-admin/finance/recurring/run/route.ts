@@ -19,6 +19,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { verifySuperAdminAuth } from '@/lib/verify-super-admin';
+import { isPeriodClosed } from '@/lib/montree/finance/period-lock';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
@@ -41,9 +42,11 @@ function currentPeriodMonth(): string {
 
 export async function POST(request: NextRequest) {
   // Auth: cron-secret OR super-admin (for manual dry-run testing).
-  const cronSecret = request.headers.get('x-cron-secret');
-  const expected = process.env.CRON_SECRET || '';
-  const isCron = cronSecret && expected && cronSecret === expected;
+  // 🚨 Session 113 V2 Finance audit F-A-1: trim + length-after-trim check
+  // defends against a whitespace-only CRON_SECRET env var.
+  const cronSecret = (request.headers.get('x-cron-secret') || '').trim();
+  const expected = (process.env.CRON_SECRET || '').trim();
+  const isCron = expected.length > 0 && cronSecret.length > 0 && cronSecret === expected;
   if (!isCron) {
     const { valid } = await verifySuperAdminAuth(request.headers);
     if (!valid) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -56,6 +59,24 @@ export async function POST(request: NextRequest) {
     const supabase = getSupabase();
     const period = currentPeriodMonth();
     const todayDay = new Date().getUTCDate();
+
+    // 🚨 Session 113 V2 Finance audit F-P-1 — period lock check.
+    // If the current period is closed, skip ALL templates (no recurring
+    // op-expense writes go into a closed period). Cron will retry next day
+    // (idempotent), so reopening the period before next 04:00 UTC means
+    // templates fire correctly. Edge case: closing a period mid-month would
+    // skip subsequent recurring fires that month — accountant's call.
+    const currentPeriodLocked = await isPeriodClosed(supabase, period);
+    if (currentPeriodLocked) {
+      return NextResponse.json({
+        ok: true,
+        period,
+        period_locked: true,
+        message: `Period ${period} is closed — skipping all recurring op-expense fires for this run.`,
+        templates_count: 0,
+        outcomes: [],
+      });
+    }
 
     const { data: templatesRaw, error: tplErr } = await supabase
       .from('montree_recurring_op_expenses')
