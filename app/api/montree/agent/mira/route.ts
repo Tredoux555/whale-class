@@ -124,17 +124,41 @@ export async function POST(request: NextRequest) {
   // the log table doesn't exist yet (migration 191 not run) so the build
   // doesn't refuse to serve before the table lands.
   try {
-    const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+    const sinceMs = Date.now() - 24 * 60 * 60 * 1000;
+    const since = new Date(sinceMs).toISOString();
     const { count, error } = await supabase
       .from('montree_agent_mira_log')
       .select('id', { count: 'exact', head: true })
       .eq('agent_id', auth.userId)
       .gte('asked_at', since);
     if (!error && typeof count === 'number' && count >= DAILY_INTERACTION_CAP) {
+      // 🚨 Tracy + Mira audit quick win (Session 113 V2): include
+      // `remaining` and `resets_at` in the 429 body so the frontend can
+      // show "you're at the daily cap, comes back at <time>" instead of
+      // just a flat error. resets_at = oldest_in_window + 24h.
+      let resetsAt = new Date(sinceMs + 24 * 60 * 60 * 1000).toISOString();
+      try {
+        const { data: oldest } = await supabase
+          .from('montree_agent_mira_log')
+          .select('asked_at')
+          .eq('agent_id', auth.userId)
+          .gte('asked_at', since)
+          .order('asked_at', { ascending: true })
+          .limit(1)
+          .maybeSingle();
+        if (oldest?.asked_at) {
+          resetsAt = new Date(new Date(oldest.asked_at).getTime() + 24 * 60 * 60 * 1000).toISOString();
+        }
+      } catch {
+        // fall through to the conservative bound
+      }
       return NextResponse.json(
         {
           error: 'Daily interaction limit reached for Mira. Resets in 24 hours.',
           limit: DAILY_INTERACTION_CAP,
+          remaining: 0,
+          used: count,
+          resets_at: resetsAt,
         },
         { status: 429 }
       );

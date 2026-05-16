@@ -48,6 +48,9 @@ import {
   TRACY_FLOAT_OPEN_KEY,
   type TracyStorageKeys,
 } from '@/lib/montree/tracy/storage-keys';
+// Canonical action-line parser — single source of truth across Tracy + Mira
+// surfaces. Session 113 V2 audit MED-5.
+import { splitActionLine } from '@/lib/montree/ai/split-action-line';
 
 // Dark forest tokens — match the cockpit palette
 const T = {
@@ -155,37 +158,8 @@ function newConvId(): string {
   return 'c-' + Math.random().toString(36).slice(2) + Date.now().toString(36);
 }
 
-// Same parser as /montree/admin/page.tsx — kept inline so the float doesn't
-// reach into a sibling page's internals. If the parser ever changes, update
-// both sites or extract to lib/montree/tracy/action-line.ts.
-function splitActionLine(text: string): {
-  body: string;
-  action: string | null;
-} {
-  if (!text || !text.trim()) return { body: text, action: null };
-  const ARROW_RE = /^\s*(?:→|->)\s+/;
-  const paragraphs = text.split(/\n\s*\n/);
-  const lastPara = paragraphs[paragraphs.length - 1]?.trim() ?? '';
-  if (ARROW_RE.test(lastPara)) {
-    const action = lastPara.replace(ARROW_RE, '').trim();
-    const body = paragraphs.slice(0, -1).join('\n\n').trim();
-    return { body, action };
-  }
-  const lines = text.split(/\n/);
-  if (lines.length >= 2) {
-    const lastLine = lines[lines.length - 1].trim();
-    if (ARROW_RE.test(lastLine)) {
-      const action = lastLine.replace(ARROW_RE, '').trim();
-      const body = lines.slice(0, -1).join('\n').trim();
-      return { body, action };
-    }
-  }
-  if (/^I['’]d\s/i.test(lastPara)) {
-    const body = paragraphs.slice(0, -1).join('\n\n').trim();
-    return { body, action: lastPara };
-  }
-  return { body: text, action: null };
-}
+// splitActionLine is imported from the canonical helper at the top of this file.
+// Session 113 V2 audit MED-5 — drift across 4 copies eliminated.
 
 // Detect question-form offers Tracy can execute on (e.g. "Want me to draft…?").
 // These get inline Yes/No buttons. Plain declarative actions ("Send Susan a

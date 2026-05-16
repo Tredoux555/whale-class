@@ -37,6 +37,8 @@ import { usePathname } from 'next/navigation';
 import { Send, Minus } from 'lucide-react';
 import MiraAvatar from './MiraAvatar';
 import { miraKeys } from '@/lib/montree/mira/storage-keys';
+// Canonical action-line parser — Session 113 V2 audit MED-5.
+import { splitActionLine } from '@/lib/montree/ai/split-action-line';
 
 const MIRA_FLOAT_OPEN_KEY = 'montree.miraFloat.open';
 
@@ -120,31 +122,8 @@ function newConvId(): string {
   return 'c-' + Math.random().toString(36).slice(2) + Date.now().toString(36);
 }
 
-// Same parser as the dedicated chat page. Detects "→ <action>" on its own line.
-function splitActionLine(text: string): {
-  body: string;
-  action: string | null;
-} {
-  if (!text || !text.trim()) return { body: text, action: null };
-  const ARROW_RE = /^\s*(?:→|->)\s+/;
-  const paragraphs = text.split(/\n\s*\n/);
-  const lastPara = paragraphs[paragraphs.length - 1]?.trim() ?? '';
-  if (ARROW_RE.test(lastPara)) {
-    const action = lastPara.replace(ARROW_RE, '').trim();
-    const body = paragraphs.slice(0, -1).join('\n\n').trim();
-    return { body, action };
-  }
-  const lines = text.split(/\n/);
-  if (lines.length >= 2) {
-    const lastLine = lines[lines.length - 1].trim();
-    if (ARROW_RE.test(lastLine)) {
-      const action = lastLine.replace(ARROW_RE, '').trim();
-      const body = lines.slice(0, -1).join('\n').trim();
-      return { body, action };
-    }
-  }
-  return { body: text, action: null };
-}
+// splitActionLine is imported from the canonical helper at the top of this file.
+// Session 113 V2 audit MED-5 — drift across 4 copies eliminated.
 
 function isQuestionOffer(action: string | null): boolean {
   if (!action) return false;

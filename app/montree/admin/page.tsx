@@ -35,6 +35,8 @@ import TracyBody from '@/components/montree/admin/TracyBody';
 import ChangelogModal from '@/components/montree/ChangelogModal';
 import TrialExpiringBanner from '@/components/montree/admin/TrialExpiringBanner';
 import TracyProactiveCard from '@/components/montree/admin/TracyProactiveCard';
+// Canonical action-line parser — Session 113 V2 audit MED-5.
+import { splitActionLine } from '@/lib/montree/ai/split-action-line';
 import {
   tracyKeys,
   getSchoolIdFromStorage,
@@ -144,54 +146,8 @@ function newConvId(): string {
   return 'c-' + Math.random().toString(36).slice(2) + Date.now().toString(36);
 }
 
-/**
- * Tracy's responses end with a single closing action line that begins with
- * the universal arrow marker "→ ". Split that off so we can render it
- * distinctly from the body prose, and so the splitter works in any language
- * (the action TEXT itself is in the principal's locale, but the marker is
- * the literal "→" character regardless).
- *
- * Returns the body without the action line and the action line itself
- * (with the arrow marker stripped — caller renders its own dash decoration).
- * If no marker is found, the whole text is body and action is null.
- *
- * Backward-compat: the legacy "I'd …" English pattern is still matched as a
- * fallback so older cached responses or stragglers still render correctly.
- */
-function splitActionLine(text: string): { body: string; action: string | null } {
-  if (!text || !text.trim()) return { body: text, action: null };
-  // Accept either the literal "→" or the older "->" ASCII fallback, plus a
-  // surrounding whitespace tolerance, so a typo in transit doesn't drop the action.
-  const ARROW_RE = /^\s*(?:→|->)\s+/;
-
-  const paragraphs = text.split(/\n\s*\n/);
-  const lastPara = paragraphs[paragraphs.length - 1]?.trim() ?? '';
-  if (ARROW_RE.test(lastPara)) {
-    const action = lastPara.replace(ARROW_RE, '').trim();
-    const body = paragraphs.slice(0, -1).join('\n\n').trim();
-    return { body, action };
-  }
-
-  // Single-newline fallback — Tracy sometimes drops the blank line before the action.
-  const lines = text.split(/\n/);
-  if (lines.length >= 2) {
-    const lastLine = lines[lines.length - 1].trim();
-    if (ARROW_RE.test(lastLine)) {
-      const action = lastLine.replace(ARROW_RE, '').trim();
-      const body = lines.slice(0, -1).join('\n').trim();
-      return { body, action };
-    }
-  }
-
-  // Legacy pattern (English-only "I'd …") — kept as a backstop for cached
-  // responses that pre-date the arrow marker convention.
-  if (/^I['’]d\s/i.test(lastPara)) {
-    const body = paragraphs.slice(0, -1).join('\n\n').trim();
-    return { body, action: lastPara };
-  }
-
-  return { body: text, action: null };
-}
+// splitActionLine is imported from the canonical helper (top of this file).
+// Session 113 V2 audit MED-5 — single source of truth across Tracy + Mira surfaces.
 
 // ── Subcomponents ────────────────────────────────────────────────────────
 // TracyAvatar lives in components/montree/admin/TracyAvatar.tsx — shared
