@@ -247,7 +247,15 @@ export async function POST(
       original_amount: amountUsd,
       fx_rate: 1.0,
       usd_amount: amountUsd,
-      source: 'stripe_webhook' as const, // closest existing source enum value
+      // 🚨 Session 113 V2 Finance audit F-Misc-3: source corrected from
+      // 'stripe_webhook' → 'manual_entry'. This commission row is created
+      // by a super-admin click that fires a Stripe Connect transfer;
+      // NO Stripe webhook is involved. The previous label confused
+      // reconciliation tooling that filters by source='stripe_webhook'
+      // to find inbound payments — these are OUTBOUND commission rows.
+      // 'manual_entry' matches the manual-wire counterpart in
+      // record-wire/route.ts and is the correct semantic.
+      source: 'manual_entry' as const,
       source_ref: sourceRef,
       notes: `Wired via Stripe Connect transfer ${transfer.id}`,
     };

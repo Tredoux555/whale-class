@@ -69,9 +69,16 @@ export async function POST(request: NextRequest) {
   // ── Sweep mode ─────────────────────────────────────────────────────────
   // Super admin OR cron-secret. Walks every school with an active
   // subscription and reconciles quantity.
-  const cronSecret = request.headers.get('x-cron-secret');
-  const cronSecretConfigured = process.env.CRON_SECRET;
-  const isCron = Boolean(cronSecret && cronSecretConfigured && cronSecret === cronSecretConfigured);
+  //
+  // 🚨 Session 113 V2 Finance audit F-A-1: trim + length-after-trim check
+  // defends against a whitespace-only CRON_SECRET env var.
+  const cronSecret = (request.headers.get('x-cron-secret') || '').trim();
+  const cronSecretConfigured = (process.env.CRON_SECRET || '').trim();
+  const isCron = Boolean(
+    cronSecretConfigured.length > 0 &&
+      cronSecret.length > 0 &&
+      cronSecret === cronSecretConfigured
+  );
   if (!isCron) {
     const superAuth = await verifySuperAdminAuth(request.headers);
     if (!superAuth.valid) {

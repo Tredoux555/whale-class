@@ -32,9 +32,16 @@ interface CalcBody {
 export async function POST(request: NextRequest) {
   try {
     // Auth: super-admin OR cron secret.
-    const cronSecret = request.headers.get('x-cron-secret');
-    const expectedCronSecret = process.env.CRON_SECRET || '';
-    const isCronCall = cronSecret && expectedCronSecret && cronSecret === expectedCronSecret;
+    // 🚨 Session 113 V2 Finance audit F-A-1: trim + length-after-trim check
+    // defends against a whitespace-only CRON_SECRET env var (which would
+    // otherwise let `x-cron-secret: '  '` bypass auth via the &&-chain
+    // accepting any truthy non-empty string).
+    const cronSecret = (request.headers.get('x-cron-secret') || '').trim();
+    const expectedCronSecret = (process.env.CRON_SECRET || '').trim();
+    const isCronCall =
+      expectedCronSecret.length > 0 &&
+      cronSecret.length > 0 &&
+      cronSecret === expectedCronSecret;
 
     if (!isCronCall) {
       const { valid } = await verifySuperAdminAuth(request.headers);
