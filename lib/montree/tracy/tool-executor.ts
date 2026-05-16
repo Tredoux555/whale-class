@@ -707,11 +707,14 @@ export async function executeTracyTool(
           filters.query = input.query.trim();
         }
         const memories = await recallMemories(supabase, principalId, filters, 20);
-        // Fire-and-forget reference bump — Tracy doesn't wait.
+        // Fire-and-forget reference bump — Tracy doesn't wait. Pass
+        // principalId so the bump uses the migration 212 RPC fast path
+        // (1 round-trip) instead of the legacy N+1 fallback.
         if (memories.length > 0) {
           void bumpMemoryReference(
             supabase,
-            memories.map((m) => m.id)
+            memories.map((m) => m.id),
+            principalId
           );
         }
         return {
