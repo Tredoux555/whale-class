@@ -11,7 +11,10 @@
 
 import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import AgentFirstRunOverlay from '@/components/montree/agent/AgentFirstRunOverlay';
+// Session 113 V2: AgentFirstRunOverlay disabled per user directive
+// ("Let the agent explore the dashboard by themselves"). Component preserved
+// on disk per hide-don't-delete posture in case we want to re-enable it later.
+// import AgentFirstRunOverlay from '@/components/montree/agent/AgentFirstRunOverlay';
 import AgentRedemptionBanner from '@/components/montree/agent/AgentRedemptionBanner';
 import MiraProactiveCard from '@/components/montree/agent/MiraProactiveCard';
 import ChangelogModal from '@/components/montree/ChangelogModal';
@@ -164,8 +167,8 @@ export default function AgentDashboardPage() {
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
-      {/* ── First-run overlay (once per device) ────────────────────────── */}
-      <AgentFirstRunOverlay />
+      {/* First-run overlay deliberately not rendered — user directive
+          "Let the agent explore the dashboard by themselves." */}
 
       {/* ── What's new since last visit (agent-scoped) ─────────────────── */}
       <ChangelogModal audience="agent" />

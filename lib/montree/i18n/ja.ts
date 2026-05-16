@@ -3856,7 +3856,7 @@ export const ja: Record<string, string> = {
 
   // ─── Auto-filled missing keys (from Apr 30 audit) ───
   'landing.nav.library': 'ライブラリ',
-  'landing.nav.forTeachers': '先生向け',
+  'landing.nav.forTeachers': 'アンバサダーになる',
   'landing.nav.login': 'ログイン',
   'landing.nav.getStarted': '始める',
   'landing.hero.label': 'モンテッソーリ教室管理',
@@ -4555,4 +4555,7 @@ export const ja: Record<string, string> = {
   'upgrade.feature.tracy_draft.body': 'Tracyは過去のメッセージからお客様の声で親への返信をドラフトします。請求設定を行い有効化してください。月額$7/アクティブな生徒、契約の制約なし。',
   'upgrade.feature.vault_transcribe.title': '会話ボルトを有効化',
   'upgrade.feature.vault_transcribe.body': 'ボルトは保護者面談を記録し、後で読み直すことができるプライベートな3段落の要約を作成します。これを利用するには請求設定を行ってください — アクティブなお子さま1名あたり月額$7で、契約期間の制限はありません。',
+  'landing.hero.evolve': '教室を進化させる。学校を進化させる。',
+  'landing.quote.body': '遊びは子どもの仕事である。',
+  'landing.quote.attribution': 'マリア・モンテッソーリ',
 };

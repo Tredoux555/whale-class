@@ -3856,7 +3856,7 @@ export const ko: Record<string, string> = {
 
   // ─── Auto-filled missing keys (from Apr 30 audit) ───
   'landing.nav.library': '라이브러리',
-  'landing.nav.forTeachers': '교사를 위해',
+  'landing.nav.forTeachers': '앰배서더 되기',
   'landing.nav.login': '로그인',
   'landing.nav.getStarted': '시작하기',
   'landing.hero.label': '몬테소리 교실 관리',
@@ -4555,4 +4555,7 @@ export const ko: Record<string, string> = {
   'upgrade.feature.tracy_draft.body': 'Tracy는 지난 메시지를 바탕으로 학부모 답장의 초안을 작성해줍니다. 청구를 설정하여 잠금을 해제하세요 — 학생 1명당 월 $7, 계약 없음.',
   'upgrade.feature.vault_transcribe.title': '대화 저장소 활성화하기',
   'upgrade.feature.vault_transcribe.body': '저장소는 학부모 면담을 녹음하고 나중에 다시 읽을 수 있는 비공개 3단락 요약본을 작성해요. 이 기능을 사용하려면 결제 설정을 완료해주세요 — 활동 중인 자녀분당 월 $7, 계약 없음.',
+  'landing.hero.evolve': '교실을 진화시키세요. 학교를 진화시키세요.',
+  'landing.quote.body': '놀이는 아이의 일이다.',
+  'landing.quote.attribution': '마리아 몬테소리',
 };

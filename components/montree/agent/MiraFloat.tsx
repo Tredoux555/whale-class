@@ -85,10 +85,6 @@ function isHiddenKickoff(text: string): boolean {
   return text === GREETING_PROMPT || text === GREETING_FIRST_PROMPT;
 }
 
-function isKickoff(text: string): boolean {
-  return isHiddenKickoff(text);
-}
-
 // ── Helpers ──────────────────────────────────────────────────────────────
 
 function readConv(agentId: string, convId: string): ConvTurn[] {
@@ -190,49 +186,22 @@ export default function MiraFloat() {
         setConvId(id);
         setTurns(readConv(a.id, id));
 
-        // Persisted open/closed state (UI-only key)
-        let persistedOpen = false;
-        try {
-          persistedOpen = localStorage.getItem(MIRA_FLOAT_OPEN_KEY) === 'true';
-        } catch {
-          /* ignore */
-        }
-        setOpen(persistedOpen);
+        // Session 113 V2: starts CLOSED on every page load.
+        // Previously this restored the `open` flag from localStorage so
+        // navigating between agent pages kept Mira open. User directive
+        // is now "leave it there" — meaning Mira should NEVER pop open
+        // by itself, only when the agent clicks the trigger. Persistence
+        // within a single open session is still desired (don't close on
+        // every navigation IF the agent opened her), so the persist-on-
+        // change effect below stays as-is. But we force CLOSED at mount.
+        setOpen(false);
 
-        // Once-per-session greeting trigger — scoped per agent
-        let alreadyGreeted = false;
-        try {
-          alreadyGreeted = sessionStorage.getItem(miraKeys.greetedSession(a.id)) === 'true';
-        } catch {
-          /* sessionStorage disabled — treat as not greeted */
-        }
-        if (!alreadyGreeted) {
-          try {
-            sessionStorage.setItem(miraKeys.greetedSession(a.id), 'true');
-          } catch {
-            /* ignore */
-          }
-          // Open the panel so the greeting is visible immediately.
-          setOpen(true);
-          try {
-            localStorage.setItem(MIRA_FLOAT_OPEN_KEY, 'true');
-          } catch {
-            /* ignore */
-          }
-
-          // First-meeting check — fire [GREETING_FIRST] (full introduction) if
-          // Mira has never properly introduced herself to this agent.
-          // CRITICAL: hasMet flips ONLY on a successful 'done' SSE event,
-          // not preemptively. Same rule as Tracy. Audit fix from Session 97.
-          let hasMet = false;
-          try {
-            hasMet = localStorage.getItem(miraKeys.hasMet(a.id)) === 'true';
-          } catch {
-            /* ignore */
-          }
-          const kickoff = hasMet ? GREETING_PROMPT : GREETING_FIRST_PROMPT;
-          void fireGreeting(id, kickoff, a);
-        }
+        // Session 113 V2: auto-open + auto-greet on first session DISABLED
+        // per user directive "Let the agent explore the dashboard by themselves."
+        // Mira trigger stays visible but starts CLOSED. The greeting fires
+        // the first time the agent OPENS the panel manually — see the
+        // setOpen handler below. This means a new agent sees a clean
+        // dashboard, with Mira waiting in the corner if they want her.
       })
       .catch(() => {
         /* not signed in as agent — float stays inert */
@@ -241,7 +210,6 @@ export default function MiraFloat() {
     return () => {
       cancelled = true;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Persist conversation on every change
@@ -500,11 +468,41 @@ export default function MiraFloat() {
     return -1;
   })();
 
+  // Open + fire greeting on FIRST manual open (only if Mira has never
+  // greeted this agent in this session AND we have agent identity).
+  // Auto-open-on-mount was disabled per user directive — this is the
+  // recovery so the agent still gets a friendly first hello when they
+  // actually click the trigger.
+  const handleManualOpen = () => {
+    setOpen(true);
+    if (!agent || !convId) return;
+    let alreadyGreeted = false;
+    try {
+      alreadyGreeted = sessionStorage.getItem(miraKeys.greetedSession(agent.id)) === 'true';
+    } catch {
+      /* sessionStorage disabled — treat as not greeted */
+    }
+    if (alreadyGreeted) return;
+    try {
+      sessionStorage.setItem(miraKeys.greetedSession(agent.id), 'true');
+    } catch {
+      /* ignore */
+    }
+    let hasMet = false;
+    try {
+      hasMet = localStorage.getItem(miraKeys.hasMet(agent.id)) === 'true';
+    } catch {
+      /* ignore */
+    }
+    const kickoff = hasMet ? GREETING_PROMPT : GREETING_FIRST_PROMPT;
+    void fireGreeting(convId, kickoff, agent);
+  };
+
   // ── Collapsed state — just the avatar button ─────────────────────────
   if (!open) {
     return (
       <button
-        onClick={() => setOpen(true)}
+        onClick={handleManualOpen}
         aria-label="Open Mira"
         style={{
           position: 'fixed',

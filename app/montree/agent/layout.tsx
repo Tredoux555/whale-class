@@ -18,7 +18,7 @@ import AgentNav from '@/components/montree/agent/AgentNav';
 import MiraFloat from '@/components/montree/agent/MiraFloat';
 
 export const metadata: Metadata = {
-  title: 'Agent — Montree',
+  title: 'Ambassador — Montree',
 };
 
 export default function AgentLayout({ children }: { children: React.ReactNode }) {

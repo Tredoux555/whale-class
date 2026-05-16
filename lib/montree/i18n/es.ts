@@ -3827,7 +3827,7 @@ export const es: Record<string, string> = {
 
   // ─── Auto-filled missing keys (from Apr 30 audit) ───
   'landing.nav.library': 'Biblioteca',
-  'landing.nav.forTeachers': 'Para docentes',
+  'landing.nav.forTeachers': 'Sé embajador',
   'landing.nav.login': 'Iniciar sesión',
   'landing.nav.getStarted': 'Comenzar',
   'landing.hero.label': 'Gestión del ambiente Montessori',
@@ -4526,4 +4526,7 @@ export const es: Record<string, string> = {
   'upgrade.feature.tracy_draft.body': 'Tracy redacta la respuesta para la familia con tu voz a partir de tus últimos mensajes. Configura la facturación para desbloquearlo — $7 por estudiante activo por mes, sin contratos.',
   'upgrade.feature.vault_transcribe.title': 'Activar Bóveda de Conversaciones',
   'upgrade.feature.vault_transcribe.body': 'La Bóveda transcribe las reuniones con familias y redacta un resumen privado de tres párrafos que podés releer más tarde. Configura la facturación para desbloquearlo — $7 por estudiante activo por mes, sin contratos.',
+  'landing.hero.evolve': 'Evolucioná tu aula. Evolucioná tu escuela.',
+  'landing.quote.body': 'El juego es el trabajo del niño.',
+  'landing.quote.attribution': 'Maria Montessori',
 };

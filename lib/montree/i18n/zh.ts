@@ -4259,7 +4259,7 @@ export const zh = {
   // ─── Auto-filled missing keys (from Apr 30 audit) ───
   'signup.getMyCode': '开始 →',
   'landing.nav.library': '资源库',
-  'landing.nav.forTeachers': '教师版',
+  'landing.nav.forTeachers': '成为大使',
   'landing.nav.login': '登录',
   'landing.nav.getStarted': '开始使用',
   'landing.hero.label': '蒙特梭利课室管理',
@@ -4958,4 +4958,7 @@ export const zh = {
   'upgrade.feature.tracy_draft.body': 'Tracy 从你的最后消息中以你的声音草拟家长回复。设置结算以解锁它 — 每个活跃学生每月 $7，无合同。',
   'upgrade.feature.vault_transcribe.title': '激活对话保险库',
   'upgrade.feature.vault_transcribe.body': '保险库可以转录家长会议并撰写您稍后可以重新阅读的私密三段落摘要。设置账单以解锁此功能 — 每个在读学生每月 $7，无合同。',
+  'landing.hero.evolve': '让教室进化。让学校进化。',
+  'landing.quote.body': '游戏是儿童的工作。',
+  'landing.quote.attribution': '玛丽亚·蒙特梭利',
 } as const;

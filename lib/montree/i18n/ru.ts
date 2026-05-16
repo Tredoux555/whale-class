@@ -3853,7 +3853,7 @@ export const ru: Record<string, string> = {
 
   // ─── Auto-filled missing keys (from Apr 30 audit) ───
   'landing.nav.library': 'Библиотека',
-  'landing.nav.forTeachers': 'Для педагогов',
+  'landing.nav.forTeachers': 'Стать амбассадором',
   'landing.nav.login': 'Войти',
   'landing.nav.getStarted': 'Начать',
   'landing.hero.label': 'Управление классом Монтессори',
@@ -4552,4 +4552,7 @@ export const ru: Record<string, string> = {
   'upgrade.feature.tracy_draft.body': 'Tracy составляет ответ родителю в вашем голосе на основе ваших последних сообщений. Настройте платежи, чтобы разблокировать — 7 долларов за активного ученика в месяц, без контрактов.',
   'upgrade.feature.vault_transcribe.title': 'Активировать Хранилище переговоров',
   'upgrade.feature.vault_transcribe.body': 'Хранилище записывает встречи с родителями и создаёт приватное резюме из трёх абзацев, которое Вы можете перечитать позже. Установите платёжные реквизиты для разблокировки функции — $7 за активного учащегося в месяц, без контрактов.',
+  'landing.hero.evolve': 'Развивайте свой класс. Развивайте свою школу.',
+  'landing.quote.body': 'Игра — это работа ребёнка.',
+  'landing.quote.attribution': 'Мария Монтессори',
 };

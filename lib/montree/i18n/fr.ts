@@ -3856,7 +3856,7 @@ export const fr: Record<string, string> = {
 
   // ─── Auto-filled missing keys (from Apr 30 audit) ───
   'landing.nav.library': 'Bibliothèque',
-  'landing.nav.forTeachers': 'Pour les enseignants',
+  'landing.nav.forTeachers': 'Devenir ambassadeur',
   'landing.nav.login': 'Connexion',
   'landing.nav.getStarted': 'Commencer',
   'landing.hero.label': 'Gestion de la classe Montessori',
@@ -4555,4 +4555,7 @@ export const fr: Record<string, string> = {
   'upgrade.feature.tracy_draft.body': 'Tracy rédige la réponse parentale à votre voix à partir de vos derniers messages. Configurez la facturation pour le déverrouiller — 7 $ par enfant actif par mois, sans contrat.',
   'upgrade.feature.vault_transcribe.title': 'Activer la Voûte de Conversation',
   'upgrade.feature.vault_transcribe.body': 'La Voûte transcrit les réunions avec les parents et rédige un résumé privé en trois paragraphes que vous pouvez relire ultérieurement. Configurez votre facturation pour l\'activer — 7 $ par enfant actif par mois, sans contrat.',
+  'landing.hero.evolve': 'Faites évoluer votre classe. Faites évoluer votre école.',
+  'landing.quote.body': 'Le jeu est le travail de l\'enfant.',
+  'landing.quote.attribution': 'Maria Montessori',
 };
