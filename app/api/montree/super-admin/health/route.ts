@@ -255,6 +255,21 @@ export async function GET(request: NextRequest) {
           : null,
       };
     });
+    // 🚨 Session 113 V2 Outreach audit MED F-7.8 — flip demo_requests card
+    // to fail when the oldest pending request is older than 30 days. The
+    // existing card only surfaced a 14-day soft signal in the UI without
+    // flipping the overall health flag, so stale leads silently rotted
+    // past two weeks. 14d is still "warning territory" via the oldest
+    // timestamp; 30d is a hard fail — the lead is almost certainly cold.
+    if (demoRequests.result) {
+      const oldest = (demoRequests.result as { oldest_pending: { created_at: string } | null }).oldest_pending;
+      if (oldest?.created_at) {
+        const ageDays = (Date.now() - new Date(oldest.created_at).getTime()) / (24 * 60 * 60 * 1000);
+        if (ageDays > 30) {
+          demoRequests.step.ok = false;
+        }
+      }
+    }
     steps.push(demoRequests.step);
 
     // 9. Cost-model drift — surfaces silently-wrong cost_usd logging from
