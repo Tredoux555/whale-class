@@ -46,19 +46,42 @@ export async function GET(request: NextRequest) {
 
     // 🚨 Language-area filter (Session 113 V2). The presentation slideshow
     // is the LANGUAGE showcase — every other curriculum area is filtered out.
-    // Approach: fetch language-area work IDs for the child's classroom first,
-    // then constrain the media query to media.work_id IN (those ids).
-    // Photos with work_id IS NULL (uncategorized) are excluded by design —
-    // we don't want unidentified photos surfacing during a parent meeting.
     //
-    // Note: the child's classroom is the source of truth for 'which works
-    // count as language'. We use the access.classroomId returned by
-    // verifyChildBelongsToSchool — it's already validated above.
+    // Two-table schema: montree_classroom_curriculum_works.area_id points to
+    // montree_classroom_curriculum_areas.id, which has area_key. So we look
+    // up the language area_id first, then fetch work IDs in that area, then
+    // constrain the photo query to media.work_id IN (those work ids).
+    //
+    // Mirrors the canonical pattern from loadLanguageProgress() in
+    // app/api/montree/reports/language-semester/generate/route.ts.
+    //
+    // Photos with work_id IS NULL (uncategorized / Saved-as-Other / failed
+    // identification) are excluded by design — we don't want unidentified
+    // photos surfacing during a parent meeting.
+    const { data: langArea, error: areaErr } = await supabase
+      .from('montree_classroom_curriculum_areas')
+      .select('id')
+      .eq('classroom_id', access.classroomId)
+      .eq('area_key', 'language')
+      .maybeSingle();
+
+    if (areaErr) {
+      console.error('[present/album] language area lookup error:', areaErr.message);
+      return NextResponse.json({ error: 'Failed to load album' }, { status: 500 });
+    }
+
+    if (!langArea) {
+      // Classroom has no Language area seeded — return empty.
+      const empty = NextResponse.json({ photos: [] });
+      empty.headers.set('Cache-Control', 'private, max-age=30, stale-while-revalidate=120');
+      return empty;
+    }
+
     const { data: languageWorks, error: workErr } = await supabase
       .from('montree_classroom_curriculum_works')
       .select('id')
       .eq('classroom_id', access.classroomId)
-      .eq('area', 'language');
+      .eq('area_id', (langArea as { id: string }).id);
 
     if (workErr) {
       console.error('[present/album] language work lookup error:', workErr.message);
@@ -70,11 +93,9 @@ export async function GET(request: NextRequest) {
     );
 
     if (languageWorkIds.length === 0) {
-      // No language works seeded for this classroom yet — return empty
-      // rather than failing. The picker page will show "no photos yet".
-      const response = NextResponse.json({ photos: [] });
-      response.headers.set('Cache-Control', 'private, max-age=30, stale-while-revalidate=120');
-      return response;
+      const empty = NextResponse.json({ photos: [] });
+      empty.headers.set('Cache-Control', 'private, max-age=30, stale-while-revalidate=120');
+      return empty;
     }
 
     // Pull direct + group photos in parallel, constrained to language work IDs.
