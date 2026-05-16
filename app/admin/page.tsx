@@ -38,6 +38,8 @@ const TOOLS: Tool[] = [
   { id: 'english-guide', title: 'English Guide', href: '/admin/english-guide', icon: '📖', color: 'bg-blue-500', description: 'How to teach' },
   { id: 'reading-framework', title: 'Reading Framework', href: '/admin/reading-framework', icon: '📗', color: 'bg-emerald-600', description: '13 works · 4 shelves · writing first' },
   { id: 'reading-content', title: 'Pink Phase Lessons', href: '/admin/reading-content', icon: '📕', color: 'bg-pink-600', description: 'Word lists · sentences · UFLI L1-53' },
+  { id: 'reading-content-blue', title: 'Blue Phase Lessons', href: '/admin/reading-content-blue', icon: '📘', color: 'bg-blue-600', description: 'VCe · r-controlled · 2-syl · UFLI L54-83' },
+  { id: 'reading-content-green', title: 'Green Phase Lessons', href: '/admin/reading-content-green', icon: '📗', color: 'bg-green-700', description: 'Vowel teams · roots · UFLI L84-128' },
   { id: 'english-setup', title: 'English Setup', href: '/admin/english-setup', icon: '🗄️', color: 'bg-teal-500', description: 'Shelf layout' },
   { id: 'english-progress', title: 'English Progress', href: '/admin/english-progress', icon: '📊', color: 'bg-indigo-500', description: 'Parent reports' },
   { id: 'phonics-planner', title: 'Phonics', href: '/admin/phonics-planner', icon: '🔤', color: 'bg-red-500', description: 'Phonics lessons' },
