@@ -400,14 +400,14 @@ export async function POST(request: NextRequest) {
           const messagesUsedToday = countError ? 0 : (todayCount || 0);
 
           if (messagesUsedToday >= dailyLimit) {
-            const tierName = !isPaid ? 'free trial' : guruTier === 'haiku' ? 'Haiku' : 'Sonnet';
+            const tierName = !isPaid ? 'first month' : guruTier === 'haiku' ? 'Haiku' : 'Sonnet';
             return NextResponse.json({
               success: false,
               error: 'guru_daily_limit_reached',
               messages_used_today: messagesUsedToday,
               daily_limit: dailyLimit,
               message: !isPaid
-                ? `You've used your ${dailyLimit} free messages for today. Come back tomorrow, or subscribe for up to 10 messages per day starting at $5/month.`
+                ? `You've used your ${dailyLimit} messages for today. Come back tomorrow, or upgrade for up to 10 messages per day starting at $5/month.`
                 : `You've used your ${dailyLimit} ${tierName} messages for today. Come back tomorrow — your limit resets at midnight UTC.`,
             }, { status: 429 });
           }
