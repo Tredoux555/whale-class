@@ -75,21 +75,48 @@ export async function POST(request: NextRequest) {
   }
   const contacts = (contactsRaw || []) as ContactRow[];
 
-  // 2. Pull all prior drip sends in one query (idempotency).
-  const { data: priorSends } = await supabase
-    .from('montree_outreach_log')
-    .select('action, metadata, contact_id')
-    .in('action', ['demo_request_drip_day3', 'demo_request_drip_day7', 'demo_request_drip_day14']);
+  // 2. Pull all prior drip sends (idempotency).
+  //
+  // 🚨 Session 113 V2 Outreach audit HIGH F-5.1 — paginated read. The
+  // legacy single SELECT without .range()/.limit() relied on PostgREST's
+  // default 1000-row cap. Once the outreach_log accumulates >1000 drip
+  // rows (~6-12 months at current cadence), the idempotency check
+  // silently truncates and the cron starts re-firing already-sent emails
+  // every day. Paginate explicitly until we drain the table.
   const sentKey = new Set<string>();
-  for (const row of (priorSends || []) as Array<{
-    action: string;
-    metadata: Record<string, unknown> | null;
-    contact_id: string | null;
-  }>) {
-    const cid = row.contact_id || (row.metadata?.contact_id as string | undefined);
-    if (typeof cid === 'string') {
-      sentKey.add(`${cid}::${row.action}`);
+  const PAGE_SIZE = 1000;
+  let offset = 0;
+  // Hard ceiling guards against pathological growth — at >100K log rows
+  // someone is misusing the table and we should alert rather than scan.
+  const MAX_ROWS = 100_000;
+  while (offset < MAX_ROWS) {
+    const { data: page, error: pageErr } = await supabase
+      .from('montree_outreach_log')
+      .select('action, metadata, contact_id')
+      .in('action', ['demo_request_drip_day3', 'demo_request_drip_day7', 'demo_request_drip_day14'])
+      .range(offset, offset + PAGE_SIZE - 1);
+    if (pageErr) {
+      console.error('[demo-request-drip] page read failed at offset', offset, pageErr);
+      break;
     }
+    const rows = (page || []) as Array<{
+      action: string;
+      metadata: Record<string, unknown> | null;
+      contact_id: string | null;
+    }>;
+    for (const row of rows) {
+      const cid = row.contact_id || (row.metadata?.contact_id as string | undefined);
+      if (typeof cid === 'string') {
+        sentKey.add(`${cid}::${row.action}`);
+      }
+    }
+    if (rows.length < PAGE_SIZE) break;
+    offset += PAGE_SIZE;
+  }
+  if (offset >= MAX_ROWS) {
+    console.warn(
+      '[demo-request-drip] outreach_log scan hit MAX_ROWS ceiling — idempotency check may be incomplete. Investigate log retention.'
+    );
   }
 
   const now = Date.now();

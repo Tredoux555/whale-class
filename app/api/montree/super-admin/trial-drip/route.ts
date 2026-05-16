@@ -65,18 +65,40 @@ export async function POST(request: NextRequest) {
   }
   const schools = (schoolsRaw || []) as SchoolRow[];
 
-  // 2. Pull all prior drip sends in one query (idempotency).
-  const { data: priorSends } = await supabase
-    .from('montree_outreach_log')
-    .select('action, metadata')
-    .in('action', ['trial_drip_day7', 'trial_drip_day14', 'trial_drip_day25']);
-  // metadata.school_id is how we keyed each send.
+  // 2. Pull all prior drip sends (idempotency).
+  //
+  // 🚨 Session 113 V2 Outreach audit HIGH F-5.1 — paginated read. The
+  // legacy SELECT without .range()/.limit() relied on PostgREST's default
+  // 1000-row cap. After enough drip rows accumulate the idempotency check
+  // silently truncates and the cron starts re-firing already-sent emails.
   const sentKey = new Set<string>();
-  for (const row of (priorSends || []) as Array<{ action: string; metadata: Record<string, unknown> | null }>) {
-    const sid = row.metadata?.school_id;
-    if (typeof sid === 'string') {
-      sentKey.add(`${sid}::${row.action}`);
+  const PAGE_SIZE = 1000;
+  const MAX_ROWS = 100_000;
+  let offset = 0;
+  while (offset < MAX_ROWS) {
+    const { data: page, error: pageErr } = await supabase
+      .from('montree_outreach_log')
+      .select('action, metadata')
+      .in('action', ['trial_drip_day7', 'trial_drip_day14', 'trial_drip_day25'])
+      .range(offset, offset + PAGE_SIZE - 1);
+    if (pageErr) {
+      console.error('[trial-drip] page read failed at offset', offset, pageErr);
+      break;
     }
+    const rows = (page || []) as Array<{ action: string; metadata: Record<string, unknown> | null }>;
+    for (const row of rows) {
+      const sid = row.metadata?.school_id;
+      if (typeof sid === 'string') {
+        sentKey.add(`${sid}::${row.action}`);
+      }
+    }
+    if (rows.length < PAGE_SIZE) break;
+    offset += PAGE_SIZE;
+  }
+  if (offset >= MAX_ROWS) {
+    console.warn(
+      '[trial-drip] outreach_log scan hit MAX_ROWS ceiling — idempotency check may be incomplete.'
+    );
   }
 
   const now = Date.now();
