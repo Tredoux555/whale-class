@@ -718,6 +718,7 @@ export const ru: Record<string, string> = {
   'gallery.photosDeletedSuccessfully': '{count} фотографий успешно удалено',
   'gallery.deletePhotosError': 'Не удалось удалить фотографии',
   'gallery.untagged': 'Без тегов',
+  'gallery.savedAsOther': 'Сохранено как Другое',
   'gallery.tapToChange': 'нажмите, чтобы изменить',
   'gallery.changeArea': 'Изменить область',
   'gallery.tapToAddDescription': 'Нажмите, чтобы добавить описание...',

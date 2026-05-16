@@ -718,6 +718,7 @@ export const nl: Record<string, string> = {
   'gallery.photosDeletedSuccessfully': '{count} foto\'s succesvol verwijderd',
   'gallery.deletePhotosError': 'Foto\'s verwijderen mislukt',
   'gallery.untagged': 'Zonder label',
+  'gallery.savedAsOther': 'Opgeslagen als Anders',
   'gallery.tapToChange': 'tik om te wijzigen',
   'gallery.changeArea': 'Gebied wijzigen',
   'gallery.tapToAddDescription': 'Tik om een beschrijving toe te voegen...',

@@ -718,6 +718,7 @@ export const ko: Record<string, string> = {
   'gallery.photosDeletedSuccessfully': '{count}장의 사진이 삭제되었습니다',
   'gallery.deletePhotosError': '사진 삭제에 실패했습니다',
   'gallery.untagged': '태그 없음',
+  'gallery.savedAsOther': '기타로 저장',
   'gallery.tapToChange': '탭하여 변경',
   'gallery.changeArea': '영역 변경',
   'gallery.tapToAddDescription': '탭하여 설명을 추가하세요...',

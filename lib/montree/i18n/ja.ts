@@ -718,6 +718,7 @@ export const ja: Record<string, string> = {
   'gallery.photosDeletedSuccessfully': '{count} photos deleted successfully',
   'gallery.deletePhotosError': '写真の削除に失敗しました',
   'gallery.untagged': 'タグなし',
+  'gallery.savedAsOther': 'その他として保存',
   'gallery.tapToChange': 'タップして変更',
   'gallery.changeArea': 'エリアを変更',
   'gallery.tapToAddDescription': '説明を追加するにはタップしてください...',

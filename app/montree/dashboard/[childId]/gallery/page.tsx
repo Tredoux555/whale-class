@@ -30,6 +30,15 @@ const VoiceDictate = dynamic(() => import('@/components/montree/voice/VoiceDicta
 interface GalleryItem extends MontreeMedia {
   area?: string;
   work_name?: string;
+  // sonnet_draft is the photo-pipeline JSONB carrier. For the gallery we only
+  // care about the Other-bucket discriminator from Session 113 V2 (Save as
+  // Other feature). The full schema is documented in the photo-pipeline
+  // audit doc.
+  sonnet_draft?: {
+    is_other?: boolean;
+    other_note?: string | null;
+    other_classified_at?: string | null;
+  } | null;
 }
 
 interface CurriculumWork {
@@ -1008,21 +1017,34 @@ export default function GalleryPage() {
                 <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs" style={{ background: 'rgba(255,255,255,0.20)', color: 'rgba(255,255,255,0.60)' }}>?</div>
               )}
             </button>
-            {/* Tappable work name — opens work picker within current area */}
-            <button
-              onClick={() => openWorkPicker(photo)}
-              className="flex items-center gap-2 flex-1 min-w-0 rounded-lg transition-colors text-left group/tag"
-              style={{ padding: '6px 8px' }}
-              onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = 'rgba(52,211,153,0.08)'; }}
-              onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = 'transparent'; }}
-            >
-              <span className="text-sm truncate flex-1" style={{ fontFamily: '"Inter", sans-serif', fontWeight: 500, color: 'rgba(255,255,255,0.90)' }}>
-                {photo.work_name || t('gallery.untagged')}
-              </span>
-              <span className="text-xs opacity-0 group-hover/tag:opacity-100 transition-opacity" style={{ color: 'rgba(255,255,255,0.35)' }}>
-                {t('gallery.tapToChange')}
-              </span>
-            </button>
+            {/* Tappable work name — opens work picker within current area.
+                Session 113 V2: photos saved as Other (sonnet_draft.is_other=true)
+                show a distinct 📌 chip in muted slate rather than the standard
+                emerald-on-hover treatment, so teachers can tell at a glance
+                which photos are non-curriculum. Tap still opens the picker
+                in case the teacher wants to move it to a real work. */}
+            {(() => {
+              const isOther = photo.sonnet_draft?.is_other === true;
+              return (
+                <button
+                  onClick={() => openWorkPicker(photo)}
+                  className="flex items-center gap-2 flex-1 min-w-0 rounded-lg transition-colors text-left group/tag"
+                  style={{ padding: '6px 8px' }}
+                  onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = isOther ? 'rgba(148,163,184,0.10)' : 'rgba(52,211,153,0.08)'; }}
+                  onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = 'transparent'; }}
+                >
+                  {isOther && <span style={{ fontSize: 13 }}>📌</span>}
+                  <span className="text-sm truncate flex-1" style={{ fontFamily: '"Inter", sans-serif', fontWeight: 500, color: isOther ? 'rgba(203,213,225,0.85)' : 'rgba(255,255,255,0.90)', fontStyle: isOther ? 'italic' : 'normal' }}>
+                    {isOther
+                      ? (t('gallery.savedAsOther') || 'Saved as Other')
+                      : (photo.work_name || t('gallery.untagged'))}
+                  </span>
+                  <span className="text-xs opacity-0 group-hover/tag:opacity-100 transition-opacity" style={{ color: 'rgba(255,255,255,0.35)' }}>
+                    {t('gallery.tapToChange')}
+                  </span>
+                </button>
+              );
+            })()}
           </div>
 
           {/* Caption editing */}

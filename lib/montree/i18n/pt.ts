@@ -718,6 +718,7 @@ export const pt: Record<string, string> = {
   'gallery.photosDeletedSuccessfully': '{count} fotos excluídas com sucesso',
   'gallery.deletePhotosError': 'Falha ao excluir fotos',
   'gallery.untagged': 'Sem marcação',
+  'gallery.savedAsOther': 'Salvo como Outro',
   'gallery.tapToChange': 'toque para alterar',
   'gallery.changeArea': 'Alterar área',
   'gallery.tapToAddDescription': 'Toque para adicionar uma descrição...',
