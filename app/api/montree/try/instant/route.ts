@@ -82,6 +82,111 @@ async function resolveReferralCode(
 }
 
 /**
+ * 🚨 Session 113 V2 — Agent dashboard audit CRITICAL fix.
+ *
+ * Atomically redeem a referral code AND stamp the school's referral
+ * linkage, race-guarded against concurrent signups using the same code.
+ *
+ * The pre-fix pattern had a TOCTOU race: two concurrent /try/instant
+ * calls would both pass resolveReferralCode's status='pending' check,
+ * both create schools, both stamp founding_teacher_id. Only one of the
+ * two .update({status:'redeemed'}) writes would persist (last-writer-
+ * wins), leaving the OTHER school as an orphan — revenue share active
+ * but no canonical FK back from the code → broken reconciliation +
+ * unclear attribution.
+ *
+ * The new pattern:
+ *   1. AWAIT a conditional UPDATE on the code with
+ *      `.eq('status', 'pending')` — Postgres-level atomicity. Only the
+ *      first signup wins; the second signup's UPDATE matches zero rows.
+ *   2. AWAIT (not fire-and-forget) so we know the outcome before
+ *      responding to the user. School stamp is gated on race-won.
+ *   3. If race lost: log loudly, return false, and let the caller skip
+ *      the school stamp. The school still exists but stays as a regular
+ *      (non-referral) trial — same outcome as if no code had been used.
+ *   4. If school stamp fails AFTER redeem won: try to roll back the code
+ *      to 'pending' so the caller can re-issue or another signup can
+ *      use it. The roll-back conditional filters on
+ *      `.eq('redeemed_by_school_id', schoolId)` so we don't un-redeem
+ *      someone else's claim.
+ *
+ * Slight perf hit (one extra round-trip-await on the redemption path)
+ * vs the old fire-and-forget. Acceptable — redemption is the canonical
+ * money-flow setup step and correctness matters here.
+ */
+async function redeemReferralCode(
+  supabase: ReturnType<typeof getSupabase>,
+  referral: ReferralContext,
+  schoolId: string,
+  context: string
+): Promise<boolean> {
+  // Step 1: atomic conditional UPDATE on the code. Returns the updated
+  // row if our UPDATE was the first to hit; returns empty if another
+  // signup beat us to it.
+  const { data: redeemed, error: redeemErr } = await supabase
+    .from('montree_referral_codes')
+    .update({
+      status: 'redeemed',
+      redeemed_by_school_id: schoolId,
+      redeemed_at: new Date().toISOString(),
+    })
+    .eq('id', referral.codeId)
+    .eq('status', 'pending')
+    .select('id');
+
+  if (redeemErr) {
+    console.error(`[Trial] referral code redeem failed (${context}):`, redeemErr.message);
+    return false;
+  }
+
+  if (!redeemed || redeemed.length === 0) {
+    // Race lost — another concurrent signup redeemed this code first.
+    // The school we just created stays as a regular trial (no founding_
+    // teacher_id, no revenue share). The user gets a working trial; the
+    // agent doesn't get attribution. Acceptable outcome under contention.
+    console.warn(
+      `[Trial] referral code RACE LOST (${context}) — code ${referral.code} was redeemed by another concurrent signup. School ${schoolId} will NOT carry revenue share.`
+    );
+    return false;
+  }
+
+  // Step 2: race won — stamp the school's referral linkage.
+  const { error: schoolErr } = await supabase
+    .from('montree_schools')
+    .update({
+      founding_teacher_id: referral.agentId,
+      revenue_share_pct: referral.revenueSharePct,
+      revenue_share_active: true,
+      referral_code_id: referral.codeId,
+      referral_code_used: referral.code,
+    })
+    .eq('id', schoolId);
+
+  if (schoolErr) {
+    // School stamp failed AFTER redeem won — try to roll back the code
+    // so the inconsistent state doesn't persist. The conditional
+    // .eq('redeemed_by_school_id', schoolId) ensures we don't trample
+    // another signup's claim if somehow they got in between.
+    console.error(
+      `[Trial] school stamp failed AFTER redeem won (${context}):`,
+      schoolErr.message,
+      '— attempting code roll-back.'
+    );
+    await supabase
+      .from('montree_referral_codes')
+      .update({ status: 'pending', redeemed_by_school_id: null, redeemed_at: null })
+      .eq('id', referral.codeId)
+      .eq('redeemed_by_school_id', schoolId)
+      .then(({ error }) => {
+        if (error) console.error(`[Trial] code roll-back also failed (${context}):`, error.message);
+      });
+    return false;
+  }
+
+  return true;
+}
+
+/**
  * Seed full Montessori curriculum for a new classroom
  * Non-blocking: failures here don't prevent trial creation
  */
@@ -339,28 +444,14 @@ export async function POST(req: NextRequest) {
       steps.push('4-homeschool-parent-ok:' + teacher.id);
 
       // ── Stamp the school's referral linkage (homeschool branch) ──
+      // 🚨 Session 113 V2 audit CRITICAL fix: race-guarded redemption.
+      // Awaited so we know the outcome before responding. See
+      // redeemReferralCode() for the race contract.
       if (referral) {
-        supabase
-          .from('montree_schools')
-          .update({
-            founding_teacher_id: referral.agentId,
-            revenue_share_pct: referral.revenueSharePct,
-            revenue_share_active: true,
-            referral_code_id: referral.codeId,
-            referral_code_used: referral.code,
-          })
-          .eq('id', school.id)
-          .then(({ error }) => {
-            if (error) console.error('[Trial] referral school update failed (homeschool):', error.message);
-          });
-        supabase
-          .from('montree_referral_codes')
-          .update({ status: 'redeemed', redeemed_by_school_id: school.id, redeemed_at: new Date().toISOString() })
-          .eq('id', referral.codeId)
-          .then(({ error }) => {
-            if (error) console.error('[Trial] referral code redeem failed (homeschool):', error.message);
-          });
-        steps.push(`4a-referral-redeemed:${referral.code}`);
+        const redeemed = await redeemReferralCode(supabase, referral, school.id, 'homeschool');
+        steps.push(redeemed
+          ? `4a-referral-redeemed:${referral.code}`
+          : `4a-referral-race-lost:${referral.code}`);
       }
 
       // Lead record (non-blocking)
@@ -448,27 +539,11 @@ export async function POST(req: NextRequest) {
       // Without a code, the new teacher becomes the founding teacher (legacy
       // self-serve flow from Session 72).
       if (referral) {
-        supabase
-          .from('montree_schools')
-          .update({
-            founding_teacher_id: referral.agentId,
-            revenue_share_pct: referral.revenueSharePct,
-            revenue_share_active: true,
-            referral_code_id: referral.codeId,
-            referral_code_used: referral.code,
-          })
-          .eq('id', school.id)
-          .then(({ error }) => {
-            if (error) console.error('[Trial] referral school update failed:', error.message);
-          });
-        supabase
-          .from('montree_referral_codes')
-          .update({ status: 'redeemed', redeemed_by_school_id: school.id, redeemed_at: new Date().toISOString() })
-          .eq('id', referral.codeId)
-          .then(({ error }) => {
-            if (error) console.error('[Trial] referral code redeem failed:', error.message);
-          });
-        steps.push(`4a-referral-redeemed:${referral.code}`);
+        // 🚨 Session 113 V2 audit CRITICAL fix: race-guarded redemption.
+        const redeemed = await redeemReferralCode(supabase, referral, school.id, 'teacher');
+        steps.push(redeemed
+          ? `4a-referral-redeemed:${referral.code}`
+          : `4a-referral-race-lost:${referral.code}`);
       } else {
         supabase
           .from('montree_schools')
@@ -577,27 +652,11 @@ export async function POST(req: NextRequest) {
       // used, the agent becomes founding_teacher_id and the school is locked
       // to that revenue share %.
       if (referral) {
-        supabase
-          .from('montree_schools')
-          .update({
-            founding_teacher_id: referral.agentId,
-            revenue_share_pct: referral.revenueSharePct,
-            revenue_share_active: true,
-            referral_code_id: referral.codeId,
-            referral_code_used: referral.code,
-          })
-          .eq('id', school.id)
-          .then(({ error }) => {
-            if (error) console.error('[Trial] referral school update failed (principal):', error.message);
-          });
-        supabase
-          .from('montree_referral_codes')
-          .update({ status: 'redeemed', redeemed_by_school_id: school.id, redeemed_at: new Date().toISOString() })
-          .eq('id', referral.codeId)
-          .then(({ error }) => {
-            if (error) console.error('[Trial] referral code redeem failed (principal):', error.message);
-          });
-        steps.push(`4a-referral-redeemed:${referral.code}`);
+        // 🚨 Session 113 V2 audit CRITICAL fix: race-guarded redemption.
+        const redeemed = await redeemReferralCode(supabase, referral, school.id, 'principal');
+        steps.push(redeemed
+          ? `4a-referral-redeemed:${referral.code}`
+          : `4a-referral-race-lost:${referral.code}`);
       }
 
       // Lead record (non-blocking)
