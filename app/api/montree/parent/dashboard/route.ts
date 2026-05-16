@@ -172,9 +172,15 @@ export async function GET(request: NextRequest) {
         .from('montree_media')
         .select('id, storage_path, work_id, captured_at, thumbnail_path')
         .eq('child_id', childId)
-        // Exclude pending_review photos — not yet teacher-approved, must not
-        // surface to parents. NULL-safe via .or() (Postgres .neq excludes NULL).
-        .or('identification_status.is.null,identification_status.neq.pending_review')
+        // 🚨 Session 113 V2 Parent audit F-3.3 + F-3.4 + F-3.5 — only return:
+        //   1. media_type = 'photo' (no videos / documents in the photo strip)
+        //   2. teacher_confirmed = true (NOT the over-permissive
+        //      identification_status filter, which let haiku_drafted +
+        //      sonnet_drafted + failed rows through to parents)
+        //   3. parent_visible != false (default-true with explicit-hide override)
+        .eq('media_type', 'photo')
+        .eq('teacher_confirmed', true)
+        .neq('parent_visible', false)
         .order('captured_at', { ascending: false })
         .limit(9),
     ]);
