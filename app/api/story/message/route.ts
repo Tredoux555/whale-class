@@ -11,7 +11,7 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { message, author } = body;
+    const { message } = body;
 
     if (!message || typeof message !== 'string' || !message.trim()) {
       return NextResponse.json({ error: 'Message required' }, { status: 400 });
@@ -23,7 +23,12 @@ export async function POST(req: NextRequest) {
 
     const supabase = getSupabase();
     const weekStart = getCurrentWeekStart();
-    const msgAuthor = author || username;
+    // 🚨 Session 113 V2 Story audit F-1.1 CRITICAL — author MUST come from the
+    // verified JWT, NEVER from the request body. The legacy body.author let
+    // any logged-in parent forge { author: 'Tredoux' } and broadcast under
+    // any name. Server-side username from verifyUserToken() is the only
+    // identity that gets written to the broadcast row.
+    const msgAuthor = username;
     const trimmedMsg = message.trim();
     const expiresAt = new Date();
     expiresAt.setHours(expiresAt.getHours() + 24);

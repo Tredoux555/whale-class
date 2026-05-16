@@ -101,7 +101,12 @@ export async function POST(req: NextRequest) {
       const valid = await bcrypt.compare(password, users[0].password_hash);
 
       if (valid) {
-        const token = await new SignJWT({ username })
+        // 🚨 Session 113 V2 Story audit F-1.4 — stamp role: 'user' so the
+        // user-token verifier can eventually positive-require it. For now
+        // the verifier negative-checks role !== 'admin' for backward
+        // compat with legacy no-role tokens; tighten to positive-require
+        // once existing tokens have rolled over (24h TTL).
+        const token = await new SignJWT({ username, role: 'user' })
           .setProtectedHeader({ alg: 'HS256' })
           .setIssuedAt()
           .setExpirationTime('24h')
