@@ -14,6 +14,9 @@
 //   - teacher_confirmed = true        (only photos the teacher has signed off)
 //   - media_type = 'photo'            (no videos in the slideshow)
 //   - parent_visible != false         (respect any hide-from-parents flag)
+//   - 🚨 work area = 'language'       (Session 113 V2 user directive — this
+//                                      parent night is the Language showcase,
+//                                      only show Language-area works)
 //   - deduped by media.id
 //
 // Auth: standard verifySchoolRequest + verifyChildBelongsToSchool.
@@ -41,17 +44,51 @@ export async function GET(request: NextRequest) {
 
     const supabase = getSupabase();
 
-    // Pull direct + group photos in parallel.
+    // 🚨 Language-area filter (Session 113 V2). The presentation slideshow
+    // is the LANGUAGE showcase — every other curriculum area is filtered out.
+    // Approach: fetch language-area work IDs for the child's classroom first,
+    // then constrain the media query to media.work_id IN (those ids).
+    // Photos with work_id IS NULL (uncategorized) are excluded by design —
+    // we don't want unidentified photos surfacing during a parent meeting.
+    //
+    // Note: the child's classroom is the source of truth for 'which works
+    // count as language'. We use the access.classroomId returned by
+    // verifyChildBelongsToSchool — it's already validated above.
+    const { data: languageWorks, error: workErr } = await supabase
+      .from('montree_classroom_curriculum_works')
+      .select('id')
+      .eq('classroom_id', access.classroomId)
+      .eq('area', 'language');
+
+    if (workErr) {
+      console.error('[present/album] language work lookup error:', workErr.message);
+      return NextResponse.json({ error: 'Failed to load album' }, { status: 500 });
+    }
+
+    const languageWorkIds = (languageWorks || []).map(
+      (w: { id: string }) => w.id
+    );
+
+    if (languageWorkIds.length === 0) {
+      // No language works seeded for this classroom yet — return empty
+      // rather than failing. The picker page will show "no photos yet".
+      const response = NextResponse.json({ photos: [] });
+      response.headers.set('Cache-Control', 'private, max-age=30, stale-while-revalidate=120');
+      return response;
+    }
+
+    // Pull direct + group photos in parallel, constrained to language work IDs.
     const [
       { data: directPhotos, error: directError },
       { data: groupLinks, error: linkError },
     ] = await Promise.all([
       supabase
         .from('montree_media')
-        .select('id, storage_path, captured_at, created_at, parent_visible, media_type, teacher_confirmed')
+        .select('id, storage_path, captured_at, created_at, parent_visible, media_type, teacher_confirmed, work_id')
         .eq('child_id', childId)
         .eq('media_type', 'photo')
         .eq('teacher_confirmed', true)
+        .in('work_id', languageWorkIds)
         .order('captured_at', { ascending: true })
         .limit(500),
       supabase
@@ -72,10 +109,11 @@ export async function GET(request: NextRequest) {
     if (groupMediaIds.length > 0) {
       const { data, error: groupError } = await supabase
         .from('montree_media')
-        .select('id, storage_path, captured_at, created_at, parent_visible, media_type, teacher_confirmed')
+        .select('id, storage_path, captured_at, created_at, parent_visible, media_type, teacher_confirmed, work_id')
         .in('id', groupMediaIds)
         .eq('media_type', 'photo')
-        .eq('teacher_confirmed', true);
+        .eq('teacher_confirmed', true)
+        .in('work_id', languageWorkIds);
       if (groupError) {
         console.error('[present/album] group fetch error:', groupError.message);
       } else {
