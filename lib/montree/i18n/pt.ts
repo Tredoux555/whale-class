@@ -3856,7 +3856,7 @@ export const pt: Record<string, string> = {
 
   // ─── Auto-filled missing keys (from Apr 30 audit) ───
   'landing.nav.library': 'Biblioteca',
-  'landing.nav.forTeachers': 'Para educadores',
+  'landing.nav.forTeachers': 'Seja embaixador',
   'landing.nav.login': 'Fazer login',
   'landing.nav.getStarted': 'Começar',
   'landing.hero.label': 'Gestão de sala Montessori',
@@ -4555,4 +4555,7 @@ export const pt: Record<string, string> = {
   'upgrade.feature.tracy_draft.body': 'Tracy redige a resposta para os pais com sua voz a partir de suas últimas mensagens. Configure a cobrança para desbloqueá-lo — R$ 7 por aluno ativo por mês, sem contratos.',
   'upgrade.feature.vault_transcribe.title': 'Ativar Cofre de Conversas',
   'upgrade.feature.vault_transcribe.body': 'O Cofre transcreve reuniões com responsáveis e escreve um resumo privado em três parágrafos que o senhor/a senhora pode relê-lo posteriormente. Configure o pagamento para desbloqueá-lo — R$ 7 por estudante ativo por mês, sem contratos.',
+  'landing.hero.evolve': 'Evolua sua sala. Evolua sua escola.',
+  'landing.quote.body': 'O brincar é o trabalho da criança.',
+  'landing.quote.attribution': 'Maria Montessori',
 };

@@ -3853,7 +3853,7 @@ export const uk: Record<string, string> = {
 
   // ─── Auto-filled missing keys (from Apr 30 audit) ───
   'landing.nav.library': 'Бібліотека',
-  'landing.nav.forTeachers': 'Для педагогів',
+  'landing.nav.forTeachers': 'Стати амбасадором',
   'landing.nav.login': 'Увійти',
   'landing.nav.getStarted': 'Почати роботу',
   'landing.hero.label': 'Керування Монтессорі класом',
@@ -4552,4 +4552,7 @@ export const uk: Record<string, string> = {
   'upgrade.feature.tracy_draft.body': 'Tracy складає відповідь батькам вашим голосом з ваших останніх повідомлень. Налаштуйте розрахунки, щоб розблокувати — $7 на активного учня на місяць, без контрактів.',
   'upgrade.feature.vault_transcribe.title': 'Активувати архів розмов',
   'upgrade.feature.vault_transcribe.body': 'Архів записує батьківські зустрічі та складає приватне резюме з трьох абзаців, яке ви можете переглянути пізніше. Налаштуйте білінг, щоб розблокувати — 7 доларів за активного учня на місяць, без контрактів.',
+  'landing.hero.evolve': 'Розвивайте свій клас. Розвивайте свою школу.',
+  'landing.quote.body': 'Гра — це робота дитини.',
+  'landing.quote.attribution': 'Марія Монтессорі',
 };

@@ -3856,7 +3856,7 @@ export const nl: Record<string, string> = {
 
   // ─── Auto-filled missing keys (from Apr 30 audit) ───
   'landing.nav.library': 'Bibliotheek',
-  'landing.nav.forTeachers': 'Voor onderwijzers',
+  'landing.nav.forTeachers': 'Word ambassadeur',
   'landing.nav.login': 'Inloggen',
   'landing.nav.getStarted': 'Aan de slag',
   'landing.hero.label': 'Montessori-klassenmanagement',
@@ -4555,4 +4555,7 @@ export const nl: Record<string, string> = {
   'upgrade.feature.tracy_draft.body': 'Tracy concepteert het ouderantwoord in uw stem uit uw laatste berichten. Stel facturering in om het te ontgrendelen — €7 per actieve leerling per maand, geen contracten.',
   'upgrade.feature.vault_transcribe.title': 'Activeer Gespreksarchief',
   'upgrade.feature.vault_transcribe.body': 'Het Gespreksarchief transcribeert oudergesprekken en schrijft een privé samenvatting van drie alinea\'s die u later kunt herlezen. Stel facturering in om het uit te schakelen — €7 per actieve leerling per maand, geen contracten.',
+  'landing.hero.evolve': 'Laat je klas groeien. Laat je school groeien.',
+  'landing.quote.body': 'Spelen is het werk van het kind.',
+  'landing.quote.attribution': 'Maria Montessori',
 };

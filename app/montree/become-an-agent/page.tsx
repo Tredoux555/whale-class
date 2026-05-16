@@ -430,7 +430,7 @@ export default function BecomeAnAgentPage() {
         {/* Hero */}
         <section className="ba-hero">
           <div ref={addReveal} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-            <span className="ba-label" style={{ marginBottom: 30 }}>Montree agent programme</span>
+            <span className="ba-label" style={{ marginBottom: 30 }}>Montree ambassador programme</span>
             <h1>Bring Montree to schools.<br />Earn from every one.</h1>
             <p className="ba-hero-sub">
               You introduce schools to Montree. When they subscribe, 20% of every monthly payment comes back to you — for as long as they stay.
@@ -492,14 +492,14 @@ export default function BecomeAnAgentPage() {
             <div className="ba-step-num">2</div>
             <div>
               <h3>Get reviewed</h3>
-              <p>Within a few days we'll be in touch. If we're a good fit, you'll receive your personal agent code and a short onboarding doc.</p>
+              <p>Within a few days we'll be in touch. If we're a good fit, you'll receive your personal ambassador code and a short onboarding doc.</p>
             </div>
           </div>
           <div className="ba-step">
             <div className="ba-step-num">3</div>
             <div>
               <h3>Pitch your way</h3>
-              <p>Generate referral codes one per pitch from your agent dashboard. Share them with schools as part of your normal conversations. You decide who, how, and when.</p>
+              <p>Generate referral codes one per pitch from your ambassador dashboard. Share them with schools as part of your normal conversations. You decide who, how, and when.</p>
             </div>
           </div>
           <div className="ba-step">
@@ -519,7 +519,7 @@ export default function BecomeAnAgentPage() {
               { strong: '20% of the school\'s monthly subscription.', rest: ' Locked at the moment you bring them in. Per-school rate stays the same even if our pricing changes later.' },
               { strong: 'No cap, no expiry.', rest: ' Bring 50 schools, earn from all 50. As long as they keep paying, you keep earning.' },
               { strong: 'Paid monthly to your bank.', rest: ' Stripe Connect Express handles the payout. Your bank, your tax setup — we never see those details.' },
-              { strong: 'One agent per school.', rest: ' The first agent whose code is redeemed at signup is permanently linked to that school. Revenue share doesn\'t fork.' },
+              { strong: 'One ambassador per school.', rest: ' The first ambassador whose code is redeemed at signup is permanently linked to that school. Revenue share doesn\'t fork.' },
               { strong: 'No targets, no quotas.', rest: ' Pitch at your own pace. We\'re looking for genuine introductions, not high-volume affiliate marketing.' },
             ].map((rule, i) => (
               <div className="ba-rule" key={i}>
@@ -547,7 +547,7 @@ export default function BecomeAnAgentPage() {
             <div className="ba-form-success">
               <h3>Application received.</h3>
               <p>
-                Thanks for applying. I read every application personally — you'll hear back from me within a few days. If we're a good fit, I'll send your agent code and walk you through getting set up.
+                Thanks for applying. I read every application personally — you'll hear back from me within a few days. If we're a good fit, I'll send your ambassador code and walk you through getting set up.
               </p>
               <p style={{ marginTop: 18, fontSize: '0.8125rem', color: 'rgba(255,255,255,0.4)' }}>
                 — Montree
@@ -625,7 +625,7 @@ export default function BecomeAnAgentPage() {
               </div>
 
               <div style={{ marginBottom: 16 }}>
-                <label className="ba-form-label" htmlFor="ba-pitch">Why you'd be a good agent *</label>
+                <label className="ba-form-label" htmlFor="ba-pitch">Why you'd be a good ambassador *</label>
                 <textarea
                   id="ba-pitch"
                   className="ba-form-textarea"

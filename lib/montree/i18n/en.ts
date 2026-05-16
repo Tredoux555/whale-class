@@ -4107,11 +4107,12 @@ export const en = {
 
   // Landing page (montree.xyz/montree)
   'landing.nav.library': 'Library',
-  'landing.nav.forTeachers': 'Become an agent',
+  'landing.nav.forTeachers': 'Become an ambassador',
   'landing.nav.login': 'Log in',
   'landing.nav.getStarted': 'Get started',
   'landing.hero.label': 'Montessori classroom management',
   'landing.hero.kicker': 'Change your life',
+  'landing.hero.evolve': 'Evolve your classroom. Evolve your school.',
   'landing.hero.title': 'The magic of Montree.',
   'landing.hero.subtitle': 'A teacher takes a photo. Montree does the rest.',
   'landing.hero.cta': 'Try it',
@@ -4128,6 +4129,8 @@ export const en = {
   'landing.closing.title': 'Experience the magic.',
   'landing.closing.body': 'One month free. Then $7 per child, per month. One plan. No tiers. No contracts.',
   'landing.closing.cta': 'Start your free trial',
+  'landing.quote.body': 'Play is the work of the child.',
+  'landing.quote.attribution': 'Maria Montessori',
 
   // Classroom Overview
   'classroomOverview.shelfTab': 'Shelf Overview',

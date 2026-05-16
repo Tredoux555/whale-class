@@ -214,6 +214,17 @@ export default function MontreeLanding() {
           color: rgba(255,255,255,0.38);
           letter-spacing: 0.04em;
         }
+        .m-hero-evolve {
+          font-family: var(--font-lora), Georgia, serif;
+          font-style: italic;
+          font-weight: 400;
+          font-size: clamp(16px, 1.9vw, 22px);
+          letter-spacing: 0.01em;
+          color: rgba(255,255,255,0.82);
+          margin: 0 0 36px 0;
+          max-width: 32ch;
+          line-height: 1.45;
+        }
         .m-hero-kicker {
           font-family: var(--font-lora), Georgia, serif;
           font-style: italic;
@@ -307,6 +318,31 @@ export default function MontreeLanding() {
           margin: 0 auto 40px;
         }
 
+        /* ── Bottom quote ── */
+        .m-bottom-quote {
+          padding: 80px 32px 96px;
+          text-align: center;
+          border-top: 1px solid rgba(255,255,255,0.04);
+        }
+        .m-bottom-quote-body {
+          font-family: var(--font-lora), Georgia, serif;
+          font-style: italic;
+          font-weight: 400;
+          font-size: clamp(16px, 2vw, 22px);
+          letter-spacing: 0.01em;
+          color: rgba(255,255,255,0.55);
+          margin: 0 auto 12px;
+          max-width: 36ch;
+          line-height: 1.6;
+        }
+        .m-bottom-quote-attr {
+          font-size: 0.8rem;
+          color: rgba(255,255,255,0.32);
+          letter-spacing: 0.06em;
+          text-transform: uppercase;
+          margin: 0;
+        }
+
         /* ── Footer ── */
         .m-footer {
           padding: 56px 32px 64px;
@@ -346,6 +382,7 @@ export default function MontreeLanding() {
           .m-editorial { padding: 40px 24px 100px; }
           .m-block { padding: 40px 0; }
           .m-closing { padding: 110px 24px 110px; }
+          .m-bottom-quote { padding: 56px 24px 72px; }
           .m-footer { padding: 40px 24px 48px; }
         }
       `}</style>
@@ -397,13 +434,14 @@ export default function MontreeLanding() {
         </div>
       </nav>
 
-      {/* ── HERO ── Clean and clear: title + CTA, nothing else. ── */}
+      {/* ── HERO ──
+          Session 113 V2: "Evolve your classroom. Evolve your school." now leads
+          the page per user directive. The Maria Montessori quote moved out of
+          the hero and lives in its own quiet block at the bottom of the page.
+      */}
       <section className="m-hero">
         <div ref={addReveal} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-          <p className="m-hero-quote">
-            &ldquo;Play is the work of the child.&rdquo;
-            <span className="m-hero-quote-attr">— Maria Montessori</span>
-          </p>
+          <p className="m-hero-evolve">{t('landing.hero.evolve')}</p>
           <h1>{t('landing.hero.title')}</h1>
           <Link className="m-pill m-pill-lg" href="/montree/login-select?signup=true">
             {t('landing.hero.cta')}
@@ -446,6 +484,15 @@ export default function MontreeLanding() {
         <a className="m-pill m-pill-lg" href="/montree/login-select?signup=true">
           {t('landing.closing.cta')}
         </a>
+      </section>
+
+      {/* ── BOTTOM QUOTE ──
+          Maria Montessori quote moved here from the hero per Session 113 V2
+          user directive. A quiet closing thought before the footer.
+      */}
+      <section className="m-bottom-quote" aria-label="Maria Montessori quote" ref={addReveal}>
+        <p className="m-bottom-quote-body">&ldquo;{t('landing.quote.body')}&rdquo;</p>
+        <p className="m-bottom-quote-attr">— {t('landing.quote.attribution')}</p>
       </section>
 
       {/* ── FOOTER ── */}

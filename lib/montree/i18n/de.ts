@@ -3856,7 +3856,7 @@ export const de: Record<string, string> = {
 
   // ─── Auto-filled missing keys (from Apr 30 audit) ───
   'landing.nav.library': 'Bibliothek',
-  'landing.nav.forTeachers': 'Für Lehrkräfte',
+  'landing.nav.forTeachers': 'Botschafter werden',
   'landing.nav.login': 'Anmelden',
   'landing.nav.getStarted': 'Jetzt starten',
   'landing.hero.label': 'Montessori-Klassenzimmerverwaltung',
@@ -4555,4 +4555,7 @@ export const de: Record<string, string> = {
   'upgrade.feature.tracy_draft.body': 'Tracy entwirft die Eltenantwort in Ihrer Stimme aus Ihren letzten Nachrichten. Richten Sie die Abrechnung ein, um ihn freizuschalten – 7 € pro aktivem Kind pro Monat, ohne Verträge.',
   'upgrade.feature.vault_transcribe.title': 'Gesprächstresor aktivieren',
   'upgrade.feature.vault_transcribe.body': 'Der Tresor transkribiert Elterngespräche und verfasst eine private dreiteilige Zusammenfassung, die Sie später erneut lesen können. Richten Sie die Abrechnung ein, um diese Funktion freizuschalten — 7 € pro aktivem Kind pro Monat, keine Verträge erforderlich.',
+  'landing.hero.evolve': 'Entwickle dein Klassenzimmer. Entwickle deine Schule.',
+  'landing.quote.body': 'Spiel ist die Arbeit des Kindes.',
+  'landing.quote.attribution': 'Maria Montessori',
 };
