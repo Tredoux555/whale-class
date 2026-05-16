@@ -1575,6 +1575,13 @@ async function handleAlipayInvoicePaid(
   }
 
   // Per-school timeline row (paid).
+  // 🚨 Session 113 V2 Finance audit F-Misc-2: added period_start +
+  // period_end so the alipay rail's billing_history row has the same
+  // column completeness as the subscription rail's row (handleInvoicePaid
+  // at line ~800). Without these, the per-school invoice timeline UI
+  // shows blanks for alipay invoices.
+  const alipayPeriodStart = invoice.lines?.data?.[0]?.period?.start;
+  const alipayPeriodEnd = invoice.lines?.data?.[0]?.period?.end;
   await supabase.from('montree_billing_history').insert({
     school_id: schoolRow.id,
     stripe_invoice_id: invoice.id,
@@ -1583,6 +1590,8 @@ async function handleAlipayInvoicePaid(
     status: 'paid',
     description: invoice.description || `Alipay/WeChat payment (${cadenceFromMetadata})`,
     invoice_pdf_url: invoice.invoice_pdf,
+    period_start: alipayPeriodStart ? new Date(alipayPeriodStart * 1000).toISOString() : null,
+    period_end: alipayPeriodEnd ? new Date(alipayPeriodEnd * 1000).toISOString() : null,
     quantity,
   }).then(({ error }) => {
     if (error && (error as { code?: string }).code !== '23505') {
