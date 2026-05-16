@@ -17,8 +17,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Message required' }, { status: 400 });
     }
 
-    if (message.length > 50000) {
-      return NextResponse.json({ error: 'Message too long (max 50,000 characters)' }, { status: 400 });
+    // 🚨 Session 113 V2 Story audit F-4.3 — 5,000-char cap. Parents'
+    // letter-decode UX is a single paragraph; 50K was wildly out of bounds.
+    if (message.length > 5000) {
+      return NextResponse.json({ error: 'Message too long (max 5,000 characters)' }, { status: 400 });
     }
 
     const supabase = getSupabase();

@@ -28,18 +28,35 @@ export function encryptMessage(message: string): string {
   }
 }
 
+// 🚨 Session 113 V2 Story audit F-3.2 — sentinel returned on decrypt failure.
+// The legacy behaviour returned the original ciphertext verbatim, which the
+// frontend then rendered as gibberish ('gcm:abc...:def...:0123...') in
+// message bubbles. Mid-rotation of MESSAGE_ENCRYPTION_KEY would silently
+// corrupt every old message. Sentinel makes the failure mode visible.
+export const DECRYPT_FAILURE_SENTINEL = '[Message could not be decrypted]';
+
 export function decryptMessage(encrypted: string): string {
   try {
-    // Handle non-encrypted messages
+    // 🚨 Session 113 V2 Story audit F-3.4 — strict prefix check. The legacy
+    // "no colon → return verbatim" path created a covert plaintext channel
+    // (any DB row with a colonless string would render as plaintext). All
+    // legitimate messages are either GCM-prefixed or legacy-CBC (iv:data
+    // format). Anything else is treated as a decrypt failure.
+    if (!encrypted || typeof encrypted !== 'string') {
+      return DECRYPT_FAILURE_SENTINEL;
+    }
     if (!encrypted.includes(':')) {
-      return encrypted;
+      // No format marker → not a recognised ciphertext. Treat as failure
+      // rather than silently passing through.
+      console.warn('[MessageEncryption] decrypt received non-prefixed value — treating as failure');
+      return DECRYPT_FAILURE_SENTINEL;
     }
 
     // Phase 9: Detect format — GCM (gcm:iv:tag:data) vs legacy CBC (iv:data)
     if (encrypted.startsWith('gcm:')) {
       const parts = encrypted.split(':');
       // parts[0] = 'gcm', parts[1] = iv, parts[2] = authTag, parts[3] = ciphertext
-      if (parts.length !== 4) return encrypted;
+      if (parts.length !== 4) return DECRYPT_FAILURE_SENTINEL;
       const iv = Buffer.from(parts[1], 'hex');
       const authTag = Buffer.from(parts[2], 'hex');
       const ciphertext = parts[3];
@@ -54,7 +71,7 @@ export function decryptMessage(encrypted: string): string {
     // Legacy CBC format: <iv>:<encrypted>
     const [ivHex, encryptedHex] = encrypted.split(':');
     if (!ivHex || !encryptedHex) {
-      return encrypted;
+      return DECRYPT_FAILURE_SENTINEL;
     }
 
     const iv = Buffer.from(ivHex, 'hex');
@@ -65,7 +82,6 @@ export function decryptMessage(encrypted: string): string {
     return decrypted;
   } catch (error) {
     console.error('[MessageEncryption] Decryption error:', error);
-    // Return original if decryption fails
-    return encrypted;
+    return DECRYPT_FAILURE_SENTINEL;
   }
 }

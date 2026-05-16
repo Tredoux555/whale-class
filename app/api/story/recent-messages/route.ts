@@ -40,11 +40,18 @@ export async function GET(req: NextRequest) {
 
     const supabase = getSupabase();
 
-    // Get recent non-expired messages from admins/teachers
+    // Get recent non-expired messages from admins/teachers.
+    //
+    // 🚨 Session 113 V2 Story audit F-3.3 — defense in depth with an
+    // expires_at check on top of the is_expired flag. is_expired is set
+    // by a separate cron path; if the cron is lagging, expired messages
+    // could appear in this endpoint. Belt-and-braces.
+    const nowIso = new Date().toISOString();
     const { data: rows, error } = await supabase
       .from('story_message_history')
       .select('*')
       .eq('is_expired', false)
+      .or(`expires_at.is.null,expires_at.gt.${nowIso}`)
       .order('created_at', { ascending: false })
       .limit(limit);
 
