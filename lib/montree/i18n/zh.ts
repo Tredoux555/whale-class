@@ -838,6 +838,7 @@ export const zh = {
   'gallery.photosDeletedSuccessfully': '{count}张照片已成功删除',
   'gallery.deletePhotosError': '删除照片失败',
   'gallery.untagged': '未标记',
+  'gallery.savedAsOther': '存为其他',
   'gallery.tapToChange': '点击更改',
   'gallery.changeArea': '更改领域',
   'gallery.tapToAddDescription': '点击添加描述...',

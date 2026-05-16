@@ -718,6 +718,7 @@ export const uk: Record<string, string> = {
   'gallery.photosDeletedSuccessfully': '{count} фото успішно видалено',
   'gallery.deletePhotosError': 'Не вдалося видалити фото',
   'gallery.untagged': 'Без позначок',
+  'gallery.savedAsOther': 'Збережено як Інше',
   'gallery.tapToChange': 'торкніться для змін',
   'gallery.changeArea': 'Змінити область',
   'gallery.tapToAddDescription': 'Торкніться, щоб додати опис...',
