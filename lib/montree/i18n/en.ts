@@ -4989,8 +4989,8 @@ export const en = {
   'agentThread.networkError': 'Network error — please try again',
 
   // parentCodes.* — teacher-facing parent code page
-  'parentCodes.title': 'Parent codes',
-  'parentCodes.subtitle': "One code per child. Share it with the parent — they enter it at montree.xyz/montree/parent to see their child's updates. The principal can see all codes for the school too.",
+  'parentCodes.title': 'Invite parents',
+  'parentCodes.subtitle': "Generate a code for each child and share it with the parent. They enter it at montree.xyz/montree/parent to start receiving updates. The principal sees every code in the school too.",
   'parentCodes.print': 'Print',
   'parentCodes.noChildrenYet': 'No children in your classroom yet. Add students from the dashboard first.',
   'parentCodes.parentPortalAccess': 'Parent portal access',

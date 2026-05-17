@@ -12,7 +12,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, Copy, RefreshCw, Sparkles, Mail, Printer, Check } from 'lucide-react';
+import { ArrowLeft, Copy, RefreshCw, Sparkles, Mail, Printer, Check, Zap } from 'lucide-react';
 import { useI18n } from '@/lib/montree/i18n';
 import LanguageToggle from '@/components/montree/LanguageToggle';
 import { toast, Toaster } from 'sonner';
@@ -58,6 +58,10 @@ export default function TeacherParentCodesPage() {
   const [loading, setLoading] = useState(true);
   const [busyChildId, setBusyChildId] = useState<string | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  // Bulk-generate state — fires POST per-child for any child without an
+  // active code. The POST is idempotent (returns existing if active), so
+  // running it over every child is safe + cheap.
+  const [bulkGenerating, setBulkGenerating] = useState(false);
 
   const fetchCodes = useCallback(async () => {
     try {
@@ -143,6 +147,62 @@ export default function TeacherParentCodesPage() {
     },
     [fetchCodes, t]
   );
+
+  // Bulk-generate: fire POST per-child for each row that doesn't already
+  // have a code. POST is idempotent, so this is safe to re-run. We use
+  // small concurrency (4) to avoid hammering the API.
+  const handleGenerateAll = useCallback(async () => {
+    const missing = codes.filter((c) => !c.code);
+    if (missing.length === 0) return;
+
+    if (typeof window !== 'undefined') {
+      const ok = window.confirm(
+        `Generate codes for ${missing.length} ${missing.length === 1 ? 'child' : 'children'}? You can then share each one with the parent below.`
+      );
+      if (!ok) return;
+    }
+
+    setBulkGenerating(true);
+    const CONCURRENCY = 4;
+    let successCount = 0;
+    let failCount = 0;
+
+    // Walk through children in chunks so we don't blow open 20 parallel
+    // requests at once. POST is idempotent so a slow chunk is fine.
+    for (let i = 0; i < missing.length; i += CONCURRENCY) {
+      const chunk = missing.slice(i, i + CONCURRENCY);
+      const results = await Promise.all(
+        chunk.map(async (row) => {
+          try {
+            const res = await fetch('/api/montree/dashboard/parent-codes', {
+              method: 'POST',
+              credentials: 'include',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ child_id: row.child_id }),
+            });
+            return res.ok;
+          } catch {
+            return false;
+          }
+        })
+      );
+      for (const ok of results) {
+        if (ok) successCount++;
+        else failCount++;
+      }
+    }
+
+    await fetchCodes();
+    setBulkGenerating(false);
+
+    if (failCount === 0) {
+      toast.success(`Generated ${successCount} ${successCount === 1 ? 'code' : 'codes'}`);
+    } else {
+      toast.error(
+        `${successCount} generated, ${failCount} failed. Try the remaining ones individually.`
+      );
+    }
+  }, [codes, fetchCodes]);
 
   const handleCopy = useCallback(async (text: string, id: string) => {
     try {
@@ -251,7 +311,38 @@ export default function TeacherParentCodesPage() {
             <ArrowLeft size={16} strokeWidth={1.75} />
             {t('common.back')}
           </Link>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            {/* Bulk-generate — count of children without an active code.
+                Hidden when every child already has one. */}
+            {(() => {
+              const missingCount = codes.filter((c) => !c.code).length;
+              if (missingCount === 0 || codes.length === 0) return null;
+              return (
+                <button
+                  onClick={handleGenerateAll}
+                  disabled={bulkGenerating}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 6,
+                    padding: '8px 14px',
+                    borderRadius: 10,
+                    background: T.emerald,
+                    border: 'none',
+                    color: '#0a1a0f',
+                    fontSize: 12,
+                    fontWeight: 600,
+                    cursor: bulkGenerating ? 'not-allowed' : 'pointer',
+                    opacity: bulkGenerating ? 0.6 : 1,
+                  }}
+                >
+                  <Zap size={14} strokeWidth={2} />
+                  {bulkGenerating
+                    ? `Generating ${missingCount}…`
+                    : `Generate all (${missingCount})`}
+                </button>
+              );
+            })()}
             <button
               onClick={() => window.print()}
               style={{

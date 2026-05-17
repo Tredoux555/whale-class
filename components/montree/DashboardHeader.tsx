@@ -605,10 +605,13 @@ function DashboardHeader() {
                     onClick={() => { setShowMoreMenu(false); router.push('/montree/dashboard/messages'); }}
                   />
 
-                  {/* Parent codes — teacher onboards parents from their classroom */}
+                  {/* Invite parents — teacher onboards parents from their classroom.
+                      The page itself is at /montree/dashboard/parent-codes and
+                      handles per-child code generation, bulk generate, and the
+                      neat email/mailto handoff for one-by-one sharing. */}
                   <MenuRow
                     icon={KeyRound}
-                    label="Parent codes"
+                    label="Invite parents"
                     active={activePage === 'parent-codes'}
                     onClick={() => { setShowMoreMenu(false); router.push('/montree/dashboard/parent-codes'); }}
                   />
