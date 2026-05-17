@@ -13,6 +13,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, Copy, RefreshCw, Sparkles, Mail, Printer, Check, Zap } from 'lucide-react';
+import QRCode from 'qrcode';
 import { useI18n } from '@/lib/montree/i18n';
 import LanguageToggle from '@/components/montree/LanguageToggle';
 import { toast, Toaster } from 'sonner';
@@ -62,6 +63,11 @@ export default function TeacherParentCodesPage() {
   // active code. The POST is idempotent (returns existing if active), so
   // running it over every child is safe + cheap.
   const [bulkGenerating, setBulkGenerating] = useState(false);
+  // Client-side QR data URLs keyed by parent_url. We render QR codes via
+  // the `qrcode` npm package instead of an external service so the
+  // network request never leaves montree.xyz — avoids the strict CSP
+  // img-src directive that blocks api.qrserver.com.
+  const [qrDataUrls, setQrDataUrls] = useState<Record<string, string>>({});
 
   const fetchCodes = useCallback(async () => {
     try {
@@ -93,6 +99,44 @@ export default function TeacherParentCodesPage() {
   useEffect(() => {
     fetchCodes();
   }, [fetchCodes]);
+
+  // Generate QR data URLs client-side whenever the code list changes.
+  // Done in parallel via Promise.all — 20 children × ~10ms per QR = trivial.
+  // The map is keyed by parent_url so re-renders don't re-generate the
+  // ones we already have.
+  useEffect(() => {
+    let cancelled = false;
+    const urls = codes.map((c) => c.parent_url).filter((u): u is string => !!u);
+    if (urls.length === 0) return;
+    const todo = urls.filter((u) => !qrDataUrls[u]);
+    if (todo.length === 0) return;
+
+    Promise.all(
+      todo.map((url) =>
+        QRCode.toDataURL(url, {
+          width: 240,
+          margin: 2,
+          errorCorrectionLevel: 'M',
+          color: { dark: '#000000', light: '#ffffff' },
+        })
+          .then((dataUrl) => ({ url, dataUrl }))
+          .catch(() => ({ url, dataUrl: '' }))
+      )
+    ).then((results) => {
+      if (cancelled) return;
+      setQrDataUrls((prev) => {
+        const next = { ...prev };
+        for (const { url, dataUrl } of results) {
+          if (dataUrl) next[url] = dataUrl;
+        }
+        return next;
+      });
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [codes, qrDataUrls]);
 
   const handleCreateCode = useCallback(
     async (childId: string) => {
@@ -312,34 +356,43 @@ export default function TeacherParentCodesPage() {
             {t('common.back')}
           </Link>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            {/* Bulk-generate — count of children without an active code.
-                Hidden when every child already has one. */}
-            {(() => {
+            {/* Bulk-generate — always visible per user request: "If the
+                parents need their codes they need their codes. They lose
+                them." When 0 missing, button still shows but disabled with
+                a clear "All codes ready" label. When N missing, primary
+                emerald CTA with the count. */}
+            {codes.length > 0 && (() => {
               const missingCount = codes.filter((c) => !c.code).length;
-              if (missingCount === 0 || codes.length === 0) return null;
+              const allReady = missingCount === 0;
               return (
                 <button
-                  onClick={handleGenerateAll}
-                  disabled={bulkGenerating}
+                  onClick={allReady ? undefined : handleGenerateAll}
+                  disabled={bulkGenerating || allReady}
                   style={{
                     display: 'inline-flex',
                     alignItems: 'center',
                     gap: 6,
                     padding: '8px 14px',
                     borderRadius: 10,
-                    background: T.emerald,
-                    border: 'none',
-                    color: '#0a1a0f',
+                    background: allReady ? T.card : T.emerald,
+                    border: allReady ? T.cardBorder : 'none',
+                    color: allReady ? T.textSecondary : '#0a1a0f',
                     fontSize: 12,
                     fontWeight: 600,
-                    cursor: bulkGenerating ? 'not-allowed' : 'pointer',
+                    cursor: bulkGenerating || allReady ? 'default' : 'pointer',
                     opacity: bulkGenerating ? 0.6 : 1,
                   }}
                 >
-                  <Zap size={14} strokeWidth={2} />
+                  {allReady ? (
+                    <Check size={14} strokeWidth={2} />
+                  ) : (
+                    <Zap size={14} strokeWidth={2} />
+                  )}
                   {bulkGenerating
                     ? `Generating ${missingCount}…`
-                    : `Generate all (${missingCount})`}
+                    : allReady
+                    ? `All ${codes.length} codes ready`
+                    : `Generate codes (${missingCount})`}
                 </button>
               );
             })()}
@@ -479,10 +532,14 @@ export default function TeacherParentCodesPage() {
                         </p>
                       </div>
 
-                      {row.qr_url && (
+                      {row.parent_url && qrDataUrls[row.parent_url] && (
                         <div className="print:block" style={{ display: 'none', justifyContent: 'center' }}>
-                          {/* eslint-disable-next-line @next/next/no-img-element -- QR served by qrserver.com, native <img> is correct */}
-                          <img src={row.qr_url} alt={`QR ${row.child_name}`} style={{ width: 140, height: 140 }} />
+                          {/* eslint-disable-next-line @next/next/no-img-element -- QR is a client-generated data URL */}
+                          <img
+                            src={qrDataUrls[row.parent_url]}
+                            alt={`QR ${row.child_name}`}
+                            style={{ width: 140, height: 140 }}
+                          />
                         </div>
                       )}
 
