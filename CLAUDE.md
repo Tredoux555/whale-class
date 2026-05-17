@@ -202,6 +202,43 @@ Wave 1 sends bounced for these addresses. None of these are flagged as `bounced`
 
 ## RECENT STATUS (May 17, 2026)
 
+### 🔥 Session 117 (continued, late evening) — Mira messaging tools SHIPPED (Phase 4.7 carry-over closed)
+
+**1 commit pushed to main: `a10f2070`.** Closes the Phase 4.7 carry-over from Session 108's Agent Dashboard Plan. Mira can now post into the agent's thread with Tredoux on her behalf. Infrastructure was already built (agent_super_admin messaging routes from Session 108) — this session wires three tools onto Mira's surface so she can use the channel natively inside the chief-of-staff flow.
+
+**New tools (lib/montree/mira/tool-definitions.ts):**
+- `list_my_threads_with_tredoux` — read up to 20 most-recent threads with last-message preview + last-sender + unread state.
+- `start_thread_with_tredoux` — write a NEW thread + first message. Fires ONLY when the agent has explicitly asked.
+- `reply_in_thread` — append a message to an existing thread. Requires thread_id (resolved via list).
+
+**Dispatch (lib/montree/mira/tool-executor.ts):**
+- All 3 tools self-scope by `deps.agentId`. Cross-pollination filters on every write: `created_by_id`, `sender_id`, `participant_id = agentId`. Defense in depth on reply: agent must be a participant on the thread AND `thread_type='agent_super_admin'`.
+- `ai_drafted=false` forced on every message (Session 84 architectural rule — agent never claims AI authorship on her own outgoing messages, even when Mira composed them).
+- `school_id=NULL` on thread create (allowed only for `agent_super_admin` per migration 204 gated CHECK).
+- Participants-insert failure rolls back the just-created thread.
+- `last_message_at` on thread + `last_read_at` on agent's participant row bumped fire-and-forget on every send.
+
+**System prompt (lib/montree/mira/system-prompt.ts):**
+- New "When she asks you to message Tredoux" section. Strict posture: fire ONLY when the agent has explicitly asked. Never volunteer. Write the body in HER voice, no greeting padding, no sign-off. After firing, confirm briefly ("Sent. Subject: ...") and stop.
+
+**Deps plumbing:** `MiraToolDeps` now carries optional `agentName` for `sender_name`. SSE route at `/api/montree/agent/mira/route.ts` passes the agentName already resolved for the system prompt. Falls back to a DB lookup inside the tool if not provided.
+
+**Audit:**
+- Lint clean (`--max-warnings=0`, exit 0) on all 4 changed files.
+- TypeScript clean (no mira/agent-mira errors).
+- Cross-pollination verified by grep — every write filters by agentId.
+- Drive-by: agora-token route doc-comment updated to reference `AppointmentsCalendar` instead of `AvailabilityEditor` (Session 117 calendar redesign carry-over).
+
+**🚨 Architectural rules locked in (extend prior session rules #171-177):**
+
+178. **Mira tools that write to messaging tables MUST pull `agentId` from `deps.agentId`, never from tool input.** The SSE route sets `deps.agentId = auth.userId` after `verifySchoolRequest` + `auth.role === 'agent'` gate. An agent's tool input never controls her own identity — this is the cross-pollination guarantee.
+179. **`ai_drafted=false` is FORCED on every Mira-written message.** Same Session 84 rule that applies to the HTTP agent messages route. Mira composed the message; the message is the agent's. AI attribution would be misleading.
+180. **`school_id=NULL` is allowed ONLY for `thread_type='agent_super_admin'`.** Migration 204's gated CHECK enforces this. Every Mira write to `montree_message_threads` passes both values.
+181. **Tool description + system prompt MUST agree on when to call.** When introducing a new write tool, the tool's description AND the system prompt's posture section both say "fire ONLY when X". One without the other is a footgun (Session 87 architectural lesson: when descriptions disagree, the tool description wins because that's what Opus reads at decision moment).
+182. **Phase 4.8 (Tracy super-admin scope) is recommended as a separate `/montree/super-admin/tracy` route**, not bolted onto the principal Tracy. The principal Tracy is gated to a single school's data; super-admin Tracy scans across all agents. Different identity, different gating, different system prompt. This is the natural counterpart to Phase 4.7 and the next obvious build for the agent ↔ super-admin loop.
+
+---
+
 ### 🔥 Session 117 (continued) — Calendar-first appointments UI SHIPPED (May 17, 2026, evening — extended)
 
 **2 commits pushed to main: `d6c70752`, `36c41e0c`.** Closes the #2 priority from the original Session 117 handoff. The proposal in Section D ("Calendar-first UI redesign") is now live in production-ready code.
