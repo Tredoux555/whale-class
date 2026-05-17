@@ -1,5 +1,13 @@
 // Shared Supabase client for story routes
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import type { NextRequest, NextResponse } from 'next/server';
+
+// 🚨 Session 113 V2 Story audit F-1.2 — httpOnly cookie name.
+// Mirrors the MONTREE_AUTH_COOKIE pattern from lib/montree/server-auth.ts.
+// Once Phase B lands, this is the SOLE path that carries the user JWT —
+// the URL no longer contains it.
+export const STORY_AUTH_COOKIE = 'story-auth';
+export const STORY_AUTH_COOKIE_MAX_AGE_SECONDS = 24 * 60 * 60; // 24h — matches JWT TTL
 
 let supabaseInstance: SupabaseClient | null = null;
 
@@ -71,6 +79,76 @@ export function getSessionToken(authHeader: string | null): string | null {
   if (!authHeader) return null;
   const token = authHeader.replace('Bearer ', '');
   return token.substring(0, 50);
+}
+
+// 🚨 Session 113 V2 Story audit F-1.2 — cookie-aware user token verifier.
+//
+// The original `verifyUserToken(authHeader)` only reads from the
+// `Authorization: Bearer …` header, which currently comes from the JWT
+// in the URL path (`/story/<full-JWT>`). Phase A: introduce a request-
+// scoped verifier that ALSO accepts the token from the new httpOnly
+// `story-auth` cookie. This unblocks Phase B (URL becomes static,
+// JWT only lives in the cookie).
+//
+// Header takes precedence so existing legacy URL-bookmark sessions keep
+// working unchanged. Cookie is the fallback. Both pathways apply the
+// same role gate (REJECT admins) as verifyUserToken.
+export async function verifyUserTokenFromRequest(
+  req: NextRequest
+): Promise<string | null> {
+  const authHeader = req.headers.get('authorization');
+  if (authHeader) {
+    const fromHeader = await verifyUserToken(authHeader);
+    if (fromHeader) return fromHeader;
+  }
+  const cookieToken = req.cookies.get(STORY_AUTH_COOKIE)?.value;
+  if (!cookieToken) return null;
+  // Wrap as a Bearer-formatted string so we can reuse verifyUserToken
+  // verbatim (role gate, jose verify, exp enforcement).
+  return verifyUserToken(`Bearer ${cookieToken}`);
+}
+
+// Get the underlying token string from request (header first, cookie fallback).
+// Used by login_logs writers that need the first 50 chars for tracking.
+export function getSessionTokenFromRequest(req: NextRequest): string | null {
+  const authHeader = req.headers.get('authorization');
+  if (authHeader) {
+    const fromHeader = getSessionToken(authHeader);
+    if (fromHeader) return fromHeader;
+  }
+  const cookieToken = req.cookies.get(STORY_AUTH_COOKIE)?.value;
+  if (!cookieToken) return null;
+  return cookieToken.substring(0, 50);
+}
+
+// Set the story-auth httpOnly cookie on a NextResponse. Mirrors the
+// setMontreeAuthCookie pattern from lib/montree/server-auth.ts.
+//
+// Posture: httpOnly (blocks XSS), secure in prod, sameSite=lax (allows
+// the normal cross-page navigation flow but blocks cross-site CSRF on
+// state-changing POSTs unless explicitly opted in).
+export function setStoryAuthCookie(res: NextResponse, token: string): void {
+  res.cookies.set({
+    name: STORY_AUTH_COOKIE,
+    value: token,
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    path: '/',
+    maxAge: STORY_AUTH_COOKIE_MAX_AGE_SECONDS,
+  });
+}
+
+export function clearStoryAuthCookie(res: NextResponse): void {
+  res.cookies.set({
+    name: STORY_AUTH_COOKIE,
+    value: '',
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    path: '/',
+    maxAge: 0,
+  });
 }
 
 // 🚨 Session 113 V2 Story audit F-2.1 — vault token verifier.

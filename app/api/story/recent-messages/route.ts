@@ -2,35 +2,18 @@
 // GET last N messages for parent view
 
 import { NextRequest, NextResponse } from 'next/server';
-import { jwtVerify } from 'jose';
 import { getSupabase } from '@/lib/supabase-client';
 import { decryptMessage } from '@/lib/message-encryption';
 import { effectiveMessageType } from '@/lib/story/document-detect';
-
-function getJWTSecret(): Uint8Array {
-  const secret = process.env.STORY_JWT_SECRET;
-  if (!secret) throw new Error('STORY_JWT_SECRET not set');
-  return new TextEncoder().encode(secret);
-}
-
-// Phase 7: Accept token from Authorization header or HttpOnly cookie
-async function verifyToken(authHeader: string | null, cookieToken?: string | null): Promise<string | null> {
-  const token = authHeader ? authHeader.replace('Bearer ', '') : (cookieToken || null);
-  if (!token) return null;
-  try {
-    const { payload } = await jwtVerify(token, getJWTSecret());
-    return payload.username as string;
-  } catch {
-    return null;
-  }
-}
+import { verifyUserTokenFromRequest } from '@/lib/story-db';
 
 export async function GET(req: NextRequest) {
   try {
-    const username = await verifyToken(
-      req.headers.get('authorization'),
-      req.cookies.get('story-admin-token')?.value
-    );
+    // 🚨 Session 113 V2 F-1.2 — canonical role-gated user-token verifier.
+    // Replaces a local verifyToken that wasn't role-gated and read the
+    // wrong cookie. verifyUserTokenFromRequest reads the Authorization
+    // header first, then the new story-auth cookie; rejects admin tokens.
+    const username = await verifyUserTokenFromRequest(req);
     if (!username) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }

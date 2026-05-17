@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getSupabase, verifyUserToken, getCurrentWeekStart } from '@/lib/story-db';
+import { getSupabase, verifyUserTokenFromRequest, getCurrentWeekStart } from '@/lib/story-db';
 import { encryptMessage, decryptMessage } from '@/lib/message-encryption';
 
 export async function POST(req: NextRequest) {
   try {
-    const authHeader = req.headers.get('authorization');
-    const username = await verifyUserToken(authHeader);
+    // 🚨 Session 113 V2 F-1.2 — header first, story-auth cookie fallback.
+    const username = await verifyUserTokenFromRequest(req);
     if (!username) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
@@ -77,7 +77,8 @@ export async function POST(req: NextRequest) {
 
 export async function GET(req: NextRequest) {
   try {
-    const username = await verifyUserToken(req.headers.get('authorization'));
+    // 🚨 Session 113 V2 F-1.2 — header first, story-auth cookie fallback.
+    const username = await verifyUserTokenFromRequest(req);
     if (!username) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
