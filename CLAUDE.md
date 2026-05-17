@@ -202,6 +202,50 @@ Wave 1 sends bounced for these addresses. None of these are flagged as `bounced`
 
 ## RECENT STATUS (May 17, 2026)
 
+### 🔥 Session 117 (continued) — Calendar-first appointments UI SHIPPED (May 17, 2026, evening — extended)
+
+**2 commits pushed to main: `d6c70752`, `36c41e0c`.** Closes the #2 priority from the original Session 117 handoff. The proposal in Section D ("Calendar-first UI redesign") is now live in production-ready code.
+
+**What shipped:**
+- NEW `components/montree/appointments/AppointmentsCalendar.tsx` (~1,100 lines) — single-file component, dark-forest theme, inline styles, mobile-first.
+  - Month grid 6×7 with 44pt+ tap-target day cells.
+  - Per-day markers: emerald dot (booking), gold dot (time away), subtle dot (open).
+  - Selected-day detail panel below the grid renders bookings inline with the existing **Join video call** CTA (Agora or Jitsi) + **Show prior conversations** toggle. Phase 116.3 killer feature reachable in one tap from any day.
+  - "Add" popover: **Open this weekday every week** / **I'm away this day**.
+  - Recurring availability + Time away as collapsed accordions (admin views).
+  - "Today" jump pill — visible only when not viewing the current month.
+  - Mobile auto-scroll-to-detail-panel on day tap (< 768px viewport, deferred one frame via `requestAnimationFrame`).
+- WIRED into both `/montree/dashboard/appointments` (teacher) and `/montree/admin/appointments` (principal). Sidebar + More-menu labels: **Appointments → Calendar**.
+- `AvailabilityEditor.tsx` left on disk (hide-don't-delete per rule #56).
+
+**🚨 Word swaps locked in (rule #177):**
+- *Weekly availability* → *Open every week on…*
+- *Add window* → *Add open slot*
+- *One-off blackouts* → *Time away*
+- *Add blackout* → *Mark time away*
+- *Upcoming bookings* → *What's on your calendar*
+
+**🚨 Architectural fix caught during audit:** BookingRow was defined as a nested function inside `AppointmentsCalendar`, which would have force-remounted every booking row on every parent state change (React sees a new component type each render). Extracted to module scope before commit. Locked in as architectural rule going forward: sub-components that close over module-scope-only refs should live at module scope, never nest inside the parent component.
+
+**i18n DEFERRED.** The appointments surface (parent appointments page + legacy AvailabilityEditor + the new calendar) is already English-only across the board with zero `appointments.*` keys in any locale file. Adding i18n for just the new calendar would create an inconsistent surface — that's its own sweep. Flagged for follow-up.
+
+**Cross-pollination intact.** Every fetch goes to the existing 3 backend routes (`/api/montree/appointments/availability`, `/api/montree/appointments/availability/blackouts`, `/api/montree/appointments`) which gate by `auth.role + auth.userId + auth.schoolId` server-side via `verifySchoolRequest()`. No client-side identity passing.
+
+**Stage A Agora activation — still pending Tredoux** (operational, ~5 min). Migration 223 + flag flip + 2-device test per `docs/handoffs/AGORA_STAGE_A_QUICKSTART.md`. The calendar surface is now ready to test Agora end-to-end inside the new humanized UI — exactly what was wanted before activating.
+
+**Session 114 meeting-notes carry-over actually shipped:** The "wire parent_visible toggle to post into parent thread" item flagged as "the natural finisher" in Session 114 was already closed between Sessions 114 and 117. Both `app/api/montree/dashboard/conversations/[id]/route.ts` AND `app/api/montree/admin/meeting-notes/[id]/route.ts` PATCH routes call `shareMeetingNoteToThread()` from `lib/montree/meeting-notes/share-to-thread.ts` when `parent_visible` flips true. UI on both sides surfaces "Shared with parent" / "Private to you". The CLAUDE.md carry-over note was stale.
+
+**🚨 Next session priorities (ordered):**
+
+1. **Finish Stage A Agora activation** — paste migration 223 SQL + flag flip + 2-device end-to-end test inside the new calendar UI. ~5 min.
+2. **Stage B (recording + AI briefings) activation** — operational only after Stage A confirmed working. Requires credit card on Agora + Cloud Recording enable + Supabase Storage bucket + 4 more Railway env vars + flip `video_recording` flag.
+3. **Appointments i18n sweep** — translate the entire appointments surface (parent + staff + calendar) across 12 locales. ~30 new keys × 12 locales via Haiku batch. Half-day focused work.
+4. **Carry-over outreach** — FAMM Argentina + Cambridge Montessori Global + others (see Active Reply Threads block).
+5. **Mira → Tracy tool extension** (Session 84 + 85 architectural carry-over).
+6. **Multilingual sweep** (Session 75 carry-over).
+
+---
+
 ### 🔥 Session 117 — Phase 116.2 + 116.3 ship + Stage A Agora activation in flight + calendar-first UI proposal (May 17, 2026, late afternoon → evening)
 
 **6 commits pushed to main this session.** Two phases of the school ecosystem ship + Agora native video infrastructure + setup playbook + carry-over migration cleanup + a UX redesign proposal at session end.
