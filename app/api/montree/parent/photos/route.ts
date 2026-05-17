@@ -100,7 +100,7 @@ export async function GET(request: NextRequest) {
       total: count || 0,
       hasMore: (count || 0) > offset + limit
     });
-    response.headers.set('Cache-Control', 'private, max-age=60, stale-while-revalidate=120');
+    response.headers.set('Cache-Control', 'private, no-store');
     return response;
 
   } catch (error) {

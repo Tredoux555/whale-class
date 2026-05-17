@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
     }
 
     const response = NextResponse.json({ children: children || [] });
-    response.headers.set('Cache-Control', 'private, max-age=120, stale-while-revalidate=300');
+    response.headers.set('Cache-Control', 'private, no-store');
     return response;
   } catch (error: unknown) {
     console.error('Get children error:', error);

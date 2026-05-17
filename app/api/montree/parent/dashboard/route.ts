@@ -286,7 +286,7 @@ export async function GET(request: NextRequest) {
       reports,
       recentMedia,
     });
-    response.headers.set('Cache-Control', 'private, max-age=60, stale-while-revalidate=120');
+    response.headers.set('Cache-Control', 'private, no-store');
     return response;
     
   } catch (error) {
