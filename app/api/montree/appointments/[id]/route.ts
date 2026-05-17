@@ -21,15 +21,16 @@ import type { StaffRole } from '@/lib/montree/appointments/types';
 export const maxDuration = 30;
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+// Includes optional columns from 222 (video_url) + 223 (provider,
+// recording_enabled). LEGACY strips all three.
 const APPT_COLS =
-  'id, school_id, classroom_id, child_id, parent_id, event_kind, scheduled_start, scheduled_end, duration_minutes, status, cancelled_reason, cancelled_by_role, cancelled_at, intake_subject, intake_body, location, thread_id, shared_to_thread_at, video_url, created_at, updated_at';
-// Migration-pending fallback for the video_url column added by 222.
+  'id, school_id, classroom_id, child_id, parent_id, event_kind, scheduled_start, scheduled_end, duration_minutes, status, cancelled_reason, cancelled_by_role, cancelled_at, intake_subject, intake_body, location, thread_id, shared_to_thread_at, video_url, provider, recording_enabled, created_at, updated_at';
 const APPT_COLS_LEGACY =
   'id, school_id, classroom_id, child_id, parent_id, event_kind, scheduled_start, scheduled_end, duration_minutes, status, cancelled_reason, cancelled_by_role, cancelled_at, intake_subject, intake_body, location, thread_id, shared_to_thread_at, created_at, updated_at';
 
 function isVideoUrlColumnMissing(err: { code?: string; message?: string } | null | undefined): boolean {
   if (!err) return false;
-  return err.code === '42703' && /video_url/i.test(err.message || '');
+  return err.code === '42703' && /video_url|provider|recording_enabled/i.test(err.message || '');
 }
 
 function isStaff(role: string): role is 'teacher' | 'principal' {

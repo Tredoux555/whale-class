@@ -18,16 +18,16 @@ import { shareAppointmentToThread } from '@/lib/montree/appointments/share-to-th
 export const maxDuration = 30;
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+// Includes optional columns from 222 (video_url) + 223 (provider,
+// recording_enabled). All three fall back to LEGACY when missing.
 const APPT_COLS =
-  'id, school_id, classroom_id, child_id, parent_id, event_kind, scheduled_start, scheduled_end, duration_minutes, status, cancelled_reason, cancelled_by_role, cancelled_at, intake_subject, intake_body, location, thread_id, shared_to_thread_at, ical_token, video_url, created_at, updated_at';
-// Migration-pending fallback for the video_url column added by 222.
-// Stays in lockstep with APPT_COLS minus `video_url`.
+  'id, school_id, classroom_id, child_id, parent_id, event_kind, scheduled_start, scheduled_end, duration_minutes, status, cancelled_reason, cancelled_by_role, cancelled_at, intake_subject, intake_body, location, thread_id, shared_to_thread_at, ical_token, video_url, provider, recording_enabled, created_at, updated_at';
 const APPT_COLS_LEGACY =
   'id, school_id, classroom_id, child_id, parent_id, event_kind, scheduled_start, scheduled_end, duration_minutes, status, cancelled_reason, cancelled_by_role, cancelled_at, intake_subject, intake_body, location, thread_id, shared_to_thread_at, ical_token, created_at, updated_at';
 
 function isVideoUrlColumnMissing(err: { code?: string; message?: string } | null | undefined): boolean {
   if (!err) return false;
-  return err.code === '42703' && /video_url/i.test(err.message || '');
+  return err.code === '42703' && /video_url|provider|recording_enabled/i.test(err.message || '');
 }
 
 export async function GET(
@@ -232,6 +232,13 @@ export async function PATCH(
   // (legacy fetch fallback path) AND the column MAY not exist yet.
   const currentVideoUrl =
     (current as { video_url?: string | null }).video_url ?? null;
+  // Phase 116.3 — provider + recording_enabled also carry forward across
+  // reschedule. Same room, same recording posture. Conditionally spread
+  // because either may be null when read via the LEGACY column path.
+  const currentProvider =
+    (current as { provider?: 'jitsi' | 'agora' | null }).provider ?? null;
+  const currentRecordingEnabled =
+    (current as { recording_enabled?: boolean | null }).recording_enabled ?? null;
   const newInsertPayload: Record<string, unknown> = {
     school_id: parent.schoolId,
     classroom_id: current.classroom_id,
@@ -252,6 +259,12 @@ export async function PATCH(
   if (currentVideoUrl !== null) {
     newInsertPayload.video_url = currentVideoUrl;
   }
+  if (currentProvider !== null) {
+    newInsertPayload.provider = currentProvider;
+  }
+  if (currentRecordingEnabled !== null) {
+    newInsertPayload.recording_enabled = currentRecordingEnabled;
+  }
 
   let { data: newAppt, error: newErr } = await supabase
     .from('montree_appointments')
@@ -259,11 +272,12 @@ export async function PATCH(
     .select(APPT_COLS)
     .single();
   if (isVideoUrlColumnMissing(newErr)) {
-    console.warn('[parent/appointments reschedule] video_url column missing — retrying without it');
-    // Migration 222 not run. Strip video_url from payload (defensive — it
-    // would already be absent if currentVideoUrl was null, but make it
-    // explicit) and retry the whole INSERT-RETURNING with legacy cols.
+    console.warn('[parent/appointments reschedule] optional column missing — retrying without 222/223 columns');
+    // Migration 222 / 223 not run. Strip all optional columns from
+    // payload defensively and retry with legacy SELECT cols.
     delete newInsertPayload.video_url;
+    delete newInsertPayload.provider;
+    delete newInsertPayload.recording_enabled;
     const retry = await supabase
       .from('montree_appointments')
       .insert(newInsertPayload)

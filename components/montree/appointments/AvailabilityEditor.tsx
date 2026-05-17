@@ -15,6 +15,7 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
+import dynamic from 'next/dynamic';
 import {
   Calendar,
   Plus,
@@ -24,6 +25,20 @@ import {
   CheckCircle2,
   Video,
 } from 'lucide-react';
+
+// Lazy-mount the Agora call — SDK ~600KB chunk only loads when staff
+// actually taps Join on an upcoming Agora booking.
+const AgoraVideoCallLazy = dynamic(
+  () => import('@/components/montree/appointments/AgoraVideoCall'),
+  { ssr: false }
+);
+
+// Lazy-mount the PriorConversationCard. Renders summaries from prior
+// meetings with this parent — the killer-feature briefing surface.
+const PriorConversationCardLazy = dynamic(
+  () => import('@/components/montree/appointments/PriorConversationCard'),
+  { ssr: false }
+);
 
 const T = {
   emerald: '#34d399',
@@ -75,6 +90,11 @@ interface Appointment {
   // when migration 222 is run. Optional because legacy schools / pre-
   // migration bookings won't have it.
   video_url?: string | null;
+  // Phase 116.3 — which provider serves this appointment's video call.
+  // 'agora' = open AgoraVideoCall inline (native). 'jitsi' or absent =
+  // fall through to the video_url external anchor.
+  provider?: 'jitsi' | 'agora' | null;
+  recording_enabled?: boolean | null;
   hosts: Array<{ role: string; id: string; name: string | null; is_primary: boolean; response: string | null }>;
 }
 
@@ -86,6 +106,14 @@ export default function AvailabilityEditor() {
   const [migrationPending, setMigrationPending] = useState(false);
   const [featureDisabled, setFeatureDisabled] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Phase 116.3 — which appointment's Agora call is currently mounted.
+  // Null = no call open. We track the appointment object so the call
+  // component has the remote display name + recording flag.
+  const [agoraCall, setAgoraCall] = useState<Appointment | null>(null);
+  // Phase 116.3 — which appointment rows have their PriorConversationCard
+  // expanded. Set, not single, so staff can preview multiple briefings
+  // in the same session.
+  const [expandedPriorIds, setExpandedPriorIds] = useState<Set<string>>(new Set());
 
   // Add-rule form state
   const [showAddRule, setShowAddRule] = useState(false);
@@ -458,11 +486,34 @@ export default function AvailabilityEditor() {
                       “{a.intake_subject}”
                     </div>
                   )}
-                  {/* Phase 116.2 — Join button for staff. Renders when
-                      the parent opted into a video call and the school
-                      has video_calls enabled. Same Jitsi URL the parent
-                      sees, so both land in the same room. */}
-                  {a.video_url && (
+                  {/* Phase 116.2/116.3 — Join button.
+                      provider='agora' opens AgoraVideoCall inline.
+                      Otherwise falls through to the Jitsi video_url anchor.
+                      Past + cancelled appointments hide the button. */}
+                  {a.provider === 'agora' && a.status === 'confirmed' && (
+                    <button
+                      type="button"
+                      onClick={() => setAgoraCall(a)}
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: 6,
+                        marginTop: 8,
+                        padding: '6px 10px',
+                        borderRadius: 8,
+                        background: T.emerald,
+                        color: '#0a1a0f',
+                        fontWeight: 600,
+                        fontSize: 12,
+                        border: 'none',
+                        cursor: 'pointer',
+                      }}
+                      aria-label="Join the video call"
+                    >
+                      <Video size={12} strokeWidth={1.75} /> Join video call
+                    </button>
+                  )}
+                  {a.provider !== 'agora' && a.video_url && (
                     <a
                       href={a.video_url}
                       target="_blank"
@@ -485,12 +536,61 @@ export default function AvailabilityEditor() {
                       <Video size={12} strokeWidth={1.75} /> Join video call
                     </a>
                   )}
+
+                  {/* Phase 116.3 — Prior conversations toggle. The killer
+                      feature surface — staff opens this BEFORE joining to
+                      see what was discussed in past meetings with the same
+                      parent. Renders nothing if no prior summaries exist. */}
+                  <div style={{ marginTop: 10 }}>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setExpandedPriorIds((prev) => {
+                          const next = new Set(prev);
+                          if (next.has(a.id)) next.delete(a.id);
+                          else next.add(a.id);
+                          return next;
+                        });
+                      }}
+                      style={{
+                        background: 'transparent',
+                        border: 'none',
+                        color: 'rgba(232,201,106,0.85)',
+                        fontSize: 11,
+                        fontWeight: 600,
+                        cursor: 'pointer',
+                        padding: 0,
+                        textDecoration: 'underline',
+                        textUnderlineOffset: 2,
+                      }}
+                    >
+                      {expandedPriorIds.has(a.id) ? 'Hide prior conversations' : 'Show prior conversations'}
+                    </button>
+                    {expandedPriorIds.has(a.id) && (
+                      <div style={{ marginTop: 10 }}>
+                        <PriorConversationCardLazy appointmentId={a.id} />
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             ))}
           </div>
         )}
       </Section>
+
+      {/* Phase 116.3 — full-viewport Agora call overlay. Staff sees the
+          same UI the parent sees, including recording controls (staff
+          can start/stop; parent only sees the recording banner). */}
+      {agoraCall && (
+        <AgoraVideoCallLazy
+          appointmentId={agoraCall.id}
+          callerRole="teacher"
+          remoteDisplayName={agoraCall.parent_name || 'Parent'}
+          recordingEnabledForAppointment={!!agoraCall.recording_enabled}
+          onClose={() => setAgoraCall(null)}
+        />
+      )}
     </div>
   );
 }

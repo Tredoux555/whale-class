@@ -15,18 +15,16 @@ import type { StaffRole } from '@/lib/montree/appointments/types';
 
 export const maxDuration = 30;
 
-// `video_url` (Phase 116.2) surfaces the staff-side "Join video call"
-// button on the AvailabilityEditor — null unless the parent opted in
-// at booking AND the school has the `video_calls` flag enabled.
+// Includes optional columns from 222 (video_url) + 223 (provider,
+// recording_enabled). LEGACY fallback strips all three.
 const APPT_COLS =
-  'id, school_id, classroom_id, child_id, parent_id, event_kind, scheduled_start, scheduled_end, duration_minutes, status, cancelled_reason, cancelled_by_role, cancelled_at, intake_subject, intake_body, location, thread_id, video_url, created_at, updated_at';
-// Migration-pending fallback for the video_url column added by 222.
+  'id, school_id, classroom_id, child_id, parent_id, event_kind, scheduled_start, scheduled_end, duration_minutes, status, cancelled_reason, cancelled_by_role, cancelled_at, intake_subject, intake_body, location, thread_id, video_url, provider, recording_enabled, created_at, updated_at';
 const APPT_COLS_LEGACY =
   'id, school_id, classroom_id, child_id, parent_id, event_kind, scheduled_start, scheduled_end, duration_minutes, status, cancelled_reason, cancelled_by_role, cancelled_at, intake_subject, intake_body, location, thread_id, created_at, updated_at';
 
 function isVideoUrlColumnMissing(err: { code?: string; message?: string } | null | undefined): boolean {
   if (!err) return false;
-  return err.code === '42703' && /video_url/i.test(err.message || '');
+  return err.code === '42703' && /video_url|provider|recording_enabled/i.test(err.message || '');
 }
 
 export async function GET(request: NextRequest) {
