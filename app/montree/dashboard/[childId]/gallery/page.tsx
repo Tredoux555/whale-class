@@ -129,6 +129,11 @@ export default function GalleryPage() {
   // Selection state
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [selectionMode, setSelectionMode] = useState(false);
+  // Bulk download — ZIP build runs in-browser via JSZip dynamic import.
+  // downloadProgress is "i of N" so the toolbar pill can show progress
+  // during the per-photo blob fetch (the slow part).
+  const [downloadingZip, setDownloadingZip] = useState(false);
+  const [downloadProgress, setDownloadProgress] = useState<{ done: number; total: number } | null>(null);
 
   // Editing state
   const [editingCaption, setEditingCaption] = useState<string | null>(null);
@@ -566,6 +571,93 @@ export default function GalleryPage() {
       toast.error(t('gallery.deletePhotoError'));
     } finally {
       setIsDeleting(false);
+    }
+  };
+
+  // Bulk-download selected photos as a ZIP. Used when the teacher curates
+  // a set of photos to send a parent before a meeting (e.g. via WhatsApp /
+  // email / Drive). Browser-side ZIP via dynamic-imported JSZip — same
+  // pattern as the QR generator + flashcards tools (CLAUDE.md Tier 5.4).
+  //
+  // Per-photo filename mirrors the existing single-photo download:
+  //   {work_name}_{captured_date}.jpg — sanitized.
+  // ZIP filename: montree-photos-{YYYY-MM-DD}.zip.
+  //
+  // Robustness: per-photo fetch failures are logged but don't abort the
+  // whole ZIP — the teacher gets whatever succeeded. A summary toast at
+  // the end says how many made it in.
+  const handleBulkDownload = async () => {
+    if (selectedIds.size === 0 || downloadingZip) return;
+    const selectedPhotos = photos.filter((p) => selectedIds.has(p.id));
+    if (selectedPhotos.length === 0) return;
+    setDownloadingZip(true);
+    setDownloadProgress({ done: 0, total: selectedPhotos.length });
+    try {
+      const { default: JSZip } = await import('jszip');
+      const zip = new JSZip();
+      const usedNames = new Set<string>(); // collision guard for same work+date
+      let succeeded = 0;
+      let failed = 0;
+      for (let i = 0; i < selectedPhotos.length; i++) {
+        const photo = selectedPhotos[i];
+        const photoUrl = getPhotoUrl(photo);
+        if (!photoUrl) {
+          failed++;
+          setDownloadProgress({ done: i + 1, total: selectedPhotos.length });
+          continue;
+        }
+        try {
+          const res = await fetch(photoUrl);
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          const blob = await res.blob();
+          // Mirror the single-photo download filename convention.
+          const safeWork = (photo.work_name || 'photo').replace(/[^a-zA-Z0-9]/g, '_');
+          const safeDate = formatDate(photo.captured_at).replace(/[^a-zA-Z0-9]/g, '_');
+          let name = `${safeWork}_${safeDate}.jpg`;
+          // Collision guard — multiple photos of the same work on the same
+          // day would otherwise overwrite each other inside the ZIP.
+          let suffix = 2;
+          while (usedNames.has(name)) {
+            name = `${safeWork}_${safeDate}_${suffix}.jpg`;
+            suffix++;
+          }
+          usedNames.add(name);
+          zip.file(name, blob);
+          succeeded++;
+        } catch (err) {
+          console.error('[gallery bulk download] photo fetch failed', photo.id, err);
+          failed++;
+        }
+        setDownloadProgress({ done: i + 1, total: selectedPhotos.length });
+      }
+
+      if (succeeded === 0) {
+        toast.error('Could not download any photos. Try again or save them one by one.');
+        return;
+      }
+
+      const zipBlob = await zip.generateAsync({ type: 'blob' });
+      const blobUrl = URL.createObjectURL(zipBlob);
+      const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+      const a = document.createElement('a');
+      a.href = blobUrl;
+      a.download = `montree-photos-${today}.zip`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(blobUrl);
+
+      if (failed > 0) {
+        toast.success(`Downloaded ${succeeded} of ${succeeded + failed} photos. ${failed} failed.`);
+      } else {
+        toast.success(`Downloaded ${succeeded} photo${succeeded === 1 ? '' : 's'}.`);
+      }
+    } catch (err) {
+      console.error('[gallery bulk download] ZIP build failed', err);
+      toast.error('Could not build the ZIP file. Try again.');
+    } finally {
+      setDownloadingZip(false);
+      setDownloadProgress(null);
     }
   };
 
@@ -1308,6 +1400,16 @@ export default function GalleryPage() {
               style={{ fontSize: 12, padding: '5px 12px', background: 'rgba(52,211,153,0.12)', border: '1px solid rgba(52,211,153,0.30)', borderRadius: 8, color: '#34d399', fontFamily: '"Inter", sans-serif', cursor: 'pointer' }}
             >
               {selectedIds.size === filteredPhotos.length ? t('gallery.deselectAll') : t('gallery.selectAll')}
+            </button>
+            <button
+              onClick={handleBulkDownload}
+              disabled={downloadingZip}
+              style={{ fontSize: 12, padding: '5px 12px', background: downloadingZip ? 'rgba(232,201,106,0.25)' : 'rgba(232,201,106,0.85)', border: 'none', borderRadius: 8, color: downloadingZip ? '#E8C96A' : '#0a1a0f', fontFamily: '"Inter", sans-serif', fontWeight: 600, cursor: downloadingZip ? 'wait' : 'pointer', display: 'inline-flex', alignItems: 'center', gap: 6 }}
+              aria-label="Download selected photos as a ZIP"
+            >
+              {downloadingZip && downloadProgress
+                ? `Zipping ${downloadProgress.done}/${downloadProgress.total}…`
+                : '💾 Download'}
             </button>
             <button
               onClick={() => setShowBulkDeleteConfirm(true)}
