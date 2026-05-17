@@ -113,6 +113,27 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string
       { status: 400 }
     );
   }
+  // Re-click safety. Accept is a one-time action. If the app is already
+  // 'sent' / 'declined' / 'dead', refuse — re-running this route would
+  // ROTATE the agent's login code, invalidating any code already
+  // shared with them. To re-issue intentionally, use the Referrals tab
+  // 🔑 reset button on the agent's row.
+  if (application.status !== 'agent_applied') {
+    const linkedId =
+      (application.application_details as { linked_agent_id?: string } | null)
+        ?.linked_agent_id || null;
+    return NextResponse.json(
+      {
+        error: `This application is already ${application.status}.`,
+        hint: linkedId
+          ? 'The agent record exists. To reset their login code, open the Referrals tab and click 🔑 on their row.'
+          : 'No action needed.',
+        application_status: application.status,
+        linked_agent_id: linkedId,
+      },
+      { status: 409 }
+    );
+  }
   const email = (application.email || '').trim().toLowerCase();
   if (!email) {
     return NextResponse.json(
@@ -231,21 +252,42 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string
   });
 
   // ── 4. Mark application as 'sent' + link the agent ─────────────
+  // Awaited (not fire-and-forget) so a silent failure surfaces here
+  // instead of leaving the application in 'agent_applied' — which would
+  // make it re-appear in the pending banner, tempting Tredoux to click
+  // Accept again and ROTATE the just-issued login code. The re-click
+  // safety check above is the second line of defense; this is the first.
   const nextDetails: Record<string, unknown> = {
     ...(application.application_details || {}),
     accepted_at: new Date().toISOString(),
     linked_agent_id: agentId,
   };
-  void supabase
+  const { error: markSentErr } = await supabase
     .from('montree_outreach_contacts')
     .update({
       status: 'sent',
       application_details: nextDetails,
     })
-    .eq('id', application.id)
-    .then(({ error }) => {
-      if (error) console.error('[applications accept] mark-sent failed', error);
-    });
+    .eq('id', application.id);
+  if (markSentErr) {
+    // The agent record + login code are now persisted but the
+    // application is still 'agent_applied'. Surface the failure so
+    // Tredoux knows to reset the code manually rather than re-clicking
+    // Accept (which would rotate the code).
+    console.error('[applications accept] mark-sent failed', markSentErr);
+    return NextResponse.json(
+      {
+        error:
+          'Agent login code was issued, but the application status could not be updated. ' +
+          'IMPORTANT: do NOT click Accept again — that would rotate the code. ' +
+          'Save this code now, then mark the application as Sent manually via the Pending Applications panel.',
+        detail: markSentErr.message,
+        login_code: plaintext,
+        agent_id: agentId,
+      },
+      { status: 500 }
+    );
+  }
 
   // ── 5. Build the welcome message + return the plaintext code ───
   const loginUrl = `${baseUrl}/montree/login-select?code=${encodeURIComponent(plaintext)}`;

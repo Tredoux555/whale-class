@@ -11,10 +11,12 @@
 // stack in the super-admin header.
 //
 // Per-row actions:
-//   ✓ Accept (issue code) — links to Referrals tab with prefill query
-//     params, so the existing 🔑 Issue Agent Login modal opens with the
-//     applicant's name + email already in. Tredoux finishes the issue
-//     manually (sets the share %) then this row flips to 'sent'.
+//   ✓ Accept — one-shot endpoint creates the agent record + issues a
+//     6-char login code in a single round-trip. Opens a reveal-once
+//     welcome modal with the code, deep-link URL, and a pre-built
+//     welcome message Tredoux pastes into WhatsApp / email / SMS.
+//     Agent generates THEIR OWN referral codes from inside their
+//     dashboard later.
 //   ✗ Decline — sets status='declined'.
 //   ✉ Reply — opens mailto with a warm short reply.
 
@@ -59,6 +61,23 @@ export default function AgentApplicationAlert({ saToken }: { saToken: string }) 
   // Contains the plaintext login code — server never returns it again.
   const [accepted, setAccepted] = useState<AcceptedAgent | null>(null);
   const [copiedField, setCopiedField] = useState<'code' | 'link' | 'message' | null>(null);
+
+  // Body-scroll lock + Escape close while the welcome modal is open.
+  // Restores prev overflow on cleanup so nested modals (none here, but
+  // good hygiene) compose cleanly.
+  useEffect(() => {
+    if (!accepted) return;
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setAccepted(null);
+    };
+    document.addEventListener('keydown', onKey);
+    return () => {
+      document.body.style.overflow = prevOverflow;
+      document.removeEventListener('keydown', onKey);
+    };
+  }, [accepted]);
 
   const copyToClipboard = async (text: string, field: 'code' | 'link' | 'message') => {
     try {
