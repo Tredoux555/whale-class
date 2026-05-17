@@ -14,6 +14,10 @@ import WebVitalsReporter from "@/components/montree/WebVitalsReporter";
 // so the SSR output is empty. Next.js 16 forbids `dynamic({ ssr: false })`
 // in Server Components, but a direct import of a client component is fine.
 import AppLockOverlay from "@/components/montree/AppLockOverlay";
+// Floating connectivity-status pill — appears top-of-screen when offline,
+// briefly confirms 'Back online' when connectivity returns. Pointer-events
+// none, so it never blocks interaction. Self-gates pathname.
+import OnlineStatusBanner from "@/components/montree/OnlineStatusBanner";
 import { isValidLocale, DEFAULT_LOCALE, type Locale } from "@/lib/montree/i18n/locales";
 
 export const metadata: Metadata = {
@@ -123,6 +127,7 @@ export default async function MontreeLayout({
       <VisitorTracker />
       <WebVitalsReporter />
       <AppLockOverlay />
+      <OnlineStatusBanner />
       {children}
     </I18nClientWrapper>
   );
