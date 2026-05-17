@@ -1,5 +1,22 @@
 // components/montree/appointments/AvailabilityEditor.tsx
 //
+// 🚨 DEPRECATED as of Session 117 (May 17, 2026).
+//
+// This component is the legacy database-list view of staff availability.
+// It has been replaced by AppointmentsCalendar (in this same directory),
+// which is the canonical calendar-first surface at /montree/dashboard/
+// appointments and /montree/admin/appointments.
+//
+// Kept on disk per the hide-don't-delete posture (architectural rule #56):
+//   - No remaining importers anywhere in the codebase (verified).
+//   - Useful as a fallback reference if AppointmentsCalendar ever needs to
+//     be rolled back surgically.
+//   - Future contributors should NOT re-import this file. Extend
+//     AppointmentsCalendar instead — the underlying APIs are unchanged.
+//
+// ───────────────────────────────────────────────────────────────────────
+// Original docs (preserved):
+//
 // Staff availability editor. Used at both /montree/dashboard/appointments
 // (teacher view) and /montree/admin/appointments (principal view). The
 // API auto-scopes to the caller's identity via auth.role + auth.userId
