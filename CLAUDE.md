@@ -202,6 +202,103 @@ Wave 1 sends bounced for these addresses. None of these are flagged as `bounced`
 
 ## RECENT STATUS (May 17, 2026)
 
+### 🔥 Session 117 — Phase 116.2 + 116.3 ship + Stage A Agora activation in flight + calendar-first UI proposal (May 17, 2026, late afternoon → evening)
+
+**6 commits pushed to main this session.** Two phases of the school ecosystem ship + Agora native video infrastructure + setup playbook + carry-over migration cleanup + a UX redesign proposal at session end.
+
+**🚨 Canonical resume doc:** `docs/handoffs/SESSION_117_HANDOFF.md` — full session breakdown + Agora Stage A activation status + audit findings + calendar-first UI proposal + next-session priorities.
+
+**Commits (oldest → newest):**
+- `7808a85d` — Phase 116.2: Jitsi video calls + Session 115/116 ecosystem ship (45 files, foundational appointments/events/calendar)
+- `09316a17` — Gallery: bulk-download selected photos as ZIP
+- `a8947eee` — Teacher Meeting Notes: surface share-to-parent-thread outcomes
+- `f4c08ffc` — Phase 116.3: Agora native video calls + Cloud Recording + Whisper/Sonnet meeting briefings (24 files, the killer-feature ship)
+- `e889360c` — Agora Stage A quickstart doc (10-min activation, free tier, no credit card)
+- `99661138` — Phase 116.3 audit fixes: recording idempotency + UX in-flight guard (ship-blocker caught in self-audit)
+
+**🚨 All migrations confirmed RUN this session:** 210 (photo identification CHECK), 211 (pipeline telemetry), 212 (bump_memory_references RPC), 213 (outreach log retention + drip uniqueness). Plus 214-222 already run in prior sessions.
+
+**🚨 Migration 223 PENDING Tredoux's Supabase run:** Agora recordings table + provider column + `agora_video_calls` + `video_recording` feature flags. SQL provided in `docs/handoffs/AGORA_STAGE_A_QUICKSTART.md` Step 4.
+
+**A. Phase 116.2 (Jitsi) — shipped:**
+
+Foundational appointments + events + school calendar from Session 115 finally committed. Jitsi video URLs on parent appointments behind `video_calls` flag. Full handoff in `docs/handoffs/SESSION_117_HANDOFF.md` section A.
+
+**B. Phase 116.3 (Agora) — the killer-feature ship:**
+
+Native-in-Montree video calls (no external Jitsi page) + Cloud Recording → Supabase Storage + Whisper transcription + Sonnet "chief-of-staff briefing" + PriorConversationCard for next-meeting context. All gated behind `agora_video_calls` + `video_recording` feature flags. Stage A (video only, free tier, no credit card) is now activatable; Stage B (recording + AI) requires credit card + Cloud Recording setup.
+
+**Decision locked:** Agora is the recommendation for production video. China-reachable (works inside the Great Firewall), best-in-class white-label SDK, Hong Kong-billable as Montree Limited, pay-per-minute trivial cost (~$0.99/1000 video min, ~$0.24 per 30-min recorded meeting all-in). Jitsi (Phase 116.2) stays as fallback for schools that don't enable Agora.
+
+**Architecture (24 files in commit `f4c08ffc`):**
+- Migration 223 — `montree_appointment_recordings` table + provider column on appointments + 2 feature flags
+- `lib/montree/appointments/agora/{config, token-builder, recording, types}.ts`
+- `lib/montree/appointments/transcription/{whisper, summarize, pipeline}.ts`
+- API routes: `agora-token` + `recording/start` + `recording/stop` + `recording` (GET + PATCH) + `prior-conversations`
+- `components/montree/appointments/AgoraVideoCall.tsx` + `PriorConversationCard.tsx`
+- Wired into parent + staff appointment surfaces
+- Setup playbook at `docs/handoffs/AGORA_SETUP_PLAYBOOK.md` (full Stage A + B) + `AGORA_STAGE_A_QUICKSTART.md` (simplified Stage A only)
+- `package.json` extended with `agora-token@^2.0.5` + `agora-rtc-sdk-ng@^4.20.0`
+
+**C. Stage A activation — Tredoux paused mid-flow:**
+
+- ✅ Signed up at agora.io (Hong Kong-registered, US country in dropdown)
+- ✅ Default project auto-created, App ID + Primary Certificate copied
+- ✅ Set 2 env vars in Railway: `AGORA_APP_ID`, `AGORA_APP_CERTIFICATE`
+- ⏳ Migration 223 NOT YET RUN
+- ⏳ `agora_video_calls` flag NOT YET FLIPPED for Whale Class
+- ⏳ End-to-end test NOT YET DONE
+
+To finish Stage A when ready: paste migration 223 SQL → paste flag-flip SQL → test with 2 devices. ~5 min. Full SQL in `AGORA_STAGE_A_QUICKSTART.md`.
+
+**D. Audit findings — one real ship-blocker, fixed:**
+
+🔴 **Recording-start route was NOT idempotent.** Double-click of Record button could spawn TWO parallel Agora Cloud Recording sessions for the same appointment. Stop route only ended the most-recent; the other kept recording (+ billing) until Agora's 30-second idle timeout. Worst case = silent cost runaway.
+
+**Fix in `99661138`:** server-side idempotency check at top of route (returns existing row if recording already 'recording' or 'pending') + client-side `recordingRequestInFlight` state guard with disabled-button UX on Start/Stop. Two-layer defense.
+
+Stage A users never hit this code path. Stage B users are now protected.
+
+**🟢 Verified clean:** `agora-token` package signature (7-arg, matches our call), channel naming + length, UID derivation collision risk (negligible), recording-bot UID collision with participants (impossible by hash-input design), cleanup-on-unmount lifecycle, cancellation guards in init effect, Stage A graceful degradation, PriorConversationCard empty state, cross-pollination on every query, migration 223 idempotency.
+
+**E. UX feedback at session end — CALENDAR-FIRST REDESIGN PROPOSED:**
+
+Tredoux flagged the appointments UI as too technical: *"Should this not all fall under calendar? Click on a day, schedule a call. Think Apple. 'Blackout' is harsh wording."*
+
+He's right. Current `/montree/dashboard/appointments` (and `/montree/admin/appointments`) is database-thinking dressed in CSS — three vertical lists (Weekly availability + Blackouts + Bookings). Forces the teacher to mentally map lists back into a week.
+
+**Proposed reframe (full spec in `SESSION_117_HANDOFF.md` section D):**
+- Single primary interface: month view (compact week-strip on mobile)
+- Tap a day → that day's schedule fills below
+- Tap a slot → menu: **Mark as open** / **I'm away** / **See what's booked**
+- Recurring availability lives in a quiet "Open every week on…" accordion at the bottom
+- Word swaps: **"blackout" → "time away"**, "window" → "open slot", "recipient" → "who they want to meet", "upcoming bookings" → "what's on your calendar"
+
+**Effort:** ~4-6 hours focused work. Pure UI. No schema changes, no migration. The technical pipes (Phase 116.2 + 116.3) are all in place.
+
+**Decision pending Tredoux's go-ahead next session.** When approved: build `<AppointmentsCalendar>` component, drop into both surfaces, ship.
+
+**🚨 Architectural rules locked in this session (#171-#177):**
+
+171. **Every Agora REST API call that costs money MUST have a server-side idempotency check via DB row state before firing.** Pattern: query for existing 'recording'/'pending' row first; return that if found instead of acquiring a fresh slot.
+172. **Client buttons that trigger paid operations MUST have an in-flight guard.** Pattern: `[xRequestInFlight, setXInFlight] = useState(false)`; guard handler entry; flip in finally{}; reflect via `disabled` prop.
+173. **`isAgoraConfigured()` requires only AGORA_APP_ID + AGORA_APP_CERTIFICATE** (Stage A). `getAgoraRecordingConfig()` additionally requires CUSTOMER_KEY + SECRET (Stage B). Two-tier check is the canonical pattern for opt-in-by-env.
+174. **Agora channel names use `montree-` prefix + 20 chars of base64url-safe entropy from ical_token.** Same deterministic-channel rule as Jitsi (rule #164). Survives reschedule (same room, same URL).
+175. **Cleanup IIFE on Agora component unmount: mic.close → cam.stop+close → client.leave.** Fire-and-forget — cleanup is async but unmount doesn't await it.
+176. **Calendar-first UI is the canonical posture for any time-based surface in Montree.** Database lists (rules / blackouts / bookings) are admin views; the primary teacher/parent surface is the calendar grid + tap-to-act. NEW per Session 117 UX feedback.
+177. **Humanize word choices on user-facing strings:** "blackout" → "time away"; "window" → "open slot"; "recipient" → "who they want to meet". Database column names can stay technical; UI labels can't.
+
+**🚨 Next session priorities (ordered):**
+
+1. **Finish Stage A Agora activation** — paste migration 223 SQL + flag flip + 2-device end-to-end test. 5 min.
+2. **Calendar-first UI build per section E above** — 4-6 hours. Single biggest UX win remaining in the appointments stack. Tredoux's explicit ask.
+3. **Stage B (recording + AI briefings) activation** — operational only after Stage A confirmed working. Requires credit card on Agora + Cloud Recording enable + Supabase Storage bucket + 4 more Railway env vars + flip `video_recording` flag.
+4. **Carry-over outreach work** — FAMM Argentina + Cambridge Montessori Global + others (see Active Reply Threads block in this file).
+5. **Mira → Tracy tool extension** (Session 84 + 85 architectural carry-over).
+6. **Multilingual sweep** (Session 75 carry-over).
+
+---
+
 ### 🔥 Session 114 — Mobile + auth + meeting notes burn (May 17, 2026)
 
 **7 commits pushed to main:** `11ece6ba` → `02e221b4`. Continuation of the Session 113 V2 audit closure work — the user verified production after the prior burn and said "keep burning." Seven focused user-facing ships, none of them mega-features, all quality-of-life or audit closure.
