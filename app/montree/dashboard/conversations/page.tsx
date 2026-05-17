@@ -241,7 +241,7 @@ export default function TeacherConversationsPage() {
           />
         ) : view.kind === 'new' ? (
           <NewMeetingFlow
-            children={children}
+            childrenOptions={children}
             onCancel={() => setView({ kind: 'list' })}
             onSaved={async (saved) => {
               await refreshMeetings();
@@ -440,9 +440,12 @@ function ListView({
                 }}
               >
                 <span>⏱ {fmtDuration(m.duration_seconds)}</span>
-                {m.parent_visible && (
-                  <span style={{ color: T.gold }}>· Shared with parent</span>
-                )}
+                {m.parent_visible &&
+                  (m.shared_to_thread_id ? (
+                    <span style={{ color: T.gold }}>· Shared with parent</span>
+                  ) : (
+                    <span style={{ color: T.textMuted }}>· Marked for parent</span>
+                  ))}
               </div>
             </button>
           ))}
@@ -464,14 +467,17 @@ interface ReviewData {
 }
 
 function NewMeetingFlow({
-  children,
+  childrenOptions,
   onCancel,
   onSaved,
 }: {
-  children: ChildOption[];
+  childrenOptions: ChildOption[];
   onCancel: () => void;
   onSaved: (m: MeetingRow) => void;
 }) {
+  // Stable alias so the rest of the body reads naturally; renamed from
+  // `children` to avoid the React built-in prop name.
+  const children = childrenOptions;
   const [stage, setStage] = useState<Stage>('consent');
   const [recordingSeconds, setRecordingSeconds] = useState(0);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -565,6 +571,10 @@ function NewMeetingFlow({
         'Could not access the microphone. Check the browser permission and try again.'
       );
     }
+    // `uploadForTranscription` is intentionally NOT in deps — defined in the
+    // same component scope; the rec.onstop closure captures it via lexical
+    // scope which is correct. Adding it to deps creates a circular dep.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const stopRecording = useCallback(() => {
@@ -960,6 +970,11 @@ function DetailView({
   const [notes, setNotes] = useState<string>(meeting.notes || '');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Mirrors the principal-side meeting-notes page — surfaces the outcome of
+  // the share-to-parent-thread fan-out so the teacher knows whether the
+  // summary actually reached the parent's inbox or just got flagged for
+  // future posting.
+  const [shareInfo, setShareInfo] = useState<string | null>(null);
 
   useEffect(() => {
     setLocal(meeting);
@@ -994,6 +1009,7 @@ function DetailView({
 
   const togglevisible = useCallback(async () => {
     const next = !local.parent_visible;
+    setShareInfo(null);
     try {
       const res = await fetch(`/api/montree/dashboard/conversations/${meeting.id}`, {
         method: 'PATCH',
@@ -1009,6 +1025,34 @@ function DetailView({
       if (data?.meeting) {
         setLocal(data.meeting);
         onChanged();
+      }
+      // The PATCH route fires shareMeetingNoteToThread() when parent_visible
+      // flips true. Surface the outcome so the teacher isn't left guessing
+      // whether the parent actually received the summary. The reasons here
+      // mirror ShareSkipReason in lib/montree/meeting-notes/share-to-thread.ts.
+      if (data?.share) {
+        const reason = data.share.reason as string | undefined;
+        if (data.share.threadId && !reason) {
+          setShareInfo('The summary has been posted to the parent thread.');
+        } else if (reason === 'no_child') {
+          setShareInfo(
+            'Flagged as visible. Link a child to this meeting to actually post the summary into the parent thread.'
+          );
+        } else if (reason === 'feature_disabled') {
+          setShareInfo(
+            'Flagged as visible. Parent messaging is not enabled for this school yet — the summary is recorded but not posted.'
+          );
+        } else if (reason === 'no_parents') {
+          setShareInfo(
+            'Flagged as visible, but no parent accounts are linked to this child.'
+          );
+        } else if (reason === 'already_shared') {
+          setShareInfo('Already shared earlier — the existing thread is unchanged.');
+        } else if (reason === 'message_insert_failed') {
+          setShareInfo(
+            'Thread created, but posting the message failed. You can post manually from Messages.'
+          );
+        }
       }
     } catch {
       setError('Network error.');
@@ -1143,7 +1187,9 @@ function DetailView({
             </div>
             <div style={{ color: T.textSecondary, fontSize: 12, marginTop: 2 }}>
               {local.parent_visible
-                ? 'This summary can be referenced in the parent thread.'
+                ? local.shared_to_thread_id
+                  ? 'The summary has been posted into the parent thread.'
+                  : 'Marked as visible — but no parent thread was created (see hint below).'
                 : 'Only you can see this. The parent never gets a copy.'}
             </div>
           </div>
@@ -1156,6 +1202,22 @@ function DetailView({
           {local.parent_visible ? 'Make private' : 'Share with parent'}
         </button>
       </div>
+
+      {shareInfo && (
+        <div
+          style={{
+            padding: 12,
+            borderRadius: 10,
+            background: 'rgba(232,201,106,0.10)',
+            border: '1px solid rgba(232,201,106,0.32)',
+            color: T.gold,
+            fontSize: 12,
+            lineHeight: 1.5,
+          }}
+        >
+          {shareInfo}
+        </div>
+      )}
 
       {error && <ErrorBox text={error} />}
 
