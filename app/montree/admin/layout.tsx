@@ -246,13 +246,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const activeNav: NavItem[] = principalId
     ? [
         ...NAV,
-        // Phase 2 (Session 115+) — Appointments. The page itself shows
-        // a "feature disabled" hint when the school doesn't have the
-        // flag on, so it's safe to surface universally — principals see
-        // the empty editor and understand the system exists.
+        // Session 117 redesign — Calendar. Calendar-first posture replaces
+        // the database-list view per architectural rule #176. The page
+        // itself shows a "feature disabled" hint when the school doesn't
+        // have the appointments flag on, so it's safe to surface universally.
         {
           href: '/montree/admin/appointments',
-          label: 'Appointments',
+          label: 'Calendar',
           icon: Calendar,
           match: (p) => p.startsWith('/montree/admin/appointments'),
         },
