@@ -11,9 +11,13 @@
 //   AGORA_RECORDING_BUCKET    — Supabase Storage bucket name for uploads.
 //                               Defaults to 'meeting-recordings'.
 //
-// If ANY of these are missing, isAgoraConfigured() returns false and routes
-// gracefully fall back to "feature not available" rather than crashing.
-// This is the same pattern as Stripe / Resend / OpenAI: opt-in via env.
+// Two-tier configuration check:
+//   - isAgoraConfigured() requires only AGORA_APP_ID + AGORA_APP_CERTIFICATE.
+//     Sufficient for "Stage A" — native video calls without recording.
+//   - getAgoraRecordingConfig() additionally requires AGORA_CUSTOMER_KEY +
+//     AGORA_CUSTOMER_SECRET. Required for "Stage B" — Cloud Recording.
+// Routes gracefully fall back to "feature not available" when missing,
+// rather than crashing. Same opt-in-via-env pattern as Stripe / Resend / OpenAI.
 
 import type { AgoraConfig } from './types';
 

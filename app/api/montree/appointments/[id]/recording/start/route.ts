@@ -112,6 +112,34 @@ export async function POST(
     );
   }
 
+  // ── Idempotency guard ──────────────────────────────────────────────
+  // If a recording is already running for this appointment, return that
+  // row instead of starting another. Prevents the "double-click Record →
+  // two parallel Agora recordings + 2x billing" failure mode.
+  //
+  // We check both 'recording' AND 'pending' states. 'pending' is unused
+  // by the current pipeline but reserved for future async-start flows;
+  // belt-and-braces against future regressions.
+  const { data: existing } = await supabase
+    .from('montree_appointment_recordings')
+    .select('id, agora_resource_id, agora_sid, recording_status, started_at')
+    .eq('appointment_id', id)
+    .eq('school_id', auth.schoolId)
+    .in('recording_status', ['recording', 'pending'])
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (existing) {
+    return NextResponse.json(
+      {
+        recording: existing,
+        already_running: true,
+      },
+      { status: 200 }
+    );
+  }
+
   const channel = channelForAppointment(appt.ical_token);
   if (!channel) {
     return NextResponse.json({ error: 'No video room for this appointment.' }, { status: 500 });
