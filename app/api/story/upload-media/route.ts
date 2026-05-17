@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getSupabase, verifyUserToken, getCurrentWeekStart } from '@/lib/story-db';
+import { getSupabase, verifyUserTokenFromRequest, getCurrentWeekStart } from '@/lib/story-db';
 import { getProxyUrl } from '@/lib/montree/media/proxy-url';
 
 // Allow large uploads on slow mobile networks (videos up to 300MB)
@@ -77,7 +77,8 @@ function getFileType(mimeType: string, filename: string): 'image' | 'video' | 'a
 
 export async function POST(req: NextRequest) {
   try {
-    const username = await verifyUserToken(req.headers.get('authorization'));
+    // 🚨 Session 113 V2 F-1.2 — header first, story-auth cookie fallback.
+    const username = await verifyUserTokenFromRequest(req);
     if (!username) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }

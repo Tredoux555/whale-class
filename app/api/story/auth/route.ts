@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { SignJWT } from 'jose';
-import { getSupabase, getJWTSecret } from '@/lib/story-db';
+import {
+  getSupabase,
+  getJWTSecret,
+  setStoryAuthCookie,
+  clearStoryAuthCookie,
+  STORY_AUTH_COOKIE,
+} from '@/lib/story-db';
 import { checkRateLimit } from '@/lib/rate-limiter';
 import { logAudit, getClientIP, getUserAgent } from '@/lib/montree/audit-logger';
 
@@ -116,7 +122,14 @@ export async function POST(req: NextRequest) {
         // heartbeat self-heal will catch it, and Z can still use the site.
         const logged = await logLogin(username, ip, userAgent, token);
 
-        return NextResponse.json({ session: token, _loginLogged: logged });
+        // 🚨 Session 113 V2 Story audit F-1.2 — set httpOnly cookie alongside
+        // returning the token. Phase A: both pathways work (legacy URL-token
+        // bookmarks keep functioning, new logins also have a cookie).
+        // Phase B (next push) makes the cookie the SOLE pathway and stops
+        // putting the JWT in the URL.
+        const response = NextResponse.json({ session: token, _loginLogged: logged });
+        setStoryAuthCookie(response, token);
+        return response;
       }
     }
   } catch (e) {
@@ -134,13 +147,20 @@ export async function POST(req: NextRequest) {
 }
 
 export async function DELETE(req: NextRequest) {
-  // Logout - mark as logged out
+  // Logout - mark as logged out + clear the httpOnly cookie.
+  //
+  // 🚨 Session 113 V2 F-1.2 — also accept the token from the cookie (in
+  // addition to the legacy Authorization header) so logout works for
+  // sessions that no longer put the JWT in the URL.
   try {
     const authHeader = req.headers.get('authorization');
-    if (authHeader) {
-      const token = authHeader.replace('Bearer ', '');
+    const cookieToken = req.cookies.get(STORY_AUTH_COOKIE)?.value;
+    const token = authHeader
+      ? authHeader.replace('Bearer ', '')
+      : cookieToken || '';
+
+    if (token) {
       const supabase = getSupabase();
-      
       // Mark recent login as logged out
       await supabase
         .from('story_login_logs')
@@ -151,5 +171,7 @@ export async function DELETE(req: NextRequest) {
   } catch (e) {
     console.error('[Auth] Logout tracking failed:', e);
   }
-  return NextResponse.json({ success: true });
+  const response = NextResponse.json({ success: true });
+  clearStoryAuthCookie(response);
+  return response;
 }

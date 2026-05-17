@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getSupabase, verifyUserToken } from '@/lib/story-db';
+import { getSupabase, verifyUserTokenFromRequest } from '@/lib/story-db';
 
 export async function GET(req: NextRequest) {
   try {
-    const username = await verifyUserToken(req.headers.get('authorization'));
+    // 🚨 Session 113 V2 F-1.2 — header first, story-auth cookie fallback.
+    const username = await verifyUserTokenFromRequest(req);
     if (!username) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }

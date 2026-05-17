@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getSupabase, verifyUserToken, getSessionToken } from '@/lib/story-db';
+import { getSupabase, verifyUserTokenFromRequest, getSessionTokenFromRequest } from '@/lib/story-db';
 import { getClientIP, getUserAgent } from '@/lib/montree/audit-logger';
 
 // A new "visit" is logged when the user returns after this many ms of inactivity
@@ -7,12 +7,13 @@ const VISIT_GAP_MS = 5 * 60 * 1000; // 5 minutes
 
 export async function POST(req: NextRequest) {
   try {
-    const username = await verifyUserToken(req.headers.get('authorization'));
+    // 🚨 Session 113 V2 F-1.2 — header first, story-auth cookie fallback.
+    const username = await verifyUserTokenFromRequest(req);
     if (!username) {
       return NextResponse.json({ ok: true }); // Don't 401 heartbeats
     }
 
-    const sessionToken = getSessionToken(req.headers.get('authorization'));
+    const sessionToken = getSessionTokenFromRequest(req);
     if (!sessionToken) {
       return NextResponse.json({ ok: true });
     }

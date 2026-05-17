@@ -1,13 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { jwtVerify } from 'jose';
 import { getSupabase } from '@/lib/supabase-client';
 import { decryptMessage } from '@/lib/message-encryption';
-
-function getJWTSecret(): Uint8Array {
-  const secret = process.env.STORY_JWT_SECRET;
-  if (!secret) throw new Error('STORY_JWT_SECRET not set');
-  return new TextEncoder().encode(secret);
-}
+import { verifyUserTokenFromRequest } from '@/lib/story-db';
 
 function getCurrentWeekStart(): string {
   const today = new Date();
@@ -17,18 +11,6 @@ function getCurrentWeekStart(): string {
   monday.setDate(today.getDate() + diff);
   monday.setHours(0, 0, 0, 0);
   return monday.toISOString().split('T')[0];
-}
-
-// Phase 7: Accept token from Authorization header or HttpOnly cookie
-async function verifyToken(authHeader: string | null, cookieToken?: string | null): Promise<string | null> {
-  const token = authHeader ? authHeader.replace('Bearer ', '') : (cookieToken || null);
-  if (!token) return null;
-  try {
-    const { payload } = await jwtVerify(token, getJWTSecret());
-    return payload.username as string;
-  } catch {
-    return null;
-  }
 }
 
 function getDefaultStory() {
@@ -49,10 +31,12 @@ function getDefaultStory() {
 
 export async function GET(req: NextRequest) {
   try {
-    const username = await verifyToken(
-      req.headers.get('authorization'),
-      req.cookies.get('story-admin-token')?.value
-    );
+    // 🚨 Session 113 V2 F-1.2 — canonical role-gated user-token verifier.
+    // Replaces a local verifyToken that (a) wasn't role-gated (admin JWTs
+    // were accepted), (b) read the wrong cookie name (story-admin-token).
+    // verifyUserTokenFromRequest reads the Authorization header first then
+    // the new story-auth cookie, and rejects admin tokens.
+    const username = await verifyUserTokenFromRequest(req);
     if (!username) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
