@@ -116,4 +116,62 @@ export const MIRA_TOOLS: Tool[] = [
       required: ['text', 'target_language'],
     },
   },
+
+  // ── MESSAGING TOOLS (Phase 4.7 from Session 108 plan) ─────────────────
+  // These tools actually WRITE rows to the agent_super_admin messaging
+  // tables — they're how Mira-on-behalf-of-the-agent posts to Tredoux.
+  // The agent must EXPLICITLY ask ("tell Tredoux X", "reply to that thread
+  // saying Y"). Mira NEVER volunteers — see system-prompt.ts for the
+  // posture. Cross-pollination is enforced server-side: every write is
+  // scoped to deps.agentId.
+  {
+    name: 'list_my_threads_with_tredoux',
+    description:
+      "List the agent's existing threads with Tredoux (super-admin). Returns up to 20 most-recent threads with: id, subject, last_message_at, last_message_preview, last_sender ('agent' | 'super_admin'), unread (boolean — whether Tredoux has replied since the agent last read). Use BEFORE calling reply_in_thread to find the right thread, or when the agent asks 'what have I asked Tredoux lately?' / 'any reply from him?'.",
+    input_schema: {
+      type: 'object',
+      properties: {},
+    },
+  },
+  {
+    name: 'start_thread_with_tredoux',
+    description:
+      "Start a NEW thread with Tredoux on the agent's behalf. ONLY call this when the agent has explicitly asked you to message Tredoux ('tell Tredoux …', 'message Tredoux …', 'ask Tredoux …'). The body MUST be the message the agent wants sent — write it in her voice, short and direct, no greeting padding (the recipient knows who's writing). Returns thread_id + the posted message text. After firing, tell the agent the message is sent and surface the thread_id naturally so she can follow up.",
+    input_schema: {
+      type: 'object',
+      properties: {
+        subject: {
+          type: 'string',
+          description:
+            'Short subject line (under 60 chars). Optional but helpful — names what the thread is about. e.g. "Trial pilot pricing for FAMM Argentina".',
+        },
+        body: {
+          type: 'string',
+          description:
+            "The message body. Must be 1-10000 chars. Write it as the agent would — first person, direct. NO 'Hi Tredoux,' opener — he knows who it's from. NO sign-off — the system handles attribution.",
+        },
+      },
+      required: ['body'],
+    },
+  },
+  {
+    name: 'reply_in_thread',
+    description:
+      "Reply to an EXISTING thread with Tredoux. ONLY call this when the agent has explicitly asked you to reply to a specific thread, OR when she's responding to something Tredoux wrote. Requires a thread_id — call list_my_threads_with_tredoux first if you don't have one. Body must be the agent's actual message. Returns the posted message_id.",
+    input_schema: {
+      type: 'object',
+      properties: {
+        thread_id: {
+          type: 'string',
+          description: 'The thread id from list_my_threads_with_tredoux.',
+        },
+        body: {
+          type: 'string',
+          description:
+            "The reply body. Must be 1-10000 chars. Write as the agent would, in her voice. No greeting / sign-off padding.",
+        },
+      },
+      required: ['thread_id', 'body'],
+    },
+  },
 ];

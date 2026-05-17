@@ -18,6 +18,10 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import { randomBytes } from 'crypto';
 import { HAIKU_MODEL } from '@/lib/ai/anthropic';
 import { getLanguageName, getAILanguageInstruction } from '@/lib/montree/i18n/locale-config';
+import {
+  SUPER_ADMIN_SENTINEL_UUID,
+  SUPER_ADMIN_DISPLAY_NAME,
+} from '@/lib/montree/agent-super-admin-messaging/types';
 
 // 🚨 PROMPT-INJECTION DEFENCE (Tracy + Mira audit HIGH-2, Session 113 V2).
 //
@@ -48,6 +52,8 @@ export interface MiraToolDeps {
   anthropic: Anthropic | null;
   /** The agent's userId — the cross-pollination filter. */
   agentId: string;
+  /** Display name for outgoing messages (sender_name field). Falls back to a DB lookup when omitted. */
+  agentName?: string;
   /** Agent's UI locale. Forwarded to Haiku for translations to make better choices on register. */
   locale?: string;
 }
@@ -447,6 +453,359 @@ ${fenceEnd}`;
           success: true,
           data: { translated, target_language: target },
           result_summary: `translated to ${langName}`,
+        };
+      }
+
+      // ── MESSAGING: list_my_threads_with_tredoux ──────────────────
+      case 'list_my_threads_with_tredoux': {
+        // List active agent_super_admin threads where this agent is a
+        // participant. Cross-pollination: filter by participant_id=agentId.
+        const { data: parts } = await supabase
+          .from('montree_message_thread_participants')
+          .select('thread_id, last_read_at')
+          .eq('participant_role', 'agent')
+          .eq('participant_id', agentId)
+          .is('left_at', null);
+        const threadIds = ((parts as { thread_id: string; last_read_at: string | null }[] | null) || []).map(
+          (p) => p.thread_id
+        );
+        if (!threadIds.length) {
+          return {
+            success: true,
+            data: { threads: [] },
+            result_summary: 'No threads with Tredoux yet.',
+          };
+        }
+        const lastReadMap = new Map<string, string | null>();
+        for (const p of (parts as { thread_id: string; last_read_at: string | null }[]) || []) {
+          lastReadMap.set(p.thread_id, p.last_read_at);
+        }
+
+        const { data: threads } = await supabase
+          .from('montree_message_threads')
+          .select('id, subject, last_message_at, created_at')
+          .in('id', threadIds)
+          .eq('thread_type', 'agent_super_admin')
+          .is('archived_at', null)
+          .order('last_message_at', { ascending: false })
+          .limit(20);
+        const threadRows = (threads as Array<{
+          id: string;
+          subject: string | null;
+          last_message_at: string;
+          created_at: string;
+        }> | null) || [];
+        if (!threadRows.length) {
+          return {
+            success: true,
+            data: { threads: [] },
+            result_summary: 'No threads with Tredoux yet.',
+          };
+        }
+        const ids = threadRows.map((t) => t.id);
+
+        // Last message per thread.
+        const { data: lastMsgs } = await supabase
+          .from('montree_thread_messages')
+          .select('thread_id, body, sender_role, sent_at')
+          .in('thread_id', ids)
+          .is('deleted_at', null)
+          .order('sent_at', { ascending: false })
+          .limit(ids.length * 4); // belt-and-braces — last few per thread
+        const lastMsgByThread = new Map<
+          string,
+          { body: string; sender_role: string; sent_at: string }
+        >();
+        for (const m of (lastMsgs as Array<{
+          thread_id: string;
+          body: string;
+          sender_role: string;
+          sent_at: string;
+        }> | null) || []) {
+          if (!lastMsgByThread.has(m.thread_id)) {
+            lastMsgByThread.set(m.thread_id, {
+              body: m.body,
+              sender_role: m.sender_role,
+              sent_at: m.sent_at,
+            });
+          }
+        }
+
+        const out = threadRows.map((t) => {
+          const last = lastMsgByThread.get(t.id);
+          const lastReadAt = lastReadMap.get(t.id);
+          // Unread = last message is from super_admin AND landed after the
+          // agent's last_read_at (or last_read_at is null).
+          const unread =
+            !!last &&
+            last.sender_role === 'super_admin' &&
+            (!lastReadAt || last.sent_at > lastReadAt);
+          return {
+            id: t.id,
+            subject: t.subject,
+            last_message_at: t.last_message_at,
+            last_message_preview: last ? last.body.slice(0, 140) : null,
+            last_sender: last ? last.sender_role : null,
+            unread,
+          };
+        });
+
+        const unreadCount = out.filter((t) => t.unread).length;
+        return {
+          success: true,
+          data: { threads: out },
+          result_summary: `${out.length} thread(s)${unreadCount ? `, ${unreadCount} with new reply` : ''}`,
+        };
+      }
+
+      // ── MESSAGING: start_thread_with_tredoux ─────────────────────
+      // 🚨 This writes a real DB row. Mira fires this ONLY when the agent
+      // has explicitly asked her to message Tredoux. The system prompt is
+      // strict on the "don't volunteer" posture.
+      case 'start_thread_with_tredoux': {
+        const subject = typeof input.subject === 'string' ? input.subject.trim().slice(0, 200) : null;
+        const text = String(input.body || '').trim();
+        if (!text) {
+          return { success: false, error: 'body is required' };
+        }
+        if (text.length > 10000) {
+          return { success: false, error: 'body exceeds 10000 chars — shorten the message' };
+        }
+
+        // Resolve agent display name for sender_name. Prefer the deps-
+        // provided value; fall back to a DB lookup so the message is never
+        // attributed to a placeholder.
+        let senderName = deps.agentName?.trim() || '';
+        if (!senderName) {
+          const { data: ag } = await supabase
+            .from('montree_teachers')
+            .select('name, email')
+            .eq('id', agentId)
+            .maybeSingle();
+          senderName =
+            (ag?.name as string | undefined)?.trim() ||
+            (ag?.email as string | undefined) ||
+            'Agent';
+        }
+
+        // 1. Create the thread. school_id=NULL is allowed only for
+        //    agent_super_admin (per migration 204 gated CHECK).
+        const nowIso = new Date().toISOString();
+        const { data: threadRaw, error: threadErr } = await supabase
+          .from('montree_message_threads')
+          .insert({
+            school_id: null,
+            classroom_id: null,
+            child_id: null,
+            thread_type: 'agent_super_admin',
+            subject,
+            created_by_role: 'agent',
+            created_by_id: agentId,
+            last_message_at: nowIso,
+          })
+          .select('id')
+          .single();
+        if (threadErr || !threadRaw) {
+          return {
+            success: false,
+            error: `Could not start the thread: ${threadErr?.message || 'unknown error'}`,
+          };
+        }
+        const threadId = (threadRaw as { id: string }).id;
+
+        // 2. Add both participants — agent + super-admin sentinel.
+        const { error: partErr } = await supabase
+          .from('montree_message_thread_participants')
+          .insert([
+            {
+              thread_id: threadId,
+              participant_role: 'agent',
+              participant_id: agentId,
+              can_reply: true,
+              is_observer: false,
+              is_primary: true,
+            },
+            {
+              thread_id: threadId,
+              participant_role: 'super_admin',
+              participant_id: SUPER_ADMIN_SENTINEL_UUID,
+              can_reply: true,
+              is_observer: false,
+              is_primary: true,
+            },
+          ]);
+        if (partErr) {
+          // Best-effort rollback to keep DB clean.
+          await supabase.from('montree_message_threads').delete().eq('id', threadId);
+          return {
+            success: false,
+            error: `Could not add participants: ${partErr.message}`,
+          };
+        }
+
+        // 3. Insert the message. ai_drafted=false per Session 84 rule —
+        //    agent never claims AI authorship on her own outgoing messages.
+        //    (Mira composed it on her behalf, but the message IS hers.)
+        const { data: msg, error: msgErr } = await supabase
+          .from('montree_thread_messages')
+          .insert({
+            thread_id: threadId,
+            sender_role: 'agent',
+            sender_id: agentId,
+            sender_name: senderName,
+            body: text,
+            ai_drafted: false,
+          })
+          .select('id, sent_at')
+          .single();
+        if (msgErr) {
+          // Thread is created but message missing — surface so caller can retry.
+          return {
+            success: false,
+            error: `Thread created but message insert failed: ${msgErr.message}`,
+            data: { thread_id: threadId },
+          };
+        }
+
+        // 4. Mark agent's last_read_at to now — they just sent.
+        void supabase
+          .from('montree_message_thread_participants')
+          .update({ last_read_at: nowIso })
+          .eq('thread_id', threadId)
+          .eq('participant_role', 'agent')
+          .eq('participant_id', agentId)
+          .then(({ error }) => {
+            if (error) console.error('[mira start_thread] last_read update failed', error);
+          });
+
+        return {
+          success: true,
+          data: {
+            thread_id: threadId,
+            message_id: (msg as { id: string }).id,
+            subject,
+            recipient: SUPER_ADMIN_DISPLAY_NAME,
+          },
+          result_summary: `Started thread with ${SUPER_ADMIN_DISPLAY_NAME}${subject ? `: "${subject}"` : ''}`,
+        };
+      }
+
+      // ── MESSAGING: reply_in_thread ───────────────────────────────
+      case 'reply_in_thread': {
+        const threadId = String(input.thread_id || '').trim();
+        const text = String(input.body || '').trim();
+        if (!threadId) {
+          return { success: false, error: 'thread_id is required' };
+        }
+        if (!text) {
+          return { success: false, error: 'body is required' };
+        }
+        if (text.length > 10000) {
+          return { success: false, error: 'body exceeds 10000 chars — shorten the message' };
+        }
+
+        // Cross-pollination check: this agent MUST be a participant on the
+        // thread. The same check the HTTP route does.
+        const { data: part } = await supabase
+          .from('montree_message_thread_participants')
+          .select('thread_id, can_reply')
+          .eq('thread_id', threadId)
+          .eq('participant_role', 'agent')
+          .eq('participant_id', agentId)
+          .is('left_at', null)
+          .maybeSingle();
+        if (!part) {
+          return {
+            success: false,
+            error: "You're not a participant on that thread.",
+          };
+        }
+        const partRow = part as { thread_id: string; can_reply: boolean };
+        if (!partRow.can_reply) {
+          return {
+            success: false,
+            error: 'Replies are disabled on that thread.',
+          };
+        }
+
+        // Confirm thread type (defence in depth — a misrouted thread_id
+        // from another scope should not accept agent posts).
+        const { data: thread } = await supabase
+          .from('montree_message_threads')
+          .select('id, thread_type')
+          .eq('id', threadId)
+          .maybeSingle();
+        const threadRow = thread as { id: string; thread_type: string } | null;
+        if (!threadRow || threadRow.thread_type !== 'agent_super_admin') {
+          return {
+            success: false,
+            error: 'That thread is not an agent ↔ Tredoux thread.',
+          };
+        }
+
+        // Resolve sender_name (same fallback chain as start_thread).
+        let senderName = deps.agentName?.trim() || '';
+        if (!senderName) {
+          const { data: ag } = await supabase
+            .from('montree_teachers')
+            .select('name, email')
+            .eq('id', agentId)
+            .maybeSingle();
+          senderName =
+            (ag?.name as string | undefined)?.trim() ||
+            (ag?.email as string | undefined) ||
+            'Agent';
+        }
+
+        const nowIso = new Date().toISOString();
+        const { data: msg, error: msgErr } = await supabase
+          .from('montree_thread_messages')
+          .insert({
+            thread_id: threadId,
+            sender_role: 'agent',
+            sender_id: agentId,
+            sender_name: senderName,
+            body: text,
+            ai_drafted: false,
+          })
+          .select('id, sent_at')
+          .single();
+        if (msgErr) {
+          return {
+            success: false,
+            error: `Reply insert failed: ${msgErr.message}`,
+          };
+        }
+
+        // Bump thread.last_message_at so it sorts to the top on both sides.
+        void supabase
+          .from('montree_message_threads')
+          .update({ last_message_at: nowIso })
+          .eq('id', threadId)
+          .then(({ error }) => {
+            if (error) console.error('[mira reply_in_thread] last_message_at bump failed', error);
+          });
+
+        // Mark agent's last_read_at to now.
+        void supabase
+          .from('montree_message_thread_participants')
+          .update({ last_read_at: nowIso })
+          .eq('thread_id', threadId)
+          .eq('participant_role', 'agent')
+          .eq('participant_id', agentId)
+          .then(({ error }) => {
+            if (error) console.error('[mira reply_in_thread] last_read update failed', error);
+          });
+
+        return {
+          success: true,
+          data: {
+            thread_id: threadId,
+            message_id: (msg as { id: string }).id,
+            sent_at: (msg as { sent_at: string }).sent_at,
+            recipient: SUPER_ADMIN_DISPLAY_NAME,
+          },
+          result_summary: `Replied in thread to ${SUPER_ADMIN_DISPLAY_NAME}`,
         };
       }
 

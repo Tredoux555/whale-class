@@ -2,7 +2,8 @@
 //
 // Mint an Agora publish-side join token for a participant. Called by both:
 //   - The parent (when they tap Join on their appointment detail)
-//   - The staff host (when they tap Join from AvailabilityEditor)
+//   - The staff host (when they tap Join from AppointmentsCalendar's
+//     day-detail panel — the calendar-first UI from Session 117)
 //
 // AUTH: parent OR staff. We verify the caller is actually a participant
 // on this appointment before minting a token — parents must be the
