@@ -14,6 +14,7 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
+import dynamic from 'next/dynamic';
 import {
   Calendar,
   ArrowLeft,
@@ -25,6 +26,13 @@ import {
   ChevronRight,
   Video,
 } from 'lucide-react';
+
+// Lazy-mount the Agora call. ~600KB SDK chunk — only loads when a parent
+// taps Join on an Agora-provider appointment.
+const AgoraVideoCallLazy = dynamic(
+  () => import('@/components/montree/appointments/AgoraVideoCall'),
+  { ssr: false }
+);
 
 const T = {
   bg: '#0a1a0f',
@@ -63,11 +71,16 @@ interface Appointment {
   // Phase 116.2 — Jitsi room URL. Optional because pre-migration-222
   // bookings + schools without the video_calls flag have no value here.
   video_url?: string | null;
+  // Phase 116.3 — which video provider serves this appointment.
+  provider?: 'jitsi' | 'agora' | null;
+  recording_enabled?: boolean | null;
   hosts: Array<{ role: string; id: string; name: string | null; is_primary: boolean }>;
 }
 
 interface FeatureFlagsEcho {
   video_calls?: boolean;
+  agora_video_calls?: boolean;
+  video_recording?: boolean;
 }
 
 interface RecipientBundle {
@@ -279,8 +292,18 @@ function BookFlow({ bundles, featureFlags, onCancel, onBooked }: { bundles: Reci
   // a worse first impression than asking. Server ignores this when the
   // school's video_calls flag is OFF (defense in depth).
   const [videoCall, setVideoCall] = useState<boolean>(false);
+  // Phase 116.3 — opt-in to recording. Only visible when school has BOTH
+  // agora_video_calls AND video_recording flags on AND the parent has
+  // ticked the video-call checkbox above. Defaults OFF — parents opt in.
+  const [recordMeeting, setRecordMeeting] = useState<boolean>(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Whether the video checkbox surface should appear at all (either Jitsi
+  // legacy or Agora premium counts as "video available").
+  const videoAvailable = !!featureFlags.video_calls || !!featureFlags.agora_video_calls;
+  // Whether to surface the "Record this meeting" sub-checkbox.
+  const recordingAvailable = !!featureFlags.agora_video_calls && !!featureFlags.video_recording;
 
   const currentBundle = bundles.find((b) => b.child_id === childId) || null;
 
@@ -338,10 +361,14 @@ function BookFlow({ bundles, featureFlags, onCancel, onBooked }: { bundles: Reci
           child_id: childId || null,
           intake_subject: subject.trim() || null,
           intake_body: bodyText.trim() || null,
-          // Phase 116.2 — opt-in video call. Only sent when the flag is
-          // on (UI hides the checkbox otherwise). Server gates this
-          // against the same flag for defense in depth.
-          ...(featureFlags.video_calls && videoCall ? { video_call: true } : {}),
+          // Phase 116.2/116.3 — opt-in video call. Sent when either Jitsi
+          // (video_calls) or Agora (agora_video_calls) is on. Server
+          // chooses provider based on its own flag check (defense in depth).
+          ...(videoAvailable && videoCall ? { video_call: true } : {}),
+          // Phase 116.3 — opt-in recording. Only sent when recording is
+          // available AND the parent ticked the video-call checkbox AND
+          // the parent ticked the recording sub-checkbox.
+          ...(recordingAvailable && videoCall && recordMeeting ? { record_meeting: true } : {}),
         }),
       });
       if (!res.ok) {
@@ -440,29 +467,59 @@ function BookFlow({ bundles, featureFlags, onCancel, onBooked }: { bundles: Reci
                 <textarea value={bodyText} onChange={(e) => setBodyText(e.target.value)} rows={4} placeholder="Context, questions, what's on your mind — optional" maxLength={2000} style={{ ...inputStyle(), resize: 'vertical', minHeight: 90 }} />
               </FieldRow>
 
-              {/* Phase 116.2 — video-call opt-in. Surfaces only when the
-                  school has the `video_calls` flag on. Schools without
-                  the flag never see this checkbox. */}
-              {featureFlags.video_calls && (
-                <label style={{
-                  display: 'flex', alignItems: 'flex-start', gap: 10,
-                  padding: 12, borderRadius: 10,
-                  background: T.cardBg, border: T.cardBorder,
-                  fontSize: 13, color: T.textPrimary, cursor: 'pointer',
-                }}>
-                  <input
-                    type="checkbox"
-                    checked={videoCall}
-                    onChange={(e) => setVideoCall(e.target.checked)}
-                    style={{ marginTop: 3, width: 18, height: 18, cursor: 'pointer', accentColor: T.emerald }}
-                  />
-                  <span style={{ flex: 1 }}>
-                    <span style={{ fontWeight: 600 }}>Video call</span>
-                    <span style={{ display: 'block', fontSize: 12, color: T.textSecondary, marginTop: 2, lineHeight: 1.45 }}>
-                      Join the meeting from anywhere via Jitsi Meet. A secure room link will be created for you and {recipient.name}. Browser-only — no app to install.
+              {/* Phase 116.2/116.3 — video-call opt-in. Surfaces when
+                  EITHER provider is on. Copy + features adapt to which
+                  one is active (Agora native > Jitsi external). */}
+              {videoAvailable && (
+                <>
+                  <label style={{
+                    display: 'flex', alignItems: 'flex-start', gap: 10,
+                    padding: 12, borderRadius: 10,
+                    background: T.cardBg, border: T.cardBorder,
+                    fontSize: 13, color: T.textPrimary, cursor: 'pointer',
+                  }}>
+                    <input
+                      type="checkbox"
+                      checked={videoCall}
+                      onChange={(e) => setVideoCall(e.target.checked)}
+                      style={{ marginTop: 3, width: 18, height: 18, cursor: 'pointer', accentColor: T.emerald }}
+                    />
+                    <span style={{ flex: 1 }}>
+                      <span style={{ fontWeight: 600 }}>Video call</span>
+                      <span style={{ display: 'block', fontSize: 12, color: T.textSecondary, marginTop: 2, lineHeight: 1.45 }}>
+                        {featureFlags.agora_video_calls
+                          ? `Meet face-to-face with ${recipient.name} from anywhere — the call opens right here inside Montree. Camera and microphone permission required.`
+                          : `Join the meeting from anywhere via Jitsi Meet. A secure room link will be created for you and ${recipient.name}. Browser-only — no app to install.`}
+                      </span>
                     </span>
-                  </span>
-                </label>
+                  </label>
+
+                  {/* Recording sub-option. Indented under video to show it
+                      depends on the parent checkbox. */}
+                  {videoCall && recordingAvailable && (
+                    <label style={{
+                      display: 'flex', alignItems: 'flex-start', gap: 10,
+                      padding: 12, borderRadius: 10,
+                      background: 'rgba(232,201,106,0.08)',
+                      border: '1px solid rgba(232,201,106,0.28)',
+                      fontSize: 13, color: T.textPrimary, cursor: 'pointer',
+                      marginLeft: 24,
+                    }}>
+                      <input
+                        type="checkbox"
+                        checked={recordMeeting}
+                        onChange={(e) => setRecordMeeting(e.target.checked)}
+                        style={{ marginTop: 3, width: 18, height: 18, cursor: 'pointer', accentColor: '#E8C96A' }}
+                      />
+                      <span style={{ flex: 1 }}>
+                        <span style={{ fontWeight: 600, color: '#E8C96A' }}>Record this meeting</span>
+                        <span style={{ display: 'block', fontSize: 12, color: T.textSecondary, marginTop: 2, lineHeight: 1.45 }}>
+                          The school keeps a copy so the next teacher you meet knows what was discussed. Audio only — never video. You&apos;ll see a recording banner during the call.
+                        </span>
+                      </span>
+                    </label>
+                  )}
+                </>
               )}
 
               {error && (
@@ -536,6 +593,10 @@ function SlotGrid({ slots, selectedStart, onPick }: { slots: Array<{ start: stri
 function DetailView({ appt, onClose, onChanged }: { appt: Appointment; onClose: () => void; onChanged: () => Promise<void> }) {
   const [cancelling, setCancelling] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Phase 116.3 — controls whether the AgoraVideoCall component is
+  // mounted (covers the whole viewport when active). Lazy-required so
+  // the SDK isn't downloaded until the user actually taps Join.
+  const [agoraOpen, setAgoraOpen] = useState(false);
   const primary = appt.hosts.find((h) => h.is_primary);
   const isPast = new Date(appt.scheduled_end) < new Date();
   const canModify = appt.status === 'confirmed' && !isPast;
@@ -586,12 +647,37 @@ function DetailView({ appt, onClose, onChanged }: { appt: Appointment; onClose: 
             {appt.location}
           </div>
         )}
-        {/* Phase 116.2 — Join button for Jitsi calls. Renders only when
-            the booking has a video_url (parent opted in + school has
-            video_calls on). Past appointments still show the button so
-            the parent can re-enter the room if they got dropped. We
-            don't disable it on cancelled because some flows re-open. */}
-        {appt.video_url && (
+        {/* Phase 116.2/116.3 — Join button. Two variants:
+            (a) provider='agora' → button mounts the AgoraVideoCall
+                component inline (no external URL). Recording UX surfaces
+                inside the call if recording_enabled.
+            (b) Otherwise → falls back to the Jitsi video_url anchor.
+            Past + cancelled appointments still show the button so the
+            parent can re-enter if they got dropped. */}
+        {appt.provider === 'agora' && appt.status === 'confirmed' && !isPast && (
+          <button
+            type="button"
+            onClick={() => setAgoraOpen(true)}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 8,
+              marginTop: 12,
+              padding: '10px 14px',
+              borderRadius: 10,
+              background: T.emerald,
+              color: '#0a1a0f',
+              fontWeight: 600,
+              fontSize: 14,
+              border: 'none',
+              cursor: 'pointer',
+            }}
+            aria-label="Join the video call"
+          >
+            <Video size={16} strokeWidth={1.75} /> Join video call
+          </button>
+        )}
+        {appt.provider !== 'agora' && appt.video_url && (
           <a
             href={appt.video_url}
             target="_blank"
@@ -643,6 +729,19 @@ function DetailView({ appt, onClose, onChanged }: { appt: Appointment; onClose: 
       )}
 
       <button onClick={onClose} style={btnGhost()}>Back</button>
+
+      {/* Phase 116.3 — full-viewport Agora call overlay. Dynamic import
+          to keep the SDK chunk out of the initial bundle for anyone who
+          doesn't open a video call. */}
+      {agoraOpen && appt.provider === 'agora' && (
+        <AgoraVideoCallLazy
+          appointmentId={appt.id}
+          callerRole="parent"
+          remoteDisplayName={primary?.name || 'Your teacher'}
+          recordingEnabledForAppointment={!!appt.recording_enabled}
+          onClose={() => setAgoraOpen(false)}
+        />
+      )}
     </div>
   );
 }

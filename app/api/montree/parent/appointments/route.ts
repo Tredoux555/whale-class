@@ -31,34 +31,52 @@ export const maxDuration = 30;
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-// `video_url` (Phase 116.2) is the Jitsi room URL — present only when the
-// parent ticked the video-call checkbox at booking AND the `video_calls`
-// feature flag is enabled for the school. Null on every appointment
-// booked before migration 222 / on schools without the flag on.
+// APPT_COLS covers everything we want to surface on parent appointments
+// pages. New optional columns (added by 222 + 223):
+//   - video_url (222) — Jitsi room URL, null on Agora and on pre-222
+//   - provider (223) — 'jitsi' | 'agora', defaults 'jitsi' for pre-223
+//   - recording_enabled (223) — whether recording was enabled at booking,
+//     defaults false pre-223
+// All three are gracefully omitted via the LEGACY fallback below when
+// the relevant migration hasn't been run.
 const APPT_COLS =
-  'id, school_id, classroom_id, child_id, parent_id, event_kind, scheduled_start, scheduled_end, duration_minutes, status, cancelled_reason, cancelled_by_role, cancelled_at, intake_subject, intake_body, location, thread_id, shared_to_thread_at, ical_token, video_url, created_at, updated_at';
-// Migration-pending fallback. Used when SELECT(APPT_COLS) returns 42703
-// because migration 222 hasn't been run yet. Stays in lockstep with
-// APPT_COLS minus `video_url`. Without this, every parent's
-// appointments page would 500 in the window between code deploy and
-// migration run.
+  'id, school_id, classroom_id, child_id, parent_id, event_kind, scheduled_start, scheduled_end, duration_minutes, status, cancelled_reason, cancelled_by_role, cancelled_at, intake_subject, intake_body, location, thread_id, shared_to_thread_at, ical_token, video_url, provider, recording_enabled, created_at, updated_at';
+// Migration-pending fallback. Strips ALL optional columns added by 222 +
+// 223. Without this, every parent's appointments page would 500 in the
+// window between code deploy and migration run.
 const APPT_COLS_LEGACY =
   'id, school_id, classroom_id, child_id, parent_id, event_kind, scheduled_start, scheduled_end, duration_minutes, status, cancelled_reason, cancelled_by_role, cancelled_at, intake_subject, intake_body, location, thread_id, shared_to_thread_at, ical_token, created_at, updated_at';
 
 /**
- * Detect the column-pending case for `video_url`. Returns true when the
- * Supabase error indicates migration 222 hasn't been run.
+ * Detect the column-pending case for any of the optional columns added
+ * by migrations 222 / 223. The retry path falls back to APPT_COLS_LEGACY
+ * which omits all three.
  */
-function isVideoUrlColumnMissing(err: { code?: string; message?: string } | null | undefined): boolean {
+function isOptionalColumnMissing(err: { code?: string; message?: string } | null | undefined): boolean {
   if (!err) return false;
-  return err.code === '42703' && /video_url/i.test(err.message || '');
+  return err.code === '42703' && /video_url|provider|recording_enabled/i.test(err.message || '');
 }
+
+// Back-compat alias — older code paths reference this name.
+const isVideoUrlColumnMissing = isOptionalColumnMissing;
 
 // ── GET — parent's appointments ──────────────────────────────────────
 export async function GET() {
   const supabase = getSupabase();
   const parent = await resolveAppointmentsParent(supabase);
   if (parent instanceof NextResponse) return parent;
+
+  // Echo BOTH video flags so the parent UI can decide:
+  //   - video_calls (Jitsi legacy) — checkbox visible, books with Jitsi
+  //   - agora_video_calls (premium) — checkbox visible, books with Agora
+  //   - video_recording — adds "record this meeting" sub-option (Agora only)
+  // Computed up-front; reused both in the response echo AND inside the POST
+  // for provider selection. Single source of truth.
+  const [videoCallsEnabledFlag, agoraEnabledFlag, recordingEnabledFlag] = await Promise.all([
+    isFeatureEnabled(supabase, parent.schoolId, 'video_calls'),
+    isFeatureEnabled(supabase, parent.schoolId, 'agora_video_calls'),
+    isFeatureEnabled(supabase, parent.schoolId, 'video_recording'),
+  ]);
 
   // Pull upcoming + recent past (last 30 days). Hosts hydrated via a
   // second query.
@@ -148,20 +166,16 @@ export async function GET() {
     hosts: hostsByAppt.get(a.id) || [],
   }));
 
-  // Phase 116.2 — echo the video_calls flag so the booking UI can show
-  // / hide the "Video call" checkbox without a second round-trip. Other
-  // appointment-adjacent flags can ride alongside in this map as they
-  // ship.
-  const videoCallsEnabled = await isFeatureEnabled(
-    supabase,
-    parent.schoolId,
-    'video_calls'
-  );
-
   return NextResponse.json({
     appointments: enriched,
     feature_flags: {
-      video_calls: videoCallsEnabled,
+      video_calls: videoCallsEnabledFlag,
+      // Phase 116.3 — when ON, parent UI books with Agora provider instead
+      // of Jitsi. Both flags can coexist (Agora takes priority server-side).
+      agora_video_calls: agoraEnabledFlag,
+      // When BOTH agora_video_calls AND video_recording are ON, the booking
+      // UI surfaces a "record this meeting" sub-checkbox.
+      video_recording: recordingEnabledFlag,
     },
   });
 }
@@ -198,6 +212,10 @@ export async function POST(request: NextRequest) {
     // school. If the flag is off, this field is silently ignored
     // (booking still succeeds, just no video URL).
     video_call?: boolean;
+    // Phase 116.3 — parent ticks "Record this meeting" sub-option (Agora
+    // only). Requires BOTH agora_video_calls AND video_recording flags.
+    // Server stores on the appointment row as recording_enabled.
+    record_meeting?: boolean;
   };
   try {
     body = await request.json();
@@ -309,24 +327,45 @@ export async function POST(request: NextRequest) {
     classroomId = (t as { classroom_id: string | null } | null)?.classroom_id ?? null;
   }
 
-  // ── Phase 116.2 video URL ──────────────────────────────────────────
-  // Generate a Jitsi URL only when (a) the parent opted in AND (b) the
-  // `video_calls` feature flag is ON for the school. The feature flag
-  // gate runs server-side as the authoritative check — the parent UI
-  // also gates the checkbox on the same flag (from the GET response's
-  // feature_flags echo) but a malicious or stale client passing
-  // video_call=true with the flag OFF should still be ignored.
+  // ── Phase 116.2/116.3 — Video provider selection ────────────────────
+  // Token is generated regardless; both Jitsi URL and Agora channel name
+  // derive deterministically from it.
+  //
+  // PROVIDER PRECEDENCE:
+  //   1. Parent didn't tick video_call → no provider, no video.
+  //   2. agora_video_calls flag ON → provider='agora'. Channel name is
+  //      derived from ical_token at join time via /agora-token. We don't
+  //      store a video_url because the URL is implicit (Montree-internal
+  //      route, not a hosted page).
+  //   3. agora_video_calls flag OFF + video_calls flag ON → provider='jitsi'.
+  //      Generate the Jitsi URL up-front and store in video_url.
+  //   4. Both flags OFF → silently ignore video_call (no provider).
+  //
+  // RECORDING:
+  //   record_meeting=true is only honoured when BOTH agora_video_calls
+  //   AND video_recording are ON. Stored as appointment.recording_enabled
+  //   which the recording/start route checks at recording time.
+  //
+  // We use the upfront flag checks (videoCallsEnabledFlag etc.) computed
+  // in the GET section — they're a single source of truth across both
+  // verbs of this route.
   const icalToken = randomBytes(18).toString('base64url');
   let videoUrl: string | null = null;
+  let provider: 'jitsi' | 'agora' = 'jitsi';
+  let recordingEnabled = false;
   if (body.video_call === true) {
-    const videoFlagOn = await isFeatureEnabled(
-      supabase,
-      parent.schoolId,
-      'video_calls'
-    );
-    if (videoFlagOn) {
+    if (agoraEnabledFlag) {
+      provider = 'agora';
+      // No video_url for Agora — UI computes from /agora-token endpoint.
+      if (body.record_meeting === true && recordingEnabledFlag) {
+        recordingEnabled = true;
+      }
+    } else if (videoCallsEnabledFlag) {
+      provider = 'jitsi';
       videoUrl = generateJitsiUrl(icalToken);
     }
+    // Both flags OFF → provider stays 'jitsi' default, no video_url. The
+    // checkbox shouldn't have surfaced on the UI; defense in depth.
   }
 
   // ── Insert the appointment ─────────────────────────────────────────
@@ -355,6 +394,16 @@ export async function POST(request: NextRequest) {
   };
   if (videoUrl !== null) {
     insertPayload.video_url = videoUrl;
+  }
+  // Phase 116.3 — provider + recording_enabled are stamped from migration
+  // 223 columns. Conditionally spread: when 223 hasn't been run, the
+  // INSERT would 42703 on these column references. The two flag checks
+  // above already gate that recordingEnabled stays false in that case;
+  // we additionally skip spreading them when provider stayed at the
+  // 'jitsi' default + no recording (the pre-223 default behaviour).
+  if (provider !== 'jitsi' || recordingEnabled) {
+    insertPayload.provider = provider;
+    insertPayload.recording_enabled = recordingEnabled;
   }
 
   let { data: appt, error: insertErr } = await supabase

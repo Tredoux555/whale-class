@@ -74,6 +74,16 @@ export interface Appointment {
   // Read via lib/montree/appointments/video.ts:resolveVideoUrl which
   // falls back to regeneration from ical_token if the column is null.
   video_url: string | null;
+  // Phase 116.3 (migration 223) — which provider serves this appointment's
+  // video call. 'jitsi' = external Jitsi URL (use video_url). 'agora' =
+  // native-in-Montree Agora call (use /agora-token endpoint). Defaults
+  // 'jitsi' on existing rows. Optional in TS because legacy fetch paths
+  // may strip the column when migration 223 hasn't been run.
+  provider?: 'jitsi' | 'agora' | null;
+  // Phase 116.3 — whether recording was enabled at booking. Recording
+  // requires this PLUS the school's video_recording flag PLUS staff
+  // tapping the in-call record button.
+  recording_enabled?: boolean | null;
   created_at: string;
   updated_at: string;
 }
