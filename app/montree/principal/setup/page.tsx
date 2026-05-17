@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 import { useI18n } from '@/lib/montree/i18n';
 import PrincipalSetupGuide from '@/components/montree/onboarding/PrincipalSetupGuide';
 import TracyAvatar from '@/components/montree/admin/TracyAvatar';
-import MontreeMark from '@/components/montree/MontreeMark';
+import MontreeLogo from '@/components/montree/MonteeLogo';
 
 
 const EMOJI_OPTIONS = ['🌳', '🐼', '🦁', '🐘', '🦋', '🌟', '🌈', '🌻', '🍎', '🎨', '📚', '🎵'];
@@ -291,7 +291,7 @@ export default function PrincipalSetupPage() {
             <div className="relative inline-block mb-8">
               <div className="absolute inset-0 w-24 h-24 rounded-full bg-emerald-400/20 blur-xl" style={{ animation: 'welcome-pulse 3s ease-in-out infinite' }} />
               <div className="relative flex items-center justify-center">
-                <MontreeMark size={96} />
+                <MontreeLogo size={96} />
               </div>
             </div>
 
@@ -743,7 +743,7 @@ export default function PrincipalSetupPage() {
       {/* Footer */}
       <div className="absolute bottom-6 left-0 right-0 text-center">
         <p className="text-slate-500 text-xs inline-flex items-center justify-center gap-1.5">
-          <MontreeMark size={12} withSpark={false} />
+          <MontreeLogo size={12} />
           <span>Montree • montree.xyz</span>
         </p>
       </div>

@@ -4,7 +4,7 @@ import { useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useI18n } from '@/lib/montree/i18n';
 import LanguageToggle from '@/components/montree/LanguageToggle';
-import MontreeMark from '@/components/montree/MontreeMark';
+import MontreeLogo from '@/components/montree/MonteeLogo';
 
 // /montree/page.tsx — Montree landing page (v2 — deep forest palette)
 
@@ -144,7 +144,7 @@ export default function MontreeLanding() {
           text-decoration: none;
         }
         /* .m-logo-mark and ::after rules removed — replaced by the
-           <MontreeMark> component which carries its own styling + spark. */
+           <MontreeLogo> component which carries its own styling + spark. */
         .m-logo-word {
           font-family: var(--font-lora), Georgia, serif;
           font-weight: 500;
@@ -402,7 +402,7 @@ export default function MontreeLanding() {
         <div className="m-nav-inner">
           <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
             <a className="m-logo" href="/montree" aria-label="Montree home">
-              <MontreeMark size={28} />
+              <MontreeLogo size={28} />
               <span className="m-logo-word">Montree</span>
             </a>
             <Link
@@ -510,7 +510,7 @@ export default function MontreeLanding() {
       {/* ── FOOTER ── */}
       <footer className="m-footer">
         <div className="m-footer-inner">
-          <MontreeMark size={14} withSpark={false} />
+          <MontreeLogo size={14} />
           <span>Montree · montree.xyz</span>
         </div>
       </footer>
