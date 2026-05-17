@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { toast, Toaster } from 'sonner';
-import { LogOut, ChevronDown, Sparkles } from 'lucide-react';
+import { LogOut, ChevronDown, Sparkles, MessageSquare, Calendar } from 'lucide-react';
 import { useI18n, getIntlLocale } from '@/lib/montree/i18n';
 import LanguageToggle from '@/components/montree/LanguageToggle';
 import PhotoLightbox from '@/components/montree/media/PhotoLightbox';
@@ -122,6 +122,63 @@ export default function ParentDashboardPage() {
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
 
+  // 🚨 Phase 1 — Parent ↔ principal messaging entry point.
+  // Probe /api/montree/parent/messages/threads — Session 98's resolver returns
+  // 404 when the `parent_messaging` feature flag is OFF, so we only surface
+  // the Messages link when the school has opted in. Empty default keeps the
+  // dashboard scope locked to "log in → see Weekly Wrap → log out" for any
+  // school without the flag.
+  const [messaging, setMessaging] = useState<{ enabled: boolean; unread: number }>({
+    enabled: false,
+    unread: 0,
+  });
+
+  // 🚨 Phase 2 — Appointment booking entry point. Same probe pattern as
+  // messaging: /api/montree/parent/appointments returns 404 when the
+  // `appointments` feature flag is OFF for the school.
+  const [appointmentsState, setAppointmentsState] = useState<{ enabled: boolean }>({
+    enabled: false,
+  });
+
+  // 🚨 Phase 3 — Featured announcement. When a broadcast (thread_type
+  // = 'broadcast') is unread, surface it prominently above the report.
+  // Same probe — messaging endpoint already returns broadcast threads.
+  const [featuredAnnouncement, setFeaturedAnnouncement] = useState<{
+    id: string;
+    subject: string | null;
+    snippet: string | null;
+    senderName: string | null;
+    at: string;
+  } | null>(null);
+
+  // 🚨 Phase 4 — Upcoming events. Visible only when the `school_events`
+  // feature flag is on for the school. We pull up to 3 upcoming events
+  // with the parent's current RSVP state and surface one-tap RSVP
+  // buttons inline. Tapping the row opens the full event detail.
+  interface UpcomingEvent {
+    id: string;
+    title: string;
+    description: string | null;
+    start_at: string;
+    end_at: string | null;
+    location: string | null;
+    classroom_id: string | null;
+    capacity: number | null;
+    rsvp_counts: { yes: number; no: number; maybe: number };
+    my_rsvp: { status: string; child_id: string | null; note: string | null } | null;
+  }
+  const [upcomingEvents, setUpcomingEvents] = useState<UpcomingEvent[]>([]);
+
+  // 🚨 Phase 6 — Birthday + holiday calendar. Combined feed for next 30
+  // days. Gated on `school_calendar` flag server-side.
+  interface CalendarEntry {
+    kind: 'birthday_own' | 'birthday_classmate' | 'holiday';
+    date: string;
+    label: string;
+    is_closed?: boolean;
+  }
+  const [calendarEntries, setCalendarEntries] = useState<CalendarEntry[]>([]);
+
   // --- Auth & Init ---
   // 🚨 Session 113 V2 Parent audit F-1.3 — auth check is now cookie-based,
   // not localStorage-based. The httpOnly cookie is the only authority on
@@ -210,6 +267,108 @@ export default function ParentDashboardPage() {
     };
   }, [router, t]);
 
+  // 🚨 Phase 1 — Probe parent_messaging flag + unread count after auth lands.
+  // 🚨 Phase 2 — Probe appointments flag in parallel. Both fail-quiet.
+  // Each resolver returns 404 when the school hasn't enabled the feature;
+  // the corresponding entry icon stays hidden in that case.
+  useEffect(() => {
+    if (loading) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const [messagingRes, appointmentsRes, eventsRes, calendarRes] = await Promise.all([
+          fetch('/api/montree/parent/messages/threads', {
+            credentials: 'same-origin',
+            cache: 'no-store',
+          }),
+          fetch('/api/montree/parent/appointments', {
+            credentials: 'same-origin',
+            cache: 'no-store',
+          }),
+          fetch('/api/montree/parent/events', {
+            credentials: 'same-origin',
+            cache: 'no-store',
+          }),
+          fetch('/api/montree/parent/calendar', {
+            credentials: 'same-origin',
+            cache: 'no-store',
+          }),
+        ]);
+        if (cancelled) return;
+
+        if (messagingRes.ok) {
+          const data = await messagingRes.json();
+          type ThreadRow = {
+            id: string;
+            thread_type?: string;
+            subject?: string | null;
+            last_snippet?: string | null;
+            last_sender_name?: string | null;
+            last_message_at?: string;
+            unread_for_me?: number;
+          };
+          const threads: ThreadRow[] = Array.isArray(data?.threads) ? data.threads : [];
+          const unread = threads.reduce(
+            (acc, t) => acc + (typeof t.unread_for_me === 'number' ? t.unread_for_me : 0),
+            0
+          );
+          setMessaging({ enabled: true, unread });
+
+          // Surface the most recent UNREAD broadcast as the featured
+          // announcement. Broadcasts are usually one-way; the parent
+          // taps to view the full content.
+          const unreadBroadcast = threads
+            .filter((t) => t.thread_type === 'broadcast' && (t.unread_for_me || 0) > 0)
+            .sort((a, b) => (b.last_message_at || '').localeCompare(a.last_message_at || ''))[0];
+          if (unreadBroadcast) {
+            setFeaturedAnnouncement({
+              id: unreadBroadcast.id,
+              subject: unreadBroadcast.subject || null,
+              snippet: unreadBroadcast.last_snippet || null,
+              senderName: unreadBroadcast.last_sender_name || null,
+              at: unreadBroadcast.last_message_at || '',
+            });
+          }
+        }
+        // For appointments: 200 = enabled. 404 = feature off. 503 = migration pending.
+        if (appointmentsRes.ok) {
+          setAppointmentsState({ enabled: true });
+        }
+
+        // For events: 200 = enabled. 404 = feature off.
+        if (eventsRes.ok) {
+          const edata = await eventsRes.json();
+          type RawEvent = UpcomingEvent & { cancelled_at?: string | null };
+          const list: RawEvent[] = Array.isArray(edata?.events) ? edata.events : [];
+          // Filter to upcoming AND non-cancelled. Show top 3 by start_at.
+          // (The server returns cancelled events for the full /events page
+          //  so parents can see "this was cancelled"; on the dashboard we
+          //  hide them — RSVP buttons would be confusing.)
+          const now = Date.now();
+          const upcoming = list
+            .filter((e) => !e.cancelled_at && Date.parse(e.start_at) >= now)
+            .sort((a, b) => a.start_at.localeCompare(b.start_at))
+            .slice(0, 3);
+          setUpcomingEvents(upcoming);
+        }
+
+        // Calendar: 200 = enabled. 404 = feature off.
+        if (calendarRes.ok) {
+          const cdata = await calendarRes.json();
+          if (Array.isArray(cdata?.entries)) {
+            setCalendarEntries(cdata.entries as CalendarEntry[]);
+          }
+        }
+      } catch {
+        // Network failure — leave both disabled. Weekly Wrap is the primary
+        // dashboard value and doesn't depend on either probe.
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [loading]);
+
   // --- Data Loading ---
   // (Session 113 V2 F-1.3: legacy loadChildren() removed — the auth-and-init
   // effect above now calls /parent/children directly via the cookie-based
@@ -263,6 +422,39 @@ export default function ParentDashboardPage() {
     localStorage.removeItem('montree_selected_child');
     router.push('/montree/parent');
   };
+
+  // 🚨 Phase 4 — inline RSVP. Fires from the dashboard event card.
+  // Optimistic update: flip my_rsvp.status locally before the server
+  // confirms; revert on error.
+  const handleRsvp = useCallback(
+    async (eventId: string, status: 'yes' | 'no' | 'maybe') => {
+      setUpcomingEvents((prev) =>
+        prev.map((e) =>
+          e.id === eventId
+            ? { ...e, my_rsvp: { status, child_id: e.my_rsvp?.child_id ?? null, note: e.my_rsvp?.note ?? null } }
+            : e
+        )
+      );
+      try {
+        const res = await fetch(`/api/montree/parent/events/${eventId}/rsvp`, {
+          method: 'POST',
+          credentials: 'same-origin',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status }),
+        });
+        if (!res.ok) {
+          // Roll back optimistic update on failure.
+          setUpcomingEvents((prev) =>
+            prev.map((e) => (e.id === eventId ? { ...e, my_rsvp: e.my_rsvp || null } : e))
+          );
+          toast.error(t('parent.dashboard.rsvpFailed') || 'Could not save RSVP');
+        }
+      } catch {
+        toast.error(t('parent.dashboard.rsvpFailed') || 'Could not save RSVP');
+      }
+    },
+    [t]
+  );
 
   // --- Report Data ---
   const allWorks: WorkItem[] = useMemo(() => {
@@ -418,7 +610,85 @@ export default function ParentDashboardPage() {
               Montree
             </span>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            {appointmentsState.enabled && (
+              <Link
+                href="/montree/parent/appointments"
+                aria-label="Appointments"
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  width: 40,
+                  height: 40,
+                  borderRadius: 10,
+                  color: T.emerald,
+                  background: 'transparent',
+                  textDecoration: 'none',
+                  transition: 'background 140ms ease',
+                }}
+                onMouseEnter={(e) =>
+                  (e.currentTarget.style.background = T.emeraldSoft)
+                }
+                onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+              >
+                <Calendar size={20} strokeWidth={1.75} />
+              </Link>
+            )}
+            {messaging.enabled && (
+              <Link
+                href="/montree/parent/messages"
+                aria-label={
+                  messaging.unread > 0
+                    ? `Messages — ${messaging.unread} unread`
+                    : 'Messages'
+                }
+                style={{
+                  position: 'relative',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  // 40+px touch target without dominating the header.
+                  width: 40,
+                  height: 40,
+                  borderRadius: 10,
+                  color: T.emerald,
+                  background: 'transparent',
+                  textDecoration: 'none',
+                  transition: 'background 140ms ease',
+                }}
+                onMouseEnter={(e) =>
+                  (e.currentTarget.style.background = T.emeraldSoft)
+                }
+                onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+              >
+                <MessageSquare size={20} strokeWidth={1.75} />
+                {messaging.unread > 0 && (
+                  <span
+                    aria-hidden
+                    style={{
+                      position: 'absolute',
+                      top: 4,
+                      right: 4,
+                      minWidth: 18,
+                      height: 18,
+                      padding: '0 5px',
+                      borderRadius: 999,
+                      background: T.emerald,
+                      color: '#0a1a0f',
+                      fontSize: 10,
+                      fontWeight: 700,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      lineHeight: 1,
+                    }}
+                  >
+                    {messaging.unread > 99 ? '99+' : messaging.unread}
+                  </span>
+                )}
+              </Link>
+            )}
             <LanguageToggle />
             <button
               onClick={handleLogout}
@@ -448,6 +718,179 @@ export default function ParentDashboardPage() {
       </header>
 
       <main style={{ maxWidth: 512, margin: '0 auto' }}>
+
+        {/* ═══ Phase 3 — Featured announcement banner ═══
+            Surfaces the most-recent UNREAD broadcast prominently. Tapping
+            opens the thread; reading the thread marks it read, so the
+            banner disappears on the next dashboard load. */}
+        {featuredAnnouncement && (
+          <div style={{ padding: '14px 20px 0' }}>
+            <Link
+              href={`/montree/parent/messages/${featuredAnnouncement.id}`}
+              style={{
+                display: 'block',
+                padding: '14px 16px',
+                borderRadius: 14,
+                background: 'rgba(232,201,106,0.12)',
+                border: '1px solid rgba(232,201,106,0.45)',
+                color: T.textPrimary,
+                textDecoration: 'none',
+              }}
+            >
+              <div
+                style={{
+                  fontSize: 10,
+                  letterSpacing: 0.8,
+                  fontWeight: 600,
+                  color: '#E8C96A',
+                  textTransform: 'uppercase',
+                  marginBottom: 4,
+                }}
+              >
+                {featuredAnnouncement.senderName
+                  ? `Announcement from ${featuredAnnouncement.senderName}`
+                  : 'New announcement'}
+              </div>
+              <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 4 }}>
+                {featuredAnnouncement.subject || 'Tap to read'}
+              </div>
+              {featuredAnnouncement.snippet && (
+                <div
+                  style={{
+                    fontSize: 13,
+                    color: T.textSecondary,
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    display: '-webkit-box',
+                    WebkitLineClamp: 2,
+                    WebkitBoxOrient: 'vertical',
+                    lineHeight: 1.45,
+                  }}
+                >
+                  {featuredAnnouncement.snippet}
+                </div>
+              )}
+            </Link>
+          </div>
+        )}
+
+        {/* ═══ Phase 4 — Upcoming events feed ═══
+            Inline list of the next ~3 upcoming events with one-tap RSVP
+            buttons. Only renders when school_events is enabled AND there
+            are upcoming events. */}
+        {upcomingEvents.length > 0 && (
+          <div style={{ padding: '14px 20px 0' }}>
+            <div style={{
+              fontSize: 11, fontWeight: 600, color: T.emerald,
+              textTransform: 'uppercase', letterSpacing: 0.8,
+              marginBottom: 10,
+            }}>
+              Upcoming events
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {upcomingEvents.map((e) => {
+                const start = new Date(e.start_at);
+                const myStatus = e.my_rsvp?.status;
+                return (
+                  <div key={e.id} style={{
+                    padding: '12px 14px', borderRadius: 12,
+                    background: T.card, border: '1px solid rgba(52,211,153,0.15)',
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 8, marginBottom: 4 }}>
+                      <div style={{ fontSize: 14, fontWeight: 600, color: T.textPrimary }}>
+                        {e.title}
+                      </div>
+                      <div style={{ fontSize: 11, color: T.textMuted }}>
+                        {start.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })} ·{' '}
+                        {start.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' })}
+                      </div>
+                    </div>
+                    {e.location && (
+                      <div style={{ fontSize: 12, color: T.textSecondary, marginBottom: 6 }}>
+                        {e.location}
+                      </div>
+                    )}
+                    <div style={{ display: 'flex', gap: 6, marginTop: 6 }}>
+                      {(['yes', 'maybe', 'no'] as const).map((s) => {
+                        const selected = myStatus === s;
+                        return (
+                          <button
+                            key={s}
+                            onClick={() => handleRsvp(e.id, s)}
+                            style={{
+                              flex: 1,
+                              padding: '8px 10px',
+                              borderRadius: 8,
+                              fontSize: 12,
+                              fontWeight: 600,
+                              cursor: 'pointer',
+                              border: selected ? 'none' : '1px solid rgba(52,211,153,0.20)',
+                              background: selected
+                                ? s === 'yes' ? T.emerald : s === 'no' ? 'rgba(239,68,68,0.18)' : 'rgba(232,201,106,0.22)'
+                                : 'transparent',
+                              color: selected
+                                ? s === 'yes' ? '#0a1a0f' : s === 'no' ? '#fca5a5' : T.textPrimary
+                                : T.textSecondary,
+                              textTransform: 'capitalize',
+                            }}
+                          >
+                            {s}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* ═══ Phase 6 — Birthday + holiday feed ═══
+            Combined chip-strip showing the next 30 days of birthdays and
+            holidays. Stays small + scannable. Each entry is a single
+            line; tapping does nothing in v1 (just informational). */}
+        {calendarEntries.length > 0 && (
+          <div style={{ padding: '14px 20px 0' }}>
+            <div style={{
+              fontSize: 11, fontWeight: 600, color: T.emerald,
+              textTransform: 'uppercase', letterSpacing: 0.8,
+              marginBottom: 10,
+            }}>
+              Coming up
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              {calendarEntries.slice(0, 6).map((entry, idx) => {
+                const d = new Date(entry.date + 'T00:00:00Z');
+                const dateLabel = d.toLocaleDateString(undefined, {
+                  weekday: 'short', month: 'short', day: 'numeric',
+                  timeZone: 'UTC',
+                });
+                const accent =
+                  entry.kind === 'holiday'
+                    ? T.amber
+                    : entry.kind === 'birthday_own'
+                      ? T.emerald
+                      : T.violetBorder;
+                const emoji =
+                  entry.kind === 'holiday' ? '📅' :
+                  entry.kind === 'birthday_own' ? '🎂' : '🎈';
+                return (
+                  <div key={`${entry.kind}:${entry.date}:${idx}`} style={{
+                    display: 'flex', alignItems: 'center', gap: 10,
+                    padding: '8px 12px', borderRadius: 10,
+                    background: T.card, border: `1px solid ${accent}`,
+                    fontSize: 13,
+                  }}>
+                    <span>{emoji}</span>
+                    <span style={{ flex: 1, color: T.textPrimary }}>{entry.label}</span>
+                    <span style={{ color: T.textMuted, fontSize: 11 }}>{dateLabel}</span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
 
         {/* ═══ Multi-child Selector ═══ */}
         {children.length > 1 && (

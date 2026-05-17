@@ -11,6 +11,8 @@ import {
   createThreadWithParticipants,
 } from '@/lib/montree/messaging/thread-resolver';
 import type { BroadcastScope, SenderRole } from '@/lib/montree/messaging/types';
+import { isFeatureEnabled } from '@/lib/montree/features/server';
+import { sendAnnouncementEmail } from '@/lib/montree/email';
 
 export const dynamic = 'force-dynamic';
 
@@ -136,6 +138,73 @@ export async function POST(request: NextRequest) {
   if (msgErr) {
     console.error('[broadcast] message insert failed', msgErr);
     return NextResponse.json({ error: 'Thread created but message failed' }, { status: 500 });
+  }
+
+  // 🚨 Phase 3 — Newsletter email push.
+  // When the school has the `principal_newsletter` feature flag ON AND
+  // the broadcast targets parents (any scope containing parents), fire
+  // emails to those parents alongside the in-app delivery. Fire-and-
+  // forget — failure here NEVER blocks the broadcast itself.
+  const parentRecipients = recipients.filter((r) => r.role === 'parent');
+  if (parentRecipients.length > 0) {
+    void (async () => {
+      try {
+        const flagOn = await isFeatureEnabled(
+          supabase,
+          auth.schoolId,
+          'principal_newsletter'
+        );
+        if (!flagOn) return;
+
+        // Hydrate parent emails. We already have the IDs from recipients.
+        const parentIds = parentRecipients.map((r) => r.id);
+        const { data: parentRows } = await supabase
+          .from('montree_parents')
+          .select('id, email, name')
+          .in('id', parentIds)
+          .eq('is_active', true);
+
+        // Resolve school name once for the email header.
+        const { data: school } = await supabase
+          .from('montree_schools')
+          .select('name')
+          .eq('id', auth.schoolId)
+          .maybeSingle();
+        const schoolName = (school as { name: string } | null)?.name || 'Your school';
+
+        const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://montree.xyz';
+        const threadUrl = `${appUrl.replace(/\/$/, '')}/montree/parent/messages/${thread.id}`;
+
+        type ParentRow = { id: string; email: string | null; name: string | null };
+        // Cap concurrency to avoid hammering Resend on a 500-parent broadcast.
+        // Fire 5 at a time.
+        const queue = ((parentRows || []) as ParentRow[]).filter((p) => p.email);
+        const concurrency = 5;
+        let index = 0;
+        async function worker() {
+          while (index < queue.length) {
+            const myIndex = index++;
+            const p = queue[myIndex];
+            try {
+              await sendAnnouncementEmail(p.email as string, {
+                schoolName,
+                senderName,
+                subject,
+                bodyPlain: body.body.trim(),
+                threadUrl,
+              });
+            } catch (err) {
+              console.error('[broadcast email] send failed', p.id, err);
+            }
+          }
+        }
+        await Promise.all(
+          Array.from({ length: Math.min(concurrency, queue.length) }, () => worker())
+        );
+      } catch (err) {
+        console.error('[broadcast email] fan-out failed', err);
+      }
+    })();
   }
 
   return NextResponse.json(

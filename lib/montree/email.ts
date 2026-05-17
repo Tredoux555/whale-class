@@ -975,3 +975,74 @@ Open Money tab: https://montree.xyz/montree/super-admin`;
     return { success: false, error: err instanceof Error ? err.message : 'unknown' };
   }
 }
+
+// ============================================
+// SEND ANNOUNCEMENT / NEWSLETTER (Phase 3)
+// ============================================
+//
+// Fires alongside a Session 97 broadcast when the school has the
+// `principal_newsletter` feature flag ON. Parents always see broadcasts
+// in-app via /montree/parent/messages — this is the EXTRA email channel.
+//
+// Designed to be called per-recipient, fire-and-forget, from inside the
+// broadcast route. Failures are logged but never block the broadcast
+// itself.
+export async function sendAnnouncementEmail(
+  recipientEmail: string,
+  args: {
+    schoolName: string;
+    senderName: string;
+    subject: string;
+    bodyPlain: string;
+    threadUrl?: string; // deep link into /montree/parent/messages/<id>
+  }
+): Promise<EmailResult> {
+  try {
+    const emailSubject = `${args.schoolName} · ${args.subject}`;
+    const cta = args.threadUrl
+      ? `<p style="margin:28px 0 0;"><a href="${args.threadUrl}" style="display:inline-block;padding:12px 22px;background:#10b981;color:#fff;border-radius:10px;font-weight:600;text-decoration:none;font-size:14px;">Open in Montree</a></p>`
+      : '';
+
+    // Preserve paragraph breaks in the plaintext body when rendering
+    // as HTML. Escape every line, then wrap in <p> blocks.
+    const htmlBody = args.bodyPlain
+      .split(/\n\s*\n/)
+      .map((para) => `<p style="margin:0 0 12px;font-size:15px;line-height:1.65;color:#0a1a0f;">${escapeHtml(para).replace(/\n/g, '<br/>')}</p>`)
+      .join('');
+
+    const html = `<!doctype html>
+<html><body style="margin:0;padding:0;background:#f7f9f8;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#0a1a0f;">
+  <div style="max-width:600px;margin:24px auto;padding:32px 28px;background:#fff;border-radius:14px;border:1px solid rgba(52,211,153,0.18);">
+    <div style="font-size:11px;color:#5b6b73;letter-spacing:0.8px;text-transform:uppercase;font-weight:600;margin-bottom:6px;">From ${escapeHtml(args.schoolName)}</div>
+    <h1 style="margin:0 0 18px;font-size:22px;font-family:Lora,Georgia,serif;font-weight:600;color:#0a1a0f;">${escapeHtml(args.subject)}</h1>
+    ${htmlBody}
+    <div style="margin-top:24px;font-size:13px;color:#5b6b73;">— ${escapeHtml(args.senderName)}</div>
+    ${cta}
+  </div>
+  <div style="text-align:center;padding:8px 16px 24px;color:#9ba9a3;font-size:11px;">Montree · montree.xyz</div>
+</body></html>`;
+
+    const text = `${args.subject}
+
+${args.bodyPlain}
+
+— ${args.senderName}
+${args.threadUrl ? `\nOpen in Montree: ${args.threadUrl}` : ''}`;
+
+    const { data, error } = await getResend().emails.send({
+      from: getFromEmail(),
+      to: recipientEmail,
+      subject: emailSubject,
+      html,
+      text,
+    });
+    if (error) {
+      console.error('[sendAnnouncementEmail] resend error', error);
+      return { success: false, error: error.message };
+    }
+    return { success: true, messageId: data?.id };
+  } catch (err) {
+    console.error('[sendAnnouncementEmail] unexpected', err);
+    return { success: false, error: err instanceof Error ? err.message : 'unknown' };
+  }
+}

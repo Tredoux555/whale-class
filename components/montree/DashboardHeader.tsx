@@ -10,7 +10,7 @@ import {
   FileText, Target, Search, Sparkles, BookOpen,
   LayoutGrid, CalendarDays, Images, FolderOpen, TrendingUp,
   Users, BookMarked, Globe, BarChart2, Settings2, LogOut, UserPlus,
-  MessageSquare, KeyRound,
+  MessageSquare, KeyRound, Calendar,
 } from 'lucide-react';
 import { getSession, clearSession, isHomeschoolParent, type MontreeSession } from '@/lib/montree/auth';
 import { HOME_THEME } from '@/lib/montree/home-theme';
@@ -199,6 +199,7 @@ function DashboardHeader() {
     if (pathname?.startsWith('/montree/dashboard/messages'))  return 'messages';
     if (pathname === '/montree/dashboard/parent-codes')       return 'parent-codes';
     if (pathname?.startsWith('/montree/dashboard/conversations')) return 'conversations';
+    if (pathname?.startsWith('/montree/dashboard/appointments')) return 'appointments';
     if (pathname === '/montree/dashboard/notes')              return 'notes';
     if (pathname === '/montree/dashboard/focus')              return 'focus-list';
     if (pathname?.startsWith('/montree/dashboard/photo-audit')) return 'photo-audit';
@@ -619,6 +620,17 @@ function DashboardHeader() {
                     label="Meeting Notes"
                     active={activePage === 'conversations'}
                     onClick={() => { setShowMoreMenu(false); router.push('/montree/dashboard/conversations'); }}
+                  />
+
+                  {/* Appointments — Session 115+ Phase 2. Parents book meetings
+                      with this teacher; staff set their own availability windows.
+                      Page itself shows a "feature disabled" hint when the school
+                      doesn't have the appointments flag on. */}
+                  <MenuRow
+                    icon={Calendar}
+                    label="Appointments"
+                    active={activePage === 'appointments'}
+                    onClick={() => { setShowMoreMenu(false); router.push('/montree/dashboard/appointments'); }}
                   />
 
                   {/* Help — renamed from "Inbox", same Tredoux-DM channel underneath */}

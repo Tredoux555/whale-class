@@ -1,13 +1,17 @@
-// app/api/montree/dashboard/conversations/[id]/route.ts
+// app/api/montree/admin/meeting-notes/[id]/route.ts
 //
-// Single meeting-note GET / PATCH / DELETE. All filtered by teacher_id +
-// school_id — a teacher can only touch their own notes.
+// Principal-side single-meeting GET / PATCH / DELETE. Mirror of the teacher
+// [id] route, but every query filters by principal_id + school_id.
 //
-// PATCH supports editing the teacher's free `notes` field, the
-// child link / name, and the parent_visible toggle. The summary +
-// transcript are immutable once saved (they're the AI output — editing
-// them would put the teacher's words in Sonnet's mouth, and break the
-// "what was said" trust contract).
+// PATCH supports editing notes / child link / child name / meeting date /
+// parent_visible toggle. summary + transcript are IMMUTABLE — editing the
+// AI output would put the principal's words in Sonnet's mouth and break
+// the "what was said" trust contract.
+//
+// When parent_visible flips true: shareMeetingNoteToThread() (Session 114
+// finisher) posts the summary into a dedicated parent_principal thread via
+// the existing Session 97 messaging infrastructure. shared_to_thread_id is
+// stamped on the row so re-toggling never double-posts.
 
 import { NextRequest, NextResponse } from 'next/server';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
@@ -21,7 +25,7 @@ const MAX_NOTES_LEN = 4_000;
 const MAX_CHILD_NAME_LEN = 100;
 
 const SELECT_COLS =
-  'id, teacher_id, school_id, classroom_id, child_id, child_name, meeting_date, summary, transcript, notes, duration_seconds, locale, parent_visible, shared_to_thread_id, created_at, updated_at';
+  'id, principal_id, school_id, classroom_id, child_id, child_name, meeting_date, summary, transcript, notes, duration_seconds, locale, parent_visible, shared_to_thread_id, created_at, updated_at';
 
 export async function GET(
   request: NextRequest,
@@ -34,8 +38,8 @@ export async function GET(
 
   const auth = await verifySchoolRequest(request);
   if (auth instanceof NextResponse) return auth;
-  if (auth.role !== 'teacher') {
-    return NextResponse.json({ error: 'Teacher-only route.' }, { status: 403 });
+  if (auth.role !== 'principal') {
+    return NextResponse.json({ error: 'Principal-only route.' }, { status: 403 });
   }
 
   const supabase = getSupabase();
@@ -43,12 +47,12 @@ export async function GET(
     .from('montree_meeting_notes')
     .select(SELECT_COLS)
     .eq('id', id)
-    .eq('teacher_id', auth.userId)
+    .eq('principal_id', auth.userId)
     .eq('school_id', auth.schoolId)
     .maybeSingle();
 
   if (error) {
-    console.error('[meeting-notes/[id] GET] error:', error);
+    console.error('[admin/meeting-notes/[id] GET] error:', error);
     return NextResponse.json({ error: 'Server error.' }, { status: 500 });
   }
   if (!data) {
@@ -68,8 +72,8 @@ export async function PATCH(
 
   const auth = await verifySchoolRequest(request);
   if (auth instanceof NextResponse) return auth;
-  if (auth.role !== 'teacher') {
-    return NextResponse.json({ error: 'Teacher-only route.' }, { status: 403 });
+  if (auth.role !== 'principal') {
+    return NextResponse.json({ error: 'Principal-only route.' }, { status: 403 });
   }
 
   let body: {
@@ -105,24 +109,27 @@ export async function PATCH(
 
   const supabase = getSupabase();
 
-  // If a new child_id is supplied, verify school membership.
+  // If a new child_id is supplied, verify it belongs to this school via the
+  // classroom's school_id (principal scope = entire school).
   if (body.child_id !== undefined) {
     if (body.child_id === null) {
       updates.child_id = null;
     } else if (UUID_RE.test(body.child_id)) {
-      const { data: child, error: childErr } = await supabase
+      const { data: child } = await supabase
         .from('montree_children')
-        .select('id')
+        .select('id, classrooms:montree_classrooms!inner(school_id)')
         .eq('id', body.child_id)
-        .eq('school_id', auth.schoolId)
         .maybeSingle();
-      if (childErr || !child) {
+      const childRow = child as unknown as
+        | { id: string; classrooms: { school_id: string } | null }
+        | null;
+      if (!childRow || !childRow.classrooms || childRow.classrooms.school_id !== auth.schoolId) {
         return NextResponse.json(
           { error: 'Child not found in this school.' },
           { status: 403 }
         );
       }
-      updates.child_id = child.id;
+      updates.child_id = childRow.id;
     } else {
       return NextResponse.json({ error: 'Invalid child_id.' }, { status: 400 });
     }
@@ -139,13 +146,13 @@ export async function PATCH(
     .from('montree_meeting_notes')
     .update(updates)
     .eq('id', id)
-    .eq('teacher_id', auth.userId)
+    .eq('principal_id', auth.userId)
     .eq('school_id', auth.schoolId)
     .select(SELECT_COLS)
     .maybeSingle();
 
   if (error) {
-    console.error('[meeting-notes/[id] PATCH] error:', error);
+    console.error('[admin/meeting-notes/[id] PATCH] error:', error);
     return NextResponse.json({ error: 'Failed to update.' }, { status: 500 });
   }
   if (!updated) {
@@ -153,8 +160,7 @@ export async function PATCH(
   }
 
   // 🚨 Session 114 finisher — when parent_visible flips true, post the
-  // summary into a dedicated parent_teacher thread. Idempotent via
-  // shared_to_thread_id check inside the helper + stamping after the share.
+  // summary into a dedicated parent_principal thread.
   let shareResult: { threadId: string | null; reason?: string; error?: string } | null = null;
   if (
     body.parent_visible === true &&
@@ -174,15 +180,17 @@ export async function PATCH(
         shared_to_thread_id: updated.shared_to_thread_id,
         locale: updated.locale,
       },
-      authorRole: 'teacher',
+      authorRole: 'principal',
       authorId: auth.userId,
     });
+    // Stamp shared_to_thread_id even on partial failure (thread created,
+    // message insert failed) so a re-toggle doesn't create a second thread.
     if (shareResult.threadId) {
       const { data: restamped } = await supabase
         .from('montree_meeting_notes')
         .update({ shared_to_thread_id: shareResult.threadId })
         .eq('id', id)
-        .eq('teacher_id', auth.userId)
+        .eq('principal_id', auth.userId)
         .eq('school_id', auth.schoolId)
         .select(SELECT_COLS)
         .maybeSingle();
@@ -209,8 +217,8 @@ export async function DELETE(
 
   const auth = await verifySchoolRequest(request);
   if (auth instanceof NextResponse) return auth;
-  if (auth.role !== 'teacher') {
-    return NextResponse.json({ error: 'Teacher-only route.' }, { status: 403 });
+  if (auth.role !== 'principal') {
+    return NextResponse.json({ error: 'Principal-only route.' }, { status: 403 });
   }
 
   const supabase = getSupabase();
@@ -218,11 +226,11 @@ export async function DELETE(
     .from('montree_meeting_notes')
     .delete()
     .eq('id', id)
-    .eq('teacher_id', auth.userId)
+    .eq('principal_id', auth.userId)
     .eq('school_id', auth.schoolId);
 
   if (error) {
-    console.error('[meeting-notes/[id] DELETE] error:', error);
+    console.error('[admin/meeting-notes/[id] DELETE] error:', error);
     return NextResponse.json({ error: 'Failed to delete.' }, { status: 500 });
   }
   return NextResponse.json({ success: true });
