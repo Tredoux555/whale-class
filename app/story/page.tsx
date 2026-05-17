@@ -25,8 +25,17 @@ export default function StoryLogin() {
       const data = await res.json();
 
       if (res.ok) {
+        // 🚨 Session 113 V2 Story audit F-1.2 — JWT no longer goes in the
+        // URL. Stored in:
+        //   (a) httpOnly story-auth cookie (set server-side by Phase A on
+        //       this same response) — primary auth for API calls, can't be
+        //       read by JS, can't leak via Referer.
+        //   (b) sessionStorage 'story_session' — kept ONLY for the existing
+        //       Authorization: Bearer header path. Phase C may drop this.
+        // The URL is now a static '/story/active' path — no JWT visible in
+        // browser history, link previews, server logs, or sync.
         sessionStorage.setItem('story_session', data.session);
-        router.push(`/story/${data.session}`);
+        router.push('/story/active');
       } else {
         setError(data.details || data.error || 'Invalid credentials');
       }
