@@ -144,17 +144,29 @@ export async function GET(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Get report. 🚨 Session 113 V2 Parent audit F-3.1 — filter status='sent'.
-    // Unpublished/draft reports must NOT be visible to parents.
+    // Get report.
+    //
+    // Filter logic (Session 117 continued fix — align with the LIST
+    // endpoint at /api/montree/parent/reports which surfaces a report
+    // when EITHER status='sent' OR generated_at IS NOT NULL).
+    //
+    // Why both: the original Session 113 V2 audit F-3.1 added status='sent'
+    // here to hide drafts. But the LIST endpoint never tightened — so
+    // schools with legacy reports (generated_at set, status still 'draft')
+    // had reports listed on the parent dashboard that 404'd on click.
+    // Aligning the detail filter prevents that broken link.
+    //
+    // We still hide PURE drafts (status='draft' AND generated_at IS NULL)
+    // — those are work-in-progress and shouldn't be visible.
     const { data: report, error: reportError } = await supabase
       .from('montree_weekly_reports')
       .select(`
         id, week_number, report_year, week_start, week_end, parent_summary,
         highlights, areas_of_growth, recommendations,
-        created_at, child_id, classroom_id, content, status
+        created_at, child_id, classroom_id, content, status, generated_at
       `)
       .eq('id', reportId)
-      .eq('status', 'sent')
+      .or('status.eq.sent,generated_at.not.is.null')
       .maybeSingle();
 
     if (reportError) {

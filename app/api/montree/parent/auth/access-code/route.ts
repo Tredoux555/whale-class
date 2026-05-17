@@ -102,10 +102,11 @@ export async function POST(request: NextRequest) {
       }, { status: 401 });
     }
 
-    // Get child info
+    // Get child info — school_id needed for provisioning the lightweight
+    // parent row below (Session 117 continued fix).
     const { data: child, error: childError } = await supabase
       .from('montree_children')
-      .select('id, name, nickname, classroom_id')
+      .select('id, name, nickname, classroom_id, school_id')
       .eq('id', invite.child_id)
       .single();
 
@@ -133,12 +134,96 @@ export async function POST(request: NextRequest) {
       })
       .eq('id', invite.id);
 
+    // ── Session 117 continued — Provision a lightweight montree_parents
+    // row on first invite redemption. Without this:
+    //   - Staff appointment-invite picker can't see the parent
+    //   - Parent can't see incoming appointment invitations
+    //   - Any route that requires session.parentId returns 403
+    //
+    // The provisioned row uses placeholders for email/name (the parent
+    // hasn't done a full signup yet) but has school_id + is_active=true so
+    // it's a first-class queryable entity. Idempotent via the
+    // UNIQUE(email, school_id) constraint — re-redemption hits ON CONFLICT
+    // and we read the existing row back.
+    let provisionedParentId: string | undefined;
+    try {
+      const placeholderEmail = `pending-${invite.id}@parent.montree.local`;
+      const childDisplay = (child.name || child.nickname || 'child').trim();
+      const placeholderName = `${childDisplay}'s parent`;
+      // Random hash — parent never logs in with email/password until they
+      // complete a full signup. The invite code remains their auth path.
+      const placeholderHash = `pending:${invite.id}:${Date.now()}`;
+
+      const { data: existingParent } = await supabase
+        .from('montree_parents')
+        .select('id')
+        .eq('email', placeholderEmail)
+        .eq('school_id', child.school_id)
+        .maybeSingle();
+
+      if (existingParent) {
+        provisionedParentId = (existingParent as { id: string }).id;
+      } else {
+        const { data: newParent, error: parentInsertErr } = await supabase
+          .from('montree_parents')
+          .insert({
+            school_id: child.school_id,
+            email: placeholderEmail,
+            password_hash: placeholderHash,
+            name: placeholderName,
+            is_active: true,
+          })
+          .select('id')
+          .single();
+        if (parentInsertErr) {
+          // 23505 unique_violation race: someone provisioned just before
+          // us. Read back.
+          if (parentInsertErr.code === '23505') {
+            const { data: raced } = await supabase
+              .from('montree_parents')
+              .select('id')
+              .eq('email', placeholderEmail)
+              .eq('school_id', child.school_id)
+              .maybeSingle();
+            if (raced) provisionedParentId = (raced as { id: string }).id;
+          } else {
+            console.error('[parent/auth] provision parent insert failed', parentInsertErr);
+          }
+        } else if (newParent) {
+          provisionedParentId = (newParent as { id: string }).id;
+        }
+      }
+
+      // Junction link parent↔child. Idempotent via UNIQUE(parent_id, child_id).
+      if (provisionedParentId) {
+        const { error: linkErr } = await supabase
+          .from('montree_parent_children')
+          .insert({
+            parent_id: provisionedParentId,
+            child_id: child.id,
+          });
+        // 23505 = link already exists; safe to ignore.
+        if (linkErr && linkErr.code !== '23505') {
+          console.error('[parent/auth] provision link insert failed', linkErr);
+        }
+      }
+    } catch (provErr) {
+      // Don't block login on provisioning failure — fall through to the
+      // original invite-only behaviour. Parent will still get into the
+      // dashboard; staff just won't see them in the picker until the
+      // next code redemption succeeds.
+      console.error('[parent/auth] provisioning failed (non-fatal)', provErr);
+    }
+
     // Create signed JWT token (replaces forgeable base64)
     const sessionToken = await createParentToken({
       sub: child.id,
       childName: child.name || child.nickname,
       classroomId: child.classroom_id,
       inviteId: invite.id,
+      // Include parentId when provisioning succeeded — unlocks the routes
+      // that gate on session.parentId (appointments, messaging, etc.).
+      ...(provisionedParentId ? { parentId: provisionedParentId } : {}),
     });
 
     // Set HTTP-only cookie

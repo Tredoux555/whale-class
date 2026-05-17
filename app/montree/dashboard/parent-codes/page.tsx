@@ -266,26 +266,17 @@ export default function TeacherParentCodesPage() {
     }
   }, []);
 
-  // Welcome message — copy-to-clipboard text the teacher can paste into
-  // WhatsApp, WeChat, SMS, email — whatever channel the parent uses.
-  // Designed for the "parents are stupid, they lose their codes" case:
-  //   - URL deep-links to /montree/parent?code=ABC123 which preloads the
-  //     code into the login field. One tap and they only press Enter.
-  //   - Raw code printed below as a backup for messaging apps that
-  //     strip URLs (e.g. some corporate email filters, WeChat groups).
-  //   - No emoji clutter, no formal letter padding — short + warm.
+  // Welcome message — copy-to-clipboard text the teacher pastes into
+  // WhatsApp / WeChat / SMS / email. Tight per user feedback: three
+  // beats — welcome, login link, code-as-fallback. No paragraph padding.
+  // The link preloads the code at /montree/parent?code=ABC so the parent
+  // only presses Enter on the login screen.
   const buildWelcomeMessage = (row: CodeRow): string => {
     if (!row.code || !row.parent_url) return '';
     return [
-      `Welcome to Montree —`,
-      ``,
-      `A little space for you to follow ${row.child_name}'s journey at school. Photos, observations, and weekly notes from us.`,
-      ``,
-      `Tap to open your portal:`,
-      row.parent_url,
-      ``,
-      `If the link doesn't work, visit montree.xyz/montree/parent and enter this code:`,
-      row.code,
+      `Welcome to Montree.`,
+      `Visit this link to log in: ${row.parent_url}`,
+      `Save this code so you can log in again: ${row.code}`,
     ].join('\n');
   };
 
