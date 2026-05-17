@@ -216,8 +216,15 @@ export default function StoryViewer() {
   }, [getSession]);
 
   useEffect(() => {
+    // 🚨 Session 113 V2 Story audit F-1.2 — drop the URL-equality auth check.
+    // Pre-fix: `session !== params.session` enforced the URL contained the
+    // exact JWT — which is exactly the leak we're closing. Post-fix: the
+    // server-side cookie + sessionStorage are the auth sources; the URL
+    // path segment is just a route marker (typically 'active' for fresh
+    // logins, legacy bookmarks with the JWT in the URL still work because
+    // sessionStorage was populated at login time).
     const session = getSession();
-    if (!session || session !== params.session) {
+    if (!session) {
       router.push('/story');
       return;
     }
@@ -255,7 +262,10 @@ export default function StoryViewer() {
     
     window.addEventListener('beforeunload', handleUnload);
     return () => window.removeEventListener('beforeunload', handleUnload);
-  }, [params.session, router, loadStory, loadMedia, loadSharedFiles, loadRecentMessages, getSession]);
+    // Note: params.session intentionally NOT in deps. With Phase B the URL
+    // path is a static 'active' for fresh logins, so depending on it would
+    // be misleading. Auth comes from sessionStorage + the httpOnly cookie.
+  }, [router, loadStory, loadMedia, loadSharedFiles, loadRecentMessages, getSession]);
 
   // Handle letter clicks
   const handleLetterClick = async (letter: string, charIndex: number, paragraphIndex: number) => {
