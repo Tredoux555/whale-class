@@ -10,9 +10,9 @@ import { getSupabase } from '@/lib/supabase-client';
 
 export const maxDuration = 30;
 
-const PRINCIPAL_VAULT_ENABLED_FOR = new Set<string>([
-  '16eec1c0-bfb5-4edf-a160-059bb41803fb', // Tredoux on Whale Class
-]);
+// 🚨 Session 114 — PRINCIPAL_VAULT_ENABLED_FOR allow-list dropped. Every
+// authenticated principal has access to their own records, scoped by
+// principal_id + school_id on every query.
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -29,9 +29,6 @@ export async function GET(
   if (auth instanceof NextResponse) return auth;
   if (auth.role !== 'principal') {
     return NextResponse.json({ error: 'Principal-only route.' }, { status: 403 });
-  }
-  if (!PRINCIPAL_VAULT_ENABLED_FOR.has(auth.userId)) {
-    return NextResponse.json({ error: 'Not found' }, { status: 404 });
   }
 
   const supabase = getSupabase();
@@ -68,9 +65,6 @@ export async function DELETE(
   if (auth instanceof NextResponse) return auth;
   if (auth.role !== 'principal') {
     return NextResponse.json({ error: 'Principal-only route.' }, { status: 403 });
-  }
-  if (!PRINCIPAL_VAULT_ENABLED_FOR.has(auth.userId)) {
-    return NextResponse.json({ error: 'Not found' }, { status: 404 });
   }
 
   const supabase = getSupabase();
