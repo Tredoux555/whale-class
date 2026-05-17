@@ -622,13 +622,14 @@ function DashboardHeader() {
                     onClick={() => { setShowMoreMenu(false); router.push('/montree/dashboard/conversations'); }}
                   />
 
-                  {/* Appointments — Session 115+ Phase 2. Parents book meetings
-                      with this teacher; staff set their own availability windows.
+                  {/* Calendar — Session 117 redesign. Calendar-first posture
+                      replaces the database-list view. Parents book meetings
+                      with this teacher; staff set their own open slots.
                       Page itself shows a "feature disabled" hint when the school
                       doesn't have the appointments flag on. */}
                   <MenuRow
                     icon={Calendar}
-                    label="Appointments"
+                    label="Calendar"
                     active={activePage === 'appointments'}
                     onClick={() => { setShowMoreMenu(false); router.push('/montree/dashboard/appointments'); }}
                   />
