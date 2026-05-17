@@ -29,7 +29,7 @@
 
 'use client';
 
-import { useEffect, useState, useCallback, useMemo } from 'react';
+import { useEffect, useState, useCallback, useMemo, useRef } from 'react';
 import dynamic from 'next/dynamic';
 import {
   ChevronLeft,
@@ -152,6 +152,13 @@ export default function AppointmentsCalendar() {
     d.setHours(0, 0, 0, 0);
     return d;
   });
+
+  // Ref to the day-detail panel — used to auto-scroll-into-view on
+  // mobile when the user taps a day cell. Most phones can't show grid +
+  // detail panel without scrolling, so a tap that does nothing visible
+  // feels broken. Mount-time selectedDay never triggers a scroll because
+  // the scroll only fires from the onSelectDay click handler below.
+  const detailPanelRef = useRef<HTMLDivElement | null>(null);
 
   // Slot/day quick-action menu state (popover anchored to the day-detail
   // panel — Mark as open / I'm away / See what's booked).
@@ -536,6 +543,7 @@ export default function AppointmentsCalendar() {
           justifyContent: 'space-between',
           marginBottom: 14,
           padding: '0 4px',
+          gap: 8,
         }}
       >
         <button
@@ -552,14 +560,54 @@ export default function AppointmentsCalendar() {
         </button>
         <div
           style={{
-            fontFamily: T.serif,
-            fontSize: 20,
-            fontWeight: 500,
-            letterSpacing: -0.2,
-            color: T.textPrimary,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 10,
+            flex: 1,
+            justifyContent: 'center',
           }}
         >
-          {MONTHS_FULL[viewMonth.month]} {viewMonth.year}
+          <div
+            style={{
+              fontFamily: T.serif,
+              fontSize: 20,
+              fontWeight: 500,
+              letterSpacing: -0.2,
+              color: T.textPrimary,
+            }}
+          >
+            {MONTHS_FULL[viewMonth.month]} {viewMonth.year}
+          </div>
+          {/* "Today" jump button — only shows when not viewing the current
+              month, so it stays visually quiet most of the time. */}
+          {(viewMonth.year !== today.getFullYear() ||
+            viewMonth.month !== today.getMonth()) && (
+            <button
+              type="button"
+              onClick={() => {
+                setViewMonth({ year: today.getFullYear(), month: today.getMonth() });
+                const t = new Date();
+                t.setHours(0, 0, 0, 0);
+                setSelectedDay(t);
+                setSlotMenu(null);
+              }}
+              style={{
+                padding: '4px 10px',
+                borderRadius: 999,
+                background: T.emeraldSoft,
+                border: '1px solid rgba(52,211,153,0.30)',
+                color: T.emerald,
+                fontFamily: T.sans,
+                fontSize: 11,
+                fontWeight: 600,
+                letterSpacing: 0.3,
+                cursor: 'pointer',
+              }}
+              aria-label="Jump to today"
+            >
+              Today
+            </button>
+          )}
         </div>
         <button
           type="button"
@@ -584,6 +632,18 @@ export default function AppointmentsCalendar() {
         onSelectDay={(d) => {
           setSelectedDay(d);
           setSlotMenu(null);
+          // Mobile-first: bring the day-detail panel into view on tap.
+          // Most phones can't show grid + detail without scrolling, so a
+          // tap that does nothing visible feels broken.
+          if (typeof window !== 'undefined' && window.innerWidth < 768) {
+            // Defer one frame so the React update lands first.
+            requestAnimationFrame(() => {
+              detailPanelRef.current?.scrollIntoView({
+                behavior: 'smooth',
+                block: 'start',
+              });
+            });
+          }
         }}
         openDows={openDows}
         timeAwayByDay={timeAwayByDay}
@@ -592,12 +652,14 @@ export default function AppointmentsCalendar() {
 
       {/* ── Day detail panel ────────────────────────────────────────── */}
       <div
+        ref={detailPanelRef}
         style={{
           marginTop: 18,
           padding: 18,
           borderRadius: 14,
           background: T.cardBg,
           border: T.cardBorder,
+          scrollMarginTop: 12, // small breathing room when scrolled-into-view
         }}
       >
         {/* Selected day header. */}
