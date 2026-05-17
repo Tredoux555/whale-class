@@ -200,6 +200,106 @@ Wave 1 sends bounced for these addresses. None of these are flagged as `bounced`
 
 ---
 
+## RECENT STATUS (May 17, 2026)
+
+### 🔥 Session 114 — Mobile + auth + meeting notes burn (May 17, 2026)
+
+**7 commits pushed to main:** `11ece6ba` → `02e221b4`. Continuation of the Session 113 V2 audit closure work — the user verified production after the prior burn and said "keep burning." Seven focused user-facing ships, none of them mega-features, all quality-of-life or audit closure.
+
+**🚨 Canonical resume doc:** `docs/handoffs/SESSION_114_HANDOFF.md`.
+
+**🚨 Migration pending Supabase run:** `migrations/214_meeting_notes.sql` (new this session) + the three carried over from Session 113 V2 (210, 211, 213).
+
+**🚨 On hold:** Agent → Representative rename. User asked whether already done; the codebase has zero "ambassador" hits and "agent" is heavily used (JWT role, DB columns, routes, AI = Mira). Two options scoped (Option A user-facing strings only ~30 min; Option B full rename ~half-day + migration). User parked: *"keep this on hold and keep burning"* pending friend's input. Recommendation when resumed: Option A.
+
+**The 7 commits:**
+
+| # | SHA | Ship |
+|---|---|---|
+| 1 | `11ece6ba` | Present-mode per-photo hide + revert tray + iPad menu logout fix |
+| 2 | `e19b6af2` | Mobile screensaver lock overlay (banking-app pattern) |
+| 3 | `9041cc76` | Build fix (Next.js 16 server-component constraint) |
+| 4 | `db69e65f` | Story F-1.2 Phase A — cookie auth plumbing |
+| 5 | `de11933c` | Story F-1.2 Phase B — JWT out of URL (F-1.2 CLOSED) |
+| 6 | `0b8465c2` | Parent meeting notes (audio-free) + opened principal vault to all principals |
+| 7 | `02e221b4` | Offline page retheme (dark forest) + floating online/offline status banner |
+
+**A. iPad menu logout fix** (`11ece6ba`) — `100vh` → `100dvh` on `MENU_PANEL_STYLE` in `DashboardHeader.tsx` so iOS dynamic toolbars stop clipping the bottom rows. Added `paddingBottom: env(safe-area-inset-bottom)`, `WebkitOverflowScrolling: 'touch'`, `overscrollBehavior: 'contain'`. Four-pattern combo for any scrollable popover that can exceed viewport.
+
+**B. Present-mode per-photo hide + revert tray** (`11ece6ba`) — `app/montree/dashboard/present/page.tsx` gained an in-session hide system. Each photo can be hidden via a top-right "Hide" pill; the slideshow skips it; a "↺ N hidden" pill appears with a tray that shows dimmed thumbnails for one-tap revert. Hidden state persists across sessions via the existing `parent_visible` flag on `montree_media` (server-side album route already filters `parent_visible !== false`). Cross-session unhide requires gallery access (intentional — `parent_visible` is the canonical "is this safe for parents" signal across every parent-facing surface).
+
+**C. Mobile screensaver lock overlay** (`e19b6af2`) — new `components/montree/AppLockOverlay.tsx`, mounted once in `app/montree/layout.tsx`. Listens for `visibilitychange` + `pagehide`; when `document.hidden`, snaps in a full-screen Montree-branded overlay. Banking-app pattern: STAYS after foreground return until user taps the top-left gold lock icon (option (b) from the design conversation — matches user's specific phrasing "login on top-left corner icon"). Self-gates pathname — only locks on sensitive surfaces (admin, dashboard, agent, super-admin, parent/dashboard|photos|report|...). Public pages opt out. z-index 99999, respects `env(safe-area-inset-*)`, body-scroll locked while overlay up.
+
+**🚨 Build fix** (`9041cc76`) — initial commit used `dynamic({ ssr: false })` to lazy-load the overlay. **Next.js 16 forbids this in Server Components.** Fix: direct import. The component is `'use client'` already, so SSR output is null and there's no perf hit. **Architectural rule locked in: NEVER use `dynamic({ ssr: false })` in `app/` Server Components. Direct import of a `'use client'` component works fine.**
+
+**D. Story F-1.2 fully CLOSED** (`db69e65f` + `de11933c`) — the largest remaining HIGH from Session 113 V2's Story audit. JWT no longer in the URL on new logins. Two phases:
+
+- **Phase A** — cookie auth plumbing. New `STORY_AUTH_COOKIE = 'story-auth'` + `verifyUserTokenFromRequest(req)` helper in `lib/story-db.ts` (header first, cookie fallback, REJECT admins). Auth POST sets the cookie alongside returning the token. Auth DELETE clears the cookie. 7 API routes switched to the new verifier: `/current`, `/recent-messages`, `/current-media`, `/shared-files`, `/heartbeat`, `/message`, `/upload-media`. **Bonus fix on `/current` and `/recent-messages`**: replaced local `verifyToken` wrappers that weren't role-gated (admin JWTs were being accepted as user tokens) with the canonical role-gated path.
+- **Phase B** — login redirect → static path. `app/story/page.tsx`: `router.push('/story/${token}')` → `router.push('/story/active')`. `app/story/[session]/page.tsx`: dropped the `session !== params.session` URL-equality auth check (that's exactly the leak). Legacy bookmarks `/story/<JWT>` keep working via sessionStorage for their JWT's 24h TTL — within a day all clients on the clean URL.
+
+After: new Story logins produce a clean `/story/active` URL. No JWT in path, browser history, cross-device sync, link previews, Referer headers, or proxy access logs.
+
+**E. Parent Meeting Notes — audio-free** (`0b8465c2`) — the headline feature this session. User asked: *"Can I build something into Montree that the principal can use and the teachers can use in parents meetings that doesn't actually record the audio but rather saves what was written in summary?"* Most of the pipeline already existed (Session 87's Principal Vault, Tredoux-allow-listed). Session 114 widened to all principals AND built the teacher-side equivalent.
+
+**Phase A — drop the principal allow-list:** 4 files edited to remove `PRINCIPAL_VAULT_ENABLED_FOR` / `VAULT_ENABLED_PRINCIPAL_IDS` (admin layout + 3 API routes). Every authenticated principal now sees the Conversations sidebar item. Each principal sets their own vault password on first use; per-record salt + PBKDF2 keeps one principal's records independent of another's.
+
+**Phase B — teacher-side new surface:**
+- **Migration `214_meeting_notes.sql`** (pending Supabase run) — new `montree_meeting_notes` table. Columns: `id`, `school_id`, `classroom_id`, `teacher_id`, `child_id` (nullable), `child_name`, `meeting_date`, `summary` (required), `transcript` (optional), `notes`, `duration_seconds`, `locale`, `parent_visible`, `shared_to_thread_id` (FK to `montree_message_threads` for future parent-thread integration), timestamps + auto-bump trigger. Three indexes.
+- **3 new API routes under `/api/montree/dashboard/conversations`:** `/transcribe` (POST — audio → Whisper → Sonnet 3-paragraph summary, NO audio persisted, tier-gated), `/` (GET list, POST save), `/[id]` (GET, PATCH, DELETE).
+- **New page `app/montree/dashboard/conversations/page.tsx`** — list view + new-meeting flow (consent banner → record → Whisper+Sonnet → review → save form with optional child link + meeting date + teacher notes + optional transcript toggle) + detail view with auto-save notes + parent-visible toggle + delete.
+- **Wired into `DashboardHeader.tsx`** as "Meeting Notes" entry in More menu (Mic icon, right after Parent codes).
+
+**🚨 Privacy posture (verified, locked in):** audio is NEVER persisted. Whisper sees bytes for ~30s during processing, audio Blob discarded on the server. NO Supabase Storage upload anywhere in the transcribe route (grep-verifiable). OpenAI's default 30-day retention applies on their side — consent banner tells the teacher/principal to inform the other party before recording.
+
+**Cost per meeting:** ~$0.18 Whisper + ~$0.01 Sonnet for a 30-min meeting. ~$10-15/mo per active teacher at high volume.
+
+**🚨 Pending wiring (NOT in this commit):** the `parent_visible` toggle currently flips the flag but doesn't post the summary into the parent thread (Session 97 messaging). The `shared_to_thread_id` column exists in the migration for that future use. Closing the loop is ~30-45 min focused work — flagged as the natural next-burn finisher.
+
+**F. PWA polish** (`02e221b4`):
+
+- **Offline page retheme** (`app/montree/offline/page.tsx`) — light-emerald-on-white → dark forest scheme. Inline cloud-off SVG icon (no external resources — by definition the user is offline when they see this page). Inline styles (belt-and-braces in case the precached HTML can't pull its stylesheet from cache).
+- **New `components/montree/OnlineStatusBanner.tsx`** — floating pill at top of viewport when `navigator.onLine` flips false. "You're offline" (amber) persists until connectivity returns; "Back online" (emerald) shows for 2.4s then auto-dismisses. `pointer-events: none`, z-index 9998 (under AppLockOverlay 99999). Skips on `/montree/offline` itself and on the parent-meeting presentation full-bleed view. Mounted alongside AppLockOverlay in `app/montree/layout.tsx`.
+
+**Caveat:** `navigator.onLine` only reflects network interface state — captive-portal scenarios (WiFi connected but no internet) fall through to `montreeApi()` auto-retry from Session 81 Tier 4.1 (verified still in place). This banner is honest about the 95% case (signal drop, plane mode, WiFi disconnected).
+
+**🚨 Architectural rules locked in this session (#139-#150 — see full list in handoff doc):**
+
+139. `100dvh` not `100vh` on scrollable popovers; combine with `safe-area-inset-bottom` padding + `WebkitOverflowScrolling: 'touch'` + `overscrollBehavior: 'contain'`.
+140. `parent_visible` on `montree_media` is the canonical "is this safe for parents" signal. Every parent-facing query filters on it.
+141. AppLockOverlay self-gates pathname; only sensitive surfaces lock. Public surfaces opt out.
+142. NEVER `dynamic({ ssr: false })` in Server Components — direct import a `'use client'` component instead.
+143. `STORY_AUTH_COOKIE` is the canonical Story user-session cookie; `verifyUserTokenFromRequest(req)` is the canonical verifier.
+144. New Story logins go to `/story/active` (static). Never put a JWT in the URL again.
+145. Principal vault uses per-principal user-typed passwords, NOT shared. `VAULT_PASSWORD` env var is for the Story vault (different system).
+146. Audio bytes from any transcribe route MUST flow Blob → Whisper → discard. NO Supabase Storage upload.
+147. Consent banner mandatory on every recording surface.
+148. Teacher meeting notes scoped by `teacher_id + school_id` on every query. Summary + transcript IMMUTABLE after save.
+149. `navigator.onLine` is honest about the 95% case; captive-portal cases fall through to `montreeApi()` auto-retry.
+150. The offline page must render entirely self-contained — inline SVG, inline styles, system-stack fonts.
+
+**🚨 Production verification checklist (8 steps — in handoff doc):**
+1. iPad menu logout — reachable without rubber-band bounce on iPad
+2. Present-mode hide/revert — hide a photo, see "1 hidden" pill, tap to revert
+3. Mobile screensaver — background the app on phone, return → dark forest overlay with top-left gold lock icon
+4. Story URL after login → `/story/active` (no JWT in path)
+5. Principal vault works for non-Tredoux principals
+6. Teacher Meeting Notes page shows the migration-pending banner before 214 runs
+7. Offline page renders dark forest (DevTools → Network → Offline → reload)
+8. Online status banner pops when DevTools forces offline mode
+
+**🚨 Next session priorities (ordered):**
+
+1. **Run migration 214** in Supabase SQL Editor — unblocks teacher Meeting Notes. Plus carry-overs 210, 211, 213 from Session 113 V2.
+2. **Walk the 8-step verification** on production after Railway settles.
+3. **Confirm direction on Agent → Representative rename** with user's friend → execute Option A (~30 min) when ready.
+4. **Parent-thread integration for meeting notes** (the natural finisher) — wire `parent_visible=true` toggle to post the summary into the parent_teacher thread system. ~30-45 min.
+5. **Story F-2.3** (last remaining Story HIGH) — vault per-file DEK + per-admin KEK. Half-day + migration with brief downtime window. Schedule as a focused session, not a burn item.
+6. **Whale-Class admin SPA broken links** (Session 113 V2 carry-over) — ~10 admin pages calling non-existent API routes.
+7. **Photo bank improvements** (multi-session carry-over) — proxy URL inconsistency, delete UX, search filter, export-to-tool.
+8. **Unaudited surfaces** (Session 113 V2 carry-overs) — agent SPA pages, super-admin Stripe, Mira payout statements, Xero sync, recurring op-expense cron, Web Vitals data flow.
+
+---
+
 ## RECENT STATUS (May 16, 2026)
 
 ### 🔥 Session 113 V2 — Saturday burn: 8 deep audits (Photo + Tracy/Mira + Finance + Agent + Parent + Story + Whale-Class + Outreach + Legacy-API + Photo-AI-Quality) — closed 10 CRITICAL + 30+ HIGH + 10+ MED across the whole product (May 16-17, 2026)
@@ -6509,6 +6609,9 @@ All migrations through 169 have been run. Key ones: 147 (smart learning columns)
 
 **Session 111 (May 14, 2026) — Inbound payments three-rail billing. ⏳ 1 migration pending Tredoux's Supabase run:**
 - ⏳ `209_school_payment_method.sql` — `montree_schools.payment_method` (CHECK IN 'stripe_subscription','alipay_invoice','manual_invoice'), `manual_invoice_details` JSONB, `manual_invoice_details_updated_at` TIMESTAMPTZ, `billing_cadence` (CHECK IN 'monthly','annual'), `next_invoice_due_at` TIMESTAMPTZ. Two partial indexes (`idx_schools_alipay_active` for daily cron pickup, `idx_schools_manual_invoice_active` for super-admin filter). Idempotent BEGIN/COMMIT. **REQUIRED for 💳 button (PaymentConfigModal PATCH) + alipay invoice cron + manual ⚡ Wire route + record-incoming-wire idempotency. Until run, payment-config 500s on PATCH (column does not exist) and the new 💳 + ⚡ buttons surface but are non-functional. Existing Stripe subscription path unchanged.**
+
+**Session 114 (May 17, 2026) — Parent meeting notes (audio-free). ⏳ 1 new migration pending Tredoux's Supabase run:**
+- ⏳ `214_meeting_notes.sql` — new `montree_meeting_notes` table for teacher-side parent-meeting notes. Columns: `id`, `school_id`, `classroom_id`, `teacher_id`, `child_id` (nullable), `child_name`, `meeting_date`, `summary` (required), `transcript` (optional), `notes`, `duration_seconds`, `locale`, `parent_visible` (default FALSE), `shared_to_thread_id` (FK to `montree_message_threads` for future parent-thread integration), `created_at`, `updated_at` + auto-bump trigger. Three indexes (per-teacher hot path, per-child where child_id IS NOT NULL, per-school). Idempotent BEGIN/COMMIT. **REQUIRED for teacher Meeting Notes save path. Until run, the new page at `/montree/dashboard/conversations` surfaces a clear "Migration 214 not yet run" banner — record + transcribe + summary still work, only persistence waits. Principal vault (existing `montree_principal_vault` from migration 185) works without this.**
 
 ---
 
