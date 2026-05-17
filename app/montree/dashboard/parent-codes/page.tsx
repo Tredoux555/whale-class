@@ -12,7 +12,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, Copy, RefreshCw, Sparkles, Mail, Printer, Check, Zap } from 'lucide-react';
+import { ArrowLeft, Copy, RefreshCw, Sparkles, Heart, Printer, Check, Zap } from 'lucide-react';
 import QRCode from 'qrcode';
 import { useI18n } from '@/lib/montree/i18n';
 import LanguageToggle from '@/components/montree/LanguageToggle';
@@ -266,13 +266,27 @@ export default function TeacherParentCodesPage() {
     }
   }, []);
 
-  const mailtoFor = (row: CodeRow) => {
-    if (!row.code || !row.parent_url) return '#';
-    const subject = encodeURIComponent(t('parentCodes.emailSubject', { name: row.child_name }));
-    const body = encodeURIComponent(
-      t('parentCodes.emailBody', { name: row.child_name, url: row.parent_url, code: row.code })
-    );
-    return `mailto:?subject=${subject}&body=${body}`;
+  // Welcome message — copy-to-clipboard text the teacher can paste into
+  // WhatsApp, WeChat, SMS, email — whatever channel the parent uses.
+  // Designed for the "parents are stupid, they lose their codes" case:
+  //   - URL deep-links to /montree/parent?code=ABC123 which preloads the
+  //     code into the login field. One tap and they only press Enter.
+  //   - Raw code printed below as a backup for messaging apps that
+  //     strip URLs (e.g. some corporate email filters, WeChat groups).
+  //   - No emoji clutter, no formal letter padding — short + warm.
+  const buildWelcomeMessage = (row: CodeRow): string => {
+    if (!row.code || !row.parent_url) return '';
+    return [
+      `Welcome to Montree —`,
+      ``,
+      `A little space for you to follow ${row.child_name}'s journey at school. Photos, observations, and weekly notes from us.`,
+      ``,
+      `Tap to open your portal:`,
+      row.parent_url,
+      ``,
+      `If the link doesn't work, visit montree.xyz/montree/parent and enter this code:`,
+      row.code,
+    ].join('\n');
   };
 
   if (loading) {
@@ -571,8 +585,17 @@ export default function TeacherParentCodesPage() {
                           {copiedId === copyId ? <Check size={14} /> : <Copy size={14} />}
                           {copiedId === copyId ? t('parentCodes.copied') : t('parentCodes.copyCode')}
                         </button>
-                        <a
-                          href={mailtoFor(row)}
+                        <button
+                          onClick={() => {
+                            const msg = buildWelcomeMessage(row);
+                            if (!msg) return;
+                            handleCopy(msg, `welcome-${row.child_id}`);
+                            toast.success(
+                              `Welcome message copied — paste into WhatsApp, SMS, or email for ${row.child_name}'s parent.`
+                            );
+                          }}
+                          disabled={!row.code}
+                          title="Copy a ready-to-send welcome message"
                           style={{
                             flex: 1,
                             minWidth: 92,
@@ -582,17 +605,22 @@ export default function TeacherParentCodesPage() {
                             gap: 6,
                             padding: '8px 10px',
                             borderRadius: 10,
-                            background: T.card,
-                            border: T.cardBorder,
-                            color: T.textSecondary,
+                            background: copiedId === `welcome-${row.child_id}` ? T.emerald : T.card,
+                            border: copiedId === `welcome-${row.child_id}` ? 'none' : T.cardBorder,
+                            color: copiedId === `welcome-${row.child_id}` ? '#0a1a0f' : T.textSecondary,
                             fontSize: 12,
                             fontWeight: 600,
-                            textDecoration: 'none',
+                            cursor: row.code ? 'pointer' : 'not-allowed',
+                            opacity: row.code ? 1 : 0.4,
                           }}
                         >
-                          <Mail size={14} />
-                          {t('parentCodes.email')}
-                        </a>
+                          {copiedId === `welcome-${row.child_id}` ? (
+                            <Check size={14} />
+                          ) : (
+                            <Heart size={14} strokeWidth={1.75} />
+                          )}
+                          {copiedId === `welcome-${row.child_id}` ? 'Copied' : 'Welcome message'}
+                        </button>
                         <button
                           onClick={() => handleResetCode(row.child_id)}
                           disabled={busy}
