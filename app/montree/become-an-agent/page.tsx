@@ -19,7 +19,7 @@
 // Honeypot field `website_url_hp` for bot filtering.
 
 import { useRef, useEffect, useState, FormEvent } from 'react';
-import MontreeMark from '@/components/montree/MontreeMark';
+import MontreeLogo from '@/components/montree/MonteeLogo';
 
 interface FormState {
   name: string;
@@ -410,7 +410,7 @@ export default function BecomeAnAgentPage() {
         <nav className="ba-nav">
           <div className="ba-nav-inner">
             <a className="ba-logo" href="/montree" style={{ display: 'inline-flex', alignItems: 'center', gap: '10px', textDecoration: 'none' }}>
-              <MontreeMark size={28} />
+              <MontreeLogo size={28} />
               <span>Montree</span>
             </a>
             <a
@@ -677,7 +677,7 @@ export default function BecomeAnAgentPage() {
 
         {/* Footer */}
         <footer className="ba-footer" style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
-          <MontreeMark size={14} withSpark={false} />
+          <MontreeLogo size={14} />
           <span>Montree · <a href="https://montree.xyz" style={{ color: 'rgba(130,217,174,0.7)', textDecoration: 'none' }}>montree.xyz</a></span>
         </footer>
       </div>
