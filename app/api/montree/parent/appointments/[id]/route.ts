@@ -88,7 +88,7 @@ export async function PATCH(
   if (parent instanceof NextResponse) return parent;
 
   let body: {
-    action?: 'cancel' | 'reschedule';
+    action?: 'cancel' | 'reschedule' | 'accept' | 'decline';
     cancelled_reason?: string;
     new_start?: string; // ISO
     new_duration_minutes?: number;
@@ -98,9 +98,14 @@ export async function PATCH(
   } catch {
     return NextResponse.json({ error: 'Invalid JSON.' }, { status: 400 });
   }
-  if (body.action !== 'cancel' && body.action !== 'reschedule') {
+  if (
+    body.action !== 'cancel' &&
+    body.action !== 'reschedule' &&
+    body.action !== 'accept' &&
+    body.action !== 'decline'
+  ) {
     return NextResponse.json(
-      { error: "action must be 'cancel' or 'reschedule'." },
+      { error: "action must be 'accept', 'decline', 'cancel', or 'reschedule'." },
       { status: 400 }
     );
   }
@@ -128,6 +133,121 @@ export async function PATCH(
       { error: `Cannot ${body.action} a ${current.status} appointment.` },
       { status: 409 }
     );
+  }
+
+  // ── ACCEPT (Session 117 continued) ────────────────────────────────
+  // Parent accepts a staff-initiated pending invitation.
+  // Only valid on pending appointments — confirmed/cancelled/completed
+  // already filtered above (and the equality check below).
+  if (body.action === 'accept') {
+    if (current.status !== 'pending') {
+      return NextResponse.json(
+        { error: 'Only pending invitations can be accepted.' },
+        { status: 409 }
+      );
+    }
+    const buildAcceptUpdate = (cols: string) =>
+      supabase
+        .from('montree_appointments')
+        .update({ status: 'confirmed' })
+        .eq('id', id)
+        .eq('parent_id', parent.parentId)
+        .eq('school_id', parent.schoolId)
+        .eq('status', 'pending') // race-safe — refuses to flip if another path raced us
+        .select(cols)
+        .maybeSingle();
+    let { data: updated, error: acceptErr } = await buildAcceptUpdate(APPT_COLS);
+    if (isVideoUrlColumnMissing(acceptErr)) {
+      ({ data: updated, error: acceptErr } = await buildAcceptUpdate(APPT_COLS_LEGACY));
+    }
+    if (acceptErr || !updated) {
+      console.error('[parent/appointments accept] error', acceptErr);
+      return NextResponse.json({ error: 'Failed to accept.' }, { status: 500 });
+    }
+
+    // Notify hosts via the existing thread infrastructure (fire-and-forget).
+    // Accept maps to 'booking' kind — the appointment is now booked from
+    // the parent's perspective. share-to-thread doesn't have a dedicated
+    // 'accept' kind because the message body is identical to the original
+    // invitation confirmation.
+    const { data: primaryHost } = await supabase
+      .from('montree_appointment_hosts')
+      .select('host_role, host_id')
+      .eq('appointment_id', id)
+      .eq('is_primary', true)
+      .maybeSingle();
+    if (primaryHost) {
+      const hostRow = primaryHost as { host_role: 'teacher' | 'principal'; host_id: string };
+      void shareAppointmentToThread({
+        supabase,
+        appointment: updated as Parameters<typeof shareAppointmentToThread>[0]['appointment'],
+        primaryHost: { role: hostRow.host_role, id: hostRow.host_id },
+        kind: 'booking',
+      }).catch((e) => {
+        console.error('[parent/appointments accept] thread share failed', e);
+      });
+    }
+
+    return NextResponse.json({ appointment: updated });
+  }
+
+  // ── DECLINE (Session 117 continued) ───────────────────────────────
+  // Parent declines a staff-initiated pending invitation. Functionally
+  // similar to cancel but only valid on pending status.
+  if (body.action === 'decline') {
+    if (current.status !== 'pending') {
+      return NextResponse.json(
+        { error: 'Only pending invitations can be declined.' },
+        { status: 409 }
+      );
+    }
+    const buildDeclineUpdate = (cols: string) =>
+      supabase
+        .from('montree_appointments')
+        .update({
+          status: 'cancelled',
+          cancelled_reason: body.cancelled_reason?.slice(0, 500) || null,
+          cancelled_by_role: 'parent',
+          cancelled_by_id: parent.parentId,
+          cancelled_at: new Date().toISOString(),
+        })
+        .eq('id', id)
+        .eq('parent_id', parent.parentId)
+        .eq('school_id', parent.schoolId)
+        .eq('status', 'pending')
+        .select(cols)
+        .maybeSingle();
+    let { data: updated, error: declineErr } = await buildDeclineUpdate(APPT_COLS);
+    if (isVideoUrlColumnMissing(declineErr)) {
+      ({ data: updated, error: declineErr } = await buildDeclineUpdate(APPT_COLS_LEGACY));
+    }
+    if (declineErr || !updated) {
+      console.error('[parent/appointments decline] error', declineErr);
+      return NextResponse.json({ error: 'Failed to decline.' }, { status: 500 });
+    }
+
+    // Notify hosts via the existing thread infrastructure (fire-and-forget).
+    // Decline maps to 'cancellation' kind — semantically identical from
+    // the host's perspective (the appointment isn't happening).
+    const { data: primaryHost } = await supabase
+      .from('montree_appointment_hosts')
+      .select('host_role, host_id')
+      .eq('appointment_id', id)
+      .eq('is_primary', true)
+      .maybeSingle();
+    if (primaryHost) {
+      const hostRow = primaryHost as { host_role: 'teacher' | 'principal'; host_id: string };
+      void shareAppointmentToThread({
+        supabase,
+        appointment: updated as Parameters<typeof shareAppointmentToThread>[0]['appointment'],
+        primaryHost: { role: hostRow.host_role, id: hostRow.host_id },
+        kind: 'cancellation',
+      }).catch((e) => {
+        console.error('[parent/appointments decline] thread share failed', e);
+      });
+    }
+
+    return NextResponse.json({ appointment: updated });
   }
 
   // ── CANCEL ─────────────────────────────────────────────────────────

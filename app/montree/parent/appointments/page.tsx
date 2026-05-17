@@ -193,6 +193,9 @@ export default function ParentAppointmentsPage() {
             appointments={appointments}
             onBook={() => setView({ kind: 'book' })}
             onOpen={(a) => setView({ kind: 'detail', appt: a })}
+            onChanged={async () => {
+              await reload();
+            }}
           />
         )}
         {view.kind === 'book' && (
@@ -221,9 +224,32 @@ export default function ParentAppointmentsPage() {
 }
 
 // ── List view ─────────────────────────────────────────────────────────
-function ListView({ appointments, onBook, onOpen }: { appointments: Appointment[]; onBook: () => void; onOpen: (a: Appointment) => void }) {
+function ListView({
+  appointments,
+  onBook,
+  onOpen,
+  onChanged,
+}: {
+  appointments: Appointment[];
+  onBook: () => void;
+  onOpen: (a: Appointment) => void;
+  onChanged: () => void;
+}) {
+  // Session 117 continued — split out pending invitations (staff sent
+  // them; parent must accept or decline) from confirmed/past/cancelled.
+  // Pending invites surface FIRST because they're the action-required.
+  const pendingInvites = appointments.filter((a) => a.status === 'pending');
+  const otherAppointments = appointments.filter((a) => a.status !== 'pending');
+
   return (
     <>
+      {pendingInvites.length > 0 && (
+        <PendingInvitations
+          invitations={pendingInvites}
+          onChanged={onChanged}
+        />
+      )}
+
       <button onClick={onBook} style={{
         width: '100%', padding: '14px 18px', borderRadius: 12,
         background: `linear-gradient(135deg, ${T.emerald}, ${T.emeraldDeep})`,
@@ -234,14 +260,16 @@ function ListView({ appointments, onBook, onOpen }: { appointments: Appointment[
         <Plus size={18} strokeWidth={2} /> Book a meeting
       </button>
 
-      {appointments.length === 0 ? (
+      {otherAppointments.length === 0 ? (
         <div style={{ padding: 30, borderRadius: 12, background: T.cardBg, border: T.cardBorder, color: T.textSecondary, fontSize: 14, lineHeight: 1.6, textAlign: 'center' }}>
           <Calendar size={28} color={T.emerald} strokeWidth={1.5} style={{ margin: '0 auto 12px', display: 'block', opacity: 0.6 }} />
-          You haven&apos;t booked any meetings yet.
+          {pendingInvites.length > 0
+            ? 'No confirmed meetings yet. Pending invitations are above.'
+            : "You haven't booked any meetings yet."}
         </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-          {appointments.map((a) => {
+          {otherAppointments.map((a) => {
             const primary = a.hosts.find((h) => h.is_primary);
             const isPast = new Date(a.scheduled_end) < new Date();
             return (
@@ -274,6 +302,211 @@ function ListView({ appointments, onBook, onOpen }: { appointments: Appointment[
         </div>
       )}
     </>
+  );
+}
+
+// ── Pending invitations (Session 117 continued) ──────────────────────
+// Staff-initiated appointments awaiting parent response. Each row has
+// Accept + Decline buttons that PATCH the appointment status.
+function PendingInvitations({
+  invitations,
+  onChanged,
+}: {
+  invitations: Appointment[];
+  onChanged: () => void;
+}) {
+  const [busyId, setBusyId] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const respond = async (id: string, action: 'accept' | 'decline') => {
+    if (action === 'decline') {
+      const confirmed =
+        typeof window !== 'undefined'
+          ? window.confirm('Decline this invitation? The staff member will see your response.')
+          : true;
+      if (!confirmed) return;
+    }
+    setBusyId(id);
+    setError(null);
+    try {
+      const res = await fetch(`/api/montree/parent/appointments/${id}`, {
+        method: 'PATCH',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action }),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        setError(data?.error || (action === 'accept' ? 'Could not accept.' : 'Could not decline.'));
+        return;
+      }
+      onChanged();
+    } catch {
+      setError('Network error.');
+    } finally {
+      setBusyId(null);
+    }
+  };
+
+  return (
+    <div
+      style={{
+        marginBottom: 18,
+        padding: 16,
+        borderRadius: 14,
+        background: 'rgba(232,201,106,0.08)',
+        border: '1px solid rgba(232,201,106,0.32)',
+        color: T.textPrimary,
+      }}
+    >
+      <div
+        style={{
+          fontFamily: T.serif,
+          fontSize: 17,
+          fontWeight: 500,
+          color: T.gold,
+          marginBottom: 4,
+        }}
+      >
+        {invitations.length === 1
+          ? 'New invitation'
+          : `${invitations.length} new invitations`}
+      </div>
+      <div style={{ fontSize: 12, color: T.textSecondary, marginBottom: 12 }}>
+        A staff member from your school invited you to a meeting. Tap accept to
+        confirm or decline if it doesn&apos;t work.
+      </div>
+
+      {error && (
+        <div
+          style={{
+            padding: 10,
+            borderRadius: 10,
+            background: 'rgba(239,68,68,0.12)',
+            border: '1px solid rgba(239,68,68,0.32)',
+            color: T.red,
+            fontSize: 12,
+            marginBottom: 10,
+          }}
+        >
+          {error}
+        </div>
+      )}
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        {invitations.map((a) => {
+          const primary = a.hosts.find((h) => h.is_primary);
+          return (
+            <div
+              key={a.id}
+              style={{
+                padding: '12px 14px',
+                borderRadius: 10,
+                background: 'rgba(8,20,12,0.55)',
+                border: T.cardBorder,
+              }}
+            >
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'baseline',
+                  justifyContent: 'space-between',
+                  gap: 8,
+                  marginBottom: 4,
+                }}
+              >
+                <span style={{ fontWeight: 600, fontSize: 14 }}>
+                  {primary?.name || 'Staff'}
+                </span>
+                {a.provider === 'agora' || a.video_url ? (
+                  <span
+                    style={{
+                      fontSize: 11,
+                      color: T.emerald,
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: 4,
+                    }}
+                  >
+                    <Video size={12} strokeWidth={1.75} /> Video call
+                  </span>
+                ) : (
+                  <span style={{ fontSize: 11, color: T.textMuted }}>In-person</span>
+                )}
+              </div>
+              <div style={{ fontSize: 13, color: T.textSecondary, marginBottom: 6 }}>
+                <Clock
+                  size={12}
+                  strokeWidth={1.75}
+                  style={{ verticalAlign: 'middle', marginRight: 4, color: T.emerald }}
+                />
+                {fmtDateTime(a.scheduled_start)}
+              </div>
+              {a.intake_subject && (
+                <div
+                  style={{
+                    fontSize: 12,
+                    color: T.textMuted,
+                    marginBottom: 10,
+                    fontStyle: 'italic',
+                  }}
+                >
+                  &ldquo;{a.intake_subject}&rdquo;
+                </div>
+              )}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                <button
+                  type="button"
+                  onClick={() => respond(a.id, 'accept')}
+                  disabled={busyId === a.id}
+                  style={{
+                    padding: '12px 14px',
+                    borderRadius: 10,
+                    background: T.emerald,
+                    border: 'none',
+                    color: '#0a1a0f',
+                    fontWeight: 600,
+                    fontSize: 14,
+                    cursor: busyId === a.id ? 'not-allowed' : 'pointer',
+                    opacity: busyId === a.id ? 0.6 : 1,
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: 6,
+                  }}
+                >
+                  <CheckCircle2 size={14} strokeWidth={2} />
+                  {busyId === a.id ? '…' : 'Accept'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => respond(a.id, 'decline')}
+                  disabled={busyId === a.id}
+                  style={{
+                    padding: '12px 14px',
+                    borderRadius: 10,
+                    background: 'transparent',
+                    border: '1px solid rgba(239,68,68,0.4)',
+                    color: T.red,
+                    fontWeight: 600,
+                    fontSize: 14,
+                    cursor: busyId === a.id ? 'not-allowed' : 'pointer',
+                    opacity: busyId === a.id ? 0.6 : 1,
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: 6,
+                  }}
+                >
+                  <XCircle size={14} strokeWidth={2} />
+                  {busyId === a.id ? '…' : 'Decline'}
+                </button>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
   );
 }
 

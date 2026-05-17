@@ -58,6 +58,14 @@ const PriorConversationCardLazy = dynamic(
   { ssr: false }
 );
 
+// Lazy-mount the SetAppointmentModal — opens from the day-detail sheet.
+// Code-split so the parent-picker + recipients fetch only loads when
+// staff actually taps "Set appointment".
+const SetAppointmentModalLazy = dynamic(
+  () => import('@/components/montree/appointments/SetAppointmentModal'),
+  { ssr: false }
+);
+
 // ── Theme tokens (dark forest) ───────────────────────────────────────
 const T = {
   emerald: '#34d399',
@@ -129,8 +137,6 @@ interface Appointment {
   }>;
 }
 
-type SlotMenuMode = null | 'closed' | 'open';
-
 // ── Component ────────────────────────────────────────────────────────
 export default function AppointmentsCalendar() {
   const [rules, setRules] = useState<Rule[]>([]);
@@ -153,16 +159,15 @@ export default function AppointmentsCalendar() {
     return d;
   });
 
-  // Ref to the day-detail panel — used to auto-scroll-into-view on
-  // mobile when the user taps a day cell. Most phones can't show grid +
-  // detail panel without scrolling, so a tap that does nothing visible
-  // feels broken. Mount-time selectedDay never triggers a scroll because
-  // the scroll only fires from the onSelectDay click handler below.
+  // Day-detail sheet state. Apple-style — tap a day → modal popup with
+  // bookings + 'Set appointment' CTA. The detailPanelRef stays for the
+  // ref-into-view behaviour (used on mobile when the day sheet first
+  // opens, the scroll lands the user at the modal's top).
   const detailPanelRef = useRef<HTMLDivElement | null>(null);
+  const [daySheetOpen, setDaySheetOpen] = useState(false);
 
-  // Slot/day quick-action menu state (popover anchored to the day-detail
-  // panel — Mark as open / I'm away / See what's booked).
-  const [slotMenu, setSlotMenu] = useState<SlotMenuMode>(null);
+  // SetAppointment modal state — opens from inside the day sheet.
+  const [setApptOpen, setSetApptOpen] = useState(false);
 
   // Recurring + Time-away accordions (closed by default — admin views).
   const [openRecurring, setOpenRecurring] = useState(false);
@@ -397,7 +402,7 @@ export default function AppointmentsCalendar() {
 
   // Quick action: mark THIS DAY away (full day blackout).
   const markDayAway = async () => {
-    setSlotMenu(null);
+    // (slotMenu state removed — no-op)
     const start = new Date(selectedDay);
     start.setHours(0, 0, 0, 0);
     const end = new Date(selectedDay);
@@ -427,7 +432,7 @@ export default function AppointmentsCalendar() {
   // Quick action: open recurring panel + pre-fill the day for the
   // selected day's weekday.
   const openAddSlotForToday = () => {
-    setSlotMenu(null);
+    // (slotMenu state removed — no-op)
     setNewDay(selectedDay.getDay());
     setOpenRecurring(true);
     setShowAddRule(true);
@@ -589,7 +594,7 @@ export default function AppointmentsCalendar() {
                 const t = new Date();
                 t.setHours(0, 0, 0, 0);
                 setSelectedDay(t);
-                setSlotMenu(null);
+                // (slotMenu state removed — no-op)
               }}
               style={{
                 padding: '4px 10px',
@@ -631,37 +636,30 @@ export default function AppointmentsCalendar() {
         selectedDay={selectedDay}
         onSelectDay={(d) => {
           setSelectedDay(d);
-          setSlotMenu(null);
-          // Mobile-first: bring the day-detail panel into view on tap.
-          // Most phones can't show grid + detail without scrolling, so a
-          // tap that does nothing visible feels broken.
-          if (typeof window !== 'undefined' && window.innerWidth < 768) {
-            // Defer one frame so the React update lands first.
-            requestAnimationFrame(() => {
-              detailPanelRef.current?.scrollIntoView({
-                behavior: 'smooth',
-                block: 'start',
-              });
-            });
-          }
+          // (slotMenu state removed — no-op)
+          // Apple-style: tap a day → open the day-detail SHEET modal
+          // popup. The user previously asked for "click on a day and it
+          // opens a pop up window for that day". This replaces the inline
+          // panel that lived below the grid.
+          setDaySheetOpen(true);
         }}
         openDows={openDows}
         timeAwayByDay={timeAwayByDay}
         bookingsByDay={bookingsByDay}
       />
 
-      {/* ── Day detail panel ────────────────────────────────────────── */}
-      <div
-        ref={detailPanelRef}
-        style={{
-          marginTop: 18,
-          padding: 18,
-          borderRadius: 14,
-          background: T.cardBg,
-          border: T.cardBorder,
-          scrollMarginTop: 12, // small breathing room when scrolled-into-view
-        }}
-      >
+      {/* ── Day detail SHEET (modal popup) ──────────────────────────── */}
+      {/* Apple-style — tap a day cell, this overlay opens with the day's
+          bookings + a primary "Set appointment" CTA. On mobile it fills
+          the screen; on desktop it's centered with backdrop. */}
+      {daySheetOpen && (
+        <DaySheet
+          onClose={() => {
+            setDaySheetOpen(false);
+            // (slotMenu state removed — no-op)
+          }}
+          panelRef={detailPanelRef}
+        >
         {/* Selected day header. */}
         <div
           style={{
@@ -688,27 +686,36 @@ export default function AppointmentsCalendar() {
               {formatDayDate(selectedDay)}
             </div>
           </div>
-          {!featureDisabled && !migrationPending && !selectedIsPast && (
-            <div style={{ position: 'relative' }}>
-              <button
-                type="button"
-                onClick={() => setSlotMenu(slotMenu === 'open' ? null : 'open')}
-                style={btnGhost()}
-                aria-haspopup="menu"
-                aria-expanded={slotMenu === 'open'}
-              >
-                <Plus size={14} strokeWidth={1.75} /> Add
-              </button>
-              {slotMenu === 'open' && (
-                <SlotMenu
-                  onMarkOpen={openAddSlotForToday}
-                  onMarkAway={markDayAway}
-                  onClose={() => setSlotMenu(null)}
-                  alreadyAway={!!selectedDayAway}
-                />
-              )}
-            </div>
-          )}
+          {/* Close button on the day-sheet — only visible inside the
+              modal. Per Session 117 UX feedback, the day sheet's
+              headline action ("Set appointment") lives at the BOTTOM —
+              the top of the sheet stays clean. The legacy "Add" popover
+              that wrapped Mark-open / I'm-away is gone; those actions
+              moved to (a) the bottom CTA pair for time-away, and (b) the
+              "Open every week on…" accordion for recurring rules. */}
+          <button
+            type="button"
+            onClick={() => {
+              setDaySheetOpen(false);
+              // (slotMenu state removed — no-op)
+            }}
+            aria-label="Close"
+            style={{
+              width: 36,
+              height: 36,
+              borderRadius: 10,
+              background: 'rgba(255,255,255,0.05)',
+              border: '1px solid rgba(255,255,255,0.10)',
+              color: T.textSecondary,
+              cursor: 'pointer',
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexShrink: 0,
+            }}
+          >
+            <X size={16} strokeWidth={1.75} />
+          </button>
         </div>
 
         {/* Time-away banner. */}
@@ -830,7 +837,56 @@ export default function AppointmentsCalendar() {
             ))}
           </div>
         )}
-      </div>
+
+        {/* Primary "Set appointment" CTA — the headline action in the
+            day sheet per Session 117 UX feedback. Parent meeting OR
+            video call. Hidden on past days (can't invite into the past). */}
+        {!featureDisabled && !migrationPending && !selectedIsPast && (
+          <div style={{ marginTop: 18, display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <button
+              type="button"
+              onClick={() => {
+                setSetApptOpen(true);
+              }}
+              style={{
+                width: '100%',
+                padding: '14px 16px',
+                borderRadius: 12,
+                background: T.emerald,
+                border: 'none',
+                color: '#0a1a0f',
+                fontWeight: 600,
+                fontSize: 15,
+                cursor: 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 8,
+              }}
+            >
+              <Plus size={18} strokeWidth={1.75} /> Set appointment
+            </button>
+            <button
+              type="button"
+              onClick={selectedDayAway ? () => deleteTimeAway(selectedDayAway.id) : markDayAway}
+              style={{
+                width: '100%',
+                padding: '10px 14px',
+                borderRadius: 10,
+                background: 'transparent',
+                border: '1px solid rgba(255,255,255,0.10)',
+                color: T.textSecondary,
+                fontWeight: 500,
+                fontSize: 12,
+                cursor: 'pointer',
+              }}
+            >
+              {selectedDayAway ? 'Cancel time away' : "I'm away this day"}
+            </button>
+          </div>
+        )}
+      </DaySheet>
+      )}
 
       {/* ── Recurring availability accordion ────────────────────────── */}
       <Accordion
@@ -1094,6 +1150,90 @@ export default function AppointmentsCalendar() {
           onClose={() => setAgoraCall(null)}
         />
       )}
+
+      {/* Session 117 continued — Set appointment invitation modal.
+          Opens when staff taps "Set appointment" inside the day-detail
+          sheet. On successful send, reload calendar so the new pending
+          appointment lands as a marker and the user sees it. */}
+      {setApptOpen && (
+        <SetAppointmentModalLazy
+          selectedDay={selectedDay}
+          onClose={() => setSetApptOpen(false)}
+          onSent={() => {
+            setSetApptOpen(false);
+            setDaySheetOpen(false);
+            void reload();
+          }}
+        />
+      )}
+    </div>
+  );
+}
+
+// ── DaySheet sub-component (Apple-style modal overlay) ──────────────
+// Backdrop + centered panel. Mobile: fills the viewport with a top-
+// safe-area inset. Desktop: centered, max-width 560px.
+function DaySheet({
+  onClose,
+  panelRef,
+  children,
+}: {
+  onClose: () => void;
+  panelRef: React.RefObject<HTMLDivElement | null>;
+  children: React.ReactNode;
+}) {
+  // Escape key closes.
+  useEffect(() => {
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    document.addEventListener('keydown', handleKey);
+    return () => document.removeEventListener('keydown', handleKey);
+  }, [onClose]);
+
+  // Body-scroll lock while open.
+  useEffect(() => {
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = prevOverflow;
+    };
+  }, []);
+
+  return (
+    <div
+      role="dialog"
+      aria-modal="true"
+      onClick={onClose}
+      style={{
+        position: 'fixed',
+        inset: 0,
+        background: 'rgba(0, 0, 0, 0.55)',
+        backdropFilter: 'blur(4px)',
+        zIndex: 1000,
+        display: 'flex',
+        alignItems: 'flex-start',
+        justifyContent: 'center',
+        padding: '6vh 16px 24px',
+        overflowY: 'auto',
+      }}
+    >
+      <div
+        ref={panelRef}
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          width: '100%',
+          maxWidth: 560,
+          padding: 22,
+          borderRadius: 18,
+          background: 'rgba(10, 26, 15, 0.96)',
+          border: '1px solid rgba(52,211,153,0.28)',
+          boxShadow: '0 24px 64px rgba(0, 0, 0, 0.55)',
+          color: 'rgba(255,255,255,0.92)',
+        }}
+      >
+        {children}
+      </div>
     </div>
   );
 }
@@ -1362,82 +1502,6 @@ function MonthGrid({
   );
 }
 
-// ── SlotMenu popover ─────────────────────────────────────────────────
-function SlotMenu({
-  onMarkOpen,
-  onMarkAway,
-  onClose,
-  alreadyAway,
-}: {
-  onMarkOpen: () => void;
-  onMarkAway: () => void;
-  onClose: () => void;
-  alreadyAway: boolean;
-}) {
-  // Click-outside-to-close.
-  useEffect(() => {
-    const handler = () => onClose();
-    // Defer one tick so the originating click doesn't immediately close.
-    const timer = setTimeout(() => document.addEventListener('click', handler, { once: true }), 0);
-    return () => {
-      clearTimeout(timer);
-      document.removeEventListener('click', handler);
-    };
-  }, [onClose]);
-
-  return (
-    <div
-      onClick={(e) => e.stopPropagation()}
-      style={{
-        position: 'absolute',
-        top: 'calc(100% + 6px)',
-        right: 0,
-        minWidth: 200,
-        background: 'rgba(8,20,12,0.96)',
-        border: T.cardBorder,
-        borderRadius: 12,
-        padding: 6,
-        backdropFilter: 'blur(18px)',
-        boxShadow: '0 12px 32px rgba(0,0,0,0.45)',
-        // backdrop-filter creates its own stacking context — rule #143
-        zIndex: 30,
-        fontFamily: T.sans,
-      }}
-      role="menu"
-    >
-      <button
-        type="button"
-        onClick={onMarkOpen}
-        style={menuItemStyle()}
-        role="menuitem"
-      >
-        <Sun size={14} strokeWidth={1.75} style={{ color: T.emerald, flexShrink: 0 }} />
-        <span>Open this weekday every week</span>
-      </button>
-      {!alreadyAway && (
-        <button
-          type="button"
-          onClick={onMarkAway}
-          style={menuItemStyle()}
-          role="menuitem"
-        >
-          <Moon size={14} strokeWidth={1.75} style={{ color: T.gold, flexShrink: 0 }} />
-          <span>I&apos;m away this day</span>
-        </button>
-      )}
-      <button
-        type="button"
-        onClick={onClose}
-        style={{ ...menuItemStyle(), color: T.textMuted }}
-        role="menuitem"
-      >
-        <X size={14} strokeWidth={1.75} style={{ flexShrink: 0 }} />
-        <span>Cancel</span>
-      </button>
-    </div>
-  );
-}
-
 // ── Accordion sub-component ──────────────────────────────────────────
 function Accordion({
   id,
@@ -1633,24 +1697,6 @@ function dayCellStyle({
   return base;
 }
 
-function menuItemStyle(): React.CSSProperties {
-  return {
-    display: 'flex',
-    alignItems: 'center',
-    gap: 10,
-    width: '100%',
-    padding: '10px 12px',
-    background: 'transparent',
-    border: 'none',
-    borderRadius: 8,
-    color: T.textPrimary,
-    fontFamily: T.sans,
-    fontSize: 13,
-    fontWeight: 500,
-    textAlign: 'left',
-    cursor: 'pointer',
-  };
-}
 
 function inputStyle(): React.CSSProperties {
   return {
