@@ -15,6 +15,9 @@ import {
   Menu,
   X,
   Lock,
+  Mic,
+  Calendar,
+  CalendarDays,
 } from 'lucide-react';
 // 🚨 Perf Tier 2.4 (PERF_HEALTH_CHECK.md) — Tracy panel is 1,200 lines and
 // mounted on every /montree/admin/* page. Loading it eagerly added ~30-50 KB
@@ -231,13 +234,44 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     } catch { /* ignore */ }
   }, [router]);
 
-  // Conversations vault entry is shown to every principal (Session 114 —
-  // prototype gate dropped). The principal sets their own vault password on
-  // first use; per-record salt + PBKDF2 keeps each principal's records
-  // independently encrypted.
+  // Two distinct meeting-notes surfaces for the principal:
+  //   - "Parent Meetings" (/montree/admin/meeting-notes) — plaintext meeting
+  //     notes mirroring the teacher's, optionally shareable into the parent
+  //     thread system. The everyday surface.
+  //   - "Conversations" (/montree/admin/conversations) — the encrypted vault
+  //     (Session 87 + migration 185). Per-principal vault password, E2E
+  //     encrypted, NOT shareable. For private notes the principal wants to
+  //     keep locked.
+  // Both visible to every principal — they pick the surface based on intent.
   const activeNav: NavItem[] = principalId
     ? [
         ...NAV,
+        // Phase 2 (Session 115+) — Appointments. The page itself shows
+        // a "feature disabled" hint when the school doesn't have the
+        // flag on, so it's safe to surface universally — principals see
+        // the empty editor and understand the system exists.
+        {
+          href: '/montree/admin/appointments',
+          label: 'Appointments',
+          icon: Calendar,
+          match: (p) => p.startsWith('/montree/admin/appointments'),
+        },
+        // Phase 4 — Events. Same posture as Appointments — the page
+        // itself surfaces a "feature disabled" hint when the flag is off.
+        // Uses CalendarDays icon to differentiate from Appointments above
+        // (avoids identical Calendar icon on two adjacent sidebar rows).
+        {
+          href: '/montree/admin/events',
+          label: 'Events',
+          icon: CalendarDays,
+          match: (p) => p.startsWith('/montree/admin/events'),
+        },
+        {
+          href: '/montree/admin/meeting-notes',
+          label: 'Parent Meetings',
+          icon: Mic,
+          match: (p) => p.startsWith('/montree/admin/meeting-notes'),
+        },
         {
           href: '/montree/admin/conversations',
           label: 'Conversations',

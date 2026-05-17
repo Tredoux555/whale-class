@@ -51,6 +51,22 @@ export type FeatureKey =
   // OFF by default; when ON, parents can initiate parent_teacher / parent_principal
   // threads that flow into the same Communication system from migration 190.
   | 'parent_messaging'
+  // ── School Ecosystem (Session 115+) ────────────────────────────────────
+  // Phase 2 — appointment booking. Parents book meetings with teachers + the
+  // principal. Migration 216. Default OFF, schools opt in.
+  | 'appointments'
+  // Phase 3 — principal newsletter + announcements. Migration 217. Default OFF.
+  | 'principal_newsletter'
+  // Phase 4 — school events with RSVP + signup conversion. Migration 218.
+  | 'school_events'
+  // Phase 6 — birthday + holiday calendar surfacing. Migration 220.
+  | 'school_calendar'
+  // Phase 116.2 — Jitsi video calls on parent appointments. Migration 222.
+  // When ON: parents can opt into a video call at booking time; URL is
+  // deterministic from the appointment's ical_token. Default OFF —
+  // schools opt in once they're comfortable with the parent-messaging
+  // + appointments stack.
+  | 'video_calls'
   // Menu items — all gated so schools can customise their menu
   | 'menu_notes'
   | 'menu_focus_list'
