@@ -350,6 +350,7 @@ export async function POST(request: NextRequest) {
                   supabase,
                   anthropic,
                   agentId: auth.userId,
+                  agentName,
                   locale,
                 }
               );
