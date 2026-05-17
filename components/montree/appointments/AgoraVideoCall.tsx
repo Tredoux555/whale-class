@@ -132,6 +132,9 @@ export default function AgoraVideoCall(props: AgoraVideoCallProps) {
   const [remoteUserPresent, setRemoteUserPresent] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [recordingError, setRecordingError] = useState<string | null>(null);
+  // In-flight guard — prevents double-click race against Agora's billing.
+  // Server has its own idempotency check; this is the UX-side belt.
+  const [recordingRequestInFlight, setRecordingRequestInFlight] = useState(false);
 
   const clientRef = useRef<IAgoraRTCClient | null>(null);
   const micTrackRef = useRef<IMicTrack | null>(null);
@@ -326,7 +329,9 @@ export default function AgoraVideoCall(props: AgoraVideoCallProps) {
   );
 
   const handleStartRecording = useCallback(async () => {
+    if (recordingRequestInFlight) return; // guard against double-tap
     setRecordingError(null);
+    setRecordingRequestInFlight(true);
     try {
       const res = await fetch(
         `/api/montree/appointments/${props.appointmentId}/recording/start`,
@@ -342,14 +347,20 @@ export default function AgoraVideoCall(props: AgoraVideoCallProps) {
         setRecordingError(j?.error || 'Failed to start recording.');
         return;
       }
+      // Server returns the existing row when already running (idempotent
+      // double-click guard). Either way we just flip the local flag.
       setIsRecording(true);
     } catch {
       setRecordingError('Network error starting recording.');
+    } finally {
+      setRecordingRequestInFlight(false);
     }
-  }, [props.appointmentId]);
+  }, [props.appointmentId, recordingRequestInFlight]);
 
   const handleStopRecording = useCallback(async () => {
+    if (recordingRequestInFlight) return;
     setRecordingError(null);
+    setRecordingRequestInFlight(true);
     try {
       const res = await fetch(
         `/api/montree/appointments/${props.appointmentId}/recording/stop`,
@@ -363,8 +374,10 @@ export default function AgoraVideoCall(props: AgoraVideoCallProps) {
       setIsRecording(false);
     } catch {
       setRecordingError('Network error stopping recording.');
+    } finally {
+      setRecordingRequestInFlight(false);
     }
-  }, [props.appointmentId]);
+  }, [props.appointmentId, recordingRequestInFlight]);
 
   // ── Render ─────────────────────────────────────────────────────────
   if (state.phase === 'error') {
@@ -430,16 +443,18 @@ export default function AgoraVideoCall(props: AgoraVideoCallProps) {
           isRecording ? (
             <ControlButton
               icon={<Square size={20} fill={T.redSolid} />}
-              label="Stop recording"
+              label={recordingRequestInFlight ? 'Stopping…' : 'Stop recording'}
               onClick={handleStopRecording}
               danger
+              disabled={recordingRequestInFlight}
             />
           ) : (
             <ControlButton
               icon={<Circle size={20} color={T.gold} />}
-              label="Record"
+              label={recordingRequestInFlight ? 'Starting…' : 'Record'}
               onClick={handleStartRecording}
               accent
+              disabled={recordingRequestInFlight}
             />
           )
         )}
@@ -492,7 +507,7 @@ function WaitingTile({ remoteDisplayName, state }: { remoteDisplayName: string; 
   );
 }
 
-function ControlButton({ icon, label, onClick, danger, accent, end }: { icon: React.ReactNode; label: string; onClick: () => void; danger?: boolean; accent?: boolean; end?: boolean }) {
+function ControlButton({ icon, label, onClick, danger, accent, end, disabled }: { icon: React.ReactNode; label: string; onClick: () => void; danger?: boolean; accent?: boolean; end?: boolean; disabled?: boolean }) {
   const bg = end
     ? 'rgba(239,68,68,0.85)'
     : danger
@@ -512,8 +527,24 @@ function ControlButton({ icon, label, onClick, danger, accent, end }: { icon: Re
     <button
       type="button"
       onClick={onClick}
+      disabled={disabled}
       aria-label={label}
-      style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, padding: '10px 14px', borderRadius: 12, background: bg, border, color: fg, cursor: 'pointer', fontFamily: T.sans, fontSize: 11, fontWeight: 600 }}
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        gap: 4,
+        padding: '10px 14px',
+        borderRadius: 12,
+        background: bg,
+        border,
+        color: fg,
+        cursor: disabled ? 'wait' : 'pointer',
+        opacity: disabled ? 0.6 : 1,
+        fontFamily: T.sans,
+        fontSize: 11,
+        fontWeight: 600,
+      }}
     >
       {icon}
       <span>{label}</span>
