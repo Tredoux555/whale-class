@@ -63,6 +63,9 @@ interface TeacherOption {
 }
 
 interface RecipientsResponse {
+  /** Role of the caller, returned by the server so the modal can route
+   *  the "Invite parents" link to the right parent-codes page. */
+  caller_role: 'teacher' | 'principal';
   children: ChildBundle[];
   // Principal-only — list of other teachers in the school the principal
   // can invite as co-hosts.
@@ -145,6 +148,7 @@ export default function SetAppointmentModal({
         const data = await res.json();
         if (cancelled) return;
         setRecipients({
+          caller_role: data.caller_role || 'teacher',
           children: data.children || [],
           teachers: data.teachers || undefined,
         });
@@ -451,8 +455,46 @@ export default function SetAppointmentModal({
               ) : recipientError ? (
                 <div style={errorBlockStyle()}>{recipientError}</div>
               ) : flatParents.length === 0 ? (
-                <div style={emptyHintStyle()}>
-                  No parents in your classroom yet.
+                <div
+                  style={{
+                    padding: 18,
+                    borderRadius: 10,
+                    background: T.inputBg,
+                    border: T.inputBorder,
+                    color: T.textSecondary,
+                    fontSize: 13,
+                    lineHeight: 1.5,
+                  }}
+                >
+                  <div style={{ color: T.textPrimary, fontWeight: 500, marginBottom: 6 }}>
+                    No parents have signed up yet.
+                  </div>
+                  <div style={{ marginBottom: 12, color: T.textSecondary }}>
+                    Generate a parent invite code for each child and share it
+                    with the parent. Once they redeem it, they&apos;ll show up
+                    here.
+                  </div>
+                  <a
+                    href={
+                      recipients?.caller_role === 'principal'
+                        ? '/montree/admin/parent-codes'
+                        : '/montree/dashboard/parent-codes'
+                    }
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: 6,
+                      padding: '8px 14px',
+                      borderRadius: 8,
+                      background: T.emerald,
+                      color: '#0a1a0f',
+                      fontWeight: 600,
+                      fontSize: 13,
+                      textDecoration: 'none',
+                    }}
+                  >
+                    Manage parent codes →
+                  </a>
                 </div>
               ) : (
                 <div>
