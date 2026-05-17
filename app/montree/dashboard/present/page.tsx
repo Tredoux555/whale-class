@@ -94,6 +94,55 @@ export default function PresentAlbumPage() {
   const [photoError, setPhotoError] = useState<string | null>(null);
   const [index, setIndex] = useState(0);
 
+  // In-session hide/unhide. Hiding fires a PATCH to montree_media setting
+  // parent_visible=false — that persists across sessions (server filters it
+  // out on next album load). The "Hidden N" pill + tray lets the teacher
+  // un-hide within this session if it was a mis-tap.
+  const [hiddenIds, setHiddenIds] = useState<Set<string>>(new Set());
+  const [showHiddenTray, setShowHiddenTray] = useState(false);
+
+  const viewable = useMemo(
+    () => photos.filter((p) => !hiddenIds.has(p.id)),
+    [photos, hiddenIds]
+  );
+  const hiddenPhotos = useMemo(
+    () => photos.filter((p) => hiddenIds.has(p.id)),
+    [photos, hiddenIds]
+  );
+
+  const patchVisibility = useCallback((id: string, parent_visible: boolean) => {
+    fetch('/api/montree/media', {
+      method: 'PATCH',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id, parent_visible }),
+    }).catch((err) => console.error('[present] visibility patch error:', err));
+  }, []);
+
+  const hidePhoto = useCallback(
+    (id: string) => {
+      setHiddenIds((prev) => {
+        const next = new Set(prev);
+        next.add(id);
+        return next;
+      });
+      patchVisibility(id, false);
+    },
+    [patchVisibility]
+  );
+
+  const unhidePhoto = useCallback(
+    (id: string) => {
+      setHiddenIds((prev) => {
+        const next = new Set(prev);
+        next.delete(id);
+        return next;
+      });
+      patchVisibility(id, true);
+    },
+    [patchVisibility]
+  );
+
   // ── Auth + redirect-on-fail ──
   useEffect(() => {
     const s = getSession();
@@ -134,11 +183,20 @@ export default function PresentAlbumPage() {
     return () => ctrl.abort();
   }, [authChecked, classroomId]);
 
+  // Clamp index when viewable shrinks (e.g. after hiding the last photo).
+  useEffect(() => {
+    if (index > 0 && index >= viewable.length) {
+      setIndex(Math.max(0, viewable.length - 1));
+    }
+  }, [viewable.length, index]);
+
   // ── Load album when child selected ──
   useEffect(() => {
     if (!selectedChild) {
       setPhotos([]);
       setIndex(0);
+      setHiddenIds(new Set());
+      setShowHiddenTray(false);
       return;
     }
     const ctrl = new AbortController();
@@ -176,8 +234,8 @@ export default function PresentAlbumPage() {
   );
 
   const goNext = useCallback(() => {
-    setIndex((i) => Math.min(i + 1, Math.max(0, photos.length - 1)));
-  }, [photos.length]);
+    setIndex((i) => Math.min(i + 1, Math.max(0, viewable.length - 1)));
+  }, [viewable.length]);
 
   const goPrev = useCallback(() => {
     setIndex((i) => Math.max(0, i - 1));
@@ -227,8 +285,9 @@ export default function PresentAlbumPage() {
   // PRESENTATION VIEW — full-bleed, no chrome on the photo
   // ─────────────────────────────────────────────────────────
   if (selectedChild) {
-    const total = photos.length;
-    const current = photos[index];
+    const total = viewable.length;
+    const current = viewable[index];
+    const hiddenCount = hiddenIds.size;
     return (
       <div
         style={{
@@ -269,7 +328,55 @@ export default function PresentAlbumPage() {
           >
             {selectedChild.name}
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 16, pointerEvents: 'auto' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, pointerEvents: 'auto' }}>
+            {hiddenCount > 0 && (
+              <button
+                type="button"
+                onClick={() => setShowHiddenTray((v) => !v)}
+                aria-label={`Show ${hiddenCount} hidden photo${hiddenCount === 1 ? '' : 's'}`}
+                style={{
+                  minHeight: 36,
+                  padding: '0 12px',
+                  borderRadius: 999,
+                  border: '1px solid rgba(232,201,106,0.45)',
+                  background: showHiddenTray ? 'rgba(232,201,106,0.22)' : 'rgba(232,201,106,0.12)',
+                  color: '#E8C96A',
+                  fontSize: 12,
+                  fontWeight: 600,
+                  letterSpacing: 0.3,
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 6,
+                }}
+              >
+                ↺ {hiddenCount} hidden
+              </button>
+            )}
+            {current && (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  hidePhoto(current.id);
+                }}
+                aria-label="Hide this photo"
+                style={{
+                  minHeight: 36,
+                  padding: '0 14px',
+                  borderRadius: 999,
+                  border: '1px solid rgba(255,255,255,0.30)',
+                  background: 'rgba(0,0,0,0.40)',
+                  color: '#fff',
+                  fontSize: 12,
+                  fontWeight: 500,
+                  letterSpacing: 0.3,
+                  cursor: 'pointer',
+                }}
+              >
+                Hide
+              </button>
+            )}
             {total > 0 && (
               <div
                 style={{
@@ -303,6 +410,115 @@ export default function PresentAlbumPage() {
             </button>
           </div>
         </div>
+
+        {/* Hidden-photos revert tray. Slides down from top. Tap a thumbnail
+            to bring that photo back into the slideshow. */}
+        {showHiddenTray && hiddenCount > 0 && (
+          <div
+            style={{
+              position: 'absolute',
+              top: 76,
+              right: 14,
+              maxWidth: 'min(92vw, 520px)',
+              maxHeight: '60vh',
+              overflowY: 'auto',
+              padding: 14,
+              borderRadius: 16,
+              background: 'rgba(10,26,15,0.96)',
+              border: '1px solid rgba(232,201,106,0.35)',
+              boxShadow: '0 12px 40px rgba(0,0,0,0.55)',
+              zIndex: 5,
+              WebkitOverflowScrolling: 'touch',
+              overscrollBehavior: 'contain',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                marginBottom: 10,
+              }}
+            >
+              <div style={{ color: '#E8C96A', fontSize: 12, fontWeight: 600, letterSpacing: 0.4 }}>
+                Tap to bring back
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowHiddenTray(false)}
+                aria-label="Close hidden tray"
+                style={{
+                  width: 28,
+                  height: 28,
+                  borderRadius: '50%',
+                  border: '1px solid rgba(255,255,255,0.20)',
+                  background: 'rgba(255,255,255,0.06)',
+                  color: '#fff',
+                  fontSize: 14,
+                  cursor: 'pointer',
+                }}
+              >
+                ×
+              </button>
+            </div>
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fill, minmax(80px, 1fr))',
+                gap: 8,
+              }}
+            >
+              {hiddenPhotos.map((p) => (
+                <button
+                  key={p.id}
+                  type="button"
+                  onClick={() => unhidePhoto(p.id)}
+                  aria-label="Bring this photo back"
+                  style={{
+                    position: 'relative',
+                    aspectRatio: '1 / 1',
+                    padding: 0,
+                    border: '1px solid rgba(232,201,106,0.35)',
+                    borderRadius: 10,
+                    overflow: 'hidden',
+                    background: '#000',
+                    cursor: 'pointer',
+                  }}
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={getProxyUrl(p.storage_path)}
+                    alt=""
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'cover',
+                      display: 'block',
+                      opacity: 0.55,
+                    }}
+                  />
+                  <div
+                    style={{
+                      position: 'absolute',
+                      inset: 0,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      color: '#fff',
+                      fontSize: 11,
+                      fontWeight: 600,
+                      letterSpacing: 0.4,
+                      textShadow: '0 1px 3px rgba(0,0,0,0.7)',
+                    }}
+                  >
+                    Show
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Photo stage */}
         <div
@@ -351,10 +567,10 @@ export default function PresentAlbumPage() {
           ) : null}
 
           {/* Preload next photo so it pops in instantly on tap */}
-          {photos[index + 1] && (
+          {viewable[index + 1] && (
             // eslint-disable-next-line @next/next/no-img-element
             <img
-              src={getProxyUrl(photos[index + 1].storage_path)}
+              src={getProxyUrl(viewable[index + 1].storage_path)}
               alt=""
               style={{ display: 'none' }}
             />

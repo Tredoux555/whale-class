@@ -129,6 +129,9 @@ const Divider = () => (
 const MENU_PANEL_STYLE: React.CSSProperties = {
   position: 'absolute', top: 'calc(100% + 8px)', right: 0,
   width: 248, padding: 6,
+  // iPad fix: respect the home-indicator safe area so the bottom item (logout)
+  // isn't pushed under it.
+  paddingBottom: `calc(6px + env(safe-area-inset-bottom))`,
   background: C.menuBg,
   border: `1px solid ${C.border}`,
   borderRadius: 14,
@@ -136,8 +139,15 @@ const MENU_PANEL_STYLE: React.CSSProperties = {
   WebkitBackdropFilter: 'blur(24px) saturate(140%)',
   boxShadow: '0 8px 40px rgba(0,0,0,0.5)',
   zIndex: 60,
-  maxHeight: 'calc(100vh - 80px)',
+  // iPad fix: dvh (dynamic viewport height) shrinks with the Safari address bar
+  // and bottom toolbar — vh doesn't, which clips the bottom of the scroll area.
+  // dvh is on every iPad Safari from 15.4+ (2022).
+  maxHeight: 'calc(100dvh - 80px)',
   overflowY: 'auto',
+  // Smooth iOS scrolling + prevent the inner scroll bouncing past the menu
+  // and snapping the logout out of view.
+  WebkitOverflowScrolling: 'touch',
+  overscrollBehavior: 'contain',
 };
 
 // ── Main component ────────────────────────────────────────────────────────────
