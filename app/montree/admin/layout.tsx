@@ -33,12 +33,11 @@ const TracyFloat = dynamic(() => import('@/components/montree/admin/TracyFloat')
 // need a separate Guru chat. Removed from the principal sidebar; the
 // teacher-side /montree/dashboard/guru entry is unaffected.
 
-// Principal Vault prototype gate — until the feature is broadened, only
-// surface the sidebar entry for these principal IDs. The server enforces the
-// same allow-list (see /api/montree/admin/conversations/* routes).
-const VAULT_ENABLED_PRINCIPAL_IDS = new Set<string>([
-  '16eec1c0-bfb5-4edf-a160-059bb41803fb', // Tredoux on Whale Class
-]);
+// 🚨 Session 114 — Principal Vault is now available to every principal.
+// The previous VAULT_ENABLED_PRINCIPAL_IDS allow-list (Tredoux-only prototype
+// from Session 87) has been dropped. Each principal sets their own vault
+// password on first use — per-record salt + PBKDF2 means each principal's
+// encryption key is independent. No cross-principal access.
 
 // Canonical dark-forest tokens (mirror the teacher-side voice-onboarding / curriculum pages)
 const T = {
@@ -232,10 +231,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     } catch { /* ignore */ }
   }, [router]);
 
-  // Build the active nav list — append the Conversations vault item if this
-  // principal is on the prototype allow-list. Server enforces the same gate
-  // independently; this just keeps the sidebar from showing a dead link.
-  const activeNav: NavItem[] = principalId && VAULT_ENABLED_PRINCIPAL_IDS.has(principalId)
+  // Conversations vault entry is shown to every principal (Session 114 —
+  // prototype gate dropped). The principal sets their own vault password on
+  // first use; per-record salt + PBKDF2 keeps each principal's records
+  // independently encrypted.
+  const activeNav: NavItem[] = principalId
     ? [
         ...NAV,
         {

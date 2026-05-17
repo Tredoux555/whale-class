@@ -198,6 +198,7 @@ function DashboardHeader() {
   const activePage = useMemo(() => {
     if (pathname?.startsWith('/montree/dashboard/messages'))  return 'messages';
     if (pathname === '/montree/dashboard/parent-codes')       return 'parent-codes';
+    if (pathname?.startsWith('/montree/dashboard/conversations')) return 'conversations';
     if (pathname === '/montree/dashboard/notes')              return 'notes';
     if (pathname === '/montree/dashboard/focus')              return 'focus-list';
     if (pathname?.startsWith('/montree/dashboard/photo-audit')) return 'photo-audit';
@@ -609,6 +610,15 @@ function DashboardHeader() {
                     label="Parent codes"
                     active={activePage === 'parent-codes'}
                     onClick={() => { setShowMoreMenu(false); router.push('/montree/dashboard/parent-codes'); }}
+                  />
+
+                  {/* Meeting Notes — Session 114: voice-record parent meetings,
+                      summary saved, audio never persisted. Tier-gated server-side. */}
+                  <MenuRow
+                    icon={Mic}
+                    label="Meeting Notes"
+                    active={activePage === 'conversations'}
+                    onClick={() => { setShowMoreMenu(false); router.push('/montree/dashboard/conversations'); }}
                   />
 
                   {/* Help — renamed from "Inbox", same Tredoux-DM channel underneath */}

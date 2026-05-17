@@ -15,9 +15,11 @@ import { getSupabase } from '@/lib/supabase-client';
 
 export const maxDuration = 30;
 
-const PRINCIPAL_VAULT_ENABLED_FOR = new Set<string>([
-  '16eec1c0-bfb5-4edf-a160-059bb41803fb', // Tredoux on Whale Class
-]);
+// 🚨 Session 114 — PRINCIPAL_VAULT_ENABLED_FOR allow-list dropped.
+// Every authenticated principal has access. Each principal sets their own
+// vault password on first use; per-record salt + PBKDF2 means the records
+// of one principal cannot be decrypted by another. The principal_id +
+// school_id filters on every query enforce cross-school scoping.
 
 // Reasonable upper bound on a single record. ~10 hours of meeting at typical
 // summary+transcript token sizes is well under this. Anything larger is suspect.
@@ -29,9 +31,6 @@ export async function GET(request: NextRequest) {
   if (auth instanceof NextResponse) return auth;
   if (auth.role !== 'principal') {
     return NextResponse.json({ error: 'Principal-only route.' }, { status: 403 });
-  }
-  if (!PRINCIPAL_VAULT_ENABLED_FOR.has(auth.userId)) {
-    return NextResponse.json({ error: 'Not found' }, { status: 404 });
   }
 
   const supabase = getSupabase();
@@ -72,9 +71,6 @@ export async function POST(request: NextRequest) {
   if (auth instanceof NextResponse) return auth;
   if (auth.role !== 'principal') {
     return NextResponse.json({ error: 'Principal-only route.' }, { status: 403 });
-  }
-  if (!PRINCIPAL_VAULT_ENABLED_FOR.has(auth.userId)) {
-    return NextResponse.json({ error: 'Not found' }, { status: 404 });
   }
 
   let body: {
