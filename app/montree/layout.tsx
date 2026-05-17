@@ -3,10 +3,20 @@
 // Enhanced metadata for SEO + bilingual i18n provider
 import type { Metadata, Viewport } from "next";
 import { cookies } from "next/headers";
+import dynamic from "next/dynamic";
 import I18nClientWrapper from "@/components/montree/I18nClientWrapper";
 import VisitorTracker from "@/components/montree/VisitorTracker";
 import WebVitalsReporter from "@/components/montree/WebVitalsReporter";
 import { isValidLocale, DEFAULT_LOCALE, type Locale } from "@/lib/montree/i18n/locales";
+
+// Mobile-style privacy lock. Self-mounts on every /montree/* route but
+// internally gates on pathname — only sensitive surfaces (admin, dashboard,
+// agent, super-admin, parent/*) actually trigger the lock overlay. Public
+// pages (landing, library, login) opt out. Loaded client-only.
+const AppLockOverlay = dynamic(
+  () => import("@/components/montree/AppLockOverlay"),
+  { ssr: false }
+);
 
 export const metadata: Metadata = {
   title: {
@@ -114,6 +124,7 @@ export default async function MontreeLayout({
     <I18nClientWrapper initialLocale={initialLocale} initialMessages={initialMessages}>
       <VisitorTracker />
       <WebVitalsReporter />
+      <AppLockOverlay />
       {children}
     </I18nClientWrapper>
   );
