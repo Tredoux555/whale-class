@@ -110,19 +110,49 @@ export async function GET(request: NextRequest) {
 
 /**
  * POST /api/montree/photo-bank
- * Upload one or more photos
+ * Upload one or more photos.
  * Body: multipart/form-data with 'files' field
+ *
+ * 🚨 PUBLIC ENDPOINT — no login required.
+ * The library page (/montree/library/photo-bank) is a shared community
+ * resource. Anyone can browse, anyone can contribute. Per Session 117
+ * user feedback: 'anyone should be able to drop anything in here'.
+ *
+ * Spam controls (defense-in-depth):
+ *   1. IP rate-limit: 5 uploads / 15 minutes (checkRateLimit).
+ *   2. JPEG-only (validateJpegPhoto — rejects PNG/HEIC/WebP/GIF/AVIF).
+ *   3. 10 MB per-file cap.
+ *   4. Filename sanitization on the storage path.
+ *   5. is_public + is_approved default true (matches existing behaviour);
+ *      a future moderation pass can flip is_approved to false on
+ *      anonymous uploads if abuse becomes a concern.
  */
 export async function POST(request: NextRequest) {
   try {
-    // Auth: teacher-level (any authenticated school user can upload)
-    // Was super-admin-only but photo-bank is used by teachers from library page
-    // verifySchoolRequest checks httpOnly cookie — sufficient for upload protection
-    const { verifySchoolRequest } = await import('@/lib/montree/verify-request');
-    const auth = await verifySchoolRequest(request);
-    if (auth instanceof NextResponse) return auth;
-
     const supabase = getSupabase();
+
+    // IP rate-limit. Same posture as the demo-request public form.
+    // Anonymous uploads are inherent to a public picture bank — rate
+    // limit by IP gives us the spam guard without a login gate.
+    const { checkRateLimit } = await import('@/lib/rate-limiter');
+    const { getClientIP } = await import('@/lib/montree/audit-logger');
+    const ip = getClientIP(request.headers);
+    const { allowed, retryAfterSeconds } = await checkRateLimit(
+      supabase,
+      ip,
+      '/api/montree/photo-bank',
+      5,
+      15
+    );
+    if (!allowed) {
+      return NextResponse.json(
+        {
+          error: 'Too many uploads. Please try again in a few minutes.',
+        },
+        { status: 429, headers: { 'Retry-After': String(retryAfterSeconds) } }
+      );
+    }
+
     const formData = await request.formData();
     const files = formData.getAll('files') as File[];
     const uploadedBy = (formData.get('uploaded_by') as string) || 'public';
