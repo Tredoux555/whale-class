@@ -1,12 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { v4 as uuidv4 } from 'uuid';
+import { WHALE_CLASSROOM_ID } from '@/lib/curriculum/classroom';
 
 // POST /api/admin/curriculum/sync-all
 // Sync ALL children in the classroom - matches weekly assignments to curriculum
 // auto-adds missing works, AND BACKFILLS mastered works based on sequence
-
-const WHALE_CLASSROOM_ID = 'bf0daf1b-cd46-4fba-9c2f-d3297bd11fc6';
+//
+// 🚨 SESSION 113 V2: The local hardcoded `WHALE_CLASSROOM_ID = 'bf0daf1b-...'` was a
+//    stale ghost (no student was enrolled). Now imports from lib/curriculum/classroom
+//    which resolves to the canonical '51e7adb6-...' (overridable via env). See the
+//    constant's comment block in that file for the audit trail.
 
 // Status mapping from string to number
 const statusToNumber: Record<string, number> = {

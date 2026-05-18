@@ -2,30 +2,18 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import type { Child } from "@/types/database";
 
 export default function MontessoriDashboard() {
   const [children, setChildren] = useState<Child[]>([]);
   const [loading, setLoading] = useState(true);
-  const router = useRouter();
 
   useEffect(() => {
-    checkAuth();
+    // 🚨 SESSION 113 V2: removed dead checkAuth() — /api/videos doesn't exist.
+    //    Middleware enforces admin JWT on /admin/*.
     fetchChildren();
   }, []);
-
-  const checkAuth = async () => {
-    try {
-      const response = await fetch("/api/videos");
-      if (response.status === 401) {
-        router.push("/admin/login");
-      }
-    } catch (error) {
-      router.push("/admin/login");
-    }
-  };
 
   const fetchChildren = async () => {
     try {

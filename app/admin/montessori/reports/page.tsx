@@ -2,7 +2,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Download, Calendar, FileText, Loader } from 'lucide-react';
 
@@ -20,31 +19,20 @@ export default function ReportsPage() {
   const [endDate, setEndDate] = useState("");
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
-  const router = useRouter();
 
   useEffect(() => {
-    checkAuth();
+    // 🚨 SESSION 113 V2: removed dead checkAuth() — /api/videos doesn't exist.
+    //    Middleware enforces admin JWT on /admin/*.
     fetchChildren();
-    
+
     // Set default date range (last 30 days)
     const end = new Date();
     const start = new Date();
     start.setDate(start.getDate() - 30);
-    
+
     setEndDate(end.toISOString().split('T')[0]);
     setStartDate(start.toISOString().split('T')[0]);
   }, []);
-
-  const checkAuth = async () => {
-    try {
-      const response = await fetch("/api/videos");
-      if (response.status === 401) {
-        router.push("/admin/login");
-      }
-    } catch (error) {
-      router.push("/admin/login");
-    }
-  };
 
   const fetchChildren = async () => {
     try {

@@ -2,7 +2,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createSupabaseClient } from '@/lib/supabase-client';
 import { ChevronDown, ChevronUp, Search } from 'lucide-react';
@@ -33,10 +32,10 @@ export default function EnglishCurriculumPage() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [expandedActivity, setExpandedActivity] = useState<string | null>(null);
-  const router = useRouter();
 
   useEffect(() => {
-    checkAuth();
+    // 🚨 SESSION 113 V2: removed dead checkAuth() — /api/videos doesn't exist.
+    //    Middleware (verifyAdminToken on /admin/*) is the real auth gate.
     fetchActivities();
   }, []);
 
@@ -55,17 +54,6 @@ export default function EnglishCurriculumPage() {
       );
     }
   }, [searchQuery, activities]);
-
-  const checkAuth = async () => {
-    try {
-      const response = await fetch("/api/videos");
-      if (response.status === 401) {
-        router.push("/admin/login");
-      }
-    } catch (error) {
-      router.push("/admin/login");
-    }
-  };
 
   const fetchActivities = async () => {
     try {

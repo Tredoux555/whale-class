@@ -75,28 +75,18 @@ export default function SchoolCurriculumPage() {
     }
   };
 
+  // 🚨 SESSION 113 V2: /api/admin/seed-curriculum does not exist. The button
+  //    surfaces a TODO message instead of 404'ing. The real seeding pipeline
+  //    lives at /api/montree/admin/reseed-curriculum (used during principal
+  //    setup); a future session can either gate this UI behind that route or
+  //    remove the button entirely.
   const seedCurriculum = async () => {
     if (seeding) return;
     setSeeding(true);
-    setSeedMessage(null);
-    
-    try {
-      const res = await fetch('/api/admin/seed-curriculum', { method: 'POST' });
-      const data = await res.json();
-      
-      if (data.success) {
-        setSeedMessage(`✅ Seeded ${data.count} works!`);
-        // Refresh counts
-        await fetchCurriculumStats();
-      } else {
-        setSeedMessage(`⚠️ ${data.error || 'Seed failed'}`);
-      }
-    } catch (err) {
-      console.error('Seed error:', err);
-      setSeedMessage('❌ Failed to seed curriculum');
-    } finally {
-      setSeeding(false);
-    }
+    setSeedMessage(
+      '⚠️ Seed endpoint not wired up. Use /api/montree/admin/reseed-curriculum with a classroom_id query param via the Montree super-admin tools instead.'
+    );
+    setSeeding(false);
   };
 
   const isEmpty = totalWorks === 0;

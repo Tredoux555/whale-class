@@ -1,3 +1,10 @@
+// DEPRECATED — SESSION 113 V2
+//
+// This page is linked from /admin/montree and /montree/welcome but every server
+// fetch targets /api/admin/teacher-students which does not exist. The canonical
+// teacher-roster surface for Montree multi-tenant is the principal dashboard
+// at /montree/admin. Kept on disk so direct URLs don't 404 (hide-don't-delete
+// posture). Fetches are short-circuited to clean empty state.
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -22,42 +29,25 @@ export default function TeacherStudentsPage() {
   const [children, setChildren] = useState<Child[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedTeacher, setSelectedTeacher] = useState<string | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [saving, setSaving] = useState<string | null>(null);
 
   useEffect(() => {
     fetchData();
   }, []);
 
+  // 🚨 DEPRECATED — endpoints below do not exist. Short-circuit instead of 404.
   const fetchData = async () => {
-    try {
-      const res = await fetch('/api/admin/teacher-students');
-      const data = await res.json();
-      setTeachers(data.teachers || []);
-      setChildren(data.children || []);
-    } catch (error) {
-      console.error('Failed to fetch data:', error);
-    } finally {
-      setLoading(false);
-    }
+    setTeachers([]);
+    setChildren([]);
+    setLoading(false);
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const assignChild = async (childId: string, teacherId: string | null) => {
-    setSaving(childId);
-    try {
-      const res = await fetch('/api/admin/teacher-students', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ childId, teacherId }),
-      });
-      
-      if (res.ok) {
-        await fetchData(); // Refresh data
-      }
-    } catch (error) {
-      console.error('Failed to assign child:', error);
-    } finally {
-      setSaving(null);
-    }
+    alert(
+      'Deprecated. Use the Montree super-admin tools at /montree/admin to manage teacher rosters.'
+    );
   };
 
   const unassignedChildren = children.filter(c => !c.assignedTo);

@@ -2,7 +2,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { CheckCircle, Clock, RefreshCw, Sparkles, Heart } from 'lucide-react';
 
@@ -54,10 +53,8 @@ export default function DaughterActivityPage() {
   const [todayActivity, setTodayActivity] = useState<DailyAssignment | null>(null);
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
-  const router = useRouter();
 
   useEffect(() => {
-    checkAuth();
     findDaughterChild();
   }, []);
 
@@ -67,16 +64,8 @@ export default function DaughterActivityPage() {
     }
   }, [daughterChildId]);
 
-  const checkAuth = async () => {
-    try {
-      const response = await fetch("/api/videos");
-      if (response.status === 401) {
-        router.push("/admin/login");
-      }
-    } catch (error) {
-      router.push("/admin/login");
-    }
-  };
+  // 🚨 SESSION 113 V2: removed dead checkAuth() — called /api/videos (does not
+  //    exist) and was therefore a no-op. Middleware enforces admin JWT.
 
   const findDaughterChild = async () => {
     try {

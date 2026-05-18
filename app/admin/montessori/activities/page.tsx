@@ -2,7 +2,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 // Removed createSupabaseClient - using API route instead
 import { Search, Filter, ChevronDown, ChevronUp, BookOpen, User } from 'lucide-react';
@@ -59,10 +58,10 @@ export default function ActivitiesLibraryPage() {
   const [showAssignModal, setShowAssignModal] = useState(false);
   const [selectedActivity, setSelectedActivity] = useState<Activity | null>(null);
   const [selectedChild, setSelectedChild] = useState<string>("");
-  const router = useRouter();
 
   useEffect(() => {
-    checkAuth();
+    // 🚨 SESSION 113 V2: removed dead checkAuth() — /api/videos doesn't exist.
+    //    Middleware enforces admin JWT on /admin/*.
     fetchActivities();
     fetchChildren();
   }, []);
@@ -70,17 +69,6 @@ export default function ActivitiesLibraryPage() {
   useEffect(() => {
     filterActivities();
   }, [searchQuery, selectedArea, selectedSkillLevel, ageFilter, activities]);
-
-  const checkAuth = async () => {
-    try {
-      const response = await fetch("/api/videos");
-      if (response.status === 401) {
-        router.push("/admin/login");
-      }
-    } catch (error) {
-      router.push("/admin/login");
-    }
-  };
 
   const fetchActivities = async () => {
     try {
