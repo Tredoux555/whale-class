@@ -6,14 +6,16 @@
 
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { useRouter, useParams } from 'next/navigation';
+import Link from 'next/link';
 import { toast, Toaster } from 'sonner';
-import { ArrowLeft, Send } from 'lucide-react';
+import { ArrowLeft, Send, Video, Calendar } from 'lucide-react';
 import { useI18n, getIntlLocale } from '@/lib/montree/i18n';
 import { useThreadPolling } from '@/hooks/useThreadPolling';
 import VoiceComposer, { type VoiceReady } from '@/components/montree/messaging/VoiceComposer';
 import VoiceBubble from '@/components/montree/messaging/VoiceBubble';
+import MontreeLogo from '@/components/montree/MonteeLogo';
 
 // Dark forest tokens
 const T = {
@@ -83,11 +85,24 @@ interface Classroom {
   name: string;
 }
 
+interface ThreadAppointment {
+  id: string;
+  scheduled_start: string;
+  scheduled_end: string;
+  duration_minutes: number;
+  status: string;
+  provider?: 'jitsi' | 'agora' | null;
+  video_url?: string | null;
+  location?: string | null;
+  intake_subject?: string | null;
+}
+
 interface ThreadResponse {
   thread: Thread;
   participants: Participant[];
   child: Child | null;
   classroom: Classroom | null;
+  appointments?: ThreadAppointment[];
 }
 
 export default function ParentThreadDetailPage() {
@@ -101,6 +116,7 @@ export default function ParentThreadDetailPage() {
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [child, setChild] = useState<Child | null>(null);
   const [classroom, setClassroom] = useState<Classroom | null>(null);
+  const [appointments, setAppointments] = useState<ThreadAppointment[]>([]);
   const [messages, setMessages] = useState<Message[]>([]);
   const [reply, setReply] = useState('');
   const [sending, setSending] = useState(false);
@@ -138,6 +154,7 @@ export default function ParentThreadDetailPage() {
           setParticipants(threadData.participants || []);
           setChild(threadData.child);
           setClassroom(threadData.classroom);
+          setAppointments(threadData.appointments || []);
           setMessages(messagesData.messages || []);
           setLoading(false);
         }
@@ -173,6 +190,60 @@ export default function ParentThreadDetailPage() {
 
   const myParticipant = participants.find((p) => p.is_me);
   const canReply = myParticipant?.can_reply ?? false;
+
+  // State-backed clock so the "joinable" window flips reactively as time
+  // passes. Ticks once a minute — close enough for a 15-min pre-window.
+  // useMemo bodies must be pure, so we read clock from state, not Date.now().
+  const [nowTick, setNowTick] = useState<number>(() => Date.now());
+  useEffect(() => {
+    const id = window.setInterval(() => setNowTick(Date.now()), 60_000);
+    return () => window.clearInterval(id);
+  }, []);
+
+  // Find the next live appointment to surface at the top of the thread.
+  // ONLY shown when the meeting is within range: starts within 7 days, OR
+  // ended within the last 2 hours. Past/distant-future meetings stay in
+  // the message timeline below — we don't want a 3-month-old appointment
+  // pinned permanently at the top.
+  const nextMeeting = useMemo<ThreadAppointment | null>(() => {
+    const live = appointments.filter((a) => a.status !== 'cancelled');
+    if (live.length === 0) return null;
+    const inWindow = live
+      .filter((a) => {
+        const start = new Date(a.scheduled_start).getTime();
+        const end = new Date(a.scheduled_end).getTime();
+        return nowTick >= start - 7 * 24 * 60 * 60 * 1000 && nowTick <= end + 2 * 60 * 60 * 1000;
+      })
+      .sort((a, b) => {
+        // Prefer the meeting closest to "now" — currently-running first,
+        // then soonest upcoming, then most recently ended.
+        const aStart = new Date(a.scheduled_start).getTime();
+        const bStart = new Date(b.scheduled_start).getTime();
+        return Math.abs(aStart - nowTick) - Math.abs(bStart - nowTick);
+      });
+    return inWindow[0] || null;
+  }, [appointments, nowTick]);
+
+  const isMeetingJoinable = useMemo(() => {
+    if (!nextMeeting) return false;
+    const start = new Date(nextMeeting.scheduled_start).getTime();
+    const end = new Date(nextMeeting.scheduled_end).getTime();
+    // Joinable from 15 min before start until 30 min after end. Same window
+    // the appointments page uses for the green Join button.
+    return nowTick >= start - 15 * 60 * 1000 && nowTick <= end + 30 * 60 * 1000;
+  }, [nextMeeting, nowTick]);
+
+  const meetingHeader = useMemo(() => {
+    if (!nextMeeting) return null;
+    const dl = getIntlLocale(locale);
+    const start = new Date(nextMeeting.scheduled_start);
+    const sameDay = start.toDateString() === new Date(nowTick).toDateString();
+    const dateLabel = sameDay
+      ? t('parentMessages.today') || 'Today'
+      : start.toLocaleDateString(dl, { weekday: 'short', month: 'short', day: 'numeric' });
+    const timeLabel = start.toLocaleTimeString(dl, { hour: 'numeric', minute: '2-digit' });
+    return `${dateLabel} · ${timeLabel}`;
+  }, [nextMeeting, locale, t, nowTick]);
 
   const headerName = (() => {
     // Show the non-me, non-observer participants as the "title" of the thread.
@@ -345,7 +416,7 @@ export default function ParentThreadDetailPage() {
     }}>
       <Toaster position="top-center" />
 
-      {/* ═══ Sticky Header ═══ */}
+      {/* ═══ Sticky Header — Montree home link + Back + thread title ═══ */}
       <header style={{
         position: 'sticky',
         top: 0,
@@ -357,11 +428,29 @@ export default function ParentThreadDetailPage() {
         <div style={{
           maxWidth: 720,
           margin: '0 auto',
-          padding: '12px 20px',
+          padding: '10px 20px',
           display: 'flex',
           alignItems: 'center',
           gap: 12,
         }}>
+          {/* Montree home anchor — tap takes you straight to the parent dashboard. */}
+          <Link
+            href="/montree/parent/dashboard"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8,
+              textDecoration: 'none',
+              color: T.textPrimary,
+              padding: '4px 6px 4px 0',
+            }}
+            aria-label="Montree home"
+          >
+            <MontreeLogo size={26} />
+            <span style={{ fontFamily: T.serif, fontSize: 15, fontWeight: 600, letterSpacing: -0.2 }}>
+              Montree
+            </span>
+          </Link>
           <button
             onClick={() => router.push('/montree/parent/messages')}
             style={{
@@ -371,15 +460,20 @@ export default function ParentThreadDetailPage() {
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
-              padding: 4,
+              gap: 4,
+              padding: '4px 8px',
+              fontSize: 12,
+              fontWeight: 500,
             }}
+            aria-label={t('parentMessages.backToList') || 'Back to messages'}
           >
-            <ArrowLeft size={18} strokeWidth={1.75} />
+            <ArrowLeft size={14} strokeWidth={2} />
+            {t('parentMessages.messages') || 'Messages'}
           </button>
-          <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ flex: 1, minWidth: 0, textAlign: 'right' }}>
             <div style={{
               fontFamily: T.serif,
-              fontSize: 16,
+              fontSize: 14,
               fontWeight: 600,
               color: T.textPrimary,
               overflow: 'hidden',
@@ -389,7 +483,7 @@ export default function ParentThreadDetailPage() {
               {headerName}
             </div>
             {(child?.name || classroom?.name) && (
-              <div style={{ fontSize: 11, color: T.textMuted, marginTop: 2 }}>
+              <div style={{ fontSize: 10, color: T.textMuted, marginTop: 1 }}>
                 {[child?.name, classroom?.name].filter(Boolean).join(' · ')}
               </div>
             )}
@@ -408,6 +502,70 @@ export default function ParentThreadDetailPage() {
         flexDirection: 'column',
         gap: 12,
       }}>
+        {/* Pinned upcoming-meeting card — appears when this thread has a
+            non-cancelled appointment within 24h, in-progress, or in the past
+            30min. Click → /montree/parent/appointments where Join lives. */}
+        {nextMeeting && (
+          <Link
+            href="/montree/parent/appointments"
+            style={{
+              display: 'block',
+              padding: '14px 16px',
+              borderRadius: 14,
+              background: isMeetingJoinable
+                ? 'linear-gradient(135deg, rgba(52,211,153,0.22), rgba(16,185,129,0.16))'
+                : 'rgba(52,211,153,0.10)',
+              border: isMeetingJoinable
+                ? '1px solid rgba(52,211,153,0.55)'
+                : T.cardBorder,
+              textDecoration: 'none',
+              color: T.textPrimary,
+              marginBottom: 4,
+            }}
+            aria-label={isMeetingJoinable ? 'Join the video call' : 'Open the meeting'}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <div style={{
+                width: 36,
+                height: 36,
+                borderRadius: 10,
+                background: isMeetingJoinable ? 'rgba(52,211,153,0.30)' : 'rgba(52,211,153,0.15)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexShrink: 0,
+              }}>
+                {isMeetingJoinable
+                  ? <Video size={18} strokeWidth={2} color={T.emerald} />
+                  : <Calendar size={16} strokeWidth={1.75} color={T.emerald} />}
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: 0.3, textTransform: 'uppercase', color: isMeetingJoinable ? T.emerald : T.textMuted }}>
+                  {isMeetingJoinable
+                    ? (t('parentMessages.meetingLive') || 'Meeting ready')
+                    : (t('parentMessages.upcomingMeeting') || 'Upcoming meeting')}
+                </div>
+                <div style={{ fontFamily: T.serif, fontSize: 15, fontWeight: 600, color: T.textPrimary, marginTop: 2 }}>
+                  {meetingHeader}
+                </div>
+              </div>
+              <div style={{
+                padding: '8px 14px',
+                borderRadius: 999,
+                background: isMeetingJoinable ? T.emerald : 'rgba(255,255,255,0.08)',
+                color: isMeetingJoinable ? '#0a1a0f' : T.textSecondary,
+                fontSize: 12,
+                fontWeight: 700,
+                flexShrink: 0,
+              }}>
+                {isMeetingJoinable
+                  ? (t('parentMessages.joinCall') || 'Join')
+                  : (t('parentMessages.openMeeting') || 'Open')}
+              </div>
+            </div>
+          </Link>
+        )}
+
         {messages.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '40px 20px', color: T.textMuted, fontSize: 13 }}>
             {t('parentMessages.noMessagesYet') || 'No messages yet.'}

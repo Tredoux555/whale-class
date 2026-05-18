@@ -21,9 +21,10 @@ import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { toast, Toaster } from 'sonner';
-import { ArrowLeft, MessageSquare, Plus, Sparkles, X } from 'lucide-react';
+import { MessageSquare, Plus, Sparkles, X } from 'lucide-react';
 import { useI18n, getIntlLocale } from '@/lib/montree/i18n';
 import LanguageToggle from '@/components/montree/LanguageToggle';
+import MontreeLogo from '@/components/montree/MonteeLogo';
 
 // Dark forest tokens (same as dashboard)
 const T = {
@@ -203,23 +204,23 @@ export default function ParentMessagesPage() {
           alignItems: 'center',
           justifyContent: 'space-between',
         }}>
-          <button
-            onClick={() => router.push('/montree/parent/dashboard')}
+          {/* Montree home anchor — tap takes you straight to the parent dashboard. */}
+          <Link
+            href="/montree/parent/dashboard"
             style={{
               display: 'flex',
               alignItems: 'center',
               gap: 8,
-              fontSize: 13,
-              fontWeight: 500,
-              color: T.textSecondary,
-              background: 'none',
-              border: 'none',
-              cursor: 'pointer',
+              textDecoration: 'none',
+              color: T.textPrimary,
             }}
+            aria-label="Montree home"
           >
-            <ArrowLeft size={16} strokeWidth={1.75} />
-            {t('parentMessages.backToReport') || 'Back'}
-          </button>
+            <MontreeLogo size={28} />
+            <span style={{ fontFamily: T.serif, fontSize: 16, fontWeight: 600, letterSpacing: -0.2 }}>
+              Montree
+            </span>
+          </Link>
           <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
             <LanguageToggle />
           </div>

@@ -79,8 +79,11 @@ export async function GET(
     return NextResponse.json({ error: 'Thread not found' }, { status: 404 });
   }
 
-  // Hydrate participants + child + classroom in parallel.
-  const [participantsRes, classroomRes, childRes] = await Promise.all([
+  // Hydrate participants + child + classroom + appointments in parallel.
+  // Appointments: scope by thread_id + this parent's id. The booking message
+  // body holds the prose; this gives the front-end a structural CTA target
+  // so the "Join video call" button can render inline in the thread.
+  const [participantsRes, classroomRes, childRes, appointmentsRes] = await Promise.all([
     supabase
       .from('montree_message_thread_participants')
       .select('participant_role, participant_id, is_observer, is_primary, can_reply, last_read_at, joined_at, left_at')
@@ -91,6 +94,14 @@ export async function GET(
     thread.child_id
       ? supabase.from('montree_children').select('id, name, photo_url').eq('id', thread.child_id).maybeSingle()
       : Promise.resolve({ data: null }),
+    supabase
+      .from('montree_appointments')
+      .select('id, scheduled_start, scheduled_end, duration_minutes, status, provider, video_url, location, intake_subject')
+      .eq('thread_id', threadId)
+      .eq('school_id', parent.schoolId)
+      .eq('parent_id', parent.parentId)
+      .order('scheduled_start', { ascending: false })
+      .limit(20),
   ]);
 
   // Hydrate participant names.
@@ -134,6 +145,9 @@ export async function GET(
     thread,
     classroom: classroomRes.data || null,
     child: childRes.data || null,
+    // Soft-fail on appointments query (e.g. if the table doesn't exist yet
+    // on a fresh DB) — never block the thread render.
+    appointments: Array.isArray(appointmentsRes.data) ? appointmentsRes.data : [],
     participants: dedupedParts.map((p) => ({
       role: p.participant_role,
       id: p.participant_id,
