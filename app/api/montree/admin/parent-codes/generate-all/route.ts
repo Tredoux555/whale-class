@@ -87,6 +87,14 @@ export async function POST(request: NextRequest) {
             invite_code: codeResult,
             expires_at: oneYearFromNow,
             is_active: true,
+            // 🚨 Without these, the DB default (max_uses=1, is_reusable=false
+            // per migration 096) burns the code after a single parent login.
+            // Parents need to log in repeatedly — the canonical
+            // /api/montree/invites POST sets both correctly; we MUST mirror
+            // that here. See the broken codes generated 2026-05-17 14:06
+            // for what happens otherwise.
+            is_reusable: true,
+            max_uses: null,
           });
 
         if (insertErr) {
