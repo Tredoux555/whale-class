@@ -2,22 +2,30 @@
 //
 // Mobile-style privacy lock. The moment the page is hidden (screen locks, app
 // backgrounds, tab loses focus on a phone), an overlay snaps in over the
-// app. When the user comes back, the overlay STAYS until they tap the top-left
-// unlock icon — banking-app pattern. Keeps Tracy chats, parent messages, child
-// data off the screen if someone else picks up the device.
+// app. When the user comes back, the overlay STAYS until they tap the Montree
+// logo to dismiss — banking-app pattern. Keeps Tracy chats, parent messages,
+// child data off the screen if someone else picks up the device.
 //
-// Cookie-based session is preserved underneath — tapping the icon is a
+// Cookie-based session is preserved underneath — tapping the logo is a
 // one-tap dismiss, no password retype. If the cookie has expired in the
 // meantime the next API call will redirect to login as it would normally.
 //
 // Mounted ONCE in /montree/layout.tsx. Self-decides via pathname whether
 // the current route is sensitive enough to lock. Public surfaces (landing,
 // library, login, signup) opt out.
+//
+// 🚨 FEATURE FLAG: APP_LOCK_ENABLED is currently FALSE. Tredoux turned the
+// feature off on 2026-05-18 ("don't really understand the point of it") but
+// kept the code for future re-enable. Flip the flag to true to bring it
+// back. When flipped back on, the dismiss surface is the Montree logo
+// itself (not the old top-left lock icon, which has been removed).
 'use client';
+
+// Toggle to re-enable the privacy lock. False = component is a no-op.
+const APP_LOCK_ENABLED = false;
 
 import { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
-import { Lock } from 'lucide-react';
 import MontreeLogo from './MonteeLogo';
 
 // Sensitive routes that should auto-lock on background. Anything else (landing,
@@ -51,8 +59,21 @@ const EMERALD_GLOW =
 
 export default function AppLockOverlay() {
   const pathname = usePathname();
-  const lockable = isLockable(pathname);
+  const lockable = isLockable(pathname) && APP_LOCK_ENABLED;
   const [locked, setLocked] = useState(false);
+
+  // Belt-and-braces: if a stale `locked=true` somehow survived a hot reload
+  // while the flag was being flipped off, clear it on mount.
+  useEffect(() => {
+    if (!APP_LOCK_ENABLED) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- defensive cleanup on flag flip
+      setLocked(false);
+      // Defensively restore body scroll in case a prior render had locked it.
+      if (typeof document !== 'undefined') {
+        document.body.style.overflow = '';
+      }
+    }
+  }, []);
 
   // Visibility listeners. We add them whenever we're on a lockable route,
   // and tear them down on route change or unmount.
@@ -92,6 +113,7 @@ export default function AppLockOverlay() {
   // When the route changes to a non-lockable one (e.g. user navigated to
   // landing), make sure we don't leave a stuck overlay behind.
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- clears stuck overlay on route change
     if (!lockable && locked) setLocked(false);
   }, [lockable, locked]);
 
@@ -123,51 +145,32 @@ export default function AppLockOverlay() {
         paddingRight: 'env(safe-area-inset-right)',
       }}
     >
-      {/* Top-left unlock icon — the one tap that gets you back into the app */}
+      {/* Tap the logo to come back — the entire logo + wordmark cluster is
+          the dismiss surface. Banking-app style, but the affordance is the
+          brand itself (warmer than a separate lock icon). */}
       <button
         type="button"
         onClick={() => setLocked(false)}
-        aria-label="Unlock"
-        style={{
-          position: 'absolute',
-          top: `calc(env(safe-area-inset-top) + 14px)`,
-          left: `calc(env(safe-area-inset-left) + 14px)`,
-          width: 48,
-          height: 48,
-          borderRadius: '50%',
-          border: '1px solid rgba(232,201,106,0.40)',
-          background: 'rgba(232,201,106,0.10)',
-          color: '#E8C96A',
-          cursor: 'pointer',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          backdropFilter: 'blur(12px)',
-          WebkitBackdropFilter: 'blur(12px)',
-          transition: 'background 140ms ease, transform 140ms ease',
-        }}
-        onMouseDown={(e) => {
-          e.currentTarget.style.transform = 'scale(0.94)';
-        }}
-        onMouseUp={(e) => {
-          e.currentTarget.style.transform = 'scale(1)';
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.transform = 'scale(1)';
-        }}
-      >
-        <Lock size={20} strokeWidth={1.75} />
-      </button>
-
-      {/* Centered Montree screensaver — logo + wordmark */}
-      <div
+        aria-label="Tap the Montree logo to come back"
         style={{
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
           gap: 22,
           userSelect: 'none',
+          background: 'transparent',
+          border: 'none',
+          padding: 24,
+          margin: 0,
+          color: 'inherit',
+          cursor: 'pointer',
+          transition: 'transform 140ms ease',
         }}
+        onMouseDown={(e) => { e.currentTarget.style.transform = 'scale(0.97)'; }}
+        onMouseUp={(e) => { e.currentTarget.style.transform = 'scale(1)'; }}
+        onMouseLeave={(e) => { e.currentTarget.style.transform = 'scale(1)'; }}
+        onTouchStart={(e) => { e.currentTarget.style.transform = 'scale(0.97)'; }}
+        onTouchEnd={(e) => { e.currentTarget.style.transform = 'scale(1)'; }}
       >
         <MontreeLogo size={96} showBackground={true} />
         <div
@@ -190,9 +193,9 @@ export default function AppLockOverlay() {
             marginTop: 4,
           }}
         >
-          Tap the lock to come back
+          Tap to come back
         </div>
-      </div>
+      </button>
     </div>
   );
 }
