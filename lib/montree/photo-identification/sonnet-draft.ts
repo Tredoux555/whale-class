@@ -80,6 +80,19 @@ export interface SonnetDraft {
   confidence: number;
   /** ISO timestamp when the draft was generated */
   drafted_at: string;
+  /**
+   * Top-3 candidate work names from the V2 fuzzy matcher (Session 105+).
+   * Optional because the type is shared with rows written before the
+   * carry-through was added; absent on legacy rows but populated on every
+   * new auto-Sonnet write under photo_pipeline_v2 so the audit UI can show
+   * the same quick-tap chips it shows on haiku_matched / haiku_drafted.
+   */
+  top_candidates?: Array<{
+    workName: string;
+    workKey: string | null;
+    area: string | null;
+    score: number;
+  }>;
 }
 
 export interface SonnetDraftResult {

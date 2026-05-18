@@ -64,6 +64,18 @@ import {
 } from '@/lib/montree/photo-identification/sonnet-draft';
 import type { Locale } from '@/lib/montree/i18n/locales';
 import { isValidLocale } from '@/lib/montree/i18n/locales';
+import { isFeatureEnabled } from '@/lib/montree/features/server';
+
+// Photo pipeline v2 (Session 117+) — see migration 224. When true:
+//   A. is_curriculum_work=false routing gated behind confidence >= 0.80
+//   B. Visual memory budget reduced 50KB/100 -> 20KB/40
+//   C. top_candidates carried through to sonnet_drafted writes
+//   D. Age-decay weighting on visual memory ordering
+// All four fixes ship as one coordinated bundle so flipping the flag rolls
+// back the entire change for that school. Default ON via migration 224;
+// flip per-school via montree_school_features to revert.
+const PHOTO_PIPELINE_V2_KEY = 'photo_pipeline_v2' as const;
+const IS_CURRICULUM_WORK_FALSE_CONFIDENCE_FLOOR = 0.80;
 
 // Photos below this confidence get Sonnet enrichment automatically
 // (fire-and-forget after haiku_drafted is written). At 0.70 Haiku is
@@ -201,7 +213,11 @@ export async function POST(request: NextRequest) {
   // hits a different table / file) so concurrency is safe. ~200-450ms saved
   // per photo. Photos are taken constantly so this compounds fast.
   const attemptedAtIso = new Date().toISOString();
-  const [childRes, _attemptedRes, classroomWorksRes, identificationContext] = await Promise.all([
+  // Resolve the v2 flag in parallel with the cheap queries — it's needed by
+  // loadIdentificationContext below (Fixes B + D). Net latency cost: <50ms
+  // since the flag fetch is small and finishes before the loader's own
+  // parallel queries complete.
+  const [childRes, _attemptedRes, classroomWorksRes, photoPipelineV2] = await Promise.all([
     // (1) Load child for context (name + age). Skip when no child_id.
     media.child_id
       ? supabase
@@ -227,12 +243,20 @@ export async function POST(request: NextRequest) {
           .eq('classroom_id', media.classroom_id)
           .eq('is_custom', true)
       : Promise.resolve({ data: [] as Array<{ name: string; work_key: string; area: { area_key: string } | null }> }),
-    // (4) Visual memory + recent corrections context. This is the priciest
-    // setup step (multiple queries inside loadIdentificationContext) — biggest
-    // beneficiary of parallelization.
-    loadIdentificationContext(supabase, { classroomId: media.classroom_id }),
+    // (4) Photo pipeline v2 flag — gates Fixes A+B+C+D. Default true via
+    // migration 224; per-school override via montree_school_features.
+    isFeatureEnabled(supabase, auth.schoolId, PHOTO_PIPELINE_V2_KEY),
   ]);
   void _attemptedRes; // Result intentionally unused — fire-and-resolve write.
+
+  // (5) Visual memory + recent corrections context. The priciest setup step.
+  // Sequential after the v2 flag resolves so loadIdentificationContext can
+  // apply v2-gated budget + age-decay. The loader itself parallelizes its 2
+  // DB queries internally so the wall time is still ~100-150ms.
+  const identificationContext = await loadIdentificationContext(supabase, {
+    classroomId: media.classroom_id,
+    useV2: photoPipelineV2,
+  });
 
   let childName = 'the child';
   let childAge: number | string = 0;
@@ -441,7 +465,23 @@ export async function POST(request: NextRequest) {
     // skip). work_id stays null; identification_status='confirmed' since
     // Haiku's own confidence on "not a curriculum work" passes Gate B
     // for us automatically.
-    if (twoPassResult.success && ident && ident.is_curriculum_work === false) {
+    //
+    // 🚨 V2 (photo_pipeline_v2 flag, Session 117+) — gate this routing
+    // behind a confidence floor. Haiku Pass 2 was over-applying the
+    // not-curriculum escape hatch after the Pass 1 prompt was tightened,
+    // producing a surge of "Untagged" cards (work_id=null, no chips).
+    // When confidence < 0.80, fall through to the normal haiku_drafted
+    // path so the teacher sees the AI's best guess + top_candidates chips
+    // and can confirm / correct. V1 (flag OFF): routes any false to Other.
+    const passesNotCurriculumGate = !photoPipelineV2
+      ? true
+      : (ident?.confidence ?? 0) >= IS_CURRICULUM_WORK_FALSE_CONFIDENCE_FLOOR;
+    if (
+      twoPassResult.success &&
+      ident &&
+      ident.is_curriculum_work === false &&
+      passesNotCurriculumGate
+    ) {
       const { error: otherErr } = await supabase
         .from('montree_media')
         .update({
@@ -634,6 +674,16 @@ export async function POST(request: NextRequest) {
             return;
           }
 
+          // V2 (photo_pipeline_v2, Session 117+) — Fix C: carry the V2
+          // matcher's top_candidates from the Haiku Pass 2 result onto the
+          // Sonnet draft so the audit UI can still render the quick-tap
+          // sibling chips. Without this, every Auto-Sonnet write clobbered
+          // the haiku_drafted draft's top_candidates with nothing and the
+          // chips disappeared on sonnet_drafted cards.
+          const draftWithCandidates = photoPipelineV2 && ident?.topCandidates
+            ? { ...sonnetResult.draft, top_candidates: ident.topCandidates }
+            : sonnetResult.draft;
+
           // Race guard layer 2: conditional UPDATE — only if status still
           // matches AND teacher hasn't touched. If a teacher action lands
           // between our SELECT above and this UPDATE, the WHERE clause
@@ -641,7 +691,7 @@ export async function POST(request: NextRequest) {
           const { error: sonnetWriteErr, data: written } = await supabase
             .from('montree_media')
             .update({
-              sonnet_draft: sonnetResult.draft,
+              sonnet_draft: draftWithCandidates,
               identification_status: 'sonnet_drafted',
             })
             .eq('id', mediaId)
