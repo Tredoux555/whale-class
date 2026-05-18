@@ -19,11 +19,11 @@
 
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { toast, Toaster } from 'sonner';
-import { ArrowLeft, MessageSquare, Plus, Sparkles, X } from 'lucide-react';
+import { ArrowLeft, MessageSquare, Plus, Search, Sparkles, X } from 'lucide-react';
 import { useI18n, getIntlLocale } from '@/lib/montree/i18n';
 import LanguageToggle from '@/components/montree/LanguageToggle';
 
@@ -91,6 +91,21 @@ export default function TeacherMessagesPage() {
   const [loading, setLoading] = useState(true);
   const [threads, setThreads] = useState<ThreadRow[]>([]);
   const [composeOpen, setComposeOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
+  // Filter threads by participant name, thread subject, or last snippet.
+  // Case-insensitive. Empty query returns everything in original order.
+  const filteredThreads = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    if (!q) return threads;
+    return threads.filter((thread) => {
+      if (thread.subject && thread.subject.toLowerCase().includes(q)) return true;
+      if (thread.last_snippet && thread.last_snippet.toLowerCase().includes(q)) return true;
+      // Match any participant name (parent, principal, other teacher).
+      return thread.participants.some((p) => (p.name || '').toLowerCase().includes(q));
+    });
+  }, [threads, searchQuery]);
 
   // --- Initial load
   useEffect(() => {
@@ -274,6 +289,67 @@ export default function TeacherMessagesPage() {
           </p>
         </div>
 
+        {/* Find-a-parent search — same dropdown-style affordance as the
+            header's "Jump to student" picker. Filters the thread list
+            below as you type. Hidden when there are no threads at all. */}
+        {threads.length > 0 && (
+          <div style={{ position: 'relative', marginBottom: 16 }}>
+            <Search
+              size={16}
+              strokeWidth={1.75}
+              color={T.textMuted}
+              style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }}
+            />
+            <input
+              ref={searchInputRef}
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder={t('teacherMessages.searchPlaceholder') || 'Find a parent or conversation…'}
+              style={{
+                width: '100%',
+                padding: '10px 38px 10px 38px',
+                borderRadius: 12,
+                background: T.card,
+                border: T.cardBorder,
+                color: T.textPrimary,
+                // 16px prevents iOS Safari zoom-on-focus.
+                fontSize: 15,
+                fontFamily: T.sans,
+                outline: 'none',
+              }}
+              aria-label={t('teacherMessages.searchPlaceholder') || 'Find a parent or conversation'}
+            />
+            {searchQuery && (
+              <button
+                onClick={() => {
+                  setSearchQuery('');
+                  searchInputRef.current?.focus();
+                }}
+                style={{
+                  position: 'absolute',
+                  right: 8,
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  background: 'rgba(255,255,255,0.08)',
+                  border: 'none',
+                  color: T.textSecondary,
+                  cursor: 'pointer',
+                  borderRadius: '50%',
+                  width: 24,
+                  height: 24,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+                aria-label={t('teacherMessages.clearSearch') || 'Clear search'}
+              >
+                <X size={13} strokeWidth={2} />
+              </button>
+            )}
+          </div>
+        )}
+
         {/* Thread list */}
         {threads.length === 0 ? (
           <div style={{
@@ -307,9 +383,21 @@ export default function TeacherMessagesPage() {
               {t('teacherMessages.emptyHint') || 'Tap the + button to start a new conversation.'}
             </p>
           </div>
+        ) : filteredThreads.length === 0 ? (
+          <div style={{
+            background: T.card,
+            border: T.cardBorder,
+            borderRadius: T.cardRadius,
+            padding: '24px',
+            textAlign: 'center',
+            fontSize: 13,
+            color: T.textMuted,
+          }}>
+            {t('teacherMessages.noMatches') || `No conversation matches "${searchQuery}".`}
+          </div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-            {threads.map((thread) => {
+            {filteredThreads.map((thread) => {
               const unread = thread.unread_for_me > 0;
               return (
                 <Link
