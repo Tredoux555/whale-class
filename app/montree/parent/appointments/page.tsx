@@ -520,11 +520,14 @@ function BookFlow({ bundles, featureFlags, onCancel, onBooked }: { bundles: Reci
   const [selectedSlot, setSelectedSlot] = useState<{ start: string; end: string } | null>(null);
   const [subject, setSubject] = useState('');
   const [bodyText, setBodyText] = useState('');
-  // Phase 116.2 — opt-in checkbox. Defaults OFF — Montessori parents
-  // skew towards in-person, and surprise-defaulting to video would be
-  // a worse first impression than asking. Server ignores this when the
-  // school's video_calls flag is OFF (defense in depth).
-  const [videoCall, setVideoCall] = useState<boolean>(false);
+  // Phase 116.2 — opt-in checkbox. 🚨 Defaults TRUE as of 2026-05-18.
+  // Previous "Montessori parents skew towards in-person" framing turned
+  // out to be wrong in practice — every booking the user tested with the
+  // checkbox unchecked landed with no Join button + no way to enter the
+  // meeting, breaking the whole point of the feature. Default to video
+  // when the school has video on; parent can untick if they want
+  // in-person. Mirrors the server-side default added in 45becce6.
+  const [videoCall, setVideoCall] = useState<boolean>(true);
   // Phase 116.3 — opt-in to recording. Only visible when school has BOTH
   // agora_video_calls AND video_recording flags on AND the parent has
   // ticked the video-call checkbox above. Defaults OFF — parents opt in.
