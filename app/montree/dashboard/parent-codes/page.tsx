@@ -267,17 +267,22 @@ export default function TeacherParentCodesPage() {
   }, []);
 
   // Welcome message — copy-to-clipboard text the teacher pastes into
-  // WhatsApp / WeChat / SMS / email. Tight per user feedback: three
-  // beats — welcome, login link, code-as-fallback. No paragraph padding.
-  // The link preloads the code at /montree/parent?code=ABC so the parent
-  // only presses Enter on the login screen.
+  // WhatsApp / WeChat / SMS / email. Four beats — welcome, login link,
+  // code-as-fallback, home-screen tip so the parent doesnt have to log
+  // in every time. The link preloads the code at /montree/parent?code=ABC
+  // so the parent only presses Enter on the login screen.
+  //
+  // 🚨 PWA install line is in lockstep with the teacher welcome message
+  // (Tracys draft_teacher_welcome_messages + admin classroom Send button).
+  // Update all three if you change the wording.
   const buildWelcomeMessage = (row: CodeRow): string => {
     if (!row.code || !row.parent_url) return '';
     return [
       `Welcome to Montree.`,
       `Visit this link to log in: ${row.parent_url}`,
       `Save this code so you can log in again: ${row.code}`,
-    ].join('\n');
+      `Tip: once you're in, save the page to your home screen so it works like an app — on iPhone tap the share icon then "Add to Home Screen", on Android tap the menu then "Install app" or "Add to Home Screen". You won't have to log in again.`,
+    ].join('\n\n');
   };
 
   if (loading) {
