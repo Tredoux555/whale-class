@@ -885,9 +885,12 @@ function DetailView({ appt, onClose, onChanged }: { appt: Appointment; onClose: 
                 component inline (no external URL). Recording UX surfaces
                 inside the call if recording_enabled.
             (b) Otherwise → falls back to the Jitsi video_url anchor.
-            Past + cancelled appointments still show the button so the
-            parent can re-enter if they got dropped. */}
-        {appt.provider === 'agora' && appt.status === 'confirmed' && !isPast && (
+            🚨 No isPast guard (2026-05-18) — matches the teacher calendar
+            BookingRow. Agora rooms don't auto-close, so a parent dropped
+            mid-call OR a meeting that overran the scheduled window needs
+            to keep being join-able. Cancelled status DOES block (intent
+            was explicit), but past + confirmed stays joinable. */}
+        {appt.provider === 'agora' && appt.status === 'confirmed' && (
           <button
             type="button"
             onClick={() => setAgoraOpen(true)}
