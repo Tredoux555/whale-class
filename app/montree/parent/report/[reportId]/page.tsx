@@ -7,6 +7,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, ChevronDown, Camera, Sparkles } from 'lucide-react';
+import MontreeLogo from '@/components/montree/MonteeLogo';
 import { useI18n, getIntlLocale } from '@/lib/montree/i18n';
 import LanguageToggle from '@/components/montree/LanguageToggle';
 import PhotoLightbox from '@/components/montree/media/PhotoLightbox';
@@ -286,11 +287,20 @@ export default function ParentReportPage() {
   return (
     <div style={{ minHeight: "100vh", background: T.bg, backgroundImage: T.glow, backgroundAttachment: "fixed" }}>
 
-      {/* ═══ Sticky Header ═══ */}
+      {/* ═══ Sticky Header — Montree home anchor + Back + LanguageToggle ═══ */}
       <header style={{ background: T.card, backdropFilter: T.blur, position: "sticky", top: 0, zIndex: 10 }}>
-        <div style={{ maxWidth: "32rem", marginLeft: "auto", marginRight: "auto", paddingLeft: "1rem", paddingRight: "1rem", paddingTop: "0.75rem", paddingBottom: "0.75rem", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <Link href="/montree/parent/dashboard" style={{ color: T.emerald, fontSize: "0.875rem", display: "flex", alignItems: "center", gap: "0.25rem", fontWeight: "500", textDecoration: "none", cursor: "pointer" }}>
-            ← {t('parentReport.back')}
+        <div style={{ maxWidth: "32rem", marginLeft: "auto", marginRight: "auto", paddingLeft: "1rem", paddingRight: "1rem", paddingTop: "0.625rem", paddingBottom: "0.625rem", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+          {/* Montree home anchor — universal across the parent surface. */}
+          <Link
+            href="/montree/parent/dashboard"
+            style={{ display: 'flex', alignItems: 'center', gap: 8, textDecoration: 'none', color: T.textPrimary }}
+            aria-label="Montree home"
+          >
+            <MontreeLogo size={26} />
+            <span style={{ fontFamily: 'var(--font-lora), Georgia, serif', fontSize: 15, fontWeight: 600, letterSpacing: -0.2 }}>Montree</span>
+          </Link>
+          <Link href="/montree/parent/dashboard" style={{ color: T.textSecondary, fontSize: 12, fontWeight: 500, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 4 }}>
+            <ArrowLeft size={13} strokeWidth={2} /> {t('parentReport.back')}
           </Link>
           <LanguageToggle />
         </div>

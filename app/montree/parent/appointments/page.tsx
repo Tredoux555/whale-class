@@ -14,6 +14,7 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import {
   Calendar,
@@ -26,6 +27,7 @@ import {
   ChevronRight,
   Video,
 } from 'lucide-react';
+import MontreeLogo from '@/components/montree/MonteeLogo';
 
 // Lazy-mount the Agora call. ~600KB SDK chunk — only loads when a parent
 // taps Join on an Agora-provider appointment.
@@ -196,12 +198,24 @@ export default function ParentAppointmentsPage() {
   return (
     <div style={{ minHeight: '100vh', background: T.bg, backgroundImage: T.bgGradient, backgroundAttachment: 'fixed', color: T.textPrimary, fontFamily: T.sans }}>
       <header style={{ position: 'sticky', top: 0, zIndex: 20, background: T.card, backdropFilter: 'blur(18px)', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-        <div style={{ maxWidth: 560, margin: '0 auto', padding: '12px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <button onClick={() => view.kind === 'list' ? router.push('/montree/parent/dashboard') : setView({ kind: 'list' })} style={backBtn()}>
-            <ArrowLeft size={16} strokeWidth={1.75} /> Back
-          </button>
-          <div style={{ fontFamily: T.serif, fontSize: 18, fontWeight: 500 }}>Appointments</div>
-          <div style={{ width: 48 }} />
+        <div style={{ maxWidth: 560, margin: '0 auto', padding: '10px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+          {/* Montree home anchor — universal across the parent surface. */}
+          <Link
+            href="/montree/parent/dashboard"
+            style={{ display: 'flex', alignItems: 'center', gap: 8, textDecoration: 'none', color: T.textPrimary }}
+            aria-label="Montree home"
+          >
+            <MontreeLogo size={26} />
+            <span style={{ fontFamily: T.serif, fontSize: 15, fontWeight: 600, letterSpacing: -0.2 }}>Montree</span>
+          </Link>
+          <div style={{ fontFamily: T.serif, fontSize: 16, fontWeight: 500, color: T.textPrimary }}>Appointments</div>
+          {view.kind !== 'list' ? (
+            <button onClick={() => setView({ kind: 'list' })} style={backBtn()} aria-label="Back to appointments list">
+              <ArrowLeft size={14} strokeWidth={2} /> Back
+            </button>
+          ) : (
+            <div style={{ width: 60 }} />
+          )}
         </div>
       </header>
 
