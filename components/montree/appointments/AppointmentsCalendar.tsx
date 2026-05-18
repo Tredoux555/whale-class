@@ -241,6 +241,28 @@ export default function AppointmentsCalendar() {
     })();
   }, [reload]);
 
+  // Live updates — poll every 5s while the page is visible. New parent
+  // bookings appear without a refresh; parent accept/decline + cancel
+  // propagate live (matters for the status-mismatch problem the user hit:
+  // parent confirmed but teacher's stale UI kept showing pending). Same
+  // pattern as the parent appointments page + messaging thread polling.
+  useEffect(() => {
+    if (loading) return;
+    let inFlight = false;
+    const tick = async () => {
+      if (document.hidden) return;
+      if (inFlight) return;
+      inFlight = true;
+      try {
+        await reload();
+      } finally {
+        inFlight = false;
+      }
+    };
+    const id = window.setInterval(tick, 5000);
+    return () => window.clearInterval(id);
+  }, [loading, reload]);
+
   // ── Derived per-day signals ────────────────────────────────────────
   const bookingsByDay = useMemo(() => {
     const m = new Map<string, Appointment[]>();

@@ -161,6 +161,30 @@ export default function ParentAppointmentsPage() {
     })();
   }, [reload]);
 
+  // Live updates — poll every 5s while the page is visible. New
+  // teacher-initiated invitations pop in without a refresh; status flips
+  // (cancel/confirm) propagate live (matters for the detail view so the
+  // parent sees the teacher's cancel immediately). Skip ONLY the active
+  // booking flow — we don't want a poll to mid-tap the booking form.
+  // Same pattern as messaging thread polling (hooks/useThreadPolling.ts).
+  useEffect(() => {
+    if (loading) return;
+    if (view.kind === 'book') return; // don't churn while user is filling the form
+    let inFlight = false;
+    const tick = async () => {
+      if (document.hidden) return;
+      if (inFlight) return;
+      inFlight = true;
+      try {
+        await reload();
+      } finally {
+        inFlight = false;
+      }
+    };
+    const id = window.setInterval(tick, 5000);
+    return () => window.clearInterval(id);
+  }, [loading, view.kind, reload]);
+
   if (loading) {
     return (
       <div style={{ minHeight: '100vh', background: T.bg, backgroundImage: T.bgGradient, color: T.textSecondary, fontFamily: T.sans, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>

@@ -79,13 +79,37 @@ type AgoraSDK = {
     createClient: (cfg: { mode: 'rtc'; codec: 'vp8' | 'h264' }) => IAgoraRTCClient;
     createMicrophoneAudioTrack: () => Promise<IMicTrack>;
     createCameraVideoTrack: () => Promise<ICamTrack>;
+    setArea: (cfg: { areaCode: string | string[]; excludedArea?: string }) => void;
   };
 };
+
+// 🚨 Region routing. Default GLOBAL is BLOCKED behind the Great Firewall in
+// mainland China — both parent + teacher get stuck on `NETWORK_ERROR:
+// Network Error` retrying the unilbs (unified load balancer) handshake.
+// Schools serving mainland users must set NEXT_PUBLIC_AGORA_AREA=CHINA at
+// build time so the SDK reaches Agora's in-China edge instead. Cross-border
+// schools can use OVERSEA or leave unset for GLOBAL. Recognised values:
+// GLOBAL | CHINA | NORTH_AMERICA | EUROPE | ASIA | JAPAN | INDIA | OVERSEA.
+const AGORA_AREA = process.env.NEXT_PUBLIC_AGORA_AREA || 'GLOBAL';
+let agoraAreaApplied = false;
 
 let cachedSdk: AgoraSDK | null = null;
 async function loadAgoraSdk(): Promise<AgoraSDK> {
   if (cachedSdk) return cachedSdk;
   const mod = (await import('agora-rtc-sdk-ng')) as unknown as AgoraSDK;
+  // setArea is static + applies to ALL subsequent createClient() calls.
+  // Idempotent: call once on first SDK load. Wrapped in try/catch because
+  // an unknown areaCode throws — better to fall back to default GLOBAL
+  // than to dead-end the call entirely.
+  if (!agoraAreaApplied && AGORA_AREA && AGORA_AREA !== 'GLOBAL') {
+    try {
+      mod.default.setArea({ areaCode: AGORA_AREA });
+      console.log('[Agora] setArea:', AGORA_AREA);
+    } catch (err) {
+      console.warn('[Agora] setArea failed, falling back to GLOBAL', err);
+    }
+    agoraAreaApplied = true;
+  }
   cachedSdk = mod;
   return mod;
 }
