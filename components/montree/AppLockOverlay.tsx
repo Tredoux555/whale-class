@@ -21,12 +21,12 @@
 // itself (not the old top-left lock icon, which has been removed).
 'use client';
 
-// Toggle to re-enable the privacy lock. False = component is a no-op.
-const APP_LOCK_ENABLED = false;
-
 import { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import MontreeLogo from './MonteeLogo';
+
+// Toggle to re-enable the privacy lock. False = component is a no-op.
+const APP_LOCK_ENABLED = false;
 
 // Sensitive routes that should auto-lock on background. Anything else (landing,
 // library, login flows, signup) stays unlocked — no surprise overlay on the
