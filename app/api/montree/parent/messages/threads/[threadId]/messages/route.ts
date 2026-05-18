@@ -93,6 +93,11 @@ interface PostBody {
   body: string;
   body_locale?: string;
   in_reply_to?: string;
+  // Voice notes — body carries the Whisper transcript; media_* carries the
+  // audio file. Principal still sees everything via the observer rule.
+  media_url?: string;
+  media_type?: 'image' | 'video' | 'document' | 'audio';
+  media_filename?: string;
 }
 
 export async function POST(
@@ -141,6 +146,12 @@ export async function POST(
   const safeBodyLocale =
     body.body_locale && isValidLocale(body.body_locale) ? body.body_locale : null;
 
+  // Validate audio media — must be 'audio' type with a URL we control.
+  const isAudio = body.media_type === 'audio';
+  if (isAudio && (!body.media_url || typeof body.media_url !== 'string')) {
+    return NextResponse.json({ error: 'media_url required for audio' }, { status: 400 });
+  }
+
   // Insert. ai_drafted is forced false — parents don't get AI drafting in v1.
   const { data: inserted, error } = await supabase
     .from('montree_thread_messages')
@@ -151,6 +162,9 @@ export async function POST(
       sender_name: parent.parentName,
       body: body.body.trim(),
       body_locale: safeBodyLocale,
+      media_url: body.media_url || null,
+      media_type: body.media_type || null,
+      media_filename: body.media_filename || null,
       ai_drafted: false,
       ai_draft_source: null,
       approved_by_id: null,

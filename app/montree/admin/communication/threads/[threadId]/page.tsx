@@ -12,6 +12,8 @@ import { useParams, useRouter } from 'next/navigation';
 import { ArrowLeft, Send, Sparkles, Eye, Loader2 } from 'lucide-react';
 import UpgradeCard, { extractUpgradeFromResponse } from '@/components/montree/UpgradeCard';
 import { useThreadPolling } from '@/hooks/useThreadPolling';
+import VoiceComposer, { type VoiceReady } from '@/components/montree/messaging/VoiceComposer';
+import VoiceBubble from '@/components/montree/messaging/VoiceBubble';
 
 const T = {
   emerald: '#34d399',
@@ -60,6 +62,11 @@ interface Message {
   ai_draft_source: string | null;
   approved_by_id: string | null;
   sent_at: string;
+  // Voice notes: when media_type='audio', body carries the Whisper transcript
+  // and media_url is the stable proxy URL to the audio file in voice-obs.
+  media_url?: string | null;
+  media_type?: 'image' | 'video' | 'document' | 'audio' | null;
+  media_filename?: string | null;
   // 🚨 Perf Tier 4.3 — optimistic send state. Set on locally-added
   // bubbles before the server confirms. Cleared when load() re-fetches.
   // Real messages from the server never carry these fields.
@@ -211,6 +218,61 @@ export default function ThreadPage() {
       );
       setDraft(draftBody);
       setAiDrafted(aiDraftedNow);
+      setError(err instanceof Error ? err.message : 'Send failed');
+    } finally {
+      setSending(false);
+    }
+  }
+
+  // Voice-note send. Mirrors `send()` but with media_* on the payload.
+  // ai_drafted is always false on voice notes (Tracy doesn't draft audio).
+  async function handleVoiceReady(data: VoiceReady) {
+    if (sending) return;
+    setSending(true);
+    setError(null);
+    const tempId = `optimistic-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    const optimistic: Message = {
+      id: tempId,
+      sender_role: 'principal',
+      sender_id: 'me',
+      sender_name: 'You',
+      body: data.transcript,
+      ai_drafted: false,
+      ai_draft_source: null,
+      approved_by_id: null,
+      sent_at: new Date().toISOString(),
+      media_url: data.audioUrl,
+      media_type: 'audio',
+      media_filename: data.filename,
+      optimistic: true,
+    };
+    setMessages((prev) => [...prev, optimistic]);
+    try {
+      const res = await fetch(`/api/montree/messages/threads/${threadId}/messages`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          body: data.transcript,
+          media_url: data.audioUrl,
+          media_type: 'audio',
+          media_filename: data.filename,
+        }),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err?.error || 'Send failed');
+      }
+      const respJson = await res.json();
+      if (respJson?.message) {
+        setMessages((prev) => prev.map((m) => (m.id === tempId ? respJson.message : m)));
+      } else {
+        void load();
+      }
+    } catch (err: unknown) {
+      setMessages((prev) =>
+        prev.map((m) => (m.id === tempId ? { ...m, sendFailed: true, optimistic: false } : m))
+      );
       setError(err instanceof Error ? err.message : 'Send failed');
     } finally {
       setSending(false);
@@ -541,7 +603,8 @@ export default function ThreadPage() {
           </div>
         )}
         {error && !upgrade && <div style={{ color: '#f87171', fontSize: 12, marginBottom: 8 }}>{error}</div>}
-        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8 }}>
+          <VoiceComposer onReady={handleVoiceReady} disabled={sending} />
           <button
             onClick={() => void send()}
             disabled={sending || !draft.trim()}
@@ -625,7 +688,11 @@ function MessageBubble({ message }: { message: Message }) {
           whiteSpace: 'pre-wrap',
         }}
       >
-        {message.body}
+        {message.media_type === 'audio' && message.media_url ? (
+          <VoiceBubble audioUrl={message.media_url} transcript={message.body} />
+        ) : (
+          message.body
+        )}
       </div>
     </div>
   );
