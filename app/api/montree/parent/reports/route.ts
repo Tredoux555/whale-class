@@ -27,13 +27,27 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    // Get weekly reports for this child
-    // Accept: status='sent' (new way) OR generated_at is set (old way - indicates report was sent)
+    // Get weekly reports for this child.
+    //
+    // 🚨 SENT-ONLY filter. Drafts are work-in-progress — the weekly-wrap
+    // pipeline upserts skeleton drafts every week with status='draft' even
+    // when there are no confirmed photos yet. Those skeletons have empty
+    // content.works arrays and would render as "No activities recorded
+    // this week" on the parent surface. We must NOT surface them.
+    //
+    // Earlier this session we widened to `or('status.eq.sent,generated_at.not.is.null')`
+    // thinking it would surface legitimate legacy reports. It surfaced 84
+    // drafts (65 with content, 19 empty) across Whale Class — only 6 had
+    // actually been sent. Drafts are private to the teacher until they
+    // explicitly hit "Send to parent" (which flips status='sent').
+    //
+    // If a teacher wants a report to be visible, they MUST send it. The
+    // canonical action is /api/montree/reports/send.
     const { data: reports, error } = await supabase
       .from('montree_weekly_reports')
       .select('id, status, created_at, week_start, week_end, week_number, report_year, parent_summary, content, generated_at, sent_at')
       .eq('child_id', childId)
-      .or('status.eq.sent,generated_at.not.is.null')
+      .eq('status', 'sent')
       .order('created_at', { ascending: false })
       .limit(20);
 

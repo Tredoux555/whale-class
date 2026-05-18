@@ -575,6 +575,18 @@ function DashboardHeader() {
               <Camera size={18} strokeWidth={1.75} color="#fff" />
             </IconBtn>
 
+            {/* Messages — promoted from the More menu to a first-class icon
+                so principals + parents can reach this channel in one tap.
+                Same destination as the More-menu entry below (which stays for
+                discoverability + a labelled affordance). */}
+            <IconBtn
+              title={t('nav.messages') || 'Messages'}
+              active={activePage === 'messages'}
+              onClick={() => router.push('/montree/dashboard/messages')}
+            >
+              <MessageSquare size={18} strokeWidth={1.75} color="#fff" />
+            </IconBtn>
+
             <IconBtn
               title={isRecording ? t('dashboard.stopRecording') : t('dashboard.quickVoiceNote')}
               onClick={isRecording ? stopRecording : startRecording}

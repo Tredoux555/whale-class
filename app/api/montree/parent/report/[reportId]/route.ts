@@ -146,18 +146,15 @@ export async function GET(
 
     // Get report.
     //
-    // Filter logic (Session 117 continued fix — align with the LIST
-    // endpoint at /api/montree/parent/reports which surfaces a report
-    // when EITHER status='sent' OR generated_at IS NOT NULL).
+    // 🚨 SENT-ONLY filter (kept in lockstep with the list endpoint at
+    // /api/montree/parent/reports). Drafts must NOT be parent-visible —
+    // weekly-wrap upserts skeleton drafts with empty content arrays for
+    // every child every week, and surfacing those would render as
+    // "No activities recorded this week" on the parent report page.
     //
-    // Why both: the original Session 113 V2 audit F-3.1 added status='sent'
-    // here to hide drafts. But the LIST endpoint never tightened — so
-    // schools with legacy reports (generated_at set, status still 'draft')
-    // had reports listed on the parent dashboard that 404'd on click.
-    // Aligning the detail filter prevents that broken link.
-    //
-    // We still hide PURE drafts (status='draft' AND generated_at IS NULL)
-    // — those are work-in-progress and shouldn't be visible.
+    // The teacher MUST hit "Send to parent" (which calls
+    // /api/montree/reports/send and flips status='sent') for a report
+    // to surface here.
     const { data: report, error: reportError } = await supabase
       .from('montree_weekly_reports')
       .select(`
@@ -166,7 +163,7 @@ export async function GET(
         created_at, child_id, classroom_id, content, status, generated_at
       `)
       .eq('id', reportId)
-      .or('status.eq.sent,generated_at.not.is.null')
+      .eq('status', 'sent')
       .maybeSingle();
 
     if (reportError) {
