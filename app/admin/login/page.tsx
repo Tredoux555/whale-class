@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 
 export default function AdminLogin() {
@@ -11,39 +10,26 @@ export default function AdminLogin() {
   const [loading, setLoading] = useState(false);
   const [proxyEnabled, setProxyEnabled] = useState(false);
   const [proxyLoading, setProxyLoading] = useState(false);
-  const router = useRouter();
 
   useEffect(() => {
     checkProxyMode();
   }, []);
 
+  // 🚨 SESSION 113 V2: /api/admin/proxy-mode route does not exist. Toggle state
+  //    lives entirely in the `video-proxy-enabled` cookie (read on mount, written
+  //    on toggle). Server fetches were silent 404s — removed.
   const checkProxyMode = async () => {
     try {
-      const response = await fetch("/api/admin/proxy-mode");
-      const data = await response.json();
-      setProxyEnabled(data.proxyEnabled || false);
-    } catch (error) {
-      console.error("Error checking proxy mode:", error);
+      const match = document.cookie.match(/(?:^|;\s*)video-proxy-enabled=(true|false)/);
+      setProxyEnabled(match?.[1] === 'true');
+    } catch {
+      setProxyEnabled(false);
     }
   };
 
   const toggleProxyMode = async (enabled: boolean) => {
     setProxyLoading(true);
     try {
-      const response = await fetch("/api/admin/proxy-mode", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ enabled }),
-      });
-
-      if (response.ok) {
-        setProxyEnabled(enabled);
-        document.cookie = `video-proxy-enabled=${enabled}; path=/; max-age=${60 * 60 * 24 * 30}`;
-      } else {
-        document.cookie = `video-proxy-enabled=${enabled}; path=/; max-age=${60 * 60 * 24 * 30}`;
-        setProxyEnabled(enabled);
-      }
-    } catch (error) {
       document.cookie = `video-proxy-enabled=${enabled}; path=/; max-age=${60 * 60 * 24 * 30}`;
       setProxyEnabled(enabled);
     } finally {
@@ -83,14 +69,9 @@ export default function AdminLogin() {
       if (data.success) {
         await new Promise(resolve => setTimeout(resolve, 100));
         
-        if (proxyEnabled) {
-          fetch("/api/admin/proxy-mode", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ enabled: true }),
-          }).catch(() => {});
-        }
-        
+        // 🚨 SESSION 113 V2: proxy-mode is cookie-only (no server route exists).
+        //    The cookie is already set by toggleProxyMode(); no post-login sync needed.
+
         window.location.href = "/admin";
       } else {
         setError(data.error || "Login failed");

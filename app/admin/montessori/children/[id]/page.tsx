@@ -1,29 +1,15 @@
 // app/admin/montessori/children/[id]/page.tsx
 "use client";
 
-import { useEffect, use } from "react";
-import { useRouter } from "next/navigation";
+import { use } from "react";
 import Link from "next/link";
 import EnhancedChildDashboard from "@/components/EnhancedChildDashboard";
 
+// 🚨 SESSION 113 V2: removed dead checkAuth() useEffect — /api/videos doesn't
+//    exist. Middleware enforces admin JWT on /admin/*.
+
 export default function ChildDetailPage({ params }: { params: Promise<{ id: string }> }) {
-  const router = useRouter();
   const resolvedParams = use(params);
-
-  useEffect(() => {
-    checkAuth();
-  }, []);
-
-  const checkAuth = async () => {
-    try {
-      const response = await fetch("/api/videos");
-      if (response.status === 401) {
-        router.push("/admin/login");
-      }
-    } catch (error) {
-      router.push("/admin/login");
-    }
-  };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#E8F4F8] to-[#B8E0F0]">

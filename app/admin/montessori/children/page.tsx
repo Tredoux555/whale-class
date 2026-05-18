@@ -2,7 +2,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import type { Child, AgeGroup } from "@/types/database";
 
@@ -11,23 +10,12 @@ export default function ChildrenPage() {
   const [loading, setLoading] = useState(true);
   const [showAddForm, setShowAddForm] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const router = useRouter();
 
   useEffect(() => {
-    checkAuth();
+    // 🚨 SESSION 113 V2: removed dead checkAuth() — /api/videos doesn't exist.
+    //    Middleware enforces admin JWT on /admin/*.
     fetchChildren();
   }, []);
-
-  const checkAuth = async () => {
-    try {
-      const response = await fetch("/api/videos");
-      if (response.status === 401) {
-        router.push("/admin/login");
-      }
-    } catch (error) {
-      router.push("/admin/login");
-    }
-  };
 
   const fetchChildren = async () => {
     try {

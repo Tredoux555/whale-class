@@ -1,0 +1,2307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Montree — Launch Playbook · 12 Videos × 3 Weeks</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --bg: #0a1a0f;
+    --bg-elev: rgba(15, 30, 22, 0.65);
+    --emerald: #34d399;
+    --emerald-deep: #1D6B48;
+    --gold: #E8C96A;
+    --gold-soft: rgba(232, 201, 106, 0.18);
+    --ink: #e8efe8;
+    --muted: rgba(232, 239, 232, 0.62);
+    --hairline: rgba(52, 211, 153, 0.18);
+    --glass: rgba(255, 255, 255, 0.04);
+  }
+  html, body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    line-height: 1.6;
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+  }
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(ellipse at 88% 8%, rgba(52, 211, 153, 0.16) 0%, transparent 55%),
+                radial-gradient(ellipse at 12% 92%, rgba(232, 201, 106, 0.08) 0%, transparent 60%),
+                linear-gradient(180deg, var(--bg) 0%, #061008 100%);
+    z-index: -1;
+    pointer-events: none;
+  }
+  .wrap {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 56px 28px 120px;
+  }
+  /* --- Hero --- */
+  .hero {
+    text-align: center;
+    padding: 40px 0 56px;
+    border-bottom: 1px solid var(--hairline);
+    margin-bottom: 64px;
+  }
+  .hero-eyebrow {
+    display: inline-block;
+    font-size: 12px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--emerald);
+    padding: 6px 14px;
+    border: 1px solid var(--hairline);
+    border-radius: 999px;
+    background: rgba(52, 211, 153, 0.06);
+    margin-bottom: 28px;
+  }
+  .hero h1 {
+    font-family: 'Lora', Georgia, serif;
+    font-weight: 600;
+    font-size: clamp(32px, 5vw, 56px);
+    letter-spacing: -0.02em;
+    line-height: 1.08;
+    margin-bottom: 18px;
+  }
+  .hero h1 em {
+    color: var(--gold);
+    font-style: italic;
+  }
+  .hero-sub {
+    font-size: 18px;
+    color: var(--muted);
+    max-width: 640px;
+    margin: 0 auto 32px;
+  }
+  .hero-meta {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 12px 28px;
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .hero-meta span strong {
+    color: var(--emerald);
+    font-weight: 600;
+  }
+  /* --- Section --- */
+  section {
+    margin-bottom: 88px;
+  }
+  .section-head {
+    margin-bottom: 32px;
+  }
+  .section-tag {
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 10px;
+  }
+  .section-head h2 {
+    font-family: 'Lora', Georgia, serif;
+    font-weight: 600;
+    font-size: clamp(26px, 3.5vw, 36px);
+    letter-spacing: -0.01em;
+    margin-bottom: 12px;
+  }
+  .section-head p {
+    color: var(--muted);
+    font-size: 16px;
+    max-width: 720px;
+  }
+  /* --- Pillars grid --- */
+  .pillars {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+  }
+  .pillar {
+    background: var(--bg-elev);
+    border: 1px solid var(--hairline);
+    border-radius: 18px;
+    padding: 28px 26px;
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+  }
+  .pillar-tag {
+    display: inline-block;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--emerald);
+    padding: 4px 10px;
+    border-radius: 4px;
+    background: rgba(52, 211, 153, 0.08);
+    border: 1px solid var(--hairline);
+    margin-bottom: 14px;
+  }
+  .pillar h3 {
+    font-family: 'Lora', Georgia, serif;
+    font-size: 22px;
+    font-weight: 600;
+    margin-bottom: 12px;
+    line-height: 1.25;
+  }
+  .pillar p {
+    color: var(--muted);
+    font-size: 14px;
+    line-height: 1.65;
+    margin-bottom: 14px;
+  }
+  .pillar-meta {
+    font-size: 12px;
+    color: var(--gold);
+    letter-spacing: 0.05em;
+  }
+  /* --- Tabs --- */
+  .tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 32px;
+    border-bottom: 1px solid var(--hairline);
+    padding-bottom: 18px;
+  }
+  .tab {
+    background: transparent;
+    border: 1px solid var(--hairline);
+    color: var(--muted);
+    padding: 10px 20px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 500;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.18s ease;
+  }
+  .tab:hover {
+    border-color: var(--emerald);
+    color: var(--ink);
+  }
+  .tab.active {
+    background: var(--emerald);
+    color: var(--bg);
+    border-color: var(--emerald);
+  }
+  /* --- Script cards --- */
+  .scripts-grid {
+    display: grid;
+    gap: 24px;
+  }
+  .script-card {
+    background: var(--bg-elev);
+    border: 1px solid var(--hairline);
+    border-radius: 20px;
+    padding: 32px 30px;
+    backdrop-filter: blur(18px);
+    display: none;
+  }
+  .script-card.visible {
+    display: block;
+  }
+  .script-head {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+    margin-bottom: 20px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--hairline);
+  }
+  .script-head-left {
+    flex: 1 1 auto;
+  }
+  .script-num {
+    font-family: 'Lora', Georgia, serif;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 8px;
+  }
+  .script-card h3 {
+    font-family: 'Lora', Georgia, serif;
+    font-weight: 600;
+    font-size: 26px;
+    letter-spacing: -0.01em;
+    line-height: 1.2;
+  }
+  .script-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 12px;
+  }
+  .chip {
+    font-size: 11px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    border: 1px solid var(--hairline);
+    color: var(--muted);
+    letter-spacing: 0.05em;
+  }
+  .chip-pillar-vision { color: var(--gold); border-color: var(--gold-soft); background: rgba(232, 201, 106, 0.06); }
+  .chip-pillar-product { color: var(--emerald); border-color: var(--hairline); background: rgba(52, 211, 153, 0.06); }
+  .chip-pillar-agent { color: #c084fc; border-color: rgba(192, 132, 252, 0.25); background: rgba(192, 132, 252, 0.06); }
+  /* --- Script body --- */
+  .script-section-label {
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--emerald);
+    margin: 22px 0 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .script-section-label:first-child {
+    margin-top: 0;
+  }
+  .script-hook {
+    font-family: 'Lora', Georgia, serif;
+    font-size: 22px;
+    font-style: italic;
+    color: var(--gold);
+    line-height: 1.4;
+    padding: 16px 22px;
+    border-left: 3px solid var(--gold);
+    background: rgba(232, 201, 106, 0.05);
+    border-radius: 0 12px 12px 0;
+    margin-bottom: 6px;
+  }
+  .script-body {
+    font-size: 17px;
+    line-height: 1.75;
+    color: var(--ink);
+    padding: 18px 0;
+    white-space: pre-wrap;
+  }
+  .script-cta {
+    font-family: 'Lora', Georgia, serif;
+    font-style: italic;
+    font-size: 18px;
+    color: var(--emerald);
+    padding: 14px 0 4px;
+    border-top: 1px dashed var(--hairline);
+  }
+  /* --- Copy block (the whole script for HeyGen) --- */
+  .copy-block {
+    margin-top: 24px;
+    background: rgba(0, 0, 0, 0.35);
+    border: 1px solid var(--hairline);
+    border-radius: 14px;
+    padding: 20px;
+  }
+  .copy-block-label {
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .copy-block pre {
+    font-family: 'SF Mono', Monaco, monospace;
+    font-size: 14px;
+    line-height: 1.65;
+    color: var(--ink);
+    white-space: pre-wrap;
+    word-wrap: break-word;
+  }
+  .copy-btn {
+    background: var(--emerald);
+    color: var(--bg);
+    border: none;
+    padding: 7px 14px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 600;
+    font-family: inherit;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.18s ease;
+  }
+  .copy-btn:hover {
+    background: var(--gold);
+  }
+  .copy-btn.copied {
+    background: var(--gold);
+    color: var(--bg);
+  }
+  /* --- HeyGen specs panel --- */
+  .specs {
+    margin-top: 28px;
+    padding: 22px;
+    background: rgba(52, 211, 153, 0.04);
+    border: 1px solid var(--hairline);
+    border-radius: 14px;
+  }
+  .specs h4 {
+    font-family: 'Lora', Georgia, serif;
+    font-size: 15px;
+    color: var(--emerald);
+    margin-bottom: 14px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    font-weight: 600;
+  }
+  .specs-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 14px;
+    font-size: 13px;
+  }
+  .specs-item .specs-key {
+    color: var(--muted);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  .specs-item .specs-value {
+    color: var(--ink);
+    font-weight: 500;
+  }
+  /* --- Captions section --- */
+  .captions {
+    margin-top: 24px;
+  }
+  .caption-block {
+    margin-top: 14px;
+  }
+  /* --- Calendar table --- */
+  .calendar-wrap {
+    overflow-x: auto;
+    margin-top: 24px;
+  }
+  table.calendar {
+    width: 100%;
+    min-width: 700px;
+    border-collapse: collapse;
+    font-size: 14px;
+  }
+  table.calendar th,
+  table.calendar td {
+    border: 1px solid var(--hairline);
+    padding: 14px 12px;
+    vertical-align: top;
+    text-align: left;
+  }
+  table.calendar th {
+    background: rgba(52, 211, 153, 0.08);
+    color: var(--emerald);
+    font-weight: 600;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+  table.calendar td.day {
+    color: var(--muted);
+    font-weight: 600;
+    width: 110px;
+  }
+  table.calendar .video-pill {
+    display: inline-block;
+    font-size: 11px;
+    color: var(--gold);
+    padding: 3px 8px;
+    border: 1px solid var(--hairline);
+    border-radius: 999px;
+    margin: 2px 4px 2px 0;
+  }
+  /* --- Process step --- */
+  .step {
+    background: var(--bg-elev);
+    border: 1px solid var(--hairline);
+    border-radius: 14px;
+    padding: 22px;
+    margin-bottom: 14px;
+  }
+  .step-num {
+    color: var(--gold);
+    font-family: 'Lora', Georgia, serif;
+    font-size: 13px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .step h4 {
+    font-family: 'Lora', Georgia, serif;
+    font-size: 18px;
+    margin-bottom: 8px;
+  }
+  .step p {
+    color: var(--muted);
+    font-size: 14px;
+  }
+  .step ul {
+    margin-top: 10px;
+    padding-left: 20px;
+    color: var(--muted);
+    font-size: 14px;
+  }
+  .step li {
+    margin-bottom: 6px;
+  }
+  /* --- Prompts (Web Claude) --- */
+  .prompt-card {
+    background: rgba(0, 0, 0, 0.32);
+    border: 1px solid var(--hairline);
+    border-radius: 14px;
+    padding: 22px;
+    margin-top: 18px;
+  }
+  .prompt-card h4 {
+    font-family: 'Lora', Georgia, serif;
+    color: var(--emerald);
+    font-size: 16px;
+    margin-bottom: 10px;
+  }
+  /* --- Notes / callout --- */
+  .callout {
+    padding: 22px 26px;
+    background: rgba(232, 201, 106, 0.06);
+    border: 1px solid var(--gold-soft);
+    border-left: 3px solid var(--gold);
+    border-radius: 0 14px 14px 0;
+    margin: 22px 0;
+  }
+  .callout strong {
+    color: var(--gold);
+  }
+  /* --- Footer --- */
+  footer {
+    margin-top: 96px;
+    padding-top: 32px;
+    border-top: 1px solid var(--hairline);
+    color: var(--muted);
+    font-size: 13px;
+    text-align: center;
+  }
+  footer em {
+    color: var(--gold);
+    font-style: italic;
+  }
+  /* --- Print --- */
+  @media print {
+    body::before { display: none; }
+    body { background: white; color: black; }
+    .script-card { display: block !important; page-break-inside: avoid; }
+    .tabs { display: none; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- HERO -->
+  <header class="hero">
+    <span class="hero-eyebrow">Launch Playbook · May 2026</span>
+    <h1>The Montree Launch.<br><em>12 videos. 3 weeks. One movement.</em></h1>
+    <p class="hero-sub">A balanced content series across three pillars — vision, product, agent recruitment — engineered for the algorithm and tuned for your voice. Stretched across your 146 HeyGen credits with room to re-render.</p>
+    <div class="hero-meta">
+      <span><strong>12</strong> videos</span>
+      <span><strong>~96</strong> credits used</span>
+      <span><strong>~50</strong> credits reserved for re-renders</span>
+      <span><strong>5</strong> platforms</span>
+      <span><strong>21</strong> day calendar</span>
+    </div>
+  </header>
+
+  <!-- THE STRATEGY -->
+  <section>
+    <div class="section-head">
+      <div class="section-tag">The Strategy</div>
+      <h2>Three pillars. One launch.</h2>
+      <p>Each pillar pulls a different audience. Week one hooks the algorithm with story and vision. Week two converts that attention into product understanding. Week three monetises the audience through agent recruitment. The math is real and the brand voice is yours.</p>
+    </div>
+    <div class="pillars">
+      <article class="pillar">
+        <span class="pillar-tag">Pillar A — Vision</span>
+        <h3>Built by one teacher. Six months. Under $1,000.</h3>
+        <p>The AI disruption story. The bigger vision. The teacher who lived inside a Montessori classroom for ten years and built the future of the system from the inside out.</p>
+        <div class="pillar-meta">4 videos · Days 1–7</div>
+      </article>
+      <article class="pillar">
+        <span class="pillar-tag">Pillar B — Product</span>
+        <h3>A teacher takes a photo. Montree does the rest.</h3>
+        <p>What it actually does. The time-back promise. The skeptic response. Tracy for principals. Twelve languages. Real moments, real reports, real magic.</p>
+        <div class="pillar-meta">5 videos · Days 8–14</div>
+      </article>
+      <article class="pillar">
+        <span class="pillar-tag">Pillar C — Agent</span>
+        <h3>Sign one school. Get paid forever.</h3>
+        <p>The founding agents program. 20% recurring revenue share. The passive income math. Limited window. Specifically engineered for Montessori teachers at conferences who already have the network.</p>
+        <div class="pillar-meta">3 videos · Days 15–21</div>
+      </article>
+    </div>
+    <div class="callout">
+      <strong>Credit math.</strong> 12 videos × 8 HeyGen credits (Script-to-Video, Builder tab) = 96 credits used. 50 credits reserved for re-renders, A/B versions, or surprise additions. <strong>Do not</strong> use Video Agent — it bills credits during planning, not at render. Use the <strong>Builder → Script to Video</strong> path only.
+    </div>
+  </section>
+
+  <!-- THE 12 SCRIPTS -->
+  <section>
+    <div class="section-head">
+      <div class="section-tag">The Twelve Scripts</div>
+      <h2>Every script. Every spec. Every caption.</h2>
+      <p>Tap a pillar below to filter. Each card has the script copy-paste ready for HeyGen, the production specs to feed in (avatar, voice, music, B-roll), and the platform-tuned captions to paste under each upload.</p>
+    </div>
+
+    <div class="tabs" id="pillarTabs">
+      <button class="tab active" data-filter="all">All 12</button>
+      <button class="tab" data-filter="vision">Pillar A — Vision (4)</button>
+      <button class="tab" data-filter="product">Pillar B — Product (5)</button>
+      <button class="tab" data-filter="agent">Pillar C — Agent (3)</button>
+    </div>
+
+    <div class="scripts-grid" id="scriptsGrid">
+
+      <!-- ===== VIDEO 1 — A1 ===== -->
+      <article class="script-card visible" data-pillar="vision">
+        <div class="script-head">
+          <div class="script-head-left">
+            <div class="script-num">Video 01 · Pillar A · Vision</div>
+            <h3>The Million-Dollar App Built for $1,000</h3>
+            <div class="script-chips">
+              <span class="chip chip-pillar-vision">Vision</span>
+              <span class="chip">30 seconds</span>
+              <span class="chip">~70 words</span>
+              <span class="chip">9:16 vertical</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="script-section-label">Hook (first 3 seconds)</div>
+        <div class="script-hook">"This app would have cost ten million dollars to build three years ago."</div>
+
+        <div class="script-section-label">Body</div>
+        <div class="script-body">Today, one teacher built it in six months. For under a thousand dollars. That's what AI disruption actually looks like. Montree is changing how Montessori classrooms work. Built by a teacher. For teachers. Ten years lived inside a Montessori classroom.</div>
+
+        <div class="script-section-label">CTA</div>
+        <div class="script-cta">"This is the future. montree.xyz."</div>
+
+        <div class="copy-block">
+          <div class="copy-block-label">Full HeyGen script
+            <button class="copy-btn" data-copy="script-01">Copy</button>
+          </div>
+          <pre id="script-01">This app would have cost ten million dollars to build three years ago.
+
+Today, one teacher built it in six months. For under a thousand dollars.
+
+That's what AI disruption actually looks like.
+
+Montree is changing how Montessori classrooms work. Built by a teacher. For teachers. Ten years lived inside a Montessori classroom.
+
+This is the future.
+
+montree.xyz.</pre>
+        </div>
+
+        <div class="specs">
+          <h4>HeyGen production specs</h4>
+          <div class="specs-grid">
+            <div class="specs-item"><div class="specs-key">Avatar</div><div class="specs-value">Stock warm-professional male (40s)</div></div>
+            <div class="specs-item"><div class="specs-key">Voice</div><div class="specs-value">Deep / measured / South African English if available, else US neutral</div></div>
+            <div class="specs-item"><div class="specs-key">Music</div><div class="specs-value">Cinematic build — slow swell</div></div>
+            <div class="specs-item"><div class="specs-key">Aspect</div><div class="specs-value">9:16 vertical</div></div>
+            <div class="specs-item"><div class="specs-key">B-roll</div><div class="specs-value">$10M crossed out → $1K underneath. Photo of teacher. Montree logo end card.</div></div>
+            <div class="specs-item"><div class="specs-key">Credits</div><div class="specs-value">8</div></div>
+          </div>
+        </div>
+
+        <div class="captions">
+          <div class="copy-block">
+            <div class="copy-block-label">TikTok / IG Reels / YT Shorts / FB Reels caption
+              <button class="copy-btn" data-copy="cap-01-short">Copy</button>
+            </div>
+            <pre id="cap-01-short">Three years ago this app would have cost $10M and three years of a developer team.
+
+I built it in six months. One teacher. Under $1,000.
+
+This is what AI disruption looks like in education. 👁️
+
+Try it free → montree.xyz
+
+#Montessori #MontessoriTeacher #EdTech #MontessoriClassroom #TeacherLife #AIinEducation #Montree</pre>
+          </div>
+          <div class="copy-block">
+            <div class="copy-block-label">LinkedIn caption
+              <button class="copy-btn" data-copy="cap-01-li">Copy</button>
+            </div>
+            <pre id="cap-01-li">Three years ago, building Montree would have required a $10M budget and a team of engineers working for three years.
+
+I built it in six months. As one teacher. For under a thousand dollars.
+
+This is what AI disruption actually looks like in education — not a press release, not a pitch deck, but a working product that gives Montessori teachers their time back.
+
+We are early in a new era. The question is whether your school is early — or whether your school is late.
+
+→ montree.xyz</pre>
+          </div>
+        </div>
+      </article>
+
+      <!-- ===== VIDEO 2 — A2 ===== -->
+      <article class="script-card visible" data-pillar="vision">
+        <div class="script-head">
+          <div class="script-head-left">
+            <div class="script-num">Video 02 · Pillar A · Vision</div>
+            <h3>What Montree Actually Is</h3>
+            <div class="script-chips">
+              <span class="chip chip-pillar-vision">Vision</span>
+              <span class="chip">60 seconds</span>
+              <span class="chip">~135 words</span>
+              <span class="chip">9:16 vertical</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="script-section-label">Hook</div>
+        <div class="script-hook">"A teacher takes a photo of a child working. Montree does the rest."</div>
+
+        <div class="script-section-label">Body</div>
+        <div class="script-body">The system identifies the work. Logs it to the child. The teacher just taps a name.
+
+Later, the same photo writes a beautiful description for the parents — what the child did, why it matters — in language any parent understands.
+
+Montree tracks every child against Maria Montessori's original developmental work. It knows their stage. It tells the teacher what to present next.
+
+Every week it writes a personalised report for every child. Not generic. Real. From actual moments in your classroom.
+
+That's thirty minutes per report. Times twenty children. Fifteen hours back to the teacher. Every single week.</div>
+
+        <div class="script-section-label">CTA</div>
+        <div class="script-cta">"The magic of Montree. montree.xyz."</div>
+
+        <div class="copy-block">
+          <div class="copy-block-label">Full HeyGen script
+            <button class="copy-btn" data-copy="script-02">Copy</button>
+          </div>
+          <pre id="script-02">A teacher takes a photo of a child working. Montree does the rest.
+
+The system identifies the work. Logs it to the child. The teacher just taps a name.
+
+Later, the same photo writes a beautiful description for the parents — what the child did, why it matters — in language any parent understands.
+
+Montree tracks every child against Maria Montessori's original developmental work. It knows their stage. It tells the teacher what to present next.
+
+Every week it writes a personalised report for every child. Not generic. Real. From actual moments in your classroom.
+
+That's thirty minutes per report. Times twenty children. Fifteen hours back to the teacher. Every single week.
+
+The magic of Montree.
+
+montree.xyz.</pre>
+        </div>
+
+        <div class="specs">
+          <h4>HeyGen production specs</h4>
+          <div class="specs-grid">
+            <div class="specs-item"><div class="specs-key">Avatar</div><div class="specs-value">Same as Video 01 (continuity)</div></div>
+            <div class="specs-item"><div class="specs-key">Voice</div><div class="specs-value">Warm / explanatory / conversational</div></div>
+            <div class="specs-item"><div class="specs-key">Music</div><div class="specs-value">Soft acoustic underlay — no swell</div></div>
+            <div class="specs-item"><div class="specs-key">Aspect</div><div class="specs-value">9:16 vertical (also export 16:9 for YouTube long)</div></div>
+            <div class="specs-item"><div class="specs-key">B-roll</div><div class="specs-value">Phone snapping a photo · child working · phone screen showing identified work · parent reading report on phone · calendar showing "+15 hours"</div></div>
+            <div class="specs-item"><div class="specs-key">Credits</div><div class="specs-value">8 (consider exporting 9:16 + 16:9 = 16 credits if you want both versions)</div></div>
+          </div>
+        </div>
+
+        <div class="captions">
+          <div class="copy-block">
+            <div class="copy-block-label">TikTok / IG Reels / YT Shorts / FB Reels caption
+              <button class="copy-btn" data-copy="cap-02-short">Copy</button>
+            </div>
+            <pre id="cap-02-short">A teacher takes a photo. Montree does the rest. 📸
+
+→ Identifies the work
+→ Logs to the child
+→ Writes the parent report
+→ Knows what to present next
+
+15 hours of admin a week — back to the teacher.
+
+The magic of Montree → montree.xyz
+
+#Montessori #MontessoriTeacher #MontessoriMom #MontessoriClassroom #Teacher #Montree #ClassroomTech</pre>
+          </div>
+          <div class="copy-block">
+            <div class="copy-block-label">LinkedIn caption
+              <button class="copy-btn" data-copy="cap-02-li">Copy</button>
+            </div>
+            <pre id="cap-02-li">What Montree actually does, in one sentence:
+
+A teacher takes a photo of a child working — and the system does the rest.
+
+It identifies the work. Logs it to the child. Tracks them against Maria Montessori's original developmental progression. Writes the parent report in language any parent understands. Tells the teacher what to present next.
+
+Every week, fifteen hours of administrative work returns to the teacher.
+
+That's not a marketing claim — it's the actual math:
+• 30 minutes to write one progress report properly
+• × 20 children
+• = 10 hours per week
+• Per teacher
+• Every week of the year
+
+We built this to give Montessori teachers their time back. Because what they do — actual teaching — cannot be done by AI. The admin can.
+
+→ montree.xyz</pre>
+          </div>
+        </div>
+      </article>
+
+      <!-- ===== VIDEO 3 — A3 ===== -->
+      <article class="script-card visible" data-pillar="vision">
+        <div class="script-head">
+          <div class="script-head-left">
+            <div class="script-num">Video 03 · Pillar A · Vision</div>
+            <h3>The Bigger Vision</h3>
+            <div class="script-chips">
+              <span class="chip chip-pillar-vision">Vision</span>
+              <span class="chip">45 seconds</span>
+              <span class="chip">~105 words</span>
+              <span class="chip">9:16 vertical</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="script-section-label">Hook</div>
+        <div class="script-hook">"Montree is just the beginning."</div>
+
+        <div class="script-section-label">Body</div>
+        <div class="script-body">Since I was fourteen years old, I've wanted to build a school.
+
+Not a school like the ones that exist. A school that teaches every skill a child needs to thrive — physical, mental, spiritual. To create their own ecosystem. Not just to get a job. To build a life.
+
+Right now those schools only exist for the obscenely rich.
+
+My version starts in South Africa. For local children who deserve more.
+
+Montree is the stepping stone.
+
+Climb on board now. Surf the wave. Don't get crushed by it.</div>
+
+        <div class="script-section-label">CTA</div>
+        <div class="script-cta">"Be part of it. montree.xyz."</div>
+
+        <div class="copy-block">
+          <div class="copy-block-label">Full HeyGen script
+            <button class="copy-btn" data-copy="script-03">Copy</button>
+          </div>
+          <pre id="script-03">Montree is just the beginning.
+
+Since I was fourteen years old, I've wanted to build a school.
+
+Not a school like the ones that exist. A school that teaches every skill a child needs to thrive — physical, mental, spiritual. To create their own ecosystem. Not just to get a job. To build a life.
+
+Right now those schools only exist for the obscenely rich.
+
+My version starts in South Africa. For local children who deserve more.
+
+Montree is the stepping stone.
+
+Climb on board now. Surf the wave. Don't get crushed by it.
+
+Be part of it.
+
+montree.xyz.</pre>
+        </div>
+
+        <div class="specs">
+          <h4>HeyGen production specs</h4>
+          <div class="specs-grid">
+            <div class="specs-item"><div class="specs-key">Avatar</div><div class="specs-value">Same continuity avatar</div></div>
+            <div class="specs-item"><div class="specs-key">Voice</div><div class="specs-value">Personal / earnest / slow — the most emotional of the set</div></div>
+            <div class="specs-item"><div class="specs-key">Music</div><div class="specs-value">Soft strings, gentle build</div></div>
+            <div class="specs-item"><div class="specs-key">Aspect</div><div class="specs-value">9:16 vertical (export 16:9 for LinkedIn)</div></div>
+            <div class="specs-item"><div class="specs-key">B-roll</div><div class="specs-value">Black-and-white teacher footage · South African children · a sapling growing · Montree sprout logo as final frame</div></div>
+            <div class="specs-item"><div class="specs-key">Credits</div><div class="specs-value">8</div></div>
+          </div>
+        </div>
+
+        <div class="captions">
+          <div class="copy-block">
+            <div class="copy-block-label">TikTok / IG Reels / YT Shorts / FB Reels caption
+              <button class="copy-btn" data-copy="cap-03-short">Copy</button>
+            </div>
+            <pre id="cap-03-short">I've wanted to build a school since I was 14.
+
+Not a school like the ones that exist. A school that teaches every skill a child needs to thrive. To build a life. Not just to get a job.
+
+Right now schools like that exist only for the obscenely rich.
+
+Mine will start in South Africa. For local children.
+
+Montree is the stepping stone. 🌱
+
+Be part of it → montree.xyz
+
+#Montessori #EducationReform #SouthAfrica #Vision #FutureOfEducation #Montree</pre>
+          </div>
+          <div class="copy-block">
+            <div class="copy-block-label">LinkedIn caption
+              <button class="copy-btn" data-copy="cap-03-li">Copy</button>
+            </div>
+            <pre id="cap-03-li">A vision I've held since I was fourteen:
+
+To build a school that teaches every skill a child needs to thrive — physical, mental, spiritual.
+
+A school that prepares them not just to get a job, but to build a life. To create their own ecosystem. To know themselves deeply enough to know what they're for.
+
+Schools like that already exist — but only for the obscenely rich.
+
+I'm building mine in South Africa. For local children. Free at the point of access.
+
+Montree is the stepping stone — the product that funds the school.
+
+This is why I'm building. Not for an exit. Not for a valuation. For a generation of children who deserve more.
+
+→ montree.xyz</pre>
+          </div>
+        </div>
+      </article>
+
+      <!-- ===== VIDEO 4 — A4 ===== -->
+      <article class="script-card visible" data-pillar="vision">
+        <div class="script-head">
+          <div class="script-head-left">
+            <div class="script-num">Video 04 · Pillar A · Vision</div>
+            <h3>Ten Years From Now</h3>
+            <div class="script-chips">
+              <span class="chip chip-pillar-vision">Vision</span>
+              <span class="chip">30 seconds</span>
+              <span class="chip">~65 words</span>
+              <span class="chip">9:16 vertical</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="script-section-label">Hook</div>
+        <div class="script-hook">"Ten years from now, this is the standard."</div>
+
+        <div class="script-section-label">Body</div>
+        <div class="script-body">Every Montessori classroom in the world will have a system that watches what the children do. Knows where they are developmentally. Writes the parents' reports. Gives the teacher their time back.
+
+It will exist.
+
+The only question is whether you're early.
+
+Or whether you're late.</div>
+
+        <div class="script-section-label">CTA</div>
+        <div class="script-cta">"Be early. montree.xyz."</div>
+
+        <div class="copy-block">
+          <div class="copy-block-label">Full HeyGen script
+            <button class="copy-btn" data-copy="script-04">Copy</button>
+          </div>
+          <pre id="script-04">Ten years from now, this is the standard.
+
+Every Montessori classroom in the world will have a system that watches what the children do. Knows where they are developmentally. Writes the parents' reports. Gives the teacher their time back.
+
+It will exist.
+
+The only question is whether you're early.
+
+Or whether you're late.
+
+Be early.
+
+montree.xyz.</pre>
+        </div>
+
+        <div class="specs">
+          <h4>HeyGen production specs</h4>
+          <div class="specs-grid">
+            <div class="specs-item"><div class="specs-key">Avatar</div><div class="specs-value">Continuity avatar, direct-to-camera</div></div>
+            <div class="specs-item"><div class="specs-key">Voice</div><div class="specs-value">Measured / confident / unhurried</div></div>
+            <div class="specs-item"><div class="specs-key">Music</div><div class="specs-value">Ticking clock undercurrent → resolution</div></div>
+            <div class="specs-item"><div class="specs-key">Aspect</div><div class="specs-value">9:16 vertical</div></div>
+            <div class="specs-item"><div class="specs-key">B-roll</div><div class="specs-value">Calendar pages flipping · "2036" on screen · sprout logo</div></div>
+            <div class="specs-item"><div class="specs-key">Credits</div><div class="specs-value">8</div></div>
+          </div>
+        </div>
+
+        <div class="captions">
+          <div class="copy-block">
+            <div class="copy-block-label">TikTok / IG Reels / YT Shorts / FB Reels caption
+              <button class="copy-btn" data-copy="cap-04-short">Copy</button>
+            </div>
+            <pre id="cap-04-short">10 years from now this is the standard.
+
+Every Montessori classroom in the world. AI-assisted. Time back to the teacher. Real reports for parents.
+
+The only question is whether your school is early. Or late. ⏳
+
+Be early → montree.xyz
+
+#Montessori #MontessoriTeacher #FutureOfEducation #Innovation #Montree</pre>
+          </div>
+          <div class="copy-block">
+            <div class="copy-block-label">LinkedIn caption
+              <button class="copy-btn" data-copy="cap-04-li">Copy</button>
+            </div>
+            <pre id="cap-04-li">A prediction:
+
+Ten years from now, every serious Montessori classroom in the world will have an AI-assisted system that watches what children do, knows where each child is developmentally, and writes the parent reports automatically.
+
+This is not a question of if. It is a question of when, and who.
+
+Your school will either be among the early adopters who shape what this looks like — or among the late adopters who inherit whatever the early ones built.
+
+That choice is being made right now.
+
+→ montree.xyz</pre>
+          </div>
+        </div>
+      </article>
+
+      <!-- ===== VIDEO 5 — B1 ===== -->
+      <article class="script-card visible" data-pillar="product">
+        <div class="script-head">
+          <div class="script-head-left">
+            <div class="script-num">Video 05 · Pillar B · Product</div>
+            <h3>The Skeptic Response</h3>
+            <div class="script-chips">
+              <span class="chip chip-pillar-product">Product</span>
+              <span class="chip">45 seconds</span>
+              <span class="chip">~100 words</span>
+              <span class="chip">9:16 vertical</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="script-section-label">Hook</div>
+        <div class="script-hook">"I sent a cold email last week. The reply: 'I fail to see how a photo can replace a teacher's observation.'"</div>
+
+        <div class="script-section-label">Body</div>
+        <div class="script-body">Fair. This is new.
+
+Three years ago people didn't trust self-driving cars either. Today they're on the road.
+
+Same with Montree.
+
+The teacher takes a photo. Doesn't disrupt the child. Doesn't scribble notes for ten seconds.
+
+The system reads the photo. Identifies the work. Logs it.
+
+Later that same photo becomes a beautiful description for the parents — in language any parent can understand.
+
+The teacher just teaches. That's the point.</div>
+
+        <div class="script-section-label">CTA</div>
+        <div class="script-cta">"Try it free for thirty days. montree.xyz."</div>
+
+        <div class="copy-block">
+          <div class="copy-block-label">Full HeyGen script
+            <button class="copy-btn" data-copy="script-05">Copy</button>
+          </div>
+          <pre id="script-05">I sent a cold email last week. The reply: "I fail to see how a photo can replace a teacher's observation."
+
+Fair. This is new.
+
+Three years ago people didn't trust self-driving cars either. Today they're on the road.
+
+Same with Montree.
+
+The teacher takes a photo. Doesn't disrupt the child. Doesn't scribble notes for ten seconds.
+
+The system reads the photo. Identifies the work. Logs it.
+
+Later that same photo becomes a beautiful description for the parents — in language any parent can understand.
+
+The teacher just teaches. That's the point.
+
+Try it free for thirty days.
+
+montree.xyz.</pre>
+        </div>
+
+        <div class="specs">
+          <h4>HeyGen production specs</h4>
+          <div class="specs-grid">
+            <div class="specs-item"><div class="specs-key">Avatar</div><div class="specs-value">Continuity avatar</div></div>
+            <div class="specs-item"><div class="specs-key">Voice</div><div class="specs-value">Conversational / slightly amused / confident</div></div>
+            <div class="specs-item"><div class="specs-key">Music</div><div class="specs-value">Light pulse, modern</div></div>
+            <div class="specs-item"><div class="specs-key">Aspect</div><div class="specs-value">9:16 vertical</div></div>
+            <div class="specs-item"><div class="specs-key">B-roll</div><div class="specs-value">Mock email with skeptic quote · self-driving car cutaway · teacher snapping a photo · child working uninterrupted · system identifying work on screen</div></div>
+            <div class="specs-item"><div class="specs-key">Credits</div><div class="specs-value">8</div></div>
+          </div>
+        </div>
+
+        <div class="captions">
+          <div class="copy-block">
+            <div class="copy-block-label">TikTok / IG Reels / YT Shorts / FB Reels caption
+              <button class="copy-btn" data-copy="cap-05-short">Copy</button>
+            </div>
+            <pre id="cap-05-short">Got this in my inbox: "I fail to see how a photo can replace a teacher's observation."
+
+Fair. Three years ago people didn't trust self-driving cars either.
+
+Here's what Montree does:
+📸 Teacher snaps a photo (doesn't interrupt the child)
+🧠 System identifies the work
+📝 Same photo → parent description
+✨ Teacher just teaches
+
+The point isn't to replace the teacher. The point is to give her time back.
+
+30 days free → montree.xyz
+
+#Montessori #MontessoriTeacher #EdTech #Innovation #Montree</pre>
+          </div>
+          <div class="copy-block">
+            <div class="copy-block-label">LinkedIn caption (skip on LinkedIn — too defensive)
+              <button class="copy-btn" data-copy="cap-05-li">Copy</button>
+            </div>
+            <pre id="cap-05-li">[Recommendation: do not post this video on LinkedIn. The "skeptic response" angle is great for TikTok / IG / YouTube — it's a hook. LinkedIn rewards clean confidence, not defending against critics. Save your LinkedIn slots for Videos 2, 3, 4, 7, 10, 11, 12.]</pre>
+          </div>
+        </div>
+      </article>
+
+      <!-- ===== VIDEO 6 — B2 ===== -->
+      <article class="script-card visible" data-pillar="product">
+        <div class="script-head">
+          <div class="script-head-left">
+            <div class="script-num">Video 06 · Pillar B · Product</div>
+            <h3>Fifteen Hours</h3>
+            <div class="script-chips">
+              <span class="chip chip-pillar-product">Product</span>
+              <span class="chip">30 seconds</span>
+              <span class="chip">~65 words</span>
+              <span class="chip">9:16 vertical</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="script-section-label">Hook</div>
+        <div class="script-hook">"Thirty minutes to write a proper Montessori progress report."</div>
+
+        <div class="script-section-label">Body</div>
+        <div class="script-body">Per child. Times twenty children. Ten hours a week. Forty hours a month.
+
+Half a part-time job. Unpaid.
+
+Montree writes them. Unique. Personalised. Based on photos from real moments.
+
+Teachers get the time back. Parents get better reports.
+
+Everyone wins.</div>
+
+        <div class="script-section-label">CTA</div>
+        <div class="script-cta">"montree.xyz."</div>
+
+        <div class="copy-block">
+          <div class="copy-block-label">Full HeyGen script
+            <button class="copy-btn" data-copy="script-06">Copy</button>
+          </div>
+          <pre id="script-06">Thirty minutes to write a proper Montessori progress report.
+
+Per child. Times twenty children. Ten hours a week. Forty hours a month.
+
+Half a part-time job. Unpaid.
+
+Montree writes them. Unique. Personalised. Based on photos from real moments.
+
+Teachers get the time back. Parents get better reports.
+
+Everyone wins.
+
+montree.xyz.</pre>
+        </div>
+
+        <div class="specs">
+          <h4>HeyGen production specs</h4>
+          <div class="specs-grid">
+            <div class="specs-item"><div class="specs-key">Avatar</div><div class="specs-value">Continuity avatar</div></div>
+            <div class="specs-item"><div class="specs-key">Voice</div><div class="specs-value">Direct / matter-of-fact</div></div>
+            <div class="specs-item"><div class="specs-key">Music</div><div class="specs-value">Light, steady pulse</div></div>
+            <div class="specs-item"><div class="specs-key">Aspect</div><div class="specs-value">9:16 vertical</div></div>
+            <div class="specs-item"><div class="specs-key">B-roll</div><div class="specs-value">Numbers counting up (30 min × 20 = 10 hrs × 4 = 40 hrs) · clock spinning · teacher closing laptop and going home</div></div>
+            <div class="specs-item"><div class="specs-key">Credits</div><div class="specs-value">8</div></div>
+          </div>
+        </div>
+
+        <div class="captions">
+          <div class="copy-block">
+            <div class="copy-block-label">TikTok / IG Reels / YT Shorts / FB Reels caption
+              <button class="copy-btn" data-copy="cap-06-short">Copy</button>
+            </div>
+            <pre id="cap-06-short">30 minutes × 20 kids × 4 weeks = 40 hours/month writing reports. 😴
+
+Unpaid. Every. Single. Month.
+
+Montree writes them. Real. Personalised. From actual photos.
+
+Teachers go home → montree.xyz
+
+#MontessoriLife #TeacherBurnout #MontessoriTeacher #EdTech #Montree</pre>
+          </div>
+          <div class="copy-block">
+            <div class="copy-block-label">LinkedIn caption
+              <button class="copy-btn" data-copy="cap-06-li">Copy</button>
+            </div>
+            <pre id="cap-06-li">Quick math for Montessori principals:
+
+30 minutes to write one progress report properly.
+× 20 children per classroom.
+= 10 hours per week.
+× 4 weeks.
+= 40 hours per month.
+
+Per teacher. Unpaid administrative work.
+
+That's half a part-time job, done after hours, every month, by people who are already exhausted from running a Montessori classroom — which is the most intellectually demanding teaching environment in the world.
+
+Montree writes those reports. Personalised. Real. Based on photos from your actual classroom.
+
+The teachers get those forty hours back.
+
+What would your school do with forty more hours of teaching capacity per teacher per month?
+
+→ montree.xyz</pre>
+          </div>
+        </div>
+      </article>
+
+      <!-- ===== VIDEO 7 — B3 ===== -->
+      <article class="script-card visible" data-pillar="product">
+        <div class="script-head">
+          <div class="script-head-left">
+            <div class="script-num">Video 07 · Pillar B · Product</div>
+            <h3>Tracy — Your Chief of Staff</h3>
+            <div class="script-chips">
+              <span class="chip chip-pillar-product">Product</span>
+              <span class="chip">55 seconds</span>
+              <span class="chip">~120 words</span>
+              <span class="chip">9:16 vertical</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="script-section-label">Hook</div>
+        <div class="script-hook">"If you run a Montessori school, Montree gives you Tracy."</div>
+
+        <div class="script-section-label">Body</div>
+        <div class="script-body">Tracy runs on Anthropic Opus — the most advanced reasoning AI on Earth right now.
+
+She has direct access to every child in your school. She knows what they're working on. How they're progressing.
+
+She drafts messages to parents in your voice. She tells you which classrooms need attention. Which teachers haven't logged in. Which children haven't been observed.
+
+She is the chief of staff you couldn't afford to hire.
+
+And she comes free with Montree.
+
+Sleep better. Run a tighter school. Talk to parents like you have a research team behind you.
+
+Because now you do.</div>
+
+        <div class="script-section-label">CTA</div>
+        <div class="script-cta">"montree.xyz."</div>
+
+        <div class="copy-block">
+          <div class="copy-block-label">Full HeyGen script
+            <button class="copy-btn" data-copy="script-07">Copy</button>
+          </div>
+          <pre id="script-07">If you run a Montessori school, Montree gives you Tracy.
+
+Tracy runs on Anthropic Opus — the most advanced reasoning AI on Earth right now.
+
+She has direct access to every child in your school. She knows what they're working on. How they're progressing.
+
+She drafts messages to parents in your voice. She tells you which classrooms need attention. Which teachers haven't logged in. Which children haven't been observed.
+
+She is the chief of staff you couldn't afford to hire.
+
+And she comes free with Montree.
+
+Sleep better. Run a tighter school. Talk to parents like you have a research team behind you.
+
+Because now you do.
+
+montree.xyz.</pre>
+        </div>
+
+        <div class="specs">
+          <h4>HeyGen production specs</h4>
+          <div class="specs-grid">
+            <div class="specs-item"><div class="specs-key">Avatar</div><div class="specs-value">Continuity avatar</div></div>
+            <div class="specs-item"><div class="specs-key">Voice</div><div class="specs-value">Confident / executive / warm</div></div>
+            <div class="specs-item"><div class="specs-key">Music</div><div class="specs-value">Refined / boardroom-ambient</div></div>
+            <div class="specs-item"><div class="specs-key">Aspect</div><div class="specs-value">9:16 vertical (16:9 export STRONGLY recommended for LinkedIn)</div></div>
+            <div class="specs-item"><div class="specs-key">B-roll</div><div class="specs-value">Tracy "T" monogram avatar (gold on green) · principal at desk · phone notifications · message draft appearing on screen · principal closing laptop calmly</div></div>
+            <div class="specs-item"><div class="specs-key">Credits</div><div class="specs-value">8 (consider 16 for 9:16 + 16:9 both)</div></div>
+          </div>
+        </div>
+
+        <div class="captions">
+          <div class="copy-block">
+            <div class="copy-block-label">TikTok / IG Reels / YT Shorts / FB Reels caption
+              <button class="copy-btn" data-copy="cap-07-short">Copy</button>
+            </div>
+            <pre id="cap-07-short">If you run a Montessori school, meet Tracy. 👁️
+
+🧠 Anthropic Opus brain (the smartest AI on Earth)
+📊 Knows every child
+✍️ Drafts your parent emails in YOUR voice
+🚨 Tells you what needs attention
+
+The chief of staff you couldn't afford. Free with Montree.
+
+→ montree.xyz
+
+#MontessoriHeadOfSchool #SchoolLeader #EdTech #AI #Montree</pre>
+          </div>
+          <div class="copy-block">
+            <div class="copy-block-label">LinkedIn caption ⭐
+              <button class="copy-btn" data-copy="cap-07-li">Copy</button>
+            </div>
+            <pre id="cap-07-li">Meet Tracy.
+
+She is the chief of staff every Montessori head of school deserves but almost none can afford to hire.
+
+Tracy runs on Anthropic Opus — the most advanced reasoning model currently available. She has full read access to every child, classroom, and teacher in your school. She knows what each child is working on, how they are progressing, and which signals deserve your attention this week.
+
+What Tracy actually does, every day:
+• Drafts replies to parent emails in your voice
+• Flags classrooms that need a visit
+• Surfaces teachers who haven't logged in
+• Identifies children who haven't been observed
+• Composes weekly summaries you can send to your board
+
+She comes free with Montree.
+
+For the first time, a principal can run a tight, observation-rich, parent-confident Montessori school without sacrificing their evenings.
+
+→ montree.xyz</pre>
+          </div>
+        </div>
+      </article>
+
+      <!-- ===== VIDEO 8 — B4 ===== -->
+      <article class="script-card visible" data-pillar="product">
+        <div class="script-head">
+          <div class="script-head-left">
+            <div class="script-num">Video 08 · Pillar B · Product</div>
+            <h3>The Magic (The Anthem)</h3>
+            <div class="script-chips">
+              <span class="chip chip-pillar-product">Product</span>
+              <span class="chip">30 seconds</span>
+              <span class="chip">~50 words</span>
+              <span class="chip">9:16 vertical</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="script-section-label">Hook</div>
+        <div class="script-hook">"A teacher takes a photo."</div>
+
+        <div class="script-section-label">Body</div>
+        <div class="script-body">Montree identifies the work. Tracks the child. Writes the report. Talks to the parent. Guides the next lesson.
+
+Lets the teacher actually teach.
+
+Twelve languages. One classroom free for thirty days. No credit card.</div>
+
+        <div class="script-section-label">CTA</div>
+        <div class="script-cta">"This is the magic of Montree."</div>
+
+        <div class="copy-block">
+          <div class="copy-block-label">Full HeyGen script
+            <button class="copy-btn" data-copy="script-08">Copy</button>
+          </div>
+          <pre id="script-08">A teacher takes a photo.
+
+Montree identifies the work.
+Tracks the child.
+Writes the report.
+Talks to the parent.
+Guides the next lesson.
+
+Lets the teacher actually teach.
+
+Twelve languages. One classroom free for thirty days. No credit card.
+
+This is the magic of Montree.
+
+montree.xyz.</pre>
+        </div>
+
+        <div class="specs">
+          <h4>HeyGen production specs</h4>
+          <div class="specs-grid">
+            <div class="specs-item"><div class="specs-key">Avatar</div><div class="specs-value">Continuity avatar — final hero shot only. Most of frame is B-roll.</div></div>
+            <div class="specs-item"><div class="specs-key">Voice</div><div class="specs-value">Slow / declarative / spaced-out — pauses between each line matter</div></div>
+            <div class="specs-item"><div class="specs-key">Music</div><div class="specs-value">Cinematic minimal — single piano note per line, build at end</div></div>
+            <div class="specs-item"><div class="specs-key">Aspect</div><div class="specs-value">9:16 vertical (export 16:9 also — this is your ad-creative anchor)</div></div>
+            <div class="specs-item"><div class="specs-key">B-roll</div><div class="specs-value">Each line gets its own visual: phone snap → work identified screen → child profile → parent reading on phone → next-lesson card · close on Montree sprout logo</div></div>
+            <div class="specs-item"><div class="specs-key">Credits</div><div class="specs-value">8 (recommend 16 for both aspect ratios — this is your anthem)</div></div>
+          </div>
+        </div>
+
+        <div class="captions">
+          <div class="copy-block">
+            <div class="copy-block-label">TikTok / IG Reels / YT Shorts / FB Reels caption
+              <button class="copy-btn" data-copy="cap-08-short">Copy</button>
+            </div>
+            <pre id="cap-08-short">A teacher takes a photo.
+
+Montree does the rest. ✨
+
+📸 → 🧠 → 📝 → 👨‍👩‍👧
+
+12 languages. 30 days free. No card.
+
+The magic of Montree → montree.xyz
+
+#Montessori #MontessoriTeacher #MontessoriMom #ClassroomMagic #Montree</pre>
+          </div>
+          <div class="copy-block">
+            <div class="copy-block-label">LinkedIn caption
+              <button class="copy-btn" data-copy="cap-08-li">Copy</button>
+            </div>
+            <pre id="cap-08-li">The magic of Montree, in seven steps:
+
+1. A teacher takes a photo.
+2. The system identifies the work.
+3. It tracks the child's progress.
+4. It writes the parent report.
+5. It drafts the parent communication.
+6. It guides the next lesson.
+7. It lets the teacher actually teach.
+
+Twelve languages. One classroom free for thirty days. No credit card required.
+
+This is what AI was supposed to do for education.
+
+→ montree.xyz</pre>
+          </div>
+        </div>
+      </article>
+
+      <!-- ===== VIDEO 9 — B5 ===== -->
+      <article class="script-card visible" data-pillar="product">
+        <div class="script-head">
+          <div class="script-head-left">
+            <div class="script-num">Video 09 · Pillar B · Product</div>
+            <h3>Twelve Languages</h3>
+            <div class="script-chips">
+              <span class="chip chip-pillar-product">Product</span>
+              <span class="chip">30 seconds</span>
+              <span class="chip">~70 words</span>
+              <span class="chip">9:16 vertical</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="script-section-label">Hook</div>
+        <div class="script-hook">"Montree speaks twelve languages."</div>
+
+        <div class="script-section-label">Body</div>
+        <div class="script-body">English. Mandarin. Spanish. German. French. Portuguese. Dutch. Italian. Japanese. Korean. Ukrainian. Russian.
+
+Every report. Every interface. Every parent communication — in the language of the school.
+
+A teacher in Buenos Aires writes reports in Spanish. A principal in Beijing reads them in Mandarin.
+
+The same software. Localised properly.
+
+Not Google Translate. Built for each language.</div>
+
+        <div class="script-section-label">CTA</div>
+        <div class="script-cta">"Built for the world. montree.xyz."</div>
+
+        <div class="copy-block">
+          <div class="copy-block-label">Full HeyGen script
+            <button class="copy-btn" data-copy="script-09">Copy</button>
+          </div>
+          <pre id="script-09">Montree speaks twelve languages.
+
+English. Mandarin. Spanish. German. French. Portuguese. Dutch. Italian. Japanese. Korean. Ukrainian. Russian.
+
+Every report. Every interface. Every parent communication — in the language of the school.
+
+A teacher in Buenos Aires writes reports in Spanish. A principal in Beijing reads them in Mandarin.
+
+The same software. Localised properly.
+
+Not Google Translate. Built for each language.
+
+Built for the world.
+
+montree.xyz.</pre>
+        </div>
+
+        <div class="specs">
+          <h4>HeyGen production specs</h4>
+          <div class="specs-grid">
+            <div class="specs-item"><div class="specs-key">Avatar</div><div class="specs-value">Continuity avatar</div></div>
+            <div class="specs-item"><div class="specs-key">Voice</div><div class="specs-value">Warm / globe-aware / clear diction</div></div>
+            <div class="specs-item"><div class="specs-key">Music</div><div class="specs-value">Light global undercurrent (no specific cultural genre)</div></div>
+            <div class="specs-item"><div class="specs-key">Aspect</div><div class="specs-value">9:16 vertical</div></div>
+            <div class="specs-item"><div class="specs-key">B-roll</div><div class="specs-value">World map · Hello/你好/Hola in different fonts · Buenos Aires + Beijing skyline cutaways · final shot of Montree UI in 4 languages side-by-side</div></div>
+            <div class="specs-item"><div class="specs-key">Credits</div><div class="specs-value">8</div></div>
+          </div>
+        </div>
+
+        <div class="captions">
+          <div class="copy-block">
+            <div class="copy-block-label">TikTok / IG Reels / YT Shorts / FB Reels caption
+              <button class="copy-btn" data-copy="cap-09-short">Copy</button>
+            </div>
+            <pre id="cap-09-short">Montree speaks 12 languages 🌍
+
+🇬🇧 🇨🇳 🇪🇸 🇩🇪 🇫🇷 🇵🇹 🇳🇱 🇮🇹 🇯🇵 🇰🇷 🇺🇦 🇷🇺
+
+Real localisation. Not Google Translate. Built for each language and Montessori terminology.
+
+A Montessori classroom in any country, in any language → montree.xyz
+
+#MontessoriGlobal #Montessori #BilingualEducation #Multilingual #Montree</pre>
+          </div>
+          <div class="copy-block">
+            <div class="copy-block-label">LinkedIn caption
+              <button class="copy-btn" data-copy="cap-09-li">Copy</button>
+            </div>
+            <pre id="cap-09-li">Montree now ships in twelve languages:
+
+English · Mandarin · Spanish · German · French · Portuguese · Dutch · Italian · Japanese · Korean · Ukrainian · Russian.
+
+Every report. Every interface element. Every parent communication — in the language of the school.
+
+This is real localisation, with AMI Montessori terminology mapped correctly in each language. Not machine translation. Not "good enough." Built properly, language by language.
+
+If you run a Montessori school anywhere in the world where one of these languages is spoken, Montree fits.
+
+→ montree.xyz</pre>
+          </div>
+        </div>
+      </article>
+
+      <!-- ===== VIDEO 10 — C1 ===== -->
+      <article class="script-card visible" data-pillar="agent">
+        <div class="script-head">
+          <div class="script-head-left">
+            <div class="script-num">Video 10 · Pillar C · Agent</div>
+            <h3>The Founding Agent Offer</h3>
+            <div class="script-chips">
+              <span class="chip chip-pillar-agent">Agent</span>
+              <span class="chip">55 seconds</span>
+              <span class="chip">~125 words</span>
+              <span class="chip">9:16 vertical</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="script-section-label">Hook</div>
+        <div class="script-hook">"If you're a Montessori teacher who goes to conferences — listen up."</div>
+
+        <div class="script-section-label">Body</div>
+        <div class="script-body">Montree is running a founding agents program.
+
+Sign up a school. Get paid twenty percent of their monthly subscription. Forever.
+
+As long as the school uses Montree, you get paid.
+
+The math: twenty students per class. Ten classes. Seven dollars per student per month. That's two hundred and eighty dollars a month. From one school.
+
+A dedicated agent signs three to five schools. Nearly a thousand dollars a month. Passive.
+
+The catch? This offer disappears when Montree solidifies.
+
+Right now you can lock in lifetime revenue share.
+
+Two months from now — maybe not.</div>
+
+        <div class="script-section-label">CTA</div>
+        <div class="script-cta">"Apply at montree.xyz/become-an-agent."</div>
+
+        <div class="copy-block">
+          <div class="copy-block-label">Full HeyGen script
+            <button class="copy-btn" data-copy="script-10">Copy</button>
+          </div>
+          <pre id="script-10">If you're a Montessori teacher who goes to conferences — listen up.
+
+Montree is running a founding agents program.
+
+Sign up a school. Get paid twenty percent of their monthly subscription. Forever.
+
+As long as the school uses Montree, you get paid.
+
+The math: twenty students per class. Ten classes. Seven dollars per student per month. That's two hundred and eighty dollars a month. From one school.
+
+A dedicated agent signs three to five schools. Nearly a thousand dollars a month. Passive.
+
+The catch? This offer disappears when Montree solidifies.
+
+Right now you can lock in lifetime revenue share.
+
+Two months from now — maybe not.
+
+Apply at montree.xyz/become-an-agent.</pre>
+        </div>
+
+        <div class="specs">
+          <h4>HeyGen production specs</h4>
+          <div class="specs-grid">
+            <div class="specs-item"><div class="specs-key">Avatar</div><div class="specs-value">Continuity avatar</div></div>
+            <div class="specs-item"><div class="specs-key">Voice</div><div class="specs-value">Energetic / direct / opportunistic — the most "salesy" of the set, but warm</div></div>
+            <div class="specs-item"><div class="specs-key">Music</div><div class="specs-value">Upbeat / motivational drive</div></div>
+            <div class="specs-item"><div class="specs-key">Aspect</div><div class="specs-value">9:16 vertical (16:9 export for LinkedIn)</div></div>
+            <div class="specs-item"><div class="specs-key">B-roll</div><div class="specs-value">Conference scene · handshake · $280 → ×3 schools = $840/mo on screen · "FOUNDING AGENTS" stamp · countdown clock for urgency</div></div>
+            <div class="specs-item"><div class="specs-key">Credits</div><div class="specs-value">8</div></div>
+          </div>
+        </div>
+
+        <div class="captions">
+          <div class="copy-block">
+            <div class="copy-block-label">TikTok / IG Reels / YT Shorts / FB Reels caption
+              <button class="copy-btn" data-copy="cap-10-short">Copy</button>
+            </div>
+            <pre id="cap-10-short">Montessori teachers who go to conferences — read this. 👀
+
+Montree is running a FOUNDING AGENTS program.
+
+→ Sign 1 school
+→ Get 20% of their monthly fee
+→ FOREVER (as long as they use Montree)
+
+The math: 20 kids × 10 classes × $7 × 20% = $280/month/school
+
+3 schools = ~$840/month passive income 💰
+
+⚠️ Limited window — when Montree solidifies the offer is gone.
+
+Apply → montree.xyz/become-an-agent
+
+#MontessoriTeacher #PassiveIncome #SideHustle #MontessoriCommunity #Montree</pre>
+          </div>
+          <div class="copy-block">
+            <div class="copy-block-label">LinkedIn caption ⭐
+              <button class="copy-btn" data-copy="cap-10-li">Copy</button>
+            </div>
+            <pre id="cap-10-li">An offer for Montessori professionals with strong networks:
+
+Montree is opening a Founding Agents program.
+
+The structure: sign up a school. Earn 20% of that school's monthly subscription. For as long as the school uses Montree.
+
+The economics:
+• 20 students per class × 10 classes × $7/student = $1,400/month school subscription
+• Your 20% = $280/month per school
+• A dedicated agent signs 3 to 5 schools
+• Recurring monthly income: $840 – $1,400
+• Lifetime, as long as the schools remain customers
+
+This is not a referral bonus. This is a permanent revenue share, locked in at the moment of signup.
+
+This is also a time-limited offer. It exists because Montree is in its founding stage and benefits from teacher-advocates with credibility. Once we no longer need that, the offer closes.
+
+If you teach Montessori, attend conferences, run a regional community, or have meaningful relationships with school heads — this is for you.
+
+→ montree.xyz/become-an-agent</pre>
+          </div>
+        </div>
+      </article>
+
+      <!-- ===== VIDEO 11 — C2 ===== -->
+      <article class="script-card visible" data-pillar="agent">
+        <div class="script-head">
+          <div class="script-head-left">
+            <div class="script-num">Video 11 · Pillar C · Agent</div>
+            <h3>The Passive Income Math</h3>
+            <div class="script-chips">
+              <span class="chip chip-pillar-agent">Agent</span>
+              <span class="chip">30 seconds</span>
+              <span class="chip">~65 words</span>
+              <span class="chip">9:16 vertical</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="script-section-label">Hook</div>
+        <div class="script-hook">"Twenty students. Ten classes. Seven dollars each. Twenty percent."</div>
+
+        <div class="script-section-label">Body</div>
+        <div class="script-body">Two hundred and eighty dollars a month. Per school.
+
+You sign once. The school pays Montree forever. You get paid forever.
+
+Three schools is around eight hundred and forty dollars a month. Passive.
+
+No follow-up. No upselling. Just one signup and the income flows.
+
+This is what founding agents lock in.</div>
+
+        <div class="script-section-label">CTA</div>
+        <div class="script-cta">"montree.xyz/become-an-agent."</div>
+
+        <div class="copy-block">
+          <div class="copy-block-label">Full HeyGen script
+            <button class="copy-btn" data-copy="script-11">Copy</button>
+          </div>
+          <pre id="script-11">Twenty students. Ten classes. Seven dollars each. Twenty percent.
+
+Two hundred and eighty dollars a month. Per school.
+
+You sign once. The school pays Montree forever. You get paid forever.
+
+Three schools is around eight hundred and forty dollars a month. Passive.
+
+No follow-up. No upselling. Just one signup and the income flows.
+
+This is what founding agents lock in.
+
+montree.xyz/become-an-agent.</pre>
+        </div>
+
+        <div class="specs">
+          <h4>HeyGen production specs</h4>
+          <div class="specs-grid">
+            <div class="specs-item"><div class="specs-key">Avatar</div><div class="specs-value">Continuity avatar</div></div>
+            <div class="specs-item"><div class="specs-key">Voice</div><div class="specs-value">Crisp / numbers-clear / confident</div></div>
+            <div class="specs-item"><div class="specs-key">Music</div><div class="specs-value">Motivational pulse</div></div>
+            <div class="specs-item"><div class="specs-key">Aspect</div><div class="specs-value">9:16 vertical</div></div>
+            <div class="specs-item"><div class="specs-key">B-roll</div><div class="specs-value">Each number landing on screen with its multiplication · "= $280/mo" stamp · "× 3 schools = $840/mo" stamp · "FOREVER" overlay</div></div>
+            <div class="specs-item"><div class="specs-key">Credits</div><div class="specs-value">8</div></div>
+          </div>
+        </div>
+
+        <div class="captions">
+          <div class="copy-block">
+            <div class="copy-block-label">TikTok / IG Reels / YT Shorts / FB Reels caption
+              <button class="copy-btn" data-copy="cap-11-short">Copy</button>
+            </div>
+            <pre id="cap-11-short">The Montree founding agent math 🧮
+
+20 students × 10 classes × $7 × 20% = $280/month per school
+
+Sign 3 schools = ~$840/month
+Sign 5 schools = ~$1,400/month
+
+Forever. As long as they use Montree, you get paid.
+
+No follow-up. No upsell. One signup → recurring income.
+
+Apply → montree.xyz/become-an-agent
+
+#PassiveIncome #MontessoriTeacher #SideHustle #Recurring #Montree</pre>
+          </div>
+          <div class="copy-block">
+            <div class="copy-block-label">LinkedIn caption
+              <button class="copy-btn" data-copy="cap-11-li">Copy</button>
+            </div>
+            <pre id="cap-11-li">The math of the Montree Founding Agents program:
+
+• 20 students per class
+• 10 classes per school
+• $7 per student / month
+• 20% revenue share to you, the agent
+• = $280/month per signed school
+
+Three schools → $840/month, recurring.
+Five schools → $1,400/month, recurring.
+
+For as long as the school uses Montree.
+
+This is the kind of recurring revenue share that compounds with no further work after the signup. No downline. No monthly minimums. No upselling.
+
+If you have relationships with Montessori school heads, this is among the cleanest passive income structures available in education right now.
+
+→ montree.xyz/become-an-agent</pre>
+          </div>
+        </div>
+      </article>
+
+      <!-- ===== VIDEO 12 — C3 ===== -->
+      <article class="script-card visible" data-pillar="agent">
+        <div class="script-head">
+          <div class="script-head-left">
+            <div class="script-num">Video 12 · Pillar C · Agent</div>
+            <h3>Why Agents Win With Montree</h3>
+            <div class="script-chips">
+              <span class="chip chip-pillar-agent">Agent</span>
+              <span class="chip">45 seconds</span>
+              <span class="chip">~95 words</span>
+              <span class="chip">9:16 vertical</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="script-section-label">Hook</div>
+        <div class="script-hook">"Every affiliate program in the world pays you once and forgets you."</div>
+
+        <div class="script-section-label">Body</div>
+        <div class="script-body">Montree pays you forever.
+
+The principle is simple: we built something teachers actually want to keep using. When schools use it, they keep using it. When you bring them in, you keep earning.
+
+No downline. No pyramid. No monthly minimum.
+
+One effort per signup. Lifetime revenue share.
+
+The best businesses on Earth are built on helping people. Uber. Google. Now Montree.
+
+Climb on.</div>
+
+        <div class="script-section-label">CTA</div>
+        <div class="script-cta">"Apply at montree.xyz/become-an-agent."</div>
+
+        <div class="copy-block">
+          <div class="copy-block-label">Full HeyGen script
+            <button class="copy-btn" data-copy="script-12">Copy</button>
+          </div>
+          <pre id="script-12">Every affiliate program in the world pays you once and forgets you.
+
+Montree pays you forever.
+
+The principle is simple: we built something teachers actually want to keep using. When schools use it, they keep using it. When you bring them in, you keep earning.
+
+No downline. No pyramid. No monthly minimum.
+
+One effort per signup. Lifetime revenue share.
+
+The best businesses on Earth are built on helping people. Uber. Google. Now Montree.
+
+Climb on.
+
+Apply at montree.xyz/become-an-agent.</pre>
+        </div>
+
+        <div class="specs">
+          <h4>HeyGen production specs</h4>
+          <div class="specs-grid">
+            <div class="specs-item"><div class="specs-key">Avatar</div><div class="specs-value">Continuity avatar — strong direct-to-camera close on "Climb on."</div></div>
+            <div class="specs-item"><div class="specs-key">Voice</div><div class="specs-value">Convicted / clear / slightly leaned-forward energy</div></div>
+            <div class="specs-item"><div class="specs-key">Music</div><div class="specs-value">Building motivational track, final swell on "Climb on."</div></div>
+            <div class="specs-item"><div class="specs-key">Aspect</div><div class="specs-value">9:16 vertical (16:9 export for LinkedIn)</div></div>
+            <div class="specs-item"><div class="specs-key">B-roll</div><div class="specs-value">Crossed-out "one-time payout" stamps · Uber + Google logos faintly · sprout growing · Montree logo end</div></div>
+            <div class="specs-item"><div class="specs-key">Credits</div><div class="specs-value">8</div></div>
+          </div>
+        </div>
+
+        <div class="captions">
+          <div class="copy-block">
+            <div class="copy-block-label">TikTok / IG Reels / YT Shorts / FB Reels caption
+              <button class="copy-btn" data-copy="cap-12-short">Copy</button>
+            </div>
+            <pre id="cap-12-short">Every affiliate program pays once and forgets you.
+
+Montree pays you FOREVER. 🌱
+
+→ No downline
+→ No pyramid
+→ No monthly minimum
+→ One signup = lifetime revenue share
+
+The world's best businesses help people. Uber. Google. Now Montree.
+
+Climb on → montree.xyz/become-an-agent
+
+#PassiveIncome #MontessoriTeacher #AffiliateMarketing #Montree</pre>
+          </div>
+          <div class="copy-block">
+            <div class="copy-block-label">LinkedIn caption
+              <button class="copy-btn" data-copy="cap-12-li">Copy</button>
+            </div>
+            <pre id="cap-12-li">Why most affiliate programs are broken — and why Montree is different.
+
+Most affiliate programs pay you once and forget you. The partner who signed your tenth customer gets the same as the one who signed your first. There's no compounding incentive to bring in good-fit customers, because the program is built around volume, not retention.
+
+The Montree Founding Agents program is structured the opposite way:
+
+→ No volume targets
+→ No downline
+→ No monthly minimum
+→ One signup, lifetime revenue share
+
+Twenty percent of the school's subscription — as long as the school uses Montree.
+
+The principle is simple. We built something teachers actually want to keep using. When schools use it, they keep using it. When you bring them in, you keep earning.
+
+The greatest businesses on Earth are built on helping people. Uber. Google. Now Montree.
+
+→ montree.xyz/become-an-agent</pre>
+          </div>
+        </div>
+      </article>
+
+    </div>
+  </section>
+
+  <!-- POSTING CALENDAR -->
+  <section>
+    <div class="section-head">
+      <div class="section-tag">The 21-Day Calendar</div>
+      <h2>Three weeks. Eighteen posts. One launch.</h2>
+      <p>Each video posts to TikTok + Instagram Reels + YouTube Shorts + Facebook Reels on its primary day. LinkedIn gets a curated subset (videos 1, 2, 3, 4, 7, 10, 11, 12) on optimal weekday mornings. Pair short videos with a "soft" post day to give the algorithm rest.</p>
+    </div>
+
+    <div class="calendar-wrap">
+      <table class="calendar">
+        <thead>
+          <tr>
+            <th>Day</th>
+            <th>Video</th>
+            <th>Vertical (TT / IG / YT / FB)</th>
+            <th>LinkedIn (post 9am Tue/Wed/Thu)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td colspan="4" style="background: rgba(232, 201, 106, 0.05); color: var(--gold); font-family: 'Lora', Georgia, serif; font-weight: 600;">Week 1 — Vision Hook</td></tr>
+          <tr><td class="day">Mon Day 1</td><td><span class="video-pill">V01 — The Million-Dollar App</span></td><td>Post at 7–10am OR 7–9pm local</td><td>Tue 9am AM</td></tr>
+          <tr><td class="day">Tue Day 2</td><td><span class="video-pill">V02 — What Montree Is</span></td><td>Post at 11am–1pm OR 7–9pm</td><td>Wed 9am</td></tr>
+          <tr><td class="day">Wed Day 3</td><td><em style="color: var(--muted);">Algorithm rest — no post</em></td><td>—</td><td>—</td></tr>
+          <tr><td class="day">Thu Day 4</td><td><span class="video-pill">V03 — The Bigger Vision</span></td><td>Post at 11am–1pm OR 8pm</td><td>Thu 9am</td></tr>
+          <tr><td class="day">Fri Day 5</td><td><span class="video-pill">V04 — Ten Years From Now</span></td><td>Post at 7–10am</td><td>—</td></tr>
+          <tr><td class="day">Sat–Sun</td><td><em style="color: var(--muted);">Rest. Engage with comments only.</em></td><td>—</td><td>—</td></tr>
+          <tr><td colspan="4" style="background: rgba(52, 211, 153, 0.05); color: var(--emerald); font-family: 'Lora', Georgia, serif; font-weight: 600;">Week 2 — Product Conversion</td></tr>
+          <tr><td class="day">Mon Day 8</td><td><span class="video-pill">V05 — Skeptic Response</span></td><td>Post 7–10am OR 7–9pm</td><td>—</td></tr>
+          <tr><td class="day">Tue Day 9</td><td><span class="video-pill">V06 — Fifteen Hours</span></td><td>Post 11am–1pm</td><td>Tue 9am</td></tr>
+          <tr><td class="day">Wed Day 10</td><td><span class="video-pill">V07 — Tracy</span> ⭐</td><td>Post 11am–1pm OR 7–9pm</td><td>Wed 9am ⭐ flagship</td></tr>
+          <tr><td class="day">Thu Day 11</td><td><em style="color: var(--muted);">Rest day</em></td><td>—</td><td>—</td></tr>
+          <tr><td class="day">Fri Day 12</td><td><span class="video-pill">V08 — The Magic (anthem)</span></td><td>Post 11am–1pm AND 7–9pm (2× same day, different captions)</td><td>—</td></tr>
+          <tr><td class="day">Sat Day 13</td><td><span class="video-pill">V09 — Twelve Languages</span></td><td>Post 10am–12pm</td><td>—</td></tr>
+          <tr><td class="day">Sun Day 14</td><td><em style="color: var(--muted);">Rest. Engage with comments.</em></td><td>—</td><td>—</td></tr>
+          <tr><td colspan="4" style="background: rgba(192, 132, 252, 0.05); color: #c084fc; font-family: 'Lora', Georgia, serif; font-weight: 600;">Week 3 — Agent Recruitment</td></tr>
+          <tr><td class="day">Mon Day 15</td><td><span class="video-pill">V10 — Founding Agent Offer</span> ⭐</td><td>Post 7–10am OR 7–9pm</td><td>Tue 9am ⭐ flagship</td></tr>
+          <tr><td class="day">Tue Day 16</td><td><em style="color: var(--muted);">Rest. Engage with V10 comments.</em></td><td>—</td><td>—</td></tr>
+          <tr><td class="day">Wed Day 17</td><td><span class="video-pill">V11 — Passive Income Math</span></td><td>Post 11am–1pm OR 8pm</td><td>Wed 9am</td></tr>
+          <tr><td class="day">Thu Day 18</td><td><em style="color: var(--muted);">Rest day</em></td><td>—</td><td>—</td></tr>
+          <tr><td class="day">Fri Day 19</td><td><span class="video-pill">V12 — Why Agents Win</span></td><td>Post 7–10am</td><td>Thu 9am</td></tr>
+          <tr><td class="day">Sat Day 20</td><td><em style="color: var(--muted);">Re-post V08 (anthem) — stitch with 3 best comments from week.</em></td><td>—</td><td>—</td></tr>
+          <tr><td class="day">Sun Day 21</td><td><em style="color: var(--muted);">Engage with everyone. Plan next batch.</em></td><td>—</td><td>—</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout">
+      <strong>Algorithm signal logic.</strong> Every 3rd day = no post. The algorithms reward you for consistency AND for not flooding their feed. Posting 5 days a week beats posting 7 days a week on every platform. Use rest days to comment, reply, and stitch — the engagement signals matter as much as the post signals.
+    </div>
+  </section>
+
+  <!-- HEYGEN WORKFLOW -->
+  <section>
+    <div class="section-head">
+      <div class="section-tag">HeyGen Production</div>
+      <h2>From script to upload — the exact workflow.</h2>
+      <p>Use Builder → Script to Video. Avoid Video Agent (it billed 54 credits last time without producing a video). Same workflow per video. Set up takes ~5 minutes once you have the pattern.</p>
+    </div>
+
+    <div class="step">
+      <div class="step-num">Step 01</div>
+      <h4>Open HeyGen and navigate to Builder</h4>
+      <p>HeyGen.com → log in → top nav → <strong>Create video → Templates & Avatars</strong> → choose <strong>Script to Video</strong> (NOT Video Agent — that's the credit-burn trap).</p>
+    </div>
+    <div class="step">
+      <div class="step-num">Step 02</div>
+      <h4>Lock the avatar (do this once, reuse for all 12)</h4>
+      <p>Pick a stock avatar. Recommendations for Montree's voice:</p>
+      <ul>
+        <li><strong>"Daniel" or "Tyler"</strong> — warm professional male, 40s, neutral US accent. Continuity across all videos matters more than perfection.</li>
+        <li>Front-facing half-body shot, plain background (HeyGen will let you swap to dark green).</li>
+        <li>If you later train a personal Tredoux avatar (60 credits), the same script copy-paste workflow applies — just swap the avatar reference. Budget note: training the avatar mid-batch leaves you under-credit. Plan for next batch.</li>
+      </ul>
+    </div>
+    <div class="step">
+      <div class="step-num">Step 03</div>
+      <h4>Lock the voice (do this once)</h4>
+      <p>HeyGen voice library → filter <em>Male / English / Warm</em>. Test 3-4 options with the V01 script. Once you've found "the Montree voice," save the voice ID and reuse it on all 12 videos. Continuity over perfection.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">Step 04</div>
+      <h4>For each video — paste the script</h4>
+      <p>From this playbook: tap the green <strong>Copy</strong> button on the script's "Full HeyGen script" block → paste into HeyGen's script field. Don't manually retype — the line breaks matter for the avatar's pacing.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">Step 05</div>
+      <h4>Set the music & background</h4>
+      <p>HeyGen has a stock music library. Use the production specs on each card to pick the right vibe — cinematic build (V01), soft acoustic (V02), motivational drive (V10), etc. Background: deep forest green (#0a1a0f) or a soft natural background. Match the Montree brand palette.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">Step 06</div>
+      <h4>Set aspect ratio: 9:16 vertical</h4>
+      <p>All shorts are 9:16. Two exceptions where 16:9 is worth the extra 8 credits: <strong>V02 (What Montree Is)</strong>, <strong>V07 (Tracy)</strong>, <strong>V08 (Magic anthem)</strong>, and <strong>V10 (Founding Agent)</strong> — these are the LinkedIn anchors and benefit from horizontal versions.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">Step 07</div>
+      <h4>Generate. Wait 2-4 minutes. Download.</h4>
+      <p>HeyGen will render. Download as MP4. Drop into <strong>~/Desktop/Master Brain/ACTIVE/whale/marketing/videos/launch-batch/</strong> with the filename <code>V01-million-dollar-app.mp4</code> etc. Consistent naming makes posting easier later.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">Step 08</div>
+      <h4>Quick review pass before you upload</h4>
+      <p>Watch each video once. Check:</p>
+      <ul>
+        <li>Avatar lip-sync is clean (HeyGen sometimes slips on long words — re-render if so).</li>
+        <li>Music isn't overpowering the voice (drop music to 20-30% if it is).</li>
+        <li>End frame holds long enough on "montree.xyz" for someone to read it (2 seconds minimum).</li>
+        <li>No "uh" or stutter from the avatar (rare with Script to Video but check).</li>
+      </ul>
+    </div>
+    <div class="callout">
+      <strong>Total HeyGen time investment.</strong> ~5 min setup + ~3 min per video × 12 = ~45 minutes of active work spread across whatever days you want. Render time runs in parallel.
+    </div>
+  </section>
+
+  <!-- WEB CLAUDE POSTING -->
+  <section>
+    <div class="section-head">
+      <div class="section-tag">Web Claude Workflow</div>
+      <h2>How to hand off the posting to Claude in Chrome.</h2>
+      <p>Native platform UIs only — no third-party automation tools that violate ToS. Claude in Chrome can handle the upload mechanics (file pick, caption paste, hashtag paste) while you watch and approve. The actual publish click stays with you.</p>
+    </div>
+
+    <div class="callout">
+      <strong>Tier reminder.</strong> Browsers run at tier "read" for Claude — meaning Claude can see what's on screen but can't click. For TikTok/Instagram/YouTube/LinkedIn uploads, install the <strong>Claude in Chrome extension</strong> and use those DOM-aware tools. The Chrome MCP tools (mcp__Claude_in_Chrome__*) can navigate, click, type, and upload — but only inside the browser, and only with your supervision.
+    </div>
+
+    <div class="prompt-card">
+      <h4>Prompt 01 — TikTok upload (paste into Claude after opening TikTok)</h4>
+      <pre style="font-family: 'SF Mono', monospace; font-size: 13px; line-height: 1.6; color: var(--ink); white-space: pre-wrap;">I'm at tiktok.com/upload, logged in. I have a video file ready at:
+~/Desktop/Master Brain/ACTIVE/whale/marketing/videos/launch-batch/V01-million-dollar-app.mp4
+
+Walk me through this — wait for me to confirm each step before moving to the next:
+
+1. Click "Select video" and open the file picker
+2. Once I've selected the file, paste this caption (copy from playbook V01 TikTok caption):
+[PASTE V01 TIKTOK CAPTION HERE]
+
+3. Set visibility to Public, allow Duet/Stitch/Comments
+4. Add it to a TikTok Series if I want (skip if not)
+5. Show me the preview, wait for me to confirm everything looks right
+6. Click Post
+
+Use the Chrome MCP tools to navigate the page. Don't click Post until I say "go."</pre>
+      <div style="margin-top: 14px;">
+        <button class="copy-btn" data-copy="prompt-tiktok">Copy prompt</button>
+      </div>
+      <pre id="prompt-tiktok" style="display: none;">I'm at tiktok.com/upload, logged in. I have a video file ready at:
+~/Desktop/Master Brain/ACTIVE/whale/marketing/videos/launch-batch/V01-million-dollar-app.mp4
+
+Walk me through this — wait for me to confirm each step before moving to the next:
+
+1. Click "Select video" and open the file picker
+2. Once I've selected the file, paste this caption (copy from playbook V01 TikTok caption):
+[PASTE V01 TIKTOK CAPTION HERE]
+
+3. Set visibility to Public, allow Duet/Stitch/Comments
+4. Add it to a TikTok Series if I want (skip if not)
+5. Show me the preview, wait for me to confirm everything looks right
+6. Click Post
+
+Use the Chrome MCP tools to navigate the page. Don't click Post until I say "go."</pre>
+    </div>
+
+    <div class="prompt-card">
+      <h4>Prompt 02 — Instagram Reels (paste into Claude after opening Instagram on desktop)</h4>
+      <pre style="font-family: 'SF Mono', monospace; font-size: 13px; line-height: 1.6; color: var(--ink); white-space: pre-wrap;">I'm at instagram.com on desktop, logged in. I want to upload a Reel:
+
+File: ~/Desktop/Master Brain/ACTIVE/whale/marketing/videos/launch-batch/V01-million-dollar-app.mp4
+Caption: [PASTE V01 INSTAGRAM CAPTION FROM PLAYBOOK]
+
+Walk me through this:
+
+1. Click the "+" Create button (top right)
+2. Choose "Post" → switch to Reels in the preview
+3. Drag in the video file (or click "Select from computer")
+4. Skip cover frame edit, keep default
+5. Paste the caption
+6. Tag locations: skip
+7. Tag accounts: skip
+8. Settings: keep all defaults (Reels feed, recommend on, allow remixing)
+9. Show me the final review screen
+10. Wait for my "go" — then click Share
+
+Use Chrome MCP tools. Confirm each step.</pre>
+      <div style="margin-top: 14px;">
+        <button class="copy-btn" data-copy="prompt-instagram">Copy prompt</button>
+      </div>
+      <pre id="prompt-instagram" style="display: none;">I'm at instagram.com on desktop, logged in. I want to upload a Reel:
+
+File: ~/Desktop/Master Brain/ACTIVE/whale/marketing/videos/launch-batch/V01-million-dollar-app.mp4
+Caption: [PASTE V01 INSTAGRAM CAPTION FROM PLAYBOOK]
+
+Walk me through this:
+
+1. Click the "+" Create button (top right)
+2. Choose "Post" → switch to Reels in the preview
+3. Drag in the video file (or click "Select from computer")
+4. Skip cover frame edit, keep default
+5. Paste the caption
+6. Tag locations: skip
+7. Tag accounts: skip
+8. Settings: keep all defaults (Reels feed, recommend on, allow remixing)
+9. Show me the final review screen
+10. Wait for my "go" — then click Share
+
+Use Chrome MCP tools. Confirm each step.</pre>
+    </div>
+
+    <div class="prompt-card">
+      <h4>Prompt 03 — YouTube Shorts (paste into Claude after opening YouTube Studio)</h4>
+      <pre style="font-family: 'SF Mono', monospace; font-size: 13px; line-height: 1.6; color: var(--ink); white-space: pre-wrap;">I'm at studio.youtube.com, logged in. I want to upload a Short:
+
+File: ~/Desktop/Master Brain/ACTIVE/whale/marketing/videos/launch-batch/V01-million-dollar-app.mp4
+Title: The Million-Dollar App Built for $1,000 (Montree)
+Description: [PASTE V01 SHORT CAPTION FROM PLAYBOOK — YouTube takes the same caption as the others, the algorithm auto-detects #Shorts]
+
+Walk me through this:
+
+1. Click "Create" → "Upload videos"
+2. Select the file
+3. Title: paste the title above
+4. Description: paste the caption
+5. Thumbnail: skip (YouTube auto-picks for Shorts)
+6. Audience: "No, it's not made for kids"
+7. Visibility: Public
+8. Schedule: Post now (or schedule if I tell you to)
+9. Show me the final review
+10. Wait for my "go" — then publish
+
+Use Chrome MCP tools.</pre>
+      <div style="margin-top: 14px;">
+        <button class="copy-btn" data-copy="prompt-youtube">Copy prompt</button>
+      </div>
+      <pre id="prompt-youtube" style="display: none;">I'm at studio.youtube.com, logged in. I want to upload a Short:
+
+File: ~/Desktop/Master Brain/ACTIVE/whale/marketing/videos/launch-batch/V01-million-dollar-app.mp4
+Title: The Million-Dollar App Built for $1,000 (Montree)
+Description: [PASTE V01 SHORT CAPTION FROM PLAYBOOK — YouTube takes the same caption as the others, the algorithm auto-detects #Shorts]
+
+Walk me through this:
+
+1. Click "Create" → "Upload videos"
+2. Select the file
+3. Title: paste the title above
+4. Description: paste the caption
+5. Thumbnail: skip (YouTube auto-picks for Shorts)
+6. Audience: "No, it's not made for kids"
+7. Visibility: Public
+8. Schedule: Post now (or schedule if I tell you to)
+9. Show me the final review
+10. Wait for my "go" — then publish
+
+Use Chrome MCP tools.</pre>
+    </div>
+
+    <div class="prompt-card">
+      <h4>Prompt 04 — LinkedIn (paste into Claude after opening LinkedIn)</h4>
+      <pre style="font-family: 'SF Mono', monospace; font-size: 13px; line-height: 1.6; color: var(--ink); white-space: pre-wrap;">I'm at linkedin.com, logged in. I want to post a video to my personal feed:
+
+File: ~/Desktop/Master Brain/ACTIVE/whale/marketing/videos/launch-batch/V07-tracy.mp4
+(use the 16:9 version if I exported one — LinkedIn handles vertical poorly)
+
+Caption: [PASTE V07 LINKEDIN CAPTION FROM PLAYBOOK — keep the line breaks intact]
+
+Walk me through this:
+
+1. Click "Start a post" at top of feed
+2. Click the video icon
+3. Upload the file
+4. Wait for it to process
+5. Add the caption (preserve line breaks — LinkedIn renders them properly)
+6. Hashtags: keep it light, 3-5 max at the bottom (LinkedIn punishes hashtag spam)
+7. Audience: Anyone
+8. Show me the final preview
+9. Wait for my "go" — then Post
+
+Use Chrome MCP tools.</pre>
+      <div style="margin-top: 14px;">
+        <button class="copy-btn" data-copy="prompt-linkedin">Copy prompt</button>
+      </div>
+      <pre id="prompt-linkedin" style="display: none;">I'm at linkedin.com, logged in. I want to post a video to my personal feed:
+
+File: ~/Desktop/Master Brain/ACTIVE/whale/marketing/videos/launch-batch/V07-tracy.mp4
+(use the 16:9 version if I exported one — LinkedIn handles vertical poorly)
+
+Caption: [PASTE V07 LINKEDIN CAPTION FROM PLAYBOOK — keep the line breaks intact]
+
+Walk me through this:
+
+1. Click "Start a post" at top of feed
+2. Click the video icon
+3. Upload the file
+4. Wait for it to process
+5. Add the caption (preserve line breaks — LinkedIn renders them properly)
+6. Hashtags: keep it light, 3-5 max at the bottom (LinkedIn punishes hashtag spam)
+7. Audience: Anyone
+8. Show me the final preview
+9. Wait for my "go" — then Post
+
+Use Chrome MCP tools.</pre>
+    </div>
+
+    <div class="prompt-card">
+      <h4>Prompt 05 — Facebook Reels (paste into Claude after opening Facebook)</h4>
+      <pre style="font-family: 'SF Mono', monospace; font-size: 13px; line-height: 1.6; color: var(--ink); white-space: pre-wrap;">I'm at facebook.com on desktop, logged in. I want to post a Reel to my Page (or profile — confirm):
+
+File: ~/Desktop/Master Brain/ACTIVE/whale/marketing/videos/launch-batch/V01-million-dollar-app.mp4
+Caption: [PASTE V01 SHORT CAPTION FROM PLAYBOOK — same as TikTok caption]
+
+Walk me through this:
+
+1. Click "Create" → Reels
+2. Upload the file
+3. Trim if needed (skip — already cut to length)
+4. Paste the caption
+5. Cover: keep auto
+6. Audience: Public
+7. Cross-post to Instagram: yes if I haven't already posted there (otherwise skip — duplicate posts hurt the algorithm)
+8. Show me the final preview
+9. Wait for my "go" — then Share
+
+Use Chrome MCP tools.</pre>
+      <div style="margin-top: 14px;">
+        <button class="copy-btn" data-copy="prompt-facebook">Copy prompt</button>
+      </div>
+      <pre id="prompt-facebook" style="display: none;">I'm at facebook.com on desktop, logged in. I want to post a Reel to my Page (or profile — confirm):
+
+File: ~/Desktop/Master Brain/ACTIVE/whale/marketing/videos/launch-batch/V01-million-dollar-app.mp4
+Caption: [PASTE V01 SHORT CAPTION FROM PLAYBOOK — same as TikTok caption]
+
+Walk me through this:
+
+1. Click "Create" → Reels
+2. Upload the file
+3. Trim if needed (skip — already cut to length)
+4. Paste the caption
+5. Cover: keep auto
+6. Audience: Public
+7. Cross-post to Instagram: yes if I haven't already posted there (otherwise skip — duplicate posts hurt the algorithm)
+8. Show me the final preview
+9. Wait for my "go" — then Share
+
+Use Chrome MCP tools.</pre>
+    </div>
+
+    <div class="callout">
+      <strong>The posting routine.</strong> Open all 5 platform tabs once. Run through V01 across all 5 in one sitting (~10-15 min). Then go offline. Come back later to engage with comments. Don't multi-post on the same day — one video per day across all platforms is the sweet spot for the algorithms.
+    </div>
+  </section>
+
+  <!-- PLATFORM STRATEGY -->
+  <section>
+    <div class="section-head">
+      <div class="section-tag">Platform Strategy</div>
+      <h2>Why each platform is here.</h2>
+    </div>
+
+    <div class="pillars">
+      <article class="pillar">
+        <span class="pillar-tag">TikTok</span>
+        <h3>The discovery engine</h3>
+        <p>Where the algorithm is most generous to new accounts. Vertical-native. Captions short. Hashtags inline. Post at 7-10am OR 7-9pm local time. Comment back within the first hour after posting — TikTok measures that signal.</p>
+        <div class="pillar-meta">All 12 videos · primary platform</div>
+      </article>
+      <article class="pillar">
+        <span class="pillar-tag">Instagram Reels</span>
+        <h3>The Montessori parent stronghold</h3>
+        <p>Where the Montessori parent audience already lives. Same captions as TikTok. Post 11am-1pm OR 7-9pm. Cross-post to Facebook Reels in the same publish dialog (saves time, doesn't hurt the algorithm if done at upload).</p>
+        <div class="pillar-meta">All 12 videos · co-primary</div>
+      </article>
+      <article class="pillar">
+        <span class="pillar-tag">YouTube Shorts</span>
+        <h3>The long-tail search engine</h3>
+        <p>YouTube Shorts get indexed forever. Optimised titles matter more here than captions. People still find these videos six months later. Post 12-3pm OR 5-8pm. SEO bonus: include "Montessori" + a specific descriptor in the title.</p>
+        <div class="pillar-meta">All 12 videos · long-tail</div>
+      </article>
+      <article class="pillar">
+        <span class="pillar-tag">Facebook Reels</span>
+        <h3>The older-Montessori-mom audience</h3>
+        <p>Skews older. Montessori moms in their 40s. Higher conversion to demo requests on Facebook than TikTok. Cross-post from Instagram (same upload action). Don't post separately — duplicate-content penalty.</p>
+        <div class="pillar-meta">Cross-posted from Instagram · low effort, high return</div>
+      </article>
+      <article class="pillar">
+        <span class="pillar-tag">LinkedIn</span>
+        <h3>The principal & multiplier audience</h3>
+        <p>Only the right videos: <strong>V01, V02, V03, V04, V06, V07, V08, V09, V10, V11, V12</strong>. Skip V05 (skeptic response — too defensive for LinkedIn). Post Tue/Wed/Thu at 7-9am local time of your largest target audience. Captions are longer-form, professional, no emoji spam, light hashtags.</p>
+        <div class="pillar-meta">Curated 9 videos · principal/multiplier-targeted</div>
+      </article>
+      <article class="pillar">
+        <span class="pillar-tag">Engagement protocol</span>
+        <h3>Reply within an hour</h3>
+        <p>The algorithm rewards conversations. For the first hour after each post, reply to every comment — even "🌱" with a "🙏". Use the rest days (Wed in week 1, Sun, etc.) to circle back to all comments from the prior days. This is what separates the videos that pop from the ones that disappear.</p>
+        <div class="pillar-meta">Every platform · every video</div>
+      </article>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <p>The magic of Montree — <em>built by a teacher, for teachers</em>.</p>
+    <p style="margin-top: 8px;">Launch Playbook · May 2026 · <a href="https://montree.xyz" style="color: var(--emerald); text-decoration: none;">montree.xyz</a></p>
+  </footer>
+
+</div>
+
+<script>
+  // ---- Tab filter ----
+  const tabs = document.querySelectorAll('#pillarTabs .tab');
+  const cards = document.querySelectorAll('#scriptsGrid .script-card');
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      tabs.forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      const filter = tab.getAttribute('data-filter');
+      cards.forEach(card => {
+        if (filter === 'all' || card.getAttribute('data-pillar') === filter) {
+          card.classList.add('visible');
+        } else {
+          card.classList.remove('visible');
+        }
+      });
+    });
+  });
+
+  // ---- Copy buttons ----
+  document.querySelectorAll('.copy-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const targetId = btn.getAttribute('data-copy');
+      const target = document.getElementById(targetId);
+      if (!target) return;
+      const text = target.textContent;
+      navigator.clipboard.writeText(text).then(() => {
+        const originalText = btn.textContent;
+        btn.textContent = 'Copied ✓';
+        btn.classList.add('copied');
+        setTimeout(() => {
+          btn.textContent = originalText;
+          btn.classList.remove('copied');
+        }, 1400);
+      }).catch(() => {
+        // Fallback for older browsers
+        const range = document.createRange();
+        range.selectNode(target);
+        window.getSelection().removeAllRanges();
+        window.getSelection().addRange(range);
+        document.execCommand('copy');
+        window.getSelection().removeAllRanges();
+        btn.textContent = 'Copied ✓';
+        btn.classList.add('copied');
+        setTimeout(() => {
+          btn.textContent = 'Copy';
+          btn.classList.remove('copied');
+        }, 1400);
+      });
+    });
+  });
+</script>
+</body>
+</html>

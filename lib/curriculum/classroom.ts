@@ -5,8 +5,24 @@
 // CONSTANTS
 // ============================================
 
-// The Whale classroom ID (Tredoux's class at Beijing International School)
-export const WHALE_CLASSROOM_ID = 'bf0daf1b-cd46-4fba-9c2f-d3297bd11fc6';
+// The Whale classroom ID (Tredoux's class at Beijing International School).
+//
+// 🚨 SESSION 113 V2 CORRECTION: This constant previously held a stale ghost UUID
+//    ('bf0daf1b-cd46-4fba-9c2f-d3297bd11fc6') that no student is enrolled in. The
+//    canonical Whale Class classroom_id used by every production migration (161, 170,
+//    175, 177, 181), every batch translation script, every replan script, and CLAUDE.md
+//    is '51e7adb6-cd18-4e03-b707-eceb0a1d2e69'. The stale ID was carried over from an
+//    earlier classroom record that was superseded around the Apr 2026 schema migration
+//    (see docs/handoffs/HANDOFF_HAIKU_TEST_FEATURE_GATES_UPLOADS_APR4.md line 49).
+//
+// Verify query (Tredoux, run in Supabase SQL Editor):
+//   SELECT id, name, school_id FROM montree_classrooms
+//   WHERE id IN ('51e7adb6-cd18-4e03-b707-eceb0a1d2e69',
+//                'bf0daf1b-cd46-4fba-9c2f-d3297bd11fc6');
+// Expected: one row for 51e7adb6... ('Whale Class', school c6280fae...), zero rows for bf0daf1b... .
+// If bf0daf1b still resolves to a real classroom, override via env var WHALE_CLASSROOM_ID.
+export const WHALE_CLASSROOM_ID =
+  process.env.WHALE_CLASSROOM_ID || '51e7adb6-cd18-4e03-b707-eceb0a1d2e69';
 
 // Status mapping for child progress
 export const STATUS_TO_NUMBER: Record<string, number> = {

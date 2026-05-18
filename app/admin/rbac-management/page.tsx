@@ -4,6 +4,15 @@
 // Location: app/admin/rbac-management/page.tsx
 // Purpose: Complete admin interface for managing roles and permissions
 // =====================================================
+//
+// DEPRECATED — SESSION 113 V2
+// This page calls /api/admin/rbac, /api/admin/rbac/teachers, and
+// /api/admin/audit-logs — none of which exist in the API route tree. The
+// Whale-Class admin JWT carries no role distinction (super vs teacher), so
+// per-role permission editing is also a no-op. Kept on disk so direct URLs
+// don't 404 (hide-don't-delete posture). All server fetches are short-
+// circuited to surface a clear "deprecated" message instead of silent 404s.
+// =====================================================
 
 'use client';
 
@@ -90,149 +99,37 @@ export default function RBACManagementPage() {
     setLoading(false);
   }
 
-  async function loadPermissions() {
-    try {
-      const response = await fetch(`/api/admin/rbac?role=${selectedRole}`);
-      
-      if (response.status === 403) {
-        // Not authenticated as admin
-        router.push('/admin/login');
-        return;
-      }
-      
-      if (!response.ok) {
-        throw new Error('Failed to load permissions');
-      }
+  // 🚨 DEPRECATED — endpoints below do not exist. Short-circuit instead of 404.
+  const DEPRECATED_MSG =
+    'RBAC management is deprecated. The Whale-Class admin JWT carries no role distinction; per-role permissions are unused.';
 
-      const data = await response.json();
-      setFeatures(data.permissions || []);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load permissions');
-    }
+  async function loadPermissions() {
+    setFeatures([]);
+    setError(DEPRECATED_MSG);
   }
 
   async function fetchAuditLogs() {
-    try {
-      setAuditLoading(true);
-      const res = await fetch('/api/admin/audit-logs');
-      if (res.ok) {
-        const data = await res.json();
-        setAuditLogs(data.logs || []);
-      }
-    } catch (err) {
-      console.error('Error fetching audit logs:', err);
-    } finally {
-      setAuditLoading(false);
-    }
+    setAuditLogs([]);
+    setAuditLoading(false);
   }
 
   async function loadTeachers() {
-    try {
-      const response = await fetch('/api/admin/rbac/teachers');
-      
-      if (response.status === 403) {
-        // Not authenticated as admin
-        router.push('/admin/login');
-        return;
-      }
-      
-      if (!response.ok) {
-        throw new Error('Failed to load teachers');
-      }
-
-      const data = await response.json();
-      setTeachers(data.teachers || []);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load teachers');
-    }
+    setTeachers([]);
+    setError(DEPRECATED_MSG);
   }
 
-  async function togglePermission(
-    featureKey: FeatureKey,
-    permissionLevel: PermissionLevel,
-    currentValue: boolean
-  ) {
-    setSaving(true);
-    setError(null);
-    setSuccess(null);
-
-    try {
-      const response = await fetch('/api/admin/rbac', {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          role_name: selectedRole,
-          feature_key: featureKey,
-          permission_level: permissionLevel,
-          is_active: !currentValue,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to update permission');
-      }
-
-      setSuccess(`Permission ${!currentValue ? 'granted' : 'revoked'} successfully`);
-      
-      // Reload permissions
-      await loadPermissions();
-      
-      setTimeout(() => setSuccess(null), 3000);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to update permission');
-    } finally {
-      setSaving(false);
-    }
+  // 🚨 DEPRECATED — both mutators below targeted /api/admin/rbac* which does not exist.
+  // Originally took (featureKey, permissionLevel, currentValue); params dropped
+  // along with the dead body so unused-vars stays clean.
+  async function togglePermission() {
+    setError(DEPRECATED_MSG);
   }
 
   async function addTeacher() {
-    if (!newTeacherEmail) {
-      setError('Email is required');
-      return;
-    }
-
-    setSaving(true);
-    setError(null);
-    setSuccess(null);
-
-    try {
-      const response = await fetch('/api/admin/rbac/teachers', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email: newTeacherEmail,
-          name: newTeacherName || null,
-          password: newTeacherPassword || null,
-        }),
-      });
-
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.error || 'Failed to create teacher');
-      }
-
-      const data = await response.json();
-      setSuccess(data.message || 'Teacher created successfully');
-      
-      // Reset form
-      setNewTeacherEmail('');
-      setNewTeacherName('');
-      setNewTeacherPassword('');
-      setShowAddTeacher(false);
-      
-      // Reload teachers
-      await loadTeachers();
-      
-      setTimeout(() => setSuccess(null), 5000);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create teacher');
-    } finally {
-      setSaving(false);
-    }
+    setError(DEPRECATED_MSG);
+    // Original implementation called POST /api/admin/rbac/teachers which does
+    // not exist. See deprecation banner at top of file. If reviving, create
+    // the missing route first.
   }
 
   if (loading) {

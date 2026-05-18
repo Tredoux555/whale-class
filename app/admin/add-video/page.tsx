@@ -1,3 +1,10 @@
+// DEPRECATED — SESSION 113 V2
+//
+// This page calls /api/admin/curriculum-works and /api/admin/add-video — both
+// of which do not exist. The canonical video-add surface for Whale Class is
+// /admin/video-manager (which IS wired into TOOLS and has a real backing
+// route). Kept on disk so direct URLs don't 404 (hide-don't-delete posture).
+// Fetches are short-circuited to clean empty state.
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -16,6 +23,7 @@ export default function AddVideoPage() {
   const [loading, setLoading] = useState(true);
   const [selectedWork, setSelectedWork] = useState<Work | null>(null);
   const [youtubeUrl, setYoutubeUrl] = useState('');
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [filter, setFilter] = useState<'all' | 'missing'>('missing');
@@ -25,19 +33,14 @@ export default function AddVideoPage() {
     loadWorks();
   }, []);
 
+  // 🚨 DEPRECATED — endpoints below do not exist. Short-circuit instead of 404.
   async function loadWorks() {
-    setLoading(true);
-    try {
-      const response = await fetch('/api/admin/curriculum-works');
-      const data = await response.json();
-      if (data.success) {
-        setWorks(data.works || []);
-      }
-    } catch (error) {
-      console.error('Error loading works:', error);
-    } finally {
-      setLoading(false);
-    }
+    setWorks([]);
+    setLoading(false);
+    setMessage({
+      type: 'error',
+      text: 'This page is deprecated. Use /admin/video-manager to add or manage homepage videos.',
+    });
   }
 
   function extractYoutubeId(url: string): string | null {
@@ -52,39 +55,12 @@ export default function AddVideoPage() {
     return null;
   }
 
+  // 🚨 DEPRECATED — /api/admin/add-video does not exist. Use /admin/video-manager.
   async function saveVideo() {
-    if (!selectedWork || !youtubeUrl) return;
-    const videoId = extractYoutubeId(youtubeUrl);
-    if (!videoId) {
-      setMessage({ type: 'error', text: 'Invalid YouTube URL' });
-      return;
-    }
-    setSaving(true);
-    setMessage(null);
-    try {
-      const response = await fetch('/api/admin/add-video', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          workId: selectedWork.id,
-          youtubeUrl: `https://www.youtube.com/watch?v=${videoId}`,
-          youtubeVideoId: videoId,
-        }),
-      });
-      const data = await response.json();
-      if (data.success) {
-        setMessage({ type: 'success', text: `Video added for "${selectedWork.work_name}"!` });
-        setYoutubeUrl('');
-        setSelectedWork(null);
-        loadWorks();
-      } else {
-        setMessage({ type: 'error', text: data.error || 'Failed to save video' });
-      }
-    } catch (error) {
-      setMessage({ type: 'error', text: 'Failed to save video' });
-    } finally {
-      setSaving(false);
-    }
+    setMessage({
+      type: 'error',
+      text: 'Deprecated. Use /admin/video-manager to add homepage videos.',
+    });
   }
 
   const filteredWorks = works.filter(w => {

@@ -1,19 +1,27 @@
+// DEPRECATED — SESSION 113 V2
+//
+// This page calls /api/videos, /api/videos/upload, and /api/videos/save-metadata
+// — none of which exist. The canonical video-manager surface is
+// /admin/video-manager (wired into TOOLS, real backing route at
+// /api/admin/video-manager). Kept on disk so direct URLs don't 404 (hide-don't-
+// delete posture). All server fetches are short-circuited.
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 
 export default function VideosPage() {
-  const router = useRouter();
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [videos, setVideos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [stats, setStats] = useState({ videos: 0, students: 0, works: 0, teachers: 0 });
-  
+
   // Upload form state
   const [showUploadModal, setShowUploadModal] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [uploading, setUploading] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [uploadProgress, setUploadProgress] = useState(0);
   const [uploadForm, setUploadForm] = useState({
     title: '',
@@ -28,136 +36,22 @@ export default function VideosPage() {
     fetchStats();
   }, []);
 
+  // 🚨 DEPRECATED — endpoints below do not exist. Short-circuit instead of 404.
   const fetchVideos = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      
-      const res = await fetch("/api/videos");
-      
-      if (res.status === 401) {
-        router.push("/admin/login");
-        return;
-      }
-      
-      if (!res.ok) {
-        throw new Error("Failed to fetch videos");
-      }
-      
-      const data = await res.json();
-      setVideos(data.videos || []);
-    } catch (err) {
-      console.error("Error:", err);
-      setError("Failed to load videos. Please try again.");
-    } finally {
-      setLoading(false);
-    }
+    setVideos([]);
+    setError(
+      'This page is deprecated. Use /admin/video-manager to upload and manage homepage videos.'
+    );
+    setLoading(false);
   };
 
   const fetchStats = async () => {
-    try {
-      // Fetch real stats from APIs
-      const [videosRes, childrenRes, worksRes] = await Promise.all([
-        fetch("/api/videos").then(r => r.ok ? r.json() : { videos: [] }),
-        fetch("/api/whale/children").then(r => r.ok ? r.json() : { children: [] }),
-        fetch("/api/whale/curriculum/works").then(r => r.ok ? r.json() : { works: [] }),
-      ]);
-
-      setStats({
-        videos: videosRes.videos?.length || 0,
-        students: childrenRes.children?.length || childrenRes.data?.length || 0,
-        works: worksRes.works?.length || 257, // Default to seeded count
-        teachers: 3, // Could fetch from RBAC API
-      });
-    } catch (err) {
-      console.error("Error fetching stats:", err);
-    }
+    setStats({ videos: 0, students: 0, works: 0, teachers: 0 });
   };
 
   const handleUpload = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!uploadForm.videoFile || !uploadForm.title || !uploadForm.category) {
-      alert('Please fill in all required fields (title, category, and select a video file)');
-      return;
-    }
-
-    // Check file size (100MB limit)
-    const maxSize = 100 * 1024 * 1024;
-    if (uploadForm.videoFile.size > maxSize) {
-      alert(`File is too large. Maximum size is 100MB. Your file is ${(uploadForm.videoFile.size / 1024 / 1024).toFixed(2)}MB`);
-      return;
-    }
-
-    setUploading(true);
-    setUploadProgress(0);
-
-    try {
-      // Step 1: Upload video file
-      const formData = new FormData();
-      formData.append('video', uploadForm.videoFile);
-
-      setUploadProgress(25);
-      const uploadRes = await fetch('/api/videos/upload', {
-        method: 'POST',
-        body: formData,
-      });
-
-      if (!uploadRes.ok) {
-        const errorData = await uploadRes.json();
-        throw new Error(errorData.error || 'Upload failed');
-      }
-
-      const uploadData = await uploadRes.json();
-      setUploadProgress(50);
-
-      if (!uploadData.success || !uploadData.video) {
-        throw new Error('Upload succeeded but no video data returned');
-      }
-
-      // Step 2: Save metadata
-      setUploadProgress(75);
-      const metadataRes = await fetch('/api/videos/save-metadata', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          id: uploadData.video.id,
-          title: uploadForm.title,
-          category: uploadForm.category,
-          subcategory: uploadForm.subcategory || undefined,
-          week: uploadForm.week || undefined,
-          videoUrl: uploadData.video.videoUrl,
-        }),
-      });
-
-      if (!metadataRes.ok) {
-        const errorData = await metadataRes.json();
-        throw new Error(errorData.error || 'Failed to save metadata');
-      }
-
-      setUploadProgress(100);
-
-      // Success!
-      alert('Video uploaded successfully!');
-      setShowUploadModal(false);
-      setUploadForm({
-        title: '',
-        category: 'song-of-week',
-        subcategory: '',
-        week: '',
-        videoFile: null,
-      });
-      
-      // Refresh video list
-      await fetchVideos();
-      await fetchStats();
-    } catch (err) {
-      console.error('Upload error:', err);
-      alert(err instanceof Error ? err.message : 'Upload failed. Please try again.');
-    } finally {
-      setUploading(false);
-      setUploadProgress(0);
-    }
+    alert('Deprecated. Use /admin/video-manager to upload homepage videos.');
   };
 
   return (

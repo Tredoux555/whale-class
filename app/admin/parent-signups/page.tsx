@@ -1,3 +1,11 @@
+// DEPRECATED — SESSION 113 V2
+//
+// This page was orphaned: it called /api/admin/parent-signups, .../approve, and
+// .../reject, none of which exist in the API route tree. There is no nav link
+// pointing here. The Montree parent-invite flow is the canonical replacement
+// (see /montree/super-admin → Invites). Keeping the file so direct URLs don't
+// 404 (hide-don't-delete posture). All server fetches are short-circuited to
+// surface a clear "deprecated" message instead of silent 404s.
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -27,6 +35,7 @@ export default function ParentSignupsPage() {
   const [error, setError] = useState('');
   const [filter, setFilter] = useState<'all' | 'pending' | 'approved' | 'rejected'>('pending');
   const [searchTerm, setSearchTerm] = useState('');
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [processingId, setProcessingId] = useState<string | null>(null);
   const [rejectionNotes, setRejectionNotes] = useState<{ [key: string]: string }>({});
 
@@ -34,76 +43,24 @@ export default function ParentSignupsPage() {
     fetchSignups();
   }, [filter]);
 
+  // 🚨 DEPRECATED — endpoints below do not exist. Short-circuit instead of 404.
   const fetchSignups = async () => {
-    try {
-      const response = await fetch(`/api/admin/parent-signups?status=${filter}`);
-      if (!response.ok) throw new Error('Failed to fetch signups');
-      const data = await response.json();
-      setSignups(data.signups || []);
-    } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : String(err));
-    } finally {
-      setLoading(false);
-    }
+    setSignups([]);
+    setError(
+      'This admin tool is deprecated. The Montree parent-invite flow replaces ' +
+        'parent signups — visit /montree/super-admin instead.'
+    );
+    setLoading(false);
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleApprove = async (signupId: string) => {
-    if (!confirm('Approve this signup and create/update the child account?')) return;
-
-    setProcessingId(signupId);
-    try {
-      const response = await fetch('/api/admin/parent-signups/approve', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ signupId }),
-      });
-
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.error || 'Failed to approve signup');
-      }
-
-      await fetchSignups();
-      alert('Signup approved successfully! Child account created/updated.');
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : String(err);
-      alert(`Error: ${message}`);
-    } finally {
-      setProcessingId(null);
-    }
+    alert('Deprecated. Use the Montree parent-invite flow at /montree/super-admin.');
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleReject = async (signupId: string) => {
-    const notes = rejectionNotes[signupId] || '';
-    if (!notes.trim()) {
-      alert('Please provide a reason for rejection');
-      return;
-    }
-
-    if (!confirm('Reject this signup? The parent will be notified.')) return;
-
-    setProcessingId(signupId);
-    try {
-      const response = await fetch('/api/admin/parent-signups/reject', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ signupId, notes }),
-      });
-
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.error || 'Failed to reject signup');
-      }
-
-      await fetchSignups();
-      setRejectionNotes({ ...rejectionNotes, [signupId]: '' });
-      alert('Signup rejected successfully.');
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : String(err);
-      alert(`Error: ${message}`);
-    } finally {
-      setProcessingId(null);
-    }
+    alert('Deprecated. Use the Montree parent-invite flow at /montree/super-admin.');
   };
 
   const filteredSignups = signups.filter((signup) => {

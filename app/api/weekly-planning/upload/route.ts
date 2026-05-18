@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import Anthropic from '@anthropic-ai/sdk';
+import { WHALE_CLASSROOM_ID } from '@/lib/curriculum/classroom';
 
 
 // Railway/Next.js default serverless timeout is 15s. AI calls can
@@ -62,7 +63,9 @@ export async function POST(request: NextRequest) {
     const { data: curriculumWorks } = await supabase
       .from('montree_classroom_curriculum_works')
       .select('id, name, name_chinese, area_id, sequence')
-      .eq('classroom_id', 'bf0daf1b-cd46-4fba-9c2f-d3297bd11fc6')
+      // 🚨 SESSION 113 V2: was stale ghost 'bf0daf1b-...'; now imports canonical
+      // '51e7adb6-...' from lib/curriculum/classroom.ts (overridable via env).
+      .eq('classroom_id', WHALE_CLASSROOM_ID)
       .order('area_id')
       .order('sequence');
 

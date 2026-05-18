@@ -64,19 +64,13 @@ export default function AdminDashboard() {
   const [greeting, setGreeting] = useState('Good morning');
 
   useEffect(() => {
-    checkAuth();
     updateGreeting();
     fetchStats();
   }, []);
 
-  const checkAuth = async () => {
-    try {
-      const response = await fetch("/api/videos");
-      if (response.status === 401) router.push("/admin/login");
-    } catch {
-      router.push("/admin/login");
-    }
-  };
+  // 🚨 SESSION 113 V2: removed dead checkAuth() — it called /api/videos (which
+  //    doesn't exist; only /api/public/videos does) and was therefore a no-op.
+  //    Middleware (verifyAdminToken on /admin/*) is the real auth gate.
 
   const updateGreeting = () => {
     const hour = new Date().getHours();

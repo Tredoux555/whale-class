@@ -1,6 +1,14 @@
 // =====================================================
 // ADMIN: Video Management Dashboard
 // =====================================================
+//
+// DEPRECATED — SESSION 113 V2
+// This page calls /api/admin/videos which does not exist. The canonical
+// video-manager surface is /admin/video-manager (wired into TOOLS). This
+// page is only referenced from public/video-discovery-demo.html (a demo
+// page, not a live nav). Kept on disk so direct URLs don't 404 (hide-don't-
+// delete posture). Fetches short-circuited to clean empty state.
+// =====================================================
 'use client';
 
 import React, { useEffect, useState } from 'react';
@@ -32,52 +40,20 @@ export default function VideoManagementPage() {
     loadVideos();
   }, [filter]);
 
+  // 🚨 DEPRECATED — /api/admin/videos does not exist. Short-circuit instead of 404.
   async function loadVideos() {
-    setLoading(true);
-    try {
-      const response = await fetch(`/api/admin/videos?status=${filter}`);
-      const data = await response.json();
-      
-      if (data.success) {
-        setVideos(data.videos || []);
-      }
-    } catch (error) {
-      console.error('Error loading videos:', error);
-    } finally {
-      setLoading(false);
-    }
+    setVideos([]);
+    setLoading(false);
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async function approveVideo(videoId: string) {
-    try {
-      const response = await fetch('/api/admin/videos', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ videoId, isApproved: true }),
-      });
-
-      if (response.ok) {
-        loadVideos();
-      }
-    } catch (error) {
-      console.error('Error approving video:', error);
-    }
+    alert('Deprecated. Use /admin/video-manager to manage homepage videos.');
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async function rejectVideo(videoId: string) {
-    try {
-      const response = await fetch('/api/admin/videos', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ videoId, isApproved: false, isActive: false }),
-      });
-
-      if (response.ok) {
-        loadVideos();
-      }
-    } catch (error) {
-      console.error('Error rejecting video:', error);
-    }
+    alert('Deprecated. Use /admin/video-manager to manage homepage videos.');
   }
 
   async function runDiscovery() {

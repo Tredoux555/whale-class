@@ -353,7 +353,17 @@ export async function POST(request: NextRequest) {
   let videoUrl: string | null = null;
   let provider: 'jitsi' | 'agora' = 'jitsi';
   let recordingEnabled = false;
-  if (body.video_call === true) {
+  // 🚨 Default video_call to TRUE when a video flag is on. Until 2026-05-18,
+  // the parent had to tick a "video call" checkbox on the booking modal that
+  // they could easily miss — and then their booking arrived with no video
+  // room and no way to join. A meeting in a school that has video calling
+  // enabled should be a video meeting by default; in-person is the exception
+  // and can always happen alongside. body.video_call === false still respects
+  // an explicit opt-out.
+  const videoFlagOn = agoraEnabledFlag || videoCallsEnabledFlag;
+  const wantsVideo = body.video_call === true
+    || (body.video_call !== false && videoFlagOn);
+  if (wantsVideo) {
     if (agoraEnabledFlag) {
       provider = 'agora';
       // No video_url for Agora — UI computes from /agora-token endpoint.

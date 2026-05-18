@@ -384,7 +384,13 @@ export async function POST(request: NextRequest) {
   let videoUrl: string | null = null;
   let provider: 'jitsi' | 'agora' = 'jitsi';
   let recordingEnabled = false;
-  if (kind === 'video_call') {
+  // 🚨 Default to video when a video flag is on. Staff can pick 'parent_meeting'
+  // explicitly for in-person; otherwise 'parent_meeting' falls through to video
+  // when Agora/Jitsi is enabled. Matches the parent POST default — see comment
+  // there for the full reasoning.
+  const videoFlagOn = agoraEnabledFlag || videoCallsEnabledFlag;
+  const provisionVideo = kind === 'video_call' || (kind !== 'parent_meeting' && videoFlagOn);
+  if (provisionVideo) {
     if (agoraEnabledFlag) {
       provider = 'agora';
       // Recording defaults off on staff-initiated; the staff can flip it
