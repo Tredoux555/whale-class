@@ -42,7 +42,11 @@ import {
   Square,
   Loader2,
   AlertCircle,
+  Signal,
+  Clipboard,
+  ClipboardCheck,
 } from 'lucide-react';
+import { agoraLog, copyAgoraLogs, clearAgoraLogs, getAgoraLogs } from '@/lib/montree/appointments/agora/debug-logger';
 
 // Type aliases for the lazily-imported SDK. We avoid hard import to keep
 // the chunk out of the bundle until first use.
@@ -160,6 +164,18 @@ export default function AgoraVideoCall(props: AgoraVideoCallProps) {
   // Server has its own idempotency check; this is the UX-side belt.
   const [recordingRequestInFlight, setRecordingRequestInFlight] = useState(false);
 
+  // ── Connection quality + reconnect UX state ────────────────────────
+  // Quality scale per Agora docs:
+  //   0=unknown, 1=excellent, 2=good, 3=poor, 4=bad, 5=very bad, 6=down
+  // We collapse to 3 buckets for the UI: good / fair / poor.
+  const [netQuality, setNetQuality] = useState<'good' | 'fair' | 'poor' | 'unknown'>('unknown');
+  // 'connected' is the happy path. 'reconnecting' surfaces the amber toast.
+  // 'just-reconnected' briefly shows a green "Back online" pip then fades.
+  const [connStatus, setConnStatus] = useState<'connecting' | 'connected' | 'reconnecting' | 'just-reconnected' | 'failed'>('connecting');
+  // Debug panel reveal — Cmd+Shift+D (or long-press the network indicator)
+  const [debugOpen, setDebugOpen] = useState(false);
+  const [copyState, setCopyState] = useState<'idle' | 'copied'>('idle');
+
   const clientRef = useRef<IAgoraRTCClient | null>(null);
   const micTrackRef = useRef<IMicTrack | null>(null);
   const camTrackRef = useRef<ICamTrack | null>(null);
@@ -235,6 +251,7 @@ export default function AgoraVideoCall(props: AgoraVideoCallProps) {
         });
 
         client.on('token-privilege-will-expire', async () => {
+          agoraLog('warn', 'token.will-expire', {});
           // Refresh token before Agora kicks us out.
           try {
             const refreshRes = await fetch(
@@ -244,16 +261,76 @@ export default function AgoraVideoCall(props: AgoraVideoCallProps) {
             if (refreshRes.ok) {
               const fresh = (await refreshRes.json()) as { token: string };
               await client.renewToken(fresh.token);
+              agoraLog('info', 'token.renew.success', {});
+            } else {
+              agoraLog('error', 'token.renew.http-fail', { status: refreshRes.status });
             }
           } catch (err) {
             console.error('[agora] token renew failed', err);
+            agoraLog('error', 'token.renew.exception', { message: (err as Error).message });
           }
+        });
+
+        // ── Connection state — drives the Reconnecting toast ─────────
+        client.on('connection-state-change', (...args: unknown[]) => {
+          const curState = args[0] as string;
+          const prevState = args[1] as string;
+          const reason = args[2] as string | undefined;
+          agoraLog('info', 'connection.state', { from: prevState, to: curState, reason });
+
+          if (curState === 'RECONNECTING') {
+            setConnStatus('reconnecting');
+          } else if (curState === 'CONNECTED') {
+            // Only show "Back online" pip if we were JUST reconnecting (not on
+            // first-time connect — that's covered by the join splash).
+            if (prevState === 'RECONNECTING') {
+              setConnStatus('just-reconnected');
+              window.setTimeout(() => {
+                setConnStatus((s) => (s === 'just-reconnected' ? 'connected' : s));
+              }, 2400);
+            } else {
+              setConnStatus('connected');
+            }
+          } else if (curState === 'DISCONNECTED' || curState === 'FAILED') {
+            setConnStatus('failed');
+          } else if (curState === 'CONNECTING') {
+            setConnStatus('connecting');
+          }
+        });
+
+        // ── Network quality — drives the small Signal indicator ──────
+        client.on('network-quality', (...args: unknown[]) => {
+          const stats = args[0] as { uplinkNetworkQuality: number; downlinkNetworkQuality: number };
+          // Worse of the two directions dictates what we show.
+          const worst = Math.max(stats.uplinkNetworkQuality, stats.downlinkNetworkQuality);
+          let bucket: 'good' | 'fair' | 'poor' | 'unknown';
+          if (worst === 0) bucket = 'unknown';
+          else if (worst <= 2) bucket = 'good';
+          else if (worst <= 4) bucket = 'fair';
+          else bucket = 'poor';
+          // Only re-render + log on bucket changes — quality events fire
+          // every ~2s and would spam the buffer otherwise.
+          setNetQuality((prev) => {
+            if (prev !== bucket) {
+              agoraLog('info', 'network.quality', { bucket, raw: { up: stats.uplinkNetworkQuality, down: stats.downlinkNetworkQuality } });
+            }
+            return bucket;
+          });
+        });
+
+        // ── Exception channel — Agora SDK errors that don't trigger
+        //    connection-state changes still come through here.
+        client.on('exception', (...args: unknown[]) => {
+          const evt = args[0] as { code: number; msg: string; uid?: number };
+          agoraLog('warn', 'sdk.exception', { code: evt.code, msg: evt.msg, uid: evt.uid });
         });
 
         // 4. Join + publish.
         setState({ phase: 'joining' });
+        agoraLog('info', 'join.start', { channel: tokenData.channel, uid: tokenData.uid });
         await client.join(tokenData.appId, tokenData.channel, tokenData.token, tokenData.uid);
         if (cancelled) return;
+        agoraLog('info', 'join.success', {});
 
         // Request cam + mic. Permissions prompt fires here.
         const [mic, cam] = await Promise.all([
@@ -267,17 +344,21 @@ export default function AgoraVideoCall(props: AgoraVideoCallProps) {
         }
         micTrackRef.current = mic;
         camTrackRef.current = cam;
+        agoraLog('info', 'tracks.created', {});
 
         if (localVideoElRef.current) {
           cam.play(localVideoElRef.current);
         }
         await client.publish([mic, cam]);
+        agoraLog('info', 'publish.success', {});
 
         if (cancelled) return;
         setState({ phase: 'in-call' });
+        setConnStatus('connected');
       } catch (err) {
         if (cancelled) return;
         const msg = (err as Error).message || 'Unknown error';
+        agoraLog('error', 'init.failed', { message: msg });
         // Permission denied gets a friendlier message.
         if (/Permission|NotAllowed|denied/i.test(msg)) {
           setState({
@@ -403,6 +484,19 @@ export default function AgoraVideoCall(props: AgoraVideoCallProps) {
     }
   }, [props.appointmentId, recordingRequestInFlight]);
 
+  // ── Keyboard shortcut for the debug panel: Cmd/Ctrl + Shift + D ────
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const mod = e.metaKey || e.ctrlKey;
+      if (mod && e.shiftKey && e.key.toLowerCase() === 'd') {
+        e.preventDefault();
+        setDebugOpen((v) => !v);
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, []);
+
   // ── Render ─────────────────────────────────────────────────────────
   if (state.phase === 'error') {
     return (
@@ -413,16 +507,23 @@ export default function AgoraVideoCall(props: AgoraVideoCallProps) {
   return (
     <div style={{ position: 'fixed', inset: 0, background: T.bg, zIndex: 9999, display: 'flex', flexDirection: 'column', fontFamily: T.sans }}>
       {/* Top bar */}
-      <div style={{ padding: '12px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: T.cardBorder }}>
-        <div style={{ fontFamily: T.serif, fontSize: 17, color: T.textPrimary }}>
+      <div style={{ padding: '12px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: T.cardBorder, gap: 12 }}>
+        <div style={{ fontFamily: T.serif, fontSize: 17, color: T.textPrimary, flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
           Meeting with <span style={{ color: T.emerald, fontWeight: 600 }}>{props.remoteDisplayName}</span>
         </div>
-        {isRecording && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 12px', borderRadius: 999, background: 'rgba(239,68,68,0.15)', border: '1px solid rgba(239,68,68,0.45)', color: T.red, fontSize: 12, fontWeight: 600 }}>
-            <Circle size={10} fill={T.redSolid} color={T.redSolid} /> Recording
-          </div>
-        )}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+          {/* Network quality pill. Long-press / right-click opens debug panel. */}
+          <NetworkPill quality={netQuality} onLongPress={() => setDebugOpen((v) => !v)} />
+          {isRecording && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 12px', borderRadius: 999, background: 'rgba(239,68,68,0.15)', border: '1px solid rgba(239,68,68,0.45)', color: T.red, fontSize: 12, fontWeight: 600 }}>
+              <Circle size={10} fill={T.redSolid} color={T.redSolid} /> Recording
+            </div>
+          )}
+        </div>
       </div>
+
+      {/* Connection-state toast (top-center, non-blocking). */}
+      <ConnectionToast status={connStatus} />
 
       {/* Consent banner — only visible while recording */}
       {isRecording && (
@@ -489,6 +590,25 @@ export default function AgoraVideoCall(props: AgoraVideoCallProps) {
           end
         />
       </div>
+
+      {/* Debug panel — toggled via Cmd/Ctrl+Shift+D or long-press the network pill */}
+      {debugOpen && (
+        <DebugPanel
+          appointmentId={props.appointmentId}
+          netQuality={netQuality}
+          connStatus={connStatus}
+          copyState={copyState}
+          onCopy={async () => {
+            const ok = await copyAgoraLogs();
+            if (ok) {
+              setCopyState('copied');
+              window.setTimeout(() => setCopyState('idle'), 1500);
+            }
+          }}
+          onClear={() => clearAgoraLogs()}
+          onClose={() => setDebugOpen(false)}
+        />
+      )}
 
       {recordingError && (
         <div style={{ padding: '10px 16px', background: 'rgba(239,68,68,0.12)', color: T.red, fontSize: 12, textAlign: 'center', borderTop: '1px solid rgba(239,68,68,0.25)' }}>
@@ -595,6 +715,209 @@ function ErrorPanel({ message, onClose }: { message: string; onClose: () => void
           Close
         </button>
       </div>
+    </div>
+  );
+}
+
+// ── NetworkPill ──────────────────────────────────────────────────────
+// Small Signal icon + tooltip. Three buckets: good (emerald), fair (gold),
+// poor (red). Long-press (mobile) or right-click (desktop) opens the
+// debug panel — useful in the field when something feels off.
+function NetworkPill({ quality, onLongPress }: { quality: 'good' | 'fair' | 'poor' | 'unknown'; onLongPress: () => void }) {
+  const color =
+    quality === 'good' ? T.emerald :
+    quality === 'fair' ? T.gold :
+    quality === 'poor' ? T.red :
+    'rgba(255,255,255,0.45)';
+  const label =
+    quality === 'good' ? 'Strong connection' :
+    quality === 'fair' ? 'Connection a bit slow' :
+    quality === 'poor' ? 'Connection unstable' :
+    'Checking connection…';
+
+  const pressTimer = useRef<number | null>(null);
+  const start = () => {
+    pressTimer.current = window.setTimeout(() => onLongPress(), 600);
+  };
+  const cancel = () => {
+    if (pressTimer.current) {
+      window.clearTimeout(pressTimer.current);
+      pressTimer.current = null;
+    }
+  };
+  return (
+    <div
+      title={label + ' (long-press for debug)'}
+      onMouseDown={start}
+      onMouseUp={cancel}
+      onMouseLeave={cancel}
+      onTouchStart={start}
+      onTouchEnd={cancel}
+      onContextMenu={(e) => { e.preventDefault(); onLongPress(); }}
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: 6,
+        padding: '6px 10px',
+        borderRadius: 999,
+        background: 'rgba(255,255,255,0.06)',
+        border: '1px solid rgba(255,255,255,0.12)',
+        color,
+        fontSize: 11,
+        fontWeight: 600,
+        userSelect: 'none',
+        cursor: 'pointer',
+      }}
+    >
+      <Signal size={12} strokeWidth={2} />
+      <span style={{ textTransform: 'capitalize' }}>
+        {quality === 'unknown' ? '—' : quality}
+      </span>
+    </div>
+  );
+}
+
+// ── ConnectionToast ──────────────────────────────────────────────────
+// Top-center floating banner that shows during RECONNECTING and briefly
+// after recovery. Non-blocking. Auto-hides on connected steady state.
+function ConnectionToast({ status }: { status: 'connecting' | 'connected' | 'reconnecting' | 'just-reconnected' | 'failed' }) {
+  if (status === 'connecting' || status === 'connected') return null;
+
+  const palette =
+    status === 'reconnecting' ? { bg: 'rgba(232,201,106,0.18)', border: 'rgba(232,201,106,0.55)', fg: '#E8C96A', text: 'Reconnecting…' } :
+    status === 'just-reconnected' ? { bg: 'rgba(52,211,153,0.18)', border: 'rgba(52,211,153,0.55)', fg: '#34d399', text: 'Back online' } :
+    { bg: 'rgba(239,68,68,0.18)', border: 'rgba(239,68,68,0.55)', fg: '#fca5a5', text: 'Connection lost' };
+
+  return (
+    <div
+      role="status"
+      aria-live="polite"
+      style={{
+        position: 'fixed',
+        top: 'calc(env(safe-area-inset-top) + 70px)',
+        left: '50%',
+        transform: 'translateX(-50%)',
+        zIndex: 10000,
+        padding: '8px 16px',
+        borderRadius: 999,
+        background: palette.bg,
+        border: `1px solid ${palette.border}`,
+        color: palette.fg,
+        fontSize: 13,
+        fontWeight: 600,
+        fontFamily: T.sans,
+        boxShadow: '0 8px 24px rgba(0,0,0,0.4)',
+        backdropFilter: 'blur(8px)',
+        display: 'flex',
+        alignItems: 'center',
+        gap: 8,
+        pointerEvents: 'none',
+      }}
+    >
+      {status === 'reconnecting' && <Loader2 size={14} style={{ animation: 'spin 1.4s linear infinite' }} />}
+      {palette.text}
+    </div>
+  );
+}
+
+// ── DebugPanel ───────────────────────────────────────────────────────
+// Slide-up overlay listing the last 500 logged Agora events. Copy-as-JSON
+// button so the user can paste the timeline straight back to me when
+// debugging future calls.
+function DebugPanel({
+  appointmentId,
+  netQuality,
+  connStatus,
+  copyState,
+  onCopy,
+  onClear,
+  onClose,
+}: {
+  appointmentId: string;
+  netQuality: 'good' | 'fair' | 'poor' | 'unknown';
+  connStatus: 'connecting' | 'connected' | 'reconnecting' | 'just-reconnected' | 'failed';
+  copyState: 'idle' | 'copied';
+  onCopy: () => void;
+  onClear: () => void;
+  onClose: () => void;
+}) {
+  return (
+    <div style={{ position: 'fixed', inset: 0, zIndex: 10001, display: 'flex', alignItems: 'flex-end', justifyContent: 'center', padding: 16, fontFamily: T.sans }}>
+      <div
+        onClick={onClose}
+        style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.5)' }}
+      />
+      <div style={{ position: 'relative', maxWidth: 680, width: '100%', maxHeight: '70vh', display: 'flex', flexDirection: 'column', background: T.cardBg, border: T.cardBorder, borderRadius: 14, overflow: 'hidden' }}>
+        <div style={{ padding: '12px 16px', borderBottom: T.cardBorder, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+          <div style={{ fontFamily: T.serif, fontSize: 15, color: T.textPrimary }}>
+            Call debug — <span style={{ color: T.textSecondary, fontFamily: T.sans, fontSize: 11 }}>appt {appointmentId.slice(0, 8)}…</span>
+          </div>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button
+              type="button"
+              onClick={onCopy}
+              style={{ padding: '6px 12px', borderRadius: 8, background: copyState === 'copied' ? 'rgba(52,211,153,0.20)' : 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.18)', color: copyState === 'copied' ? T.emerald : T.textPrimary, fontSize: 12, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}
+              aria-label="Copy debug log"
+            >
+              {copyState === 'copied' ? <ClipboardCheck size={14} /> : <Clipboard size={14} />}
+              {copyState === 'copied' ? 'Copied' : 'Copy log'}
+            </button>
+            <button
+              type="button"
+              onClick={onClear}
+              style={{ padding: '6px 12px', borderRadius: 8, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.12)', color: T.textSecondary, fontSize: 12, fontWeight: 600, cursor: 'pointer' }}
+            >
+              Clear
+            </button>
+            <button
+              type="button"
+              onClick={onClose}
+              style={{ padding: '6px 12px', borderRadius: 8, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.12)', color: T.textSecondary, fontSize: 12, fontWeight: 600, cursor: 'pointer' }}
+            >
+              Close
+            </button>
+          </div>
+        </div>
+        <div style={{ padding: '8px 16px', display: 'flex', gap: 12, fontSize: 11, color: T.textSecondary, borderBottom: T.cardBorder, flexWrap: 'wrap' }}>
+          <div>Conn: <span style={{ color: T.textPrimary, fontWeight: 600 }}>{connStatus}</span></div>
+          <div>Quality: <span style={{ color: T.textPrimary, fontWeight: 600 }}>{netQuality}</span></div>
+          <div>Region: <span style={{ color: T.textPrimary, fontWeight: 600 }}>{AGORA_AREA}</span></div>
+        </div>
+        <div style={{ flex: 1, overflow: 'auto', padding: 12, fontFamily: 'ui-monospace, SF Mono, Menlo, monospace', fontSize: 11, lineHeight: 1.55, color: T.textSecondary }}>
+          <DebugLogList />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function DebugLogList() {
+  // Re-read on every render — cheap, the buffer is in-memory and capped at 500.
+  // We also rebuild on a 1s tick so the user sees live events while open.
+  const [, force] = useState(0);
+  useEffect(() => {
+    const id = window.setInterval(() => force((v) => v + 1), 1000);
+    return () => window.clearInterval(id);
+  }, []);
+  const entries = getAgoraLogs();
+  if (entries.length === 0) {
+    return <div style={{ color: T.textSecondary, fontStyle: 'italic' }}>No events yet — join a call to populate.</div>;
+  }
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+      {entries.slice().reverse().map((e, i) => {
+        const color = e.level === 'error' ? '#fca5a5' : e.level === 'warn' ? '#fbbf24' : T.textSecondary;
+        const time = new Date(e.ts).toISOString().slice(11, 23);
+        return (
+          <div key={i} style={{ color }}>
+            <span style={{ opacity: 0.55 }}>{time}</span>{' '}
+            <span style={{ color: T.textPrimary, fontWeight: 600 }}>{e.event}</span>
+            {e.data && Object.keys(e.data).length > 0 && (
+              <span> {JSON.stringify(e.data)}</span>
+            )}
+          </div>
+        );
+      })}
     </div>
   );
 }
