@@ -200,6 +200,63 @@ Wave 1 sends bounced for these addresses. None of these are flagged as `bounced`
 
 ---
 
+## RECENT STATUS (May 18, 2026)
+
+### 🔥 Session 117 (continued, deep parent audit) — Parent flow rebuilt + agent Accept one-shot + Messages promoted + photo-bank public (May 18, 2026, into the small hours)
+
+**13 commits pushed to main this run.** Range `3345a95c` → `03622bdf`. The whole burn was a deep triple audit of three real-user-reported symptoms ("Amy parents logged in but no dice on this end" / "past reports are not found" / "where is my ability to send parents messages? I feel this should have its own tab") which surfaced four distinct bugs across the parent identity flow. Three were closed in code; one is a documented carry-over.
+
+**🚨 Canonical resume doc:** `docs/handoffs/SESSION_117_PARENT_AUDIT_HANDOFF.md` — full 13-commit log + path tracing + verification checklist + carry-overs.
+
+**The 4 bugs + fixes:**
+
+| # | Symptom | Root cause | Fix |
+|---|---|---|---|
+| 1 | Amy missing from staff appointment-invite picker after invite redemption | Login-select calls `/api/montree/auth/unified` (NOT `/parent/auth/access-code`). Its `tryParentLogin()` minted a JWT with `{ childId, classroomId, inviteId }` only — no `parentId`. Picker, accept-invite API, and every first-class parent route gate on `session.parentId` and 403 without it. | `0a0470ba` patches `/parent/auth/access-code` (the dedicated parent endpoint). `7b44b961` patches `/auth/unified` (the actual login-select path — initial fix missed this). Both endpoints now find-or-create a lightweight `montree_parents` row + `montree_parent_children` link + stamp `parentId` into the JWT. Idempotent via UNIQUE(email, school_id). Non-fatal failure mode (parent still gets to dashboard with invite-only state). |
+| 2 | Past reports listed but body showed "No activities recorded this week" | Earlier in this same session I widened the report filter to `or('status.eq.sent,generated_at.not.is.null')` thinking it would surface "legacy reports with `generated_at` set but `status='draft'`". Real production state: Whale Class has 6 sent reports vs 84 drafts. The weekly-wrap pipeline auto-upserts a draft every week per child with `generated_at` set, even when there are zero confirmed photos. Those empty drafts were surfacing as past reports. | `03622bdf` reverts BOTH endpoints (`/parent/reports` list + `/parent/report/[reportId]` detail) to `status='sent'` only. Drafts are private to the teacher until they explicitly hit "Send to parent" which calls `/api/montree/reports/send` and flips status='sent'. |
+| 3 | "Where is my ability to send parents messages? I feel this should have its own tab." | Teacher messaging surface lived only inside the 3-dot More menu — easy to miss. | `03622bdf` promotes Messages from More menu to a first-class `MessageSquare` `IconBtn` in the DashboardHeader right-cluster, between Camera and Mic. Same destination as the More-menu entry, which stays for the labelled affordance. No unread badge in this pass (deferred). |
+| 4 | "Regardless of what parent I log in as the screen always comes back as Austin" — cross-session cache leak | Every `/api/montree/parent/*` endpoint had `Cache-Control: private, max-age=60-120, stale-while-revalidate=...` set without the cache key including the session cookie. Browser + CDN cached the first parent's body and served it to whoever logged in next. | `f18f09bf` flips 7 routes (`/children`, `/reports`, `/stats`, `/photos`, `/milestones`, `/dashboard`, `/announcements`) to `Cache-Control: private, no-store`. |
+
+**Other work this run (non-parent-audit):**
+
+- **`3345a95c` Staff-initiated appointment invitations** — `POST /api/montree/appointments` now accepts staff caller (teacher/principal) + parent_id + type + slot → creates pending invitation. Parent gets accept/decline buttons on `/montree/parent/appointments`. New `GET /api/montree/appointments/parents` endpoint surfaces child→parents bundles for the SetAppointmentModal picker (teacher scope: classroom; principal scope: school-wide; returns `caller_role` so modal can route empty-state CTA).
+- **`1ad53516` + `029bba0d` + `6bbad468` Invite parents UX rebuild** — renamed "Parent codes" → "Invite parents" in 3-dot menu. Always-visible "Generate all N codes" bulk button (count-aware, shows "All N codes ready" when 0 missing). Client-side QR generation via `qrcode` npm package (CSP-safe, replaces `api.qrserver.com`). "Welcome message" button replaces email mailto — copies a 3-line template with deep-link URL that preloads the code on login.
+- **`d539bb13` Sprout logo restored** — `MontreeLogo` (sprout SVG) reinstated across landing, become-an-agent, principal setup/register, login-select, agent nav. Gold-M (`MontreeMark`) had displaced it.
+- **`e47053bc` + `1a0d4af4` Agent Accept one-shot endpoint** — `POST /super-admin/agent-applications/[id]/accept` replaces the prior "Generate code" friction. Find-or-create agent + issue 6-char login code + mark application 'sent' in one shot. Returns plaintext code + login_url + welcome message. Modal shows three Copy buttons (code, URL, welcome message). **Re-click safety** (`1a0d4af4`): refuses to mutate rows that aren't `status='agent_applied'` so a second click can't rotate the code that's already been shared. Plaintext returned EXACTLY once.
+- **`376b844b` Photo bank: drop auth gate** — user-flagged "Anyone should be able to drop anything in here." Removed `verifySchoolRequest` gate. Added IP rate limit (5 uploads / 15 min) via `checkRateLimit` to prevent abuse. Photo bank is intentionally a community contribution surface, not a per-school store.
+
+**🚨 Architectural rules locked in (#183-187):**
+
+183. **Parent JWT must carry `parentId` for any first-class identity feature.** Provisioning happens on first invite redemption. Both `/auth/unified` AND `/parent/auth/access-code` MUST provision identically. If you add a third parent-login surface, audit this contract. Presence of `parentId` is the canonical gate for picker, appointment-accept, messaging, and any future first-class parent route.
+
+184. **Parent-facing report filters are `status='sent'` only.** Drafts are private to the teacher until explicit Send. The weekly-wrap pipeline creates drafts with `generated_at` set as part of normal operation. The list endpoint and the detail endpoint MUST stay in lockstep. NEVER widen to `or('status.eq.sent,generated_at.not.is.null')` — that's the footgun this session caught.
+
+185. **Cache-Control on session-scoped endpoints is `private, no-store` unless cache key safety is explicitly proven.** Don't ship `private, max-age=N` on any route returning per-user data without auditing cache-key composition (Vary headers, cookie inclusion). The cross-session leak this session is the canonical example of the failure mode.
+
+186. **`montree_outreach_contacts` re-click safety on Accept.** Refuse to mutate rows that aren't in the expected source status (e.g. already `'sent'`) so a second click can't rotate an already-issued plaintext code.
+
+187. **Photo bank uploads are public + IP rate-limited.** No auth gate. 5 uploads / 15 min via `checkRateLimit`. This is intentional posture — community contribution surface, not per-school store.
+
+**Verification pending on production (after Railway settles):**
+
+1. Amy parent flow — log out → login-select with her code → land on dashboard → as teacher open appointment-invite picker → Amy should appear under her child (was missing pre-fix).
+2. Past reports — open parent dashboard for any child. Empty list if the teacher never hit Send (correct). Drafts must not surface.
+3. Cross-session cache — log in as parent A → log out → log in as parent B in same browser → confirm B's data, not A's.
+4. Messages icon — teacher header should show chat-bubble between Camera and Mic.
+5. Agent Accept — fresh application → Accept → modal shows code + URL + welcome → re-click Accept → refuses (no second rotation).
+6. Photo bank — incognito JPEG upload should succeed → 6th upload in 15 min → 429.
+
+**Carry-overs:**
+- **Existing parent JWTs minted before `7b44b961` don't carry `parentId`.** They keep working for everything they worked for before but won't reach picker/appointment-invite features until the parent re-logs-in. Communicate to teachers if any parent reports as missing.
+- **Weekly-wrap empty-skeleton question** — many of the 84 drafts have empty `content.works` because the pipeline creates them whether or not there's confirmed work that week. Worth a future audit: should weekly-wrap SKIP children with zero confirmed photos, instead of creating an empty draft? Currently the sent-only filter masks this, but it's still ledger noise.
+- **Unread badge on Messages icon** — deferred. Would need polling cost analysis.
+- **Stage A Agora activation** (carry-over from main Session 117 handoff — migration 223 + flag flip + 2-device test).
+- **Appointments i18n sweep** (carry-over).
+- **Mira → Tracy tool extension** (Session 108 plan, Phase 4.8 — super-admin scope).
+- **Unrelated working-tree edits** — `app/admin/*.tsx` + `lib/curriculum/classroom.ts` + others remain unstaged from a prior Whale-Class admin audit. Do NOT mix them into the next commit batch.
+
+---
+
 ## RECENT STATUS (May 17, 2026)
 
 ### 🔥 Session 117 (continued, late evening) — Mira messaging tools SHIPPED (Phase 4.7 carry-over closed)
