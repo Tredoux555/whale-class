@@ -71,9 +71,9 @@ const EMPTY_CONTEXT: IdentificationContext = {
  */
 export async function loadIdentificationContext(
   supabase: SupabaseClient,
-  opts: { classroomId: string | null }
+  opts: { classroomId: string | null; useV2?: boolean }
 ): Promise<IdentificationContext> {
-  const { classroomId } = opts;
+  const { classroomId, useV2 = false } = opts;
   if (!classroomId) return EMPTY_CONTEXT;
 
   const [correctionsResult, visualMemoryResult] = await Promise.allSettled([
@@ -85,7 +85,7 @@ export async function loadIdentificationContext(
       .limit(50),
     supabase
       .from('montree_visual_memory')
-      .select('work_name, area, visual_description, is_custom, key_materials, negative_descriptions, source, description_confidence')
+      .select('work_name, area, visual_description, is_custom, key_materials, negative_descriptions, source, description_confidence, updated_at')
       .eq('classroom_id', classroomId)
       .order('description_confidence', { ascending: false })
       .order('updated_at', { ascending: false })
@@ -126,9 +126,39 @@ export async function loadIdentificationContext(
   if (visualMemoryResult.status === 'fulfilled') {
     const memories = visualMemoryResult.value?.data;
     if (memories && memories.length > 0) {
+      // V2 (Session 117+): age-decay re-sort BEFORE filter+format so the most
+      // durable signal wins the budget instead of the most-recently-touched.
+      // weighted_score = description_confidence * exp(-days_since_update / 90)
+      // A 30d-old high-confidence entry beats a 1d-old medium-confidence one,
+      // killing the "recently-corrected work biases all future matches" pattern.
+      type VisualMemRow = {
+        work_name: string;
+        area: string | null;
+        visual_description: string;
+        is_custom: boolean;
+        key_materials: string[] | null;
+        negative_descriptions: string[] | null;
+        source: string;
+        description_confidence: number | null;
+        updated_at: string | null;
+      };
+      const ranked: VisualMemRow[] = (memories as VisualMemRow[]).slice();
+      if (useV2) {
+        const now = Date.now();
+        const scoreOf = (m: VisualMemRow): number => {
+          const conf = m.description_confidence || 0;
+          if (!m.updated_at) return conf; // null updated_at = treat as no decay
+          const ts = Date.parse(m.updated_at);
+          if (Number.isNaN(ts)) return conf;
+          const daysOld = Math.max(0, (now - ts) / (1000 * 60 * 60 * 24));
+          return conf * Math.exp(-daysOld / 90);
+        };
+        ranked.sort((a, b) => scoreOf(b) - scoreOf(a));
+      }
+
       const verifiedEntries: string[] = [];
 
-      for (const m of memories) {
+      for (const m of ranked) {
         // Relaxed filter (Apr 8): accept teacher_enrichment as a valid source
         // (classroom-setup writes this), drop confidence bar from 0.9 → 0.75.
         // Previously the strict filter was starving the Gate A trust check —
@@ -159,24 +189,26 @@ export async function loadIdentificationContext(
       }
 
       if (verifiedEntries.length > 0) {
-        // AUDIT FIX (Apr 30, 2026): adaptive cap.
+        // V2 (Session 117+): reduced budget from 50KB/100 → 20KB/40 because the
+        // Apr 30 expansion drowned Haiku's attention and the user reported a
+        // regression ("recently-corrected work biases all future matches" +
+        // worksheet-overmatch). V1 budget retained as the fallback.
+        //
+        // V1 (Apr 30, 2026): adaptive cap.
         // Old: hard slice at 50 entries. Whale Class has 65+ eligible entries
         // and 15 high-quality ones were silently dropped every Pass 2 call.
         // New: pack as many entries as fit in a 50KB char budget (~12K tokens),
         // up to a 100-entry sanity ceiling. Entries are already sorted by
         // (description_confidence DESC, updated_at DESC) by the SELECT, so
         // we naturally fill the budget with the highest-quality recent entries.
-        // For small classrooms (<50 entries), nothing changes — they all fit.
-        // For large classrooms (Whale, future schools), more signal reaches Pass 2.
-        // visualMemoryWorkNames is populated ONLY for works actually in the prompt
-        // so Gate A trust ("hasVisualMemoryForMatch") stays logically consistent.
-        const VM_CHAR_BUDGET = 50_000;   // ~12.5K tokens
-        const VM_HARD_CEILING = 100;
+        const VM_CHAR_BUDGET = useV2 ? 20_000 : 50_000; // ~5K vs ~12.5K tokens
+        const VM_HARD_CEILING = useV2 ? 40 : 100;
+        const VM_MIN_FLOOR = useV2 ? 15 : 30; // budget can only stop AFTER N entries packed
         const capped: string[] = [];
         let runningChars = 0;
         for (const entry of verifiedEntries) {
           if (capped.length >= VM_HARD_CEILING) break;
-          if (runningChars + entry.length > VM_CHAR_BUDGET && capped.length >= 30) break;
+          if (runningChars + entry.length > VM_CHAR_BUDGET && capped.length >= VM_MIN_FLOOR) break;
           capped.push(entry);
           runningChars += entry.length;
         }
