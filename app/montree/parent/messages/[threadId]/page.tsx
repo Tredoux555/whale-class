@@ -11,6 +11,7 @@ import { useRouter, useParams } from 'next/navigation';
 import { toast, Toaster } from 'sonner';
 import { ArrowLeft, Send } from 'lucide-react';
 import { useI18n, getIntlLocale } from '@/lib/montree/i18n';
+import { useThreadPolling } from '@/hooks/useThreadPolling';
 
 // Dark forest tokens
 const T = {
@@ -153,6 +154,15 @@ export default function ParentThreadDetailPage() {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
   }, [messages.length]);
+
+  // Live updates — poll the messages endpoint every 5s while the page is
+  // visible and a send isn't in flight. Pauses on tab-hidden + during send.
+  useThreadPolling<Message>({
+    endpoint: `/api/montree/parent/messages/threads/${threadId}/messages`,
+    setMessages,
+    enabled: !loading && !!threadId,
+    pause: sending,
+  });
 
   const myParticipant = participants.find((p) => p.is_me);
   const canReply = myParticipant?.can_reply ?? false;

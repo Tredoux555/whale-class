@@ -9,8 +9,9 @@
 
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { ArrowLeft, Send, Sparkles, Eye, MessageSquare, Loader2 } from 'lucide-react';
+import { ArrowLeft, Send, Sparkles, Eye, Loader2 } from 'lucide-react';
 import UpgradeCard, { extractUpgradeFromResponse } from '@/components/montree/UpgradeCard';
+import { useThreadPolling } from '@/hooks/useThreadPolling';
 
 const T = {
   emerald: '#34d399',
@@ -131,6 +132,15 @@ export default function ThreadPage() {
       messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
     }
   }, [messages.length]);
+
+  // Live updates — poll the messages endpoint every 5s while visible.
+  // Pauses during send so optimistic bubbles aren't trampled.
+  useThreadPolling<Message>({
+    endpoint: `/api/montree/messages/threads/${threadId}/messages`,
+    setMessages,
+    enabled: !loading && !!threadId,
+    pause: sending,
+  });
 
   async function send() {
     if (!draft.trim()) return;

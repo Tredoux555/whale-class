@@ -14,6 +14,7 @@ import { useRouter, useParams } from 'next/navigation';
 import { toast, Toaster } from 'sonner';
 import { ArrowLeft, Send } from 'lucide-react';
 import { useI18n, getIntlLocale } from '@/lib/montree/i18n';
+import { useThreadPolling } from '@/hooks/useThreadPolling';
 
 // Dark forest tokens
 const T = {
@@ -191,6 +192,15 @@ export default function TeacherThreadDetailPage() {
     }
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
   }, [messages.length]);
+
+  // Live updates — poll every 5s while visible. Pauses during send so
+  // optimistic bubbles aren't trampled by an in-flight server fetch.
+  useThreadPolling<Message>({
+    endpoint: `/api/montree/messages/threads/${threadId}/messages`,
+    setMessages,
+    enabled: !loading && !!threadId,
+    pause: sending,
+  });
 
   // Find my participant row. Falls back to the unique teacher participant if
   // we couldn't resolve myId (auth/me failed) — in 1:1 threads this is safe.
