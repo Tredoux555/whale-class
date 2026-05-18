@@ -178,6 +178,10 @@ export async function POST(request: NextRequest) {
         created_by: auth.userId,
         expires_at: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(),
         is_active: true,
+        // 🚨 DB default is max_uses=1, is_reusable=false (migration 096).
+        // Parents need to log in repeatedly — must mirror /api/montree/invites.
+        is_reusable: true,
+        max_uses: null,
       })
       .select()
       .single();
@@ -252,6 +256,10 @@ export async function PUT(request: NextRequest) {
         created_by: auth.userId,
         expires_at: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(),
         is_active: true,
+        // 🚨 DB default is max_uses=1, is_reusable=false (migration 096).
+        // Parents need to log in repeatedly — must mirror /api/montree/invites.
+        is_reusable: true,
+        max_uses: null,
       })
       .select()
       .single();
