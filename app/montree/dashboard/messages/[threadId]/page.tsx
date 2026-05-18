@@ -15,6 +15,8 @@ import { toast, Toaster } from 'sonner';
 import { ArrowLeft, Send } from 'lucide-react';
 import { useI18n, getIntlLocale } from '@/lib/montree/i18n';
 import { useThreadPolling } from '@/hooks/useThreadPolling';
+import VoiceComposer, { type VoiceReady } from '@/components/montree/messaging/VoiceComposer';
+import VoiceBubble from '@/components/montree/messaging/VoiceBubble';
 
 // Dark forest tokens
 const T = {
@@ -64,6 +66,11 @@ interface Message {
   body: string;
   ai_drafted: boolean;
   sent_at: string;
+  // Voice notes: when media_type='audio', body carries the Whisper transcript
+  // and media_url is the stable proxy URL to the audio in voice-obs.
+  media_url?: string | null;
+  media_type?: 'image' | 'video' | 'document' | 'audio' | null;
+  media_filename?: string | null;
   // 🚨 Perf Tier 4.3 — optimistic state for locally-added bubbles.
   optimistic?: boolean;
   sendFailed?: boolean;
@@ -283,6 +290,55 @@ export default function TeacherThreadDetailPage() {
     }
   }, [reply, threadId, sending, t]);
 
+  // Voice-note send. Mirrors handleSend but with media_* on the payload.
+  const handleVoiceReady = useCallback(async (data: VoiceReady) => {
+    if (!threadId || sending) return;
+    setSending(true);
+    const tempId = `optimistic-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    const optimistic: Message = {
+      id: tempId,
+      thread_id: threadId,
+      sender_role: 'teacher',
+      sender_id: myId || 'me',
+      sender_name: 'You',
+      body: data.transcript,
+      ai_drafted: false,
+      sent_at: new Date().toISOString(),
+      media_url: data.audioUrl,
+      media_type: 'audio',
+      media_filename: data.filename,
+      optimistic: true,
+    };
+    setMessages((prev) => [...prev, optimistic]);
+    try {
+      const res = await fetch(`/api/montree/messages/threads/${threadId}/messages`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          body: data.transcript,
+          media_url: data.audioUrl,
+          media_type: 'audio',
+          media_filename: data.filename,
+        }),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        setMessages((prev) => prev.map((m) => (m.id === tempId ? { ...m, sendFailed: true, optimistic: false } : m)));
+        toast.error(err.error || "Couldn't send voice note");
+        setSending(false);
+        return;
+      }
+      const respJson = await res.json();
+      setMessages((prev) => prev.map((m) => (m.id === tempId ? respJson.message : m)));
+      setSending(false);
+    } catch {
+      setMessages((prev) => prev.map((m) => (m.id === tempId ? { ...m, sendFailed: true, optimistic: false } : m)));
+      toast.error("Couldn't send voice note");
+      setSending(false);
+    }
+  }, [threadId, sending, myId]);
+
   const formatStamp = (iso: string) => {
     const d = new Date(iso);
     const now = new Date();
@@ -460,7 +516,11 @@ export default function TeacherThreadDetailPage() {
                   whiteSpace: 'pre-wrap',
                   wordBreak: 'break-word',
                 }}>
-                  {msg.body}
+                  {msg.media_type === 'audio' && msg.media_url ? (
+                    <VoiceBubble audioUrl={msg.media_url} transcript={msg.body} isMine={isMe} />
+                  ) : (
+                    msg.body
+                  )}
                 </div>
                 <div style={{
                   fontSize: 10,
@@ -516,6 +576,7 @@ export default function TeacherThreadDetailPage() {
                 lineHeight: 1.4,
               }}
             />
+            <VoiceComposer onReady={handleVoiceReady} disabled={sending} />
             <button
               onClick={handleSend}
               disabled={sending || !reply.trim()}
