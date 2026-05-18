@@ -242,11 +242,92 @@ export async function POST(request: NextRequest) {
         last_used_at: new Date().toISOString(),
       }).eq('id', invite.id);
 
+      // ── Session 117 continued — Provision a lightweight montree_parents
+      // row on first invite redemption. Without this:
+      //   - Staff appointment-invite picker can't see the parent
+      //   - Parent can't see incoming appointment invitations
+      //   - Any route that requires session.parentId returns 403
+      //
+      // The provisioned row uses placeholders for email/name (the parent
+      // hasn't done a full signup yet) but has school_id + is_active=true
+      // so it's a first-class queryable entity. Idempotent via
+      // UNIQUE(email, school_id) — re-redemption hits the existing row.
+      //
+      // 🚨 This /auth/unified path is what login-select uses. The
+      // dedicated /parent/auth/access-code endpoint has the same logic.
+      // BOTH paths must provision identically — login-select is the
+      // primary surface for parent login.
+      let provisionedParentId: string | undefined;
+      try {
+        const placeholderEmail = `pending-${invite.id}@parent.montree.local`;
+        const childDisplay = (child.name || child.nickname || 'child').trim();
+        const placeholderName = `${childDisplay}'s parent`;
+        const placeholderHash = `pending:${invite.id}:${Date.now()}`;
+
+        const { data: existingParent } = await supabase
+          .from('montree_parents')
+          .select('id')
+          .eq('email', placeholderEmail)
+          .eq('school_id', child.school_id)
+          .maybeSingle();
+
+        if (existingParent) {
+          provisionedParentId = (existingParent as { id: string }).id;
+        } else {
+          const { data: newParent, error: parentInsertErr } = await supabase
+            .from('montree_parents')
+            .insert({
+              school_id: child.school_id,
+              email: placeholderEmail,
+              password_hash: placeholderHash,
+              name: placeholderName,
+              is_active: true,
+            })
+            .select('id')
+            .single();
+          if (parentInsertErr) {
+            if (parentInsertErr.code === '23505') {
+              const { data: raced } = await supabase
+                .from('montree_parents')
+                .select('id')
+                .eq('email', placeholderEmail)
+                .eq('school_id', child.school_id)
+                .maybeSingle();
+              if (raced) provisionedParentId = (raced as { id: string }).id;
+            } else {
+              console.error('[auth/unified parent] provision insert failed', parentInsertErr);
+            }
+          } else if (newParent) {
+            provisionedParentId = (newParent as { id: string }).id;
+          }
+        }
+
+        if (provisionedParentId) {
+          const { error: linkErr } = await supabase
+            .from('montree_parent_children')
+            .insert({
+              parent_id: provisionedParentId,
+              child_id: child.id,
+            });
+          if (linkErr && linkErr.code !== '23505') {
+            console.error('[auth/unified parent] provision link failed', linkErr);
+          }
+        }
+      } catch (provErr) {
+        // Don't block login on provisioning failure — fall through to
+        // invite-only behaviour. Surfaces in logs but the parent still
+        // gets to the dashboard.
+        console.error('[auth/unified parent] provisioning failed (non-fatal)', provErr);
+      }
+
       const sessionToken = await createParentToken({
         sub: child.id,
         childName: child.name || child.nickname,
         classroomId: child.classroom_id,
         inviteId: invite.id,
+        // Include parentId when provisioning succeeded — unlocks every
+        // route that gates on session.parentId (appointments, messaging).
+        ...(provisionedParentId ? { parentId: provisionedParentId } : {}),
       });
 
       // Set parent cookie
@@ -578,10 +659,11 @@ async function tryParentLogin(supabase: ReturnType<typeof getSupabase>, code: st
   // Check max uses
   if (invite.max_uses !== null && invite.use_count >= invite.max_uses) return null;
 
-  // Get child info
+  // Get child info — school_id needed for provisioning the lightweight
+  // parent row inside the calling route (Session 117 continued fix).
   const { data: child } = await supabase
     .from('montree_children')
-    .select('id, name, nickname, classroom_id')
+    .select('id, name, nickname, classroom_id, school_id')
     .eq('id', invite.child_id)
     .maybeSingle();
 
