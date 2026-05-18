@@ -1412,32 +1412,66 @@ export default function PhotoAuditPage() {
     }
   };
 
-  // "✓ Correct" for haiku_drafted cards — teacher says the AI draft is right.
-  // Looks up the proposed name in the loaded curriculum:
-  //   found  → attachToExistingWork (same as Tier 1b but teacher-initiated, no confidence gate)
-  //   not found → opens the sheet so the teacher can type the work name themselves.
-  //               Pass allowAutoAttach=true because the teacher already
-  //               endorsed the AI's analysis with the Correct button — Tier 1a
-  //               on closest_existing_match is a legitimate shortcut here.
+  // "✓ Correct" for haiku_drafted / sonnet_drafted cards — teacher endorses
+  // the AI draft. Three resolution passes BEFORE we give up and open the
+  // picker. The picker should be the rare fallback, not the default.
+  //
+  // 🚨 Regression fix (Session 117+): the old version only tried
+  // `proposed_name` and immediately opened the picker on miss. When Sonnet
+  // proposes a name that's slightly off from the curriculum's exact spelling
+  // (e.g. "Stamp Game Multiplication" vs "Stamp Game"), the teacher
+  // tapping ✓ Correct deserves a one-tap commit, not a modal interrogation.
+  // Fall back through closest_existing_match → top_candidates[0] → picker.
   const handleConfirmHaikuDraft = (photo: AuditPhoto) => {
     if (!photo.child_id) {
       toast.error('Photo has no child tagged — tag a child first');
       return;
     }
     const draft = photo.sonnet_draft;
+
+    // Try 1: proposed_name (AI's primary guess)
     const proposed = draft?.proposed_name?.trim() || photo.work_name?.trim();
-    if (!proposed) {
-      openThisIsSheet(photo, true);
-      return;
+    if (proposed) {
+      const r = findWorkByName(proposed, draft?.suggested_area);
+      if (r) {
+        console.log(`[HaikuConfirm] proposed_name match: "${proposed}" → attaching`);
+        attachToExistingWork(photo, r.work, r.areaKey);
+        return;
+      }
     }
-    const resolved = findWorkByName(proposed, draft?.suggested_area);
-    if (resolved) {
-      console.log(`[HaikuConfirm] Teacher-confirmed draft: "${proposed}" → attaching`);
-      attachToExistingWork(photo, resolved.work, resolved.areaKey);
-    } else {
-      // Proposed name not in curriculum — open the sheet so teacher can pick/create
-      openThisIsSheet(photo, true);
+
+    // Try 2: closest_existing_match (Sonnet drafts populate this when the
+    // proposed_name is novel but the AI knows a curriculum sibling.)
+    const closest = (draft as { closest_existing_match?: { work_name?: string; work_key?: string } } | undefined)?.closest_existing_match;
+    const closestName = closest?.work_name?.trim();
+    if (closestName) {
+      const r = findWorkByName(closestName, draft?.suggested_area);
+      if (r) {
+        console.log(`[HaikuConfirm] closest_existing_match: "${closestName}" → attaching`);
+        attachToExistingWork(photo, r.work, r.areaKey);
+        return;
+      }
     }
+
+    // Try 3: top_candidates[0] (V2 fuzzy matcher's best — Session 105 feature)
+    const topCands = (draft as { top_candidates?: Array<{ workName?: string; area?: string }> } | undefined)?.top_candidates;
+    const top = Array.isArray(topCands) && topCands.length > 0 ? topCands[0] : null;
+    if (top?.workName) {
+      const r = findWorkByName(top.workName, top.area || draft?.suggested_area);
+      if (r) {
+        console.log(`[HaikuConfirm] top_candidates[0]: "${top.workName}" → attaching`);
+        attachToExistingWork(photo, r.work, r.areaKey);
+        return;
+      }
+    }
+
+    // True fallback: AI had no resolvable match in the curriculum. Open
+    // the picker so the teacher can pick or create one. Pass
+    // allowAutoAttach=true since the teacher pressed Correct.
+    console.warn('[HaikuConfirm] No resolution found, opening picker:', {
+      proposed, closestName, topCandName: top?.workName,
+    });
+    openThisIsSheet(photo, true);
   };
 
   // Quick-tap chip handler — teacher picks one of the top-3 candidates returned
