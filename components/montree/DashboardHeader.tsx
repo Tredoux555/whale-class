@@ -659,13 +659,15 @@ function DashboardHeader() {
                     onClick={() => { setShowMoreMenu(false); router.push('/montree/dashboard/messages'); }}
                   />
 
-                  {/* Invite parents — teacher onboards parents from their classroom.
-                      The page itself is at /montree/dashboard/parent-codes and
-                      handles per-child code generation, bulk generate, and the
-                      neat email/mailto handoff for one-by-one sharing. */}
+                  {/* Parent Manager — Session 119 rename per Tredoux. The
+                      page at /montree/dashboard/parent-codes handles per-child
+                      code generation + bulk generate + welcome message.
+                      Session 119 also adds the WeChat-style chat overview
+                      surface, reachable from the chat icon on the Parent
+                      Manager page (see parent-codes/page.tsx). */}
                   <MenuRow
                     icon={KeyRound}
-                    label="Invite parents"
+                    label="Parent Manager"
                     active={activePage === 'parent-codes'}
                     onClick={() => { setShowMoreMenu(false); router.push('/montree/dashboard/parent-codes'); }}
                   />

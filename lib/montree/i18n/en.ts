@@ -4998,7 +4998,7 @@ export const en = {
   'agentThread.networkError': 'Network error — please try again',
 
   // parentCodes.* — teacher-facing parent code page
-  'parentCodes.title': 'Invite parents',
+  'parentCodes.title': 'Parent Manager',
   'parentCodes.subtitle': "Generate a code for each child and share it with the parent. They enter it at montree.xyz/montree/parent to start receiving updates. The principal sees every code in the school too.",
   'parentCodes.print': 'Print',
   'parentCodes.noChildrenYet': 'No children in your classroom yet. Add students from the dashboard first.',
