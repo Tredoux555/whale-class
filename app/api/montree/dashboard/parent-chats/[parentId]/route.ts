@@ -68,14 +68,18 @@ export async function GET(
     return NextResponse.json({ error: ctx.error }, { status: ctx.status });
   }
 
-  // Fetch messages for shared threads, oldest first
+  // Fetch the most-recent 5000 messages across shared threads.
+  // 🚨 Audit pass 2: must order DESC + limit so the SLICE we get is the
+  // newest 5000, not the oldest 5000. (asc+limit would truncate the
+  // recent end of a long chat history — exactly wrong for a chat UI.)
+  // Then reverse client-side to render chronologically for display.
   const { data: messagesRaw } = await supabase
     .from('montree_thread_messages')
     .select('id, thread_id, sender_role, sender_id, sender_name, body, created_at, ai_drafted')
     .in('thread_id', ctx.sharedThreadIds)
-    .order('created_at', { ascending: true })
+    .order('created_at', { ascending: false })
     .limit(5000);
-  const messages = (messagesRaw || []) as Array<{
+  const messagesNewestFirst = (messagesRaw || []) as Array<{
     id: string;
     thread_id: string;
     sender_role: string;
@@ -85,6 +89,8 @@ export async function GET(
     created_at: string;
     ai_drafted: boolean | null;
   }>;
+  // Reverse to chronological for the UI feed
+  const messages = [...messagesNewestFirst].reverse();
 
   // Map thread → child for the child_name decoration
   const childIds = [
