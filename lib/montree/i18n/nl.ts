@@ -4558,4 +4558,13 @@ export const nl: Record<string, string> = {
   'landing.hero.evolve': 'Laat je klas groeien. Laat je school groeien.',
   'landing.quote.body': 'Spelen is het werk van het kind.',
   'landing.quote.attribution': 'Maria Montessori',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'classroomOverview.englishWeek.title': 'Heeft deze week geen Engels gedaan',
+  'classroomOverview.englishWeek.emptyOk': 'Alle kinderen hebben deze week Engels gedaan',
+  'classroomOverview.englishWeek.needCount': '{missing} van {total} kinderen hebben Engels nodig',
+  'classroomOverview.englishWeek.loading': 'Controleren wie Engels nodig heeft…',
+  'classroomOverview.englishWeek.error': 'Kon Engels-status niet laden',
+  'classroomOverview.englishWeek.refresh': 'Vernieuwen',
+  'classroomOverview.englishWeek.noLanguageArea': 'Geen Taalgebied geconfigureerd voor deze klaslokaal',
 };

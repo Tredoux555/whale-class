@@ -7,6 +7,7 @@
 
 import React, { useState } from 'react';
 import { montreeApi } from '@/lib/montree/api';
+import { invalidateEnglishWeekCache } from '@/lib/montree/cache';
 import { useI18n } from '@/lib/montree/i18n';
 import { getAreaLabel, AREA_KEYS } from '@/lib/montree/i18n/area-labels';
 import VoiceDictate from '@/components/montree/voice/VoiceDictate';
@@ -91,6 +92,9 @@ export default function TellAiSheet({ photo, onClose, onSaved }: Props) {
         setError(json.error || 'Failed to save');
         return;
       }
+      // Session 119: invalidate english-missing cache (the new_custom resolve
+      // sets teacher_confirmed=true on the photo with a Language-area work).
+      invalidateEnglishWeekCache();
       onSaved(photo.id);
       onClose();
     } catch (e: any) {

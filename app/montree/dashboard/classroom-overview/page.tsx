@@ -8,13 +8,14 @@ import { useState, useEffect, useCallback, CSSProperties } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   ArrowLeft, Printer, Layout, Languages,
-  RefreshCw,
+  RefreshCw, BookOpen, Check,
 } from 'lucide-react';
 import { getSession, isHomeschoolParent, type MontreeSession } from '@/lib/montree/auth';
 import { montreeApi } from '@/lib/montree/api';
+import { useMontreeData } from '@/lib/montree/cache';
 import { AREA_CONFIG } from '@/lib/montree/types';
 import { normalizeArea } from '@/components/montree/shared/AreaBadge';
-import { useI18n, getIntlLocale } from '@/lib/montree/i18n';
+import { useI18n, getIntlLocale, type TranslationKey } from '@/lib/montree/i18n';
 
 interface FocusWork {
   name: string;
@@ -34,6 +35,9 @@ interface ScheduleChild {
   photo_url: string | null;
   is_k_bound: boolean;
   days_since_last_visit: number | null;
+  // Session 119 — live state additions:
+  is_done?: boolean;           // confirmed Language photo this week
+  rolled_from_day?: string;    // 'monday'|'tuesday'|... if rolled from a past day
 }
 
 interface EnglishSchedule {
@@ -41,6 +45,31 @@ interface EnglishSchedule {
   children_count: number;
   k_bound_count: number;
   week_label: string;
+}
+
+// Session 119 — live state metadata from the server
+interface EnglishScheduleLiveState {
+  today: string | null;
+  is_workday: boolean;
+  done_count: number;
+  undone_count: number;
+  total_in_class: number;
+  unscheduled_undone_names: string[];
+  shortfall_warning: string | null;
+}
+
+interface EnglishMissingChild {
+  id: string;
+  name: string;
+}
+
+interface EnglishMissingResponse {
+  success: true;
+  week_start: string;
+  week_end: string;
+  missing: EnglishMissingChild[];
+  total_in_class: number;
+  language_area_present: boolean;
 }
 
 const AREAS = ['practical_life', 'sensorial', 'mathematics', 'language', 'cultural'];
@@ -123,13 +152,45 @@ export default function ClassroomOverviewPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
 
-  // English schedule state
-  const [schedule, setSchedule] = useState<EnglishSchedule | null>(null);
-  const [scheduleWeek, setScheduleWeek] = useState<string>('');
-  const [scheduleGeneratedAt, setScheduleGeneratedAt] = useState<string>('');
-  const [scheduleLoading, setScheduleLoading] = useState(false);
-  const [scheduleError, setScheduleError] = useState(false);
+  // English schedule state — Session 119 swapped from imperative useState
+  // to useMontreeData so invalidateEnglishWeekCache() (fired from photo-audit
+  // confirm sites) triggers a live refetch via the cache subscriber. Without
+  // this, navigating back from /photo-audit via SPA router (no window focus)
+  // would leave the schedule stale until the teacher manually refreshed.
+  const {
+    data: scheduleResponse,
+    loading: scheduleLoading,
+    error: scheduleErrorRaw,
+    refetch: refetchSchedule,
+  } = useMontreeData<{
+    success: boolean;
+    schedule: EnglishSchedule;
+    live_state: EnglishScheduleLiveState | null;
+    week_start: string;
+    generated_at: string;
+  }>(
+    session?.classroom?.id && tab === 'english'
+      ? '/api/montree/dashboard/english-schedule'
+      : null,
+    { staleTime: 15_000 },
+  );
+  const schedule: EnglishSchedule | null = scheduleResponse?.schedule ?? null;
+  const liveState: EnglishScheduleLiveState | null = scheduleResponse?.live_state ?? null;
+  const scheduleWeek: string = scheduleResponse?.week_start ?? '';
+  const scheduleError: boolean = !!scheduleErrorRaw;
   const [regenerating, setRegenerating] = useState(false);
+
+  // English-missing state (Session 119 — auto-updates after photo confirms via
+  // invalidateCache('/api/montree/dashboard/english-missing') from photo-audit)
+  const {
+    data: englishMissing,
+    loading: englishMissingLoading,
+    error: englishMissingError,
+    refetch: refetchEnglishMissing,
+  } = useMontreeData<EnglishMissingResponse>(
+    session?.classroom?.id ? '/api/montree/dashboard/english-missing' : null,
+    { staleTime: 30_000 },
+  );
 
   useEffect(() => {
     const sess = getSession();
@@ -156,35 +217,9 @@ export default function ClassroomOverviewPage() {
     return () => controller.abort();
   }, [router]);
 
-  const loadSchedule = useCallback(async (forceGenerate = false) => {
-    if (!session?.classroom?.id) return;
-    setScheduleLoading(true);
-    setScheduleError(false);
-    try {
-      const url = `/api/montree/dashboard/english-schedule${forceGenerate ? '?generate=true' : ''}`;
-      const res = await montreeApi(url);
-      if (!res.ok) throw new Error(`Schedule fetch: ${res.status}`);
-      const data = await res.json();
-      if (data.success) {
-        setSchedule(data.schedule);
-        setScheduleWeek(data.week_start);
-        setScheduleGeneratedAt(data.generated_at);
-      } else {
-        setScheduleError(true);
-      }
-    } catch {
-      setScheduleError(true);
-    } finally {
-      setScheduleLoading(false);
-    }
-  }, [session]);
-
-  useEffect(() => {
-    if (tab === 'english' && !schedule && !scheduleLoading) {
-      loadSchedule();
-    }
-  }, [tab, schedule, scheduleLoading, loadSchedule]);
-
+  // Session 119 — POST regenerate from scratch (rare; manual button click).
+  // useMontreeData handles the GET path automatically; this is the explicit
+  // "throw away this week's snapshot and rebuild it" action.
   const handleRegenerate = async () => {
     setRegenerating(true);
     try {
@@ -194,18 +229,27 @@ export default function ClassroomOverviewPage() {
         body: JSON.stringify({}),
       });
       if (!res.ok) throw new Error(`Regenerate: ${res.status}`);
-      const data = await res.json();
-      if (data.success) {
-        setSchedule(data.schedule);
-        setScheduleWeek(data.week_start);
-        setScheduleGeneratedAt(data.generated_at);
-      }
+      // Force the GET cache to refetch with the new snapshot baked in.
+      refetchSchedule();
     } catch (err) {
       console.error('Regenerate failed:', err);
     } finally {
       setRegenerating(false);
     }
   };
+
+  // loadSchedule shim — preserves callers that still hit it (the
+  // "generate schedule" CTA on the no-schedule-yet empty state + the
+  // "load failed" retry button). Maps to the new useMontreeData refetch
+  // path; the `forceGenerate=true` case is handled by calling POST first.
+  const loadSchedule = useCallback(async (forceGenerate = false) => {
+    if (forceGenerate) {
+      await handleRegenerate();
+      return;
+    }
+    refetchSchedule();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [refetchSchedule]);
 
   const getAreaConfig = (area: string) => {
     const normalized = normalizeArea(area);
@@ -413,6 +457,25 @@ export default function ClassroomOverviewPage() {
           </div>
         </div>
 
+        {/* English-this-week — screen only (Session 119) */}
+        <div
+          className="no-print"
+          style={{
+            maxWidth: 1280,
+            margin: '20px auto 0',
+            padding: '0 22px',
+          }}
+        >
+          <EnglishMissingPanel
+            data={englishMissing}
+            loading={englishMissingLoading}
+            errored={!!englishMissingError}
+            onRefresh={refetchEnglishMissing}
+            onJumpToChild={(childId) => router.push(`/montree/dashboard/${childId}/gallery`)}
+            t={t}
+          />
+        </div>
+
         {/* Body padding */}
         <div style={{ padding: '24px 16px 60px' }}>
 
@@ -543,6 +606,27 @@ export default function ClassroomOverviewPage() {
                       <div style={{ fontSize: '12px', color: '#be185d', fontWeight: 500 }}>
                         {formatWeekLabel(scheduleWeek)} · {session?.classroom?.name}
                       </div>
+                      {/* Session 119 — live done/undone summary. Updates after
+                          every photo confirm + on tab-focus refetch. */}
+                      {liveState && (
+                        <div style={{
+                          marginTop: 4,
+                          fontSize: 11,
+                          fontWeight: 600,
+                          color: '#7c2d12',
+                          display: 'flex',
+                          gap: 10,
+                          flexWrap: 'wrap',
+                        }}>
+                          <span>✓ {liveState.done_count} done</span>
+                          <span style={{ color: '#9f1239' }}>
+                            • {liveState.undone_count} still need bingo
+                          </span>
+                          <span style={{ color: '#a16207' }}>
+                            • {liveState.total_in_class} total
+                          </span>
+                        </div>
+                      )}
                     </div>
                     <div className="no-print" style={{ display: 'flex', gap: 8 }}>
                       <button
@@ -571,6 +655,29 @@ export default function ClassroomOverviewPage() {
                       </button>
                     </div>
                   </div>
+
+                  {/* Session 119 — shortfall warning banner. Renders when
+                      the live algorithm couldn't fit all undone kids into the
+                      remaining bingo slots this week. */}
+                  {liveState?.shortfall_warning && liveState.unscheduled_undone_names.length > 0 && (
+                    <div className="no-print" style={{
+                      padding: '10px 16px',
+                      background: '#fef2f2',
+                      borderBottom: '1px solid #fecaca',
+                      color: '#991b1b',
+                      fontSize: 12,
+                      lineHeight: 1.5,
+                    }}>
+                      <span style={{ fontWeight: 700 }}>⚠️ Bingo shortfall — </span>
+                      {liveState.shortfall_warning}.{' '}
+                      <span style={{ fontWeight: 600 }}>
+                        Won&apos;t fit: {liveState.unscheduled_undone_names.join(', ')}.
+                      </span>{' '}
+                      <span style={{ color: '#6b7280' }}>
+                        Run an extra session or accept they miss this week.
+                      </span>
+                    </div>
+                  )}
 
                   {/* Priority legend — no-print */}
                   <div className="no-print" style={{ padding: '6px 16px', fontSize: '11px', color: '#6b7280', display: 'flex', gap: '16px', borderBottom: '1px solid #f3e8ff' }}>
@@ -619,7 +726,11 @@ export default function ClassroomOverviewPage() {
                           </div>
 
                           <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-                            {dayChildren.map((child, idx) => (
+                            {dayChildren.map((child, idx) => {
+                              // Session 119 — live state derived per child
+                              const isDone = !!child.is_done;
+                              const rolledFrom = child.rolled_from_day;
+                              return (
                               <div
                                 key={child.id}
                                 style={{
@@ -630,7 +741,18 @@ export default function ClassroomOverviewPage() {
                                   alignItems: 'flex-start',
                                   gap: '6px',
                                   position: 'relative',
+                                  // Done = soft mint background. Rolled = amber left border.
+                                  background: isDone ? '#ecfdf5' : 'transparent',
+                                  borderLeft: rolledFrom ? '3px solid #f59e0b' : undefined,
+                                  opacity: isDone ? 0.7 : 1,
                                 }}
+                                title={
+                                  isDone
+                                    ? `${child.name} has done English this week`
+                                    : rolledFrom
+                                      ? `Rolled from ${DAY_LABELS_SHORT[rolledFrom] ?? rolledFrom}`
+                                      : undefined
+                                }
                               >
                                 <span style={{
                                   display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
@@ -646,28 +768,48 @@ export default function ClassroomOverviewPage() {
                                   <div style={{
                                     fontWeight: 700,
                                     fontSize: '15px',
-                                    color: '#111827',
+                                    color: isDone ? '#065f46' : '#111827',
                                     lineHeight: '1.2',
+                                    textDecoration: isDone ? 'line-through' : undefined,
+                                    textDecorationColor: isDone ? '#10b981' : undefined,
                                   }}>
                                     {child.name}
                                   </div>
 
-                                  <div style={{ fontSize: '9px', color: '#9ca3af', marginTop: '1px' }}>
-                                    {child.days_since_last_visit === null
-                                      ? t('classroomOverview.daysSince.noRecord')
-                                      : child.days_since_last_visit === 0
-                                        ? t('classroomOverview.daysSince.today')
-                                        : t('classroomOverview.daysSince.daysAgo', { days: child.days_since_last_visit })}
+                                  <div style={{
+                                    fontSize: '9px',
+                                    color: rolledFrom ? '#b45309' : '#9ca3af',
+                                    marginTop: '1px',
+                                    fontWeight: rolledFrom ? 700 : 400,
+                                  }}>
+                                    {rolledFrom
+                                      ? `↪ rolled from ${DAY_LABELS_SHORT[rolledFrom] ?? rolledFrom}`
+                                      : child.days_since_last_visit === null
+                                        ? t('classroomOverview.daysSince.noRecord')
+                                        : child.days_since_last_visit === 0
+                                          ? t('classroomOverview.daysSince.today')
+                                          : t('classroomOverview.daysSince.daysAgo', { days: child.days_since_last_visit })}
                                   </div>
                                 </div>
 
+                                {/* Checkbox — derived from is_done, no manual tick.
+                                    Photo confirms are the source of truth (no false positives,
+                                    Brain learning intact). */}
                                 <div style={{
                                   width: '20px', height: '20px',
-                                  border: '2px solid #d1d5db', borderRadius: '4px',
+                                  border: isDone ? '2px solid #10b981' : '2px solid #d1d5db',
+                                  borderRadius: '4px',
                                   flexShrink: 0, marginTop: '2px',
-                                }} />
+                                  background: isDone ? '#10b981' : 'transparent',
+                                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                  color: 'white', fontSize: '13px', fontWeight: 800,
+                                  lineHeight: 1,
+                                }}>
+                                  {isDone ? '✓' : ''}
+                                </div>
                               </div>
-                            ))}
+                              );
+                            })}
 
                             {Array.from({ length: Math.max(0, 6 - dayChildren.length) }).map((_, i) => (
                               <div key={`empty-${day}-${i}`} style={{
@@ -696,5 +838,218 @@ export default function ClassroomOverviewPage() {
         </div>
       </div>
     </>
+  );
+}
+
+// ─── English-this-week panel (Session 119) ───
+// Lives above the tab strip on Classroom Overview. Auto-refreshes on focus.
+// After a successful confirm in /photo-audit, invalidateCache(
+// '/api/montree/dashboard/english-missing') in cache.ts wipes this hook's
+// entry, and the next mount/focus refetches.
+
+interface EnglishMissingPanelProps {
+  data: EnglishMissingResponse | null;
+  loading: boolean;
+  errored: boolean;
+  onRefresh: () => void;
+  onJumpToChild: (childId: string) => void;
+  t: (key: TranslationKey, params?: Record<string, string | number>) => string;
+}
+
+function EnglishMissingPanel({
+  data,
+  loading,
+  errored,
+  onRefresh,
+  onJumpToChild,
+  t,
+}: EnglishMissingPanelProps) {
+  const card: CSSProperties = {
+    background: 'rgba(255,255,255,0.04)',
+    border: '1px solid rgba(52,211,153,0.18)',
+    borderRadius: 14,
+    padding: '14px 18px',
+    color: T.textPrimary,
+    fontFamily: T.sans,
+    backdropFilter: 'blur(12px) saturate(140%)',
+    WebkitBackdropFilter: 'blur(12px) saturate(140%)',
+  };
+
+  const headerRow: CSSProperties = {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 12,
+    marginBottom: 10,
+  };
+
+  const titleRow: CSSProperties = {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 9,
+    fontFamily: T.serif,
+    fontSize: 15,
+    fontWeight: 500,
+    letterSpacing: -0.1,
+    color: T.textPrimary,
+  };
+
+  const refreshBtn: CSSProperties = {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: 5,
+    padding: '5px 10px',
+    borderRadius: 8,
+    background: 'rgba(255,255,255,0.05)',
+    border: '1px solid rgba(255,255,255,0.10)',
+    color: T.textSecondary,
+    fontFamily: T.sans,
+    fontSize: 12,
+    fontWeight: 500,
+    cursor: loading ? 'not-allowed' : 'pointer',
+    opacity: loading ? 0.6 : 1,
+  };
+
+  // ─── Loading skeleton (first paint only — subsequent loads are background) ───
+  if (loading && !data) {
+    return (
+      <div style={card}>
+        <div style={titleRow}>
+          <BookOpen size={16} strokeWidth={1.75} color={T.emerald} />
+          <span>{t('classroomOverview.englishWeek.loading')}</span>
+        </div>
+        <div
+          aria-hidden
+          style={{
+            marginTop: 8,
+            height: 18,
+            borderRadius: 6,
+            background:
+              'linear-gradient(90deg, rgba(255,255,255,0.04), rgba(255,255,255,0.10), rgba(255,255,255,0.04))',
+            backgroundSize: '200% 100%',
+            animation: 'em-shimmer 1.4s linear infinite',
+          }}
+        />
+        <style>{`@keyframes em-shimmer { from { background-position: 200% 0; } to { background-position: -200% 0; } }`}</style>
+      </div>
+    );
+  }
+
+  // ─── Error ───
+  if (errored && !data) {
+    return (
+      <div style={card}>
+        <div style={headerRow}>
+          <div style={titleRow}>
+            <BookOpen size={16} strokeWidth={1.75} color={T.red} />
+            <span>{t('classroomOverview.englishWeek.error')}</span>
+          </div>
+          <button onClick={onRefresh} style={refreshBtn} disabled={loading}>
+            <RefreshCw size={11} strokeWidth={2} />
+            {t('classroomOverview.englishWeek.refresh')}
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (!data) return null;
+
+  // No Language area configured — show a quiet inert state so the panel isn't
+  // misleading. Common at the very first onboarding step.
+  if (!data.language_area_present) {
+    return (
+      <div style={card}>
+        <div style={titleRow}>
+          <BookOpen size={16} strokeWidth={1.75} color={T.textMuted} />
+          <span style={{ color: T.textMuted, fontFamily: T.sans, fontWeight: 500, fontSize: 13 }}>
+            {t('classroomOverview.englishWeek.noLanguageArea')}
+          </span>
+        </div>
+      </div>
+    );
+  }
+
+  const { missing, total_in_class } = data;
+  const missingCount = missing.length;
+  const allDone = missingCount === 0;
+
+  return (
+    <div style={card}>
+      <div style={headerRow}>
+        <div style={titleRow}>
+          {allDone ? (
+            <Check size={16} strokeWidth={2.25} color={T.emerald} />
+          ) : (
+            <BookOpen size={16} strokeWidth={1.75} color={T.emerald} />
+          )}
+          <span>
+            {allDone
+              ? t('classroomOverview.englishWeek.emptyOk')
+              : t('classroomOverview.englishWeek.title')}
+          </span>
+        </div>
+        <button
+          onClick={onRefresh}
+          style={refreshBtn}
+          disabled={loading}
+          aria-label={t('classroomOverview.englishWeek.refresh')}
+        >
+          <RefreshCw size={11} strokeWidth={2} />
+          {t('classroomOverview.englishWeek.refresh')}
+        </button>
+      </div>
+
+      {!allDone && (
+        <>
+          <div
+            style={{
+              fontSize: 12,
+              color: T.textSecondary,
+              marginBottom: 10,
+            }}
+          >
+            {t('classroomOverview.englishWeek.needCount', {
+              missing: missingCount,
+              total: total_in_class,
+            })}
+          </div>
+          <div
+            style={{
+              display: 'flex',
+              flexWrap: 'wrap',
+              gap: 6,
+            }}
+          >
+            {missing.map(child => (
+              <button
+                key={child.id}
+                onClick={() => onJumpToChild(child.id)}
+                style={{
+                  padding: '5px 11px',
+                  borderRadius: 999,
+                  background: 'rgba(232,201,106,0.10)',
+                  border: '1px solid rgba(232,201,106,0.32)',
+                  color: '#ecd684',
+                  fontFamily: T.sans,
+                  fontSize: 13,
+                  fontWeight: 500,
+                  cursor: 'pointer',
+                  transition: 'all 100ms ease',
+                }}
+                onMouseEnter={e => {
+                  e.currentTarget.style.background = 'rgba(232,201,106,0.18)';
+                }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.background = 'rgba(232,201,106,0.10)';
+                }}
+              >
+                {child.name}
+              </button>
+            ))}
+          </div>
+        </>
+      )}
+    </div>
   );
 }

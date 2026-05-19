@@ -247,6 +247,25 @@ export function invalidateCache(urlPrefix: string): void {
 }
 
 /**
+ * 🚨 Session 119 — single drop-point for "a Language photo just got
+ * confirmed" cache invalidation.
+ *
+ * Two surfaces depend on the per-week per-classroom done-set:
+ *  - /api/montree/dashboard/english-missing   (Session 119 panel)
+ *  - /api/montree/dashboard/english-schedule  (rolling bingo schedule)
+ *
+ * Every confirm path (photo-audit + PhotoInsightPopup + PhotoInsightButton +
+ * PhotoEditModal + TeachGuruWorkModal + TellAiSheet) calls this helper after
+ * the server response confirms success. Use this — not raw invalidateCache
+ * with one URL — so adding a third dependent endpoint later means a single
+ * edit here, not a fan-out across 8 call sites.
+ */
+export function invalidateEnglishWeekCache(): void {
+  invalidateCache('/api/montree/dashboard/english-missing');
+  invalidateCache('/api/montree/dashboard/english-schedule');
+}
+
+/**
  * Set cache data directly (useful after a mutation returns updated data).
  */
 export function setCacheData(url: string, data: unknown): void {

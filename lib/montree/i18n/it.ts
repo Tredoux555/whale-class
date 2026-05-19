@@ -4558,4 +4558,13 @@ export const it: Record<string, string> = {
   'landing.hero.evolve': 'Fai evolvere la tua classe. Fai evolvere la tua scuola.',
   'landing.quote.body': 'Il gioco è il lavoro del bambino.',
   'landing.quote.attribution': 'Maria Montessori',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'classroomOverview.englishWeek.title': 'Non ha svolto Linguaggio questa settimana',
+  'classroomOverview.englishWeek.emptyOk': 'Tutti i bambini hanno svolto Linguaggio questa settimana',
+  'classroomOverview.englishWeek.needCount': '{missing} su {total} bambini devono svolgere Linguaggio',
+  'classroomOverview.englishWeek.loading': 'Verificando chi deve svolgere Linguaggio…',
+  'classroomOverview.englishWeek.error': 'Impossibile caricare lo stato di Linguaggio',
+  'classroomOverview.englishWeek.refresh': 'Aggiorna',
+  'classroomOverview.englishWeek.noLanguageArea': 'Nessuna area di Linguaggio configurata per questa classe',
 };

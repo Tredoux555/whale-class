@@ -146,15 +146,21 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string
 
   // ── 2. Find or create the agent row ─────────────────────────────
   let agentId: string;
+  // Session 119: track whether the existing row already has a default %.
+  // For brand-new shell agents it's NULL by definition. For existing rows
+  // we read the current value so we don't overwrite an operator-set %.
+  let currentDefaultPct: number | null = null;
   {
     const { data: existing } = await supabase
       .from('montree_teachers')
-      .select('id')
+      .select('id, agent_default_share_pct')
       .eq('email', email)
       .order('created_at', { ascending: false })
       .limit(1);
     if (existing && existing.length > 0 && existing[0].id) {
       agentId = existing[0].id as string;
+      const raw = (existing[0] as { agent_default_share_pct?: string | number | null }).agent_default_share_pct;
+      currentDefaultPct = raw === null || raw === undefined ? null : Number(raw);
     } else {
       // Shell agent: montree_teachers.school_id is NOT NULL in the
       // canonical schema, so we use the oldest school as a placeholder.
@@ -221,14 +227,22 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string
     }
   }
 
+  const acceptUpdatePayload: Record<string, unknown> = {
+    is_agent: true,
+    agent_password_hash: codeHash,
+    agent_login_set_at: new Date().toISOString(),
+    agent_suspended_at: null,
+  };
+  // Session 119: seed agent_default_share_pct to 20 if currently NULL.
+  // Operator can change later via PATCH /agents/[id]/login. Never downgrades
+  // an already-set %.
+  if (currentDefaultPct === null || Number.isNaN(currentDefaultPct)) {
+    acceptUpdatePayload.agent_default_share_pct = 20;
+  }
+
   const { error: updateErr } = await supabase
     .from('montree_teachers')
-    .update({
-      is_agent: true,
-      agent_password_hash: codeHash,
-      agent_login_set_at: new Date().toISOString(),
-      agent_suspended_at: null,
-    })
+    .update(acceptUpdatePayload)
     .eq('id', agentId);
   if (updateErr) {
     console.error('[applications accept] agent update failed:', updateErr.message);

@@ -10,6 +10,7 @@
 import { useState, useRef, useCallback, useEffect, useMemo } from 'react';
 import { useI18n } from '@/lib/montree/i18n';
 import { montreeApi } from '@/lib/montree/api';
+import { invalidateEnglishWeekCache } from '@/lib/montree/cache';
 import AreaBadge from '@/components/montree/shared/AreaBadge';
 import { AREA_CONFIG } from '@/lib/montree/types';
 import UpgradeCard, { extractUpgradeFromResponse } from '@/components/montree/UpgradeCard';
@@ -185,7 +186,13 @@ export default function TeachGuruWorkModal({
               correction_type: 'work_mismatch',
             }),
             signal: pickAbort.signal,
-          }).then(() => {}).catch((err) => {
+          }).then((res) => {
+            // Session 119: invalidate english-missing cache, but ONLY on a
+            // successful HTTP response. fetch() resolves on 4xx/5xx — without
+            // this gate, a server error would still drop the cache and the
+            // overview would refetch to show stale data.
+            if (res.ok) invalidateEnglishWeekCache();
+          }).catch((err) => {
             console.error('[TeachGuruWorkModal] Correction error (non-fatal):', err);
           })
         );
@@ -321,7 +328,7 @@ export default function TeachGuruWorkModal({
         // Record correction
         if (childId) {
           try {
-            await montreeApi(`/api/montree/guru/corrections`, {
+            const corrRes = await montreeApi(`/api/montree/guru/corrections`, {
               method: 'POST',
               body: JSON.stringify({
                 child_id: childId,
@@ -333,6 +340,13 @@ export default function TeachGuruWorkModal({
                 correction_type: 'custom_work_added',
               }),
             });
+            // Session 119: invalidate english-missing cache ONLY on a
+            // successful response. montreeApi (like fetch) doesn't throw on
+            // 4xx/5xx — without this gate, a server error would still drop
+            // the cache and the overview would refetch to show stale data.
+            if (corrRes.ok) {
+              invalidateEnglishWeekCache();
+            }
           } catch (err) {
             console.error('[TeachGuruWorkModal] Correction error (non-fatal):', err);
           }

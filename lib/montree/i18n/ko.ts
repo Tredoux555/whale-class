@@ -4558,4 +4558,13 @@ export const ko: Record<string, string> = {
   'landing.hero.evolve': '교실을 진화시키세요. 학교를 진화시키세요.',
   'landing.quote.body': '놀이는 아이의 일이다.',
   'landing.quote.attribution': '마리아 몬테소리',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'classroomOverview.englishWeek.title': '이번 주에 언어 활동을 하지 않은 자녀분',
+  'classroomOverview.englishWeek.emptyOk': '모든 자녀분이 이번 주에 언어 활동을 완료했어요',
+  'classroomOverview.englishWeek.needCount': '{missing}명의 자녀분이 {total}명 중 언어 활동이 필요해요',
+  'classroomOverview.englishWeek.loading': '언어 활동이 필요한 자녀분을 확인 중이에요…',
+  'classroomOverview.englishWeek.error': '언어 활동 상태를 불러올 수 없어요',
+  'classroomOverview.englishWeek.refresh': '새로고침',
+  'classroomOverview.englishWeek.noLanguageArea': '이 교실에 언어 영역이 구성되어 있지 않아요',
 };

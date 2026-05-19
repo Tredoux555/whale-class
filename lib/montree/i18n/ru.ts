@@ -4555,4 +4555,13 @@ export const ru: Record<string, string> = {
   'landing.hero.evolve': 'Развивайте свой класс. Развивайте свою школу.',
   'landing.quote.body': 'Игра — это работа ребёнка.',
   'landing.quote.attribution': 'Мария Монтессори',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'classroomOverview.englishWeek.title': 'Не занимался Языком на этой неделе',
+  'classroomOverview.englishWeek.emptyOk': 'Все дети занимались Языком на этой неделе',
+  'classroomOverview.englishWeek.needCount': '{missing} из {total} детей нуждаются в занятиях Языком',
+  'classroomOverview.englishWeek.loading': 'Проверка, кому нужны занятия Языком…',
+  'classroomOverview.englishWeek.error': 'Не удалось загрузить статус Языка',
+  'classroomOverview.englishWeek.refresh': 'Обновить',
+  'classroomOverview.englishWeek.noLanguageArea': 'Зона Языка не настроена для этого класса',
 };

@@ -8,6 +8,7 @@ import type { MontreeMedia } from '@/lib/montree/media/types';
 import { AREA_CONFIG } from '@/lib/montree/types';
 import { useI18n } from '@/lib/montree/i18n';
 import { montreeApi } from '@/lib/montree/api';
+import { invalidateEnglishWeekCache } from '@/lib/montree/cache';
 
 interface PhotoEditModalProps {
   media: MontreeMedia | null;
@@ -191,7 +192,7 @@ export default function PhotoEditModal({
     const originalWork = availableWorks.find(w => w.id === originalId.work_id);
 
     try {
-      await montreeApi('/api/montree/guru/corrections', {
+      const corrRes = await montreeApi('/api/montree/guru/corrections', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -207,6 +208,12 @@ export default function PhotoEditModal({
           correction_type: 'work_mismatch',
         }),
       });
+      // Session 119: invalidate english-missing cache so /classroom-overview
+      // reflects a newly-corrected Language photo on next mount/focus.
+      // ONLY on success — montreeApi doesn't throw on 4xx/5xx.
+      if (corrRes.ok) {
+        invalidateEnglishWeekCache();
+      }
     } catch {
       // Non-fatal — correction recording is best-effort
       console.error('[PhotoEditModal] Failed to record correction');

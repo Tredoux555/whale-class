@@ -3,6 +3,18 @@
 // Priority: (1) K-bound children first, (2) within each group, children with
 // fewest recent English/Language visits go first.
 // Also supports saving a generated schedule and retrieving the saved one.
+//
+// 🚨 Session 119 — DYNAMIC ROLLING SCHEDULE:
+// The saved schedule is now an "intent" snapshot. Every GET applies a LIVE
+// STATE transform on top of it:
+//   - Past days (Mon-yesterday): frozen historical record; each kid marked
+//     done (✓) if they have a confirmed Language photo this week.
+//   - Today + future days: recomputed from scratch using kids who haven't
+//     done English yet this week. K-bound priority preserved.
+// This means: photos a teacher takes today instantly redistribute the
+// remaining-week plan when she next loads the page. Bingo constraint
+// ("every kid attends ≥1× per week") is hard-baked — kids who don't get
+// done roll forward as priority on the next available day.
 
 import { NextRequest, NextResponse } from 'next/server';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
@@ -26,6 +38,78 @@ interface ChildActivity {
   language_visit_count: number;      // visits in the last 2 weeks
   days_since_last_visit: number | null; // null = never visited
   last_visit_date: string | null;
+}
+
+/**
+ * Session 119 — wrap any base schedule with live state. Past days stay
+ * as saved; today + future are recomputed from current done set.
+ */
+async function enrichScheduleWithLiveState(
+  supabase: ReturnType<typeof getSupabase>,
+  classroomId: string,
+  weekStart: Date,
+  baseSchedule: { days?: Record<string, Array<{
+    id: string; name: string; photo_url: string | null;
+    is_k_bound: boolean; days_since_last_visit: number | null;
+  }>>; children_count?: number; k_bound_count?: number },
+): Promise<{
+  days: LiveScheduleDays;
+  meta: LiveStateMeta;
+  children_count: number;
+  k_bound_count: number;
+}> {
+  // Roster (current active kids — not Monday's snapshot)
+  const { data: rosterRaw } = await supabase
+    .from('montree_children')
+    .select('id, name, photo_url')
+    .eq('classroom_id', classroomId)
+    .eq('is_active', true)
+    .order('name');
+  const roster = (rosterRaw || []) as Array<{
+    id: string; name: string; photo_url: string | null;
+  }>;
+
+  // K-bound + days-since-last-visit come from the saved snapshot's kids.
+  // Anyone NEW to the roster since Monday gets defaults (not K-bound,
+  // never-visited) — they'll be top-priority for bingo this week.
+  const kBoundSet = new Set<string>();
+  const daysSinceLastEnglish = new Map<string, number | null>();
+  for (const day of DAY_ORDER_LIVE) {
+    const arr = baseSchedule.days?.[day] || [];
+    for (const k of arr) {
+      if (k.is_k_bound) kBoundSet.add(k.id);
+      if (!daysSinceLastEnglish.has(k.id)) {
+        daysSinceLastEnglish.set(k.id, k.days_since_last_visit);
+      }
+    }
+  }
+  // Defaults for new-since-Monday roster
+  for (const k of roster) {
+    if (!daysSinceLastEnglish.has(k.id)) {
+      daysSinceLastEnglish.set(k.id, null);
+      if (K_BOUND_NAMES.has(k.name.toLowerCase())) kBoundSet.add(k.id);
+    }
+  }
+
+  const rosterIds = roster.map(k => k.id);
+  const doneSet = await loadDoneChildIds(supabase, classroomId, weekStart, rosterIds);
+  const today = getCurrentWeekDay();
+
+  const { days, meta } = applyLiveState(
+    baseSchedule.days || {},
+    roster,
+    kBoundSet,
+    daysSinceLastEnglish,
+    doneSet,
+    today,
+  );
+
+  return {
+    days,
+    meta,
+    children_count: roster.length,
+    k_bound_count: kBoundSet.size,
+  };
 }
 
 /**
@@ -62,13 +146,26 @@ export async function GET(request: NextRequest) {
       .maybeSingle();
 
     if (saved) {
-      const s = saved as any;
+      const s = saved as { schedule: { days?: Record<string, Array<{
+        id: string; name: string; photo_url: string | null;
+        is_k_bound: boolean; days_since_last_visit: number | null;
+      }>>; children_count?: number; k_bound_count?: number };
+        week_start: string; generated_at: string };
+      const enriched = await enrichScheduleWithLiveState(
+        supabase, classroomId, weekStart, s.schedule,
+      );
       return NextResponse.json({
         success: true,
-        schedule: s.schedule,
+        schedule: {
+          days: enriched.days,
+          children_count: enriched.children_count,
+          k_bound_count: enriched.k_bound_count,
+          week_label: weekStart.toISOString().split('T')[0],
+        },
+        live_state: enriched.meta,
         week_start: s.week_start,
         generated_at: s.generated_at,
-        source: 'saved',
+        source: 'saved+live',
       }, { headers: { 'Cache-Control': 'no-store' } });
     }
   }
@@ -88,12 +185,21 @@ export async function GET(request: NextRequest) {
       generated_at: new Date().toISOString(),
     }, { onConflict: 'classroom_id,week_start' });
 
+  const enrichedFresh = await enrichScheduleWithLiveState(
+    supabase, classroomId, weekStart, schedule,
+  );
   return NextResponse.json({
     success: true,
-    schedule,
+    schedule: {
+      days: enrichedFresh.days,
+      children_count: enrichedFresh.children_count,
+      k_bound_count: enrichedFresh.k_bound_count,
+      week_label: weekStartStr,
+    },
+    live_state: enrichedFresh.meta,
     week_start: weekStartStr,
     generated_at: new Date().toISOString(),
-    source: 'generated',
+    source: 'generated+live',
   }, { headers: { 'Cache-Control': 'no-store' } });
 }
 
@@ -127,12 +233,21 @@ export async function POST(request: NextRequest) {
       generated_at: new Date().toISOString(),
     }, { onConflict: 'classroom_id,week_start' });
 
+  const enriched = await enrichScheduleWithLiveState(
+    supabase, classroomId, weekStart, schedule,
+  );
   return NextResponse.json({
     success: true,
-    schedule,
+    schedule: {
+      days: enriched.days,
+      children_count: enriched.children_count,
+      k_bound_count: enriched.k_bound_count,
+      week_label: weekStartStr,
+    },
+    live_state: enriched.meta,
     week_start: weekStartStr,
     generated_at: new Date().toISOString(),
-    source: 'generated',
+    source: 'generated+live',
   }, { headers: { 'Cache-Control': 'no-store' } });
 }
 
@@ -152,6 +267,264 @@ function getWeekStart(param: string | null): Date {
   monday.setDate(now.getDate() + offset);
   monday.setHours(0, 0, 0, 0);
   return monday;
+}
+
+// ─── Session 119: Live state computation ──────────────────────────────
+
+interface ScheduleChildLive {
+  id: string;
+  name: string;
+  photo_url: string | null;
+  is_k_bound: boolean;
+  days_since_last_visit: number | null;
+  is_done: boolean;            // true if confirmed Language photo this week
+  rolled_from_day?: string;    // 'monday'|'tuesday'|... when rolled forward
+}
+
+interface LiveScheduleDays {
+  monday: ScheduleChildLive[];
+  tuesday: ScheduleChildLive[];
+  wednesday: ScheduleChildLive[];
+  thursday: ScheduleChildLive[];
+  friday: ScheduleChildLive[];
+}
+
+interface LiveStateMeta {
+  today: string | null;            // 'monday'|...|'friday' OR null when weekend
+  is_workday: boolean;
+  done_count: number;
+  undone_count: number;
+  total_in_class: number;
+  unscheduled_undone_names: string[]; // only populated if shortfall
+  shortfall_warning: string | null;   // human-readable warning
+}
+
+const DAY_ORDER_LIVE = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'] as const;
+type WeekDay = typeof DAY_ORDER_LIVE[number];
+
+/**
+ * Find children who have a confirmed Language photo this week. Mirrors the
+ * Session 119 english-missing logic exactly:
+ *   - area_key='language' (NOT work-name inference)
+ *   - teacher_confirmed=true (NOT identification_status)
+ *   - includes group photos via montree_media_children junction
+ */
+async function loadDoneChildIds(
+  supabase: ReturnType<typeof getSupabase>,
+  classroomId: string,
+  weekStart: Date,
+  rosterIds: string[],
+): Promise<Set<string>> {
+  const weekEnd = new Date(weekStart);
+  weekEnd.setDate(weekStart.getDate() + 7);
+
+  // Resolve Language area for this classroom
+  const { data: langArea } = await supabase
+    .from('montree_classroom_curriculum_areas')
+    .select('id')
+    .eq('classroom_id', classroomId)
+    .eq('area_key', 'language')
+    .maybeSingle();
+  if (!langArea) return new Set();
+
+  const { data: langWorks } = await supabase
+    .from('montree_classroom_curriculum_works')
+    .select('id')
+    .eq('classroom_id', classroomId)
+    .eq('area_id', (langArea as { id: string }).id);
+  const langWorkIds = ((langWorks || []) as Array<{ id: string }>).map(w => w.id);
+  if (langWorkIds.length === 0 || rosterIds.length === 0) return new Set();
+
+  const doneSet = new Set<string>();
+
+  // Direct photos — filter by roster too (mirrors english-missing pattern)
+  const { data: directRaw } = await supabase
+    .from('montree_media')
+    .select('child_id')
+    .eq('classroom_id', classroomId)
+    .eq('teacher_confirmed', true)
+    .in('child_id', rosterIds)
+    .in('work_id', langWorkIds)
+    .gte('captured_at', weekStart.toISOString())
+    .lt('captured_at', weekEnd.toISOString());
+  for (const row of (directRaw || []) as Array<{ child_id: string | null }>) {
+    if (row.child_id) doneSet.add(row.child_id);
+  }
+
+  // Group photos via junction — also filter by roster on the junction read.
+  // Audit finding #2 (Session 119): without this, a junction row pointing to
+  // a child from a different classroom would surface in the set. Cosmetically
+  // wasteful before; now matches the english-missing reference exactly.
+  const { data: candidateMediaRaw } = await supabase
+    .from('montree_media')
+    .select('id')
+    .eq('classroom_id', classroomId)
+    .eq('teacher_confirmed', true)
+    .in('work_id', langWorkIds)
+    .gte('captured_at', weekStart.toISOString())
+    .lt('captured_at', weekEnd.toISOString());
+  const candidateMediaIds = ((candidateMediaRaw || []) as Array<{ id: string }>).map(m => m.id);
+  if (candidateMediaIds.length > 0) {
+    const { data: junctionRaw } = await supabase
+      .from('montree_media_children')
+      .select('child_id')
+      .in('media_id', candidateMediaIds)
+      .in('child_id', rosterIds);
+    for (const row of (junctionRaw || []) as Array<{ child_id: string | null }>) {
+      if (row.child_id) doneSet.add(row.child_id);
+    }
+  }
+
+  return doneSet;
+}
+
+/**
+ * Return the current weekday as 'monday'|...|'friday', or null on weekends.
+ * Uses server-local Date semantics (matches generateSchedule's getWeekStart).
+ */
+function getCurrentWeekDay(): WeekDay | null {
+  const dow = new Date().getDay(); // 0=Sun, 1=Mon, ..., 6=Sat
+  if (dow === 0 || dow === 6) return null;
+  return DAY_ORDER_LIVE[dow - 1];
+}
+
+/**
+ * Apply the LIVE STATE transform on top of a saved schedule.
+ *
+ * Past days: kept frozen (original kids) + is_done flag added.
+ * Today + future: pool of undone kids redistributed across remaining days,
+ *   K-bound first, then most-days-since-English. Bingo constraint preserved.
+ *
+ * The original saved schedule (Monday's intent) is what the function reads
+ * from — but past days only consult it for who-was-there. Today+future
+ * recompute entirely from the current done_set + roster, so a teacher's
+ * Wed photo of Rachel removes Rachel from Thu's list automatically.
+ */
+function applyLiveState(
+  savedDays: Record<string, Array<{
+    id: string;
+    name: string;
+    photo_url: string | null;
+    is_k_bound: boolean;
+    days_since_last_visit: number | null;
+  }>>,
+  roster: Array<{ id: string; name: string; photo_url: string | null }>,
+  kBoundSet: Set<string>,
+  daysSinceLastEnglish: Map<string, number | null>,
+  doneSet: Set<string>,
+  today: WeekDay | null,
+): { days: LiveScheduleDays; meta: LiveStateMeta } {
+  const days: LiveScheduleDays = {
+    monday: [], tuesday: [], wednesday: [], thursday: [], friday: [],
+  };
+
+  // Determine past vs today+future. Weekend → all days frozen.
+  const todayIdx = today === null ? DAY_ORDER_LIVE.length : DAY_ORDER_LIVE.indexOf(today);
+  const pastDays = DAY_ORDER_LIVE.slice(0, todayIdx);
+  const liveDays = DAY_ORDER_LIVE.slice(todayIdx);
+
+  // ─── PAST: freeze original kids, add is_done flag ───
+  for (const day of pastDays) {
+    const original = savedDays[day] || [];
+    days[day] = original.map(k => ({
+      id: k.id,
+      name: k.name,
+      photo_url: k.photo_url,
+      is_k_bound: k.is_k_bound,
+      days_since_last_visit: k.days_since_last_visit,
+      is_done: doneSet.has(k.id),
+    }));
+  }
+
+  // ─── LIVE: redistribute undone pool across [today, ...future] ───
+  // Pool = roster minus done. We don't care what saved schedule says for
+  // live days — undone kids ALL need a slot somewhere in the live window.
+  const pool = roster.filter(k => !doneSet.has(k.id));
+
+  // Sort: K-bound first, then most-days-since-English first, then alpha.
+  pool.sort((a, b) => {
+    const aK = kBoundSet.has(a.id);
+    const bK = kBoundSet.has(b.id);
+    if (aK !== bK) return aK ? -1 : 1;
+    const aDays = daysSinceLastEnglish.get(a.id);
+    const bDays = daysSinceLastEnglish.get(b.id);
+    if (aDays === null && bDays !== null && bDays !== undefined) return -1; // never-visited first
+    if (bDays === null && aDays !== null && aDays !== undefined) return 1;
+    if (aDays === null && bDays === null) return a.name.localeCompare(b.name);
+    return (bDays ?? 0) - (aDays ?? 0);
+  });
+
+  // Round-robin distribute across live days, 6/day cap.
+  const SLOTS_PER_DAY = 6;
+  const liveAssignment: Record<string, ScheduleChildLive[]> = {};
+  for (const d of liveDays) liveAssignment[d] = [];
+
+  // Where to mark "rolled from" — for each pool kid, find the past day they
+  // were originally scheduled (if any). That flags them visually as rolled.
+  const originalDayByChildId = new Map<string, WeekDay>();
+  for (const day of DAY_ORDER_LIVE) {
+    const original = savedDays[day] || [];
+    for (const k of original) {
+      if (!originalDayByChildId.has(k.id)) {
+        originalDayByChildId.set(k.id, day);
+      }
+    }
+  }
+
+  let dayIdx = 0;
+  for (const kid of pool) {
+    if (liveDays.length === 0) break; // weekend — nothing to schedule
+
+    // Advance dayIdx until we find a day with room
+    let attempts = 0;
+    while (
+      liveAssignment[liveDays[dayIdx % liveDays.length]].length >= SLOTS_PER_DAY
+      && attempts < liveDays.length
+    ) {
+      dayIdx += 1;
+      attempts += 1;
+    }
+    if (attempts >= liveDays.length) break; // all live days full
+
+    const targetDay = liveDays[dayIdx % liveDays.length];
+    const orig = originalDayByChildId.get(kid.id);
+    liveAssignment[targetDay].push({
+      id: kid.id,
+      name: kid.name,
+      photo_url: kid.photo_url,
+      is_k_bound: kBoundSet.has(kid.id),
+      days_since_last_visit: daysSinceLastEnglish.get(kid.id) ?? null,
+      is_done: false,
+      // Mark rolled if their original day was BEFORE today.
+      ...(orig && pastDays.includes(orig) ? { rolled_from_day: orig } : {}),
+    });
+
+    // Bump dayIdx if this day is now full, so the next kid lands elsewhere
+    if (liveAssignment[targetDay].length >= SLOTS_PER_DAY) dayIdx += 1;
+  }
+
+  for (const d of liveDays) days[d] = liveAssignment[d];
+
+  // ─── Shortfall: undone kids who didn't fit in any live day ───
+  const scheduledInLive = new Set<string>();
+  for (const d of liveDays) {
+    for (const k of liveAssignment[d]) scheduledInLive.add(k.id);
+  }
+  const unscheduled = pool.filter(k => !scheduledInLive.has(k.id));
+
+  const meta: LiveStateMeta = {
+    today,
+    is_workday: today !== null,
+    done_count: doneSet.size,
+    undone_count: pool.length,
+    total_in_class: roster.length,
+    unscheduled_undone_names: unscheduled.map(k => k.name),
+    shortfall_warning: unscheduled.length > 0
+      ? `${unscheduled.length} child${unscheduled.length === 1 ? '' : 'ren'} cannot be fit in the remaining bingo slots this week`
+      : null,
+  };
+
+  return { days, meta };
 }
 
 async function generateSchedule(
