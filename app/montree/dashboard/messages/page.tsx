@@ -313,8 +313,9 @@ export default function TeacherMessagesPage() {
                 background: T.card,
                 border: T.cardBorder,
                 color: T.textPrimary,
-                // 16px prevents iOS Safari zoom-on-focus.
-                fontSize: 15,
+                // 16px MINIMUM — iOS Safari zooms in on focus for any input
+                // < 16px. Architectural rule, customer-facing surface.
+                fontSize: 16,
                 fontFamily: T.sans,
                 outline: 'none',
               }}
