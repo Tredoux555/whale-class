@@ -54,10 +54,18 @@ const SHEET_LABELS: Record<string, Record<string, string>> = {
   },
 };
 
+/** Sub-categories under the "Others" tab. The category is persisted in
+ *  sonnet_draft.other_category so reports / galleries can group by it. */
+export type OtherCategory = 'behavioral_observation' | 'outdoor_play' | 'special_event';
+
 export type Resolution =
   | { type: 'existing'; work_id: string; work_name: string; area_key: string }
   | { type: 'new_custom'; name: string; area_key: string }
-  | { type: 'confirm_ai'; work_id?: string; work_name: string; area_key: string };
+  | { type: 'confirm_ai'; work_id?: string; work_name: string; area_key: string }
+  // Saved to the child's profile but NOT tagged against the Montessori
+  // curriculum. work_id stays null, sonnet_draft.is_other = true acts as
+  // the discriminator. Optional category narrows what kind of moment it is.
+  | { type: 'other'; category?: OtherCategory; note?: string };
 
 export interface ThisIsSheetPhoto {
   id: string;
@@ -107,6 +115,13 @@ export default function ThisIsSheet({
   const [newWorkArea, setNewWorkArea] = useState<string>('practical_life');
   const inputRef = useRef<HTMLInputElement>(null);
 
+  // Two-tab UX (Session 117+): "Curriculum" (default, classic work picker)
+  // and "Others" (Behavioral / Outdoor / Special Event sub-categories).
+  // Tab is a UI control only — picking under Others fires the same `other`
+  // resolution path used by the legacy Save-as-Other button, just with the
+  // category populated. Defaults to 'curriculum' each open.
+  const [activeTab, setActiveTab] = useState<'curriculum' | 'others'>('curriculum');
+
   // --- Merge mode state ---
   const [mergeMode, setMergeMode] = useState(false);
   const [mergeSelected, setMergeSelected] = useState<Set<string>>(new Set());
@@ -154,6 +169,7 @@ export default function ThisIsSheet({
       setMerging(false);
       setMergeResult(null);
       setMergedLoserIds(new Set());
+      setActiveTab('curriculum');
     } else {
       // Pre-seed the search bar with the AI's proposed_name (editable).
       //
@@ -380,9 +396,12 @@ export default function ThisIsSheet({
   // parent pickup, etc.). No curriculum row created. No visual memory
   // write. No progress observation. The photo is just removed from the
   // audit queue with sonnet_draft.is_other=true as the discriminator.
-  const handleSaveAsOther = () => {
+  //
+  // Session 117+: optional `category` narrows what kind of moment it is.
+  // Persisted to sonnet_draft.other_category for future report grouping.
+  const handleSaveAsOther = (category?: OtherCategory) => {
     if (submitting) return;
-    fireAndClose({ type: 'other' });
+    fireAndClose({ type: 'other', category });
   };
 
   // --- Merge handlers ---
@@ -594,6 +613,158 @@ export default function ThisIsSheet({
 
           {!addMode && (
             <>
+              {/* Two-tab strip — Curriculum (default) vs Others.
+                  Tab above the search bar visually signals that Others
+                  is a SEPARATE classification, not just another work in
+                  the picker. */}
+              <div
+                style={{
+                  display: 'flex',
+                  gap: 4,
+                  marginBottom: 12,
+                  background: '#f3f4f6',
+                  padding: 4,
+                  borderRadius: 12,
+                }}
+              >
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('curriculum')}
+                  disabled={submitting}
+                  style={{
+                    flex: 1,
+                    padding: '8px 12px',
+                    fontSize: 13,
+                    fontWeight: 600,
+                    background: activeTab === 'curriculum' ? '#ffffff' : 'transparent',
+                    border: 'none',
+                    borderRadius: 9,
+                    color: activeTab === 'curriculum' ? '#0f172a' : '#6b7280',
+                    cursor: submitting ? 'wait' : 'pointer',
+                    boxShadow: activeTab === 'curriculum' ? '0 1px 3px rgba(0,0,0,0.10)' : 'none',
+                    transition: 'all 140ms ease',
+                  }}
+                  aria-pressed={activeTab === 'curriculum'}
+                >
+                  📚 Curriculum
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('others')}
+                  disabled={submitting}
+                  style={{
+                    flex: 1,
+                    padding: '8px 12px',
+                    fontSize: 13,
+                    fontWeight: 600,
+                    background: activeTab === 'others' ? '#ffffff' : 'transparent',
+                    border: 'none',
+                    borderRadius: 9,
+                    color: activeTab === 'others' ? '#0f172a' : '#6b7280',
+                    cursor: submitting ? 'wait' : 'pointer',
+                    boxShadow: activeTab === 'others' ? '0 1px 3px rgba(0,0,0,0.10)' : 'none',
+                    transition: 'all 140ms ease',
+                  }}
+                  aria-pressed={activeTab === 'others'}
+                >
+                  📌 Others
+                </button>
+              </div>
+
+              {/* Others tab — three sub-category cards. Tap any → fires
+                  the `other` resolution with that category populated. */}
+              {activeTab === 'others' && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  <div style={{ fontSize: 12, color: '#6b7280', marginBottom: 2 }}>
+                    Saved to the child's profile. Not part of the curriculum — no work tagged.
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => handleSaveAsOther('behavioral_observation')}
+                    disabled={submitting}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'flex-start',
+                      gap: 12,
+                      width: '100%',
+                      padding: '14px 16px',
+                      background: '#fffbeb',
+                      border: '1.5px solid #fcd34d',
+                      borderRadius: 12,
+                      cursor: submitting ? 'wait' : 'pointer',
+                      textAlign: 'left',
+                    }}
+                  >
+                    <div style={{ fontSize: 22, lineHeight: 1 }}>👀</div>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontSize: 15, fontWeight: 700, color: '#92400e' }}>
+                        Behavioral observation
+                      </div>
+                      <div style={{ fontSize: 12, color: '#a16207', marginTop: 2 }}>
+                        Something worth noting about how the child is behaving — not a work.
+                      </div>
+                    </div>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleSaveAsOther('outdoor_play')}
+                    disabled={submitting}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'flex-start',
+                      gap: 12,
+                      width: '100%',
+                      padding: '14px 16px',
+                      background: '#ecfdf5',
+                      border: '1.5px solid #6ee7b7',
+                      borderRadius: 12,
+                      cursor: submitting ? 'wait' : 'pointer',
+                      textAlign: 'left',
+                    }}
+                  >
+                    <div style={{ fontSize: 22, lineHeight: 1 }}>🌳</div>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontSize: 15, fontWeight: 700, color: '#065f46' }}>
+                        Outdoor play
+                      </div>
+                      <div style={{ fontSize: 12, color: '#047857', marginTop: 2 }}>
+                        Free play, garden time, recess — captured for the parent's view.
+                      </div>
+                    </div>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleSaveAsOther('special_event')}
+                    disabled={submitting}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'flex-start',
+                      gap: 12,
+                      width: '100%',
+                      padding: '14px 16px',
+                      background: '#fdf4ff',
+                      border: '1.5px solid #d8b4fe',
+                      borderRadius: 12,
+                      cursor: submitting ? 'wait' : 'pointer',
+                      textAlign: 'left',
+                    }}
+                  >
+                    <div style={{ fontSize: 22, lineHeight: 1 }}>🎉</div>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontSize: 15, fontWeight: 700, color: '#6b21a8' }}>
+                        Special event
+                      </div>
+                      <div style={{ fontSize: 12, color: '#7e22ce', marginTop: 2 }}>
+                        Birthday, performance, field trip, holiday celebration.
+                      </div>
+                    </div>
+                  </button>
+                </div>
+              )}
+
+              {/* Curriculum tab — the classic work picker (AI guess + search + new). */}
+              {activeTab === 'curriculum' && (
+                <>
               {/* AI guess shortcut row */}
               {aiGuess && (
                 <button
@@ -1094,39 +1265,13 @@ export default function ThisIsSheet({
                 </div>
               )}
 
-              {/* Session 113: Save as Other.
-                  Subtle fallback for photos that are worth keeping but
-                  aren't curriculum (snack time, art, group photo, parent
-                  pickup, classroom event). Muted styling — not competing
-                  with the primary "this work" CTAs above. */}
-              <div style={{ marginTop: 12, paddingTop: 10, borderTop: '1px dashed #e5e7eb' }}>
-                <button
-                  onClick={handleSaveAsOther}
-                  disabled={submitting}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 10,
-                    width: '100%',
-                    padding: '10px 12px',
-                    background: '#f9fafb',
-                    border: '1px solid #e5e7eb',
-                    borderRadius: 10,
-                    cursor: submitting ? 'wait' : 'pointer',
-                    textAlign: 'left',
-                  }}
-                >
-                  <div style={{ fontSize: 18, color: '#6b7280' }}>📌</div>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: 13, color: '#374151', fontWeight: 600 }}>
-                      Save as Other
-                    </div>
-                    <div style={{ fontSize: 11, color: '#6b7280', marginTop: 1 }}>
-                      Not curriculum — snack time, art, group photo, etc. Keeps the photo on the child without tagging a work.
-                    </div>
-                  </div>
-                </button>
-              </div>
+              {/* Session 117+: legacy "Save as Other" pill removed — the
+                  Others tab above replaces it with three explicit sub-
+                  category choices (Behavioral / Outdoor / Special Event).
+                  handleSaveAsOther() is preserved (called with a category
+                  param from the tab UI). */}
+                </>
+              )}
             </>
           )}
 
