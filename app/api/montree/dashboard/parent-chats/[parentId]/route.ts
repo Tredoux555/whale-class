@@ -39,7 +39,7 @@ interface FlatMessage {
   sender_id: string;
   sender_name: string;
   body: string;
-  created_at: string;
+  sent_at: string;  // schema column name; client renders this as the timestamp
   ai_drafted: boolean;
   child_id: string | null;
   child_name: string | null;
@@ -69,15 +69,16 @@ export async function GET(
   }
 
   // Fetch the most-recent 5000 messages across shared threads.
-  // 🚨 Audit pass 2: must order DESC + limit so the SLICE we get is the
-  // newest 5000, not the oldest 5000. (asc+limit would truncate the
-  // recent end of a long chat history — exactly wrong for a chat UI.)
-  // Then reverse client-side to render chronologically for display.
+  // 🚨 Schema columns: actual time column is `sent_at` (not created_at),
+  // and we must filter out soft-deleted messages (`deleted_at IS NULL`).
+  // Must order DESC + limit so the SLICE we get is the newest 5000, not
+  // the oldest 5000. Then reverse client-side for chronological display.
   const { data: messagesRaw } = await supabase
     .from('montree_thread_messages')
-    .select('id, thread_id, sender_role, sender_id, sender_name, body, created_at, ai_drafted')
+    .select('id, thread_id, sender_role, sender_id, sender_name, body, sent_at, ai_drafted')
     .in('thread_id', ctx.sharedThreadIds)
-    .order('created_at', { ascending: false })
+    .is('deleted_at', null)
+    .order('sent_at', { ascending: false })
     .limit(5000);
   const messagesNewestFirst = (messagesRaw || []) as Array<{
     id: string;
@@ -86,7 +87,7 @@ export async function GET(
     sender_id: string;
     sender_name: string;
     body: string;
-    created_at: string;
+    sent_at: string;
     ai_drafted: boolean | null;
   }>;
   // Reverse to chronological for the UI feed
@@ -115,7 +116,7 @@ export async function GET(
     sender_id: m.sender_id,
     sender_name: m.sender_name,
     body: m.body,
-    created_at: m.created_at,
+    sent_at: m.sent_at,
     ai_drafted: !!m.ai_drafted,
     child_id: childIdByThread.get(m.thread_id) ?? null,
     child_name: (() => {
@@ -245,7 +246,7 @@ export async function POST(
       body: messageBody,
       ai_drafted: false, // Parent-chats UI is never Tracy-assisted (per Session 97 rule).
     })
-    .select('id, thread_id, sender_role, sender_id, sender_name, body, created_at, ai_drafted')
+    .select('id, thread_id, sender_role, sender_id, sender_name, body, sent_at, ai_drafted')
     .maybeSingle();
   if (insertErr || !msgRow) {
     console.error('[parent-chats POST] insert failed:', insertErr?.message);

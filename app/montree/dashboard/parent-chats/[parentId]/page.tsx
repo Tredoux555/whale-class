@@ -47,7 +47,7 @@ interface FlatMessage {
   sender_id: string;
   sender_name: string;
   body: string;
-  created_at: string;
+  sent_at: string;
   ai_drafted: boolean;
   child_id: string | null;
   child_name: string | null;
@@ -341,7 +341,7 @@ function MessageBubble({
   showSenderName: boolean;
   locale: string;
 }) {
-  const time = new Date(message.created_at).toLocaleTimeString(getIntlLocale(locale), {
+  const time = new Date(message.sent_at).toLocaleTimeString(getIntlLocale(locale), {
     hour: 'numeric',
     minute: '2-digit',
   });
