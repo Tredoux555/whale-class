@@ -200,6 +200,52 @@ Wave 1 sends bounced for these addresses. None of these are flagged as `bounced`
 
 ---
 
+## 🚨 NEXT SESSION — CALL TO ACTION (queued May 19, 2026 evening)
+
+When you come back from a context refresh, run these in order:
+
+### 1. Build the English tracking section (THE BUILD)
+
+**Full spec:** `docs/handoffs/SESSION_119_NEXT_HANDOFF.md`
+
+Tredoux's words: *"I want to build an English tracking section. Each child needs to come to English at least once in the week so I want to be able to look at 'class overview' I want a list that updates automatically after every photo commit with the photo confirmation section. So I want to see a list of the students who haven't had any English works captured for that week."*
+
+- **Where:** `/montree/dashboard/classroom-overview` — new section at top
+- **What:** List of students who haven't had a Language-area photo confirmed this week
+- **Updates:** Automatically when a Language photo is confirmed in `/photo-audit` (SWR cache mutation + revalidate-on-focus)
+- **5 steps in handoff doc:** API route → UI section → auto-refresh → mobile/i18n → smoke test
+- **Estimated effort:** 2-3 hours, no migration, no new tables, no env vars
+- **Architectural notes:** filter by `area_key='language'`, use `teacher_confirmed=TRUE`, include group photos via `montree_media_children` junction, week boundary is classroom-timezone Monday (Asia/Shanghai for Whale Class)
+
+### 2. Send Simone the VAT-registration reply (OPS — not code)
+
+Tredoux already has a **DRAFT** in Gmail (subject "Re: next step is vat registration") saying *"So I need to do some business using the business and importing licence?"* — instinct is right. Suggested expanded version:
+
+> "Hi Simone, makes sense — but we haven't done any trading yet on the new business since the import licence was only approved today. I'll need to actually run some import/export deals through the company first before I can give you those documents. Should we just pause VAT registration until I've got a few months of real trading on the books? Or is there a path to register early?"
+
+**Why this matters:** Simone's request for 3 invoices totaling R50K+, 3 months of bank statements showing income, plus a SARS tax compliance letter is legit and standard for voluntary VAT registration. But Tredoux's Jeffy (Pty) Ltd hasn't traded yet — the import licence was approved this same morning. He can't supply those documents. Push it back to Simone politely and ask whether to pause or whether there's an early-registration path.
+
+### 3. Optional cleanup (low priority)
+
+If you want a fully clean DB (cosmetic — doesn't block anything):
+
+```sql
+DELETE FROM montree_agent_audit WHERE agent_id IS NULL;
+DELETE FROM montree_referral_codes WHERE agent_id IS NULL;
+```
+
+These are 1 stale code + 11 audit rows left over from previously-deleted agents (FK was `ON DELETE SET NULL` so they survived earlier deletes). Whale Class is untouched. Agent system is otherwise fully fresh.
+
+### 4. Carry-overs (still relevant)
+
+- Stage A Agora activation — migration 223 + flag flip + 2-device end-to-end test per `docs/handoffs/AGORA_STAGE_A_QUICKSTART.md`
+- Agent default revenue share % unblock — ~10 min change to default new agents to 20% so they don't hit "Self-service code generation disabled" wall
+- Appointments i18n sweep — appointments + new calendar surface English-only
+- Mira → Tracy super-admin scope (Session 108 Phase 4.8)
+- Outreach follow-ups — FAMM Argentina, Cambridge Montessori Global, Otari NZ, Lions Gate, Montessori Norge
+
+---
+
 ## RECENT STATUS (May 19, 2026)
 
 ### 🔥 Session 118 — Parent portal home anchor + welcome PWA tip + teacher messages search + photo audit Correct fix + Photo pipeline v2 (4-fix bundle) + Others tab + audit fix (May 19, 2026)
