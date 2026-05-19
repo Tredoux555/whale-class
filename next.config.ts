@@ -115,7 +115,17 @@ const nextConfig: NextConfig = {
               //   - uni-webcollector.agora.io                           → Agora telemetry (without it, SDK logs noisy warnings)
               // Without these, the SDK's join() retries 'multi unilbs network error' forever
               // and never reaches the camera/mic permission prompt (Beijing user diagnosis, 2026-05-18).
-              "connect-src 'self' https://dmfncjjtsoxrnvcdnvjq.supabase.co https://www.googleapis.com https://static.cloudflareinsights.com https://*.agora.io wss://*.agora.io https://*.sd-rtn.com wss://*.sd-rtn.com https://*.agoraio.cn wss://*.agoraio.cn",
+              //
+              // 🚨 Session 119 — CRITICAL FIX: every Agora host source has ":*"
+              // appended. Per CSP spec, a host-source with NO port matches only
+              // the scheme's default port (443 for wss/https). Agora's SDK first
+              // probes non-standard ports (4710, 4714, etc.) which the spec
+              // then BLOCKS with "violates the following Content Security Policy
+              // directive". The SDK falls back to port 443 but burns 5–7s per
+              // device per retry — with two devices doing this dance, they
+              // rarely converge in the join window. ":*" port-wildcard fixes
+              // it. Diagnosed from Tredoux's iPhone+Mac call log 2026-05-19.
+              "connect-src 'self' https://dmfncjjtsoxrnvcdnvjq.supabase.co https://www.googleapis.com https://static.cloudflareinsights.com https://*.agora.io:* wss://*.agora.io:* https://*.sd-rtn.com:* wss://*.sd-rtn.com:* https://*.agoraio.cn:* wss://*.agoraio.cn:*",
               "media-src 'self' blob: https://dmfncjjtsoxrnvcdnvjq.supabase.co",
               // worker-src 'self' blob: required by Agora SDK for its audio-processing AudioWorklet
               "worker-src 'self' blob:",
