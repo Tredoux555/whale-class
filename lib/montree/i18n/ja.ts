@@ -4558,4 +4558,13 @@ export const ja: Record<string, string> = {
   'landing.hero.evolve': '教室を進化させる。学校を進化させる。',
   'landing.quote.body': '遊びは子どもの仕事である。',
   'landing.quote.attribution': 'マリア・モンテッソーリ',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'classroomOverview.englishWeek.title': '今週、言語をまだ学習していません',
+  'classroomOverview.englishWeek.emptyOk': 'すべてのお子さまが今週、言語を学習しました',
+  'classroomOverview.englishWeek.needCount': '{missing}人のお子さまが言語の学習が必要です（全{total}人中）',
+  'classroomOverview.englishWeek.loading': '言語の学習が必要なお子さまを確認中です…',
+  'classroomOverview.englishWeek.error': '言語の学習状況を読み込むことができませんでした',
+  'classroomOverview.englishWeek.refresh': '更新',
+  'classroomOverview.englishWeek.noLanguageArea': 'このクラスルームに言語エリアが設定されていません',
 };

@@ -20,6 +20,7 @@ import { useState, useCallback, useRef, useEffect, useSyncExternalStore } from '
 import { useI18n } from '@/lib/montree/i18n';
 import AreaBadge from '@/components/montree/shared/AreaBadge';
 import { montreeApi } from '@/lib/montree/api';
+import { invalidateEnglishWeekCache } from '@/lib/montree/cache';
 import {
   subscribe,
   getPendingEntries,
@@ -156,6 +157,9 @@ export default function PhotoInsightPopup({
           }),
         }).then((res) => {
           if (!res.ok) console.error('[PhotoInsightPopup] Confirm accuracy EMA failed:', res.status);
+          // Session 119: invalidate english-missing cache so /classroom-overview
+          // reflects a newly-confirmed Language photo on next mount/focus.
+          if (res.ok) invalidateEnglishWeekCache();
         }).catch((err) => {
           console.error('[PhotoInsightPopup] Confirm accuracy EMA error (non-fatal):', err);
         });

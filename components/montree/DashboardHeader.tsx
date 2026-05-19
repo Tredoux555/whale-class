@@ -16,6 +16,10 @@ import { getSession, clearSession, isHomeschoolParent, type MontreeSession } fro
 import { HOME_THEME } from '@/lib/montree/home-theme';
 import { useI18n } from '@/lib/montree/i18n';
 import { montreeApi } from '@/lib/montree/api';
+// InboxButton — Tredoux-DM channel. Currently hidden from the More menu
+// (Session 119, "no function"). Import preserved so the hidden JSX block
+// stays uncomment-ready; remove this import if/when that block is deleted.
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import InboxButton from './InboxButton';
 import LanguageToggle from './LanguageToggle';
 import MontreeLogo from './MonteeLogo';
@@ -48,12 +52,14 @@ interface TeacherOption  { id: string; name: string; role: string; login_code: s
 // ── Glass icon button ─────────────────────────────────────────────────────────
 function IconBtn({
   children, onClick, title, active = false, recording = false,
+  className = '',
 }: {
   children: React.ReactNode;
   onClick?: () => void;
   title?: string;
   active?: boolean;
   recording?: boolean;
+  className?: string;
 }) {
   const [hover, setHover] = useState(false);
   const bg = recording ? C.red : (hover || active ? C.glassBtnHvr : C.glassBtn);
@@ -65,6 +71,7 @@ function IconBtn({
       aria-label={title}
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => setHover(false)}
+      className={`mt-icon-btn ${className}`.trim()}
       style={{
         display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
         height: 36, padding: '8px 10px',
@@ -437,6 +444,24 @@ function DashboardHeader() {
           70%  { transform: scale(1.15); opacity: 0;   }
           100% { transform: scale(1.15); opacity: 0;   }
         }
+
+        /* Session 119 — mobile header tightening.
+           Yesterday's Messages icon (Session 117) brought the right-cluster
+           to 5 elements (LanguageToggle + Camera + Messages + Mic + More).
+           On iPhone viewports (≤ 640px) that overflowed past the teacher
+           pill on the left. Three changes restore breathing room without
+           losing any feature:
+           1. Hide the inline Messages icon on mobile — the More menu still
+              has a labelled entry for it (same as before Session 117).
+           2. Reduce inter-icon gap from 8px to 4px.
+           3. Shrink IconBtn horizontal padding from 10px to 6px.
+           4. Cap the teacher-pill text at 56px (was 100px). */
+        @media (max-width: 640px) {
+          .mt-header-right-cluster { gap: 4px !important; }
+          .mt-header-right-cluster .mt-icon-btn { padding-left: 6px !important; padding-right: 6px !important; }
+          .mt-header-icon-messages-inline { display: none !important; }
+          .mt-header-teacher-name { max-width: 56px !important; }
+        }
       `}</style>
 
       <header
@@ -486,7 +511,7 @@ function DashboardHeader() {
                   cursor: 'pointer', transition: 'background 140ms ease',
                 }}
               >
-                <span style={{ maxWidth: 100, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                <span className="mt-header-teacher-name" style={{ maxWidth: 100, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {session.teacher?.name || t('teachers.teacher')}
                 </span>
                 <ChevronDown size={13} strokeWidth={1.75} style={{ opacity: 0.7 }} />
@@ -564,7 +589,7 @@ function DashboardHeader() {
           </div>
 
           {/* Right: language + camera + mic + more */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+          <div className="mt-header-right-cluster" style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
             <LanguageToggle />
 
             <IconBtn
@@ -578,11 +603,16 @@ function DashboardHeader() {
             {/* Messages — promoted from the More menu to a first-class icon
                 so principals + parents can reach this channel in one tap.
                 Same destination as the More-menu entry below (which stays for
-                discoverability + a labelled affordance). */}
+                discoverability + a labelled affordance).
+                Session 119: hidden on ≤640px viewports (CSS media query on
+                .mt-header-icon-messages-inline) because the 5-element right
+                cluster overflowed the iPhone width. The More menu still
+                surfaces it on mobile — same one-tap path as before Session 117. */}
             <IconBtn
               title={t('nav.messages') || 'Messages'}
               active={activePage === 'messages'}
               onClick={() => router.push('/montree/dashboard/messages')}
+              className="mt-header-icon-messages-inline"
             >
               <MessageSquare size={18} strokeWidth={1.75} color="#fff" />
             </IconBtn>
@@ -609,6 +639,18 @@ function DashboardHeader() {
 
               {showMoreMenu && (
                 <div role="menu" style={MENU_PANEL_STYLE}>
+                  {/* Session 119: Classroom Overview pinned to the TOP of the
+                      menu (was buried in "extras" behind menu_classroom_overview
+                      flag). Tredoux explicitly asked for this — it's the most
+                      reached-for surface during planning. Ungated so every
+                      school sees it. */}
+                  <MenuRow
+                    icon={LayoutGrid}
+                    label={t('nav.classroomOverview')}
+                    active={activePage === 'class-overview'}
+                    onClick={() => { setShowMoreMenu(false); router.push('/montree/dashboard/classroom-overview'); }}
+                  />
+
                   {/* Messages — Session 103: principal + parent threaded comms */}
                   <MenuRow
                     icon={MessageSquare}
@@ -649,7 +691,10 @@ function DashboardHeader() {
                     onClick={() => { setShowMoreMenu(false); router.push('/montree/dashboard/appointments'); }}
                   />
 
-                  {/* Help — renamed from "Inbox", same Tredoux-DM channel underneath */}
+                  {/* Help — HIDDEN Session 119 per Tredoux: "no function".
+                      Kept in code (hide-don't-delete per CLAUDE.md rule #56) in
+                      case the Tredoux-DM channel becomes relevant again.
+                      To re-enable: uncomment the block below + remove this note.
                   <div style={{ padding: '4px 10px 8px' }} onClick={() => setShowMoreMenu(false)}>
                     <InboxButton
                       conversationId={session.teacher.id}
@@ -657,6 +702,7 @@ function DashboardHeader() {
                       data-tutorial="inbox-button"
                     />
                   </div>
+                  */}
                   <Divider />
 
                   {/* Essentials — Notes, Curriculum, Guru, Wrap Up, Manage Students */}
@@ -676,10 +722,10 @@ function DashboardHeader() {
                     <MenuRow icon={Users}       label={t('students.manageStudents') || 'Manage Students'} active={activePage === 'manage-students'} onClick={() => { setShowMoreMenu(false); router.push('/montree/dashboard/students'); }} />
                   )}
 
-                  {/* Extras — all gated, off by default for new schools */}
-                  {isEnabled('menu_classroom_overview') && (
-                    <MenuRow icon={LayoutGrid}  label={t('nav.classroomOverview')} active={activePage === 'class-overview'} onClick={() => { setShowMoreMenu(false); router.push('/montree/dashboard/classroom-overview'); }} />
-                  )}
+                  {/* Extras — all gated, off by default for new schools.
+                      Note: Classroom Overview was here behind menu_classroom_overview;
+                      Session 119 promoted it to the TOP of the menu (always
+                      visible) per Tredoux's ask. Don't re-add it here. */}
                   {isEnabled('menu_focus_list') && (
                     <MenuRow icon={Target}    label={t('dashboard.focusList')} active={activePage === 'focus-list'}  onClick={() => { setShowMoreMenu(false); router.push('/montree/dashboard/focus'); }} />
                   )}

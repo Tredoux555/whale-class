@@ -4555,4 +4555,13 @@ export const uk: Record<string, string> = {
   'landing.hero.evolve': 'Розвивайте свій клас. Розвивайте свою школу.',
   'landing.quote.body': 'Гра — це робота дитини.',
   'landing.quote.attribution': 'Марія Монтессорі',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'classroomOverview.englishWeek.title': 'Не займався англійською мовою цього тижня',
+  'classroomOverview.englishWeek.emptyOk': 'Усі діти займалися англійською мовою цього тижня',
+  'classroomOverview.englishWeek.needCount': '{missing} із {total} дітей потребують англійської мови',
+  'classroomOverview.englishWeek.loading': 'Перевірка, хто потребує англійської мови…',
+  'classroomOverview.englishWeek.error': 'Не вдалося завантажити статус англійської мови',
+  'classroomOverview.englishWeek.refresh': 'Оновити',
+  'classroomOverview.englishWeek.noLanguageArea': 'Жодна область Мови не налаштована для цього класу',
 };

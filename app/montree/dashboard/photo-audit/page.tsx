@@ -10,6 +10,7 @@ import { toast } from 'sonner';
 import { useI18n } from '@/lib/montree/i18n';
 import { getSession } from '@/lib/montree/auth';
 import { montreeApi } from '@/lib/montree/api';
+import { invalidateEnglishWeekCache } from '@/lib/montree/cache';
 import { useFeaturesContext } from '@/lib/montree/features';
 import type { Resolution as ThisIsResolution, ThisIsSheetPhoto } from '@/components/montree/photo-audit/ThisIsSheet';
 import { getThumbnailUrl, getThumbnailSrcSet } from '@/lib/montree/media/proxy-url';
@@ -1178,6 +1179,10 @@ export default function PhotoAuditPage() {
           throw new Error(errData?.error || 'confirm failed');
         }
         // Success — photo already gone. Silent. No toast.
+        // Session 119: the english-missing list on /classroom-overview depends
+        // on teacher_confirmed Language photos this week. After a successful
+        // confirm, drop the cached entry so the next mount/focus refetches.
+        invalidateEnglishWeekCache();
       } catch (err: unknown) {
         // 3. API failed — restore the photo + counts and surface the error.
         confirmedIdsRef.current.delete(photo.id);
@@ -1394,6 +1399,9 @@ export default function PhotoAuditPage() {
         throw new Error(errData?.error || 'attach failed');
       }
       // Success — photo already gone. Silent.
+      // Session 119: invalidate english-missing cache so /classroom-overview
+      // reflects this child's new Language activity on next mount/focus.
+      invalidateEnglishWeekCache();
       return true;
     } catch (err) {
       console.error('[AttachExisting] Failed:', err);
@@ -1608,6 +1616,9 @@ export default function PhotoAuditPage() {
       if (resolution.type === 'new_custom') {
         fetchCurriculum();
       }
+      // Session 119: invalidate english-missing cache so /classroom-overview
+      // reflects this child's new Language activity on next mount/focus.
+      invalidateEnglishWeekCache();
     } catch (err) {
       console.error('[ResolvePhoto] Failed:', err);
       // 3. API failed — restore the photo + counts.
@@ -1700,6 +1711,9 @@ export default function PhotoAuditPage() {
       }));
       setSelectedIds(prev => { const next = new Set(prev); next.delete(correctingPhoto.id); return next; });
       toast.success(`🔧 Fixed → "${work.name}"`);
+      // Session 119: invalidate english-missing cache (Fix path could have
+      // assigned a Language work to a previously-missing child).
+      invalidateEnglishWeekCache();
       // Auto-set "practicing" — teacher photographed the child doing this work
       if (correctingPhoto.child_id && work.name) {
         montreeApi('/api/montree/progress/update', {
@@ -1777,6 +1791,10 @@ export default function PhotoAuditPage() {
       toast.success(t('audit.batchComplete'));
     } else {
       toast.error(t('audit.batchPartial', { succeeded, total: ids.length }));
+    }
+    // Session 119: if any photos were confirmed, refresh english-missing.
+    if (succeeded > 0) {
+      invalidateEnglishWeekCache();
     }
   };
 

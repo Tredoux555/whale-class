@@ -66,6 +66,13 @@ const SetAppointmentModalLazy = dynamic(
   { ssr: false }
 );
 
+// 🚨 Session 119 — feature flip. Tredoux asked to hide the legacy
+// "Open every week on…" and "Time away" accordions ("no use"). They're
+// preserved in place (hide-don't-delete per CLAUDE.md rule #56). Flip
+// this constant to true to restore both blocks. State + handlers above
+// stay live so re-enabling requires no other change.
+const SHOW_LEGACY_ACCORDIONS = false;
+
 // ── Theme tokens (dark forest) ───────────────────────────────────────
 const T = {
   emerald: '#34d399',
@@ -910,7 +917,13 @@ export default function AppointmentsCalendar() {
       </DaySheet>
       )}
 
-      {/* ── Recurring availability accordion ────────────────────────── */}
+      {/* ── Recurring availability accordion ──────────────────────────
+          🚨 Session 119: HIDDEN per Tredoux ("Open every week on… has no
+          use"). Wrapped in SHOW_LEGACY_ACCORDIONS=false; flip to true to
+          restore. Hide-don't-delete per CLAUDE.md rule #56. The state
+          + handlers above are preserved so re-enabling is a 1-line flip.
+          The Time away accordion below is gated by the same constant. */}
+      {SHOW_LEGACY_ACCORDIONS && (
       <Accordion
         id="recurring-section"
         title="Open every week on…"
@@ -1069,8 +1082,12 @@ export default function AppointmentsCalendar() {
           </div>
         )}
       </Accordion>
+      )}
 
-      {/* ── Time away accordion ─────────────────────────────────────── */}
+      {/* ── Time away accordion ───────────────────────────────────────
+          🚨 Session 119: HIDDEN per Tredoux ("Time away has no use").
+          Same SHOW_LEGACY_ACCORDIONS gate as the recurring accordion. */}
+      {SHOW_LEGACY_ACCORDIONS && (
       <Accordion
         title="Time away"
         subtitle={
@@ -1161,6 +1178,7 @@ export default function AppointmentsCalendar() {
           </div>
         )}
       </Accordion>
+      )}
 
       {/* Phase 116.3 — full-viewport Agora call overlay. */}
       {agoraCall && (

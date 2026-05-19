@@ -4156,6 +4156,15 @@ export const en = {
   'classroomOverview.day.thursday': 'Thursday',
   'classroomOverview.day.friday': 'Friday',
 
+  // English-this-week panel (Session 119)
+  'classroomOverview.englishWeek.title': "Hasn't done English this week",
+  'classroomOverview.englishWeek.emptyOk': 'Every child has done English this week',
+  'classroomOverview.englishWeek.needCount': '{missing} of {total} children need English',
+  'classroomOverview.englishWeek.loading': 'Checking who needs English…',
+  'classroomOverview.englishWeek.error': "Couldn't load English status",
+  'classroomOverview.englishWeek.refresh': 'Refresh',
+  'classroomOverview.englishWeek.noLanguageArea': 'No Language area configured for this classroom',
+
   // --- Parent Report (Batch 2 Layer 3) ---
   'parentReport.back': 'Back',
   'parentReport.childWeekTitle': '{name}\'s Week',

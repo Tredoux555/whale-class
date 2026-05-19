@@ -1066,7 +1066,13 @@ export default function ReferralsTab({ saToken }: ReferralsTabProps) {
                         {r.agent_pitch_label || <span className="text-slate-600">—</span>}
                       </td>
                       <td className="px-3 py-3 text-slate-400 text-xs">{fmtDate(r.created_at)}</td>
-                      <td className="px-3 py-3 text-right whitespace-nowrap">
+                      {/* Session 119: actions cell was whitespace-nowrap →
+                          the 8+ action buttons (🗂 💲 💳 🔑 ✏️ 📄 💸 🔓 ⏸ + suspend)
+                          overflowed the cell and got CROPPED in narrower
+                          viewports. Tredoux couldn't see 🔓 "Log in as agent"
+                          even though it was rendered. flex + flex-wrap +
+                          justify-end stacks them onto a second row instead. */}
+                      <td className="px-3 py-3"><div className="flex flex-wrap justify-end gap-1">
                         {/* Copy code (📋) */}
                         <span
                           style={{ position: 'relative', display: 'inline-block', marginRight: 4 }}
@@ -1284,7 +1290,7 @@ export default function ReferralsTab({ saToken }: ReferralsTabProps) {
                             Revoke
                           </button>
                         )}
-                      </td>
+                      </div></td>
                     </tr>
                   );
                 })}

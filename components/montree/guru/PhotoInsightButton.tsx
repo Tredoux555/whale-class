@@ -12,6 +12,7 @@ import { Sparkles, RotateCw, AlertTriangle, Check, X, Plus, BookOpen, Eye, Loade
 import { useI18n } from '@/lib/montree/i18n';
 import AreaBadge from '@/components/montree/shared/AreaBadge';
 import { montreeApi } from '@/lib/montree/api';
+import { invalidateEnglishWeekCache } from '@/lib/montree/cache';
 import {
   subscribe,
   getEntry,
@@ -187,6 +188,10 @@ export default function PhotoInsightButton({
           if (!corrRes.ok) {
             console.error('[PhotoInsight] Confirm accuracy EMA failed:', corrRes.status);
             // Non-fatal — proceed with local confirmation even if EMA fails
+          } else {
+            // Session 119: invalidate english-missing cache so /classroom-overview
+            // reflects a newly-confirmed Language photo on next mount/focus.
+            invalidateEnglishWeekCache();
           }
         } catch (corrErr) {
           console.error('[PhotoInsight] Confirm accuracy EMA error (non-fatal):', corrErr);
@@ -867,7 +872,7 @@ export default function PhotoInsightButton({
                               const freshRes = getEntry(mediaId, childId)?.result;
                               if (classroomId && freshRes?.work_name) {
                                 try {
-                                  await montreeApi(`/api/montree/guru/corrections`, {
+                                  const candRes = await montreeApi(`/api/montree/guru/corrections`, {
                                     method: 'POST',
                                     body: JSON.stringify({
                                       child_id: childId,
@@ -879,6 +884,11 @@ export default function PhotoInsightButton({
                                       correction_type: 'candidate_selection',
                                     }),
                                   });
+                                  // Session 119: invalidate english-missing cache
+                                  // ONLY on success — montreeApi doesn't throw on 4xx/5xx.
+                                  if (candRes.ok) {
+                                    invalidateEnglishWeekCache();
+                                  }
                                 } catch (err) {
                                   console.error('[PhotoInsight] Soft correction error (non-fatal):', err);
                                 }

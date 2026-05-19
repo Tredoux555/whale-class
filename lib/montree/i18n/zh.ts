@@ -4961,4 +4961,13 @@ export const zh = {
   'landing.hero.evolve': '让教室进化。让学校进化。',
   'landing.quote.body': '游戏是儿童的工作。',
   'landing.quote.attribution': '玛丽亚·蒙特梭利',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'classroomOverview.englishWeek.title': '本周未学英语',
+  'classroomOverview.englishWeek.emptyOk': '所有幼儿本周都已学英语',
+  'classroomOverview.englishWeek.needCount': '{missing} 名幼儿需要学英语（共 {total} 名）',
+  'classroomOverview.englishWeek.loading': '正在检查谁需要学英语…',
+  'classroomOverview.englishWeek.error': '无法加载英语学习状态',
+  'classroomOverview.englishWeek.refresh': '刷新',
+  'classroomOverview.englishWeek.noLanguageArea': '该教室未配置语言区',
 } as const;

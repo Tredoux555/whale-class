@@ -59,6 +59,16 @@ interface AgentRow {
 
 const AGENT_FIELDS = 'id, name, email, is_agent, agent_password_hash, agent_default_share_pct, agent_suspended_at';
 
+// 🚨 Session 119 — default revenue share % for brand-new agents.
+// Phase 7a originally left this NULL until Tredoux explicitly set it via
+// PATCH, which caused every new agent to hit "Self-service code generation
+// disabled" until he remembered. 20% is the canonical handshake share — same
+// number the agent referral programme docs promise to multiplier partners.
+// Operators can still override via body.default_share_pct on POST or PATCH
+// the value later. We ONLY apply this default when the agent currently has
+// NULL — never downgrades an already-set value.
+const DEFAULT_AGENT_SHARE_PCT = 20;
+
 // ─── POST ─────────────────────────────────────────────────────────────────
 // Issue or reset the agent's login code. Optional default_share_pct in body
 // locks the agent's default % at the same time so a single round-trip handles
@@ -149,7 +159,14 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string
     agent_suspended_at: null,
   };
   if (nextDefaultPct !== undefined) {
+    // Operator explicitly set (or cleared) the % — that wins.
     updatePayload.agent_default_share_pct = nextDefaultPct;
+  } else if (agent.agent_default_share_pct === null || agent.agent_default_share_pct === undefined) {
+    // Session 119 unblock: agent has no % set yet. Seed with canonical 20%
+    // so self-service code generation works on first login. If the operator
+    // wants a different %, they can pass default_share_pct in the body or
+    // PATCH it later. We never downgrade an already-set value here.
+    updatePayload.agent_default_share_pct = DEFAULT_AGENT_SHARE_PCT;
   }
 
   const { data: updated, error: updateErr } = await supabase
