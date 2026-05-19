@@ -106,6 +106,11 @@ export default function AgentPayoutsPage() {
   const [error, setError] = useState<string | null>(null);
   const [link, setLink] = useState<{ url: string; expires_at: number } | null>(null);
   const [linkLoading, setLinkLoading] = useState(false);
+  // Inline error for the onboarding-link button. The page-level `error` state
+  // is rendered up at the top of the section so a user clicking the button
+  // at the bottom doesn't see it. linkError renders directly below the
+  // button so the failure mode is visible without scrolling.
+  const [linkError, setLinkError] = useState<string | null>(null);
   const [refreshLoading, setRefreshLoading] = useState(false);
   const [linkCopied, setLinkCopied] = useState(false);
   // Session 109: country picker for first-time Connect account creation.
@@ -159,6 +164,7 @@ export default function AgentPayoutsPage() {
 
     setLinkLoading(true);
     setError(null);
+    setLinkError(null);
     setUnsupportedCountry(null);
     try {
       const res = await fetch('/api/montree/agent/connect-onboard', {
@@ -166,7 +172,21 @@ export default function AgentPayoutsPage() {
         headers: needsCountry ? { 'Content-Type': 'application/json' } : undefined,
         body: needsCountry ? JSON.stringify({ country: selectedCountry }) : undefined,
       });
-      const d = await res.json();
+      // Defensive: response.json() can throw if the server returns a non-JSON
+      // body (HTML error page, blank response, etc.). Without this guard the
+      // promise rejects and the user sees nothing — exactly the symptom this
+      // was reported with. Read text first, parse if possible, surface the
+      // raw text as the error otherwise.
+      const rawText = await res.text();
+      let d: { onboarding_url?: string; onboarding_expires_at?: number; detail?: string; error?: string; country_unsupported?: boolean } = {};
+      try {
+        d = rawText ? JSON.parse(rawText) : {};
+      } catch {
+        // Non-JSON response — server probably crashed or returned HTML.
+        console.error('[payouts] link error: non-JSON response', { status: res.status, body: rawText.slice(0, 500) });
+        setLinkError(`Server returned a non-JSON response (status ${res.status}). Reach out to Tredoux.`);
+        return;
+      }
       if (!res.ok) {
         // Session 110: friendly fallback for unsupported-country case.
         // Server returns { country_unsupported: true } — instead of a generic
@@ -175,15 +195,25 @@ export default function AgentPayoutsPage() {
           setUnsupportedCountry(selectedCountry);
           return;
         }
-        setError(d.detail || d.error || 'Could not generate onboarding link.');
+        const msg = d.detail || d.error || `Could not generate onboarding link (status ${res.status}).`;
+        console.error('[payouts] link error: server rejected', { status: res.status, body: d });
+        setLinkError(msg);
         return;
       }
-      setLink({ url: d.onboarding_url, expires_at: d.onboarding_expires_at });
+      // Success path — but defensively check we actually got a URL back.
+      // If the route 200's without onboarding_url (would be a server bug),
+      // the user would see nothing without this guard.
+      if (!d.onboarding_url) {
+        console.error('[payouts] link error: server returned 200 with no onboarding_url', d);
+        setLinkError('Server returned an empty link. Reach out to Tredoux.');
+        return;
+      }
+      setLink({ url: d.onboarding_url, expires_at: d.onboarding_expires_at || 0 });
       setLinkCopied(false);
       await load();
     } catch (err) {
       console.error('[payouts] link error:', err);
-      setError('Network error.');
+      setLinkError('Network error — check your connection and try again.');
     } finally {
       setLinkLoading(false);
     }
@@ -568,6 +598,18 @@ export default function AgentPayoutsPage() {
                 <p className="mt-2 text-white/40 text-[11px]">
                   Stripe links time out in ~5 minutes for security. Generate fresh whenever you need.
                 </p>
+                {/* Inline error display — surfaces failures right next to the
+                    button so the user doesn't have to scroll up to find why
+                    the click didn't produce a link. */}
+                {linkError && (
+                  <div className="mt-3 bg-red-500/15 border border-red-500/40 rounded-lg p-3 text-red-200 text-sm">
+                    <div className="font-medium mb-1">Couldn&apos;t generate a link</div>
+                    <div className="text-red-300/90 text-xs leading-relaxed">{linkError}</div>
+                    <div className="text-red-300/60 text-xs mt-2">
+                      If this keeps happening, message Tredoux from the Tredoux tab and he&apos;ll reset your Stripe account.
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </section>

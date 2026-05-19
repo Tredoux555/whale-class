@@ -34,11 +34,21 @@ interface AgentRow {
 }
 
 export async function POST(req: NextRequest) {
+  // Diagnostic prefix so Railway logs can be grepped: [agent/connect-onboard]
+  // Every observable failure surface logs once with the agent id + the
+  // failure point. Without these, a "nothing happens" UI symptom is
+  // impossible to root-cause from logs.
+  console.log('[agent/connect-onboard] POST received');
   const auth = await verifySchoolRequest(req);
-  if (auth instanceof NextResponse) return auth;
+  if (auth instanceof NextResponse) {
+    console.warn('[agent/connect-onboard] auth failed (verifySchoolRequest returned NextResponse)');
+    return auth;
+  }
   if (auth.role !== 'agent') {
+    console.warn('[agent/connect-onboard] role mismatch:', auth.role, 'userId:', auth.userId);
     return NextResponse.json({ error: 'Forbidden — agent role required' }, { status: 403 });
   }
+  console.log('[agent/connect-onboard] auth ok, agent userId:', auth.userId);
 
   const supabase = getSupabase();
 
@@ -157,16 +167,34 @@ export async function POST(req: NextRequest) {
   }
 
   // Step 2: fresh onboarding link.
+  console.log('[agent/connect-onboard] generating onboarding link for accountId:', accountId);
   let url: string;
   let expiresAt: number;
   try {
     const link = await createOnboardingLink(accountId!);
     url = link.url;
     expiresAt = link.expires_at;
+    console.log('[agent/connect-onboard] link generated successfully, expires:', expiresAt);
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : 'Could not generate onboarding link';
-    console.error('[agent/connect-onboard] link create failed:', msg);
-    return NextResponse.json({ error: 'Could not generate onboarding link', detail: msg }, { status: 500 });
+    // Stripe error objects have type + code fields that explain what went
+    // wrong. Capture them so the agent gets a meaningful failure message.
+    const stripeErr = err as { type?: string; code?: string; statusCode?: number; raw?: { message?: string } } | undefined;
+    console.error('[agent/connect-onboard] link create failed:', {
+      message: msg,
+      type: stripeErr?.type,
+      code: stripeErr?.code,
+      statusCode: stripeErr?.statusCode,
+      accountId,
+    });
+    // Friendly hint for the common "stale account" failure mode — a
+    // stripe_connect_account_id that points to a test-mode account in live
+    // mode (or vice versa) errors with "No such account: acct_xxx".
+    let detail = msg;
+    if (msg.includes('No such account') || stripeErr?.code === 'resource_missing') {
+      detail = `Your Stripe Connect account (${accountId}) is no longer valid. Ask Tredoux to clear it in super-admin so you can start fresh.`;
+    }
+    return NextResponse.json({ error: 'Could not generate onboarding link', detail }, { status: 500 });
   }
 
   void logAgentAudit(supabase, {
