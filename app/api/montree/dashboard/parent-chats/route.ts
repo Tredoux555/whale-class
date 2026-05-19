@@ -143,11 +143,14 @@ export async function GET(request: NextRequest) {
 
   // ── 6. Pull the most-recent message per thread (one query, latest at top) ─
   // Then we'll fold to per-parent stats client-side.
+  // 🚨 Schema columns: actual time column is `sent_at` (not created_at), and
+  // we must filter out soft-deleted messages (`deleted_at IS NULL`).
   const { data: messagesRaw } = await supabase
     .from('montree_thread_messages')
-    .select('thread_id, sender_role, sender_id, sender_name, body, created_at')
+    .select('thread_id, sender_role, sender_id, sender_name, body, sent_at')
     .in('thread_id', validThreadIds)
-    .order('created_at', { ascending: false })
+    .is('deleted_at', null)
+    .order('sent_at', { ascending: false })
     .limit(2000); // generous cap; classrooms have rarely > a few hundred messages
   const messages = (messagesRaw || []) as Array<{
     thread_id: string;
@@ -155,7 +158,7 @@ export async function GET(request: NextRequest) {
     sender_id: string;
     sender_name: string;
     body: string;
-    created_at: string;
+    sent_at: string;
   }>;
 
   // ── 7. Fold into per-parent rows ─────────────────────────────────────
@@ -190,13 +193,13 @@ export async function GET(request: NextRequest) {
     // is ordered DESC.
     const latest = messagesForParent[0];
 
-    // Unread = messages NOT authored by the caller, whose created_at is
+    // Unread = messages NOT authored by the caller, whose sent_at is
     // AFTER the caller's last_read_at on THAT thread (one tally per thread).
     let unread = 0;
     for (const m of messagesForParent) {
       if (m.sender_id === auth.userId) continue;
       const lastRead = myLastReadByThread.get(m.thread_id);
-      if (!lastRead || new Date(m.created_at) > new Date(lastRead)) {
+      if (!lastRead || new Date(m.sent_at) > new Date(lastRead)) {
         unread += 1;
       }
     }
@@ -205,7 +208,7 @@ export async function GET(request: NextRequest) {
       parent_id: parentId,
       parent_name: info.name,
       parent_email: info.email,
-      last_message_at: latest.created_at,
+      last_message_at: latest.sent_at,
       last_snippet: latest.body.length > 140
         ? latest.body.slice(0, 140).trimEnd() + '…'
         : latest.body,
