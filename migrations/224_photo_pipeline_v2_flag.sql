@@ -32,14 +32,19 @@
 
 BEGIN;
 
-INSERT INTO montree_feature_definitions (feature_key, default_enabled, description)
+-- The `name` column on montree_feature_definitions is NOT NULL — every
+-- migration that adds a feature flag must include it. icon, category,
+-- is_premium have defaults so they're optional.
+INSERT INTO montree_feature_definitions (feature_key, name, default_enabled, description)
 VALUES (
   'photo_pipeline_v2',
+  'Photo Pipeline v2',
   TRUE,
   'Photo pipeline v2 bundle: confidence-gated is_curriculum_work routing + reduced moat budget + top_candidates on sonnet_drafted + age-decayed visual memory ordering. Roll back per-school via montree_school_features if quality drops.'
 )
 ON CONFLICT (feature_key) DO UPDATE
-SET default_enabled = EXCLUDED.default_enabled,
+SET name = EXCLUDED.name,
+    default_enabled = EXCLUDED.default_enabled,
     description = EXCLUDED.description;
 
 COMMIT;
