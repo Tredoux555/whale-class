@@ -14,6 +14,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { resolveAppointmentsParent } from '@/lib/montree/appointments/parent-access';
 import { shareAppointmentToThread } from '@/lib/montree/appointments/share-to-thread';
+import { postVideoCallInvite } from '@/lib/montree/messaging/video-call-invite';
 
 export const maxDuration = 30;
 
@@ -186,9 +187,58 @@ export async function PATCH(
       }).catch((e) => {
         console.error('[parent/appointments accept] thread share failed', e);
       });
+
+      // 🚨 Session 119 Task 3 — auto-post the video-call invite card
+      // into the parent_teacher chat NOW that the appointment is
+      // confirmed (and therefore joinable via the agora-token route).
+      // Only fires for Agora-provider appointments; Jitsi flows keep
+      // their existing share-to-thread (text only) path.
+      const u = updated as { provider?: string | null; scheduled_start?: string };
+      if (u.provider === 'agora') {
+        // Lookup host name for the invite's sender_name field.
+        let hostName: string = hostRow.host_role === 'principal' ? 'Principal' : 'Teacher';
+        if (hostRow.host_role === 'teacher') {
+          const { data: row } = await supabase
+            .from('montree_teachers').select('name').eq('id', hostRow.host_id).maybeSingle();
+          const n = (row as { name?: string | null } | null)?.name;
+          if (n) hostName = n;
+        } else {
+          const { data: row } = await supabase
+            .from('montree_school_admins').select('name').eq('id', hostRow.host_id).maybeSingle();
+          const n = (row as { name?: string | null } | null)?.name;
+          if (n) hostName = n;
+        }
+        const hostFirst = hostName.split(/\s+/)[0] || hostName;
+        const whenLabel = formatInviteWhen(u.scheduled_start || new Date().toISOString());
+        const caption = `Video call with ${hostFirst} · ${whenLabel} · tap Join`;
+        void postVideoCallInvite({
+          supabase,
+          schoolId: parent.schoolId,
+          classroomId: (updated as { classroom_id?: string | null }).classroom_id ?? null,
+          childId: (updated as { child_id?: string | null }).child_id ?? null,
+          appointmentId: id,
+          caller: { role: hostRow.host_role, id: hostRow.host_id, name: hostName },
+          parentId: parent.parentId,
+          caption,
+        }).catch((e) => {
+          console.error('[parent/appointments accept] invite post failed (non-fatal)', e);
+        });
+      }
     }
 
     return NextResponse.json({ appointment: updated });
+  }
+
+  function formatInviteWhen(iso: string): string {
+    try {
+      const d = new Date(iso);
+      return d.toLocaleString('en-US', {
+        weekday: 'short', month: 'short', day: 'numeric',
+        hour: 'numeric', minute: '2-digit',
+      });
+    } catch {
+      return 'soon';
+    }
   }
 
   // ── DECLINE (Session 117 continued) ───────────────────────────────

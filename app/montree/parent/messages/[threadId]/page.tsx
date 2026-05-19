@@ -10,8 +10,9 @@ import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import { toast, Toaster } from 'sonner';
-import { ArrowLeft, Send, Video, Calendar } from 'lucide-react';
+import { ArrowLeft, Send, Video, Calendar, PlayCircle } from 'lucide-react';
 import { useI18n, getIntlLocale } from '@/lib/montree/i18n';
+import { parseVideoCallInvite } from '@/lib/montree/messaging/video-call-invite';
 import { useThreadPolling } from '@/hooks/useThreadPolling';
 import VoiceComposer, { type VoiceReady } from '@/components/montree/messaging/VoiceComposer';
 import VoiceBubble from '@/components/montree/messaging/VoiceBubble';
@@ -619,9 +620,66 @@ export default function ParentThreadDetailPage() {
                 }}>
                   {msg.media_type === 'audio' && msg.media_url ? (
                     <VoiceBubble audioUrl={msg.media_url} transcript={msg.body} isMine={isMe} />
-                  ) : (
-                    msg.body
-                  )}
+                  ) : (() => {
+                    // Session 119 Task 3 — detect video-call invite messages
+                    // and render as a rich card with Join button. Parent
+                    // taps Join → /montree/parent/calls/[id] → straight
+                    // into the AgoraVideoCall.
+                    const invite = parseVideoCallInvite(msg.body);
+                    if (!invite) return msg.body;
+                    return (
+                      <Link
+                        href={`/montree/parent/calls/${invite.appointmentId}`}
+                        style={{
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: 8,
+                          padding: '12px 14px',
+                          marginTop: -2,
+                          borderRadius: 14,
+                          background: 'rgba(232,201,106,0.10)',
+                          border: '1px solid rgba(232,201,106,0.42)',
+                          textDecoration: 'none',
+                          color: 'inherit',
+                        }}
+                      >
+                        <div style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 6,
+                          fontSize: 11,
+                          fontWeight: 700,
+                          color: '#E8C96A',
+                          textTransform: 'uppercase',
+                          letterSpacing: 0.5,
+                        }}>
+                          <Video size={13} strokeWidth={2} />
+                          Video call
+                        </div>
+                        {invite.caption && (
+                          <div style={{ fontSize: 14, lineHeight: 1.4 }}>
+                            {invite.caption}
+                          </div>
+                        )}
+                        <div style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: 6,
+                          padding: '7px 13px',
+                          borderRadius: 999,
+                          background: 'linear-gradient(135deg, #34d399 0%, #1D6B48 100%)',
+                          color: '#06281a',
+                          fontSize: 13,
+                          fontWeight: 700,
+                          alignSelf: 'flex-start',
+                          marginTop: 2,
+                        }}>
+                          <PlayCircle size={15} strokeWidth={2.25} />
+                          Join now
+                        </div>
+                      </Link>
+                    );
+                  })()}
                 </div>
                 <div style={{
                   fontSize: 10,

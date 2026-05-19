@@ -473,6 +473,18 @@ export async function POST(request: NextRequest) {
     );
   }
 
+  // 🚨 Session 119 Task 3 — DO NOT auto-post the chat invite here.
+  // Scheduled appointments are created with status='pending' and the
+  // /agora-token route refuses to mint tokens for non-confirmed
+  // appointments. Posting the "Join now" card now would link to a
+  // 409-on-tap page. Audit pass 2 catch.
+  //
+  // The auto-post lives in /api/montree/parent/appointments/[id] PATCH
+  // when the parent accepts (status flips pending→confirmed). For
+  // INSTANT calls (status=confirmed at creation), the
+  // /dashboard/parent-chats/[parentId]/instant-call route posts the
+  // invite directly.
+
   return NextResponse.json({
     appointment: {
       id: appointmentId,
@@ -490,3 +502,4 @@ export async function POST(request: NextRequest) {
     },
   });
 }
+
