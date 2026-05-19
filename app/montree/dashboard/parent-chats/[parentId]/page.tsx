@@ -11,9 +11,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, Send } from 'lucide-react';
+import { ArrowLeft, Send, Video, Phone, PlayCircle } from 'lucide-react';
 import { useI18n, getIntlLocale } from '@/lib/montree/i18n';
 import { montreeApi } from '@/lib/montree/api';
+import { parseVideoCallInvite } from '@/lib/montree/messaging/video-call-invite';
 
 const T = {
   bg: '#0a1a0f',
@@ -62,6 +63,7 @@ export default function ParentChatStreamPage({ params }: { params: Promise<{ par
   const [error, setError] = useState<string | null>(null);
   const [draft, setDraft] = useState('');
   const [sending, setSending] = useState(false);
+  const [startingCall, setStartingCall] = useState<'voice' | 'video' | null>(null);
   const scrollEndRef = useRef<HTMLDivElement | null>(null);
 
   // Unwrap params
@@ -135,6 +137,41 @@ export default function ParentChatStreamPage({ params }: { params: Promise<{ par
     }
   };
 
+  // 🚨 Session 119 Task 3 — instant call. Creates an Agora appointment
+  // for RIGHT NOW + auto-posts the invite into this thread + redirects
+  // the host into the call. Parent sees the invite card in real time
+  // when their messages list refetches.
+  const handleInstantCall = useCallback(async (mode: 'voice' | 'video') => {
+    if (!parentId || startingCall) return;
+    setStartingCall(mode);
+    try {
+      const res = await montreeApi(
+        `/api/montree/dashboard/parent-chats/${parentId}/instant-call${mode === 'voice' ? '?audio=1' : ''}`,
+        { method: 'POST' },
+      );
+      if (!res.ok) {
+        const j = await res.json().catch(() => ({}));
+        setError(j?.error || `Could not start call (HTTP ${res.status}).`);
+        setStartingCall(null);
+        return;
+      }
+      const data = await res.json();
+      if (!data?.join_url) {
+        setError('Call started but no join URL — try refreshing.');
+        setStartingCall(null);
+        return;
+      }
+      // Refresh the chat so the invite message appears before the host
+      // leaves the page (graceful — they'll see it again when they
+      // come back from the call).
+      await load();
+      router.push(data.join_url);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Could not start call');
+      setStartingCall(null);
+    }
+  }, [parentId, startingCall, load, router]);
+
   return (
     <div style={{
       minHeight: '100vh',
@@ -201,6 +238,36 @@ export default function ParentChatStreamPage({ params }: { params: Promise<{ par
               </div>
             )}
           </div>
+
+          {/* Session 119 Task 3 — instant call buttons. One-tap from the
+              chat header to start a call with this parent right now.
+              Voice and video share the same Agora SDK (audio=1 query
+              param skips the camera track via the dedicated /calls
+              page's `audioOnly` flag — full SDK wire-up is deferred so
+              v1 voice-mode still joins with video and the user can mute
+              their cam from the in-call controls). */}
+          {parent && (
+            <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
+              <button
+                onClick={() => handleInstantCall('voice')}
+                disabled={!!startingCall}
+                aria-label={`Voice call ${parent.name}`}
+                title="Voice call"
+                style={callBtnStyle(startingCall === 'voice')}
+              >
+                <Phone size={16} strokeWidth={1.75} />
+              </button>
+              <button
+                onClick={() => handleInstantCall('video')}
+                disabled={!!startingCall}
+                aria-label={`Video call ${parent.name}`}
+                title="Video call"
+                style={callBtnStyle(startingCall === 'video')}
+              >
+                <Video size={16} strokeWidth={1.75} />
+              </button>
+            </div>
+          )}
         </div>
       </header>
 
@@ -330,6 +397,21 @@ export default function ParentChatStreamPage({ params }: { params: Promise<{ par
   );
 }
 
+function callBtnStyle(active: boolean): React.CSSProperties {
+  return {
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    background: active ? 'rgba(52,211,153,0.30)' : 'rgba(255,255,255,0.06)',
+    border: '1px solid rgba(255,255,255,0.10)',
+    color: active ? T.emerald : T.textPrimary,
+    cursor: active ? 'wait' : 'pointer',
+  };
+}
+
 function MessageBubble({
   message,
   isMe,
@@ -345,6 +427,11 @@ function MessageBubble({
     hour: 'numeric',
     minute: '2-digit',
   });
+
+  // 🚨 Session 119 Task 3 — detect video-call invite messages and render
+  // them as a rich card with embedded Join button. The card body comes
+  // from parseVideoCallInvite which strips the [[VCALL:id]] marker.
+  const invite = parseVideoCallInvite(message.body);
 
   return (
     <div style={{
@@ -364,6 +451,59 @@ function MessageBubble({
           {message.sender_name}
         </div>
       )}
+      {invite ? (
+        <Link
+          href={`/montree/dashboard/calls/${invite.appointmentId}`}
+          style={{
+            maxWidth: '80%',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 8,
+            padding: '14px 16px',
+            borderRadius: 18,
+            background: 'rgba(232,201,106,0.10)',
+            border: '1px solid rgba(232,201,106,0.42)',
+            color: T.textPrimary,
+            fontFamily: T.sans,
+            textDecoration: 'none',
+          }}
+        >
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 8,
+            fontSize: 12,
+            fontWeight: 700,
+            color: T.gold,
+            textTransform: 'uppercase',
+            letterSpacing: 0.6,
+          }}>
+            <Video size={14} strokeWidth={2} />
+            Video call
+          </div>
+          {invite.caption && (
+            <div style={{ fontSize: 15, lineHeight: 1.4, color: T.textPrimary }}>
+              {invite.caption}
+            </div>
+          )}
+          <div style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 6,
+            padding: '8px 14px',
+            borderRadius: 999,
+            background: 'linear-gradient(135deg, #34d399 0%, #1D6B48 100%)',
+            color: '#06281a',
+            fontSize: 14,
+            fontWeight: 700,
+            alignSelf: 'flex-start',
+            marginTop: 2,
+          }}>
+            <PlayCircle size={16} strokeWidth={2.25} />
+            Join now
+          </div>
+        </Link>
+      ) : (
       <div style={{
         maxWidth: '78%',
         padding: '8px 14px',
@@ -379,6 +519,7 @@ function MessageBubble({
       }}>
         {message.body}
       </div>
+      )}
       <div style={{
         marginTop: 2,
         fontSize: 10,
