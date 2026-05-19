@@ -83,7 +83,11 @@ type Resolution =
   // gallery/report queries. No curriculum row is created. No visual
   // memory / negative example / brain learning fires (Other photos
   // shouldn't pollute the moat).
-  | { type: 'other'; note?: string };
+  //
+  // Session 117+: optional `category` narrows what kind of moment it is —
+  // 'behavioral_observation' | 'outdoor_play' | 'special_event'. Stored
+  // on sonnet_draft.other_category so reports / galleries can group.
+  | { type: 'other'; category?: 'behavioral_observation' | 'outdoor_play' | 'special_event'; note?: string };
 
 export async function POST(request: NextRequest) {
   const startedAt = Date.now();
@@ -399,14 +403,22 @@ export async function POST(request: NextRequest) {
     // work_id IS NOT NULL and skip these. Weekly Wrap doesn't see them.
     if (resolution.type === 'other') {
       const note = typeof resolution.note === 'string' ? resolution.note.trim().slice(0, 200) : '';
+      // Session 117+: optional category. Whitelist-validate against the
+      // three accepted values; anything else is silently dropped.
+      const ALLOWED_OTHER_CATEGORIES = ['behavioral_observation', 'outdoor_play', 'special_event'];
+      const category =
+        typeof resolution.category === 'string' && ALLOWED_OTHER_CATEGORIES.includes(resolution.category)
+          ? resolution.category
+          : null;
       // Preserve any existing sonnet_draft fields the pipeline wrote — we
       // don't want to lose visual_description / proposed_name / etc.
-      // Just merge the is_other flag (+ optional note) on top.
+      // Just merge the is_other flag (+ optional note + category) on top.
       const existingDraft = (mediaRow.sonnet_draft as Record<string, unknown>) || {};
       const newDraft = {
         ...existingDraft,
         is_other: true,
         other_note: note || null,
+        other_category: category, // 'behavioral_observation' | 'outdoor_play' | 'special_event' | null
         other_classified_at: new Date().toISOString(),
       };
 
