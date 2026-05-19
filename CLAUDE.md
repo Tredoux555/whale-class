@@ -200,6 +200,101 @@ Wave 1 sends bounced for these addresses. None of these are flagged as `bounced`
 
 ---
 
+## RECENT STATUS (May 19, 2026)
+
+### 🔥 Session 118 — Parent portal home anchor + welcome PWA tip + teacher messages search + photo audit Correct fix + Photo pipeline v2 (4-fix bundle) + Others tab + audit fix (May 19, 2026)
+
+**8 commits pushed to main: `78a61ec2` → `7069820f` → `9d1997a8` → `bc8022c4` → `5bd7da45` → `b65648b0` → `7a4ddc03` → `5b0f026c`.** Continuation of Session 117 work plus a focused burn list the user assigned mid-session.
+
+**🚨 Canonical resume doc:** `docs/handoffs/SESSION_118_HANDOFF.md` — full file-by-file change list, architectural rules, 10-step verification checklist, rollback paths per commit.
+
+**🚨 ONE migration pending Tredoux's Supabase run:**
+- ⏳ `migrations/224_photo_pipeline_v2_flag.sql` — inserts `photo_pipeline_v2` into `montree_feature_definitions` with `default_enabled = TRUE`. Until run, the photo pipeline v2 fixes stay fail-closed-OFF (the very thing the user complained about — Untagged surge, worksheet over-match, missing top-3 chips, recently-corrected-work bias — keeps happening). Once run, all four fixes activate for every school. Per-school rollback: `UPDATE montree_school_features SET enabled=false WHERE school_id='X' AND feature_key='photo_pipeline_v2';`
+
+**Commits this session (oldest → newest):**
+
+| SHA | What |
+|---|---|
+| `78a61ec2` | Agora video calls: network quality pill + reconnecting toast + debug logger (carry-over from Session 117's late work) |
+| `7069820f` | Parent portal: Montree home anchor + upcoming-meeting card in thread |
+| `9d1997a8` | Parent welcome message: "Save to Home Screen" PWA install tip |
+| `bc8022c4` | Teacher messages: searchable parent-thread filter |
+| `5bd7da45` | Photo audit Correct: don't open picker when curriculum match exists |
+| `b65648b0` | **Photo pipeline v2: 4-fix bundle behind one feature flag** |
+| `7a4ddc03` | ThisIsSheet: Others tab with three sub-categories |
+| `5b0f026c` | Audit fix: teacher messages search input fontSize 15 → 16 (iOS Safari zoom-on-focus) |
+
+**A. Agora UX (`78a61ec2`)** — 438+/7- across 2 files. Carries over the network pill / reconnecting toast / debug logger work that was in flight at the end of Session 117. NEW `lib/montree/appointments/agora/debug-logger.ts` (500-entry ring buffer, console mirror, copy-to-clipboard helper). `AgoraVideoCall.tsx` subscribes to `connection-state-change`, `network-quality`, `exception`. Top-bar Signal pill (good/fair/poor), top-center toast (Reconnecting / Back online / Connection lost), 12 `agoraLog()` instrumentation points. Debug panel via `Cmd/Ctrl+Shift+D` or long-press the network pill.
+
+**B. Parent portal home anchor + upcoming-meeting card (`7069820f`)** — 230+/33- across 5 files. Universal home affordance + real bridge from message-booking notifications to the appointment Join button.
+
+- API extension: `GET /api/montree/parent/messages/threads/[threadId]` returns `appointments` array tied to this thread (parent-scoped via `thread_id + school_id + parent_id`).
+- Thread detail page pins "Upcoming meeting" card at top when this thread has a non-cancelled appointment within 7 days OR ended within last 2 hours. State-backed clock ticks once a minute so the Join window opens reactively.
+- Universal Montree home link (sprout + wordmark, top-left → `/montree/parent/dashboard`) on every parent surface: messages list, thread detail, appointments, report. No more "Back, Back, Back".
+
+**C. Parent welcome PWA install tip (`9d1997a8`)** — 10+/5- in `app/montree/dashboard/parent-codes/page.tsx`. Brings parent invite in lockstep with the teacher invite (which already had this). Adds the iPhone share / Android menu "Add to Home Screen" instruction so parents don't have to log in every time.
+
+**D. Teacher messages searchable parent-thread filter (`bc8022c4` + `5b0f026c`)** — 91+/3- in `app/montree/dashboard/messages/page.tsx`. New search input above the thread list. Filters by subject, last snippet, OR any participant name. Three-state UI (empty / no-matches / results). Matches the "Jump to student" affordance pattern. Initial ship had `fontSize: 15` triggering iOS Safari zoom-on-focus — caught by audit, fixed to 16px in `5b0f026c`.
+
+**E. Photo audit Correct one-tap fix (`5bd7da45`)** — 51+/17- in `app/montree/dashboard/photo-audit/page.tsx`. Regression: tapping ✓ Correct on a haiku_drafted card would open the picker if `proposed_name` didn't exactly match a curriculum work name. Three-tier fallback now: `proposed_name` → `closest_existing_match.work_name` → `top_candidates[0].workName` → picker. Picker is the rare true-fallback, not the default.
+
+**F. Photo pipeline v2 — 4-fix bundle behind one feature flag (`b65648b0`)** — 164+/19- across 5 files. **The headline ship.**
+
+User reported: many Untagged cards, grossly mismatched works, bias toward what children just did or what teacher most recently corrected, top-3 chips lost. Dispatched a general-purpose subagent for deep-read diagnosis. Four real regressions identified from recent commits. All four fixes ship behind `photo_pipeline_v2` feature flag (migration 224) so the user can roll back the entire bundle per-school if quality drops.
+
+- **Fix A — `is_curriculum_work=false` gated behind `confidence >= 0.80`.** Session 113 V2 commit `da701b07` added the non-curriculum escape hatch; combined with Pass 1 tightening in `8198c23b`, Haiku was over-routing photos to Other when its own confidence was low. Below 0.80 now falls through to `haiku_drafted` so the teacher sees chips. Constant: `IS_CURRICULUM_WORK_FALSE_CONFIDENCE_FLOOR = 0.80`.
+- **Fix B — Visual memory budget reduced 50KB/100 → 20KB/40.** Apr 30 expansion drowned Haiku attention in moat context. v2 budget: 20K chars, 40 entries hard ceiling, 15 entry min floor. v1 budget (50K/100/30) preserved as `useV2: false` fallback.
+- **Fix C — `top_candidates` carried through to `sonnet_drafted` writes.** Auto-Sonnet path was overwriting the `haiku_drafted` draft's `top_candidates` with nothing; chips disappeared on sonnet_drafted cards. Now preserved. `SonnetDraft` type extended with optional `top_candidates?: Array<{ workName, workKey, area, score }>`.
+- **Fix D — Age-decay weighting on visual memory ordering.** Old: `description_confidence DESC, updated_at DESC` (recently-corrected works topped every prompt). New (v2 only): `weighted_score = description_confidence * exp(-days_since_update / 90)`. Older high-confidence beats just-corrected medium-confidence. Kills the recently-corrected-work bias.
+
+Wiring: `isFeatureEnabled(supabase, auth.schoolId, 'photo_pipeline_v2')` resolves in parallel with cheap queries; `loadIdentificationContext` moved sequentially AFTER the flag resolves so the loader knows whether to apply v2 budget + ordering. Trade-off: <50ms extra latency per photo. Documented inline. Acceptable given the quality wins.
+
+**G. ThisIsSheet Others tab (`7a4ddc03`)** — 195+/38- across 2 files. Replaces the single "Save as Other" pill afterthought with a proper two-tab strip above the search bar:
+
+- **📚 Curriculum** (default) — classic AI-guess + search + add-new flow, unchanged
+- **📌 Others** — three explicit sub-category cards:
+  - 👀 Behavioral observation (amber)
+  - 🌳 Outdoor play (emerald)
+  - 🎉 Special event (purple)
+
+Tap any sub-category → photo saved with `sonnet_draft.is_other = true` + `sonnet_draft.other_category = '<category>'`. Server route whitelist-validates the category. No migration needed — lives in JSONB. Resolution union widened with optional `OtherCategory` type.
+
+**H. Audit fix iOS fontSize (`5b0f026c`)** — caught by 3-pass audit on commits 1-7. 15px input triggers iOS Safari zoom-on-focus; bumped to 16px.
+
+**🚨 Architectural rules locked in this session (do NOT let future agents break these):**
+
+188. **`is_curriculum_work=false` routing requires `confidence >= 0.80`** (when `photo_pipeline_v2` ON). Below that, fall through to `haiku_drafted` so teacher sees chips + can confirm. Stops the silent Untagged surge.
+189. **Visual memory v2 budget = 20KB chars, 40 entries hard ceiling, 15 entry minimum floor.** v1 budget (50KB/100/30) retained as the `useV2: false` fallback so flag flip restores prior behavior exactly.
+190. **Visual memory v2 ordering = age-decay weighted.** `weighted_score = description_confidence * exp(-days_since_update / 90)`. Kills recently-corrected-work bias.
+191. **`SonnetDraft.top_candidates` is optional but always written when `photo_pipeline_v2` ON.** Chips render uniformly across haiku_matched / haiku_drafted / sonnet_drafted cards.
+192. **`handleConfirmHaikuDraft` uses three-tier resolution** before opening the picker: `proposed_name` → `closest_existing_match.work_name` → `top_candidates[0].workName` → picker. Picker is the rare fallback, not the default.
+193. **Customer-facing inputs MUST be `fontSize >= 16`** (Session 95 rule, reinforced after the bc8022c4 regression caught in audit).
+194. **Parent portal Montree home anchor is universal.** Every parent surface has a tappable sprout + wordmark top-left → `/montree/parent/dashboard`. New parent pages MUST include it.
+195. **Welcome messages on every invite surface include the "Save to Home Screen" PWA install tip.** Three surfaces in lockstep: Tracy's `draft_teacher_welcome_messages`, classroom-page Send-mailto, parent-codes `buildWelcomeMessage`. Update all three together.
+196. **`other_category` JSONB whitelist is the canonical Others taxonomy.** Three values: `'behavioral_observation' | 'outdoor_play' | 'special_event'`. Server-side validation on `/api/montree/photo-audit/resolve`.
+197. **`photo_pipeline_v2` is the canonical kill-switch for the entire 4-fix bundle.** Don't split fixes A/B/C/D into separate flags — they were diagnosed together as a coordinated regression and must roll back together.
+
+**Verification status:**
+- ✅ All 8 commits on `origin/main`. Railway auto-deployed throughout.
+- ✅ Lint clean across all changed files (`--max-warnings=0` exit 0).
+- ✅ TypeScript clean on all changed files.
+- ✅ 3-pass audit run on the burn-list commits; caught 1 real bug (iOS fontSize 15 → 16) which was fixed and shipped within 90 seconds.
+- ✅ Independent subagent audit run on the photo pipeline diagnosis BEFORE the v2 fixes were coded.
+- ⏳ User to run migration 224 in Supabase + walk the 10-step verification in `docs/handoffs/SESSION_118_HANDOFF.md`.
+
+**🚨 Next session priorities (ordered):**
+
+1. **🚨 Run migration 224 in Supabase SQL Editor** — single biggest blocker.
+2. **Walk 10-step verification checklist** in `docs/handoffs/SESSION_118_HANDOFF.md` after Railway settles.
+3. **Watch photo pipeline for 24-48h** after migration 224 runs. Per-school rollback is one SQL statement if quality drops.
+4. **Carry-over: Stage A Agora activation** — migration 223 + flag flip + 2-device end-to-end test per `docs/handoffs/AGORA_STAGE_A_QUICKSTART.md`. ~5 min Tredoux time.
+5. **Carry-over: Agent default revenue share % unblock** — discussed mid-session, not implemented. ~10 min change to default agents to 20% instead of disabling self-service code generation when `agent_default_share_pct IS NULL`.
+6. **Carry-over: Appointments i18n sweep** — appointments + new calendar surface English-only. ~30 new keys × 12 locales via Haiku batch.
+7. **Carry-over: Mira → Tracy super-admin scope** (Session 108 Phase 4.8).
+8. **Carry-over outreach** — FAMM Argentina + Cambridge Montessori Global + Otari NZ + Lions Gate + Montessori Norge follow-ups.
+
+---
+
 ## RECENT STATUS (May 18, 2026)
 
 ### 🔥 Session 117 (continued, deep parent audit) — Parent flow rebuilt + agent Accept one-shot + Messages promoted + photo-bank public (May 18, 2026, into the small hours)
@@ -6847,6 +6942,9 @@ All migrations through 169 have been run. Key ones: 147 (smart learning columns)
 
 **Session 114 (May 17, 2026) — Parent meeting notes (audio-free). ⏳ 1 new migration pending Tredoux's Supabase run:**
 - ⏳ `214_meeting_notes.sql` — new `montree_meeting_notes` table for teacher-side parent-meeting notes. Columns: `id`, `school_id`, `classroom_id`, `teacher_id`, `child_id` (nullable), `child_name`, `meeting_date`, `summary` (required), `transcript` (optional), `notes`, `duration_seconds`, `locale`, `parent_visible` (default FALSE), `shared_to_thread_id` (FK to `montree_message_threads` for future parent-thread integration), `created_at`, `updated_at` + auto-bump trigger. Three indexes (per-teacher hot path, per-child where child_id IS NOT NULL, per-school). Idempotent BEGIN/COMMIT. **REQUIRED for teacher Meeting Notes save path. Until run, the new page at `/montree/dashboard/conversations` surfaces a clear "Migration 214 not yet run" banner — record + transcribe + summary still work, only persistence waits. Principal vault (existing `montree_principal_vault` from migration 185) works without this.**
+
+**Session 118 (May 19, 2026) — Photo pipeline v2 (4-fix bundle). ⏳ 1 new migration pending Tredoux's Supabase run:**
+- ⏳ `224_photo_pipeline_v2_flag.sql` — single-row INSERT into `montree_feature_definitions` adding `photo_pipeline_v2` with `default_enabled = TRUE`. Gates the 4-fix bundle: (A) `is_curriculum_work=false` routing requires `confidence >= 0.80`, (B) visual memory budget 50KB/100 → 20KB/40, (C) `top_candidates` carried through to sonnet_drafted writes, (D) age-decay weighting on visual memory ordering. Idempotent (`ON CONFLICT DO UPDATE`). **REQUIRED for the photo pipeline regression fixes to activate. Until run, `isFeatureEnabled('photo_pipeline_v2')` returns FALSE (fail-closed), and the pipeline runs the pre-fix behavior the user complained about (Untagged surge, worksheet over-match, recently-corrected-work bias, missing top-3 chips on sonnet_drafted cards). Per-school rollback after activation: `UPDATE montree_school_features SET enabled=false WHERE school_id='X' AND feature_key='photo_pipeline_v2';`**
 
 ---
 
