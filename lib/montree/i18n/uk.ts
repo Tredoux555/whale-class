@@ -4564,4 +4564,7 @@ export const uk: Record<string, string> = {
   'classroomOverview.englishWeek.error': 'Не вдалося завантажити статус англійської мови',
   'classroomOverview.englishWeek.refresh': 'Оновити',
   'classroomOverview.englishWeek.noLanguageArea': 'Жодна область Мови не налаштована для цього класу',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'classroomOverview.englishProgressTab': 'Прогрес з Мови',
 };

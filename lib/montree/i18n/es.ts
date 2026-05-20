@@ -4538,4 +4538,7 @@ export const es: Record<string, string> = {
   'classroomOverview.englishWeek.error': 'No se pudo cargar el estado de Inglés',
   'classroomOverview.englishWeek.refresh': 'Actualizar',
   'classroomOverview.englishWeek.noLanguageArea': 'No hay un área de Lenguaje configurada para este aula',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'classroomOverview.englishProgressTab': 'Progreso en Inglés',
 };

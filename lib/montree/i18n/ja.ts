@@ -4567,4 +4567,7 @@ export const ja: Record<string, string> = {
   'classroomOverview.englishWeek.error': '言語の学習状況を読み込むことができませんでした',
   'classroomOverview.englishWeek.refresh': '更新',
   'classroomOverview.englishWeek.noLanguageArea': 'このクラスルームに言語エリアが設定されていません',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'classroomOverview.englishProgressTab': '言語の進度',
 };

@@ -11,6 +11,7 @@ import { useI18n } from '@/lib/montree/i18n';
 import { getSession } from '@/lib/montree/auth';
 import { montreeApi } from '@/lib/montree/api';
 import { invalidateEnglishWeekCache } from '@/lib/montree/cache';
+import { offerEnglishAdvance } from '@/lib/montree/english-sequence/client-helper';
 import { useFeaturesContext } from '@/lib/montree/features';
 import type { Resolution as ThisIsResolution, ThisIsSheetPhoto } from '@/components/montree/photo-audit/ThisIsSheet';
 import { getThumbnailUrl, getThumbnailSrcSet } from '@/lib/montree/media/proxy-url';
@@ -1183,6 +1184,13 @@ export default function PhotoAuditPage() {
         // on teacher_confirmed Language photos this week. After a successful
         // confirm, drop the cached entry so the next mount/focus refetches.
         invalidateEnglishWeekCache();
+        // Session 119 Phase 2: if this was a Language-area photo, offer
+        // the teacher a one-tap English-position advancement.
+        offerEnglishAdvance({
+          childId: photo.child_id,
+          childName: photo.child_name,
+          area: photo.area,
+        });
       } catch (err: unknown) {
         // 3. API failed — restore the photo + counts and surface the error.
         confirmedIdsRef.current.delete(photo.id);
@@ -1402,6 +1410,14 @@ export default function PhotoAuditPage() {
       // Session 119: invalidate english-missing cache so /classroom-overview
       // reflects this child's new Language activity on next mount/focus.
       invalidateEnglishWeekCache();
+      // Session 119 Phase 2: corrected to a Language work → offer advance.
+      // areaKey is the CORRECTED area; that's the signal here (the original
+      // could have been any area before this correction).
+      offerEnglishAdvance({
+        childId: photo.child_id,
+        childName: photo.child_name,
+        area: areaKey,
+      });
       return true;
     } catch (err) {
       console.error('[AttachExisting] Failed:', err);
@@ -1619,6 +1635,16 @@ export default function PhotoAuditPage() {
       // Session 119: invalidate english-missing cache so /classroom-overview
       // reflects this child's new Language activity on next mount/focus.
       invalidateEnglishWeekCache();
+      // Session 119 Phase 2: offer English advance only when the resolution
+      // is to an actual curriculum work. The 'other' type (snack, group
+      // photo, etc.) is intentionally NOT curriculum — skip the prompt.
+      if (resolution.type !== 'other') {
+        offerEnglishAdvance({
+          childId: photo.child_id,
+          childName: photo.child_name,
+          area: resolution.area_key,
+        });
+      }
     } catch (err) {
       console.error('[ResolvePhoto] Failed:', err);
       // 3. API failed — restore the photo + counts.
@@ -1714,6 +1740,12 @@ export default function PhotoAuditPage() {
       // Session 119: invalidate english-missing cache (Fix path could have
       // assigned a Language work to a previously-missing child).
       invalidateEnglishWeekCache();
+      // Session 119 Phase 2: Fix to a Language work → offer advance.
+      offerEnglishAdvance({
+        childId: correctingPhoto.child_id,
+        childName: correctingPhoto.child_name,
+        area: effectiveArea,
+      });
       // Auto-set "practicing" — teacher photographed the child doing this work
       if (correctingPhoto.child_id && work.name) {
         montreeApi('/api/montree/progress/update', {

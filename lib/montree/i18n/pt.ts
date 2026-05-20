@@ -4567,4 +4567,7 @@ export const pt: Record<string, string> = {
   'classroomOverview.englishWeek.error': 'Não foi possível carregar o status de Inglês',
   'classroomOverview.englishWeek.refresh': 'Atualizar',
   'classroomOverview.englishWeek.noLanguageArea': 'Nenhuma área de Linguagem configurada para esta sala',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'classroomOverview.englishProgressTab': 'Progresso em Linguagem',
 };

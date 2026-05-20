@@ -4135,6 +4135,7 @@ export const en = {
   // Classroom Overview
   'classroomOverview.shelfTab': 'Shelf Overview',
   'classroomOverview.englishTab': 'English Schedule',
+  'classroomOverview.englishProgressTab': 'English Progress',
   'classroomOverview.pageLabel': 'p',
   'classroomOverview.loadingSchedule': 'Loading English schedule...',
   'classroomOverview.loadFailed': 'Failed to load schedule',

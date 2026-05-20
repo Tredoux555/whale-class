@@ -4567,4 +4567,7 @@ export const fr: Record<string, string> = {
   'classroomOverview.englishWeek.error': 'Impossible de charger le statut Langage',
   'classroomOverview.englishWeek.refresh': 'Actualiser',
   'classroomOverview.englishWeek.noLanguageArea': 'Aucune zone Langage configurée pour cette classe',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'classroomOverview.englishProgressTab': 'Progrès en Langage',
 };
