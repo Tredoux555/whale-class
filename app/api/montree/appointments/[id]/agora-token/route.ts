@@ -132,6 +132,20 @@ export async function POST(
     );
   }
 
+  // 🚨 Session 120 follow-up — server-side diagnostic log so we can grep
+  // Railway logs by appointmentId and see EXACTLY what channel each device
+  // resolved. If teacher's log shows channel X but parent's log shows channel
+  // Y for the same appointment_id, we have evidence of channel mismatch.
+  console.log('[agora-token]', {
+    appointmentId: id,
+    schoolId,
+    callerRole,
+    callerId,
+    channel: token.channel,
+    uid: token.uid,
+    icalTokenPrefix: (appt.ical_token || '').slice(0, 8),
+  });
+
   return NextResponse.json({
     appId: token.appId,
     channel: token.channel,

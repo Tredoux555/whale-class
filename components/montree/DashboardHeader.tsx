@@ -204,6 +204,7 @@ function DashboardHeader() {
   // Derive active page from pathname for menu highlighting
   const activePage = useMemo(() => {
     if (pathname?.startsWith('/montree/dashboard/messages'))  return 'messages';
+    if (pathname?.startsWith('/montree/dashboard/parent-chats')) return 'messages';
     if (pathname === '/montree/dashboard/parent-codes')       return 'parent-codes';
     if (pathname?.startsWith('/montree/dashboard/conversations')) return 'conversations';
     if (pathname?.startsWith('/montree/dashboard/appointments')) return 'appointments';
@@ -611,7 +612,7 @@ function DashboardHeader() {
             <IconBtn
               title={t('nav.messages') || 'Messages'}
               active={activePage === 'messages'}
-              onClick={() => router.push('/montree/dashboard/messages')}
+              onClick={() => router.push('/montree/dashboard/parent-chats')}
               className="mt-header-icon-messages-inline"
             >
               <MessageSquare size={18} strokeWidth={1.75} color="#fff" />
@@ -656,7 +657,7 @@ function DashboardHeader() {
                     icon={MessageSquare}
                     label={t('nav.messages') || 'Messages'}
                     active={activePage === 'messages'}
-                    onClick={() => { setShowMoreMenu(false); router.push('/montree/dashboard/messages'); }}
+                    onClick={() => { setShowMoreMenu(false); router.push('/montree/dashboard/parent-chats'); }}
                   />
 
                   {/* Parent Manager — Session 119 rename per Tredoux. The
