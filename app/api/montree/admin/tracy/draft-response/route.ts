@@ -11,6 +11,7 @@ import Anthropic from '@anthropic-ai/sdk';
 import { OPUS_MODEL } from '@/lib/ai/anthropic';
 import { randomBytes } from 'crypto';
 import { getAILanguageInstruction } from '@/lib/montree/i18n/locale-config';
+import { readEncryptedField } from '@/lib/montree/messaging-crypto';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 120;
@@ -65,8 +66,9 @@ export async function POST(request: NextRequest) {
 
   const [messagesRes, childRes, principalRes, voiceSamplesRes] = await Promise.all([
     supabase
+      // 🚨 Session 121 — pull encryption_version + decrypt below before Sonnet.
       .from('montree_thread_messages')
-      .select('sender_role, sender_name, body, sent_at')
+      .select('sender_role, sender_name, body, encryption_version, sent_at')
       .eq('thread_id', body.thread_id)
       .is('deleted_at', null)
       .order('sent_at', { ascending: true })
@@ -79,8 +81,9 @@ export async function POST(request: NextRequest) {
     // voice-matching. Explicit school filter via inner join to montree_message_threads
     // (M5 — defence-in-depth, even though sender_id pin-points one principal).
     supabase
+      // 🚨 Session 121 — pull encryption_version + decrypt for voice samples.
       .from('montree_thread_messages')
-      .select('body, sent_at, montree_message_threads!inner(school_id)')
+      .select('body, encryption_version, sent_at, montree_message_threads!inner(school_id)')
       .eq('sender_role', 'principal')
       .eq('sender_id', auth.userId)
       .eq('montree_message_threads.school_id', auth.schoolId)
@@ -89,7 +92,17 @@ export async function POST(request: NextRequest) {
       .limit(10),
   ]);
 
-  const messages = messagesRes.data || [];
+  // 🚨 Decrypt each thread message before Sonnet sees it.
+  const messages = ((messagesRes.data || []) as Array<{
+    sender_role: string;
+    sender_name: string;
+    body: string;
+    encryption_version: number | null;
+    sent_at: string;
+  }>).map((m) => ({
+    ...m,
+    body: readEncryptedField(m.body, m.encryption_version),
+  }));
   if (!messages.length) {
     return NextResponse.json({ error: 'Thread has no messages to respond to' }, { status: 400 });
   }
@@ -98,8 +111,12 @@ export async function POST(request: NextRequest) {
   const principalName = principalRes.data?.name || 'the principal';
   const principalFirstName = principalName.split(' ')[0];
 
-  const voiceSamples = (voiceSamplesRes.data || [])
-    .map((m, i) => `Sample ${i + 1}: ${m.body.slice(0, 300)}`)
+  // 🚨 Decrypt voice samples too — principal's own past messages.
+  const voiceSamples = ((voiceSamplesRes.data || []) as Array<{
+    body: string;
+    encryption_version: number | null;
+  }>)
+    .map((m, i) => `Sample ${i + 1}: ${readEncryptedField(m.body, m.encryption_version).slice(0, 300)}`)
     .join('\n');
 
   const transcript = messages

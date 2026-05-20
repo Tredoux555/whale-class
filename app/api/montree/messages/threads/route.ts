@@ -10,6 +10,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { createThreadWithParticipants } from '@/lib/montree/messaging/thread-resolver';
+import { readEncryptedField } from '@/lib/montree/messaging-crypto';
 import type {
   ParticipantRole,
   ThreadType,
@@ -106,8 +107,10 @@ export async function GET(request: NextRequest) {
       .select('thread_id, participant_role, participant_id, is_observer, is_primary')
       .in('thread_id', ids),
     supabase
+      // 🚨 Session 121 — pull encryption_version so we decrypt body before
+      // computing last_snippet. Without this the client would see ciphertext.
       .from('montree_thread_messages')
-      .select('id, thread_id, body, sender_role, sender_id, sender_name, sent_at')
+      .select('id, thread_id, body, encryption_version, sender_role, sender_id, sender_name, sent_at')
       .in('thread_id', ids)
       .is('deleted_at', null)
       .order('sent_at', { ascending: false })
@@ -176,11 +179,21 @@ export async function GET(request: NextRequest) {
       sent_at: string;
     }
   >();
-  for (const m of lastMessagesRes.data || []) {
+  for (const m of (lastMessagesRes.data || []) as Array<{
+    id: string;
+    thread_id: string;
+    body: string;
+    encryption_version: number | null;
+    sender_role: string;
+    sender_id: string;
+    sender_name: string;
+    sent_at: string;
+  }>) {
     if (!latestByThread.has(m.thread_id)) {
       latestByThread.set(m.thread_id, {
         id: m.id,
-        body: m.body,
+        // 🚨 Decrypt body before storing for snippet computation downstream.
+        body: readEncryptedField(m.body, m.encryption_version),
         sender_role: m.sender_role as SenderRole,
         sender_id: m.sender_id,
         sender_name: m.sender_name,

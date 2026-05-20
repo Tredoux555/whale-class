@@ -15,6 +15,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { resolveAppointmentsParent } from '@/lib/montree/appointments/parent-access';
+import { readEncryptedField } from '@/lib/montree/messaging-crypto';
 
 export const maxDuration = 30;
 
@@ -62,9 +63,10 @@ export async function GET(
   }
 
   // Fetch the most recent recording row.
+  // 🚨 Session 121 — pull encryption_version so we decrypt transcript + summary.
   const { data: rec, error } = await supabase
     .from('montree_appointment_recordings')
-    .select('id, recording_status, recording_storage_path, recording_duration_seconds, transcript, transcript_locale, summary, summary_locale, recording_visible_to_parent, failure_reason, started_at, ended_at, transcribed_at, summarized_at, created_at')
+    .select('id, recording_status, recording_storage_path, recording_duration_seconds, transcript, transcript_locale, summary, summary_locale, encryption_version, recording_visible_to_parent, failure_reason, started_at, ended_at, transcribed_at, summarized_at, created_at')
     .eq('appointment_id', id)
     .eq('school_id', schoolId)
     .order('created_at', { ascending: false })
@@ -98,7 +100,20 @@ export async function GET(
     });
   }
 
-  return NextResponse.json({ recording: rec });
+  // 🚨 Session 121 — decrypt transcript + summary before returning. Both
+  // columns share the row's encryption_version.
+  const recTyped = rec as {
+    transcript: string | null;
+    summary: string | null;
+    encryption_version: number | null;
+  };
+  const recDecrypted = {
+    ...rec,
+    transcript: recTyped.transcript ? readEncryptedField(recTyped.transcript, recTyped.encryption_version) : recTyped.transcript,
+    summary: recTyped.summary ? readEncryptedField(recTyped.summary, recTyped.encryption_version) : recTyped.summary,
+  };
+
+  return NextResponse.json({ recording: recDecrypted });
 }
 
 export async function PATCH(

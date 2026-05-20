@@ -15,6 +15,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { resolveMessagingParent } from '@/lib/montree/parent-messaging/access';
 import { isValidLocale } from '@/lib/montree/i18n/locales';
+import {
+  isEncryptionEnabledForSchool,
+  writeEncryptedField,
+  readEncryptedField,
+} from '@/lib/montree/messaging-crypto';
 
 export const dynamic = 'force-dynamic';
 
@@ -86,7 +91,13 @@ export async function GET(
     .order('sent_at', { ascending: true })
     .limit(limit);
 
-  return NextResponse.json({ messages: messages || [] });
+  // 🚨 Session 121 — decrypt body before returning to client.
+  const decryptedMessages = (messages || []).map((m: { body: string; encryption_version: number | null }) => ({
+    ...m,
+    body: readEncryptedField(m.body, m.encryption_version),
+  }));
+
+  return NextResponse.json({ messages: decryptedMessages });
 }
 
 interface PostBody {
@@ -152,6 +163,9 @@ export async function POST(
     return NextResponse.json({ error: 'media_url required for audio' }, { status: 400 });
   }
 
+  // 🚨 Session 121 — encrypt body when encryption_v1 is enabled.
+  const encEnabled = await isEncryptionEnabledForSchool(supabase, parent.schoolId);
+  const enc = writeEncryptedField(body.body.trim(), encEnabled);
   // Insert. ai_drafted is forced false — parents don't get AI drafting in v1.
   const { data: inserted, error } = await supabase
     .from('montree_thread_messages')
@@ -160,7 +174,8 @@ export async function POST(
       sender_role: 'parent',
       sender_id: parent.parentId,
       sender_name: parent.parentName,
-      body: body.body.trim(),
+      body: enc.value,
+      encryption_version: enc.version,
       body_locale: safeBodyLocale,
       media_url: body.media_url || null,
       media_type: body.media_type || null,
@@ -178,6 +193,13 @@ export async function POST(
     return NextResponse.json({ error: 'Failed to send message' }, { status: 500 });
   }
 
+  // Decrypt the inserted row before returning so the client sees plaintext.
+  const insertedTyped = inserted as { body: string; encryption_version: number | null };
+  const insertedDecrypted = {
+    ...inserted,
+    body: readEncryptedField(insertedTyped.body, insertedTyped.encryption_version),
+  };
+
   // Mark the parent as having read up to and including their own message.
   await supabase
     .from('montree_message_thread_participants')
@@ -186,5 +208,5 @@ export async function POST(
     .eq('participant_role', 'parent')
     .eq('participant_id', parent.parentId);
 
-  return NextResponse.json({ message: inserted }, { status: 201 });
+  return NextResponse.json({ message: insertedDecrypted }, { status: 201 });
 }
