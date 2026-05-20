@@ -164,6 +164,10 @@ export default function AgoraVideoCall(props: AgoraVideoCallProps) {
   // Server has its own idempotency check; this is the UX-side belt.
   const [recordingRequestInFlight, setRecordingRequestInFlight] = useState(false);
 
+  // 🚨 Session 120 follow-up — captured token data, surfaced in WaitingTile
+  // as a visible diagnostic so two devices can compare channel + uid + role.
+  const [diagnostic, setDiagnostic] = useState<{ channel: string; uid: number; role: string } | null>(null);
+
   // ── Connection quality + reconnect UX state ────────────────────────
   // Quality scale per Agora docs:
   //   0=unknown, 1=excellent, 2=good, 3=poor, 4=bad, 5=very bad, 6=down
@@ -232,6 +236,14 @@ export default function AgoraVideoCall(props: AgoraVideoCallProps) {
         };
 
         if (cancelled) return;
+
+        // Capture diagnostic so WaitingTile can render it for side-by-side
+        // comparison when peers don't see each other.
+        setDiagnostic({
+          channel: tokenData.channel,
+          uid: tokenData.uid,
+          role: props.callerRole,
+        });
 
         // 2. Load SDK + create client.
         setState({ phase: 'permissions' });
@@ -447,6 +459,11 @@ export default function AgoraVideoCall(props: AgoraVideoCallProps) {
     return () => {
       cancelled = true;
     };
+    // Intentional deps: initRef.current guard makes this effect run once per
+    // mount. props.callerRole is captured for the diagnostic block but is
+    // expected to be stable for the lifetime of the call (it's derived from
+    // auth and doesn't change while the component is mounted).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [props.appointmentId]);
 
   // ── Cleanup on unmount ─────────────────────────────────────────────
@@ -638,7 +655,7 @@ export default function AgoraVideoCall(props: AgoraVideoCallProps) {
             showPlaceholder={false}
           />
         ) : (
-          <WaitingTile remoteDisplayName={props.remoteDisplayName} state={state} />
+          <WaitingTile remoteDisplayName={props.remoteDisplayName} state={state} diagnostic={diagnostic} />
         )}
       </div>
 
@@ -729,15 +746,51 @@ function VideoTile({ label, mountRef, showPlaceholder }: { label: string; mountR
   );
 }
 
-function WaitingTile({ remoteDisplayName, state }: { remoteDisplayName: string; state: CallState }) {
+function WaitingTile({
+  remoteDisplayName,
+  state,
+  diagnostic,
+}: {
+  remoteDisplayName: string;
+  state: CallState;
+  diagnostic?: { channel: string; uid: number; role: string } | null;
+}) {
   let message = `Waiting for ${remoteDisplayName} to join…`;
   if (state.phase === 'loading') message = 'Connecting…';
   else if (state.phase === 'permissions') message = 'Loading video…';
   else if (state.phase === 'joining') message = 'Joining the room…';
   return (
-    <div style={{ background: T.cardBg, borderRadius: 14, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12, color: T.textSecondary, fontSize: 14, border: T.cardBorder }}>
+    <div style={{ background: T.cardBg, borderRadius: 14, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12, color: T.textSecondary, fontSize: 14, border: T.cardBorder, padding: 16 }}>
       <Loader2 size={28} strokeWidth={1.75} style={{ animation: 'spin 1.4s linear infinite', color: T.emerald }} />
-      {message}
+      <div>{message}</div>
+      {/* 🚨 Session 120 follow-up — visible call diagnostic so we can compare
+          two devices side-by-side. Channel name + role + UID + region.
+          If two devices show DIFFERENT channels, they're in different rooms
+          (different appointment_ids). If two devices show DIFFERENT regions,
+          they're on disconnected Agora edges (CN vs Global). Either way the
+          user can spot the mismatch in one glance. */}
+      {diagnostic && (
+        <div
+          style={{
+            marginTop: 8,
+            padding: '8px 10px',
+            background: 'rgba(0,0,0,0.30)',
+            border: '1px solid rgba(255,255,255,0.10)',
+            borderRadius: 8,
+            fontFamily: 'ui-monospace, SF Mono, Menlo, monospace',
+            fontSize: 10,
+            color: T.textMuted,
+            lineHeight: 1.6,
+            textAlign: 'left',
+            minWidth: 240,
+          }}
+        >
+          <div>channel: <span style={{ color: T.emerald }}>…{diagnostic.channel.slice(-12)}</span></div>
+          <div>role: <span style={{ color: T.emerald }}>{diagnostic.role}</span></div>
+          <div>uid: <span style={{ color: T.emerald }}>{diagnostic.uid}</span></div>
+          <div>region: <span style={{ color: T.emerald }}>{AGORA_AREA}</span></div>
+        </div>
+      )}
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
   );
