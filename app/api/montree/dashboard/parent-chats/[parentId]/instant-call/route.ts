@@ -199,6 +199,7 @@ export async function POST(
     caller: { role: auth.role, id: auth.userId, name: callerName },
     parentId,
     caption,
+    audioOnly,
   }).catch((err) => {
     console.error('[instant-call POST] invite post failed (non-fatal):', err);
   });

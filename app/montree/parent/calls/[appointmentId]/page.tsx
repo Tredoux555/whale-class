@@ -102,6 +102,7 @@ export default function ParentJoinCallPage({
       remoteDisplayName={meta.staff_name}
       recordingEnabledForAppointment={false}
       onClose={handleClose}
+      audioOnly={audioOnly}
     />
   );
 }
