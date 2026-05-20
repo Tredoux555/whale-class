@@ -11,6 +11,7 @@ import Anthropic from '@anthropic-ai/sdk';
 import { OPUS_MODEL } from '@/lib/ai/anthropic';
 import { randomBytes } from 'crypto';
 import { getAILanguageInstruction } from '@/lib/montree/i18n/locale-config';
+import { readEncryptedField } from '@/lib/montree/messaging-crypto';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 120;
@@ -67,8 +68,9 @@ export async function POST(request: NextRequest) {
 
   const [messagesRes, childRes, classroomRes] = await Promise.all([
     supabase
+      // 🚨 Session 121 — pull encryption_version + decrypt before Tracy sees it.
       .from('montree_thread_messages')
-      .select('sender_role, sender_name, body, sent_at')
+      .select('sender_role, sender_name, body, encryption_version, sent_at')
       .eq('thread_id', body.thread_id)
       .is('deleted_at', null)
       .order('sent_at', { ascending: true })
@@ -81,7 +83,17 @@ export async function POST(request: NextRequest) {
       : Promise.resolve({ data: null }),
   ]);
 
-  const messages = messagesRes.data || [];
+  // 🚨 Decrypt each body before feeding to Sonnet.
+  const messages = ((messagesRes.data || []) as Array<{
+    sender_role: string;
+    sender_name: string;
+    body: string;
+    encryption_version: number | null;
+    sent_at: string;
+  }>).map((m) => ({
+    ...m,
+    body: readEncryptedField(m.body, m.encryption_version),
+  }));
   if (!messages.length) {
     return NextResponse.json({
       summary: 'No messages in this thread yet.',

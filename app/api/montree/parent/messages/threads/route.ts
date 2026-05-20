@@ -19,6 +19,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { resolveMessagingParent } from '@/lib/montree/parent-messaging/access';
 import { createThreadWithParticipants } from '@/lib/montree/messaging/thread-resolver';
+import {
+  isEncryptionEnabledForSchool,
+  writeEncryptedField,
+  readEncryptedField,
+} from '@/lib/montree/messaging-crypto';
 import type {
   ParticipantRole,
   ThreadType,
@@ -91,8 +96,10 @@ export async function GET() {
       .select('thread_id, participant_role, participant_id, is_observer, is_primary')
       .in('thread_id', ids),
     supabase
+      // 🚨 Session 121 — pull encryption_version so we decrypt body before
+      // computing last_snippet for the thread list.
       .from('montree_thread_messages')
-      .select('id, thread_id, body, sender_role, sender_id, sender_name, sent_at')
+      .select('id, thread_id, body, encryption_version, sender_role, sender_id, sender_name, sent_at')
       .in('thread_id', ids)
       .is('deleted_at', null)
       .order('sent_at', { ascending: false })
@@ -159,11 +166,21 @@ export async function GET() {
       sent_at: string;
     }
   >();
-  for (const m of lastMessagesRes.data || []) {
+  for (const m of (lastMessagesRes.data || []) as Array<{
+    id: string;
+    thread_id: string;
+    body: string;
+    encryption_version: number | null;
+    sender_role: string;
+    sender_id: string;
+    sender_name: string;
+    sent_at: string;
+  }>) {
     if (!latestByThread.has(m.thread_id)) {
       latestByThread.set(m.thread_id, {
         id: m.id,
-        body: m.body,
+        // 🚨 Decrypt body before storing for snippet.
+        body: readEncryptedField(m.body, m.encryption_version),
         sender_role: m.sender_role as SenderRole,
         sender_id: m.sender_id,
         sender_name: m.sender_name,
@@ -334,6 +351,10 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Failed to create thread' }, { status: 500 });
   }
 
+  // 🚨 Session 121 — encrypt first-message body when encryption_v1 is on.
+  const encEnabledFirst = await isEncryptionEnabledForSchool(supabase, parent.schoolId);
+  const encFirst = writeEncryptedField(body.body.trim(), encEnabledFirst);
+
   // Post the first message immediately so the thread isn't empty when
   // the recipient opens it.
   const { error: msgErr } = await supabase
@@ -343,7 +364,8 @@ export async function POST(request: NextRequest) {
       sender_role: 'parent',
       sender_id: parent.parentId,
       sender_name: parent.parentName,
-      body: body.body.trim(),
+      body: encFirst.value,
+      encryption_version: encFirst.version,
       ai_drafted: false,
     });
 

@@ -270,6 +270,103 @@ Session 119 weathered a Railway edge outage (May 19 22:22 UTC, ~1.5h, first inci
 
 ## RECENT STATUS (May 20, 2026)
 
+### 🔐 Session 121 — Application-layer AES-256-GCM encryption shipped (audioOnly closed, encryption built section-by-section) (May 20, 2026)
+
+**Two ships in one session:**
+
+1. **AgoraVideoCall `audioOnly` prop wiring** (commit `5c7be446`, already pushed). 8 files, +196/-56 lines. Closes the Session 119 carry-over: voice-call button threads `?audio=1` from parent-chats → instant-call route → join page → AgoraVideoCall, which now skips `createCameraVideoTrack`, renders `VoiceTile` instead of `VideoTile` (Apple-style large initial avatar), hides the camera toggle, switches top-bar copy to "Voice call with X". Plus extended `[[VCALL:<id>:audio]]` marker so the parent's invite card preserves audio mode end-to-end. Card label + icon flip to "Voice call" + Phone icon on all 3 [[VCALL:]] render sites.
+
+2. **Application-layer encryption** (section-by-section, pending final commit). Mirror of the Story system's pattern: AES-256-GCM via 32-char `MONTREE_ENCRYPTION_KEY` env var, per-row `encryption_version` column for rollback safety. **The build was structured as 7 sections, each with its own audit cycle. All 7 sections completed clean.**
+
+**🚨 Canonical runbook:** `docs/handoffs/MONTREE_ENCRYPTION_RUNBOOK.md` — activation playbook, rollback playbook, key rotation procedure, failure modes table, architectural rules #224-235, subprocessor disclosure for privacy policy.
+
+**🚨 1 migration pending Tredoux's Supabase run:**
+- ⏳ `migrations/226_montree_encryption_v1.sql` — adds `encryption_version INTEGER` columns to `montree_thread_messages`, `montree_meeting_notes`, and `montree_appointment_recordings` (last gated on migration 223 existence via DO block). Inserts `encryption_v1` feature flag with `default_enabled=false`. Idempotent BEGIN/COMMIT. **REQUIRED before any encrypted writes happen.** Until run, every write path falls back to plaintext + null version (the writeEncryptedField helper checks isEncryptionConfigured() and the flag, gracefully degrading on misconfiguration). Existing reads continue unchanged.
+
+**§0 — Foundation (commit pending, lint clean, 32/32 self-test passed):**
+- `lib/montree/messaging-crypto.ts` — NEW. AES-256-GCM mirroring Story's `lib/message-encryption.ts` exactly: `gcm:<iv>:<authTag>:<ciphertext>` format, 32-char utf8 key from `MONTREE_ENCRYPTION_KEY`. Public surface: `encryptField`, `decryptField`, `readEncryptedField(value, version)` (canonical read pattern — branches on version), `writeEncryptedField(plain, enabled)` (canonical write pattern — returns `{value, version}`), `isEncryptionConfigured()`, `isEncryptionEnabledForSchool(supabase, schoolId | null)` (handles NULL school_id for agent_super_admin threads). Sentinel `DECRYPT_FAILURE_SENTINEL = '[Encrypted — could not decrypt]'`.
+- `migrations/226_montree_encryption_v1.sql` — NEW (above).
+- `lib/montree/features/types.ts` — added `'encryption_v1'` to `FeatureKey` union.
+- `scripts/test-montree-crypto.mjs` — NEW self-test. 32 tests cover roundtrip ASCII/Unicode/empty/50KB, IV randomness, tamper detection (auth tag), bad format detection, version branching, flag gating, key rotation, fallback-on-misconfig. **32/32 passed clean.**
+
+**§A — Messages encryption (22 files touched, lint clean):**
+
+Wrapped every read/write on `montree_thread_messages.body` across the full messaging surface area:
+- 6 lib helpers: `messaging/video-call-invite.ts`, `messaging/appointment-invite.ts`, `meeting-notes/share-to-thread.ts`, `appointments/share-to-thread.ts`, `mira/tool-executor.ts`, `tracy/tool-executor.ts`
+- 16 API routes: `messages/threads/route.ts` + `[threadId]/messages/route.ts`, `messages/broadcast/route.ts`, `parent/messages/threads/route.ts` + `[threadId]/messages/route.ts`, `dashboard/parent-chats/route.ts` + `[parentId]/route.ts`, `agent/messages/threads/route.ts` + `[threadId]/messages/route.ts`, `agent/messages-tredoux/threads/route.ts` + `[threadId]/messages/route.ts`, `super-admin/agent-messages/threads/route.ts` + `[threadId]/messages/route.ts`, `admin/tracy/scan-thread/route.ts`, `admin/tracy/draft-response/route.ts`
+
+Every read site now selects `encryption_version` alongside `body` and decrypts via `readEncryptedField` before returning to client / before passing to Tracy/Mira (AI must never see ciphertext). Every write site calls `isEncryptionEnabledForSchool()` + `writeEncryptedField()` and stores the resulting `{ body, encryption_version }`. Agent_super_admin threads (NULL school_id) fall through to the global default via the helper.
+
+**§B — Meeting Notes encryption (4 routes):**
+
+`montree_meeting_notes.{summary, transcript, notes}` — all three columns share the row's `encryption_version`. Teacher routes + principal routes (mirror of teacher per migration 215). PATCH `notes` path mirrors the row's EXISTING `encryption_version` (architectural rule #232: half-encrypting a row is forbidden). `shareMeetingNoteToThread` callers decrypt summary BEFORE passing to the helper (the helper re-encrypts independently for the message domain — passing ciphertext would double-encrypt).
+
+**§C — Cloud Recording prep (3 routes + pipeline):**
+
+`montree_appointment_recordings.{transcript, summary}` encryption hooked into:
+- `appointments/[id]/recording/route.ts` GET — decrypt before returning
+- `appointments/[id]/prior-conversations/route.ts` — decrypt summary in list response
+- `lib/montree/appointments/transcription/pipeline.ts` — encrypts Whisper transcript on first persist + Sonnet summary on second persist. `fetchPriorSummaries` decrypts before injecting into next Sonnet briefing prompt.
+
+Stage B (Cloud Recording) is not yet active. When migration 223 lands and the operator flips the flag, all transcript/summary writes will encrypt from day 1.
+
+**§D — Backfill + decrypt rollback scripts:**
+
+- `scripts/encrypt-existing-rows.mjs` — reads every row where `encryption_version IS NULL` across all 3 tables, encrypts in 100-row batches, writes back with `encryption_version=1`. `--dry-run` (default) + `--commit` modes. `--table={messages,meeting-notes,recordings,all}` scoping. Idempotent. Per-row writes filtered by `.is('encryption_version', null)` so re-runs skip already-encrypted rows.
+- `scripts/decrypt-existing-rows.mjs` — companion rollback. Decrypts every `encryption_version=1` row, writes plaintext back, clears version to NULL. Aborts with loud warning on any sentinel (key mismatch) — never writes the sentinel back as data. Same `--dry-run`/`--commit`/`--table` flags.
+
+**§E — Runbook (docs/handoffs/MONTREE_ENCRYPTION_RUNBOOK.md):**
+
+Comprehensive operations doc covering: initial activation playbook (8 steps), rollback playbook, key rotation playbook (~10-30min maintenance window with maintenance flag flip), failure modes table, 12 architectural rules locked in (#224-235), verification commands, subprocessor disclosure for privacy policy.
+
+**§F — Marketing + handoff:**
+
+- `app/montree/security/page.tsx` — NEW. Public security disclosure page at `/montree/security`. Deep forest palette matching landing. Honest language: claims what we CAN defensibly say ("AES-256-GCM, the same algorithm banks and governments use"), explicitly does NOT claim "we can't read your data" (which would require Vault-style E2E). Discloses subprocessors (OpenAI Whisper, Anthropic, Agora, Supabase). Photos disclosed as Supabase-Storage-encrypted-at-rest, NOT application-layer.
+- `app/montree/page.tsx` — added "Security" link to landing nav (m-nav-link-secondary class, between About and Log in).
+
+**🚨 Architectural rules locked in this session (#224-235 — do NOT let future agents break these):**
+
+224. **`MONTREE_ENCRYPTION_KEY` is a 32-character utf8 string.** Mirror of Story system's `MESSAGE_ENCRYPTION_KEY` pattern. Separate env vars — Story and Montree don't share keys.
+225. **Each encrypted row stores its own `encryption_version` (NULL or 1).** Reads branch on this value via `readEncryptedField`. Writes branch on the `encryption_v1` feature flag via `writeEncryptedField`. Mixed plaintext + ciphertext rows coexist safely forever.
+226. **Ciphertext format: `gcm:<iv-hex>:<authTag-hex>:<ciphertext-hex>`.** Identical to Story system. Auth-tag failure on decrypt returns sentinel, not the ciphertext or a throw.
+227. **`readEncryptedField(value, version)` is the canonical read pattern.** Returns plaintext on success, `DECRYPT_FAILURE_SENTINEL = '[Encrypted — could not decrypt]'` on any failure (wrong key, tampered ciphertext, bad format). Never throws. Use everywhere we render encrypted content to user OR to AI.
+228. **`writeEncryptedField(plain, enabled)` is the canonical write pattern.** Returns `{ value, version: 1 | null }` ready to spread into an insert. When flag is OFF or key misconfigured, falls back to plaintext + null version with a loud-log warning.
+229. **`isEncryptionEnabledForSchool(supabase, schoolId | null)` is the canonical flag resolver.** Handles NULL school_id (agent_super_admin threads) by falling through to the global `default_enabled`. Fail-closed: returns false on any error.
+230. **The decrypt path stays in code forever.** Legacy plaintext rows (`encryption_version IS NULL`) MUST continue to read correctly through all future deploys.
+231. **Tracy AI + Mira AI tool-executors decrypt before passing to Sonnet/Opus.** AI must never see ciphertext — it'd just garbage in, garbage out. Verified end-to-end in `lib/montree/tracy/tool-executor.ts` and `lib/montree/mira/tool-executor.ts`.
+232. **PATCH-on-existing-row notes encryption mirrors the row's EXISTING `encryption_version`.** A v1 row's notes update gets encrypted v1 even if the flag is now OFF (key still works). A NULL-version row's notes update stays plaintext. Half-encrypting a row (some columns encrypted, others plain) is forbidden — would break decryption logic.
+233. **`shareMeetingNoteToThread` expects plaintext summary.** Callers in `[id]/route.ts` decrypt before passing. The helper re-encrypts independently for the message domain. Passing ciphertext would double-encrypt and break the parent's view.
+234. **Audio bytes are NEVER persisted.** Whisper sees them ~30s in flight, then discarded. Application-layer encryption doesn't apply to ephemeral audio.
+235. **Photos are NOT encrypted at the application layer.** They live in Supabase Storage with bucket-level encryption-at-rest. Encrypting photos at the application layer would break thumbnails, Cloudflare CDN, AI photo identification. Documented in the public security page.
+
+**Verification status:**
+- ✅ All section lints clean (`--max-warnings=0` across 30+ files).
+- ✅ Self-test 32/32 passed (`scripts/test-montree-crypto.mjs`).
+- ✅ AgoraVideoCall audioOnly commit `5c7be446` pushed to `origin/main`.
+- ⏳ Encryption work pending push (multiple files staged, not yet committed).
+- ⏳ Migration 226 pending Tredoux's Supabase run.
+- ⏳ `MONTREE_ENCRYPTION_KEY` env var pending Tredoux's Railway set.
+- ⏳ Feature flag flip pending Tredoux's go-ahead (post-deploy + key set).
+
+**🚨 To activate encryption end-to-end (Tredoux's checklist):**
+
+1. **Generate the key** — `node -e "console.log(require('crypto').randomBytes(16).toString('hex'))"` → 32-char hex string. **🚨 BACK IT UP** in 1Password + paper copy.
+2. **Set `MONTREE_ENCRYPTION_KEY`** in Railway env vars + `.env.local`.
+3. **Run migration 226** in Supabase SQL Editor.
+4. **Deploy this session's code** (push pending; Railway auto-deploys).
+5. **Smoke-test reads** — visit `/montree/admin`, verify Tracy still works, existing messages render correctly.
+6. **Flip the flag ON** — either globally via UPDATE on `montree_feature_definitions` OR per-school via `montree_school_features` INSERT.
+7. **Send a test message** — verify in Supabase that newest row has `encryption_version=1` and `body` starts with `gcm:`. Verify in the app that the message still renders plaintext.
+8. **(Optional) Run backfill** — `node scripts/encrypt-existing-rows.mjs --dry-run` then `--commit` to upgrade legacy plaintext rows to v1.
+
+**🚨 Rollback procedure (3-step):**
+
+1. `UPDATE montree_feature_definitions SET default_enabled = false WHERE feature_key = 'encryption_v1';`
+2. New writes go to plaintext. Existing v1 rows still decrypt on read (key still in env).
+3. (Optional) `node scripts/decrypt-existing-rows.mjs --commit` to fully roll back all rows.
+
+---
+
 ### 🔥 Session 120 — Agora video render-race fix + unified appointment/messaging architecture + in-app notification banners (May 20, 2026)
 
 **Single console-log paste from one device cracked the Agora bug.** User reported: both teacher and parent join the call, both see their own video, but neither sees the other's. The log showed successful join + publish + local video play, then 11+ seconds of dead silence — ZERO `user-published` or `user-joined` event for the remote peer. That's the smoking gun.
@@ -430,7 +527,7 @@ User reported: "as I join as the teacher the connection is lost on the parent si
 **🚨 Canonical resume doc:** `docs/handoffs/SESSION_119_HANDOFF.md` — full breakdown, 13 architectural rules, 12-step verification, file index, resume prompt.
 
 **🚨 ONE migration pending Tredoux's Supabase run:**
-- ⏳ `migrations/225_child_english_progress.sql` — new `montree_child_english_progress` table (UNIQUE child_id, current_phase pink/blue/green, current_lesson 1-128, mastered_lessons int[], audit trail). Until run, the English Progress tab shows a "Run migration 225" banner instead of crashing (Postgres 42P01 graceful fallback). Once run, the full Phase 1+2+3 tracker lights up.
+- ✅ `migrations/225_child_english_progress.sql` — **RUN May 20, 2026 (Session 121).** `montree_child_english_progress` table live (UNIQUE child_id, current_phase pink/blue/green, current_lesson 1-128, mastered_lessons int[], audit trail). English Progress tab on Classroom Overview now fully functional with Phase 1+2+3 tracker. Stop telling future sessions to run this.
 
 **Commits this session (oldest → newest):**
 
@@ -7264,14 +7361,19 @@ All migrations through 169 have been run. Key ones: 147 (smart learning columns)
 **Session 111 (May 14, 2026) — Inbound payments three-rail billing. ⏳ 1 migration pending Tredoux's Supabase run:**
 - ⏳ `209_school_payment_method.sql` — `montree_schools.payment_method` (CHECK IN 'stripe_subscription','alipay_invoice','manual_invoice'), `manual_invoice_details` JSONB, `manual_invoice_details_updated_at` TIMESTAMPTZ, `billing_cadence` (CHECK IN 'monthly','annual'), `next_invoice_due_at` TIMESTAMPTZ. Two partial indexes (`idx_schools_alipay_active` for daily cron pickup, `idx_schools_manual_invoice_active` for super-admin filter). Idempotent BEGIN/COMMIT. **REQUIRED for 💳 button (PaymentConfigModal PATCH) + alipay invoice cron + manual ⚡ Wire route + record-incoming-wire idempotency. Until run, payment-config 500s on PATCH (column does not exist) and the new 💳 + ⚡ buttons surface but are non-functional. Existing Stripe subscription path unchanged.**
 
-**Session 114 (May 17, 2026) — Parent meeting notes (audio-free). ⏳ 1 new migration pending Tredoux's Supabase run:**
-- ⏳ `214_meeting_notes.sql` — new `montree_meeting_notes` table for teacher-side parent-meeting notes. Columns: `id`, `school_id`, `classroom_id`, `teacher_id`, `child_id` (nullable), `child_name`, `meeting_date`, `summary` (required), `transcript` (optional), `notes`, `duration_seconds`, `locale`, `parent_visible` (default FALSE), `shared_to_thread_id` (FK to `montree_message_threads` for future parent-thread integration), `created_at`, `updated_at` + auto-bump trigger. Three indexes (per-teacher hot path, per-child where child_id IS NOT NULL, per-school). Idempotent BEGIN/COMMIT. **REQUIRED for teacher Meeting Notes save path. Until run, the new page at `/montree/dashboard/conversations` surfaces a clear "Migration 214 not yet run" banner — record + transcribe + summary still work, only persistence waits. Principal vault (existing `montree_principal_vault` from migration 185) works without this.**
+**Session 114 (May 17, 2026) — Parent meeting notes (audio-free). ✅ Migration RUN Session 121 (May 20, 2026):**
+- ✅ `214_meeting_notes.sql` — **RUN May 20, 2026.** `montree_meeting_notes` table live for teacher-side parent-meeting notes. Columns: `id`, `school_id`, `classroom_id`, `teacher_id`, `child_id` (nullable), `child_name`, `meeting_date`, `summary` (required), `transcript` (optional), `notes`, `duration_seconds`, `locale`, `parent_visible` (default FALSE), `shared_to_thread_id` (FK to `montree_message_threads`), `created_at`, `updated_at` + auto-bump trigger. Three indexes (per-teacher, per-child where child_id IS NOT NULL, per-school). Teacher Meeting Notes save path at `/montree/dashboard/conversations` now fully functional.
+- ✅ `215_meeting_notes_principal_author.sql` — **RUN May 20, 2026.** Extends `montree_meeting_notes` to support principal authors. Drops NOT NULL on `teacher_id`, adds `principal_id` FK to `montree_school_admins` with ON DELETE CASCADE, adds `meeting_notes_author_check` CHECK constraint enforcing exactly-one-of-(teacher_id, principal_id), plus partial index `idx_meeting_notes_principal` on principal-authored rows. Principal Meeting Notes at `/montree/admin/meeting-notes` now fully functional.
+- ✅ Agent default share % backfill — **RUN May 20, 2026.** `UPDATE montree_teachers SET agent_default_share_pct = 20 WHERE is_agent = true AND agent_default_share_pct IS NULL;` — existing NULL-pct agents now inherit the 20% default introduced in commit `cd33058a`. Self-service code generation no longer hits the "disabled" wall for existing agents.
 
 **Session 118 (May 19, 2026) — Photo pipeline v2 (4-fix bundle). ✅ Migration RUN:**
 - ✅ `224_photo_pipeline_v2_flag.sql` — single-row INSERT into `montree_feature_definitions` adding `photo_pipeline_v2` with `default_enabled = TRUE`. Gates the 4-fix bundle: (A) `is_curriculum_work=false` routing requires `confidence >= 0.80`, (B) visual memory budget 50KB/100 → 20KB/40, (C) `top_candidates` carried through to sonnet_drafted writes, (D) age-decay weighting on visual memory ordering. Idempotent (`ON CONFLICT DO UPDATE`). **CONFIRMED RUN May 19, 2026 13:01** — verified via `SELECT feature_key, name, default_enabled FROM montree_feature_definitions WHERE feature_key = 'photo_pipeline_v2'` → 1 row returned (`photo_pipeline_v2 | Photo Pipeline v2 | true`). Initial run hit `null value in column "name"` because the first version of the migration omitted the required `name` column — patched in commit `301458f2`. Per-school rollback: `UPDATE montree_school_features SET enabled=false WHERE school_id='X' AND feature_key='photo_pipeline_v2';`
 
-**Session 119 (May 19–20, 2026) — English Progress Tracker. ⏳ 1 migration pending Tredoux's Supabase run:**
-- ⏳ `225_child_english_progress.sql` — new `montree_child_english_progress` table tracking per-child position in the 128-lesson English curriculum (53 Pink + 30 Blue + 45 Green). Columns: `id`, `child_id` UNIQUE (FK CASCADE to montree_children), `current_phase` CHECK IN ('pink','blue','green') DEFAULT 'pink', `current_lesson` INT CHECK 1-128 DEFAULT 1, `mastered_lessons` INT[] DEFAULT '{}', `last_advanced_at`, `last_advanced_by_role` CHECK IN ('teacher','principal','system'), `last_advanced_by_id`, `notes`, `created_at`, `updated_at` + auto-bump trigger. Two indexes (child_id, classroom roll-call via child_id JOIN). Idempotent BEGIN/COMMIT. **REQUIRED for the English Progress tab on `/montree/dashboard/classroom-overview` to render data. Until run, the tab shows a graceful "Run migration 225" banner (Postgres 42P01 → `migration_pending: true` in response, never crashes). The class heatmap + per-child cards + advance/set/reset PATCH all degrade cleanly. App-code invariant: `mastered_lessons ⊇ [1..current_lesson - 1]` enforced by `sanitizeMastered()` in `lib/montree/english-sequence/lesson-map.ts`. Schema is FROZEN — the LESSONS catalog must never be renumbered or every existing child's position would invalidate.**
+**Session 119 (May 19–20, 2026) — English Progress Tracker. ✅ Migration RUN Session 121 (May 20, 2026):**
+- ✅ `225_child_english_progress.sql` — `montree_child_english_progress` table live. UNIQUE(child_id), current_phase pink/blue/green, current_lesson 1-128, mastered_lessons int[], audit trail. English Progress tab on Classroom Overview fully functional.
+
+**Session 121 (May 20, 2026) — Application-layer AES-256-GCM encryption. ⏳ 1 migration pending Tredoux's Supabase run:**
+- ⏳ `226_montree_encryption_v1.sql` — adds `encryption_version INTEGER` columns to `montree_thread_messages`, `montree_meeting_notes`, and (gated on existence via DO block) `montree_appointment_recordings`. Inserts `encryption_v1` feature flag into `montree_feature_definitions` with `default_enabled = FALSE`. Idempotent BEGIN/COMMIT. **REQUIRED before any encrypted writes happen. Until run, every write path falls back to plaintext + null version (the `writeEncryptedField` helper checks `isEncryptionConfigured()` and the flag, gracefully degrading on misconfig). Existing reads continue unchanged via `readEncryptedField` branching on `encryption_version`. Full activation playbook in `docs/handoffs/MONTREE_ENCRYPTION_RUNBOOK.md`. Pre-requisites: (1) generate the 32-char `MONTREE_ENCRYPTION_KEY` via `node -e "console.log(require('crypto').randomBytes(16).toString('hex'))"`, (2) BACK IT UP to 1Password + paper, (3) set in Railway + .env.local, (4) THEN run migration 226, (5) deploy Session 121 code, (6) smoke-test, (7) flip flag.**
 
 Plus Session 119 agent backfill SQL (not a migration file, run separately in Supabase):
 ```sql
