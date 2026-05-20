@@ -13,7 +13,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { toast, Toaster } from 'sonner';
 import Link from 'next/link';
-import { ArrowLeft, Send, Video, PlayCircle } from 'lucide-react';
+import { ArrowLeft, Send, Video, Phone, PlayCircle } from 'lucide-react';
 import { useI18n, getIntlLocale } from '@/lib/montree/i18n';
 import { parseVideoCallInvite } from '@/lib/montree/messaging/video-call-invite';
 import { parseAppointmentInvite } from '@/lib/montree/messaging/appointment-invite';
@@ -540,7 +540,7 @@ export default function TeacherThreadDetailPage() {
                     if (!invite) return msg.body;
                     return (
                       <Link
-                        href={`/montree/dashboard/calls/${invite.appointmentId}`}
+                        href={`/montree/dashboard/calls/${invite.appointmentId}${invite.audioOnly ? '?audio=1' : ''}`}
                         style={{
                           display: 'flex',
                           flexDirection: 'column',
@@ -564,8 +564,8 @@ export default function TeacherThreadDetailPage() {
                           textTransform: 'uppercase',
                           letterSpacing: 0.5,
                         }}>
-                          <Video size={13} strokeWidth={2} />
-                          Video call
+                          {invite.audioOnly ? <Phone size={13} strokeWidth={2} /> : <Video size={13} strokeWidth={2} />}
+                          {invite.audioOnly ? 'Voice call' : 'Video call'}
                         </div>
                         {invite.caption && (
                           <div style={{ fontSize: 14, lineHeight: 1.4 }}>

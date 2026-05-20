@@ -3,9 +3,16 @@
 // 🚨 Session 119 — video-call invite message convention.
 //
 // CONVENTION: a thread message whose body STARTS WITH
-//   [[VCALL:<appointmentId>]]
-// is treated as a video-call invite card. The renderer strips the
-// marker and shows a rich card with a prominent "Join now" button.
+//   [[VCALL:<appointmentId>]]            → video call (default)
+//   [[VCALL:<appointmentId>:audio]]      → voice-only call (Session 121)
+// is treated as a call invite card. The renderer strips the marker and
+// shows a rich card with a prominent "Join now" button. When the :audio
+// suffix is present, the Join href appends ?audio=1 so the receiving
+// side mounts AgoraVideoCall in voice-only mode.
+//
+// Adding new modes (e.g. :recording) should follow the same suffix
+// pattern. Parsers must remain forgiving of unknown suffixes — newer
+// senders should not break older clients.
 //
 // Why a body prefix and not a JSONB metadata column?
 //   - Avoids a new migration (montree_thread_messages has no JSONB col)
@@ -33,6 +40,8 @@ export interface ParsedInvite {
   appointmentId: string;
   /** Human-readable body that follows the marker. */
   caption: string;
+  /** 🚨 Session 121 — voice-only flag parsed from `:audio` suffix on the marker. */
+  audioOnly: boolean;
 }
 
 /** Try to parse a message body as a video-call invite. Returns null when
@@ -41,21 +50,33 @@ export function parseVideoCallInvite(body: string): ParsedInvite | null {
   if (!body.startsWith(VCALL_PREFIX)) return null;
   const closeIdx = body.indexOf(VCALL_SUFFIX);
   if (closeIdx < 0) return null;
-  const id = body.slice(VCALL_PREFIX.length, closeIdx).trim();
-  if (!id) return null;
+  // The inside of [[VCALL:...]] is either `<id>` or `<id>:audio` (and
+  // future modes follow the same colon-separated suffix pattern).
+  const inner = body.slice(VCALL_PREFIX.length, closeIdx).trim();
+  if (!inner) return null;
+  const [rawId, ...suffixes] = inner.split(':');
+  const id = rawId.trim();
   // Validate UUID-ish — we don't need full strictness, just a sanity check.
   if (!/^[0-9a-f-]{30,}$/i.test(id)) return null;
+  const audioOnly = suffixes.map(s => s.trim().toLowerCase()).includes('audio');
   const caption = body.slice(closeIdx + VCALL_SUFFIX.length).trim();
-  return { appointmentId: id, caption };
+  return { appointmentId: id, caption, audioOnly };
 }
 
 /** Build the canonical invite-message body. Pass a friendly caption like
  *  "Tredoux is calling you — Join below" or
- *  "Monthly review · Mon 21 May · 3pm". */
-export function buildVideoCallInviteBody(appointmentId: string, caption: string): string {
+ *  "Monthly review · Mon 21 May · 3pm".
+ *  Pass `audioOnly: true` to mark this as a voice call — receivers append
+ *  ?audio=1 to the Join href so AgoraVideoCall mounts without the camera. */
+export function buildVideoCallInviteBody(
+  appointmentId: string,
+  caption: string,
+  audioOnly: boolean = false,
+): string {
   // Strip any [[VCALL:...]] markers the caller accidentally included.
   const safeCaption = caption.replace(/\[\[VCALL:[^\]]*\]\]/g, '').trim();
-  return `${VCALL_PREFIX}${appointmentId}${VCALL_SUFFIX}${safeCaption ? ` ${safeCaption}` : ''}`;
+  const suffix = audioOnly ? ':audio' : '';
+  return `${VCALL_PREFIX}${appointmentId}${suffix}${VCALL_SUFFIX}${safeCaption ? ` ${safeCaption}` : ''}`;
 }
 
 // ─── post helper ─────────────────────────────────────────────────────
@@ -77,6 +98,9 @@ interface PostInviteArgs {
   parentId: string;
   /** Friendly caption (the human-readable bit after the marker). */
   caption: string;
+  /** 🚨 Session 121 — when true, marker is built as [[VCALL:<id>:audio]] so
+   *  both sides land in voice-only AgoraVideoCall. Defaults to false. */
+  audioOnly?: boolean;
 }
 
 /**
@@ -99,6 +123,7 @@ export async function postVideoCallInvite(args: PostInviteArgs): Promise<{
   const {
     supabase, schoolId, classroomId, childId,
     appointmentId, caller, parentId, caption,
+    audioOnly,
   } = args;
 
   // Step 1: find an existing parent_teacher thread shared by caller + parent
@@ -155,7 +180,7 @@ export async function postVideoCallInvite(args: PostInviteArgs): Promise<{
   }
 
   // Step 3: insert the invite message
-  const body = buildVideoCallInviteBody(appointmentId, caption);
+  const body = buildVideoCallInviteBody(appointmentId, caption, !!audioOnly);
   const { data: msgRow, error: insertErr } = await supabase
     .from('montree_thread_messages')
     .insert({

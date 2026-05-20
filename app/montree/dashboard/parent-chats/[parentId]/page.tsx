@@ -529,7 +529,7 @@ function MessageBubble({
         </div>
       ) : invite ? (
         <Link
-          href={`/montree/dashboard/calls/${invite.appointmentId}`}
+          href={`/montree/dashboard/calls/${invite.appointmentId}${invite.audioOnly ? '?audio=1' : ''}`}
           style={{
             maxWidth: '80%',
             display: 'flex',
@@ -554,8 +554,8 @@ function MessageBubble({
             textTransform: 'uppercase',
             letterSpacing: 0.6,
           }}>
-            <Video size={14} strokeWidth={2} />
-            Video call
+            {invite.audioOnly ? <Phone size={14} strokeWidth={2} /> : <Video size={14} strokeWidth={2} />}
+            {invite.audioOnly ? 'Voice call' : 'Video call'}
           </div>
           {invite.caption && (
             <div style={{ fontSize: 15, lineHeight: 1.4, color: T.textPrimary }}>

@@ -144,6 +144,18 @@ export interface AgoraVideoCallProps {
   recordingEnabledForAppointment: boolean;
   /** When the user closes the call (either by tapping End or programmatically). */
   onClose: () => void;
+  /**
+   * 🚨 Session 121 — voice-only mode. When true:
+   *   - Local camera track is NOT created (only mic)
+   *   - Remote video tracks are NOT subscribed (saves bandwidth, and
+   *     the other side's camera is irrelevant to a voice call)
+   *   - VoiceTile renders instead of VideoTile (no black box, no video div)
+   *   - Camera toggle button hidden from the control bar
+   *   - Top bar + WaitingTile copy switches to "Voice call" language
+   * Audio bytes flow unchanged — `user-published` audio handler still
+   * fires user.audioTrack.play() inline, no DOM mount needed.
+   */
+  audioOnly?: boolean;
 }
 
 type CallState =
@@ -273,6 +285,16 @@ export default function AgoraVideoCall(props: AgoraVideoCallProps) {
           const user = args[0] as { uid: number; videoTrack?: unknown; audioTrack?: unknown };
           const mediaType = args[1] as 'audio' | 'video';
           agoraLog('info', 'user-published', { uid: user.uid, mediaType });
+          // 🚨 Session 121 — voice-only mode skips remote video entirely.
+          // We don't subscribe (saves bandwidth on slow links), we don't
+          // mount a tile, and the audio path still works because audio is
+          // its own published event. Mark the remote as present so the
+          // VoiceTile renders instead of WaitingTile.
+          if (props.audioOnly && mediaType === 'video') {
+            agoraLog('info', 'user-published.skipped.audioOnly', { uid: user.uid });
+            setRemoteUserPresent(true);
+            return;
+          }
           try {
             await client.subscribe(user, mediaType);
             agoraLog('info', 'subscribe.success', { uid: user.uid, mediaType });
@@ -415,25 +437,36 @@ export default function AgoraVideoCall(props: AgoraVideoCallProps) {
         if (cancelled) return;
         agoraLog('info', 'join.success', {});
 
-        // Request cam + mic. Permissions prompt fires here.
-        const [mic, cam] = await Promise.all([
-          sdk.default.createMicrophoneAudioTrack(),
-          sdk.default.createCameraVideoTrack(),
-        ]);
+        // 🚨 Session 121 — voice-only mode skips camera creation entirely.
+        // Permissions prompt requests microphone only. ~600KB less initial
+        // bandwidth, plus no awkward "camera permission" prompt for users
+        // who explicitly chose a voice call.
+        const mic = await sdk.default.createMicrophoneAudioTrack();
         if (cancelled) {
           mic.close();
-          cam.close();
           return;
         }
         micTrackRef.current = mic;
-        camTrackRef.current = cam;
-        agoraLog('info', 'tracks.created', {});
 
-        if (localVideoElRef.current) {
-          cam.play(localVideoElRef.current);
+        let cam: ICamTrack | null = null;
+        if (!props.audioOnly) {
+          cam = await sdk.default.createCameraVideoTrack();
+          if (cancelled) {
+            mic.close();
+            cam.close();
+            return;
+          }
+          camTrackRef.current = cam;
+          if (localVideoElRef.current) {
+            cam.play(localVideoElRef.current);
+          }
         }
-        await client.publish([mic, cam]);
-        agoraLog('info', 'publish.success', {});
+        agoraLog('info', 'tracks.created', { audioOnly: !!props.audioOnly });
+
+        // Build the publish list. Voice-only publishes mic only.
+        const tracksToPublish: unknown[] = cam ? [mic, cam] : [mic];
+        await client.publish(tracksToPublish);
+        agoraLog('info', 'publish.success', { audioOnly: !!props.audioOnly });
 
         if (cancelled) return;
         setState({ phase: 'in-call' });
@@ -620,7 +653,7 @@ export default function AgoraVideoCall(props: AgoraVideoCallProps) {
       {/* Top bar */}
       <div style={{ padding: '12px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: T.cardBorder, gap: 12 }}>
         <div style={{ fontFamily: T.serif, fontSize: 17, color: T.textPrimary, flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-          Meeting with <span style={{ color: T.emerald, fontWeight: 600 }}>{props.remoteDisplayName}</span>
+          {props.audioOnly ? 'Voice call with' : 'Meeting with'} <span style={{ color: T.emerald, fontWeight: 600 }}>{props.remoteDisplayName}</span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
           {/* Network quality pill. Long-press / right-click opens debug panel. */}
@@ -643,21 +676,34 @@ export default function AgoraVideoCall(props: AgoraVideoCallProps) {
         </div>
       )}
 
-      {/* Video tiles */}
+      {/* Video / voice tiles */}
       <div style={{ flex: 1, display: 'grid', gridTemplateColumns: remoteUserPresent ? '1fr 1fr' : '1fr', gap: 8, padding: 16, minHeight: 0 }}>
-        <VideoTile
-          label="You"
-          mountRef={localVideoElRef}
-          showPlaceholder={!camEnabled}
-        />
-        {remoteUserPresent ? (
-          <VideoTile
-            label={props.remoteDisplayName}
-            mountRef={remoteVideoElRef}
-            showPlaceholder={false}
-          />
+        {props.audioOnly ? (
+          <VoiceTile label="You" micEnabled={micEnabled} />
         ) : (
-          <WaitingTile remoteDisplayName={props.remoteDisplayName} state={state} diagnostic={diagnostic} />
+          <VideoTile
+            label="You"
+            mountRef={localVideoElRef}
+            showPlaceholder={!camEnabled}
+          />
+        )}
+        {remoteUserPresent ? (
+          props.audioOnly ? (
+            <VoiceTile label={props.remoteDisplayName} micEnabled={true} />
+          ) : (
+            <VideoTile
+              label={props.remoteDisplayName}
+              mountRef={remoteVideoElRef}
+              showPlaceholder={false}
+            />
+          )
+        ) : (
+          <WaitingTile
+            remoteDisplayName={props.remoteDisplayName}
+            state={state}
+            diagnostic={diagnostic}
+            audioOnly={!!props.audioOnly}
+          />
         )}
       </div>
 
@@ -669,12 +715,15 @@ export default function AgoraVideoCall(props: AgoraVideoCallProps) {
           onClick={handleMicToggle}
           danger={!micEnabled}
         />
-        <ControlButton
-          icon={camEnabled ? <Video size={20} /> : <VideoOff size={20} />}
-          label={camEnabled ? 'Stop video' : 'Start video'}
-          onClick={handleCamToggle}
-          danger={!camEnabled}
-        />
+        {/* Camera toggle hidden in voice-only mode — no camera to toggle. */}
+        {!props.audioOnly && (
+          <ControlButton
+            icon={camEnabled ? <Video size={20} /> : <VideoOff size={20} />}
+            label={camEnabled ? 'Stop video' : 'Start video'}
+            onClick={handleCamToggle}
+            danger={!camEnabled}
+          />
+        )}
         {canControlRecording && (
           isRecording ? (
             <ControlButton
@@ -732,6 +781,69 @@ export default function AgoraVideoCall(props: AgoraVideoCallProps) {
 
 // ── Subcomponents ──────────────────────────────────────────────────────
 
+// 🚨 Session 121 — voice-only counterpart to VideoTile. Same grid position,
+// same border treatment, no black video box. Centered initial avatar with
+// the participant's first letter, name below, mic state pip in the corner.
+// Used in audioOnly mode for both local + remote sides.
+function VoiceTile({ label, micEnabled }: { label: string; micEnabled: boolean }) {
+  // First letter of the label, uppercased. Falls back to '•' for empty strings
+  // so we never render an empty circle.
+  const initial = (label || '•').trim().charAt(0).toUpperCase() || '•';
+  return (
+    <div style={{
+      position: 'relative',
+      background: 'linear-gradient(180deg, rgba(8,20,12,0.85) 0%, rgba(6,40,26,0.65) 100%)',
+      borderRadius: 14,
+      overflow: 'hidden',
+      border: T.cardBorder,
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: 24,
+      gap: 14,
+      minHeight: 0,
+    }}>
+      {/* Big initial avatar — calm focal point of a voice call. */}
+      <div style={{
+        width: 96,
+        height: 96,
+        borderRadius: '50%',
+        background: 'rgba(52,211,153,0.15)',
+        border: '1px solid rgba(52,211,153,0.35)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        color: T.emerald,
+        fontFamily: T.serif,
+        fontSize: 40,
+        fontWeight: 600,
+      }}>
+        {initial}
+      </div>
+      <div style={{ color: T.textPrimary, fontSize: 15, fontWeight: 600, textAlign: 'center' }}>
+        {label}
+      </div>
+      {!micEnabled && (
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 6,
+          padding: '4px 10px',
+          borderRadius: 999,
+          background: 'rgba(239,68,68,0.15)',
+          border: '1px solid rgba(239,68,68,0.40)',
+          color: T.red,
+          fontSize: 11,
+          fontWeight: 600,
+        }}>
+          <MicOff size={12} /> Muted
+        </div>
+      )}
+    </div>
+  );
+}
+
 function VideoTile({ label, mountRef, showPlaceholder }: { label: string; mountRef: React.RefObject<HTMLDivElement | null>; showPlaceholder: boolean }) {
   return (
     <div style={{ position: 'relative', background: '#000', borderRadius: 14, overflow: 'hidden', border: T.cardBorder }}>
@@ -752,14 +864,16 @@ function WaitingTile({
   remoteDisplayName,
   state,
   diagnostic,
+  audioOnly,
 }: {
   remoteDisplayName: string;
   state: CallState;
   diagnostic?: { channel: string; uid: number; role: string } | null;
+  audioOnly?: boolean;
 }) {
   let message = `Waiting for ${remoteDisplayName} to join…`;
   if (state.phase === 'loading') message = 'Connecting…';
-  else if (state.phase === 'permissions') message = 'Loading video…';
+  else if (state.phase === 'permissions') message = audioOnly ? 'Asking for microphone…' : 'Loading video…';
   else if (state.phase === 'joining') message = 'Joining the room…';
   return (
     <div style={{ background: T.cardBg, borderRadius: 14, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12, color: T.textSecondary, fontSize: 14, border: T.cardBorder, padding: 16 }}>

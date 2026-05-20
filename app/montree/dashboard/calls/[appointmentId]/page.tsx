@@ -36,10 +36,8 @@ export default function TeacherJoinCallPage({
   const [apptId, setApptId] = useState<string | null>(null);
   const [meta, setMeta] = useState<ApptMeta | null>(null);
   const [error, setError] = useState<string | null>(null);
-  // audio=1 query param signals voice-only mode (Session 119 voice-call
-  // option). The AgoraVideoCall component doesn't yet support audio-only,
-  // so we still join with video for v1 — the param is stored so a future
-  // version can branch on it without changing the URL contract.
+  // audio=1 query param signals voice-only mode. Session 121 wired the
+  // prop through to AgoraVideoCall so the camera track is never created.
   const audioOnly = searchParams?.get('audio') === '1';
 
   useEffect(() => {
@@ -116,6 +114,7 @@ export default function TeacherJoinCallPage({
       remoteDisplayName={meta.parent_name}
       recordingEnabledForAppointment={meta.recording_enabled}
       onClose={handleClose}
+      audioOnly={audioOnly}
     />
   );
 }
