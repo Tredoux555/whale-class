@@ -4567,4 +4567,7 @@ export const nl: Record<string, string> = {
   'classroomOverview.englishWeek.error': 'Kon Engels-status niet laden',
   'classroomOverview.englishWeek.refresh': 'Vernieuwen',
   'classroomOverview.englishWeek.noLanguageArea': 'Geen Taalgebied geconfigureerd voor deze klaslokaal',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'classroomOverview.englishProgressTab': 'Taalprogres',
 };

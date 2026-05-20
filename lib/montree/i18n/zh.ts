@@ -4970,4 +4970,7 @@ export const zh = {
   'classroomOverview.englishWeek.error': '无法加载英语学习状态',
   'classroomOverview.englishWeek.refresh': '刷新',
   'classroomOverview.englishWeek.noLanguageArea': '该教室未配置语言区',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'classroomOverview.englishProgressTab': '英语进度',
 } as const;

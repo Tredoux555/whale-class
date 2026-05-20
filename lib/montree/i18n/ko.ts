@@ -4567,4 +4567,7 @@ export const ko: Record<string, string> = {
   'classroomOverview.englishWeek.error': '언어 활동 상태를 불러올 수 없어요',
   'classroomOverview.englishWeek.refresh': '새로고침',
   'classroomOverview.englishWeek.noLanguageArea': '이 교실에 언어 영역이 구성되어 있지 않아요',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'classroomOverview.englishProgressTab': '언어 진도',
 };

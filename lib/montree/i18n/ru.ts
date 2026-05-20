@@ -4564,4 +4564,7 @@ export const ru: Record<string, string> = {
   'classroomOverview.englishWeek.error': 'Не удалось загрузить статус Языка',
   'classroomOverview.englishWeek.refresh': 'Обновить',
   'classroomOverview.englishWeek.noLanguageArea': 'Зона Языка не настроена для этого класса',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'classroomOverview.englishProgressTab': 'Прогресс в Языке',
 };
