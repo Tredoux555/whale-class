@@ -16,6 +16,11 @@ import { getSupabase } from '@/lib/supabase-client';
 import { transcribeAudio } from './whisper';
 import { summarizeTranscript, type SummarizeInput } from './summarize';
 import { getAgoraConfig } from '@/lib/montree/appointments/agora/config';
+import {
+  isEncryptionEnabledForSchool,
+  writeEncryptedField,
+  readEncryptedField,
+} from '@/lib/montree/messaging-crypto';
 
 interface PipelineInput {
   recordingId: string;
@@ -78,11 +83,16 @@ export async function runTranscribeAndSummarizePipeline(
 
   // Persist transcript immediately so even if Sonnet fails, the staff
   // has the raw transcript to read.
+  // 🚨 Session 121 — encrypt transcript when encryption_v1 is on for the school.
+  const encEnabledTranscript = await isEncryptionEnabledForSchool(supabase, input.schoolId);
+  const transcriptPlain = whisperRes.transcript.slice(0, 100_000);
+  const encTranscript = writeEncryptedField(transcriptPlain, encEnabledTranscript);
   await supabase
     .from('montree_appointment_recordings')
     .update({
-      transcript: whisperRes.transcript.slice(0, 100_000),
+      transcript: encTranscript.value,
       transcript_locale: whisperRes.locale || null,
+      encryption_version: encTranscript.version,
       transcribed_at: new Date().toISOString(),
     })
     .eq('id', input.recordingId);
@@ -119,10 +129,13 @@ export async function runTranscribeAndSummarizePipeline(
   }
 
   // ── 5. Persist summary + mark ready ────────────────────────────────
+  // 🚨 Session 121 — encrypt the Sonnet briefing with the same encryption_version
+  // we used for the transcript (above). Both columns share the row's version.
+  const encSummary = writeEncryptedField(summaryRes.data.briefing, encEnabledTranscript);
   const { error: persistErr } = await supabase
     .from('montree_appointment_recordings')
     .update({
-      summary: summaryRes.data.briefing,
+      summary: encSummary.value,
       summary_locale: whisperRes.locale || null,
       summarized_at: new Date().toISOString(),
       recording_status: 'ready',
@@ -253,9 +266,11 @@ async function fetchPriorSummaries(
   const supabase = getSupabase();
 
   // Find appointments for this parent ordered by date, with a summary on file.
+  // 🚨 Session 121 — pull encryption_version so we decrypt summary before
+  // injecting it into the next Sonnet briefing prompt.
   const { data: rows } = await supabase
     .from('montree_appointment_recordings')
-    .select('id, summary, summarized_at, montree_appointments!inner(scheduled_start, parent_id)')
+    .select('id, summary, encryption_version, summarized_at, montree_appointments!inner(scheduled_start, parent_id)')
     .eq('montree_appointments.parent_id', parentId)
     .eq('recording_status', 'ready')
     .not('summary', 'is', null)
@@ -270,9 +285,13 @@ async function fetchPriorSummaries(
       const appts = (r as { montree_appointments: unknown }).montree_appointments;
       const appt = Array.isArray(appts) ? appts[0] : appts;
       const date = (appt as { scheduled_start?: string } | null)?.scheduled_start || '';
+      const rTyped = r as { summary?: string; encryption_version?: number | null };
+      const summaryPlain = rTyped.summary
+        ? readEncryptedField(rTyped.summary, rTyped.encryption_version ?? null)
+        : '';
       return {
         date: date.slice(0, 10),
-        summary: (r as { summary?: string }).summary || '',
+        summary: summaryPlain,
         staffName: null, // We don't enrich here — keeps the helper cheap.
       };
     })

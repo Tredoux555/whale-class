@@ -13,6 +13,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { getSupabase } from '@/lib/supabase-client';
 import { shareMeetingNoteToThread } from '@/lib/montree/meeting-notes/share-to-thread';
+import {
+  writeEncryptedField,
+  readEncryptedField,
+} from '@/lib/montree/messaging-crypto';
 
 export const maxDuration = 30;
 
@@ -20,8 +24,27 @@ const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
 const MAX_NOTES_LEN = 4_000;
 const MAX_CHILD_NAME_LEN = 100;
 
+// 🚨 Session 121 — encryption_version is part of the canonical SELECT for
+// every read of a meeting-note row. The post-read decrypt step depends on it.
 const SELECT_COLS =
-  'id, teacher_id, school_id, classroom_id, child_id, child_name, meeting_date, summary, transcript, notes, duration_seconds, locale, parent_visible, shared_to_thread_id, created_at, updated_at';
+  'id, teacher_id, school_id, classroom_id, child_id, child_name, meeting_date, summary, transcript, notes, encryption_version, duration_seconds, locale, parent_visible, shared_to_thread_id, created_at, updated_at';
+
+// 🚨 Decrypt summary + transcript + notes off a meeting-note row. All three
+// share the row's encryption_version. Returns a row with plaintext fields.
+function decryptMeetingNote<T extends {
+  summary?: string | null;
+  transcript?: string | null;
+  notes?: string | null;
+  encryption_version?: number | null;
+}>(row: T): T {
+  const v = row.encryption_version ?? null;
+  return {
+    ...row,
+    summary: row.summary ? readEncryptedField(row.summary, v) : row.summary,
+    transcript: row.transcript ? readEncryptedField(row.transcript, v) : row.transcript,
+    notes: row.notes ? readEncryptedField(row.notes, v) : row.notes,
+  };
+}
 
 export async function GET(
   request: NextRequest,
@@ -54,7 +77,7 @@ export async function GET(
   if (!data) {
     return NextResponse.json({ error: 'Not found' }, { status: 404 });
   }
-  return NextResponse.json({ meeting: data });
+  return NextResponse.json({ meeting: decryptMeetingNote(data) });
 }
 
 export async function PATCH(
@@ -87,8 +110,15 @@ export async function PATCH(
 
   const updates: Record<string, unknown> = {};
 
+  // 🚨 Session 121 — when PATCHing notes, mirror the row's existing
+  // encryption_version. We must read the row FIRST to know whether it's
+  // encrypted, then encrypt new notes with the same version (or leave
+  // plaintext if the row is legacy). Half-encrypting the row would
+  // leave summary/transcript out of sync with notes. We resolve later
+  // after the row read.
+  let pendingNotesPlaintext: string | null | undefined = undefined;
   if (body.notes !== undefined) {
-    updates.notes = body.notes === null ? null : body.notes.slice(0, MAX_NOTES_LEN);
+    pendingNotesPlaintext = body.notes === null ? null : body.notes.slice(0, MAX_NOTES_LEN);
   }
   if (body.child_name !== undefined) {
     updates.child_name =
@@ -128,6 +158,40 @@ export async function PATCH(
     }
   }
 
+  // 🚨 Session 121 — resolve notes encryption against the existing row's
+  // version. Read the row's encryption_version first; encrypt new notes
+  // with the same version if non-null (1), else write plaintext. Skipping
+  // notes update? Don't add it to `updates`.
+  if (pendingNotesPlaintext !== undefined) {
+    if (pendingNotesPlaintext === null) {
+      updates.notes = null;
+    } else {
+      const { data: existing } = await supabase
+        .from('montree_meeting_notes')
+        .select('encryption_version')
+        .eq('id', id)
+        .eq('teacher_id', auth.userId)
+        .eq('school_id', auth.schoolId)
+        .maybeSingle();
+      const existingVersion =
+        ((existing as { encryption_version?: number | null } | null)?.encryption_version) ?? null;
+      if (existingVersion === 1) {
+        // Encrypt to match the row's version.
+        const enc = writeEncryptedField(pendingNotesPlaintext, true);
+        // Defensive: writeEncryptedField may fall back to plaintext if the
+        // key is misconfigured — log loudly if that happens.
+        if (enc.version !== 1) {
+          console.error(
+            '[meeting-notes PATCH] row is version=1 but encrypt fell back to plaintext — key misconfigured?'
+          );
+        }
+        updates.notes = enc.value;
+      } else {
+        updates.notes = pendingNotesPlaintext;
+      }
+    }
+  }
+
   if (Object.keys(updates).length === 0) {
     return NextResponse.json(
       { error: 'No editable fields supplied.' },
@@ -155,12 +219,17 @@ export async function PATCH(
   // 🚨 Session 114 finisher — when parent_visible flips true, post the
   // summary into a dedicated parent_teacher thread. Idempotent via
   // shared_to_thread_id check inside the helper + stamping after the share.
+  //
+  // 🚨 Session 121 — decrypt summary BEFORE passing to shareMeetingNoteToThread.
+  // The helper expects plaintext (it re-encrypts independently for the message
+  // domain). Passing ciphertext would double-encrypt.
   let shareResult: { threadId: string | null; reason?: string; error?: string } | null = null;
   if (
     body.parent_visible === true &&
     updated.parent_visible === true &&
     !updated.shared_to_thread_id
   ) {
+    const plaintextSummary = readEncryptedField(updated.summary, updated.encryption_version);
     shareResult = await shareMeetingNoteToThread({
       supabase,
       meeting: {
@@ -170,7 +239,7 @@ export async function PATCH(
         child_id: updated.child_id,
         child_name: updated.child_name,
         meeting_date: updated.meeting_date,
-        summary: updated.summary,
+        summary: plaintextSummary,
         shared_to_thread_id: updated.shared_to_thread_id,
         locale: updated.locale,
       },
@@ -187,13 +256,13 @@ export async function PATCH(
         .select(SELECT_COLS)
         .maybeSingle();
       if (restamped) {
-        return NextResponse.json({ meeting: restamped, share: shareResult });
+        return NextResponse.json({ meeting: decryptMeetingNote(restamped), share: shareResult });
       }
     }
   }
 
   return NextResponse.json({
-    meeting: updated,
+    meeting: decryptMeetingNote(updated),
     ...(shareResult ? { share: shareResult } : {}),
   });
 }

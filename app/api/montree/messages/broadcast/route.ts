@@ -13,6 +13,10 @@ import {
 import type { BroadcastScope, SenderRole } from '@/lib/montree/messaging/types';
 import { isFeatureEnabled } from '@/lib/montree/features/server';
 import { sendAnnouncementEmail } from '@/lib/montree/email';
+import {
+  isEncryptionEnabledForSchool,
+  writeEncryptedField,
+} from '@/lib/montree/messaging-crypto';
 
 export const dynamic = 'force-dynamic';
 
@@ -128,12 +132,16 @@ export async function POST(request: NextRequest) {
   }
 
   // Post the first message.
+  // 🚨 Session 121 — encrypt body when encryption_v1 is enabled for school.
+  const broadcastEncEnabled = await isEncryptionEnabledForSchool(supabase, auth.schoolId);
+  const broadcastEnc = writeEncryptedField(body.body.trim(), broadcastEncEnabled);
   const { error: msgErr } = await supabase.from('montree_thread_messages').insert({
     thread_id: thread.id,
     sender_role: callerRole as SenderRole,
     sender_id: auth.userId,
     sender_name: senderName,
-    body: body.body.trim(),
+    body: broadcastEnc.value,
+    encryption_version: broadcastEnc.version,
   });
   if (msgErr) {
     console.error('[broadcast] message insert failed', msgErr);

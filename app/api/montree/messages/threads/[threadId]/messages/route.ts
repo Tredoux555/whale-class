@@ -7,6 +7,11 @@ import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { verifyThreadAccess } from '@/lib/montree/messaging/thread-resolver';
 import { isValidLocale } from '@/lib/montree/i18n/locales';
 import type { SenderRole } from '@/lib/montree/messaging/types';
+import {
+  isEncryptionEnabledForSchool,
+  writeEncryptedField,
+  readEncryptedField,
+} from '@/lib/montree/messaging-crypto';
 
 export const dynamic = 'force-dynamic';
 
@@ -45,7 +50,14 @@ export async function GET(
     .order('sent_at', { ascending: true })
     .limit(limit);
 
-  return NextResponse.json({ messages: messages || [] });
+  // 🚨 Session 121 — decrypt body before returning to client.
+  // Plaintext rows (encryption_version NULL) pass through untouched.
+  const decryptedMessages = (messages || []).map((m: { body: string; encryption_version: number | null }) => ({
+    ...m,
+    body: readEncryptedField(m.body, m.encryption_version),
+  }));
+
+  return NextResponse.json({ messages: decryptedMessages });
 }
 
 interface PostBody {
@@ -150,6 +162,9 @@ export async function POST(
   const safeBodyLocale =
     body.body_locale && isValidLocale(body.body_locale) ? body.body_locale : null;
 
+  // 🚨 Session 121 — encrypt body when encryption_v1 is enabled.
+  const encEnabled = await isEncryptionEnabledForSchool(supabase, auth.schoolId);
+  const enc = writeEncryptedField(body.body.trim(), encEnabled);
   const { data: inserted, error } = await supabase
     .from('montree_thread_messages')
     .insert({
@@ -157,7 +172,8 @@ export async function POST(
       sender_role: partRole as SenderRole,
       sender_id: auth.userId,
       sender_name: senderName,
-      body: body.body.trim(),
+      body: enc.value,
+      encryption_version: enc.version,
       body_locale: safeBodyLocale,
       media_url: body.media_url || null,
       media_type: body.media_type || null,
@@ -175,6 +191,14 @@ export async function POST(
     return NextResponse.json({ error: 'Failed to send message' }, { status: 500 });
   }
 
+  // Return plaintext to the client even though we just encrypted — the
+  // client's optimistic UI uses this to swap in the canonical row.
+  const insertedTyped = inserted as { body: string; encryption_version: number | null };
+  const insertedDecrypted = {
+    ...inserted,
+    body: readEncryptedField(insertedTyped.body, insertedTyped.encryption_version),
+  };
+
   // Mark this message as read for the sender.
   await supabase
     .from('montree_message_thread_participants')
@@ -183,5 +207,5 @@ export async function POST(
     .eq('participant_role', partRole)
     .eq('participant_id', auth.userId);
 
-  return NextResponse.json({ message: inserted }, { status: 201 });
+  return NextResponse.json({ message: insertedDecrypted }, { status: 201 });
 }
