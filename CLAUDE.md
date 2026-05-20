@@ -268,7 +268,38 @@ Session 119 weathered a Railway edge outage (May 19 22:22 UTC, ~1.5h, first inci
 
 ---
 
-## RECENT STATUS (May 20, 2026)
+## RECENT STATUS (May 20-21, 2026)
+
+### 🔥 Session 121 — audioOnly shipped + encryption built→audited→REVERTED + i18n audit (May 20-21, 2026)
+
+**Three things happened. Read all three.**
+
+**1. AgoraVideoCall `audioOnly` — SHIPPED, LIVE (commit `5c7be446`).**
+Closed the Session 119 carry-over. Voice-call button threads `?audio=1` from parent-chats → instant-call route → join page → AgoraVideoCall, which now skips `createCameraVideoTrack`, renders `VoiceTile` (large initial avatar, Apple-style) instead of `VideoTile`, hides the camera toggle, switches copy to "Voice call with X". `[[VCALL:<id>:audio]]` marker extended so the parent's invite card preserves audio mode end-to-end — card label + Phone icon flip on all 3 [[VCALL:]] render sites. 8 files. Lint clean. This is GOOD and STAYS.
+
+**2. Application-layer AES-256-GCM encryption — BUILT, AUDITED, then REVERTED. NOT LIVE.**
+Built the full encryption stack (commit `80879d57`): `lib/montree/messaging-crypto.ts` (AES-256-GCM mirror of Story system), migration 226, 32-test self-test (32/32 passed), wrapped 32 files across messages + meeting-notes + recordings, backfill + rollback scripts, runbook, public `/montree/security` page.
+
+🚨 **An audit caught a CRITICAL deployment-ordering bug AFTER the commit was pushed.** The code references the `encryption_version` column unconditionally in ~20 SELECTs + ~15 INSERTs, but migration 226 (which creates that column) is a manual Supabase step that hadn't run. Verified live: `HTTP 400 / 42703 — column does not exist`. Railway auto-deploys on push, so the moment the deploy went live, every message send / meeting-note save / messaging list would have 42703'd — a multi-hour production outage. The read paths structurally NEED the column (a SELECT must name it to decrypt; naming it pre-migration breaks the query) — so it can't be patched with graceful degradation. It's a coordinated ship: code + migration must land together.
+
+**Action: reverted (commit `39a10c7f`).** Production is back to the safe pre-encryption state. The encryption work is 100% preserved in git at `80879d57`.
+
+🚨 **To re-ship encryption (the ONLY correct order):**
+1. Run `migrations/226_montree_encryption_v1.sql` in Supabase SQL Editor FIRST (creates the `encryption_version` columns + `encryption_v1` feature flag, default OFF).
+2. Generate + back up `MONTREE_ENCRYPTION_KEY` (32-char hex: `node -e "console.log(require('crypto').randomBytes(16).toString('hex'))"`), set in Railway + `.env.local`.
+3. THEN re-apply the code: `cd ~/Desktop/Master\ Brain/ACTIVE/whale && git revert 39a10c7f --no-edit && git push origin main` — this revert-of-the-revert restores all 39 files (crypto module, migration, scripts, runbook `docs/handoffs/MONTREE_ENCRYPTION_RUNBOOK.md`, security page, every wrapped route).
+4. Smoke-test reads, then flip the `encryption_v1` flag ON.
+**LESSON: schema-coupled code must ship WITH or AFTER its migration, never before. Railway's auto-deploy-on-push does not wait for manual Supabase steps.**
+
+**3. i18n translatability audit — DONE. Big coverage gap confirmed.**
+Audited 211 `page.tsx` under `app/montree/` + key components. ~95 fully translatable, ~80 with hardcoded English. The ENTIRE Sessions 117-121 appointment/calling/messaging feature set shipped with ZERO i18n (consistent with the repeated "i18n DEFERRED" notes). Infrastructure is sound — purely a coverage gap. **Priority fix list (recommended order):** (1) `AppointmentInviteCard` + `PendingAppointmentsBanner` + `QuickSetAppointmentModal` — small, render everywhere; (2) parent-chats `page.tsx` + `[parentId]` — ~6 strings each; (3) `AgoraVideoCall` + both `calls/[appointmentId]` join pages; (4) classroom-overview English Progression tab (~750-line block, ~25 keys); (5) finish VCALL-card partials in `dashboard/messages/[threadId]` + `parent/messages/[threadId]`; (6) `AppointmentsCalendar` (~12 strings); (7) Meeting Notes `dashboard/conversations` + `admin/meeting-notes` (~50 keys, two near-identical files); (8) Vault; then agent dashboard / older messaging / auth pages. Estimated ~200 new keys × 12 locales. Translation infra: add keys to `lib/montree/i18n/en.ts`, run `npm run i18n:fill-ui` (Haiku batch) or `scripts/fill-missing-i18n-keys.mjs`. **Recommend a dedicated session — mass Haiku translation into 11 languages should have a human spot-check before production (project already does this for Chinese).**
+
+**🚨 Next session priorities:**
+1. **i18n translation sweep** — work the priority list above. Add `t()` + en.ts keys (safe — English users unaffected, missing locales fall back to English), then run the Haiku batch, then spot-check.
+2. **Re-ship encryption** — only after migration 226 is run (see step-by-step above).
+3. Carry-overs from Session 120 handoff (`SESSION_121_E2E_TEST_PLAN.md`): walk the E2E test plan; Stage A Agora activation; outreach follow-ups.
+
+---
 
 ### 🔥 Session 120 — Agora video render-race fix + unified appointment/messaging architecture + in-app notification banners (May 20, 2026)
 
