@@ -11,10 +11,19 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, Send, Video, Phone, PlayCircle } from 'lucide-react';
+import { ArrowLeft, Send, Video, Phone, PlayCircle, Calendar } from 'lucide-react';
+import dynamic from 'next/dynamic';
 import { useI18n, getIntlLocale } from '@/lib/montree/i18n';
 import { montreeApi } from '@/lib/montree/api';
 import { parseVideoCallInvite } from '@/lib/montree/messaging/video-call-invite';
+import { parseAppointmentInvite } from '@/lib/montree/messaging/appointment-invite';
+import AppointmentInviteCard from '@/components/montree/messaging/AppointmentInviteCard';
+// Lazy-load the quick appointment modal — only loads when the teacher
+// actually taps the calendar button. Keeps initial chat-page bundle slim.
+const QuickSetAppointmentModal = dynamic(
+  () => import('@/components/montree/appointments/QuickSetAppointmentModal'),
+  { ssr: false }
+);
 
 const T = {
   bg: '#0a1a0f',
@@ -64,7 +73,23 @@ export default function ParentChatStreamPage({ params }: { params: Promise<{ par
   const [draft, setDraft] = useState('');
   const [sending, setSending] = useState(false);
   const [startingCall, setStartingCall] = useState<'voice' | 'video' | null>(null);
+  // 🚨 Session 120 — quick-set-appointment modal state. The modal locks
+  // parent + child from this thread context so the teacher doesn't have
+  // to pick again. childAnchor derives from the most-recent message OR
+  // any message with a non-null child_id.
+  const [showApptModal, setShowApptModal] = useState(false);
   const scrollEndRef = useRef<HTMLDivElement | null>(null);
+
+  // Derive child anchor from messages — use the first message that has
+  // a non-null child_id. Falls back to null when none exist (teacher
+  // should send at least one regular message first).
+  const childAnchor: { id: string; name: string | null } | null = (() => {
+    if (!messages) return null;
+    for (const m of messages) {
+      if (m.child_id) return { id: m.child_id, name: m.child_name };
+    }
+    return null;
+  })();
 
   // Unwrap params
   useEffect(() => {
@@ -371,6 +396,29 @@ export default function ParentChatStreamPage({ params }: { params: Promise<{ par
             }}
           />
           <button
+            onClick={() => setShowApptModal(true)}
+            disabled={sending || !parent || !childAnchor}
+            aria-label="Set appointment"
+            title={childAnchor ? 'Set an appointment' : 'Send a message first to anchor the thread to a child'}
+            style={{
+              flexShrink: 0,
+              width: 40,
+              height: 40,
+              borderRadius: '50%',
+              background: 'rgba(232,201,106,0.10)',
+              border: '1px solid rgba(232,201,106,0.32)',
+              color: childAnchor ? '#E8C96A' : T.textMuted,
+              cursor: childAnchor && !sending ? 'pointer' : 'not-allowed',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              opacity: childAnchor ? 1 : 0.45,
+              transition: 'background 120ms ease',
+            }}
+          >
+            <Calendar size={16} strokeWidth={2} />
+          </button>
+          <button
             onClick={handleSend}
             disabled={sending || !draft.trim()}
             aria-label="Send"
@@ -393,6 +441,21 @@ export default function ParentChatStreamPage({ params }: { params: Promise<{ par
           </button>
         </div>
       </footer>
+
+      {showApptModal && parent && childAnchor && (
+        <QuickSetAppointmentModal
+          parentId={parent.id}
+          parentName={parent.name || 'this parent'}
+          childId={childAnchor.id}
+          childName={childAnchor.name || undefined}
+          onClose={() => setShowApptModal(false)}
+          onSent={() => {
+            setShowApptModal(false);
+            // Refresh messages so the new [[APPT:]] card appears.
+            void load();
+          }}
+        />
+      )}
     </div>
   );
 }
@@ -432,6 +495,10 @@ function MessageBubble({
   // them as a rich card with embedded Join button. The card body comes
   // from parseVideoCallInvite which strips the [[VCALL:id]] marker.
   const invite = parseVideoCallInvite(message.body);
+  // 🚨 Session 120 — detect [[APPT:]] appointment-invite messages.
+  // Parsed BEFORE VCALL so APPT cards win when both markers somehow
+  // overlap (they're disjoint by design but defense in depth).
+  const apptInvite = parseAppointmentInvite(message.body);
 
   return (
     <div style={{
@@ -451,7 +518,16 @@ function MessageBubble({
           {message.sender_name}
         </div>
       )}
-      {invite ? (
+      {apptInvite ? (
+        <div style={{ maxWidth: '80%' }}>
+          <AppointmentInviteCard
+            appointmentId={apptInvite.appointmentId}
+            initialStatus={apptInvite.status}
+            caption={apptInvite.caption}
+            viewer="staff"
+          />
+        </div>
+      ) : invite ? (
         <Link
           href={`/montree/dashboard/calls/${invite.appointmentId}`}
           style={{

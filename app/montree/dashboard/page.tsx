@@ -47,6 +47,7 @@ const BirthdayBanner = dynamic(() => import('@/components/montree/BirthdayBanner
 const TodaysFocusStrip = dynamic(() => import('@/components/montree/focus/TodaysFocusStrip'), { ssr: false });
 const OnboardingPathChoice = dynamic(() => import('@/components/montree/onboarding/OnboardingPathChoice'), { ssr: false });
 const ChangelogModal = dynamic(() => import('@/components/montree/ChangelogModal'), { ssr: false });
+const PendingAppointmentsBanner = dynamic(() => import('@/components/montree/appointments/PendingAppointmentsBanner'), { ssr: false });
 
 
 interface Child {
@@ -776,6 +777,13 @@ export default function DashboardPage() {
               </div>
 
               {/* Birthday Banner, Daily Brief, Teacher Notes — moved out of main grid view */}
+
+              {/* ═══ Session 120 — Pending appointment invites banner ═══
+                  Surfaces appointment invites where the teacher is primary
+                  host with response='pending'. Hides itself when empty. */}
+              {session?.teacher?.id && (
+                <PendingAppointmentsBanner viewer="staff" selfUserId={session.teacher.id} />
+              )}
 
               {/* ── Student Grid — fills viewport height ── */}
               {(() => {

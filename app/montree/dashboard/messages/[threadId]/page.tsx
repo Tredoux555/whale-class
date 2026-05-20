@@ -16,6 +16,8 @@ import Link from 'next/link';
 import { ArrowLeft, Send, Video, PlayCircle } from 'lucide-react';
 import { useI18n, getIntlLocale } from '@/lib/montree/i18n';
 import { parseVideoCallInvite } from '@/lib/montree/messaging/video-call-invite';
+import { parseAppointmentInvite } from '@/lib/montree/messaging/appointment-invite';
+import AppointmentInviteCard from '@/components/montree/messaging/AppointmentInviteCard';
 import { useThreadPolling } from '@/hooks/useThreadPolling';
 import VoiceComposer, { type VoiceReady } from '@/components/montree/messaging/VoiceComposer';
 import VoiceBubble from '@/components/montree/messaging/VoiceBubble';
@@ -521,6 +523,18 @@ export default function TeacherThreadDetailPage() {
                   {msg.media_type === 'audio' && msg.media_url ? (
                     <VoiceBubble audioUrl={msg.media_url} transcript={msg.body} isMine={isMe} />
                   ) : (() => {
+                    // 🚨 Session 120 — detect appointment-invite messages.
+                    const apptInvite = parseAppointmentInvite(msg.body);
+                    if (apptInvite) {
+                      return (
+                        <AppointmentInviteCard
+                          appointmentId={apptInvite.appointmentId}
+                          initialStatus={apptInvite.status}
+                          caption={apptInvite.caption}
+                          viewer="staff"
+                        />
+                      );
+                    }
                     const invite = parseVideoCallInvite(msg.body);
                     if (!invite) return msg.body;
                     return (

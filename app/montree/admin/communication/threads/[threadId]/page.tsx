@@ -14,6 +14,8 @@ import UpgradeCard, { extractUpgradeFromResponse } from '@/components/montree/Up
 import { useThreadPolling } from '@/hooks/useThreadPolling';
 import VoiceComposer, { type VoiceReady } from '@/components/montree/messaging/VoiceComposer';
 import VoiceBubble from '@/components/montree/messaging/VoiceBubble';
+import { parseAppointmentInvite } from '@/lib/montree/messaging/appointment-invite';
+import AppointmentInviteCard from '@/components/montree/messaging/AppointmentInviteCard';
 
 const T = {
   emerald: '#34d399',
@@ -690,9 +692,21 @@ function MessageBubble({ message }: { message: Message }) {
       >
         {message.media_type === 'audio' && message.media_url ? (
           <VoiceBubble audioUrl={message.media_url} transcript={message.body} />
-        ) : (
-          message.body
-        )}
+        ) : (() => {
+          // 🚨 Session 120 — detect appointment-invite messages.
+          const apptInvite = parseAppointmentInvite(message.body);
+          if (apptInvite) {
+            return (
+              <AppointmentInviteCard
+                appointmentId={apptInvite.appointmentId}
+                initialStatus={apptInvite.status}
+                caption={apptInvite.caption}
+                viewer="staff"
+              />
+            );
+          }
+          return message.body;
+        })()}
       </div>
     </div>
   );

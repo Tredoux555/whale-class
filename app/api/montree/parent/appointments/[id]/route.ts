@@ -14,7 +14,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { resolveAppointmentsParent } from '@/lib/montree/appointments/parent-access';
 import { shareAppointmentToThread } from '@/lib/montree/appointments/share-to-thread';
-import { postVideoCallInvite } from '@/lib/montree/messaging/video-call-invite';
+import { postAppointmentInvite } from '@/lib/montree/messaging/appointment-invite';
 
 export const maxDuration = 30;
 
@@ -188,42 +188,51 @@ export async function PATCH(
         console.error('[parent/appointments accept] thread share failed', e);
       });
 
-      // 🚨 Session 119 Task 3 — auto-post the video-call invite card
-      // into the parent_teacher chat NOW that the appointment is
-      // confirmed (and therefore joinable via the agora-token route).
-      // Only fires for Agora-provider appointments; Jitsi flows keep
-      // their existing share-to-thread (text only) path.
-      const u = updated as { provider?: string | null; scheduled_start?: string };
-      if (u.provider === 'agora') {
-        // Lookup host name for the invite's sender_name field.
-        let hostName: string = hostRow.host_role === 'principal' ? 'Principal' : 'Teacher';
-        if (hostRow.host_role === 'teacher') {
-          const { data: row } = await supabase
-            .from('montree_teachers').select('name').eq('id', hostRow.host_id).maybeSingle();
-          const n = (row as { name?: string | null } | null)?.name;
-          if (n) hostName = n;
-        } else {
-          const { data: row } = await supabase
-            .from('montree_school_admins').select('name').eq('id', hostRow.host_id).maybeSingle();
-          const n = (row as { name?: string | null } | null)?.name;
-          if (n) hostName = n;
+      // 🚨 Session 120 — auto-post `[[APPT:confirmed]]` status update
+      // so the chat thread shows the lifecycle (invite → confirmed).
+      // Fire-and-forget. Parent name lookup is best-effort.
+      void (async () => {
+        try {
+          const { data: parentRow } = await supabase
+            .from('montree_parents').select('name, email')
+            .eq('id', parent.parentId)
+            .eq('school_id', parent.schoolId) // defense-in-depth cross-pollination
+            .maybeSingle();
+          const pName = (parentRow as { name?: string | null; email?: string } | null);
+          const parentName = pName?.name || pName?.email || 'Parent';
+          const u2 = updated as { scheduled_start?: string };
+          const whenLabel = formatInviteWhen(u2.scheduled_start || new Date().toISOString());
+          await postAppointmentInvite({
+            supabase,
+            schoolId: parent.schoolId,
+            classroomId: (updated as { classroom_id?: string | null }).classroom_id ?? null,
+            childId: (updated as { child_id?: string | null }).child_id ?? null,
+            appointmentId: id,
+            status: 'confirmed',
+            caller: { role: 'parent', id: parent.parentId, name: parentName },
+            counterpartRole: hostRow.host_role,
+            counterpartId: hostRow.host_id,
+            caption: `Confirmed for ${whenLabel}`,
+          });
+        } catch (e) {
+          console.error('[parent/appointments accept] APPT status post failed', {
+            appointmentId: id,
+            schoolId: parent.schoolId,
+            parentId: parent.parentId,
+            error: e instanceof Error ? e.message : String(e),
+          });
         }
-        const hostFirst = hostName.split(/\s+/)[0] || hostName;
-        const whenLabel = formatInviteWhen(u.scheduled_start || new Date().toISOString());
-        const caption = `Video call with ${hostFirst} · ${whenLabel} · tap Join`;
-        void postVideoCallInvite({
-          supabase,
-          schoolId: parent.schoolId,
-          classroomId: (updated as { classroom_id?: string | null }).classroom_id ?? null,
-          childId: (updated as { child_id?: string | null }).child_id ?? null,
-          appointmentId: id,
-          caller: { role: hostRow.host_role, id: hostRow.host_id, name: hostName },
-          parentId: parent.parentId,
-          caption,
-        }).catch((e) => {
-          console.error('[parent/appointments accept] invite post failed (non-fatal)', e);
-        });
-      }
+      })();
+
+      // 🚨 Session 120 — REMOVED redundant [[VCALL:]] auto-post on accept.
+      // The [[APPT:confirmed]] post above is the canonical post-accept
+      // status update. The AppointmentInviteCard's Join button (rendered
+      // when status='confirmed' + isVideo + within ±2h) handles the same
+      // job. Audit pass found 3 redundant Join buttons appearing per
+      // accept — APPT:invite card hydrated, APPT:confirmed card, and the
+      // VCALL card. Now there's just one (on the APPT:confirmed card).
+      // The [[VCALL:]] convention is reserved for INSTANT calls
+      // (from parent-chats header) which never go through accept.
     }
 
     return NextResponse.json({ appointment: updated });
@@ -295,6 +304,39 @@ export async function PATCH(
       }).catch((e) => {
         console.error('[parent/appointments decline] thread share failed', e);
       });
+
+      // 🚨 Session 120 — post `[[APPT:declined]]` status into the chat
+      // so the teacher sees the lifecycle in the thread. Fire-and-forget.
+      void (async () => {
+        try {
+          const { data: parentRow } = await supabase
+            .from('montree_parents').select('name, email')
+            .eq('id', parent.parentId)
+            .eq('school_id', parent.schoolId) // defense-in-depth cross-pollination
+            .maybeSingle();
+          const pName = (parentRow as { name?: string | null; email?: string } | null);
+          const parentName = pName?.name || pName?.email || 'Parent';
+          await postAppointmentInvite({
+            supabase,
+            schoolId: parent.schoolId,
+            classroomId: (updated as { classroom_id?: string | null }).classroom_id ?? null,
+            childId: (updated as { child_id?: string | null }).child_id ?? null,
+            appointmentId: id,
+            status: 'declined',
+            caller: { role: 'parent', id: parent.parentId, name: parentName },
+            counterpartRole: hostRow.host_role,
+            counterpartId: hostRow.host_id,
+            caption: body.cancelled_reason ? `Declined · ${body.cancelled_reason.slice(0, 120)}` : 'Declined',
+          });
+        } catch (e) {
+          console.error('[parent/appointments decline] APPT status post failed', {
+            appointmentId: id,
+            schoolId: parent.schoolId,
+            parentId: parent.parentId,
+            error: e instanceof Error ? e.message : String(e),
+          });
+        }
+      })();
     }
 
     return NextResponse.json({ appointment: updated });

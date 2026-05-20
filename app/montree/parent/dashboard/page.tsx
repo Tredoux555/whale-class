@@ -8,6 +8,7 @@ import { LogOut, ChevronDown, Sparkles, MessageSquare, Calendar } from 'lucide-r
 import { useI18n, getIntlLocale } from '@/lib/montree/i18n';
 import LanguageToggle from '@/components/montree/LanguageToggle';
 import PhotoLightbox from '@/components/montree/media/PhotoLightbox';
+import PendingAppointmentsBanner from '@/components/montree/appointments/PendingAppointmentsBanner';
 
 // Dark forest tokens
 const T = {
@@ -718,6 +719,14 @@ export default function ParentDashboardPage() {
       </header>
 
       <main style={{ maxWidth: 512, margin: '0 auto' }}>
+
+        {/* ═══ Session 120 — Pending appointment invites banner ═══
+            Surfaces staff-initiated appointment invites awaiting parent
+            response. Inline Accept/Decline buttons. Hides itself when
+            there's nothing pending. */}
+        <div style={{ padding: '14px 20px 0' }}>
+          <PendingAppointmentsBanner viewer="parent" />
+        </div>
 
         {/* ═══ Phase 3 — Featured announcement banner ═══
             Surfaces the most-recent UNREAD broadcast prominently. Tapping
