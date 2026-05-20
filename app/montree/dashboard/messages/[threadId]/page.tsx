@@ -136,7 +136,8 @@ export default function TeacherThreadDetailPage() {
           return;
         }
         if (threadRes.status === 403 || threadRes.status === 404) {
-          router.replace('/montree/dashboard/messages');
+          // Session 120 hotfix — bypass the /messages → /parent-chats redirect.
+          router.replace('/montree/dashboard/parent-chats');
           return;
         }
         if (!threadRes.ok) {
@@ -423,7 +424,7 @@ export default function TeacherThreadDetailPage() {
           gap: 12,
         }}>
           <button
-            onClick={() => router.push('/montree/dashboard/messages')}
+            onClick={() => router.push('/montree/dashboard/parent-chats')}
             style={{
               background: 'none',
               border: 'none',
