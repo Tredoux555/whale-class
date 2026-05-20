@@ -369,12 +369,54 @@ Wired into parent-chats stream composer next to Send button. Disabled when no `c
 3. **i18n — All new UI strings are hardcoded English.** Standard v1 deferral; sweep via Haiku batch when ready (~30-50 new keys × 12 locales).
 4. **Style — `formatInviteWhen` inside PATCH function body.** Function hoisting handles it; consider lifting to module scope in a future cleanup.
 
+**🚨 SESSION 120 HOTFIXES (after main ship `e538f182`):**
+
+Three hotfix commits landed addressing real production bugs the user reported within an hour of the main Session 120 push:
+
+**Hotfix 1 — `a288201c`: WeChat-style messages + Agora diagnostic overlay + server-side token log**
+- `/montree/dashboard/messages` now REDIRECTS to `/montree/dashboard/parent-chats` (which is already WeChat-style, one row per person). DashboardHeader Messages icon + More menu link both updated to skip the redirect bounce.
+- WaitingTile in AgoraVideoCall now shows a monospace diagnostic block: `channel: …<last 12 chars>`, `role`, `uid`, `region`. Visible without opening debug panel. Two devices can screenshot this side-by-side to spot mismatches.
+- New server-side log on agora-token route: `[agora-token] { appointmentId, schoolId, callerRole, callerId, channel, uid, icalTokenPrefix, asHint }` on every mint. Pull from Railway logs by appointmentId to compare what each device resolved.
+- The user-reported "teahcerMessages.searchPlaceholder" raw-key bug went away because the whole old page is gone.
+
+**Hotfix 2 — `01f0b534`: thread detail page back/404 redirects**
+- `/montree/dashboard/messages/[threadId]/page.tsx` had two stale `router.push/replace('/montree/dashboard/messages')` calls that would route via the redirect stub causing a brief "Opening your conversations…" flash. Both updated to point directly at `/parent-chats`.
+
+**Hotfix 3 — `af0779a3`: 🚨 AGORA UID COLLISION FIX — the real bug**
+
+User reported: "as I join as the teacher the connection is lost on the parent side." Classic Agora behaviour — two clients with same UID in the same channel kick each other.
+
+**Root cause (finally cracked):** The agora-token route tried parent cookie FIRST then fell through to staff. When the SAME browser holds BOTH a parent session cookie AND a staff session cookie (multi-tab testing, shared Chrome profile, stale parent cookie from earlier test login), both sides resolved as parent → same `parentId` → `deriveAgoraUid('parent', sameParentId)` → SAME UID → Agora's uniqueness enforcement kicks one user off when the other joins.
+
+**Fix — explicit role hint via `?as=`:**
+- `/dashboard/calls/[id]` pre-flight passes `?as=teacher`
+- `/parent/calls/[id]` pre-flight passes `?as=parent`
+- AgoraVideoCall component passes `?as=<callerRole>` on BOTH initial token AND `token-privilege-will-expire` refresh
+- agora-token route reads `?as=` and routes to the requested resolver:
+  - `teacher`/`staff`/`principal` → straight to `verifySchoolRequest` (skips parent resolution entirely)
+  - `parent` → resolves parent only (no staff fallback)
+  - no hint (legacy) → original try-parent-first behaviour preserved
+- Server log enriched with `asHint` field for Railway debugging
+
+**✅ User confirmed working end-to-end after this fix.** Both teacher and parent appear in the call simultaneously, both video streams playing, both seeing each other. The screenshot showed "You" (teacher) + "Molly's parent" side-by-side with active video.
+
+**🚨 Architectural rule #221 locked in:** The Agora `/agora-token` route MUST receive an explicit `?as=teacher|parent|principal` query param from the join page. The client always knows which role it is (the join page route enforces it). Letting the server "guess" via cookie precedence is fragile — if a browser ever holds both staff + parent session cookies, both sides resolve to the same identity → same `deriveAgoraUid()` → Agora kicks the first user when the second joins. The `?as=` hint is now load-bearing for two-party video calls. Never remove it.
+
+**🚨 Architectural rule #222 locked in:** `/montree/dashboard/messages` redirects to `/montree/dashboard/parent-chats`. The parent-chats page is the canonical WeChat-style messaging surface (one row per person). Never re-add a thread-subject-based inbox at the old route. If a future change wants a different listing strategy, modify parent-chats directly.
+
+**🚨 Architectural rule #223 locked in:** Two-device testing MUST use two distinct browser profiles (Chrome profile A + Chrome profile B, OR Chrome + Safari, OR normal + incognito). Sharing cookies across tabs in the same profile can produce the UID-collision bug class — even though the `?as=` hint now mitigates it, multi-cookie sessions are still a source of subtle identity confusion in other places.
+
+---
+
 **🚨 Next session priorities (ordered):**
 
-1. **🚨 Verify the Agora fix on production.** This is the biggest payoff. Have parent + teacher both join the same appointment, confirm both see each other's video. Pull the new agora-debug log — `user-joined`, `user-published`, `subscribe.success`, `remote-video.play.success` should all appear in sequence on both devices.
-2. **Walk the full appointment loop on production.** Teacher taps 📅 in parent-chats → fills modal → sends → parent sees banner on dashboard → parent accepts → both see [[APPT:confirmed]] card in thread → tap Join at appointment time → both join Agora and see each other.
-3. **Channel-mismatch diagnostic.** If video still doesn't work after the render-race fix, the channel-mismatch theory is the next suspect. The new `join.start` log includes `channel + appointmentId + region` — compare teacher vs parent on a failing call. If channels differ, dig into how parent's Join URL gets the wrong appointment_id.
-4. **`audioOnly` prop wiring** (carry-over from Session 119) — the voice-call button still mounts AgoraVideoCall with camera. Thread `audioOnly` through to skip `createCameraVideoTrack`. ~30 min.
+1. **🚨 START HERE: End-to-end test plan handoff** — see `docs/handoffs/SESSION_121_E2E_TEST_PLAN.md` (created at the end of Session 120). Walks every flow from agent application through video call. Test as you go.
+2. **Activate the recording-and-summary systems** if time:
+   - Run migration 214 in Supabase (Teacher Meeting Notes — `/montree/dashboard/conversations`)
+   - Run migration 215 in Supabase (Principal Meeting Notes — `/montree/admin/meeting-notes`)
+   - Principal Vault (`/montree/admin/conversations`) already live since Session 87 — verify by setting a vault password
+3. **Agora Cloud Recording (Stage B)** — separate operational session. Requires credit card on Agora + Cloud Recording enable + 2 new env vars + Supabase Storage bucket creation. Migration 223 also needs to run. Per-appointment `recording_enabled` toggle UI doesn't exist yet — would need a small UI build to surface it.
+4. **`audioOnly` prop wiring** (Session 119 carry-over) — voice-call button still mounts AgoraVideoCall with camera. Thread `audioOnly` through to skip `createCameraVideoTrack`. ~30 min.
 5. **Run migration 225** if not done — English Progress Tracker (Session 119 carry-over).
 6. **Send Simone the VAT-registration reply** (Session 119 carry-over).
 7. **Carry-overs from prior sessions** — Mira → Tracy super-admin scope, appointments i18n sweep, outreach follow-ups (FAMM Argentina, Cambridge Montessori Global, Otari NZ).
