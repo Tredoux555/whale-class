@@ -432,14 +432,6 @@ export default function MontreeLanding() {
               onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.55)')}>
               About
             </Link>
-            {/* 🚨 Session 121 — public security disclosure page. Anchors the
-                "data is encrypted" marketing claim with an honest, defensible
-                breakdown. */}
-            <Link className="m-nav-link m-nav-link-secondary" href="/montree/security" style={{ fontSize: '0.875rem', color: 'rgba(255,255,255,0.55)', textDecoration: 'none', letterSpacing: '0.01em', transition: 'color 200ms ease' }}
-              onMouseEnter={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.85)' )}
-              onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.55)')}>
-              Security
-            </Link>
             {/* "What's new" link removed from public landing nav per Session 108 directive —
                 /montree/changelog is internal-use only now. The route still exists for direct
                 access. */}

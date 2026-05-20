@@ -22,7 +22,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
-import { readEncryptedField } from '@/lib/montree/messaging-crypto';
 
 export const dynamic = 'force-dynamic';
 
@@ -146,26 +145,21 @@ export async function GET(request: NextRequest) {
   // Then we'll fold to per-parent stats client-side.
   // 🚨 Schema columns: actual time column is `sent_at` (not created_at), and
   // we must filter out soft-deleted messages (`deleted_at IS NULL`).
-  // 🚨 Session 121 — pull encryption_version so we decrypt body before snippet.
   const { data: messagesRaw } = await supabase
     .from('montree_thread_messages')
-    .select('thread_id, sender_role, sender_id, sender_name, body, encryption_version, sent_at')
+    .select('thread_id, sender_role, sender_id, sender_name, body, sent_at')
     .in('thread_id', validThreadIds)
     .is('deleted_at', null)
     .order('sent_at', { ascending: false })
     .limit(2000); // generous cap; classrooms have rarely > a few hundred messages
-  const messages = ((messagesRaw || []) as Array<{
+  const messages = (messagesRaw || []) as Array<{
     thread_id: string;
     sender_role: string;
     sender_id: string;
     sender_name: string;
     body: string;
-    encryption_version: number | null;
     sent_at: string;
-  }>).map((m) => ({
-    ...m,
-    body: readEncryptedField(m.body, m.encryption_version),
-  }));
+  }>;
 
   // ── 7. Fold into per-parent rows ─────────────────────────────────────
   const rows: ParentChatRow[] = [];

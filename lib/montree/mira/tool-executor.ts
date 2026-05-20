@@ -22,11 +22,6 @@ import {
   SUPER_ADMIN_SENTINEL_UUID,
   SUPER_ADMIN_DISPLAY_NAME,
 } from '@/lib/montree/agent-super-admin-messaging/types';
-import {
-  isEncryptionEnabledForSchool,
-  writeEncryptedField,
-  readEncryptedField,
-} from '@/lib/montree/messaging-crypto';
 
 // 🚨 PROMPT-INJECTION DEFENCE (Tracy + Mira audit HIGH-2, Session 113 V2).
 //
@@ -510,11 +505,9 @@ ${fenceEnd}`;
         const ids = threadRows.map((t) => t.id);
 
         // Last message per thread.
-        // 🚨 Session 121 — pull encryption_version so we decrypt body
-        // before exposing it to Mira (Opus). Mira must never see ciphertext.
         const { data: lastMsgs } = await supabase
           .from('montree_thread_messages')
-          .select('thread_id, body, encryption_version, sender_role, sent_at')
+          .select('thread_id, body, sender_role, sent_at')
           .in('thread_id', ids)
           .is('deleted_at', null)
           .order('sent_at', { ascending: false })
@@ -526,13 +519,12 @@ ${fenceEnd}`;
         for (const m of (lastMsgs as Array<{
           thread_id: string;
           body: string;
-          encryption_version: number | null;
           sender_role: string;
           sent_at: string;
         }> | null) || []) {
           if (!lastMsgByThread.has(m.thread_id)) {
             lastMsgByThread.set(m.thread_id, {
-              body: readEncryptedField(m.body, m.encryption_version),
+              body: m.body,
               sender_role: m.sender_role,
               sent_at: m.sent_at,
             });
@@ -654,12 +646,6 @@ ${fenceEnd}`;
         // 3. Insert the message. ai_drafted=false per Session 84 rule —
         //    agent never claims AI authorship on her own outgoing messages.
         //    (Mira composed it on her behalf, but the message IS hers.)
-        // 🚨 Session 121 — agent_super_admin threads have NULL school_id,
-        // so isEncryptionEnabledForSchool(null) falls through to the
-        // global default_enabled. Once flipped ON globally, all Tredoux
-        // ↔ agent messages encrypt automatically.
-        const encEnabledStart = await isEncryptionEnabledForSchool(supabase, null);
-        const encStart = writeEncryptedField(text, encEnabledStart);
         const { data: msg, error: msgErr } = await supabase
           .from('montree_thread_messages')
           .insert({
@@ -667,8 +653,7 @@ ${fenceEnd}`;
             sender_role: 'agent',
             sender_id: agentId,
             sender_name: senderName,
-            body: encStart.value,
-            encryption_version: encStart.version,
+            body: text,
             ai_drafted: false,
           })
           .select('id, sent_at')
@@ -773,9 +758,6 @@ ${fenceEnd}`;
         }
 
         const nowIso = new Date().toISOString();
-        // 🚨 Session 121 — same NULL school_id case as start_thread.
-        const encEnabledReply = await isEncryptionEnabledForSchool(supabase, null);
-        const encReply = writeEncryptedField(text, encEnabledReply);
         const { data: msg, error: msgErr } = await supabase
           .from('montree_thread_messages')
           .insert({
@@ -783,8 +765,7 @@ ${fenceEnd}`;
             sender_role: 'agent',
             sender_id: agentId,
             sender_name: senderName,
-            body: encReply.value,
-            encryption_version: encReply.version,
+            body: text,
             ai_drafted: false,
           })
           .select('id, sent_at')

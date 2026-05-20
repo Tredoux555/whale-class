@@ -30,7 +30,6 @@ import {
   type PrincipalMemoryType,
   type RecallFilters,
 } from './memory';
-import { readEncryptedField } from '@/lib/montree/messaging-crypto';
 
 export interface TracyToolResult {
   success: boolean;
@@ -337,28 +336,19 @@ export async function executeTracyTool(
         }
 
         const ids = threads.map((t) => t.id);
-        // 🚨 Session 121 — pull encryption_version so we decrypt body
-        // before Tracy (Opus) sees it. Tracy must never see ciphertext.
         const { data: lastMsgs } = await supabase
           .from('montree_thread_messages')
-          .select('thread_id, body, encryption_version, sender_role, sender_name, sent_at')
+          .select('thread_id, body, sender_role, sender_name, sent_at')
           .in('thread_id', ids)
           .is('deleted_at', null)
           .order('sent_at', { ascending: false })
           .limit(200);
 
         const latestByThread = new Map<string, { body: string; sender_name: string; sender_role: string; sent_at: string }>();
-        for (const m of (lastMsgs as Array<{
-          thread_id: string;
-          body: string;
-          encryption_version: number | null;
-          sender_role: string;
-          sender_name: string;
-          sent_at: string;
-        }> | null) || []) {
+        for (const m of lastMsgs || []) {
           if (!latestByThread.has(m.thread_id)) {
             latestByThread.set(m.thread_id, {
-              body: readEncryptedField(m.body, m.encryption_version),
+              body: m.body,
               sender_name: m.sender_name,
               sender_role: m.sender_role,
               sent_at: m.sent_at,
