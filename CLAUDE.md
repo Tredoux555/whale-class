@@ -272,6 +272,8 @@ Session 119 weathered a Railway edge outage (May 19 22:22 UTC, ~1.5h, first inci
 
 ### 🔥 Session 121 — audioOnly shipped + encryption built→audited→REVERTED + i18n audit (May 20-21, 2026)
 
+**🚨 Canonical handoff doc:** `docs/handoffs/SESSION_121_HANDOFF.md` — full git state, encryption re-ship procedure, i18n priority fix list, migrations table, next-session priorities.
+
 **Three things happened. Read all three.**
 
 **1. AgoraVideoCall `audioOnly` — SHIPPED, LIVE (commit `5c7be446`).**
