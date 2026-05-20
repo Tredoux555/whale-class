@@ -210,9 +210,11 @@ export default function AgoraVideoCall(props: AgoraVideoCallProps) {
       try {
         setState({ phase: 'loading' });
 
-        // 1. Get the join token.
+        // 1. Get the join token. Pass `?as=<role>` so the server picks the
+        // correct identity unambiguously — Session 120 hotfix for UID
+        // collisions when same browser holds both staff + parent cookies.
         const tokenRes = await fetch(
-          `/api/montree/appointments/${props.appointmentId}/agora-token`,
+          `/api/montree/appointments/${props.appointmentId}/agora-token?as=${encodeURIComponent(props.callerRole)}`,
           {
             method: 'POST',
             credentials: 'same-origin',
@@ -330,7 +332,7 @@ export default function AgoraVideoCall(props: AgoraVideoCallProps) {
           // Refresh token before Agora kicks us out.
           try {
             const refreshRes = await fetch(
-              `/api/montree/appointments/${props.appointmentId}/agora-token`,
+              `/api/montree/appointments/${props.appointmentId}/agora-token?as=${encodeURIComponent(props.callerRole)}`,
               { method: 'POST', credentials: 'same-origin' }
             );
             if (refreshRes.ok) {

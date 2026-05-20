@@ -54,7 +54,7 @@ export default function TeacherJoinCallPage({
         // existence + flag. If 401/403/404, bail before we try to render the
         // SDK (it'd error noisily otherwise).
         const res = await montreeApi(
-          `/api/montree/appointments/${apptId}/agora-token`,
+          `/api/montree/appointments/${apptId}/agora-token?as=teacher`,
           { method: 'POST', credentials: 'same-origin' }
         );
         if (res.status === 401 || res.status === 403) {

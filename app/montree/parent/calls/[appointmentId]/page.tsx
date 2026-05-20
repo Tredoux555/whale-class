@@ -44,7 +44,7 @@ export default function ParentJoinCallPage({
         // — we just want to know it exists + grab the host name for the UI.
         // The /agora-token route below also pre-checks auth.
         const tokenRes = await fetch(
-          `/api/montree/appointments/${apptId}/agora-token`,
+          `/api/montree/appointments/${apptId}/agora-token?as=parent`,
           { method: 'POST', credentials: 'same-origin' }
         );
         if (tokenRes.status === 401 || tokenRes.status === 403) {
