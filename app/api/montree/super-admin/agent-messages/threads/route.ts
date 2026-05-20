@@ -10,6 +10,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { resolveMessagingSuperAdmin } from '@/lib/montree/agent-super-admin-messaging/access';
 import { SUPER_ADMIN_SENTINEL_UUID } from '@/lib/montree/agent-super-admin-messaging/types';
+import { readEncryptedField } from '@/lib/montree/messaging-crypto';
 
 export const dynamic = 'force-dynamic';
 
@@ -27,6 +28,7 @@ interface MessageRow {
   id: string;
   thread_id: string;
   body: string;
+  encryption_version: number | null;
   sender_role: string;
   sender_id: string;
   sender_name: string;
@@ -62,8 +64,9 @@ export async function GET(request: NextRequest) {
       .eq('participant_role', 'agent')
       .in('thread_id', ids),
     supabase
+      // 🚨 Session 121 — pull encryption_version for snippet decrypt.
       .from('montree_thread_messages')
-      .select('id, thread_id, body, sender_role, sender_id, sender_name, sent_at')
+      .select('id, thread_id, body, encryption_version, sender_role, sender_id, sender_name, sent_at')
       .in('thread_id', ids)
       .is('deleted_at', null)
       .order('sent_at', { ascending: false })
@@ -98,7 +101,11 @@ export async function GET(request: NextRequest) {
 
   const latestByThread = new Map<string, MessageRow>();
   for (const m of (lastMessagesRes.data as MessageRow[] | null) || []) {
-    if (!latestByThread.has(m.thread_id)) latestByThread.set(m.thread_id, m);
+    // 🚨 Decrypt body for snippet.
+    if (!latestByThread.has(m.thread_id)) latestByThread.set(m.thread_id, {
+      ...m,
+      body: readEncryptedField(m.body, m.encryption_version),
+    });
   }
 
   const saReadByThread = new Map<string, string | null>();

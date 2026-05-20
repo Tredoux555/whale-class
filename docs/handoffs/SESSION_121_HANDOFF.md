@@ -1,20 +1,27 @@
 # Session 121 Handoff
 
 **Date:** May 20–21, 2026 (overnight)
-**One-line:** audioOnly voice calls shipped & live; full encryption stack built + audited + REVERTED (deploy-ordering bug caught); whole-app i18n translatability audit done.
+**One-line:** audioOnly voice calls shipped & live; full encryption stack built → reverted (deploy-ordering bug caught) → migration 226 run → RE-SHIPPED & live; whole-app i18n translatability audit done.
 
 ---
 
 ## Git state — read this first
 
 ```
-8302c250  Session 121 handoff (CLAUDE.md)         ← HEAD
-39a10c7f  Revert encryption                        ← production-safe state
-80879d57  Encryption build (full stack)            ← preserved, NOT live
-5c7be446  audioOnly mode + [[VCALL:]] audio suffix  ← LIVE, good
+(latest)  Re-apply Session 121 encryption          ← encryption code LIVE again
+8302c250  Session 121 handoff (CLAUDE.md)
+39a10c7f  Revert encryption                        ← (the revert, now itself reverted)
+80879d57  Encryption build (full stack)
+5c7be446  audioOnly mode + [[VCALL:]] audio suffix  ← LIVE
 ```
 
-Production currently runs `8302c250`, which is functionally `5c7be446` (audioOnly) — the encryption was reverted out. **Nothing is broken. Nothing is on fire.**
+**Encryption is now LIVE again.** It was reverted overnight (deploy-ordering bug — code shipped before migration 226), then once migration 226 was confirmed run, the encryption code was re-applied via a revert-of-the-revert. Current state:
+- ✅ Migration 226 RUN — `encryption_version` column exists on all 3 tables.
+- ✅ Encryption code RE-APPLIED & live.
+- ✅ `encryption_v1` feature flag flipped ON.
+- ⏳ `MONTREE_ENCRYPTION_KEY` env var — must be confirmed set in Railway. If absent, writes safely fall back to plaintext + loud-log (no breakage).
+
+Section 2 below documents the original revert + the deploy-ordering lesson — kept for the record.
 
 ---
 

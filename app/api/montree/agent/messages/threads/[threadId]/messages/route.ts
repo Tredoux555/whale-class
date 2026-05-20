@@ -9,6 +9,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { resolveMessagingAgent } from '@/lib/montree/agent-messaging/access';
 import { isValidLocale } from '@/lib/montree/i18n/locales';
+import {
+  isEncryptionEnabledForSchool,
+  writeEncryptedField,
+  readEncryptedField,
+} from '@/lib/montree/messaging-crypto';
 
 export const dynamic = 'force-dynamic';
 
@@ -73,7 +78,13 @@ export async function GET(
     .order('sent_at', { ascending: true })
     .limit(limit);
 
-  return NextResponse.json({ messages: messages || [] });
+  // 🚨 Session 121 — decrypt body before returning.
+  const decrypted = (messages || []).map((m: { body: string; encryption_version: number | null }) => ({
+    ...m,
+    body: readEncryptedField(m.body, m.encryption_version),
+  }));
+
+  return NextResponse.json({ messages: decrypted });
 }
 
 interface PostBody {
@@ -126,6 +137,9 @@ export async function POST(
   const safeBodyLocale =
     body.body_locale && isValidLocale(body.body_locale) ? body.body_locale : null;
 
+  // 🚨 Session 121 — encrypt body when encryption_v1 is on for this school.
+  const encEnabled = await isEncryptionEnabledForSchool(supabase, thread.school_id);
+  const enc = writeEncryptedField(body.body.trim(), encEnabled);
   const { data: inserted, error } = await supabase
     .from('montree_thread_messages')
     .insert({
@@ -133,7 +147,8 @@ export async function POST(
       sender_role: 'agent',
       sender_id: agent.agentId,
       sender_name: agent.agentName,
-      body: body.body.trim(),
+      body: enc.value,
+      encryption_version: enc.version,
       body_locale: safeBodyLocale,
       ai_drafted: false,
       ai_draft_source: null,
@@ -148,6 +163,13 @@ export async function POST(
     return NextResponse.json({ error: 'Failed to send message' }, { status: 500 });
   }
 
+  // Decrypt before returning to client.
+  const insertedTyped = inserted as { body: string; encryption_version: number | null };
+  const insertedDecrypted = {
+    ...inserted,
+    body: readEncryptedField(insertedTyped.body, insertedTyped.encryption_version),
+  };
+
   await supabase
     .from('montree_message_thread_participants')
     .update({ last_read_at: new Date().toISOString() })
@@ -155,5 +177,5 @@ export async function POST(
     .eq('participant_role', 'agent')
     .eq('participant_id', agent.agentId);
 
-  return NextResponse.json({ message: inserted }, { status: 201 });
+  return NextResponse.json({ message: insertedDecrypted }, { status: 201 });
 }

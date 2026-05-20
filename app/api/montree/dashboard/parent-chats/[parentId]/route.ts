@@ -26,6 +26,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { createThreadWithParticipants } from '@/lib/montree/messaging/thread-resolver';
+import {
+  isEncryptionEnabledForSchool,
+  writeEncryptedField,
+  readEncryptedField,
+} from '@/lib/montree/messaging-crypto';
 
 export const dynamic = 'force-dynamic';
 
@@ -73,23 +78,28 @@ export async function GET(
   // and we must filter out soft-deleted messages (`deleted_at IS NULL`).
   // Must order DESC + limit so the SLICE we get is the newest 5000, not
   // the oldest 5000. Then reverse client-side for chronological display.
+  // 🚨 Session 121 — pull encryption_version to decrypt body for the stream.
   const { data: messagesRaw } = await supabase
     .from('montree_thread_messages')
-    .select('id, thread_id, sender_role, sender_id, sender_name, body, sent_at, ai_drafted')
+    .select('id, thread_id, sender_role, sender_id, sender_name, body, encryption_version, sent_at, ai_drafted')
     .in('thread_id', ctx.sharedThreadIds)
     .is('deleted_at', null)
     .order('sent_at', { ascending: false })
     .limit(5000);
-  const messagesNewestFirst = (messagesRaw || []) as Array<{
+  const messagesNewestFirst = ((messagesRaw || []) as Array<{
     id: string;
     thread_id: string;
     sender_role: string;
     sender_id: string;
     sender_name: string;
     body: string;
+    encryption_version: number | null;
     sent_at: string;
     ai_drafted: boolean | null;
-  }>;
+  }>).map((m) => ({
+    ...m,
+    body: readEncryptedField(m.body, m.encryption_version),
+  }));
   // Reverse to chronological for the UI feed
   const messages = [...messagesNewestFirst].reverse();
 
@@ -236,6 +246,9 @@ export async function POST(
     if (name) senderName = name;
   }
 
+  // 🚨 Session 121 — encrypt body when encryption_v1 is on.
+  const encEnabled = await isEncryptionEnabledForSchool(supabase, auth.schoolId);
+  const enc = writeEncryptedField(messageBody, encEnabled);
   const { data: msgRow, error: insertErr } = await supabase
     .from('montree_thread_messages')
     .insert({
@@ -243,17 +256,25 @@ export async function POST(
       sender_role: auth.role,
       sender_id: auth.userId,
       sender_name: senderName,
-      body: messageBody,
+      body: enc.value,
+      encryption_version: enc.version,
       ai_drafted: false, // Parent-chats UI is never Tracy-assisted (per Session 97 rule).
     })
-    .select('id, thread_id, sender_role, sender_id, sender_name, body, sent_at, ai_drafted')
+    .select('id, thread_id, sender_role, sender_id, sender_name, body, encryption_version, sent_at, ai_drafted')
     .maybeSingle();
   if (insertErr || !msgRow) {
     console.error('[parent-chats POST] insert failed:', insertErr?.message);
     return NextResponse.json({ error: 'Could not send', detail: insertErr?.message }, { status: 500 });
   }
 
-  return NextResponse.json({ ok: true, message: msgRow, thread_id: targetThreadId });
+  // Decrypt body before returning so optimistic UI sees plaintext.
+  const msgRowTyped = msgRow as { body: string; encryption_version: number | null };
+  const msgRowDecrypted = {
+    ...msgRow,
+    body: readEncryptedField(msgRowTyped.body, msgRowTyped.encryption_version),
+  };
+
+  return NextResponse.json({ ok: true, message: msgRowDecrypted, thread_id: targetThreadId });
 }
 
 // ─── Helper: load all threads the caller shares with this parent ───

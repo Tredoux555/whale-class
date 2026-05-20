@@ -32,6 +32,10 @@ import { isFeatureEnabled } from '@/lib/montree/features/server';
 import { createThreadWithParticipants } from '@/lib/montree/messaging/thread-resolver';
 import type { ParticipantRole } from '@/lib/montree/messaging/types';
 import type { StaffRole } from './types';
+import {
+  isEncryptionEnabledForSchool,
+  writeEncryptedField,
+} from '@/lib/montree/messaging-crypto';
 
 export type ShareEventKind = 'booking' | 'cancellation' | 'reschedule';
 
@@ -173,12 +177,16 @@ export async function shareAppointmentToThread(input: ShareInput): Promise<Share
       locale: input.locale || 'en',
     });
 
+  // 🚨 Session 121 — encrypt the body when encryption_v1 is enabled.
+  const encEnabled = await isEncryptionEnabledForSchool(supabase, appointment.school_id);
+  const enc = writeEncryptedField(body, encEnabled);
   const { error: msgErr } = await supabase.from('montree_thread_messages').insert({
     thread_id: threadId,
     sender_role: primaryHost.role,
     sender_id: primaryHost.id,
     sender_name: hostName,
-    body,
+    body: enc.value,
+    encryption_version: enc.version,
     body_locale: input.locale || 'en',
     ai_drafted: false,
     ai_draft_source: null,

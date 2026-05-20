@@ -11,6 +11,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { resolveMessagingSuperAdmin } from '@/lib/montree/agent-super-admin-messaging/access';
 import {
+  isEncryptionEnabledForSchool,
+  writeEncryptedField,
+  readEncryptedField,
+} from '@/lib/montree/messaging-crypto';
+import {
   SUPER_ADMIN_SENTINEL_UUID,
   SUPER_ADMIN_DISPLAY_NAME,
 } from '@/lib/montree/agent-super-admin-messaging/types';
@@ -43,14 +48,20 @@ export async function GET(
   }
 
   const { data: messages } = await supabase
+    // 🚨 Session 121 — pull encryption_version + decrypt for client.
     .from('montree_thread_messages')
-    .select('id, sender_role, sender_id, sender_name, body, ai_drafted, ai_draft_source, sent_at, edited_at')
+    .select('id, sender_role, sender_id, sender_name, body, encryption_version, ai_drafted, ai_draft_source, sent_at, edited_at')
     .eq('thread_id', threadId)
     .is('deleted_at', null)
     .order('sent_at', { ascending: true })
     .limit(500);
 
-  return NextResponse.json({ messages: messages || [] });
+  const decrypted = (messages || []).map((m: { body: string; encryption_version: number | null }) => ({
+    ...m,
+    body: readEncryptedField(m.body, m.encryption_version),
+  }));
+
+  return NextResponse.json({ messages: decrypted });
 }
 
 interface SendBody {
@@ -93,6 +104,10 @@ export async function POST(
   const aiDrafted = !!body.ai_drafted;
   const aiDraftSource = aiDrafted && body.ai_draft_source ? String(body.ai_draft_source).slice(0, 120) : null;
 
+  // 🚨 Session 121 — agent_super_admin threads have NULL school_id;
+  // isEncryptionEnabledForSchool(null) falls through to default_enabled.
+  const encEnabled = await isEncryptionEnabledForSchool(supabase, null);
+  const enc = writeEncryptedField(text, encEnabled);
   const { data: msg, error: msgErr } = await supabase
     .from('montree_thread_messages')
     .insert({
@@ -100,17 +115,25 @@ export async function POST(
       sender_role: 'super_admin',
       sender_id: SUPER_ADMIN_SENTINEL_UUID,
       sender_name: SUPER_ADMIN_DISPLAY_NAME,
-      body: text,
+      body: enc.value,
+      encryption_version: enc.version,
       ai_drafted: aiDrafted,
       ai_draft_source: aiDraftSource,
       // approved_by_id stays null — super-admin has no user UUID.
     })
-    .select('id, sender_role, sender_id, sender_name, body, ai_drafted, ai_draft_source, sent_at')
+    .select('id, sender_role, sender_id, sender_name, body, encryption_version, ai_drafted, ai_draft_source, sent_at')
     .single();
 
   if (msgErr) {
     return NextResponse.json({ error: msgErr.message }, { status: 500 });
   }
+
+  // Decrypt before returning to client.
+  const msgTyped = msg as { body: string; encryption_version: number | null };
+  const msgDecrypted = {
+    ...msg,
+    body: readEncryptedField(msgTyped.body, msgTyped.encryption_version),
+  };
 
   // Mark super-admin's last_read_at — they just sent, no unread.
   void supabase
@@ -123,5 +146,5 @@ export async function POST(
       if (error) console.error('[super-admin POST msg] last_read update:', error);
     });
 
-  return NextResponse.json({ message: msg });
+  return NextResponse.json({ message: msgDecrypted });
 }

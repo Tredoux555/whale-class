@@ -9,6 +9,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { getSupabase } from '@/lib/supabase-client';
+import {
+  isEncryptionEnabledForSchool,
+  writeEncryptedField,
+  readEncryptedField,
+} from '@/lib/montree/messaging-crypto';
 
 export const maxDuration = 30;
 
@@ -27,10 +32,11 @@ export async function GET(request: NextRequest) {
   }
 
   const supabase = getSupabase();
+  // 🚨 Session 121 — pull encryption_version so we decrypt summary/notes.
   const { data, error } = await supabase
     .from('montree_meeting_notes')
     .select(
-      'id, teacher_id, school_id, classroom_id, child_id, child_name, meeting_date, summary, notes, duration_seconds, locale, parent_visible, shared_to_thread_id, created_at, updated_at'
+      'id, teacher_id, school_id, classroom_id, child_id, child_name, meeting_date, summary, notes, encryption_version, duration_seconds, locale, parent_visible, shared_to_thread_id, created_at, updated_at'
     )
     .eq('teacher_id', auth.userId)
     .eq('school_id', auth.schoolId)
@@ -57,7 +63,15 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  return NextResponse.json({ meetings: data || [] });
+  // 🚨 Decrypt summary + notes per row. Transcript isn't included in the
+  // list response (intentionally — list view shows summary only).
+  const decrypted = (data || []).map((m: { summary: string | null; notes: string | null; encryption_version: number | null }) => ({
+    ...m,
+    summary: readEncryptedField(m.summary, m.encryption_version),
+    notes: m.notes ? readEncryptedField(m.notes, m.encryption_version) : null,
+  }));
+
+  return NextResponse.json({ meetings: decrypted });
 }
 
 // ── POST — save a new meeting note ────────────────────────────────────
@@ -152,6 +166,17 @@ export async function POST(request: NextRequest) {
     childId = child.id;
   }
 
+  // 🚨 Session 121 — encrypt summary + transcript + notes when encryption_v1
+  // is enabled. All three columns share the same encryption_version on the row.
+  const encEnabled = await isEncryptionEnabledForSchool(supabase, auth.schoolId);
+  const encSummary = writeEncryptedField(summary, encEnabled);
+  const encTranscript = transcript ? writeEncryptedField(transcript, encEnabled) : { value: null, version: null };
+  const encNotes = notes ? writeEncryptedField(notes, encEnabled) : { value: null, version: null };
+  // Row-level encryption_version is whichever non-null version we used. They
+  // must agree because we computed them under the same flag, but pick from
+  // summary which is always written.
+  const rowVersion = encSummary.version;
+
   const { data: inserted, error: insertErr } = await supabase
     .from('montree_meeting_notes')
     .insert({
@@ -161,15 +186,16 @@ export async function POST(request: NextRequest) {
       child_id: childId,
       child_name: childName,
       meeting_date: meetingDate,
-      summary,
-      transcript,
-      notes,
+      summary: encSummary.value,
+      transcript: encTranscript.value,
+      notes: encNotes.value,
+      encryption_version: rowVersion,
       duration_seconds: durationSeconds,
       locale,
       parent_visible: false,
     })
     .select(
-      'id, teacher_id, school_id, classroom_id, child_id, child_name, meeting_date, summary, notes, duration_seconds, locale, parent_visible, shared_to_thread_id, created_at, updated_at'
+      'id, teacher_id, school_id, classroom_id, child_id, child_name, meeting_date, summary, notes, encryption_version, duration_seconds, locale, parent_visible, shared_to_thread_id, created_at, updated_at'
     )
     .maybeSingle();
 
@@ -191,5 +217,13 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  return NextResponse.json({ meeting: inserted });
+  // 🚨 Decrypt the inserted row before returning to the client.
+  const insertedTyped = inserted as { summary: string; notes: string | null; encryption_version: number | null };
+  const insertedDecrypted = {
+    ...inserted,
+    summary: readEncryptedField(insertedTyped.summary, insertedTyped.encryption_version),
+    notes: insertedTyped.notes ? readEncryptedField(insertedTyped.notes, insertedTyped.encryption_version) : null,
+  };
+
+  return NextResponse.json({ meeting: insertedDecrypted });
 }
