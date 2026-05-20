@@ -17,6 +17,7 @@ import { isFeatureEnabled } from '@/lib/montree/features/server';
 import { generateJitsiUrl } from '@/lib/montree/appointments/video';
 import { randomBytes } from 'node:crypto';
 import type { StaffRole } from '@/lib/montree/appointments/types';
+import { postAppointmentInvite } from '@/lib/montree/messaging/appointment-invite';
 
 export const maxDuration = 30;
 
@@ -32,6 +33,31 @@ const APPT_COLS_LEGACY =
 function isVideoUrlColumnMissing(err: { code?: string; message?: string } | null | undefined): boolean {
   if (!err) return false;
   return err.code === '42703' && /video_url|provider|recording_enabled/i.test(err.message || '');
+}
+
+/**
+ * Build a friendly caption for the [[APPT:]] chat card.
+ * Format: "<Caller> invited you to a <kind> · <Day> <Date> · <Time>"
+ *   e.g. "Susan invited you to a video call · Mon 20 May · 3:00 PM"
+ *
+ * Caller name is required for personal touch; the renderer trims gracefully
+ * when fields are missing.
+ */
+function buildInviteCaption(args: {
+  callerName: string;
+  scheduledStart: Date;
+  durationMinutes: number;
+  kind: string;
+  provider?: string;
+  videoUrl?: string | null;
+}): string {
+  const kindLabel =
+    args.kind === 'video_call' || args.provider === 'agora' || args.videoUrl ? 'video call' :
+    args.kind === 'parent_meeting' ? 'meeting' :
+    'meeting';
+  const day = args.scheduledStart.toLocaleDateString('en-US', { weekday: 'short', day: 'numeric', month: 'short' });
+  const time = args.scheduledStart.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+  return `${args.callerName} invited you to a ${kindLabel} · ${day} · ${time} · ${args.durationMinutes} min`;
 }
 
 export async function GET(request: NextRequest) {
@@ -473,17 +499,66 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  // 🚨 Session 119 Task 3 — DO NOT auto-post the chat invite here.
-  // Scheduled appointments are created with status='pending' and the
-  // /agora-token route refuses to mint tokens for non-confirmed
-  // appointments. Posting the "Join now" card now would link to a
-  // 409-on-tap page. Audit pass 2 catch.
+  // 🚨 Session 120 — auto-post the [[APPT:<id>:invite]] card into the
+  // parent's chat thread. UNLIKE the [[VCALL:]] card (which has a Join
+  // button that needs Agora token minting + confirmed status), the APPT
+  // card has Accept/Decline buttons that PATCH the appointment status.
+  // Safe to post on pending creation.
   //
-  // The auto-post lives in /api/montree/parent/appointments/[id] PATCH
-  // when the parent accepts (status flips pending→confirmed). For
-  // INSTANT calls (status=confirmed at creation), the
-  // /dashboard/parent-chats/[parentId]/instant-call route posts the
-  // invite directly.
+  // Fire-and-forget: never block the response on chat-post failure. The
+  // appointment row is the source of truth; the chat card is a courtesy.
+  //
+  // Resolve caller's display name (fire-and-forget too — we have a
+  // fallback if the lookup fails).
+  void (async () => {
+    try {
+      let callerName = '';
+      if (auth.role === 'teacher') {
+        const { data: tRow } = await supabase
+          .from('montree_teachers')
+          .select('name')
+          .eq('id', auth.userId)
+          .eq('school_id', auth.schoolId) // defense-in-depth cross-pollination
+          .maybeSingle();
+        callerName = (tRow as { name?: string } | null)?.name || 'Your teacher';
+      } else {
+        const { data: pRow } = await supabase
+          .from('montree_school_admins')
+          .select('name')
+          .eq('id', auth.userId)
+          .eq('school_id', auth.schoolId) // defense-in-depth cross-pollination
+          .maybeSingle();
+        callerName = (pRow as { name?: string } | null)?.name || 'School principal';
+      }
+      const caption = buildInviteCaption({
+        callerName,
+        scheduledStart: new Date(startMs),
+        durationMinutes: duration,
+        kind,
+        provider: insertPayload.provider as string | undefined,
+        videoUrl,
+      });
+      await postAppointmentInvite({
+        supabase,
+        schoolId: auth.schoolId,
+        classroomId: child.classroom_id,
+        childId: child.id,
+        appointmentId,
+        status: 'invite',
+        caller: { role: auth.role as 'teacher' | 'principal', id: auth.userId, name: callerName },
+        counterpartRole: 'parent',
+        counterpartId: parent.id,
+        caption,
+      });
+    } catch (err) {
+      console.error('[appointments POST] postAppointmentInvite fire-and-forget failed', {
+        appointmentId,
+        schoolId: auth.schoolId,
+        parentId: parent.id,
+        error: err instanceof Error ? err.message : String(err),
+      });
+    }
+  })();
 
   return NextResponse.json({
     appointment: {

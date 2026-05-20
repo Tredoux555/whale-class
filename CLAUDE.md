@@ -200,24 +200,42 @@ Wave 1 sends bounced for these addresses. None of these are flagged as `bounced`
 
 ---
 
-## 🚨 NEXT SESSION — CALL TO ACTION (queued May 19, 2026 evening)
+## 🚨 NEXT SESSION — CALL TO ACTION (queued May 20, 2026 morning, post-Session 119)
 
 When you come back from a context refresh, run these in order:
 
-### 1. Build the English tracking section (THE BUILD)
+### 1. Run migration 225 + walk the 12-step verification (THE UNBLOCK)
 
-**Full spec:** `docs/handoffs/SESSION_119_NEXT_HANDOFF.md`
+**Full spec:** `docs/handoffs/SESSION_119_HANDOFF.md`
 
-Tredoux's words: *"I want to build an English tracking section. Each child needs to come to English at least once in the week so I want to be able to look at 'class overview' I want a list that updates automatically after every photo commit with the photo confirmation section. So I want to see a list of the students who haven't had any English works captured for that week."*
+```sql
+-- Paste in Supabase SQL Editor:
+-- /Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/whale/migrations/225_child_english_progress.sql
+```
 
-- **Where:** `/montree/dashboard/classroom-overview` — new section at top
-- **What:** List of students who haven't had a Language-area photo confirmed this week
-- **Updates:** Automatically when a Language photo is confirmed in `/photo-audit` (SWR cache mutation + revalidate-on-focus)
-- **5 steps in handoff doc:** API route → UI section → auto-refresh → mobile/i18n → smoke test
-- **Estimated effort:** 2-3 hours, no migration, no new tables, no env vars
-- **Architectural notes:** filter by `area_key='language'`, use `teacher_confirmed=TRUE`, include group photos via `montree_media_children` junction, week boundary is classroom-timezone Monday (Asia/Shanghai for Whale Class)
+Then run the agent backfill so existing NULL-pct agents inherit the new 20% default:
 
-### 2. Send Simone the VAT-registration reply (OPS — not code)
+```sql
+UPDATE montree_teachers
+SET agent_default_share_pct = 20
+WHERE is_agent = true AND agent_default_share_pct IS NULL;
+```
+
+Then walk the 12-step verification checklist in the handoff: Agora video call CSP fix (camera + mic should connect without retry storm), Parent Manager rename, WeChat-style chat tab, clickable `[[VCALL:...]]` invite cards, instant call from chat header, mobile header (no overlap on iPhone), Classroom Overview English Progress tab with class heatmap, super-admin Referrals 🔓 button (now wraps to second row instead of cropping), agent self-service code generation (no more "disabled" wall).
+
+### 2. AgoraVideoCall `audioOnly` prop wiring (~30 min)
+
+The voice-call button in parent-chats threads the `?audio=1` query through but AgoraVideoCall still mounts with video. Thread `audioOnly` from join page → AgoraVideoCall props → skip `createCameraVideoTrack` when true. Then the existing query param actually does what it promises.
+
+### 3. Lesson → curriculum work mapping in `lesson-map.ts`
+
+Add `lessonToWorks: Record<number, string[]>` table. Then `offerEnglishAdvance()` only fires the prompt when the confirmed work is actually mapped to the child's current lesson. Sharper UX; Phase 2 v1 fires on every Language confirm which is acceptable but noisy.
+
+### 4. Phase 2.5 — wire auto-advance into 5 component-level confirm surfaces
+
+PhotoInsightPopup, PhotoInsightButton ×2, TeachGuruWorkModal ×2, PhotoEditModal, TellAiSheet. Each has different local-var shapes; needs careful per-surface read. Lower confirm volume than photo-audit. ~30-45 min focused work.
+
+### 5. Send Simone the VAT-registration reply (OPS — not code)
 
 Tredoux already has a **DRAFT** in Gmail (subject "Re: next step is vat registration") saying *"So I need to do some business using the business and importing licence?"* — instinct is right. Suggested expanded version:
 
@@ -225,7 +243,7 @@ Tredoux already has a **DRAFT** in Gmail (subject "Re: next step is vat registra
 
 **Why this matters:** Simone's request for 3 invoices totaling R50K+, 3 months of bank statements showing income, plus a SARS tax compliance letter is legit and standard for voluntary VAT registration. But Tredoux's Jeffy (Pty) Ltd hasn't traded yet — the import licence was approved this same morning. He can't supply those documents. Push it back to Simone politely and ask whether to pause or whether there's an early-registration path.
 
-### 3. Optional cleanup (low priority)
+### 6. Optional cleanup (low priority)
 
 If you want a fully clean DB (cosmetic — doesn't block anything):
 
@@ -234,15 +252,233 @@ DELETE FROM montree_agent_audit WHERE agent_id IS NULL;
 DELETE FROM montree_referral_codes WHERE agent_id IS NULL;
 ```
 
-These are 1 stale code + 11 audit rows left over from previously-deleted agents (FK was `ON DELETE SET NULL` so they survived earlier deletes). Whale Class is untouched. Agent system is otherwise fully fresh.
+These are 1 stale code + 11 audit rows left over from previously-deleted agents (FK was `ON DELETE SET NULL` so they survived earlier deletes). Whale Class is untouched.
 
-### 4. Carry-overs (still relevant)
+### 7. Carry-overs (still relevant)
 
-- Stage A Agora activation — migration 223 + flag flip + 2-device end-to-end test per `docs/handoffs/AGORA_STAGE_A_QUICKSTART.md`
-- Agent default revenue share % unblock — ~10 min change to default new agents to 20% so they don't hit "Self-service code generation disabled" wall
-- Appointments i18n sweep — appointments + new calendar surface English-only
-- Mira → Tracy super-admin scope (Session 108 Phase 4.8)
-- Outreach follow-ups — FAMM Argentina, Cambridge Montessori Global, Otari NZ, Lions Gate, Montessori Norge
+- Stage A Agora activation — migration 223 + flag flip + 2-device end-to-end test per `docs/handoffs/AGORA_STAGE_A_QUICKSTART.md`. Now even MORE valuable post-CSP-fix since calls actually connect.
+- Migration 224 (`photo_pipeline_v2`) — already confirmed RUN per Session 118. Skip this if already on production state.
+- Appointments i18n sweep — appointments + new calendar surface English-only. ~30 new keys × 12 locales via Haiku batch.
+- Mira → Tracy super-admin scope (Session 108 Phase 4.8).
+- Outreach follow-ups — FAMM Argentina, Cambridge Montessori Global, Otari NZ, Lions Gate, Montessori Norge.
+
+### 8. Railway warm-spare on Vercel (insurance, ~10 min)
+
+Session 119 weathered a Railway edge outage (May 19 22:22 UTC, ~1.5h, first incident of this scale). Don't switch reactively (Vercel Pro caps function duration at 60s; Montree has 120s AI routes that would need rework). DO build a "warm spare" Vercel staging deployment — 10 min DNS-swap insurance if Railway has another major incident in the next 30 days.
+
+---
+
+## RECENT STATUS (May 20, 2026)
+
+### 🔥 Session 120 — Agora video render-race fix + unified appointment/messaging architecture + in-app notification banners (May 20, 2026)
+
+**Single console-log paste from one device cracked the Agora bug.** User reported: both teacher and parent join the call, both see their own video, but neither sees the other's. The log showed successful join + publish + local video play, then 11+ seconds of dead silence — ZERO `user-published` or `user-joined` event for the remote peer. That's the smoking gun.
+
+Dispatched two parallel deep-read agents (one on the Agora pipeline, one on the appointment+messaging integration). The Agora agent found a **real second bug** that would have kept the symptom alive even if the channel mismatch was fixed: the `user-published` handler tries to `play()` the remote video into `remoteVideoElRef.current`, but `setRemoteUserPresent(true)` immediately above triggers the re-render that MOUNTS the `<VideoTile>` containing that ref — and React effects run after commit, not synchronously. The inline `play()` call hits a still-null ref and silently no-ops.
+
+**Three consecutive audit passes.** Pass 1 found 3 ERRORs + 7 WARNs; all fixed; Pass 2 + Pass 3 came back CLEAN. Ship-ready.
+
+**A. Agora video render-race fix (`components/montree/appointments/AgoraVideoCall.tsx`):**
+
+- New `pendingRemoteVideoRef = useRef<{ uid; track }>` — stashes the remote video track instead of trying to play it inline
+- New `remoteVideoTick` state — bumped after stashing so the deferred-play effect fires even on republish of the same user
+- `user-published` handler rewritten: `await client.subscribe()` → set flag → stash track → bump tick. Audio still plays inline (no DOM mount needed for audio playback).
+- New `useEffect([remoteUserPresent, remoteVideoTick])` runs AFTER React commits the VideoTile mount, reads `pendingRemoteVideoRef`, plays into the now-populated div, clears the ref.
+- Rich agora-debug logging at every step: `user-joined`, `user-published`, `subscribe.success`/`subscribe.failed`, `audio.play.success`/`audio.play.failed`, `remote-video.play.success`/`remote-video.play.failed`, `user-unpublished`, `user-left`. Region + appointmentId now in `join.start` for future channel-mismatch debugging.
+- Documented 1-on-1 limitation (`pendingRemoteVideoRef` is a single slot; if 3-party calls are ever needed, convert to `Map<uid, track>` + per-user VideoTile)
+
+**B. New `[[APPT:<id>:<status>]]` magic-prefix system** (mirrors Session 119's `[[VCALL:]]`):
+
+- NEW `lib/montree/messaging/appointment-invite.ts` — `parseAppointmentInvite()`, `buildAppointmentInviteBody()`, `postAppointmentInvite()`. Status values: `invite | confirmed | declined | cancelled`. Canonical UUID regex (8-4-4-4-12 hex, defense in depth — server-built markers but tight parsing prevents fake cards from malformed bodies).
+- NEW `components/montree/messaging/AppointmentInviteCard.tsx` — rich inline card. On mount, fetches latest appointment state (parent → `/api/montree/parent/appointments/[id]`; staff → `/api/montree/appointments?include_past=1` then client-filter). Inline Accept/Decline buttons (parent only, when status='invite'). Join button only when `initialStatus === 'confirmed'` AND status hydrates to confirmed AND isVideo AND within ±2h. **Crucially, Join gates on `initialStatus === 'confirmed'` (the marker) NOT just hydrated state — prevents the [[APPT:invite]] card from also rendering Join when it later hydrates to 'confirmed'. The [[APPT:confirmed]] card posted on accept IS the canonical Join surface.**
+- Wired card renderer into FOUR chat surfaces: parent-chats stream (teacher), teacher messages thread, parent messages thread, principal admin communication thread. All parse APPT BEFORE VCALL so APPT cards win when both markers overlap.
+
+**C. Auto-post lifecycle in chat threads:**
+
+- `POST /api/montree/appointments` now fire-and-forget posts `[[APPT:<id>:invite]]` into the parent's parent_teacher thread immediately on appointment creation. Captures caller name from `montree_teachers.name` or `montree_school_admins.name` with school-id filter for defense-in-depth cross-pollination. (Session 119 had a "DO NOT auto-post here" comment because the [[VCALL:]] card needed `status='confirmed'` for the Agora token to mint — but [[APPT:]] cards have Accept/Decline buttons that PATCH the appointment, no Agora token needed. Safe to post on pending creation.)
+- `PATCH /api/montree/parent/appointments/[id]` action='accept' posts `[[APPT:<id>:confirmed]]` with caption "Confirmed for [day, time]". Parent-name lookup adds school filter.
+- `PATCH /api/montree/parent/appointments/[id]` action='decline' posts `[[APPT:<id>:declined]]` with optional reason snippet.
+- **Removed redundant [[VCALL:]] auto-post on accept.** Session 119 posted both [[APPT:confirmed]] AND [[VCALL:]] AND let the hydrated [[APPT:invite]] also show Join — three Join buttons per accept. Now: one Join button on the canonical [[APPT:confirmed]] card. The [[VCALL:]] marker is reserved for INSTANT calls (from the parent-chats header Call button), which never go through accept.
+
+**D. In-app notification banners** (`components/montree/appointments/PendingAppointmentsBanner.tsx`):
+
+Gold-bordered banner with inline Accept/Decline buttons (parent) or "Open in calendar" link (staff). Auto-hides when empty — never clutters dashboards with empty chrome. Polls on focus + visibilitychange so a response on another device clears the banner on this one. Three surface placements:
+- Parent dashboard (above featured announcement) — parent viewer with inline Accept/Decline
+- Teacher dashboard (above student grid) — staff viewer filters to pending where `selfUserId` is primary host with `response='pending'`
+- Principal admin home (after TracyProactiveCard) — staff viewer
+
+Caps at 3 visible cards with "See all →" link to full appointments page. Gracefully handles 404 from the endpoint (treats as empty — feature could be flagged off without crashing).
+
+**E. Composer 📅 button** (`components/montree/appointments/QuickSetAppointmentModal.tsx`):
+
+NEW slim modal locks parent + child from props (no pickers — teacher is already messaging this specific parent about this specific child). Type pills (Video call / In-person), datetime-local input, duration pills (15/30/45/60), optional subject. Default time: tomorrow at 3pm. POST to `/api/montree/appointments` which fires the auto-post-card chain. Client-side past-time buffer aligned with server's 60s.
+
+Wired into parent-chats stream composer next to Send button. Disabled when no `childAnchor` (derived from most-recent message's `child_id`); tooltip explains. Lazy-loaded via `dynamic({ ssr: false })`.
+
+**🚨 Architectural rules locked in this session (#211-220 — do NOT let future agents break these):**
+
+211. **The Agora `user-published` event handler MUST NOT play remote video inline.** Subscribe + stash track in `pendingRemoteVideoRef` + bump `remoteVideoTick`. The deferred-play `useEffect([remoteUserPresent, remoteVideoTick])` runs AFTER React commits the VideoTile mount and plays into the populated ref. Inline play silently no-ops because refs are null before commit.
+
+212. **`[[APPT:<uuid>:<status>]]` is the canonical magic-prefix for appointment lifecycle messages.** Status enum: `invite | confirmed | declined | cancelled`. Defense-in-depth UUID regex matches the canonical 8-4-4-4-12 hex format. Parsed BEFORE [[VCALL:]] in every chat renderer.
+
+213. **`AppointmentInviteCard.showJoin` gates on `initialStatus === 'confirmed'` AND `effectiveStatus === 'confirmed'`** — both. The marker value (initialStatus) determines whether this is the "the call is on" card vs the "an invitation was made" card. Hydrating an old [[APPT:invite]] card to current confirmed state does NOT render Join — that prevents multi-Join-button redundancy.
+
+214. **The [[VCALL:]] marker is reserved for INSTANT calls only** (parent-chats header → `/api/montree/dashboard/parent-chats/[parentId]/instant-call`). Scheduled-call lifecycle uses [[APPT:]] markers exclusively. Never re-introduce the [[VCALL:]] auto-post on parent accept — three audit passes confirmed this produces redundant Join buttons.
+
+215. **`postAppointmentInvite` is fire-and-forget** at every call site. Failures NEVER block the parent appointment-mutation operation. Error logs include `{ appointmentId, schoolId, parentId, error.message }` for grep-friendly debugging.
+
+216. **Defense-in-depth school filter on every caller/host/parent name lookup** even when the join key is a UUID primary key. Belt-and-braces cross-pollination — guards against migration-time row duplication scenarios.
+
+217. **`PendingAppointmentsBanner` polls on focus + visibilitychange ONLY** (no setInterval). Each instance fires its own poll. Returns null when empty — never renders empty-state chrome.
+
+218. **Pending-appointment surface on every dashboard** is now the canonical posture. New dashboards must wire `PendingAppointmentsBanner` with the right `viewer` + `selfUserId` (staff) or no `selfUserId` (parent — server scopes by cookie).
+
+219. **`QuickSetAppointmentModal` locks parent + child from props.** The full `SetAppointmentModal` (calendar version) still does its own parent picker; the chat-composer version assumes the thread context already names the parent. Client-side past-time buffer MUST match server's (60s).
+
+220. **Appointment creation auto-posts [[APPT:invite]] into the parent thread.** Removed the Session 119 "DO NOT auto-post here" comment block — that rule applied to [[VCALL:]] (needed confirmed status for Agora token). [[APPT:]] cards have Accept/Decline buttons, no token needed; safe to post on pending.
+
+**Files changed (14 new/modified files, 0 migrations needed):**
+
+| Path | Status |
+|------|--------|
+| `components/montree/appointments/AgoraVideoCall.tsx` | MODIFIED — render race fix + rich logging |
+| `lib/montree/messaging/appointment-invite.ts` | NEW |
+| `components/montree/messaging/AppointmentInviteCard.tsx` | NEW |
+| `components/montree/appointments/PendingAppointmentsBanner.tsx` | NEW |
+| `components/montree/appointments/QuickSetAppointmentModal.tsx` | NEW |
+| `app/api/montree/appointments/route.ts` | MODIFIED — `buildInviteCaption` + auto-post [[APPT:invite]] |
+| `app/api/montree/parent/appointments/[id]/route.ts` | MODIFIED — [[APPT:confirmed]]/[[APPT:declined]] auto-posts, removed [[VCALL:]] auto-post |
+| `app/montree/dashboard/parent-chats/[parentId]/page.tsx` | MODIFIED — APPT card renderer + 📅 composer button |
+| `app/montree/parent/messages/[threadId]/page.tsx` | MODIFIED — APPT card renderer |
+| `app/montree/dashboard/messages/[threadId]/page.tsx` | MODIFIED — APPT card renderer |
+| `app/montree/admin/communication/threads/[threadId]/page.tsx` | MODIFIED — APPT card renderer |
+| `app/montree/parent/dashboard/page.tsx` | MODIFIED — PendingAppointmentsBanner wiring |
+| `app/montree/dashboard/page.tsx` | MODIFIED — PendingAppointmentsBanner wiring |
+| `app/montree/admin/page.tsx` | MODIFIED — PendingAppointmentsBanner wiring |
+
+**Verification status:**
+- ✅ Lint clean (`--max-warnings=0`) on all 7 new/modified files in lib + components + API routes.
+- ✅ Three consecutive audit passes (Pass 1 → fix → Pass 2 clean → Pass 3 clean).
+- ✅ No migrations needed (uses existing `montree_appointments`, `montree_message_threads`, `montree_thread_messages`).
+- ⏳ User to verify end-to-end on production after Railway deploys: 2-device Agora call (both sides see each other's video — the render race fix is the headline test), then walk the create-invite → accept-on-banner → join-from-card flow.
+
+**🚨 Deferred — non-blocking notes from audit Pass 3:**
+
+1. **Perf — N identical `/api/montree/appointments?include_past=1` fetches per thread when N APPT cards render** for staff viewer. Acceptable for v1; consider `useSWR` dedupe or new `GET /api/montree/appointments/:id` single-fetch endpoint as a follow-up.
+2. **UX — Parent banner Accept gives no explicit "Accepted ✓" toast** beyond the card disappearing. Optimistic-remove signals success implicitly; consider adding a sonner toast in a follow-up.
+3. **i18n — All new UI strings are hardcoded English.** Standard v1 deferral; sweep via Haiku batch when ready (~30-50 new keys × 12 locales).
+4. **Style — `formatInviteWhen` inside PATCH function body.** Function hoisting handles it; consider lifting to module scope in a future cleanup.
+
+**🚨 Next session priorities (ordered):**
+
+1. **🚨 Verify the Agora fix on production.** This is the biggest payoff. Have parent + teacher both join the same appointment, confirm both see each other's video. Pull the new agora-debug log — `user-joined`, `user-published`, `subscribe.success`, `remote-video.play.success` should all appear in sequence on both devices.
+2. **Walk the full appointment loop on production.** Teacher taps 📅 in parent-chats → fills modal → sends → parent sees banner on dashboard → parent accepts → both see [[APPT:confirmed]] card in thread → tap Join at appointment time → both join Agora and see each other.
+3. **Channel-mismatch diagnostic.** If video still doesn't work after the render-race fix, the channel-mismatch theory is the next suspect. The new `join.start` log includes `channel + appointmentId + region` — compare teacher vs parent on a failing call. If channels differ, dig into how parent's Join URL gets the wrong appointment_id.
+4. **`audioOnly` prop wiring** (carry-over from Session 119) — the voice-call button still mounts AgoraVideoCall with camera. Thread `audioOnly` through to skip `createCameraVideoTrack`. ~30 min.
+5. **Run migration 225** if not done — English Progress Tracker (Session 119 carry-over).
+6. **Send Simone the VAT-registration reply** (Session 119 carry-over).
+7. **Carry-overs from prior sessions** — Mira → Tracy super-admin scope, appointments i18n sweep, outreach follow-ups (FAMM Argentina, Cambridge Montessori Global, Otari NZ).
+
+---
+
+### 🔥 Session 119 — Overnight build: English Progress Tracker + Agora CSP fix + Parent Manager / WeChat-style chats + clickable video invites + mobile header + agent-pct unblock (May 19 evening → May 20 ~07:00 China time)
+
+**7 commits shipped to main, range `cd33058a` → `28cfdf24`. 9 distinct features. ~3,000 lines added. All audit-clean (multiple rounds, fresh-eye agent on the big ones). One Railway edge outage (May 19 22:22 UTC, ~1.5h) weathered without code damage.**
+
+**🚨 Canonical resume doc:** `docs/handoffs/SESSION_119_HANDOFF.md` — full breakdown, 13 architectural rules, 12-step verification, file index, resume prompt.
+
+**🚨 ONE migration pending Tredoux's Supabase run:**
+- ⏳ `migrations/225_child_english_progress.sql` — new `montree_child_english_progress` table (UNIQUE child_id, current_phase pink/blue/green, current_lesson 1-128, mastered_lessons int[], audit trail). Until run, the English Progress tab shows a "Run migration 225" banner instead of crashing (Postgres 42P01 graceful fallback). Once run, the full Phase 1+2+3 tracker lights up.
+
+**Commits this session (oldest → newest):**
+
+| SHA | What | Audit |
+|---|---|---|
+| `cd33058a` | Main ship — English schedule dynamic rolling + mobile header + More menu reorg + appointments accordions hide + Referrals wrap + agent-pct unblock | 3 rounds |
+| `0cd58151` | Agora video call CSP `:*` port wildcard fix | 2 rounds |
+| `1d84a8d4` | Parent Manager rename + WeChat-style parent chats v1 | 3 rounds |
+| `3886cf67` | Parent chat audit fix (per-parent stream order DESC+limit) | 1 follow-up |
+| `03d695b2` | Parent chat schema fix (`created_at` → `sent_at`, `deleted_at` filter) | 1 follow-up |
+| `05dce8be` | Clickable `[[VCALL:...]]` invite cards + instant call + voice option | 3 rounds |
+| `28cfdf24` | English Progress Tracker Phases 1+2+3 | 3 rounds |
+
+**A. Agora video call CSP fix (`0cd58151`) — single highest-leverage one-line of the session.**
+
+Tredoux's iPhone+Mac call log: `Connecting to 'wss://X.edge.agora.io:4714/' violates CSP directive` → `AgoraRTCError WS_ABORT: LEAVE` → `SERVER_ERROR` disconnect 20s later. Root cause: CSP host-source with no explicit port matches only scheme default (443 for wss/https). Agora SDK probes non-standard ports (4710, 4714) first — those got CSP-blocked, SDK fell back to 443 but burned 5-7s per device per retry. Two devices rarely converged in the join window. SERVER_ERROR was the cascade of ghost sessions.
+
+Fix: appended `:*` (CSP explicit any-port wildcard) to every Agora-related connect-src host in `next.config.ts`. Matches Agora's official recommended CSP.
+
+```ts
+"connect-src 'self' ... https://*.agora.io:* wss://*.agora.io:* https://*.sd-rtn.com:* wss://*.sd-rtn.com:* https://*.agoraio.cn:* wss://*.agoraio.cn:*"
+```
+
+**B. Parent Manager + WeChat-style parent chats (`1d84a8d4` + `3886cf67` + `03d695b2`).**
+
+"Invite parents" renamed → "Parent Manager" in More menu. NEW WeChat-style chat surface at `/montree/dashboard/parent-chats` — one row per parent (not per thread, which is how the existing `/dashboard/messages` works). Collapses every thread shared with that parent into a single row showing last snippet + time + unread badge + child context. Tap → per-parent flat chronological stream across all threads.
+
+- NEW `/api/montree/dashboard/parent-chats` (GET list) + `/[parentId]` (GET stream + POST send)
+- NEW `/montree/dashboard/parent-chats/page.tsx` (list view with search)
+- NEW `/montree/dashboard/parent-chats/[parentId]/page.tsx` (stream view + send composer)
+- Chat icon added to Parent Manager page
+
+Uses EXISTING `montree_message_threads` + `montree_thread_messages` schema. No parallel data model. Principal-observer transparency (Session 97) keeps working. Send goes to most-recently-active shared thread, or creates a fresh parent_teacher thread when none exists.
+
+**Audit catches fixed:** schema column is `sent_at` not `created_at` (would have silently returned 0 messages). `deleted_at IS NULL` filter added. Order DESC + limit not ASC + limit (would have truncated newest messages).
+
+**C. Clickable video-call invite cards + instant call (`05dce8be`).**
+
+User-flow ask: *"I click on the message that contains the invite to the video call. It takes me to the chat but I want the link here for the actual video call so I can just go in."* Closes that loop:
+
+- **Magic-prefix convention `[[VCALL:<appointmentId>]] <caption>`** — marks a message as a video-call invite. Old clients see the caption as plain text — degrades gracefully, NO migration needed.
+- `postVideoCallInvite()` helper finds/creates the parent_teacher thread + inserts the magic message. Re-uses `createThreadWithParticipants` so Session 97 principal-observer transparency works automatically.
+- Rich card renderer wired into THREE chat surfaces: parent-chats stream, legacy teacher messages thread, parent messages thread. Gold-bordered card with "Video call" header + caption + emerald "Join now" pill.
+- Dedicated Join pages at `/montree/dashboard/calls/[id]` (teacher/principal) and `/montree/parent/calls/[id]` (parent). Both pre-flight `/agora-token` then mount AgoraVideoCall fullscreen.
+- Instant-call endpoint `/api/montree/dashboard/parent-chats/[parentId]/instant-call` — creates Agora appointment for RIGHT NOW (status=confirmed, 30min, child anchor from parent's first linked child), attaches caller as primary host, posts the invite, returns join_url for the host to redirect to.
+- Voice + Video call buttons in the parent-chats stream header. `?audio=1` query param threads through (voice button currently joins with video — `audioOnly` prop wiring deferred to Session 120).
+
+**Audit catch fixed:** auto-post for SCHEDULED appointments moved from creation (status=pending, would 409 on Join tap) to parent-side accept flow (status=confirmed). Instant calls still post on create because they skip pending.
+
+**D. English Progress Tracker — Phases 1+2+3 (`28cfdf24`). Most substantive feature of the session.**
+
+Built during the Railway outage; pushed after recovery.
+
+- **Phase 1 — Data + position display.** Migration 225 + `lib/montree/english-sequence/lesson-map.ts` (canonical 128-lesson catalog: 53 Pink + 30 Blue + 45 Green, helpers `getLesson`, `getPhaseFor`, `getPhaseProgress`, `sanitizeMastered`) + `/api/montree/dashboard/english-progress` (GET class roll-call, PATCH action='advance'|'set'|'reset'). Classroom Overview gets 3rd tab. Per-child cards: phase color dot + lesson number + label + phase progress bars + overall multicolor strip + Advance ▸ + ⚙ inline picker.
+- **Phase 2 — Photo-audit auto-advance.** `lib/montree/english-sequence/client-helper.ts` exports `offerEnglishAdvance({childId, childName, area})` which fires sonner toast with "Advance +1" button after Language confirms. Per-child 12s dedup window so batch confirms don't spam. Wired into 4 of 5 photo-audit confirm sites (handleConfirm, attachToExistingWork, handleResolvePhoto, handleFix). Batch confirm skipped.
+- **Phase 3 — Class heatmap.** `ClassEnglishHeatmap` component above per-child cards. Horizontal strip showing every child as phase-colored dot on 1→128 axis. Phase-tinted gradient background. Dots stack vertically on lesson collisions. Hover/tap shows name + lesson. Footer summary: per-phase counts + class average lesson.
+
+**E. Quick wins inside `cd33058a`:**
+
+- **Mobile dashboard header overlap** — single `@media (max-width: 640px)` block in DashboardHeader.tsx: hides inline Messages icon (kept in More menu), tightens cluster gap 8→4, IconBtn padding 10→6, teacher pill text cap 100→56.
+- **More menu reorg** — "Classroom Overview" pinned to TOP of menu (was buried). Help (InboxButton) row hidden — "no function" per Tredoux. Kept in code (JSX comment) per hide-don't-delete.
+- **Appointments accordions hidden** — single `SHOW_LEGACY_ACCORDIONS=false` constant in AppointmentsCalendar.tsx. Flip to true to restore.
+- **Super-admin Referrals Actions cell wrap** — `whitespace-nowrap` → `flex flex-wrap justify-end` so 8+ buttons wrap to second row instead of cropping. Tredoux couldn't see 🔓 "Log in as agent" even though it rendered.
+- **Agent default revenue share % unblock** — `DEFAULT_AGENT_SHARE_PCT = 20` constant in `super-admin/agents/[id]/login/route.ts` + same in `agent-applications/[id]/accept/route.ts`. New agents no longer hit "Self-service code generation disabled" wall. Operator override still wins. Backfill SQL above for existing NULL agents.
+
+**🚨 Architectural rules locked in this session (#198-210 — do NOT let future agents break these):**
+
+198. **CSP host-source patterns MUST include `:*` for any third-party WebRTC SDK** (Agora, Twilio, LiveKit). Default-port-only matching is a silent gatekeeper.
+199. **`[[VCALL:<appointmentId>]] <caption>` is the canonical magic-prefix for video-call invite messages.** Renderers detect via `parseVideoCallInvite()`. Old clients degrade gracefully (show caption as plain text).
+200. **`montree_thread_messages` time column is `sent_at` (NOT `created_at`).** Always filter `deleted_at IS NULL` for chat reads.
+201. **Auto-post invite cards fire on status `pending→confirmed` for scheduled calls**, on creation for instant calls. Never on bare creation of a `pending` appointment — would 409 on Join.
+202. **`montree_child_english_progress.current_lesson` is the SOLE source of truth for "what lesson is this child on now."** `mastered_lessons` is derived stats.
+203. **App-code invariant: `mastered_lessons ⊇ [1..current_lesson - 1]`.** Enforced by `sanitizeMastered()` in `lesson-map.ts`. All write paths must call it.
+204. **`LESSONS` const in `lesson-map.ts` is FROZEN.** Renumbering would invalidate every existing child's position. Future additions append-only with explicit approval.
+205. **English Progress tab degrades gracefully when migration 225 hasn't run** (Postgres 42P01 → `migration_pending: true` in response, UI shows banner). Never crash on missing schema.
+206. **`offerEnglishAdvance` has a per-child 12s dedup window.** Burst-confirms in a busy classroom don't spam toasts.
+207. **WeChat-style parent chats use the EXISTING thread schema** — no parallel data model. One row per parent, threads collapsed. Send goes to most-recently-active shared thread.
+208. **New agents default to 20% revenue share when `agent_default_share_pct` is NULL.** Operator override wins. Never downgrades an already-set %.
+209. **Mobile header right-cluster: hide inline Messages icon on ≤640px** (kept in More menu for one-tap reach).
+210. **`SHOW_LEGACY_ACCORDIONS = false` in AppointmentsCalendar** — flip to true to restore the "Open every week" + "Time away" sections. Hide-don't-delete.
+
+**Verification status:**
+- ✅ All 7 commits on `origin/main`. Railway auto-deployed throughout.
+- ✅ Lint clean across all changed files.
+- ✅ Multiple consecutive clean audit passes per commit (3 rounds on big ones, fresh-eye agent on Phase 1+2+3).
+- ⏳ Migration 225 pending Tredoux's Supabase run.
+- ⏳ Agent backfill SQL pending.
+- ⏳ User to walk 12-step verification checklist in handoff doc.
+
+**Railway outage note (May 19 22:22 UTC, ~1.5h):** "Partial outage on edge network · Major Outage" — both `montree.xyz` AND `backboard.railway.com` (their own login backend) dropping requests with Envoy proxy "unconditional drop overload." No code damage; recovered on its own. First incident of this scale in project history. Decision: don't switch reactively (Vercel Pro caps 60s, Montree has 120s AI routes); build a warm-spare Vercel deployment as 10-min DNS-swap insurance.
 
 ---
 
@@ -6991,6 +7227,17 @@ All migrations through 169 have been run. Key ones: 147 (smart learning columns)
 
 **Session 118 (May 19, 2026) — Photo pipeline v2 (4-fix bundle). ✅ Migration RUN:**
 - ✅ `224_photo_pipeline_v2_flag.sql` — single-row INSERT into `montree_feature_definitions` adding `photo_pipeline_v2` with `default_enabled = TRUE`. Gates the 4-fix bundle: (A) `is_curriculum_work=false` routing requires `confidence >= 0.80`, (B) visual memory budget 50KB/100 → 20KB/40, (C) `top_candidates` carried through to sonnet_drafted writes, (D) age-decay weighting on visual memory ordering. Idempotent (`ON CONFLICT DO UPDATE`). **CONFIRMED RUN May 19, 2026 13:01** — verified via `SELECT feature_key, name, default_enabled FROM montree_feature_definitions WHERE feature_key = 'photo_pipeline_v2'` → 1 row returned (`photo_pipeline_v2 | Photo Pipeline v2 | true`). Initial run hit `null value in column "name"` because the first version of the migration omitted the required `name` column — patched in commit `301458f2`. Per-school rollback: `UPDATE montree_school_features SET enabled=false WHERE school_id='X' AND feature_key='photo_pipeline_v2';`
+
+**Session 119 (May 19–20, 2026) — English Progress Tracker. ⏳ 1 migration pending Tredoux's Supabase run:**
+- ⏳ `225_child_english_progress.sql` — new `montree_child_english_progress` table tracking per-child position in the 128-lesson English curriculum (53 Pink + 30 Blue + 45 Green). Columns: `id`, `child_id` UNIQUE (FK CASCADE to montree_children), `current_phase` CHECK IN ('pink','blue','green') DEFAULT 'pink', `current_lesson` INT CHECK 1-128 DEFAULT 1, `mastered_lessons` INT[] DEFAULT '{}', `last_advanced_at`, `last_advanced_by_role` CHECK IN ('teacher','principal','system'), `last_advanced_by_id`, `notes`, `created_at`, `updated_at` + auto-bump trigger. Two indexes (child_id, classroom roll-call via child_id JOIN). Idempotent BEGIN/COMMIT. **REQUIRED for the English Progress tab on `/montree/dashboard/classroom-overview` to render data. Until run, the tab shows a graceful "Run migration 225" banner (Postgres 42P01 → `migration_pending: true` in response, never crashes). The class heatmap + per-child cards + advance/set/reset PATCH all degrade cleanly. App-code invariant: `mastered_lessons ⊇ [1..current_lesson - 1]` enforced by `sanitizeMastered()` in `lib/montree/english-sequence/lesson-map.ts`. Schema is FROZEN — the LESSONS catalog must never be renumbered or every existing child's position would invalidate.**
+
+Plus Session 119 agent backfill SQL (not a migration file, run separately in Supabase):
+```sql
+UPDATE montree_teachers
+SET agent_default_share_pct = 20
+WHERE is_agent = true AND agent_default_share_pct IS NULL;
+```
+Backfills NULL-pct agents to the new 20% default introduced in commit `cd33058a`. Without this, existing agents created before Session 119 still hit the "Self-service code generation disabled" wall.
 
 ---
 

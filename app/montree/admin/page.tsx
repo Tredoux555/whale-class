@@ -35,6 +35,7 @@ import TracyBody from '@/components/montree/admin/TracyBody';
 import ChangelogModal from '@/components/montree/ChangelogModal';
 import TrialExpiringBanner from '@/components/montree/admin/TrialExpiringBanner';
 import TracyProactiveCard from '@/components/montree/admin/TracyProactiveCard';
+import PendingAppointmentsBanner from '@/components/montree/appointments/PendingAppointmentsBanner';
 // Canonical action-line parser — Session 113 V2 audit MED-5.
 import { splitActionLine } from '@/lib/montree/ai/split-action-line';
 import {
@@ -802,6 +803,12 @@ export default function AdminAgentPage() {
       <TrialExpiringBanner />
       {/* Tracy's proactive notice for stale classrooms / idle teachers / pending photos. */}
       <TracyProactiveCard />
+      {/* ═══ Session 120 — Pending appointment invites banner ═══
+          Surfaces appointment invites where the principal is primary host
+          with response='pending'. Hides itself when empty. */}
+      {principal?.id && (
+        <PendingAppointmentsBanner viewer="staff" selfUserId={principal.id} />
+      )}
       {/* Compact language switcher — the principal can change Tracy's language
           here and her next response is in that language. Sits above the thread
           aligned right so it doesn't compete with the empty-state greeting. */}

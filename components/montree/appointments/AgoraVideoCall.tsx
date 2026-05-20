@@ -181,6 +181,19 @@ export default function AgoraVideoCall(props: AgoraVideoCallProps) {
   const camTrackRef = useRef<ICamTrack | null>(null);
   const localVideoElRef = useRef<HTMLDivElement | null>(null);
   const remoteVideoElRef = useRef<HTMLDivElement | null>(null);
+  // 🚨 Session 120 — pending remote video track. When user-published fires
+  // for a video track, we subscribe + flip remoteUserPresent=true, but the
+  // <VideoTile> div doesn't exist yet (the conditional render hasn't run).
+  // Stash the track here; a separate effect picks it up once the div mounts.
+  //
+  // 1-ON-1 LIMITATION: this single-track ref ONLY handles one remote peer.
+  // If 3-party calls are ever needed, convert this to a Map<uid, track>
+  // and render one VideoTile per remote user. The current Montree appointment
+  // model is parent ↔ staff (2-person), so this is intentional.
+  const pendingRemoteVideoRef = useRef<{ uid: number | string; track: { play: (el: HTMLElement) => void } } | null>(null);
+  // Tick counter that the deferred-play effect watches. Bumping it triggers
+  // a re-check of pendingRemoteVideoRef against the now-mounted div.
+  const [remoteVideoTick, setRemoteVideoTick] = useState(0);
 
   // ── Initialize: get token → load SDK → join → publish ──────────────
   const initRef = useRef(false);
@@ -229,24 +242,74 @@ export default function AgoraVideoCall(props: AgoraVideoCallProps) {
 
         // 3. Set up event handlers BEFORE joining so we don't miss
         //    early user-published events.
+        //
+        // 🚨 Session 120 architectural rule: subscribe synchronously,
+        // then stash the resulting track for the deferred-play effect to
+        // pick up once the <VideoTile> div mounts. DO NOT play() inline
+        // — `remoteVideoElRef.current` is null on the first user-published
+        // because setRemoteUserPresent(true) hasn't triggered the
+        // re-render yet that mounts the VideoTile. Playing inline silently
+        // no-ops (the video render race that kept Session 119 broken).
+        client.on('user-joined', (...args: unknown[]) => {
+          const user = args[0] as { uid: number };
+          agoraLog('info', 'user-joined', { uid: user.uid });
+        });
+
         client.on('user-published', async (...args: unknown[]) => {
           const user = args[0] as { uid: number; videoTrack?: unknown; audioTrack?: unknown };
           const mediaType = args[1] as 'audio' | 'video';
-          await client.subscribe(user, mediaType);
+          agoraLog('info', 'user-published', { uid: user.uid, mediaType });
+          try {
+            await client.subscribe(user, mediaType);
+            agoraLog('info', 'subscribe.success', { uid: user.uid, mediaType });
+          } catch (subErr) {
+            agoraLog('error', 'subscribe.failed', { uid: user.uid, mediaType, message: (subErr as Error).message });
+            return;
+          }
+          // Flip the flag BEFORE attempting any play — this mounts the
+          // remote VideoTile via the conditional render at line ~542.
           setRemoteUserPresent(true);
-          if (mediaType === 'video' && user.videoTrack && remoteVideoElRef.current) {
-            (user.videoTrack as { play: (el: HTMLElement) => void }).play(remoteVideoElRef.current);
+          if (mediaType === 'video' && user.videoTrack) {
+            // Stash the track. The deferred-play effect will attach it to
+            // the div on next render. If the div is already mounted from
+            // a prior remote (rare), the effect still runs because we
+            // bump remoteVideoTick.
+            pendingRemoteVideoRef.current = {
+              uid: user.uid,
+              track: user.videoTrack as { play: (el: HTMLElement) => void },
+            };
+            setRemoteVideoTick((t) => t + 1);
           }
           if (mediaType === 'audio' && user.audioTrack) {
-            (user.audioTrack as { play: () => void }).play();
+            // Audio doesn't need a DOM mount — fire-and-forget play() works.
+            try {
+              (user.audioTrack as { play: () => void }).play();
+              agoraLog('info', 'audio.play.success', { uid: user.uid });
+            } catch (playErr) {
+              agoraLog('error', 'audio.play.failed', { uid: user.uid, message: (playErr as Error).message });
+            }
           }
         });
 
-        client.on('user-unpublished', () => {
+        client.on('user-unpublished', (...args: unknown[]) => {
+          const user = args[0] as { uid: number };
+          const mediaType = args[1] as 'audio' | 'video';
+          agoraLog('info', 'user-unpublished', { uid: user.uid, mediaType });
+          // Clear the stashed video pointer if this is the user we were
+          // about to play. The remote-present flag stays as long as any
+          // remote user is in the channel.
+          if (mediaType === 'video' && pendingRemoteVideoRef.current?.uid === user.uid) {
+            pendingRemoteVideoRef.current = null;
+          }
           if (client.remoteUsers.length === 0) setRemoteUserPresent(false);
         });
 
-        client.on('user-left', () => {
+        client.on('user-left', (...args: unknown[]) => {
+          const user = args[0] as { uid: number };
+          agoraLog('info', 'user-left', { uid: user.uid });
+          if (pendingRemoteVideoRef.current?.uid === user.uid) {
+            pendingRemoteVideoRef.current = null;
+          }
           if (client.remoteUsers.length === 0) setRemoteUserPresent(false);
         });
 
@@ -327,7 +390,13 @@ export default function AgoraVideoCall(props: AgoraVideoCallProps) {
 
         // 4. Join + publish.
         setState({ phase: 'joining' });
-        agoraLog('info', 'join.start', { channel: tokenData.channel, uid: tokenData.uid });
+        agoraLog('info', 'join.start', {
+          channel: tokenData.channel,
+          uid: tokenData.uid,
+          appointmentId: props.appointmentId,
+          region: AGORA_AREA,
+          appId: tokenData.appId.slice(0, 8) + '…', // truncated for log readability
+        });
         await client.join(tokenData.appId, tokenData.channel, tokenData.token, tokenData.uid);
         if (cancelled) return;
         agoraLog('info', 'join.success', {});
@@ -404,6 +473,29 @@ export default function AgoraVideoCall(props: AgoraVideoCallProps) {
       })();
     };
   }, []);
+
+  // ── Deferred remote-video play ─────────────────────────────────────
+  // 🚨 Session 120 — fixes the render race that was Session 119's killer
+  // bug. When user-published fires, the handler subscribes + stashes the
+  // video track in pendingRemoteVideoRef and flips remoteUserPresent=true.
+  // That flip mounts the <VideoTile> with remoteVideoElRef, but the
+  // user-published handler's ref-read is too early — the div isn't there
+  // yet. This effect runs AFTER the re-render, when the ref is populated,
+  // and attaches the pending track to the now-mounted div.
+  useEffect(() => {
+    if (!remoteUserPresent) return;
+    const div = remoteVideoElRef.current;
+    if (!div) return;
+    const pending = pendingRemoteVideoRef.current;
+    if (!pending) return;
+    try {
+      pending.track.play(div);
+      agoraLog('info', 'remote-video.play.success', { uid: pending.uid });
+      pendingRemoteVideoRef.current = null;
+    } catch (err) {
+      agoraLog('error', 'remote-video.play.failed', { uid: pending.uid, message: (err as Error).message });
+    }
+  }, [remoteUserPresent, remoteVideoTick]);
 
   // ── Controls ───────────────────────────────────────────────────────
   const handleMicToggle = useCallback(async () => {

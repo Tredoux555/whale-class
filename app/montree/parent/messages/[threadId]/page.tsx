@@ -13,6 +13,8 @@ import { toast, Toaster } from 'sonner';
 import { ArrowLeft, Send, Video, Calendar, PlayCircle } from 'lucide-react';
 import { useI18n, getIntlLocale } from '@/lib/montree/i18n';
 import { parseVideoCallInvite } from '@/lib/montree/messaging/video-call-invite';
+import { parseAppointmentInvite } from '@/lib/montree/messaging/appointment-invite';
+import AppointmentInviteCard from '@/components/montree/messaging/AppointmentInviteCard';
 import { useThreadPolling } from '@/hooks/useThreadPolling';
 import VoiceComposer, { type VoiceReady } from '@/components/montree/messaging/VoiceComposer';
 import VoiceBubble from '@/components/montree/messaging/VoiceBubble';
@@ -621,6 +623,21 @@ export default function ParentThreadDetailPage() {
                   {msg.media_type === 'audio' && msg.media_url ? (
                     <VoiceBubble audioUrl={msg.media_url} transcript={msg.body} isMine={isMe} />
                   ) : (() => {
+                    // 🚨 Session 120 — detect appointment-invite messages
+                    // and render as the rich AppointmentInviteCard with
+                    // Accept/Decline buttons. Parsed BEFORE VCALL so APPT
+                    // cards win when both markers overlap.
+                    const apptInvite = parseAppointmentInvite(msg.body);
+                    if (apptInvite) {
+                      return (
+                        <AppointmentInviteCard
+                          appointmentId={apptInvite.appointmentId}
+                          initialStatus={apptInvite.status}
+                          caption={apptInvite.caption}
+                          viewer="parent"
+                        />
+                      );
+                    }
                     // Session 119 Task 3 — detect video-call invite messages
                     // and render as a rich card with Join button. Parent
                     // taps Join → /montree/parent/calls/[id] → straight
