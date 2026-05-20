@@ -51,21 +51,27 @@ export async function POST(
     );
   }
 
-  // Caller can be either parent or staff. Try parent first (cookie-based);
-  // if that fails (no parent session), fall through to staff auth.
+  // 🚨 Session 120 hotfix — explicit role hint via ?as=teacher|parent|staff
+  // disambiguates when the SAME browser holds BOTH a parent session cookie
+  // AND a staff session cookie. Without the hint, the route's "try parent
+  // first" resolver would pick the parent identity for ANY caller with a
+  // parent cookie — even a teacher hitting the call page from /dashboard/calls.
+  // That collapses both sides to the same parentId → same deriveAgoraUid →
+  // same UID → Agora's uniqueness enforcement kicks one user off when the
+  // other joins (the bug the user kept hitting in production testing).
+  const url = new URL(request.url);
+  const asHint = (url.searchParams.get('as') || '').toLowerCase();
+  const preferStaff = asHint === 'teacher' || asHint === 'staff' || asHint === 'principal';
+  const preferParent = asHint === 'parent';
+
   const supabase = getSupabase();
-  const parentResolution = await resolveAppointmentsParent(supabase);
 
   let callerRole: 'parent' | 'teacher' | 'principal' | null = null;
   let callerId: string | null = null;
   let schoolId: string | null = null;
 
-  if (!(parentResolution instanceof NextResponse)) {
-    callerRole = 'parent';
-    callerId = parentResolution.parentId;
-    schoolId = parentResolution.schoolId;
-  } else {
-    // Staff path.
+  if (preferStaff) {
+    // Explicit staff hint → skip parent resolution, go straight to staff auth.
     const auth = await verifySchoolRequest(request);
     if (auth instanceof NextResponse) return auth;
     if (auth.role !== 'teacher' && auth.role !== 'principal') {
@@ -74,6 +80,31 @@ export async function POST(
     callerRole = auth.role;
     callerId = auth.userId;
     schoolId = auth.schoolId;
+  } else if (preferParent) {
+    // Explicit parent hint → only resolve parent. Don't fall through to
+    // staff even if cookie is missing — surface the auth error cleanly.
+    const parentResolution = await resolveAppointmentsParent(supabase);
+    if (parentResolution instanceof NextResponse) return parentResolution;
+    callerRole = 'parent';
+    callerId = parentResolution.parentId;
+    schoolId = parentResolution.schoolId;
+  } else {
+    // No hint (legacy callers) — fall back to original try-parent-first logic.
+    const parentResolution = await resolveAppointmentsParent(supabase);
+    if (!(parentResolution instanceof NextResponse)) {
+      callerRole = 'parent';
+      callerId = parentResolution.parentId;
+      schoolId = parentResolution.schoolId;
+    } else {
+      const auth = await verifySchoolRequest(request);
+      if (auth instanceof NextResponse) return auth;
+      if (auth.role !== 'teacher' && auth.role !== 'principal') {
+        return NextResponse.json({ error: 'Auth required.' }, { status: 403 });
+      }
+      callerRole = auth.role;
+      callerId = auth.userId;
+      schoolId = auth.schoolId;
+    }
   }
 
   if (!callerRole || !callerId || !schoolId) {
@@ -144,6 +175,7 @@ export async function POST(
     channel: token.channel,
     uid: token.uid,
     icalTokenPrefix: (appt.ical_token || '').slice(0, 8),
+    asHint: asHint || '(none)',
   });
 
   return NextResponse.json({
