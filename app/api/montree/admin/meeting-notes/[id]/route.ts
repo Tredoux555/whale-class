@@ -17,10 +17,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { getSupabase } from '@/lib/supabase-client';
 import { shareMeetingNoteToThread } from '@/lib/montree/meeting-notes/share-to-thread';
-import {
-  writeEncryptedField,
-  readEncryptedField,
-} from '@/lib/montree/messaging-crypto';
 
 export const maxDuration = 30;
 
@@ -28,25 +24,8 @@ const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
 const MAX_NOTES_LEN = 4_000;
 const MAX_CHILD_NAME_LEN = 100;
 
-// 🚨 Session 121 — encryption_version included in canonical SELECT so the
-// decryptMeetingNote helper has what it needs.
 const SELECT_COLS =
-  'id, principal_id, school_id, classroom_id, child_id, child_name, meeting_date, summary, transcript, notes, encryption_version, duration_seconds, locale, parent_visible, shared_to_thread_id, created_at, updated_at';
-
-function decryptMeetingNote<T extends {
-  summary?: string | null;
-  transcript?: string | null;
-  notes?: string | null;
-  encryption_version?: number | null;
-}>(row: T): T {
-  const v = row.encryption_version ?? null;
-  return {
-    ...row,
-    summary: row.summary ? readEncryptedField(row.summary, v) : row.summary,
-    transcript: row.transcript ? readEncryptedField(row.transcript, v) : row.transcript,
-    notes: row.notes ? readEncryptedField(row.notes, v) : row.notes,
-  };
-}
+  'id, principal_id, school_id, classroom_id, child_id, child_name, meeting_date, summary, transcript, notes, duration_seconds, locale, parent_visible, shared_to_thread_id, created_at, updated_at';
 
 export async function GET(
   request: NextRequest,
@@ -79,7 +58,7 @@ export async function GET(
   if (!data) {
     return NextResponse.json({ error: 'Not found' }, { status: 404 });
   }
-  return NextResponse.json({ meeting: decryptMeetingNote(data) });
+  return NextResponse.json({ meeting: data });
 }
 
 export async function PATCH(
@@ -112,10 +91,8 @@ export async function PATCH(
 
   const updates: Record<string, unknown> = {};
 
-  // 🚨 Session 121 — pending notes encryption resolved below after row read.
-  let pendingNotesPlaintext: string | null | undefined = undefined;
   if (body.notes !== undefined) {
-    pendingNotesPlaintext = body.notes === null ? null : body.notes.slice(0, MAX_NOTES_LEN);
+    updates.notes = body.notes === null ? null : body.notes.slice(0, MAX_NOTES_LEN);
   }
   if (body.child_name !== undefined) {
     updates.child_name =
@@ -158,34 +135,6 @@ export async function PATCH(
     }
   }
 
-  // 🚨 Session 121 — resolve notes encryption against existing row's version.
-  if (pendingNotesPlaintext !== undefined) {
-    if (pendingNotesPlaintext === null) {
-      updates.notes = null;
-    } else {
-      const { data: existing } = await supabase
-        .from('montree_meeting_notes')
-        .select('encryption_version')
-        .eq('id', id)
-        .eq('principal_id', auth.userId)
-        .eq('school_id', auth.schoolId)
-        .maybeSingle();
-      const existingVersion =
-        ((existing as { encryption_version?: number | null } | null)?.encryption_version) ?? null;
-      if (existingVersion === 1) {
-        const enc = writeEncryptedField(pendingNotesPlaintext, true);
-        if (enc.version !== 1) {
-          console.error(
-            '[admin/meeting-notes PATCH] row v=1 but encrypt fell back to plaintext — key misconfigured?'
-          );
-        }
-        updates.notes = enc.value;
-      } else {
-        updates.notes = pendingNotesPlaintext;
-      }
-    }
-  }
-
   if (Object.keys(updates).length === 0) {
     return NextResponse.json(
       { error: 'No editable fields supplied.' },
@@ -212,15 +161,12 @@ export async function PATCH(
 
   // 🚨 Session 114 finisher — when parent_visible flips true, post the
   // summary into a dedicated parent_principal thread.
-  //
-  // 🚨 Session 121 — decrypt summary BEFORE passing to shareMeetingNoteToThread.
   let shareResult: { threadId: string | null; reason?: string; error?: string } | null = null;
   if (
     body.parent_visible === true &&
     updated.parent_visible === true &&
     !updated.shared_to_thread_id
   ) {
-    const plaintextSummary = readEncryptedField(updated.summary, updated.encryption_version);
     shareResult = await shareMeetingNoteToThread({
       supabase,
       meeting: {
@@ -230,7 +176,7 @@ export async function PATCH(
         child_id: updated.child_id,
         child_name: updated.child_name,
         meeting_date: updated.meeting_date,
-        summary: plaintextSummary,
+        summary: updated.summary,
         shared_to_thread_id: updated.shared_to_thread_id,
         locale: updated.locale,
       },
@@ -249,13 +195,13 @@ export async function PATCH(
         .select(SELECT_COLS)
         .maybeSingle();
       if (restamped) {
-        return NextResponse.json({ meeting: decryptMeetingNote(restamped), share: shareResult });
+        return NextResponse.json({ meeting: restamped, share: shareResult });
       }
     }
   }
 
   return NextResponse.json({
-    meeting: decryptMeetingNote(updated),
+    meeting: updated,
     ...(shareResult ? { share: shareResult } : {}),
   });
 }

@@ -12,11 +12,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { resolveMessagingAgent } from '@/lib/montree/agent-super-admin-messaging/access';
-import {
-  isEncryptionEnabledForSchool,
-  writeEncryptedField,
-  readEncryptedField,
-} from '@/lib/montree/messaging-crypto';
 
 export const dynamic = 'force-dynamic';
 
@@ -65,20 +60,14 @@ export async function GET(
   }
 
   const { data: messages } = await supabase
-    // 🚨 Session 121 — pull encryption_version + decrypt for client.
     .from('montree_thread_messages')
-    .select('id, sender_role, sender_id, sender_name, body, encryption_version, ai_drafted, sent_at, edited_at')
+    .select('id, sender_role, sender_id, sender_name, body, ai_drafted, sent_at, edited_at')
     .eq('thread_id', threadId)
     .is('deleted_at', null)
     .order('sent_at', { ascending: true })
     .limit(500);
 
-  const decrypted = (messages || []).map((m: { body: string; encryption_version: number | null }) => ({
-    ...m,
-    body: readEncryptedField(m.body, m.encryption_version),
-  }));
-
-  return NextResponse.json({ messages: decrypted });
+  return NextResponse.json({ messages: messages || [] });
 }
 
 export async function POST(
@@ -110,10 +99,6 @@ export async function POST(
     return NextResponse.json({ error: 'body exceeds 10000 chars' }, { status: 400 });
   }
 
-  // 🚨 Session 121 — agent_super_admin threads have NULL school_id;
-  // isEncryptionEnabledForSchool(null) falls through to default_enabled.
-  const encEnabled = await isEncryptionEnabledForSchool(supabase, null);
-  const enc = writeEncryptedField(text, encEnabled);
   const { data: msg, error: msgErr } = await supabase
     .from('montree_thread_messages')
     .insert({
@@ -121,23 +106,15 @@ export async function POST(
       sender_role: 'agent',
       sender_id: agent.agentId,
       sender_name: agent.agentName,
-      body: enc.value,
-      encryption_version: enc.version,
+      body: text,
       ai_drafted: false, // forced — agents never claim AI authorship
     })
-    .select('id, sender_role, sender_id, sender_name, body, encryption_version, ai_drafted, sent_at')
+    .select('id, sender_role, sender_id, sender_name, body, ai_drafted, sent_at')
     .single();
 
   if (msgErr) {
     return NextResponse.json({ error: msgErr.message }, { status: 500 });
   }
-
-  // Decrypt before returning to client.
-  const msgTyped = msg as { body: string; encryption_version: number | null };
-  const msgDecrypted = {
-    ...msg,
-    body: readEncryptedField(msgTyped.body, msgTyped.encryption_version),
-  };
 
   // Mark agent's read state — they just sent, so no unread.
   void supabase
@@ -150,5 +127,5 @@ export async function POST(
       if (error) console.error('[agent ↔ tredoux POST msg] last_read update:', error);
     });
 
-  return NextResponse.json({ message: msgDecrypted });
+  return NextResponse.json({ message: msg });
 }

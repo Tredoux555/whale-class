@@ -19,11 +19,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { resolveMessagingAgent } from '@/lib/montree/agent-messaging/access';
 import { createThreadWithParticipants } from '@/lib/montree/messaging/thread-resolver';
-import {
-  isEncryptionEnabledForSchool,
-  writeEncryptedField,
-  readEncryptedField,
-} from '@/lib/montree/messaging-crypto';
 import type { ThreadListItem, ThreadType, SenderRole } from '@/lib/montree/messaging/types';
 
 export const dynamic = 'force-dynamic';
@@ -82,9 +77,8 @@ export async function GET(request: NextRequest) {
       .select('thread_id, participant_role, participant_id, is_observer, is_primary')
       .in('thread_id', ids),
     supabase
-      // 🚨 Session 121 — pull encryption_version so we decrypt body for snippet.
       .from('montree_thread_messages')
-      .select('id, thread_id, body, encryption_version, sender_role, sender_id, sender_name, sent_at')
+      .select('id, thread_id, body, sender_role, sender_id, sender_name, sent_at')
       .in('thread_id', ids)
       .is('deleted_at', null)
       .order('sent_at', { ascending: false })
@@ -152,21 +146,11 @@ export async function GET(request: NextRequest) {
     string,
     { id: string; body: string; sender_role: SenderRole; sender_id: string; sender_name: string; sent_at: string }
   >();
-  for (const m of (lastMessagesRes.data || []) as Array<{
-    id: string;
-    thread_id: string;
-    body: string;
-    encryption_version: number | null;
-    sender_role: string;
-    sender_id: string;
-    sender_name: string;
-    sent_at: string;
-  }>) {
+  for (const m of lastMessagesRes.data || []) {
     if (!latestByThread.has(m.thread_id)) {
       latestByThread.set(m.thread_id, {
         id: m.id,
-        // 🚨 Decrypt body before storing for snippet.
-        body: readEncryptedField(m.body, m.encryption_version),
+        body: m.body,
         sender_role: m.sender_role as SenderRole,
         sender_id: m.sender_id,
         sender_name: m.sender_name,
@@ -295,9 +279,6 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  // 🚨 Session 121 — encrypt first-message body when encryption_v1 is on.
-  const encEnabled = await isEncryptionEnabledForSchool(supabase, body.school_id);
-  const enc = writeEncryptedField(body.body.trim(), encEnabled);
   const { error: msgErr } = await supabase
     .from('montree_thread_messages')
     .insert({
@@ -305,8 +286,7 @@ export async function POST(request: NextRequest) {
       sender_role: 'agent',
       sender_id: agent.agentId,
       sender_name: agent.agentName,
-      body: enc.value,
-      encryption_version: enc.version,
+      body: body.body.trim(),
       ai_drafted: false,
     });
 

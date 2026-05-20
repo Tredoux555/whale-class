@@ -50,12 +50,6 @@ export type FeatureKey =
   // sonnet_drafted + age-decayed visual memory ordering. Default ON via
   // migration 224. Flip per-school to roll back to v1 if quality drops.
   | 'photo_pipeline_v2'
-  // 🚨 Session 121 — application-layer AES-256-GCM encryption on parent-school
-  // message bodies + meeting note summaries/transcripts/notes + call transcripts.
-  // Default OFF; flip on (globally OR per-school) once MONTREE_ENCRYPTION_KEY is
-  // set in Railway. Migration 226. See lib/montree/messaging-crypto.ts +
-  // docs/handoffs/MONTREE_ENCRYPTION_RUNBOOK.md.
-  | 'encryption_v1'
   // Language presentation (semester presentation tool — once/twice per year)
   | 'language_presentation'
   // Parent messaging — Session 98 threaded surface at /montree/parent/messages.

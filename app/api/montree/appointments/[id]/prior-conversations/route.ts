@@ -20,7 +20,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
-import { readEncryptedField } from '@/lib/montree/messaging-crypto';
 
 export const maxDuration = 30;
 
@@ -75,7 +74,6 @@ export async function GET(
   // Find prior recordings for this parent. We exclude the current
   // appointment AND any future appointments (we only want what's already
   // happened from the staff's POV).
-  // 🚨 Session 121 — pull encryption_version so we decrypt summary.
   const { data: recordings, error } = await supabase
     .from('montree_appointment_recordings')
     .select(`
@@ -84,7 +82,6 @@ export async function GET(
       recording_status,
       summary,
       summary_locale,
-      encryption_version,
       summarized_at,
       ended_at,
       montree_appointments!inner(scheduled_start, parent_id, child_id, intake_subject)
@@ -112,7 +109,6 @@ export async function GET(
     recording_status: string;
     summary: string | null;
     summary_locale: string | null;
-    encryption_version: number | null;
     summarized_at: string | null;
     ended_at: string | null;
     montree_appointments: { scheduled_start?: string; intake_subject?: string | null } | { scheduled_start?: string; intake_subject?: string | null }[] | null;
@@ -174,8 +170,7 @@ export async function GET(
       appointment_id: rec.appointment_id,
       meeting_date: (appt?.scheduled_start || '').slice(0, 10),
       intake_subject: appt?.intake_subject ?? null,
-      // 🚨 Decrypt summary before returning to client.
-      summary: rec.summary ? readEncryptedField(rec.summary, rec.encryption_version) : rec.summary,
+      summary: rec.summary,
       summary_locale: rec.summary_locale,
       summarized_at: rec.summarized_at,
       ended_at: rec.ended_at,

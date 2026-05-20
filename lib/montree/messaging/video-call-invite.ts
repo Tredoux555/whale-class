@@ -32,10 +32,6 @@
 import { createThreadWithParticipants } from './thread-resolver';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { ParticipantRole } from './types';
-import {
-  isEncryptionEnabledForSchool,
-  writeEncryptedField,
-} from '@/lib/montree/messaging-crypto';
 
 const VCALL_PREFIX = '[[VCALL:';
 const VCALL_SUFFIX = ']]';
@@ -184,15 +180,7 @@ export async function postVideoCallInvite(args: PostInviteArgs): Promise<{
   }
 
   // Step 3: insert the invite message
-  // 🚨 Session 121 — encrypt the body if encryption_v1 is enabled for
-  // this school. The [[VCALL:]] marker IS encrypted along with the body;
-  // the parser sees plaintext after decryptField at read time. Old
-  // clients that haven't refreshed since flag flip would see ciphertext
-  // — acceptable, the worst case is a "[Encrypted — could not decrypt]"
-  // sentinel rather than a Join link.
-  const plaintextBody = buildVideoCallInviteBody(appointmentId, caption, !!audioOnly);
-  const encEnabled = await isEncryptionEnabledForSchool(supabase, schoolId);
-  const enc = writeEncryptedField(plaintextBody, encEnabled);
+  const body = buildVideoCallInviteBody(appointmentId, caption, !!audioOnly);
   const { data: msgRow, error: insertErr } = await supabase
     .from('montree_thread_messages')
     .insert({
@@ -200,8 +188,7 @@ export async function postVideoCallInvite(args: PostInviteArgs): Promise<{
       sender_role: caller.role,
       sender_id: caller.id,
       sender_name: caller.name,
-      body: enc.value,
-      encryption_version: enc.version,
+      body,
       ai_drafted: false,
     })
     .select('id')

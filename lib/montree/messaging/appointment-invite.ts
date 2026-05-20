@@ -35,10 +35,6 @@
 import { createThreadWithParticipants } from './thread-resolver';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { ParticipantRole } from './types';
-import {
-  isEncryptionEnabledForSchool,
-  writeEncryptedField,
-} from '@/lib/montree/messaging-crypto';
 
 const APPT_PREFIX = '[[APPT:';
 const APPT_SUFFIX = ']]';
@@ -208,12 +204,7 @@ export async function postAppointmentInvite(args: PostInviteArgs): Promise<{
   }
 
   // Step 3: insert the invite message.
-  // 🚨 Session 121 — encrypt the body if encryption_v1 is enabled.
-  // The [[APPT:]] marker IS encrypted along with the body; renderer
-  // sees plaintext after decryptField at read time.
-  const plaintextBody = buildAppointmentInviteBody(appointmentId, status, caption);
-  const encEnabled = await isEncryptionEnabledForSchool(supabase, schoolId);
-  const enc = writeEncryptedField(plaintextBody, encEnabled);
+  const body = buildAppointmentInviteBody(appointmentId, status, caption);
   const { data: msgRow, error: insertErr } = await supabase
     .from('montree_thread_messages')
     .insert({
@@ -221,8 +212,7 @@ export async function postAppointmentInvite(args: PostInviteArgs): Promise<{
       sender_role: caller.role,
       sender_id: caller.id,
       sender_name: caller.name,
-      body: enc.value,
-      encryption_version: enc.version,
+      body,
       ai_drafted: false,
     })
     .select('id')

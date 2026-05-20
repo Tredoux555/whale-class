@@ -30,10 +30,6 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import { isFeatureEnabled } from '@/lib/montree/features/server';
 import { createThreadWithParticipants } from '@/lib/montree/messaging/thread-resolver';
 import type { ThreadType, ParticipantRole } from '@/lib/montree/messaging/types';
-import {
-  isEncryptionEnabledForSchool,
-  writeEncryptedField,
-} from '@/lib/montree/messaging-crypto';
 
 export type ShareSkipReason =
   | 'no_child'
@@ -185,20 +181,12 @@ export async function shareMeetingNoteToThread(input: ShareInput): Promise<Share
   }
 
   // ── Post the message ────────────────────────────────────────────────
-  // 🚨 Session 121 — encrypt the shared summary when encryption_v1 is on.
-  // The summary is being posted INTO the thread system (which is its own
-  // encryption domain), so we encrypt independently from the meeting-note
-  // row's encryption state. The meeting note's own encryption is handled
-  // at the route layer in §B.
-  const encEnabled = await isEncryptionEnabledForSchool(supabase, meeting.school_id);
-  const enc = writeEncryptedField(meeting.summary, encEnabled);
   const { error: msgErr } = await supabase.from('montree_thread_messages').insert({
     thread_id: created.id,
     sender_role: authorRole,
     sender_id: authorId,
     sender_name: authorName,
-    body: enc.value,
-    encryption_version: enc.version,
+    body: meeting.summary,
     body_locale: meeting.locale || null,
     ai_drafted: false,
     ai_draft_source: null,
