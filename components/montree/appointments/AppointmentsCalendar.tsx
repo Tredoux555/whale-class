@@ -31,6 +31,8 @@
 
 import { useEffect, useState, useCallback, useMemo, useRef } from 'react';
 import dynamic from 'next/dynamic';
+import { useI18n, getIntlLocale } from '@/lib/montree/i18n';
+import type { TranslationKey } from '@/lib/montree/i18n';
 import {
   ChevronLeft,
   ChevronRight,
@@ -98,12 +100,29 @@ const T = {
   amberBorder: '1px solid rgba(232,201,106,0.32)',
 };
 
-const DAYS_SHORT = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-const DAYS_FULL = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-const MONTHS_FULL = [
-  'January', 'February', 'March', 'April', 'May', 'June',
-  'July', 'August', 'September', 'October', 'November', 'December',
-];
+// i18n key arrays — translated short/full day + month names. Indexed by
+// JS Date conventions (0=Sun for days, 0=Jan for months).
+const DAY_SHORT_KEYS = [
+  'appt.daySun', 'appt.dayMon', 'appt.dayTue', 'appt.dayWed',
+  'appt.dayThu', 'appt.dayFri', 'appt.daySat',
+] as const;
+const DAY_FULL_KEYS = [
+  'appt.dayFullSun', 'appt.dayFullMon', 'appt.dayFullTue', 'appt.dayFullWed',
+  'appt.dayFullThu', 'appt.dayFullFri', 'appt.dayFullSat',
+] as const;
+const MONTH_KEYS = [
+  'appt.monthJan', 'appt.monthFeb', 'appt.monthMar', 'appt.monthApr',
+  'appt.monthMay', 'appt.monthJun', 'appt.monthJul', 'appt.monthAug',
+  'appt.monthSep', 'appt.monthOct', 'appt.monthNov', 'appt.monthDec',
+] as const;
+// Single-letter day initials for the calendar grid header. Separate from
+// DAY_SHORT_KEYS because charAt(0) of a translated short name is wrong
+// for CJK locales where each character carries meaning.
+const DAY_INITIAL_KEYS = [
+  'appt.dayInitialSun', 'appt.dayInitialMon', 'appt.dayInitialTue',
+  'appt.dayInitialWed', 'appt.dayInitialThu', 'appt.dayInitialFri',
+  'appt.dayInitialSat',
+] as const;
 
 // ── Types ────────────────────────────────────────────────────────────
 interface Rule {
@@ -146,6 +165,8 @@ interface Appointment {
 
 // ── Component ────────────────────────────────────────────────────────
 export default function AppointmentsCalendar() {
+  const { t, locale } = useI18n();
+  const intlLocale = getIntlLocale(locale);
   const [rules, setRules] = useState<Rule[]>([]);
   const [blackouts, setBlackouts] = useState<Blackout[]>([]);
   const [appointments, setAppointments] = useState<Appointment[]>([]);
@@ -222,7 +243,7 @@ export default function AppointmentsCalendar() {
           window.location.href = '/montree/login-select';
           return;
         }
-        setError('Could not load your calendar.');
+        setError(t('appt.errLoadCalendar'));
         return;
       }
       const availData = await availRes.json();
@@ -236,9 +257,9 @@ export default function AppointmentsCalendar() {
         setAppointments(apptsData?.appointments || []);
       }
     } catch {
-      setError('Network error.');
+      setError(t('appt.errNetwork'));
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     (async () => {
@@ -327,7 +348,7 @@ export default function AppointmentsCalendar() {
   // ── Mutations ──────────────────────────────────────────────────────
   const addRule = async () => {
     if (newStart >= newEnd) {
-      setError('Start time must be before end time.');
+      setError(t('appt.errStartBeforeEnd'));
       return;
     }
     setError(null);
@@ -347,27 +368,27 @@ export default function AppointmentsCalendar() {
       });
       if (!res.ok) {
         const j = await res.json().catch(() => ({}));
-        setError(j?.error || 'Failed to save your open slot.');
+        setError(j?.error || t('appt.errSaveOpenSlot'));
         return;
       }
       setShowAddRule(false);
       await reload();
     } catch {
-      setError('Network error.');
+      setError(t('appt.errNetwork'));
     }
   };
 
   const deleteRule = async (id: string) => {
-    if (!confirm('Remove this open slot?')) return;
+    if (!confirm(t('appt.confirmRemoveOpenSlot'))) return;
     try {
       const res = await fetch(`/api/montree/appointments/availability?id=${id}`, {
         method: 'DELETE',
         credentials: 'include',
       });
       if (res.ok) await reload();
-      else setError('Failed to remove.');
+      else setError(t('appt.errRemove'));
     } catch {
-      setError('Network error.');
+      setError(t('appt.errNetwork'));
     }
   };
 
@@ -387,7 +408,7 @@ export default function AppointmentsCalendar() {
 
   const addTimeAway = async () => {
     if (!newAwayStart || !newAwayEnd) {
-      setError('Pick a start and end.');
+      setError(t('appt.errPickStartEnd'));
       return;
     }
     try {
@@ -403,7 +424,7 @@ export default function AppointmentsCalendar() {
       });
       if (!res.ok) {
         const j = await res.json().catch(() => ({}));
-        setError(j?.error || 'Failed to mark time away.');
+        setError(j?.error || t('appt.errMarkTimeAway'));
         return;
       }
       setShowAddTimeAway(false);
@@ -412,12 +433,12 @@ export default function AppointmentsCalendar() {
       setNewAwayEnd('');
       await reload();
     } catch {
-      setError('Network error.');
+      setError(t('appt.errNetwork'));
     }
   };
 
   const deleteTimeAway = async (id: string) => {
-    if (!confirm('Remove this time-away block?')) return;
+    if (!confirm(t('appt.confirmRemoveTimeAway'))) return;
     try {
       const res = await fetch(`/api/montree/appointments/availability/blackouts?id=${id}`, {
         method: 'DELETE',
@@ -449,12 +470,12 @@ export default function AppointmentsCalendar() {
       });
       if (!res.ok) {
         const j = await res.json().catch(() => ({}));
-        setError(j?.error || 'Could not mark you away.');
+        setError(j?.error || t('appt.errMarkYouAway'));
         return;
       }
       await reload();
     } catch {
-      setError('Network error.');
+      setError(t('appt.errNetwork'));
     }
   };
 
@@ -478,7 +499,7 @@ export default function AppointmentsCalendar() {
   if (loading) {
     return (
       <div style={{ padding: 30, color: T.textSecondary, fontFamily: T.sans }}>
-        Loading your calendar…
+        {t('appt.loadingCalendar')}
       </div>
     );
   }
@@ -513,10 +534,10 @@ export default function AppointmentsCalendar() {
             color: T.textPrimary,
           }}
         >
-          Calendar
+          {t('appt.calendarTitle')}
         </h1>
         <p style={{ color: T.textSecondary, fontSize: 13, margin: '6px 0 0' }}>
-          Tap a day to see who&apos;s booked or set time away.
+          {t('appt.calendarSubtitle')}
         </p>
       </div>
 
@@ -533,8 +554,7 @@ export default function AppointmentsCalendar() {
             fontSize: 13,
           }}
         >
-          Calendar isn&apos;t enabled for your school yet. Ask the school owner to turn the
-          feature on.
+          {t('appt.featureDisabled')}
         </div>
       )}
       {migrationPending && (
@@ -549,7 +569,7 @@ export default function AppointmentsCalendar() {
             fontSize: 13,
           }}
         >
-          ⚠️ The appointments table isn&apos;t set up yet. Tredoux needs to run{' '}
+          ⚠️ {t('appt.migrationPending')}{' '}
           <code>migrations/216_appointments.sql</code>.
         </div>
       )}
@@ -587,7 +607,7 @@ export default function AppointmentsCalendar() {
             if (m < 0) setViewMonth({ year: viewMonth.year - 1, month: 11 });
             else setViewMonth({ year: viewMonth.year, month: m });
           }}
-          aria-label="Previous month"
+          aria-label={t('appt.prevMonth')}
           style={navBtnStyle()}
         >
           <ChevronLeft size={18} strokeWidth={1.75} />
@@ -610,7 +630,7 @@ export default function AppointmentsCalendar() {
               color: T.textPrimary,
             }}
           >
-            {MONTHS_FULL[viewMonth.month]} {viewMonth.year}
+            {t(MONTH_KEYS[viewMonth.month])} {viewMonth.year}
           </div>
           {/* "Today" jump button — only shows when not viewing the current
               month, so it stays visually quiet most of the time. */}
@@ -637,9 +657,9 @@ export default function AppointmentsCalendar() {
                 letterSpacing: 0.3,
                 cursor: 'pointer',
               }}
-              aria-label="Jump to today"
+              aria-label={t('appt.jumpToToday')}
             >
-              Today
+              {t('appt.today')}
             </button>
           )}
         </div>
@@ -650,7 +670,7 @@ export default function AppointmentsCalendar() {
             if (m > 11) setViewMonth({ year: viewMonth.year + 1, month: 0 });
             else setViewMonth({ year: viewMonth.year, month: m });
           }}
-          aria-label="Next month"
+          aria-label={t('appt.nextMonth')}
           style={navBtnStyle()}
         >
           <ChevronRight size={18} strokeWidth={1.75} />
@@ -659,6 +679,8 @@ export default function AppointmentsCalendar() {
 
       {/* ── Month grid ──────────────────────────────────────────────── */}
       <MonthGrid
+        t={t}
+        intlLocale={intlLocale}
         year={viewMonth.year}
         month={viewMonth.month}
         today={today}
@@ -709,10 +731,10 @@ export default function AppointmentsCalendar() {
                 color: T.textPrimary,
               }}
             >
-              {dayHeading(selectedDay, today)}
+              {dayHeading(selectedDay, today, t)}
             </div>
             <div style={{ fontSize: 12, color: T.textSecondary, marginTop: 2 }}>
-              {formatDayDate(selectedDay)}
+              {formatDayDate(selectedDay, intlLocale)}
             </div>
           </div>
           {/* Close button on the day-sheet — only visible inside the
@@ -728,7 +750,7 @@ export default function AppointmentsCalendar() {
               setDaySheetOpen(false);
               // (slotMenu state removed — no-op)
             }}
-            aria-label="Close"
+            aria-label={t('common.close')}
             style={{
               width: 36,
               height: 36,
@@ -765,7 +787,7 @@ export default function AppointmentsCalendar() {
           >
             <Moon size={16} strokeWidth={1.75} />
             <div style={{ flex: 1 }}>
-              <strong>You&apos;re away.</strong>
+              <strong>{t('appt.youreAway')}</strong>
               {selectedDayAway.reason ? (
                 <span style={{ color: T.textSecondary }}> {selectedDayAway.reason}</span>
               ) : null}
@@ -774,8 +796,8 @@ export default function AppointmentsCalendar() {
               type="button"
               onClick={() => deleteTimeAway(selectedDayAway.id)}
               style={iconBtn(T.red)}
-              aria-label="Remove time away"
-              title="Remove time away"
+              aria-label={t('appt.removeTimeAway')}
+              title={t('appt.removeTimeAway')}
             >
               <Trash2 size={14} strokeWidth={1.75} />
             </button>
@@ -800,7 +822,7 @@ export default function AppointmentsCalendar() {
           >
             <Sun size={14} strokeWidth={1.75} />
             <span>
-              You&apos;re open{' '}
+              {t('appt.youreOpen')}{' '}
               {selectedDayRules
                 .map((r) => `${r.start_time.slice(0, 5)}–${r.end_time.slice(0, 5)}`)
                 .join(' · ')}
@@ -821,10 +843,12 @@ export default function AppointmentsCalendar() {
             }}
           >
             {selectedDayAway ? (
-              <span>No meetings scheduled. You&apos;ve marked the day off.</span>
+              <span>{t('appt.noMeetingsDayOff')}</span>
             ) : selectedDayRules.length === 0 ? (
               <span>
-                Nothing booked. You haven&apos;t opened up {DAYS_FULL[selectedDay.getDay()]}s yet —{' '}
+                {t('appt.nothingBookedDayClosed', {
+                  day: t(DAY_FULL_KEYS[selectedDay.getDay()]),
+                })}{' '}
                 <button
                   type="button"
                   onClick={openAddSlotForToday}
@@ -839,11 +863,11 @@ export default function AppointmentsCalendar() {
                     padding: 0,
                   }}
                 >
-                  open every {DAYS_FULL[selectedDay.getDay()]} →
+                  {t('appt.openEveryDay', { day: t(DAY_FULL_KEYS[selectedDay.getDay()]) })} →
                 </button>
               </span>
             ) : (
-              <span>Nothing booked yet for this day.</span>
+              <span>{t('appt.nothingBookedYet')}</span>
             )}
           </div>
         ) : (
@@ -851,6 +875,8 @@ export default function AppointmentsCalendar() {
             {selectedDayBookings.map((a) => (
               <BookingRow
                 key={a.id}
+                t={t}
+                intlLocale={intlLocale}
                 appointment={a}
                 expanded={expandedPriorIds.has(a.id)}
                 onTogglePrior={() => {
@@ -893,7 +919,7 @@ export default function AppointmentsCalendar() {
                 gap: 8,
               }}
             >
-              <Plus size={18} strokeWidth={1.75} /> Set appointment
+              <Plus size={18} strokeWidth={1.75} /> {t('appt.setAppointment')}
             </button>
             <button
               type="button"
@@ -910,7 +936,7 @@ export default function AppointmentsCalendar() {
                 cursor: 'pointer',
               }}
             >
-              {selectedDayAway ? 'Cancel time away' : "I'm away this day"}
+              {selectedDayAway ? t('appt.cancelTimeAway') : t('appt.imAwayThisDay')}
             </button>
           </div>
         )}
@@ -926,11 +952,13 @@ export default function AppointmentsCalendar() {
       {SHOW_LEGACY_ACCORDIONS && (
       <Accordion
         id="recurring-section"
-        title="Open every week on…"
+        title={t('appt.openEveryWeekTitle')}
         subtitle={
           openDows.size === 0
-            ? "You haven't opened any days yet."
-            : `${openDows.size} day${openDows.size === 1 ? '' : 's'} open every week.`
+            ? t('appt.openEveryWeekNone')
+            : openDows.size === 1
+              ? t('appt.openEveryWeekCountOne')
+              : t('appt.openEveryWeekCount', { count: openDows.size })
         }
         expanded={openRecurring}
         onToggle={() => setOpenRecurring((v) => !v)}
@@ -942,7 +970,7 @@ export default function AppointmentsCalendar() {
               onClick={() => setShowAddRule((v) => !v)}
               style={btnPrimary()}
             >
-              <Plus size={16} strokeWidth={1.75} /> Add open slot
+              <Plus size={16} strokeWidth={1.75} /> {t('appt.addOpenSlot')}
             </button>
           </div>
         )}
@@ -950,27 +978,27 @@ export default function AppointmentsCalendar() {
         {showAddRule && (
           <div style={addCardStyle()}>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 10 }}>
-              <Field label="Day">
+              <Field label={t('appt.fieldDay')}>
                 <select
                   value={newDay}
                   onChange={(e) => setNewDay(parseInt(e.target.value, 10))}
                   style={inputStyle()}
                 >
-                  {DAYS_SHORT.map((d, i) => (
+                  {DAY_SHORT_KEYS.map((dk, i) => (
                     <option key={i} value={i}>
-                      {d}
+                      {t(dk)}
                     </option>
                   ))}
                 </select>
               </Field>
-              <Field label="Timezone">
+              <Field label={t('appt.fieldTimezone')}>
                 <input
                   value={newTz}
                   onChange={(e) => setNewTz(e.target.value)}
                   style={inputStyle()}
                 />
               </Field>
-              <Field label="From">
+              <Field label={t('appt.fieldFrom')}>
                 <input
                   type="time"
                   value={newStart}
@@ -978,7 +1006,7 @@ export default function AppointmentsCalendar() {
                   style={inputStyle()}
                 />
               </Field>
-              <Field label="To">
+              <Field label={t('appt.fieldTo')}>
                 <input
                   type="time"
                   value={newEnd}
@@ -986,7 +1014,7 @@ export default function AppointmentsCalendar() {
                   style={inputStyle()}
                 />
               </Field>
-              <Field label="Meeting length (min)">
+              <Field label={t('appt.fieldMeetingLength')}>
                 <input
                   type="number"
                   min={5}
@@ -996,7 +1024,7 @@ export default function AppointmentsCalendar() {
                   style={inputStyle()}
                 />
               </Field>
-              <Field label="Buffer between (min)">
+              <Field label={t('appt.fieldBuffer')}>
                 <input
                   type="number"
                   min={0}
@@ -1009,10 +1037,10 @@ export default function AppointmentsCalendar() {
             </div>
             <div style={{ display: 'flex', gap: 10 }}>
               <button onClick={() => setShowAddRule(false)} style={btnGhost()}>
-                Cancel
+                {t('common.cancel')}
               </button>
               <button onClick={addRule} style={btnPrimary()}>
-                Save
+                {t('common.save')}
               </button>
             </div>
           </div>
@@ -1020,8 +1048,9 @@ export default function AppointmentsCalendar() {
 
         {rules.length === 0 && !showAddRule ? (
           <div style={emptyStyle()}>
-            No open slots yet. Tap <strong style={{ color: T.textPrimary }}>Add open slot</strong>{' '}
-            above to open your first one.
+            {t('appt.noOpenSlotsPrefix')}{' '}
+            <strong style={{ color: T.textPrimary }}>{t('appt.addOpenSlot')}</strong>{' '}
+            {t('appt.noOpenSlotsSuffix')}
           </div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -1043,23 +1072,26 @@ export default function AppointmentsCalendar() {
                       letterSpacing: 0.5,
                     }}
                   >
-                    {DAYS_SHORT[rule.day_of_week]}
+                    {t(DAY_SHORT_KEYS[rule.day_of_week])}
                   </div>
                   <div>
                     <div style={{ fontSize: 14, fontWeight: 500 }}>
                       {rule.start_time.slice(0, 5)} – {rule.end_time.slice(0, 5)}
                     </div>
                     <div style={{ fontSize: 11, color: T.textMuted, marginTop: 2 }}>
-                      {rule.slot_duration_minutes}-min meetings · {rule.buffer_minutes}-min buffer ·{' '}
-                      {rule.timezone}
+                      {t('appt.ruleMeta', {
+                        duration: rule.slot_duration_minutes,
+                        buffer: rule.buffer_minutes,
+                      })}{' '}
+                      · {rule.timezone}
                     </div>
                   </div>
                 </div>
                 <div style={{ display: 'flex', gap: 6 }}>
                   <button
                     onClick={() => toggleRuleActive(rule)}
-                    title={rule.is_active ? 'Pause' : 'Resume'}
-                    aria-label={rule.is_active ? 'Pause this open slot' : 'Resume this open slot'}
+                    title={rule.is_active ? t('appt.pause') : t('appt.resume')}
+                    aria-label={rule.is_active ? t('appt.pauseOpenSlot') : t('appt.resumeOpenSlot')}
                     style={iconBtn(rule.is_active ? T.emerald : T.textMuted)}
                   >
                     {rule.is_active ? (
@@ -1070,8 +1102,8 @@ export default function AppointmentsCalendar() {
                   </button>
                   <button
                     onClick={() => deleteRule(rule.id)}
-                    title="Remove"
-                    aria-label="Remove this open slot"
+                    title={t('common.delete')}
+                    aria-label={t('appt.removeOpenSlot')}
                     style={iconBtn(T.red)}
                   >
                     <Trash2 size={16} strokeWidth={1.75} />
@@ -1089,11 +1121,13 @@ export default function AppointmentsCalendar() {
           Same SHOW_LEGACY_ACCORDIONS gate as the recurring accordion. */}
       {SHOW_LEGACY_ACCORDIONS && (
       <Accordion
-        title="Time away"
+        title={t('appt.timeAwayTitle')}
         subtitle={
           blackouts.length === 0
-            ? "Holidays, sick days, days you're out."
-            : `${blackouts.length} time-away block${blackouts.length === 1 ? '' : 's'} ahead.`
+            ? t('appt.timeAwayNone')
+            : blackouts.length === 1
+              ? t('appt.timeAwayCountOne')
+              : t('appt.timeAwayCount', { count: blackouts.length })
         }
         expanded={openTimeAway}
         onToggle={() => setOpenTimeAway((v) => !v)}
@@ -1105,7 +1139,7 @@ export default function AppointmentsCalendar() {
               onClick={() => setShowAddTimeAway((v) => !v)}
               style={btnPrimary()}
             >
-              <Plus size={16} strokeWidth={1.75} /> Mark time away
+              <Plus size={16} strokeWidth={1.75} /> {t('appt.markTimeAway')}
             </button>
           </div>
         )}
@@ -1113,7 +1147,7 @@ export default function AppointmentsCalendar() {
         {showAddTimeAway && (
           <div style={addCardStyle()}>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 10 }}>
-              <Field label="From">
+              <Field label={t('appt.fieldFrom')}>
                 <input
                   type="datetime-local"
                   value={newAwayStart}
@@ -1121,7 +1155,7 @@ export default function AppointmentsCalendar() {
                   style={inputStyle()}
                 />
               </Field>
-              <Field label="To">
+              <Field label={t('appt.fieldTo')}>
                 <input
                   type="datetime-local"
                   value={newAwayEnd}
@@ -1130,34 +1164,34 @@ export default function AppointmentsCalendar() {
                 />
               </Field>
             </div>
-            <Field label="Note (optional — parents don't see this)">
+            <Field label={t('appt.fieldAwayNote')}>
               <input
                 value={newAwayReason}
                 onChange={(e) => setNewAwayReason(e.target.value)}
                 style={inputStyle()}
-                placeholder="Holiday, sick day, training…"
+                placeholder={t('appt.awayNotePlaceholder')}
               />
             </Field>
             <div style={{ display: 'flex', gap: 10, marginTop: 10 }}>
               <button onClick={() => setShowAddTimeAway(false)} style={btnGhost()}>
-                Cancel
+                {t('common.cancel')}
               </button>
               <button onClick={addTimeAway} style={btnPrimary()}>
-                Save
+                {t('common.save')}
               </button>
             </div>
           </div>
         )}
 
         {blackouts.length === 0 && !showAddTimeAway ? (
-          <div style={emptyStyle()}>None scheduled.</div>
+          <div style={emptyStyle()}>{t('appt.noneScheduled')}</div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {blackouts.map((b) => (
               <div key={b.id} style={blackoutRowStyle()}>
                 <div style={{ flex: 1 }}>
                   <div style={{ fontSize: 14, fontWeight: 500 }}>
-                    {fmtDateTime(b.start_at)} → {fmtDateTime(b.end_at)}
+                    {fmtDateTime(b.start_at, intlLocale)} → {fmtDateTime(b.end_at, intlLocale)}
                   </div>
                   {b.reason && (
                     <div style={{ fontSize: 11, color: T.textMuted, marginTop: 2 }}>
@@ -1167,8 +1201,8 @@ export default function AppointmentsCalendar() {
                 </div>
                 <button
                   onClick={() => deleteTimeAway(b.id)}
-                  title="Remove"
-                  aria-label="Remove this time-away block"
+                  title={t('common.delete')}
+                  aria-label={t('appt.removeTimeAwayBlock')}
                   style={iconBtn(T.red)}
                 >
                   <Trash2 size={16} strokeWidth={1.75} />
@@ -1185,7 +1219,7 @@ export default function AppointmentsCalendar() {
         <AgoraVideoCallLazy
           appointmentId={agoraCall.id}
           callerRole="teacher"
-          remoteDisplayName={agoraCall.parent_name || 'Parent'}
+          remoteDisplayName={agoraCall.parent_name || t('appt.parent')}
           recordingEnabledForAppointment={!!agoraCall.recording_enabled}
           onClose={() => setAgoraCall(null)}
         />
@@ -1280,11 +1314,15 @@ function DaySheet({
 
 // ── BookingRow sub-component (module-level — stable identity across renders) ──
 function BookingRow({
+  t,
+  intlLocale,
   appointment: a,
   expanded,
   onTogglePrior,
   onJoinAgora,
 }: {
+  t: (key: TranslationKey, params?: Record<string, string | number>) => string;
+  intlLocale: string;
   appointment: Appointment;
   expanded: boolean;
   onTogglePrior: () => void;
@@ -1296,14 +1334,18 @@ function BookingRow({
     <div style={apptRowStyle()}>
       <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 8 }}>
         <span style={{ fontSize: 15, fontWeight: 600 }}>
-          {fmtTimeOnly(start)} – {fmtTimeOnly(end)}
+          {fmtTimeOnly(start, intlLocale)} – {fmtTimeOnly(end, intlLocale)}
         </span>
-        <span style={{ fontSize: 11, color: statusColor(a.status) }}>{a.status}</span>
+        <span style={{ fontSize: 11, color: statusColor(a.status) }}>
+          {t(statusKey(a.status))}
+        </span>
       </div>
       <div style={{ fontSize: 14, color: T.textPrimary, marginTop: 4 }}>
-        {a.parent_name || 'Parent'}
+        {a.parent_name || t('appt.parent')}
         {a.child_name ? (
-          <span style={{ color: T.textSecondary }}> · about {a.child_name}</span>
+          <span style={{ color: T.textSecondary }}>
+            {' '}· {t('appt.aboutChild', { child: a.child_name })}
+          </span>
         ) : null}
       </div>
       {a.intake_subject && (
@@ -1318,9 +1360,9 @@ function BookingRow({
           type="button"
           onClick={onJoinAgora}
           style={joinBtn()}
-          aria-label="Join the video call"
+          aria-label={t('appt.joinVideoCall')}
         >
-          <Video size={12} strokeWidth={1.75} /> Join video call
+          <Video size={12} strokeWidth={1.75} /> {t('appt.joinVideoCall')}
         </button>
       )}
       {a.provider !== 'agora' && a.video_url && (
@@ -1329,9 +1371,9 @@ function BookingRow({
           target="_blank"
           rel="noopener noreferrer"
           style={joinBtn()}
-          aria-label="Join the video call (opens in a new tab)"
+          aria-label={t('appt.joinVideoCallNewTab')}
         >
-          <Video size={12} strokeWidth={1.75} /> Join video call
+          <Video size={12} strokeWidth={1.75} /> {t('appt.joinVideoCall')}
         </a>
       )}
 
@@ -1352,7 +1394,7 @@ function BookingRow({
             textUnderlineOffset: 2,
           }}
         >
-          {expanded ? 'Hide prior conversations' : 'Show prior conversations'}
+          {expanded ? t('appt.hidePriorConversations') : t('appt.showPriorConversations')}
         </button>
         {expanded && (
           <div style={{ marginTop: 10 }}>
@@ -1366,6 +1408,8 @@ function BookingRow({
 
 // ── MonthGrid sub-component ──────────────────────────────────────────
 function MonthGrid({
+  t,
+  intlLocale,
   year,
   month,
   today,
@@ -1375,6 +1419,8 @@ function MonthGrid({
   timeAwayByDay,
   bookingsByDay,
 }: {
+  t: (key: TranslationKey, params?: Record<string, string | number>) => string;
+  intlLocale: string;
   year: number;
   month: number;
   today: Date;
@@ -1420,9 +1466,9 @@ function MonthGrid({
           marginBottom: 6,
         }}
       >
-        {DAYS_SHORT.map((d) => (
+        {DAY_INITIAL_KEYS.map((dk, i) => (
           <div
-            key={d}
+            key={i}
             style={{
               textAlign: 'center',
               fontSize: 11,
@@ -1433,7 +1479,7 @@ function MonthGrid({
               padding: '4px 0',
             }}
           >
-            {d.charAt(0)}
+            {t(dk)}
           </div>
         ))}
       </div>
@@ -1461,7 +1507,7 @@ function MonthGrid({
               key={i}
               type="button"
               onClick={() => onSelectDay(c.date)}
-              aria-label={formatDayDate(c.date)}
+              aria-label={formatDayDate(c.date, intlLocale)}
               aria-pressed={isSelected}
               style={dayCellStyle({
                 inMonth: c.inMonth,
@@ -1506,7 +1552,11 @@ function MonthGrid({
                       borderRadius: '50%',
                       background: T.emerald,
                     }}
-                    title={`${bookings.length} booking${bookings.length === 1 ? '' : 's'}`}
+                    title={
+                      bookings.length === 1
+                        ? t('appt.bookingCountOne')
+                        : t('appt.bookingCount', { count: bookings.length })
+                    }
                   />
                 )}
                 {away && (
@@ -1518,7 +1568,7 @@ function MonthGrid({
                       borderRadius: '50%',
                       background: T.gold,
                     }}
-                    title="Time away"
+                    title={t('appt.timeAwayTitle')}
                   />
                 )}
                 {hasOpen && bookings.length === 0 && (
@@ -1530,7 +1580,7 @@ function MonthGrid({
                       borderRadius: '50%',
                       background: 'rgba(52,211,153,0.55)',
                     }}
-                    title="You're open"
+                    title={t('appt.youreOpenTitle')}
                   />
                 )}
               </div>
@@ -1615,19 +1665,23 @@ function dayKey(d: Date): string {
   ).padStart(2, '0')}`;
 }
 
-function dayHeading(d: Date, today: Date): string {
+function dayHeading(
+  d: Date,
+  today: Date,
+  t: (key: TranslationKey, params?: Record<string, string | number>) => string,
+): string {
   const k = dayKey(d);
   const tk = dayKey(today);
-  if (k === tk) return 'Today';
+  if (k === tk) return t('appt.today');
   const tomorrow = new Date(today);
   tomorrow.setDate(today.getDate() + 1);
-  if (k === dayKey(tomorrow)) return 'Tomorrow';
-  return DAYS_FULL[d.getDay()];
+  if (k === dayKey(tomorrow)) return t('appt.tomorrow');
+  return t(DAY_FULL_KEYS[d.getDay()]);
 }
 
-function formatDayDate(d: Date): string {
+function formatDayDate(d: Date, intlLocale?: string): string {
   try {
-    return d.toLocaleDateString(undefined, {
+    return d.toLocaleDateString(intlLocale, {
       month: 'long',
       day: 'numeric',
       year: 'numeric',
@@ -1637,9 +1691,9 @@ function formatDayDate(d: Date): string {
   }
 }
 
-function fmtDateTime(iso: string): string {
+function fmtDateTime(iso: string, intlLocale?: string): string {
   try {
-    return new Date(iso).toLocaleString(undefined, {
+    return new Date(iso).toLocaleString(intlLocale, {
       weekday: 'short',
       month: 'short',
       day: 'numeric',
@@ -1651,9 +1705,9 @@ function fmtDateTime(iso: string): string {
   }
 }
 
-function fmtTimeOnly(d: Date): string {
+function fmtTimeOnly(d: Date, intlLocale?: string): string {
   try {
-    return d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
+    return d.toLocaleTimeString(intlLocale, { hour: 'numeric', minute: '2-digit' });
   } catch {
     return d.toISOString();
   }
@@ -1671,6 +1725,23 @@ function statusColor(status: string): string {
       return T.textMuted;
     default:
       return T.textMuted;
+  }
+}
+
+// Map an appointment status to its i18n key. Unknown statuses fall back
+// to a generic key so the raw DB string never leaks to the UI.
+function statusKey(status: string): TranslationKey {
+  switch (status) {
+    case 'confirmed':
+      return 'appt.statusConfirmed';
+    case 'pending':
+      return 'appt.statusPending';
+    case 'cancelled':
+      return 'appt.statusCancelled';
+    case 'completed':
+      return 'appt.statusCompleted';
+    default:
+      return 'appt.statusPending';
   }
 }
 

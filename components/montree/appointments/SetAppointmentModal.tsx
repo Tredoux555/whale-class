@@ -23,6 +23,7 @@
 
 import { useEffect, useState, useMemo, useCallback } from 'react';
 import { Users, Video, X, Send, ChevronDown, Check } from 'lucide-react';
+import { useI18n, getIntlLocale } from '@/lib/montree/i18n';
 
 const T = {
   emerald: '#34d399',
@@ -87,6 +88,8 @@ export default function SetAppointmentModal({
   onClose,
   onSent,
 }: SetAppointmentModalProps) {
+  const { t, locale } = useI18n();
+  const intlLocale = getIntlLocale(locale);
   // Whether the "Also invite teachers" section is shown is derived from
   // the recipients response — the parents endpoint only returns `teachers`
   // when the caller is a principal. No need for the modal to know its
@@ -142,7 +145,7 @@ export default function SetAppointmentModal({
           cache: 'no-store',
         });
         if (!res.ok) {
-          if (!cancelled) setRecipientError('Could not load parents.');
+          if (!cancelled) setRecipientError(t('appt.errLoadParents'));
           return;
         }
         const data = await res.json();
@@ -153,7 +156,7 @@ export default function SetAppointmentModal({
           teachers: data.teachers || undefined,
         });
       } catch {
-        if (!cancelled) setRecipientError('Network error loading parents.');
+        if (!cancelled) setRecipientError(t('appt.errNetworkParents'));
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -161,6 +164,9 @@ export default function SetAppointmentModal({
     return () => {
       cancelled = true;
     };
+    // Recipients are fetched once on mount. `t` is only read inside error
+    // branches; intentionally excluded so a locale switch doesn't re-fetch.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Flatten all parent entries to a searchable list, with their child links.
@@ -209,7 +215,7 @@ export default function SetAppointmentModal({
 
   const handleSubmit = useCallback(async () => {
     if (!parentId || !childId) {
-      setSubmitError('Pick a parent before sending.');
+      setSubmitError(t('appt.errPickParent'));
       return;
     }
     setSubmitting(true);
@@ -236,16 +242,16 @@ export default function SetAppointmentModal({
       });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        setSubmitError(data?.error || 'Failed to send the invitation.');
+        setSubmitError(data?.error || t('appt.errSendInvitation'));
         return;
       }
-      const parentName = selectedEntry?.parent.name || 'the parent';
+      const parentName = selectedEntry?.parent.name || t('appt.theParent');
       setSuccess({ parentName, whenISO: computedStartIso });
       // Let the parent caller refresh the calendar so the new pending
       // appointment lands as a marker.
       onSent();
     } catch {
-      setSubmitError('Network error.');
+      setSubmitError(t('appt.errNetwork'));
     } finally {
       setSubmitting(false);
     }
@@ -259,6 +265,7 @@ export default function SetAppointmentModal({
     additionalHostIds,
     selectedEntry,
     onSent,
+    t,
   ]);
 
   // ── Render ─────────────────────────────────────────────────────────
@@ -317,11 +324,11 @@ export default function SetAppointmentModal({
                 color: T.textPrimary,
               }}
             >
-              {success ? 'Invitation sent' : 'Set appointment'}
+              {success ? t('appt.invitationSent') : t('appt.setAppointment')}
             </h2>
             {!success && (
               <p style={{ margin: '6px 0 0', fontSize: 12, color: T.textSecondary }}>
-                {formatDayLong(selectedDay)}
+                {formatDayLong(selectedDay, intlLocale)}
               </p>
             )}
           </div>
@@ -330,7 +337,7 @@ export default function SetAppointmentModal({
             onClick={() => {
               if (!submitting) onClose();
             }}
-            aria-label="Close"
+            aria-label={t('common.close')}
             style={{
               width: 36,
               height: 36,
@@ -366,17 +373,17 @@ export default function SetAppointmentModal({
                 <Check size={18} strokeWidth={2} />
                 <div>
                   <div style={{ fontWeight: 600, fontSize: 14 }}>
-                    Invitation sent to {success.parentName}
+                    {t('appt.invitationSentTo', { name: success.parentName })}
                   </div>
                   <div style={{ fontSize: 12, color: T.textSecondary, marginTop: 4 }}>
-                    {formatDayLong(new Date(success.whenISO))} ·{' '}
-                    {new Date(success.whenISO).toLocaleTimeString(undefined, {
+                    {formatDayLong(new Date(success.whenISO), intlLocale)} ·{' '}
+                    {new Date(success.whenISO).toLocaleTimeString(intlLocale, {
                       hour: 'numeric',
                       minute: '2-digit',
                     })}
                   </div>
                   <div style={{ fontSize: 12, color: T.textSecondary, marginTop: 8 }}>
-                    They&apos;ll see it on their appointments page and can accept or decline.
+                    {t('appt.invitationSentHint')}
                   </div>
                 </div>
               </div>
@@ -386,24 +393,24 @@ export default function SetAppointmentModal({
               onClick={onClose}
               style={btnPrimary()}
             >
-              Done
+              {t('common.done')}
             </button>
           </div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
             {/* ── Type pills ───────────────────────────────────────── */}
-            <Field label="Type">
+            <Field label={t('appt.fieldType')}>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
                 <TypePill
                   active={kind === 'parent_meeting'}
                   icon={<Users size={16} strokeWidth={1.75} />}
-                  label="Parent meeting"
+                  label={t('appt.parentMeeting')}
                   onClick={() => setKind('parent_meeting')}
                 />
                 <TypePill
                   active={kind === 'video_call'}
                   icon={<Video size={16} strokeWidth={1.75} />}
-                  label="Video call"
+                  label={t('appt.videoCall')}
                   onClick={() => setKind('video_call')}
                 />
               </div>
@@ -411,7 +418,7 @@ export default function SetAppointmentModal({
 
             {/* ── Time ─────────────────────────────────────────────── */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-              <Field label="Start time">
+              <Field label={t('appt.fieldStartTime')}>
                 <input
                   type="time"
                   value={startTime}
@@ -419,18 +426,18 @@ export default function SetAppointmentModal({
                   style={inputStyle()}
                 />
               </Field>
-              <Field label="Duration">
+              <Field label={t('appt.fieldDuration')}>
                 <div style={{ position: 'relative' }}>
                   <select
                     value={durationMinutes}
                     onChange={(e) => setDurationMinutes(parseInt(e.target.value, 10))}
                     style={{ ...inputStyle(), appearance: 'none', paddingRight: 36 }}
                   >
-                    <option value={15}>15 min</option>
-                    <option value={30}>30 min</option>
-                    <option value={45}>45 min</option>
-                    <option value={60}>60 min</option>
-                    <option value={90}>90 min</option>
+                    <option value={15}>{t('appt.nMin', { n: 15 })}</option>
+                    <option value={30}>{t('appt.nMin', { n: 30 })}</option>
+                    <option value={45}>{t('appt.nMin', { n: 45 })}</option>
+                    <option value={60}>{t('appt.nMin', { n: 60 })}</option>
+                    <option value={90}>{t('appt.nMin', { n: 90 })}</option>
                   </select>
                   <ChevronDown
                     size={16}
@@ -449,9 +456,9 @@ export default function SetAppointmentModal({
             </div>
 
             {/* ── Parent picker ────────────────────────────────────── */}
-            <Field label="Who they want to meet">
+            <Field label={t('appt.fieldWhoToMeet')}>
               {loading ? (
-                <div style={emptyHintStyle()}>Loading parents…</div>
+                <div style={emptyHintStyle()}>{t('appt.loadingParents')}</div>
               ) : recipientError ? (
                 <div style={errorBlockStyle()}>{recipientError}</div>
               ) : flatParents.length === 0 ? (
@@ -467,12 +474,10 @@ export default function SetAppointmentModal({
                   }}
                 >
                   <div style={{ color: T.textPrimary, fontWeight: 500, marginBottom: 6 }}>
-                    No parents have signed up yet.
+                    {t('appt.noParentsTitle')}
                   </div>
                   <div style={{ marginBottom: 12, color: T.textSecondary }}>
-                    Generate a parent invite code for each child and share it
-                    with the parent. Once they redeem it, they&apos;ll show up
-                    here.
+                    {t('appt.noParentsBody')}
                   </div>
                   <a
                     href={
@@ -493,14 +498,14 @@ export default function SetAppointmentModal({
                       textDecoration: 'none',
                     }}
                   >
-                    Manage parent codes →
+                    {t('appt.manageParentCodes')} →
                   </a>
                 </div>
               ) : (
                 <div>
                   <input
                     type="text"
-                    placeholder="Search by parent or child name…"
+                    placeholder={t('appt.searchParentChild')}
                     value={parentSearch}
                     onChange={(e) => setParentSearch(e.target.value)}
                     style={{ ...inputStyle(), marginBottom: 8 }}
@@ -527,7 +532,7 @@ export default function SetAppointmentModal({
                           fontSize: 12,
                         }}
                       >
-                        No matches.
+                        {t('appt.noMatches')}
                       </div>
                     ) : (
                       filteredParents.map((entry) => {
@@ -575,7 +580,7 @@ export default function SetAppointmentModal({
                                   whiteSpace: 'nowrap',
                                 }}
                               >
-                                about {entry.child.name}
+                                {t('appt.aboutChild', { child: entry.child.name })}
                               </div>
                             </div>
                             {selected && (
@@ -599,7 +604,7 @@ export default function SetAppointmentModal({
                 the appointments/parents endpoint only includes it for
                 principal callers. */}
             {recipients?.teachers && recipients.teachers.length > 0 && (
-              <Field label="Also invite (optional)">
+              <Field label={t('appt.fieldAlsoInvite')}>
                 <div
                   style={{
                     display: 'flex',
@@ -646,12 +651,12 @@ export default function SetAppointmentModal({
             )}
 
             {/* ── Subject (optional) ───────────────────────────────── */}
-            <Field label="Subject (optional)">
+            <Field label={t('appt.fieldSubject')}>
               <input
                 type="text"
                 value={subject}
                 onChange={(e) => setSubject(e.target.value)}
-                placeholder="e.g. End-of-term update"
+                placeholder={t('appt.subjectPlaceholder')}
                 maxLength={200}
                 style={inputStyle()}
               />
@@ -674,10 +679,10 @@ export default function SetAppointmentModal({
               }}
             >
               {submitting ? (
-                'Sending…'
+                t('appt.sending')
               ) : (
                 <>
-                  <Send size={16} strokeWidth={1.75} /> Send invitation
+                  <Send size={16} strokeWidth={1.75} /> {t('appt.sendInvitation')}
                 </>
               )}
             </button>
@@ -748,9 +753,9 @@ function TypePill({
 }
 
 // ── Helpers ─────────────────────────────────────────────────────────
-function formatDayLong(d: Date): string {
+function formatDayLong(d: Date, intlLocale?: string): string {
   try {
-    return d.toLocaleDateString(undefined, {
+    return d.toLocaleDateString(intlLocale, {
       weekday: 'long',
       month: 'long',
       day: 'numeric',

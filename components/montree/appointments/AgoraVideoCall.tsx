@@ -47,6 +47,10 @@ import {
   ClipboardCheck,
 } from 'lucide-react';
 import { agoraLog, copyAgoraLogs, clearAgoraLogs, getAgoraLogs } from '@/lib/montree/appointments/agora/debug-logger';
+import { useI18n } from '@/lib/montree/i18n';
+
+// Translate function type, threaded into subcomponents that render copy.
+type TFn = ReturnType<typeof useI18n>['t'];
 
 // Type aliases for the lazily-imported SDK. We avoid hard import to keep
 // the chunk out of the bundle until first use.
@@ -166,6 +170,7 @@ type CallState =
   | { phase: 'error'; message: string };
 
 export default function AgoraVideoCall(props: AgoraVideoCallProps) {
+  const { t } = useI18n();
   const [state, setState] = useState<CallState>({ phase: 'loading' });
   const [micEnabled, setMicEnabled] = useState(true);
   const [camEnabled, setCamEnabled] = useState(true);
@@ -237,7 +242,7 @@ export default function AgoraVideoCall(props: AgoraVideoCallProps) {
           if (cancelled) return;
           setState({
             phase: 'error',
-            message: j?.error || 'Could not get a video token. The call may not be available yet.',
+            message: j?.error || t('calls.errorNoToken'),
           });
           return;
         }
@@ -479,13 +484,12 @@ export default function AgoraVideoCall(props: AgoraVideoCallProps) {
         if (/Permission|NotAllowed|denied/i.test(msg)) {
           setState({
             phase: 'error',
-            message:
-              'Camera or microphone access was denied. Tap the camera icon in your browser address bar to grant access, then refresh.',
+            message: t('calls.errorPermissionDenied'),
           });
         } else {
           setState({
             phase: 'error',
-            message: `Could not start the video call: ${msg.slice(0, 200)}`,
+            message: t('calls.errorCouldNotStart', { detail: msg.slice(0, 200) }),
           });
         }
       }
@@ -593,18 +597,18 @@ export default function AgoraVideoCall(props: AgoraVideoCallProps) {
       );
       if (!res.ok) {
         const j = await res.json().catch(() => ({}));
-        setRecordingError(j?.error || 'Failed to start recording.');
+        setRecordingError(j?.error || t('calls.recordingStartFailed'));
         return;
       }
       // Server returns the existing row when already running (idempotent
       // double-click guard). Either way we just flip the local flag.
       setIsRecording(true);
     } catch {
-      setRecordingError('Network error starting recording.');
+      setRecordingError(t('calls.recordingStartNetworkError'));
     } finally {
       setRecordingRequestInFlight(false);
     }
-  }, [props.appointmentId, recordingRequestInFlight]);
+  }, [props.appointmentId, recordingRequestInFlight, t]);
 
   const handleStopRecording = useCallback(async () => {
     if (recordingRequestInFlight) return;
@@ -617,16 +621,16 @@ export default function AgoraVideoCall(props: AgoraVideoCallProps) {
       );
       if (!res.ok) {
         const j = await res.json().catch(() => ({}));
-        setRecordingError(j?.error || 'Failed to stop recording.');
+        setRecordingError(j?.error || t('calls.recordingStopFailed'));
         return;
       }
       setIsRecording(false);
     } catch {
-      setRecordingError('Network error stopping recording.');
+      setRecordingError(t('calls.recordingStopNetworkError'));
     } finally {
       setRecordingRequestInFlight(false);
     }
-  }, [props.appointmentId, recordingRequestInFlight]);
+  }, [props.appointmentId, recordingRequestInFlight, t]);
 
   // ── Keyboard shortcut for the debug panel: Cmd/Ctrl + Shift + D ────
   useEffect(() => {
@@ -644,7 +648,7 @@ export default function AgoraVideoCall(props: AgoraVideoCallProps) {
   // ── Render ─────────────────────────────────────────────────────────
   if (state.phase === 'error') {
     return (
-      <ErrorPanel message={state.message} onClose={handleEndCall} />
+      <ErrorPanel message={state.message} onClose={handleEndCall} t={t} />
     );
   }
 
@@ -654,43 +658,43 @@ export default function AgoraVideoCall(props: AgoraVideoCallProps) {
           aren't hidden under the iPhone status bar / Dynamic Island. */}
       <div style={{ padding: '12px 16px', paddingTop: 'calc(12px + env(safe-area-inset-top))', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: T.cardBorder, gap: 12 }}>
         <div style={{ fontFamily: T.serif, fontSize: 17, color: T.textPrimary, flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-          {props.audioOnly ? 'Voice call with' : 'Meeting with'} <span style={{ color: T.emerald, fontWeight: 600 }}>{props.remoteDisplayName}</span>
+          {props.audioOnly ? t('calls.voiceCallWith') : t('calls.meetingWith')} <span style={{ color: T.emerald, fontWeight: 600 }}>{props.remoteDisplayName}</span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
           {/* Network quality pill. Long-press / right-click opens debug panel. */}
-          <NetworkPill quality={netQuality} onLongPress={() => setDebugOpen((v) => !v)} />
+          <NetworkPill quality={netQuality} onLongPress={() => setDebugOpen((v) => !v)} t={t} />
           {isRecording && (
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 12px', borderRadius: 999, background: 'rgba(239,68,68,0.15)', border: '1px solid rgba(239,68,68,0.45)', color: T.red, fontSize: 12, fontWeight: 600 }}>
-              <Circle size={10} fill={T.redSolid} color={T.redSolid} /> Recording
+              <Circle size={10} fill={T.redSolid} color={T.redSolid} /> {t('calls.recording')}
             </div>
           )}
         </div>
       </div>
 
       {/* Connection-state toast (top-center, non-blocking). */}
-      <ConnectionToast status={connStatus} />
+      <ConnectionToast status={connStatus} t={t} />
 
       {/* Consent banner — only visible while recording */}
       {isRecording && (
         <div style={{ padding: '8px 16px', background: 'rgba(239,68,68,0.10)', borderBottom: '1px solid rgba(239,68,68,0.25)', color: T.red, fontSize: 12, textAlign: 'center' }}>
-          🔴 This meeting is being recorded for the school&apos;s records and to help your next teacher walk in prepared.
+          🔴 {t('calls.recordingConsentBanner')}
         </div>
       )}
 
       {/* Video / voice tiles */}
       <div style={{ flex: 1, display: 'grid', gridTemplateColumns: remoteUserPresent ? '1fr 1fr' : '1fr', gap: 8, padding: 16, minHeight: 0 }}>
         {props.audioOnly ? (
-          <VoiceTile label="You" micEnabled={micEnabled} />
+          <VoiceTile label={t('calls.you')} micEnabled={micEnabled} t={t} />
         ) : (
           <VideoTile
-            label="You"
+            label={t('calls.you')}
             mountRef={localVideoElRef}
             showPlaceholder={!camEnabled}
           />
         )}
         {remoteUserPresent ? (
           props.audioOnly ? (
-            <VoiceTile label={props.remoteDisplayName} micEnabled={true} />
+            <VoiceTile label={props.remoteDisplayName} micEnabled={true} t={t} />
           ) : (
             <VideoTile
               label={props.remoteDisplayName}
@@ -704,6 +708,7 @@ export default function AgoraVideoCall(props: AgoraVideoCallProps) {
             state={state}
             diagnostic={diagnostic}
             audioOnly={!!props.audioOnly}
+            t={t}
           />
         )}
       </div>
@@ -713,7 +718,7 @@ export default function AgoraVideoCall(props: AgoraVideoCallProps) {
       <div style={{ padding: 16, paddingBottom: 'calc(16px + env(safe-area-inset-bottom))', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 14, borderTop: T.cardBorder }}>
         <ControlButton
           icon={micEnabled ? <Mic size={20} /> : <MicOff size={20} />}
-          label={micEnabled ? 'Mute' : 'Unmute'}
+          label={micEnabled ? t('calls.mute') : t('calls.unmute')}
           onClick={handleMicToggle}
           danger={!micEnabled}
         />
@@ -721,7 +726,7 @@ export default function AgoraVideoCall(props: AgoraVideoCallProps) {
         {!props.audioOnly && (
           <ControlButton
             icon={camEnabled ? <Video size={20} /> : <VideoOff size={20} />}
-            label={camEnabled ? 'Stop video' : 'Start video'}
+            label={camEnabled ? t('calls.stopVideo') : t('calls.startVideo')}
             onClick={handleCamToggle}
             danger={!camEnabled}
           />
@@ -730,7 +735,7 @@ export default function AgoraVideoCall(props: AgoraVideoCallProps) {
           isRecording ? (
             <ControlButton
               icon={<Square size={20} fill={T.redSolid} />}
-              label={recordingRequestInFlight ? 'Stopping…' : 'Stop recording'}
+              label={recordingRequestInFlight ? t('calls.stopping') : t('calls.stopRecording')}
               onClick={handleStopRecording}
               danger
               disabled={recordingRequestInFlight}
@@ -738,7 +743,7 @@ export default function AgoraVideoCall(props: AgoraVideoCallProps) {
           ) : (
             <ControlButton
               icon={<Circle size={20} color={T.gold} />}
-              label={recordingRequestInFlight ? 'Starting…' : 'Record'}
+              label={recordingRequestInFlight ? t('calls.starting') : t('calls.record')}
               onClick={handleStartRecording}
               accent
               disabled={recordingRequestInFlight}
@@ -747,7 +752,7 @@ export default function AgoraVideoCall(props: AgoraVideoCallProps) {
         )}
         <ControlButton
           icon={<PhoneOff size={20} />}
-          label="Leave"
+          label={t('calls.leave')}
           onClick={handleEndCall}
           end
         />
@@ -787,7 +792,7 @@ export default function AgoraVideoCall(props: AgoraVideoCallProps) {
 // same border treatment, no black video box. Centered initial avatar with
 // the participant's first letter, name below, mic state pip in the corner.
 // Used in audioOnly mode for both local + remote sides.
-function VoiceTile({ label, micEnabled }: { label: string; micEnabled: boolean }) {
+function VoiceTile({ label, micEnabled, t }: { label: string; micEnabled: boolean; t: TFn }) {
   // First letter of the label, uppercased. Falls back to '•' for empty strings
   // so we never render an empty circle.
   const initial = (label || '•').trim().charAt(0).toUpperCase() || '•';
@@ -839,7 +844,7 @@ function VoiceTile({ label, micEnabled }: { label: string; micEnabled: boolean }
           fontSize: 11,
           fontWeight: 600,
         }}>
-          <MicOff size={12} /> Muted
+          <MicOff size={12} /> {t('calls.muted')}
         </div>
       )}
     </div>
@@ -867,16 +872,18 @@ function WaitingTile({
   state,
   diagnostic,
   audioOnly,
+  t,
 }: {
   remoteDisplayName: string;
   state: CallState;
   diagnostic?: { channel: string; uid: number; role: string } | null;
   audioOnly?: boolean;
+  t: TFn;
 }) {
-  let message = `Waiting for ${remoteDisplayName} to join…`;
-  if (state.phase === 'loading') message = 'Connecting…';
-  else if (state.phase === 'permissions') message = audioOnly ? 'Asking for microphone…' : 'Loading video…';
-  else if (state.phase === 'joining') message = 'Joining the room…';
+  let message = t('calls.waitingForToJoin', { name: remoteDisplayName });
+  if (state.phase === 'loading') message = t('calls.connecting');
+  else if (state.phase === 'permissions') message = audioOnly ? t('calls.askingForMicrophone') : t('calls.loadingVideo');
+  else if (state.phase === 'joining') message = t('calls.joiningRoom');
   return (
     <div style={{ background: T.cardBg, borderRadius: 14, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12, color: T.textSecondary, fontSize: 14, border: T.cardBorder, padding: 16 }}>
       <Loader2 size={28} strokeWidth={1.75} style={{ animation: 'spin 1.4s linear infinite', color: T.emerald }} />
@@ -959,13 +966,13 @@ function ControlButton({ icon, label, onClick, danger, accent, end, disabled }: 
   );
 }
 
-function ErrorPanel({ message, onClose }: { message: string; onClose: () => void }) {
+function ErrorPanel({ message, onClose, t }: { message: string; onClose: () => void; t: TFn }) {
   return (
     <div style={{ position: 'fixed', inset: 0, background: T.bg, zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, fontFamily: T.sans }}>
       <div style={{ maxWidth: 420, background: T.cardBg, border: T.cardBorder, borderRadius: 14, padding: 24, textAlign: 'center' }}>
         <AlertCircle size={36} color={T.red} strokeWidth={1.5} style={{ marginBottom: 12 }} />
         <div style={{ fontFamily: T.serif, fontSize: 18, color: T.textPrimary, marginBottom: 10 }}>
-          Can&apos;t start the call
+          {t('calls.cantStartCall')}
         </div>
         <div style={{ fontSize: 13, color: T.textSecondary, lineHeight: 1.55, marginBottom: 20 }}>
           {message}
@@ -975,7 +982,7 @@ function ErrorPanel({ message, onClose }: { message: string; onClose: () => void
           onClick={onClose}
           style={{ padding: '10px 20px', borderRadius: 10, background: T.emerald, color: '#0a1a0f', border: 'none', fontWeight: 600, cursor: 'pointer' }}
         >
-          Close
+          {t('common.close')}
         </button>
       </div>
     </div>
@@ -986,17 +993,17 @@ function ErrorPanel({ message, onClose }: { message: string; onClose: () => void
 // Small Signal icon + tooltip. Three buckets: good (emerald), fair (gold),
 // poor (red). Long-press (mobile) or right-click (desktop) opens the
 // debug panel — useful in the field when something feels off.
-function NetworkPill({ quality, onLongPress }: { quality: 'good' | 'fair' | 'poor' | 'unknown'; onLongPress: () => void }) {
+function NetworkPill({ quality, onLongPress, t }: { quality: 'good' | 'fair' | 'poor' | 'unknown'; onLongPress: () => void; t: TFn }) {
   const color =
     quality === 'good' ? T.emerald :
     quality === 'fair' ? T.gold :
     quality === 'poor' ? T.red :
     'rgba(255,255,255,0.45)';
   const label =
-    quality === 'good' ? 'Strong connection' :
-    quality === 'fair' ? 'Connection a bit slow' :
-    quality === 'poor' ? 'Connection unstable' :
-    'Checking connection…';
+    quality === 'good' ? t('calls.netStrong') :
+    quality === 'fair' ? t('calls.netSlow') :
+    quality === 'poor' ? t('calls.netUnstable') :
+    t('calls.netChecking');
 
   const pressTimer = useRef<number | null>(null);
   const start = () => {
@@ -1010,7 +1017,7 @@ function NetworkPill({ quality, onLongPress }: { quality: 'good' | 'fair' | 'poo
   };
   return (
     <div
-      title={label + ' (long-press for debug)'}
+      title={label}
       onMouseDown={start}
       onMouseUp={cancel}
       onMouseLeave={cancel}
@@ -1034,7 +1041,13 @@ function NetworkPill({ quality, onLongPress }: { quality: 'good' | 'fair' | 'poo
     >
       <Signal size={12} strokeWidth={2} />
       <span style={{ textTransform: 'capitalize' }}>
-        {quality === 'unknown' ? '—' : quality}
+        {quality === 'unknown'
+          ? '—'
+          : quality === 'good'
+            ? t('calls.netQualityGood')
+            : quality === 'fair'
+              ? t('calls.netQualityFair')
+              : t('calls.netQualityPoor')}
       </span>
     </div>
   );
@@ -1043,13 +1056,13 @@ function NetworkPill({ quality, onLongPress }: { quality: 'good' | 'fair' | 'poo
 // ── ConnectionToast ──────────────────────────────────────────────────
 // Top-center floating banner that shows during RECONNECTING and briefly
 // after recovery. Non-blocking. Auto-hides on connected steady state.
-function ConnectionToast({ status }: { status: 'connecting' | 'connected' | 'reconnecting' | 'just-reconnected' | 'failed' }) {
+function ConnectionToast({ status, t }: { status: 'connecting' | 'connected' | 'reconnecting' | 'just-reconnected' | 'failed'; t: TFn }) {
   if (status === 'connecting' || status === 'connected') return null;
 
   const palette =
-    status === 'reconnecting' ? { bg: 'rgba(232,201,106,0.18)', border: 'rgba(232,201,106,0.55)', fg: '#E8C96A', text: 'Reconnecting…' } :
-    status === 'just-reconnected' ? { bg: 'rgba(52,211,153,0.18)', border: 'rgba(52,211,153,0.55)', fg: '#34d399', text: 'Back online' } :
-    { bg: 'rgba(239,68,68,0.18)', border: 'rgba(239,68,68,0.55)', fg: '#fca5a5', text: 'Connection lost' };
+    status === 'reconnecting' ? { bg: 'rgba(232,201,106,0.18)', border: 'rgba(232,201,106,0.55)', fg: '#E8C96A', text: t('calls.reconnecting') } :
+    status === 'just-reconnected' ? { bg: 'rgba(52,211,153,0.18)', border: 'rgba(52,211,153,0.55)', fg: '#34d399', text: t('calls.backOnline') } :
+    { bg: 'rgba(239,68,68,0.18)', border: 'rgba(239,68,68,0.55)', fg: '#fca5a5', text: t('calls.connectionLost') };
 
   return (
     <div

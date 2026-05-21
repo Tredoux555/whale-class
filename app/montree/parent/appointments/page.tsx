@@ -28,6 +28,7 @@ import {
   Video,
 } from 'lucide-react';
 import MontreeLogo from '@/components/montree/MonteeLogo';
+import { useI18n, getIntlLocale } from '@/lib/montree/i18n';
 
 // Lazy-mount the Agora call. ~600KB SDK chunk — only loads when a parent
 // taps Join on an Agora-provider appointment.
@@ -99,8 +100,17 @@ type View =
   | { kind: 'book' }
   | { kind: 'detail'; appt: Appointment };
 
+// Translate function type — matches useI18n().t signature loosely enough
+// for prop threading without importing TranslationKey here.
+type TFn = (key: string, params?: Record<string, string | number>) => string;
+
 export default function ParentAppointmentsPage() {
   const router = useRouter();
+  const i18n = useI18n();
+  // Cast to a loose key type — apptPage.* keys are added to en.ts in the
+  // same change set; the runtime t() resolves them fine.
+  const t = i18n.t as unknown as TFn;
+  const intl = getIntlLocale(i18n.locale);
   const [view, setView] = useState<View>({ kind: 'list' });
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [bundles, setBundles] = useState<RecipientBundle[]>([]);
@@ -127,7 +137,7 @@ export default function ParentAppointmentsPage() {
         return;
       }
       if (!res.ok) {
-        setError('Could not load appointments.');
+        setError(t('apptPage.errLoad'));
         return;
       }
       const data = await res.json();
@@ -138,9 +148,9 @@ export default function ParentAppointmentsPage() {
         setFeatureFlags(data.feature_flags as FeatureFlagsEcho);
       }
     } catch {
-      setError('Network error.');
+      setError(t('apptPage.errNetwork'));
     }
-  }, [router]);
+  }, [router, t]);
 
   // Load on mount + fetch recipients bundle (reuses messaging endpoint
   // which already returns per-child {teachers, principal}).
@@ -190,7 +200,7 @@ export default function ParentAppointmentsPage() {
   if (loading) {
     return (
       <div style={{ minHeight: '100dvh', background: T.bg, backgroundImage: T.bgGradient, color: T.textSecondary, fontFamily: T.sans, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        Loading…
+        {t('common.loading')}
       </div>
     );
   }
@@ -203,15 +213,15 @@ export default function ParentAppointmentsPage() {
           <Link
             href="/montree/parent/dashboard"
             style={{ display: 'flex', alignItems: 'center', gap: 8, textDecoration: 'none', color: T.textPrimary }}
-            aria-label="Montree home"
+            aria-label={t('apptPage.montreeHome')}
           >
             <MontreeLogo size={26} />
             <span style={{ fontFamily: T.serif, fontSize: 15, fontWeight: 600, letterSpacing: -0.2 }}>Montree</span>
           </Link>
-          <div style={{ fontFamily: T.serif, fontSize: 16, fontWeight: 500, color: T.textPrimary }}>Appointments</div>
+          <div style={{ fontFamily: T.serif, fontSize: 16, fontWeight: 500, color: T.textPrimary }}>{t('apptPage.title')}</div>
           {view.kind !== 'list' ? (
-            <button onClick={() => setView({ kind: 'list' })} style={backBtn()} aria-label="Back to appointments list">
-              <ArrowLeft size={14} strokeWidth={2} /> Back
+            <button onClick={() => setView({ kind: 'list' })} style={backBtn()} aria-label={t('apptPage.backToList')}>
+              <ArrowLeft size={14} strokeWidth={2} /> {t('common.back')}
             </button>
           ) : (
             <div style={{ width: 60 }} />
@@ -229,6 +239,8 @@ export default function ParentAppointmentsPage() {
         {view.kind === 'list' && (
           <ListView
             appointments={appointments}
+            t={t}
+            intl={intl}
             onBook={() => setView({ kind: 'book' })}
             onOpen={(a) => setView({ kind: 'detail', appt: a })}
             onChanged={async () => {
@@ -240,6 +252,8 @@ export default function ParentAppointmentsPage() {
           <BookFlow
             bundles={bundles}
             featureFlags={featureFlags}
+            t={t}
+            intl={intl}
             onCancel={() => setView({ kind: 'list' })}
             onBooked={async (appt) => {
               await reload();
@@ -250,6 +264,8 @@ export default function ParentAppointmentsPage() {
         {view.kind === 'detail' && (
           <DetailView
             appt={view.appt}
+            t={t}
+            intl={intl}
             onClose={() => setView({ kind: 'list' })}
             onChanged={async () => {
               await reload();
@@ -264,11 +280,15 @@ export default function ParentAppointmentsPage() {
 // ── List view ─────────────────────────────────────────────────────────
 function ListView({
   appointments,
+  t,
+  intl,
   onBook,
   onOpen,
   onChanged,
 }: {
   appointments: Appointment[];
+  t: TFn;
+  intl: string;
   onBook: () => void;
   onOpen: (a: Appointment) => void;
   onChanged: () => void;
@@ -284,6 +304,8 @@ function ListView({
       {pendingInvites.length > 0 && (
         <PendingInvitations
           invitations={pendingInvites}
+          t={t}
+          intl={intl}
           onChanged={onChanged}
         />
       )}
@@ -295,15 +317,15 @@ function ListView({
         cursor: 'pointer', marginBottom: 18,
         display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
       }}>
-        <Plus size={18} strokeWidth={2} /> Book a meeting
+        <Plus size={18} strokeWidth={2} /> {t('apptPage.bookMeeting')}
       </button>
 
       {otherAppointments.length === 0 ? (
         <div style={{ padding: 30, borderRadius: 12, background: T.cardBg, border: T.cardBorder, color: T.textSecondary, fontSize: 14, lineHeight: 1.6, textAlign: 'center' }}>
           <Calendar size={28} color={T.emerald} strokeWidth={1.5} style={{ margin: '0 auto 12px', display: 'block', opacity: 0.6 }} />
           {pendingInvites.length > 0
-            ? 'No confirmed meetings yet. Pending invitations are above.'
-            : "You haven't booked any meetings yet."}
+            ? t('apptPage.noConfirmedWithPending')
+            : t('apptPage.noBookings')}
         </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -319,15 +341,15 @@ function ListView({
               }}>
                 <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 10, marginBottom: 6 }}>
                   <span style={{ fontWeight: 600, color: T.textPrimary }}>
-                    {primary?.name || 'Staff'}
-                    {a.status === 'cancelled' && <span style={{ color: T.red, fontSize: 11, marginLeft: 8 }}>· cancelled</span>}
-                    {isPast && a.status !== 'cancelled' && <span style={{ color: T.textMuted, fontSize: 11, marginLeft: 8 }}>· past</span>}
+                    {primary?.name || t('apptPage.staff')}
+                    {a.status === 'cancelled' && <span style={{ color: T.red, fontSize: 11, marginLeft: 8 }}>· {t('apptPage.cancelledTag')}</span>}
+                    {isPast && a.status !== 'cancelled' && <span style={{ color: T.textMuted, fontSize: 11, marginLeft: 8 }}>· {t('apptPage.pastTag')}</span>}
                   </span>
                   <ChevronRight size={16} color={T.textMuted} strokeWidth={1.75} />
                 </div>
                 <div style={{ fontSize: 13, color: T.textSecondary }}>
                   <Clock size={12} strokeWidth={1.75} style={{ verticalAlign: 'middle', marginRight: 4, color: T.emerald }} />
-                  {fmtDateTime(a.scheduled_start)}
+                  {fmtDateTime(a.scheduled_start, intl)}
                 </div>
                 {a.intake_subject && (
                   <div style={{ fontSize: 12, color: T.textMuted, marginTop: 4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
@@ -348,9 +370,13 @@ function ListView({
 // Accept + Decline buttons that PATCH the appointment status.
 function PendingInvitations({
   invitations,
+  t,
+  intl,
   onChanged,
 }: {
   invitations: Appointment[];
+  t: TFn;
+  intl: string;
   onChanged: () => void;
 }) {
   const [busyId, setBusyId] = useState<string | null>(null);
@@ -360,7 +386,7 @@ function PendingInvitations({
     if (action === 'decline') {
       const confirmed =
         typeof window !== 'undefined'
-          ? window.confirm('Decline this invitation? The staff member will see your response.')
+          ? window.confirm(t('apptPage.declineConfirm'))
           : true;
       if (!confirmed) return;
     }
@@ -375,12 +401,12 @@ function PendingInvitations({
       });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        setError(data?.error || (action === 'accept' ? 'Could not accept.' : 'Could not decline.'));
+        setError(data?.error || (action === 'accept' ? t('apptPage.errAccept') : t('apptPage.errDecline')));
         return;
       }
       onChanged();
     } catch {
-      setError('Network error.');
+      setError(t('apptPage.errNetwork'));
     } finally {
       setBusyId(null);
     }
@@ -407,12 +433,11 @@ function PendingInvitations({
         }}
       >
         {invitations.length === 1
-          ? 'New invitation'
-          : `${invitations.length} new invitations`}
+          ? t('apptPage.newInvitation')
+          : t('apptPage.newInvitationsCount', { count: invitations.length })}
       </div>
       <div style={{ fontSize: 12, color: T.textSecondary, marginBottom: 12 }}>
-        A staff member from your school invited you to a meeting. Tap accept to
-        confirm or decline if it doesn&apos;t work.
+        {t('apptPage.invitationBlurb')}
       </div>
 
       {error && (
@@ -454,7 +479,7 @@ function PendingInvitations({
                 }}
               >
                 <span style={{ fontWeight: 600, fontSize: 14 }}>
-                  {primary?.name || 'Staff'}
+                  {primary?.name || t('apptPage.staff')}
                 </span>
                 {a.provider === 'agora' || a.video_url ? (
                   <span
@@ -466,10 +491,10 @@ function PendingInvitations({
                       gap: 4,
                     }}
                   >
-                    <Video size={12} strokeWidth={1.75} /> Video call
+                    <Video size={12} strokeWidth={1.75} /> {t('apptPage.videoCall')}
                   </span>
                 ) : (
-                  <span style={{ fontSize: 11, color: T.textMuted }}>In-person</span>
+                  <span style={{ fontSize: 11, color: T.textMuted }}>{t('apptPage.inPerson')}</span>
                 )}
               </div>
               <div style={{ fontSize: 13, color: T.textSecondary, marginBottom: 6 }}>
@@ -478,7 +503,7 @@ function PendingInvitations({
                   strokeWidth={1.75}
                   style={{ verticalAlign: 'middle', marginRight: 4, color: T.emerald }}
                 />
-                {fmtDateTime(a.scheduled_start)}
+                {fmtDateTime(a.scheduled_start, intl)}
               </div>
               {a.intake_subject && (
                 <div
@@ -514,7 +539,7 @@ function PendingInvitations({
                   }}
                 >
                   <CheckCircle2 size={14} strokeWidth={2} />
-                  {busyId === a.id ? '…' : 'Accept'}
+                  {busyId === a.id ? '…' : t('apptPage.accept')}
                 </button>
                 <button
                   type="button"
@@ -537,7 +562,7 @@ function PendingInvitations({
                   }}
                 >
                   <XCircle size={14} strokeWidth={2} />
-                  {busyId === a.id ? '…' : 'Decline'}
+                  {busyId === a.id ? '…' : t('apptPage.decline')}
                 </button>
               </div>
             </div>
@@ -549,7 +574,7 @@ function PendingInvitations({
 }
 
 // ── Book flow ─────────────────────────────────────────────────────────
-function BookFlow({ bundles, featureFlags, onCancel, onBooked }: { bundles: RecipientBundle[]; featureFlags: FeatureFlagsEcho; onCancel: () => void; onBooked: (a: Appointment) => void }) {
+function BookFlow({ bundles, featureFlags, t, intl, onCancel, onBooked }: { bundles: RecipientBundle[]; featureFlags: FeatureFlagsEcho; t: TFn; intl: string; onCancel: () => void; onBooked: (a: Appointment) => void }) {
   const [step, setStep] = useState<'recipient' | 'slot' | 'intake'>('recipient');
   const [childId, setChildId] = useState<string>('');
   const [recipient, setRecipient] = useState<{ role: 'teacher' | 'principal'; id: string; name: string } | null>(null);
@@ -598,18 +623,18 @@ function BookFlow({ bundles, featureFlags, onCancel, onBooked }: { bundles: Reci
         credentials: 'same-origin',
       });
       if (!res.ok) {
-        setError('Could not load available times.');
+        setError(t('apptPage.errLoadTimes'));
         setSlots([]);
         return;
       }
       const data = await res.json();
       setSlots(data?.slots || []);
     } catch {
-      setError('Network error.');
+      setError(t('apptPage.errNetwork'));
     } finally {
       setSlotsLoading(false);
     }
-  }, [recipient]);
+  }, [recipient, t]);
 
   useEffect(() => {
     if (step === 'slot' && recipient) loadSlots();
@@ -647,13 +672,13 @@ function BookFlow({ bundles, featureFlags, onCancel, onBooked }: { bundles: Reci
       });
       if (!res.ok) {
         const j = await res.json().catch(() => ({}));
-        setError(j?.error || 'Could not book the meeting.');
+        setError(j?.error || t('apptPage.errBook'));
         return;
       }
       const data = await res.json();
       if (data?.appointment) onBooked(data.appointment);
     } catch {
-      setError('Network error.');
+      setError(t('apptPage.errNetwork'));
     } finally {
       setSubmitting(false);
     }
@@ -662,18 +687,18 @@ function BookFlow({ bundles, featureFlags, onCancel, onBooked }: { bundles: Reci
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
       <h2 style={{ fontFamily: T.serif, fontSize: 22, fontWeight: 500, margin: 0 }}>
-        Book a meeting
+        {t('apptPage.bookMeeting')}
       </h2>
 
       {bundles.length === 0 ? (
         <div style={{ padding: 18, borderRadius: 12, background: T.cardBg, border: T.cardBorder, color: T.textSecondary, fontSize: 14 }}>
-          You don&apos;t have any children linked to a classroom yet. Contact your school.
+          {t('apptPage.noChildrenLinked')}
         </div>
       ) : (
         <>
           {/* Child picker */}
           {bundles.length > 1 && (
-            <FieldRow label="About">
+            <FieldRow label={t('apptPage.aboutLabel')}>
               <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                 {bundles.map((b) => (
                   <button key={b.child_id} onClick={() => { setChildId(b.child_id); setRecipient(null); setStep('recipient'); }} style={{
@@ -690,20 +715,20 @@ function BookFlow({ bundles, featureFlags, onCancel, onBooked }: { bundles: Reci
           )}
 
           {step === 'recipient' && currentBundle && (
-            <FieldRow label="Who do you want to meet with?">
+            <FieldRow label={t('apptPage.whoToMeet')}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 {currentBundle.teachers.map((teacher) => (
                   <button key={`t:${teacher.id}`} onClick={() => { setRecipient({ role: 'teacher', id: teacher.id, name: teacher.name }); setStep('slot'); }} style={recipientCard()}>
                     <div style={{ fontWeight: 600 }}>{teacher.name}</div>
                     <div style={{ fontSize: 12, color: T.textMuted, marginTop: 2 }}>
-                      {teacher.is_lead ? 'Lead teacher' : 'Teacher'}
+                      {teacher.is_lead ? t('apptPage.leadTeacher') : t('apptPage.teacher')}
                     </div>
                   </button>
                 ))}
                 {currentBundle.principal && (
                   <button onClick={() => { setRecipient({ role: 'principal', id: currentBundle.principal!.id, name: currentBundle.principal!.name }); setStep('slot'); }} style={recipientCard()}>
                     <div style={{ fontWeight: 600 }}>{currentBundle.principal.name}</div>
-                    <div style={{ fontSize: 12, color: T.textMuted, marginTop: 2 }}>Principal</div>
+                    <div style={{ fontSize: 12, color: T.textMuted, marginTop: 2 }}>{t('apptPage.principal')}</div>
                   </button>
                 )}
               </div>
@@ -711,17 +736,17 @@ function BookFlow({ bundles, featureFlags, onCancel, onBooked }: { bundles: Reci
           )}
 
           {step === 'slot' && recipient && (
-            <FieldRow label={`Pick a time with ${recipient.name}`}>
+            <FieldRow label={t('apptPage.pickTimeWith', { name: recipient.name })}>
               {slotsLoading ? (
                 <div style={{ padding: 24, textAlign: 'center', color: T.textSecondary, fontSize: 13 }}>
-                  <Loader2 size={20} style={{ animation: 'spin 1.4s linear infinite' }} /> Loading times…
+                  <Loader2 size={20} style={{ animation: 'spin 1.4s linear infinite' }} /> {t('apptPage.loadingTimes')}
                 </div>
               ) : slots.length === 0 ? (
                 <div style={{ padding: 18, borderRadius: 12, background: T.cardBg, border: T.cardBorder, color: T.textSecondary, fontSize: 13 }}>
-                  No open slots in the next 30 days. {recipient.role === 'teacher' ? 'Try another teacher' : 'Try again later'}, or message them directly first.
+                  {recipient.role === 'teacher' ? t('apptPage.noSlotsTeacher') : t('apptPage.noSlotsOther')}
                 </div>
               ) : (
-                <SlotGrid slots={slots} selectedStart={selectedSlot?.start || null} onPick={(s) => { setSelectedSlot(s); setStep('intake'); }} />
+                <SlotGrid slots={slots} selectedStart={selectedSlot?.start || null} intl={intl} onPick={(s) => { setSelectedSlot(s); setStep('intake'); }} />
               )}
             </FieldRow>
           )}
@@ -729,16 +754,16 @@ function BookFlow({ bundles, featureFlags, onCancel, onBooked }: { bundles: Reci
           {step === 'intake' && recipient && selectedSlot && (
             <>
               <div style={{ padding: 14, borderRadius: 12, background: T.cardBg, border: T.cardBorder, fontSize: 13, color: T.textSecondary }}>
-                Meeting with <strong style={{ color: T.textPrimary }}>{recipient.name}</strong><br />
-                {fmtDateTime(selectedSlot.start)}
+                {t('apptPage.meetingWith')} <strong style={{ color: T.textPrimary }}>{recipient.name}</strong><br />
+                {fmtDateTime(selectedSlot.start, intl)}
               </div>
 
-              <FieldRow label="What would you like to talk about?">
-                <input value={subject} onChange={(e) => setSubject(e.target.value)} placeholder="One short line — optional" maxLength={200} style={inputStyle()} />
+              <FieldRow label={t('apptPage.talkAboutLabel')}>
+                <input value={subject} onChange={(e) => setSubject(e.target.value)} placeholder={t('apptPage.subjectPlaceholder')} maxLength={200} style={inputStyle()} />
               </FieldRow>
 
-              <FieldRow label="Anything they should know before?">
-                <textarea value={bodyText} onChange={(e) => setBodyText(e.target.value)} rows={4} placeholder="Context, questions, what's on your mind — optional" maxLength={2000} style={{ ...inputStyle(), resize: 'vertical', minHeight: 90 }} />
+              <FieldRow label={t('apptPage.knowBeforeLabel')}>
+                <textarea value={bodyText} onChange={(e) => setBodyText(e.target.value)} rows={4} placeholder={t('apptPage.bodyPlaceholder')} maxLength={2000} style={{ ...inputStyle(), resize: 'vertical', minHeight: 90 }} />
               </FieldRow>
 
               {/* Phase 116.2/116.3 — video-call opt-in. Surfaces when
@@ -759,11 +784,11 @@ function BookFlow({ bundles, featureFlags, onCancel, onBooked }: { bundles: Reci
                       style={{ marginTop: 3, width: 18, height: 18, cursor: 'pointer', accentColor: T.emerald }}
                     />
                     <span style={{ flex: 1 }}>
-                      <span style={{ fontWeight: 600 }}>Video call</span>
+                      <span style={{ fontWeight: 600 }}>{t('apptPage.videoCall')}</span>
                       <span style={{ display: 'block', fontSize: 12, color: T.textSecondary, marginTop: 2, lineHeight: 1.45 }}>
                         {featureFlags.agora_video_calls
-                          ? `Meet face-to-face with ${recipient.name} from anywhere — the call opens right here inside Montree. Camera and microphone permission required.`
-                          : `Join the meeting from anywhere via Jitsi Meet. A secure room link will be created for you and ${recipient.name}. Browser-only — no app to install.`}
+                          ? t('apptPage.videoCallDescAgora', { name: recipient.name })
+                          : t('apptPage.videoCallDescJitsi', { name: recipient.name })}
                       </span>
                     </span>
                   </label>
@@ -786,9 +811,9 @@ function BookFlow({ bundles, featureFlags, onCancel, onBooked }: { bundles: Reci
                         style={{ marginTop: 3, width: 18, height: 18, cursor: 'pointer', accentColor: '#E8C96A' }}
                       />
                       <span style={{ flex: 1 }}>
-                        <span style={{ fontWeight: 600, color: '#E8C96A' }}>Record this meeting</span>
+                        <span style={{ fontWeight: 600, color: '#E8C96A' }}>{t('apptPage.recordMeeting')}</span>
                         <span style={{ display: 'block', fontSize: 12, color: T.textSecondary, marginTop: 2, lineHeight: 1.45 }}>
-                          The school keeps a copy so the next teacher you meet knows what was discussed. Audio only — never video. You&apos;ll see a recording banner during the call.
+                          {t('apptPage.recordMeetingDesc')}
                         </span>
                       </span>
                     </label>
@@ -803,9 +828,9 @@ function BookFlow({ bundles, featureFlags, onCancel, onBooked }: { bundles: Reci
               )}
 
               <div style={{ display: 'flex', gap: 10 }}>
-                <button onClick={() => setStep('slot')} style={btnGhost()}>Back</button>
+                <button onClick={() => setStep('slot')} style={btnGhost()}>{t('common.back')}</button>
                 <button onClick={handleBook} disabled={submitting} style={btnPrimary(submitting)}>
-                  {submitting ? 'Booking…' : 'Confirm meeting'}
+                  {submitting ? t('apptPage.booking') : t('apptPage.confirmMeeting')}
                 </button>
               </div>
             </>
@@ -814,7 +839,7 @@ function BookFlow({ bundles, featureFlags, onCancel, onBooked }: { bundles: Reci
       )}
 
       {step === 'recipient' && (
-        <button onClick={onCancel} style={btnGhost()}>Cancel</button>
+        <button onClick={onCancel} style={btnGhost()}>{t('common.cancel')}</button>
       )}
 
       <style jsx>{`
@@ -825,7 +850,7 @@ function BookFlow({ bundles, featureFlags, onCancel, onBooked }: { bundles: Reci
 }
 
 // ── Slot grid ─────────────────────────────────────────────────────────
-function SlotGrid({ slots, selectedStart, onPick }: { slots: Array<{ start: string; end: string }>; selectedStart: string | null; onPick: (s: { start: string; end: string }) => void }) {
+function SlotGrid({ slots, selectedStart, intl, onPick }: { slots: Array<{ start: string; end: string }>; selectedStart: string | null; intl: string; onPick: (s: { start: string; end: string }) => void }) {
   // Group by day.
   const byDay = new Map<string, Array<{ start: string; end: string }>>();
   for (const s of slots) {
@@ -839,7 +864,7 @@ function SlotGrid({ slots, selectedStart, onPick }: { slots: Array<{ start: stri
       {Array.from(byDay.entries()).slice(0, 14).map(([day, dayslots]) => (
         <div key={day}>
           <div style={{ fontSize: 11, color: T.gold, textTransform: 'uppercase', letterSpacing: 0.6, fontWeight: 600, marginBottom: 8 }}>
-            {fmtDayHeader(dayslots[0].start)}
+            {fmtDayHeader(dayslots[0].start, intl)}
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(96px, 1fr))', gap: 8 }}>
             {dayslots.map((s) => {
@@ -852,7 +877,7 @@ function SlotGrid({ slots, selectedStart, onPick }: { slots: Array<{ start: stri
                   color: selected ? '#0a1a0f' : T.textPrimary,
                   fontSize: 13, fontWeight: 600, cursor: 'pointer',
                 }}>
-                  {fmtTime(s.start)}
+                  {fmtTime(s.start, intl)}
                 </button>
               );
             })}
@@ -864,7 +889,7 @@ function SlotGrid({ slots, selectedStart, onPick }: { slots: Array<{ start: stri
 }
 
 // ── Detail view ───────────────────────────────────────────────────────
-function DetailView({ appt, onClose, onChanged }: { appt: Appointment; onClose: () => void; onChanged: () => Promise<void> }) {
+function DetailView({ appt, t, intl, onClose, onChanged }: { appt: Appointment; t: TFn; intl: string; onClose: () => void; onChanged: () => Promise<void> }) {
   const [cancelling, setCancelling] = useState(false);
   const [error, setError] = useState<string | null>(null);
   // Phase 116.3 — controls whether the AgoraVideoCall component is
@@ -876,7 +901,7 @@ function DetailView({ appt, onClose, onChanged }: { appt: Appointment; onClose: 
   const canModify = appt.status === 'confirmed' && !isPast;
 
   const handleCancel = async () => {
-    if (!confirm('Cancel this meeting?')) return;
+    if (!confirm(t('apptPage.cancelConfirm'))) return;
     setCancelling(true);
     setError(null);
     try {
@@ -887,13 +912,13 @@ function DetailView({ appt, onClose, onChanged }: { appt: Appointment; onClose: 
         body: JSON.stringify({ action: 'cancel' }),
       });
       if (!res.ok) {
-        setError('Could not cancel.');
+        setError(t('apptPage.errCancel'));
         return;
       }
       await onChanged();
       onClose();
     } catch {
-      setError('Network error.');
+      setError(t('apptPage.errNetwork'));
     } finally {
       setCancelling(false);
     }
@@ -903,16 +928,18 @@ function DetailView({ appt, onClose, onChanged }: { appt: Appointment; onClose: 
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
       <div style={{ padding: 18, borderRadius: 12, background: T.cardBg, border: T.cardBorder }}>
         <div style={{ fontFamily: T.serif, fontSize: 22, fontWeight: 500 }}>
-          {primary?.name || 'Meeting'}
+          {primary?.name || t('apptPage.meeting')}
         </div>
         <div style={{ fontSize: 13, color: T.textSecondary, marginTop: 6 }}>
           <Clock size={13} strokeWidth={1.75} style={{ verticalAlign: 'middle', marginRight: 6, color: T.emerald }} />
-          {fmtDateTime(appt.scheduled_start)} · {appt.duration_minutes} min
+          {fmtDateTime(appt.scheduled_start, intl)} · {t('apptPage.minutes', { count: appt.duration_minutes })}
         </div>
         <div style={{ fontSize: 12, marginTop: 8 }}>
           <span style={{ color: statusColor(appt.status) }}>
-            {appt.status === 'confirmed' ? <><CheckCircle2 size={12} strokeWidth={1.75} style={{ verticalAlign: 'middle', marginRight: 4 }} /> Confirmed</> :
-             appt.status === 'cancelled' ? <><XCircle size={12} strokeWidth={1.75} style={{ verticalAlign: 'middle', marginRight: 4 }} /> Cancelled</> :
+            {appt.status === 'confirmed' ? <><CheckCircle2 size={12} strokeWidth={1.75} style={{ verticalAlign: 'middle', marginRight: 4 }} /> {t('apptPage.statusConfirmed')}</> :
+             appt.status === 'cancelled' ? <><XCircle size={12} strokeWidth={1.75} style={{ verticalAlign: 'middle', marginRight: 4 }} /> {t('apptPage.statusCancelled')}</> :
+             appt.status === 'completed' ? t('apptPage.statusCompleted') :
+             appt.status === 'pending' ? t('apptPage.statusPending') :
              appt.status}
           </span>
         </div>
@@ -949,9 +976,9 @@ function DetailView({ appt, onClose, onChanged }: { appt: Appointment; onClose: 
               border: 'none',
               cursor: 'pointer',
             }}
-            aria-label="Join the video call"
+            aria-label={t('apptPage.joinVideoCall')}
           >
-            <Video size={16} strokeWidth={1.75} /> Join video call
+            <Video size={16} strokeWidth={1.75} /> {t('apptPage.joinVideoCall')}
           </button>
         )}
         {appt.provider !== 'agora' && appt.video_url && (
@@ -972,9 +999,9 @@ function DetailView({ appt, onClose, onChanged }: { appt: Appointment; onClose: 
               fontSize: 14,
               textDecoration: 'none',
             }}
-            aria-label="Join the video call (opens in a new tab)"
+            aria-label={t('apptPage.joinVideoCallNewTab')}
           >
-            <Video size={16} strokeWidth={1.75} /> Join video call
+            <Video size={16} strokeWidth={1.75} /> {t('apptPage.joinVideoCall')}
           </a>
         )}
         {appt.intake_subject && (
@@ -1001,11 +1028,11 @@ function DetailView({ appt, onClose, onChanged }: { appt: Appointment; onClose: 
           background: 'rgba(239,68,68,0.10)', border: '1px solid rgba(239,68,68,0.32)',
           color: T.red, fontSize: 14, fontWeight: 600, cursor: 'pointer',
         }}>
-          {cancelling ? 'Cancelling…' : 'Cancel meeting'}
+          {cancelling ? t('apptPage.cancelling') : t('apptPage.cancelMeeting')}
         </button>
       )}
 
-      <button onClick={onClose} style={btnGhost()}>Back</button>
+      <button onClick={onClose} style={btnGhost()}>{t('common.back')}</button>
 
       {/* Phase 116.3 — full-viewport Agora call overlay. Dynamic import
           to keep the SDK chunk out of the initial bundle for anyone who
@@ -1014,7 +1041,7 @@ function DetailView({ appt, onClose, onChanged }: { appt: Appointment; onClose: 
         <AgoraVideoCallLazy
           appointmentId={appt.id}
           callerRole="parent"
-          remoteDisplayName={primary?.name || 'Your teacher'}
+          remoteDisplayName={primary?.name || t('apptPage.yourTeacher')}
           recordingEnabledForAppointment={!!appt.recording_enabled}
           onClose={() => setAgoraOpen(false)}
         />
@@ -1034,9 +1061,9 @@ function FieldRow({ label, children }: { label: string; children: React.ReactNod
     </div>
   );
 }
-function fmtDateTime(iso: string): string {
+function fmtDateTime(iso: string, intl?: string): string {
   try {
-    return new Date(iso).toLocaleString(undefined, {
+    return new Date(iso).toLocaleString(intl || undefined, {
       weekday: 'long', month: 'short', day: 'numeric',
       hour: 'numeric', minute: '2-digit',
     });
@@ -1044,18 +1071,18 @@ function fmtDateTime(iso: string): string {
     return iso;
   }
 }
-function fmtDayHeader(iso: string): string {
+function fmtDayHeader(iso: string, intl?: string): string {
   try {
-    return new Date(iso).toLocaleDateString(undefined, {
+    return new Date(iso).toLocaleDateString(intl || undefined, {
       weekday: 'long', month: 'short', day: 'numeric',
     });
   } catch {
     return iso;
   }
 }
-function fmtTime(iso: string): string {
+function fmtTime(iso: string, intl?: string): string {
   try {
-    return new Date(iso).toLocaleTimeString(undefined, {
+    return new Date(iso).toLocaleTimeString(intl || undefined, {
       hour: 'numeric', minute: '2-digit',
     });
   } catch {

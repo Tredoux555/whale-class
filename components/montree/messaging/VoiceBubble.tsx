@@ -5,6 +5,7 @@
 'use client';
 
 import { Volume2 } from 'lucide-react';
+import { useI18n } from '@/lib/montree/i18n';
 
 interface Props {
   /** Stable proxy URL from the message row's media_url. */
@@ -16,6 +17,7 @@ interface Props {
 }
 
 export default function VoiceBubble({ audioUrl, transcript, isMine = false }: Props) {
+  const { t } = useI18n();
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 6, minWidth: 220 }}>
       <div
@@ -33,6 +35,7 @@ export default function VoiceBubble({ audioUrl, transcript, isMine = false }: Pr
           controls
           preload="metadata"
           src={audioUrl}
+          aria-label={t('msg.voiceMessage')}
           style={{ height: 32, flex: 1, minWidth: 0 }}
         />
       </div>

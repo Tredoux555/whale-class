@@ -24,6 +24,8 @@
 
 import { useEffect, useState } from 'react';
 import { ChevronDown, ChevronUp, Sparkles, Clock } from 'lucide-react';
+import { useI18n } from '@/lib/montree/i18n';
+import { getIntlLocale } from '@/lib/montree/i18n/locales';
 
 const T = {
   cardBg: 'rgba(8,20,12,0.55)',
@@ -57,6 +59,7 @@ interface PriorConversationCardProps {
 }
 
 export default function PriorConversationCard({ appointmentId }: PriorConversationCardProps) {
+  const { t, locale } = useI18n();
   const [conversations, setConversations] = useState<PriorConversation[]>([]);
   const [loading, setLoading] = useState(true);
   const [showHistory, setShowHistory] = useState(false);
@@ -91,7 +94,7 @@ export default function PriorConversationCard({ appointmentId }: PriorConversati
   if (loading) {
     return (
       <div style={{ padding: 14, borderRadius: 12, background: T.cardBg, border: T.cardBorder, color: T.textMuted, fontSize: 12, fontFamily: T.sans }}>
-        Loading prior conversations…
+        {t('calls.loadingPriorConversations')}
       </div>
     );
   }
@@ -111,23 +114,23 @@ export default function PriorConversationCard({ appointmentId }: PriorConversati
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
           <Sparkles size={14} color={T.gold} strokeWidth={1.75} />
           <div style={{ fontSize: 11, color: T.gold, fontWeight: 600, letterSpacing: 0.6, textTransform: 'uppercase' }}>
-            Last meeting briefing
+            {t('calls.lastMeetingBriefing')}
           </div>
         </div>
         <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 10, fontSize: 12, color: T.textSecondary }}>
           <Clock size={11} strokeWidth={1.75} color={T.emerald} />
-          {formatDate(mostRecent.meeting_date)}
+          {formatDate(mostRecent.meeting_date, locale)}
           {mostRecent.host?.name && (
-            <span style={{ color: T.textMuted }}>· with {mostRecent.host.name}</span>
+            <span style={{ color: T.textMuted }}>{t('calls.withHost', { name: mostRecent.host.name })}</span>
           )}
         </div>
         {mostRecent.intake_subject && (
           <div style={{ fontSize: 12, color: T.textMuted, fontStyle: 'italic', marginBottom: 8 }}>
-            Parent asked: &ldquo;{mostRecent.intake_subject}&rdquo;
+            {t('calls.parentAsked', { subject: mostRecent.intake_subject })}
           </div>
         )}
         <div style={{ fontFamily: T.serif, fontSize: 14, lineHeight: 1.65, color: T.textPrimary, whiteSpace: 'pre-wrap' }}>
-          {mostRecent.summary || '(Summary still processing — check back in a moment.)'}
+          {mostRecent.summary || t('calls.summaryProcessing')}
         </div>
       </div>
 
@@ -140,7 +143,13 @@ export default function PriorConversationCard({ appointmentId }: PriorConversati
             style={{ width: '100%', padding: '10px 14px', borderRadius: 10, background: T.cardBg, border: T.cardBorder, color: T.textPrimary, fontFamily: T.sans, fontSize: 12, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
           >
             <span>
-              {showHistory ? 'Hide' : 'Show'} {older.length} earlier meeting{older.length === 1 ? '' : 's'}
+              {showHistory
+                ? (older.length === 1
+                    ? t('calls.hideEarlierMeeting', { count: older.length })
+                    : t('calls.hideEarlierMeetings', { count: older.length }))
+                : (older.length === 1
+                    ? t('calls.showEarlierMeeting', { count: older.length })
+                    : t('calls.showEarlierMeetings', { count: older.length }))}
             </span>
             {showHistory ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
           </button>
@@ -150,7 +159,7 @@ export default function PriorConversationCard({ appointmentId }: PriorConversati
               {older.map((c) => (
                 <div key={c.recording_id} style={{ padding: 14, borderRadius: 10, background: T.cardBg, border: T.cardBorder, fontFamily: T.sans }}>
                   <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 8, fontSize: 11, color: T.textMuted }}>
-                    {formatDate(c.meeting_date)}
+                    {formatDate(c.meeting_date, locale)}
                     {c.host?.name && <span>· {c.host.name}</span>}
                   </div>
                   {c.intake_subject && (
@@ -171,9 +180,9 @@ export default function PriorConversationCard({ appointmentId }: PriorConversati
   );
 }
 
-function formatDate(iso: string): string {
+function formatDate(iso: string, locale: string): string {
   try {
-    return new Date(iso + (iso.length === 10 ? 'T12:00:00' : '')).toLocaleDateString(undefined, {
+    return new Date(iso + (iso.length === 10 ? 'T12:00:00' : '')).toLocaleDateString(getIntlLocale(locale), {
       weekday: 'long',
       month: 'long',
       day: 'numeric',

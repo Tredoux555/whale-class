@@ -18,6 +18,7 @@
 
 import { useState, useCallback } from 'react';
 import { X, Send, Video, Users, Loader2, CheckCircle2 } from 'lucide-react';
+import { useI18n } from '@/lib/montree/i18n';
 
 const T = {
   bg: '#0a1a0f',
@@ -72,6 +73,7 @@ export default function QuickSetAppointmentModal({
   onClose,
   onSent,
 }: QuickSetAppointmentModalProps) {
+  const { t } = useI18n();
   const [kind, setKind] = useState<ApptKind>('video_call');
   const [startLocal, setStartLocal] = useState<string>(defaultStartIso());
   const [duration, setDuration] = useState<number>(30);
@@ -83,12 +85,12 @@ export default function QuickSetAppointmentModal({
   const handleSubmit = useCallback(async () => {
     setError(null);
     if (!startLocal) {
-      setError('Pick a start time.');
+      setError(t('appt.errPickStartTime'));
       return;
     }
     const startDate = new Date(startLocal);
     if (isNaN(startDate.getTime())) {
-      setError('That start time is not valid.');
+      setError(t('appt.errStartTimeInvalid'));
       return;
     }
     // 🚨 Session 120 audit — align with server's stricter 60s past buffer.
@@ -96,7 +98,7 @@ export default function QuickSetAppointmentModal({
     // Pre-validating with the same buffer prevents the "I picked a time and
     // got a server error" round-trip.
     if (startDate.getTime() < Date.now() - 60 * 1000) {
-      setError('Start time must be in the future.');
+      setError(t('appt.errStartTimeFuture'));
       return;
     }
 
@@ -117,7 +119,7 @@ export default function QuickSetAppointmentModal({
       });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        setError(data?.error || 'Could not send the invitation.');
+        setError(data?.error || t('appt.errSendInvitation'));
         setSending(false);
         return;
       }
@@ -127,10 +129,10 @@ export default function QuickSetAppointmentModal({
         onSent();
       }, 700);
     } catch {
-      setError('Network error sending the invitation.');
+      setError(t('appt.errNetworkSendInvitation'));
       setSending(false);
     }
-  }, [parentId, childId, startLocal, duration, kind, subject, onSent]);
+  }, [parentId, childId, startLocal, duration, kind, subject, onSent, t]);
 
   return (
     <div
@@ -168,17 +170,19 @@ export default function QuickSetAppointmentModal({
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
           <div>
             <div style={{ fontFamily: T.serif, fontSize: 18, fontWeight: 500 }}>
-              Set appointment
+              {t('appt.setAppointment')}
             </div>
             <div style={{ fontSize: 12, color: T.textSecondary, marginTop: 2 }}>
-              With {parentName}{childName ? ` · ${childName}` : ''}
+              {childName
+                ? t('appt.withParentChild', { parent: parentName, child: childName })
+                : t('appt.withParent', { parent: parentName })}
             </div>
           </div>
           <button
             onClick={onClose}
             disabled={sending}
             type="button"
-            aria-label="Close"
+            aria-label={t('common.close')}
             style={{
               background: 'none',
               border: 0,
@@ -206,9 +210,9 @@ export default function QuickSetAppointmentModal({
           >
             <CheckCircle2 size={20} />
             <div>
-              <div style={{ fontWeight: 600, fontSize: 14 }}>Invitation sent</div>
+              <div style={{ fontWeight: 600, fontSize: 14 }}>{t('appt.invitationSent')}</div>
               <div style={{ fontSize: 12, color: T.textSecondary, marginTop: 2 }}>
-                {parentName} will see it in the chat. The card appears in this thread.
+                {t('appt.invitationSentChatHint', { parent: parentName })}
               </div>
             </div>
           </div>
@@ -217,7 +221,7 @@ export default function QuickSetAppointmentModal({
             {/* Type pills */}
             <div style={{ marginBottom: 14 }}>
               <div style={{ fontSize: 11, fontWeight: 600, color: T.textSecondary, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6 }}>
-                Type
+                {t('appt.fieldType')}
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
                 <button
@@ -238,7 +242,7 @@ export default function QuickSetAppointmentModal({
                     gap: 6,
                   }}
                 >
-                  <Video size={14} /> Video call
+                  <Video size={14} /> {t('appt.videoCall')}
                 </button>
                 <button
                   type="button"
@@ -258,7 +262,7 @@ export default function QuickSetAppointmentModal({
                     gap: 6,
                   }}
                 >
-                  <Users size={14} /> In-person
+                  <Users size={14} /> {t('appt.inPerson')}
                 </button>
               </div>
             </div>
@@ -266,7 +270,7 @@ export default function QuickSetAppointmentModal({
             {/* Start time */}
             <div style={{ marginBottom: 14 }}>
               <label style={{ fontSize: 11, fontWeight: 600, color: T.textSecondary, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6, display: 'block' }}>
-                When
+                {t('appt.fieldWhen')}
               </label>
               <input
                 type="datetime-local"
@@ -292,7 +296,7 @@ export default function QuickSetAppointmentModal({
             {/* Duration */}
             <div style={{ marginBottom: 14 }}>
               <div style={{ fontSize: 11, fontWeight: 600, color: T.textSecondary, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6 }}>
-                Duration
+                {t('appt.fieldDuration')}
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 6 }}>
                 {DURATION_OPTIONS.map((d) => (
@@ -311,7 +315,7 @@ export default function QuickSetAppointmentModal({
                       cursor: 'pointer',
                     }}
                   >
-                    {d} min
+                    {t('appt.nMin', { n: d })}
                   </button>
                 ))}
               </div>
@@ -320,14 +324,14 @@ export default function QuickSetAppointmentModal({
             {/* Subject (optional) */}
             <div style={{ marginBottom: 16 }}>
               <label style={{ fontSize: 11, fontWeight: 600, color: T.textSecondary, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6, display: 'block' }}>
-                What&apos;s it about (optional)
+                {t('appt.fieldWhatAbout')}
               </label>
               <input
                 type="text"
                 value={subject}
                 onChange={(e) => setSubject(e.target.value.slice(0, 200))}
                 disabled={sending}
-                placeholder="e.g. Quarterly review"
+                placeholder={t('appt.whatAboutPlaceholder')}
                 style={{
                   width: '100%',
                   padding: '10px 12px',
@@ -383,11 +387,11 @@ export default function QuickSetAppointmentModal({
               {sending ? (
                 <>
                   <Loader2 size={16} style={{ animation: 'spin 1.4s linear infinite' }} />
-                  Sending…
+                  {t('appt.sending')}
                 </>
               ) : (
                 <>
-                  <Send size={16} /> Send invitation
+                  <Send size={16} /> {t('appt.sendInvitation')}
                 </>
               )}
             </button>
