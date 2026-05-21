@@ -650,8 +650,9 @@ export default function AgoraVideoCall(props: AgoraVideoCallProps) {
 
   return (
     <div style={{ position: 'fixed', inset: 0, background: T.bg, zIndex: 9999, display: 'flex', flexDirection: 'column', fontFamily: T.sans }}>
-      {/* Top bar */}
-      <div style={{ padding: '12px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: T.cardBorder, gap: 12 }}>
+      {/* Top bar — pad below the notch so the call title + recording pill
+          aren't hidden under the iPhone status bar / Dynamic Island. */}
+      <div style={{ padding: '12px 16px', paddingTop: 'calc(12px + env(safe-area-inset-top))', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: T.cardBorder, gap: 12 }}>
         <div style={{ fontFamily: T.serif, fontSize: 17, color: T.textPrimary, flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
           {props.audioOnly ? 'Voice call with' : 'Meeting with'} <span style={{ color: T.emerald, fontWeight: 600 }}>{props.remoteDisplayName}</span>
         </div>
@@ -707,8 +708,9 @@ export default function AgoraVideoCall(props: AgoraVideoCallProps) {
         )}
       </div>
 
-      {/* Bottom control bar */}
-      <div style={{ padding: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 14, borderTop: T.cardBorder }}>
+      {/* Bottom control bar — pad above the home indicator so the mic /
+          camera / end-call controls aren't obscured on iPhone. */}
+      <div style={{ padding: 16, paddingBottom: 'calc(16px + env(safe-area-inset-bottom))', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 14, borderTop: T.cardBorder }}>
         <ControlButton
           icon={micEnabled ? <Mic size={20} /> : <MicOff size={20} />}
           label={micEnabled ? 'Mute' : 'Unmute'}

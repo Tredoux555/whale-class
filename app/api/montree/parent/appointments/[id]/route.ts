@@ -504,9 +504,39 @@ export async function PATCH(
     return NextResponse.json({ error: 'Failed to reschedule.' }, { status: 500 });
   }
 
-  // Now cancel the old row. New row exists, so even if this cancel
-  // call somehow fails (extremely unlikely), the parent ends up with
-  // BOTH bookings — non-destructive on failure.
+  // Re-attach host rows on the NEW appointment BEFORE cancelling the old
+  // one. Ordering matters: if host attach fails, the old appointment is
+  // still live + joinable, so we roll the orphaned new row back and leave
+  // the parent with a working booking to retry from — rather than a
+  // cancelled old + a hostless (un-joinable, agora-token 404s) new row.
+  type OldHost = { host_role: 'teacher' | 'principal'; host_id: string; is_primary: boolean; is_required: boolean };
+  const { error: hostAttachErr } = await supabase
+    .from('montree_appointment_hosts')
+    .insert(
+      (oldHostRows as OldHost[]).map((h) => ({
+        appointment_id: newAppt.id,
+        host_role: h.host_role,
+        host_id: h.host_id,
+        is_primary: h.is_primary,
+        is_required: h.is_required,
+        response: 'accepted' as const,
+        response_at: new Date().toISOString(),
+      })),
+    );
+  if (hostAttachErr) {
+    console.error('[parent/appointments reschedule] host re-attach failed — rolling back new row', hostAttachErr);
+    // Roll back the orphaned hostless new appointment.
+    await supabase.from('montree_appointments').delete().eq('id', newAppt.id);
+    return NextResponse.json(
+      { error: 'Could not reschedule. Your original appointment is unchanged — please try again.' },
+      { status: 500 },
+    );
+  }
+
+  // New row is fully valid (has hosts). Now cancel the old row. If this
+  // somehow fails the parent ends up with BOTH bookings — annoying but
+  // non-destructive: the new one is joinable; recoverable by cancelling
+  // the old one manually.
   const { error: cancelOldErr } = await supabase
     .from('montree_appointments')
     .update({
@@ -523,20 +553,6 @@ export async function PATCH(
     // Log loudly but don't fail the response — the new booking is in.
     console.error('[parent/appointments reschedule] cancel-old failed', cancelOldErr);
   }
-
-  // Re-attach host rows on the new appointment.
-  type OldHost = { host_role: 'teacher' | 'principal'; host_id: string; is_primary: boolean; is_required: boolean };
-  await supabase.from('montree_appointment_hosts').insert(
-    (oldHostRows as OldHost[]).map((h) => ({
-      appointment_id: newAppt.id,
-      host_role: h.host_role,
-      host_id: h.host_id,
-      is_primary: h.is_primary,
-      is_required: h.is_required,
-      response: 'accepted' as const,
-      response_at: new Date().toISOString(),
-    }))
-  );
 
   // Notify via thread.
   const primary = (oldHostRows as OldHost[]).find((h) => h.is_primary);
