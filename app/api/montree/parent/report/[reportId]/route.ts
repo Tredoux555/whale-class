@@ -7,6 +7,7 @@ import { getChineseNameForWork } from '@/lib/montree/curriculum-loader';
 import { getChineseParentDescription } from '@/lib/curriculum/comprehensive-guides/parent-descriptions-zh';
 import { getLocaleFromRequest } from '@/lib/montree/i18n/server';
 import { getProxyUrl } from '@/lib/montree/media/proxy-url';
+import { getLesson, getPhaseFor, TOTAL_LESSONS } from '@/lib/montree/english-sequence/lesson-map';
 
 // Load parent descriptions from curriculum JSON files with area info
 function loadParentDescriptions(): Map<string, { description: string; why_it_matters: string; area: string }> {
@@ -199,6 +200,40 @@ export async function GET(
 
     const classroomId = report.classroom_id || child?.classroom_id;
 
+    // English reading-sequence position — surfaced read-only to parents
+    // (Session 124). No AI pipeline involved. Stays null when the teacher
+    // has not yet placed this child on the progression, so the report
+    // never shows a misleading "Lesson 1" for an untracked child.
+    let englishProgress: {
+      current_lesson: number;
+      current_phase: string;
+      lesson_label: string;
+      total_lessons: number;
+      mastered_count: number;
+    } | null = null;
+    try {
+      const { data: epRow } = await supabase
+        .from('montree_child_english_progress')
+        .select('current_lesson, current_phase, mastered_lessons')
+        .eq('child_id', report.child_id)
+        .maybeSingle();
+      if (epRow && typeof epRow.current_lesson === 'number' && epRow.current_lesson >= 1) {
+        const lesson = getLesson(epRow.current_lesson);
+        englishProgress = {
+          current_lesson: epRow.current_lesson,
+          current_phase:
+            (epRow.current_phase as string) || getPhaseFor(epRow.current_lesson) || 'pink',
+          lesson_label: lesson?.label || `Lesson ${epRow.current_lesson}`,
+          total_lessons: TOTAL_LESSONS,
+          mastered_count: Array.isArray(epRow.mastered_lessons)
+            ? epRow.mastered_lessons.length
+            : 0,
+        };
+      }
+    } catch (epErr) {
+      console.error('[parent report] english progress lookup failed (non-fatal):', epErr);
+    }
+
     // Build DB name→chinese map for custom works / works not in static JSON
     // Priority cascade used below: static JSON (getChineseNameForWork) → DB (dbChineseMap) → null
     // Covers both the saved-content path and the fallback progress-based path.
@@ -332,6 +367,7 @@ export async function GET(
           // AI-generated narrative (from batch-narratives endpoint)
           narrative: narrative || null,
           child,
+          english_progress: englishProgress,
           works_completed: worksCompleted,
           all_photos: allPhotos,
         }
@@ -495,6 +531,7 @@ export async function GET(
       report: {
         ...report,
         child,
+        english_progress: englishProgress,
         works_completed: worksCompleted,
         all_photos: allPhotos, // Include ALL photos from the week
       }
