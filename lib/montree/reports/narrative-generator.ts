@@ -37,6 +37,21 @@ export interface NarrativeInput {
   previousNarrative?: string | null;
 
   /**
+   * Optional reading-sequence position (montree_child_english_progress).
+   * When present, the narrative weaves ONE natural sentence about where the
+   * child stands in the structured Pink → Blue → Green reading progression.
+   * Null/omitted for children the teacher hasn't placed on the sequence —
+   * the prompt then says nothing about reading position, so no misleading
+   * "Lesson 1" ever appears for an untracked child.
+   */
+  englishProgress?: {
+    current_lesson: number;
+    total_lessons: number;
+    phase: 'pink' | 'blue' | 'green';
+    lesson_label: string;
+  } | null;
+
+  /**
    * Optional Anthropic model override (e.g. HAIKU_MODEL / AI_MODEL).
    * Resolved per-request from the school's AI tier flag — see
    * `lib/montree/reports/resolve-model.ts`. Defaults to HAIKU_MODEL when
@@ -57,9 +72,16 @@ export interface NarrativeOutput {
 // ── Prompt Builder ──
 
 function buildNarrativePrompt(input: NarrativeInput): string {
-  const { child, analysis, photos, locale, previousNarrative } = input;
+  const { child, analysis, photos, locale, previousNarrative, englishProgress } = input;
   const firstName = child.name.split(' ')[0];
   const lang = getLanguageName(locale);
+
+  // Reading-progression context — only built when the teacher has placed
+  // this child on the sequence. Empty string otherwise (prompt stays silent).
+  const readingBlock = englishProgress
+    ? `\nREADING PROGRESSION (structured Pink → Blue → Green reading sequence):
+${firstName} is on lesson ${englishProgress.current_lesson} of ${englishProgress.total_lessons} — currently working on "${englishProgress.lesson_label}" (${englishProgress.phase.charAt(0).toUpperCase() + englishProgress.phase.slice(1)} phase).\n`
+    : '';
 
   // Gather key data points for the narrative
   const masteredWorks = photos.filter(p => p.status === 'mastered');
@@ -107,7 +129,7 @@ ${concerns.length > 0 ? `- Notes: ${concerns.join('; ')}` : ''}
 
 DOCUMENTED WORKS (with educational context):
 ${workLines}
-
+${readingBlock}
 ${previousNarrative ? `PREVIOUS WEEK'S LETTER (for continuity — reference or build on it naturally):\n${previousNarrative}\n` : ''}
 TASK:
 Write a warm, personal narrative letter (3-4 short paragraphs, roughly 200-300 words) that this parent will read alongside their child's weekly photos.
@@ -117,7 +139,7 @@ STRUCTURE:
 
 2. The Learning Story (4-6 sentences): Pick 2-3 of the most meaningful works and explain what ${firstName} was actually doing and WHY it matters. Use the "What this work is" and "Why it matters" data provided above — weave it into your own words naturally. Help the parent see that when their child pours water between jugs, they're building the precise hand control they'll need to write. When they trace sandpaper letters, they're training muscle memory that makes reading feel natural. Connect the classroom to real development the parent can observe at home.
 
-3. The Bigger Picture (2-3 sentences): Step back and paint the developmental arc. ${activePeriods.length > 0 ? `Weave in the sensitive period(s) naturally — explain what it means that ${firstName} is drawn to certain kinds of work right now, and that this window won't last forever.` : 'Connect the week\'s work to the bigger developmental journey.'} If the child mastered something, help the parent feel the significance. If they repeated something many times, explain why repetition is the sign of deep learning, not boredom.
+3. The Bigger Picture (2-3 sentences): Step back and paint the developmental arc. ${activePeriods.length > 0 ? `Weave in the sensitive period(s) naturally — explain what it means that ${firstName} is drawn to certain kinds of work right now, and that this window won't last forever.` : 'Connect the week\'s work to the bigger developmental journey.'} If the child mastered something, help the parent feel the significance. If they repeated something many times, explain why repetition is the sign of deep learning, not boredom.${englishProgress ? ` Weave in ONE warm, natural sentence about where ${firstName} stands in their reading — they are steadily moving through a structured reading sequence and are currently working on "${englishProgress.lesson_label}". Frame it as part of the growth story in plain parent language; do NOT quote lesson numbers or say "Lesson X of Y".` : ''}
 
 4. Closing (1-2 sentences): Forward-looking, encouraging, warm. Leave the parent feeling connected to their child's classroom life and excited about what's coming next.
 

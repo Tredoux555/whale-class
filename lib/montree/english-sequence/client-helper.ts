@@ -63,9 +63,12 @@ export function offerEnglishAdvance(input: OfferAdvanceInput): void {
     let currentLabel = '';
     let atFinal = false;
     try {
-      const res = await fetch('/api/montree/dashboard/english-progress', {
-        credentials: 'same-origin',
-      });
+      // ?child_id= narrows the response to this one child — no need to pull
+      // the whole class roll-call just to read one position.
+      const res = await fetch(
+        `/api/montree/dashboard/english-progress?child_id=${encodeURIComponent(childId)}`,
+        { credentials: 'same-origin' },
+      );
       if (res.ok) {
         const j = await res.json();
         const total = typeof j?.total_lessons === 'number' ? j.total_lessons : null;

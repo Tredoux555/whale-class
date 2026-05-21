@@ -16,6 +16,7 @@ import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { analyzeWeeklyProgress } from '@/lib/montree/ai';
 import { generateWeeklyNarrative, NarrativeInput } from '@/lib/montree/reports/narrative-generator';
+import { getLesson, getPhaseFor, TOTAL_LESSONS } from '@/lib/montree/english-sequence/lesson-map';
 import { getLocaleFromRequest } from '@/lib/montree/i18n/server';
 import { getChineseNameForWork } from '@/lib/montree/curriculum-loader';
 import { getChineseDescriptionsMap } from '@/lib/curriculum/comprehensive-guides/parent-descriptions-zh';
@@ -170,6 +171,43 @@ export async function POST(request: NextRequest) {
         const content = r.content;
         if (content?.narrative) {
           existingReports.set(r.child_id, { id: r.id, content });
+        }
+      }
+    }
+
+    // Batch-fetch each child's reading-sequence position so the parent
+    // narrative can weave in where they stand. Best-effort — if migration 225
+    // hasn't run (Postgres 42P01) the map stays empty and the prompt simply
+    // omits the reading thread.
+    const englishProgressByChild = new Map<string, {
+      current_lesson: number;
+      total_lessons: number;
+      phase: 'pink' | 'blue' | 'green';
+      lesson_label: string;
+    }>();
+    {
+      const { data: epRaw, error: epErr } = await supabase
+        .from('montree_child_english_progress')
+        .select('child_id, current_lesson, current_phase')
+        .in('child_id', children.map(c => c.id));
+      if (epErr) {
+        if (epErr.code !== '42P01') {
+          console.error('[batch-narratives] english-progress fetch error:', epErr.message);
+        }
+      } else {
+        for (const row of (epRaw || []) as Array<{
+          child_id: string; current_lesson: number | null; current_phase: string | null;
+        }>) {
+          if (typeof row.current_lesson === 'number' && row.current_lesson >= 1) {
+            const lesson = getLesson(row.current_lesson);
+            englishProgressByChild.set(row.child_id, {
+              current_lesson: row.current_lesson,
+              total_lessons: TOTAL_LESSONS,
+              phase: (row.current_phase as 'pink' | 'blue' | 'green')
+                || getPhaseFor(row.current_lesson) || 'pink',
+              lesson_label: lesson?.label || `Lesson ${row.current_lesson}`,
+            });
+          }
         }
       }
     }
@@ -329,6 +367,7 @@ export async function POST(request: NextRequest) {
               locale,
               analysis,
               photos: enrichedPhotos,
+              englishProgress: englishProgressByChild.get(child.id) ?? null,
             });
 
             // Build full report content for storage
