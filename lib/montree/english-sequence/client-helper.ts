@@ -1,32 +1,20 @@
 // lib/montree/english-sequence/client-helper.ts
 //
-// 🚨 Session 119 Phase 2 — client-side helper that fires the "advance
-// English position" toast after a successful Language-area photo
-// confirm in photo-audit (or any other surface that confirms a
-// Language work).
+// 🚨 Session 119 Phase 2 / Session 124 — client-side helper that fires an
+// INFORMED "advance English position" prompt after a successful
+// Language-area photo confirm in photo-audit (or any confirm surface).
 //
-// Design: every confirm site already calls invalidateEnglishWeekCache()
-// after server-confirmed success. This helper adds a SINGLE matching
-// drop-point for the English-position prompt — single source of truth
-// so future schema / endpoint changes only need one edit.
+// Session 124 sharpening: the prompt used to be blind — "Advance this
+// child's English position?" with no context, so the teacher couldn't
+// judge whether it made sense. It now first looks up the child's current
+// lesson and shows it in the toast — "Amy is on Lesson 7 — the 'm' sound.
+// Advance to Lesson 8?" — so the teacher decides knowing exactly where the
+// child stands. Children already at the final lesson (128) are skipped
+// silently. If the lookup fails the helper falls back to the original
+// generic prompt — the nudge is never lost.
 //
-// What the helper does:
-//   1. Inspects the photo's resolved area. Bails when not 'language'.
-//   2. Fires a follow-up sonner toast with an "Advance +1" action.
-//   3. On tap, POSTs to the english-progress PATCH endpoint.
-//   4. Shows success / error feedback.
-//
-// What the helper deliberately does NOT do (yet):
-//   - Match the confirmed work to the child's current lesson's mapped
-//     works. Phase 3 will add a `lessonToWorks` table in lesson-map.ts
-//     and gate the prompt to only fire when relevant. For Phase 2 v1
-//     the teacher sees the prompt on every Language confirm — one tap
-//     skips if irrelevant, one tap advances if it is. Tap cost ≤ scroll
-//     cost on a busy classroom.
-//   - Show the CHILD's current lesson number in the toast (would need a
-//     server roundtrip first). Phase 3 will piggyback the lesson number
-//     onto the confirm response so the toast can say "Advance Amy from
-//     Lesson 7 to Lesson 8?".
+// Design: every confirm site calls this once after server-confirmed
+// success. Single drop-point — schema/endpoint changes need one edit.
 
 import { toast } from 'sonner';
 
@@ -34,18 +22,14 @@ interface OfferAdvanceInput {
   /** The child whose photo was just confirmed. */
   childId: string | null | undefined;
   childName: string | null | undefined;
-  /** The Montessori area of the confirmed work — 'language', 'mathematics',
-   *  'sensorial', 'practical_life', 'cultural', or null/unknown. Helper
-   *  bails on anything but 'language'. */
+  /** Montessori area of the confirmed work. Helper bails on anything but 'language'. */
   area: string | null | undefined;
 }
 
-// 🚨 Audit pass 2 fix (Q7): per-child dedup window. Teachers often confirm
-// 3-5 Language photos for the same child in quick succession (busy classroom
-// morning — kid did sandpaper letter, build with t-s-a-p, reading card,
-// they're all going in). Without dedup, each fires its own "Advance +1"
-// toast and a reflex-tapping teacher could jump the child several lessons
-// in 10 seconds. Window: 12s — short enough to re-prompt on the next
+// Per-child dedup window. Teachers confirm 3-5 Language photos for the same
+// child in quick succession on a busy morning; without dedup each fires its
+// own prompt and a reflex-tapping teacher could jump the child several
+// lessons in 10 seconds. 12s is short enough to re-prompt on the next
 // distinct work session, long enough to absorb a batch of related confirms.
 const PER_CHILD_DEDUP_MS = 12_000;
 const lastPromptByChild = new Map<string, number>();
@@ -71,40 +55,75 @@ export function offerEnglishAdvance(input: OfferAdvanceInput): void {
 
   const label = childName || 'this child';
 
-  toast(`📚 Advance ${label}'s English position?`, {
-    duration: 8000,
-    action: {
-      label: 'Advance +1',
-      onClick: () => {
-        // Fire-and-forget the PATCH. Server enforces all invariants.
-        void fetch('/api/montree/dashboard/english-progress', {
-          method: 'PATCH',
-          credentials: 'same-origin',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            action: 'advance',
-            child_id: childId,
-          }),
-        })
-          .then(async (res) => {
-            if (!res.ok) {
-              const j = await res.json().catch(() => ({}));
-              toast.error(j?.error || `Could not advance (${res.status})`);
-              return;
-            }
-            const j = await res.json().catch(() => ({}));
-            const newLesson = j?.current_lesson;
-            const lessonLabel = j?.lesson_label;
-            toast.success(
-              newLesson
-                ? `${label} → Lesson ${newLesson}${lessonLabel ? ' · ' + lessonLabel : ''}`
-                : `${label} advanced one lesson`,
-            );
+  void (async () => {
+    // Look up the child's current position so the prompt is INFORMED — the
+    // teacher decides knowing where the child stands. Falls back to the
+    // generic prompt if the lookup fails (never lose the nudge).
+    let currentLesson: number | null = null;
+    let currentLabel = '';
+    let atFinal = false;
+    try {
+      const res = await fetch('/api/montree/dashboard/english-progress', {
+        credentials: 'same-origin',
+      });
+      if (res.ok) {
+        const j = await res.json();
+        const total = typeof j?.total_lessons === 'number' ? j.total_lessons : null;
+        const row = Array.isArray(j?.children)
+          ? j.children.find((c: { child_id?: string }) => c?.child_id === childId)
+          : null;
+        if (row && typeof row.current_lesson === 'number') {
+          currentLesson = row.current_lesson;
+          currentLabel = typeof row.lesson_label === 'string' ? row.lesson_label : '';
+          atFinal = total !== null && row.current_lesson >= total;
+        }
+      }
+    } catch {
+      // Network/parse failure — fall through to the generic prompt.
+    }
+
+    // Already at the final lesson — nothing to advance to.
+    if (atFinal) return;
+
+    const next = currentLesson !== null ? currentLesson + 1 : null;
+    const title =
+      currentLesson !== null
+        ? `📚 ${label} is on Lesson ${currentLesson}${currentLabel ? ` — ${currentLabel}` : ''}. Advance to ${next}?`
+        : `📚 Advance ${label}'s English position?`;
+    const actionLabel = next !== null ? `Advance to ${next}` : 'Advance +1';
+
+    toast(title, {
+      duration: 8000,
+      action: {
+        label: actionLabel,
+        onClick: () => {
+          // Fire-and-forget the PATCH. Server enforces all invariants.
+          void fetch('/api/montree/dashboard/english-progress', {
+            method: 'PATCH',
+            credentials: 'same-origin',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'advance', child_id: childId }),
           })
-          .catch((err) => {
-            toast.error(err instanceof Error ? err.message : 'Could not advance');
-          });
+            .then(async (res) => {
+              if (!res.ok) {
+                const j = await res.json().catch(() => ({}));
+                toast.error(j?.error || `Could not advance (${res.status})`);
+                return;
+              }
+              const j = await res.json().catch(() => ({}));
+              const newLesson = j?.current_lesson;
+              const lessonLabel = j?.lesson_label;
+              toast.success(
+                newLesson
+                  ? `${label} → Lesson ${newLesson}${lessonLabel ? ' · ' + lessonLabel : ''}`
+                  : `${label} advanced one lesson`,
+              );
+            })
+            .catch((err) => {
+              toast.error(err instanceof Error ? err.message : 'Could not advance');
+            });
+        },
       },
-    },
-  });
+    });
+  })();
 }

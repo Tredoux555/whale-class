@@ -66,6 +66,13 @@ interface ReportData {
     generated_at?: string;
     model?: string;
   } | null;
+  english_progress: {
+    current_lesson: number;
+    current_phase: string;
+    lesson_label: string;
+    total_lessons: number;
+    mastered_count: number;
+  } | null;
   created_at: string;
   child: {
     name: string;
@@ -359,6 +366,55 @@ export default function ParentReportPage() {
             </div>
           ) : null}
         </div>
+
+        {/* ═══ Reading journey — English-progression position ═══ */}
+        {report.english_progress && (() => {
+          const ep = report.english_progress;
+          const PHASE_COLOR: Record<string, string> = { pink: '#f9a8d4', blue: '#7dd3fc', green: '#86efac' };
+          const PHASE_NAME: Record<string, Record<string, string>> = {
+            en: { pink: 'Pink', blue: 'Blue', green: 'Green' },
+            zh: { pink: '粉色', blue: '蓝色', green: '绿色' },
+          };
+          const isZh = locale === 'zh';
+          const color = PHASE_COLOR[ep.current_phase] || T.emerald;
+          const phaseName =
+            (PHASE_NAME[isZh ? 'zh' : 'en'] || PHASE_NAME.en)[ep.current_phase] || ep.current_phase;
+          const first =
+            (report.child?.nickname || report.child?.name || '').trim().split(/\s+/)[0] ||
+            (isZh ? '孩子' : 'Your child');
+          const pct = Math.max(
+            0,
+            Math.min(100, Math.round(((ep.current_lesson - 1) / ep.total_lessons) * 100)),
+          );
+          return (
+            <div style={{ marginLeft: '1.25rem', marginRight: '1.25rem', marginBottom: '1rem', background: T.card, border: `1px solid ${T.cardBorder}`, borderRadius: '0.9rem', padding: '1rem 1.15rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
+                <span style={{ fontSize: '1.05rem' }} aria-hidden>📖</span>
+                <span style={{ color: T.textPrimary, fontWeight: 600, fontSize: '0.95rem' }}>
+                  {isZh ? '阅读进度' : 'Reading journey'}
+                </span>
+              </div>
+              <p style={{ color: T.textSecondary, fontSize: '0.875rem', lineHeight: 1.55, margin: '0 0 0.7rem' }}>
+                {isZh ? (
+                  <>{first} 目前处于<strong style={{ color }}>{phaseName}阶段</strong>，正在学习<strong style={{ color: T.textPrimary }}>第 {ep.current_lesson} 课 — {ep.lesson_label}</strong>。</>
+                ) : (
+                  <>{first} is in the <strong style={{ color }}>{phaseName} phase</strong> of reading, working on <strong style={{ color: T.textPrimary }}>Lesson {ep.current_lesson} — {ep.lesson_label}</strong>.</>
+                )}
+              </p>
+              <div style={{ height: '0.4rem', borderRadius: '0.2rem', background: 'rgba(255,255,255,0.08)', overflow: 'hidden' }}>
+                <div style={{ width: `${pct}%`, height: '100%', background: color, borderRadius: '0.2rem' }} />
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '0.3rem', fontSize: '0.7rem', color: 'rgba(255,255,255,0.45)' }}>
+                <span>
+                  {isZh
+                    ? `第 ${ep.current_lesson} 课 / 共 ${ep.total_lessons} 课`
+                    : `Lesson ${ep.current_lesson} of ${ep.total_lessons}`}
+                </span>
+                <span>{pct}%</span>
+              </div>
+            </div>
+          );
+        })()}
 
         {/* ═══ Divider ═══ */}
         {photoWorks.length > 0 && (
