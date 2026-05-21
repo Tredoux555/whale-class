@@ -1782,7 +1782,7 @@ function ClassEnglishHeatmap({
           Class at a glance
         </div>
         <div style={{ fontSize: 11, color: T.textMuted }}>
-          {children.length} {children.length === 1 ? 'child' : 'children'} · 1 → {totalLessons}
+          {kids.length} {kids.length === 1 ? 'child' : 'children'} · 1 → {totalLessons}
         </div>
       </div>
 
@@ -1911,7 +1911,7 @@ function ClassEnglishHeatmap({
         flexWrap: 'wrap',
       }}>
         {(['pink', 'blue', 'green'] as const).map(phase => {
-          const count = children.filter(c => c.current_phase === phase).length;
+          const count = kids.filter(c => c.current_phase === phase).length;
           return (
             <span key={phase} style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
               <span style={{
@@ -1927,7 +1927,7 @@ function ClassEnglishHeatmap({
         })}
         <span style={{ marginLeft: 'auto' }}>
           Class avg: Lesson {Math.round(
-            children.reduce((sum, c) => sum + c.current_lesson, 0) / children.length
+            kids.reduce((sum, c) => sum + c.current_lesson, 0) / kids.length
           )}
         </span>
       </div>
