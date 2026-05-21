@@ -84,15 +84,26 @@ export async function runTranscribeAndSummarizePipeline(
   // Persist transcript immediately so even if Sonnet fails, the staff
   // has the raw transcript to read.
   // 🚨 Session 121 — encrypt transcript when encryption_v1 is on for the school.
-  const encEnabledTranscript = await isEncryptionEnabledForSchool(supabase, input.schoolId);
+  // The encryption decision is resolved ONCE here and reused for the summary
+  // write below, so both columns on this row always share one
+  // encryption_version.
+  const encEnabled = await isEncryptionEnabledForSchool(supabase, input.schoolId);
   const transcriptPlain = whisperRes.transcript.slice(0, 100_000);
-  const encTranscript = writeEncryptedField(transcriptPlain, encEnabledTranscript);
+  const encTranscript = writeEncryptedField(transcriptPlain, encEnabled);
+  // Clear any stale summary from a previous run in the SAME update that
+  // re-stamps encryption_version. On a re-run after the encryption flag
+  // flipped, an old summary encoded under the previous version would
+  // otherwise mismatch the new encryption_version and read back as
+  // undecryptable ciphertext if the summarize stage below then fails.
+  // The summary is regenerated in stage 5; NULL is a clean intermediate.
   await supabase
     .from('montree_appointment_recordings')
     .update({
       transcript: encTranscript.value,
       transcript_locale: whisperRes.locale || null,
       encryption_version: encTranscript.version,
+      summary: null,
+      summarized_at: null,
       transcribed_at: new Date().toISOString(),
     })
     .eq('id', input.recordingId);
@@ -129,14 +140,17 @@ export async function runTranscribeAndSummarizePipeline(
   }
 
   // ── 5. Persist summary + mark ready ────────────────────────────────
-  // 🚨 Session 121 — encrypt the Sonnet briefing with the same encryption_version
-  // we used for the transcript (above). Both columns share the row's version.
-  const encSummary = writeEncryptedField(summaryRes.data.briefing, encEnabledTranscript);
+  // 🚨 Session 121 — encrypt the Sonnet briefing with the SAME encryption
+  // decision used for the transcript above. encryption_version is re-stamped
+  // here too (belt-and-braces — guarantees the row's version always matches
+  // the summary encoding).
+  const encSummary = writeEncryptedField(summaryRes.data.briefing, encEnabled);
   const { error: persistErr } = await supabase
     .from('montree_appointment_recordings')
     .update({
       summary: encSummary.value,
       summary_locale: whisperRes.locale || null,
+      encryption_version: encSummary.version,
       summarized_at: new Date().toISOString(),
       recording_status: 'ready',
     })
