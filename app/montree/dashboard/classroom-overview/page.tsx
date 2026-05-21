@@ -1107,6 +1107,18 @@ const PHASE_LABEL: Record<'pink' | 'blue' | 'green', string> = {
   green: 'Green',
 };
 
+/** Deep-link to the Library content page for a given lesson. Pink lessons
+ *  1-4 are pre-reading review with no #lesson-N anchor — the link still
+ *  opens the right page, just at the top. Anchors are injected by
+ *  scripts/lesson-content/add-lesson-anchors.py. */
+function lessonContentHref(phase: 'pink' | 'blue' | 'green', lesson: number): string {
+  const file =
+    phase === 'pink' ? 'language-area-lessons'
+    : phase === 'blue' ? 'language-area-blue'
+    : 'language-area-green';
+  return `/${file}.html#lesson-${lesson}`;
+}
+
 function EnglishProgressTab({
   classroomId,
   T,
@@ -1242,7 +1254,8 @@ function EnglishProgressTab({
         </div>
         <div style={{ fontSize: 13, color: T.textMuted, marginTop: 4, lineHeight: 1.5 }}>
           Each child&apos;s position in the 128-lesson Pink → Blue → Green progression
-          from your Library. Use ▸ to advance after a child masters their current lesson.
+          from your Library. Tap a child&apos;s lesson to open its word bank, phrases
+          and heart words; use ▸ to advance once they&apos;ve mastered it.
         </div>
       </div>
 
@@ -1356,27 +1369,43 @@ function ChildProgressCard({
           }}>
             {child.child_name}
           </div>
-          <div style={{
-            marginTop: 2,
-            display: 'flex',
-            alignItems: 'center',
-            gap: 8,
-            fontSize: 12,
-            color: T.textSecondary,
-          }}>
+          <button
+            type="button"
+            onClick={() => window.open(
+              lessonContentHref(child.current_phase, child.current_lesson),
+              '_blank',
+              'noopener,noreferrer',
+            )}
+            title={`Open Lesson ${child.current_lesson} — word bank, phrases, heart words`}
+            style={{
+              marginTop: 4,
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 7,
+              maxWidth: '100%',
+              fontSize: 12,
+              color: T.textSecondary,
+              background: 'rgba(255,255,255,0.05)',
+              border: '1px solid rgba(255,255,255,0.12)',
+              borderRadius: 8,
+              padding: '5px 9px',
+              cursor: 'pointer',
+              fontFamily: 'inherit',
+            }}
+          >
             <span style={{
               display: 'inline-block',
               width: 8,
               height: 8,
               borderRadius: '50%',
               background: PHASE_COLOR[child.current_phase],
+              flexShrink: 0,
             }} />
-            <span>
-              Lesson {child.current_lesson}/{totalLessons}
-              {' · '}
-              {child.lesson_label}
+            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              Lesson {child.current_lesson}/{totalLessons} · {child.lesson_label}
             </span>
-          </div>
+            <BookOpen size={13} strokeWidth={1.75} style={{ flexShrink: 0, opacity: 0.8 }} />
+          </button>
         </div>
         <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
           <button
