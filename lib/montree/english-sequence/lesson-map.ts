@@ -40,64 +40,73 @@ export interface EnglishLesson {
 //   /scripts/lesson-content/build_pink.py
 // Mandarin-L1 articulation notes live in the HTML, not here.
 // ───────────────────────────────────────────────────────────────
+// 🚨 Session 124 — Pink realigned to MATCH the Library Pink page
+// (public/language-area-lessons.html) one-to-one, with Tredoux's explicit
+// sign-off. The page reserves L1-4 for pre-reading review (no letter cards)
+// and begins letter-sounds at L5; the catalog now mirrors that exactly so
+// the English Progression tab's #lesson-N deep-links land on the right
+// section. Safe to renumber: the montree_child_english_progress table was
+// empty at the time, so no child position needed migrating.
 const PINK: EnglishLesson[] = [
-  // Phase 1 — The Alphabet (L1-34, UFLI SATPIN order then high-frequency)
-  { num: 1,  phase: 'pink', letter: 's',  sound: '/s/',  label: 's' },
-  { num: 2,  phase: 'pink', letter: 'a',  sound: '/ă/',  label: 'a (short)' },
-  { num: 3,  phase: 'pink', letter: 't',  sound: '/t/',  label: 't' },
-  { num: 4,  phase: 'pink', letter: 'p',  sound: '/p/',  label: 'p' },
-  { num: 5,  phase: 'pink', letter: 'i',  sound: '/ĭ/',  label: 'i (short)' },
-  { num: 6,  phase: 'pink', letter: 'n',  sound: '/n/',  label: 'n' },
-  { num: 7,  phase: 'pink', letter: 'm',  sound: '/m/',  label: 'm' },
-  { num: 8,  phase: 'pink', letter: 'd',  sound: '/d/',  label: 'd' },
-  { num: 9,  phase: 'pink', letter: 'g',  sound: '/g/',  label: 'g (hard)' },
-  { num: 10, phase: 'pink', letter: 'o',  sound: '/ŏ/',  label: 'o (short)' },
-  { num: 11, phase: 'pink', letter: 'c',  sound: '/k/',  label: 'c (hard)' },
-  { num: 12, phase: 'pink', letter: 'k',  sound: '/k/',  label: 'k' },
-  { num: 13, phase: 'pink', letter: 'ck', sound: '/k/',  label: 'ck' },
-  { num: 14, phase: 'pink', letter: 'e',  sound: '/ĕ/',  label: 'e (short)' },
-  { num: 15, phase: 'pink', letter: 'u',  sound: '/ŭ/',  label: 'u (short)' },
-  { num: 16, phase: 'pink', letter: 'r',  sound: '/r/',  label: 'r' },
-  { num: 17, phase: 'pink', letter: 'h',  sound: '/h/',  label: 'h' },
-  { num: 18, phase: 'pink', letter: 'b',  sound: '/b/',  label: 'b' },
-  { num: 19, phase: 'pink', letter: 'f',  sound: '/f/',  label: 'f' },
-  { num: 20, phase: 'pink', letter: 'l',  sound: '/l/',  label: 'l' },
-  { num: 21, phase: 'pink', letter: 'j',  sound: '/j/',  label: 'j' },
-  { num: 22, phase: 'pink', letter: 'v',  sound: '/v/',  label: 'v' },
-  { num: 23, phase: 'pink', letter: 'w',  sound: '/w/',  label: 'w' },
-  { num: 24, phase: 'pink', letter: 'x',  sound: '/ks/', label: 'x' },
-  { num: 25, phase: 'pink', letter: 'y',  sound: '/y/',  label: 'y (consonant)' },
-  { num: 26, phase: 'pink', letter: 'z',  sound: '/z/',  label: 'z' },
-  { num: 27, phase: 'pink', letter: 'qu', sound: '/kw/', label: 'qu' },
-  // Lessons 28-34: review + heart words + sentence building (no new graphemes)
-  { num: 28, phase: 'pink', letter: '—',  sound: '—',    label: 'CVC review · the / a / is' },
-  { num: 29, phase: 'pink', letter: '—',  sound: '—',    label: 'CVC review · I / and / to' },
-  { num: 30, phase: 'pink', letter: '—',  sound: '—',    label: 'CVC review · was / for / on' },
-  { num: 31, phase: 'pink', letter: '—',  sound: '—',    label: 'Sentence building · short a/i' },
-  { num: 32, phase: 'pink', letter: '—',  sound: '—',    label: 'Sentence building · short o/u' },
-  { num: 33, phase: 'pink', letter: '—',  sound: '—',    label: 'Sentence building · short e' },
-  { num: 34, phase: 'pink', letter: '—',  sound: '—',    label: 'All-vowels review + heart words' },
-  // Phase 2 — CVC consolidation + FLSZ doubling (L35-41)
-  { num: 35, phase: 'pink', letter: '—',  sound: '/ă/',  label: 'CVC drill — short a' },
-  { num: 36, phase: 'pink', letter: '—',  sound: '/ĭ/',  label: 'CVC drill — short i' },
-  { num: 37, phase: 'pink', letter: '—',  sound: '/ŏ/',  label: 'CVC drill — short o' },
-  { num: 38, phase: 'pink', letter: '—',  sound: '/ĕ/',  label: 'CVC drill — short e' },
-  { num: 39, phase: 'pink', letter: '—',  sound: '/ŭ/',  label: 'CVC drill — short u' },
-  { num: 40, phase: 'pink', letter: '—',  sound: '—',    label: 'Mixed minimal pairs · cat/cot/cut' },
+  // Pre-reading review — oral group activities, no letter cards yet (L1-4)
+  { num: 1,  phase: 'pink', letter: '—', sound: '—', label: 'Pre-reading · rhyming' },
+  { num: 2,  phase: 'pink', letter: '—', sound: '—', label: 'Pre-reading · alphabet sequence' },
+  { num: 3,  phase: 'pink', letter: '—', sound: '—', label: 'Pre-reading · sound matching' },
+  { num: 4,  phase: 'pink', letter: '—', sound: '—', label: 'Pre-reading · concepts of print' },
+  // The Alphabet — one new letter per lesson (L5-31, UFLI SATPIN order)
+  { num: 5,  phase: 'pink', letter: 's',  sound: '/s/',  label: 's' },
+  { num: 6,  phase: 'pink', letter: 'a',  sound: '/ă/',  label: 'a (short)' },
+  { num: 7,  phase: 'pink', letter: 't',  sound: '/t/',  label: 't' },
+  { num: 8,  phase: 'pink', letter: 'p',  sound: '/p/',  label: 'p' },
+  { num: 9,  phase: 'pink', letter: 'i',  sound: '/ĭ/',  label: 'i (short)' },
+  { num: 10, phase: 'pink', letter: 'n',  sound: '/n/',  label: 'n' },
+  { num: 11, phase: 'pink', letter: 'm',  sound: '/m/',  label: 'm' },
+  { num: 12, phase: 'pink', letter: 'd',  sound: '/d/',  label: 'd' },
+  { num: 13, phase: 'pink', letter: 'g',  sound: '/g/',  label: 'g (hard)' },
+  { num: 14, phase: 'pink', letter: 'o',  sound: '/ŏ/',  label: 'o (short)' },
+  { num: 15, phase: 'pink', letter: 'c',  sound: '/k/',  label: 'c (hard)' },
+  { num: 16, phase: 'pink', letter: 'k',  sound: '/k/',  label: 'k' },
+  { num: 17, phase: 'pink', letter: 'ck', sound: '/k/',  label: 'ck' },
+  { num: 18, phase: 'pink', letter: 'e',  sound: '/ĕ/',  label: 'e (short)' },
+  { num: 19, phase: 'pink', letter: 'u',  sound: '/ŭ/',  label: 'u (short)' },
+  { num: 20, phase: 'pink', letter: 'r',  sound: '/r/',  label: 'r' },
+  { num: 21, phase: 'pink', letter: 'h',  sound: '/h/',  label: 'h' },
+  { num: 22, phase: 'pink', letter: 'b',  sound: '/b/',  label: 'b' },
+  { num: 23, phase: 'pink', letter: 'f',  sound: '/f/',  label: 'f' },
+  { num: 24, phase: 'pink', letter: 'l',  sound: '/l/',  label: 'l' },
+  { num: 25, phase: 'pink', letter: 'j',  sound: '/j/',  label: 'j' },
+  { num: 26, phase: 'pink', letter: 'v',  sound: '/v/',  label: 'v' },
+  { num: 27, phase: 'pink', letter: 'w',  sound: '/w/',  label: 'w' },
+  { num: 28, phase: 'pink', letter: 'x',  sound: '/ks/', label: 'x' },
+  { num: 29, phase: 'pink', letter: 'y',  sound: '/y/',  label: 'y (consonant)' },
+  { num: 30, phase: 'pink', letter: 'z',  sound: '/z/',  label: 'z' },
+  { num: 31, phase: 'pink', letter: 'qu', sound: '/kw/', label: 'qu' },
+  // Alphabet review (L32-34, no new graphemes)
+  { num: 32, phase: 'pink', letter: '—', sound: '—', label: 'Alphabet review' },
+  { num: 33, phase: 'pink', letter: '—', sound: '—', label: 'Alphabet review' },
+  { num: 34, phase: 'pink', letter: '—', sound: '—', label: 'Alphabet review' },
+  // Short-vowel deep dives + FLSZ doubling (L35-41)
+  { num: 35, phase: 'pink', letter: '—', sound: '/ă/', label: 'Short a — deep dive' },
+  { num: 36, phase: 'pink', letter: '—', sound: '/ĭ/', label: 'Short i — deep dive' },
+  { num: 37, phase: 'pink', letter: '—', sound: '/ŏ/', label: 'Short o — deep dive' },
+  { num: 38, phase: 'pink', letter: '—', sound: '/ĕ/', label: 'Short e — deep dive' },
+  { num: 39, phase: 'pink', letter: '—', sound: '/ŭ/', label: 'Short u — deep dive' },
+  { num: 40, phase: 'pink', letter: '—', sound: '—', label: 'Mixed CVC minimal pairs' },
   { num: 41, phase: 'pink', letter: 'ff/ll/ss/zz', sound: '—', label: 'FLSZ doubling rule' },
-  // Phase 3 — Digraphs + Blends (L42-53)
+  // Digraphs (L42-46)
   { num: 42, phase: 'pink', letter: 'sh', sound: '/ʃ/',  label: 'sh' },
   { num: 43, phase: 'pink', letter: 'ch', sound: '/tʃ/', label: 'ch' },
   { num: 44, phase: 'pink', letter: 'th', sound: '/θ/',  label: 'th (voiceless)' },
-  { num: 45, phase: 'pink', letter: 'th', sound: '/ð/',  label: 'th (voiced)' },
-  { num: 46, phase: 'pink', letter: 'wh', sound: '/w/',  label: 'wh' },
-  { num: 47, phase: 'pink', letter: '—',  sound: '—',    label: 'Ending blends · -st/-nd/-mp/-nt' },
-  { num: 48, phase: 'pink', letter: 's-', sound: '—',    label: 'Beginning s-blends · sp/st/sn/sm/sw' },
-  { num: 49, phase: 'pink', letter: 'l-', sound: '—',    label: 'l-blends · bl/cl/fl/gl/pl/sl' },
-  { num: 50, phase: 'pink', letter: 'r-', sound: '—',    label: 'r-blends · br/cr/dr/fr/gr/pr/tr' },
-  { num: 51, phase: 'pink', letter: 'str/spl', sound: '—', label: 'Triple blends · str/spl/spr/scr' },
-  { num: 52, phase: 'pink', letter: 'thr/shr', sound: '—', label: 'thr / shr' },
-  { num: 53, phase: 'pink', letter: '—',  sound: '—',    label: 'Pink Phase consolidation' },
+  { num: 45, phase: 'pink', letter: 'wh', sound: '/w/',  label: 'wh' },
+  { num: 46, phase: 'pink', letter: 'th', sound: '/ð/',  label: 'th (voiced)' },
+  // Blends (L47-53)
+  { num: 47, phase: 'pink', letter: '—',  sound: '—', label: 'Ending blends · st/nd/mp' },
+  { num: 48, phase: 'pink', letter: '—',  sound: '—', label: 'Ending blends · nk/nt/lt' },
+  { num: 49, phase: 'pink', letter: 's-', sound: '—', label: 'Beginning blends · s-blends' },
+  { num: 50, phase: 'pink', letter: 'l-', sound: '—', label: 'Beginning blends · l-blends' },
+  { num: 51, phase: 'pink', letter: 'r-', sound: '—', label: 'Beginning blends · r-blends' },
+  { num: 52, phase: 'pink', letter: '—',  sound: '—', label: 'Beginning blends · tw/dw/qu review' },
+  { num: 53, phase: 'pink', letter: 'str/spl', sound: '—', label: 'Triple blends' },
 ];
 
 // ───────────────────────────────────────────────────────────────
