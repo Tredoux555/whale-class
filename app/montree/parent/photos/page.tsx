@@ -165,7 +165,7 @@ function ParentPhotosContent() {
 
   return (
     <div style={{
-      minHeight: '100vh',
+      minHeight: '100dvh',
       background: T.bg,
       backgroundImage: T.glow,
       backgroundAttachment: 'fixed',
@@ -400,7 +400,7 @@ function PhotosSplash() {
   const { t } = useI18n();
   return (
     <div style={{
-      minHeight: '100vh',
+      minHeight: '100dvh',
       background: T.bg,
       backgroundImage: T.glow,
       backgroundAttachment: 'fixed',

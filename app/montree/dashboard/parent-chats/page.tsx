@@ -97,7 +97,7 @@ export default function ParentChatsListPage() {
 
   return (
     <div style={{
-      minHeight: '100vh',
+      minHeight: '100dvh',
       background: T.bg,
       backgroundImage: T.glow,
       backgroundAttachment: 'fixed',

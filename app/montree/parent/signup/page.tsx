@@ -56,7 +56,7 @@ function SignupRedirect() {
 export default function ParentSignupPage() {
   return (
     <div style={{
-      minHeight: '100vh',
+      minHeight: '100dvh',
       background: T.bg,
       backgroundImage: T.glow,
       backgroundAttachment: 'fixed',

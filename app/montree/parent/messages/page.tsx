@@ -145,7 +145,7 @@ export default function ParentMessagesPage() {
   if (loading) {
     return (
       <div style={{
-        minHeight: '100vh',
+        minHeight: '100dvh',
         background: T.bg,
         backgroundImage: T.glow,
         backgroundAttachment: 'fixed',
@@ -178,7 +178,7 @@ export default function ParentMessagesPage() {
 
   return (
     <div style={{
-      minHeight: '100vh',
+      minHeight: '100dvh',
       background: T.bg,
       backgroundImage: T.glow,
       backgroundAttachment: 'fixed',
