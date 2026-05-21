@@ -83,6 +83,14 @@ export interface ThisIsSheetPhoto {
     suggested_area?: string;
     closest_existing_match?: { work_name?: string; similarity?: number } | null;
     confidence?: number;
+    // Rich description fields the pipeline cached on the photo. The
+    // new_custom resolve path copies these verbatim onto the freshly
+    // created curriculum work, so the addMode preview shows the teacher
+    // exactly what they're adding before they commit.
+    visual_description?: string;
+    parent_description?: string;
+    why_it_matters?: string;
+    key_materials?: string[];
   } | null;
 }
 
@@ -1348,6 +1356,53 @@ export default function ThisIsSheet({
                   );
                 })}
               </div>
+
+              {(() => {
+                const d = photo?.sonnet_draft;
+                const desc = (d?.parent_description || d?.visual_description || '').trim();
+                const why = (d?.why_it_matters || '').trim();
+                const mats = (d?.key_materials || []).filter(
+                  (m): m is string => typeof m === 'string' && m.trim().length > 0,
+                );
+                const hasContent = !!desc || !!why || mats.length > 0;
+                return (
+                  <div style={{
+                    background: '#faf5ff',
+                    border: '1px solid #e9d5ff',
+                    borderRadius: 12,
+                    padding: '12px 14px',
+                    marginBottom: 16,
+                  }}>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: '#6b21a8', marginBottom: hasContent ? 8 : 0 }}>
+                      📖 What you&apos;re adding
+                    </div>
+                    {hasContent ? (
+                      <>
+                        {desc && (
+                          <p style={{ fontSize: 13, color: '#374151', lineHeight: 1.5, margin: '0 0 8px' }}>{desc}</p>
+                        )}
+                        {why && (
+                          <p style={{ fontSize: 12, color: '#4b5563', lineHeight: 1.5, margin: '0 0 8px' }}>
+                            <span style={{ fontWeight: 600, color: '#6b21a8' }}>Why it matters: </span>{why}
+                          </p>
+                        )}
+                        {mats.length > 0 && (
+                          <p style={{ fontSize: 12, color: '#6b7280', margin: 0 }}>
+                            <span style={{ fontWeight: 600 }}>Materials: </span>{mats.slice(0, 8).join(', ')}
+                          </p>
+                        )}
+                        <p style={{ fontSize: 11, color: '#9ca3af', fontStyle: 'italic', margin: '8px 0 0' }}>
+                          Sonnet wrote this from the photo. It attaches now and is refined automatically a few seconds after you create the work.
+                        </p>
+                      </>
+                    ) : (
+                      <p style={{ fontSize: 12, color: '#9ca3af', fontStyle: 'italic', margin: 0 }}>
+                        No AI description on this photo yet — Sonnet will write one in the background right after you create the work.
+                      </p>
+                    )}
+                  </div>
+                );
+              })()}
 
               <div style={{ display: 'flex', gap: 10 }}>
                 <button
