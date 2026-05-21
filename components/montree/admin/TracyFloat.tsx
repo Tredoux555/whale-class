@@ -1090,6 +1090,11 @@ function AssistantBubble({
   onAccept: () => void;
   onDecline: () => void;
 }) {
+  // 🚨 Pre-existing latent bug fixed in audit: the 402 upgrade card below
+  // calls t(...) but t was never brought into scope here — a Free-tier
+  // principal hitting Tracy would crash this bubble. AssistantBubble is a
+  // component, so useI18n() is valid.
+  const { t } = useI18n();
   const { body, action } = splitActionLine(turn.text);
   const isThinking = turn.pending && !turn.text && !turn.error;
   const showOfferButtons =
