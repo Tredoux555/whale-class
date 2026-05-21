@@ -9,11 +9,20 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import dynamic from 'next/dynamic';
+import { useI18n } from '@/lib/montree/i18n';
 
 const AgoraVideoCall = dynamic(
   () => import('@/components/montree/appointments/AgoraVideoCall'),
-  { ssr: false, loading: () => <CallSplash message="Loading the call interface…" /> },
+  { ssr: false, loading: () => <LoadingSplash /> },
 );
+
+// Loading fallback for the dynamic AgoraVideoCall chunk. Its own component so
+// it can use the i18n hook (the dynamic `loading` callback renders inside the
+// React tree, so hooks are valid here).
+function LoadingSplash() {
+  const { t } = useI18n();
+  return <CallSplash message={t('calls.loadingInterface')} />;
+}
 
 interface ApptMeta {
   id: string;
@@ -27,6 +36,7 @@ export default function ParentJoinCallPage({
 }) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { t } = useI18n();
   const [apptId, setApptId] = useState<string | null>(null);
   const [meta, setMeta] = useState<ApptMeta | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -52,12 +62,12 @@ export default function ParentJoinCallPage({
           return;
         }
         if (tokenRes.status === 404) {
-          setError("This call isn't available — the meeting may have been cancelled.");
+          setError(t('calls.unavailableMeeting'));
           return;
         }
         if (!tokenRes.ok) {
           const j = await tokenRes.json().catch(() => ({}));
-          setError(j?.error || `Could not join (HTTP ${tokenRes.status}).`);
+          setError(j?.error || t('calls.couldNotJoin', { status: tokenRes.status }));
           return;
         }
         await tokenRes.json().catch(() => ({}));
@@ -72,27 +82,27 @@ export default function ParentJoinCallPage({
           if (detailRes.ok) {
             const d = await detailRes.json().catch(() => ({}));
             const a = d?.appointment || d;
-            const name = a?.host?.name || a?.hosts?.[0]?.name || a?.host_name || 'Your teacher';
+            const name = a?.host?.name || a?.hosts?.[0]?.name || a?.host_name || t('calls.defaultTeacherName');
             setMeta({ id: apptId, staff_name: name });
             return;
           }
         } catch { /* fall through */ }
-        setMeta({ id: apptId, staff_name: 'Your teacher' });
+        setMeta({ id: apptId, staff_name: t('calls.defaultTeacherName') });
       } catch (e) {
-        setError(e instanceof Error ? e.message : 'Could not load the call.');
+        setError(e instanceof Error ? e.message : t('calls.couldNotLoad'));
       }
     })();
-  }, [apptId, router]);
+  }, [apptId, router, t]);
 
   const handleClose = useCallback(() => {
     router.push('/montree/parent/dashboard');
   }, [router]);
 
   if (error) {
-    return <CallSplash message={error} action={{ label: 'Back to dashboard', onClick: handleClose }} />;
+    return <CallSplash message={error} action={{ label: t('calls.backToDashboard'), onClick: handleClose }} />;
   }
   if (!apptId || !meta) {
-    return <CallSplash message={audioOnly ? 'Starting voice call…' : 'Starting video call…'} />;
+    return <CallSplash message={audioOnly ? t('calls.startingVoiceCall') : t('calls.startingVideoCall')} />;
   }
 
   return (

@@ -20,6 +20,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { Mic, Square, Loader2, X } from 'lucide-react';
+import { useI18n } from '@/lib/montree/i18n';
 
 export interface VoiceReady {
   audioUrl: string;          // proxy URL stored in media_url
@@ -40,6 +41,7 @@ interface Props {
 type Stage = 'idle' | 'recording' | 'processing' | 'error';
 
 export default function VoiceComposer({ onReady, disabled, accent = '#34d399' }: Props) {
+  const { t } = useI18n();
   const [stage, setStage] = useState<Stage>('idle');
   const [seconds, setSeconds] = useState(0);
   const [error, setError] = useState<string | null>(null);
@@ -83,7 +85,7 @@ export default function VoiceComposer({ onReady, disabled, accent = '#34d399' }:
       timerRef.current = window.setInterval(() => setSeconds((s) => s + 1), 1000);
     } catch (err) {
       console.error('[VoiceComposer] mic permission denied', err);
-      setError('Microphone access denied');
+      setError(t('msg.micDenied'));
       setStage('error');
     }
   }
@@ -161,12 +163,12 @@ export default function VoiceComposer({ onReady, disabled, accent = '#34d399' }:
         // Transcription failure shouldn't block sending — send with a
         // placeholder transcript so the parent/principal can still listen.
         console.warn('[VoiceComposer] transcription failed, sending without text');
-        transcript = '[Voice message — transcript unavailable]';
+        transcript = t('msg.transcriptUnavailable');
       }
 
       onReady({
         audioUrl: upData.url,
-        transcript: transcript || '[Voice message]',
+        transcript: transcript || t('msg.voiceMessage'),
         durationSeconds,
         filename,
       });
@@ -175,7 +177,7 @@ export default function VoiceComposer({ onReady, disabled, accent = '#34d399' }:
       setSeconds(0);
     } catch (err) {
       console.error('[VoiceComposer] process failed', err);
-      setError(err instanceof Error ? err.message : 'Could not send voice note');
+      setError(err instanceof Error ? err.message : t('msg.couldNotSendVoice'));
       setStage('error');
     }
   }
@@ -192,8 +194,8 @@ export default function VoiceComposer({ onReady, disabled, accent = '#34d399' }:
           type="button"
           onClick={startRecording}
           disabled={disabled}
-          title="Record voice note"
-          aria-label="Record voice note"
+          title={t('msg.recordVoiceNote')}
+          aria-label={t('msg.recordVoiceNote')}
           style={{
             width: 40,
             height: 40,
@@ -224,8 +226,8 @@ export default function VoiceComposer({ onReady, disabled, accent = '#34d399' }:
         <button
           type="button"
           onClick={stopRecording}
-          title="Stop and send"
-          aria-label="Stop recording"
+          title={t('msg.stopAndSend')}
+          aria-label={t('msg.stopRecording')}
           style={{
             width: 40,
             height: 40,
@@ -249,8 +251,8 @@ export default function VoiceComposer({ onReady, disabled, accent = '#34d399' }:
         <button
           type="button"
           onClick={cancelRecording}
-          title="Cancel"
-          aria-label="Cancel recording"
+          title={t('common.cancel')}
+          aria-label={t('msg.cancelRecording')}
           style={{
             width: 28,
             height: 28,
@@ -281,7 +283,7 @@ export default function VoiceComposer({ onReady, disabled, accent = '#34d399' }:
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'rgba(255,255,255,0.7)', fontSize: 13 }}>
       <Loader2 size={18} className="animate-spin" />
-      <span>Transcribing…</span>
+      <span>{t('msg.transcribing')}</span>
     </div>
   );
 }

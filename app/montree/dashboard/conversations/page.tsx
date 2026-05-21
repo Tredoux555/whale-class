@@ -33,6 +33,11 @@ import {
 import UpgradeCard, {
   extractUpgradeFromResponse,
 } from '@/components/montree/UpgradeCard';
+import { useI18n, getIntlLocale, type TranslationKey } from '@/lib/montree/i18n';
+
+// Translation helper — new meetingNotes.* keys are added to en.ts by the i18n
+// team after this file ships. Cast keeps TS happy until they land.
+type TFn = (key: string, params?: Record<string, string | number>) => string;
 
 const T = {
   emerald: '#34d399',
@@ -83,9 +88,9 @@ type View =
   | { kind: 'new' }
   | { kind: 'detail'; meeting: MeetingRow };
 
-function fmtDate(d: string): string {
+function fmtDate(d: string, locale: string): string {
   try {
-    return new Date(d).toLocaleString(undefined, {
+    return new Date(d).toLocaleString(getIntlLocale(locale), {
       year: 'numeric',
       month: 'short',
       day: 'numeric',
@@ -97,18 +102,23 @@ function fmtDate(d: string): string {
   }
 }
 
-function fmtDuration(seconds: number | null): string {
+function fmtDuration(seconds: number | null, t: TFn): string {
   if (!seconds || seconds < 1) return '—';
-  if (seconds < 60) return `${seconds}s`;
+  if (seconds < 60) return t('meetingNotes.durationSeconds', { s: seconds });
   const m = Math.floor(seconds / 60);
   const s = seconds % 60;
-  if (m < 60) return `${m}m${s ? ` ${s}s` : ''}`;
+  if (m < 60) {
+    return s
+      ? t('meetingNotes.durationMinutesSeconds', { m, s })
+      : t('meetingNotes.durationMinutes', { m });
+  }
   const h = Math.floor(m / 60);
-  return `${h}h ${m % 60}m`;
+  return t('meetingNotes.durationHoursMinutes', { h, m: m % 60 });
 }
 
 export default function TeacherConversationsPage() {
   const router = useRouter();
+  const { t } = useI18n();
   const [view, setView] = useState<View>({ kind: 'list' });
   const [meetings, setMeetings] = useState<MeetingRow[]>([]);
   const [children, setChildren] = useState<ChildOption[]>([]);
@@ -146,7 +156,7 @@ export default function TeacherConversationsPage() {
           router.replace('/montree/login');
           return;
         } else {
-          setError('Could not load meeting notes.');
+          setError(t('meetingNotes.errorLoad' as TranslationKey));
         }
 
         if (childrenRes.ok) {
@@ -157,7 +167,7 @@ export default function TeacherConversationsPage() {
           );
         }
       } catch {
-        if (!cancelled) setError('Network error.');
+        if (!cancelled) setError(t('meetingNotes.errorNetwork' as TranslationKey));
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -165,7 +175,7 @@ export default function TeacherConversationsPage() {
     return () => {
       cancelled = true;
     };
-  }, [router]);
+  }, [router, t]);
 
   const refreshMeetings = useCallback(async () => {
     try {
@@ -207,9 +217,9 @@ export default function TeacherConversationsPage() {
               lineHeight: 1.5,
             }}
           >
-            ⚠️ The Meeting Notes table isn&apos;t set up yet. Tredoux needs to
-            run <code>migrations/214_meeting_notes.sql</code> in Supabase. Once
-            that runs you&apos;ll be able to record and save here.
+            ⚠️ {t('meetingNotes.migrationPendingTeacherIntro' as TranslationKey)}{' '}
+            <code>migrations/214_meeting_notes.sql</code>{' '}
+            {t('meetingNotes.migrationPendingTeacherOutro' as TranslationKey)}
           </div>
         )}
 
@@ -231,7 +241,7 @@ export default function TeacherConversationsPage() {
 
         {loading ? (
           <div style={{ color: T.textSecondary, fontSize: 14, padding: 20 }}>
-            Loading meetings…
+            {t('meetingNotes.loadingMeetings' as TranslationKey)}
           </div>
         ) : view.kind === 'list' ? (
           <ListView
@@ -277,6 +287,7 @@ function Header({
   view: View;
   setView: (v: View) => void;
 }) {
+  const { t } = useI18n();
   return (
     <div
       style={{
@@ -291,7 +302,7 @@ function Header({
           <button
             type="button"
             onClick={() => setView({ kind: 'list' })}
-            aria-label="Back to list"
+            aria-label={t('meetingNotes.backToList' as TranslationKey)}
             style={{
               width: 36,
               height: 36,
@@ -317,10 +328,10 @@ function Header({
               letterSpacing: -0.3,
             }}
           >
-            Meeting Notes
+            {t('meetingNotes.teacherTitle' as TranslationKey)}
           </div>
           <div style={{ fontSize: 13, color: T.textSecondary, marginTop: 2 }}>
-            Record a parent meeting, save the summary. The audio is never kept.
+            {t('meetingNotes.teacherSubtitle' as TranslationKey)}
           </div>
         </div>
       </div>
@@ -340,6 +351,7 @@ function ListView({
   onOpen: (m: MeetingRow) => void;
   onNew: () => void;
 }) {
+  const { t, locale } = useI18n();
   return (
     <div>
       <button
@@ -363,7 +375,7 @@ function ListView({
         }}
       >
         <Mic size={18} strokeWidth={1.75} />
-        Start a new meeting
+        {t('meetingNotes.startNewMeeting' as TranslationKey)}
       </button>
 
       {meetings.length === 0 ? (
@@ -378,8 +390,11 @@ function ListView({
             lineHeight: 1.6,
           }}
         >
-          No saved meeting notes yet. Tap <strong style={{ color: T.textSoft }}>Start a new meeting</strong> above
-          to record one.
+          {t('meetingNotes.emptyListBefore' as TranslationKey)}{' '}
+          <strong style={{ color: T.textSoft }}>
+            {t('meetingNotes.startNewMeeting' as TranslationKey)}
+          </strong>{' '}
+          {t('meetingNotes.emptyListAfter' as TranslationKey)}
         </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -411,10 +426,10 @@ function ListView({
                 }}
               >
                 <span style={{ color: T.textSoft, fontWeight: 600 }}>
-                  {m.child_name || 'Untitled meeting'}
+                  {m.child_name || t('meetingNotes.untitledMeeting' as TranslationKey)}
                 </span>
                 <span style={{ color: T.textMuted, fontSize: 12 }}>
-                  {fmtDate(m.created_at)}
+                  {fmtDate(m.created_at, locale)}
                 </span>
               </div>
               <div
@@ -439,12 +454,16 @@ function ListView({
                   color: T.textMuted,
                 }}
               >
-                <span>⏱ {fmtDuration(m.duration_seconds)}</span>
+                <span>⏱ {fmtDuration(m.duration_seconds, t)}</span>
                 {m.parent_visible &&
                   (m.shared_to_thread_id ? (
-                    <span style={{ color: T.gold }}>· Shared with parent</span>
+                    <span style={{ color: T.gold }}>
+                      · {t('meetingNotes.sharedWithParent' as TranslationKey)}
+                    </span>
                   ) : (
-                    <span style={{ color: T.textMuted }}>· Marked for parent</span>
+                    <span style={{ color: T.textMuted }}>
+                      · {t('meetingNotes.markedForParent' as TranslationKey)}
+                    </span>
                   ))}
               </div>
             </button>
@@ -475,6 +494,7 @@ function NewMeetingFlow({
   onCancel: () => void;
   onSaved: (m: MeetingRow) => void;
 }) {
+  const { t } = useI18n();
   // Stable alias so the rest of the body reads naturally; renamed from
   // `children` to avoid the React built-in prop name.
   const children = childrenOptions;
@@ -567,9 +587,7 @@ function NewMeetingFlow({
       setStage('recording');
     } catch (err) {
       console.error('[meeting] mic error', err);
-      setErrorMsg(
-        'Could not access the microphone. Check the browser permission and try again.'
-      );
+      setErrorMsg(t('meetingNotes.errorMic' as TranslationKey));
     }
     // `uploadForTranscription` is intentionally NOT in deps — defined in the
     // same component scope; the rec.onstop closure captures it via lexical
@@ -608,7 +626,7 @@ function NewMeetingFlow({
             setStage('consent');
             return;
           }
-          let err = 'Transcription failed.';
+          let err = t('meetingNotes.errorTranscription' as TranslationKey);
           try {
             const j = await res.json();
             err = j?.error || err;
@@ -631,19 +649,17 @@ function NewMeetingFlow({
         setStage('review');
       } catch (err) {
         console.error('[meeting] transcribe network error', err);
-        setErrorMsg('Network error while transcribing. Try again.');
+        setErrorMsg(t('meetingNotes.errorTranscribeNetwork' as TranslationKey));
         setStage('consent');
       }
     },
-    []
+    [t]
   );
 
   const saveMeeting = useCallback(async () => {
     if (!review) return;
     if (!review.summary.trim()) {
-      setErrorMsg(
-        'No summary was produced — recording may have been silent. Try again.'
-      );
+      setErrorMsg(t('meetingNotes.errorNoSummary' as TranslationKey));
       return;
     }
     setSaving(true);
@@ -664,7 +680,7 @@ function NewMeetingFlow({
         }),
       });
       if (!res.ok) {
-        let err = 'Failed to save.';
+        let err = t('meetingNotes.errorSave' as TranslationKey);
         try {
           const j = await res.json();
           err = j?.error || err;
@@ -678,11 +694,11 @@ function NewMeetingFlow({
       if (data?.meeting) onSaved(data.meeting as MeetingRow);
     } catch (err) {
       console.error('[meeting] save error', err);
-      setErrorMsg('Network error while saving.');
+      setErrorMsg(t('meetingNotes.errorSaveNetwork' as TranslationKey));
     } finally {
       setSaving(false);
     }
-  }, [review, savingTranscript, notes, childId, childName, meetingDate, onSaved]);
+  }, [review, savingTranscript, notes, childId, childName, meetingDate, onSaved, t]);
 
   if (upgradeFeature) {
     return <UpgradeCard feature={upgradeFeature} />;
@@ -699,7 +715,7 @@ function NewMeetingFlow({
             onClick={onCancel}
             style={ghostBtn()}
           >
-            Cancel
+            {t('common.cancel')}
           </button>
           <button
             type="button"
@@ -707,7 +723,7 @@ function NewMeetingFlow({
             style={primaryBtn()}
           >
             <Mic size={18} strokeWidth={1.75} />
-            I&apos;ve told the parent. Start recording.
+            {t('meetingNotes.startRecordingConsent' as TranslationKey)}
           </button>
         </div>
       </div>
@@ -750,7 +766,7 @@ function NewMeetingFlow({
             textTransform: 'uppercase',
           }}
         >
-          Recording
+          {t('meetingNotes.recordingLabel' as TranslationKey)}
         </div>
         <div
           style={{
@@ -762,11 +778,11 @@ function NewMeetingFlow({
             fontVariantNumeric: 'tabular-nums',
           }}
         >
-          {fmtDuration(recordingSeconds)}
+          {fmtDuration(recordingSeconds, t)}
         </div>
         <button type="button" onClick={stopRecording} style={primaryBtn()}>
           <MicOff size={18} strokeWidth={1.75} />
-          Stop & transcribe
+          {t('meetingNotes.stopAndTranscribe' as TranslationKey)}
         </button>
         <style jsx>{`
           @keyframes recPulse {
@@ -801,7 +817,7 @@ function NewMeetingFlow({
           style={{ animation: 'spin 1.4s linear infinite', marginBottom: 14 }}
         />
         <div style={{ fontSize: 14, color: T.textSecondary }}>
-          Transcribing and summarising… this takes ~30s per minute of audio.
+          {t('meetingNotes.transcribingMessage' as TranslationKey)}
         </div>
         <style jsx>{`
           @keyframes spin {
@@ -836,7 +852,7 @@ function NewMeetingFlow({
             fontWeight: 600,
           }}
         >
-          Summary
+          {t('meetingNotes.summaryLabel' as TranslationKey)}
         </div>
         <div
           style={{
@@ -846,10 +862,10 @@ function NewMeetingFlow({
             whiteSpace: 'pre-wrap',
           }}
         >
-          {review.summary || '(No summary was produced — see transcript below.)'}
+          {review.summary || t('meetingNotes.noSummaryProduced' as TranslationKey)}
         </div>
         <div style={{ fontSize: 12, color: T.textMuted, marginTop: 10 }}>
-          ⏱ {fmtDuration(review.duration_seconds)}
+          ⏱ {fmtDuration(review.duration_seconds, t)}
         </div>
       </div>
 
@@ -860,13 +876,13 @@ function NewMeetingFlow({
           gridTemplateColumns: '1fr 1fr',
         }}
       >
-        <Field label="Child">
+        <Field label={t('meetingNotes.fieldChild' as TranslationKey)}>
           <select
             value={childId}
             onChange={(e) => setChildId(e.target.value)}
             style={inputStyle()}
           >
-            <option value="">— pick a child —</option>
+            <option value="">{t('meetingNotes.pickAChild' as TranslationKey)}</option>
             {children.map((c) => (
               <option key={c.id} value={c.id}>
                 {c.name}
@@ -874,7 +890,7 @@ function NewMeetingFlow({
             ))}
           </select>
         </Field>
-        <Field label="Meeting date">
+        <Field label={t('meetingNotes.fieldMeetingDate' as TranslationKey)}>
           <input
             type="date"
             value={meetingDate}
@@ -884,12 +900,12 @@ function NewMeetingFlow({
         </Field>
       </div>
 
-      <Field label="Your notes (optional)">
+      <Field label={t('meetingNotes.fieldYourNotesOptional' as TranslationKey)}>
         <textarea
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
           rows={4}
-          placeholder="Anything you want to remember that wasn't in the audio."
+          placeholder={t('meetingNotes.notesPlaceholderReview' as TranslationKey)}
           style={{ ...inputStyle(), resize: 'vertical', minHeight: 90 }}
         />
       </Field>
@@ -909,14 +925,14 @@ function NewMeetingFlow({
           checked={savingTranscript}
           onChange={(e) => setSavingTranscript(e.target.checked)}
         />
-        Also save the full transcript (in addition to the summary).
+        {t('meetingNotes.alsoSaveTranscript' as TranslationKey)}
       </label>
 
       {errorMsg && <ErrorBox text={errorMsg} />}
 
       <div style={{ display: 'flex', gap: 10 }}>
         <button type="button" onClick={onCancel} style={ghostBtn()}>
-          Discard
+          {t('meetingNotes.discard' as TranslationKey)}
         </button>
         <button
           type="button"
@@ -931,10 +947,10 @@ function NewMeetingFlow({
                 strokeWidth={1.75}
                 style={{ animation: 'spin 1.4s linear infinite' }}
               />
-              Saving…
+              {t('meetingNotes.saving' as TranslationKey)}
             </>
           ) : (
-            'Save meeting'
+            t('meetingNotes.saveMeeting' as TranslationKey)
           )}
         </button>
       </div>
@@ -966,6 +982,7 @@ function DetailView({
   onChanged: () => void;
   onDeleted: () => void;
 }) {
+  const { t, locale } = useI18n();
   const [local, setLocal] = useState<MeetingRow>(meeting);
   const [notes, setNotes] = useState<string>(meeting.notes || '');
   const [saving, setSaving] = useState(false);
@@ -992,7 +1009,7 @@ function DetailView({
         body: JSON.stringify({ notes: notes.trim() || null }),
       });
       if (!res.ok) {
-        setError('Failed to save notes.');
+        setError(t('meetingNotes.errorSaveNotes' as TranslationKey));
         return;
       }
       const data = await res.json();
@@ -1001,11 +1018,11 @@ function DetailView({
         onChanged();
       }
     } catch {
-      setError('Network error.');
+      setError(t('meetingNotes.errorNetwork' as TranslationKey));
     } finally {
       setSaving(false);
     }
-  }, [meeting.id, notes, onChanged]);
+  }, [meeting.id, notes, onChanged, t]);
 
   const togglevisible = useCallback(async () => {
     const next = !local.parent_visible;
@@ -1018,7 +1035,7 @@ function DetailView({
         body: JSON.stringify({ parent_visible: next }),
       });
       if (!res.ok) {
-        setError('Failed to update visibility.');
+        setError(t('meetingNotes.errorUpdateVisibility' as TranslationKey));
         return;
       }
       const data = await res.json();
@@ -1033,38 +1050,26 @@ function DetailView({
       if (data?.share) {
         const reason = data.share.reason as string | undefined;
         if (data.share.threadId && !reason) {
-          setShareInfo('The summary has been posted to the parent thread.');
+          setShareInfo(t('meetingNotes.sharePosted' as TranslationKey));
         } else if (reason === 'no_child') {
-          setShareInfo(
-            'Flagged as visible. Link a child to this meeting to actually post the summary into the parent thread.'
-          );
+          setShareInfo(t('meetingNotes.shareNoChild' as TranslationKey));
         } else if (reason === 'feature_disabled') {
-          setShareInfo(
-            'Flagged as visible. Parent messaging is not enabled for this school yet — the summary is recorded but not posted.'
-          );
+          setShareInfo(t('meetingNotes.shareFeatureDisabled' as TranslationKey));
         } else if (reason === 'no_parents') {
-          setShareInfo(
-            'Flagged as visible, but no parent accounts are linked to this child.'
-          );
+          setShareInfo(t('meetingNotes.shareNoParents' as TranslationKey));
         } else if (reason === 'already_shared') {
-          setShareInfo('Already shared earlier — the existing thread is unchanged.');
+          setShareInfo(t('meetingNotes.shareAlreadyShared' as TranslationKey));
         } else if (reason === 'message_insert_failed') {
-          setShareInfo(
-            'Thread created, but posting the message failed. You can post manually from Messages.'
-          );
+          setShareInfo(t('meetingNotes.shareMessageFailedTeacher' as TranslationKey));
         }
       }
     } catch {
-      setError('Network error.');
+      setError(t('meetingNotes.errorNetwork' as TranslationKey));
     }
-  }, [meeting.id, local.parent_visible, onChanged]);
+  }, [meeting.id, local.parent_visible, onChanged, t]);
 
   const removeMeeting = useCallback(async () => {
-    if (
-      !window.confirm(
-        'Delete this meeting note? The summary and notes will be permanently removed.'
-      )
-    ) {
+    if (!window.confirm(t('meetingNotes.confirmDelete' as TranslationKey))) {
       return;
     }
     try {
@@ -1073,19 +1078,19 @@ function DetailView({
         credentials: 'include',
       });
       if (!res.ok) {
-        setError('Failed to delete.');
+        setError(t('meetingNotes.errorDelete' as TranslationKey));
         return;
       }
       onDeleted();
     } catch {
-      setError('Network error.');
+      setError(t('meetingNotes.errorNetwork' as TranslationKey));
     }
-  }, [meeting.id, onDeleted]);
+  }, [meeting.id, onDeleted, t]);
 
   const childLabel =
     local.child_name ||
     childrenOptions.find((c) => c.id === local.child_id)?.name ||
-    'Untitled meeting';
+    t('meetingNotes.untitledMeeting' as TranslationKey);
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -1117,12 +1122,14 @@ function DetailView({
             {childLabel}
           </div>
           <div style={{ color: T.textMuted, fontSize: 12 }}>
-            {fmtDate(local.created_at)}
+            {fmtDate(local.created_at, locale)}
           </div>
         </div>
         <div style={{ color: T.textSecondary, fontSize: 12, marginBottom: 14 }}>
-          ⏱ {fmtDuration(local.duration_seconds)}
-          {local.meeting_date && <> · Meeting: {local.meeting_date}</>}
+          ⏱ {fmtDuration(local.duration_seconds, t)}
+          {local.meeting_date && (
+            <> · {t('meetingNotes.meetingDatePrefix' as TranslationKey)} {local.meeting_date}</>
+          )}
         </div>
 
         <div
@@ -1135,7 +1142,7 @@ function DetailView({
             marginBottom: 6,
           }}
         >
-          Summary
+          {t('meetingNotes.summaryLabel' as TranslationKey)}
         </div>
         <div
           style={{
@@ -1149,17 +1156,19 @@ function DetailView({
         </div>
       </div>
 
-      <Field label="Your notes">
+      <Field label={t('meetingNotes.fieldYourNotes' as TranslationKey)}>
         <textarea
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
           onBlur={saveNotes}
           rows={4}
-          placeholder="Anything you want to add after the meeting."
+          placeholder={t('meetingNotes.notesPlaceholderDetail' as TranslationKey)}
           style={{ ...inputStyle(), resize: 'vertical', minHeight: 90 }}
         />
         <div style={{ fontSize: 11, color: T.textMuted, marginTop: 4 }}>
-          {saving ? 'Saving…' : 'Auto-saves when you click away.'}
+          {saving
+            ? t('meetingNotes.saving' as TranslationKey)
+            : t('meetingNotes.autoSaveHint' as TranslationKey)}
         </div>
       </Field>
 
@@ -1183,14 +1192,16 @@ function DetailView({
           )}
           <div>
             <div style={{ color: T.textSoft, fontSize: 14 }}>
-              {local.parent_visible ? 'Shared with parent' : 'Private to you'}
+              {local.parent_visible
+                ? t('meetingNotes.sharedWithParent' as TranslationKey)
+                : t('meetingNotes.privateToYou' as TranslationKey)}
             </div>
             <div style={{ color: T.textSecondary, fontSize: 12, marginTop: 2 }}>
               {local.parent_visible
                 ? local.shared_to_thread_id
-                  ? 'The summary has been posted into the parent thread.'
-                  : 'Marked as visible — but no parent thread was created (see hint below).'
-                : 'Only you can see this. The parent never gets a copy.'}
+                  ? t('meetingNotes.visibilityPosted' as TranslationKey)
+                  : t('meetingNotes.visibilityMarkedNoThread' as TranslationKey)
+                : t('meetingNotes.visibilityPrivate' as TranslationKey)}
             </div>
           </div>
         </div>
@@ -1199,7 +1210,9 @@ function DetailView({
           onClick={togglevisible}
           style={ghostBtn(false, { padding: '8px 14px', fontSize: 13 })}
         >
-          {local.parent_visible ? 'Make private' : 'Share with parent'}
+          {local.parent_visible
+            ? t('meetingNotes.makePrivate' as TranslationKey)
+            : t('meetingNotes.shareWithParent' as TranslationKey)}
         </button>
       </div>
 
@@ -1223,7 +1236,7 @@ function DetailView({
 
       <div style={{ display: 'flex', gap: 10, marginTop: 8 }}>
         <button type="button" onClick={onClose} style={ghostBtn()}>
-          Back to list
+          {t('meetingNotes.backToList' as TranslationKey)}
         </button>
         <button
           type="button"
@@ -1236,7 +1249,7 @@ function DetailView({
           }}
         >
           <Trash2 size={16} strokeWidth={1.75} />
-          Delete
+          {t('common.delete')}
         </button>
       </div>
     </div>
@@ -1248,6 +1261,7 @@ function DetailView({
 // ─────────────────────────────────────────────────────────────────────
 
 function ConsentBanner() {
+  const { t } = useI18n();
   return (
     <div
       style={{
@@ -1264,13 +1278,10 @@ function ConsentBanner() {
       <MessageSquareText size={22} color={T.gold} strokeWidth={1.75} />
       <div style={{ flex: 1, fontSize: 14, lineHeight: 1.6 }}>
         <div style={{ color: T.gold, fontWeight: 600, marginBottom: 6 }}>
-          Tell the parent first.
+          {t('meetingNotes.consentHeading' as TranslationKey)}
         </div>
         <div style={{ color: T.textPrimary }}>
-          Recording someone without telling them is illegal in many places, and
-          even where it&apos;s legal it&apos;s the wrong way to start a
-          relationship. Use this for your own clarity, not as evidence. The
-          audio is never saved — only the summary and your notes.
+          {t('meetingNotes.consentBody' as TranslationKey)}
         </div>
       </div>
     </div>

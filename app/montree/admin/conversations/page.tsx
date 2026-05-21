@@ -32,6 +32,11 @@ import {
   type PlaintextRecord,
 } from '@/lib/montree/vault-crypto';
 import UpgradeCard, { extractUpgradeFromResponse } from '@/components/montree/UpgradeCard';
+import { useI18n, getIntlLocale, type TranslationKey } from '@/lib/montree/i18n';
+
+// Translation helper — new meetingNotes.* keys are added to en.ts by the i18n
+// team after this file ships. Cast keeps TS happy until they land.
+type TFn = (key: string, params?: Record<string, string | number>) => string;
 
 const T = {
   emerald: '#34d399',
@@ -66,9 +71,9 @@ type View =
   | { kind: 'new' }
   | { kind: 'detail'; conv: ConvRow; plain: PlaintextRecord };
 
-function fmtDate(d: string): string {
+function fmtDate(d: string, locale: string): string {
   try {
-    return new Date(d).toLocaleString(undefined, {
+    return new Date(d).toLocaleString(getIntlLocale(locale), {
       year: 'numeric',
       month: 'short',
       day: 'numeric',
@@ -80,18 +85,23 @@ function fmtDate(d: string): string {
   }
 }
 
-function fmtDuration(seconds: number | null): string {
+function fmtDuration(seconds: number | null, t: TFn): string {
   if (!seconds || seconds < 1) return '—';
-  if (seconds < 60) return `${seconds}s`;
+  if (seconds < 60) return t('meetingNotes.durationSeconds', { s: seconds });
   const m = Math.floor(seconds / 60);
   const s = seconds % 60;
-  if (m < 60) return `${m}m${s ? ` ${s}s` : ''}`;
+  if (m < 60) {
+    return s
+      ? t('meetingNotes.durationMinutesSeconds', { m, s })
+      : t('meetingNotes.durationMinutes', { m });
+  }
   const h = Math.floor(m / 60);
-  return `${h}h ${m % 60}m`;
+  return t('meetingNotes.durationHoursMinutes', { h, m: m % 60 });
 }
 
 export default function ConversationsPage() {
   const router = useRouter();
+  const { t } = useI18n();
 
   const [authChecked, setAuthChecked] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
@@ -125,9 +135,7 @@ export default function ConversationsPage() {
         const meData = await meRes.json();
         if (cancelled) return;
         if (meData.role !== 'principal') {
-          setAuthError(
-            'This area is for principals only. Sign out and log in with your principal code.'
-          );
+          setAuthError(t('meetingNotes.vaultPrincipalsOnly' as TranslationKey));
           setAuthChecked(true);
           return;
         }
@@ -138,14 +146,12 @@ export default function ConversationsPage() {
         if (cancelled) return;
         if (listRes.status === 404) {
           // Server gate — this user isn't on the prototype allow-list.
-          setAuthError(
-            'This feature is in private prototype on Whale Class. Tell Tredoux if you want access.'
-          );
+          setAuthError(t('meetingNotes.vaultPrototypeOnly' as TranslationKey));
           setLoading(false);
           return;
         }
         if (!listRes.ok) {
-          setAuthError('Could not load conversations.');
+          setAuthError(t('meetingNotes.vaultErrorLoad' as TranslationKey));
           setLoading(false);
           return;
         }
@@ -163,7 +169,7 @@ export default function ConversationsPage() {
       } catch (err) {
         if (!cancelled) {
           console.error('[conversations init] error:', err);
-          setAuthError('Something went wrong loading the vault.');
+          setAuthError(t('meetingNotes.vaultErrorGeneric' as TranslationKey));
           setLoading(false);
         }
       }
@@ -171,7 +177,7 @@ export default function ConversationsPage() {
     return () => {
       cancelled = true;
     };
-  }, [router]);
+  }, [router, t]);
 
   const lockVault = useCallback(() => {
     setVaultPassword(null);
@@ -182,19 +188,22 @@ export default function ConversationsPage() {
   }, [conversations.length]);
 
   // ── Unlock / first-setup handlers ──────────────────────────────────────
-  const handleFirstSetup = useCallback(async (pwd: string, confirm: string) => {
-    setUnlockError(null);
-    if (pwd.length < 8) {
-      setUnlockError('Pick a password at least 8 characters long.');
-      return;
-    }
-    if (pwd !== confirm) {
-      setUnlockError("The two passwords don't match.");
-      return;
-    }
-    setVaultPassword(pwd);
-    setUnlockState({ kind: 'none' });
-  }, []);
+  const handleFirstSetup = useCallback(
+    async (pwd: string, confirm: string) => {
+      setUnlockError(null);
+      if (pwd.length < 8) {
+        setUnlockError(t('meetingNotes.vaultPasswordTooShort' as TranslationKey));
+        return;
+      }
+      if (pwd !== confirm) {
+        setUnlockError(t('meetingNotes.vaultPasswordMismatch' as TranslationKey));
+        return;
+      }
+      setVaultPassword(pwd);
+      setUnlockState({ kind: 'none' });
+    },
+    [t]
+  );
 
   const handleUnlock = useCallback(
     async (pwd: string) => {
@@ -210,19 +219,19 @@ export default function ConversationsPage() {
         }
         const ok = await verifyPasswordAgainstRecord(pwd, conversations[0]);
         if (!ok) {
-          setUnlockError('Wrong password — try again.');
+          setUnlockError(t('meetingNotes.vaultWrongPassword' as TranslationKey));
           return;
         }
         setVaultPassword(pwd);
         setUnlockState({ kind: 'none' });
       } catch (err) {
         console.error('[vault unlock] error:', err);
-        setUnlockError('Could not unlock the vault. Try again.');
+        setUnlockError(t('meetingNotes.vaultUnlockFailed' as TranslationKey));
       } finally {
         setUnlockBusy(false);
       }
     },
-    [conversations]
+    [conversations, t]
   );
 
   // ── Open a conversation (decrypt) ──────────────────────────────────────
@@ -236,28 +245,26 @@ export default function ConversationsPage() {
         console.error('[vault decrypt one] error:', err);
         if (err instanceof Error && err.message === 'WRONG_PASSWORD') {
           // Password drift — lock and prompt unlock again.
-          alert(
-            "Couldn't decrypt that conversation with the current password. Re-unlocking the vault."
-          );
+          alert(t('meetingNotes.vaultDecryptDriftAlert' as TranslationKey));
           lockVault();
         } else {
-          alert('Could not open that conversation.');
+          alert(t('meetingNotes.vaultOpenFailedAlert' as TranslationKey));
         }
       }
     },
-    [vaultPassword, lockVault]
+    [vaultPassword, lockVault, t]
   );
 
   // ── Delete ─────────────────────────────────────────────────────────────
   const deleteConversation = useCallback(
     async (id: string) => {
-      if (!confirm('Delete this conversation? This cannot be undone.')) return;
+      if (!confirm(t('meetingNotes.vaultConfirmDelete' as TranslationKey))) return;
       try {
         const res = await fetch(`/api/montree/admin/conversations/${id}`, {
           method: 'DELETE',
         });
         if (!res.ok) {
-          alert('Failed to delete.');
+          alert(t('meetingNotes.errorDelete' as TranslationKey));
           return;
         }
         setConversations((prev) => prev.filter((c) => c.id !== id));
@@ -266,17 +273,17 @@ export default function ConversationsPage() {
         }
       } catch (err) {
         console.error('[vault delete] error:', err);
-        alert('Failed to delete.');
+        alert(t('meetingNotes.errorDelete' as TranslationKey));
       }
     },
-    [view]
+    [view, t]
   );
 
   // ── Save a new conversation ────────────────────────────────────────────
   const saveNewConversation = useCallback(
     async (record: PlaintextRecord, durationSeconds: number | null) => {
       if (!vaultPassword) {
-        alert('Vault is locked.');
+        alert(t('meetingNotes.vaultLockedAlert' as TranslationKey));
         return null;
       }
       const encrypted = await encryptRecord(vaultPassword, record);
@@ -291,7 +298,7 @@ export default function ConversationsPage() {
       });
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
-        alert(err.error || 'Failed to save.');
+        alert(err.error || t('meetingNotes.errorSave' as TranslationKey));
         return null;
       }
       const data = await res.json();
@@ -309,7 +316,7 @@ export default function ConversationsPage() {
       setConversations((prev) => [newRow, ...prev]);
       return newRow;
     },
-    [vaultPassword]
+    [vaultPassword, t]
   );
 
   // ── Renders ────────────────────────────────────────────────────────────
@@ -332,7 +339,7 @@ export default function ConversationsPage() {
   if (!authChecked) {
     return pageWrap(
       <div style={{ color: T.textMuted, padding: '48px 0', textAlign: 'center' }}>
-        Loading…
+        {t('common.loading')}
       </div>
     );
   }
@@ -351,7 +358,7 @@ export default function ConversationsPage() {
             cursor: 'pointer',
           }}
         >
-          Back to Tracy
+          {t('meetingNotes.backToTracy' as TranslationKey)}
         </button>
       </div>
     );
@@ -424,6 +431,7 @@ function UnlockGate({
   onFirstSetup: (pwd: string, confirm: string) => void;
   onBack: () => void;
 }) {
+  const { t } = useI18n();
   const [pwd, setPwd] = useState('');
   const [confirm, setConfirm] = useState('');
 
@@ -445,7 +453,7 @@ function UnlockGate({
           gap: 6,
         }}
       >
-        <ArrowLeft size={14} /> Back
+        <ArrowLeft size={14} /> {t('common.back')}
       </button>
       <div
         style={{
@@ -459,19 +467,21 @@ function UnlockGate({
         <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 18 }}>
           <KeyRound size={28} color={T.gold} strokeWidth={1.75} />
           <h1 style={{ fontFamily: T.serif, fontSize: 26, fontWeight: 500, margin: 0 }}>
-            {isFirst ? 'Set your vault password' : 'Unlock your vault'}
+            {isFirst
+              ? t('meetingNotes.vaultSetPasswordTitle' as TranslationKey)
+              : t('meetingNotes.vaultUnlockTitle' as TranslationKey)}
           </h1>
         </div>
         <p style={{ color: T.textSoft, fontSize: 14, lineHeight: 1.6, marginBottom: 18 }}>
           {isFirst
-            ? "This password encrypts every conversation you save. We never see it. If you lose it, the conversations can't be recovered."
-            : 'Enter the password you set for this vault. Wrong password? Try again — there are no lockouts, but every recording you saved is encrypted under whatever password you used at that moment.'}
+            ? t('meetingNotes.vaultSetPasswordBody' as TranslationKey)
+            : t('meetingNotes.vaultUnlockBody' as TranslationKey)}
         </p>
         <input
           type="password"
           value={pwd}
           onChange={(e) => setPwd(e.target.value)}
-          placeholder="Vault password"
+          placeholder={t('meetingNotes.vaultPasswordPlaceholder' as TranslationKey)}
           autoFocus
           disabled={busy}
           style={{
@@ -491,7 +501,7 @@ function UnlockGate({
             type="password"
             value={confirm}
             onChange={(e) => setConfirm(e.target.value)}
-            placeholder="Type the password again"
+            placeholder={t('meetingNotes.vaultPasswordConfirmPlaceholder' as TranslationKey)}
             disabled={busy}
             style={{
               width: '100%',
@@ -530,7 +540,9 @@ function UnlockGate({
           }}
         >
           {busy && <Loader2 size={16} className="animate-spin" />}
-          {isFirst ? 'Set password' : 'Unlock'}
+          {isFirst
+            ? t('meetingNotes.vaultSetPasswordButton' as TranslationKey)
+            : t('meetingNotes.vaultUnlockButton' as TranslationKey)}
         </button>
         {isFirst && (
           <p
@@ -545,8 +557,7 @@ function UnlockGate({
               lineHeight: 1.55,
             }}
           >
-            Write this password down somewhere safe. We have no way to reset it
-            for you. Losing it means losing every conversation in this vault.
+            {t('meetingNotes.vaultPasswordWarning' as TranslationKey)}
           </p>
         )}
       </div>
@@ -569,6 +580,7 @@ function ListView({
   onLock: () => void;
   onBack: () => void;
 }) {
+  const { t, locale } = useI18n();
   return (
     <div>
       <div
@@ -592,11 +604,11 @@ function ListView({
             gap: 6,
           }}
         >
-          <ArrowLeft size={14} /> Tracy
+          <ArrowLeft size={14} /> {t('meetingNotes.vaultTracyNav' as TranslationKey)}
         </button>
         <button
           onClick={onLock}
-          title="Lock vault"
+          title={t('meetingNotes.vaultLockTitle' as TranslationKey)}
           style={{
             background: 'transparent',
             border: T.cardBorder,
@@ -610,7 +622,7 @@ function ListView({
             gap: 6,
           }}
         >
-          <Lock size={13} /> Lock
+          <Lock size={13} /> {t('meetingNotes.vaultLock' as TranslationKey)}
         </button>
       </div>
 
@@ -622,10 +634,10 @@ function ListView({
           margin: '0 0 8px',
         }}
       >
-        Conversations
+        {t('meetingNotes.vaultTitle' as TranslationKey)}
       </h1>
       <p style={{ color: T.textSecondary, fontSize: 14, margin: '0 0 24px' }}>
-        Encrypted record of your parent meetings. Only you can read these.
+        {t('meetingNotes.vaultSubtitle' as TranslationKey)}
       </p>
 
       <button
@@ -647,10 +659,14 @@ function ListView({
           marginBottom: 28,
         }}
       >
-        <Mic size={18} /> New conversation
+        <Mic size={18} /> {t('meetingNotes.vaultNewConversation' as TranslationKey)}
       </button>
 
-      {loading && <div style={{ color: T.textMuted, padding: '24px 0' }}>Loading…</div>}
+      {loading && (
+        <div style={{ color: T.textMuted, padding: '24px 0' }}>
+          {t('common.loading')}
+        </div>
+      )}
 
       {!loading && conversations.length === 0 && (
         <div
@@ -662,8 +678,7 @@ function ListView({
             lineHeight: 1.6,
           }}
         >
-          Nothing here yet. Your first encrypted conversation will appear here
-          after you record one.
+          {t('meetingNotes.vaultEmptyList' as TranslationKey)}
         </div>
       )}
 
@@ -691,10 +706,11 @@ function ListView({
               <LockKeyhole size={18} color={T.gold} strokeWidth={1.75} />
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontSize: 14.5, fontWeight: 500 }}>
-                  {fmtDate(c.recorded_at)}
+                  {fmtDate(c.recorded_at, locale)}
                 </div>
                 <div style={{ fontSize: 12.5, color: T.textMuted, marginTop: 2 }}>
-                  {fmtDuration(c.duration_seconds)} · encrypted · tap to open
+                  {fmtDuration(c.duration_seconds, t)} ·{' '}
+                  {t('meetingNotes.vaultRowMeta' as TranslationKey)}
                 </div>
               </div>
             </button>
@@ -716,6 +732,7 @@ function DetailView({
   onBack: () => void;
   onDelete: () => void;
 }) {
+  const { t, locale } = useI18n();
   return (
     <div>
       <button
@@ -732,7 +749,7 @@ function DetailView({
           gap: 6,
         }}
       >
-        <ArrowLeft size={14} /> Back
+        <ArrowLeft size={14} /> {t('common.back')}
       </button>
 
       <div
@@ -746,7 +763,8 @@ function DetailView({
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
           <span style={{ fontSize: 13, color: T.textMuted }}>
-            {fmtDate(conv.recorded_at)} · {fmtDuration(conv.duration_seconds)}
+            {fmtDate(conv.recorded_at, locale)} ·{' '}
+            {fmtDuration(conv.duration_seconds, t)}
           </span>
         </div>
         {plain.child_name && (
@@ -762,7 +780,9 @@ function DetailView({
               marginBottom: 14,
             }}
           >
-            About {plain.child_name}
+            {t('meetingNotes.vaultAboutChild' as TranslationKey, {
+              name: plain.child_name,
+            })}
           </div>
         )}
         <h2
@@ -773,7 +793,7 @@ function DetailView({
             margin: '4px 0 14px',
           }}
         >
-          Summary
+          {t('meetingNotes.summaryLabel' as TranslationKey)}
         </h2>
         <div
           style={{
@@ -783,7 +803,7 @@ function DetailView({
             whiteSpace: 'pre-wrap',
           }}
         >
-          {plain.summary || '(No summary was generated.)'}
+          {plain.summary || t('meetingNotes.vaultNoSummary' as TranslationKey)}
         </div>
       </div>
 
@@ -805,7 +825,7 @@ function DetailView({
               fontWeight: 500,
             }}
           >
-            Show full transcript
+            {t('meetingNotes.vaultShowTranscript' as TranslationKey)}
           </summary>
           <div
             style={{
@@ -840,7 +860,7 @@ function DetailView({
               margin: '0 0 8px',
             }}
           >
-            Notes
+            {t('meetingNotes.vaultNotesHeading' as TranslationKey)}
           </h3>
           <div
             style={{
@@ -870,7 +890,7 @@ function DetailView({
           gap: 8,
         }}
       >
-        <Trash2 size={14} /> Delete
+        <Trash2 size={14} /> {t('common.delete')}
       </button>
     </div>
   );
@@ -888,6 +908,7 @@ function NewConversation({
     durationSeconds: number | null
   ) => Promise<unknown>;
 }) {
+  const { t } = useI18n();
   const [recording, setRecording] = useState(false);
   const [recDuration, setRecDuration] = useState(0); // seconds
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
@@ -934,11 +955,9 @@ function NewConversation({
       setRecording(true);
     } catch (err) {
       console.error('[recorder] mic error', err);
-      setError(
-        'Could not access the microphone. Check Chrome permissions for this site.'
-      );
+      setError(t('meetingNotes.vaultErrorMic' as TranslationKey));
     }
-  }, []);
+  }, [t]);
 
   const stopRecording = useCallback(() => {
     const mr = mediaRecorderRef.current;
@@ -985,7 +1004,7 @@ function NewConversation({
       }
       if (!res.ok) {
         const j = await res.json().catch(() => ({}));
-        setError(j.error || 'Transcription failed.');
+        setError(j.error || t('meetingNotes.errorTranscription' as TranslationKey));
         return;
       }
       const data = await res.json();
@@ -993,15 +1012,15 @@ function NewConversation({
       setSummary(data.summary || '');
     } catch (err) {
       console.error('[transcribe] error', err);
-      setError('Transcription failed.');
+      setError(t('meetingNotes.errorTranscription' as TranslationKey));
     } finally {
       setTranscribing(false);
     }
-  }, [audioBlob, recDuration, childName]);
+  }, [audioBlob, recDuration, childName, t]);
 
   const handleSave = useCallback(async () => {
     if (!summary.trim() && !transcript.trim() && !notes.trim()) {
-      setError('Nothing to save — add a summary, transcript, or notes first.');
+      setError(t('meetingNotes.vaultErrorNothingToSave' as TranslationKey));
       return;
     }
     setError(null);
@@ -1020,11 +1039,11 @@ function NewConversation({
       if (ok) onSaved();
     } catch (err) {
       console.error('[save] error', err);
-      setError('Encrypt + save failed.');
+      setError(t('meetingNotes.vaultErrorEncryptSave' as TranslationKey));
     } finally {
       setSaving(false);
     }
-  }, [summary, transcript, childName, notes, meetingDate, recDuration, save, onSaved]);
+  }, [summary, transcript, childName, notes, meetingDate, recDuration, save, onSaved, t]);
 
   return (
     <div>
@@ -1042,7 +1061,7 @@ function NewConversation({
           gap: 6,
         }}
       >
-        <ArrowLeft size={14} /> Cancel
+        <ArrowLeft size={14} /> {t('common.cancel')}
       </button>
 
       <h1
@@ -1053,7 +1072,7 @@ function NewConversation({
           margin: '0 0 6px',
         }}
       >
-        New conversation
+        {t('meetingNotes.vaultNewConversation' as TranslationKey)}
       </h1>
 
       <div
@@ -1069,11 +1088,10 @@ function NewConversation({
           lineHeight: 1.55,
         }}
       >
-        <strong style={{ fontWeight: 600 }}>Before you record:</strong> Tell the
-        parent. Recording someone without telling them is illegal in many
-        places, and even where it&rsquo;s legal it&rsquo;s the wrong way to
-        start a relationship. Use this for your own clarity, not as evidence.
-        The recording stays encrypted under a password only you know.
+        <strong style={{ fontWeight: 600 }}>
+          {t('meetingNotes.vaultConsentLead' as TranslationKey)}
+        </strong>{' '}
+        {t('meetingNotes.vaultConsentBody' as TranslationKey)}
       </div>
 
       {/* Recording panel */}
@@ -1104,7 +1122,7 @@ function NewConversation({
               gap: 10,
             }}
           >
-            <Mic size={18} /> Start recording
+            <Mic size={18} /> {t('meetingNotes.vaultStartRecording' as TranslationKey)}
           </button>
         )}
         {recording && (
@@ -1118,7 +1136,7 @@ function NewConversation({
                 marginBottom: 14,
               }}
             >
-              {fmtDuration(recDuration)}
+              {fmtDuration(recDuration, t)}
             </div>
             <button
               onClick={stopRecording}
@@ -1136,14 +1154,16 @@ function NewConversation({
                 gap: 10,
               }}
             >
-              <MicOff size={18} /> Stop
+              <MicOff size={18} /> {t('meetingNotes.vaultStop' as TranslationKey)}
             </button>
           </div>
         )}
         {audioBlob && !recording && (
           <div>
             <div style={{ marginBottom: 14, fontSize: 13.5, color: T.textSoft }}>
-              Recording captured — {fmtDuration(recDuration)}
+              {t('meetingNotes.vaultRecordingCaptured' as TranslationKey, {
+                duration: fmtDuration(recDuration, t),
+              })}
             </div>
             <audio
               src={URL.createObjectURL(audioBlob)}
@@ -1169,7 +1189,7 @@ function NewConversation({
                 }}
               >
                 {transcribing && <Loader2 size={14} className="animate-spin" />}
-                Transcribe & summarize
+                {t('meetingNotes.vaultTranscribeSummarize' as TranslationKey)}
               </button>
               <button
                 onClick={() => {
@@ -1188,7 +1208,7 @@ function NewConversation({
                   cursor: 'pointer',
                 }}
               >
-                Re-record
+                {t('meetingNotes.vaultReRecord' as TranslationKey)}
               </button>
             </div>
           </div>
@@ -1218,7 +1238,7 @@ function NewConversation({
                 marginBottom: 4,
               }}
             >
-              Meeting date
+              {t('meetingNotes.fieldMeetingDate' as TranslationKey)}
             </label>
             <input
               type="date"
@@ -1245,13 +1265,13 @@ function NewConversation({
                 marginBottom: 4,
               }}
             >
-              Child (optional)
+              {t('meetingNotes.fieldChildOptional' as TranslationKey)}
             </label>
             <input
               type="text"
               value={childName}
               onChange={(e) => setChildName(e.target.value)}
-              placeholder="e.g. Austin"
+              placeholder={t('meetingNotes.vaultChildPlaceholder' as TranslationKey)}
               style={{
                 width: '100%',
                 padding: '8px 10px',
@@ -1268,12 +1288,12 @@ function NewConversation({
 
         <div>
           <label style={{ fontSize: 12, color: T.textMuted, display: 'block', marginBottom: 4 }}>
-            Summary (auto-filled from transcript; edit anything)
+            {t('meetingNotes.vaultSummaryFieldLabel' as TranslationKey)}
           </label>
           <textarea
             value={summary}
             onChange={(e) => setSummary(e.target.value)}
-            placeholder="Three short paragraphs: what was discussed, what was agreed, what to follow up on."
+            placeholder={t('meetingNotes.vaultSummaryPlaceholder' as TranslationKey)}
             rows={8}
             style={{
               width: '100%',
@@ -1293,12 +1313,12 @@ function NewConversation({
 
         <div>
           <label style={{ fontSize: 12, color: T.textMuted, display: 'block', marginBottom: 4 }}>
-            Personal notes (optional)
+            {t('meetingNotes.vaultPersonalNotesLabel' as TranslationKey)}
           </label>
           <textarea
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
-            placeholder="Reminders only you'll see."
+            placeholder={t('meetingNotes.vaultPersonalNotesPlaceholder' as TranslationKey)}
             rows={3}
             style={{
               width: '100%',
@@ -1325,7 +1345,7 @@ function NewConversation({
                 fontSize: 13,
               }}
             >
-              Show / edit raw transcript
+              {t('meetingNotes.vaultShowEditTranscript' as TranslationKey)}
             </summary>
             <textarea
               value={transcript}
@@ -1392,7 +1412,7 @@ function NewConversation({
         }}
       >
         {saving && <Loader2 size={16} className="animate-spin" />}
-        <Lock size={16} /> Encrypt &amp; save
+        <Lock size={16} /> {t('meetingNotes.vaultEncryptSave' as TranslationKey)}
       </button>
     </div>
   );

@@ -26,6 +26,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Calendar, Clock, Video, CheckCircle2, XCircle, ChevronRight, Loader2 } from 'lucide-react';
 import Link from 'next/link';
+import { useI18n, getIntlLocale } from '@/lib/montree/i18n';
 
 const T = {
   cardBg: 'rgba(8,20,12,0.55)',
@@ -65,10 +66,10 @@ export interface PendingAppointmentsBannerProps {
   seeAllHref?: string;
 }
 
-function formatDateTime(iso: string): string {
+function formatDateTime(iso: string, intlLocale?: string): string {
   try {
     const d = new Date(iso);
-    return d.toLocaleString(undefined, {
+    return d.toLocaleString(intlLocale, {
       weekday: 'short',
       month: 'short',
       day: 'numeric',
@@ -85,6 +86,8 @@ export default function PendingAppointmentsBanner({
   selfUserId,
   seeAllHref,
 }: PendingAppointmentsBannerProps) {
+  const { t, locale } = useI18n();
+  const intlLocale = getIntlLocale(locale);
   const [pending, setPending] = useState<ApptRow[] | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -139,7 +142,7 @@ export default function PendingAppointmentsBanner({
   const respond = useCallback(async (appointmentId: string, action: 'accept' | 'decline') => {
     if (action === 'decline') {
       const ok = typeof window !== 'undefined'
-        ? window.confirm('Decline this invitation? The teacher will see your response.')
+        ? window.confirm(t('appt.confirmDecline'))
         : true;
       if (!ok) return;
     }
@@ -154,18 +157,18 @@ export default function PendingAppointmentsBanner({
       });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        setError(data?.error || 'Could not respond.');
+        setError(data?.error || t('appt.errCouldNotRespond'));
         return;
       }
       // Optimistic remove + refetch.
       setPending((prev) => (prev || []).filter((a) => a.id !== appointmentId));
       void fetchPending();
     } catch {
-      setError('Network error.');
+      setError(t('appt.errNetwork'));
     } finally {
       setBusyId(null);
     }
-  }, [fetchPending]);
+  }, [fetchPending, t]);
 
   // Don't render anything while loading or when empty.
   if (pending === null) return null;
@@ -208,8 +211,12 @@ export default function PendingAppointmentsBanner({
         >
           <Calendar size={16} strokeWidth={1.75} />
           {pending.length === 1
-            ? viewer === 'parent' ? 'New invitation' : '1 invitation needs your response'
-            : viewer === 'parent' ? `${pending.length} new invitations` : `${pending.length} invitations need your response`}
+            ? viewer === 'parent'
+              ? t('appt.bannerNewInvitationOne')
+              : t('appt.bannerStaffNeedsResponseOne')
+            : viewer === 'parent'
+              ? t('appt.bannerNewInvitations', { count: pending.length })
+              : t('appt.bannerStaffNeedsResponse', { count: pending.length })}
         </div>
         {pending.length > 2 && (
           <Link
@@ -223,15 +230,14 @@ export default function PendingAppointmentsBanner({
               gap: 4,
             }}
           >
-            See all <ChevronRight size={12} />
+            {t('appt.seeAll')} <ChevronRight size={12} />
           </Link>
         )}
       </div>
 
       {viewer === 'parent' && (
         <div style={{ fontSize: 12, color: T.textSecondary, marginBottom: 10 }}>
-          A staff member from your school invited you to a meeting. Tap accept to
-          confirm or decline if it doesn&apos;t work.
+          {t('appt.bannerParentIntro')}
         </div>
       )}
 
@@ -276,8 +282,8 @@ export default function PendingAppointmentsBanner({
               >
                 <span style={{ fontWeight: 600, fontSize: 13 }}>
                   {viewer === 'parent'
-                    ? primary?.name || 'A staff member'
-                    : 'Awaiting your response'}
+                    ? primary?.name || t('appt.aStaffMember')
+                    : t('appt.awaitingYourResponse')}
                 </span>
                 {isVideo ? (
                   <span
@@ -289,10 +295,10 @@ export default function PendingAppointmentsBanner({
                       gap: 4,
                     }}
                   >
-                    <Video size={12} strokeWidth={1.75} /> Video call
+                    <Video size={12} strokeWidth={1.75} /> {t('appt.videoCall')}
                   </span>
                 ) : (
-                  <span style={{ fontSize: 11, color: T.textMuted }}>In-person</span>
+                  <span style={{ fontSize: 11, color: T.textMuted }}>{t('appt.inPerson')}</span>
                 )}
               </div>
               <div style={{ fontSize: 13, color: T.textSecondary, marginBottom: 6 }}>
@@ -301,7 +307,8 @@ export default function PendingAppointmentsBanner({
                   strokeWidth={1.75}
                   style={{ verticalAlign: 'middle', marginRight: 4, color: T.emerald }}
                 />
-                {formatDateTime(a.scheduled_start)} · {a.duration_minutes} min
+                {formatDateTime(a.scheduled_start, intlLocale)} ·{' '}
+                {t('appt.nMin', { n: a.duration_minutes })}
               </div>
               {a.intake_subject && (
                 <div
@@ -338,7 +345,7 @@ export default function PendingAppointmentsBanner({
                     }}
                   >
                     {busyId === a.id ? <Loader2 size={12} style={{ animation: 'spin 1.4s linear infinite' }} /> : <CheckCircle2 size={12} />}
-                    Accept
+                    {t('appt.accept')}
                   </button>
                   <button
                     type="button"
@@ -361,7 +368,7 @@ export default function PendingAppointmentsBanner({
                     }}
                   >
                     {busyId === a.id ? <Loader2 size={12} style={{ animation: 'spin 1.4s linear infinite' }} /> : <XCircle size={12} />}
-                    Decline
+                    {t('appt.decline')}
                   </button>
                 </div>
               ) : (
@@ -378,7 +385,7 @@ export default function PendingAppointmentsBanner({
                     fontWeight: 600,
                   }}
                 >
-                  Open in calendar <ChevronRight size={12} />
+                  {t('appt.openInCalendar')} <ChevronRight size={12} />
                 </Link>
               )}
             </div>

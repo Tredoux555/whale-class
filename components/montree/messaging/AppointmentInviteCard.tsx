@@ -31,6 +31,7 @@ import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Calendar, Clock, Video, CheckCircle2, XCircle, Loader2, ArrowRight } from 'lucide-react';
 import type { ApptInviteStatus } from '@/lib/montree/messaging/appointment-invite';
+import { useI18n } from '@/lib/montree/i18n';
 
 const T = {
   cardBg: 'rgba(8,20,12,0.55)',
@@ -75,10 +76,10 @@ export interface AppointmentInviteCardProps {
   onChanged?: () => void;
 }
 
-function formatDateTime(iso: string): string {
+function formatDateTime(iso: string, locale: string): string {
   try {
     const d = new Date(iso);
-    return d.toLocaleString(undefined, {
+    return d.toLocaleString(locale, {
       weekday: 'short',
       month: 'short',
       day: 'numeric',
@@ -97,6 +98,7 @@ export default function AppointmentInviteCard({
   viewer,
   onChanged,
 }: AppointmentInviteCardProps) {
+  const { t, locale } = useI18n();
   const [appt, setAppt] = useState<FetchedAppt | null>(null);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState<'accept' | 'decline' | null>(null);
@@ -144,7 +146,7 @@ export default function AppointmentInviteCard({
   const respond = useCallback(async (action: 'accept' | 'decline') => {
     if (action === 'decline') {
       const ok = typeof window !== 'undefined'
-        ? window.confirm('Decline this invitation? The teacher will see your response.')
+        ? window.confirm(t('msg.declineConfirm'))
         : true;
       if (!ok) return;
     }
@@ -159,18 +161,18 @@ export default function AppointmentInviteCard({
       });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        setError(data?.error || (action === 'accept' ? 'Could not accept.' : 'Could not decline.'));
+        setError(data?.error || (action === 'accept' ? t('msg.couldNotAccept') : t('msg.couldNotDecline')));
         return;
       }
       const data = await res.json();
       if (data?.appointment) setAppt(data.appointment as FetchedAppt);
       onChanged?.();
     } catch {
-      setError('Network error.');
+      setError(t('msg.networkError'));
     } finally {
       setBusy(null);
     }
-  }, [appointmentId, onChanged]);
+  }, [appointmentId, onChanged, t]);
 
   // Derive UI state.
   // Priority: server state (if loaded) > marker state.
@@ -209,10 +211,10 @@ export default function AppointmentInviteCard({
     T.gold;
 
   const headerLabel =
-    effectiveStatus === 'confirmed' ? 'Confirmed' :
-    effectiveStatus === 'declined' ? 'Declined' :
-    effectiveStatus === 'cancelled' ? 'Cancelled' :
-    'New invitation';
+    effectiveStatus === 'confirmed' ? t('msg.statusConfirmed') :
+    effectiveStatus === 'declined' ? t('msg.statusDeclined') :
+    effectiveStatus === 'cancelled' ? t('msg.statusCancelled') :
+    t('msg.newInvitation');
 
   const headerIcon =
     effectiveStatus === 'confirmed' ? <CheckCircle2 size={14} strokeWidth={2} /> :
@@ -252,7 +254,7 @@ export default function AppointmentInviteCard({
         {headerLabel}
         {isVideo && (
           <span style={{ marginLeft: 'auto', display: 'inline-flex', alignItems: 'center', gap: 4, color: T.emerald, textTransform: 'none', letterSpacing: 0 }}>
-            <Video size={12} strokeWidth={1.75} /> Video
+            <Video size={12} strokeWidth={1.75} /> {t('msg.video')}
           </span>
         )}
       </div>
@@ -261,15 +263,15 @@ export default function AppointmentInviteCard({
       {scheduledStart ? (
         <div style={{ fontFamily: T.serif, fontSize: 16, fontWeight: 500, color: T.textPrimary, lineHeight: 1.3 }}>
           <Clock size={13} strokeWidth={1.75} style={{ display: 'inline', verticalAlign: 'middle', marginRight: 6, color: T.emerald }} />
-          {formatDateTime(scheduledStart)}
+          {formatDateTime(scheduledStart, locale)}
           {appt?.duration_minutes && (
             <span style={{ marginLeft: 6, fontSize: 12, color: T.textSecondary, fontFamily: T.sans }}>
-              · {appt.duration_minutes} min
+              · {t('msg.nMin', { n: appt.duration_minutes })}
             </span>
           )}
         </div>
       ) : (
-        <div style={{ fontFamily: T.serif, fontSize: 14, color: T.textSecondary }}>{caption || 'Appointment'}</div>
+        <div style={{ fontFamily: T.serif, fontSize: 14, color: T.textSecondary }}>{caption || t('msg.appointment')}</div>
       )}
 
       {appt?.intake_subject && (
@@ -303,7 +305,7 @@ export default function AppointmentInviteCard({
       {loading ? (
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, color: T.textMuted, fontSize: 12 }}>
           <Loader2 size={12} style={{ animation: 'spin 1.4s linear infinite' }} />
-          Loading…
+          {t('common.loading')}
         </div>
       ) : canActAsParent ? (
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginTop: 4 }}>
@@ -329,7 +331,7 @@ export default function AppointmentInviteCard({
             }}
           >
             {busy === 'accept' ? <Loader2 size={14} style={{ animation: 'spin 1.4s linear infinite' }} /> : <CheckCircle2 size={14} />}
-            Accept
+            {t('msg.accept')}
           </button>
           <button
             type="button"
@@ -353,7 +355,7 @@ export default function AppointmentInviteCard({
             }}
           >
             {busy === 'decline' ? <Loader2 size={14} style={{ animation: 'spin 1.4s linear infinite' }} /> : <XCircle size={14} />}
-            Decline
+            {t('msg.decline')}
           </button>
         </div>
       ) : showJoin ? (
@@ -374,7 +376,7 @@ export default function AppointmentInviteCard({
             marginTop: 4,
           }}
         >
-          Join now <ArrowRight size={14} />
+          {t('msg.joinNow')} <ArrowRight size={14} />
         </Link>
       ) : null}
 
