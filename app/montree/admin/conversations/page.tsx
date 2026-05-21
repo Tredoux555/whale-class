@@ -36,7 +36,7 @@ import { useI18n, getIntlLocale, type TranslationKey } from '@/lib/montree/i18n'
 
 // Translation helper — new meetingNotes.* keys are added to en.ts by the i18n
 // team after this file ships. Cast keeps TS happy until they land.
-type TFn = (key: string, params?: Record<string, string | number>) => string;
+type TFn = ReturnType<typeof useI18n>['t'];
 
 const T = {
   emerald: '#34d399',
