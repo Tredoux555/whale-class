@@ -328,6 +328,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           alignItems: 'center',
           justifyContent: 'space-between',
           padding: '14px 18px',
+          // Pad below the iPhone status bar / notch / Dynamic Island so the
+          // hamburger + school name aren't hidden under the phone's native UI.
+          paddingTop: 'calc(14px + env(safe-area-inset-top))',
           background: 'rgba(7,18,12,0.85)',
           backdropFilter: 'blur(12px)',
           borderBottom: T.sidebarBorder,
@@ -370,7 +373,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           position: 'fixed',
           top: 0,
           left: 0,
-          height: '100vh',
+          height: '100dvh',
           width: 240,
           background: T.sidebar,
           borderRight: T.sidebarBorder,
@@ -406,13 +409,17 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               position: 'fixed',
               top: 0,
               left: 0,
-              height: '100vh',
+              height: '100dvh',
               width: 280,
               background: T.sidebar,
               borderRight: T.sidebarBorder,
               display: 'flex',
               flexDirection: 'column',
               zIndex: 50,
+              // Clear the notch so the drawer's nav + close button aren't
+              // hidden under the iPhone status bar.
+              paddingTop: 'env(safe-area-inset-top)',
+              paddingBottom: 'env(safe-area-inset-bottom)',
             }}
           >
             <button
@@ -420,7 +427,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               aria-label="Close menu"
               style={{
                 position: 'absolute',
-                top: 14,
+                top: 'calc(14px + env(safe-area-inset-top))',
                 right: 14,
                 background: 'transparent',
                 border: 'none',

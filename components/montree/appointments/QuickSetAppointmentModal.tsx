@@ -280,7 +280,8 @@ export default function QuickSetAppointmentModal({
                   background: T.inputBg,
                   border: T.inputBorder,
                   color: T.textPrimary,
-                  fontSize: 14,
+                  // 16px — anything smaller makes iOS Safari auto-zoom on focus.
+                  fontSize: 16,
                   fontFamily: T.sans,
                   outline: 'none',
                   colorScheme: 'dark',
@@ -334,7 +335,8 @@ export default function QuickSetAppointmentModal({
                   background: T.inputBg,
                   border: T.inputBorder,
                   color: T.textPrimary,
-                  fontSize: 14,
+                  // 16px — anything smaller makes iOS Safari auto-zoom on focus.
+                  fontSize: 16,
                   fontFamily: T.sans,
                   outline: 'none',
                 }}

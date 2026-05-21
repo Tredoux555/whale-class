@@ -208,10 +208,12 @@ export default function ParentChatStreamPage({ params }: { params: Promise<{ par
       display: 'flex',
       flexDirection: 'column',
     }}>
-      {/* Sticky header */}
+      {/* Sticky header — sits directly below the DashboardHeader (57px tall),
+          which itself grows by env(safe-area-inset-top) on a notched iPhone.
+          Mirror that inset here so the two headers don't overlap. */}
       <header style={{
         position: 'sticky',
-        top: 57,
+        top: 'calc(57px + env(safe-area-inset-top))',
         zIndex: 40,
         background: T.toolbarBg,
         backdropFilter: 'blur(20px) saturate(140%)',
