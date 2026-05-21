@@ -93,7 +93,14 @@ export default function AgentNav() {
   return (
     <nav
       className="sticky top-0 z-30 backdrop-blur-md border-b border-white/5"
-      style={{ background: 'rgba(8,20,12,0.65)' }}
+      style={{
+        background: 'rgba(8,20,12,0.65)',
+        // Pad below the iPhone status bar / notch / Dynamic Island so the
+        // nav content isn't hidden under the phone's native UI. The frosted
+        // background fills the inset, extending the bar behind the status
+        // bar — the intended iOS standalone look.
+        paddingTop: 'env(safe-area-inset-top)',
+      }}
     >
       {/*
        * 🚨 Right-side padding on md+ reserves space for MiraFloat's trigger
