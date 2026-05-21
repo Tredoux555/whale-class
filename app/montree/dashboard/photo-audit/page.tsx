@@ -3480,36 +3480,36 @@ function AuditPhotoCardInner({ photo, selected, onToggle, onConfirm, onCorrect, 
         )}
         {/* Work status: P/Pr/M buttons hidden — status auto-set to "practicing" on confirm.
             Kept in code for reinstatement if needed. See handleSetStatus + progressMap. */}
-        {/* For plain cards (no AI section): show unified button or Fix + Tell AI */}
-        {!photo.sonnet_draft && photo.identification_status !== 'haiku_matched' && (
-          unifiedTagger ? (
-            <button
-              onClick={onAcceptDraft}
-              disabled={processing}
-              style={{ width: '100%', fontSize: 10, padding: '8px 0', marginTop: 8, borderRadius: 8, background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.75)', fontWeight: 600, cursor: processing ? 'wait' : 'pointer', opacity: processing ? 0.5 : 1 }}
-              title="Identify this work"
-            >
-              {processing ? '...' : '🏷️ This is…'}
-            </button>
-          ) : (
-            <div style={{ display: 'flex', gap: 6, marginTop: 8 }}>
+        {/* Fallback tag surface. Fires whenever NONE of the rich AI branches
+            (sonnet_drafted / haiku_drafted / haiku_matched) rendered — which
+            is the case for untagged photos whose cached sonnet_draft made the
+            old `!photo.sonnet_draft` guard false, leaving the card with no way
+            to tag a work. Always give the teacher a clear, prominent action. */}
+        {(() => {
+          const hasSonnetBranch = !!photo.sonnet_draft && photo.identification_status === 'sonnet_drafted';
+          const hasHaikuDraftBranch = photo.identification_status === 'haiku_drafted' && photo.identification_confidence !== null;
+          const hasHaikuMatchBranch = photo.identification_status === 'haiku_matched' && !!photo.work_name;
+          if (hasSonnetBranch || hasHaikuDraftBranch || hasHaikuMatchBranch) return null;
+          return (
+            <div style={{ marginTop: 8 }}>
               <button
-                onClick={onCorrect}
+                onClick={onAcceptDraft}
                 disabled={processing}
-                style={{ flex: 1, fontSize: 10, padding: '7px 0', borderRadius: 8, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.60)', fontWeight: 500, cursor: processing ? 'wait' : 'pointer', opacity: processing ? 0.5 : 1 }}
+                style={{ width: '100%', fontSize: 12, padding: '10px 0', borderRadius: 8, background: 'linear-gradient(180deg, #34d399, #10b981)', border: '1px solid rgba(52,211,153,0.55)', color: '#06281a', fontWeight: 700, cursor: processing ? 'wait' : 'pointer', opacity: processing ? 0.5 : 1 }}
+                title="Link this photo to a curriculum work"
               >
-                ✏️ {t('audit.fix')}
+                {processing ? '...' : '🏷️ Tag a work'}
               </button>
               <button
                 onClick={onTellAI}
                 disabled={processing}
-                style={{ flex: 1, fontSize: 10, padding: '7px 0', borderRadius: 8, background: 'rgba(139,92,246,0.08)', border: '1px solid rgba(139,92,246,0.22)', color: 'rgba(196,181,253,0.70)', fontWeight: 500, cursor: processing ? 'wait' : 'pointer', opacity: processing ? 0.5 : 1 }}
+                style={{ width: '100%', fontSize: 10, padding: '6px 0', marginTop: 5, borderRadius: 8, background: 'rgba(139,92,246,0.08)', border: '1px solid rgba(139,92,246,0.22)', color: 'rgba(196,181,253,0.70)', fontWeight: 500, cursor: processing ? 'wait' : 'pointer', opacity: processing ? 0.5 : 1 }}
               >
-                🗣️ Tell AI
+                🗣️ Tell AI what it is
               </button>
             </div>
-          )
-        )}
+          );
+        })()}
         {/* Utility actions — Confirm and Teach hidden (auto-handled on resolve/fix).
             Kept in code for reinstatement. Only delete remains visible. */}
         <div style={{ display: 'flex', gap: 4, marginTop: 8, justifyContent: 'flex-end' }}>
