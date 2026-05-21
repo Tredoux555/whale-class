@@ -793,7 +793,9 @@ export default function TracyFloat() {
         aria-label="Open Tracy"
         style={{
           position: 'fixed',
-          top: 16,
+          // Notch-safe top inset so the avatar clears the iPhone status bar /
+          // Dynamic Island. Top-right on every screen — uniform with MiraFloat.
+          top: 'calc(env(safe-area-inset-top, 0px) + 16px)',
           right: 16,
           zIndex: 35,
           width: 56,
@@ -847,11 +849,11 @@ export default function TracyFloat() {
       aria-label="Tracy"
       style={{
         position: 'fixed',
-        top: 16,
+        top: 'calc(env(safe-area-inset-top, 0px) + 16px)',
         right: 16,
         zIndex: 35,
         width: 'min(380px, calc(100vw - 32px))',
-        maxHeight: 'calc(100vh - 32px)',
+        maxHeight: 'calc(100vh - env(safe-area-inset-top, 0px) - 32px)',
         background: T.cardBg,
         backdropFilter: 'blur(22px)',
         border: T.cardBorder,

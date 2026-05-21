@@ -541,30 +541,22 @@ export default function MiraFloat() {
           />
         )}
         {/*
-          MOBILE: float sits BOTTOM-RIGHT so it doesn't collide with the
-            AgentNav hamburger (which is also top-right). 16px from the bottom
-            + a safe-area-inset bump for notched devices.
-          DESKTOP (md+): float sits TOP-RIGHT 16px — matches the design language
-            of TracyFloat in the principal dashboard. No hamburger conflict
-            because desktop renders the full nav inline.
+          The AI assistant float is TOP-RIGHT on every screen and platform —
+          uniform with TracyFloat in the principal dashboard. The safe-area
+          inset clears the iPhone status bar / notch / Dynamic Island. The
+          AgentNav hamburger lives on the LEFT specifically so this corner
+          stays clear of it on mobile.
         */}
         <style jsx>{`
           .mira-float-trigger {
-            bottom: calc(env(safe-area-inset-bottom, 0px) + 16px);
+            top: calc(env(safe-area-inset-top, 0px) + 16px);
             right: 16px;
-            top: auto;
+            bottom: auto;
           }
           .mira-float-trigger:hover {
             transform: translateY(-1px);
             box-shadow: 0 8px 26px rgba(0, 0, 0, 0.5),
               0 0 0 4px rgba(232, 201, 106, 0.12);
-          }
-          @media (min-width: 768px) {
-            .mira-float-trigger {
-              top: 16px;
-              right: 16px;
-              bottom: auto;
-            }
           }
         `}</style>
       </button>
@@ -581,7 +573,7 @@ export default function MiraFloat() {
         position: 'fixed',
         zIndex: 35,
         width: 'min(380px, calc(100vw - 32px))',
-        maxHeight: 'calc(100dvh - 32px)',
+        maxHeight: 'calc(100dvh - env(safe-area-inset-top, 0px) - 32px)',
         background: T.cardBg,
         backdropFilter: 'blur(22px)',
         border: T.cardBorder,
@@ -594,20 +586,13 @@ export default function MiraFloat() {
         color: T.textSoft,
       }}
     >
-      {/* MOBILE: opens from bottom-right (matches trigger position).
-          DESKTOP (md+): opens from top-right. Same responsive rule as trigger. */}
+      {/* Opens from TOP-RIGHT on every screen — same uniform position as the
+          trigger and as TracyFloat. Safe-area inset clears the notch. */}
       <style jsx>{`
         .mira-float-panel {
-          bottom: calc(env(safe-area-inset-bottom, 0px) + 16px);
+          top: calc(env(safe-area-inset-top, 0px) + 16px);
           right: 16px;
-          top: auto;
-        }
-        @media (min-width: 768px) {
-          .mira-float-panel {
-            top: 16px;
-            right: 16px;
-            bottom: auto;
-          }
+          bottom: auto;
         }
       `}</style>
       {/* Header */}

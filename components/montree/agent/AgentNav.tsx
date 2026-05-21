@@ -115,6 +115,18 @@ export default function AgentNav() {
           </span>
         </Link>
 
+        {/* Mobile hamburger — kept on the LEFT so the top-right corner stays
+            clear for the MiraFloat AI assistant. The AI float is top-right on
+            every screen and platform; nav controls never share that corner. */}
+        <button
+          onClick={() => setMenuOpen(o => !o)}
+          className="md:hidden inline-flex items-center justify-center w-9 h-9 rounded-lg text-white/70 hover:text-white border border-white/10 shrink-0"
+          aria-label="Menu"
+          aria-expanded={menuOpen}
+        >
+          <span className="text-lg leading-none">{menuOpen ? '✕' : '☰'}</span>
+        </button>
+
         {/* Desktop links */}
         <div className="hidden md:flex items-center gap-1 ml-2 flex-wrap">
           {NAV_LINKS.map(l => (
@@ -136,16 +148,6 @@ export default function AgentNav() {
             className="hidden md:inline-flex px-3 py-1.5 rounded-lg text-xs font-medium text-white/70 hover:text-white border border-white/10 hover:border-white/30 transition-colors disabled:opacity-50 whitespace-nowrap"
           >
             {signOutLoading ? 'Signing out…' : 'Sign out'}
-          </button>
-
-          {/* Mobile hamburger */}
-          <button
-            onClick={() => setMenuOpen(o => !o)}
-            className="md:hidden inline-flex items-center justify-center w-9 h-9 rounded-lg text-white/70 hover:text-white border border-white/10"
-            aria-label="Menu"
-            aria-expanded={menuOpen}
-          >
-            <span className="text-lg leading-none">{menuOpen ? '✕' : '☰'}</span>
           </button>
         </div>
       </div>
