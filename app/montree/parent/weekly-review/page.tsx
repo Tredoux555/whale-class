@@ -74,7 +74,7 @@ function LoadingScreenWrapper() {
 
 function LoadingScreen({ t }: { t: (key: string) => string }) {
   return (
-    <div style={{ minHeight: "100vh", background: T.bg, backgroundImage: T.glow, backgroundAttachment: "fixed", display: "flex", alignItems: "center", justifyContent: "center" }}>
+    <div style={{ minHeight: "100dvh", background: T.bg, backgroundImage: T.glow, backgroundAttachment: "fixed", display: "flex", alignItems: "center", justifyContent: "center" }}>
       <div style={{ textAlign: "center" }}>
         <div style={{ width: "4rem", height: "4rem", background: `linear-gradient(to bottom right, #34d399, #14b8a6)`, borderRadius: "0.5rem", boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)", display: "flex", alignItems: "center", justifyContent: "center", marginLeft: "auto", marginRight: "auto", marginBottom: "1rem", animation: "pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite" }}>
           <span style={{ fontSize: "1.875rem" }}>📊</span>
@@ -200,7 +200,7 @@ function ParentWeeklyReviewContent() {
 
   if (error) {
     return (
-      <div style={{ minHeight: "100vh", background: T.bg, backgroundImage: T.glow, backgroundAttachment: "fixed", display: "flex", alignItems: "center", justifyContent: "center", padding: "1rem" }}>
+      <div style={{ minHeight: "100dvh", background: T.bg, backgroundImage: T.glow, backgroundAttachment: "fixed", display: "flex", alignItems: "center", justifyContent: "center", padding: "1rem" }}>
         <div style={{ textAlign: "center", maxWidth: "28rem" }}>
           <div style={{ fontSize: "3.75rem", marginBottom: "1rem" }}>😕</div>
           <h2 style={{ fontSize: "1.25rem", fontWeight: "700", color: T.textPrimary, marginBottom: "0.5rem" }}>{t('parentWeeklyReview.errorTitle')}</h2>
@@ -215,7 +215,7 @@ function ParentWeeklyReviewContent() {
 
   if (!child || !analysis) {
     return (
-      <div style={{ minHeight: "100vh", background: T.bg, backgroundImage: T.glow, backgroundAttachment: "fixed", display: "flex", alignItems: "center", justifyContent: "center", padding: "1rem" }}>
+      <div style={{ minHeight: "100dvh", background: T.bg, backgroundImage: T.glow, backgroundAttachment: "fixed", display: "flex", alignItems: "center", justifyContent: "center", padding: "1rem" }}>
         <div style={{ textAlign: "center", maxWidth: "28rem" }}>
           <div style={{ fontSize: "3.75rem", marginBottom: "1rem" }}>📊</div>
           <h2 style={{ fontSize: "1.25rem", fontWeight: "700", color: T.textPrimary, marginBottom: "0.5rem" }}>{t('parentWeeklyReview.noReportTitle')}</h2>
@@ -231,7 +231,7 @@ function ParentWeeklyReviewContent() {
   }
 
   return (
-    <div style={{ minHeight: "100vh", background: T.bg, backgroundImage: T.glow, backgroundAttachment: "fixed" }}>
+    <div style={{ minHeight: "100dvh", background: T.bg, backgroundImage: T.glow, backgroundAttachment: "fixed" }}>
       {/* Header */}
       <header style={{ background: T.card, backdropFilter: T.blur }}>
         <div style={{ maxWidth: "56rem", marginLeft: "auto", marginRight: "auto", paddingLeft: "1rem", paddingRight: "1rem", paddingTop: "1rem", paddingBottom: "1rem" }}>

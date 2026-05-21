@@ -214,7 +214,7 @@ export default function AgentThreadDetailPage() {
   return (
     <div style={{
       color: T.textPrimary, fontFamily: T.sans,
-      display: 'flex', flexDirection: 'column', minHeight: 'calc(100vh - 64px)',
+      display: 'flex', flexDirection: 'column', minHeight: 'calc(100dvh - 64px)',
     }}>
       {/* Sticky header */}
       <header style={{

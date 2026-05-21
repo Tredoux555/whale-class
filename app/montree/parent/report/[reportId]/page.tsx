@@ -258,7 +258,7 @@ export default function ParentReportPage() {
   // --- Loading ---
   if (loading) {
     return (
-      <div style={{ minHeight: "100vh", background: T.bg, backgroundImage: T.glow, backgroundAttachment: "fixed" }}>
+      <div style={{ minHeight: "100dvh", background: T.bg, backgroundImage: T.glow, backgroundAttachment: "fixed" }}>
         <div style={{ maxWidth: "32rem", marginLeft: "auto", marginRight: "auto", padding: "1.5rem" }}>
           <div style={{ animation: "pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite", display: "flex", flexDirection: "column", gap: "1.5rem", marginTop: "3rem" }}>
             <div style={{ background: T.card, borderRadius: "0.75rem", height: "2rem" }} />
@@ -279,7 +279,7 @@ export default function ParentReportPage() {
   // --- Error ---
   if (error || !report) {
     return (
-      <div style={{ minHeight: "100vh", background: T.bg, backgroundImage: T.glow, backgroundAttachment: "fixed", display: "flex", alignItems: "center", justifyContent: "center", padding: "2rem" }}>
+      <div style={{ minHeight: "100dvh", background: T.bg, backgroundImage: T.glow, backgroundAttachment: "fixed", display: "flex", alignItems: "center", justifyContent: "center", padding: "2rem" }}>
         <div style={{ textAlign: "center" }}>
           <p style={{ color: '#f87171', marginBottom: "1rem" }}>{error || t('parentReport.notFound')}</p>
           <Link href="/montree/parent/dashboard" style={{ color: T.emerald, textDecoration: "underline", cursor: "pointer" }}>
@@ -292,7 +292,7 @@ export default function ParentReportPage() {
 
   // --- Main Render ---
   return (
-    <div style={{ minHeight: "100vh", background: T.bg, backgroundImage: T.glow, backgroundAttachment: "fixed" }}>
+    <div style={{ minHeight: "100dvh", background: T.bg, backgroundImage: T.glow, backgroundAttachment: "fixed" }}>
 
       {/* ═══ Sticky Header — Montree home anchor + Back + LanguageToggle ═══ */}
       <header style={{ background: T.card, backdropFilter: T.blur, position: "sticky", top: 0, zIndex: 10 }}>

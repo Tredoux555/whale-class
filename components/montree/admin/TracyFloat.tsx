@@ -853,7 +853,7 @@ export default function TracyFloat() {
         right: 16,
         zIndex: 35,
         width: 'min(380px, calc(100vw - 32px))',
-        maxHeight: 'calc(100vh - env(safe-area-inset-top, 0px) - 32px)',
+        maxHeight: 'calc(100dvh - env(safe-area-inset-top, 0px) - 32px)',
         background: T.cardBg,
         backdropFilter: 'blur(22px)',
         border: T.cardBorder,
@@ -917,7 +917,7 @@ export default function TracyFloat() {
           flexDirection: 'column',
           gap: 16,
           minHeight: 280,
-          maxHeight: 'calc(100vh - 240px)',
+          maxHeight: 'calc(100dvh - 240px)',
         }}
       >
         {visibleTurns.length === 0 ? (

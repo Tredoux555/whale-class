@@ -168,7 +168,7 @@ function ParentMilestonesContent() {
   if (loading) {
     return (
       <div style={{
-        minHeight: '100vh',
+        minHeight: '100dvh',
         background: T.bg,
         backgroundImage: T.glow,
         backgroundAttachment: 'fixed',
@@ -204,7 +204,7 @@ function ParentMilestonesContent() {
 
   return (
     <div style={{
-      minHeight: '100vh',
+      minHeight: '100dvh',
       background: T.bg,
       backgroundImage: T.glow,
       backgroundAttachment: 'fixed',
@@ -470,7 +470,7 @@ function MilestonesLoadingFallback() {
   const { t } = useI18n();
   return (
     <div style={{
-      minHeight: '100vh',
+      minHeight: '100dvh',
       background: T.bg,
       backgroundImage: T.glow,
       backgroundAttachment: 'fixed',

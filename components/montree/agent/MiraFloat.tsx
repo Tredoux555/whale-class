@@ -646,7 +646,7 @@ export default function MiraFloat() {
           flexDirection: 'column',
           gap: 16,
           minHeight: 280,
-          maxHeight: 'calc(100vh - 240px)',
+          maxHeight: 'calc(100dvh - 240px)',
         }}
       >
         {visibleTurns.length === 0 ? (
