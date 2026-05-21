@@ -268,7 +268,38 @@ Session 119 weathered a Railway edge outage (May 19 22:22 UTC, ~1.5h, first inci
 
 ---
 
-## RECENT STATUS (May 20-21, 2026)
+## RECENT STATUS (May 21, 2026)
+
+### 🔥 Session 124 — Photo Audit polish + English sequence integration (content loop + parent reports) + Teaching Notes + agent mobile fix (May 21, 2026)
+
+**5 commits pushed to main:** `97aae331` → `fa9191d1` → `0d5db8f1` → `fe416508` → (agent mobile fix + handoff + this brain update). **Canonical handoff:** `docs/handoffs/SESSION_124_HANDOFF.md`.
+
+**🚨 ONE migration pending Supabase run:** `migrations/227_weekly_teaching_notes_flag.sql` — registers the `weekly_teaching_notes` flag (default OFF) + enables it for Whale Class. Idempotent. Until run, the Teaching Notes tab simply doesn't appear (graceful — no crash). Migration 225 (`montree_child_english_progress`) was already run in Session 121.
+
+**A. Photo Audit (`97aae331`).** Restored the description preview in the custom-work creator — `ThisIsSheet` addMode now shows a `📖 What you're adding` panel built from the photo's cached `sonnet_draft` (exactly what the resolve route copies onto the new work), so teachers review before committing. Added a guaranteed `🏷️ Tag a work` button to untagged cards: untagged photos carrying a `sonnet_draft` fell through every status branch (`sonnet_drafted` / `haiku_drafted` / `haiku_matched` / bare) and rendered NO tagging action. New fallback fires whenever no rich AI branch rendered.
+
+**B. English content loop (`fa9191d1`).** **Realigned `lib/montree/english-sequence/lesson-map.ts` PINK array to match the Library Pink page numbering 1:1** — the page reserves L1-4 for pre-reading review and starts letter-sounds at L5; the catalog previously started letters at L1, so Pink deep-links would have landed ~4 lessons off. Safe — the `montree_child_english_progress` table was empty, zero data migrated. Blue (54-83) + Green (84-128) already matched. `scripts/lesson-content/add-lesson-anchors.py` (idempotent, re-runnable) injected `id="lesson-N"` into all 124 content lessons across the 3 Library HTML pages. **Content loop:** each child's lesson on the English Progression tab (Classroom Overview) is now a tappable button → deep-links via `window.open` to that lesson's word bank / phrases / heart words in the Library. Pink L1-4 (review, no anchor) open the page top.
+
+**C. Teaching Notes (`0d5db8f1`).** New **Teaching Notes** tab on Weekly Admin next to Weekly Summary / Weekly Plan. `components/montree/reports/TeachingNotesView.tsx` (NEW) — collects the week's distinct planned works from `planNotes`, fetches each guide via `/api/montree/works/guide`, renders printable light cards (what it is / how to teach / materials / why it matters / which children have it). Print button + `@media print` isolation. Feature-flagged `weekly_teaching_notes` (migration 227, default OFF). Auto-fill / Generate / Save hide on this tab (read-only view).
+
+**D. English sequence finish-up (`fe416508`).** `offerEnglishAdvance` (`english-sequence/client-helper.ts`) is now **informed** — it looks up the child's current lesson before showing the toast: *"Amy is on Lesson 7 — the 'm' sound. Advance to 8?"* Skips children at Lesson 128; falls back to the generic prompt if the lookup fails. **Parent reports get a reading-journey card** — `/api/montree/parent/report/[reportId]` now returns `english_progress` (read from `montree_child_english_progress`, no AI pipeline touched, no migration); the report viewer renders a bilingual en/zh card with phase + lesson + progress bar. Hidden for children the teacher hasn't placed on the progression.
+
+**E. Agent mobile fix (final commit).** `AgentNav` was `sticky top-0` with no safe-area handling — on iPhone the nav content sat under the status bar / notch / Dynamic Island. Added `paddingTop: env(safe-area-inset-top)` so content drops below the native UI and the frosted bar extends behind the status bar.
+
+**🚨 Architectural notes locked in:**
+- **`lessonToWorks` deliberately NOT built.** Montessori Language materials (Sandpaper Letters, Movable Alphabet) span dozens of lessons each — a per-lesson→work map fabricates a relationship that doesn't cleanly exist and could make the advance nudge *more* wrong. The informed advance toast is the honest fix. Do not build lessonToWorks.
+- **`lesson-map.ts` PINK is page-aligned.** Rule #231 (no renumber without sign-off) honoured — renumber done with explicit approval while the progress table was empty.
+- **The parent reading-journey card shows LIVE position** (not a send-time snapshot). Fine for v1; a snapshot would be the purist choice.
+- **`scripts/lesson-content/add-lesson-anchors.py` must be re-run** if `build_blue.py` / `build_green.py` regenerate their HTML (those generators don't emit anchors).
+
+**Verification:** all commits lint-clean (0 errors; 0 new warnings). English catalog audited — 128 entries 1-128 sequential, 53/30/45 phase split, Pink letters match the page, all 124 content lessons anchored, no importer hardcodes a Pink lesson number.
+
+**🚨 Next-session priorities:**
+1. **Run migration 227** in Supabase.
+2. **Stale-lesson flag on the English Progression tab** — surface children who haven't advanced in 3+ weeks (stuck/struggling, or teacher forgot). Highest classroom value. ~half a day.
+3. **Weave reading position into the AI weekly-wrap narrative** — currently a separate card; feeding the position into the narrative prompt makes the parent report read as one warm story. Touches the AI pipeline — opt-in Phase 2.
+4. `?child_id=` filter on the english-progress GET — the informed toast fetches the whole class roll-call to find one child. Minor efficiency.
+5. Carry-overs from Session 121: encryption end-to-end verify, i18n translation sweep.
 
 ### 🔥 Session 121 — audioOnly shipped + AES-256-GCM encryption RE-SHIPPED + i18n audit (May 20-21, 2026)
 
