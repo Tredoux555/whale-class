@@ -1130,10 +1130,23 @@ function EnglishProgressTab({
   const [error, setError] = useState<string | null>(null);
   const [busyChildId, setBusyChildId] = useState<string | null>(null);
   const [pickerChildId, setPickerChildId] = useState<string | null>(null);
+  // This-week English coverage — who hasn't been to the Language area yet.
+  // null = not loaded / unavailable. languageAreaPresent gates the banner so
+  // classrooms with no Language area configured don't see a misleading flag.
+  const [missing, setMissing] = useState<{
+    ids: Set<string>;
+    names: string[];
+    languageAreaPresent: boolean;
+  } | null>(null);
 
   const load = useCallback(async () => {
     try {
-      const res = await montreeApi('/api/montree/dashboard/english-progress');
+      // english-missing is best-effort — its failure must never block the
+      // progression tab, so it's caught independently of the main fetch.
+      const [res, missRes] = await Promise.all([
+        montreeApi('/api/montree/dashboard/english-progress'),
+        montreeApi('/api/montree/dashboard/english-missing').catch(() => null),
+      ]);
       if (!res.ok) {
         const j = await res.json().catch(() => ({}));
         setError(j?.error || `HTTP ${res.status}`);
@@ -1141,6 +1154,22 @@ function EnglishProgressTab({
       }
       const json = (await res.json()) as EnglishProgressResponse;
       setData(json);
+
+      if (missRes && missRes.ok) {
+        try {
+          const mj = await missRes.json();
+          const list = Array.isArray(mj?.missing) ? mj.missing : [];
+          setMissing({
+            ids: new Set(list.map((c: { id: string }) => c.id)),
+            names: list.map((c: { name: string }) => c.name),
+            languageAreaPresent: mj?.language_area_present === true,
+          });
+        } catch {
+          setMissing(null);
+        }
+      } else {
+        setMissing(null);
+      }
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Could not load');
     }
@@ -1259,6 +1288,44 @@ function EnglishProgressTab({
         </div>
       </div>
 
+      {/* This-week coverage — who hasn't been to the English area yet, so the
+          teacher knows who to pull in. Only shown when a Language area exists. */}
+      {missing && missing.languageAreaPresent && (
+        missing.ids.size > 0 ? (
+          <div style={{
+            padding: '12px 16px',
+            marginBottom: 18,
+            borderRadius: 12,
+            background: 'rgba(245,158,11,0.10)',
+            border: '1px solid rgba(245,158,11,0.40)',
+            fontSize: 13,
+            lineHeight: 1.55,
+          }}>
+            <span style={{ fontWeight: 700, color: '#fcd34d' }}>
+              {missing.ids.size === 1
+                ? '1 child hasn’t been to the English area this week'
+                : `${missing.ids.size} children haven’t been to the English area this week`}
+            </span>
+            <span style={{ color: T.textSecondary }}> — these are the ones to see: </span>
+            <span style={{ color: T.textPrimary, fontWeight: 600 }}>
+              {missing.names.join(', ')}
+            </span>
+          </div>
+        ) : (
+          <div style={{
+            padding: '10px 16px',
+            marginBottom: 18,
+            borderRadius: 12,
+            background: 'rgba(52,211,153,0.08)',
+            border: '1px solid rgba(52,211,153,0.30)',
+            fontSize: 13,
+            color: '#86efac',
+          }}>
+            ✓ Every child has had English time this week.
+          </div>
+        )
+      )}
+
       {/* Class heatmap — at-a-glance class progression (Session 119 Phase 3) */}
       {data.children.length > 0 && (
         <ClassEnglishHeatmap
@@ -1288,6 +1355,7 @@ function EnglishProgressTab({
               key={child.child_id}
               child={child}
               totalLessons={data.total_lessons}
+              missingThisWeek={missing?.ids.has(child.child_id) ?? false}
               busy={busyChildId === child.child_id}
               pickerOpen={pickerChildId === child.child_id}
               onAdvance={() => handleAdvance(child.child_id)}
@@ -1322,6 +1390,7 @@ function EnglishProgressTab({
 function ChildProgressCard({
   child,
   totalLessons,
+  missingThisWeek,
   busy,
   pickerOpen,
   onAdvance,
@@ -1332,6 +1401,7 @@ function ChildProgressCard({
 }: {
   child: EnglishProgressChild;
   totalLessons: number;
+  missingThisWeek: boolean;
   busy: boolean;
   pickerOpen: boolean;
   onAdvance: () => void;
@@ -1406,6 +1476,24 @@ function ChildProgressCard({
             </span>
             <BookOpen size={13} strokeWidth={1.75} style={{ flexShrink: 0, opacity: 0.8 }} />
           </button>
+          {missingThisWeek && (
+            <div style={{ marginTop: 6 }}>
+              <span style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 5,
+                fontSize: 11,
+                fontWeight: 600,
+                color: '#fcd34d',
+                background: 'rgba(245,158,11,0.12)',
+                border: '1px solid rgba(245,158,11,0.35)',
+                borderRadius: 7,
+                padding: '3px 8px',
+              }}>
+                ⚠ Not in the English area this week
+              </span>
+            </div>
+          )}
         </div>
         <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
           <button

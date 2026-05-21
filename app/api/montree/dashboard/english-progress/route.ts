@@ -77,7 +77,18 @@ export async function GET(request: NextRequest) {
     .eq('classroom_id', auth.classroomId)
     .eq('is_active', true)
     .order('name');
-  const roster = (rosterRaw || []) as Array<{ id: string; name: string }>;
+  const fullRoster = (rosterRaw || []) as Array<{ id: string; name: string }>;
+
+  // Optional ?child_id= narrows the roll-call to one child — used by
+  // offerEnglishAdvance() so the informed advance toast fetches a single
+  // row instead of the whole class. Classroom membership is still enforced:
+  // fullRoster is already classroom-scoped, so a child_id from another
+  // classroom filters down to [] and the caller falls back gracefully.
+  const childIdParam = request.nextUrl.searchParams.get('child_id');
+  const roster =
+    childIdParam && UUID_RE.test(childIdParam)
+      ? fullRoster.filter(c => c.id === childIdParam)
+      : fullRoster;
 
   if (roster.length === 0) {
     return jsonNoStore({
