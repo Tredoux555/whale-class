@@ -9,6 +9,9 @@ export type FeatureKey =
   | 'parent_portal'
   | 'games'
   | 'weekly_admin_docs'
+  // Teacher-only Teaching Notes view on the Weekly Admin tab — the week's
+  // planned works, each with what-it-is + how-to-teach. Migration 227. Default OFF.
+  | 'weekly_teaching_notes'
   | 'teacher_notes'
   | 'multi_teacher_mgmt'
   | 'class_events'

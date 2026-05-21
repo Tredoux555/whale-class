@@ -10,7 +10,8 @@ import { useI18n } from '@/lib/montree/i18n';
 import { getAreaLabel } from '@/lib/montree/i18n/area-labels';
 import { useFeatures } from '@/hooks/useFeatures';
 import { sortChildrenByCustomOrder } from '@/lib/montree/weekly-admin/child-order';
-import { ChevronLeft, ChevronRight, FileText, ClipboardList, Sparkles, Download, Save, AlertTriangle, Minus, Plus } from 'lucide-react';
+import { ChevronLeft, ChevronRight, FileText, ClipboardList, Sparkles, Download, Save, AlertTriangle, Minus, Plus, BookOpen } from 'lucide-react';
+import TeachingNotesView from './TeachingNotesView';
 
 const AREAS = [
   { key: 'practical_life', label: 'Practical Life', zh: '日常' },
@@ -165,7 +166,7 @@ export default function WeeklyAdminTab({ classroomId }: WeeklyAdminTabProps) {
   const [success, setSuccess] = useState('');
 
   const [weekStart, setWeekStart] = useState(() => getCurrentMonday());
-  const [activeTab, setActiveTab] = useState<'summary' | 'plan'>('summary');
+  const [activeTab, setActiveTab] = useState<'summary' | 'plan' | 'teaching'>('summary');
   const [summaryNotes, setSummaryNotes] = useState<SummaryNotes>({});
   const [planNotes, setPlanNotes] = useState<PlanNotes>({});
 
@@ -708,6 +709,9 @@ export default function WeeklyAdminTab({ classroomId }: WeeklyAdminTabProps) {
           {[
             { id: 'summary' as const, label: t('weeklyAdmin.summaryTab'), icon: FileText },
             { id: 'plan' as const, label: t('weeklyAdmin.planTab'), icon: ClipboardList },
+            ...(isEnabled('weekly_teaching_notes')
+              ? [{ id: 'teaching' as const, label: 'Teaching Notes', icon: BookOpen }]
+              : []),
           ].map(opt => {
             const active = activeTab === opt.id;
             const Icon = opt.icon;
@@ -746,44 +750,48 @@ export default function WeeklyAdminTab({ classroomId }: WeeklyAdminTabProps) {
 
           <div style={{ flex: 1 }} />
 
-          <button
-            onClick={handleAutoFill}
-            disabled={autoFilling}
-            style={{
-              ...ctaAmber,
-              opacity: autoFilling ? 0.55 : 1,
-              cursor: autoFilling ? 'not-allowed' : 'pointer',
-            }}
-          >
-            <Sparkles size={12} strokeWidth={1.75} />
-            {autoFilling ? '...' : t('weeklyAdmin.autoFill')}
-          </button>
+          {activeTab !== 'teaching' && (
+            <>
+              <button
+                onClick={handleAutoFill}
+                disabled={autoFilling}
+                style={{
+                  ...ctaAmber,
+                  opacity: autoFilling ? 0.55 : 1,
+                  cursor: autoFilling ? 'not-allowed' : 'pointer',
+                }}
+              >
+                <Sparkles size={12} strokeWidth={1.75} />
+                {autoFilling ? '...' : t('weeklyAdmin.autoFill')}
+              </button>
 
-          <button
-            onClick={() => handleGenerate(activeTab)}
-            disabled={generating !== null}
-            style={{
-              ...(activeTab === 'plan' ? ctaViolet : ctaPrimary),
-              opacity: generating !== null ? 0.55 : 1,
-              cursor: generating !== null ? 'not-allowed' : 'pointer',
-            }}
-          >
-            <Download size={12} strokeWidth={2} />
-            {generating === activeTab ? t('weeklyAdmin.generating') : t('weeklyAdmin.generate')}
-          </button>
+              <button
+                onClick={() => handleGenerate(activeTab === 'plan' ? 'plan' : 'summary')}
+                disabled={generating !== null}
+                style={{
+                  ...(activeTab === 'plan' ? ctaViolet : ctaPrimary),
+                  opacity: generating !== null ? 0.55 : 1,
+                  cursor: generating !== null ? 'not-allowed' : 'pointer',
+                }}
+              >
+                <Download size={12} strokeWidth={2} />
+                {generating === activeTab ? t('weeklyAdmin.generating') : t('weeklyAdmin.generate')}
+              </button>
 
-          <button
-            onClick={() => saveNotes(false)}
-            disabled={saving}
-            style={{
-              ...ctaPrimary,
-              opacity: saving ? 0.55 : 1,
-              cursor: saving ? 'not-allowed' : 'pointer',
-            }}
-          >
-            <Save size={12} strokeWidth={2} />
-            {saving ? t('common.loading') : t('common.save')}
-          </button>
+              <button
+                onClick={() => saveNotes(false)}
+                disabled={saving}
+                style={{
+                  ...ctaPrimary,
+                  opacity: saving ? 0.55 : 1,
+                  cursor: saving ? 'not-allowed' : 'pointer',
+                }}
+              >
+                <Save size={12} strokeWidth={2} />
+                {saving ? t('common.loading') : t('common.save')}
+              </button>
+            </>
+          )}
         </div>
       </div>
 
@@ -888,8 +896,18 @@ export default function WeeklyAdminTab({ classroomId }: WeeklyAdminTabProps) {
         </div>
       )}
 
+      {/* Teaching Notes — printable per-work guide for the planned week */}
+      {!loading && activeTab === 'teaching' && (
+        <TeachingNotesView
+          planNotes={planNotes}
+          childList={children}
+          classroomId={classroomId}
+          weekStart={weekStart}
+        />
+      )}
+
       {/* Children Cards */}
-      {!loading && (
+      {!loading && activeTab !== 'teaching' && (
         <div style={{
           padding: '20px 16px',
           display: 'flex',
