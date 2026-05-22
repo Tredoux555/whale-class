@@ -73,12 +73,14 @@ export default function StoryVoiceCall({ callId, as, authToken, onClose }: Story
 
   // ── Fetch a fresh token. Used for the initial join AND token renewal. ──
   const fetchToken = useCallback(async (): Promise<TokenData | null> => {
+    // authToken may be empty for a user who arrived via a push notification
+    // (fresh window, no sessionStorage). credentials:'same-origin' carries
+    // the story-auth cookie, which the server accepts as the fallback.
+    const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+    if (authToken) headers.Authorization = `Bearer ${authToken}`;
     const res = await fetch(`/api/story/agora-token?as=${encodeURIComponent(as)}`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${authToken}`,
-      },
+      headers,
       credentials: 'same-origin',
       body: JSON.stringify({ callId }),
     });
@@ -94,16 +96,20 @@ export default function StoryVoiceCall({ callId, as, authToken, onClose }: Story
     if (endedRef.current) return;
     endedRef.current = true;
     try {
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (authToken) headers.Authorization = `Bearer ${authToken}`;
       if (as === 'admin') {
         await fetch('/api/story/admin/call', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${authToken}` },
+          headers,
+          credentials: 'same-origin',
           body: JSON.stringify({ callId, action: 'end' }),
         });
       } else {
         await fetch('/api/story/current-call', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${authToken}` },
+          headers,
+          credentials: 'same-origin',
           body: JSON.stringify({ callId }),
         });
       }

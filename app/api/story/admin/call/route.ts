@@ -14,6 +14,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { randomBytes } from 'node:crypto';
 import { getSupabase, verifyAdminToken } from '@/lib/story-db';
 import { isAgoraConfigured } from '@/lib/montree/appointments/agora/config';
+import { sendCallPush } from '@/lib/story/push';
 
 export const maxDuration = 30;
 
@@ -83,6 +84,11 @@ export async function POST(req: NextRequest) {
     console.error('[story-call] create failed:', error?.message);
     return NextResponse.json({ error: 'Could not start the call.' }, { status: 500 });
   }
+
+  // Push the call to the user's devices so they're alerted even with the
+  // Story app closed. Fire-and-forget — Railway keeps the process alive;
+  // a push failure never blocks the admin's call.
+  void sendCallPush(username, created.id, adminUser);
 
   return NextResponse.json({ callId: created.id, channel: created.channel });
 }

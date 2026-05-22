@@ -4,6 +4,7 @@ import { useEffect, useState, useRef, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { usePullToRefresh } from '@/lib/story/use-pull-to-refresh';
 import PullRefreshIndicator from '@/lib/story/PullRefreshIndicator';
+import EnableNotificationsButton from '@/components/story/EnableNotificationsButton';
 
 interface Story {
   title: string;
@@ -743,11 +744,14 @@ export default function StoryViewer() {
       )}
 
       <div className="max-w-3xl mx-auto bg-white rounded-lg shadow-xl p-12">
-        <h1 className="text-4xl font-bold mb-8 text-center text-gray-800 font-serif">
+        <h1 className="text-4xl font-bold mb-4 text-center text-gray-800 font-serif">
           {story.title}
         </h1>
-        
-        <div className="prose prose-lg max-w-none">
+
+        {/* One-tap opt-in for call notifications (hides itself once enabled) */}
+        <EnableNotificationsButton />
+
+        <div className="prose prose-lg max-w-none mt-8">
           {story.paragraphs.map((paragraph, index) => (
             <div key={index}>
               {renderParagraph(paragraph, index)}

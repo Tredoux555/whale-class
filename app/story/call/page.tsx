@@ -55,15 +55,15 @@ export default function StoryCallPage() {
       />
     );
   }
-  if (!authToken) {
-    // Not signed in on this device — send them to the right login.
+  // The admin authenticates with the sessionStorage Bearer token. The user
+  // can ALSO authenticate via the story-auth httpOnly cookie — so a tap on
+  // a push notification, which opens a fresh window with empty
+  // sessionStorage, still connects (StoryVoiceCall sends credentials).
+  if (as === 'admin' && !authToken) {
     return (
       <CallSplash
         message="Please sign in first."
-        action={{
-          label: 'Sign in',
-          onClick: () => router.push(as === 'admin' ? '/story/admin' : '/story'),
-        }}
+        action={{ label: 'Sign in', onClick: () => router.push('/story/admin') }}
       />
     );
   }
@@ -72,7 +72,7 @@ export default function StoryCallPage() {
     <StoryVoiceCall
       callId={callId}
       as={as}
-      authToken={authToken}
+      authToken={authToken || ''}
       onClose={() => router.push(as === 'admin' ? '/story/admin/dashboard' : '/story/active')}
     />
   );
