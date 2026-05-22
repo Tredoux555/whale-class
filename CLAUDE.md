@@ -308,6 +308,43 @@ Session 119 weathered a Railway edge outage (May 19 22:22 UTC, ~1.5h, first inci
 
 ---
 
+### 🔥 Session 126 (cont.) — Story Call button ungated + Web Push notifications (May 22, 2026)
+
+**2 further commits:** `4a6b896f` (call button ungated) → `8ab35d59` (Web Push). Continuation of the Session 126 Story voice-call work.
+
+**🚨 TWO migrations now pending Supabase run:** `228_story_calls.sql` + `229_story_push_subscriptions.sql`. Run both.
+
+**A. Call button ungated (`4a6b896f`).** The admin Call button was gated on the flaky online-heartbeat — both parties were online a long time yet no button appeared. The **👥 Students** tab (renamed from "Active Students") now lists EVERY `story_users` user with a 📞 Call button, online or offline; the online/offline dot is an indicator, never a gate. New `GET /api/story/admin/users` (admin-auth) returns the roster; `OnlineUsersTab` fetches it and cross-references the online poll for the dot.
+
+**B. Web Push notifications (`8ab35d59`).** Story is a PWA that had no service worker — push needed one built. Admin places a call → the user gets a phone notification even with the Story app closed.
+- **6 new files:** `migrations/229_story_push_subscriptions.sql` (subscription store keyed by username, UNIQUE endpoint); `public/story-sw.js` (push-ONLY service worker — `push` shows the call notification, `notificationclick` opens `/story/call`; NO fetch interception; scope `/story/`); `lib/story/push.ts` (`sendCallPush` / `isPushConfigured` / `getVapidPublicKey` — opt-in by env, prunes dead 404/410 subscriptions); `app/api/story/push/public-key/route.ts` (serves the VAPID public key); `app/api/story/push/subscribe/route.ts` (user-auth, upserts on `endpoint`); `components/story/EnableNotificationsButton.tsx` (one-tap opt-in — registers SW, requests permission, subscribes, saves; iOS-unsupported → "add to Home Screen" hint).
+- **5 edited:** `package.json` (+`web-push`, +`@types/web-push` — Dockerfile does `rm package-lock.json && npm install --force`, so no lockfile work needed); `app/api/story/admin/call/route.ts` (fire-and-forget `sendCallPush` after creating the call); `app/story/[session]/page.tsx` (renders the opt-in button); `app/story/call/page.tsx` + `components/story/StoryVoiceCall.tsx` (user side no longer hard-requires the sessionStorage token — falls back to the `story-auth` cookie, so a notification tap opening a fresh window still authenticates).
+- **iOS reality:** Web Push only works inside the PWA **installed to the Home Screen** (iOS 16.4+) — not a Safari tab. The opt-in button detects this and shows a hint otherwise. It's a notification banner, not a ringing-call screen.
+
+**🚨 Railway env vars to set (Web Push is inert — feature degrades to poll-only — until these exist):**
+- `STORY_VAPID_PUBLIC_KEY` = `BNEvphJMjw8wAn-kQn_ZE8iemJflT9d9YV2IcsEh9uigcGIviAZoPNYIdTVfdXnCu-O1Bs2Gt_-sk9SidtQFhk4`
+- `STORY_VAPID_PRIVATE_KEY` = (credential — given to Tredoux in chat, NOT recorded here per the keys-stay-out-of-git rule)
+- `STORY_VAPID_SUBJECT` = optional; defaults to `mailto:tredoux555@gmail.com`
+
+**🚨 Architectural rules locked in:**
+- `public/story-sw.js` is push-ONLY — no fetch interception, no caching. Never add caching to it (would risk Story offline/stale bugs).
+- `sendCallPush` is fire-and-forget at the call site — a push failure never blocks the call.
+- VAPID private key lives ONLY in Railway env — never git, never CLAUDE.md (same rule as Stripe live keys). The public key is non-sensitive and OK to record.
+- Web Push is opt-in by env (`isPushConfigured()`) — absent VAPID env → feature inert, the 5s poll-based banner still works.
+- The Story user side authenticates via the `story-auth` cookie OR a Bearer token — the call page must NOT hard-block `as=user` on a missing sessionStorage token, or the notification-tap flow (fresh window, empty sessionStorage) breaks.
+- The Story Call button is NOT gated on online status — `story_users` is the roster; online is a display indicator only.
+
+**Verification:** all 7 lintable new/edited files lint-clean (`--max-warnings=0`, 0/0). Awaiting migrations 228+229 + the Railway VAPID env vars + a 2-device test with the PWA installed to the Home Screen.
+
+**🚨 Next-session priorities:**
+1. Run migrations **228 + 229** in Supabase.
+2. Set `STORY_VAPID_PUBLIC_KEY` + `STORY_VAPID_PRIVATE_KEY` in Railway.
+3. Install the Story PWA to the Home Screen on the user's device, open it, tap "🔔 Enable call notifications", grant permission.
+4. 2-device test: admin → 👥 Students → 📞 Call → the user gets a push notification → tap → joins the voice call.
+5. Carry-overs: the "declined / no answer" admin-feedback gap (Session 126 main handoff); Session 125 sweeps.
+
+---
+
 ### 🔥 Session 125 — English Progression coverage flag + overnight health check + i18n of the new feature set + app-wide home-link/toggle sweep (May 21–22, 2026)
 
 **11 commits pushed to main:** `05ca6a04` → `f61693f0` → `9ac5cff4` → `34f2701b` → `b3ff75c2` → `80be337d` → `89d9cb9e` → `ef07ad0c` → `72702638` → `84d28452` → `e184abb5`. **🚨 Canonical handoff:** `docs/handoffs/SESSION_125_HANDOFF.md` (+ `SESSION_125_HEALTH_CHECK.md`).
@@ -7426,8 +7463,9 @@ All migrations through 169 have been run. Key ones: 147 (smart learning columns)
 **Session 121 (May 20-21, 2026) — Application-layer AES-256-GCM encryption. ✅ Migration RUN:**
 - ✅ `226_montree_encryption_v1.sql` — **RUN May 21, 2026.** `encryption_version INTEGER` columns live on `montree_thread_messages`, `montree_meeting_notes`, `montree_appointment_recordings` (verified via information_schema query — all 3 present). `encryption_v1` feature flag inserted into `montree_feature_definitions`, then flipped ON by Tredoux. Encryption code re-applied & live. Only remaining step: confirm `MONTREE_ENCRYPTION_KEY` (32-char hex) is set in Railway — without it, writes safely fall back to plaintext + loud-log. Operations playbook: `docs/handoffs/MONTREE_ENCRYPTION_RUNBOOK.md`.
 
-**Session 126 (May 22, 2026) — Story voice calls. ⏳ 1 migration pending Tredoux's Supabase run:**
+**Session 126 (May 22, 2026) — Story voice calls + Web Push. ⏳ 2 migrations pending Tredoux's Supabase run:**
 - ⏳ `228_story_calls.sql` — `story_calls` table (id, username, channel, status ringing/active/ended, initiated_by, created_at, updated_at, ended_at) + partial index `idx_story_calls_user_active` + `story_calls_touch_updated_at()` trigger. Powers Story voice-call signalling (admin ↔ Story user). Idempotent BEGIN/COMMIT. **REQUIRED for the Story Call button. Until run, `/api/story/admin/call` INSERT fails → 500 "Could not start the call"; `/api/story/current-call` GET degrades gracefully to `{call:null}` (no banner, no crash). The flashcard fix in the same session needs no migration.**
+- ⏳ `229_story_push_subscriptions.sql` — `story_push_subscriptions` table (id, username, endpoint UNIQUE, p256dh, auth, user_agent, created_at, last_used_at) + `idx_story_push_subs_username`. Stores each Story user's Web Push subscription so `sendCallPush()` can notify them when the app is closed. Idempotent BEGIN/COMMIT. **REQUIRED for Story call push notifications. Until run, `/api/story/push/subscribe` 500s on the upsert; the "Enable call notifications" button surfaces the error gracefully. Also needs Railway env: `STORY_VAPID_PUBLIC_KEY` + `STORY_VAPID_PRIVATE_KEY` — without them the whole push feature stays inert (poll-based banner still works).**
 
 Plus Session 119 agent backfill SQL (not a migration file, run separately in Supabase):
 ```sql
