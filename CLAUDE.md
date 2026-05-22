@@ -270,6 +270,44 @@ Session 119 weathered a Railway edge outage (May 19 22:22 UTC, ~1.5h, first inci
 
 ## RECENT STATUS (May 22, 2026)
 
+### 🔥 Session 126 — Vocabulary Flashcard crop fix + Story Voice Calls (Agora) (May 22, 2026)
+
+**3 commits pushed to main:** `cc928378` → `cecc5810` → `e06f6f01`. **🚨 Canonical handoff:** `docs/handoffs/SESSION_126_HANDOFF.md`.
+
+**🚨 ONE migration pending Supabase run:** `migrations/228_story_calls.sql` — `story_calls` table for Story voice-call signalling. Idempotent. Until run, the admin Call button surfaces but returns "Could not start the call" (graceful — no crash).
+
+**A. Vocabulary Flashcard image crop fix (`cc928378`).** The Vocabulary Flashcard Maker printed cropped images (a velociraptor lost its head + tail). Root cause: print CSS used `object-fit: cover` — fills the ~2:1 image box, crops the overflow; almost no photo matches that ratio. Fixed `cover` → `contain` (whole image, letterboxed onto the already-white `.image-area` box → invisible) + preview-grid `object-cover` → `object-contain` so the preview matches the print. **3 independent copies fixed**, 6 edits: `app/montree/library/tools/vocabulary-flashcards/page.tsx`, `app/admin/vocabulary-flashcards/page.tsx`, `app/montree/dashboard/vocabulary-flashcards/page.tsx`.
+
+**B. Story Voice Calls (`cecc5810`) — full build.** In-app voice calling for the Story system: admin (Tredoux) ↔ one Story user, voice-only.
+- **Engine reused, UI fresh.** The Agora token-minting engine (`lib/montree/appointments/agora/{config,token-builder}.ts`) is reused server-side. The call UI is a NEW lean voice-only component (`components/story/StoryVoiceCall.tsx`) — NOT a retrofit of Montree's `AgoraVideoCall` (i18n/recording/video-coupled). Voice-only sidesteps the entire video render-race machinery (rule #211) — remote audio plays with no DOM mount.
+- **6 new files:** migration 228; `app/api/story/agora-token/route.ts` (token mint, `?as=admin|user`, ringing→active flip); `app/api/story/admin/call/route.ts` (admin start/end); `app/api/story/current-call/route.ts` (user banner-poll GET + decline POST); `StoryVoiceCall.tsx`; `app/story/call/page.tsx` (call surface, static segment — takes precedence over `/story/[session]`).
+- **3 edited:** `app/story/admin/dashboard/components/OnlineUsersTab.tsx` (📞 Call button per online student), admin dashboard `page.tsx` (passes `getSession`), `app/story/[session]/page.tsx` (`incomingCall` state + 5s poll + fixed green incoming-call banner).
+- **Flow:** admin → `/story/admin` → dashboard → Active Students tab → 📞 Call → `ringing` `story_calls` row → student's Story page polls `/api/story/current-call` every 5s → green "Tredoux is calling you" banner → Join → both at `/story/call` → Agora voice. Channel `story-<20-char base64url>`; UID role prefixes `story-admin` / `story-user` (collision-free).
+- **Calling is online-only by design** — a student must have their Story page open (heartbeat ≤5 min) to appear in Active Students AND to receive the ring. Correct, not a gap.
+
+**C. Audit (`e06f6f01`).** Re-read all 9 files; 2 real bugs fixed: (1) the `user-left` 1.6s teardown timer wasn't cancelled on unmount → manual hang-up in that window fired `hangUp()` on a dead component → tracked in `leaveTimerRef`, cleared in cleanup; (2) `current-call` GET returned `active` calls too → a never-cleaned-up call showed a zombie "ongoing call" banner forever → GET now returns `ringing`-only. Auth/cross-pollination/channel-uniqueness/token-refresh verified solid.
+
+**🚨 Architectural rules locked in this session:**
+- Flashcard/print card images use `object-fit: contain` on a white box — never `cover`. The 3 vocabulary-flashcard files are independent copies; fix together.
+- Story voice calls reuse the Agora ENGINE (`lib/montree/appointments/agora/{config,token-builder}.ts`) but have their own voice-only UI (`StoryVoiceCall.tsx`). Never route Story through Montree's `AgoraVideoCall`.
+- `/api/story/agora-token` requires an explicit `?as=admin|user` hint — never guess identity from whichever cookie is present (the Montree rule #221 lesson — guessing collapses both sides to one UID).
+- Story channels are `story-`-prefixed (Montree uses `montree-`); UID role prefixes `story-admin` / `story-user`.
+- `current-call` GET returns `ringing`-only — reporting `active` calls to the banner re-introduces the zombie-banner bug.
+- Story calls are voice-only by design — no camera, no video, no recording.
+- `StoryVoiceCall`'s init effect is mount-once (`[]` deps + `initRef` guard) — must NOT depend on parent callbacks, or a re-run tears the live call down via the cleanup.
+- `story_calls` keys by `username` TEXT, no FK — consistent with `story_online_sessions` and the rest of the Story schema.
+
+**🚨 Known limitations (gaps, not bugs — flagged in the handoff):** (1) no "declined / no answer" feedback to the admin — they see "Calling…" until they hang up; closing it needs an admin call-status poll (~30-45 min). (2) Remote-audio autoplay has no explicit `autoplay-failed` fallback — matches Montree's production component, low risk. (3) Mic-permission-denied after channel join doesn't auto-mark the call row ended.
+
+**Verification:** all 6 new files lint-clean (`--max-warnings=0`, 0/0); the 3 edited files added zero new warnings (pre-existing `<img>`/unused-var warnings only). Awaiting migration 228 + a 2-device end-to-end test (checklist in `docs/handoffs/SESSION_126_HANDOFF.md`).
+
+**🚨 Next-session priorities:**
+1. **Run migration 228** in Supabase, then walk the verification checklist in `docs/handoffs/SESSION_126_HANDOFF.md` on two devices/profiles.
+2. Optional: close the "declined / no answer" gap — admin call screen polls call status. ~30-45 min.
+3. Carry-overs from Session 125: `demo/*` + super-admin home-link/toggle sweep; duplicate-key cleanup in `en.ts` + locale files; i18n the library tool pages; Stage A Agora activation; Mira → Tracy super-admin scope; outreach follow-ups (FAMM Argentina, Cambridge Montessori Global, Otari NZ, Lions Gate, Montessori Norge).
+
+---
+
 ### 🔥 Session 125 — English Progression coverage flag + overnight health check + i18n of the new feature set + app-wide home-link/toggle sweep (May 21–22, 2026)
 
 **11 commits pushed to main:** `05ca6a04` → `f61693f0` → `9ac5cff4` → `34f2701b` → `b3ff75c2` → `80be337d` → `89d9cb9e` → `ef07ad0c` → `72702638` → `84d28452` → `e184abb5`. **🚨 Canonical handoff:** `docs/handoffs/SESSION_125_HANDOFF.md` (+ `SESSION_125_HEALTH_CHECK.md`).
@@ -7387,6 +7425,9 @@ All migrations through 169 have been run. Key ones: 147 (smart learning columns)
 
 **Session 121 (May 20-21, 2026) — Application-layer AES-256-GCM encryption. ✅ Migration RUN:**
 - ✅ `226_montree_encryption_v1.sql` — **RUN May 21, 2026.** `encryption_version INTEGER` columns live on `montree_thread_messages`, `montree_meeting_notes`, `montree_appointment_recordings` (verified via information_schema query — all 3 present). `encryption_v1` feature flag inserted into `montree_feature_definitions`, then flipped ON by Tredoux. Encryption code re-applied & live. Only remaining step: confirm `MONTREE_ENCRYPTION_KEY` (32-char hex) is set in Railway — without it, writes safely fall back to plaintext + loud-log. Operations playbook: `docs/handoffs/MONTREE_ENCRYPTION_RUNBOOK.md`.
+
+**Session 126 (May 22, 2026) — Story voice calls. ⏳ 1 migration pending Tredoux's Supabase run:**
+- ⏳ `228_story_calls.sql` — `story_calls` table (id, username, channel, status ringing/active/ended, initiated_by, created_at, updated_at, ended_at) + partial index `idx_story_calls_user_active` + `story_calls_touch_updated_at()` trigger. Powers Story voice-call signalling (admin ↔ Story user). Idempotent BEGIN/COMMIT. **REQUIRED for the Story Call button. Until run, `/api/story/admin/call` INSERT fails → 500 "Could not start the call"; `/api/story/current-call` GET degrades gracefully to `{call:null}` (no banner, no crash). The flashcard fix in the same session needs no migration.**
 
 Plus Session 119 agent backfill SQL (not a migration file, run separately in Supabase):
 ```sql
