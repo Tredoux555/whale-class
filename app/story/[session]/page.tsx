@@ -71,6 +71,9 @@ export default function StoryViewer() {
   // Recent messages state
   const [recentMessages, setRecentMessages] = useState<RecentMessage[]>([]);
   const [showRecentMessages, setShowRecentMessages] = useState(false);
+
+  // Incoming voice call from the teacher (polled from /api/story/current-call).
+  const [incomingCall, setIncomingCall] = useState<{ id: string; status: string; from: string } | null>(null);
   
   // Refs
   const paragraph3Ref = useRef<HTMLParagraphElement>(null);
@@ -165,6 +168,39 @@ export default function StoryViewer() {
     }
   }, [getSession]);
 
+  // Poll for an incoming voice call from the teacher.
+  const loadCurrentCall = useCallback(async () => {
+    const session = getSession();
+    if (!session) return;
+    try {
+      const res = await fetch('/api/story/current-call', {
+        headers: { 'Authorization': `Bearer ${session}` },
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setIncomingCall(data.call || null);
+      }
+    } catch {
+      // Non-critical, ignore
+    }
+  }, [getSession]);
+
+  // Decline (or dismiss) an incoming call.
+  const declineCall = useCallback(async (callId: string) => {
+    const session = getSession();
+    setIncomingCall(null);
+    if (!session) return;
+    try {
+      await fetch('/api/story/current-call', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${session}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ callId }),
+      });
+    } catch {
+      // Non-critical, ignore
+    }
+  }, [getSession]);
+
   // Check for new messages + media periodically (every 10 seconds)
   useEffect(() => {
     const interval = setInterval(() => {
@@ -174,6 +210,16 @@ export default function StoryViewer() {
 
     return () => clearInterval(interval);
   }, [loadStory, loadMedia]);
+
+  // Incoming-call poll — every 5s so a ringing call surfaces quickly.
+  useEffect(() => {
+    loadCurrentCall();
+    const interval = setInterval(() => {
+      if (typeof document !== 'undefined' && document.visibilityState !== 'visible') return;
+      loadCurrentCall();
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [loadCurrentCall]);
 
   // Pull-to-refresh — runs all four loaders in parallel. Touch-only;
   // desktop users use the browser refresh. Disabled while editing a
@@ -661,6 +707,43 @@ export default function StoryViewer() {
         threshold={pullState.threshold}
         variant="parent"
       />
+
+      {/* Incoming voice call banner */}
+      {incomingCall && (
+        <div
+          className="fixed top-0 left-0 right-0 z-[9998] bg-emerald-600 text-white shadow-lg"
+          style={{ paddingTop: 'env(safe-area-inset-top)' }}
+        >
+          <div className="max-w-3xl mx-auto flex items-center justify-between gap-3 px-4 py-3">
+            <div className="flex items-center gap-3 min-w-0">
+              <span className="text-2xl animate-pulse">📞</span>
+              <div className="min-w-0">
+                <p className="font-semibold truncate">
+                  {incomingCall.status === 'active'
+                    ? 'Ongoing call'
+                    : `${incomingCall.from} is calling you`}
+                </p>
+                <p className="text-xs text-emerald-100">Voice call</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 flex-shrink-0">
+              <button
+                onClick={() => router.push(`/story/call?call=${encodeURIComponent(incomingCall.id)}&as=user`)}
+                className="px-4 py-2 bg-white text-emerald-700 rounded-full text-sm font-bold hover:bg-emerald-50 transition-colors"
+              >
+                Join
+              </button>
+              <button
+                onClick={() => declineCall(incomingCall.id)}
+                className="px-4 py-2 bg-emerald-700 text-white rounded-full text-sm font-semibold hover:bg-emerald-800 transition-colors"
+              >
+                Decline
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="max-w-3xl mx-auto bg-white rounded-lg shadow-xl p-12">
         <h1 className="text-4xl font-bold mb-8 text-center text-gray-800 font-serif">
           {story.title}
