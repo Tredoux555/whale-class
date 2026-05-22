@@ -4,6 +4,8 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useI18n } from '@/lib/montree/i18n';
+import MontreeLogo from '@/components/montree/MonteeLogo';
+import LanguageToggle from '@/components/montree/LanguageToggle';
 
 const AREA_OPTIONS = [
   { key: 'practical_life', nameKey: 'area.practical_life', color: '#ec4899', icon: 'P' },
@@ -85,7 +87,17 @@ export default function UploadPage() {
 
   if (submitted) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-gray-50 flex flex-col">
+        <header className="bg-[#0D3330] text-white px-4 py-4">
+          <div className="max-w-lg mx-auto flex items-center justify-between">
+            <Link href="/montree/library" className="flex items-center gap-2 group">
+              <MontreeLogo size={26} />
+              <span className="text-white font-semibold text-sm group-hover:text-emerald-300 transition-colors">Library</span>
+            </Link>
+            <LanguageToggle />
+          </div>
+        </header>
+        <div className="flex-1 flex items-center justify-center p-4">
         <div className="bg-white rounded-2xl p-8 max-w-sm text-center shadow-sm">
           <div className="text-5xl mb-4">🎉</div>
           <h2 className="text-xl font-bold text-gray-900">{t('library.workSubmitted')}</h2>
@@ -101,6 +113,7 @@ export default function UploadPage() {
             </button>
           </div>
         </div>
+        </div>
       </div>
     );
   }
@@ -109,6 +122,13 @@ export default function UploadPage() {
     <div className="min-h-screen bg-gray-50">
       <header className="bg-[#0D3330] text-white px-4 py-4">
         <div className="max-w-lg mx-auto">
+          <div className="flex items-center justify-between mb-1">
+            <Link href="/montree/library" className="flex items-center gap-2 group">
+              <MontreeLogo size={26} />
+              <span className="text-white font-semibold text-sm group-hover:text-emerald-300 transition-colors">Library</span>
+            </Link>
+            <LanguageToggle />
+          </div>
           <Link href="/montree/library/browse" className="text-emerald-300 text-sm hover:underline">← {t('library.back')}</Link>
           <h1 className="text-xl font-bold mt-1">{t('library.shareWork')}</h1>
         </div>

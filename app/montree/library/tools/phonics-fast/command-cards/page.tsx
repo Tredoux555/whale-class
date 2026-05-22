@@ -5,6 +5,8 @@ import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { ALL_PHASES, getCommands } from '@/lib/montree/phonics/phonics-data';
 import { escapeHtml } from '@/lib/sanitize';
+import MontreeLogo from '@/components/montree/MonteeLogo';
+import LanguageToggle from '@/components/montree/LanguageToggle';
 
 // ============================================
 // PHONICS COMMAND CARDS GENERATOR
@@ -322,6 +324,13 @@ export default function PhonicsCommandCardsGenerator() {
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
       {/* Header */}
       <div className="bg-gradient-to-r from-teal-800 to-teal-700 text-white">
+        <div className="max-w-6xl mx-auto px-6 pt-3 flex items-center justify-between">
+          <Link href="/montree/library" className="flex items-center gap-2 group">
+            <MontreeLogo size={26} />
+            <span className="text-white font-semibold text-sm group-hover:text-teal-200 transition-colors">Library</span>
+          </Link>
+          <LanguageToggle />
+        </div>
         <div className="max-w-6xl mx-auto px-6 py-8">
           <div className="flex items-center justify-between">
             <div>

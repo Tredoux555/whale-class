@@ -1,10 +1,13 @@
 'use client';
 
 import { useState, useEffect, Suspense } from 'react';
+import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { toast, Toaster } from 'sonner';
-import { ArrowLeft, Camera } from 'lucide-react';
+import { Camera } from 'lucide-react';
 import { useI18n, getIntlLocale } from '@/lib/montree/i18n';
+import MontreeLogo from '@/components/montree/MonteeLogo';
+import LanguageToggle from '@/components/montree/LanguageToggle';
 import PhotoLightbox from '@/components/montree/media/PhotoLightbox';
 import { getThumbnailUrl, getThumbnailSrcSet } from '@/lib/montree/media/proxy-url';
 
@@ -192,24 +195,20 @@ function ParentPhotosContent() {
           alignItems: 'center',
           gap: 12,
         }}>
-          <button
-            onClick={() => router.push('/montree/parent/dashboard')}
-            aria-label="Back"
+          <Link
+            href="/montree/parent/dashboard"
+            aria-label="Montree home"
             style={{
               display: 'flex',
               alignItems: 'center',
-              justifyContent: 'center',
-              width: 38,
-              height: 38,
-              borderRadius: 10,
-              background: 'rgba(255,255,255,0.06)',
-              border: '1px solid rgba(255,255,255,0.10)',
+              gap: 8,
+              textDecoration: 'none',
               color: T.textPrimary,
-              cursor: 'pointer',
             }}
           >
-            <ArrowLeft size={16} strokeWidth={1.75} />
-          </button>
+            <MontreeLogo size={26} />
+            <span style={{ fontFamily: T.serif, fontSize: 15, fontWeight: 600, letterSpacing: -0.2 }}>Montree</span>
+          </Link>
           <div style={{ minWidth: 0 }}>
             <h1 style={{
               margin: 0,
@@ -229,6 +228,9 @@ function ParentPhotosContent() {
             }}>
               {childName ? `${childName}'s ${t('parentPhotos.photos')}` : t('parentPhotos.sharedByTeachers')}
             </p>
+          </div>
+          <div style={{ marginLeft: 'auto' }}>
+            <LanguageToggle />
           </div>
         </div>
       </header>

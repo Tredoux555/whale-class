@@ -4,6 +4,8 @@ import React, { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { getDictionaryWords, ALL_PHASES } from '@/lib/montree/phonics/phonics-data';
 import { escapeHtml } from '@/lib/sanitize';
+import MontreeLogo from '@/components/montree/MonteeLogo';
+import LanguageToggle from '@/components/montree/LanguageToggle';
 
 type DictionaryEntry = ReturnType<typeof getDictionaryWords>[number];
 
@@ -381,6 +383,13 @@ export default function PhonicsDictionaryPage() {
       {/* Header */}
       <div className="sticky top-0 z-50 bg-gradient-to-r from-teal-800 to-teal-700 text-white shadow-lg">
         <div className="max-w-6xl mx-auto px-4 py-4">
+          <div className="flex items-center justify-between mb-3">
+            <Link href="/montree/library" className="flex items-center gap-2 group">
+              <MontreeLogo size={26} />
+              <span className="text-white font-semibold text-sm group-hover:text-teal-200 transition-colors">Library</span>
+            </Link>
+            <LanguageToggle />
+          </div>
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
               <Link

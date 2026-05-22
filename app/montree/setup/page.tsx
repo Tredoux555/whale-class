@@ -4,7 +4,10 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { useI18n, type TranslationKey } from '@/lib/montree/i18n';
+import MontreeLogo from '@/components/montree/MonteeLogo';
+import LanguageToggle from '@/components/montree/LanguageToggle';
 
 export default function TeacherSetupPage() {
   const router = useRouter();
@@ -128,7 +131,16 @@ export default function TeacherSetupPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-slate-100 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-slate-100 flex items-center justify-center p-4 relative">
+      {/* Top bar — home link + language toggle */}
+      <div className="absolute top-0 left-0 right-0 flex items-center justify-between p-5">
+        <Link href="/montree" className="flex items-center gap-2.5 no-underline">
+          <MontreeLogo size={30} />
+          <span className="text-slate-800 text-base font-semibold tracking-tight">Montree</span>
+        </Link>
+        <LanguageToggle />
+      </div>
+
       <div className="w-full max-w-md">
         {/* Header */}
         <div className="text-center mb-8">

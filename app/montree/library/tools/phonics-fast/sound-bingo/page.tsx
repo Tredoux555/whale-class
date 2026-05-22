@@ -7,6 +7,8 @@
 import React, { useState, useCallback, useMemo } from 'react';
 import Link from 'next/link';
 import { SOUND_BINGO_ANCHORS } from '@/lib/montree/phonics/phonics-data';
+import MontreeLogo from '@/components/montree/MonteeLogo';
+import LanguageToggle from '@/components/montree/LanguageToggle';
 
 // =====================================================================
 // TYPES
@@ -365,6 +367,13 @@ export default function SoundBingoPage() {
     <div className="min-h-screen bg-gradient-to-b from-amber-50 to-white">
       {/* Header */}
       <header className="bg-[#0D3330] text-white">
+        <div className="max-w-5xl mx-auto px-4 pt-3 flex items-center justify-between">
+          <Link href="/montree/library" className="flex items-center gap-2 group">
+            <MontreeLogo size={26} />
+            <span className="text-white font-semibold text-sm group-hover:text-emerald-300 transition-colors">Library</span>
+          </Link>
+          <LanguageToggle />
+        </div>
         <div className="max-w-5xl mx-auto px-4 py-6">
           <Link href="/montree/library/tools/phonics-fast" className="text-emerald-300 text-sm hover:underline">
             &larr; Fast Phonics Hub

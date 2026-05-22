@@ -3,6 +3,8 @@
 import { useState, useRef, useEffect, useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
+import MontreeLogo from '@/components/montree/MonteeLogo';
+import LanguageToggle from '@/components/montree/LanguageToggle';
 import {
   SHORT_STORIES,
   ALL_PHASES,
@@ -401,6 +403,13 @@ export default function PhonicsStoriesPage() {
     <div className="min-h-screen bg-gradient-to-b from-teal-50 to-teal-100 p-4 md:p-8">
       {/* Header */}
       <div className="bg-gradient-to-r from-teal-800 to-teal-700 text-white rounded-xl shadow-lg mb-8 overflow-hidden">
+        <div className="px-6 md:px-8 pt-4 flex items-center justify-between">
+          <Link href="/montree/library" className="flex items-center gap-2 group">
+            <MontreeLogo size={26} />
+            <span className="text-white font-semibold text-sm group-hover:text-teal-200 transition-colors">Library</span>
+          </Link>
+          <LanguageToggle />
+        </div>
         <div className="p-6 md:p-8">
           <Link
             href="/montree/library/tools/phonics-fast"

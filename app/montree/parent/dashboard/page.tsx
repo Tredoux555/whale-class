@@ -4,9 +4,10 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { toast, Toaster } from 'sonner';
-import { LogOut, ChevronDown, Sparkles, MessageSquare, Calendar } from 'lucide-react';
+import { LogOut, ChevronDown, MessageSquare, Calendar } from 'lucide-react';
 import { useI18n, getIntlLocale } from '@/lib/montree/i18n';
 import LanguageToggle from '@/components/montree/LanguageToggle';
+import MontreeLogo from '@/components/montree/MonteeLogo';
 import PhotoLightbox from '@/components/montree/media/PhotoLightbox';
 import PendingAppointmentsBanner from '@/components/montree/appointments/PendingAppointmentsBanner';
 
@@ -606,7 +607,7 @@ export default function ParentDashboardPage() {
           justifyContent: 'space-between',
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <Sparkles size={20} color={T.emerald} strokeWidth={1.75} />
+            <MontreeLogo size={26} />
             <span style={{ fontFamily: T.serif, fontSize: 16, fontWeight: 600, color: T.textPrimary }}>
               Montree
             </span>

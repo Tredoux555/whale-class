@@ -8,6 +8,8 @@ import { useSearchParams } from 'next/navigation';
 import { ALL_PHASES, getPhaseWords, type PhonicsWord, type PhonicsPhase } from '@/lib/montree/phonics/phonics-data';
 import { resolvePhotoBankImages } from '@/lib/montree/phonics/photo-bank-resolver';
 import { escapeHtml } from '@/lib/sanitize';
+import MontreeLogo from '@/components/montree/MonteeLogo';
+import LanguageToggle from '@/components/montree/LanguageToggle';
 
 type LabelSize = 'small' | 'medium' | 'large';
 
@@ -266,6 +268,13 @@ export default function LabelsPage() {
     <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white">
       {/* Header with Gradient */}
       <header className="bg-gradient-to-r from-teal-800 to-teal-700 text-white shadow-lg">
+        <div className="max-w-6xl mx-auto px-4 pt-3 flex items-center justify-between">
+          <Link href="/montree/library" className="flex items-center gap-2 group">
+            <MontreeLogo size={26} />
+            <span className="text-white font-semibold text-sm group-hover:text-teal-200 transition-colors">Library</span>
+          </Link>
+          <LanguageToggle />
+        </div>
         <div className="max-w-6xl mx-auto px-4 py-6">
           <Link
             href="/montree/library/tools/phonics-fast"

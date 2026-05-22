@@ -5,7 +5,10 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { useI18n } from '@/lib/montree/i18n';
+import MontreeLogo from '@/components/montree/MonteeLogo';
+import LanguageToggle from '@/components/montree/LanguageToggle';
 import CurriculumPicker from './components/CurriculumPicker';
 import AgePicker from './components/AgePicker';
 import { Work, Student, CURRICULUM_AREAS, AGE_OPTIONS } from './types';
@@ -334,7 +337,15 @@ export default function OnboardingPage() {
   // Step 0: Welcome (Emerald/Teal theme - warm & inspiring)
   if (step === 0) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50 flex items-center justify-center p-4 relative">
+        {/* Top bar — home link + language toggle */}
+        <div className="absolute top-0 left-0 right-0 flex items-center justify-between p-5">
+          <Link href="/montree" className="flex items-center gap-2.5 no-underline">
+            <MontreeLogo size={30} />
+            <span className="text-slate-800 text-base font-semibold tracking-tight">Montree</span>
+          </Link>
+          <LanguageToggle />
+        </div>
         <div className="bg-white rounded-3xl shadow-2xl border border-emerald-100/50 p-10 w-full max-w-md text-center">
           {/* Logo */}
           <div className="w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-2xl flex items-center justify-center shadow-lg shadow-emerald-200">
@@ -390,6 +401,14 @@ export default function OnboardingPage() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-slate-100 p-4 md:p-6">
         <div className="max-w-2xl mx-auto">
+          {/* Top bar — home link + language toggle */}
+          <div className="flex items-center justify-between mb-6">
+            <Link href="/montree" className="flex items-center gap-2.5 no-underline">
+              <MontreeLogo size={30} />
+              <span className="text-slate-800 text-base font-semibold tracking-tight">Montree</span>
+            </Link>
+            <LanguageToggle />
+          </div>
           {/* Header */}
           <div className="text-center mb-6">
             <h1 className="text-2xl font-bold text-slate-800 mb-2">{isParent ? t('onboarding.addChildren') : t('onboarding.addStudents')}</h1>
@@ -568,7 +587,15 @@ export default function OnboardingPage() {
 
   // Step 2: Complete - Inspirational success screen
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50 flex items-center justify-center p-4 relative">
+      {/* Top bar — home link + language toggle */}
+      <div className="absolute top-0 left-0 right-0 flex items-center justify-between p-5">
+        <Link href="/montree" className="flex items-center gap-2.5 no-underline">
+          <MontreeLogo size={30} />
+          <span className="text-slate-800 text-base font-semibold tracking-tight">Montree</span>
+        </Link>
+        <LanguageToggle />
+      </div>
       <div className="bg-white rounded-3xl shadow-2xl border border-emerald-100/50 p-10 w-full max-w-md text-center">
         {/* Celebration icon */}
         <div className="w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-full flex items-center justify-center shadow-lg shadow-emerald-200">

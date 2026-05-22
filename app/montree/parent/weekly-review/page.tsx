@@ -8,6 +8,8 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { ArrowLeft, ChevronDown, Camera, Sparkles } from 'lucide-react';
 import { useI18n, getIntlLocale } from '@/lib/montree/i18n';
+import MontreeLogo from '@/components/montree/MonteeLogo';
+import LanguageToggle from '@/components/montree/LanguageToggle';
 
 // Dark forest tokens
 const T = {
@@ -238,18 +240,19 @@ function ParentWeeklyReviewContent() {
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
             <Link
               href="/montree/parent/dashboard"
-              style={{ display: "flex", alignItems: "center", gap: "0.5rem", color: T.emerald, textDecoration: "none", cursor: "pointer" }}
+              style={{ display: "flex", alignItems: "center", gap: "0.5rem", color: T.textPrimary, textDecoration: "none", cursor: "pointer" }}
+              aria-label="Montree home"
               onMouseEnter={(e) => { (e.currentTarget as HTMLAnchorElement).style.opacity = "0.8"; }}
               onMouseLeave={(e) => { (e.currentTarget as HTMLAnchorElement).style.opacity = "1"; }}
             >
-              <span>←</span>
-              <span style={{ fontSize: "0.875rem" }}>{t('parentWeeklyReview.dashboard')}</span>
+              <MontreeLogo size={26} />
+              <span style={{ fontFamily: 'var(--font-lora), Georgia, serif', fontSize: 15, fontWeight: 600, letterSpacing: -0.2 }}>Montree</span>
             </Link>
             <div style={{ textAlign: "center" }}>
               <h1 style={{ fontSize: "1.125rem", fontWeight: "700", color: T.textPrimary }}>{t('parentWeeklyReview.weeklyReport')}</h1>
               <p style={{ fontSize: "0.75rem", color: T.textMuted }}>{child.name}</p>
             </div>
-            <div style={{ width: "4rem" }} /> {/* Spacer for alignment */}
+            <LanguageToggle />
           </div>
         </div>
       </header>

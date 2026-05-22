@@ -11,6 +11,8 @@ import { useSearchParams } from 'next/navigation';
 import { ALL_PHASES, getCommands } from '@/lib/montree/phonics/phonics-data';
 import { resolvePhotoBankImages } from '@/lib/montree/phonics/photo-bank-resolver';
 import { escapeHtml } from '@/lib/sanitize';
+import MontreeLogo from '@/components/montree/MonteeLogo';
+import LanguageToggle from '@/components/montree/LanguageToggle';
 
 // =====================================================================
 // TYPES & CONSTANTS
@@ -596,6 +598,13 @@ body { font-family: 'Segoe UI', system-ui, sans-serif; background: white; color:
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white">
       <header className="bg-gradient-to-r from-blue-800 to-blue-600 text-white shadow-lg">
+        <div className="max-w-6xl mx-auto px-4 pt-3 flex items-center justify-between">
+          <Link href="/montree/library" className="flex items-center gap-2 group">
+            <MontreeLogo size={26} />
+            <span className="text-white font-semibold text-sm group-hover:text-blue-200 transition-colors">Library</span>
+          </Link>
+          <LanguageToggle />
+        </div>
         <div className="max-w-6xl mx-auto px-4 py-6">
           <Link href="/montree/library/tools/phonics-fast" className="inline-flex items-center text-blue-200 text-sm font-medium hover:text-white transition-colors mb-3">
             <span className="mr-2">←</span> Back to Phonics Fast

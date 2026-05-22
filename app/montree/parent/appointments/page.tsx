@@ -28,6 +28,7 @@ import {
   Video,
 } from 'lucide-react';
 import MontreeLogo from '@/components/montree/MonteeLogo';
+import LanguageToggle from '@/components/montree/LanguageToggle';
 import { useI18n, getIntlLocale } from '@/lib/montree/i18n';
 
 // Lazy-mount the Agora call. ~600KB SDK chunk — only loads when a parent
@@ -219,13 +220,14 @@ export default function ParentAppointmentsPage() {
             <span style={{ fontFamily: T.serif, fontSize: 15, fontWeight: 600, letterSpacing: -0.2 }}>Montree</span>
           </Link>
           <div style={{ fontFamily: T.serif, fontSize: 16, fontWeight: 500, color: T.textPrimary }}>{t('apptPage.title')}</div>
-          {view.kind !== 'list' ? (
-            <button onClick={() => setView({ kind: 'list' })} style={backBtn()} aria-label={t('apptPage.backToList')}>
-              <ArrowLeft size={14} strokeWidth={2} /> {t('common.back')}
-            </button>
-          ) : (
-            <div style={{ width: 60 }} />
-          )}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            {view.kind !== 'list' && (
+              <button onClick={() => setView({ kind: 'list' })} style={backBtn()} aria-label={t('apptPage.backToList')}>
+                <ArrowLeft size={14} strokeWidth={2} /> {t('common.back')}
+              </button>
+            )}
+            <LanguageToggle />
+          </div>
         </div>
       </header>
 

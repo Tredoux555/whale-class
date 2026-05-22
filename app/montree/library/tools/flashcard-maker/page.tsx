@@ -2,8 +2,11 @@
 "use client";
 
 import React, { useState, useRef, useCallback } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { escapeHtml } from '@/lib/sanitize';
+import MontreeLogo from '@/components/montree/MonteeLogo';
+import LanguageToggle from '@/components/montree/LanguageToggle';
 
 interface FlashCard {
   id: number;
@@ -268,6 +271,13 @@ const VideoFlashcardMaker = () => {
     <div className="min-h-screen bg-gradient-to-b from-blue-50 to-cyan-50">
       {/* Sticky header */}
       <div className="bg-white border-b border-cyan-200 px-6 py-4 sticky top-0 z-10">
+        <div className="max-w-5xl mx-auto flex items-center justify-between mb-3">
+          <Link href="/montree/library" className="flex items-center gap-2 group">
+            <MontreeLogo size={26} />
+            <span className="text-gray-800 font-semibold text-sm group-hover:text-cyan-700 transition-colors">Library</span>
+          </Link>
+          <LanguageToggle />
+        </div>
         <div className="max-w-5xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-4">
             <button onClick={() => router.back()} className="text-cyan-600 hover:text-cyan-800">← Back</button>

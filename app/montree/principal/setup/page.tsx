@@ -4,10 +4,12 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { useI18n } from '@/lib/montree/i18n';
 import PrincipalSetupGuide from '@/components/montree/onboarding/PrincipalSetupGuide';
 import TracyAvatar from '@/components/montree/admin/TracyAvatar';
 import MontreeLogo from '@/components/montree/MonteeLogo';
+import LanguageToggle from '@/components/montree/LanguageToggle';
 
 
 const EMOJI_OPTIONS = ['🌳', '🐼', '🦁', '🐘', '🦋', '🌟', '🌈', '🌻', '🍎', '🎨', '📚', '🎵'];
@@ -276,6 +278,15 @@ export default function PrincipalSetupPage() {
       hasTeachers={createdTeachers.length > 0}
     />
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-emerald-900 to-teal-900 p-6 relative overflow-hidden">
+
+      {/* Top bar — home link + language toggle */}
+      <div className="absolute top-0 left-0 right-0 z-30 flex items-center justify-between p-5">
+        <Link href="/montree" className="flex items-center gap-2.5 no-underline">
+          <MontreeLogo size={30} />
+          <span className="text-white text-base font-semibold tracking-tight">Montree</span>
+        </Link>
+        <LanguageToggle />
+      </div>
 
       {/* ============ WELCOME OVERLAY — HIDDEN: onboarding guides disabled ============ */}
       {false && showWelcome && school && (

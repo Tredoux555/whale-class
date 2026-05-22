@@ -1,8 +1,11 @@
 'use client';
 
 import { useSearchParams, useRouter } from 'next/navigation';
-import { Suspense, useState, useEffect } from 'react';
+import { Suspense, useState } from 'react';
+import Link from 'next/link';
 import { useI18n, type TranslationKey } from '@/lib/montree/i18n';
+import MontreeLogo from '@/components/montree/MonteeLogo';
+import LanguageToggle from '@/components/montree/LanguageToggle';
 
 function JoinContent() {
   const searchParams = useSearchParams();
@@ -24,7 +27,16 @@ function JoinContent() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-50 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-50 flex items-center justify-center p-4 relative">
+      {/* Top bar — home link + language toggle */}
+      <div className="absolute top-0 left-0 right-0 flex items-center justify-between p-5">
+        <Link href="/montree" className="flex items-center gap-2.5 no-underline">
+          <MontreeLogo size={30} />
+          <span className="text-gray-800 text-base font-semibold tracking-tight">Montree</span>
+        </Link>
+        <LanguageToggle />
+      </div>
+
       <div className="w-full max-w-sm">
         {/* Logo */}
         <div className="text-center mb-6">

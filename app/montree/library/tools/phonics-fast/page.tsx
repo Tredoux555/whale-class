@@ -9,6 +9,8 @@ import { useI18n } from '@/lib/montree/i18n/context';
 import { ALL_PHASES, SIGHT_WORDS, getCommands, type PhonicsPhase, type PhonicsWord, type PhonicsWordGroup } from '@/lib/montree/phonics/phonics-data';
 import { resolvePhotoBankImages } from '@/lib/montree/phonics/photo-bank-resolver';
 import { escapeHtml } from '@/lib/sanitize';
+import MontreeLogo from '@/components/montree/MonteeLogo';
+import LanguageToggle from '@/components/montree/LanguageToggle';
 
 // Derive series color from phase ID prefix
 function getSeriesInfo(phaseId: string): { series: string; color: string; bgClass: string } {
@@ -75,6 +77,13 @@ export default function PhonicsHubPage() {
       {/* Header */}
       <header className="bg-[#0D3330] text-white">
         <div className="max-w-5xl mx-auto px-4 py-6">
+          <div className="flex items-center justify-between mb-3">
+            <Link href="/montree/library" className="flex items-center gap-2 group">
+              <MontreeLogo size={26} />
+              <span className="text-white font-semibold text-sm group-hover:text-emerald-300 transition-colors">Library</span>
+            </Link>
+            <LanguageToggle />
+          </div>
           <Link href="/montree/library/tools" className="text-emerald-300 text-sm hover:underline">
             {t('library.contentCreationToolsBack')}
           </Link>

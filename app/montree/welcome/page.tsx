@@ -4,6 +4,8 @@ import React, { useEffect, useState, Suspense } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { useI18n, type TranslationKey } from '@/lib/montree/i18n';
+import MontreeLogo from '@/components/montree/MonteeLogo';
+import LanguageToggle from '@/components/montree/LanguageToggle';
 
 function WelcomeContent() {
   const searchParams = useSearchParams();
@@ -35,6 +37,15 @@ function WelcomeContent() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-cyan-50 py-12 px-4">
+      {/* Top bar — home link + language toggle */}
+      <div className="max-w-2xl mx-auto flex items-center justify-between mb-6">
+        <Link href="/montree" className="flex items-center gap-2.5 no-underline">
+          <MontreeLogo size={30} />
+          <span className="text-gray-900 text-base font-semibold tracking-tight">Montree</span>
+        </Link>
+        <LanguageToggle />
+      </div>
+
       <div className="max-w-2xl mx-auto">
         {/* Success Card */}
         <div className="bg-white rounded-2xl shadow-xl p-8 text-center mb-8">
