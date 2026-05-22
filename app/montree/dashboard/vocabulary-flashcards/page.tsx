@@ -381,7 +381,7 @@ const VocabularyFlashcardGenerator = () => {
     .image-area img { 
       width: 100%; 
       height: 100%; 
-      object-fit: cover;
+      object-fit: contain;
     }
     .label-area {
       background: white;
@@ -611,7 +611,7 @@ const VocabularyFlashcardGenerator = () => {
                 >
                   {card ? (
                     <>
-                      <img src={card.image} alt={word} className="w-full h-full object-cover" />
+                      <img src={card.image} alt={word} className="w-full h-full object-contain" />
                       <button
                         onClick={(e) => { e.stopPropagation(); removeCard(word); }}
                         className="absolute top-1 right-1 bg-red-500 text-white w-6 h-6 rounded-full text-sm hover:bg-red-600"
