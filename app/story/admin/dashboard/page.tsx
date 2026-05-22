@@ -331,7 +331,7 @@ export default function AdminDashboard() {
               />
             )}
 
-            {activeTab === 'online' && <OnlineUsersTab onlineUsers={onlineUsers} />}
+            {activeTab === 'online' && <OnlineUsersTab onlineUsers={onlineUsers} getSession={getSession} />}
 
             {activeTab === 'logs' && <ActivityLogTab visits={visits} error={loginLogsError} />}
 
