@@ -132,3 +132,55 @@ Verified solid (no change): auth/cross-pollination, channel uniqueness, token re
 1. **Run migration 228** + walk the verification checklist on two devices.
 2. **Optional: close limitation #1** — admin "declined / no answer" feedback.
 3. Carry-overs from Session 125 (unchanged): `demo/*` + super-admin home-link/toggle sweep; duplicate-key cleanup in `en.ts` + locale files; i18n the library tool pages; Stage A Agora activation; Mira → Tracy super-admin scope; outreach follow-ups (FAMM Argentina, Cambridge Montessori Global, Otari NZ, Lions Gate, Montessori Norge).
+
+---
+
+# CONTINUATION — Call button ungated + Web Push notifications
+
+**2 further commits:** `4a6b896f` (call button ungated) → `8ab35d59` (Web Push).
+
+## D. Call button ungated (`4a6b896f`)
+
+The admin Call button was rendered only per *online* user, and "online" = a heartbeat within 5 min — which wasn't registering reliably (both parties were online a long time, no button appeared). Fixed: the dashboard tab (renamed **👥 Active Students → 👥 Students**) now lists **every `story_users` user** with a 📞 Call button, online or offline. Online/offline is just a coloured dot now, never a gate.
+
+- NEW `app/api/story/admin/users/route.ts` — `GET`, admin-auth, returns the `story_users` roster.
+- `OnlineUsersTab.tsx` — fetches the full roster, cross-references the existing online poll for the dot, Call button on every row.
+
+## E. Web Push notifications (`8ab35d59`)
+
+Story is a PWA that registered **no service worker** — push needed one built. Now: admin places a call → the user gets a notification on their phone even with the Story app closed.
+
+**6 new files:**
+| Path | Role |
+|------|------|
+| `migrations/229_story_push_subscriptions.sql` | Subscription store, keyed by username, `endpoint` UNIQUE |
+| `public/story-sw.js` | Push-ONLY service worker — `push` shows the call notification, `notificationclick` opens `/story/call`. No fetch interception. Scope `/story/`. |
+| `lib/story/push.ts` | `sendCallPush` / `isPushConfigured` / `getVapidPublicKey`. Opt-in by env. Prunes dead (404/410) subscriptions. |
+| `app/api/story/push/public-key/route.ts` | Serves the VAPID public key to the browser |
+| `app/api/story/push/subscribe/route.ts` | User-auth; upserts the push subscription on `endpoint` |
+| `components/story/EnableNotificationsButton.tsx` | One-tap opt-in — registers SW, requests permission, subscribes, saves. iOS-unsupported → "add to Home Screen" hint. |
+
+**5 edited:** `package.json` (+`web-push`, +`@types/web-push`); `app/api/story/admin/call/route.ts` (fire-and-forget `sendCallPush` after the call is created); `app/story/[session]/page.tsx` (renders the opt-in button); `app/story/call/page.tsx` + `components/story/StoryVoiceCall.tsx` (user side no longer hard-requires the sessionStorage token — falls back to the `story-auth` cookie, so a notification tap opening a fresh window still authenticates).
+
+**iOS reality:** Web Push works ONLY inside the PWA installed to the Home Screen (iOS 16.4+) — not a Safari tab. It's a notification banner, not a ringing-call screen. The opt-in button detects an unsupported context and shows the install hint.
+
+## 🚨 Operational steps to make push live
+
+1. **Run migrations 228 + 229** in Supabase.
+2. **Set Railway env vars:**
+   - `STORY_VAPID_PUBLIC_KEY` = `BNEvphJMjw8wAn-kQn_ZE8iemJflT9d9YV2IcsEh9uigcGIviAZoPNYIdTVfdXnCu-O1Bs2Gt_-sk9SidtQFhk4`
+   - `STORY_VAPID_PRIVATE_KEY` = (the private key — supplied to Tredoux in chat; a credential, kept out of git)
+   - `STORY_VAPID_SUBJECT` = optional, defaults to `mailto:tredoux555@gmail.com`
+3. The Story user installs the PWA to their Home Screen, opens it from the icon, taps **🔔 Enable call notifications**, grants permission.
+4. 2-device test: admin → 👥 Students → 📞 Call → the user's phone shows a notification → tap → joins.
+
+Until the VAPID env is set, push is inert and the call falls back to the 5s poll-based banner (works only if the user's Story page is open).
+
+## 🚨 Architectural rules (continuation)
+
+- `public/story-sw.js` is push-ONLY — no fetch interception, no caching. Never add caching.
+- `sendCallPush` is fire-and-forget — a push failure never blocks the call.
+- VAPID private key lives ONLY in Railway env — never git/CLAUDE.md.
+- Web Push is opt-in by env — absent VAPID env → inert, poll banner still works.
+- The Story Call button is NOT gated on online status; `story_users` is the roster.
+- The call page must not hard-block `as=user` on a missing sessionStorage token — the `story-auth` cookie is the fallback that makes the notification-tap flow work.
