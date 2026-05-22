@@ -258,7 +258,7 @@ const VocabularyFlashcardGenerator = () => {
     display: flex; align-items: center; justify-content: center;
     overflow: hidden; margin-bottom: 8mm;
   }
-  .image-area img { width: 100%; height: 100%; object-fit: cover; }
+  .image-area img { width: 100%; height: 100%; object-fit: contain; }
   .label-area {
     background: white; border-radius: 8mm; height: 40mm;
     display: flex; align-items: center; justify-content: center;
@@ -418,7 +418,7 @@ const VocabularyFlashcardGenerator = () => {
               {cards.map((card) => (
                 <div key={card.word} className="relative rounded-xl overflow-hidden ring-1 ring-gray-200 shadow-sm bg-white">
                   <div className="aspect-square">
-                    <img src={card.image} alt={card.word} className="w-full h-full object-cover" />
+                    <img src={card.image} alt={card.word} className="w-full h-full object-contain" />
                   </div>
                   <div
                     className="py-2 text-center font-bold text-white text-sm"
