@@ -2,10 +2,13 @@
 //
 // User-side call signalling.
 //
-//   GET  -> the user's latest ringing/active call (drives the incoming-call
-//           banner poll on the Story page). Returns { call: null } when
-//           there's nothing — and never 401s, so the banner poll stays
-//           quiet rather than noisy.
+//   GET  -> the user's latest RINGING call (drives the incoming-call banner
+//           poll on the Story page). Returns { call: null } when there's
+//           nothing — and never 401s, so the banner poll stays quiet
+//           rather than noisy. Only 'ringing' is reported: an 'active' call
+//           means the user is already on the call page, and reporting it
+//           here would let a never-cleaned-up call show a stale "ongoing"
+//           banner forever.
 //   POST { callId } -> the user declines / ends a call.
 //
 // A 'ringing' call older than 2 minutes is treated as unanswered and
@@ -30,7 +33,7 @@ export async function GET(req: NextRequest) {
     .from('story_calls')
     .select('id, status, initiated_by, created_at')
     .eq('username', username)
-    .in('status', ['ringing', 'active'])
+    .eq('status', 'ringing')
     .order('created_at', { ascending: false })
     .limit(1)
     .maybeSingle();
@@ -40,10 +43,7 @@ export async function GET(req: NextRequest) {
   }
 
   // Drop a ringing call nobody answered inside the window.
-  if (
-    data.status === 'ringing' &&
-    Date.now() - new Date(data.created_at).getTime() > RING_WINDOW_MS
-  ) {
+  if (Date.now() - new Date(data.created_at).getTime() > RING_WINDOW_MS) {
     return NextResponse.json({ call: null });
   }
 

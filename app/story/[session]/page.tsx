@@ -719,9 +719,7 @@ export default function StoryViewer() {
               <span className="text-2xl animate-pulse">📞</span>
               <div className="min-w-0">
                 <p className="font-semibold truncate">
-                  {incomingCall.status === 'active'
-                    ? 'Ongoing call'
-                    : `${incomingCall.from} is calling you`}
+                  {incomingCall.from} is calling you
                 </p>
                 <p className="text-xs text-emerald-100">Voice call</p>
               </div>
