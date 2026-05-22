@@ -268,6 +268,53 @@ Session 119 weathered a Railway edge outage (May 19 22:22 UTC, ~1.5h, first inci
 
 ---
 
+## RECENT STATUS (May 22, 2026)
+
+### 🔥 Session 125 — English Progression coverage flag + overnight health check + i18n of the new feature set + app-wide home-link/toggle sweep (May 21–22, 2026)
+
+**11 commits pushed to main:** `05ca6a04` → `f61693f0` → `9ac5cff4` → `34f2701b` → `b3ff75c2` → `80be337d` → `89d9cb9e` → `ef07ad0c` → `72702638` → `84d28452` → `e184abb5`. **🚨 Canonical handoff:** `docs/handoffs/SESSION_125_HANDOFF.md` (+ `SESSION_125_HEALTH_CHECK.md`).
+
+**🚨 No new migrations.** Migration 227 (`weekly_teaching_notes`) confirmed RUN by Tredoux. `MONTREE_ENCRYPTION_KEY` confirmed set in Railway — app-layer encryption fully live.
+
+**A. English Progression (`05ca6a04`).** English Progression tab now shows a current-week "who hasn't been to the English area this week" banner + per-child amber pill (Tredoux's redefinition of the Session 124 stale-lesson carry-over — current week, not 3-week stale; reads the existing `english-missing` endpoint). Reading position woven into the AI parent narrative — `generateWeeklyNarrative` gained optional `englishProgress`; `weekly-wrap` + `batch-narratives` batch-fetch `montree_child_english_progress` and feed each child's lesson into the prompt. `?child_id=` filter added to the `english-progress` GET so `offerEnglishAdvance` fetches one row, not the whole class.
+
+**B. English Progress tab crash fix (`f61693f0`).** `ClassEnglishHeatmap` destructured its prop as `kids` but used bare `children` in 3 places → `ReferenceError` crashed the whole tab. Pre-existing Session 119 bug — the tab had never been opened on production. All 3 → `kids`.
+
+**C. AI float top-right uniform (`9ac5cff4`).** MiraFloat was bottom-right on mobile (Session 106) — now top-right on every screen/platform, uniform with TracyFloat. Agent-nav hamburger moved LEFT to keep the top-right corner clear. TracyFloat got notch-safe insets.
+
+**D. Encryption pipeline fix (`34f2701b`).** Overnight encryption audit found the AES-256-GCM layer otherwise clean (no ciphertext leaks). One real bug: the recording transcription pipeline could leave a stale undecryptable summary after an `encryption_v1` flag-flip + re-run. Fix: resolve the encryption decision once; the transcript write clears any stale summary + re-stamps `encryption_version` so every row's encrypted columns share one version.
+
+**E. Mobile health (`b3ff75c2`, `80be337d`).** Safe-area insets on the principal mobile nav/drawer, the Agora call top/bottom bars (controls were under the notch/home-indicator during live calls), and the parent-chats sticky header. `QuickSetAppointmentModal` inputs 14→16px (iOS zoom). Parent reschedule hardened — attach hosts before cancelling the old appointment, rollback on failure. `100vh → 100dvh` across the parent platform + messaging surfaces + float panels (19 files).
+
+**F. i18n of the new feature set (`ef07ad0c`, `72702638`).** Sessions 117–121 (appointments, video calling, messaging, calendar, meeting-notes, vault) shipped 100% English. **14 surfaces converted to `t()` keys; 410 new keys added to `en.ts`; all 11 other locales Haiku-batch filled — 12 locales now at 100% parity.** Audit fix: 3 meeting-notes files declared a loose `TFn` type → 12 type-variance errors → tightened to `ReturnType<typeof useI18n>['t']`. Also fixed a pre-existing latent crash — `TracyFloat`'s `AssistantBubble` called `t()` without it in scope (Free-tier upgrade card would crash).
+
+**G. App-wide home-link + language-toggle sweep (`84d28452`, `e184abb5`).** Every customer-facing page across all 4 platforms + the public funnel + library now has a top-left home affordance + a visible `LanguageToggle`. Teacher (85 pages) already covered by `DashboardHeader` via layout. Principal (24) — one `admin/layout.tsx` edit (school name → home Link + toggle, sidebar + mobile bar). Agent (13) — one `AgentNav` edit. Parent (12) + public funnel (15) + library (~33) — per-page. Independent fresh-eyes review caught 2 missed `apply/*` funnel pages (fixed in `e184abb5`). Also fixed a pre-existing latent crash in `set-password` (called `setError`, no such state → `toast.error`).
+
+**🚨 Architectural rules locked in this session:**
+- `ClassEnglishHeatmap` destructures `kids` — never bare `children` inside it.
+- The AI assistant float (Mira/Tracy) is TOP-RIGHT on every screen/platform. Nav controls never share the top-right corner; the agent-nav hamburger lives on the left.
+- The transcription pipeline resolves the encryption decision ONCE; the transcript write clears stale summary + re-stamps `encryption_version` — every row's encrypted columns always share one version.
+- `TFn` must be `ReturnType<typeof useI18n>['t']` — never a loose `(key: string) => string` (contravariance error).
+- Every customer-facing page has a top-left home affordance + `LanguageToggle`. Shared chrome carries it where possible (`DashboardHeader`, `admin/layout.tsx`, `AgentNav`); parent + public pages carry it per-page.
+- `100dvh` not `100vh` for any full-height mobile surface.
+
+**🚨 Verification.** All commits lint-clean (0 errors). Two full `tsc` runs — 0 new type errors introduced (the 12 `TFn` errors caught + fixed; everything else is the pre-existing `ignoreBuildErrors` backlog). i18n strict parity 12/12 = 100%. The home-link/toggle sweep got an independent fresh-eyes code review (no duplicates, no wrong destinations, no broken JSX).
+
+**🚨 Pre-existing issues flagged (NOT fixed):**
+- Duplicate keys (`TS1117`) in `en.ts` (~28) + every locale file — second value silently wins. Needs a dedicated cleanup (human call on which value is correct).
+- Teacher dashboard still has some `100vh` (`classroom-overview` uses it deliberately for A4 print pages — needs a careful per-line pass).
+- `AgoraVideoCall` secondary panels (error/waiting) lack safe-area insets.
+- Library tool pages have the toggle but hardcoded-English bodies — translating tool-page content is a future i18n sweep.
+
+**🚨 Next-session priorities:**
+1. `demo/*` pages + super-admin — not swept for home-link/toggle (internal/demo, deferred).
+2. Duplicate-key cleanup in `en.ts` + locale files.
+3. i18n the library tool pages + remaining teacher surfaces (toggle is present everywhere; bodies still English).
+4. Carry-overs from Session 124: stale-lesson flag; weave reading position into the AI weekly-wrap narrative *prose* (currently a separate card); Stage A Agora activation; Mira → Tracy super-admin scope.
+5. Outreach follow-ups — FAMM Argentina, Cambridge Montessori Global, Otari NZ, Lions Gate, Montessori Norge.
+
+---
+
 ## RECENT STATUS (May 21, 2026)
 
 ### 🔥 Session 124 — Photo Audit polish + English sequence integration (content loop + parent reports) + Teaching Notes + agent mobile fix (May 21, 2026)
