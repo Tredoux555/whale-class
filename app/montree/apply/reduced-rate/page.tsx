@@ -3,6 +3,8 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useI18n, type TranslationKey } from '@/lib/montree/i18n';
+import MontreeLogo from '@/components/montree/MonteeLogo';
+import LanguageToggle from '@/components/montree/LanguageToggle';
 
 type ReasonType = 'developing_country' | 'small_school' | 'startup' | 'hardship' | 'other';
 type TierType = 'tier_a_500' | 'tier_b_250' | 'tier_c_100' | 'custom';
@@ -87,7 +89,15 @@ export default function ReducedRateApplicationPage() {
 
   if (submitted) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-slate-900 via-emerald-900 to-teal-900 p-6 relative overflow-hidden">
+      <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-slate-900 via-emerald-900 to-teal-900 px-6 pb-6 pt-20 relative overflow-hidden">
+        {/* Home + language toggle */}
+        <div className="absolute top-0 left-0 right-0 z-20 flex items-center justify-between px-5 py-4">
+          <Link href="/montree" className="flex items-center gap-2">
+            <MontreeLogo size={28} />
+            <span className="text-white font-light tracking-wide">Montree</span>
+          </Link>
+          <LanguageToggle />
+        </div>
         {/* Background glow */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-emerald-500/20 rounded-full blur-3xl pointer-events-none" />
 
@@ -152,7 +162,15 @@ export default function ReducedRateApplicationPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-slate-900 via-emerald-900 to-teal-900 p-6 relative overflow-hidden">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-slate-900 via-emerald-900 to-teal-900 px-6 pb-6 pt-20 relative overflow-hidden">
+      {/* Home + language toggle */}
+      <div className="absolute top-0 left-0 right-0 z-20 flex items-center justify-between px-5 py-4">
+        <Link href="/montree" className="flex items-center gap-2">
+          <MontreeLogo size={28} />
+          <span className="text-white font-light tracking-wide">Montree</span>
+        </Link>
+        <LanguageToggle />
+      </div>
       {/* Background glow */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-emerald-500/20 rounded-full blur-3xl pointer-events-none" />
 
