@@ -69,6 +69,7 @@ export default function StoryVoiceCall({ callId, as, authToken, onClose }: Story
   const micTrackRef = useRef<IMicTrack | null>(null);
   const initRef = useRef(false);
   const endedRef = useRef(false);
+  const leaveTimerRef = useRef<number | null>(null);
 
   // ── Fetch a fresh token. Used for the initial join AND token renewal. ──
   const fetchToken = useCallback(async (): Promise<TokenData | null> => {
@@ -168,9 +169,11 @@ export default function StoryVoiceCall({ callId, as, authToken, onClose }: Story
 
         client.on('user-left', () => {
           if (cancelled) return;
-          // The other person hung up. End cleanly.
+          // The other person hung up. End cleanly. Timer id is kept so the
+          // unmount cleanup can cancel it — otherwise hangUp() could fire
+          // after the component is gone (double onClose / stale setState).
           setPhase('ended');
-          window.setTimeout(() => {
+          leaveTimerRef.current = window.setTimeout(() => {
             void hangUp();
           }, 1600);
         });
@@ -209,6 +212,10 @@ export default function StoryVoiceCall({ callId, as, authToken, onClose }: Story
 
     return () => {
       cancelled = true;
+      if (leaveTimerRef.current !== null) {
+        window.clearTimeout(leaveTimerRef.current);
+        leaveTimerRef.current = null;
+      }
       try {
         micTrackRef.current?.close();
       } catch { /* ignore */ }
