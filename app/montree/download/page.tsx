@@ -3,7 +3,10 @@
 // Teachers in China can't access Google Play — this gives them direct APK download
 'use client';
 
+import Link from 'next/link';
 import { useI18n } from '@/lib/montree/i18n';
+import MontreeLogo from '@/components/montree/MonteeLogo';
+import LanguageToggle from '@/components/montree/LanguageToggle';
 
 export default function DownloadPage() {
   const { t, locale } = useI18n();
@@ -14,12 +17,21 @@ export default function DownloadPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#0D3330] to-[#1a4a46] flex flex-col items-center justify-center p-6">
+    <div className="min-h-screen bg-gradient-to-b from-[#0D3330] to-[#1a4a46] flex flex-col p-6">
+      {/* Top bar — home link + language toggle */}
+      <div className="w-full flex items-center justify-between mb-8">
+        <Link href="/montree" className="flex items-center gap-2.5 no-underline">
+          <MontreeLogo size={32} />
+          <span className="text-white text-lg font-semibold tracking-tight">Montree</span>
+        </Link>
+        <LanguageToggle />
+      </div>
+
+      <div className="flex-1 flex flex-col items-center justify-center">
       <div className="max-w-md w-full space-y-8 text-center">
 
-        {/* Logo / Title */}
+        {/* Title */}
         <div>
-          <div className="text-6xl mb-4">🌿</div>
           <h1 className="text-3xl font-bold text-white">Montree</h1>
           <p className="text-white/60 mt-2">
             {L('Montessori Classroom Intelligence', 'Montessori 课堂智能工具')}
@@ -80,6 +92,7 @@ export default function DownloadPage() {
           </a>
         </div>
 
+      </div>
       </div>
     </div>
   );

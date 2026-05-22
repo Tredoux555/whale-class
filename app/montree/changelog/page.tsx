@@ -5,6 +5,8 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { CHANGELOG_ENTRIES } from '@/lib/montree/changelog';
+import MontreeLogo from '@/components/montree/MonteeLogo';
+import LanguageToggle from '@/components/montree/LanguageToggle';
 
 export const metadata: Metadata = {
   title: "What's new on Montree",
@@ -36,13 +38,33 @@ export default function ChangelogPage() {
         }}
       />
       <div style={{ position: 'relative', zIndex: 1, maxWidth: 720, margin: '0 auto', padding: '48px 24px 96px' }}>
-        <nav style={{ marginBottom: 24 }}>
+        <nav
+          style={{
+            marginBottom: 32,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: 16,
+          }}
+        >
           <Link
             href="/montree"
-            style={{ color: 'rgba(255,255,255,0.6)', textDecoration: 'none', fontSize: 14 }}
+            style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}
           >
-            ← Back to Montree
+            <MontreeLogo size={32} />
+            <span
+              style={{
+                fontFamily: 'var(--font-lora), Georgia, serif',
+                color: '#ECEFE6',
+                fontSize: 20,
+                fontWeight: 600,
+                letterSpacing: '-0.3px',
+              }}
+            >
+              Montree
+            </span>
           </Link>
+          <LanguageToggle />
         </nav>
 
         <header style={{ marginBottom: 40 }}>

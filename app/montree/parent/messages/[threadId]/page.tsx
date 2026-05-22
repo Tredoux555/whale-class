@@ -19,6 +19,7 @@ import { useThreadPolling } from '@/hooks/useThreadPolling';
 import VoiceComposer, { type VoiceReady } from '@/components/montree/messaging/VoiceComposer';
 import VoiceBubble from '@/components/montree/messaging/VoiceBubble';
 import MontreeLogo from '@/components/montree/MonteeLogo';
+import LanguageToggle from '@/components/montree/LanguageToggle';
 
 // Dark forest tokens
 const T = {
@@ -491,6 +492,7 @@ export default function ParentThreadDetailPage() {
               </div>
             )}
           </div>
+          <LanguageToggle />
         </div>
       </header>
 

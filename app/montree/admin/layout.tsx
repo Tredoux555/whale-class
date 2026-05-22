@@ -7,6 +7,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
+import LanguageToggle from '@/components/montree/LanguageToggle';
 import {
   Home,
   GraduationCap,
@@ -119,8 +120,11 @@ interface SidebarContentProps {
 function SidebarContent({ schoolName, isActive, onLogout, nav }: SidebarContentProps) {
   return (
     <>
-      {/* School identity (Lora serif) */}
-      <div style={{ padding: '28px 22px 22px 22px' }}>
+      {/* School identity (Lora serif) — tap to return to the cockpit home. */}
+      <Link
+        href="/montree/admin"
+        style={{ display: 'block', padding: '28px 22px 14px 22px', textDecoration: 'none' }}
+      >
         <div
           style={{
             fontFamily: T.serif,
@@ -146,6 +150,11 @@ function SidebarContent({ schoolName, isActive, onLogout, nav }: SidebarContentP
         >
           Principal
         </div>
+      </Link>
+
+      {/* Language toggle — on every cockpit page via the shared sidebar. */}
+      <div style={{ padding: '0 22px 16px 22px' }}>
+        <LanguageToggle />
       </div>
 
       {/* Nav */}
@@ -352,18 +361,20 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         >
           <Menu size={22} strokeWidth={1.75} />
         </button>
-        <div
+        <Link
+          href="/montree/admin"
           style={{
             fontFamily: T.serif,
             fontSize: 16,
             fontWeight: 500,
             color: T.textPrimary,
             letterSpacing: -0.2,
+            textDecoration: 'none',
           }}
         >
           {schoolName || 'School'}
-        </div>
-        <div style={{ width: 22 }} />
+        </Link>
+        <LanguageToggle />
       </div>
 
       {/* Desktop sidebar (visible >=960px) */}

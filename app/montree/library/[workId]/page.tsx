@@ -5,6 +5,8 @@ import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { useI18n } from '@/lib/montree/i18n';
+import MontreeLogo from '@/components/montree/MonteeLogo';
+import LanguageToggle from '@/components/montree/LanguageToggle';
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
 
@@ -82,8 +84,9 @@ export default function WorkDetailPage() {
       {/* Header bar */}
       <header className="bg-[#0D3330] text-white px-4 py-3">
         <div className="max-w-4xl mx-auto flex items-center gap-3">
-          <Link href="/montree/library" className="text-emerald-300 hover:underline text-sm">
-            ← {t('work.library')}
+          <Link href="/montree/library" className="flex items-center gap-2 group">
+            <MontreeLogo size={26} />
+            <span className="text-white font-semibold text-sm group-hover:text-emerald-300 transition-colors">Library</span>
           </Link>
           <span className="text-white/30">|</span>
           <span
@@ -92,6 +95,9 @@ export default function WorkDetailPage() {
           >
             {t(('area.' + work.area) as any) || cfg.name}
           </span>
+          <div className="ml-auto">
+            <LanguageToggle />
+          </div>
         </div>
       </header>
 

@@ -16,6 +16,7 @@
 
 import Link from 'next/link';
 import MontreeLogo from '@/components/montree/MonteeLogo';
+import LanguageToggle from '@/components/montree/LanguageToggle';
 
 export default function SecurityPage() {
   return (
@@ -87,6 +88,7 @@ export default function SecurityPage() {
           </Link>
           <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
             <Link href="/montree" className="m-nav-link">Home</Link>
+            <LanguageToggle />
             <Link href="/montree/login-select" className="m-pill" style={{ marginLeft: 8 }}>Log in</Link>
           </div>
         </div>

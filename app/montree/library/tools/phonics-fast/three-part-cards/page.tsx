@@ -4,11 +4,14 @@
 'use client';
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import Link from 'next/link';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { ALL_PHASES, type PhonicsWord, type PhonicsPhase } from '@/lib/montree/phonics/phonics-data';
 import CardGenerator from '@/components/card-generator/CardGenerator';
 import type { Card } from '@/components/card-generator/types';
 import { resolvePhotoBankImages, urlToDataUrl } from '@/lib/montree/phonics/photo-bank-resolver';
+import MontreeLogo from '@/components/montree/MonteeLogo';
+import LanguageToggle from '@/components/montree/LanguageToggle';
 
 // Render an emoji (or text) onto a canvas and return a data URL
 function emojiToDataUrl(emoji: string, size = 400): string {
@@ -136,6 +139,14 @@ export default function ThreePartCardsPage() {
       backgroundColor: '#f8f9fa',
       minHeight: '100vh'
     }}>
+      {/* Top bar — home affordance + language */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+        <Link href="/montree/library" style={{ display: 'flex', alignItems: 'center', gap: '8px', textDecoration: 'none' }}>
+          <MontreeLogo size={26} />
+          <span style={{ color: '#0D3330', fontWeight: 600, fontSize: '14px' }}>Library</span>
+        </Link>
+        <LanguageToggle />
+      </div>
       {/* Header */}
       <div style={{
         marginBottom: '24px',

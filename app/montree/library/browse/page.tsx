@@ -4,6 +4,8 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import Link from 'next/link';
 import { useI18n } from '@/lib/montree/i18n';
+import MontreeLogo from '@/components/montree/MonteeLogo';
+import LanguageToggle from '@/components/montree/LanguageToggle';
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
 
@@ -140,6 +142,13 @@ export default function LibraryBrowsePage() {
       {/* ─── Header ─── */}
       <header className="bg-[#0D3330]">
         <div className="max-w-3xl mx-auto px-4 pt-4 pb-3">
+          <div className="flex items-center justify-between mb-2">
+            <Link href="/montree/library" className="flex items-center gap-2 group">
+              <MontreeLogo size={28} />
+              <span className="text-white font-semibold text-sm group-hover:text-emerald-300 transition-colors">Library</span>
+            </Link>
+            <LanguageToggle />
+          </div>
           <div className="flex items-center justify-between mb-3">
             <div>
               <Link href="/montree/library" className="text-emerald-400/60 text-xs hover:text-emerald-300 transition-colors">{t('library.backToLibrary' as any)}</Link>

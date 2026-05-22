@@ -20,6 +20,7 @@
 
 import { useRef, useEffect, useState, FormEvent } from 'react';
 import MontreeLogo from '@/components/montree/MonteeLogo';
+import LanguageToggle from '@/components/montree/LanguageToggle';
 
 interface FormState {
   name: string;
@@ -413,21 +414,24 @@ export default function BecomeAnAgentPage() {
               <MontreeLogo size={28} />
               <span>Montree</span>
             </a>
-            <a
-              className="ba-nav-login"
-              href="/montree/login-select"
-              style={{
-                fontSize: '0.875rem',
-                color: 'rgba(255,255,255,0.55)',
-                textDecoration: 'none',
-                letterSpacing: '0.01em',
-                transition: 'color 200ms ease',
-              }}
-              onMouseEnter={(e) => (e.currentTarget.style.color = 'rgba(255,255,255,0.85)')}
-              onMouseLeave={(e) => (e.currentTarget.style.color = 'rgba(255,255,255,0.55)')}
-            >
-              Log in
-            </a>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+              <LanguageToggle />
+              <a
+                className="ba-nav-login"
+                href="/montree/login-select"
+                style={{
+                  fontSize: '0.875rem',
+                  color: 'rgba(255,255,255,0.55)',
+                  textDecoration: 'none',
+                  letterSpacing: '0.01em',
+                  transition: 'color 200ms ease',
+                }}
+                onMouseEnter={(e) => (e.currentTarget.style.color = 'rgba(255,255,255,0.85)')}
+                onMouseLeave={(e) => (e.currentTarget.style.color = 'rgba(255,255,255,0.55)')}
+              >
+                Log in
+              </a>
+            </div>
           </div>
         </nav>
 

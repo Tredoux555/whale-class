@@ -4,6 +4,8 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { escapeHtml } from '@/lib/sanitize';
+import MontreeLogo from '@/components/montree/MonteeLogo';
+import LanguageToggle from '@/components/montree/LanguageToggle';
 
 // ============================================
 // MOVABLE ALPHABET LABEL MAKER
@@ -271,6 +273,14 @@ const LabelMaker = () => {
       backgroundColor: '#f8f9fa',
       minHeight: '100vh'
     }}>
+      {/* Top bar — home affordance + language */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+        <Link href="/montree/library" style={{ display: 'flex', alignItems: 'center', gap: '8px', textDecoration: 'none' }}>
+          <MontreeLogo size={26} />
+          <span style={{ color: '#0D3330', fontWeight: 600, fontSize: '14px' }}>Library</span>
+        </Link>
+        <LanguageToggle />
+      </div>
       {/* Header */}
       <div style={{
         textAlign: 'center',

@@ -9,6 +9,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import MontreeLogo from '@/components/montree/MonteeLogo';
+import LanguageToggle from '@/components/montree/LanguageToggle';
 
 interface MeResponse {
   agent: { id: string; name: string | null; email: string | null };
@@ -114,6 +115,12 @@ export default function AgentNav() {
             Ambassador
           </span>
         </Link>
+
+        {/* Language toggle — kept beside the logo (left cluster) so it's on
+            every agent page and clear of the top-right MiraFloat. */}
+        <div className="shrink-0">
+          <LanguageToggle />
+        </div>
 
         {/* Mobile hamburger — kept on the LEFT so the top-right corner stays
             clear for the MiraFloat AI assistant. The AI float is top-right on

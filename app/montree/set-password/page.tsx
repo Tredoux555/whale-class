@@ -2,8 +2,11 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { Toaster, toast } from 'sonner';
 import { useI18n, type TranslationKey } from '@/lib/montree/i18n';
+import MontreeLogo from '@/components/montree/MonteeLogo';
+import LanguageToggle from '@/components/montree/LanguageToggle';
 
 export default function SetPasswordPage() {
   const router = useRouter();
@@ -63,7 +66,10 @@ export default function SetPasswordPage() {
 
       if (!res.ok) {
         const errData = await res.json().catch(() => ({}));
-        setError(errData.error || 'Failed to set password');
+        // Was setError() — but this component has no error state; every other
+        // failure path uses toast.error. Pre-existing latent ReferenceError,
+        // fixed during the home-link/toggle sweep audit.
+        toast.error(errData.error || 'Failed to set password');
         setLoading(false);
         return;
       }
@@ -102,9 +108,18 @@ export default function SetPasswordPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-50 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-50 flex items-center justify-center p-4 relative">
       <Toaster position="top-center" richColors />
-      
+
+      {/* Top bar — home link + language toggle */}
+      <div className="absolute top-0 left-0 right-0 flex items-center justify-between p-5">
+        <Link href="/montree" className="flex items-center gap-2.5 no-underline">
+          <MontreeLogo size={30} />
+          <span className="text-slate-800 text-base font-semibold tracking-tight">Montree</span>
+        </Link>
+        <LanguageToggle />
+      </div>
+
       <div className="bg-white rounded-3xl shadow-xl p-8 w-full max-w-md">
         <div className="text-center mb-8">
           <div className="text-5xl mb-4">🔐</div>
