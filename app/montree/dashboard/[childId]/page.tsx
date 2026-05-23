@@ -897,7 +897,7 @@ export default function WeekPage() {
           {t('focusWorks.title')}
         </h2>
         <span style={{ fontFamily: "'Inter', -apple-system, system-ui, sans-serif", fontSize: 13, color: 'rgba(255,255,255,0.65)', flexShrink: 0 }}>
-          {focusWorks.length} works in rotation
+          {t('weekView.worksInRotation', { count: String(focusWorks.length) })}
         </span>
       </div>
       <FocusWorksSection
