@@ -185,6 +185,10 @@ export function I18nProvider({
       // because the app is HTTPS-only in production.
       if (typeof document !== 'undefined') {
         document.cookie = `${COOKIE_KEY}=${l}; Path=/; Max-Age=${COOKIE_MAX_AGE}; SameSite=Lax`;
+        // Update <html lang> synchronously here too — not only in the
+        // [locale] effect — so a soft-nav dropdown switch updates it
+        // immediately, with no dependency on effect-flush timing.
+        document.documentElement.lang = l;
         // Broadcast so EVERY language switcher on the page updates at once —
         // not just the one that was clicked (handoff bug #22). A single
         // provider already shares state via context, but this also keeps
