@@ -8,6 +8,7 @@ import { PDF_CONFIG, getAreaColor, formatDateRange } from './pdf-types';
 import { getTranslator, type Locale } from '@/lib/montree/i18n/server';
 import { getIntlLocale } from '@/lib/montree/i18n/locales';
 import { getLocalizedWorkName } from '@/lib/montree/i18n/db-helpers';
+import { sanitizeNarrative } from './narrative-generator';
 
 // ============================================
 // MAIN GENERATOR FUNCTION
@@ -289,6 +290,10 @@ function drawParentMessage(doc: PDFKit.PDFDocument, data: PDFReportData, locale:
     return;
   }
 
+  // Strip any stray markdown / collapse doubled paragraphs (handoff bug #5)
+  // — covers reports stored before the generator-side sanitizer landed.
+  const message = sanitizeNarrative(data.parentMessage);
+
   // Check for page break
   if (doc.y > doc.page.height - 150) {
     doc.addPage();
@@ -309,8 +314,8 @@ function drawParentMessage(doc: PDFKit.PDFDocument, data: PDFReportData, locale:
   const boxPadding = 16;
   
   doc.fontSize(fontSize.body).font(fonts.italic);
-  const messageHeight = doc.heightOfString(data.parentMessage, { 
-    width: pageWidth - (boxPadding * 2) 
+  const messageHeight = doc.heightOfString(message, {
+    width: pageWidth - (boxPadding * 2)
   });
   
   const boxHeight = messageHeight + (boxPadding * 2) + 30;
@@ -326,7 +331,7 @@ function drawParentMessage(doc: PDFKit.PDFDocument, data: PDFReportData, locale:
   doc.fontSize(fontSize.body)
     .font(fonts.italic)
     .fillColor(colors.text)
-    .text(data.parentMessage, margins.left + boxPadding, boxY + boxPadding, {
+    .text(message, margins.left + boxPadding, boxY + boxPadding, {
       width: pageWidth - (boxPadding * 2),
       lineGap: 4,
     });

@@ -6,7 +6,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import dynamic from 'next/dynamic';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams, useRouter, notFound } from 'next/navigation';
 import Link from 'next/link';
 import { Images, ChevronDown, ClipboardList, Camera, Mic, Square } from 'lucide-react';
 import { toast, Toaster } from 'sonner';
@@ -116,6 +116,13 @@ export default function WeekPage() {
   const [photoPathChosen, setPhotoPathChosen] = useState(false);
   // Game plan — stored in child.settings.game_plan
   const [gamePlan, setGamePlan] = useState<GamePlan | null>(null);
+
+  // Route validity. The [childId] segment matches ANY string, so a stale
+  // bookmark or a sibling route name typed as a path (e.g. /dashboard/weekly-plan)
+  // lands here. When the child API answers 403/404 the id is not a real child
+  // in this teacher's classroom — flip this and render the not-found boundary
+  // instead of showing the student shell or (the old bug) bouncing to /login.
+  const [routeStatus, setRouteStatus] = useState<'ok' | 'not_found'>('ok');
 
   // Guru weekly summary state — single object instead of 7 individual useState calls
   const [guruSettings, setGuruSettings] = useState<{
@@ -291,9 +298,19 @@ export default function WeekPage() {
     lastFetchTimeRef.current = Date.now();
     montreeApi(`/api/montree/progress?child_id=${childId}`)
       .then(r => {
-        if (!r.ok) {
-          // Auth expired or server error — redirect to login with return URL
+        if (r.status === 401) {
+          // Auth genuinely expired — redirect to login with return URL.
           router.push(`/montree/login?redirect=${encodeURIComponent(`/montree/dashboard/${childId}`)}`);
+          return { progress: [] };
+        }
+        if (r.status === 403 || r.status === 404) {
+          // Not a valid child for this teacher (stale URL / wrong path).
+          // Render the 404 boundary — NEVER log the teacher out for this.
+          setRouteStatus('not_found');
+          return { progress: [] };
+        }
+        if (!r.ok) {
+          // Transient server error — show empty state, stay on the page.
           return { progress: [] };
         }
         return r.json();
@@ -384,7 +401,11 @@ export default function WeekPage() {
     if (!childId) return;
 
     // Always try to fetch child data + game plan (game plan shows regardless of feature flag)
-    const fetchChild = montreeApi(`/api/montree/children/${childId}`).then(r => r.ok ? r.json() : null);
+    const fetchChild = montreeApi(`/api/montree/children/${childId}`).then(r => {
+      // 403/404 = the id isn't a real child in this classroom → render 404.
+      if (r.status === 403 || r.status === 404) { setRouteStatus('not_found'); return null; }
+      return r.ok ? r.json() : null;
+    });
 
     // Only check profile if feature is enabled
     const fetchProfile = isEnabled('tell_guru_onboarding')
@@ -716,6 +737,13 @@ export default function WeekPage() {
       setIsSaving(false);
     }
   };
+
+  // The id in the URL isn't a real child in this classroom — render the
+  // dashboard not-found boundary. Calling notFound() during render is the
+  // canonical, safe path (a .then()/.catch() would swallow the signal).
+  if (routeStatus === 'not_found') {
+    notFound();
+  }
 
   if (loading) {
     return <WeekViewSkeleton />;

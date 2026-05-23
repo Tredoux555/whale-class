@@ -9,6 +9,7 @@ import { createMontreeToken, setMontreeAuthCookie } from '@/lib/montree/server-a
 import { getLocationFromRequest } from '@/lib/ip-geolocation';
 import { applyGlobalTranslations } from '@/lib/montree/curriculum/apply-global-translations';
 import { isValidLocale, DEFAULT_LOCALE, type Locale } from '@/lib/montree/i18n/locales';
+import { DEFAULTS } from '@/lib/montree/constants';
 
 /**
  * Resolve the primary locale for a new school at signup.
@@ -314,7 +315,8 @@ export async function POST(req: NextRequest) {
 
     const code = generateCode();
     const codeHash = legacySha256(code.toUpperCase());
-    const trialEndsAt = new Date(Date.now() + 90 * 24 * 60 * 60 * 1000);
+    // CR-1: trial length comes from the single DEFAULTS.TRIAL_DAYS constant.
+    const trialEndsAt = new Date(Date.now() + DEFAULTS.TRIAL_DAYS * 24 * 60 * 60 * 1000);
 
     // ── Step 1: Create trial school ──
     steps.push('2-school');

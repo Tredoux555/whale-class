@@ -83,8 +83,13 @@ export async function POST(req: NextRequest) {
     .select('id, channel')
     .single();
   if (error || !created) {
-    console.error('[story-call] create failed:', error?.message);
-    return NextResponse.json({ error: 'Could not start the call.' }, { status: 500 });
+    // Surface the real DB error (e.g. a mode CHECK-constraint violation on a
+    // video call) so a failure is self-diagnosing instead of a generic 500.
+    console.error('[story-call] create failed:', { mode, error: error?.message, code: error?.code });
+    return NextResponse.json(
+      { error: 'Could not start the call.', detail: error?.message || null },
+      { status: 500 }
+    );
   }
 
   // Push the call to the user's devices so they're alerted even with the

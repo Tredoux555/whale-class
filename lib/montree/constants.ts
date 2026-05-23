@@ -6,7 +6,11 @@ export const DEFAULTS = {
   AGE_GROUP: '3-6',
   PLAN_TYPE: 'school',
   SUBSCRIPTION_STATUS: 'trialing',
-  TRIAL_DAYS: 14,
+  // Free trial length, in days. CR-1 (May 2026): 7-day trial.
+  // This is the SINGLE source of truth — school creation derives
+  // trial_ends_at from it, and Stripe trial_period_days follows from
+  // trial_ends_at. Do not hardcode a trial length anywhere else.
+  TRIAL_DAYS: 7,
 } as const;
 
 // Regex patterns

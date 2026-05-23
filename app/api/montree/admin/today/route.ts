@@ -60,14 +60,17 @@ export async function GET(request: NextRequest) {
     const classroomIds = classrooms.map(c => c.id);
 
     // ── Plan / billing state — drives the principal cockpit gates ───────────
-    // A "teacher-led" school is one where the founder was a teacher (via the
-    // /try/instant teacher path). Principals invited to such schools are
-    // viewers — they can browse, but adding classrooms / teachers requires
-    // upgrading to a school plan. plan_type === 'personal_classroom' is the
-    // primary signal; founding_teacher_id is a secondary signal for clarity.
-    const isTeacherLed =
-      school.plan_type === 'personal_classroom' ||
-      !!school.founding_teacher_id;
+    // A "teacher-led" school is one created via the /try/instant TEACHER path
+    // (plan_type === 'personal_classroom'). A principal invited into such a
+    // school is a viewer. A principal who creates their own school via the
+    // wizard gets plan_type === 'school' and is the owner — never a viewer.
+    //
+    // founding_teacher_id is deliberately NOT used here: it is overloaded —
+    // on a referral signup it holds the AGENT's id (try/instant ~line 157), so
+    // a principal-created, agent-referred school would be wrongly flagged
+    // teacher-led and the OWNING principal shown a viewer banner + an "Upgrade
+    // to add classrooms" gate on their own school (handoff bug #8).
+    const isTeacherLed = school.plan_type === 'personal_classroom';
     const planSummary = {
       plan_type: school.plan_type || 'school',
       subscription_status: school.subscription_status || 'trialing',

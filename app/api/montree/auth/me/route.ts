@@ -17,18 +17,53 @@ export async function GET(request: NextRequest) {
   try {
     const supabase = getSupabase();
 
-    // Fetch teacher + school + classroom in parallel
-    const [teacherRes, schoolRes, classroomRes] = await Promise.all([
+    // Fetch teacher + principal-admin + school + classroom in parallel.
+    // A principal of a school may have NO montree_teachers row (the principal
+    // signup path creates only a montree_school_admins row). Looking up BOTH
+    // is what makes auth/me authoritative for principals — without the admin
+    // lookup, /admin/conversations and other principal surfaces mis-resolve
+    // the role (handoff bug #6).
+    const [teacherRes, adminRes, schoolRes, classroomRes] = await Promise.all([
       supabase.from('montree_teachers').select('id, name, email, role').eq('id', userId).maybeSingle(),
+      supabase.from('montree_school_admins').select('id, name, email, role').eq('id', userId).eq('school_id', schoolId).maybeSingle(),
       supabase.from('montree_schools').select('id, name, slug').eq('id', schoolId).maybeSingle(),
       classroomId
         ? supabase.from('montree_classrooms').select('id, name, age_group, school_id').eq('id', classroomId).maybeSingle()
         : Promise.resolve({ data: null }),
     ]);
 
-    if (!teacherRes.data || !schoolRes.data) {
+    // Authenticated if the school exists AND the user is EITHER a teacher OR a
+    // school admin of it. (Was: teacher-only — which 401'd every pure principal.)
+    if (!schoolRes.data || (!teacherRes.data && !adminRes.data)) {
       return NextResponse.json({ authenticated: false }, { status: 401 });
     }
+
+    // Effective session role. A montree_school_admins row means principal;
+    // otherwise fall back to the teacher row's role, then the JWT role.
+    const effectiveRole: string = adminRes.data
+      ? (adminRes.data.role || 'principal')
+      : (teacherRes.data?.role || role);
+
+    // Identity block. Named `teacher` for backward-compat with existing
+    // consumers that read meData.teacher.id; for a pure principal it carries
+    // the school-admin identity instead. `role` is ALWAYS `effectiveRole` so
+    // it agrees with the top-level `role` — otherwise a founder-principal
+    // (has BOTH a teacher row and an admin row) would get `role:'principal'`
+    // at top level but `teacher.role:'teacher'`, and recoverSession() — which
+    // builds the session from `teacher` — would see the wrong role.
+    const identity = teacherRes.data
+      ? {
+          id: teacherRes.data.id,
+          name: teacherRes.data.name,
+          role: effectiveRole,
+          email: teacherRes.data.email,
+        }
+      : {
+          id: adminRes.data!.id,
+          name: adminRes.data!.name,
+          role: effectiveRole,
+          email: adminRes.data!.email,
+        };
 
     // Security: verify classroom belongs to the authenticated school
     // Prevents cross-school data leakage if token contains a mismatched classroomId
@@ -45,12 +80,10 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       authenticated: true,
-      teacher: {
-        id: teacherRes.data.id,
-        name: teacherRes.data.name,
-        role: teacherRes.data.role || role,
-        email: teacherRes.data.email,
-      },
+      // Top-level session role — the authoritative "what am I logged in as"
+      // signal. Principal surfaces (e.g. /admin/conversations) gate on this.
+      role: effectiveRole,
+      teacher: identity,
       school: schoolRes.data,
       classroom,
     });

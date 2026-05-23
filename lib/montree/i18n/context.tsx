@@ -18,6 +18,8 @@ export type { Locale };
 const STORAGE_KEY = 'montree_lang';
 const COOKIE_KEY = 'mt_locale';
 const COOKIE_MAX_AGE = 365 * 24 * 60 * 60; // 1 year
+// Window event broadcast on every setLocale — see the listener in the provider.
+const LOCALE_EVENT = 'montree:locale-change';
 
 // 🚨 Perf Tier 1.4 (PERF_HEALTH_CHECK.md): only English ships in the initial
 // page bundle. The 11 other locale files (zh/es/de/fr/pt/nl/it/ja/ko/uk/ru)
@@ -161,10 +163,35 @@ export function I18nProvider({
       // because the app is HTTPS-only in production.
       if (typeof document !== 'undefined') {
         document.cookie = `${COOKIE_KEY}=${l}; Path=/; Max-Age=${COOKIE_MAX_AGE}; SameSite=Lax`;
+        // Broadcast so EVERY language switcher on the page updates at once —
+        // not just the one that was clicked (handoff bug #22). A single
+        // provider already shares state via context, but this also keeps
+        // any future second provider instance + other browser tabs in sync.
+        window.dispatchEvent(new CustomEvent(LOCALE_EVENT, { detail: l }));
       }
     } catch {
       // ignore
     }
+  }, []);
+
+  // Listen for locale changes broadcast by another switcher / another tab and
+  // mirror them into this provider's state. Keeps the whole UI consistent.
+  useEffect(() => {
+    const onLocaleEvent = (e: Event) => {
+      const next = (e as CustomEvent).detail;
+      if (isValidLocale(next)) setLocaleState((cur) => (cur === next ? cur : next));
+    };
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === STORAGE_KEY && isValidLocale(e.newValue)) {
+        setLocaleState((cur) => (cur === e.newValue ? cur : (e.newValue as Locale)));
+      }
+    };
+    window.addEventListener(LOCALE_EVENT, onLocaleEvent);
+    window.addEventListener('storage', onStorage);
+    return () => {
+      window.removeEventListener(LOCALE_EVENT, onLocaleEvent);
+      window.removeEventListener('storage', onStorage);
+    };
   }, []);
 
   const t = useCallback(

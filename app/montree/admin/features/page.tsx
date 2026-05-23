@@ -44,15 +44,21 @@ export default function FeaturesAdminPage() {
 
   async function loadFeatures() {
     if (!session?.classroom?.id) return;
+    // 12s abort guard — a hung fetch (cold start / network stall) must not
+    // leave the page stuck on "Loading features…" forever (handoff bug #7).
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), 12000);
     try {
-      const res = await fetch(`/api/montree/features?classroom_id=${session.classroom.id}`);
+      const res = await fetch(`/api/montree/features?classroom_id=${session.classroom.id}`, { signal: ctrl.signal });
       if (!res.ok) throw new Error('Failed to load features');
       const data = await res.json();
       if (data.success) setFeatures(data.features || []);
     } catch (err) {
       toast.error(t('features.failedToLoad' as TranslationKey));
+    } finally {
+      clearTimeout(timer);
+      setLoading(false);
     }
-    setLoading(false);
   }
 
   async function toggleFeature(featureKey: string, enabled: boolean) {
