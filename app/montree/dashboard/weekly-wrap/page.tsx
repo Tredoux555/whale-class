@@ -1242,17 +1242,16 @@ export default function WeeklyWrapPage() {
               </div>
             )}
 
-            {/* Preview link */}
-            {r.report_id && (
-              <a
-                href={`/montree/parent/report/${r.report_id}?teacher_preview=1`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-block text-xs text-emerald-600 font-medium hover:underline"
-              >
-                {t('weeklyWrap.openFullReport')}
-              </a>
-            )}
+            {/* Full parent-view link removed (re-sweep Bug G): it pointed at
+                /montree/parent/report/<id>?teacher_preview=1, but that route
+                is parent-session-only AND status='sent'-only — so for a
+                teacher on a draft report it always 404'd ("Report not
+                found"). The teacher reviews the parent report inline on this
+                "Parent Reports" tab. To restore a true full-page preview,
+                first implement a teacher_preview auth branch in
+                app/api/montree/parent/report/[reportId]/route.ts (teacher/
+                principal of the report's school, any status), then re-add a
+                link here. */}
 
             {/* Save + Send buttons */}
             <div className="flex gap-2 pt-2 border-t border-gray-100">

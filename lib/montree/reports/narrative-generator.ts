@@ -268,9 +268,21 @@ export async function generateWeeklyNarrative(
       success: true,
       narrative: (() => {
         const fn = input.child.name.split(' ')[0];
+        // Localized for every supported locale — the parent-facing report
+        // is written in the school's language, so the empty-state line must
+        // be too (an incomplete map silently fell back to English).
         const NO_PHOTOS: Record<string, string> = {
           zh: `${fn}本周没有拍摄到照片记录。`,
           es: `No capturamos momentos fotográficos de ${fn} esta semana.`,
+          de: `Diese Woche haben wir keine Fotomomente von ${fn} festgehalten.`,
+          fr: `Cette semaine, nous n'avons pas pris de photos de ${fn}.`,
+          pt: `Esta semana não registramos momentos em foto de ${fn}.`,
+          nl: `Deze week hebben we geen fotomomenten van ${fn} vastgelegd.`,
+          it: `Questa settimana non abbiamo catturato momenti fotografici di ${fn}.`,
+          ja: `今週は${fn}さんの写真の記録はありませんでした。`,
+          ko: `이번 주에는 ${fn}의 사진 기록이 없습니다.`,
+          uk: `Цього тижня ми не зробили фотознімків ${fn}.`,
+          ru: `На этой неделе мы не сделали фотографий ${fn}.`,
         };
         return NO_PHOTOS[input.locale] || `We didn't capture any photo moments for ${fn} this week.`;
       })(),
