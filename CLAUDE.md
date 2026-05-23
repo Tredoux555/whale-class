@@ -345,6 +345,27 @@ Session 119 weathered a Railway edge outage (May 19 22:22 UTC, ~1.5h, first inci
 
 ---
 
+### 🔥 Session 126 (cont. 2) — Call-500 diagnosed + voice/video choice (May 23, 2026)
+
+**1 commit:** `a56d0e68`.
+
+**🚨 The "Could not start the call" 500 — diagnosed.** Verified via the Supabase REST API: `story_calls` → **HTTP 404 (table missing)**, `story_push_subscriptions` → 200, `story_users` → 200. **Migration 229 ran; migration 228 did NOT.** The 500 is the `story_calls` INSERT failing on a non-existent table. Fix = run migration 228. (Couldn't run it from here — the direct DB host `db.<project>.supabase.co` doesn't resolve from the user's network; the Supabase SQL Editor is the path.)
+
+**Migration 228 AMENDED** — folded a `mode TEXT CHECK (mode IN ('voice','video'))` column into it (plus an idempotent `ADD COLUMN IF NOT EXISTS`). Since 228 never ran anywhere, amending the unrun file is safe. One run now does both: fixes the 500 AND lands the video-call schema.
+
+**Voice/video choice built.** Admin dashboard 👥 Students now has two buttons per user — 📞 Voice (emerald) and 📹 Video (indigo). `mode` flows end to end: `admin/call` route stores it → `agora-token` + `current-call` return it → `sendCallPush` words the notification → the incoming-call banner shows 📹/📞 + "Video call"/"Voice call". `StoryVoiceCall.tsx` rewritten to handle BOTH modes: voice = the avatar UI (unchanged); video = full-bleed remote video + local self-view PiP + a camera-toggle button. Remote-video render race handled per rule #211 (stash track + `videoTick` bump + deferred-play effect). Camera failure (denied/missing) degrades to audio-only — never fails the call.
+
+**🚨 Push still inert — Railway env not set.** The EnableNotifications button showed "Call notifications aren't switched on yet" = a 503 from `/api/story/push/public-key` = `STORY_VAPID_PUBLIC_KEY` / `STORY_VAPID_PRIVATE_KEY` are NOT set in Railway. Adding the Story PWA to the Home Screen is necessary but NOT sufficient — the VAPID env vars must be set server-side. Values are in the Session 126 (cont.) block above.
+
+**🚨 Architectural notes:**
+- Migration 228 carries the `mode` column. `story_calls.mode` ∈ {voice, video}.
+- `StoryVoiceCall.tsx` handles voice AND video (filename kept; the component does both). Video uses the stash-track + deferred-play render-race pattern (rule #211).
+- Camera creation is best-effort — a denied/missing camera degrades the call to audio, never fails it.
+
+**🚨 Next:** (1) Run the amended `migrations/228_story_calls.sql` in Supabase — fixes the 500. (2) Set the two `STORY_VAPID_*` env vars in Railway for push. (3) Then 2-device test voice + video.
+
+---
+
 ### 🔥 Session 125 — English Progression coverage flag + overnight health check + i18n of the new feature set + app-wide home-link/toggle sweep (May 21–22, 2026)
 
 **11 commits pushed to main:** `05ca6a04` → `f61693f0` → `9ac5cff4` → `34f2701b` → `b3ff75c2` → `80be337d` → `89d9cb9e` → `ef07ad0c` → `72702638` → `84d28452` → `e184abb5`. **🚨 Canonical handoff:** `docs/handoffs/SESSION_125_HANDOFF.md` (+ `SESSION_125_HEALTH_CHECK.md`).
@@ -7464,7 +7485,7 @@ All migrations through 169 have been run. Key ones: 147 (smart learning columns)
 - ✅ `226_montree_encryption_v1.sql` — **RUN May 21, 2026.** `encryption_version INTEGER` columns live on `montree_thread_messages`, `montree_meeting_notes`, `montree_appointment_recordings` (verified via information_schema query — all 3 present). `encryption_v1` feature flag inserted into `montree_feature_definitions`, then flipped ON by Tredoux. Encryption code re-applied & live. Only remaining step: confirm `MONTREE_ENCRYPTION_KEY` (32-char hex) is set in Railway — without it, writes safely fall back to plaintext + loud-log. Operations playbook: `docs/handoffs/MONTREE_ENCRYPTION_RUNBOOK.md`.
 
 **Session 126 (May 22, 2026) — Story voice calls + Web Push. ⏳ 2 migrations pending Tredoux's Supabase run:**
-- ⏳ `228_story_calls.sql` — `story_calls` table (id, username, channel, status ringing/active/ended, initiated_by, created_at, updated_at, ended_at) + partial index `idx_story_calls_user_active` + `story_calls_touch_updated_at()` trigger. Powers Story voice-call signalling (admin ↔ Story user). Idempotent BEGIN/COMMIT. **REQUIRED for the Story Call button. Until run, `/api/story/admin/call` INSERT fails → 500 "Could not start the call"; `/api/story/current-call` GET degrades gracefully to `{call:null}` (no banner, no crash). The flashcard fix in the same session needs no migration.**
+- ⏳ `228_story_calls.sql` — `story_calls` table (id, username, channel, status ringing/active/ended, **`mode` voice/video**, initiated_by, created_at, updated_at, ended_at) + partial index `idx_story_calls_user_active` + `story_calls_touch_updated_at()` trigger. Powers Story voice/video-call signalling. Idempotent BEGIN/COMMIT. **🚨 Session 126 cont.2: CONFIRMED NOT RUN — verified via the Supabase REST API (`story_calls` → HTTP 404). The "Could not start the call" 500 is this exact missing table. Migration AMENDED to also add the `mode` column. RE-RUN the current file in the Supabase SQL Editor — that fixes the 500 and lands the video-call schema in one go.**
 - ⏳ `229_story_push_subscriptions.sql` — `story_push_subscriptions` table (id, username, endpoint UNIQUE, p256dh, auth, user_agent, created_at, last_used_at) + `idx_story_push_subs_username`. Stores each Story user's Web Push subscription so `sendCallPush()` can notify them when the app is closed. Idempotent BEGIN/COMMIT. **REQUIRED for Story call push notifications. Until run, `/api/story/push/subscribe` 500s on the upsert; the "Enable call notifications" button surfaces the error gracefully. Also needs Railway env: `STORY_VAPID_PUBLIC_KEY` + `STORY_VAPID_PRIVATE_KEY` — without them the whole push feature stays inert (poll-based banner still works).**
 
 Plus Session 119 agent backfill SQL (not a migration file, run separately in Supabase):
