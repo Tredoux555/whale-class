@@ -82,6 +82,21 @@ export async function POST(request: NextRequest) {
     }
     const classroom = classroomRaw as { id: string; name: string; school_id: string };
 
+    // Parent narratives must be written in the SCHOOL's language — not the UI
+    // locale of whichever teacher happened to trigger the wrap (handoff bug #5:
+    // English narratives surfaced on a Spanish school). Teacher reports keep
+    // `locale` (the triggering user's locale); parent-facing text uses this.
+    let parentLocale: Locale = locale;
+    {
+      const { data: schoolRow } = await supabase
+        .from('montree_schools')
+        .select('primary_locale')
+        .eq('id', classroom.school_id)
+        .maybeSingle();
+      const sl = (schoolRow as { primary_locale?: string } | null)?.primary_locale;
+      if (sl && isValidLocale(sl)) parentLocale = sl;
+    }
+
     // Resolve this school's AI tier (free / haiku / sonnet) — fail-closed to free on error
     const aiTier = await resolveReportModel(supabase, classroom.school_id);
     if (aiTier.tier === 'free') {
@@ -552,7 +567,7 @@ export async function POST(request: NextRequest) {
                 },
                 weekStart: week_start,
                 weekEnd: week_end,
-                locale,
+                locale: parentLocale,
                 analysis,
                 photos: enrichedPhotos.map(p => ({
                   work_name: p.work_name,
@@ -612,7 +627,7 @@ export async function POST(request: NextRequest) {
                   captured_at: p.captured_at,
                 })),
                 generated_at: now,
-                report_locale: locale,
+                report_locale: parentLocale,
               };
 
               // eslint-disable-next-line @typescript-eslint/no-explicit-any

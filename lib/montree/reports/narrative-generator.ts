@@ -8,6 +8,29 @@ import type { WeeklyAnalysisResult } from '@/lib/montree/ai/weekly-analyzer';
 import { getLanguageName, getAILanguageInstruction } from '@/lib/montree/i18n/locale-config';
 import type { Locale } from '@/lib/montree/i18n/locales';
 
+// Parent narratives are plain warm prose — the prompt forbids markdown, but
+// LLMs slip. Strip any stray markdown tokens and collapse consecutive
+// duplicate paragraphs (a doubled-merge artifact) BEFORE the text is stored,
+// so every downstream consumer (parent viewer, PDF, principal preview) gets
+// clean text. Handoff bug #5.
+export function sanitizeNarrative(raw: string): string {
+  let s = raw
+    .replace(/\*\*(.+?)\*\*/g, '$1')
+    .replace(/__(.+?)__/g, '$1')
+    .replace(/(^|\s)[*_](\S.*?\S|\S)[*_](\s|$)/g, '$1$2$3')
+    .replace(/`([^`]+)`/g, '$1')
+    .replace(/^#{1,6}\s+/gm, '')
+    .replace(/^\s*[-*+]\s+/gm, '')
+    .replace(/^\s*(?:&gt;|>)\s?/gm, '');
+  const paras = s.split(/\n{2,}/).map(p => p.trim()).filter(Boolean);
+  const deduped: string[] = [];
+  for (const p of paras) {
+    if (deduped[deduped.length - 1] !== p) deduped.push(p);
+  }
+  s = deduped.join('\n\n');
+  return s.trim();
+}
+
 // ── Types ──
 
 export interface NarrativeInput {
@@ -279,11 +302,13 @@ export async function generateWeeklyNarrative(
       messages: [{ role: 'user', content: prompt }],
     });
 
-    const narrative = response.content
-      .filter(block => block.type === 'text')
-      .map(block => (block as { type: 'text'; text: string }).text)
-      .join('')
-      .trim();
+    const narrative = sanitizeNarrative(
+      response.content
+        .filter(block => block.type === 'text')
+        .map(block => (block as { type: 'text'; text: string }).text)
+        .join('')
+        .trim()
+    );
 
     return {
       success: true,

@@ -5,12 +5,12 @@
 // curl -X POST 'https://montree.xyz/api/montree/super-admin/trial-drip' \
 //   -H "x-cron-secret: $CRON_SECRET"
 //
-// Logic:
+// Logic (CR-1 — 7-day trial):
 //   - Pull every school where subscription_status='trialing' AND owner_email is set
 //   - Compute days_since_signup = floor((now - created_at) / day)
-//   - On day 7 → send day7 email (if not already sent)
-//   - On day 14 → send day14 email
-//   - On day 25 → send day25 email
+//   - On day 4 → send day4 email — mid-trial nudge (T-3)
+//   - On day 6 → send day6 email — "trial ends tomorrow" (T-1)
+//   - On day 7 → send day7 email — "trial ended, billing started" (T-0)
 //
 // Idempotency: track sends in montree_outreach_log so we don't re-send the
 // same drip to the same school. Action format: 'trial_drip_dayN'.
@@ -35,9 +35,9 @@ interface SchoolRow {
 }
 
 const DRIP_DAYS: Array<{ day: number; key: TrialDripDay }> = [
+  { day: 4, key: 'day4' },
+  { day: 6, key: 'day6' },
   { day: 7, key: 'day7' },
-  { day: 14, key: 'day14' },
-  { day: 25, key: 'day25' },
 ];
 
 export async function POST(request: NextRequest) {
@@ -79,7 +79,7 @@ export async function POST(request: NextRequest) {
     const { data: page, error: pageErr } = await supabase
       .from('montree_outreach_log')
       .select('action, metadata')
-      .in('action', ['trial_drip_day7', 'trial_drip_day14', 'trial_drip_day25'])
+      .in('action', ['trial_drip_day4', 'trial_drip_day6', 'trial_drip_day7'])
       .range(offset, offset + PAGE_SIZE - 1);
     if (pageErr) {
       console.error('[trial-drip] page read failed at offset', offset, pageErr);
@@ -116,7 +116,7 @@ export async function POST(request: NextRequest) {
 
   for (const s of schools) {
     if (!s.owner_email) {
-      outcomes.push({ school_id: s.id, school_name: s.name || s.id, day: 'day7', ok: false, skipped: 'no_email' });
+      outcomes.push({ school_id: s.id, school_name: s.name || s.id, day: 'day4', ok: false, skipped: 'no_email' });
       continue;
     }
     const daysSince = Math.floor((now - new Date(s.created_at).getTime()) / dayMs);

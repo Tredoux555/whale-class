@@ -60,7 +60,8 @@ export function OnlineUsersTab({ onlineUsers, getSession }: OnlineUsersTabProps)
       });
       if (!res.ok) {
         const j = await res.json().catch(() => ({}));
-        alert(j?.error || 'Could not start the call.');
+        const msg = j?.error || 'Could not start the call.';
+        alert(j?.detail ? `${msg}\n\n${j.detail}` : msg);
         setCallingUser(null);
         return;
       }

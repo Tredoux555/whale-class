@@ -29,6 +29,30 @@ const T = {
 };
 
 
+// Sanitize an AI narrative for parent display (handoff bug #5).
+// The narrative is meant to be plain warm prose — the generator forbids
+// markdown, but LLMs slip. This strips any stray markdown tokens and
+// collapses consecutive duplicate paragraphs (a doubled-merge artifact).
+function cleanNarrative(raw: string | null | undefined): string {
+  if (!raw) return '';
+  let s = raw
+    .replace(/\*\*(.+?)\*\*/g, '$1')   // **bold**
+    .replace(/__(.+?)__/g, '$1')        // __bold__
+    .replace(/(^|\s)[*_](\S.*?\S|\S)[*_](\s|$)/g, '$1$2$3') // *italic* / _italic_
+    .replace(/`([^`]+)`/g, '$1')        // `code`
+    .replace(/^#{1,6}\s+/gm, '')        // # headings
+    .replace(/^\s*[-*+]\s+/gm, '')           // - bullet markers
+    .replace(/^\s*(?:&gt;|>)\s?/gm, '');      // > blockquote
+  // Collapse consecutive duplicate paragraphs (de-dup a doubled merge).
+  const paras = s.split(/\n{2,}/).map(p => p.trim()).filter(Boolean);
+  const deduped: string[] = [];
+  for (const p of paras) {
+    if (deduped[deduped.length - 1] !== p) deduped.push(p);
+  }
+  s = deduped.join('\n\n');
+  return s.trim();
+}
+
 // --- Types ---
 
 interface WorkItem {
@@ -354,14 +378,14 @@ export default function ParentReportPage() {
           {/* ═══ AI Narrative Summary ═══ */}
           {report.narrative?.summary ? (
             <div style={{ borderLeft: `4px solid ${T.emerald}`, background: 'rgba(52,211,153,0.10)', borderRadius: "0 0.75rem 0.75rem 0", paddingLeft: "1.25rem", paddingRight: "1.25rem", paddingTop: "1rem", paddingBottom: "1rem", marginBottom: "0.5rem" }}>
-              <p style={{ color: T.textSecondary }}>
-                {report.narrative.summary}
+              <p style={{ color: T.textSecondary, whiteSpace: 'pre-line' }}>
+                {cleanNarrative(report.narrative.summary)}
               </p>
             </div>
           ) : report.parent_summary ? (
             <div style={{ borderLeft: `4px solid ${T.emerald}`, background: 'rgba(52,211,153,0.10)', borderRadius: "0 0.75rem 0.75rem 0", paddingLeft: "1.25rem", paddingRight: "1.25rem", paddingTop: "1rem", paddingBottom: "1rem", marginBottom: "0.5rem" }}>
-              <p style={{ color: T.textSecondary }}>
-                {report.parent_summary}
+              <p style={{ color: T.textSecondary, whiteSpace: 'pre-line' }}>
+                {cleanNarrative(report.parent_summary)}
               </p>
             </div>
           ) : null}

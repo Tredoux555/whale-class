@@ -108,8 +108,25 @@ export default function WeeklyWrapPage() {
   const searchParams = useSearchParams();
   const { t, locale } = useI18n();
 
-  const weekStart = searchParams.get('week') || '';
-  const weekEnd = searchParams.get('week_end') || '';
+  // Default to the current (Monday-start) week when the URL carries no — or a
+  // malformed — ?week= param. Without a default, weekStart was '' → loadReports()
+  // bailed on the `!weekStart` guard and the page sat on its skeleton forever,
+  // never firing an XHR (handoff bug #4). The strict YYYY-MM-DD check also stops
+  // a garbage param (e.g. a hand-typed/stale bookmark) reaching `new Date(...)`
+  // → Invalid Date → `.toISOString()` RangeError → render crash.
+  const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
+  const weekParam = searchParams.get('week');
+  const weekEndParam = searchParams.get('week_end');
+  const weekStart = (weekParam && ISO_DATE.test(weekParam)) ? weekParam : (() => {
+    const d = new Date();
+    d.setUTCDate(d.getUTCDate() - ((d.getUTCDay() + 6) % 7)); // back to Monday
+    return d.toISOString().slice(0, 10);
+  })();
+  const weekEnd = (weekEndParam && ISO_DATE.test(weekEndParam)) ? weekEndParam : (() => {
+    const d = new Date(`${weekStart}T00:00:00Z`);
+    d.setUTCDate(d.getUTCDate() + 6);
+    return d.toISOString().slice(0, 10);
+  })();
 
   const [session, setSession] = useState<{ classroom: { id: string; name: string }; school: { id: string } } | null>(null);
   const [reports, setReports] = useState<ReportResult[]>([]);

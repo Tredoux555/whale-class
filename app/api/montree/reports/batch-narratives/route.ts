@@ -73,6 +73,19 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Classroom not found or access denied' }, { status: 403 });
     }
 
+    // Parent narratives are written in the SCHOOL's language, not the UI
+    // locale of whoever triggered the batch (handoff bug #5).
+    let parentLocale: Locale = locale;
+    {
+      const { data: schoolRow } = await supabase
+        .from('montree_schools')
+        .select('primary_locale')
+        .eq('id', classroom.school_id)
+        .maybeSingle();
+      const sl = (schoolRow as { primary_locale?: string } | null)?.primary_locale;
+      if (sl && isValidLocale(sl)) parentLocale = sl;
+    }
+
     // Get children — either requested subset or all active in classroom
     let childQuery = supabase
       .from('montree_children')
@@ -364,7 +377,7 @@ export async function POST(request: NextRequest) {
               },
               weekStart: week_start,
               weekEnd: week_end,
-              locale,
+              locale: parentLocale,
               analysis,
               photos: enrichedPhotos,
               englishProgress: englishProgressByChild.get(child.id) ?? null,
@@ -419,7 +432,7 @@ export async function POST(request: NextRequest) {
                 captured_at: p.captured_at,
               })),
               generated_at: now,
-              report_locale: locale,
+              report_locale: parentLocale,
             };
 
             // Upsert report
