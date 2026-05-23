@@ -216,7 +216,7 @@ function UnifiedLoginContent() {
               href="/pricing"
               className="text-white/30 hover:text-white/50 text-xs inline-block transition-colors"
             >
-              See pricing →
+              {t('auth.seePricing')}
             </a>
           </div>
         </div>

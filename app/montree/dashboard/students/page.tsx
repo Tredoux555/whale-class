@@ -773,7 +773,7 @@ export default function StudentsPage() {
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">
                   {t('students.tenure')}
-                  <span className="text-slate-400 font-normal ml-1">(helps Guru give better advice)</span>
+                  <span className="text-slate-400 font-normal ml-1">{t('students.guruHint')}</span>
                 </label>
                 <select
                   value={formData.tenure}
@@ -1003,7 +1003,7 @@ export default function StudentsPage() {
                         className="w-full p-2.5 bg-white border border-slate-200 rounded-lg text-slate-700 placeholder-slate-400 focus:border-teal-400 outline-none text-sm resize-none"
                       />
                       <p className="text-xs text-slate-500 mt-1">
-                        This information is kept private and only used by the Guru to provide personalized support.
+                        {t('students.guruPrivacyNote')}
                       </p>
                     </div>
                   </div>
