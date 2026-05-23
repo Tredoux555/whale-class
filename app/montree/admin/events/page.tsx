@@ -12,6 +12,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { Calendar, Plus, Users, MapPin, Trash2, X } from 'lucide-react';
+import { useI18n } from '@/lib/montree/i18n';
 
 const T = {
   emerald: '#34d399',
@@ -55,6 +56,7 @@ interface Classroom {
 
 export default function AdminEventsPage() {
   const router = useRouter();
+  const { t } = useI18n();
   const [events, setEvents] = useState<EventRow[]>([]);
   const [classrooms, setClassrooms] = useState<Classroom[]>([]);
   const [loading, setLoading] = useState(true);
@@ -74,7 +76,7 @@ export default function AdminEventsPage() {
           router.replace('/montree/login-select');
           return;
         }
-        setError('Could not load events.');
+        setError(t('events.errorLoad'));
         return;
       }
       const data = await eventsRes.json();
@@ -90,9 +92,9 @@ export default function AdminEventsPage() {
         setClassrooms(list.map((c: Cls) => ({ id: c.id, name: c.name })));
       }
     } catch {
-      setError('Network error.');
+      setError(t('events.errorNetwork'));
     }
-  }, [router]);
+  }, [router, t]);
 
   useEffect(() => {
     (async () => {
@@ -107,22 +109,22 @@ export default function AdminEventsPage() {
       <div style={{ marginBottom: 22 }}>
         <h1 style={{ fontFamily: T.serif, fontSize: 28, fontWeight: 500, letterSpacing: -0.3, margin: 0 }}>
           <Calendar size={26} strokeWidth={1.75} style={{ verticalAlign: 'text-bottom', marginRight: 10, color: T.emerald }} />
-          Events
+          {t('events.title')}
         </h1>
         <p style={{ color: T.textSecondary, fontSize: 13, margin: '6px 0 0' }}>
-          Post events the school can see. Parents RSVP yes / no / maybe.
+          {t('events.subtitle')}
         </p>
       </div>
 
       {featureDisabled && (
         <div style={{ padding: 14, borderRadius: 12, marginBottom: 18, background: 'rgba(232,201,106,0.10)', border: '1px solid rgba(232,201,106,0.40)', color: T.gold, fontSize: 13 }}>
-          Events isn&apos;t enabled for your school yet.
+          {t('events.featureDisabled')}
         </div>
       )}
 
       {migrationPending && (
         <div style={{ padding: 14, borderRadius: 12, marginBottom: 18, background: 'rgba(232,201,106,0.10)', border: '1px solid rgba(232,201,106,0.40)', color: T.gold, fontSize: 13 }}>
-          ⚠️ The events table isn&apos;t set up yet. Tredoux needs to run <code>migrations/218_school_events.sql</code>.
+          {t('events.migrationPending')}
         </div>
       )}
 
@@ -143,15 +145,15 @@ export default function AdminEventsPage() {
             marginBottom: 18,
           }}
         >
-          <Plus size={18} strokeWidth={1.75} /> New event
+          <Plus size={18} strokeWidth={1.75} /> {t('events.newEvent')}
         </button>
       )}
 
       {loading ? (
-        <div style={{ color: T.textSecondary, fontSize: 14, padding: 20 }}>Loading…</div>
+        <div style={{ color: T.textSecondary, fontSize: 14, padding: 20 }}>{t('common.loading')}</div>
       ) : events.length === 0 ? (
         <div style={{ padding: 24, borderRadius: 12, background: T.cardBg, border: T.cardBorder, color: T.textSecondary, fontSize: 14, textAlign: 'center' }}>
-          No events scheduled.
+          {t('events.empty')}
         </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -170,13 +172,14 @@ export default function AdminEventsPage() {
 
 // ── Event card ────────────────────────────────────────────────────────
 function EventCard({ event, classrooms, onChanged }: { event: EventRow; classrooms: Classroom[]; onChanged: () => Promise<void> }) {
+  const { t } = useI18n();
   const [expanded, setExpanded] = useState(false);
   const classroom = event.classroom_id ? classrooms.find((c) => c.id === event.classroom_id) : null;
   const isPast = new Date(event.start_at) < new Date();
   const isCancelled = !!event.cancelled_at;
 
   const handleCancel = async () => {
-    if (!confirm('Cancel this event?')) return;
+    if (!confirm(t('events.confirmCancel'))) return;
     const res = await fetch(`/api/montree/admin/events/${event.id}`, {
       method: 'PATCH',
       credentials: 'include',
@@ -186,7 +189,7 @@ function EventCard({ event, classrooms, onChanged }: { event: EventRow; classroo
     if (res.ok) await onChanged();
   };
   const handleDelete = async () => {
-    if (!confirm('Delete this event? This cannot be undone.')) return;
+    if (!confirm(t('events.confirmDelete'))) return;
     const res = await fetch(`/api/montree/admin/events/${event.id}`, {
       method: 'DELETE',
       credentials: 'include',
@@ -202,11 +205,11 @@ function EventCard({ event, classrooms, onChanged }: { event: EventRow; classroo
       <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 10, marginBottom: 4 }}>
         <div style={{ fontFamily: T.serif, fontSize: 17, fontWeight: 500, color: T.textPrimary }}>
           {event.title}
-          {isCancelled && <span style={{ color: T.red, fontSize: 11, marginLeft: 8 }}>· cancelled</span>}
-          {isPast && !isCancelled && <span style={{ color: T.textMuted, fontSize: 11, marginLeft: 8 }}>· past</span>}
+          {isCancelled && <span style={{ color: T.red, fontSize: 11, marginLeft: 8 }}>{t('events.tagCancelled')}</span>}
+          {isPast && !isCancelled && <span style={{ color: T.textMuted, fontSize: 11, marginLeft: 8 }}>{t('events.tagPast')}</span>}
         </div>
         <button onClick={() => setExpanded((v) => !v)} style={{ background: 'none', border: 'none', color: T.textMuted, cursor: 'pointer', fontSize: 11 }}>
-          {expanded ? 'Less' : 'More'}
+          {expanded ? t('events.less') : t('events.more')}
         </button>
       </div>
 
@@ -223,17 +226,17 @@ function EventCard({ event, classrooms, onChanged }: { event: EventRow; classroo
 
       <div style={{ display: 'flex', gap: 12, fontSize: 12, color: T.textMuted, marginTop: 8 }}>
         <Users size={12} strokeWidth={1.75} style={{ alignSelf: 'center' }} />
-        <span style={{ color: T.emerald }}>Yes {event.rsvps.yes}</span>
-        <span>Maybe {event.rsvps.maybe}</span>
-        <span>No {event.rsvps.no}</span>
+        <span style={{ color: T.emerald }}>{t('events.rsvpYes', { count: event.rsvps.yes })}</span>
+        <span>{t('events.rsvpMaybe', { count: event.rsvps.maybe })}</span>
+        <span>{t('events.rsvpNo', { count: event.rsvps.no })}</span>
         {event.capacity != null && (
-          <span style={{ color: T.gold }}>· cap {event.capacity}</span>
+          <span style={{ color: T.gold }}>{t('events.capacityTag', { count: event.capacity })}</span>
         )}
         {classroom && (
           <span style={{ marginLeft: 'auto', color: T.textSecondary }}>· {classroom.name}</span>
         )}
         {!classroom && event.classroom_id === null && (
-          <span style={{ marginLeft: 'auto', color: T.textSecondary }}>· school-wide</span>
+          <span style={{ marginLeft: 'auto', color: T.textSecondary }}>{t('events.tagSchoolWide')}</span>
         )}
       </div>
 
@@ -246,10 +249,10 @@ function EventCard({ event, classrooms, onChanged }: { event: EventRow; classroo
           )}
           <div style={{ display: 'flex', gap: 10 }}>
             {!isCancelled && !isPast && (
-              <button onClick={handleCancel} style={btnGhost()}>Cancel event</button>
+              <button onClick={handleCancel} style={btnGhost()}>{t('events.cancelEvent')}</button>
             )}
             <button onClick={handleDelete} style={{ ...btnGhost(), color: T.red, border: '1px solid rgba(239,68,68,0.45)' }}>
-              <Trash2 size={14} strokeWidth={1.75} /> Delete
+              <Trash2 size={14} strokeWidth={1.75} /> {t('common.delete')}
             </button>
           </div>
         </div>
@@ -260,6 +263,7 @@ function EventCard({ event, classrooms, onChanged }: { event: EventRow; classroo
 
 // ── Compose modal ─────────────────────────────────────────────────────
 function ComposeModal({ classrooms, onClose, onCreated }: { classrooms: Classroom[]; onClose: () => void; onCreated: () => void }) {
+  const { t } = useI18n();
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [startAt, setStartAt] = useState('');
@@ -272,7 +276,7 @@ function ComposeModal({ classrooms, onClose, onCreated }: { classrooms: Classroo
 
   const submit = async () => {
     if (!title.trim() || !startAt) {
-      setError('Title and start time are required.');
+      setError(t('events.errorRequired'));
       return;
     }
     setSaving(true);
@@ -294,12 +298,12 @@ function ComposeModal({ classrooms, onClose, onCreated }: { classrooms: Classroo
       });
       if (!res.ok) {
         const j = await res.json().catch(() => ({}));
-        setError(j?.error || 'Failed to create.');
+        setError(j?.error || t('events.errorCreate'));
         return;
       }
       onCreated();
     } catch {
-      setError('Network error.');
+      setError(t('events.errorNetwork'));
     } finally {
       setSaving(false);
     }
@@ -324,30 +328,30 @@ function ComposeModal({ classrooms, onClose, onCreated }: { classrooms: Classroo
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-          <h2 style={{ fontFamily: T.serif, fontSize: 20, fontWeight: 500, margin: 0 }}>New event</h2>
+          <h2 style={{ fontFamily: T.serif, fontSize: 20, fontWeight: 500, margin: 0 }}>{t('events.newEvent')}</h2>
           <button onClick={onClose} style={{ background: 'none', border: 'none', color: T.textMuted, cursor: 'pointer' }}>
             <X size={20} strokeWidth={1.75} />
           </button>
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-          <Field label="Title"><input value={title} onChange={(e) => setTitle(e.target.value)} maxLength={200} style={inputStyle()} /></Field>
-          <Field label="Description (optional)"><textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={3} maxLength={5000} style={{ ...inputStyle(), resize: 'vertical', minHeight: 70 }} /></Field>
+          <Field label={t('events.fieldTitle')}><input value={title} onChange={(e) => setTitle(e.target.value)} maxLength={200} style={inputStyle()} /></Field>
+          <Field label={t('events.fieldDescription')}><textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={3} maxLength={5000} style={{ ...inputStyle(), resize: 'vertical', minHeight: 70 }} /></Field>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-            <Field label="Start"><input type="datetime-local" value={startAt} onChange={(e) => setStartAt(e.target.value)} style={inputStyle()} /></Field>
-            <Field label="End (optional)"><input type="datetime-local" value={endAt} onChange={(e) => setEndAt(e.target.value)} style={inputStyle()} /></Field>
+            <Field label={t('events.fieldStart')}><input type="datetime-local" value={startAt} onChange={(e) => setStartAt(e.target.value)} style={inputStyle()} /></Field>
+            <Field label={t('events.fieldEnd')}><input type="datetime-local" value={endAt} onChange={(e) => setEndAt(e.target.value)} style={inputStyle()} /></Field>
           </div>
-          <Field label="Location (optional)"><input value={location} onChange={(e) => setLocation(e.target.value)} maxLength={500} style={inputStyle()} /></Field>
+          <Field label={t('events.fieldLocation')}><input value={location} onChange={(e) => setLocation(e.target.value)} maxLength={500} style={inputStyle()} /></Field>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-            <Field label="Scope">
+            <Field label={t('events.fieldScope')}>
               <select value={classroomId} onChange={(e) => setClassroomId(e.target.value)} style={inputStyle()}>
-                <option value="">School-wide</option>
+                <option value="">{t('events.scopeSchoolWide')}</option>
                 {classrooms.map((c) => (
                   <option key={c.id} value={c.id}>{c.name}</option>
                 ))}
               </select>
             </Field>
-            <Field label="Capacity (optional)">
+            <Field label={t('events.fieldCapacity')}>
               <input type="number" min={0} value={capacity} onChange={(e) => setCapacity(e.target.value)} style={inputStyle()} />
             </Field>
           </div>
@@ -359,9 +363,9 @@ function ComposeModal({ classrooms, onClose, onCreated }: { classrooms: Classroo
           )}
 
           <div style={{ display: 'flex', gap: 10 }}>
-            <button onClick={onClose} style={btnGhost()}>Cancel</button>
+            <button onClick={onClose} style={btnGhost()}>{t('common.cancel')}</button>
             <button onClick={submit} disabled={saving} style={{ ...btnPrimary(), flex: 1, opacity: saving ? 0.5 : 1 }}>
-              {saving ? 'Creating…' : 'Create event'}
+              {saving ? t('events.creating') : t('events.create')}
             </button>
           </div>
         </div>
