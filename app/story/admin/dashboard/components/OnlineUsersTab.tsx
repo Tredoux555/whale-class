@@ -42,7 +42,7 @@ export function OnlineUsersTab({ onlineUsers, getSession }: OnlineUsersTabProps)
     loadAllUsers();
   }, [loadAllUsers]);
 
-  const startCall = async (username: string) => {
+  const startCall = async (username: string, mode: 'voice' | 'video') => {
     const session = getSession();
     if (!session) {
       router.push('/story/admin');
@@ -56,7 +56,7 @@ export function OnlineUsersTab({ onlineUsers, getSession }: OnlineUsersTabProps)
           'Content-Type': 'application/json',
           Authorization: `Bearer ${session}`,
         },
-        body: JSON.stringify({ username }),
+        body: JSON.stringify({ username, mode }),
       });
       if (!res.ok) {
         const j = await res.json().catch(() => ({}));
@@ -121,11 +121,18 @@ export function OnlineUsersTab({ onlineUsers, getSession }: OnlineUsersTabProps)
                   </div>
                   <div className="flex items-center gap-2 flex-shrink-0">
                     <button
-                      onClick={() => startCall(username)}
+                      onClick={() => startCall(username, 'voice')}
                       disabled={callingUser !== null}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 disabled:bg-gray-400 text-white text-xs font-semibold rounded-full transition-colors"
+                      className="inline-flex items-center gap-1 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 disabled:bg-gray-400 text-white text-xs font-semibold rounded-full transition-colors"
                     >
-                      📞 {callingUser === username ? 'Calling…' : 'Call'}
+                      📞 {callingUser === username ? '…' : 'Voice'}
+                    </button>
+                    <button
+                      onClick={() => startCall(username, 'video')}
+                      disabled={callingUser !== null}
+                      className="inline-flex items-center gap-1 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-400 text-white text-xs font-semibold rounded-full transition-colors"
+                    >
+                      📹 {callingUser === username ? '…' : 'Video'}
                     </button>
                     <span
                       className={`hidden sm:inline-flex items-center gap-1 px-3 py-1 text-xs font-semibold rounded-full ${

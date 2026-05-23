@@ -74,7 +74,7 @@ export default function StoryViewer() {
   const [showRecentMessages, setShowRecentMessages] = useState(false);
 
   // Incoming voice call from the teacher (polled from /api/story/current-call).
-  const [incomingCall, setIncomingCall] = useState<{ id: string; status: string; from: string } | null>(null);
+  const [incomingCall, setIncomingCall] = useState<{ id: string; status: string; from: string; mode?: string } | null>(null);
   
   // Refs
   const paragraph3Ref = useRef<HTMLParagraphElement>(null);
@@ -717,12 +717,16 @@ export default function StoryViewer() {
         >
           <div className="max-w-3xl mx-auto flex items-center justify-between gap-3 px-4 py-3">
             <div className="flex items-center gap-3 min-w-0">
-              <span className="text-2xl animate-pulse">📞</span>
+              <span className="text-2xl animate-pulse">
+                {incomingCall.mode === 'video' ? '📹' : '📞'}
+              </span>
               <div className="min-w-0">
                 <p className="font-semibold truncate">
                   {incomingCall.from} is calling you
                 </p>
-                <p className="text-xs text-emerald-100">Voice call</p>
+                <p className="text-xs text-emerald-100">
+                  {incomingCall.mode === 'video' ? 'Video call' : 'Voice call'}
+                </p>
               </div>
             </div>
             <div className="flex items-center gap-2 flex-shrink-0">

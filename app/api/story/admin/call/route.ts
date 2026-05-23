@@ -26,7 +26,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  let body: { username?: string; callId?: string; action?: string };
+  let body: { username?: string; callId?: string; action?: string; mode?: string };
   try {
     body = await req.json();
   } catch {
@@ -63,6 +63,8 @@ export async function POST(req: NextRequest) {
   if (!username) {
     return NextResponse.json({ error: 'A username is required.' }, { status: 400 });
   }
+  // Voice or video — defaults to voice.
+  const mode: 'voice' | 'video' = body.mode === 'video' ? 'video' : 'voice';
 
   // Supersede any stale ringing/active call to this user.
   await supabase
@@ -77,7 +79,7 @@ export async function POST(req: NextRequest) {
 
   const { data: created, error } = await supabase
     .from('story_calls')
-    .insert({ username, channel, status: 'ringing', initiated_by: adminUser })
+    .insert({ username, channel, status: 'ringing', mode, initiated_by: adminUser })
     .select('id, channel')
     .single();
   if (error || !created) {
@@ -88,7 +90,7 @@ export async function POST(req: NextRequest) {
   // Push the call to the user's devices so they're alerted even with the
   // Story app closed. Fire-and-forget — Railway keeps the process alive;
   // a push failure never blocks the admin's call.
-  void sendCallPush(username, created.id, adminUser);
+  void sendCallPush(username, created.id, adminUser, mode);
 
-  return NextResponse.json({ callId: created.id, channel: created.channel });
+  return NextResponse.json({ callId: created.id, channel: created.channel, mode });
 }
