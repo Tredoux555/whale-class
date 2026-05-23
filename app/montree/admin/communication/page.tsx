@@ -26,6 +26,11 @@ import {
   X,
   Sparkles,
 } from 'lucide-react';
+import { useI18n } from '@/lib/montree/i18n';
+
+// Session 125 rule #149: TFn must be ReturnType<typeof useI18n>['t'] —
+// never a loose (key: string) => string (contravariance error).
+type TFn = ReturnType<typeof useI18n>['t'];
 
 const T = {
   emerald: '#34d399',
@@ -112,6 +117,7 @@ interface MessageGroup {
 
 export default function CommunicationPage() {
   const router = useRouter();
+  const { t } = useI18n();
   const [tab, setTab] = useState<TabId>('by_classroom');
   const [directory, setDirectory] = useState<Directory | null>(null);
   const [threads, setThreads] = useState<ThreadListItem[]>([]);
@@ -177,10 +183,10 @@ export default function CommunicationPage() {
             margin: 0,
           }}
         >
-          Communication
+          {t('comm.title')}
         </h1>
         <p style={{ color: T.textSecondary, fontSize: 14, marginTop: 8, margin: '8px 0 0 0' }}>
-          Reach your teachers and parents. Tracy drafts on request — you press send.
+          {t('comm.subtitle')}
         </p>
       </header>
 
@@ -196,18 +202,24 @@ export default function CommunicationPage() {
         }}
       >
         {([
-          { id: 'by_classroom', label: 'By classroom', icon: GraduationCap },
-          { id: 'all_teachers', label: 'All teachers', icon: Users },
-          { id: 'all_parents', label: 'All parents', icon: Heart },
-          { id: 'groups', label: 'Custom groups', icon: Sparkles },
-          { id: 'inbox', label: `Inbox${totalUnread ? ` (${totalUnread})` : ''}`, icon: MessageSquare },
-        ] as Array<{ id: TabId; label: string; icon: typeof Users }>).map((t) => {
-          const Icon = t.icon;
-          const active = tab === t.id;
+          { id: 'by_classroom', label: t('comm.tab.byClassroom'), icon: GraduationCap },
+          { id: 'all_teachers', label: t('comm.tab.allTeachers'), icon: Users },
+          { id: 'all_parents', label: t('comm.tab.allParents'), icon: Heart },
+          { id: 'groups', label: t('comm.tab.groups'), icon: Sparkles },
+          {
+            id: 'inbox',
+            label: totalUnread
+              ? `${t('comm.tab.inbox')} (${totalUnread})`
+              : t('comm.tab.inbox'),
+            icon: MessageSquare,
+          },
+        ] as Array<{ id: TabId; label: string; icon: typeof Users }>).map((tabItem) => {
+          const Icon = tabItem.icon;
+          const active = tab === tabItem.id;
           return (
             <button
-              key={t.id}
-              onClick={() => setTab(t.id)}
+              key={tabItem.id}
+              onClick={() => setTab(tabItem.id)}
               style={{
                 display: 'flex',
                 alignItems: 'center',
@@ -227,7 +239,7 @@ export default function CommunicationPage() {
               }}
             >
               <Icon size={16} strokeWidth={1.75} />
-              {t.label}
+              {tabItem.label}
             </button>
           );
         })}
@@ -252,19 +264,19 @@ export default function CommunicationPage() {
           onSearch={setSearchTerm}
           onComposeAll={() =>
             setComposeOpen({
-              title: 'Message all teachers',
-              recipients: directory.all_teachers.map((t) => ({
+              title: t('comm.compose.allTeachers'),
+              recipients: directory.all_teachers.map((tch) => ({
                 role: 'teacher',
-                id: t.id,
-                name: t.name,
+                id: tch.id,
+                name: tch.name,
               })),
               scope: 'all_teachers',
             })
           }
-          onComposeOne={(t) =>
+          onComposeOne={(teacher) =>
             setComposeOpen({
-              title: `Message ${t.name}`,
-              recipients: [{ role: 'teacher', id: t.id, name: t.name }],
+              title: t('comm.compose.person', { name: teacher.name }),
+              recipients: [{ role: 'teacher', id: teacher.id, name: teacher.name }],
               threadType: 'internal',
             })
           }
@@ -279,7 +291,7 @@ export default function CommunicationPage() {
           onSearch={setSearchTerm}
           onComposeAll={() =>
             setComposeOpen({
-              title: 'Message all parents',
+              title: t('comm.compose.allParents'),
               recipients: directory.all_parents.map((p) => ({
                 role: 'parent',
                 id: p.id,
@@ -290,7 +302,7 @@ export default function CommunicationPage() {
           }
           onComposeOne={(p) =>
             setComposeOpen({
-              title: `Message ${p.name}`,
+              title: t('comm.compose.person', { name: p.name }),
               recipients: [{ role: 'parent', id: p.id, name: p.name }],
               threadType: 'parent_principal',
             })
@@ -305,7 +317,7 @@ export default function CommunicationPage() {
           onCreate={() => setGroupBuilderOpen(true)}
           onComposeGroup={(g) =>
             setComposeOpen({
-              title: `Message "${g.name}"`,
+              title: t('comm.compose.group', { name: g.name }),
               recipients: g.members.map((m) => ({
                 role: m.role as 'teacher' | 'parent' | 'principal',
                 id: m.id,
@@ -376,6 +388,7 @@ function ByClassroomView({
     childId?: string;
   }) => void;
 }) {
+  const { t } = useI18n();
   return (
     <div>
       {/* Classroom selector */}
@@ -399,7 +412,7 @@ function ByClassroomView({
             >
               {c.name}
               <span style={{ marginLeft: 8, opacity: 0.7 }}>
-                {c.teachers.length}T · {c.parents.length}P
+                {t('comm.classroomPill', { teachers: c.teachers.length, parents: c.parents.length })}
               </span>
             </button>
           );
@@ -425,16 +438,16 @@ function ByClassroomView({
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
               <h3 style={{ margin: 0, fontSize: 14, fontWeight: 600 }}>
-                Teachers ({selectedClassroom.teachers.length})
+                {t('comm.teachersCount', { count: selectedClassroom.teachers.length })}
               </h3>
               <button
                 onClick={() =>
                   onOpenCompose({
-                    title: `Message all teachers in ${selectedClassroom.name}`,
-                    recipients: selectedClassroom.teachers.map((t) => ({
+                    title: t('comm.compose.classroomTeachers', { classroom: selectedClassroom.name }),
+                    recipients: selectedClassroom.teachers.map((teacher) => ({
                       role: 'teacher',
-                      id: t.id,
-                      name: t.name,
+                      id: teacher.id,
+                      name: teacher.name,
                     })),
                     scope: 'classroom_teachers',
                     classroomId: selectedClassroom.id,
@@ -457,25 +470,25 @@ function ByClassroomView({
                 }}
               >
                 <Send size={12} strokeWidth={1.75} />
-                Message all
+                {t('comm.messageAll')}
               </button>
             </div>
             {selectedClassroom.teachers.length === 0 ? (
               <p style={{ color: T.textMuted, fontSize: 13 }}>
-                No teachers yet. Invite them from Classrooms → {selectedClassroom.name}.
+                {t('comm.noTeachersYet', { classroom: selectedClassroom.name })}
               </p>
             ) : (
-              selectedClassroom.teachers.map((t) => (
+              selectedClassroom.teachers.map((teacher) => (
                 <PersonRow
-                  key={t.id}
-                  initial={(t.name || 'T').charAt(0).toUpperCase()}
-                  name={t.name}
-                  subtitle={t.email}
-                  badge={t.role === 'lead_teacher' ? 'Lead' : null}
+                  key={teacher.id}
+                  initial={(teacher.name || 'T').charAt(0).toUpperCase()}
+                  name={teacher.name}
+                  subtitle={teacher.email}
+                  badge={teacher.role === 'lead_teacher' ? t('comm.badgeLead') : null}
                   onMessage={() =>
                     onOpenCompose({
-                      title: `Message ${t.name}`,
-                      recipients: [{ role: 'teacher', id: t.id, name: t.name }],
+                      title: t('comm.compose.person', { name: teacher.name }),
+                      recipients: [{ role: 'teacher', id: teacher.id, name: teacher.name }],
                       threadType: 'internal',
                     })
                   }
@@ -495,12 +508,12 @@ function ByClassroomView({
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
               <h3 style={{ margin: 0, fontSize: 14, fontWeight: 600 }}>
-                Parents ({selectedClassroom.parents.length})
+                {t('comm.parentsCount', { count: selectedClassroom.parents.length })}
               </h3>
               <button
                 onClick={() =>
                   onOpenCompose({
-                    title: `Message all parents in ${selectedClassroom.name}`,
+                    title: t('comm.compose.classroomParents', { classroom: selectedClassroom.name }),
                     recipients: selectedClassroom.parents.map((p) => ({
                       role: 'parent',
                       id: p.id,
@@ -527,12 +540,12 @@ function ByClassroomView({
                 }}
               >
                 <Send size={12} strokeWidth={1.75} />
-                Message all
+                {t('comm.messageAll')}
               </button>
             </div>
             {selectedClassroom.parents.length === 0 ? (
               <p style={{ color: T.textMuted, fontSize: 13 }}>
-                No parents linked yet. Teachers invite parents via the parent invite code on each child.
+                {t('comm.noParentsYet')}
               </p>
             ) : (
               selectedClassroom.parents.map((p) => (
@@ -544,7 +557,7 @@ function ByClassroomView({
                   badge={null}
                   onMessage={() =>
                     onOpenCompose({
-                      title: `Message ${p.name}`,
+                      title: t('comm.compose.person', { name: p.name }),
                       recipients: [{ role: 'parent', id: p.id, name: p.name }],
                       threadType: 'parent_principal',
                     })
@@ -572,9 +585,10 @@ function AllTeachersView({
   onComposeAll: () => void;
   onComposeOne: (t: DirectoryTeacher) => void;
 }) {
-  const filtered = directory.all_teachers.filter((t) =>
-    t.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (t.email || '').toLowerCase().includes(searchTerm.toLowerCase())
+  const { t } = useI18n();
+  const filtered = directory.all_teachers.filter((teacher) =>
+    teacher.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (teacher.email || '').toLowerCase().includes(searchTerm.toLowerCase())
   );
   return (
     <div>
@@ -582,22 +596,22 @@ function AllTeachersView({
         searchTerm={searchTerm}
         onSearch={onSearch}
         onComposeAll={onComposeAll}
-        composeAllLabel={`Message all teachers (${directory.all_teachers.length})`}
+        composeAllLabel={t('comm.composeAllTeachers', { count: directory.all_teachers.length })}
       />
       <div style={{ background: T.cardBg, border: T.cardBorder, borderRadius: 16, padding: 12 }}>
         {filtered.length === 0 ? (
           <p style={{ color: T.textMuted, fontSize: 13, textAlign: 'center', padding: 20 }}>
-            No teachers match.
+            {t('comm.noTeachersMatch')}
           </p>
         ) : (
-          filtered.map((t) => (
+          filtered.map((teacher) => (
             <PersonRow
-              key={t.id}
-              initial={(t.name || 'T').charAt(0).toUpperCase()}
-              name={t.name}
-              subtitle={t.email}
-              badge={t.role === 'lead_teacher' ? 'Lead' : null}
-              onMessage={() => onComposeOne(t)}
+              key={teacher.id}
+              initial={(teacher.name || 'T').charAt(0).toUpperCase()}
+              name={teacher.name}
+              subtitle={teacher.email}
+              badge={teacher.role === 'lead_teacher' ? t('comm.badgeLead') : null}
+              onMessage={() => onComposeOne(teacher)}
             />
           ))
         )}
@@ -619,6 +633,7 @@ function AllParentsView({
   onComposeAll: () => void;
   onComposeOne: (p: DirectoryParent) => void;
 }) {
+  const { t } = useI18n();
   const filtered = directory.all_parents.filter((p) =>
     p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     (p.email || '').toLowerCase().includes(searchTerm.toLowerCase())
@@ -629,12 +644,12 @@ function AllParentsView({
         searchTerm={searchTerm}
         onSearch={onSearch}
         onComposeAll={onComposeAll}
-        composeAllLabel={`Message all parents (${directory.all_parents.length})`}
+        composeAllLabel={t('comm.composeAllParents', { count: directory.all_parents.length })}
       />
       <div style={{ background: T.cardBg, border: T.cardBorder, borderRadius: 16, padding: 12 }}>
         {filtered.length === 0 ? (
           <p style={{ color: T.textMuted, fontSize: 13, textAlign: 'center', padding: 20 }}>
-            No parents match.
+            {t('comm.noParentsMatch')}
           </p>
         ) : (
           filtered.map((p) => (
@@ -662,11 +677,12 @@ function GroupsView({
   onCreate: () => void;
   onComposeGroup: (g: MessageGroup) => void;
 }) {
+  const { t } = useI18n();
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
         <p style={{ color: T.textSecondary, fontSize: 13, margin: 0 }}>
-          Custom groups can mix teachers and parents — useful for lead-teacher discussions, foreign-language parents, or any working group.
+          {t('comm.groups.intro')}
         </p>
         <button
           onClick={onCreate}
@@ -685,7 +701,7 @@ function GroupsView({
           }}
         >
           <Plus size={14} strokeWidth={2.25} />
-          New group
+          {t('comm.groups.newGroup')}
         </button>
       </div>
       {groups.length === 0 ? (
@@ -699,7 +715,7 @@ function GroupsView({
           }}
         >
           <p style={{ color: T.textMuted, fontSize: 14, margin: 0 }}>
-            No custom groups yet. Tap “New group” to create one.
+            {t('comm.groups.empty')}
           </p>
         </div>
       ) : (
@@ -723,7 +739,7 @@ function GroupsView({
                   <div style={{ fontSize: 12, color: T.textMuted, marginTop: 4 }}>{g.description}</div>
                 )}
               </div>
-              <div style={{ fontSize: 12, color: T.textSecondary }}>{g.member_count} members</div>
+              <div style={{ fontSize: 12, color: T.textSecondary }}>{t('comm.groups.members', { count: g.member_count })}</div>
               <button
                 onClick={() => onComposeGroup(g)}
                 style={{
@@ -742,7 +758,7 @@ function GroupsView({
                 }}
               >
                 <Send size={12} strokeWidth={1.75} />
-                Message group
+                {t('comm.groups.messageGroup')}
               </button>
             </div>
           ))}
@@ -759,6 +775,7 @@ function InboxView({
   threads: ThreadListItem[];
   onOpen: (id: string) => void;
 }) {
+  const { t } = useI18n();
   if (threads.length === 0) {
     return (
       <div
@@ -771,7 +788,7 @@ function InboxView({
         }}
       >
         <p style={{ color: T.textMuted, fontSize: 14, margin: 0 }}>
-          No conversations yet. They&apos;ll show up here as messages flow.
+          {t('comm.inbox.empty')}
         </p>
       </div>
     );
@@ -779,13 +796,13 @@ function InboxView({
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-      {threads.map((t) => (
+      {threads.map((thread) => (
         <button
-          key={t.id}
-          onClick={() => onOpen(t.id)}
+          key={thread.id}
+          onClick={() => onOpen(thread.id)}
           style={{
-            background: t.unread_for_me > 0 ? T.cardBgStrong : T.cardBg,
-            border: t.unread_for_me > 0 ? '1px solid rgba(52,211,153,0.45)' : T.cardBorder,
+            background: thread.unread_for_me > 0 ? T.cardBgStrong : T.cardBg,
+            border: thread.unread_for_me > 0 ? '1px solid rgba(52,211,153,0.45)' : T.cardBorder,
             borderRadius: 12,
             padding: 14,
             textAlign: 'left',
@@ -805,9 +822,9 @@ function InboxView({
                     letterSpacing: 1,
                   }}
                 >
-                  {threadTypeLabel(t.thread_type)}
+                  {threadTypeLabel(thread.thread_type, t)}
                 </span>
-                {t.unread_for_me > 0 && (
+                {thread.unread_for_me > 0 && (
                   <span
                     style={{
                       background: T.emerald,
@@ -818,20 +835,20 @@ function InboxView({
                       borderRadius: 999,
                     }}
                   >
-                    {t.unread_for_me} new
+                    {t('comm.inbox.unreadNew', { count: thread.unread_for_me })}
                   </span>
                 )}
               </div>
               <div style={{ fontFamily: T.serif, fontSize: 16, fontWeight: 500, marginBottom: 4 }}>
-                {t.subject || '(no subject)'}
+                {thread.subject || t('comm.inbox.noSubject')}
               </div>
               <div style={{ fontSize: 12, color: T.textSecondary, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                {t.last_sender_name && <span style={{ color: T.emeraldDim }}>{t.last_sender_name}: </span>}
-                {t.last_snippet || '(no messages)'}
+                {thread.last_sender_name && <span style={{ color: T.emeraldDim }}>{thread.last_sender_name}: </span>}
+                {thread.last_snippet || t('comm.inbox.noMessages')}
               </div>
             </div>
             <div style={{ fontSize: 11, color: T.textMuted, whiteSpace: 'nowrap' }}>
-              {formatRelativeDate(t.last_message_at)}
+              {formatRelativeDate(thread.last_message_at, t)}
             </div>
           </div>
         </button>
@@ -857,6 +874,7 @@ function PersonRow({
   badge: string | null;
   onMessage: () => void;
 }) {
+  const { t } = useI18n();
   return (
     <div
       style={{
@@ -927,7 +945,7 @@ function PersonRow({
         }}
       >
         <Send size={12} strokeWidth={1.75} />
-        Message
+        {t('comm.message')}
       </button>
     </div>
   );
@@ -944,6 +962,7 @@ function RosterControls({
   onComposeAll: () => void;
   composeAllLabel: string;
 }) {
+  const { t } = useI18n();
   return (
     <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, marginBottom: 16, flexWrap: 'wrap' }}>
       <div style={{ position: 'relative', flex: 1, minWidth: 220 }}>
@@ -955,7 +974,7 @@ function RosterControls({
         <input
           value={searchTerm}
           onChange={(e) => onSearch(e.target.value)}
-          placeholder="Search by name or email"
+          placeholder={t('comm.searchPlaceholder')}
           style={{
             width: '100%',
             padding: '10px 12px 10px 34px',
@@ -1017,6 +1036,7 @@ function ComposeModal({
   onClose: () => void;
   onSent: (threadId?: string) => void;
 }) {
+  const { t } = useI18n();
   const [subject, setSubject] = useState('');
   const [message, setMessage] = useState('');
   const [sending, setSending] = useState(false);
@@ -1051,7 +1071,7 @@ function ComposeModal({
             allow_replies: false,
           }),
         });
-        if (!res.ok) throw new Error((await res.json())?.error || 'Send failed');
+        if (!res.ok) throw new Error((await res.json())?.error || t('comm.error.sendFailed'));
         const data = await res.json();
         onSent(data.thread_id);
         return;
@@ -1071,7 +1091,7 @@ function ComposeModal({
           participants: recipients.map((r) => ({ role: r.role, id: r.id })),
         }),
       });
-      if (!threadRes.ok) throw new Error((await threadRes.json())?.error || 'Could not create thread');
+      if (!threadRes.ok) throw new Error((await threadRes.json())?.error || t('comm.error.createThread'));
       const { thread_id } = await threadRes.json();
 
       const msgRes = await fetch(`/api/montree/messages/threads/${thread_id}/messages`, {
@@ -1080,10 +1100,10 @@ function ComposeModal({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ body: message }),
       });
-      if (!msgRes.ok) throw new Error((await msgRes.json())?.error || 'Could not send message');
+      if (!msgRes.ok) throw new Error((await msgRes.json())?.error || t('comm.error.sendMessage'));
       onSent(thread_id);
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Send failed');
+      setError(err instanceof Error ? err.message : t('comm.error.sendFailed'));
     } finally {
       setSending(false);
     }
@@ -1145,7 +1165,7 @@ function ComposeModal({
           {!isSingleRecipient && (
             <div style={{ marginBottom: 14, padding: 10, background: 'rgba(0,0,0,0.25)', borderRadius: 10 }}>
               <div style={{ fontSize: 11, color: T.emeraldDim, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 6 }}>
-                {recipients.length} recipients
+                {t('comm.modal.recipients', { count: recipients.length })}
               </div>
               <div style={{ fontSize: 12, color: T.textSecondary, maxHeight: 80, overflow: 'auto' }}>
                 {recipients
@@ -1153,19 +1173,19 @@ function ComposeModal({
                   .map((r) => r.name)
                   .filter(Boolean)
                   .join(', ')}
-                {recipients.length > 12 ? `, +${recipients.length - 12} more` : ''}
+                {recipients.length > 12 ? t('comm.modal.andMore', { count: recipients.length - 12 }) : ''}
               </div>
             </div>
           )}
 
           <div style={{ marginBottom: 12 }}>
             <label style={{ display: 'block', fontSize: 11, color: T.emeraldDim, marginBottom: 6, textTransform: 'uppercase', letterSpacing: 1 }}>
-              Subject (optional)
+              {t('comm.modal.subjectLabel')}
             </label>
             <input
               value={subject}
               onChange={(e) => setSubject(e.target.value)}
-              placeholder="Add a subject"
+              placeholder={t('comm.modal.subjectPlaceholder')}
               style={{
                 width: '100%',
                 padding: '10px 12px',
@@ -1182,12 +1202,12 @@ function ComposeModal({
 
           <div>
             <label style={{ display: 'block', fontSize: 11, color: T.emeraldDim, marginBottom: 6, textTransform: 'uppercase', letterSpacing: 1 }}>
-              Message
+              {t('comm.modal.messageLabel')}
             </label>
             <textarea
               value={message}
               onChange={(e) => setMessage(e.target.value)}
-              placeholder="Write your message…"
+              placeholder={t('comm.modal.messagePlaceholder')}
               rows={6}
               style={{
                 width: '100%',
@@ -1233,7 +1253,7 @@ function ComposeModal({
               cursor: 'pointer',
             }}
           >
-            Cancel
+            {t('common.cancel')}
           </button>
           <button
             onClick={() => void send()}
@@ -1254,7 +1274,7 @@ function ComposeModal({
             }}
           >
             <Send size={14} strokeWidth={1.75} />
-            {sending ? 'Sending…' : 'Send'}
+            {sending ? t('comm.modal.sending') : t('comm.modal.send')}
           </button>
         </div>
       </div>
@@ -1275,6 +1295,7 @@ function GroupBuilderModal({
   onClose: () => void;
   onCreated: () => void;
 }) {
+  const { t } = useI18n();
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [picked, setPicked] = useState<Set<string>>(new Set());
@@ -1297,9 +1318,9 @@ function GroupBuilderModal({
       filterRole === 'parents'
         ? []
         : directory.all_teachers.filter(
-            (t) =>
-              t.name.toLowerCase().includes(term) ||
-              (t.email || '').toLowerCase().includes(term)
+            (teacher) =>
+              teacher.name.toLowerCase().includes(term) ||
+              (teacher.email || '').toLowerCase().includes(term)
           );
     const parents =
       filterRole === 'teachers'
@@ -1314,11 +1335,11 @@ function GroupBuilderModal({
 
   async function save() {
     if (!name.trim()) {
-      setError('Name required');
+      setError(t('comm.error.nameRequired'));
       return;
     }
     if (picked.size === 0) {
-      setError('Add at least one member');
+      setError(t('comm.error.addMember'));
       return;
     }
     setSaving(true);
@@ -1338,10 +1359,10 @@ function GroupBuilderModal({
           members,
         }),
       });
-      if (!res.ok) throw new Error((await res.json())?.error || 'Failed');
+      if (!res.ok) throw new Error((await res.json())?.error || t('comm.error.groupFailed'));
       onCreated();
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Failed');
+      setError(err instanceof Error ? err.message : t('comm.error.groupFailed'));
     } finally {
       setSaving(false);
     }
@@ -1374,7 +1395,7 @@ function GroupBuilderModal({
         }}
       >
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-          <h2 style={{ fontFamily: T.serif, fontSize: 20, fontWeight: 500, margin: 0 }}>New custom group</h2>
+          <h2 style={{ fontFamily: T.serif, fontSize: 20, fontWeight: 500, margin: 0 }}>{t('comm.groupBuilder.title')}</h2>
           <button onClick={onClose} style={{ background: 'transparent', border: 'none', color: T.textMuted, cursor: 'pointer' }}>
             <X size={18} strokeWidth={1.75} />
           </button>
@@ -1384,7 +1405,7 @@ function GroupBuilderModal({
           <input
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder="Group name (e.g. Lead teachers)"
+            placeholder={t('comm.groupBuilder.namePlaceholder')}
             style={{
               padding: '10px 12px',
               background: T.inputBg,
@@ -1399,7 +1420,7 @@ function GroupBuilderModal({
           <input
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            placeholder="Description (optional)"
+            placeholder={t('comm.groupBuilder.descPlaceholder')}
             style={{
               padding: '10px 12px',
               background: T.inputBg,
@@ -1429,13 +1450,17 @@ function GroupBuilderModal({
                 cursor: 'pointer',
               }}
             >
-              {r === 'all' ? 'All' : r === 'teachers' ? 'Teachers' : 'Parents'}
+              {r === 'all'
+                ? t('common.all')
+                : r === 'teachers'
+                  ? t('comm.groupBuilder.teachers')
+                  : t('comm.groupBuilder.parents')}
             </button>
           ))}
           <input
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="Search…"
+            placeholder={t('comm.groupBuilder.searchPlaceholder')}
             style={{
               flex: 1,
               padding: '6px 10px',
@@ -1464,15 +1489,15 @@ function GroupBuilderModal({
           {filtered.teachers.length > 0 && (
             <div style={{ marginBottom: 8 }}>
               <div style={{ fontSize: 11, color: T.emeraldDim, textTransform: 'uppercase', letterSpacing: 1, padding: '6px 8px' }}>
-                Teachers
+                {t('comm.groupBuilder.teachers')}
               </div>
-              {filtered.teachers.map((t) => (
+              {filtered.teachers.map((teacher) => (
                 <PickRow
-                  key={`t:${t.id}`}
-                  picked={picked.has(`teacher:${t.id}`)}
-                  onToggle={() => toggle('teacher', t.id)}
-                  name={t.name}
-                  subtitle={t.email}
+                  key={`t:${teacher.id}`}
+                  picked={picked.has(`teacher:${teacher.id}`)}
+                  onToggle={() => toggle('teacher', teacher.id)}
+                  name={teacher.name}
+                  subtitle={teacher.email}
                 />
               ))}
             </div>
@@ -1480,7 +1505,7 @@ function GroupBuilderModal({
           {filtered.parents.length > 0 && (
             <div>
               <div style={{ fontSize: 11, color: T.emeraldDim, textTransform: 'uppercase', letterSpacing: 1, padding: '6px 8px' }}>
-                Parents
+                {t('comm.groupBuilder.parents')}
               </div>
               {filtered.parents.map((p) => (
                 <PickRow
@@ -1498,7 +1523,7 @@ function GroupBuilderModal({
         {error && <div style={{ color: '#f87171', fontSize: 12, marginBottom: 8 }}>{error}</div>}
 
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <span style={{ fontSize: 12, color: T.textMuted }}>{picked.size} selected</span>
+          <span style={{ fontSize: 12, color: T.textMuted }}>{t('comm.groupBuilder.selected', { count: picked.size })}</span>
           <div style={{ display: 'flex', gap: 8 }}>
             <button
               onClick={onClose}
@@ -1513,7 +1538,7 @@ function GroupBuilderModal({
                 cursor: 'pointer',
               }}
             >
-              Cancel
+              {t('common.cancel')}
             </button>
             <button
               onClick={() => void save()}
@@ -1530,7 +1555,7 @@ function GroupBuilderModal({
                 opacity: saving || !name.trim() || picked.size === 0 ? 0.5 : 1,
               }}
             >
-              {saving ? 'Saving…' : 'Create group'}
+              {saving ? t('comm.groupBuilder.saving') : t('comm.groupBuilder.create')}
             </button>
           </div>
         </div>
@@ -1597,33 +1622,33 @@ function PickRow({
 // Utils
 // ─────────────────────────────────────────────────────────────────
 
-function threadTypeLabel(t: string): string {
-  switch (t) {
+function threadTypeLabel(threadType: string, t: TFn): string {
+  switch (threadType) {
     case 'parent_teacher':
-      return 'Parent · Teacher';
+      return t('comm.threadType.parentTeacher');
     case 'parent_principal':
-      return 'Parent · Principal';
+      return t('comm.threadType.parentPrincipal');
     case 'internal':
-      return 'Internal';
+      return t('comm.threadType.internal');
     case 'broadcast':
-      return 'Broadcast';
+      return t('comm.threadType.broadcast');
     case 'group':
-      return 'Group';
+      return t('comm.threadType.group');
     default:
-      return t;
+      return threadType;
   }
 }
 
-function formatRelativeDate(iso: string): string {
+function formatRelativeDate(iso: string, t: TFn): string {
   const d = new Date(iso);
   if (!Number.isFinite(d.getTime())) return '';
   const ms = Date.now() - d.getTime();
   const min = Math.floor(ms / 60000);
-  if (min < 1) return 'just now';
-  if (min < 60) return `${min}m`;
+  if (min < 1) return t('comm.time.justNow');
+  if (min < 60) return t('comm.time.minutes', { count: min });
   const h = Math.floor(min / 60);
-  if (h < 24) return `${h}h`;
+  if (h < 24) return t('comm.time.hours', { count: h });
   const dd = Math.floor(h / 24);
-  if (dd < 7) return `${dd}d`;
+  if (dd < 7) return t('comm.time.days', { count: dd });
   return d.toLocaleDateString();
 }

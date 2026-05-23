@@ -12,6 +12,7 @@ import {
   Camera,
   FileText,
 } from 'lucide-react';
+import { useI18n } from '@/lib/montree/i18n';
 
 const T = {
   emerald: '#34d399',
@@ -40,6 +41,7 @@ interface TodayResponse {
 
 export default function PulsePage() {
   const router = useRouter();
+  const { t } = useI18n();
   const [data, setData] = useState<TodayResponse | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -69,7 +71,7 @@ export default function PulsePage() {
             margin: 0,
           }}
         >
-          Pulse
+          {t('pulse.title')}
         </h1>
         <p
           style={{
@@ -79,7 +81,7 @@ export default function PulsePage() {
             margin: '8px 0 0 0',
           }}
         >
-          School activity, observations, and reports.
+          {t('pulse.subtitle')}
         </p>
       </div>
 
@@ -92,7 +94,7 @@ export default function PulsePage() {
             fontSize: 14,
           }}
         >
-          Loading…
+          {t('pulse.loading')}
         </div>
       ) : (
         <div
@@ -104,42 +106,45 @@ export default function PulsePage() {
         >
           <HubCard
             icon={<Camera size={22} strokeWidth={1.75} color={T.emerald} />}
-            title="This week"
+            title={t('pulse.thisWeek.title')}
             value={data ? `${data.digest.photos_confirmed_7d}` : '—'}
             sublabel={
               data
-                ? `photos confirmed · ${data.stats.total_observed_this_week} of ${data.stats.total_students} children observed`
+                ? t('pulse.thisWeek.sublabel', {
+                    observed: data.stats.total_observed_this_week,
+                    total: data.stats.total_students,
+                  })
                 : ''
             }
-            cta="See activity"
+            cta={t('pulse.thisWeek.cta')}
             onClick={() => router.push('/montree/admin/activity')}
           />
           <HubCard
             icon={<FileText size={22} strokeWidth={1.75} color={T.emerald} />}
-            title="Reports"
+            title={t('pulse.reports.title')}
             value="—"
-            sublabel="Weekly wraps · parent letters · semester reports"
-            cta="Open reports"
+            sublabel={t('pulse.reports.sublabel')}
+            cta={t('pulse.reports.cta')}
             onClick={() => router.push('/montree/admin/reports')}
           />
           <HubCard
             icon={<BarChart3 size={22} strokeWidth={1.75} color={T.emerald} />}
-            title="Billing"
+            title={t('pulse.billing.title')}
             value="—"
-            sublabel="School plan, invoices, payment history"
-            cta="View billing"
+            sublabel={t('pulse.billing.sublabel')}
+            cta={t('pulse.billing.cta')}
             onClick={() => router.push('/montree/admin/billing')}
           />
           <HubCard
             icon={<Activity size={22} strokeWidth={1.75} color={T.emerald} />}
-            title="Engagement"
+            title={t('pulse.engagement.title')}
             value={
               data
                 ? `${data.digest.active_teacher_count}/${data.digest.total_teacher_count}`
                 : '—'
             }
-            sublabel="Teachers active this week"
-            cta="See activity"
+            sublabel={t('pulse.engagement.sublabel')}
+            cta={t('pulse.engagement.cta')}
             onClick={() => router.push('/montree/admin/activity')}
           />
         </div>

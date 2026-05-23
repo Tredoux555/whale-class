@@ -186,12 +186,12 @@ export default function ClassroomsPage() {
               letterSpacing: -0.4,
             }}
           >
-            Classrooms
+            {t('admin.classrooms.title')}
           </h1>
           <p style={{ color: T.textSecondary, fontSize: 14, marginTop: 6, margin: '6px 0 0 0' }}>
             {classrooms.length === 1
-              ? '1 classroom'
-              : `${classrooms.length} classrooms`}
+              ? t('admin.classrooms.countOne')
+              : t('admin.classrooms.countMany', { count: classrooms.length })}
           </p>
         </div>
         {isViewer ? (
@@ -214,10 +214,10 @@ export default function ClassroomsPage() {
               cursor: 'pointer',
               textDecoration: 'none',
             }}
-            title="Adding classrooms requires a school plan"
+            title={t('admin.classrooms.upgradeTitle')}
           >
             <Plus size={16} strokeWidth={2.25} />
-            Upgrade to add classrooms
+            {t('admin.classrooms.upgradeCta')}
           </a>
         ) : (
           <button
@@ -423,8 +423,8 @@ export default function ClassroomsPage() {
               }}
             >
               <Plus size={28} strokeWidth={1.5} />
-              <span style={{ fontSize: 13, fontWeight: 500 }}>Upgrade to add</span>
-              <span style={{ fontSize: 11, color: 'rgba(232,201,106,0.65)' }}>school plan unlocks classrooms</span>
+              <span style={{ fontSize: 13, fontWeight: 500 }}>{t('admin.classrooms.upgradeTileCta')}</span>
+              <span style={{ fontSize: 11, color: 'rgba(232,201,106,0.65)' }}>{t('admin.classrooms.upgradeTileSub')}</span>
             </a>
           ) : (
             <button
