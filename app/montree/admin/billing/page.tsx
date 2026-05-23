@@ -390,14 +390,14 @@ function BillingPageContent() {
             */}
             <div className="mt-5 border-t border-white/5 pt-4 text-center">
               <p className="text-white/55 text-xs">
-                Card not an option? Need a custom invoice, wire transfer, or fapiao?{' '}
+                {t('billing.altPaymentQ')}{' '}
                 <a
                   href="mailto:tredoux555@gmail.com?subject=Montree%20billing%20—%20alternative%20payment&body=Hi%20Tredoux,%0A%0AI%27d%20like%20to%20talk%20about%20paying%20for%20Montree%20outside%20Stripe%20Checkout.%20Our%20situation%20is:%0A%0A"
                   className="text-emerald-300 hover:text-emerald-200 underline underline-offset-2"
                 >
-                  Email me directly
+                  {t('billing.altPaymentLink')}
                 </a>{' '}
-                — I&apos;ll set up the right arrangement for your school.
+                {t('billing.altPaymentA')}
               </p>
             </div>
           </section>
