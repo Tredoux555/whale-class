@@ -184,3 +184,42 @@ Until the VAPID env is set, push is inert and the call falls back to the 5s poll
 - Web Push is opt-in by env — absent VAPID env → inert, poll banner still works.
 - The Story Call button is NOT gated on online status; `story_users` is the roster.
 - The call page must not hard-block `as=user` on a missing sessionStorage token — the `story-auth` cookie is the fallback that makes the notification-tap flow work.
+
+---
+
+# CONTINUATION 2 — Call-500 diagnosed + voice/video choice (May 23)
+
+**1 commit:** `a56d0e68`.
+
+## The "Could not start the call" 500 — root cause
+
+Verified against the production DB via the Supabase REST API:
+| Table | HTTP |
+|-------|------|
+| `story_calls` | **404 — does not exist** |
+| `story_push_subscriptions` | 200 |
+| `story_users` | 200 |
+
+**Migration 229 ran; migration 228 did NOT.** The 500 is `/api/story/admin/call`'s INSERT into the non-existent `story_calls` table. The console `5× 500 on /api/story/admin/call` and the "Could not start the call." alert are exactly that.
+
+Could not run 228 from the dev environment — the direct DB host `db.<project>.supabase.co` doesn't resolve from the user's network. **Fix: run `migrations/228_story_calls.sql` in the Supabase SQL Editor.**
+
+## Migration 228 amended
+
+Since 228 never ran anywhere, the file was amended (safe — it's effectively still a draft): it now also creates a `mode TEXT NOT NULL DEFAULT 'voice' CHECK (mode IN ('voice','video'))` column, plus an idempotent `ALTER TABLE ... ADD COLUMN IF NOT EXISTS mode`. **One run of the current file fixes the 500 AND lands the video-call schema.**
+
+## Voice / video choice
+
+- Admin **👥 Students** tab: two buttons per user — **📞 Voice** (emerald) and **📹 Video** (indigo).
+- `mode` flows end to end: `admin/call` stores it on the row → `agora-token` + `current-call` return it → `sendCallPush` words the notification ("voice call" / "video call") → the incoming-call banner shows 📹/📞 + the label.
+- `components/story/StoryVoiceCall.tsx` rewritten to handle both: voice = the avatar UI (unchanged); video = full-bleed remote video + local self-view PiP + a camera toggle. Remote-video render race handled with the stash-track + `videoTick` + deferred-play-effect pattern (rule #211). Camera denied/missing degrades to audio — never fails the call.
+
+## Push notifications — still inert (Railway env)
+
+The "🔔 Enable call notifications" button showed **"Call notifications aren't switched on yet"** — that's a 503 from `/api/story/push/public-key`, i.e. `STORY_VAPID_PUBLIC_KEY` / `STORY_VAPID_PRIVATE_KEY` are **not set in Railway**. Adding the PWA to the Home Screen is necessary but not sufficient. The VAPID env vars must be set server-side (values in CONTINUATION above).
+
+## Operational steps (user)
+
+1. Run `migrations/228_story_calls.sql` (current amended file) in the Supabase SQL Editor → fixes the 500 + video schema.
+2. Set `STORY_VAPID_PUBLIC_KEY` + `STORY_VAPID_PRIVATE_KEY` in Railway → enables push.
+3. 2-device test: admin → 👥 Students → 📞 Voice / 📹 Video → student joins.
