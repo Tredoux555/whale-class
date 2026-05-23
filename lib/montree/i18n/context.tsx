@@ -142,15 +142,37 @@ export function I18nProvider({
       }
     }
     if (loadedLocales.has(locale)) return;
-    loadLocale(locale).then(() => {
-      if (!cancelled) {
-        setLoadedLocales((prev) => new Set([...prev, locale]));
-      }
-    });
+    // Lazy-load the locale chunk WITH retry. A transient chunk-load failure
+    // (network blip on the dynamic import) would otherwise leave `locale`
+    // set but its messages never loaded — so t() falls back to English and
+    // the UI is stuck in English until a hard reload, even though the
+    // switcher + cookie say otherwise. Retrying the import recovers it.
+    const tryLoad = (attempt: number) => {
+      loadLocale(locale)
+        .then(() => {
+          if (!cancelled) setLoadedLocales((prev) => new Set([...prev, locale]));
+        })
+        .catch((err) => {
+          console.error(`[i18n] locale "${locale}" load failed (attempt ${attempt})`, err);
+          if (!cancelled && attempt < 2) {
+            setTimeout(() => { if (!cancelled) tryLoad(attempt + 1); }, 400 * (attempt + 1));
+          }
+        });
+    };
+    tryLoad(0);
     return () => {
       cancelled = true;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [locale]);
+
+  // Keep the document's <html lang> attribute in sync with the active locale.
+  // It was stuck at "en" across every locale switch — an a11y/SEO correctness
+  // nit (screen readers + search engines read the document language from it).
+  useEffect(() => {
+    if (typeof document !== 'undefined') {
+      document.documentElement.lang = locale;
+    }
   }, [locale]);
 
   const setLocale = useCallback((l: Locale) => {
