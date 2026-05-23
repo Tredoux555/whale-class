@@ -54,7 +54,8 @@ export function getVapidPublicKey(): string | null {
 export async function sendCallPush(
   username: string,
   callId: string,
-  fromName: string
+  fromName: string,
+  mode: 'voice' | 'video' = 'voice'
 ): Promise<void> {
   if (!ensureConfigured()) return;
 
@@ -67,7 +68,7 @@ export async function sendCallPush(
 
   const payload = JSON.stringify({
     title: `${fromName} is calling you`,
-    body: 'Tap to join the voice call.',
+    body: `Tap to join the ${mode} call.`,
     callId,
   });
 

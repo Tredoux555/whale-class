@@ -31,7 +31,7 @@ export async function GET(req: NextRequest) {
   const supabase = getSupabase();
   const { data, error } = await supabase
     .from('story_calls')
-    .select('id, status, initiated_by, created_at')
+    .select('id, status, mode, initiated_by, created_at')
     .eq('username', username)
     .eq('status', 'ringing')
     .order('created_at', { ascending: false })
@@ -48,7 +48,12 @@ export async function GET(req: NextRequest) {
   }
 
   return NextResponse.json({
-    call: { id: data.id, status: data.status, from: data.initiated_by },
+    call: {
+      id: data.id,
+      status: data.status,
+      mode: data.mode === 'video' ? 'video' : 'voice',
+      from: data.initiated_by,
+    },
   });
 }
 

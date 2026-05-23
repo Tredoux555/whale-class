@@ -73,7 +73,7 @@ export async function POST(req: NextRequest) {
   const supabase = getSupabase();
   const { data: call, error } = await supabase
     .from('story_calls')
-    .select('id, username, channel, status, initiated_by')
+    .select('id, username, channel, status, mode, initiated_by')
     .eq('id', callId)
     .maybeSingle();
   if (error || !call) {
@@ -124,6 +124,8 @@ export async function POST(req: NextRequest) {
     uid: token.uid,
     token: token.token,
     expiresAt: token.expiresAt,
+    // voice or video — the call UI uses this to decide on the camera.
+    mode: call.mode === 'video' ? 'video' : 'voice',
     // Who the OTHER person is, for the call UI.
     remoteName: asHint === 'admin' ? call.username : call.initiated_by,
   });

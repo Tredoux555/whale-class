@@ -19,11 +19,17 @@ CREATE TABLE IF NOT EXISTS story_calls (
   channel      TEXT NOT NULL,                       -- Agora channel name (story-<entropy>)
   status       TEXT NOT NULL DEFAULT 'ringing'
                CHECK (status IN ('ringing', 'active', 'ended')),
+  mode         TEXT NOT NULL DEFAULT 'voice'
+               CHECK (mode IN ('voice', 'video')),  -- voice-only or video call
   initiated_by TEXT NOT NULL,                       -- admin username who started the call
   created_at   TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at   TIMESTAMPTZ NOT NULL DEFAULT now(),
   ended_at     TIMESTAMPTZ
 );
+
+-- Belt-and-braces: if a partial earlier run left the table without `mode`.
+ALTER TABLE story_calls
+  ADD COLUMN IF NOT EXISTS mode TEXT NOT NULL DEFAULT 'voice';
 
 -- The user-poll lookup: latest non-ended call for a username.
 CREATE INDEX IF NOT EXISTS idx_story_calls_user_active
