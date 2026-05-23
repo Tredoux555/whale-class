@@ -45,10 +45,20 @@ export async function GET(request: NextRequest) {
     .limit(200);
 
   if (error) {
-    console.error('[conversations GET] error:', error);
+    console.error('[conversations GET] error:', { code: error.code, message: error.message });
+    // 42P01 = undefined_table — migration 185 (montree_principal_vault) has
+    // not been run on this database. Report it as a clean "not set up yet"
+    // state so the page can show a friendly message instead of a hard 500.
+    const missingTable = error.code === '42P01';
     return NextResponse.json(
-      { error: 'Failed to load conversations.' },
-      { status: 500 }
+      {
+        error: missingTable
+          ? 'Conversations is not set up on this server yet.'
+          : 'Failed to load conversations.',
+        detail: error.message || null,
+        migration_pending: missingTable || undefined,
+      },
+      { status: missingTable ? 503 : 500 }
     );
   }
 

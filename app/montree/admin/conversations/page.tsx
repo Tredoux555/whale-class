@@ -151,7 +151,19 @@ export default function ConversationsPage() {
           return;
         }
         if (!listRes.ok) {
-          setAuthError(t('meetingNotes.vaultErrorLoad' as TranslationKey));
+          // 503 + migration_pending = the vault table isn't set up on this
+          // server yet (migration 185). Show a clear, calm message rather
+          // than the generic load error.
+          const errBody = await listRes.json().catch(() => ({}));
+          if (errBody?.migration_pending) {
+            setAuthError(t('meetingNotes.vaultPrototypeOnly' as TranslationKey));
+          } else {
+            setAuthError(
+              errBody?.detail
+                ? `${t('meetingNotes.vaultErrorLoad' as TranslationKey)} (${errBody.detail})`
+                : t('meetingNotes.vaultErrorLoad' as TranslationKey),
+            );
+          }
           setLoading(false);
           return;
         }

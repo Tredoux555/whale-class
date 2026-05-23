@@ -8,6 +8,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import LanguageToggle from '@/components/montree/LanguageToggle';
+import { useI18n, type TranslationKey } from '@/lib/montree/i18n';
 import {
   Home,
   GraduationCap,
@@ -74,16 +75,16 @@ interface NavItem {
 // (via dedicated links from the Settings page) so the principal can dig in
 // when she wants but isn't presented with them by default.
 const NAV: NavItem[] = [
-  { href: '/montree/admin', label: 'Today', icon: Home, match: (p) => p === '/montree/admin' },
+  { href: '/montree/admin', label: 'adminNav.today', icon: Home, match: (p) => p === '/montree/admin' },
   {
     href: '/montree/admin/classrooms',
-    label: 'Classrooms',
+    label: 'adminNav.classrooms',
     icon: GraduationCap,
     match: (p) => p.startsWith('/montree/admin/classrooms'),
   },
   {
     href: '/montree/admin/communication',
-    label: 'Communication',
+    label: 'adminNav.communication',
     icon: MessageSquare,
     match: (p) =>
       p.startsWith('/montree/admin/communication') ||
@@ -97,7 +98,7 @@ const NAV: NavItem[] = [
   },
   {
     href: '/montree/admin/settings',
-    label: 'Settings',
+    label: 'adminNav.settings',
     icon: Settings,
     match: (p) =>
       p.startsWith('/montree/admin/settings') ||
@@ -118,6 +119,7 @@ interface SidebarContentProps {
 }
 
 function SidebarContent({ schoolName, isActive, onLogout, nav }: SidebarContentProps) {
+  const { t } = useI18n();
   return (
     <>
       {/* School identity (Lora serif) — tap to return to the cockpit home. */}
@@ -148,7 +150,7 @@ function SidebarContent({ schoolName, isActive, onLogout, nav }: SidebarContentP
             letterSpacing: 1.2,
           }}
         >
-          Principal
+          {t('adminNav.principal')}
         </div>
       </Link>
 
@@ -186,7 +188,7 @@ function SidebarContent({ schoolName, isActive, onLogout, nav }: SidebarContentP
               }}
             >
               <Icon size={18} strokeWidth={1.75} />
-              <span>{item.label}</span>
+              <span>{t(item.label as TranslationKey)}</span>
             </Link>
           );
         })}
@@ -210,7 +212,7 @@ function SidebarContent({ schoolName, isActive, onLogout, nav }: SidebarContentP
             transition: 'all 0.15s ease',
           }}
         >
-          Sign out
+          {t('adminNav.signOut')}
         </button>
       </div>
     </>
@@ -261,7 +263,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         // have the appointments flag on, so it's safe to surface universally.
         {
           href: '/montree/admin/appointments',
-          label: 'Calendar',
+          label: 'adminNav.calendar',
           icon: Calendar,
           match: (p) => p.startsWith('/montree/admin/appointments'),
         },
@@ -271,19 +273,19 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         // (avoids identical Calendar icon on two adjacent sidebar rows).
         {
           href: '/montree/admin/events',
-          label: 'Events',
+          label: 'adminNav.events',
           icon: CalendarDays,
           match: (p) => p.startsWith('/montree/admin/events'),
         },
         {
           href: '/montree/admin/meeting-notes',
-          label: 'Parent Meetings',
+          label: 'adminNav.parentMeetings',
           icon: Mic,
           match: (p) => p.startsWith('/montree/admin/meeting-notes'),
         },
         {
           href: '/montree/admin/conversations',
-          label: 'Conversations',
+          label: 'adminNav.conversations',
           icon: Lock,
           match: (p) => p.startsWith('/montree/admin/conversations'),
         },

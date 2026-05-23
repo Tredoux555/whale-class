@@ -30,10 +30,17 @@ export default function FeaturesAdminPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // This page lives inside /montree/admin/* — the admin layout already
+    // gates principal auth. getSession() reads the TEACHER session, which a
+    // principal does not have, so a null result here is normal, NOT a reason
+    // to redirect to /montree/login (that bounced principals into a broken
+    // teacher dashboard — handoff re-sweep bug #2). Just stop loading; the
+    // render shows a "managed per classroom" message when there's no
+    // classroom context.
     const sess = getSession();
-    if (!sess) { router.push('/montree/login'); return; }
+    if (!sess) { setLoading(false); return; }
     setSession(sess);
-  }, [router]);
+  }, []);
 
   useEffect(() => {
     if (!session) return; // Session not loaded yet
@@ -93,6 +100,31 @@ export default function FeaturesAdminPage() {
     return (
       <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', background: '#0f172a' }}>
         <div style={{ color: '#94a3b8', fontSize: 18 }}>{t('features.loading' as TranslationKey)}</div>
+      </div>
+    );
+  }
+
+  // Feature toggles are per-classroom and need a classroom context. A
+  // principal has no single classroom — show a clear pointer to the
+  // Classrooms page rather than an empty list or a broken redirect.
+  if (!session?.classroom?.id) {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', background: '#0f172a', padding: 24 }}>
+        <div style={{ maxWidth: 420, textAlign: 'center' }}>
+          <div style={{ fontSize: 40, marginBottom: 12 }}>⚙️</div>
+          <h1 style={{ fontSize: 20, fontWeight: 700, color: '#e2e8f0', margin: '0 0 8px' }}>
+            {t('features.title' as TranslationKey)}
+          </h1>
+          <p style={{ fontSize: 14, color: '#94a3b8', lineHeight: 1.6, margin: '0 0 20px' }}>
+            {t('features.perClassroomHint' as TranslationKey)}
+          </p>
+          <button
+            onClick={() => router.push('/montree/admin/classrooms')}
+            style={{ background: '#10b981', border: 'none', borderRadius: 10, padding: '10px 18px', color: '#fff', fontSize: 14, fontWeight: 600, cursor: 'pointer' }}
+          >
+            {t('features.openClassrooms' as TranslationKey)}
+          </button>
+        </div>
       </div>
     );
   }
