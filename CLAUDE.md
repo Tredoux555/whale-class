@@ -268,6 +268,49 @@ Session 119 weathered a Railway edge outage (May 19 22:22 UTC, ~1.5h, first inci
 
 ---
 
+## RECENT STATUS (May 23, 2026)
+
+### 🔥 Session 127 — Production E2E handoff: 27 bugs + CR-1 worked end-to-end across 8 commits + 3 browser-Claude re-sweeps (May 23, 2026)
+
+**8 commits pushed to main: `11585d87` → `6ec916ee` → `ddd6a60f` → `ec0b4408` → `4140b75c` → `7ddbdb94` → `c75385e8` → `032c7e73`.** A browser-Claude ran a full production E2E test of montree.xyz (original brief: `HANDOFF.md`) surfacing 1 change-request + 27 bugs. This session worked the whole list plus a separate Story video-call bug, then iterated through three browser-Claude runtime re-sweeps. Every confirmed functional bug is fixed, audited, and shipped.
+
+**🚨 Canonical resume docs:** `docs/handoffs/MONTREE_E2E_SESSION_HANDOFF.md` (session close — commit table, status, decisions, what's left), `docs/handoffs/MONTREE_E2E_FIX_PLAN.md` (the phased plan + §8 execution log), `docs/handoffs/MONTREE_E2E_REVERIFY.md` (the re-verification brief).
+
+**🚨 ONE migration pending Supabase run:** `migrations/230_story_calls_mode_check.sql` — drops + recreates the `story_calls.mode` CHECK constraint as `IN ('voice','video')`. Story VIDEO calls notified nobody while VOICE worked perfectly — every code path is mode-agnostic, so a video INSERT failing meant a stale CHECK constraint admitting 'voice' but not 'video' (migration 228's idempotent guards left the column without the amended CHECK). The migration drops ANY mode CHECK by definition-match and recreates the correct one. Idempotent. Until run, video calls fail. `migrations/185_principal_vault.sql` is also referenced (the Conversations vault table) — likely already run, but if `/admin/conversations` 500s, run it.
+
+**What shipped (all 8 brief items + CR-1 closed, runtime-verified by browser-Claude):**
+- **Routing/auth** — `[childId]` page renders a `not-found.tsx` boundary on a 403/404 child fetch; **only a 401 logs a teacher out, never a 403** (the old coupling bounced teachers to login). New `app/montree/dashboard/not-found.tsx`.
+- **Principal role** — `auth/me` now resolves principals via `montree_school_admins` + returns a top-level `role`; `admin/today` `isTeacherLed = plan_type === 'personal_classroom'` only (dropped the `founding_teacher_id` clause — it holds the AGENT id on referral signups, wrongly flagging owner-principals as viewers).
+- **CR-1 trial 90 → 7 days** — single `DEFAULTS.TRIAL_DAYS` constant; `try/instant` derives `trial_ends_at` from it; trial drip retimed day 7/14/25 → **day 4/6/7** (T-3/T-1/T-0); "first month" copy reworded to "trial / 7 days" in all 12 locales.
+- **AI family report** — `sanitizeNarrative()` (exported from `narrative-generator.ts`) strips markdown + collapses doubled paragraphs, applied at generation + parent viewer + PDF generator; parent narratives generate in the school's `primary_locale`, not the triggering user's UI locale; `NO_PHOTOS` empty-state localized for all 12 locales.
+- **Loading** — `weekly-wrap` defaults to the current Monday-week when no `?week=` param (+ malformed-param guard); `/admin/features` got a 12s fetch timeout and no longer redirects principals to a broken teacher dashboard.
+- **Locale** — `setLocale` broadcasts a `montree:locale-change` window event + a `storage` listener so every switcher + tab syncs; the principal admin layout bounces on cross-tab sign-out; lazy locale-chunk loads retry up to twice on failure; `<html lang>` tracks the active locale.
+- **i18n leaks** — principal sidebar nav, billing footnote, login "See pricing", Add Student modal strings, "N works in rotation", bulk-import date hint, AI-tier error, FR login verb agreement — all wired to `t()` across 12 locales.
+
+**Re-sweep findings A–J all fixed.** B (Tracy greeting doesn't relocalize — AI-generated text, not a static string) and H (English Montessori work names inside localized prose) are confirmed by-design / known-limitation.
+
+**🚨 Architectural rules locked in this session:**
+- `[childId]`: a 403/404 renders the 404 boundary; only 401 → logout. `montreeApi` 403 must never tear down a session.
+- `auth/me` resolves principals via `montree_school_admins`; `identity.role` always equals the computed `effectiveRole`.
+- `admin/today` `isTeacherLed` keys off `plan_type` ONLY — `founding_teacher_id` is overloaded (agent id on referral signups) and must not gate viewer-mode.
+- `DEFAULTS.TRIAL_DAYS` is the SOLE trial-length source — never hardcode a trial length.
+- Parent reports generate in the school's `primary_locale`; educator/teacher reports follow the UI locale; they legitimately differ. `primary_locale` is set at signup, not surfaced in the UI.
+- `sanitizeNarrative()` is the canonical markdown-strip/dedup for parent narrative text.
+- Lazy locale-chunk loads MUST retry on failure — a failed dynamic import otherwise leaves the UI stuck in English until a hard reload.
+- `migrations/230` pattern: drop ALL mode CHECK constraints by definition-match, recreate the correct one — idempotent-migration history makes constraint names unreliable.
+
+**Verification:** every commit lint-clean (0 errors); the strict i18n parity pre-commit hook passed each time (12 locales, 100%); five fresh-eyes subagent audits all returned clean; browser-Claude ran three runtime re-sweeps and confirmed all 8 brief items pass in production. Only Story video is not runtime-verified (gated on migration 230 + Story admin access).
+
+**🚨 Next-session priorities:**
+1. **Run `migrations/230_story_calls_mode_check.sql`** in Supabase — Story video calls stay broken until then. Verify migration 185 (`montree_principal_vault`) is also run.
+2. **Verify Story video** end-to-end after 230 — needs Story admin access.
+3. **Phase 6b — bulk i18n** of the 4 full admin pages (Classrooms / Communication / Pulse / Events), still English on non-EN locales. Use the `npm run i18n:fill-ui` Haiku batch.
+4. **Optional** — a "School language" indicator on `/admin/settings` showing the school's `primary_locale`.
+5. **Bug H** — feed the localized curriculum catalog into the AI report prompt so work names match the prose locale (separate effort).
+6. Carry-overs: `demo/*` + super-admin home-link/toggle sweep; duplicate-key cleanup in `en.ts`; library tool-page i18n; Stage A Agora activation; outreach follow-ups.
+
+---
+
 ## RECENT STATUS (May 22, 2026)
 
 ### 🔥 Session 126 — Vocabulary Flashcard crop fix + Story Voice Calls (Agora) (May 22, 2026)
