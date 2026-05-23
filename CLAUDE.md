@@ -366,6 +366,19 @@ Session 119 weathered a Railway edge outage (May 19 22:22 UTC, ~1.5h, first inci
 
 ---
 
+### 🔥 Session 126 (cont. 3) — Story calls verified live on montree.xyz (May 23, 2026)
+
+No new commits — verification + state confirmation. Migrations 228 + 229 confirmed RUN and the VAPID env confirmed SET, all verified against production:
+- `story_calls` table → Supabase REST HTTP 200, `mode` column present. **The "Could not start the call" 500 is resolved.**
+- `montree.xyz/api/story/push/public-key` → HTTP 200 (returns the key). `STORY_VAPID_PUBLIC_KEY` + `STORY_VAPID_PRIVATE_KEY` are set in Railway. **Web Push is fully configured.**
+- `montree.xyz/story/admin/dashboard` → HTTP 200; `montree.xyz/api/story/*` → 200. The Story system is fully live on **montree.xyz**.
+
+**🚨 USE `montree.xyz` — NOT `teacherpotato.xyz`.** teacherpotato.xyz is the old domain and is currently not serving: every `/api/*` 404s and the Story page itself returns a connection failure (HTTP 000). The Story admin dashboard, the Story user pages, and the home-screen PWA must all be on `montree.xyz`. If the Story PWA was added to the Home Screen from teacherpotato.xyz, it must be re-added from `montree.xyz/story` — calls + push only work on the live domain. (CLAUDE.md's older Session 86 note that montree.xyz redirects `/story` to teacherpotato.xyz is STALE — montree.xyz serves Story directly now, returning 200, no redirect. The earlier "Could not start the call" 500s were on teacherpotato.xyz when it was still serving a stale build + the missing table.)
+
+**Story voice + video calls: code-complete, deployed, migrations run, env set, verified.** Remaining (non-blocking): a 2-device end-to-end test on montree.xyz (voice + video, push notification); the "declined / no answer" admin-feedback gap (~30-45 min); optionally re-point or retire the teacherpotato.xyz domain in Railway.
+
+---
+
 ### 🔥 Session 125 — English Progression coverage flag + overnight health check + i18n of the new feature set + app-wide home-link/toggle sweep (May 21–22, 2026)
 
 **11 commits pushed to main:** `05ca6a04` → `f61693f0` → `9ac5cff4` → `34f2701b` → `b3ff75c2` → `80be337d` → `89d9cb9e` → `ef07ad0c` → `72702638` → `84d28452` → `e184abb5`. **🚨 Canonical handoff:** `docs/handoffs/SESSION_125_HANDOFF.md` (+ `SESSION_125_HEALTH_CHECK.md`).
@@ -7484,9 +7497,9 @@ All migrations through 169 have been run. Key ones: 147 (smart learning columns)
 **Session 121 (May 20-21, 2026) — Application-layer AES-256-GCM encryption. ✅ Migration RUN:**
 - ✅ `226_montree_encryption_v1.sql` — **RUN May 21, 2026.** `encryption_version INTEGER` columns live on `montree_thread_messages`, `montree_meeting_notes`, `montree_appointment_recordings` (verified via information_schema query — all 3 present). `encryption_v1` feature flag inserted into `montree_feature_definitions`, then flipped ON by Tredoux. Encryption code re-applied & live. Only remaining step: confirm `MONTREE_ENCRYPTION_KEY` (32-char hex) is set in Railway — without it, writes safely fall back to plaintext + loud-log. Operations playbook: `docs/handoffs/MONTREE_ENCRYPTION_RUNBOOK.md`.
 
-**Session 126 (May 22, 2026) — Story voice calls + Web Push. ⏳ 2 migrations pending Tredoux's Supabase run:**
-- ⏳ `228_story_calls.sql` — `story_calls` table (id, username, channel, status ringing/active/ended, **`mode` voice/video**, initiated_by, created_at, updated_at, ended_at) + partial index `idx_story_calls_user_active` + `story_calls_touch_updated_at()` trigger. Powers Story voice/video-call signalling. Idempotent BEGIN/COMMIT. **🚨 Session 126 cont.2: CONFIRMED NOT RUN — verified via the Supabase REST API (`story_calls` → HTTP 404). The "Could not start the call" 500 is this exact missing table. Migration AMENDED to also add the `mode` column. RE-RUN the current file in the Supabase SQL Editor — that fixes the 500 and lands the video-call schema in one go.**
-- ⏳ `229_story_push_subscriptions.sql` — `story_push_subscriptions` table (id, username, endpoint UNIQUE, p256dh, auth, user_agent, created_at, last_used_at) + `idx_story_push_subs_username`. Stores each Story user's Web Push subscription so `sendCallPush()` can notify them when the app is closed. Idempotent BEGIN/COMMIT. **REQUIRED for Story call push notifications. Until run, `/api/story/push/subscribe` 500s on the upsert; the "Enable call notifications" button surfaces the error gracefully. Also needs Railway env: `STORY_VAPID_PUBLIC_KEY` + `STORY_VAPID_PRIVATE_KEY` — without them the whole push feature stays inert (poll-based banner still works).**
+**Session 126 (May 22-23, 2026) — Story voice/video calls + Web Push. ✅ Both migrations RUN (verified May 23):**
+- ✅ `228_story_calls.sql` — **RUN.** `story_calls` table (id, username, channel, status ringing/active/ended, `mode` voice/video, initiated_by, created_at, updated_at, ended_at) + partial index `idx_story_calls_user_active` + `story_calls_touch_updated_at()` trigger. Verified via the Supabase REST API — `story_calls` returns HTTP 200, `mode` column present. The "Could not start the call" 500 is resolved.
+- ✅ `229_story_push_subscriptions.sql` — **RUN.** `story_push_subscriptions` table (id, username, endpoint UNIQUE, p256dh, auth, user_agent, created_at, last_used_at) + `idx_story_push_subs_username`. The Railway env vars `STORY_VAPID_PUBLIC_KEY` + `STORY_VAPID_PRIVATE_KEY` are also set — verified (`montree.xyz/api/story/push/public-key` → HTTP 200). Web Push is fully configured server-side.
 
 Plus Session 119 agent backfill SQL (not a migration file, run separately in Supabase):
 ```sql

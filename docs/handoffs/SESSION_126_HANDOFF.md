@@ -223,3 +223,20 @@ The "🔔 Enable call notifications" button showed **"Call notifications aren't 
 1. Run `migrations/228_story_calls.sql` (current amended file) in the Supabase SQL Editor → fixes the 500 + video schema.
 2. Set `STORY_VAPID_PUBLIC_KEY` + `STORY_VAPID_PRIVATE_KEY` in Railway → enables push.
 3. 2-device test: admin → 👥 Students → 📞 Voice / 📹 Video → student joins.
+
+---
+
+# CONTINUATION 3 — verified live (May 23)
+
+No new commits. The user ran migration 228 + set the VAPID env vars; this is the verification + the final state.
+
+**Verified against production:**
+- `story_calls` table → Supabase REST API HTTP 200, `mode` column present. The "Could not start the call" 500 is resolved.
+- `montree.xyz/api/story/push/public-key` → HTTP 200 (returns the VAPID key) → `STORY_VAPID_PUBLIC_KEY` + `STORY_VAPID_PRIVATE_KEY` are set in Railway. Web Push is configured server-side.
+- `montree.xyz/story/admin/dashboard` → HTTP 200; `montree.xyz/api/story/*` → 200. Story is fully live on montree.xyz.
+
+**🚨 The remaining gotcha — domain. Use `montree.xyz`, NOT `teacherpotato.xyz`.**
+teacherpotato.xyz (the old domain) is currently not serving — every `/api/*` returns 404 and the Story page itself returns HTTP 000 (connection failure). The earlier "Could not start the call" 500s were on teacherpotato.xyz back when it still served a stale build + the table was missing. The Story system — admin dashboard, user pages, and the home-screen PWA — must all be used on **montree.xyz**. If the Story PWA was added to the Home Screen from teacherpotato.xyz, re-add it from `montree.xyz/story`; calls + push only work on the live domain.
+
+**Status: Story voice + video calls — code-complete, deployed, migrations run, env set, verified.**
+Remaining (all non-blocking): a 2-device end-to-end test on montree.xyz; the "declined / no answer" admin-feedback gap; optionally re-point or retire the teacherpotato.xyz domain in Railway.
