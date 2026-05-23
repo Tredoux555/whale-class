@@ -305,7 +305,9 @@ export default function ParentReportPage() {
     return (
       <div style={{ minHeight: "100dvh", background: T.bg, backgroundImage: T.glow, backgroundAttachment: "fixed", display: "flex", alignItems: "center", justifyContent: "center", padding: "2rem" }}>
         <div style={{ textAlign: "center" }}>
-          <p style={{ color: '#f87171', marginBottom: "1rem" }}>{error || t('parentReport.notFound')}</p>
+          {/* Always the localized string — never the raw English server
+              `error` text, which produced a mixed-locale error screen. */}
+          <p style={{ color: '#f87171', marginBottom: "1rem" }}>{t('parentReport.notFound')}</p>
           <Link href="/montree/parent/dashboard" style={{ color: T.emerald, textDecoration: "underline", cursor: "pointer" }}>
             ← {t('common.backToDashboard')}
           </Link>
