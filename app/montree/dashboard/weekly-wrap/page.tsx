@@ -248,7 +248,13 @@ export default function WeeklyWrapPage() {
 
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        throw new Error(data.error || 'Generation failed');
+        // 402 = the school has no AI tier. Show a localized, user-friendly
+        // message instead of the raw English server string (re-sweep
+        // Finding C — this error is shown to the teacher on click).
+        if (res.status === 402 || data?.requires_upgrade) {
+          throw new Error(t('weeklyWrap.aiTierRequired'));
+        }
+        throw new Error(data.error || t('weeklyWrap.generationFailed'));
       }
 
       const contentType = res.headers.get('content-type') || '';

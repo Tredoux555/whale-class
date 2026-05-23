@@ -405,7 +405,7 @@ export default function BulkPasteImport({ classroomId, existingCount, onImported
               color: T.textMuted,
               fontStyle: 'italic',
             }}>
-              Any date format works — we&apos;ll figure it out. Birthdays are optional.
+              {t('bulkImport.dateHint')}
             </p>
 
             <div style={{
@@ -477,7 +477,7 @@ export default function BulkPasteImport({ classroomId, existingCount, onImported
                   className="bp-textarea"
                   value={birthdaysText}
                   onChange={e => { setBirthdaysText(e.target.value); setShowPreview(false); }}
-                  placeholder={'2020-03-15\n15/03/2020\n03/15/2020\n(any format)'}
+                  placeholder={`2020-03-15\n15/03/2020\n03/15/2020\n${t('bulkImport.anyFormat')}`}
                   spellCheck={false}
                   style={{
                     width: '100%',

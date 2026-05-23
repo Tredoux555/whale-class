@@ -245,6 +245,20 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     } catch { /* ignore */ }
   }, [router]);
 
+  // Cross-tab sign-out: if the principal signs out in another tab the
+  // `montree_principal` key is cleared — this tab must not keep showing a
+  // stale cockpit. The `storage` event fires only in OTHER tabs, so this
+  // bounces the background tab to login the moment the session ends.
+  useEffect(() => {
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === 'montree_principal' && !e.newValue) {
+        router.replace('/montree/login-select');
+      }
+    };
+    window.addEventListener('storage', onStorage);
+    return () => window.removeEventListener('storage', onStorage);
+  }, [router]);
+
   // Two distinct meeting-notes surfaces for the principal:
   //   - "Parent Meetings" (/montree/admin/meeting-notes) — plaintext meeting
   //     notes mirroring the teacher's, optionally shareable into the parent
