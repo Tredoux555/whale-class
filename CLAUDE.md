@@ -13,6 +13,19 @@ Local path: `/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/whale` (note spa
 
 ---
 
+## 🎬 MARKETING VIDEO CAMPAIGN (active — started May 24, 2026)
+
+**🚨 Canonical handoff: `docs/handoffs/MONTREE_CAMPAIGN_HANDOFF.md`. Scripts: `Montree_Campaign_Video_Scripts.md`. Read the handoff to pick this up.**
+
+A 13-video marketing campaign (1 front-page hero + 12 feature videos) for TikTok / Reels / Shorts / LinkedIn. This is **video marketing** — NOT the email Campaign Manager / Outreach Protocol below (that's school email outreach).
+
+- **Tool:** Colossyan Creator, driven by a browser-Claude. Talking-head format — one avatar (default + "GB - Riley" voice), clean background, no B-roll.
+- **Built:** super-admin "📣 Campaign" tab (Campaign Command Center). 🚨 `migrations/231_campaign_command_center.sql` PENDING the user's Supabase run.
+- **Status:** all 13 scripts written + the hero approved; nothing built in Colossyan yet. To make a video, hand a browser-Claude section 2 of the scripts doc (the brief) + that video's section.
+- **Decision locked:** no AI agent in super-admin — not worth the API cost for a solo operator. The Campaign Command Center is a plain tool, not an AI.
+
+---
+
 ## 📮 CAMPAIGN MANAGER — Outreach Protocol (replaces GMass as of Apr 19, 2026)
 
 **🚨 THIS IS A STANDING INSTRUCTION FOR EVERY SESSION. READ THIS FIRST. 🚨**
