@@ -43,7 +43,7 @@ export default function LanguageAreaLandingPage() {
           </h1>
 
           <p className="text-white/40 mt-5 text-lg max-w-md mx-auto leading-relaxed">
-            Five resources. One sets the room up. Three give you the daily lessons, phase by phase. And one is a set of fifteen little storybooks the child reads alone.
+            Six resources for the language area: the room setup, the daily lessons for every phase, a song for every Pink Phase sound, and fifteen little storybooks the child reads alone.
           </p>
 
           <div className="mt-14 space-y-4">
@@ -100,6 +100,35 @@ export default function LanguageAreaLandingPage() {
                 </div>
               </div>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="relative z-10 text-pink-400/30 group-hover:text-pink-400 group-hover:translate-x-1 transition-all shrink-0">
+                <path d="M5 12h14M12 5l7 7-7 7" />
+              </svg>
+            </a>
+
+            {/* Pink Sound Songs — violet, one per lesson */}
+            <a
+              href="/pink-phase-songs.html"
+              className="group relative flex items-center gap-5 w-full p-6 rounded-2xl border transition-all duration-300 hover:scale-[1.01] active:scale-[0.99]"
+              style={{
+                background: 'linear-gradient(135deg, rgba(167,139,250,0.11), rgba(124,58,237,0.04))',
+                borderColor: 'rgba(167,139,250,0.20)',
+              }}
+            >
+              <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" style={{ background: 'linear-gradient(135deg, rgba(167,139,250,0.15), rgba(124,58,237,0.06))' }} />
+
+              <div className="relative z-10 w-14 h-14 rounded-xl flex items-center justify-center shrink-0 transition-colors duration-300" style={{ background: 'rgba(167,139,250,0.17)' }}>
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-violet-300">
+                  <path d="M9 18V5l12-2v13" />
+                  <circle cx="6" cy="18" r="3" />
+                  <circle cx="18" cy="16" r="3" />
+                </svg>
+              </div>
+              <div className="relative z-10 flex-1 text-left">
+                <div className="text-white font-semibold text-lg">Pink Sound Songs</div>
+                <div className="text-violet-200/45 text-sm mt-0.5">
+                  49 circle-time songs · one per UFLI lesson L5-53 · sing every sound · Suno-ready
+                </div>
+              </div>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="relative z-10 text-violet-300/30 group-hover:text-violet-300 group-hover:translate-x-1 transition-all shrink-0">
                 <path d="M5 12h14M12 5l7 7-7 7" />
               </svg>
             </a>
