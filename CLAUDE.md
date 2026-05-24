@@ -26,21 +26,29 @@ A 13-video marketing campaign (1 front-page hero + 12 feature videos) for TikTok
 
 ---
 
-## 📚 PINK READERS — Decodable reader series (active — pinned May 24, 2026)
+## 📚 PINK READERS — Decodable reader series (SHIPPED — May 24, 2026)
 
-**🚨 Canonical handoff: `docs/handoffs/PINK_READERS_HANDOFF.md`. Read it to pick this up.**
-
-A graded series of **decodable readers** for the Pink Phase (UFLI L5–53) — real
-little story books where every word is phonics already taught or a heart word
-already introduced. Fills the gap between the lesson content's isolated
+A graded series of 15 **decodable readers** for the Pink Phase (UFLI L5–53) —
+real little story books where every word is phonics already taught or a heart
+word already introduced. Fills the gap between the lesson content's isolated
 sentence cards and "a real book."
 
-- **Status:** Book 1 sample built + approved by the user; full series greenlit
-  to build in one go. Series plan + Book 1 live in `docs/readers/`.
-- **To do:** write Books 2–15 (match `docs/readers/Book_01_Cat_Can_Nap.md`
-  exactly) + a Teacher Guide + a Canva Production Guide, then ship as a Montree
-  library page (`public/pink-readers.html` + a card on the language-area
-  library page, neutral branding, Session 112 pattern).
+- **Status: COMPLETE & SHIPPED.** All 15 books (`docs/readers/Book_01`–`Book_15`)
+  + `Teacher_Guide.md` + `Canva_Production_Guide.md` written, decodability-
+  audited, and assembled into `public/pink-readers.html` (neutral branding).
+  Wired as an amber "Pink Readers" card on the language-area library page
+  (`app/montree/library/language-area/page.tsx`).
+- **Verification:** every book passed a word-by-word programmatic audit —
+  inventory↔text exact match, letter-timing vs gate, heart-word timing, plus a
+  vowel-team / digraph / -ng / -ing scan. All 15 clean. Hand-audited per book
+  while writing.
+- **Build note:** `public/pink-readers.html` is generated from the 15 `.md`
+  books + 2 guides by a markdown→HTML assembly script (kept in session
+  outputs, not git). If a book `.md` changes, regenerate the HTML page.
+- **Working titles refined for decodability** (originals used undecodable
+  words): B5 "Sam Can Read"→"A Big Nap"; B7 "Cat? Cot? Cut!"→"Cat? Cot? Cup?";
+  B12 "Stop! Spin! Splash?"→"The Pup on the Sled"; B13 "The Green Frog"→"The
+  Frog and the Crab"; B15 "Sam Is a Reader"→"The Big Pink Trip".
 - **The law:** `docs/readers/Pink_Readers_SERIES_PLAN.md` (the bible) +
   `public/language-area-lessons.html` (the canonical per-lesson word inventory
   every word is checked against). Iron rule: a child never meets an undecodable
