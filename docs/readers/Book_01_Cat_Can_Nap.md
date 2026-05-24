@@ -31,6 +31,8 @@ circle, tail tucked over its nose, **one eye half-open** peeking at the reader
 — the gentle joke that sets up the whole book. Soft cream background, a single
 small cushion or rug under the cat. Warm, inviting, uncluttered.
 
+**Image prompt:** A plump, friendly tabby cat curled into a perfect sleeping circle, tail tucked over its nose, one eye half-open peeking at the reader, the gentle joke that sets up the whole book. Soft cream background, a single small cushion or rug under the cat. Warm, inviting, uncluttered. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
+
 **Composition:** Title large across the top in Andika lowercase (only "Cat"
 capitalised). Cat centred. Lots of calm space.
 
@@ -49,6 +51,8 @@ shapes (a window, a plant). Sam is smiling gently down at the cat.
 *This is the only page that introduces both characters. Design Sam and the cat
 here — every later book draws them exactly the same.*
 
+**Image prompt:** Sam, a young child, about five, gender-neutral, simple warm clothing, round friendly face, sitting on a rug at home, the tabby cat beside them leaning into Sam's side. They clearly belong together. Soft daylight, cosy living room hinted with one or two simple shapes. Sam is smiling gently down at the cat. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
+
 **Composition:** Text on a clean band along the bottom third. Sam + cat centred
 above it.
 
@@ -62,6 +66,8 @@ above it.
 settling down into a curl. Sam sits just behind, chin resting on one hand,
 watching with a fond little smile. The mood: *here we go, the cat's off to
 sleep.*
+
+**Image prompt:** The cat mid-yawn, wide pink mouth, eyes scrunching shut, settling down into a curl. Sam sits just behind, chin resting on one hand, watching with a fond little smile. The mood: here we go, the cat's off to sleep. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
 
 **Composition:** Cat foreground, Sam slightly behind and smaller. Bottom text
 band.
@@ -77,6 +83,8 @@ content, breathing slow (little "z" curl optional). Sam visible at the edge of
 the frame, watching — relaxed, this one's normal. The mat is the clear,
 unambiguous object.
 
+**Image prompt:** The cat curled fast asleep on a simple woven floor mat, content, breathing slow. Sam visible at the edge of the frame, watching, relaxed, this one's normal. The mat is the clear, unambiguous object. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
+
 **Composition:** Cat + mat centre. Sam small, frame edge. Bottom text band.
 
 ---
@@ -90,6 +98,8 @@ cooking pot** — only its head and one paw flopping over the rim, utterly
 relaxed and unbothered. Sam in frame, eyebrows up, hand to mouth, *amused* —
 "how did you even fit in there?" The pot is an ordinary kitchen pot.
 
+**Image prompt:** The cat comically squished inside a round cooking pot, only its head and one paw flopping over the rim, utterly relaxed and unbothered. Sam in frame, eyebrows up, hand to mouth, amused, "how did you even fit in there?" The pot is an ordinary kitchen pot. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
+
 **Composition:** Pot + cat centre, slight comic tilt. Sam reacting at the side.
 Bottom text band.
 
@@ -102,6 +112,8 @@ Bottom text band.
 **Art brief:** The cat flopped flat on its **back**, all four legs in the air,
 completely sprawled across a big open paper **map** on the floor. Peak silly.
 Sam is now openly laughing — head back, big grin.
+
+**Image prompt:** The cat flopped flat on its back, all four legs in the air, completely sprawled across a big open paper map on the floor. Peak silly. Sam is now openly laughing, head back, big grin. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
 
 **Composition:** Wide low angle, cat spread across the map. Sam laughing at the
 edge. Bottom text band.
@@ -117,6 +129,8 @@ keep it pink-ish to nod at the Pink series), a perfect cosy fit, one ear
 poking out. Sweet rather than silly — the cat looks deeply comfortable. Sam
 crouches close, gentle smile, the laughter settling into warmth.
 
+**Image prompt:** The cat curled up snug inside an upturned cap, a perfect cosy fit, one ear poking out. Sweet rather than silly, the cat looks deeply comfortable. Sam crouches close, gentle smile, the laughter settling into warmth. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
+
 **Composition:** Cap + cat centre. Sam close, leaning in. Bottom text band.
 
 ---
@@ -129,6 +143,8 @@ crouches close, gentle smile, the laughter settling into warmth.
 one paw lifting onto Sam's leg, eyeing Sam's lap. Sam sits cross-legged,
 looking down at the approaching cat with a surprised, delighted *"...me?"*
 expression. The question mark in the text is the page-turn — *will it?*
+
+**Image prompt:** The cat is mid-creep toward Sam, stretched out, one paw lifting onto Sam's leg, eyeing Sam's lap. Sam sits cross-legged, looking down at the approaching cat with a surprised, delighted "...me?" expression. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
 
 **Composition:** Cat moving left-to-right toward Sam (movement leads the eye to
 the page edge). Sam centre-right. Bottom text band.
@@ -144,6 +160,8 @@ lap / tummy**, fast asleep, completely at home. Sam, sitting back, beams —
 the biggest, warmest smile of the book — one hand resting softly on the cat.
 Pure contentment.
 
+**Image prompt:** The cat is curled into a happy circle on Sam's lap / tummy, fast asleep, completely at home. Sam, sitting back, beams, the biggest, warmest smile of the book, one hand resting softly on the cat. Pure contentment. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
+
 **Composition:** Sam + cat together, centred, the emotional heart of the book.
 Bottom text band.
 
@@ -157,6 +175,8 @@ Bottom text band.
 gently back or to one side, eyes closed, the cat still curled and asleep on
 them. Soft warm light, maybe a blanket shape, the rug from page 1. Everything
 calm and quiet. The reader closes the book on stillness and warmth.
+
+**Image prompt:** Final cosy spread. Sam has now drifted off too, head tipped gently back or to one side, eyes closed, the cat still curled and asleep on them. Soft warm light, maybe a blanket shape, the rug from page 1. Everything calm and quiet. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
 
 **Composition:** Sam + cat together, soft and centred, generous calm space.
 Two short lines of text, bottom band.

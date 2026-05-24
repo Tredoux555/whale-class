@@ -44,6 +44,8 @@ small folding **cot**, and a **cup**. The cat sits among them with a knowing
 half-smile, as if enjoying the confusion. Soft cream background, the three
 shapes spaced out and clear.
 
+**Image prompt:** A playful puzzle of a cover, the tabby cat in the middle, and around it three look-alike objects drawn at the same size and angle: a small folding cot, and a cup. The cat sits among them with a knowing half-smile, as if enjoying the confusion. Soft cream background, the three shapes spaced out and clear. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
+
 **Composition:** Title large across the top in Andika lowercase (only "Cat",
 "Cot", "Cup" capitalised as printed — each followed by its question mark). The
 cat and objects arranged below with calm space between them.
@@ -59,6 +61,8 @@ home, hands lifted in a searching gesture, head turning, eyes scanning — clear
 looking for someone. The cat is nowhere in sight. The mood: *a friendly hunt
 begins.*
 
+**Image prompt:** Sam standing in the cosy home, hands lifted in a searching gesture, head turning, eyes scanning, clearly looking for someone. The cat is nowhere in sight. The mood: a friendly hunt begins. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
+
 **Composition:** Sam centred, mid-search. Text on a clean band along the bottom
 third.
 
@@ -71,6 +75,8 @@ third.
 **Art brief:** Sam peering hopefully at a small folding **cot** — and the cot
 is plainly empty, just a neat little bed with no cat on it. Sam's face: a small
 hopeful lift, then a comic *nope*. The cot is the clear, unambiguous object.
+
+**Image prompt:** Sam peering hopefully at a small folding cot, and the cot is plainly empty, just a neat little bed with no cat on it. Sam's face: a small hopeful lift, then a comic nope. The cot is the clear, unambiguous object. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
 
 **Composition:** Sam and the empty cot, centred. Bottom text band. Two
 sentences — give the *"No!"* its own breath.
@@ -85,6 +91,8 @@ sentences — give the *"No!"* its own breath.
 empty, just a hat turned over. Same hopeful-then-comic beat on Sam's face. Keep
 the cap drawn clearly different from the cot.
 
+**Image prompt:** Sam lifting and peering inside a soft cap, the cap is empty, just a hat turned over. Same hopeful-then-comic beat on Sam's face. Keep the cap drawn clearly different from the cot. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
+
 **Composition:** Sam holding the cap, looking in. Bottom text band. Echo the
 layout of page 2.
 
@@ -98,6 +106,8 @@ layout of page 2.
 cat, which is part of the gentle joke. The cup is empty. Sam's *of course
 not* expression.
 
+**Image prompt:** Sam tilting to look into a large cup, far too small for a cat, which is part of the gentle joke. The cup is empty. Sam's of course not expression. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
+
 **Composition:** Sam and the cup, centred. Bottom text band.
 
 ---
@@ -109,6 +119,8 @@ not* expression.
 **Art brief:** Sam lifting a blanket on a **bed**, hopeful — the bed is empty,
 covers rumpled, no cat. Sam's search is getting a little more anxious now;
 let the worry begin to show, just slightly, around the eyes.
+
+**Image prompt:** Sam lifting a blanket on a bed, hopeful, the bed is empty, covers rumpled, no cat. Sam's search is getting a little more anxious now; let the worry begin to show, just slightly, around the eyes. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
 
 **Composition:** Sam at the bed, lifting the cover. Bottom text band.
 
@@ -122,6 +134,8 @@ let the worry begin to show, just slightly, around the eyes.
 desperate place to look. The bin is empty. Sam's face has tipped from hopeful
 into genuinely worried now.
 
+**Image prompt:** Sam peering right down into a bin, a last, slightly desperate place to look. The bin is empty. Sam's face has tipped from hopeful into genuinely worried now. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
+
 **Composition:** Sam leaning over the bin. Bottom text band.
 
 ---
@@ -134,6 +148,8 @@ into genuinely worried now.
 floor, shoulders dropped, chin in hands, looking small and sad. The cat is
 still nowhere to be seen. Quiet and gentle — not distressing, just the honest
 dip before the turn.
+
+**Image prompt:** The low point, and the frame breaks. Sam sits down on the floor, shoulders dropped, chin in hands, looking small and sad. The cat is still nowhere to be seen. Quiet and gentle, not distressing, just the honest dip before the turn. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
 
 **Composition:** Sam sitting alone, centred, generous empty space around to
 let the loneliness read. Bottom text band.
@@ -149,6 +165,8 @@ A warm beam of sunlight falls across one side of the scene, and at the edge of
 it, just out of full view, is the tip of a familiar tabby tail. *The cat is
 near.*
 
+**Image prompt:** Sam's head snaps up, eyes wide, hopeful, at a sound. A warm beam of sunlight falls across one side of the scene, and at the edge of it, just out of full view, is the tip of a familiar tabby tail. The cat is near. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
+
 **Composition:** Sam looking up and off toward the light. The hint of tail at
 the frame edge. Bottom text band.
 
@@ -161,6 +179,8 @@ the frame edge. Bottom text band.
 **Art brief:** The **cat** trotting happily across the room straight to Sam —
 tail high, calm and pleased, entirely unaware it was ever "lost." Sam is
 already lighting up, arms beginning to open.
+
+**Image prompt:** The cat trotting happily across the room straight to Sam, tail high, calm and pleased, entirely unaware it was ever "lost." Sam is already lighting up, arms beginning to open. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
 
 **Composition:** Cat moving toward Sam, centred. Bottom text band.
 
@@ -176,6 +196,8 @@ a cat-shaped dent is still visible in a cushion. The answer to the mystery: the
 cat was in the cosiest, sunniest, most obvious spot — exactly where a cat
 always is — while Sam searched all the odd places.
 
+**Image prompt:** A small flashback-feeling image, or the cat looking back over its shoulder toward a warm, sunlit windowsill where a cat-shaped dent is still visible in a cushion. The answer to the mystery: the cat was in the cosiest, sunniest, most obvious spot, exactly where a cat always is, while Sam searched all the odd places. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
+
 **Composition:** The cat foreground, the sunny napping spot behind it. Bottom
 text band.
 
@@ -188,6 +210,8 @@ text band.
 **Art brief:** The cat curled into a contented circle on Sam's lap. Sam, sitting
 cross-legged, looks down at the cat — the sadness completely gone, replaced by
 pure relief and warmth. One hand resting gently on the cat.
+
+**Image prompt:** The cat curled into a contented circle on Sam's lap. Sam, sitting cross-legged, looks down at the cat, the sadness completely gone, replaced by pure relief and warmth. One hand resting gently on the cat. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
 
 **Composition:** Sam and cat together, centred — the emotional heart of the
 book. Bottom text band.
@@ -202,6 +226,8 @@ book. Bottom text band.
 curled and asleep on their lap — found, safe, home. Sam beams down at it. Soft
 gold light, generous calm space. The reader closes the book on warmth, the
 worry of pages 6–7 fully resolved.
+
+**Image prompt:** Final cosy spread. Sam sits in the warm sunlight with the cat curled and asleep on their lap, found, safe, home. Sam beams down at it. Soft gold light, generous calm space. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
 
 **Composition:** Sam and cat together, centred, in the sun. Three short
 sentences — keep them well spaced; the last, *"Nap, cat,"* is the quiet button.

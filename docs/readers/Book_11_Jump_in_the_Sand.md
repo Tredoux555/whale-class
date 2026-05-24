@@ -38,6 +38,8 @@ up, pure joy — landing into a soft golden patch of **sand**, with a little
 spray of sand kicking up. The **pup** leaps right beside Sam, ears flying. Soft
 cream sky, warm sun, a wide inviting stretch of sand.
 
+**Image prompt:** Sam caught mid-jump, both feet off the ground, arms flung up, pure joy, landing into a soft golden patch of sand, with a little spray of sand kicking up. The pup leaps right beside Sam, ears flying. Soft cream sky, warm sun, a wide inviting stretch of sand. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
+
 **Composition:** Title large across the top in Andika lowercase (only "Jump"
 and "Sand" capitalised as printed). Sam and pup mid-leap, sand spray below.
 
@@ -52,6 +54,8 @@ toward a big, soft, golden patch of **sand** — a sandpit, or a sandy corner of
 the yard — both eager and happy, a sunny day. The sand stretches invitingly
 ahead of them.
 
+**Image prompt:** Sam and the pup running together toward a big, soft, golden patch of sand, a sandpit, or a sandy corner of the yard, both eager and happy, a sunny day. The sand stretches invitingly ahead of them. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
+
 **Composition:** Sam and pup running left to right toward the sand. Text on a
 clean band along the bottom third.
 
@@ -64,6 +68,8 @@ clean band along the bottom third.
 **Art brief:** Sam jumping into the sand with both feet, arms up, sand flying —
 joyful and silly. The pup bounces in alongside. Sand sprays in happy arcs. Pure
 play.
+
+**Image prompt:** Sam jumping into the sand with both feet, arms up, sand flying, joyful and silly. The pup bounces in alongside. Sand sprays in happy arcs. Pure play. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
 
 **Composition:** Sam and pup mid-jump, sand spray around them. Bottom text
 band. The cheer *"Jump, jump, jump!"* is the fluent line.
@@ -78,6 +84,8 @@ band. The cheer *"Jump, jump, jump!"* is the fluent line.
 one of it digging hard into the sand, back legs braced, sand spraying behind.
 Eager and comic.
 
+**Image prompt:** The pup demonstrating both, one little drawing of it leaping, one of it digging hard into the sand, back legs braced, sand spraying behind. Eager and comic. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
+
 **Composition:** Pup jumping and digging, two beats. Bottom text band.
 
 ---
@@ -89,6 +97,8 @@ Eager and comic.
 **Art brief:** Sam dropping to knees beside the pup, sleeves pushed up, calling
 the reader and the pup into the game — a wide welcoming grin, hands already in
 the sand. The pup is thrilled to have company.
+
+**Image prompt:** Sam dropping to knees beside the pup, sleeves pushed up, calling the reader and the pup into the game, a wide welcoming grin, hands already in the sand. The pup is thrilled to have company. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
 
 **Composition:** Sam kneeling at the sand, pup beside, both about to dig.
 Bottom text band.
@@ -103,6 +113,8 @@ Bottom text band.
 sand piling up around it, both of them grinning, fully absorbed. Teamwork and
 fun.
 
+**Image prompt:** Sam and the pup digging side by side, a real hole forming, sand piling up around it, both of them grinning, fully absorbed. Teamwork and fun. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
+
 **Composition:** Sam and pup digging together, a hole between them. Bottom text
 band.
 
@@ -115,6 +127,8 @@ band.
 **Art brief:** A beat of discovery. The pup's paw has stopped — pressed flat on
 a spot in the sand, head cocked, ears up. It has *felt* something hard down
 there. Sam leans in, eyes widening. A small bump shows in the sand.
+
+**Image prompt:** A beat of discovery. The pup's paw has stopped, pressed flat on a spot in the sand, head cocked, ears up. It has felt something hard down there. Sam leans in, eyes widening. A small bump shows in the sand. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
 
 **Composition:** Pup's paw on the spot, a faint lump in the sand, Sam leaning
 in. Bottom text band.
@@ -129,6 +143,8 @@ in. Bottom text band.
 **lump** half-buried in the sand — its shape not yet clear. Both characters are
 lit up with curiosity. *What could it be?*
 
+**Image prompt:** Sam and the pup brushing sand away to reveal the top of a hard lump half-buried in the sand, its shape not yet clear. Both characters are lit up with curiosity. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
+
 **Composition:** The half-revealed lump centred, Sam and pup either side.
 Bottom text band.
 
@@ -141,6 +157,8 @@ Bottom text band.
 **Art brief:** A burst of energetic digging — Sam and the pup working together
 to free the lump, sand flying everywhere, both fully committed, grins wide.
 The lump is nearly out.
+
+**Image prompt:** A burst of energetic digging, Sam and the pup working together to free the lump, sand flying everywhere, both fully committed, grins wide. The lump is nearly out. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
 
 **Composition:** Sam and pup digging hard, sand flying, the lump emerging.
 Bottom text band.
@@ -156,6 +174,8 @@ turning it, peering at it — eyebrows up, mouth open, guessing. The pup stares
 at it too. The lump is caked in sand; the reader cannot tell yet either. *What
 is it?*
 
+**Image prompt:** Sam holds the still-sandy lump up in both hands, turning it, peering at it, eyebrows up, mouth open, guessing. The pup stares at it too. The lump is caked in sand; the reader cannot tell yet either. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
+
 **Composition:** Sam holding the mystery lump up, pup looking on. Bottom text
 band. Leave the reader guessing.
 
@@ -168,6 +188,8 @@ band. Leave the reader guessing.
 **Art brief:** The reveal. The last of the sand brushed away — it is a smooth,
 lovely, curved **shell**, catching the sun. Sam's face is pure delight; the pup
 wags its whole body. A small, real treasure.
+
+**Image prompt:** The last of the sand brushed away, it is a smooth, lovely, curved shell, catching the sun. Sam's face is pure delight; the pup wags its whole body. A small, real treasure. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
 
 **Composition:** The shell held up, gleaming, Sam and pup beaming at it. Bottom
 text band.
@@ -182,6 +204,8 @@ text band.
 looking at it the way a child treasures a real find. The pup leans its head
 against Sam's arm, sharing the moment. Warm and proud.
 
+**Image prompt:** Sam cradling the shell in both hands, holding it close, looking at it the way a child treasures a real find. The pup leans its head against Sam's arm, sharing the moment. Warm and proud. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
+
 **Composition:** Sam and the shell, pup leaning in, centred. Bottom text band.
 
 ---
@@ -194,6 +218,8 @@ against Sam's arm, sharing the moment. Warm and proud.
 sand in the late golden light, the **shell** set carefully between them, both
 content and a little sandy after a good day's dig. The reader closes the book
 on a small treasure and a happy tiredness.
+
+**Image prompt:** Final warm spread. Sam and the pup sit together in the soft sand in the late golden light, the shell set carefully between them, both content and a little sandy after a good day's dig. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
 
 **Composition:** Sam and pup sitting in the sand, the shell between them, warm
 light. Two short lines of text, bottom band.

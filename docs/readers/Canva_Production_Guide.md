@@ -89,6 +89,63 @@ AI images drift in style. To keep fifteen books coherent:
   re-generate Sam for every page, or Sam will look different every page.
 - Always generate **"no text"** — you add the text yourself, in the font below.
 
+### Character generation prompts
+
+Every page of every reader has a ready-to-paste **Image prompt** (see the next
+section). Those page prompts name the characters — *"Sam"*, *"the cat"* — but
+they do not re-describe them, because **you generate the cast once, here,
+first.** This is what keeps Sam the same child in Book 1 and Book 15.
+
+**The two-step workflow:**
+
+1. **Step 1 — make the cast.** Paste each character prompt below into Canva
+   Magic Media. Pick the best result, remove its background (Canva: *Edit
+   image → BG Remover*), and save it to your Brand Kit / a "Pink Readers cast"
+   folder. Do this once for the whole series.
+2. **Step 2 — build each page.** For each page, paste that page's **Image
+   prompt** to generate the *scene and background*, then drop your saved
+   character elements on top, posed as the page's art brief describes. The
+   page prompt tells you the scene, the poses and the expressions; the saved
+   element keeps the character on-model.
+
+Each character prompt already ends with the style words — paste it exactly:
+
+- **Sam** — *A young child about five years old, gender-neutral, round friendly
+  face, soft dark hair, warm simple clothing in cream and sage green, a gentle
+  smile, standing relaxed, full body, flat warm children's-book illustration,
+  soft rounded shapes, plain white background, no text*
+- **The cat** — *A plump friendly tabby cat, soft brown and grey stripes, big
+  gentle eyes, curled in a relaxed sitting pose, flat warm children's-book
+  illustration, soft rounded shapes, plain white background, no text*
+- **The pup** — *A small round puppy, golden-brown, floppy ears, big eager
+  eyes, short legs, sitting bouncy and alert, flat warm children's-book
+  illustration, soft rounded shapes, plain white background, no text*
+- **Mom** — *A warm gentle mother, soft round face, kind eyes, hair tied back,
+  soft clothing in warm terracotta and cream, a calm smile, standing relaxed,
+  full body, flat warm children's-book illustration, soft rounded shapes,
+  plain white background, no text*
+- **Dad** — *A warm gentle father, soft round face, kind eyes, short hair,
+  soft clothing in sage green and cream, a calm smile, standing relaxed, full
+  body, flat warm children's-book illustration, soft rounded shapes, plain
+  white background, no text*
+- **The hen** — *A plump cheerful hen, warm reddish-brown feathers, a small red
+  comb, one bright alert eye, a slightly comic expressive face, standing, flat
+  warm children's-book illustration, soft rounded shapes, plain white
+  background, no text*
+- **The fox** — *A slim friendly fox, warm orange fur, a bushy white-tipped
+  tail, pointed ears, bright eyes with a touch of mischief, standing alert,
+  flat warm children's-book illustration, soft rounded shapes, plain white
+  background, no text*
+- **The frog** — *A small rounded friendly frog, soft green, big gentle eyes, a
+  wide gentle mouth, sitting, flat warm children's-book illustration, soft
+  rounded shapes, plain white background, no text*
+
+**One-off animals** — the pig (Book 6), the fish and the chick (Book 9) and the
+crab (Book 13) appear in a single book each, so they are described in full
+inside that book's page prompts; they do not need a cast-sheet entry. Generate
+them the same way the first time they appear in their book, and reuse the saved
+element across that book's pages.
+
 ---
 
 ## Typography — non-negotiable for early readers

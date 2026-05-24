@@ -42,6 +42,8 @@ mysterious. Soft cream background.
 *Design the fox here — every later book draws it exactly the same: orange,
 slim, bright-eyed, a touch of mischief.*
 
+**Image prompt:** A bright-eyed, slender fox, warm orange, bushy tail, alert pointed ears, peering with intense curiosity over the rim of a plain brown cardboard box, both front paws up on the edge, nose down, sniffing. Just the right amount of mischief in the eyes. The box is shut, ordinary, mysterious. Soft cream background. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
+
 **Composition:** Title large across the top in Andika lowercase (only "The",
 "Fox", "Box" capitalised as printed). Fox and box centred. Calm space.
 
@@ -57,6 +59,8 @@ the box, pleased with it, the way a child treasures an ordinary box. Cosy
 living room, soft daylight. *(Optional: the faintest hint that the box is not
 quite empty — a whisker, a tuft of fur — but keep it almost invisible.)*
 
+**Image prompt:** Sam, drawn exactly as in Books 1–3, sitting on the home rug beside a large, plain, shut cardboard box. Sam pats the box, pleased with it, the way a child treasures an ordinary box. Cosy living room, soft daylight. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
+
 **Composition:** Text on a clean band along the bottom third. Sam and the box
 centred above it.
 
@@ -69,6 +73,8 @@ centred above it.
 **Art brief:** The fox arrives — bounding into the room at speed, tail
 streaming, eyes locked on the box, drawn to it like a magnet. Sam sits back,
 surprised and delighted, watching this new visitor. Energy and arrival.
+
+**Image prompt:** The fox arrives, bounding into the room at speed, tail streaming, eyes locked on the box, drawn to it like a magnet. Sam sits back, surprised and delighted, watching this new visitor. Energy and arrival. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
 
 **Composition:** Fox running left to right toward the box, leading the eye.
 Sam at the side. Bottom text band.
@@ -83,6 +89,8 @@ Sam at the side. Bottom text band.
 nose almost touching it, ears pricked, one paw lifted — every line of the body
 asking the question. The box stays shut and silent. *What IS in there?*
 
+**Image prompt:** The fox stands right at the box now, leaning in close, nose almost touching it, ears pricked, one paw lifted, every line of the body asking the question. The box stays shut and silent. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
+
 **Composition:** Fox and box centred, the fox's whole posture pointing into the
 box. Bottom text band.
 
@@ -95,6 +103,8 @@ box. Bottom text band.
 **Art brief:** The fox tapping the side of the box with one careful paw — head
 tilted, listening hard for any answer from inside. Three little tap-marks or
 sound-puffs. Comic concentration.
+
+**Image prompt:** The fox tapping the side of the box with one careful paw, head tilted, listening hard for any answer from inside. Three little tap-marks or sound-puffs. Comic concentration. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
 
 **Composition:** Fox tapping the box, both centred. Bottom text band.
 
@@ -109,6 +119,8 @@ side, back legs pushing, slipping back down — the box too tall and smooth, the
 lid shut. Determined and a bit comically thwarted. Sam watches, hand to mouth,
 amused.
 
+**Image prompt:** The fox trying to climb the box, front paws scrabbling up the side, back legs pushing, slipping back down, the box too tall and smooth, the lid shut. Determined and a bit comically thwarted. Sam watches, hand to mouth, amused. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
+
 **Composition:** Fox mid-scrabble against the box. Bottom text band.
 
 ---
@@ -120,6 +132,8 @@ amused.
 **Art brief:** New idea. The fox has put both front paws low on the side of the
 box and is shoving — body braced, tail out for balance, a clever gleam in its
 eye. The box leans, just starting to rock.
+
+**Image prompt:** The fox has put both front paws low on the side of the box and is shoving, body braced, tail out for balance, a clever gleam in its eye. The box leans, just starting to rock. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
 
 **Composition:** Fox pushing low, box tilting. A slight diagonal to the whole
 scene. Bottom text band.
@@ -133,6 +147,8 @@ scene. Bottom text band.
 **Art brief:** The box goes over — caught at the moment it topples onto its
 side, lid flapping open, a little puff of motion. The fox hops back, eyes wide.
 Sam leans in. *Something is about to come out.*
+
+**Image prompt:** The box goes over, caught at the moment it topples onto its side, lid flapping open, a little puff of motion. The fox hops back, eyes wide. Sam leans in. Something is about to come out. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
 
 **Composition:** Box mid-topple, open end starting to face the reader. Fox
 recoiling at the side. Bottom text band. This is the page-turn page — leave the
@@ -149,6 +165,8 @@ Books 1–3 — sleepy, rumpled, blinking, mid-stretch, distinctly unimpressed a
 being woken. The fox sits bolt upright, ears flat, eyes huge — a comic fright.
 Sam bursts out laughing.
 
+**Image prompt:** Out of the open box rolls the tabby cat from Books 1–3, sleepy, rumpled, blinking, mid-stretch, distinctly unimpressed at being woken. The fox sits bolt upright, ears flat, eyes huge, a comic fright. Sam bursts out laughing. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
+
 **Composition:** Cat tumbling out of the box centre, fox startled at the side.
 Bottom text band. The fox's frozen surprise is the joke.
 
@@ -162,6 +180,8 @@ Bottom text band. The fox's frozen surprise is the joke.
 awake now, giving its paw a dignified lick — *of course I was in the box, I nap
 everywhere.* The fox stares at the cat, fright fading into wonder. Sam grins.
 
+**Image prompt:** The cat sits beside the tipped-over box, fully awake now, giving its paw a dignified lick, of course I was in the box, I nap everywhere. The fox stares at the cat, fright fading into wonder. Sam grins. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
+
 **Composition:** Cat and box centre, fox watching. Bottom text band.
 
 ---
@@ -173,6 +193,8 @@ everywhere.* The fox stares at the cat, fright fading into wonder. Sam grins.
 **Art brief:** The fox and the cat sitting side by side now, looking at each
 other — the fox's ears come up, friendly and curious; the cat blinks at it,
 calm and accepting. A quiet little moment of two becoming friends.
+
+**Image prompt:** The fox and the cat sitting side by side now, looking at each other, the fox's ears come up, friendly and curious; the cat blinks at it, calm and accepting. A quiet little moment of two becoming friends. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
 
 **Composition:** Fox and cat side by side, centred, facing each other. Bottom
 text band.
@@ -186,6 +208,8 @@ text band.
 **Art brief:** The box is righted again, open end up. The fox is climbing in
 over one side, the cat stepping in over the other — both heading into the box
 together, tails up, delighted. Sam holds the box steady, laughing.
+
+**Image prompt:** The box is righted again, open end up. The fox is climbing in over one side, the cat stepping in over the other, both heading into the box together, tails up, delighted. Sam holds the box steady, laughing. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
 
 **Composition:** Box centred, fox and cat climbing in from each side. Bottom
 text band.
@@ -201,6 +225,8 @@ inside the box**, two warm shapes nested into one — the fox's bushy tail over
 the cat, the cat tucked in close, both fast asleep. Sam sits beside the box,
 chin on hands, beaming down at the pair. Soft warm light. The reader closes the
 book on the same cosy box-nap the cat has been teaching since Book 1.
+
+**Image prompt:** Final cosy spread. The fox and the cat are curled up together inside the box, two warm shapes nested into one, the fox's bushy tail over the cat, the cat tucked in close, both fast asleep. Sam sits beside the box, chin on hands, beaming down at the pair. Soft warm light. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
 
 **Composition:** The box with fox and cat curled inside, Sam close behind, all
 centred. Two short lines of text, bottom band.

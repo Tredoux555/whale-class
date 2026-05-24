@@ -40,6 +40,8 @@ rounded green **hill**, a small curl of path winding up to it. Tiny at the
 bottom of the hill, looking up, are **Sam** and the **pup** — the scale makes
 the hill feel like a real little adventure. Soft cream sky, warm light.
 
+**Image prompt:** A bright, simple red bell sitting at the very top of a soft, rounded green hill, a small curl of path winding up to it. Tiny at the bottom of the hill, looking up, are Sam and the pup, the scale makes the hill feel like a real little adventure. Soft cream sky, warm light. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
+
 **Composition:** Title large across the top in Andika lowercase (only "The",
 "Bell", "Hill" capitalised as printed). The hill rising from the lower frame,
 the red bell at its peak, Sam and pup small at the base.
@@ -55,6 +57,8 @@ a shiny **red bell** with both hands, delighted by it — the way a child loves
 one good simple toy. The **pup** bounces at Sam's feet, eyeing the bell with
 interest.
 
+**Image prompt:** Sam in the cosy home or yard, holding up a shiny red bell with both hands, delighted by it, the way a child loves one good simple toy. The pup bounces at Sam's feet, eyeing the bell with interest. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
+
 **Composition:** Sam and the bell centred, pup below. Text on a clean band
 along the bottom third.
 
@@ -67,6 +71,8 @@ along the bottom third.
 **Art brief:** Sam climbing the rounded green **hill**, the red bell tucked
 under one arm, working hard — cheeks puffed, little effort-clouds, a determined
 grin. The hill is a proper climb. The pup scrambles up behind.
+
+**Image prompt:** Sam climbing the rounded green hill, the red bell tucked under one arm, working hard, cheeks puffed, little effort-clouds, a determined grin. The hill is a proper climb. The pup scrambles up behind. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
 
 **Composition:** Sam mid-climb on the diagonal of the hill, pup behind. Bottom
 text band. The *"Puff, puff, puff!"* is the fluent, fun line.
@@ -81,6 +87,8 @@ text band. The *"Puff, puff, puff!"* is the fluent, fun line.
 the peak of the hill. Sam stands beside it, hands on hips, proud — a job done.
 A wide view of the gentle hill dropping away below. The bell gleams at the top.
 
+**Image prompt:** Sam has reached the top and set the red bell down right at the peak of the hill. Sam stands beside it, hands on hips, proud, a job done. A wide view of the gentle hill dropping away below. The bell gleams at the top. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
+
 **Composition:** The hilltop, the bell placed on it, Sam beside it. Bottom text
 band.
 
@@ -93,6 +101,8 @@ band.
 **Art brief:** The bouncy **pup** comes barrelling over the top of the hill at
 full speed — and bumps straight into the bell. Not naughty, just pure
 puppy-bounce. The bell rocks. Sam's eyes go wide. *Uh-oh.*
+
+**Image prompt:** The bouncy pup comes barrelling over the top of the hill at full speed, and bumps straight into the bell. Not naughty, just pure puppy-bounce. The bell rocks. Sam's eyes go wide. Uh-oh. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
 
 **Composition:** Pup colliding with the bell, the bell tilting. Sam reacting at
 the side. Bottom text band.
@@ -107,6 +117,8 @@ the side. Bottom text band.
 a small puff of motion behind it, starting to roll. The pup freezes, ears
 flat, eyes huge — *what did I do?* A single short, dramatic line of text.
 
+**Image prompt:** The bell topples, caught at the instant it leaves the hilltop, a small puff of motion behind it, starting to roll. The pup freezes, ears flat, eyes huge, A single short, dramatic line of text. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
+
 **Composition:** The bell tipping over the edge of the hilltop, the pup
 recoiling. Bottom text band.
 
@@ -119,6 +131,8 @@ recoiling. Bottom text band.
 **Art brief:** The red bell rolling away down the long green slope of the hill,
 gathering speed, bouncing a little. Sam and the pup at the top, both leaning
 after it, alarmed. The bell is getting away.
+
+**Image prompt:** The red bell rolling away down the long green slope of the hill, gathering speed, bouncing a little. Sam and the pup at the top, both leaning after it, alarmed. The bell is getting away. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
 
 **Composition:** A wide hillside, the bell rolling down it on a diagonal, Sam
 and pup at the top. Bottom text band. The downhill line leads the eye toward
@@ -134,6 +148,8 @@ the page edge.
 frightened — a call to action. The pup is already crouched, ready to spring.
 The **cat** appears at the edge of the frame, ears up, drawn by the commotion.
 
+**Image prompt:** Sam pointing down the hill, calling out, urgent but not frightened, a call to action. The pup is already crouched, ready to spring. The cat appears at the edge of the frame, ears up, drawn by the commotion. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
+
 **Composition:** Sam pointing downhill, pup poised, cat arriving. Bottom text
 band.
 
@@ -146,6 +162,8 @@ band.
 **Art brief:** The chase. The **pup** and the **cat** both pelting down the
 green hillside after the rolling bell — full speed, ears back, a real dash.
 Energy and teamwork.
+
+**Image prompt:** The pup and the cat both pelting down the green hillside after the rolling bell, full speed, ears back, a real dash. Energy and teamwork. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
 
 **Composition:** Pup and cat racing downhill, the bell rolling ahead of them.
 Bottom text band.
@@ -160,6 +178,8 @@ Bottom text band.
 reaching... reaching... toward the bell just ahead of it, almost — but not
 quite — touching. Frozen at the most uncertain instant. *Will it?*
 
+**Image prompt:** The pup is stretched out at a flat run, paw reaching... reaching... toward the bell just ahead of it, almost, but not quite, touching. Frozen at the most uncertain instant. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
+
 **Composition:** Pup at full stretch, bell just beyond its paw, both centred.
 Bottom text band. Leave the reader hanging.
 
@@ -172,6 +192,8 @@ Bottom text band. Leave the reader hanging.
 **Art brief:** The payoff. The pup has the **red bell** safe between its front
 paws, having pounced on it at the bottom of the hill — tail wagging madly,
 thrilled with itself. The cat trots up beside it, pleased. Relief.
+
+**Image prompt:** The pup has the red bell safe between its front paws, having pounced on it at the bottom of the hill, tail wagging madly, thrilled with itself. The cat trots up beside it, pleased. Relief. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
 
 **Composition:** Pup with the bell, cat beside it, at the foot of the hill.
 Bottom text band.
@@ -187,6 +209,8 @@ again and set it firmly on the hilltop, this time nestled into a little dip or
 held by a small stone so it cannot roll. Everyone looks satisfied. Order
 restored.
 
+**Image prompt:** Back at the top, Sam has carried the bell up again and set it firmly on the hilltop, this time nestled into a little dip or held by a small stone so it cannot roll. Everyone looks satisfied. Order restored. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
+
 **Composition:** The hilltop, the bell settled safely, Sam and pup beside it.
 Bottom text band. Echo page 3.
 
@@ -200,6 +224,8 @@ Bottom text band. Echo page 3.
 at the top of the hill in the soft evening light, the **red bell** safe beside
 them, all three looking out over the gentle view. A good day, a small
 adventure, friends together. The reader closes the book on calm and warmth.
+
+**Image prompt:** Final warm spread. Sam, the pup and the cat sit together at the top of the hill in the soft evening light, the red bell safe beside them, all three looking out over the gentle view. A good day, a small adventure, friends together. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
 
 **Composition:** The three friends and the bell on the hilltop, centred,
 generous calm sky around them. Two short lines of text, bottom band.

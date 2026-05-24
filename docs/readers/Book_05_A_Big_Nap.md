@@ -44,6 +44,8 @@ against Sam and each other, a single cosy pile of friends. Soft cream
 background, gentle gold light. Every character drawn exactly as in their first
 book.
 
+**Image prompt:** The whole cast asleep in one warm heap, Sam in the middle, the cat, the pup, the hen and the fox all curled and nestled against Sam and each other, a single cosy pile of friends. Soft cream background, gentle gold light. Every character drawn exactly as in their first book. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
+
 **Composition:** Title large across the top in Andika lowercase (only "A" and
 "Big"/"Nap" capitalised as printed). The sleeping pile centred, generous calm
 space around it.
@@ -58,6 +60,8 @@ space around it.
 calm and composed, the pup bouncing beside it, ears up. The Book 1–2 pair, side
 by side, clearly old friends. Soft daylight, the home rug.
 
+**Image prompt:** The tabby cat and the puppy together, the cat sitting calm and composed, the pup bouncing beside it, ears up. The Book 1–2 pair, side by side, clearly old friends. Soft daylight, the home rug. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
+
 **Composition:** Text on a clean band along the bottom third. Cat and pup
 centred above it.
 
@@ -70,6 +74,8 @@ centred above it.
 **Art brief:** The **hen** and the **fox** together — the hen mid-fuss,
 feathers lively; the fox bright-eyed beside it, a glint of friendly mischief.
 The Book 3–4 pair. They are getting along fine.
+
+**Image prompt:** The hen and the fox together, the hen mid-fuss, feathers lively; the fox bright-eyed beside it, a glint of friendly mischief. The Book 3–4 pair. They are getting along fine. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
 
 **Composition:** Hen and fox centred. Bottom text band. Mirror the layout of
 page 1.
@@ -85,6 +91,8 @@ page 1.
 is drawn here for the first full time — warm, soft clothing, a kind face;
 design him to match Mom's gentle style.)* The cosy home around them.
 
+**Image prompt:** The three people of the series together, Sam in front, Mom and Dad behind, all warm and smiling, a small happy family. The cosy home around them. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
+
 **Composition:** The three centred, Sam slightly forward. Bottom text band.
 
 ---
@@ -97,6 +105,8 @@ design him to match Mom's gentle style.)* The cosy home around them.
 yard or room: Sam, Mom, Dad, the cat, the pup, the hen, the fox, all in happy
 motion, tails and feathers and arms streaming. Pure celebration. Bright, warm,
 full of life.
+
+**Image prompt:** The big joyful scene, everyone running together across a sunny yard or room: Sam, Mom, Dad, the cat, the pup, the hen, the fox, all in happy motion, tails and feathers and arms streaming. Pure celebration. Bright, warm, full of life. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
 
 **Composition:** A wide scene, the whole cast moving left to right. Bottom text
 band.
@@ -111,6 +121,8 @@ band.
 character mid-air, big grins, the pup highest of all. Joyful chaos, but clear
 and uncluttered.
 
+**Image prompt:** The same gang now all hopping, a row of bounces, every character mid-air, big grins, the pup highest of all. Joyful chaos, but clear and uncluttered. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
+
 **Composition:** Wide scene, everyone mid-hop. Bottom text band.
 
 ---
@@ -122,6 +134,8 @@ and uncluttered.
 **Art brief:** A quieter beat — the **cat** has peeled off from the game and
 curled up on its **mat** for a classic Book 1 nap, calm and content, one eye
 half-open. The others can be hinted at the edges, still playing.
+
+**Image prompt:** A quieter beat, the cat has peeled off from the game and curled up on its mat for a classic Book 1 nap, calm and content, one eye half-open. The others can be hinted at the edges, still playing. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
 
 **Composition:** Cat and mat centred. Bottom text band.
 
@@ -135,6 +149,8 @@ half-open. The others can be hinted at the edges, still playing.
 a little spray of dirt or sand flying back, bottom in the air, tongue out. Sam
 cheers it on from the side.
 
+**Image prompt:** The pup digging with gleeful abandon, front paws blurring, a little spray of dirt or sand flying back, bottom in the air, tongue out. Sam cheers it on from the side. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
+
 **Composition:** Pup digging centre, small spray of dirt. Bottom text band.
 
 ---
@@ -145,6 +161,8 @@ cheers it on from the side.
 
 **Art brief:** The **hen** pecking busily — head down, tail up, industrious and
 comic, a few specks scattered around. The hen at its happiest.
+
+**Image prompt:** The hen pecking busily, head down, tail up, industrious and comic, a few specks scattered around. The hen at its happiest. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
 
 **Composition:** Hen centred, pecking. Bottom text band. Echo the layout of
 page 7.
@@ -160,6 +178,8 @@ page 7.
 softly around the fox. The mischievous fox of Book 4 is settled and content
 here. Quiet affection.
 
+**Image prompt:** A warm, gentle page, the fox has come to sit close beside Sam, leaning lightly into Sam's side, calm and trusting. Sam has an arm softly around the fox. The mischievous fox of Book 4 is settled and content here. Quiet affection. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
+
 **Composition:** Sam and fox together, centred, close. Bottom text band.
 
 ---
@@ -172,6 +192,8 @@ here. Quiet affection.
 across a sun-filled yard, each doing its own thing, the golden light pouring
 over everything. The day is at its full, lovely height. Everyone content.
 
+**Image prompt:** A wide, warm midday scene, the whole cast scattered happily across a sun-filled yard, each doing its own thing, the golden light pouring over everything. The day is at its full, lovely height. Everyone content. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
+
 **Composition:** Wide sunny scene, the cast spread across it. Bottom text band.
 
 ---
@@ -183,6 +205,8 @@ over everything. The day is at its full, lovely height. Everyone content.
 **Art brief:** The wind-down. One by one the cast is settling — Sam yawning,
 the pup slowing, the hen tucking its head, the fox circling to lie down, Mom
 and Dad easing down onto the rug. The warm light softens. Sleep is coming.
+
+**Image prompt:** One by one the cast is settling, Sam yawning, the pup slowing, the hen tucking its head, the fox circling to lie down, Mom and Dad easing down onto the rug. The warm light softens. Sleep is coming. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
 
 **Composition:** The cast drifting toward a central resting spot. Bottom text
 band.
@@ -199,6 +223,8 @@ softly behind) all curled into one big warm sleeping heap. Every tail tucked,
 every face peaceful. Soft gold light over the whole pile. The reader closes
 Phase 1 on the biggest, warmest nap of the series — everyone the child has met,
 together.
+
+**Image prompt:** The full cover image paid off in the story: Sam, the cat, the pup, the hen, the fox all curled into one big warm sleeping heap. Every tail tucked, every face peaceful. Soft gold light over the whole pile. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
 
 **Composition:** The sleeping pile centred, generous calm space. The first line
 is a gentle roll-call; the second line, larger, is the button. Bottom text

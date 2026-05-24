@@ -44,6 +44,8 @@ streaming straight back, tongue out, eyes wide with thrilled glee, the sled
 tilting on a downhill slope with little speed-lines behind it. Pure, fast joy.
 Soft cream sky, a sweep of green hill.
 
+**Image prompt:** The pup riding a small wooden sled at full tilt, ears streaming straight back, tongue out, eyes wide with thrilled glee, the sled tilting on a downhill slope with little speed-lines behind it. Pure, fast joy. Soft cream sky, a sweep of green hill. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
+
 **Composition:** Title large across the top in Andika lowercase (only "The",
 "Pup", "Sled" capitalised as printed). Pup and sled racing on the diagonal.
 
@@ -58,6 +60,8 @@ Soft cream sky, a sweep of green hill.
 it like a magnet, clearly desperate for a ride. A sunny day, a gentle hill
 behind them.
 
+**Image prompt:** Sam standing beside a small wooden sled, and the pup racing straight toward it, eyes locked on, drawn to it like a magnet, clearly desperate for a ride. A sunny day, a gentle hill behind them. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
+
 **Composition:** Sam and the sled, the pup running in. Text on a clean band
 along the bottom third.
 
@@ -71,6 +75,8 @@ along the bottom third.
 front paws gripping, body braced, an enormous expectant grin — *ready!* Sam
 steadies the sled, smiling.
 
+**Image prompt:** The pup has scrambled up onto the sled and sits squarely on it, front paws gripping, body braced, an enormous expectant grin, ready! Sam steadies the sled, smiling. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
+
 **Composition:** Pup planted on the sled, Sam holding it. Bottom text band.
 
 ---
@@ -82,6 +88,8 @@ steadies the sled, smiling.
 **Art brief:** A wider view — the sled (pup aboard) is now at the very top of a
 big green **hill**, the slope dropping away ahead and below. The drop looks
 long and exciting. The pup peers down it, thrilled.
+
+**Image prompt:** A wider view, the sled is now at the very top of a big green hill, the slope dropping away ahead and below. The drop looks long and exciting. The pup peers down it, thrilled. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
 
 **Composition:** The hilltop, the sled at its edge, the slope falling away
 into the lower frame. Bottom text band.
@@ -96,6 +104,8 @@ into the lower frame. Bottom text band.
 just starting to pick up speed, the pup's eyes going wide and bright. A few
 little motion-lines. Here we go.
 
+**Image prompt:** The sled beginning to move, sliding off the top of the hill, just starting to pick up speed, the pup's eyes going wide and bright. A few little motion-lines. Here we go. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
+
 **Composition:** Sled tipping into the downhill slide, pup aboard. Bottom text
 band. The cheer is the fluent line.
 
@@ -108,6 +118,8 @@ band. The cheer is the fluent line.
 **Art brief:** The sled racing down the hill at full speed — strong speed-lines,
 the pup's ears flat back, mouth open in a huge delighted laugh, having the ride
 of its life. Sheer joy.
+
+**Image prompt:** The sled racing down the hill at full speed, strong speed-lines, the pup's ears flat back, mouth open in a huge delighted laugh, having the ride of its life. Sheer joy. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
 
 **Composition:** Sled at full speed on the diagonal, pup beaming. Bottom text
 band.
@@ -122,6 +134,8 @@ band.
 right around as it races on, the pup hanging on, eyes huge but still laughing —
 half thrilled, half *whoa!* Comic and wild.
 
+**Image prompt:** The sled hits a bump or a curve and starts to spin, turning right around as it races on, the pup hanging on, eyes huge but still laughing, half thrilled, half whoa! Comic and wild. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
+
 **Composition:** Sled mid-spin, little curved motion-arrows around it. Bottom
 text band.
 
@@ -134,6 +148,8 @@ text band.
 **Art brief:** The hook. **Sam**, partway down the hill, has spun round to
 watch the spinning sled race past — hands up, eyes wide, calling out, worried
 for the pup. The sled (with the delighted pup) zooms on. *Who CAN stop it?*
+
+**Image prompt:** Sam, partway down the hill, has spun round to watch the spinning sled race past, hands up, eyes wide, calling out, worried for the pup. The sled zooms on. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
 
 **Composition:** Sam mid-hill reacting, the sled racing past below. Bottom text
 band.
@@ -149,6 +165,8 @@ looks back over its shoulder at Sam — and it is grinning ear to ear, having th
 best time of its life, plainly not wanting this to end at all. The opposite of
 worried.
 
+**Image prompt:** The joke. The pup, still aboard the spinning, racing sled, looks back over its shoulder at Sam, and it is grinning ear to ear, having the best time of its life, plainly not wanting this to end at all. The opposite of worried. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
+
 **Composition:** Close on the pup aboard the sled, looking back, joyful.
 Bottom text band.
 
@@ -163,6 +181,8 @@ gently, tipping up at one end. Caught at the tipping instant. The pup is
 launching off it into the air, all four legs out, *still* grinning. Nothing
 scary — a soft, comic spill.
 
+**Image prompt:** At the bottom of the hill the sled hits the flat, and flips, gently, tipping up at one end. Caught at the tipping instant. The pup is launching off it into the air, all four legs out, still grinning. Nothing scary, a soft, comic spill. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
+
 **Composition:** The sled tipping, the pup popping up off it. Bottom text band.
 
 ---
@@ -174,6 +194,8 @@ scary — a soft, comic spill.
 **Art brief:** The pup lands — softly, in the grass at the foot of the hill,
 rolling once, legs in the air, completely unhurt. The flipped sled lies nearby.
 The pup is mid-laugh even as it lands.
+
+**Image prompt:** The pup lands, softly, in the grass at the foot of the hill, rolling once, legs in the air, completely unhurt. The flipped sled lies nearby. The pup is mid-laugh even as it lands. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
 
 **Composition:** Pup tumbling safely in the grass, sled beside it. Bottom text
 band.
@@ -188,6 +210,8 @@ band.
 mad, beaming up at Sam — *can we do that again?* Sam, hurrying up, sees the
 pup is fine and breaks into a relieved laugh.
 
+**Image prompt:** The pup back on its feet, shaking grass off, tail going like mad, beaming up at Sam, Sam, hurrying up, sees the pup is fine and breaks into a relieved laugh. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
+
 **Composition:** Pup up and beaming, Sam arriving with relief. Bottom text
 band.
 
@@ -201,6 +225,8 @@ band.
 wooden **sled** in the soft afternoon light, sandy-grassy and pleased with
 itself. **Sam** sits with it, one arm around the pup, laughing. A small wild
 adventure, safely over. The reader closes the book on glee and warmth.
+
+**Image prompt:** Final warm spread. The pup sits happily beside the little wooden sled in the soft afternoon light, sandy-grassy and pleased with itself. Sam sits with it, one arm around the pup, laughing. A small wild adventure, safely over. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
 
 **Composition:** Pup and sled and Sam together, centred, warm light. Two short
 lines of text, bottom band.

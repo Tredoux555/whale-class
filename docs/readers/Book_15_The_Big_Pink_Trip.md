@@ -48,6 +48,8 @@ and **Mom** and **Dad** — a happy procession, everyone carrying or wearing
 something for the trip. A soft pink-tinged morning sky (the gentle nod to the
 Pink Phase). Every character drawn exactly as in their own book.
 
+**Image prompt:** The whole cast setting off together on a sunny path, Sam in the lead, the pup, the cat, the hen, the fox, the frog, and Mom and Dad, a happy procession, everyone carrying or wearing something for the trip. A soft pink-tinged morning sky. Every character drawn exactly as in their own book. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
+
 **Composition:** Title large across the top in Andika lowercase (only "The",
 "Big", "Pink", "Trip" capitalised as printed). The whole procession winding
 across the lower frame.
@@ -64,6 +66,8 @@ wide, beaming — full of an idea. Around Sam, the whole cast is gathering: the
 **Dad**, all turning toward Sam, catching the excitement. The mood: *something
 wonderful is about to begin.*
 
+**Image prompt:** Sam stands in the cosy home, arms thrown wide, beaming, full of an idea. Around Sam, the whole cast is gathering: the cat, the pup, the hen, the fox, the frog, Mom and Dad, all turning toward Sam, catching the excitement. The mood: something wonderful is about to begin. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
+
 **Composition:** Sam centred and excited, the cast gathering around. Text on a
 clean band along the bottom third.
 
@@ -76,6 +80,8 @@ clean band along the bottom third.
 **Art brief:** Sam and the **pup** climbing a big green **hill** — the same
 rounded hill from Book 8. Bright morning, the path winding up. *(A child who
 read Book 8 should feel the recognition — keep the hill's shape the same.)*
+
+**Image prompt:** Sam and the pup climbing a big green hill, the same rounded hill from Book 8. Bright morning, the path winding up. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
 
 **Composition:** Sam and pup climbing the hill on the diagonal. Bottom text
 band.
@@ -90,6 +96,8 @@ band.
 into a perfect sleeping circle, having a nap, one eye half-open. The Book 1
 joke, paid off one last time. Sam and the others grin at the sight.
 
+**Image prompt:** At the top of the hill, the cat has, of course, curled into a perfect sleeping circle, having a nap, one eye half-open. The Book 1 joke, paid off one last time. Sam and the others grin at the sight. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
+
 **Composition:** The hilltop, the cat curled and napping, the cast around it.
 Bottom text band.
 
@@ -103,6 +111,8 @@ Bottom text band.
 glittering blue **pond** (the Book 14 pond). The frog is in its element,
 already leaning toward the water.
 
+**Image prompt:** The trip moves on, Sam and the frog hurrying down to a glittering blue pond. The frog is in its element, already leaning toward the water. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
+
 **Composition:** Sam and frog heading to the pond. Bottom text band.
 
 ---
@@ -114,6 +124,8 @@ already leaning toward the water.
 **Art brief:** The **frog** does what it does best — a great joyful **splash**
 in the **pond**, water flying in bright arcs. Everyone laughs, getting happily
 sprayed. A Book 14 callback.
+
+**Image prompt:** The frog does what it does best, a great joyful splash in the pond, water flying in bright arcs. Everyone laughs, getting happily sprayed. A Book 14 callback. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
 
 **Composition:** Frog mid-splash, water arcs, the cast watching and laughing.
 Bottom text band.
@@ -128,6 +140,8 @@ Bottom text band.
 Book 11 sand) — sand spraying, tail wagging. Sam digs alongside. The cheer
 returns one last time.
 
+**Image prompt:** The pup digging gleefully in a golden patch of sand, sand spraying, tail wagging. Sam digs alongside. The cheer returns one last time. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
+
 **Composition:** Pup and Sam digging in the sand. Bottom text band.
 
 ---
@@ -139,6 +153,8 @@ returns one last time.
 **Art brief:** The **pig** from Book 6, in its glorious mud — and the **pup**,
 remembering exactly how wonderful mud is, has hopped right in beside it. Both
 happily filthy, grinning. A Book 6 callback.
+
+**Image prompt:** The pig from Book 6, in its glorious mud, and the pup, remembering exactly how wonderful mud is, has hopped right in beside it. Both happily filthy, grinning. A Book 6 callback. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
 
 **Composition:** Pig and pup together in the mud. Bottom text band.
 
@@ -152,6 +168,8 @@ happily filthy, grinning. A Book 6 callback.
 squarely on top — exactly as it did in Book 3. Serene and pleased with itself.
 Mom watches, laughing, recognising the joke.
 
+**Image prompt:** The hen has found a big red hat and perched itself squarely on top, exactly as it did in Book 3. Serene and pleased with itself. Mom watches, laughing, recognising the joke. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
+
 **Composition:** Hen on the red hat, Mom laughing nearby. Bottom text band.
 
 ---
@@ -163,6 +181,8 @@ Mom watches, laughing, recognising the joke.
 **Art brief:** The **fox** has found a cardboard **box** and tucked itself
 inside — only its bright eyes and ears showing over the rim, a mischievous
 grin. The Book 4 callback. Sam peers in at it, delighted.
+
+**Image prompt:** The fox has found a cardboard box and tucked itself inside, only its bright eyes and ears showing over the rim, a mischievous grin. The Book 4 callback. Sam peers in at it, delighted. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
 
 **Composition:** Fox peeking out of the box, Sam looking in. Bottom text band.
 
@@ -177,6 +197,8 @@ together on a rug in the sun, sharing **ham** and **buns**, with the cat, pup,
 hen, fox and frog all gathered close around them. The whole family and the
 whole cast, together, happy, fed. The heart of the trip.
 
+**Image prompt:** A warm picnic beat, Sam, Mom and Dad sitting together on a rug in the sun, sharing ham and buns, with the cat, pup, hen, fox and frog all gathered close around them. The whole family and the whole cast, together, happy, fed. The heart of the trip. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
+
 **Composition:** The picnic rug, the family and cast gathered round. Bottom
 text band.
 
@@ -189,6 +211,8 @@ text band.
 **Art brief:** Evening. The light has gone soft and golden, the heat of the day
 faded. The whole cast is heading home along the path, content and pleasantly
 tired, leaning into each other. A lovely day, ending.
+
+**Image prompt:** Evening. The light has gone soft and golden, the heat of the day faded. The whole cast is heading home along the path, content and pleasantly tired, leaning into each other. A lovely day, ending. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
 
 **Composition:** The cast on the homeward path in soft evening light. Bottom
 text band.
@@ -203,6 +227,8 @@ text band.
 cosy living room, each one drawn clearly so the child can find and name every
 friend they have collected across fifteen books. Warm lamplight, sleepy and
 content.
+
+**Image prompt:** A roll-call spread, the whole cast home again, gathered in the cosy living room, each one drawn clearly so the child can find and name every friend they have collected across fifteen books. Warm lamplight, sleepy and content. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
 
 **Composition:** The full cast arranged across the room, each clearly visible.
 Bottom text band. A list-sentence the child reads as a proud roll-call.
@@ -219,6 +245,8 @@ into one big warm sleeping heap: **Sam** in the middle, the **cat**, **pup**,
 behind. Every face peaceful. Soft gold light over everything. The reader closes
 the Pink Readers on the biggest, warmest nap of all — and on a quiet,
 unspoken truth: they just read this whole book themselves.
+
+**Image prompt:** The final spread of the whole series, the entire cast curled into one big warm sleeping heap: Sam in the middle, the cat, pup, hen, fox and frog all nestled close, Mom and Dad softly behind. Every face peaceful. Soft gold light over everything. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
 
 **Composition:** The sleeping pile centred, generous calm space. Three short
 sentences, well spaced; the last is the gentle button. Bottom text band.

@@ -45,6 +45,8 @@ in bright arcs and droplets — with the **frog** at the centre of it,
 mid-leap, grinning, and the **pup** bounding in at the edge of the spray. All
 energy, all delight. Soft cream sky, warm sun, sparkling water.
 
+**Image prompt:** A huge, joyful splash in a blue pond, water flying up in bright arcs and droplets, with the frog at the centre of it, mid-leap, grinning, and the pup bounding in at the edge of the spray. All energy, all delight. Soft cream sky, warm sun, sparkling water. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
+
 **Composition:** Title large across the top in Andika lowercase (only "Splash"
 and "Pond" capitalised as printed). The big splash centred, droplets filling
 the space.
@@ -60,6 +62,8 @@ yard, both wilting in the heat — Sam fanning a face, the pup flat-out and
 panting, the sun blazing gold overhead. The mood: *too hot — they need to cool
 down.*
 
+**Image prompt:** A bright, almost too-warm scene. Sam and the pup in the yard, both wilting in the heat, Sam fanning a face, the pup flat-out and panting, the sun blazing gold overhead. The mood: too hot, they need to cool down. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
+
 **Composition:** Sam and pup centred, drooping, the big sun above. Text on a
 clean band along the bottom third. Three short sentences — keep them well
 spaced.
@@ -74,6 +78,8 @@ spaced.
 toward a glittering blue **pond** in the distance. The pup is already up on its
 feet, ears lifting, thrilled. A plan.
 
+**Image prompt:** Sam's face lights up with an idea, one arm flung out, pointing toward a glittering blue pond in the distance. The pup is already up on its feet, ears lifting, thrilled. A plan. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
+
 **Composition:** Sam pointing toward the pond, pup springing up. Bottom text
 band.
 
@@ -86,6 +92,8 @@ band.
 **Art brief:** Sam and the pup at a full, joyful **sprint** across the grass
 toward the pond — Sam's legs pumping, the pup a streak beside, strong
 speed-lines, the cool blue water getting closer. Pure rushing energy.
+
+**Image prompt:** Sam and the pup at a full, joyful sprint across the grass toward the pond, Sam's legs pumping, the pup a streak beside, strong speed-lines, the cool blue water getting closer. Pure rushing energy. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
 
 **Composition:** Sam and pup sprinting left to right toward the pond. Bottom
 text band.
@@ -101,6 +109,8 @@ text band.
 foot in welcome. The pond is wide, blue and inviting. Sam and the pup beam at
 the sight.
 
+**Image prompt:** They arrive, and there is the frog already in the pond, bobbing happily in the cool water, waving a webbed foot in welcome. The pond is wide, blue and inviting. Sam and the pup beam at the sight. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
+
 **Composition:** Frog in the pond, centred; Sam and pup arriving at the bank.
 Bottom text band.
 
@@ -115,6 +125,8 @@ Bottom text band.
 through the spray. Sam and the pup watch from the bank, delighted, already
 getting a little wet.
 
+**Image prompt:** The frog doing what frogs do best, a great joyful splash, water flying up around it in bright arcs and droplets, grinning through the spray. Sam and the pup watch from the bank, delighted, already getting a little wet. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
+
 **Composition:** Frog mid-splash, water arcs around it. Bottom text band. The
 cheer is the fluent line — and the title word.
 
@@ -127,6 +139,8 @@ cheer is the fluent line — and the title word.
 **Art brief:** The frog showing off its water tricks — one drawing of it doing
 a mid-air **twist**, one of it doing a **flip** — gleeful, acrobatic, water
 spraying off it. Sam and the pup applaud from the bank.
+
+**Image prompt:** The frog showing off its water tricks, one drawing of it doing a mid-air twist, one of it doing a flip, gleeful, acrobatic, water spraying off it. Sam and the pup applaud from the bank. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
 
 **Composition:** Frog twisting and flipping, two acrobatic beats. Bottom text
 band.
@@ -142,6 +156,8 @@ paw lifted over the water, leaning forward — eager, but the water is deep and
 new. Half wanting to leap, half hesitating. The frog looks up encouragingly.
 *Will the pup go in?*
 
+**Image prompt:** The pup stands right at the edge of the pond, one paw lifted over the water, leaning forward, eager, but the water is deep and new. Half wanting to leap, half hesitating. The frog looks up encouragingly. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
+
 **Composition:** Pup at the pond's edge, paw raised over the water, the frog
 welcoming from within. Bottom text band.
 
@@ -154,6 +170,8 @@ welcoming from within. Bottom text band.
 **Art brief:** The pup commits — leaping off the bank straight into the pond,
 all four legs out, a huge **splash** erupting around it, ears flying, pure
 abandon. The frog cheers. The doubt of page 7 gone in an instant.
+
+**Image prompt:** The pup commits, leaping off the bank straight into the pond, all four legs out, a huge splash erupting around it, ears flying, pure abandon. The frog cheers. The doubt of page 7 gone in an instant. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
 
 **Composition:** Pup mid-leap into the water, big splash blooming. Bottom text
 band. High energy.
@@ -168,6 +186,8 @@ band. High energy.
 landing in the pond with another great **splash**. Sam, the pup and the frog
 all together in the cool blue water now, every face lit with joy.
 
+**Image prompt:** Now Sam jumps in too, leaping off the bank, arms up, landing in the pond with another great splash. Sam, the pup and the frog all together in the cool blue water now, every face lit with joy. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
+
 **Composition:** Sam mid-jump into the pond, another splash. The frog and pup
 already in the water. Bottom text band. Mirror page 8.
 
@@ -181,6 +201,8 @@ already in the water. Bottom text band. Mirror page 8.
 together in the **pond**, water flying everywhere, three friends in joyful wet
 chaos. The hot, wilting day of page 1 is completely washed away.
 
+**Image prompt:** The big page, Sam, the pup and the frog all splashing together in the pond, water flying everywhere, three friends in joyful wet chaos. The hot, wilting day of page 1 is completely washed away. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
+
 **Composition:** All three friends splashing in the pond, water and droplets
 filling the scene. Bottom text band. The fullest, happiest page.
 
@@ -193,6 +215,8 @@ filling the scene. Bottom text band. The fullest, happiest page.
 **Art brief:** A calmer beat — the three friends resting low in the cool water
 or at the pond's edge, catching their breath, dripping and grinning at each
 other. Worn out and completely happy.
+
+**Image prompt:** A calmer beat, the three friends resting low in the cool water or at the pond's edge, catching their breath, dripping and grinning at each other. Worn out and completely happy. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
 
 **Composition:** The three together in or at the pond, content. Bottom text
 band.
@@ -208,6 +232,8 @@ grassy bank in the soft afternoon sun, cool now and pleasantly tired, drying
 off — while the **frog**, who never tires of water, gives one last gleeful
 **splash** in the pond behind them. Sam and the pup laugh, watching. The reader
 closes the book on cool, happy contentment.
+
+**Image prompt:** Final warm, funny spread. Sam and the pup sit on the grassy bank in the soft afternoon sun, cool now and pleasantly tired, drying off, while the frog, who never tires of water, gives one last gleeful splash in the pond behind them. Sam and the pup laugh, watching. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
 
 **Composition:** Sam and pup drying on the bank, the frog splashing in the
 pond behind. Two short sentences, bottom band.
