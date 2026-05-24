@@ -49,6 +49,15 @@ sentence cards and "a real book."
   words): B5 "Sam Can Read"→"A Big Nap"; B7 "Cat? Cot? Cut!"→"Cat? Cot? Cup?";
   B12 "Stop! Spin! Splash?"→"The Pup on the Sled"; B13 "The Green Frog"→"The
   Frog and the Crab"; B15 "Sam Is a Reader"→"The Big Pink Trip".
+- **Companion — Pink Phase Sound Songs (SHIPPED):** a Suno-ready circle-time
+  song for every Pink Phase lesson — 49 songs, L5–53 — in
+  `docs/readers/Pink_Phase_Songs.md`, shipped as `public/pink-phase-songs.html`
+  with a violet "Pink Sound Songs" card on the language-area library page. Each
+  song drills one lesson's target sound and sings a handful of its words; songs
+  are heard not decoded, so connective lyrics use free ESL-friendly English.
+  Audited — 49 songs, every listed word sung. Generated from the `.md` by
+  `build_pink_songs.py` (session outputs, not git); regenerate the HTML if the
+  `.md` changes.
 - **The law:** `docs/readers/Pink_Readers_SERIES_PLAN.md` (the bible) +
   `public/language-area-lessons.html` (the canonical per-lesson word inventory
   every word is checked against). Iron rule: a child never meets an undecodable
