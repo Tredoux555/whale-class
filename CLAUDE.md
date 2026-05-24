@@ -26,6 +26,28 @@ A 13-video marketing campaign (1 front-page hero + 12 feature videos) for TikTok
 
 ---
 
+## 📚 PINK READERS — Decodable reader series (active — pinned May 24, 2026)
+
+**🚨 Canonical handoff: `docs/handoffs/PINK_READERS_HANDOFF.md`. Read it to pick this up.**
+
+A graded series of **decodable readers** for the Pink Phase (UFLI L5–53) — real
+little story books where every word is phonics already taught or a heart word
+already introduced. Fills the gap between the lesson content's isolated
+sentence cards and "a real book."
+
+- **Status:** Book 1 sample built + approved by the user; full series greenlit
+  to build in one go. Series plan + Book 1 live in `docs/readers/`.
+- **To do:** write Books 2–15 (match `docs/readers/Book_01_Cat_Can_Nap.md`
+  exactly) + a Teacher Guide + a Canva Production Guide, then ship as a Montree
+  library page (`public/pink-readers.html` + a card on the language-area
+  library page, neutral branding, Session 112 pattern).
+- **The law:** `docs/readers/Pink_Readers_SERIES_PLAN.md` (the bible) +
+  `public/language-area-lessons.html` (the canonical per-lesson word inventory
+  every word is checked against). Iron rule: a child never meets an undecodable
+  word.
+
+---
+
 ## 📮 CAMPAIGN MANAGER — Outreach Protocol (replaces GMass as of Apr 19, 2026)
 
 **🚨 THIS IS A STANDING INSTRUCTION FOR EVERY SESSION. READ THIS FIRST. 🚨**
