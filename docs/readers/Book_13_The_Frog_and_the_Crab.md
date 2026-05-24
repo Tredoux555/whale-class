@@ -50,6 +50,8 @@ by side in the green. Soft cream background, fresh warm light.
 big gentle eyes. The crab: small, round, warm orange, expressive claws. The
 frog is recurring cast from here on; draw both consistently.*
 
+**Image prompt:** A cheerful green frog sitting in soft grass, mid-friendly- look toward a small round crab beside it, the crab with bright eyes and two raised, waving claws, plainly saying hello. The two unlikely friends, side by side in the green. Soft cream background, fresh warm light. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
+
 **Composition:** Title large across the top in Andika lowercase (only "The",
 "Frog", "Crab" capitalised as printed). Frog and crab centred in the grass.
 
@@ -63,6 +65,8 @@ frog is recurring cast from here on; draw both consistently.*
 of soft **grass**, looking out at nothing in particular — not crying, just a
 little quiet, a little wistful. Lots of empty green space around it to let the
 aloneness read. Gentle, not sad.
+
+**Image prompt:** A green frog sits alone in a wide patch of soft grass, looking out at nothing in particular, not crying, just a little quiet, a little wistful. Lots of empty green space around it to let the aloneness read. Gentle, not sad. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
 
 **Composition:** Frog small and alone, centred in generous grassy space. Text
 on a clean band along the bottom third.
@@ -78,6 +82,8 @@ the grass straight toward the frog — claws up in a friendly wave, bright-eyed,
 eager. The frog's head lifts, ears — well, the frog *perks up*, surprised and
 hopeful.
 
+**Image prompt:** A small round orange crab comes scuttling sideways through the grass straight toward the frog, claws up in a friendly wave, bright-eyed, eager. The frog's head lifts, ears, well, the frog perks up, surprised and hopeful. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
+
 **Composition:** Crab scuttling toward the frog, leading the eye. Bottom text
 band.
 
@@ -91,6 +97,8 @@ band.
 hopeful little offer, head tilted, friendly and kind. The frog looks back at
 it — the wistfulness of page 1 melting into the start of a smile.
 
+**Image prompt:** The crab right in front of the frog now, one claw lifted in a hopeful little offer, head tilted, friendly and kind. The frog looks back at it, the wistfulness of page 1 melting into the start of a smile. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
+
 **Composition:** Crab and frog face to face, centred. Bottom text band.
 
 ---
@@ -102,6 +110,8 @@ it — the wistfulness of page 1 melting into the start of a smile.
 **Art brief:** The frog's whole face opens into pure delight — the loneliness
 gone. Maybe a happy little hop on the spot. The crab beams, claws up. A warm,
 bright moment: a friend, found.
+
+**Image prompt:** The frog's whole face opens into pure delight, the loneliness gone. Maybe a happy little hop on the spot. The crab beams, claws up. A warm, bright moment: a friend, found. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
 
 **Composition:** Frog mid-happy-bounce, crab cheering, both centred. Bottom
 text band.
@@ -116,6 +126,8 @@ text band.
 caught mid-air, legs spread, grinning. The crab watches, thrilled, claws up in
 applause.
 
+**Image prompt:** The frog showing the crab what it can do, a big joyful hop, caught mid-air, legs spread, grinning. The crab watches, thrilled, claws up in applause. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
+
 **Composition:** Frog mid-hop, crab watching below. Bottom text band. The cheer
 is the fluent line.
 
@@ -128,6 +140,8 @@ is the fluent line.
 **Art brief:** The crab showing its own trick — claws opening and closing,
 grabbing playfully at a blade of grass or a leaf, comic and proud. The frog
 watches, delighted, applauding in its own froggy way.
+
+**Image prompt:** The crab showing its own trick, claws opening and closing, grabbing playfully at a blade of grass or a leaf, comic and proud. The frog watches, delighted, applauding in its own froggy way. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
 
 **Composition:** Crab mid-grab, frog watching. Bottom text band. Mirror the
 layout of page 5 — each friend shows its gift.
@@ -142,6 +156,8 @@ layout of page 5 — each friend shows its gift.
 for it, claws closing on empty air. The frog grins back over its shoulder; the
 crab gives a comic *missed-again!* look. Pure play, no meanness.
 
+**Image prompt:** A game has begun, the frog hops away just as the crab reaches for it, claws closing on empty air. The frog grins back over its shoulder; the crab gives a comic missed-again! look. Pure play, no meanness. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
+
 **Composition:** Frog hopping away, crab's claws snapping shut behind it.
 Bottom text band.
 
@@ -154,6 +170,8 @@ Bottom text band.
 **Art brief:** The frog tucked down low in the tall **grass**, only the top of
 its head and two eyes peeking out, holding very still — playing hide-and-seek,
 clearly delighted with itself.
+
+**Image prompt:** The frog tucked down low in the tall grass, only the top of its head and two eyes peeking out, holding very still, playing hide-and-seek, clearly delighted with itself. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
 
 **Composition:** Frog mostly hidden in the grass, just eyes showing. Bottom
 text band.
@@ -168,6 +186,8 @@ text band.
 parting the blades, searching everywhere — head turning, comically thorough.
 The hidden frog's eyes can just be seen peeking from one corner.
 
+**Image prompt:** The crab scuttling this way and that through the grass, claws parting the blades, searching everywhere, head turning, comically thorough. The hidden frog's eyes can just be seen peeking from one corner. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
+
 **Composition:** Crab mid-search, the frog's eyes hidden in a corner of the
 frame. Bottom text band.
 
@@ -180,6 +200,8 @@ frame. Bottom text band.
 **Art brief:** The payoff of the game — the crab has found the frog and given
 it the gentlest, most triumphant little claw-hug, both of them tumbling
 together in the grass, laughing. Joyful, warm, completely friendly.
+
+**Image prompt:** of the game, the crab has found the frog and given it the gentlest, most triumphant little claw-hug, both of them tumbling together in the grass, laughing. Joyful, warm, completely friendly. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
 
 **Composition:** Crab and frog tangled happily together in the grass. Bottom
 text band.
@@ -194,6 +216,8 @@ text band.
 side, both worn out and happy from the game — leaning a little into each other.
 The frog of page 1 is not alone anymore.
 
+**Image prompt:** The two friends sitting close together in the grass, side by side, both worn out and happy from the game, leaning a little into each other. The frog of page 1 is not alone anymore. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
+
 **Composition:** Frog and crab side by side, centred, content. Bottom text
 band. Echo page 1 — but now there are two.
 
@@ -207,6 +231,8 @@ band. Echo page 1 — but now there are two.
 asleep together in the soft grass, two small shapes nested close in the warm
 evening light. The frog has a friend now. The reader closes the book on the
 quiet warmth of not being alone.
+
+**Image prompt:** Final cosy spread. The frog and the crab are curled up asleep together in the soft grass, two small shapes nested close in the warm evening light. The frog has a friend now. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
 
 **Composition:** Frog and crab asleep together in the grass, centred, generous
 calm space. Two short lines plus the two-line button, bottom band.

@@ -41,6 +41,8 @@ loosely clasped — watching the hen with fond amusement. Soft cream background.
 *Design the hen and Mom here — every later book draws them exactly the same.
 The hen: plump, expressive, slightly comic. Mom: warm, calm, soft clothing.*
 
+**Image prompt:** A round, fussy, characterful hen mid-fuss, feathers a little ruffled, one foot lifted, beak open in a cheerful squawk, bright alert eye. Beside it stands Mom, warm, soft, patient, a gentle smile, hands loosely clasped, watching the hen with fond amusement. Soft cream background. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
+
 **Composition:** Title large across the top in Andika lowercase (only "Mom" and
 "Hen" capitalised as printed). Mom and hen centred. Calm space around them.
 
@@ -54,6 +56,8 @@ The hen: plump, expressive, slightly comic. Mom: warm, calm, soft clothing.*
 corner, the **hen** strutting about at her feet, full of bustle and opinion.
 Mom watches with an easy, fond smile. One or two simple shapes set the scene —
 a low fence, a plant pot. The mood: *this hen is a handful, and Mom loves it.*
+
+**Image prompt:** Mom in a simple home yard or kitchen-garden corner, the hen strutting about at her feet, full of bustle and opinion. Mom watches with an easy, fond smile. One or two simple shapes set the scene, a low fence, a plant pot. The mood: this hen is a handful, and Mom loves it. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
 
 **Composition:** Text on a clean band along the bottom third. Mom and hen
 centred above it.
@@ -69,6 +73,8 @@ toward a small, simple wooden **pen** (a low open box or fenced corner with a
 soft bit of straw). Her face is kind and inviting, not stern. The hen looks
 back at her, head cocked, plainly considering whether it agrees.
 
+**Image prompt:** Mom crouching down to the hen's level, one hand gently gesturing toward a small, simple wooden pen. Her face is kind and inviting, not stern. The hen looks back at her, head cocked, plainly considering whether it agrees. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
+
 **Composition:** Mom and hen left, the empty pen clearly shown on the right.
 Bottom text band.
 
@@ -83,6 +89,8 @@ half-out, legs a blur, an expression of cheerful mischief. The pen sits empty
 behind it. Mom, in frame, lifts her eyebrows with an amused *"…well then"*
 look. Nobody is upset.
 
+**Image prompt:** The hen bolting away from the pen at full comic speed, wings half-out, legs a blur, an expression of cheerful mischief. The pen sits empty behind it. Mom, in frame, lifts her eyebrows with an amused "…well then" look. Nobody is upset. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
+
 **Composition:** Hen running left to right, leading the eye to the page edge.
 Bottom text band.
 
@@ -96,6 +104,8 @@ Bottom text band.
 across the page, or one hen mid-hop with small dotted arcs tracing the bounce.
 Feathers bouncing, thoroughly pleased with itself.
 
+**Image prompt:** The hen hopping in a cheerful little line, three hop-poses across the page, or one hen mid-hop with small dotted arcs tracing the bounce. Feathers bouncing, thoroughly pleased with itself. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
+
 **Composition:** Hops travel left to right. Bottom text band.
 
 ---
@@ -107,6 +117,8 @@ Feathers bouncing, thoroughly pleased with itself.
 **Art brief:** The hen pecking busily at the ground — head down, tail up, tiny
 puffs of dust, a few seeds or specks scattered. Industrious and comic. Mom
 watches from the edge, hand on chin, smiling.
+
+**Image prompt:** The hen pecking busily at the ground, head down, tail up, tiny puffs of dust, a few seeds or specks scattered. Industrious and comic. Mom watches from the edge, hand on chin, smiling. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
 
 **Composition:** Hen centred, pecking. Bottom text band.
 
@@ -120,6 +132,8 @@ watches from the edge, hand on chin, smiling.
 cheek, looking around the yard, genuinely wondering. The hen sits in the middle
 of it all, blinking innocently, as if it has no idea what the fuss is about.
 *Where will the hen choose?*
+
+**Image prompt:** Mom stands with a hand resting thoughtfully on her cheek, looking around the yard, genuinely wondering. The hen sits in the middle of it all, blinking innocently, as if it has no idea what the fuss is about. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
 
 **Composition:** Mom looking off to one side (her gaze leads the reader to turn
 the page), the hen centred below. Bottom text band.
@@ -135,6 +149,8 @@ feeling (the hen clearly not in it), and a mossy **log** the hen is walking
 straight past with its beak in the air. Light and funny — the hen is being
 delightfully particular.
 
+**Image prompt:** A split or two-part scene: the empty pen with a small "no" feeling, and a mossy log the hen is walking straight past with its beak in the air. Light and funny, the hen is being delightfully particular. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
+
 **Composition:** Two simple vignettes side by side, or pen left / log right.
 Bottom text band.
 
@@ -149,6 +165,8 @@ side, and a small pet **bed** — both empty, the hen strolling past both with
 its head turned firmly away, comically unimpressed. Mom trails behind, palms
 up, gently bewildered.
 
+**Image prompt:** Same idea, two more spots: a soft open bag tipped on its side, and a small pet bed, both empty, the hen strolling past both with its head turned firmly away, comically unimpressed. Mom trails behind, palms up, gently bewildered. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
+
 **Composition:** Two vignettes, bag and bed. Bottom text band.
 
 ---
@@ -161,6 +179,8 @@ up, gently bewildered.
 inviting, bowl-shaped hat. She isn't offering it to the hen; she's just holding
 it, maybe about to put it on. But the hen, behind her, has spotted it — eye
 bright, body leaning toward the hat. The reader sees what is coming.
+
+**Image prompt:** Mom holding up a large, soft, red sun hat, a wide, inviting, bowl-shaped hat. She isn't offering it to the hen; she's just holding it, maybe about to put it on. But the hen, behind her, has spotted it, eye bright, body leaning toward the hat. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
 
 **Composition:** Mom and the red hat centre-left, the hen eyeing it from
 behind. Bottom text band. The hat is the clear, glowing object.
@@ -176,6 +196,8 @@ behind. Bottom text band. The hat is the clear, glowing object.
 finally content. It chose the one spot nobody offered. Mom looks up at the hen
 on her hat with a wide, surprised, delighted laugh.
 
+**Image prompt:** The hen has hopped up and settled itself squarely on top of the big red hat, wings folded, feathers smooth, utterly serene, finally content. It chose the one spot nobody offered. Mom looks up at the hen on her hat with a wide, surprised, delighted laugh. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
+
 **Composition:** Hat with hen on top, centred — the comic peak. Mom's laughing
 face below. Bottom text band.
 
@@ -190,6 +212,8 @@ face below. Bottom text band.
 balanced and perfectly pleased. Mom walks along, beaming, entirely at ease with
 this arrangement. Soft warm light. The reader closes the book on a funny, cosy
 picture of two who simply belong together.
+
+**Image prompt:** Final warm spread. Mom is now wearing the big red hat, and the hen is riding happily on top of it like a small feathered crown, perfectly balanced and perfectly pleased. Mom walks along, beaming, entirely at ease with this arrangement. Soft warm light. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
 
 **Composition:** Mom and hat-with-hen, centred, walking. Two short lines of
 text, bottom band.

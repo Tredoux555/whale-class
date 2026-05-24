@@ -46,6 +46,8 @@ background, warm sun.
 *Design the pig here — plump, friendly, pink, a happy curl of a tail. It is a
 Phase-2 visitor, not anchored cast, but draw it consistently within this book.*
 
+**Image prompt:** The pup and a cheerful, round pig sitting side by side at the edge of a glorious brown mud puddle. The pig is already a little muddy and beaming; the pup is clean, eyeing the mud with a mix of longing and doubt. Soft cream background, warm sun. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
+
 **Composition:** Title large across the top in Andika lowercase (only "The",
 "Pup", "Pig" capitalised as printed). Pup and pig centred at the mud's edge.
 
@@ -60,6 +62,8 @@ in full sun, panting, ears limp, eyes squeezed half-shut — trying to nap and
 failing, too hot to settle. The sun blazes gold above. The mood: *uncomfortable
 — the pup wants relief.*
 
+**Image prompt:** A bright, almost too-warm scene. The pup lies on the ground in full sun, panting, ears limp, eyes squeezed half-shut, trying to nap and failing, too hot to settle. The sun blazes gold above. The mood: uncomfortable, the pup wants relief. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
+
 **Composition:** Pup centred, lying down, the big sun above. Text on a clean
 band along the bottom third. Three short sentences — keep them well spaced.
 
@@ -72,6 +76,8 @@ band along the bottom third. Three short sentences — keep them well spaced.
 **Art brief:** The pup lifts its head — and there is a round, cheerful **pig**,
 sitting right down in a wide brown mud puddle, utterly content, a blissful
 little smile. The pup stares, ears coming up with interest.
+
+**Image prompt:** The pup lifts its head, and there is a round, cheerful pig, sitting right down in a wide brown mud puddle, utterly content, a blissful little smile. The pup stares, ears coming up with interest. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
 
 **Composition:** Pig in the mud, centred; the pup at the edge of the frame,
 lifting its head toward it. Bottom text band.
@@ -86,6 +92,8 @@ lifting its head toward it. Bottom text band.
 the mud, maybe a tiny "ahhh" of bliss. The point the child should read off the
 picture: the mud is keeping the pig cool. The pup watches, working this out.
 
+**Image prompt:** Closer on the pig, eyes shut, smiling, deeply cool and happy in the mud, maybe a tiny "ahhh" of bliss. The point the child should read off the picture: the mud is keeping the pig cool. The pup watches, working this out. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
+
 **Composition:** Pig blissful in the mud, centred. Pup observing from the side.
 Bottom text band.
 
@@ -98,6 +106,8 @@ Bottom text band.
 **Art brief:** The doubt. The pup stands right at the edge of the mud, one paw
 lifted over it, leaning forward — but hesitating, ears uncertain, brow
 furrowed. It wants to, but mud looks messy and strange. *Will the pup jump in?*
+
+**Image prompt:** The pup stands right at the edge of the mud, one paw lifted over it, leaning forward, but hesitating, ears uncertain, brow furrowed. It wants to, but mud looks messy and strange. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
 
 **Composition:** Pup at the mud's edge, one paw raised, the whole body caught
 between wanting and worrying. Bottom text band.
@@ -112,6 +122,8 @@ between wanting and worrying. Bottom text band.
 snout and trotters, mud flying up in happy brown arcs, grinning hugely. An
 invitation in motion. The pup watches, doubt starting to crack into a grin.
 
+**Image prompt:** The pig demonstrating pure joy, digging into the mud with its snout and trotters, mud flying up in happy brown arcs, grinning hugely. An invitation in motion. The pup watches, doubt starting to crack into a grin. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
+
 **Composition:** Pig digging centre, mud arcs around it. Pup at the side,
 warming up. Bottom text band.
 
@@ -124,6 +136,8 @@ warming up. Bottom text band.
 **Art brief:** The pig pauses, looks straight at the pup, and gives a wide,
 welcoming smile — *come on in, it's wonderful.* The pup's face has changed: the
 worry is gone, replaced by an eager grin. The decision is made.
+
+**Image prompt:** The pig pauses, looks straight at the pup, and gives a wide, welcoming smile, come on in, it's wonderful. The pup's face has changed: the worry is gone, replaced by an eager grin. The decision is made. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
 
 **Composition:** Pig and pup facing each other across the mud's edge, both
 grinning now. Bottom text band.
@@ -138,6 +152,8 @@ grinning now. Bottom text band.
 out, ears up, a joyful airborne commitment, a big brown splash starting
 beneath it. Pure glee. The moment of bravery rewarded.
 
+**Image prompt:** The pup launches itself into the mud, all four legs out, ears up, a joyful airborne commitment, a big brown splash starting beneath it. Pure glee. The moment of bravery rewarded. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
+
 **Composition:** Pup mid-leap over the mud, splash forming. Bottom text band.
 A high-energy page.
 
@@ -150,6 +166,8 @@ A high-energy page.
 **Art brief:** The pup sitting right down in the mud now, plastered in glorious
 brown, eyes wide with delighted surprise — *this is the BEST thing.* The pig
 beside it, thrilled to have company.
+
+**Image prompt:** The pup sitting right down in the mud now, plastered in glorious brown, eyes wide with delighted surprise, this is the BEST thing. The pig beside it, thrilled to have company. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
 
 **Composition:** Pup and pig together in the mud, both centred. Bottom text
 band.
@@ -164,6 +182,8 @@ band.
 content the pig had on page 3, now on the pup's face. The hot, restless pup of
 page 1 is gone. Relief and joy.
 
+**Image prompt:** The pup cool, relaxed and blissful in the mud, the exact content the pig had on page 3, now on the pup's face. The hot, restless pup of page 1 is gone. Relief and joy. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
+
 **Composition:** Pup blissful in the mud, centred. Bottom text band. Echo the
 composition of page 3 — the pup has become the cool, happy one.
 
@@ -177,6 +197,8 @@ composition of page 3 — the pup has become the cool, happy one.
 flying everywhere, both laughing — a shared, messy, delighted game. The
 friendship is sealed.
 
+**Image prompt:** The two friends digging side by side in the mud, brown arcs flying everywhere, both laughing, a shared, messy, delighted game. The friendship is sealed. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
+
 **Composition:** Pig and pup digging together, mud flying. Bottom text band.
 
 ---
@@ -189,6 +211,8 @@ friendship is sealed.
 the sight of a completely mud-caked pup. But Sam's face is pure laughter, not
 anger — *look at the state of you!* The pup beams up at Sam, unrepentant and
 happy.
+
+**Image prompt:** Sam comes running up, and stops, hands flying to mouth, at the sight of a completely mud-caked pup. But Sam's face is pure laughter, not anger, look at the state of you! The pup beams up at Sam, unrepentant and happy. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
 
 **Composition:** Sam arriving at the side, the muddy pup and pig in the mud
 centred. Bottom text band.
@@ -204,6 +228,8 @@ settled happily in the mud, two cosy muddy shapes, grinning out at the reader.
 Sam sits at the edge, laughing, and — the last little joke — one of Sam's hands
 is reaching down to dip a finger in the mud too. Soft warm light. The reader
 closes the book on shared, silly, cooling-off joy.
+
+**Image prompt:** Final warm, funny spread. The pig and the pup are both settled happily in the mud, two cosy muddy shapes, grinning out at the reader. Sam sits at the edge, laughing, and, the last little joke, one of Sam's hands is reaching down to dip a finger in the mud too. Soft warm light. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
 
 **Composition:** Pig and pup in the mud, Sam at the edge dipping a hand in. All
 centred. Two short lines plus the button, bottom band.

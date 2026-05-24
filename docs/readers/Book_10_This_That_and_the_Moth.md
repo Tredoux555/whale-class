@@ -43,6 +43,8 @@ warm light — an evening-indoors feeling.
 *Design the moth here — soft, rounded, gentle wings, never sharp or scary.
 Draw it consistently within the book.*
 
+**Image prompt:** A soft, pale, pretty moth with gently patterned wings, fluttering in the middle of the page, small dotted loops tracing its drifting path. Below it, looking up, the tabby cat from earlier books, one paw lifted, eyes following the moth, utterly absorbed. Soft cream background, calm warm light, an evening-indoors feeling. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
+
 **Composition:** Title large across the top in Andika lowercase (only "This",
 "That", "Moth" capitalised as printed). Moth centred and drifting, cat below.
 
@@ -57,6 +59,8 @@ Draw it consistently within the book.*
 room. **Sam** notices it from one side, and the **cat** is already alert, head
 up. The mood: *a soft, quiet visitor has arrived.*
 
+**Image prompt:** The cosy home in soft evening light. A pale moth has drifted in through a window and floats gently in the middle of the room. Sam notices it from one side, and the cat is already alert, head up. The mood: a soft, quiet visitor has arrived. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
+
 **Composition:** Moth drifting centre, Sam and cat noticing it. Text on a clean
 band along the bottom third.
 
@@ -69,6 +73,8 @@ band along the bottom third.
 **Art brief:** The cat is trying to curl up on its mat — but its head keeps
 lifting, eyes tracking the moth fluttering above. It cannot possibly sleep with
 something this interesting in the air. Comic, fond restlessness.
+
+**Image prompt:** The cat is trying to curl up on its mat, but its head keeps lifting, eyes tracking the moth fluttering above. It cannot possibly sleep with something this interesting in the air. Comic, fond restlessness. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
 
 **Composition:** Cat half-curled on its mat, head and eyes up toward the moth.
 Bottom text band.
@@ -83,6 +89,8 @@ Bottom text band.
 (let it be a clearly drawn lamp, a book, a pot). The word `this` is the moth's
 first perch. The cat creeps a step closer, eyes huge.
 
+**Image prompt:** The moth has landed, softly, wings folding, on a small object. The word `this` is the moth's first perch. The cat creeps a step closer, eyes huge. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
+
 **Composition:** Moth settled on its perch, the cat creeping in from the side.
 Bottom text band.
 
@@ -95,6 +103,8 @@ Bottom text band.
 **Art brief:** The moth has lifted and re-landed on a *different* object across
 the room — `that`. The cat's head swings to follow it. Keep the two objects
 (this/that) clearly different so the words have visible meaning.
+
+**Image prompt:** The moth has lifted and re-landed on a different object across the room, `that`. The cat's head swings to follow it. Keep the two objects clearly different so the words have visible meaning. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
 
 **Composition:** Moth on the second perch, cat's gaze swinging toward it.
 Bottom text band. Echo page 3.
@@ -109,6 +119,8 @@ Bottom text band. Echo page 3.
 one scene with the moth's dotted path looping from a **hat** to a **mat**. Light
 and playful. The cat trails after it, thoroughly led around the room.
 
+**Image prompt:** The moth's tour continues, shown as two little vignettes, or one scene with the moth's dotted path looping from a hat to a mat. Light and playful. The cat trails after it, thoroughly led around the room. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
+
 **Composition:** Hat and mat with the moth visiting each, the cat following.
 Bottom text band.
 
@@ -121,6 +133,8 @@ Bottom text band.
 **Art brief:** The cat finally makes its move — a soft, playful pounce-run
 toward the moth, front paws reaching up, body stretched, full of eager play.
 Nothing fierce — this is a cat delighting in a game.
+
+**Image prompt:** The cat finally makes its move, a soft, playful pounce-run toward the moth, front paws reaching up, body stretched, full of eager play. Nothing fierce, this is a cat delighting in a game. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
 
 **Composition:** Cat leaping up toward the moth, both centred. Bottom text band.
 
@@ -135,6 +149,8 @@ unbothered, still fluttering its gentle loops. The cat lands back down on its
 paws, looking up, comically out-foxed. *(Keep the moth visibly fine — the chase
 is gentle play, never danger.)*
 
+**Image prompt:** The moth has drifted easily up and away, completely safe, unbothered, still fluttering its gentle loops. The cat lands back down on its paws, looking up, comically out-foxed. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
+
 **Composition:** Moth drifting up out of reach, cat landed below looking up.
 Bottom text band.
 
@@ -147,6 +163,8 @@ Bottom text band.
 **Art brief:** The hook. The cat sits, tail twitching, watching the moth circle
 high above — visibly thinking, plotting, *when?* The moth loops on, serene.
 Sam, at the edge, smiles a small knowing smile.
+
+**Image prompt:** The cat sits, tail twitching, watching the moth circle high above, visibly thinking, plotting, The moth loops on, serene. Sam, at the edge, smiles a small knowing smile. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
 
 **Composition:** Cat sitting and watching, moth circling above. Bottom text
 band.
@@ -161,6 +179,8 @@ band.
 cat is still padding after it, a step behind every time, never quite catching
 up. The repeated frame returns: the chase will not be won by chasing.
 
+**Image prompt:** The moth's tour resumes, landing here, landing there, and the cat is still padding after it, a step behind every time, never quite catching up. The repeated frame returns: the chase will not be won by chasing. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
+
 **Composition:** Moth perching, cat one step behind. Bottom text band. Echo
 pages 3–4.
 
@@ -173,6 +193,8 @@ pages 3–4.
 **Art brief:** The turn — quiet and important. The cat stops chasing. It sits
 down on its mat, settles, and simply *watches* the moth, calm now, content to
 let it be. The eager game has softened into peaceful watching.
+
+**Image prompt:** Quiet and important. The cat stops chasing. It sits down on its mat, settles, and simply watches the moth, calm now, content to let it be. The eager game has softened into peaceful watching. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
 
 **Composition:** Cat sitting calmly on its mat, the moth drifting gently above.
 Generous calm space. Bottom text band.
@@ -188,6 +210,8 @@ has drifted down and landed softly right on the cat's head (or back) — a tiny
 pale visitor perched on the calm tabby. The cat's eyes go wide with delighted
 surprise — *it came to ME.* It holds perfectly still so as not to disturb it.
 
+**Image prompt:** The funny, warm turn. Now that the cat is still, the moth has drifted down and landed softly right on the cat's head, a tiny pale visitor perched on the calm tabby. The cat's eyes go wide with delighted surprise, it came to ME. It holds perfectly still so as not to disturb it. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
+
 **Composition:** Moth perched on the still cat, both centred. Bottom text band.
 
 ---
@@ -201,6 +225,8 @@ still and content, the soft **moth** resting on it — the chase is over, and th
 cat got its friend simply by being calm. Sam sits nearby in the soft evening
 light, smiling. The reader closes the book on stillness and a quiet little
 lesson: some things come to you when you stop chasing them.
+
+**Image prompt:** Final cosy spread. The cat is settled on its mat, perfectly still and content, the soft moth resting on it, the chase is over, and the cat got its friend simply by being calm. Sam sits nearby in the soft evening light, smiling. flat warm children’s-book illustration, soft rounded shapes, soft cream background, warm and gentle, uncluttered, no text.
 
 **Composition:** Cat on its mat with the moth perched on it, Sam behind. All
 centred, gentle light. Two short lines of text, bottom band.
