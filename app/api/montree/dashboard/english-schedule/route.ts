@@ -57,6 +57,8 @@ async function enrichScheduleWithLiveState(
   meta: LiveStateMeta;
   children_count: number;
   k_bound_count: number;
+  done_this_week: Array<{ id: string; name: string; photo_url: string | null; day: string | null }>;
+  activity_tracker: Array<{ id: string; name: string; photo_url: string | null; sessions_4w: number; sessions_all: number }>;
 }> {
   // Roster (current active kids — not Monday's snapshot)
   const { data: rosterRaw } = await supabase
@@ -92,7 +94,8 @@ async function enrichScheduleWithLiveState(
   }
 
   const rosterIds = roster.map(k => k.id);
-  const doneSet = await loadDoneChildIds(supabase, classroomId, weekStart, rosterIds);
+  const { doneSet, doneDayByChild } = await loadDoneChildInfo(supabase, classroomId, weekStart, rosterIds);
+  const activityCounts = await loadEnglishActivityCounts(supabase, classroomId, rosterIds);
   const today = getCurrentWeekDay();
 
   const { days, meta } = applyLiveState(
@@ -104,11 +107,43 @@ async function enrichScheduleWithLiveState(
     today,
   );
 
+  // "Done this week" panel — children who did English + the weekday each
+  // first did it, ordered Monday→Sunday then by name.
+  const DONE_DAY_RANK: Record<string, number> = {
+    monday: 1, tuesday: 2, wednesday: 3, thursday: 4, friday: 5, saturday: 6, sunday: 7,
+  };
+  const done_this_week = roster
+    .filter(k => doneSet.has(k.id))
+    .map(k => ({
+      id: k.id,
+      name: k.name,
+      photo_url: k.photo_url,
+      day: doneDayByChild.get(k.id) || null,
+    }))
+    .sort((a, b) => {
+      const ra = a.day ? (DONE_DAY_RANK[a.day] ?? 99) : 99;
+      const rb = b.day ? (DONE_DAY_RANK[b.day] ?? 99) : 99;
+      if (ra !== rb) return ra - rb;
+      return a.name.localeCompare(b.name);
+    });
+
+  // Activity tracker — every roster child's English-session counts. The UI
+  // sorts/ranks; the server just supplies the raw numbers for both windows.
+  const activity_tracker = roster.map(k => ({
+    id: k.id,
+    name: k.name,
+    photo_url: k.photo_url,
+    sessions_4w: activityCounts.get(k.id)?.sessions4w ?? 0,
+    sessions_all: activityCounts.get(k.id)?.sessionsAll ?? 0,
+  }));
+
   return {
     days,
     meta,
     children_count: roster.length,
     k_bound_count: kBoundSet.size,
+    done_this_week,
+    activity_tracker,
   };
 }
 
@@ -163,6 +198,8 @@ export async function GET(request: NextRequest) {
           week_label: weekStart.toISOString().split('T')[0],
         },
         live_state: enriched.meta,
+        done_this_week: enriched.done_this_week,
+        activity_tracker: enriched.activity_tracker,
         week_start: s.week_start,
         generated_at: s.generated_at,
         source: 'saved+live',
@@ -197,6 +234,8 @@ export async function GET(request: NextRequest) {
       week_label: weekStartStr,
     },
     live_state: enrichedFresh.meta,
+    done_this_week: enrichedFresh.done_this_week,
+    activity_tracker: enrichedFresh.activity_tracker,
     week_start: weekStartStr,
     generated_at: new Date().toISOString(),
     source: 'generated+live',
@@ -245,6 +284,8 @@ export async function POST(request: NextRequest) {
       week_label: weekStartStr,
     },
     live_state: enriched.meta,
+    done_this_week: enriched.done_this_week,
+    activity_tracker: enriched.activity_tracker,
     week_start: weekStartStr,
     generated_at: new Date().toISOString(),
     source: 'generated+live',
@@ -302,80 +343,177 @@ interface LiveStateMeta {
 const DAY_ORDER_LIVE = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'] as const;
 type WeekDay = typeof DAY_ORDER_LIVE[number];
 
+// Weekday names indexed by JS getDay() (0=Sun).
+const WEEKDAY_NAMES = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'] as const;
+
 /**
- * Find children who have a confirmed Language photo this week. Mirrors the
- * Session 119 english-missing logic exactly:
- *   - area_key='language' (NOT work-name inference)
- *   - teacher_confirmed=true (NOT identification_status)
- *   - includes group photos via montree_media_children junction
+ * Resolve the Language-area work IDs for a classroom. Shared by the
+ * done-this-week and activity-tracker queries so both use the exact same
+ * "what counts as English" definition (area_key='language').
  */
-async function loadDoneChildIds(
+async function resolveLanguageWorkIds(
   supabase: ReturnType<typeof getSupabase>,
   classroomId: string,
-  weekStart: Date,
-  rosterIds: string[],
-): Promise<Set<string>> {
-  const weekEnd = new Date(weekStart);
-  weekEnd.setDate(weekStart.getDate() + 7);
-
-  // Resolve Language area for this classroom
+): Promise<string[]> {
   const { data: langArea } = await supabase
     .from('montree_classroom_curriculum_areas')
     .select('id')
     .eq('classroom_id', classroomId)
     .eq('area_key', 'language')
     .maybeSingle();
-  if (!langArea) return new Set();
-
+  if (!langArea) return [];
   const { data: langWorks } = await supabase
     .from('montree_classroom_curriculum_works')
     .select('id')
     .eq('classroom_id', classroomId)
     .eq('area_id', (langArea as { id: string }).id);
-  const langWorkIds = ((langWorks || []) as Array<{ id: string }>).map(w => w.id);
-  if (langWorkIds.length === 0 || rosterIds.length === 0) return new Set();
+  return ((langWorks || []) as Array<{ id: string }>).map(w => w.id);
+}
+
+/**
+ * Children with a confirmed Language photo THIS WEEK, plus the weekday each
+ * one FIRST did English this week (powers the "Done this week" panel).
+ * Mirrors the Session 119 english-missing logic exactly:
+ *   - area_key='language' (NOT work-name inference)
+ *   - teacher_confirmed=true (NOT identification_status)
+ *   - includes group photos via montree_media_children junction
+ */
+async function loadDoneChildInfo(
+  supabase: ReturnType<typeof getSupabase>,
+  classroomId: string,
+  weekStart: Date,
+  rosterIds: string[],
+): Promise<{ doneSet: Set<string>; doneDayByChild: Map<string, string> }> {
+  const empty = { doneSet: new Set<string>(), doneDayByChild: new Map<string, string>() };
+  const weekEnd = new Date(weekStart);
+  weekEnd.setDate(weekStart.getDate() + 7);
+
+  const langWorkIds = await resolveLanguageWorkIds(supabase, classroomId);
+  if (langWorkIds.length === 0 || rosterIds.length === 0) return empty;
 
   const doneSet = new Set<string>();
+  const earliestByChild = new Map<string, number>(); // childId -> earliest ms this week
+  const note = (childId: string, capturedAt: string) => {
+    doneSet.add(childId);
+    const ts = new Date(capturedAt).getTime();
+    if (Number.isNaN(ts)) return;
+    const prev = earliestByChild.get(childId);
+    if (prev === undefined || ts < prev) earliestByChild.set(childId, ts);
+  };
 
   // Direct photos — filter by roster too (mirrors english-missing pattern)
   const { data: directRaw } = await supabase
     .from('montree_media')
-    .select('child_id')
+    .select('child_id, captured_at')
     .eq('classroom_id', classroomId)
     .eq('teacher_confirmed', true)
     .in('child_id', rosterIds)
     .in('work_id', langWorkIds)
     .gte('captured_at', weekStart.toISOString())
     .lt('captured_at', weekEnd.toISOString());
-  for (const row of (directRaw || []) as Array<{ child_id: string | null }>) {
-    if (row.child_id) doneSet.add(row.child_id);
+  for (const row of (directRaw || []) as Array<{ child_id: string | null; captured_at: string }>) {
+    if (row.child_id) note(row.child_id, row.captured_at);
   }
 
-  // Group photos via junction — also filter by roster on the junction read.
-  // Audit finding #2 (Session 119): without this, a junction row pointing to
-  // a child from a different classroom would surface in the set. Cosmetically
-  // wasteful before; now matches the english-missing reference exactly.
+  // Group photos via junction — also filter by roster on the junction read
+  // (Session 119 audit finding #2: prevents a junction row for a child from
+  // another classroom surfacing here).
   const { data: candidateMediaRaw } = await supabase
     .from('montree_media')
-    .select('id')
+    .select('id, captured_at')
     .eq('classroom_id', classroomId)
     .eq('teacher_confirmed', true)
     .in('work_id', langWorkIds)
     .gte('captured_at', weekStart.toISOString())
     .lt('captured_at', weekEnd.toISOString());
-  const candidateMediaIds = ((candidateMediaRaw || []) as Array<{ id: string }>).map(m => m.id);
-  if (candidateMediaIds.length > 0) {
+  const candidateMedia = ((candidateMediaRaw || []) as Array<{ id: string; captured_at: string }>);
+  if (candidateMedia.length > 0) {
+    const capturedById = new Map(candidateMedia.map(m => [m.id, m.captured_at]));
     const { data: junctionRaw } = await supabase
       .from('montree_media_children')
-      .select('child_id')
-      .in('media_id', candidateMediaIds)
+      .select('child_id, media_id')
+      .in('media_id', candidateMedia.map(m => m.id))
       .in('child_id', rosterIds);
-    for (const row of (junctionRaw || []) as Array<{ child_id: string | null }>) {
-      if (row.child_id) doneSet.add(row.child_id);
+    for (const row of (junctionRaw || []) as Array<{ child_id: string | null; media_id: string }>) {
+      if (!row.child_id) continue;
+      const cap = capturedById.get(row.media_id);
+      if (cap) note(row.child_id, cap);
     }
   }
 
-  return doneSet;
+  const doneDayByChild = new Map<string, string>();
+  for (const [childId, ts] of earliestByChild) {
+    doneDayByChild.set(childId, WEEKDAY_NAMES[new Date(ts).getDay()]);
+  }
+  return { doneSet, doneDayByChild };
+}
+
+/**
+ * Per-child English-session counts — confirmed Language photos in the last
+ * 28 days and all-time. Powers the most/least activity tracker.
+ * Dedups on (childId, mediaId) so a photo that is both a direct hit and a
+ * junction hit for the same child counts once.
+ */
+async function loadEnglishActivityCounts(
+  supabase: ReturnType<typeof getSupabase>,
+  classroomId: string,
+  rosterIds: string[],
+): Promise<Map<string, { sessions4w: number; sessionsAll: number }>> {
+  const counts = new Map<string, { sessions4w: number; sessionsAll: number }>();
+  for (const id of rosterIds) counts.set(id, { sessions4w: 0, sessionsAll: 0 });
+  if (rosterIds.length === 0) return counts;
+
+  const langWorkIds = await resolveLanguageWorkIds(supabase, classroomId);
+  if (langWorkIds.length === 0) return counts;
+
+  const fourWeeksAgo = Date.now() - 28 * 24 * 60 * 60 * 1000;
+  const seen = new Set<string>(); // `${childId}:${mediaId}`
+  const tally = (childId: string, mediaId: string, capturedAt: string) => {
+    const c = counts.get(childId);
+    if (!c) return;
+    const key = `${childId}:${mediaId}`;
+    if (seen.has(key)) return;
+    seen.add(key);
+    c.sessionsAll += 1;
+    const ts = new Date(capturedAt).getTime();
+    if (!Number.isNaN(ts) && ts >= fourWeeksAgo) c.sessions4w += 1;
+  };
+
+  // Direct photos — all-time
+  const { data: directRaw } = await supabase
+    .from('montree_media')
+    .select('id, child_id, captured_at')
+    .eq('classroom_id', classroomId)
+    .eq('teacher_confirmed', true)
+    .in('child_id', rosterIds)
+    .in('work_id', langWorkIds);
+  for (const row of (directRaw || []) as Array<{ id: string; child_id: string | null; captured_at: string }>) {
+    if (row.child_id) tally(row.child_id, row.id, row.captured_at);
+  }
+
+  // Group photos via junction — all-time
+  const { data: candidateRaw } = await supabase
+    .from('montree_media')
+    .select('id, captured_at')
+    .eq('classroom_id', classroomId)
+    .eq('teacher_confirmed', true)
+    .in('work_id', langWorkIds);
+  const candidates = ((candidateRaw || []) as Array<{ id: string; captured_at: string }>);
+  if (candidates.length > 0) {
+    const capturedById = new Map(candidates.map(m => [m.id, m.captured_at]));
+    const { data: junctionRaw } = await supabase
+      .from('montree_media_children')
+      .select('child_id, media_id')
+      .in('media_id', candidates.map(m => m.id))
+      .in('child_id', rosterIds);
+    for (const row of (junctionRaw || []) as Array<{ child_id: string | null; media_id: string }>) {
+      if (!row.child_id) continue;
+      const cap = capturedById.get(row.media_id);
+      if (cap) tally(row.child_id, row.media_id, cap);
+    }
+  }
+
+  return counts;
 }
 
 /**

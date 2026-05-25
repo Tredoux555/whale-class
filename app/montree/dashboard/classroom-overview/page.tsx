@@ -58,6 +58,23 @@ interface EnglishScheduleLiveState {
   shortfall_warning: string | null;
 }
 
+// "Done this week" panel — a child who did English + the weekday they did it.
+interface DoneThisWeekChild {
+  id: string;
+  name: string;
+  photo_url: string | null;
+  day: string | null;
+}
+
+// English-activity tracker — per-child confirmed Language session counts.
+interface ActivityTrackerChild {
+  id: string;
+  name: string;
+  photo_url: string | null;
+  sessions_4w: number;
+  sessions_all: number;
+}
+
 interface EnglishMissingChild {
   id: string;
   name: string;
@@ -166,6 +183,8 @@ export default function ClassroomOverviewPage() {
     success: boolean;
     schedule: EnglishSchedule;
     live_state: EnglishScheduleLiveState | null;
+    done_this_week?: DoneThisWeekChild[];
+    activity_tracker?: ActivityTrackerChild[];
     week_start: string;
     generated_at: string;
   }>(
@@ -176,9 +195,13 @@ export default function ClassroomOverviewPage() {
   );
   const schedule: EnglishSchedule | null = scheduleResponse?.schedule ?? null;
   const liveState: EnglishScheduleLiveState | null = scheduleResponse?.live_state ?? null;
+  const doneThisWeek: DoneThisWeekChild[] = scheduleResponse?.done_this_week ?? [];
+  const activityTracker: ActivityTrackerChild[] = scheduleResponse?.activity_tracker ?? [];
   const scheduleWeek: string = scheduleResponse?.week_start ?? '';
   const scheduleError: boolean = !!scheduleErrorRaw;
   const [regenerating, setRegenerating] = useState(false);
+  // English-activity tracker window — 'recent' = last 4 weeks, 'all' = all time.
+  const [trackerWindow, setTrackerWindow] = useState<'recent' | 'all'>('recent');
 
   // English-missing state (Session 119 — auto-updates after photo confirms via
   // invalidateCache('/api/montree/dashboard/english-missing') from photo-audit)
@@ -706,23 +729,48 @@ export default function ClassroomOverviewPage() {
                     {DAY_ORDER.map(day => {
                       const dayChildren = schedule.days[day] || [];
                       const dayLabel = t(`classroomOverview.day.${day}`);
+                      // Today / past / future — so a spent day reads as spent
+                      // and the teacher's eye lands on what's next.
+                      const todayIdx = liveState?.today ? DAY_ORDER.indexOf(liveState.today) : -1;
+                      const dayIdx = DAY_ORDER.indexOf(day);
+                      const isToday = liveState?.today === day;
+                      const isPast = todayIdx >= 0 && dayIdx < todayIdx;
 
                       return (
                         <div key={day} style={{
                           borderRight: '1px solid #d1d5db',
                           display: 'flex', flexDirection: 'column',
+                          // Spent days dim back so the eye lands on today + ahead.
+                          opacity: isPast ? 0.6 : 1,
                         }}>
                           <div style={{
                             padding: '8px 10px',
-                            background: '#fdf2f8',
-                            borderBottom: '2px solid #ec4899',
+                            background: isToday ? '#fbcfe8' : isPast ? '#f3f4f6' : '#fdf2f8',
+                            borderBottom: isToday
+                              ? '3px solid #db2777'
+                              : isPast ? '2px solid #d1d5db' : '2px solid #ec4899',
                             textAlign: 'center',
                           }}>
-                            <div style={{ fontWeight: 800, fontSize: '15px', color: '#9d174d' }}>
+                            <div style={{
+                              fontWeight: 800, fontSize: '15px',
+                              color: isPast ? '#6b7280' : '#9d174d',
+                              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5,
+                            }}>
                               {dayLabel}
+                              {isToday && (
+                                <span style={{
+                                  fontSize: '8px', fontWeight: 800, letterSpacing: 0.6,
+                                  background: '#db2777', color: 'white',
+                                  padding: '2px 5px', borderRadius: 4,
+                                }}>
+                                  TODAY
+                                </span>
+                              )}
                             </div>
-                            <div style={{ fontSize: '10px', color: '#be185d' }}>
-                              {t('classroomOverview.childrenCount', { count: dayChildren.length })}
+                            <div style={{ fontSize: '10px', color: isPast ? '#9ca3af' : '#be185d' }}>
+                              {isPast
+                                ? `${dayChildren.length} · day done`
+                                : t('classroomOverview.childrenCount', { count: dayChildren.length })}
                             </div>
                           </div>
 
@@ -821,6 +869,146 @@ export default function ClassroomOverviewPage() {
                         </div>
                       );
                     })}
+                  </div>
+
+                  {/* ── Done this week (screen only — the grid above is the printable artifact) ── */}
+                  <div className="no-print" style={{ padding: '16px', borderTop: '1px solid #e5e7eb', background: '#fafafa' }}>
+                    <div style={{ fontWeight: 800, fontSize: 14, color: '#065f46', marginBottom: 2 }}>
+                      ✓ Done this week — {doneThisWeek.length} {doneThisWeek.length === 1 ? 'child' : 'children'}
+                    </div>
+                    <div style={{ fontSize: 11, color: '#6b7280', marginBottom: 12 }}>
+                      Children who&apos;ve already had English this week, and the day they did it. Repeats are fine — this shows the first day.
+                    </div>
+                    {doneThisWeek.length === 0 ? (
+                      <div style={{ fontSize: 13, color: '#9ca3af', fontStyle: 'italic' }}>
+                        No children have done English yet this week.
+                      </div>
+                    ) : (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                        {DAY_ORDER.map(day => {
+                          const kids = doneThisWeek.filter(k => k.day === day);
+                          if (kids.length === 0) return null;
+                          return (
+                            <div key={`done-${day}`} style={{ display: 'flex', gap: 10, alignItems: 'baseline' }}>
+                              <div style={{ width: 84, flexShrink: 0, fontWeight: 700, fontSize: 12, color: '#9d174d' }}>
+                                {t(`classroomOverview.day.${day}`)}
+                              </div>
+                              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                                {kids.map(k => (
+                                  <span key={k.id} style={{
+                                    fontSize: 12, fontWeight: 600, color: '#065f46',
+                                    background: '#d1fae5', border: '1px solid #6ee7b7',
+                                    borderRadius: 999, padding: '3px 10px',
+                                  }}>
+                                    {k.name}
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+                          );
+                        })}
+                        {(() => {
+                          // Children whose English day fell outside Mon–Fri (rare — weekend catch-up).
+                          const offGrid = doneThisWeek.filter(k => !k.day || !DAY_ORDER.includes(k.day));
+                          if (offGrid.length === 0) return null;
+                          return (
+                            <div style={{ display: 'flex', gap: 10, alignItems: 'baseline' }}>
+                              <div style={{ width: 84, flexShrink: 0, fontWeight: 700, fontSize: 12, color: '#9d174d' }}>
+                                Other day
+                              </div>
+                              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                                {offGrid.map(k => (
+                                  <span key={k.id} style={{
+                                    fontSize: 12, fontWeight: 600, color: '#065f46',
+                                    background: '#d1fae5', border: '1px solid #6ee7b7',
+                                    borderRadius: 999, padding: '3px 10px',
+                                  }}>
+                                    {k.name}
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+                          );
+                        })()}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* ── English activity tracker (screen only) ── */}
+                  <div className="no-print" style={{ padding: '16px', borderTop: '1px solid #e5e7eb', background: 'white' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8, marginBottom: 2 }}>
+                      <div style={{ fontWeight: 800, fontSize: 14, color: '#9d174d' }}>
+                        English activity — most to least
+                      </div>
+                      <div style={{ display: 'flex', gap: 4, background: '#f3f4f6', borderRadius: 8, padding: 3 }}>
+                        {([['recent', 'Last 4 weeks'], ['all', 'All time']] as const).map(([val, label]) => (
+                          <button
+                            key={val}
+                            type="button"
+                            onClick={() => setTrackerWindow(val)}
+                            style={{
+                              fontSize: 11, fontWeight: 700, padding: '5px 12px', borderRadius: 6,
+                              border: 'none', cursor: 'pointer',
+                              background: trackerWindow === val ? '#ec4899' : 'transparent',
+                              color: trackerWindow === val ? 'white' : '#6b7280',
+                            }}
+                          >
+                            {label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    <div style={{ fontSize: 11, color: '#6b7280', marginBottom: 12 }}>
+                      How many English sessions each child has had ({trackerWindow === 'recent' ? 'last 4 weeks' : 'all time'}).
+                      The lowest few are highlighted in amber — they may need more time on the English side.
+                    </div>
+                    {(() => {
+                      const pick = (c: ActivityTrackerChild) =>
+                        trackerWindow === 'recent' ? c.sessions_4w : c.sessions_all;
+                      const ranked = [...activityTracker].sort(
+                        (a, b) => pick(b) - pick(a) || a.name.localeCompare(b.name),
+                      );
+                      if (ranked.length === 0) {
+                        return (
+                          <div style={{ fontSize: 13, color: '#9ca3af', fontStyle: 'italic' }}>
+                            No children in this class yet.
+                          </div>
+                        );
+                      }
+                      const maxCount = Math.max(1, ...ranked.map(pick));
+                      return (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                          {ranked.map((c, i) => {
+                            const count = pick(c);
+                            const isLow = i >= ranked.length - 3; // bottom 3 = least active
+                            const barPct = Math.round((count / maxCount) * 100);
+                            return (
+                              <div key={c.id} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                <span style={{ width: 18, flexShrink: 0, fontSize: 10, fontWeight: 700, color: '#9ca3af', textAlign: 'right' }}>
+                                  {i + 1}
+                                </span>
+                                <span style={{
+                                  width: 96, flexShrink: 0, fontSize: 12, fontWeight: 700,
+                                  color: isLow ? '#b45309' : '#374151',
+                                  overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                                }}>
+                                  {c.name}
+                                </span>
+                                <div style={{ flex: 1, height: 14, background: '#f3f4f6', borderRadius: 4, overflow: 'hidden' }}>
+                                  <div style={{ width: `${barPct}%`, height: '100%', background: isLow ? '#f59e0b' : '#ec4899', borderRadius: 4 }} />
+                                </div>
+                                <span style={{
+                                  width: 28, flexShrink: 0, fontSize: 12, fontWeight: 700,
+                                  color: isLow ? '#b45309' : '#9d174d', textAlign: 'right',
+                                }}>
+                                  {count}
+                                </span>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      );
+                    })()}
                   </div>
                 </div>
               ) : (
