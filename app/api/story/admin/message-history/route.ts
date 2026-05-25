@@ -76,9 +76,30 @@ export async function GET(req: NextRequest) {
         media_filename: row.media_filename,
         author: row.author,
         created_at: row.created_at,
-        is_expired: row.is_expired
+        is_expired: row.is_expired,
+        is_from_admin: !!row.is_from_admin,
       };
     });
+
+    // Read receipts — for admin messages, collect which Story users have
+    // opened them (and when). Non-admin messages get an empty list.
+    const adminIds = messages.filter(m => m.is_from_admin).map(m => m.id);
+    const readByMessage = new Map<number, Array<{ username: string; read_at: string }>>();
+    if (adminIds.length > 0) {
+      const { data: readRows } = await supabase
+        .from('story_message_reads')
+        .select('message_id, username, read_at')
+        .in('message_id', adminIds);
+      for (const r of ((readRows || []) as Array<{ message_id: number; username: string; read_at: string }>)) {
+        const list = readByMessage.get(r.message_id) || [];
+        list.push({ username: r.username, read_at: r.read_at });
+        readByMessage.set(r.message_id, list);
+      }
+    }
+    const messagesWithReads = messages.map(m => ({
+      ...m,
+      read_by: m.is_from_admin ? (readByMessage.get(m.id) || []) : [],
+    }));
 
     // Get stats
     const { data: statsRows } = await supabase
@@ -96,8 +117,8 @@ export async function GET(req: NextRequest) {
       count
     }));
 
-    return NextResponse.json({ 
-      messages, 
+    return NextResponse.json({
+      messages: messagesWithReads,
       statistics
     });
   } catch (error) {

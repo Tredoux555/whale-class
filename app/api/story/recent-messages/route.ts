@@ -67,6 +67,22 @@ export async function GET(req: NextRequest) {
       };
     });
 
+    // Read receipts — this user has now fetched these messages into an open
+    // chat, so mark them read. Fire-and-forget: a failure here must never
+    // block the chat from loading. ON CONFLICT DO NOTHING (ignoreDuplicates)
+    // keeps the FIRST read time — read_at never moves on a later re-view.
+    if (messages.length > 0) {
+      const readRows = messages.map(m => ({ message_id: m.id, username }));
+      supabase
+        .from('story_message_reads')
+        .upsert(readRows, { onConflict: 'message_id,username', ignoreDuplicates: true })
+        .then(({ error: readErr }) => {
+          if (readErr) {
+            console.error('[RecentMessages] read-receipt upsert failed (non-fatal):', readErr.message);
+          }
+        });
+    }
+
     return NextResponse.json({ messages });
   } catch (error) {
     console.error('[RecentMessages] Error:', error);
