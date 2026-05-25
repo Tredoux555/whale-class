@@ -22,6 +22,12 @@ export interface Visit {
   ip_address: string | null;
 }
 
+// A single read receipt — a Story user who opened a message, and when.
+export interface MessageRead {
+  username: string;
+  read_at: string;
+}
+
 export interface Message {
   id: number;
   week_start_date: string;
@@ -32,6 +38,10 @@ export interface Message {
   author: string;
   created_at: string;
   is_expired: boolean;
+  // Read receipts (admin-side only). is_from_admin marks a message the
+  // admin sent; read_by lists the Story users who have opened it.
+  is_from_admin?: boolean;
+  read_by?: MessageRead[];
 }
 
 export interface Statistics {

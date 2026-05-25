@@ -179,13 +179,15 @@ export async function POST(req: NextRequest) {
       const trimmedMessage = message.trim();
       const encryptedMessage = encryptMessage(trimmedMessage);
 
-      // Core fields only — session linking columns (login_log_id, session_token, is_from_admin)
-      // were never added to production story_message_history table
+      // is_from_admin flags this as an admin message so the dashboard can
+      // attach a read receipt to it. (login_log_id / session_token were
+      // never added to production story_message_history.)
       const textRecord = {
         week_start_date: weekStartDate,
         message_type: 'text',
         message_content: encryptedMessage,
         author: adminUsername,
+        is_from_admin: true,
         expires_at: expiresAt.toISOString(),
         is_expired: false,
       };
@@ -310,7 +312,7 @@ export async function POST(req: NextRequest) {
     const mediaUrl = getProxyUrl(filePath, 'story-uploads');
     const encryptedCaption = caption.trim() ? encryptMessage(caption.trim()) : null;
 
-    // Core fields only — session linking columns not present in production
+    // is_from_admin flags this as an admin message for the dashboard read receipt.
     const mediaRecord = {
       week_start_date: weekStartDate,
       message_type: mediaType,
@@ -318,6 +320,7 @@ export async function POST(req: NextRequest) {
       media_url: mediaUrl,
       media_filename: file.name || filename,
       author: adminUsername,
+      is_from_admin: true,
       expires_at: expiresAt.toISOString(),
       is_expired: false,
     };
@@ -341,6 +344,7 @@ export async function POST(req: NextRequest) {
         media_url: mediaUrl,
         media_filename: file.name || filename,
         author: adminUsername,
+        is_from_admin: true,
         expires_at: expiresAt.toISOString(),
         is_expired: false,
       };

@@ -3,6 +3,22 @@
 import { Message } from '../types';
 import { formatTime, getTypeIcon } from '../utils';
 
+// Human-friendly relative time for read receipts — "just now", "2 hours ago",
+// "yesterday". Plain words, not a raw timestamp.
+function timeAgo(iso: string): string {
+  const then = new Date(iso).getTime();
+  if (Number.isNaN(then)) return '';
+  const mins = Math.floor((Date.now() - then) / 60000);
+  if (mins < 1) return 'just now';
+  if (mins < 60) return `${mins} min ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs} hour${hrs === 1 ? '' : 's'} ago`;
+  const days = Math.floor(hrs / 24);
+  if (days === 1) return 'yesterday';
+  if (days < 7) return `${days} days ago`;
+  return new Date(iso).toLocaleDateString();
+}
+
 interface MessagesTabProps {
   messages: Message[];
   showExpired: boolean;
@@ -145,6 +161,30 @@ export function MessagesTab({
                       ? '⏳ Saving...'
                       : '🔒 Save to Vault'}
                   </button>
+                </div>
+              )}
+
+              {/* Read receipt — admin-side only. Shows whether the user has
+                  actually opened the message yet, in plain words. */}
+              {msg.is_from_admin && (
+                <div className="mt-3 pt-2 border-t border-blue-100">
+                  {msg.read_by && msg.read_by.length > 0 ? (
+                    <div className="flex items-center gap-1.5 text-xs font-semibold text-emerald-700">
+                      <span>✓</span>
+                      <span>
+                        Opened by {msg.read_by.map(r => r.username).join(' & ')}
+                        {' · '}
+                        {timeAgo(
+                          [...msg.read_by].sort((a, b) => b.read_at.localeCompare(a.read_at))[0].read_at,
+                        )}
+                      </span>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-1.5 text-xs font-semibold text-amber-600">
+                      <span>🕓</span>
+                      <span>Not opened yet</span>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
