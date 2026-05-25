@@ -62,7 +62,7 @@ export async function POST(request: NextRequest) {
     if (auth instanceof NextResponse) return auth;
 
     const body = await request.json();
-    const { work_name, area, teacher_prompt } = body;
+    const { work_name, area, teacher_prompt, media_id } = body;
     const locale = ['en', 'zh'].includes(body.locale) ? body.locale : 'en';
 
     if (!work_name || typeof work_name !== 'string' || work_name.length > 200) {
@@ -138,6 +138,35 @@ export async function POST(request: NextRequest) {
       ? `\n\nTeacher's notes about this work: "${teacher_prompt.slice(0, 500)}"`
       : '';
 
+    // Photo Audit calls this with the media_id of the photo being tagged.
+    // Pull the photo's cached AI description so the generated guide is
+    // informed by what's actually in the classroom photo — not just the
+    // work name. school_id scope is defense-in-depth (the draft is only
+    // prompt context, but never read another school's media).
+    let photoContext = '';
+    if (media_id && typeof media_id === 'string') {
+      try {
+        const { data: mediaRow } = await supabase
+          .from('montree_media')
+          .select('sonnet_draft')
+          .eq('id', media_id)
+          .eq('school_id', auth.schoolId)
+          .maybeSingle();
+        const draft = (mediaRow?.sonnet_draft || {}) as Record<string, unknown>;
+        const vd = typeof draft.visual_description === 'string' ? draft.visual_description.trim() : '';
+        const km = Array.isArray(draft.key_materials)
+          ? (draft.key_materials as unknown[]).filter((m): m is string => typeof m === 'string' && m.trim().length > 0)
+          : [];
+        if (vd) photoContext += `\n\nObserved in a real classroom photo of this work:\n"${vd.slice(0, 800)}"`;
+        if (km.length) photoContext += `\nMaterials visible in the photo: ${km.slice(0, 12).join(', ')}`;
+        if (photoContext) {
+          photoContext += `\n\nGround the content in what the photo actually shows. Do not contradict the observed photo.`;
+        }
+      } catch {
+        // Non-fatal — fall back to name-only generation.
+      }
+    }
+
     const systemPrompt = `You are an experienced AMI-trained Montessori teacher creating curriculum content for a new work.
 
 ${langInstruction}
@@ -149,7 +178,7 @@ Generate comprehensive, professional content for this Montessori work. Be specif
 - Quick guide: Numbered steps a teacher can follow immediately
 - Materials: Specific items needed
 - Aims: What the child explicitly learns
-- Presentation steps: Detailed ordered steps for showing the child${teacherContext}`;
+- Presentation steps: Detailed ordered steps for showing the child${teacherContext}${photoContext}`;
 
     // Call AI with tool_use for structured output. Model is tier-aware.
     let timeoutHandle: ReturnType<typeof setTimeout> | undefined;
