@@ -128,6 +128,11 @@ export default function MontreeLanding() {
           backdrop-filter: saturate(180%) blur(14px);
           -webkit-backdrop-filter: saturate(180%) blur(14px);
           border-bottom: 1px solid rgba(255,255,255,0.06);
+          /* Edge-to-edge iPhones (notch / Dynamic Island): pad the bar down
+             past the status bar so the logo and links never hide under it.
+             env() is 0 on devices with no inset, so this is harmless
+             everywhere else. viewport-fit=cover is already set in app/layout. */
+          padding-top: env(safe-area-inset-top);
         }
         .m-nav-inner {
           max-width: 1180px;

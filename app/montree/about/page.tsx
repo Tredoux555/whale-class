@@ -98,6 +98,8 @@ const ABOUT_STYLES = `
     -webkit-backdrop-filter: blur(18px) saturate(140%);
     background: rgba(8,26,18,0.62);
     border-bottom: 1px solid rgba(255,255,255,0.06);
+    /* Edge-to-edge iPhones: pad past the status bar. env() = 0 elsewhere. */
+    padding-top: env(safe-area-inset-top);
   }
   .m-about-nav-inner {
     max-width: 1180px;

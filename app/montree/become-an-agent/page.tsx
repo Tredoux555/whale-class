@@ -169,7 +169,10 @@ export default function BecomeAnAgentPage() {
           position: sticky; top: 0; z-index: 50;
           background: rgba(8,26,18,0.72);
           backdrop-filter: saturate(180%) blur(14px);
+          -webkit-backdrop-filter: saturate(180%) blur(14px);
           border-bottom: 1px solid rgba(255,255,255,0.06);
+          /* Edge-to-edge iPhones: pad past the status bar. env() = 0 elsewhere. */
+          padding-top: env(safe-area-inset-top);
         }
         .ba-nav-inner {
           max-width: 1180px; margin: 0 auto;
