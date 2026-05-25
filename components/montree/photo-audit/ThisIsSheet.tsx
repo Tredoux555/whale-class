@@ -20,6 +20,7 @@
 'use client';
 
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
+import type { CSSProperties } from 'react';
 import { useClassroomWorks, ClassroomWork } from '@/lib/montree/hooks/useClassroomWorks';
 import { useI18n } from '@/lib/montree/i18n';
 import { getAreaLabel, AREA_KEYS } from '@/lib/montree/i18n/area-labels';
@@ -60,7 +61,20 @@ export type OtherCategory = 'behavioral_observation' | 'outdoor_play' | 'special
 
 export type Resolution =
   | { type: 'existing'; work_id: string; work_name: string; area_key: string }
-  | { type: 'new_custom'; name: string; area_key: string }
+  // new_custom optionally carries the teacher-reviewed work definition
+  // (parent explanation / why it matters / materials) captured on the
+  // addMode review screen. When `reviewed` is true the resolve route
+  // writes these verbatim and the background enrichment translates them
+  // but does NOT re-generate over the teacher's edits.
+  | {
+      type: 'new_custom';
+      name: string;
+      area_key: string;
+      parent_description?: string;
+      why_it_matters?: string;
+      materials?: string[];
+      reviewed?: boolean;
+    }
   | { type: 'confirm_ai'; work_id?: string; work_name: string; area_key: string }
   // Saved to the child's profile but NOT tagged against the Montessori
   // curriculum. work_id stays null, sonnet_draft.is_other = true acts as
@@ -121,6 +135,12 @@ export default function ThisIsSheet({
   const [addMode, setAddMode] = useState(false); // user tapped "add as new work"
   const [newWorkName, setNewWorkName] = useState('');
   const [newWorkArea, setNewWorkArea] = useState<string>('practical_life');
+  // Editable work-definition fields shown in addMode so the teacher sees
+  // (and corrects) exactly what the curriculum work will contain BEFORE
+  // "Create and attach" locks it in. Pre-seeded from the photo's AI draft.
+  const [newWorkParentDesc, setNewWorkParentDesc] = useState('');
+  const [newWorkWhyItMatters, setNewWorkWhyItMatters] = useState('');
+  const [newWorkMaterials, setNewWorkMaterials] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
 
   // Two-tab UX (Session 117+): "Curriculum" (default, classic work picker)
@@ -169,6 +189,9 @@ export default function ThisIsSheet({
       setAddMode(false);
       setNewWorkName('');
       setNewWorkArea('practical_life');
+      setNewWorkParentDesc('');
+      setNewWorkWhyItMatters('');
+      setNewWorkMaterials('');
       setSubmitting(false);
       setMergeMode(false);
       setMergeSelected(new Set());
@@ -197,6 +220,18 @@ export default function ThisIsSheet({
       const proposed = photo?.sonnet_draft?.proposed_name?.trim() || '';
       const confidence = photo?.sonnet_draft?.confidence ?? 0;
       if (proposed && confidence >= 0.4 && isSonnetDraft) setQuery(proposed);
+      // Pre-seed the editable work-definition fields from the cached AI
+      // draft so addMode opens showing the AI's best guess, ready for the
+      // teacher to correct before committing.
+      const d = photo?.sonnet_draft;
+      setNewWorkParentDesc((d?.parent_description || d?.visual_description || '').trim());
+      setNewWorkWhyItMatters((d?.why_it_matters || '').trim());
+      setNewWorkMaterials(
+        (d?.key_materials || [])
+          .filter((m): m is string => typeof m === 'string' && m.trim().length > 0)
+          .map(m => m.trim())
+          .join(', ')
+      );
       // Autofocus and select-all so a quick edit is one keypress away.
       // Using setTimeout to ensure DOM has rendered and focus can persist.
       setTimeout(() => {
@@ -386,10 +421,22 @@ export default function ThisIsSheet({
   const handleCreateNew = () => {
     const name = newWorkName.trim();
     if (submitting || !name) return;
+    const materials = newWorkMaterials
+      .split(',')
+      .map(m => m.trim())
+      .filter(Boolean);
     fireAndClose({
       type: 'new_custom',
       name,
       area_key: newWorkArea,
+      // The teacher reviewed/edited these on the addMode screen — send
+      // them so the work is created with exactly what they saw. `reviewed`
+      // tells the resolve route to keep the teacher's text and skip the
+      // background Sonnet re-write (translation still runs).
+      parent_description: newWorkParentDesc.trim() || undefined,
+      why_it_matters: newWorkWhyItMatters.trim() || undefined,
+      materials: materials.length ? materials : undefined,
+      reviewed: true,
     });
   };
 
@@ -510,6 +557,26 @@ export default function ThisIsSheet({
     setMerging(false);
     setMergeResult(null);
   }, []);
+
+  // Shared styling for the addMode work-definition fields.
+  const fieldInputStyle: CSSProperties = {
+    width: '100%',
+    padding: '10px 12px',
+    fontSize: 15,
+    color: '#0f172a',
+    caretColor: '#8b5cf6',
+    background: '#ffffff',
+    border: '1.5px solid #ddd',
+    borderRadius: 10,
+    outline: 'none',
+    fontFamily: 'inherit',
+    boxSizing: 'border-box',
+  };
+  const fieldTextareaStyle: CSSProperties = {
+    ...fieldInputStyle,
+    resize: 'vertical',
+    lineHeight: 1.5,
+  };
 
   if (!isOpen || !photo || !classroomId) return null;
 
@@ -1357,52 +1424,64 @@ export default function ThisIsSheet({
                 })}
               </div>
 
-              {(() => {
-                const d = photo?.sonnet_draft;
-                const desc = (d?.parent_description || d?.visual_description || '').trim();
-                const why = (d?.why_it_matters || '').trim();
-                const mats = (d?.key_materials || []).filter(
-                  (m): m is string => typeof m === 'string' && m.trim().length > 0,
-                );
-                const hasContent = !!desc || !!why || mats.length > 0;
-                return (
-                  <div style={{
-                    background: '#faf5ff',
-                    border: '1px solid #e9d5ff',
-                    borderRadius: 12,
-                    padding: '12px 14px',
-                    marginBottom: 16,
-                  }}>
-                    <div style={{ fontSize: 13, fontWeight: 700, color: '#6b21a8', marginBottom: hasContent ? 8 : 0 }}>
-                      📖 What you&apos;re adding
-                    </div>
-                    {hasContent ? (
-                      <>
-                        {desc && (
-                          <p style={{ fontSize: 13, color: '#374151', lineHeight: 1.5, margin: '0 0 8px' }}>{desc}</p>
-                        )}
-                        {why && (
-                          <p style={{ fontSize: 12, color: '#4b5563', lineHeight: 1.5, margin: '0 0 8px' }}>
-                            <span style={{ fontWeight: 600, color: '#6b21a8' }}>Why it matters: </span>{why}
-                          </p>
-                        )}
-                        {mats.length > 0 && (
-                          <p style={{ fontSize: 12, color: '#6b7280', margin: 0 }}>
-                            <span style={{ fontWeight: 600 }}>Materials: </span>{mats.slice(0, 8).join(', ')}
-                          </p>
-                        )}
-                        <p style={{ fontSize: 11, color: '#9ca3af', fontStyle: 'italic', margin: '8px 0 0' }}>
-                          Sonnet wrote this from the photo. It attaches now and is refined automatically a few seconds after you create the work.
-                        </p>
-                      </>
-                    ) : (
-                      <p style={{ fontSize: 12, color: '#9ca3af', fontStyle: 'italic', margin: 0 }}>
-                        No AI description on this photo yet — Sonnet will write one in the background right after you create the work.
-                      </p>
-                    )}
-                  </div>
-                );
-              })()}
+              {/* Full work definition — editable. The teacher sees and
+                  corrects exactly what the curriculum work will contain
+                  before "Create and attach" locks it in. Pre-filled from
+                  the photo's AI draft; what's shown is what gets saved. */}
+              <div
+                style={{
+                  background: '#faf5ff',
+                  border: '1px solid #e9d5ff',
+                  borderRadius: 12,
+                  padding: '14px',
+                  marginBottom: 16,
+                }}
+              >
+                <div style={{ fontSize: 13, fontWeight: 700, color: '#6b21a8', marginBottom: 2 }}>
+                  📖 Work definition
+                </div>
+                <div style={{ fontSize: 11, color: '#9ca3af', marginBottom: 14 }}>
+                  The AI drafted this from the photo. Edit anything — what you see here is exactly what gets saved.
+                </div>
+
+                <div style={{ fontSize: 13, color: '#666', marginBottom: 6, fontWeight: 600 }}>
+                  Parent explanation
+                </div>
+                <textarea
+                  value={newWorkParentDesc}
+                  onChange={e => setNewWorkParentDesc(e.target.value)}
+                  disabled={submitting}
+                  rows={4}
+                  placeholder="What the child does with this work — warm, concrete language for parents…"
+                  style={{ ...fieldTextareaStyle, marginBottom: 14 }}
+                />
+
+                <div style={{ fontSize: 13, color: '#666', marginBottom: 6, fontWeight: 600 }}>
+                  Why it matters
+                </div>
+                <textarea
+                  value={newWorkWhyItMatters}
+                  onChange={e => setNewWorkWhyItMatters(e.target.value)}
+                  disabled={submitting}
+                  rows={3}
+                  placeholder="The developmental purpose — what skill or concept this builds…"
+                  style={{ ...fieldTextareaStyle, marginBottom: 14 }}
+                />
+
+                <div style={{ fontSize: 13, color: '#666', marginBottom: 6, fontWeight: 600 }}>
+                  Materials
+                </div>
+                <input
+                  value={newWorkMaterials}
+                  onChange={e => setNewWorkMaterials(e.target.value)}
+                  disabled={submitting}
+                  placeholder="e.g. wooden tray, sandpaper letters, object box"
+                  style={{ ...fieldInputStyle, marginBottom: 4 }}
+                />
+                <div style={{ fontSize: 11, color: '#9ca3af', margin: 0 }}>
+                  Separate each material with a comma.
+                </div>
+              </div>
 
               <div style={{ display: 'flex', gap: 10 }}>
                 <button

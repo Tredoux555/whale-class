@@ -73,7 +73,20 @@ async function upsertProgressObservation({
 
 type Resolution =
   | { type: 'existing'; work_id: string; work_name: string; area_key: string }
-  | { type: 'new_custom'; name: string; area_key: string }
+  // new_custom optionally carries the teacher-reviewed work definition from
+  // the addMode review screen. When `reviewed` is true these values are
+  // written verbatim onto the new curriculum row and the background
+  // enrichment translates-only (it never re-generates over the teacher's
+  // text). When absent, the route seeds from the cached sonnet_draft.
+  | {
+      type: 'new_custom';
+      name: string;
+      area_key: string;
+      parent_description?: string;
+      why_it_matters?: string;
+      materials?: string[];
+      reviewed?: boolean;
+    }
   | { type: 'confirm_ai'; work_id?: string; work_name: string; area_key: string }
   // Session 113: "Other" bucket — photos worth keeping (snack time, art
   // moments, group activity, parent pickup, etc.) but NOT pedagogically
@@ -284,11 +297,22 @@ export async function POST(request: NextRequest) {
       // what the teacher expects to see on the new curriculum entry
       // immediately — no waiting for background re-enrichment.
       const draft = (mediaRow.sonnet_draft as Record<string, any>) || {};
+      // Teacher-reviewed values from the addMode form take precedence over
+      // the cached AI draft. Each field falls back to the draft only when
+      // the teacher left it blank.
+      const teacherParent = typeof resolution.parent_description === 'string' ? resolution.parent_description.trim().slice(0, 2000) : '';
+      const teacherWhy = typeof resolution.why_it_matters === 'string' ? resolution.why_it_matters.trim().slice(0, 2000) : '';
+      const teacherMaterials = Array.isArray(resolution.materials)
+        ? resolution.materials.filter((m) => typeof m === 'string' && m.trim()).map((m) => m.trim()).slice(0, 20)
+        : [];
       const draftParent = typeof draft.parent_description === 'string' ? draft.parent_description.trim().slice(0, 1000) : '';
       const draftWhy = typeof draft.why_it_matters === 'string' ? draft.why_it_matters.trim().slice(0, 1000) : '';
       const draftMaterials = Array.isArray(draft.key_materials)
         ? draft.key_materials.filter((m: any) => typeof m === 'string' && m.trim()).slice(0, 20)
         : [];
+      const finalParent = teacherParent || draftParent;
+      const finalWhy = teacherWhy || draftWhy;
+      const finalMaterials = teacherMaterials.length ? teacherMaterials : draftMaterials;
 
       const insertPayload: Record<string, unknown> = {
         classroom_id: classroomId,
@@ -300,9 +324,9 @@ export async function POST(request: NextRequest) {
         is_active: true,
         source: 'photo_audit_resolve',
       };
-      if (draftParent) insertPayload.parent_description = draftParent;
-      if (draftWhy) insertPayload.why_it_matters = draftWhy;
-      if (draftMaterials.length) insertPayload.materials = draftMaterials;
+      if (finalParent) insertPayload.parent_description = finalParent;
+      if (finalWhy) insertPayload.why_it_matters = finalWhy;
+      if (finalMaterials.length) insertPayload.materials = finalMaterials;
 
       // Insert the custom work pre-seeded with the AI draft's rich fields.
       const { data: newWork, error: insErr } = await supabase
@@ -365,7 +389,10 @@ export async function POST(request: NextRequest) {
       upsertProgressObservation({ childId, classroomId, workName: name, area: areaKey })
         .catch(err => console.error('[PhotoAuditResolve] Progress upsert (new_custom) failed (non-fatal):', err));
 
-      // Fire-and-forget Sonnet enrichment (uses cached sonnet_draft.visual_description as seed)
+      // Fire-and-forget Sonnet enrichment (uses cached sonnet_draft.visual_description as seed).
+      // When the teacher reviewed + edited the definition on the addMode screen,
+      // skipSonnetEnrichment keeps their text — enrichment seeds visual memory
+      // and translates, but does NOT re-generate the description.
       enrichCustomWorkInBackground({
         classroomId,
         workId: newWorkId,
@@ -373,6 +400,7 @@ export async function POST(request: NextRequest) {
         workKey,
         areaKey,
         mediaId: media_id,
+        skipSonnetEnrichment: resolution.reviewed === true,
       }).catch(err => {
         console.error('[PhotoAuditResolve] Background enrichment failed (non-fatal):', err);
       });

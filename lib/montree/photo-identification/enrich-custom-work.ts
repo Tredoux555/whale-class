@@ -17,6 +17,11 @@ interface EnrichInput {
   workKey: string;
   areaKey: string;
   mediaId: string;
+  // When true, the teacher reviewed + edited the work definition on the
+  // Photo Audit addMode screen and the resolve route already wrote their
+  // text verbatim. Enrichment then seeds visual memory and translates the
+  // teacher's text but MUST NOT re-generate the description over it.
+  skipSonnetEnrichment?: boolean;
 }
 
 /**
@@ -24,7 +29,7 @@ interface EnrichInput {
  * Caller MUST NOT await — call with .catch(err => console.error(...)).
  */
 export async function enrichCustomWorkInBackground(input: EnrichInput): Promise<void> {
-  const { classroomId, workId, workName, areaKey, mediaId } = input;
+  const { classroomId, workId, workName, areaKey, mediaId, skipSonnetEnrichment } = input;
 
   try {
     const supabase = getSupabase();
@@ -91,6 +96,32 @@ export async function enrichCustomWorkInBackground(input: EnrichInput): Promise<
             );
           }
         });
+    }
+
+    // 2a. Teacher-reviewed work: the resolve route already wrote the
+    //     teacher's exact text. Translate whatever is on the row and
+    //     return — never call Sonnet, which would overwrite their edits.
+    if (skipSonnetEnrichment) {
+      const { data: reviewedRow } = await supabase
+        .from('montree_classroom_curriculum_works')
+        .select('parent_description, why_it_matters')
+        .eq('id', workId)
+        .maybeSingle();
+      if (reviewedRow?.parent_description || reviewedRow?.why_it_matters) {
+        autoTranslateToChinese({
+          classroomId,
+          workName,
+          parentDescription: (reviewedRow.parent_description as string) || '',
+          whyItMatters: (reviewedRow.why_it_matters as string) || '',
+        }).catch((err) =>
+          console.error(
+            `[EnrichCustomWork] autoTranslate failed for "${workName}":`,
+            err?.message || err
+          )
+        );
+      }
+      console.log(`[EnrichCustomWork] "${workName}" teacher-reviewed — translate only, no Sonnet`);
+      return;
     }
 
     // 2b. Check whether the curriculum work row already has a
