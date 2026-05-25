@@ -85,6 +85,12 @@ type Resolution =
       parent_description?: string;
       why_it_matters?: string;
       materials?: string[];
+      // Full teacher-reviewed guide fields, present when the teacher used
+      // the "Generate full teaching guide" step in the addMode review screen.
+      description?: string;
+      quick_guide?: string;
+      direct_aims?: string[];
+      presentation_steps?: string[];
       reviewed?: boolean;
     }
   | { type: 'confirm_ai'; work_id?: string; work_name: string; area_key: string }
@@ -314,6 +320,19 @@ export async function POST(request: NextRequest) {
       const finalWhy = teacherWhy || draftWhy;
       const finalMaterials = teacherMaterials.length ? teacherMaterials : draftMaterials;
 
+      // Full guide fields — present only when the teacher used the
+      // "Generate full teaching guide" step. No sonnet_draft fallback
+      // exists for these (the photo draft never carries a teaching guide),
+      // so they come straight from the teacher-reviewed resolution.
+      const teacherDescription = typeof resolution.description === 'string' ? resolution.description.trim().slice(0, 2000) : '';
+      const teacherQuickGuide = typeof resolution.quick_guide === 'string' ? resolution.quick_guide.trim().slice(0, 4000) : '';
+      const teacherDirectAims = Array.isArray(resolution.direct_aims)
+        ? resolution.direct_aims.filter((a) => typeof a === 'string' && a.trim()).map((a) => a.trim()).slice(0, 12)
+        : [];
+      const teacherPresentationSteps = Array.isArray(resolution.presentation_steps)
+        ? resolution.presentation_steps.filter((s) => typeof s === 'string' && s.trim()).map((s) => s.trim()).slice(0, 20)
+        : [];
+
       const insertPayload: Record<string, unknown> = {
         classroom_id: classroomId,
         name,
@@ -327,6 +346,10 @@ export async function POST(request: NextRequest) {
       if (finalParent) insertPayload.parent_description = finalParent;
       if (finalWhy) insertPayload.why_it_matters = finalWhy;
       if (finalMaterials.length) insertPayload.materials = finalMaterials;
+      if (teacherDescription) insertPayload.description = teacherDescription;
+      if (teacherQuickGuide) insertPayload.quick_guide = teacherQuickGuide;
+      if (teacherDirectAims.length) insertPayload.direct_aims = teacherDirectAims;
+      if (teacherPresentationSteps.length) insertPayload.presentation_steps = teacherPresentationSteps;
 
       // Insert the custom work pre-seeded with the AI draft's rich fields.
       const { data: newWork, error: insErr } = await supabase

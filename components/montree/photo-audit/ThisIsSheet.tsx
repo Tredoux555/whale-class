@@ -24,6 +24,7 @@ import type { CSSProperties } from 'react';
 import { useClassroomWorks, ClassroomWork } from '@/lib/montree/hooks/useClassroomWorks';
 import { useI18n } from '@/lib/montree/i18n';
 import { getAreaLabel, AREA_KEYS } from '@/lib/montree/i18n/area-labels';
+import UpgradeCard, { extractUpgradeFromResponse } from '@/components/montree/UpgradeCard';
 
 const AREA_COLORS: Record<string, string> = {
   practical_life: '#10b981',
@@ -141,6 +142,17 @@ export default function ThisIsSheet({
   const [newWorkParentDesc, setNewWorkParentDesc] = useState('');
   const [newWorkWhyItMatters, setNewWorkWhyItMatters] = useState('');
   const [newWorkMaterials, setNewWorkMaterials] = useState('');
+  // Full teaching-guide fields — populated by the "Generate full teaching
+  // guide" step (Sonnet, photo-informed). Shown in addMode once generated.
+  const [newWorkDescription, setNewWorkDescription] = useState('');
+  const [newWorkQuickGuide, setNewWorkQuickGuide] = useState('');
+  const [newWorkDirectAims, setNewWorkDirectAims] = useState('');             // newline-separated
+  const [newWorkPresentationSteps, setNewWorkPresentationSteps] = useState(''); // newline-separated
+  const [newWorkTeacherPrompt, setNewWorkTeacherPrompt] = useState('');
+  const [guideGenerated, setGuideGenerated] = useState(false);
+  const [generatingGuide, setGeneratingGuide] = useState(false);
+  const [guideError, setGuideError] = useState<string | null>(null);
+  const [guideUpgrade, setGuideUpgrade] = useState<{ feature: string; upgradeUrl: string } | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   // Two-tab UX (Session 117+): "Curriculum" (default, classic work picker)
@@ -192,6 +204,15 @@ export default function ThisIsSheet({
       setNewWorkParentDesc('');
       setNewWorkWhyItMatters('');
       setNewWorkMaterials('');
+      setNewWorkDescription('');
+      setNewWorkQuickGuide('');
+      setNewWorkDirectAims('');
+      setNewWorkPresentationSteps('');
+      setNewWorkTeacherPrompt('');
+      setGuideGenerated(false);
+      setGeneratingGuide(false);
+      setGuideError(null);
+      setGuideUpgrade(null);
       setSubmitting(false);
       setMergeMode(false);
       setMergeSelected(new Set());
@@ -421,10 +442,9 @@ export default function ThisIsSheet({
   const handleCreateNew = () => {
     const name = newWorkName.trim();
     if (submitting || !name) return;
-    const materials = newWorkMaterials
-      .split(',')
-      .map(m => m.trim())
-      .filter(Boolean);
+    const materials = newWorkMaterials.split(',').map(m => m.trim()).filter(Boolean);
+    const directAims = newWorkDirectAims.split('\n').map(s => s.trim()).filter(Boolean);
+    const presentationSteps = newWorkPresentationSteps.split('\n').map(s => s.trim()).filter(Boolean);
     fireAndClose({
       type: 'new_custom',
       name,
@@ -436,8 +456,72 @@ export default function ThisIsSheet({
       parent_description: newWorkParentDesc.trim() || undefined,
       why_it_matters: newWorkWhyItMatters.trim() || undefined,
       materials: materials.length ? materials : undefined,
+      // Full teaching-guide fields — empty unless the teacher ran the
+      // "Generate full teaching guide" step. Empty → undefined → omitted.
+      description: newWorkDescription.trim() || undefined,
+      quick_guide: newWorkQuickGuide.trim() || undefined,
+      direct_aims: directAims.length ? directAims : undefined,
+      presentation_steps: presentationSteps.length ? presentationSteps : undefined,
       reviewed: true,
     });
+  };
+
+  // "Generate full teaching guide" — Sonnet writes the complete work
+  // definition (teacher description, parent explanation, why it matters,
+  // step-by-step teaching guide, materials, direct aims, presentation
+  // steps), informed by the actual classroom photo. Fills every field in
+  // the review panel; the teacher can then edit anything before Create.
+  const handleGenerateGuide = async () => {
+    const name = newWorkName.trim();
+    if (!name || generatingGuide || submitting) return;
+    setGeneratingGuide(true);
+    setGuideError(null);
+    setGuideUpgrade(null);
+    try {
+      const res = await fetch('/api/montree/guru/generate-work-content', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          work_name: name,
+          area: newWorkArea,
+          media_id: photo?.id,
+          teacher_prompt: newWorkTeacherPrompt.trim() || undefined,
+          locale,
+        }),
+      });
+      if (res.status === 402) {
+        const u = await extractUpgradeFromResponse(res);
+        if (u) {
+          setGuideUpgrade({ feature: u.feature, upgradeUrl: u.upgradeUrl });
+          return;
+        }
+      }
+      const data = await res.json().catch(() => ({}));
+      const c = data?.content;
+      if (res.ok && data?.success && c) {
+        if (typeof c.description === 'string') setNewWorkDescription(c.description);
+        if (typeof c.parent_description === 'string') setNewWorkParentDesc(c.parent_description);
+        if (typeof c.why_it_matters === 'string') setNewWorkWhyItMatters(c.why_it_matters);
+        if (typeof c.quick_guide === 'string') setNewWorkQuickGuide(c.quick_guide);
+        if (Array.isArray(c.materials)) {
+          setNewWorkMaterials(c.materials.filter((m: unknown): m is string => typeof m === 'string').join(', '));
+        }
+        if (Array.isArray(c.direct_aims)) {
+          setNewWorkDirectAims(c.direct_aims.filter((a: unknown): a is string => typeof a === 'string').join('\n'));
+        }
+        if (Array.isArray(c.presentation_steps)) {
+          setNewWorkPresentationSteps(c.presentation_steps.filter((s: unknown): s is string => typeof s === 'string').join('\n'));
+        }
+        setGuideGenerated(true);
+      } else {
+        setGuideError('Could not generate the guide — please try again.');
+      }
+    } catch {
+      setGuideError('Could not generate the guide — please try again.');
+    } finally {
+      setGeneratingGuide(false);
+    }
   };
 
   const handleDiscussionFlag = () => {
@@ -578,6 +662,12 @@ export default function ThisIsSheet({
     ...fieldInputStyle,
     resize: 'vertical',
     lineHeight: 1.5,
+  };
+  const fieldLabelStyle: CSSProperties = {
+    fontSize: 13,
+    color: '#666',
+    marginBottom: 6,
+    fontWeight: 600,
   };
 
   if (!isOpen || !photo || !classroomId) return null;
@@ -1426,63 +1516,157 @@ export default function ThisIsSheet({
                 })}
               </div>
 
-              {/* Full work definition — editable. The teacher sees and
-                  corrects exactly what the curriculum work will contain
-                  before "Create and attach" locks it in. Pre-filled from
-                  the photo's AI draft; what's shown is what gets saved. */}
-              <div
-                style={{
-                  background: '#faf5ff',
-                  border: '1px solid #e9d5ff',
-                  borderRadius: 12,
-                  padding: '14px',
-                  marginBottom: 16,
-                }}
-              >
+              {/* Generate full teaching guide — Sonnet writes the complete
+                  work definition, informed by the actual classroom photo.
+                  Optional notes let the teacher steer the generation. */}
+              <div style={{ marginBottom: 16 }}>
+                <div style={fieldLabelStyle}>
+                  Notes for the AI <span style={{ fontWeight: 400, color: '#9ca3af' }}>(optional)</span>
+                </div>
+                <textarea
+                  value={newWorkTeacherPrompt}
+                  onChange={e => setNewWorkTeacherPrompt(e.target.value)}
+                  disabled={submitting || generatingGuide}
+                  rows={2}
+                  placeholder="Anything specific about how this work is used in your classroom…"
+                  style={{ ...fieldTextareaStyle, marginBottom: 10 }}
+                />
+                <button
+                  type="button"
+                  onClick={handleGenerateGuide}
+                  disabled={submitting || generatingGuide || !newWorkName.trim()}
+                  style={{
+                    width: '100%',
+                    padding: '12px',
+                    borderRadius: 12,
+                    border: '1.5px solid #8b5cf6',
+                    background: generatingGuide ? '#ede9fe' : 'linear-gradient(180deg, #8b5cf6, #7c3aed)',
+                    color: generatingGuide ? '#7c3aed' : '#fff',
+                    fontWeight: 700,
+                    fontSize: 14,
+                    cursor: (submitting || generatingGuide || !newWorkName.trim()) ? 'not-allowed' : 'pointer',
+                    opacity: (submitting || !newWorkName.trim()) ? 0.55 : 1,
+                  }}
+                >
+                  {generatingGuide
+                    ? '✨ Writing the teaching guide…'
+                    : guideGenerated
+                      ? '✨ Regenerate full guide'
+                      : '✨ Generate full teaching guide'}
+                </button>
+                {guideUpgrade && (
+                  <div style={{ marginTop: 10 }}>
+                    <UpgradeCard feature={guideUpgrade.feature} upgradeUrl={guideUpgrade.upgradeUrl} />
+                  </div>
+                )}
+                {guideError && !guideUpgrade && (
+                  <p style={{ fontSize: 12, color: '#dc2626', marginTop: 8, textAlign: 'center' }}>
+                    {guideError}
+                  </p>
+                )}
+              </div>
+
+              {/* Work definition — editable. The teacher sees and corrects
+                  exactly what the curriculum work will contain before
+                  "Create and attach" locks it in. The 3 base fields are
+                  pre-filled from the photo's AI draft; the teacher-description,
+                  teaching guide, aims and steps appear once the full guide
+                  has been generated. What's shown is what gets saved. */}
+              <div style={{ background: '#faf5ff', border: '1px solid #e9d5ff', borderRadius: 12, padding: '14px', marginBottom: 16 }}>
                 <div style={{ fontSize: 13, fontWeight: 700, color: '#6b21a8', marginBottom: 2 }}>
                   📖 Work definition
                 </div>
                 <div style={{ fontSize: 11, color: '#9ca3af', marginBottom: 14 }}>
-                  The AI drafted this from the photo. Edit anything — what you see here is exactly what gets saved.
+                  {guideGenerated
+                    ? 'Full teaching guide generated. Edit anything — what you see here is exactly what gets saved.'
+                    : 'The AI drafted this from the photo. Edit anything, or generate the full teaching guide above. What you see here is exactly what gets saved.'}
                 </div>
 
-                <div style={{ fontSize: 13, color: '#666', marginBottom: 6, fontWeight: 600 }}>
-                  Parent explanation
-                </div>
+                {guideGenerated && (
+                  <>
+                    <div style={fieldLabelStyle}>Teacher description</div>
+                    <textarea
+                      value={newWorkDescription}
+                      onChange={e => setNewWorkDescription(e.target.value)}
+                      disabled={submitting || generatingGuide}
+                      rows={2}
+                      placeholder="A short professional description of the work for teachers…"
+                      style={{ ...fieldTextareaStyle, marginBottom: 14 }}
+                    />
+                  </>
+                )}
+
+                <div style={fieldLabelStyle}>Parent explanation</div>
                 <textarea
                   value={newWorkParentDesc}
                   onChange={e => setNewWorkParentDesc(e.target.value)}
-                  disabled={submitting}
+                  disabled={submitting || generatingGuide}
                   rows={4}
                   placeholder="What the child does with this work — warm, concrete language for parents…"
                   style={{ ...fieldTextareaStyle, marginBottom: 14 }}
                 />
 
-                <div style={{ fontSize: 13, color: '#666', marginBottom: 6, fontWeight: 600 }}>
-                  Why it matters
-                </div>
+                <div style={fieldLabelStyle}>Why it matters</div>
                 <textarea
                   value={newWorkWhyItMatters}
                   onChange={e => setNewWorkWhyItMatters(e.target.value)}
-                  disabled={submitting}
+                  disabled={submitting || generatingGuide}
                   rows={3}
                   placeholder="The developmental purpose — what skill or concept this builds…"
                   style={{ ...fieldTextareaStyle, marginBottom: 14 }}
                 />
 
-                <div style={{ fontSize: 13, color: '#666', marginBottom: 6, fontWeight: 600 }}>
-                  Materials
-                </div>
+                {guideGenerated && (
+                  <>
+                    <div style={fieldLabelStyle}>Teaching guide</div>
+                    <textarea
+                      value={newWorkQuickGuide}
+                      onChange={e => setNewWorkQuickGuide(e.target.value)}
+                      disabled={submitting || generatingGuide}
+                      rows={6}
+                      placeholder="Step-by-step guide for presenting this work…"
+                      style={{ ...fieldTextareaStyle, marginBottom: 14 }}
+                    />
+                  </>
+                )}
+
+                <div style={fieldLabelStyle}>Materials</div>
                 <input
                   value={newWorkMaterials}
                   onChange={e => setNewWorkMaterials(e.target.value)}
-                  disabled={submitting}
+                  disabled={submitting || generatingGuide}
                   placeholder="e.g. wooden tray, sandpaper letters, object box"
                   style={{ ...fieldInputStyle, marginBottom: 4 }}
                 />
-                <div style={{ fontSize: 11, color: '#9ca3af', margin: 0 }}>
+                <div style={{ fontSize: 11, color: '#9ca3af', margin: guideGenerated ? '0 0 14px' : 0 }}>
                   Separate each material with a comma.
                 </div>
+
+                {guideGenerated && (
+                  <>
+                    <div style={fieldLabelStyle}>Direct aims</div>
+                    <textarea
+                      value={newWorkDirectAims}
+                      onChange={e => setNewWorkDirectAims(e.target.value)}
+                      disabled={submitting || generatingGuide}
+                      rows={3}
+                      placeholder="What the child explicitly learns — one per line…"
+                      style={{ ...fieldTextareaStyle, marginBottom: 4 }}
+                    />
+                    <div style={{ fontSize: 11, color: '#9ca3af', margin: '0 0 14px' }}>One aim per line.</div>
+
+                    <div style={fieldLabelStyle}>Presentation steps</div>
+                    <textarea
+                      value={newWorkPresentationSteps}
+                      onChange={e => setNewWorkPresentationSteps(e.target.value)}
+                      disabled={submitting || generatingGuide}
+                      rows={5}
+                      placeholder="Ordered steps for showing the child — one per line…"
+                      style={{ ...fieldTextareaStyle, marginBottom: 4 }}
+                    />
+                    <div style={{ fontSize: 11, color: '#9ca3af', margin: 0 }}>One step per line.</div>
+                  </>
+                )}
               </div>
 
               <div style={{ display: 'flex', gap: 10 }}>
