@@ -108,6 +108,8 @@ export async function enrichCustomWorkInBackground(input: EnrichInput): Promise<
         .eq('id', workId)
         .maybeSingle();
       if (reviewedRow?.parent_description || reviewedRow?.why_it_matters) {
+        // The teacher saved real text — translate it, and never let Sonnet
+        // overwrite it.
         autoTranslateToChinese({
           classroomId,
           workName,
@@ -119,9 +121,14 @@ export async function enrichCustomWorkInBackground(input: EnrichInput): Promise<
             err?.message || err
           )
         );
+        console.log(`[EnrichCustomWork] "${workName}" teacher-reviewed — translate only, no Sonnet`);
+        return;
       }
-      console.log(`[EnrichCustomWork] "${workName}" teacher-reviewed — translate only, no Sonnet`);
-      return;
+      // Reviewed, but the teacher saved no description text at all (e.g. the
+      // photo had no AI draft to pre-fill the fields). There's nothing to
+      // protect — fall through so Sonnet writes a description, instead of
+      // leaving the curriculum work permanently blank.
+      console.log(`[EnrichCustomWork] "${workName}" teacher-reviewed but empty — letting Sonnet enrich`);
     }
 
     // 2b. Check whether the curriculum work row already has a

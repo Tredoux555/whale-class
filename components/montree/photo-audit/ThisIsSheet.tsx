@@ -559,10 +559,12 @@ export default function ThisIsSheet({
   }, []);
 
   // Shared styling for the addMode work-definition fields.
+  // fontSize 16 (not smaller) — anything below 16 makes iOS Safari
+  // zoom the viewport on focus. Teachers edit these on a tablet.
   const fieldInputStyle: CSSProperties = {
     width: '100%',
     padding: '10px 12px',
-    fontSize: 15,
+    fontSize: 16,
     color: '#0f172a',
     caretColor: '#8b5cf6',
     background: '#ffffff',
