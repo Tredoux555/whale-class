@@ -1139,7 +1139,13 @@ export default function PhotoAuditPage() {
   // photo is restored only if the API fails. Teachers don't wait for the wheel.
   const handleConfirm = (photo: AuditPhoto) => {
     if (!photo.child_id) {
-      toast.error(t('photoAudit.tagChildFirst'));
+      // No child on this photo (e.g. a haiku_matched photo whose work was
+      // identified but the child was never tagged). A confirmation has to
+      // attach the work to a child, so a bare toast is a dead end — the
+      // teacher taps ✓ Correct and nothing moves. Open the child tagger
+      // so the flow continues: tag the child, then confirm.
+      toast(t('photoAudit.tagChildFirst'));
+      handleOpenChildTagger(photo);
       return;
     }
     if (!photo.work_id && !photo.work_name) {
@@ -1448,7 +1454,10 @@ export default function PhotoAuditPage() {
   // Fall back through closest_existing_match → top_candidates[0] → picker.
   const handleConfirmHaikuDraft = (photo: AuditPhoto) => {
     if (!photo.child_id) {
-      toast.error('Photo has no child tagged — tag a child first');
+      // No child tagged — open the child tagger so the teacher can tag
+      // and then confirm, instead of dead-ending on a toast.
+      toast(t('photoAudit.tagChildFirst'));
+      handleOpenChildTagger(photo);
       return;
     }
     const draft = photo.sonnet_draft;
@@ -1489,9 +1498,27 @@ export default function PhotoAuditPage() {
       }
     }
 
-    // True fallback: AI had no resolvable match in the curriculum. Open
-    // the picker so the teacher can pick or create one. Pass
-    // allowAutoAttach=true since the teacher pressed Correct.
+    // True fallback: the AI proposed a work that isn't in the loaded
+    // classroom curriculum yet. The teacher pressed ✓ Correct — they have
+    // ALREADY endorsed the AI's identification. Dumping them into the
+    // "This is…" picker here is the glitch the teacher sees ("clicking
+    // Correct opens a search page"). Instead, create the work straight
+    // from the AI draft via the new_custom resolve path. That route is
+    // dedup-safe: if the work secretly already exists in the classroom it
+    // delegates to the existing-work path instead of creating a duplicate,
+    // so this is correct whether or not "Name Writing" is a real row.
+    const VALID_RESOLVE_AREAS = ['practical_life', 'sensorial', 'mathematics', 'language', 'cultural'];
+    const fallbackName = (proposed || closestName || top?.workName || '').trim();
+    const rawArea = (draft?.suggested_area || top?.area || photo.area || '').trim().toLowerCase();
+    const fallbackArea = VALID_RESOLVE_AREAS.includes(rawArea) ? rawArea : 'language';
+    if (fallbackName.length >= 2 && fallbackName.length <= 80) {
+      console.log(`[HaikuConfirm] No curriculum match — confirming "${fallbackName}" via new_custom (${fallbackArea})`);
+      handleResolvePhoto(photo, { type: 'new_custom', name: fallbackName, area_key: fallbackArea });
+      return;
+    }
+
+    // Last resort: the AI gave no usable name at all — open the picker so
+    // the teacher can pick or type one.
     console.warn('[HaikuConfirm] No resolution found, opening picker:', {
       proposed, closestName, topCandName: top?.workName,
     });
@@ -1508,7 +1535,10 @@ export default function PhotoAuditPage() {
     candidate: { workName: string; workKey: string | null; area: string | null }
   ) => {
     if (!photo.child_id) {
-      toast.error('Photo has no child tagged — tag a child first');
+      // No child tagged — open the child tagger so the teacher can tag
+      // and then confirm, instead of dead-ending on a toast.
+      toast(t('photoAudit.tagChildFirst'));
+      handleOpenChildTagger(photo);
       return;
     }
     const resolved = findWorkByName(candidate.workName, candidate.area || undefined);
@@ -1544,7 +1574,10 @@ export default function PhotoAuditPage() {
   // endorsement to a specific work via proposed_name.
   const openThisIsSheet = (photo: AuditPhoto, allowAutoAttach: boolean = false) => {
     if (!photo.child_id) {
-      toast.error('Photo has no child tagged — tag a child first');
+      // No child tagged — open the child tagger so the teacher can tag
+      // and then confirm, instead of dead-ending on a toast.
+      toast(t('photoAudit.tagChildFirst'));
+      handleOpenChildTagger(photo);
       return;
     }
     if (allowAutoAttach) {
