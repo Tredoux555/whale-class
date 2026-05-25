@@ -187,8 +187,8 @@ export default function TryMontreePage() {
         `,
       }} />
 
-      {/* Language toggle — top right */}
-      <div className="absolute top-4 right-4 z-20">
+      {/* Language toggle — top right (clears the status bar on edge-to-edge iPhones) */}
+      <div className="absolute right-4 z-20" style={{ top: 'max(16px, env(safe-area-inset-top, 16px))' }}>
         <LanguageToggle className="bg-white/10 hover:bg-white/20 text-white" />
       </div>
 

@@ -16,7 +16,10 @@ export default function LanguageAreaLandingPage() {
         `,
       }} />
 
-      <nav className="relative z-10 px-6 py-5 flex items-center justify-between">
+      <nav
+        className="relative z-10 px-6 pb-5 flex items-center justify-between"
+        style={{ paddingTop: 'calc(env(safe-area-inset-top) + 1.25rem)' }}
+      >
         <Link
           href="/montree/library"
           className="text-white/40 text-sm hover:text-white/70 transition-colors"
