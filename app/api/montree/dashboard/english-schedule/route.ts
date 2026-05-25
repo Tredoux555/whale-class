@@ -99,11 +99,11 @@ async function enrichScheduleWithLiveState(
   const today = getCurrentWeekDay();
 
   const { days, meta } = applyLiveState(
-    baseSchedule.days || {},
     roster,
     kBoundSet,
     daysSinceLastEnglish,
     doneSet,
+    doneDayByChild,
     today,
   );
 
@@ -295,19 +295,30 @@ export async function POST(request: NextRequest) {
 
 // ─── Helpers ───
 
+// 🚨 Timezone — the classroom runs on China time (UTC+8); the Railway server
+// is UTC. Every "what day / what week is it" computation shifts +8h FIRST,
+// otherwise the schedule sits a day behind through the whole China-morning /
+// UTC-evening window (e.g. 6am Tue in China is still "Monday" in UTC).
+const TZ_OFFSET_MS = 8 * 60 * 60 * 1000;
+
+// "Now" as a Date whose .getUTC* accessors read as China-local values.
+function chinaNow(): Date {
+  return new Date(Date.now() + TZ_OFFSET_MS);
+}
+
+// Returns a Date at UTC-midnight of the China week's Monday calendar date.
+// `.toISOString().split('T')[0]` then yields the correct China-Monday date
+// string (the DB key + label). loadDoneChildInfo shifts -8h off this when it
+// needs the true China-Monday-midnight instant for captured_at filtering.
 function getWeekStart(param: string | null): Date {
   if (param) {
-    const d = new Date(param + 'T00:00:00');
+    const d = new Date(param + 'T00:00:00Z');
     if (!isNaN(d.getTime())) return d;
   }
-  // Default: this week's Monday
-  const now = new Date();
-  const day = now.getDay(); // 0=Sun
+  const cn = chinaNow();
+  const day = cn.getUTCDay(); // 0=Sun — China day-of-week
   const offset = day === 0 ? -6 : 1 - day;
-  const monday = new Date(now);
-  monday.setDate(now.getDate() + offset);
-  monday.setHours(0, 0, 0, 0);
-  return monday;
+  return new Date(Date.UTC(cn.getUTCFullYear(), cn.getUTCMonth(), cn.getUTCDate() + offset));
 }
 
 // ─── Session 119: Live state computation ──────────────────────────────
@@ -385,8 +396,12 @@ async function loadDoneChildInfo(
   rosterIds: string[],
 ): Promise<{ doneSet: Set<string>; doneDayByChild: Map<string, string> }> {
   const empty = { doneSet: new Set<string>(), doneDayByChild: new Map<string, string>() };
-  const weekEnd = new Date(weekStart);
-  weekEnd.setDate(weekStart.getDate() + 7);
+  // weekStart is UTC-midnight of the China-Monday date; the true China week
+  // window is that minus the +8h offset, spanning 7 days. Filtering on the
+  // real China-week boundary so an early-morning English session counts.
+  const startMs = weekStart.getTime() - TZ_OFFSET_MS;
+  const startIso = new Date(startMs).toISOString();
+  const endIso = new Date(startMs + 7 * 24 * 60 * 60 * 1000).toISOString();
 
   const langWorkIds = await resolveLanguageWorkIds(supabase, classroomId);
   if (langWorkIds.length === 0 || rosterIds.length === 0) return empty;
@@ -409,8 +424,8 @@ async function loadDoneChildInfo(
     .eq('teacher_confirmed', true)
     .in('child_id', rosterIds)
     .in('work_id', langWorkIds)
-    .gte('captured_at', weekStart.toISOString())
-    .lt('captured_at', weekEnd.toISOString());
+    .gte('captured_at', startIso)
+    .lt('captured_at', endIso);
   for (const row of (directRaw || []) as Array<{ child_id: string | null; captured_at: string }>) {
     if (row.child_id) note(row.child_id, row.captured_at);
   }
@@ -424,8 +439,8 @@ async function loadDoneChildInfo(
     .eq('classroom_id', classroomId)
     .eq('teacher_confirmed', true)
     .in('work_id', langWorkIds)
-    .gte('captured_at', weekStart.toISOString())
-    .lt('captured_at', weekEnd.toISOString());
+    .gte('captured_at', startIso)
+    .lt('captured_at', endIso);
   const candidateMedia = ((candidateMediaRaw || []) as Array<{ id: string; captured_at: string }>);
   if (candidateMedia.length > 0) {
     const capturedById = new Map(candidateMedia.map(m => [m.id, m.captured_at]));
@@ -441,9 +456,11 @@ async function loadDoneChildInfo(
     }
   }
 
+  // The weekday each child FIRST did English this week — derived in China
+  // time so an early-morning session doesn't get tagged as the day before.
   const doneDayByChild = new Map<string, string>();
   for (const [childId, ts] of earliestByChild) {
-    doneDayByChild.set(childId, WEEKDAY_NAMES[new Date(ts).getDay()]);
+    doneDayByChild.set(childId, WEEKDAY_NAMES[new Date(ts + TZ_OFFSET_MS).getUTCDay()]);
   }
   return { doneSet, doneDayByChild };
 }
@@ -518,137 +535,118 @@ async function loadEnglishActivityCounts(
 
 /**
  * Return the current weekday as 'monday'|...|'friday', or null on weekends.
- * Uses server-local Date semantics (matches generateSchedule's getWeekStart).
+ * Computed in China time (UTC+8) — the server is UTC, so a bare getDay()
+ * would report yesterday during the China-morning window.
  */
 function getCurrentWeekDay(): WeekDay | null {
-  const dow = new Date().getDay(); // 0=Sun, 1=Mon, ..., 6=Sat
+  const dow = chinaNow().getUTCDay(); // 0=Sun, 1=Mon, ..., 6=Sat — China-local
   if (dow === 0 || dow === 6) return null;
   return DAY_ORDER_LIVE[dow - 1];
 }
 
 /**
- * Apply the LIVE STATE transform on top of a saved schedule.
+ * Build the week grid from live state — the photo system is the source of
+ * truth, no saved snapshot needed.
  *
- * Past days: kept frozen (original kids) + is_done flag added.
- * Today + future: pool of undone kids redistributed across remaining days,
- *   K-bound first, then most-days-since-English. Bingo constraint preserved.
+ * DONE children are placed on the weekday they ACTUALLY did English (the
+ * first confirmed Language photo this week) with a ticked box. UNDONE
+ * children fill the upcoming plan — distributed across today→Friday (the
+ * whole week on a weekend), K-bound first then most-neglected, ~6 per day.
  *
- * The original saved schedule (Monday's intent) is what the function reads
- * from — but past days only consult it for who-was-there. Today+future
- * recompute entirely from the current done_set + roster, so a teacher's
- * Wed photo of Rachel removes Rachel from Thu's list automatically.
+ * So the grid doubles as a record (who's ticked off, and on which day) and
+ * a plan (who still needs bingo, on which day).
  */
 function applyLiveState(
-  savedDays: Record<string, Array<{
-    id: string;
-    name: string;
-    photo_url: string | null;
-    is_k_bound: boolean;
-    days_since_last_visit: number | null;
-  }>>,
   roster: Array<{ id: string; name: string; photo_url: string | null }>,
   kBoundSet: Set<string>,
   daysSinceLastEnglish: Map<string, number | null>,
   doneSet: Set<string>,
+  doneDayByChild: Map<string, string>,
   today: WeekDay | null,
 ): { days: LiveScheduleDays; meta: LiveStateMeta } {
   const days: LiveScheduleDays = {
     monday: [], tuesday: [], wednesday: [], thursday: [], friday: [],
   };
 
-  // Determine past vs today+future. Weekend → all days frozen.
-  const todayIdx = today === null ? DAY_ORDER_LIVE.length : DAY_ORDER_LIVE.indexOf(today);
-  const pastDays = DAY_ORDER_LIVE.slice(0, todayIdx);
-  const liveDays = DAY_ORDER_LIVE.slice(todayIdx);
-
-  // ─── PAST: freeze original kids, add is_done flag ───
-  for (const day of pastDays) {
-    const original = savedDays[day] || [];
-    days[day] = original.map(k => ({
-      id: k.id,
-      name: k.name,
-      photo_url: k.photo_url,
-      is_k_bound: k.is_k_bound,
-      days_since_last_visit: k.days_since_last_visit,
-      is_done: doneSet.has(k.id),
-    }));
+  // ─── DONE children → the weekday they actually did English, ticked. ───
+  // A weekend / unknown completion day falls back to Monday so the child
+  // still appears on the grid (they're also in the Done-this-week panel).
+  for (const kid of roster) {
+    if (!doneSet.has(kid.id)) continue;
+    const raw = doneDayByChild.get(kid.id);
+    const day: WeekDay = raw && (DAY_ORDER_LIVE as readonly string[]).includes(raw)
+      ? (raw as WeekDay)
+      : 'monday';
+    days[day].push({
+      id: kid.id,
+      name: kid.name,
+      photo_url: kid.photo_url,
+      is_k_bound: kBoundSet.has(kid.id),
+      days_since_last_visit: daysSinceLastEnglish.get(kid.id) ?? null,
+      is_done: true,
+    });
   }
 
-  // ─── LIVE: redistribute undone pool across [today, ...future] ───
-  // Pool = roster minus done. We don't care what saved schedule says for
-  // live days — undone kids ALL need a slot somewhere in the live window.
+  // ─── UNDONE children → the upcoming plan. ───
   const pool = roster.filter(k => !doneSet.has(k.id));
-
-  // Sort: K-bound first, then most-days-since-English first, then alpha.
+  // K-bound first, then most-days-since-English, then alphabetical.
   pool.sort((a, b) => {
     const aK = kBoundSet.has(a.id);
     const bK = kBoundSet.has(b.id);
     if (aK !== bK) return aK ? -1 : 1;
     const aDays = daysSinceLastEnglish.get(a.id);
     const bDays = daysSinceLastEnglish.get(b.id);
-    if (aDays === null && bDays !== null && bDays !== undefined) return -1; // never-visited first
-    if (bDays === null && aDays !== null && aDays !== undefined) return 1;
-    if (aDays === null && bDays === null) return a.name.localeCompare(b.name);
+    if (aDays == null && bDays != null) return -1; // never-visited first
+    if (bDays == null && aDays != null) return 1;
+    if (aDays == null && bDays == null) return a.name.localeCompare(b.name);
     return (bDays ?? 0) - (aDays ?? 0);
   });
 
-  // Round-robin distribute across live days, 6/day cap.
+  // Plan window — today→Friday. On a weekend, plan the whole week ahead.
+  const todayIdx = today === null ? 0 : DAY_ORDER_LIVE.indexOf(today);
+  const planDays = DAY_ORDER_LIVE.slice(todayIdx);
   const SLOTS_PER_DAY = 6;
-  const liveAssignment: Record<string, ScheduleChildLive[]> = {};
-  for (const d of liveDays) liveAssignment[d] = [];
-
-  // Where to mark "rolled from" — for each pool kid, find the past day they
-  // were originally scheduled (if any). That flags them visually as rolled.
-  const originalDayByChildId = new Map<string, WeekDay>();
-  for (const day of DAY_ORDER_LIVE) {
-    const original = savedDays[day] || [];
-    for (const k of original) {
-      if (!originalDayByChildId.has(k.id)) {
-        originalDayByChildId.set(k.id, day);
-      }
-    }
-  }
 
   let dayIdx = 0;
   for (const kid of pool) {
-    if (liveDays.length === 0) break; // weekend — nothing to schedule
-
-    // Advance dayIdx until we find a day with room
+    if (planDays.length === 0) break;
+    // Advance to a plan day with room — done children already on that day
+    // count toward the 6 (they're English sessions for that day too).
     let attempts = 0;
     while (
-      liveAssignment[liveDays[dayIdx % liveDays.length]].length >= SLOTS_PER_DAY
-      && attempts < liveDays.length
+      days[planDays[dayIdx % planDays.length]].length >= SLOTS_PER_DAY
+      && attempts < planDays.length
     ) {
       dayIdx += 1;
       attempts += 1;
     }
-    if (attempts >= liveDays.length) break; // all live days full
-
-    const targetDay = liveDays[dayIdx % liveDays.length];
-    const orig = originalDayByChildId.get(kid.id);
-    liveAssignment[targetDay].push({
+    if (attempts >= planDays.length) break; // every plan day is full
+    const targetDay = planDays[dayIdx % planDays.length];
+    days[targetDay].push({
       id: kid.id,
       name: kid.name,
       photo_url: kid.photo_url,
       is_k_bound: kBoundSet.has(kid.id),
       days_since_last_visit: daysSinceLastEnglish.get(kid.id) ?? null,
       is_done: false,
-      // Mark rolled if their original day was BEFORE today.
-      ...(orig && pastDays.includes(orig) ? { rolled_from_day: orig } : {}),
     });
-
-    // Bump dayIdx if this day is now full, so the next kid lands elsewhere
-    if (liveAssignment[targetDay].length >= SLOTS_PER_DAY) dayIdx += 1;
+    if (days[targetDay].length >= SLOTS_PER_DAY) dayIdx += 1;
   }
 
-  for (const d of liveDays) days[d] = liveAssignment[d];
-
-  // ─── Shortfall: undone kids who didn't fit in any live day ───
-  const scheduledInLive = new Set<string>();
-  for (const d of liveDays) {
-    for (const k of liveAssignment[d]) scheduledInLive.add(k.id);
+  // Within each day: done (ticked) children first, then the planned ones.
+  for (const d of DAY_ORDER_LIVE) {
+    days[d].sort((a, b) => {
+      if (a.is_done !== b.is_done) return a.is_done ? -1 : 1;
+      return a.name.localeCompare(b.name);
+    });
   }
-  const unscheduled = pool.filter(k => !scheduledInLive.has(k.id));
+
+  // ─── Shortfall — undone kids who didn't fit any plan day this week. ───
+  const planned = new Set<string>();
+  for (const d of planDays) {
+    for (const k of days[d]) if (!k.is_done) planned.add(k.id);
+  }
+  const unscheduled = pool.filter(k => !planned.has(k.id));
 
   const meta: LiveStateMeta = {
     today,
