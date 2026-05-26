@@ -320,6 +320,88 @@ Session 119 weathered a Railway edge outage (May 19 22:22 UTC, ~1.5h, first inci
 
 ---
 
+## RECENT STATUS (May 27, 2026)
+
+### 🎬 Session 130 — Splash page refresh + corner autoplay video + name removal + HeyGen script (May 27, 2026)
+
+**6 commits shipped to `main`:** `9f36ce6c` → `1439fda3` → `98ea90ce` → `f2f805de` → `85b0ee7e` → `e6d7bfa0`. Full splash brand refresh, founder name scrubbed off the public surface, autoplay corner video bolted onto the hero with self-contained EN/中文 toggle. Plus a parallel agent produced a ready-to-paste HeyGen explainer script (~750 words / 5 min, both brand phrases worked in, no founder name).
+
+**Three design pivots in one session:** (1) click-to-play inline section under the hero, (2) same plus "Watch the intro" pill + lightbox modal, (3) FINAL — corner autoplay video in the hero with EN/中文 toggle overlaid on the player. Each was built and audited before being superseded by the next, so the in-tree state is clean.
+
+**🚨 Canonical resume doc:** `docs/handoffs/SESSION_130_HANDOFF.md` — full commit table, pivot history, architectural rules #248–255, end-of-session test plan.
+
+**No migrations.** Pure frontend + asset + i18n.
+
+**A. Hero rewrite (commit `9f36ce6c`):**
+
+`app/montree/page.tsx` centered hero stack: `The magic of Montree.` → `Montree` (h1, brand mark) + new italic Lora-serif `the AI Montessori classroom revolution` tagline directly beneath + `Try it` CTA + `Work smarter not harder` gold kicker (replaced `Change your life`). i18n: 3 keys touched across 12 locales (`landing.hero.title` → "Montree" untranslated everywhere, `landing.hero.tagline` NEW with real per-locale translations, `landing.hero.kicker` → "Work smarter not harder" with real per-locale translations). Strict parity check: 5,035 / 5,035 per locale = 100% × 12.
+
+**B. About page name removal (commit `9f36ce6c`):**
+
+`app/montree/about/page.tsx`:
+- Visible copy: `Tredoux Willemse, an AMS-certified Montessori Young Learner Specialist currently teaching a PreK 4 class in Beijing` → `a practicing AMS-certified Montessori educator`. Drops the name AND the school-identifying detail (Beijing + PreK 4).
+- Schema.org JSON-LD: removed the `founder: { '@type': 'Person', name: 'Tredoux Willemse', ... }` field entirely. Google's entity graph now sees Montree Limited as the operator with no named human attached.
+- `metadata.description` + OpenGraph + Twitter descriptions: `Built by a practicing AMS-certified Montessori teacher` → `Built by a practicing Montessori educator`.
+- Montree Limited / HK SAR / BR 80261361 / address / founded date / contact email all kept.
+
+Grep verified: zero "Tredoux" or "Willemse" remain on `app/montree/page.tsx` or `app/montree/about/page.tsx`.
+
+**C. Splash video — three iterations, final state in `85b0ee7e`:**
+
+**Iteration 1** (`9f36ce6c` + `1439fda3`): Click-to-play inline `<section>` between hero and editorial blocks. 20 MB 65s EN MP4 + 73 KB poster (auto-extracted at t=2s via `ffmpeg -ss 2 -i <video>.mp4 -frames:v 1 -q:v 3 <poster>.jpg`). Native browser controls, `preload="metadata"`. `SPLASH_VIDEO_BY_LOCALE` map keyed on the page-wide i18n locale.
+
+**Iteration 2** (built and shipped in `85b0ee7e`'s parent state, then ripped out in the same commit when user pivoted): added a "▶ Watch the intro" ghost-pill next to the Try it CTA + a full-screen lightbox modal that opened on click (autoplay-with-sound + ESC + backdrop-click close + body scroll lock).
+
+**Iteration 3** (FINAL — `85b0ee7e`): user pivoted to "auto-run video top-left corner so visitors know what Montree is before anything else." Corner autoplay video in the hero, `position: absolute; top: 32px; left: 32px`. Hero now has `position: relative` so the corner anchors to it. Width: `clamp(260px, 28vw, 360px)`. `autoplay muted loop playsInline preload="auto"`. Self-contained EN / 中文 toggle overlaid on the video frame's bottom-right — local `useState<'en' | 'zh'>('en')` INDEPENDENT of the page-wide LanguageToggle. `<video key={src}>` so React rebuilds the player on locale flip (without it the old buffer/playhead point at the previous MP4 and the new src never loads). Mobile (≤640px): corner video drops to `position: static`, sized to `min(280px, 75vw)`, flows above the centered text.
+
+**Iteration 3b** (`e6d7bfa0`): user uploaded a tighter 45s/13MB short version of the EN video, better for autoplay-on-load (less buffer, less awkward looping). Replaced in place at `/public/montree-splash-video.mp4`. Poster regenerated.
+
+**D. 2 ms flash bug — diagnosed + fixed:**
+
+User reported: "the video flashes for about two milli seconds and then cuts out." Root cause: the `IntersectionObserver` reveal pattern in `addReveal()` paints the section at default `opacity: 1`, then the ref callback fires post-commit and sets `opacity: 0` with `transition: 0.7s`, then the IntersectionObserver fires when in viewport and pulses back to `opacity: 1`. For sections below the fold this is invisible. For above-the-fold elements containing a `<video>` element, the brief paint at opacity 1 → snap to 0 → fade to 1 is visible as a flash. **Fix:** corner video container deliberately does NOT use `ref={addReveal}`. Static `opacity: 1` from CSS default. Other above-the-fold elements without `<video>` content keep the reveal pattern.
+
+**E. `.gitignore` carve-out (commit `9f36ce6c`):**
+
+Global `*.mp4` block (line 50) was blocking the splash video. Added one-line negation: `!public/montree-splash-video*.mp4`. Covers `montree-splash-video.mp4` (en) and `montree-splash-video-zh.mp4` (zh). Don't widen this glob — each new locale adds 13–40 MB to the repo.
+
+**F. HeyGen explainer script (parallel agent — not in git):**
+
+~750 words / 5 minutes spoken, walks through all 12 major features (photo→observation flip, Weekly Wrap, Tracy, Guru, growing brain, 12-language localisation, library tools, parent portal, principal cockpit, voice onboarding, pricing, Montree Limited HK). Both brand phrases ("the AI Montessori classroom revolution" at top + close, "work smarter, not harder" near the end). Founder name NOT mentioned. Ready-to-paste prose with no scene markers. Paste-target: HeyGen Builder → Script to Video → 8 credits. Script preserved in the Session 130 final assistant message (chat transcript only — not saved to a file).
+
+**🚨 Architectural rules locked in this session (#248–255):**
+
+248. **Splash brand video lives at `/public/montree-splash-video.mp4` (en) and `/public/montree-splash-video-zh.mp4` (zh).** Narrow carve-out from the global `*.mp4` gitignore block. Don't widen past 2–3 locales without reconsidering.
+249. **Per-locale splash video poster is auto-extracted at t=2s** via `ffmpeg -ss 2 -i <video>.mp4 -frames:v 1 -q:v 3 <poster>.jpg`. Stored at `/public/montree-splash-video<-locale>-poster.jpg`. Required so `<video>` has something to show before metadata loads.
+250. **The splash video EN/中文 toggle is INDEPENDENT of the page-wide LanguageToggle.** Local `useState<'en' | 'zh'>` indexing into `SPLASH_VIDEOS` constant. EN/中文 only because that's all we currently have content for.
+251. **The hero's corner video MUST NOT use `ref={addReveal}`.** The JS-set opacity pulse races the `<video>` element's first paint and produces the 2 ms flash. Static `opacity: 1` from CSS default is canonical for any element that mounts a `<video>` above the fold.
+252. **`<video>` element on a locale-switch surface MUST use `key={src}`** so React unmounts + remounts on src change. Without it the player keeps the old buffer/playhead and the new src never loads.
+253. **Browser autoplay requires `muted` attribute set.** Adding it means corner videos are silent by design. If audio matters, build a lightbox/modal that plays with sound on user gesture.
+254. **About page Schema.org JSON-LD MUST NOT include a named `founder` Person field.** Tying Montree Limited to a specific named individual on a public surface lets schools cross-reference the founder to a specific classroom.
+255. **SSH push of pack files containing 20+ MB binary assets is unreliable on the current network.** Mitigation: split commits so code changes ship first (small pack), asset commits come second (larger pack, may need 1–3 retries). Retry with `GIT_SSH_COMMAND='ssh -o ServerAliveInterval=15 -o ServerAliveCountMax=10'` if it keeps failing.
+
+**Verification status:**
+- ✅ All 6 commits on `origin/main`. Railway auto-deploying.
+- ✅ Lint clean (`--max-warnings=0`) on every changed code file.
+- ✅ TypeScript clean — `tsc --noEmit -p .` reports zero `app/montree/page.tsx` errors.
+- ✅ i18n strict parity 12/12 locales at 100% (5,035 keys each).
+- ✅ Grep for stale refs (SPLASH_VIDEO_BY_LOCALE, lightboxOpen, m-pill-ghost, m-lightbox, m-splash-video, watchIntro): zero hits.
+- ✅ Grep for Tredoux/Willemse on splash + About: zero hits.
+- ✅ CSS class names ↔ JSX consumers cross-verified.
+- ✅ All imports used.
+- ✅ HeyGen script delivered.
+- ⏳ Production eyes-on verification on `montree.xyz` after Railway settles.
+- ⏳ Mobile eyes-on at true 390px (iPhone).
+
+**🚨 Next-session priorities (ordered):**
+
+1. **Verify on production after Railway settles** — corner video autoplays muted on page load, EN/中文 toggle swaps the source, hero text stays centered, page-wide LanguageToggle does NOT affect the video, mobile drops video above centered text, no 2 ms flash, About page is name-free.
+2. **HeyGen video render** — paste the script (Session 130 final assistant message) into HeyGen Builder → Script to Video → 8 credits. Use the existing "GB - Riley" voice setup.
+3. **Decide on more locale variants of the splash video** — each adds 15–40 MB to repo. Worth it for French/Japanese/Korean? Probably not for Ukrainian/Russian yet.
+4. **Optional: corner video tap-to-unmute affordance** — current state is silent by design. If user feedback says "let me hear it", add a small mute/unmute toggle next to the EN/中文 pills.
+5. **Carry-overs from Session 129** (untouched this session): Class Progress body i18n batch, mobile eyes-on for Classroom Overview 4-tab strip, optional deeper Calendar consolidation, system-wide tz sweep (rule #228), parent-portal Calendar nav link, multi-school parent picker, rate-limit `/api/montree/calendar`.
+
+---
+
 ## RECENT STATUS (May 26, 2026)
 
 ### 🔥 Session 129 — Calendar reframe + Class Progress tab + glowing dots + audit marathon + Appointments consolidation (May 26, 2026)
