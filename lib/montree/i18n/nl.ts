@@ -5135,4 +5135,7 @@ export const nl: Record<string, string> = {
   'calendar.summary.cta': 'Vat deze maand samen',
   'calendar.summary.loading': 'Uw agenda inlezen…',
   'classroomOverview.classProgressTab': 'Voortgang van de klas',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'nav.appointments': 'Afspraken',
 };

@@ -5135,4 +5135,7 @@ export const ja: Record<string, string> = {
   'calendar.summary.cta': 'この月をまとめる',
   'calendar.summary.loading': 'カレンダーを読み込み中です…',
   'classroomOverview.classProgressTab': 'クラスの進捗',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'nav.appointments': '予定',
 };

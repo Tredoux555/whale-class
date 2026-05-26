@@ -24,8 +24,38 @@ export async function resolveCalendarScope(
   const staff = await verifySchoolRequest(request);
   if (!(staff instanceof NextResponse)) {
     const supabase = getSupabase();
+
+    // Session 129 follow-up — defensive principal-upgrade.
+    // Founder-principals (someone in BOTH montree_teachers AND
+    // montree_school_admins) often get role='teacher' stamped on their JWT
+    // by the unified login (same bug class as Session 86 Tracy 403).
+    // For the calendar surface that means QuickCreateMenu hides the Term
+    // option because ACTIONS_BY_ROLE['teacher'] doesn't include it.
+    // Fix: if the JWT role is teacher but this user is ALSO an active
+    // principal in this school, upgrade the calendar scope role to
+    // 'principal' so the surface presents the full set of principal-level
+    // affordances. Read-only routes are unaffected — this only changes the
+    // *display* role on the calendar.
+    let effectiveRole: CalendarRole = (staff.role as CalendarRole) || 'teacher';
+    if (effectiveRole === 'teacher') {
+      const { data: adminRow } = await supabase
+        .from('montree_school_admins')
+        .select('id, role, is_active')
+        .eq('id', staff.userId)
+        .eq('school_id', staff.schoolId)
+        .eq('is_active', true)
+        .eq('role', 'principal')
+        .maybeSingle();
+      if (adminRow) {
+        console.warn(
+          `[CalendarScope] JWT role='teacher' but user ${staff.userId} is an active principal in school ${staff.schoolId} — upgrading scope role to 'principal'.`,
+        );
+        effectiveRole = 'principal';
+      }
+    }
+
     let childIds: string[] = [];
-    if (staff.role === 'teacher' && staff.classroomId) {
+    if (effectiveRole === 'teacher' && staff.classroomId) {
       const { data } = await supabase
         .from('montree_children')
         .select('id')
@@ -35,7 +65,7 @@ export async function resolveCalendarScope(
     }
     return {
       scope: {
-        role: (staff.role as CalendarRole) || 'teacher',
+        role: effectiveRole,
         schoolId: staff.schoolId,
         classroomId: staff.classroomId || null,
         childIds,

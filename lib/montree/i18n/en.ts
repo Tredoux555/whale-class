@@ -243,6 +243,7 @@ export const en = {
   'nav.more': 'More tools',
   'nav.classroomBuilder': 'Classroom Setup',
   'nav.calendar': 'Calendar',
+  'nav.appointments': 'Appointments',
 
   // Calendar (universal events + appointments surface — see /montree/calendar)
   'calendar.title': 'Calendar',

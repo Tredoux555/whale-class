@@ -5538,4 +5538,7 @@ export const zh = {
   'calendar.summary.cta': '总结本月',
   'calendar.summary.loading': '正在读取您的日历…',
   'classroomOverview.classProgressTab': '班级进度',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'nav.appointments': '预约',
 } as const;
