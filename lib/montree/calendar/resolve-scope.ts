@@ -31,26 +31,44 @@ export async function resolveCalendarScope(
     // by the unified login (same bug class as Session 86 Tracy 403).
     // For the calendar surface that means QuickCreateMenu hides the Term
     // option because ACTIONS_BY_ROLE['teacher'] doesn't include it.
-    // Fix: if the JWT role is teacher but this user is ALSO an active
-    // principal in this school, upgrade the calendar scope role to
-    // 'principal' so the surface presents the full set of principal-level
-    // affordances. Read-only routes are unaffected — this only changes the
-    // *display* role on the calendar.
+    //
+    // The match needs an identifier that's SHARED across the two tables,
+    // not an id (montree_teachers.id and montree_school_admins.id are
+    // independent gen_random_uuid() values — they will never match by id
+    // even for the same person, which made the first attempt at this
+    // upgrade a no-op caught by Web-Claude's Pass C audit).
+    //
+    // Email is the canonical shared identifier:
+    //   - montree_teachers.email   (TEXT, indexed per migration 069)
+    //   - montree_school_admins.email   (TEXT NOT NULL, UNIQUE(school_id, email)
+    //                                    per migration 067)
+    // Two-query lookup: teacher email → principal in same school with that
+    // email. Fail-safe: any error (no email, no row, query error) leaves
+    // effectiveRole at 'teacher' — the user still sees the calendar, just
+    // without the Term option until the JWT mis-stamp is fixed upstream.
     let effectiveRole: CalendarRole = (staff.role as CalendarRole) || 'teacher';
     if (effectiveRole === 'teacher') {
-      const { data: adminRow } = await supabase
-        .from('montree_school_admins')
-        .select('id, role, is_active')
+      const { data: teacherRow } = await supabase
+        .from('montree_teachers')
+        .select('email')
         .eq('id', staff.userId)
-        .eq('school_id', staff.schoolId)
-        .eq('is_active', true)
-        .eq('role', 'principal')
         .maybeSingle();
-      if (adminRow) {
-        console.warn(
-          `[CalendarScope] JWT role='teacher' but user ${staff.userId} is an active principal in school ${staff.schoolId} — upgrading scope role to 'principal'.`,
-        );
-        effectiveRole = 'principal';
+      const teacherEmail = teacherRow?.email?.trim().toLowerCase();
+      if (teacherEmail) {
+        const { data: adminRow } = await supabase
+          .from('montree_school_admins')
+          .select('id')
+          .eq('school_id', staff.schoolId)
+          .eq('role', 'principal')
+          .eq('is_active', true)
+          .ilike('email', teacherEmail) // case-insensitive match
+          .maybeSingle();
+        if (adminRow) {
+          console.warn(
+            `[CalendarScope] JWT role='teacher' but user ${staff.userId} (email=${teacherEmail}) is also an active principal in school ${staff.schoolId} via school_admins row ${adminRow.id} — upgrading scope role to 'principal'.`,
+          );
+          effectiveRole = 'principal';
+        }
       }
     }
 
