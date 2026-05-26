@@ -195,7 +195,13 @@ export default function CalendarPage() {
     <div style={{ minHeight: '100dvh', background: '#0a1a0f', color: '#e2eee4' }}>
       <header
         style={{
-          padding: '16px 18px',
+          // iOS notch / dynamic island safe-area honored — without this the
+          // Montree wordmark collides with the iOS time pill on notched
+          // devices (real bug shipped Session 129, fixed in follow-up).
+          paddingTop: 'calc(16px + env(safe-area-inset-top))',
+          paddingBottom: 16,
+          paddingLeft: 'calc(18px + env(safe-area-inset-left))',
+          paddingRight: 'calc(18px + env(safe-area-inset-right))',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
@@ -219,7 +225,13 @@ export default function CalendarPage() {
         <LanguageToggle />
       </header>
 
-      <main style={{ maxWidth: 1100, margin: '0 auto', padding: '20px 16px 48px' }}>
+      <main style={{
+        maxWidth: 1100,
+        margin: '0 auto',
+        // 48px nominal bottom padding + iOS home-indicator safe area so the
+        // last day-detail card isn't tucked under the home indicator.
+        padding: '20px 16px calc(48px + env(safe-area-inset-bottom))',
+      }}>
         <div
           style={{
             display: 'flex',
