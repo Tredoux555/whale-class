@@ -184,9 +184,13 @@ export default function MontreeLanding() {
           aspect-ratio: 16 / 9;
           background: #06140e;
         }
+        /* EN / 中文 pill pair lives TOP-RIGHT of the frame, not bottom,
+           so it doesn't collide with the native video controls which
+           always render at the bottom of the <video> element (and would
+           overlap the toggle on hover-show or persistent-on-mobile). */
         .m-hero-corner-video-toggle {
           position: absolute;
-          bottom: 8px;
+          top: 8px;
           right: 8px;
           display: inline-flex;
           gap: 2px;
@@ -196,6 +200,7 @@ export default function MontreeLanding() {
           backdrop-filter: blur(8px);
           -webkit-backdrop-filter: blur(8px);
           border: 1px solid rgba(255,255,255,0.12);
+          z-index: 2;
         }
         .m-hero-corner-video-toggle-btn {
           appearance: none;
@@ -495,7 +500,7 @@ export default function MontreeLanding() {
             margin: 0 auto 36px;
           }
           .m-hero-corner-video-frame { border-radius: 10px; }
-          .m-hero-corner-video-toggle { bottom: 6px; right: 6px; }
+          .m-hero-corner-video-toggle { top: 6px; right: 6px; }
           .m-hero-corner-video-toggle-btn { font-size: 10px; padding: 3px 8px; }
           .m-editorial { padding: 40px 24px 100px; }
           .m-block { padding: 40px 0; }
@@ -605,7 +610,21 @@ export default function MontreeLanding() {
             {/* key={src} so React rebuilds the player when the user
                 flips EN ↔ 中文 — without that, the old buffer + playhead
                 point at the previous locale's MP4 and the new src
-                doesn't load. */}
+                doesn't load.
+
+                controls — gives the user full native HTML5 controls:
+                  • mute / unmute (autoplay starts muted by browser policy,
+                    user clicks the speaker icon to enable sound)
+                  • volume slider
+                  • play / pause
+                  • scrubber + duration
+                  • fullscreen button (rotation works automatically on
+                    devices that support orientation change)
+                  • picture-in-picture on supported browsers
+
+                playsInline — kept so the video does NOT auto-fullscreen on
+                first tap (iOS Safari default). The user can still go
+                fullscreen explicitly via the controls. */}
             <video
               key={splashVideo.src}
               className="m-hero-corner-video-element"
@@ -614,6 +633,7 @@ export default function MontreeLanding() {
               autoPlay
               muted
               loop
+              controls
               playsInline
               preload="auto"
               aria-label="Montree introduction video"
