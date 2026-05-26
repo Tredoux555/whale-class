@@ -18,17 +18,18 @@ import MontreeLogo from '@/components/montree/MonteeLogo';
 //   2. Extract a poster: ffmpeg -ss 2 -i <video>.mp4 -frames:v 1 -q:v 3 <poster>.jpg
 //   3. Add the locale key here.
 //
-// SESSION 130: zh entry stubbed in (commented) so the next agent or session
-// can flip it on the moment the Chinese MP4 lands in public/.
+// SESSION 130: zh entry live (1080p MP4 shipped alongside the 720p en one).
+// Add more locales by dropping <video>.mp4 + extracting <poster>.jpg into
+// /public/ and registering a new key here.
 const SPLASH_VIDEO_BY_LOCALE: Record<string, { src: string; poster: string }> = {
   en: {
     src: '/montree-splash-video.mp4',
     poster: '/montree-splash-video-poster.jpg',
   },
-  // zh: {
-  //   src: '/montree-splash-video-zh.mp4',
-  //   poster: '/montree-splash-video-zh-poster.jpg',
-  // },
+  zh: {
+    src: '/montree-splash-video-zh.mp4',
+    poster: '/montree-splash-video-zh-poster.jpg',
+  },
 };
 
 export default function MontreeLanding() {
