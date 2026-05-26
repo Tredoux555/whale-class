@@ -5121,4 +5121,15 @@ export const uk: Record<string, string> = {
   'comm.groupBuilder.selected': '{count} вибрано',
   'comm.groupBuilder.saving': 'Збереження…',
   'comm.groupBuilder.create': 'Створити групу',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'nav.calendar': 'Календар',
+  'calendar.title': 'Календар',
+  'calendar.today': 'Сьогодні',
+  'calendar.attention.heading': 'Потребує уваги',
+  'calendar.emptyDay': 'Нічого не заплановано.',
+  'calendar.summary.heading': 'Резюме',
+  'calendar.summary.cta': 'Узагальнити цей місяць',
+  'calendar.summary.loading': 'Читання вашого календара…',
+  'classroomOverview.classProgressTab': 'Прогрес класу',
 };

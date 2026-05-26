@@ -5124,4 +5124,15 @@ export const de: Record<string, string> = {
   'comm.groupBuilder.selected': '{count} ausgewählt',
   'comm.groupBuilder.saving': 'Wird gespeichert…',
   'comm.groupBuilder.create': 'Gruppe erstellen',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'nav.calendar': 'Kalender',
+  'calendar.title': 'Kalender',
+  'calendar.today': 'Heute',
+  'calendar.attention.heading': 'Erfordert Aufmerksamkeit',
+  'calendar.emptyDay': 'Nichts geplant.',
+  'calendar.summary.heading': 'Zusammenfassung',
+  'calendar.summary.cta': 'Diesen Monat zusammenfassen',
+  'calendar.summary.loading': 'Ihr Kalender wird gelesen…',
+  'classroomOverview.classProgressTab': 'Klassenfortschritt',
 };

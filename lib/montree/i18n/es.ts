@@ -5095,4 +5095,15 @@ export const es: Record<string, string> = {
   'comm.groupBuilder.selected': '{count} seleccionados',
   'comm.groupBuilder.saving': 'Guardando…',
   'comm.groupBuilder.create': 'Crear grupo',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'nav.calendar': 'Calendario',
+  'calendar.title': 'Calendario',
+  'calendar.today': 'Hoy',
+  'calendar.attention.heading': 'Requiere atención',
+  'calendar.emptyDay': 'Nada programado.',
+  'calendar.summary.heading': 'Resumen',
+  'calendar.summary.cta': 'Resumir este mes',
+  'calendar.summary.loading': 'Leyendo tu calendario…',
+  'classroomOverview.classProgressTab': 'Progreso de la Clase',
 };

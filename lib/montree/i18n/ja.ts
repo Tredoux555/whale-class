@@ -5124,4 +5124,15 @@ export const ja: Record<string, string> = {
   'comm.groupBuilder.selected': '{count}件選択',
   'comm.groupBuilder.saving': '保存中…',
   'comm.groupBuilder.create': 'グループを作成',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'nav.calendar': 'カレンダー',
+  'calendar.title': 'カレンダー',
+  'calendar.today': '今日',
+  'calendar.attention.heading': '注意が必要です',
+  'calendar.emptyDay': '予定がありません。',
+  'calendar.summary.heading': 'サマリー',
+  'calendar.summary.cta': 'この月をまとめる',
+  'calendar.summary.loading': 'カレンダーを読み込み中です…',
+  'classroomOverview.classProgressTab': 'クラスの進捗',
 };

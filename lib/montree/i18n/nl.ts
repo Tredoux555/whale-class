@@ -5124,4 +5124,15 @@ export const nl: Record<string, string> = {
   'comm.groupBuilder.selected': '{count} geselecteerd',
   'comm.groupBuilder.saving': 'Opslaan...',
   'comm.groupBuilder.create': 'Groep maken',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'nav.calendar': 'Agenda',
+  'calendar.title': 'Agenda',
+  'calendar.today': 'Vandaag',
+  'calendar.attention.heading': 'Aandacht vereist',
+  'calendar.emptyDay': 'Niets ingepland.',
+  'calendar.summary.heading': 'Samenvatting',
+  'calendar.summary.cta': 'Vat deze maand samen',
+  'calendar.summary.loading': 'Uw agenda inlezen…',
+  'classroomOverview.classProgressTab': 'Voortgang van de klas',
 };

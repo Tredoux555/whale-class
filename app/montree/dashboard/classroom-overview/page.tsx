@@ -9,6 +9,7 @@ import { useRouter } from 'next/navigation';
 import {
   ArrowLeft, Printer, Layout, Languages,
   RefreshCw, BookOpen, Check, ChevronRight, Settings2,
+  TrendingUp,
 } from 'lucide-react';
 import { getSession, isHomeschoolParent, type MontreeSession } from '@/lib/montree/auth';
 import { montreeApi } from '@/lib/montree/api';
@@ -104,7 +105,7 @@ const DAY_LABELS_SHORT: Record<string, string> = {
 };
 const DAY_ORDER = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'];
 
-type TabType = 'shelf' | 'english' | 'english-progress';
+type TabType = 'shelf' | 'english' | 'english-progress' | 'class-progress';
 
 // Dark forest tokens (screen chrome only — print pages stay light)
 const T = {
@@ -432,7 +433,10 @@ export default function ClassroomOverviewPage() {
             </button>
           </div>
 
-          {/* Tab switcher */}
+          {/* Tab switcher — mobile-resilient: horizontally scrolls on narrow
+              viewports instead of wrapping or truncating labels. Each pill
+              keeps its label on one line (whiteSpace:nowrap). Session 129
+              audit-fix for the 4-tab overflow. */}
           <div style={{
             display: 'flex',
             gap: 4,
@@ -443,11 +447,15 @@ export default function ClassroomOverviewPage() {
             border: '1px solid rgba(255,255,255,0.08)',
             maxWidth: 1280,
             margin: '12px auto 0',
+            overflowX: 'auto',
+            WebkitOverflowScrolling: 'touch',
+            scrollbarWidth: 'none',
           }}>
             {[
               { id: 'shelf' as const, label: t('classroomOverview.shelfTab'), icon: Layout },
               { id: 'english' as const, label: t('classroomOverview.englishTab'), icon: Languages },
               { id: 'english-progress' as const, label: t('classroomOverview.englishProgressTab'), icon: BookOpen },
+              { id: 'class-progress' as const, label: t('classroomOverview.classProgressTab'), icon: TrendingUp },
             ].map(opt => {
               const active = tab === opt.id;
               const Icon = opt.icon;
@@ -456,7 +464,8 @@ export default function ClassroomOverviewPage() {
                   key={opt.id}
                   onClick={() => setTab(opt.id)}
                   style={{
-                    flex: 1,
+                    flex: '1 1 auto',
+                    minWidth: 'fit-content',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -471,6 +480,7 @@ export default function ClassroomOverviewPage() {
                     fontWeight: 600,
                     cursor: 'pointer',
                     transition: 'all 120ms ease',
+                    whiteSpace: 'nowrap',
                   }}
                 >
                   <Icon size={14} strokeWidth={1.75} />
@@ -1031,6 +1041,13 @@ export default function ClassroomOverviewPage() {
               Auto-advancement from photo audit lands in Phase 2. */}
           {tab === 'english-progress' && session?.classroom?.id && (
             <EnglishProgressTab classroomId={session.classroom.id} T={T} />
+          )}
+
+          {/* ═══ TAB: Class Progress (Session 128 + later) ═══
+              Per-area + per-child week/month summary across all 5 areas.
+              Reads /api/montree/dashboard/class-progress (school-tz aware). */}
+          {tab === 'class-progress' && session?.classroom?.id && (
+            <ClassProgressTab classroomId={session.classroom.id} T={T} />
           )}
         </div>
       </div>
@@ -2118,6 +2135,698 @@ function ClassEnglishHeatmap({
             kids.reduce((sum, c) => sum + c.current_lesson, 0) / kids.length
           )}
         </span>
+      </div>
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// Class Progress Tab
+// ═══════════════════════════════════════════════════════════════════
+// Classroom-wide summary across all 5 curriculum areas. Mirrors the
+// vibe of the English Schedule tab — clean, scannable, dark-forest.
+//
+// Top: 5 area summary cards (PL/S/M/L/C) — children active, photos,
+// works touched, top 3 works.
+// Bottom: per-child rows — areas-active pill, photos, last_active,
+// 5 mini bars (one per area, proportional to that child's max).
+//
+// Children sorted: most areas active DESC, ties → most photos DESC.
+// Children with zero photos this week sink to bottom under a quiet
+// "Quiet this week" subhead.
+
+type ClassProgressAreaKey =
+  | 'practical_life' | 'sensorial' | 'mathematics' | 'language' | 'cultural';
+
+const CP_AREA_ORDER: ClassProgressAreaKey[] = [
+  'practical_life', 'sensorial', 'mathematics', 'language', 'cultural',
+];
+
+// Canonical area palette — sourced from
+// components/montree/child/FocusWorksSection.tsx AREA_DOT_RGB constant.
+const CP_AREA_COLOR: Record<ClassProgressAreaKey, string> = {
+  practical_life: 'rgb(236, 72, 153)',   // pink
+  sensorial:      'rgb(20, 184, 166)',   // teal
+  mathematics:    'rgb(168, 85, 247)',   // purple
+  language:       'rgb(74, 222, 128)',   // green
+  cultural:       'rgb(249, 115, 22)',   // orange
+};
+
+const CP_AREA_LETTER: Record<ClassProgressAreaKey, string> = {
+  practical_life: 'PL',
+  sensorial: 'S',
+  mathematics: 'M',
+  language: 'L',
+  cultural: 'C',
+};
+
+const CP_AREA_LABEL: Record<ClassProgressAreaKey, string> = {
+  practical_life: 'Practical Life',
+  sensorial: 'Sensorial',
+  mathematics: 'Mathematics',
+  language: 'Language',
+  cultural: 'Cultural',
+};
+
+interface CPTopWork {
+  work_name: string;
+  photo_count: number;
+  children_count: number;
+}
+
+interface CPAreaSummary {
+  area_key: ClassProgressAreaKey;
+  area_label: string;
+  children_active: number;
+  photos_total: number;
+  works_active: number;
+  top_works: CPTopWork[];
+}
+
+interface CPPerChild {
+  child_id: string;
+  child_name: string;
+  photo_url: string | null;
+  areas_active: number;
+  photos_total: number;
+  last_active: string | null;
+  area_breakdown: Record<ClassProgressAreaKey, number>;
+}
+
+interface ClassProgressResponse {
+  success: true;
+  classroom_id: string;
+  children_count: number;
+  period: 'week' | 'month';
+  areas: CPAreaSummary[];
+  per_child: CPPerChild[];
+  week_start: string;
+  generated_at: string;
+}
+
+function formatRelativeTime(iso: string | null): string {
+  if (!iso) return 'no activity';
+  const then = new Date(iso).getTime();
+  const now = Date.now();
+  const diffMs = now - then;
+  const mins = Math.floor(diffMs / 60_000);
+  if (mins < 1) return 'just now';
+  if (mins < 60) return `${mins}m ago`;
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.floor(hours / 24);
+  if (days < 7) return `${days}d ago`;
+  const weeks = Math.floor(days / 7);
+  return `${weeks}w ago`;
+}
+
+function formatWeekRange(weekStart: string, period: 'week' | 'month'): string {
+  if (!weekStart) return '';
+  const start = new Date(weekStart + 'T00:00:00');
+  const end = new Date(start);
+  if (period === 'month') {
+    // 30-day window backwards from Monday — show as range
+    end.setDate(start.getDate() + 6);
+    const back = new Date(start);
+    back.setDate(start.getDate() - 30);
+    const opts: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric' };
+    return `${back.toLocaleDateString('en-US', opts)} – ${end.toLocaleDateString('en-US', opts)}`;
+  }
+  end.setDate(start.getDate() + 6);
+  const opts: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric' };
+  return `${start.toLocaleDateString('en-US', opts)} – ${end.toLocaleDateString('en-US', opts)}`;
+}
+
+function ClassProgressTab({
+  classroomId,
+  T,
+}: {
+  classroomId: string;
+  T: Record<string, string>;
+}) {
+  const [data, setData] = useState<ClassProgressResponse | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [period, setPeriod] = useState<'week' | 'month'>('week');
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await montreeApi(`/api/montree/dashboard/class-progress?period=${period}`);
+      if (!res.ok) {
+        const j = await res.json().catch(() => ({}));
+        setError(j?.error || `HTTP ${res.status}`);
+        setLoading(false);
+        return;
+      }
+      const json = (await res.json()) as ClassProgressResponse;
+      setData(json);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Could not load');
+    } finally {
+      setLoading(false);
+    }
+  }, [period]);
+
+  useEffect(() => { void load(); }, [load, classroomId]);
+
+  // ─── Loading ───
+  if (loading && !data) {
+    return (
+      <div style={{
+        maxWidth: 1100,
+        margin: '0 auto',
+        padding: '60px 16px',
+        textAlign: 'center',
+      }}>
+        <div style={{
+          width: 28,
+          height: 28,
+          border: `3px solid ${T.emeraldDim}`,
+          borderTopColor: 'transparent',
+          borderRadius: '50%',
+          margin: '0 auto 12px',
+          animation: 'cl-spin 0.9s linear infinite',
+        }} />
+        <p style={{
+          margin: 0,
+          color: T.textMuted,
+          fontSize: 13,
+          fontFamily: T.serif,
+          fontStyle: 'italic',
+        }}>
+          Reading the week…
+        </p>
+      </div>
+    );
+  }
+
+  // ─── Error / fallback (e.g. endpoint missing) ───
+  if (error || !data) {
+    return (
+      <div style={{
+        maxWidth: 720,
+        margin: '0 auto',
+        padding: '40px 24px',
+        textAlign: 'center',
+        background: 'rgba(255,255,255,0.04)',
+        border: '1px solid rgba(52,211,153,0.15)',
+        borderRadius: 14,
+        marginTop: 24,
+      }}>
+        <p style={{
+          fontFamily: T.serif,
+          fontSize: 15,
+          color: T.textSecondary,
+          margin: '0 0 16px',
+          lineHeight: 1.55,
+        }}>
+          Class Progress will appear once your classroom has some confirmed photos this week.
+        </p>
+        <button
+          onClick={() => { void load(); }}
+          style={{
+            padding: '8px 16px',
+            borderRadius: 10,
+            background: 'rgba(255,255,255,0.06)',
+            border: '1px solid rgba(255,255,255,0.10)',
+            color: T.textPrimary,
+            fontSize: 13,
+            cursor: 'pointer',
+            fontFamily: T.sans,
+          }}
+        >
+          Try again
+        </button>
+      </div>
+    );
+  }
+
+  // ─── Empty roster ───
+  if (data.children_count === 0) {
+    return (
+      <div style={{
+        maxWidth: 720,
+        margin: '24px auto 0',
+        padding: '40px 24px',
+        textAlign: 'center',
+        background: 'rgba(255,255,255,0.04)',
+        border: '1px solid rgba(52,211,153,0.15)',
+        borderRadius: 14,
+      }}>
+        <p style={{
+          fontFamily: T.serif,
+          fontSize: 15,
+          color: T.textSecondary,
+          margin: 0,
+          lineHeight: 1.55,
+        }}>
+          Add students to this classroom first — then come back here to see how the week is shaping up.
+        </p>
+      </div>
+    );
+  }
+
+  // ─── Render ───
+  const periodLabel = period === 'week' ? 'This week' : 'This month';
+  const dateRange = formatWeekRange(data.week_start, period);
+  const totalPhotosThisPeriod = data.areas.reduce((s, a) => s + a.photos_total, 0);
+
+  // Split children into active vs quiet
+  const activeChildren = data.per_child.filter(c => c.photos_total > 0);
+  const quietChildren = data.per_child.filter(c => c.photos_total === 0);
+
+  return (
+    <div style={{
+      maxWidth: 1100,
+      margin: '0 auto',
+      padding: '24px 16px 60px',
+      fontFamily: T.sans,
+    }}>
+      {/* Header — title + period toggle */}
+      <div style={{
+        display: 'flex',
+        alignItems: 'baseline',
+        justifyContent: 'space-between',
+        flexWrap: 'wrap',
+        gap: 12,
+        marginBottom: 6,
+      }}>
+        <div style={{ minWidth: 0 }}>
+          <div style={{
+            fontFamily: T.serif,
+            fontSize: 22,
+            fontWeight: 500,
+            color: T.textPrimary,
+            letterSpacing: -0.3,
+          }}>
+            {periodLabel} across the classroom
+          </div>
+          <div style={{ fontSize: 13, color: T.textMuted, marginTop: 4 }}>
+            {dateRange} · {totalPhotosThisPeriod} confirmed {totalPhotosThisPeriod === 1 ? 'photo' : 'photos'}
+          </div>
+        </div>
+
+        {/* Period toggle */}
+        <div style={{
+          display: 'inline-flex',
+          gap: 4,
+          padding: 4,
+          borderRadius: 10,
+          background: 'rgba(255,255,255,0.04)',
+          border: '1px solid rgba(255,255,255,0.08)',
+        }}>
+          {(['week', 'month'] as const).map(p => {
+            const active = period === p;
+            return (
+              <button
+                key={p}
+                type="button"
+                onClick={() => setPeriod(p)}
+                style={{
+                  padding: '6px 14px',
+                  borderRadius: 7,
+                  background: active ? 'rgba(52,211,153,0.15)' : 'transparent',
+                  border: `1px solid ${active ? 'rgba(52,211,153,0.45)' : 'transparent'}`,
+                  color: active ? T.emerald : T.textSecondary,
+                  fontFamily: T.sans,
+                  fontSize: 12,
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  textTransform: 'capitalize',
+                }}
+              >
+                {p}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Per-area summary cards — 5 across, wrap to 2 rows on narrow */}
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+        gap: 10,
+        marginTop: 18,
+        marginBottom: 28,
+      }}>
+        {data.areas.map(area => (
+          <ClassProgressAreaCard
+            key={area.area_key}
+            area={area}
+            totalChildren={data.children_count}
+            T={T}
+          />
+        ))}
+      </div>
+
+      {/* Per-child rows */}
+      <div style={{
+        fontFamily: T.serif,
+        fontSize: 16,
+        fontWeight: 500,
+        color: T.textPrimary,
+        marginBottom: 10,
+        letterSpacing: -0.1,
+      }}>
+        Per child
+      </div>
+
+      {activeChildren.length === 0 ? (
+        <div style={{
+          padding: '24px',
+          textAlign: 'center',
+          color: T.textMuted,
+          fontSize: 13,
+          background: 'rgba(255,255,255,0.04)',
+          border: '1px solid rgba(52,211,153,0.15)',
+          borderRadius: 14,
+          fontStyle: 'italic',
+        }}>
+          No confirmed photos yet this {period}. As soon as a teacher confirms one, it shows up here.
+        </div>
+      ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {activeChildren.map(child => (
+            <ClassProgressChildRow key={child.child_id} child={child} T={T} />
+          ))}
+        </div>
+      )}
+
+      {/* Quiet-this-week subhead + rows */}
+      {quietChildren.length > 0 && (
+        <>
+          <div style={{
+            fontFamily: T.serif,
+            fontSize: 14,
+            fontWeight: 500,
+            color: T.textMuted,
+            marginTop: 22,
+            marginBottom: 8,
+            letterSpacing: -0.1,
+            fontStyle: 'italic',
+          }}>
+            Quiet this {period} — no confirmed photos yet
+          </div>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+            {quietChildren.map(child => (
+              <span
+                key={child.child_id}
+                style={{
+                  padding: '5px 11px',
+                  borderRadius: 999,
+                  background: 'rgba(255,255,255,0.04)',
+                  border: '1px solid rgba(255,255,255,0.10)',
+                  color: T.textSecondary,
+                  fontSize: 13,
+                  fontWeight: 500,
+                }}
+              >
+                {child.child_name}
+              </span>
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+function ClassProgressAreaCard({
+  area,
+  totalChildren,
+  T,
+}: {
+  area: CPAreaSummary;
+  totalChildren: number;
+  T: Record<string, string>;
+}) {
+  const color = CP_AREA_COLOR[area.area_key];
+  const letter = CP_AREA_LETTER[area.area_key];
+  const label = CP_AREA_LABEL[area.area_key];
+  const isQuiet = area.photos_total === 0;
+
+  return (
+    <div style={{
+      padding: '14px 14px',
+      borderRadius: 14,
+      background: 'rgba(15,30,18,0.78)',
+      border: '1px solid rgba(52,211,153,0.15)',
+      backdropFilter: 'blur(12px) saturate(140%)',
+      WebkitBackdropFilter: 'blur(12px) saturate(140%)',
+      opacity: isQuiet ? 0.65 : 1,
+      display: 'flex',
+      flexDirection: 'column',
+      minHeight: 150,
+    }}>
+      {/* Letter dot + label */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+        <div style={{
+          width: 28,
+          height: 28,
+          borderRadius: '50%',
+          background: color,
+          color: 'white',
+          fontFamily: T.sans,
+          fontSize: letter.length > 1 ? 11 : 13,
+          fontWeight: 800,
+          display: 'inline-flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          flexShrink: 0,
+          boxShadow: `0 0 0 1px ${color}, 0 0 12px ${color}33`,
+        }}>
+          {letter}
+        </div>
+        <div style={{
+          fontFamily: T.sans,
+          fontSize: 12,
+          fontWeight: 600,
+          color: T.textSecondary,
+          letterSpacing: 0.3,
+          textTransform: 'uppercase',
+        }}>
+          {label}
+        </div>
+      </div>
+
+      {/* Big number */}
+      <div style={{ marginTop: 2 }}>
+        <span style={{
+          fontFamily: T.serif,
+          fontSize: 28,
+          fontWeight: 600,
+          color: T.textPrimary,
+          letterSpacing: -0.5,
+        }}>
+          {area.children_active}
+        </span>
+        <span style={{
+          fontFamily: T.serif,
+          fontSize: 16,
+          color: T.textMuted,
+          marginLeft: 4,
+        }}>
+          / {totalChildren}
+        </span>
+      </div>
+      <div style={{
+        fontSize: 11,
+        color: T.textMuted,
+        marginTop: 2,
+        marginBottom: 8,
+      }}>
+        {area.children_active === 1 ? 'child' : 'children'} active
+      </div>
+
+      {/* Secondary stats */}
+      <div style={{ fontSize: 11, color: T.textSecondary, marginBottom: 8, lineHeight: 1.55 }}>
+        {area.photos_total} {area.photos_total === 1 ? 'photo' : 'photos'}
+        {' · '}
+        {area.works_active} {area.works_active === 1 ? 'work' : 'works'}
+      </div>
+
+      {/* Top works list */}
+      {area.top_works.length > 0 ? (
+        <div style={{
+          marginTop: 'auto',
+          paddingTop: 8,
+          borderTop: '1px solid rgba(255,255,255,0.06)',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 3,
+        }}>
+          {area.top_works.slice(0, 3).map(w => (
+            <div
+              key={w.work_name}
+              style={{
+                fontSize: 11,
+                color: T.textSecondary,
+                lineHeight: 1.4,
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+              }}
+              title={`${w.work_name} — ${w.photo_count} photo${w.photo_count === 1 ? '' : 's'}, ${w.children_count} ${w.children_count === 1 ? 'child' : 'children'}`}
+            >
+              <span style={{ color: T.textPrimary, fontWeight: 500 }}>{w.work_name}</span>
+              <span style={{ color: T.textMuted }}> · {w.photo_count}</span>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div style={{
+          marginTop: 'auto',
+          paddingTop: 8,
+          borderTop: '1px solid rgba(255,255,255,0.06)',
+          fontSize: 11,
+          color: T.textMuted,
+          fontStyle: 'italic',
+        }}>
+          No works tagged yet
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ClassProgressChildRow({
+  child,
+  T,
+}: {
+  child: CPPerChild;
+  T: Record<string, string>;
+}) {
+  const childMaxAreaCount = Math.max(1, ...CP_AREA_ORDER.map(k => child.area_breakdown[k]));
+  const initial = child.child_name.charAt(0).toUpperCase();
+
+  return (
+    <div style={{
+      padding: '12px 14px',
+      borderRadius: 12,
+      background: 'rgba(15,30,18,0.78)',
+      border: '1px solid rgba(52,211,153,0.15)',
+      backdropFilter: 'blur(12px) saturate(140%)',
+      WebkitBackdropFilter: 'blur(12px) saturate(140%)',
+      display: 'flex',
+      alignItems: 'center',
+      gap: 12,
+      flexWrap: 'wrap',
+    }}>
+      {/* Avatar — URL wrapped in quotes so paren/quote chars in signed URLs
+          don't break the CSS background shorthand. */}
+      <div style={{
+        width: 32,
+        height: 32,
+        borderRadius: '50%',
+        background: child.photo_url
+          ? `center / cover no-repeat url("${child.photo_url.replace(/"/g, '\\"')}")`
+          : 'rgba(52,211,153,0.18)',
+        border: '1px solid rgba(52,211,153,0.35)',
+        flexShrink: 0,
+        display: 'inline-flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        color: T.emerald,
+        fontSize: 13,
+        fontWeight: 700,
+        fontFamily: T.sans,
+      }}>
+        {!child.photo_url && initial}
+      </div>
+
+      {/* Name + meta */}
+      <div style={{ minWidth: 140, flex: '0 0 auto' }}>
+        <div style={{
+          fontFamily: T.serif,
+          fontSize: 15,
+          fontWeight: 500,
+          color: T.textPrimary,
+          letterSpacing: -0.1,
+        }}>
+          {child.child_name}
+        </div>
+        <div style={{ fontSize: 11, color: T.textMuted, marginTop: 2 }}>
+          {formatRelativeTime(child.last_active)}
+        </div>
+      </div>
+
+      {/* Areas active pill */}
+      <span style={{
+        padding: '3px 10px',
+        borderRadius: 999,
+        background: 'rgba(52,211,153,0.10)',
+        border: '1px solid rgba(52,211,153,0.30)',
+        color: T.emerald,
+        fontSize: 11,
+        fontWeight: 600,
+        letterSpacing: 0.2,
+        flexShrink: 0,
+      }}>
+        {child.areas_active}/5 areas
+      </span>
+
+      {/* Photos count */}
+      <span style={{
+        fontSize: 11,
+        color: T.textMuted,
+        flexShrink: 0,
+      }}>
+        {child.photos_total} {child.photos_total === 1 ? 'photo' : 'photos'}
+      </span>
+
+      {/* 5 mini bars — one per area */}
+      <div style={{
+        flex: 1,
+        minWidth: 160,
+        display: 'flex',
+        gap: 4,
+        alignItems: 'flex-end',
+        height: 22,
+        marginLeft: 'auto',
+      }}>
+        {CP_AREA_ORDER.map(area => {
+          const count = child.area_breakdown[area];
+          const pct = count > 0 ? (count / childMaxAreaCount) * 100 : 0;
+          const isActive = count > 0;
+          return (
+            <div
+              key={area}
+              title={`${CP_AREA_LABEL[area]}: ${count} ${count === 1 ? 'photo' : 'photos'}`}
+              style={{
+                flex: 1,
+                height: '100%',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'flex-end',
+                alignItems: 'center',
+                gap: 2,
+              }}
+            >
+              <div style={{
+                width: '100%',
+                height: `${Math.max(pct, isActive ? 12 : 0)}%`,
+                minHeight: isActive ? 3 : 0,
+                background: isActive
+                  ? CP_AREA_COLOR[area]
+                  : 'rgba(255,255,255,0.06)',
+                borderRadius: 2,
+                transition: 'height 220ms ease',
+              }} />
+              <div style={{
+                fontSize: 8,
+                fontWeight: 700,
+                color: isActive ? T.textSecondary : T.textMuted,
+                letterSpacing: 0.4,
+                lineHeight: 1,
+              }}>
+                {CP_AREA_LETTER[area]}
+              </div>
+            </div>
+          );
+        })}
       </div>
     </div>
   );
