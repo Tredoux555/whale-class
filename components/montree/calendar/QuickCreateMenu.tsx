@@ -29,8 +29,26 @@ interface QuickCreateMenuProps {
 
 type Action = 'event' | 'appointment' | 'meeting_note' | 'term';
 
+// Session 129 audit pass C — teachers now get 'term' too.
+//
+// Rationale: gating term creation to role='principal' was theoretically clean
+// but broke in practice. Founder-principals in personal_classroom / homeschool
+// plans log in via code, often have NO email on their teacher row, and
+// montree_schools.founding_teacher_id was historically unpopulated — so
+// every smart-detection path for "is this teacher also the principal?"
+// fails for the most common founder-principal case (Tredoux himself).
+//
+// Product reality: in personal_classroom and homeschool schools the teacher
+// IS the principal. In multi-teacher school-plan schools, term creation is
+// infrequent (2-3 terms/year), benign (a teacher creating "Spring Break"
+// that everyone sees does no harm), and the modal makes the action
+// deliberate. If multi-teacher term-spam ever becomes a real problem, gate
+// at modal-submit time on plan_type — not at menu render.
+//
+// Parent stays empty (no calendar authoring). Super-admin stays event+term
+// (school-wide governance, no school-specific appointments/meetings).
 const ACTIONS_BY_ROLE: Record<QuickCreateMenuProps['role'], Action[]> = {
-  teacher: ['event', 'appointment', 'meeting_note'],
+  teacher: ['event', 'appointment', 'meeting_note', 'term'],
   principal: ['event', 'appointment', 'meeting_note', 'term'],
   parent: [],
   super_admin: ['event', 'term'],
