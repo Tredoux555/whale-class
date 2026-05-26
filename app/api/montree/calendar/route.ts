@@ -7,100 +7,18 @@
 // sorts by start, returns CalendarEvent[]. School-tz-aware bounds.
 
 import { NextRequest, NextResponse } from 'next/server';
-import { verifySchoolRequest } from '@/lib/montree/verify-request';
-import { verifyParentSession } from '@/lib/montree/verify-parent-request';
 import { getSchoolTimezone, localDateInTzToUtcInstant } from '@/lib/montree/school-time';
-import { getSupabase } from '@/lib/supabase-client';
 import { getAdaptersForRole } from '@/lib/montree/calendar/registry';
-import type {
-  CalendarEvent,
-  CalendarRole,
-  CalendarScope,
-  CalendarSource,
-  CalendarWindow,
-} from '@/lib/montree/calendar/types';
+import { resolveCalendarScope } from '@/lib/montree/calendar/resolve-scope';
+import type { CalendarEvent, CalendarSource, CalendarWindow } from '@/lib/montree/calendar/types';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 30;
 
 const YYYY_MM_DD = /^\d{4}-\d{2}-\d{2}$/;
 
-interface ResolvedScope {
-  scope: CalendarScope;
-}
-
-async function resolveScope(request: NextRequest): Promise<ResolvedScope | NextResponse> {
-  // Try staff auth first (teacher / principal / super_admin).
-  const staffAttempt = await verifySchoolRequest(request);
-  if (!(staffAttempt instanceof NextResponse)) {
-    const supabase = getSupabase();
-    // Teachers + principals: childIds = the classroom's roster, lazily.
-    let childIds: string[] = [];
-    if (staffAttempt.role === 'teacher' && staffAttempt.classroomId) {
-      const { data } = await supabase
-        .from('montree_children')
-        .select('id')
-        .eq('classroom_id', staffAttempt.classroomId)
-        .eq('is_active', true);
-      childIds = (data || []).map((r: { id: string }) => r.id);
-    }
-    return {
-      scope: {
-        role: (staffAttempt.role as CalendarRole) || 'teacher',
-        schoolId: staffAttempt.schoolId,
-        classroomId: staffAttempt.classroomId || null,
-        childIds,
-      },
-    };
-  }
-
-  // Parent path. verifyParentSession reads the cookie via next/headers().
-  const parent = await verifyParentSession();
-  if (parent) {
-    const supabase = getSupabase();
-    // Resolve all children the parent has access to. Full-account parents
-    // link via montree_parent_children; invite-based sessions are scoped to
-    // session.childId (single child).
-    let childIds: string[] = [];
-    if (parent.parentId) {
-      const { data: links } = await supabase
-        .from('montree_parent_children')
-        .select('child_id')
-        .eq('parent_id', parent.parentId);
-      childIds = (links || []).map((r: { child_id: string }) => r.child_id);
-      // Always include the session childId as a defensive fallback.
-      if (parent.childId && !childIds.includes(parent.childId)) {
-        childIds.push(parent.childId);
-      }
-    } else if (parent.childId) {
-      childIds = [parent.childId];
-    }
-    if (childIds.length === 0) {
-      return NextResponse.json({ error: 'No children linked to this parent.' }, { status: 403 });
-    }
-    const { data: kid } = await supabase
-      .from('montree_children')
-      .select('school_id, classroom_id')
-      .eq('id', childIds[0])
-      .maybeSingle();
-    if (!kid) {
-      return NextResponse.json({ error: 'Linked child not found.' }, { status: 404 });
-    }
-    return {
-      scope: {
-        role: 'parent',
-        schoolId: kid.school_id,
-        classroomId: kid.classroom_id || null,
-        childIds,
-      },
-    };
-  }
-
-  return NextResponse.json({ error: 'Not authenticated.' }, { status: 401 });
-}
-
 export async function GET(request: NextRequest) {
-  const resolved = await resolveScope(request);
+  const resolved = await resolveCalendarScope(request);
   if (resolved instanceof NextResponse) return resolved;
   const { scope } = resolved;
 
