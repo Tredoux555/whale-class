@@ -171,6 +171,7 @@ export async function GET(request: NextRequest) {
     {
       events,
       window: { from, to, tz },
+      role: scope.role,
       sources: adapters.map((d) => d.name),
       errors: errors.length ? errors : undefined,
     },

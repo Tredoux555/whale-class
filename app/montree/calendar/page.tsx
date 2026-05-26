@@ -14,6 +14,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useI18n } from '@/lib/montree/i18n';
 import LanguageToggle from '@/components/montree/LanguageToggle';
+import QuickCreateMenu from '@/components/montree/calendar/QuickCreateMenu';
 import Link from 'next/link';
 
 interface CalendarEvent {
@@ -35,9 +36,12 @@ interface CalendarEvent {
   visibility: string;
 }
 
+type CalendarRole = 'teacher' | 'principal' | 'parent' | 'super_admin';
+
 interface ApiResponse {
   events: CalendarEvent[];
   window: { from: string; to: string; tz: string };
+  role: CalendarRole;
   sources: string[];
   errors?: Array<{ source: string; message: string }>;
 }
@@ -95,6 +99,7 @@ export default function CalendarPage() {
     return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
   });
   const [events, setEvents] = useState<CalendarEvent[]>([]);
+  const [role, setRole] = useState<CalendarRole | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedDay, setSelectedDay] = useState<string>(() => ymd(new Date()));
@@ -116,6 +121,7 @@ export default function CalendarPage() {
       }
       const data = (await res.json()) as ApiResponse;
       setEvents(data.events || []);
+      if (data.role) setRole(data.role);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed to load calendar');
       setEvents([]);
@@ -370,9 +376,18 @@ export default function CalendarPage() {
             })}
           </h2>
           {selectedEvents.length === 0 ? (
-            <div style={{ ...card, color: '#7fa68d', fontSize: 14 }}>
-              {t('calendar.emptyDay') || 'Nothing scheduled.'}
-            </div>
+            <>
+              <div style={{ ...card, color: '#7fa68d', fontSize: 14 }}>
+                {t('calendar.emptyDay') || 'Nothing scheduled.'}
+              </div>
+              {role && role !== 'parent' ? (
+                <QuickCreateMenu
+                  selectedDay={selectedDay}
+                  role={role}
+                  onCreated={fetchEvents}
+                />
+              ) : null}
+            </>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               {selectedEvents.map((ev) => {
@@ -428,6 +443,13 @@ export default function CalendarPage() {
                   </a>
                 );
               })}
+              {role && role !== 'parent' ? (
+                <QuickCreateMenu
+                  selectedDay={selectedDay}
+                  role={role}
+                  onCreated={fetchEvents}
+                />
+              ) : null}
             </div>
           )}
         </section>
