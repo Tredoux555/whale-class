@@ -15,6 +15,7 @@ import { milestonesAdapter } from './adapters/milestones';
 import { meetingNotesAdapter } from './adapters/meeting-notes';
 import { conferenceNotesAdapter } from './adapters/conference-notes';
 import { termsAdapter } from './adapters/terms';
+import { attentionAdapter } from './adapters/attention';
 
 export interface AdapterDef {
   name: CalendarSource;
@@ -45,7 +46,12 @@ const REGISTRY: AdapterDef[] = [
   { name: 'conference_note', adapter: conferenceNotesAdapter, roles: '*' },
   { name: 'term', adapter: termsAdapter, roles: '*' },
 
-  // Phase 5 still ahead: attention, super_admin, billing (operational).
+  // Phase 5 — operational signals (staff-only by design).
+  {
+    name: 'attention',
+    adapter: attentionAdapter,
+    roles: ['teacher', 'principal', 'super_admin'],
+  },
 ];
 
 /** Returns the adapter set for a given role. */

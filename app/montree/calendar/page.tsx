@@ -175,6 +175,10 @@ export default function CalendarPage() {
 
   const today = useMemo(() => ymd(new Date()), []);
   const selectedEvents = eventsByDay.get(selectedDay) || [];
+  const attentionEvents = useMemo(
+    () => events.filter((e) => e.source === 'attention'),
+    [events],
+  );
 
   const monthLabel = formatMonthLabel(anchor);
   const inSelectedMonth = (d: Date) => d.getUTCMonth() === anchor.getUTCMonth();
@@ -278,6 +282,73 @@ export default function CalendarPage() {
 
         {error ? (
           <div style={{ ...card, color: '#fca5a5' }}>{error}</div>
+        ) : null}
+
+        {attentionEvents.length > 0 && role && role !== 'parent' ? (
+          <section
+            style={{
+              ...card,
+              background: 'rgba(251,146,60,0.08)',
+              border: '1px solid rgba(251,146,60,0.35)',
+              marginBottom: 18,
+            }}
+          >
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8,
+                marginBottom: 10,
+              }}
+            >
+              <span style={{ fontSize: 16 }}>🚩</span>
+              <h2
+                style={{
+                  margin: 0,
+                  fontFamily: 'Lora, serif',
+                  fontSize: 16,
+                  color: '#fed7aa',
+                }}
+              >
+                {t('calendar.attention.heading') || 'Needs attention'}
+              </h2>
+              <span style={{ fontSize: 12, color: '#fb923c' }}>
+                {attentionEvents.length}
+              </span>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              {attentionEvents.slice(0, 6).map((ev) => (
+                <a
+                  key={ev.id}
+                  href={ev.link || '#'}
+                  onClick={ev.link ? undefined : (e) => e.preventDefault()}
+                  onMouseEnter={() => setSelectedDay(ev.start.slice(0, 10))}
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    gap: 8,
+                    padding: '8px 10px',
+                    borderRadius: 8,
+                    background: 'rgba(255,255,255,0.03)',
+                    color: '#fde7c8',
+                    textDecoration: 'none',
+                    fontSize: 13,
+                  }}
+                >
+                  <span style={{ flex: 1, minWidth: 0 }}>{ev.title}</span>
+                  <span style={{ fontSize: 11, color: '#fb923c' }}>
+                    {ev.start.slice(0, 10)}
+                  </span>
+                </a>
+              ))}
+              {attentionEvents.length > 6 ? (
+                <div style={{ fontSize: 12, color: '#fb923c', marginTop: 4 }}>
+                  +{attentionEvents.length - 6} more
+                </div>
+              ) : null}
+            </div>
+          </section>
         ) : null}
 
         <section style={{ marginBottom: 18 }}>
