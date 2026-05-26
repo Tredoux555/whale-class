@@ -19,6 +19,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { getSupabase } from '@/lib/supabase-client';
+import {
+  getSchoolTimezone,
+  currentWeekdayInTz,
+  weekdayInTz,
+  tzOffsetMs,
+} from '@/lib/montree/school-time';
 
 export const dynamic = 'force-dynamic';
 
@@ -52,6 +58,7 @@ async function enrichScheduleWithLiveState(
     id: string; name: string; photo_url: string | null;
     is_k_bound: boolean; days_since_last_visit: number | null;
   }>>; children_count?: number; k_bound_count?: number },
+  tz: string,
 ): Promise<{
   days: LiveScheduleDays;
   meta: LiveStateMeta;
@@ -94,9 +101,9 @@ async function enrichScheduleWithLiveState(
   }
 
   const rosterIds = roster.map(k => k.id);
-  const { doneSet, doneDayByChild } = await loadDoneChildInfo(supabase, classroomId, weekStart, rosterIds);
+  const { doneSet, doneDayByChild } = await loadDoneChildInfo(supabase, classroomId, weekStart, rosterIds, tz);
   const activityCounts = await loadEnglishActivityCounts(supabase, classroomId, rosterIds);
-  const today = getCurrentWeekDay();
+  const today = getCurrentWeekDay(tz);
 
   const { days, meta } = applyLiveState(
     roster,
@@ -163,10 +170,12 @@ export async function GET(request: NextRequest) {
 
   const supabase = getSupabase();
   const forceGenerate = request.nextUrl.searchParams.get('generate') === 'true';
+  // School-local time — everything below resolves day/week against THIS tz.
+  const tz = await getSchoolTimezone(schoolId);
 
   // Determine week boundaries
   const weekStartParam = request.nextUrl.searchParams.get('week_start');
-  const weekStart = getWeekStart(weekStartParam);
+  const weekStart = getWeekStart(weekStartParam, tz);
   const weekEnd = new Date(weekStart);
   weekEnd.setDate(weekStart.getDate() + 4); // Friday
   weekEnd.setHours(23, 59, 59, 999);
@@ -187,7 +196,7 @@ export async function GET(request: NextRequest) {
       }>>; children_count?: number; k_bound_count?: number };
         week_start: string; generated_at: string };
       const enriched = await enrichScheduleWithLiveState(
-        supabase, classroomId, weekStart, s.schedule,
+        supabase, classroomId, weekStart, s.schedule, tz,
       );
       return NextResponse.json({
         success: true,
@@ -223,7 +232,7 @@ export async function GET(request: NextRequest) {
     }, { onConflict: 'classroom_id,week_start' });
 
   const enrichedFresh = await enrichScheduleWithLiveState(
-    supabase, classroomId, weekStart, schedule,
+    supabase, classroomId, weekStart, schedule, tz,
   );
   return NextResponse.json({
     success: true,
@@ -255,9 +264,10 @@ export async function POST(request: NextRequest) {
   }
 
   const supabase = getSupabase();
+  const tz = await getSchoolTimezone(schoolId);
   const body = await request.json().catch(() => ({}));
   const weekStartParam = body.week_start || null;
-  const weekStart = getWeekStart(weekStartParam);
+  const weekStart = getWeekStart(weekStartParam, tz);
 
   const schedule = await generateSchedule(supabase, classroomId, weekStart);
 
@@ -273,7 +283,7 @@ export async function POST(request: NextRequest) {
     }, { onConflict: 'classroom_id,week_start' });
 
   const enriched = await enrichScheduleWithLiveState(
-    supabase, classroomId, weekStart, schedule,
+    supabase, classroomId, weekStart, schedule, tz,
   );
   return NextResponse.json({
     success: true,
@@ -295,30 +305,30 @@ export async function POST(request: NextRequest) {
 
 // ─── Helpers ───
 
-// 🚨 Timezone — the classroom runs on China time (UTC+8); the Railway server
-// is UTC. Every "what day / what week is it" computation shifts +8h FIRST,
-// otherwise the schedule sits a day behind through the whole China-morning /
-// UTC-evening window (e.g. 6am Tue in China is still "Monday" in UTC).
-const TZ_OFFSET_MS = 8 * 60 * 60 * 1000;
-
-// "Now" as a Date whose .getUTC* accessors read as China-local values.
-function chinaNow(): Date {
-  return new Date(Date.now() + TZ_OFFSET_MS);
-}
-
-// Returns a Date at UTC-midnight of the China week's Monday calendar date.
-// `.toISOString().split('T')[0]` then yields the correct China-Monday date
-// string (the DB key + label). loadDoneChildInfo shifts -8h off this when it
-// needs the true China-Monday-midnight instant for captured_at filtering.
-function getWeekStart(param: string | null): Date {
+// 🚨 Timezone — Calendar Plan §7a. The Railway server is UTC; the school is
+// not. All day/week/weekday computation routes through lib/montree/school-time
+// which reads montree_schools.timezone (defaults to signup_timezone, then
+// UTC). The route resolves the school's tz once and threads it down.
+//
+// Returns a Date at UTC-midnight of the school-week's Monday calendar date.
+// `.toISOString().split('T')[0]` then yields the school-Monday date string
+// (used as the DB key + label). loadDoneChildInfo shifts off this Date's
+// tz-offset when it needs the true school-Monday-midnight instant for
+// captured_at filtering.
+function getWeekStart(param: string | null, tz: string): Date {
   if (param) {
     const d = new Date(param + 'T00:00:00Z');
     if (!isNaN(d.getTime())) return d;
   }
-  const cn = chinaNow();
-  const day = cn.getUTCDay(); // 0=Sun — China day-of-week
+  // "Now" in school-local time — read .getUTC* off it for school-local values.
+  const shifted = new Date(Date.now() + tzOffsetMs(tz));
+  const day = shifted.getUTCDay();
   const offset = day === 0 ? -6 : 1 - day;
-  return new Date(Date.UTC(cn.getUTCFullYear(), cn.getUTCMonth(), cn.getUTCDate() + offset));
+  return new Date(Date.UTC(
+    shifted.getUTCFullYear(),
+    shifted.getUTCMonth(),
+    shifted.getUTCDate() + offset,
+  ));
 }
 
 // ─── Session 119: Live state computation ──────────────────────────────
@@ -354,8 +364,8 @@ interface LiveStateMeta {
 const DAY_ORDER_LIVE = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'] as const;
 type WeekDay = typeof DAY_ORDER_LIVE[number];
 
-// Weekday names indexed by JS getDay() (0=Sun).
-const WEEKDAY_NAMES = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'] as const;
+// (Historical WEEKDAY_NAMES const removed — weekday derivation now flows
+// through weekdayInTz / currentWeekdayInTz from lib/montree/school-time.)
 
 /**
  * Resolve the Language-area work IDs for a classroom. Shared by the
@@ -394,12 +404,14 @@ async function loadDoneChildInfo(
   classroomId: string,
   weekStart: Date,
   rosterIds: string[],
+  tz: string,
 ): Promise<{ doneSet: Set<string>; doneDayByChild: Map<string, string> }> {
   const empty = { doneSet: new Set<string>(), doneDayByChild: new Map<string, string>() };
-  // weekStart is UTC-midnight of the China-Monday date; the true China week
-  // window is that minus the +8h offset, spanning 7 days. Filtering on the
-  // real China-week boundary so an early-morning English session counts.
-  const startMs = weekStart.getTime() - TZ_OFFSET_MS;
+  // weekStart is UTC-midnight of the school-Monday date; the true school
+  // week window is that minus the tz offset AT THAT INSTANT (so DST is
+  // honoured), spanning 7 days. Filtering on the real school-week boundary
+  // so an early-morning English session counts.
+  const startMs = weekStart.getTime() - tzOffsetMs(tz, weekStart);
   const startIso = new Date(startMs).toISOString();
   const endIso = new Date(startMs + 7 * 24 * 60 * 60 * 1000).toISOString();
 
@@ -456,11 +468,11 @@ async function loadDoneChildInfo(
     }
   }
 
-  // The weekday each child FIRST did English this week — derived in China
+  // The weekday each child FIRST did English this week — derived in school
   // time so an early-morning session doesn't get tagged as the day before.
   const doneDayByChild = new Map<string, string>();
   for (const [childId, ts] of earliestByChild) {
-    doneDayByChild.set(childId, WEEKDAY_NAMES[new Date(ts + TZ_OFFSET_MS).getUTCDay()]);
+    doneDayByChild.set(childId, weekdayInTz(ts, tz));
   }
   return { doneSet, doneDayByChild };
 }
@@ -535,13 +547,14 @@ async function loadEnglishActivityCounts(
 
 /**
  * Return the current weekday as 'monday'|...|'friday', or null on weekends.
- * Computed in China time (UTC+8) — the server is UTC, so a bare getDay()
- * would report yesterday during the China-morning window.
+ * Computed in the school's timezone (Calendar Plan §7a).
  */
-function getCurrentWeekDay(): WeekDay | null {
-  const dow = chinaNow().getUTCDay(); // 0=Sun, 1=Mon, ..., 6=Sat — China-local
-  if (dow === 0 || dow === 6) return null;
-  return DAY_ORDER_LIVE[dow - 1];
+function getCurrentWeekDay(tz: string): WeekDay | null {
+  const name = currentWeekdayInTz(tz);
+  if (!name) return null;
+  // currentWeekdayInTz already returns only monday..friday | null; this is
+  // a safe cast back into the route's WeekDay alias.
+  return name as WeekDay;
 }
 
 /**
@@ -844,14 +857,18 @@ export async function generateAndSaveEnglishSchedule(
   schoolId: string,
 ) {
   const supabase = getSupabase();
+  const tz = await getSchoolTimezone(schoolId);
 
-  // Generate for NEXT week (the week the new plans apply to)
-  const now = new Date();
-  const day = now.getDay();
-  const offset = day === 0 ? 1 : 8 - day; // next Monday
-  const nextMonday = new Date(now);
-  nextMonday.setDate(now.getDate() + offset);
-  nextMonday.setHours(0, 0, 0, 0);
+  // Generate for NEXT week (the week the new plans apply to). "Next" is
+  // measured in the school's local time, not the UTC server's.
+  const shifted = new Date(Date.now() + tzOffsetMs(tz));
+  const day = shifted.getUTCDay();
+  const offset = day === 0 ? 1 : 8 - day; // next Monday in school-local terms
+  const nextMonday = new Date(Date.UTC(
+    shifted.getUTCFullYear(),
+    shifted.getUTCMonth(),
+    shifted.getUTCDate() + offset,
+  ));
 
   const schedule = await generateSchedule(supabase, classroomId, nextMonday);
   const weekStartStr = nextMonday.toISOString().split('T')[0];
