@@ -5527,4 +5527,15 @@ export const zh = {
   'comm.groupBuilder.selected': '{count} 个已选择',
   'comm.groupBuilder.saving': '保存中…',
   'comm.groupBuilder.create': '创建群组',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'nav.calendar': '日历',
+  'calendar.title': '日历',
+  'calendar.today': '今天',
+  'calendar.attention.heading': '需要关注',
+  'calendar.emptyDay': '没有任何计划。',
+  'calendar.summary.heading': '总结',
+  'calendar.summary.cta': '总结本月',
+  'calendar.summary.loading': '正在读取您的日历…',
+  'classroomOverview.classProgressTab': '班级进度',
 } as const;

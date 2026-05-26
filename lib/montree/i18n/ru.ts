@@ -5121,4 +5121,15 @@ export const ru: Record<string, string> = {
   'comm.groupBuilder.selected': '{count} выбрано',
   'comm.groupBuilder.saving': 'Сохранение…',
   'comm.groupBuilder.create': 'Создать группу',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'nav.calendar': 'Календарь',
+  'calendar.title': 'Календарь',
+  'calendar.today': 'Сегодня',
+  'calendar.attention.heading': 'Требует внимания',
+  'calendar.emptyDay': 'Ничего не запланировано.',
+  'calendar.summary.heading': 'Итоги',
+  'calendar.summary.cta': 'Подвести итоги за месяц',
+  'calendar.summary.loading': 'Чтение Вашего календаря…',
+  'classroomOverview.classProgressTab': 'Прогресс класса',
 };

@@ -5124,4 +5124,15 @@ export const ko: Record<string, string> = {
   'comm.groupBuilder.selected': '{count}명 선택됨',
   'comm.groupBuilder.saving': '저장 중…',
   'comm.groupBuilder.create': '그룹 만들기',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'nav.calendar': '캘린더',
+  'calendar.title': '캘린더',
+  'calendar.today': '오늘',
+  'calendar.attention.heading': '주의가 필요해요',
+  'calendar.emptyDay': '예약된 일정이 없어요.',
+  'calendar.summary.heading': '요약',
+  'calendar.summary.cta': '이번 달을 정리해요',
+  'calendar.summary.loading': '캘린더를 읽는 중이에요…',
+  'classroomOverview.classProgressTab': '학급 진도',
 };
