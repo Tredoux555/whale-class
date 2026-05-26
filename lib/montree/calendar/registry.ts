@@ -8,6 +8,13 @@
 import type { CalendarAdapter, CalendarRole, CalendarSource } from './types';
 import { appointmentsAdapter } from './adapters/appointments';
 import { schoolEventsAdapter } from './adapters/school-events';
+import { reportsAdapter } from './adapters/reports';
+import { observationsAdapter } from './adapters/observations';
+import { englishScheduleAdapter } from './adapters/english-schedule';
+import { milestonesAdapter } from './adapters/milestones';
+import { meetingNotesAdapter } from './adapters/meeting-notes';
+import { conferenceNotesAdapter } from './adapters/conference-notes';
+import { termsAdapter } from './adapters/terms';
 
 export interface AdapterDef {
   name: CalendarSource;
@@ -18,23 +25,27 @@ export interface AdapterDef {
 
 const REGISTRY: AdapterDef[] = [
   // Phase 1 — two adapters proving the contract.
+  { name: 'appointment', adapter: appointmentsAdapter, roles: '*' },
+  { name: 'school_event', adapter: schoolEventsAdapter, roles: '*' },
+
+  // Phase 2 — the daily-life adapters.
+  { name: 'report', adapter: reportsAdapter, roles: ['parent', 'teacher', 'principal'] },
+  { name: 'observation', adapter: observationsAdapter, roles: ['teacher', 'principal'] },
   {
-    name: 'appointment',
-    adapter: appointmentsAdapter,
-    roles: '*',
+    name: 'english_schedule',
+    adapter: englishScheduleAdapter,
+    roles: ['teacher', 'principal'],
   },
+  { name: 'milestone', adapter: milestonesAdapter, roles: '*' },
   {
-    name: 'school_event',
-    adapter: schoolEventsAdapter,
-    roles: '*',
+    name: 'meeting_note',
+    adapter: meetingNotesAdapter,
+    roles: ['teacher', 'principal'],
   },
-  // Phase 2 adapters will register here:
-  // { name: 'report', adapter: reportsAdapter, roles: ['parent', 'teacher', 'principal'] },
-  // { name: 'observation', adapter: observationsAdapter, roles: ['teacher', 'principal'] },
-  // { name: 'english_schedule', adapter: englishScheduleAdapter, roles: ['teacher', 'principal'] },
-  // { name: 'milestone', adapter: milestonesAdapter, roles: '*' },
-  // { name: 'attendance', adapter: attendanceAdapter, roles: ['teacher', 'principal'] },
-  // ...
+  { name: 'conference_note', adapter: conferenceNotesAdapter, roles: '*' },
+  { name: 'term', adapter: termsAdapter, roles: '*' },
+
+  // Phase 5 still ahead: attention, super_admin, billing (operational).
 ];
 
 /** Returns the adapter set for a given role. */
