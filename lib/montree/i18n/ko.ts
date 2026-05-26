@@ -5138,4 +5138,7 @@ export const ko: Record<string, string> = {
 
   // ─── Auto-filled missing keys (from Apr 30 audit) ───
   'nav.appointments': '일정',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'calendar.manageAvailability': '제 시간을 설정해요',
 };

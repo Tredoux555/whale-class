@@ -253,6 +253,7 @@ export const en = {
   'calendar.summary.heading': 'Summary',
   'calendar.summary.cta': 'Summarise this month',
   'calendar.summary.loading': 'Reading your calendar…',
+  'calendar.manageAvailability': 'Set my availability',
 
   // Print / Classroom Overview
   'print.classOverview': 'Classroom Overview',

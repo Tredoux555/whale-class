@@ -5138,4 +5138,7 @@ export const ja: Record<string, string> = {
 
   // ─── Auto-filled missing keys (from Apr 30 audit) ───
   'nav.appointments': '予定',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'calendar.manageAvailability': '私の予定を設定します',
 };
