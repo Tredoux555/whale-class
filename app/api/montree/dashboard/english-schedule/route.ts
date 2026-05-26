@@ -221,6 +221,7 @@ export async function GET(request: NextRequest) {
 
   // Save it
   const weekStartStr = weekStart.toISOString().split('T')[0];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   await (supabase as any)
     .from('montree_english_schedule')
     .upsert({
@@ -272,6 +273,7 @@ export async function POST(request: NextRequest) {
   const schedule = await generateSchedule(supabase, classroomId, weekStart);
 
   const weekStartStr = weekStart.toISOString().split('T')[0];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   await (supabase as any)
     .from('montree_english_schedule')
     .upsert({
@@ -707,7 +709,7 @@ async function generateSchedule(
       .from('montree_classroom_curriculum_works')
       .select('id')
       .eq('classroom_id', classroomId)
-      .eq('area_id', (langArea as any).id);
+      .eq('area_id', (langArea as { id: string }).id);
 
     langWorkIds = new Set(((langWorks || []) as Array<{ id: string }>).map(w => w.id));
   }
@@ -736,7 +738,7 @@ async function generateSchedule(
 
   const groupLinks = (rawGroupLinks || []) as Array<{ child_id: string; media_id: string }>;
 
-  let groupMediaMap = new Map<string, { work_id: string; captured_at: string }>();
+  const groupMediaMap = new Map<string, { work_id: string; captured_at: string }>();
   if (groupLinks.length > 0) {
     const groupMediaIds = [...new Set(groupLinks.map(l => l.media_id))];
     const { data: groupMedia } = await supabase
@@ -873,6 +875,7 @@ export async function generateAndSaveEnglishSchedule(
   const schedule = await generateSchedule(supabase, classroomId, nextMonday);
   const weekStartStr = nextMonday.toISOString().split('T')[0];
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   await (supabase as any)
     .from('montree_english_schedule')
     .upsert({
