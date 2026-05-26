@@ -5541,4 +5541,7 @@ export const zh = {
 
   // ─── Auto-filled missing keys (from Apr 30 audit) ───
   'nav.appointments': '预约',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'calendar.manageAvailability': '设置我的可用时间',
 } as const;

@@ -5135,4 +5135,7 @@ export const uk: Record<string, string> = {
 
   // ─── Auto-filled missing keys (from Apr 30 audit) ───
   'nav.appointments': 'Призначення',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'calendar.manageAvailability': 'Установити мою доступність',
 };

@@ -5138,4 +5138,7 @@ export const nl: Record<string, string> = {
 
   // ─── Auto-filled missing keys (from Apr 30 audit) ───
   'nav.appointments': 'Afspraken',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'calendar.manageAvailability': 'Mijn beschikbaarheid instellen',
 };

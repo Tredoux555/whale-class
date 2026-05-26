@@ -5135,4 +5135,7 @@ export const ru: Record<string, string> = {
 
   // ─── Auto-filled missing keys (from Apr 30 audit) ───
   'nav.appointments': 'Приемные часы',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'calendar.manageAvailability': 'Установить мою доступность',
 };

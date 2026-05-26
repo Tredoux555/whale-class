@@ -12,6 +12,7 @@
 // shape. New adapters land in the registry — this page gets them for free.
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import Link from 'next/link';
 import { useI18n } from '@/lib/montree/i18n';
 import QuickCreateMenu from '@/components/montree/calendar/QuickCreateMenu';
 // Session 129 follow-up — custom header (Montree wordmark + LanguageToggle)
@@ -400,27 +401,63 @@ export default function CalendarPage() {
               </div>
             </div>
           ) : (
-            <button
-              type="button"
-              onClick={fetchSummary}
-              disabled={summaryLoading || loading}
+            // Session 129 consolidation — the Summarise button and the new
+            // "Set my availability" link sit side-by-side. Both are
+            // meta-actions ABOUT the calendar (not events ON it). The
+            // availability link replaces the standalone Appointments menu
+            // entry (hidden in DashboardHeader) and roots availability
+            // management inside the Calendar surface as the user requested.
+            <div
               style={{
-                background: 'rgba(232,201,106,0.14)',
-                border: '1px solid rgba(232,201,106,0.4)',
-                color: '#E8C96A',
-                padding: '10px 16px',
-                borderRadius: 10,
-                cursor: summaryLoading || loading ? 'wait' : 'pointer',
-                fontSize: 14,
-                display: 'inline-flex',
+                display: 'flex',
+                gap: 10,
                 alignItems: 'center',
-                gap: 8,
+                flexWrap: 'wrap',
               }}
             >
-              {summaryLoading
-                ? t('calendar.summary.loading') || 'Reading your calendar…'
-                : t('calendar.summary.cta') || 'Summarise this month'}
-            </button>
+              <button
+                type="button"
+                onClick={fetchSummary}
+                disabled={summaryLoading || loading}
+                style={{
+                  background: 'rgba(232,201,106,0.14)',
+                  border: '1px solid rgba(232,201,106,0.4)',
+                  color: '#E8C96A',
+                  padding: '10px 16px',
+                  borderRadius: 10,
+                  cursor: summaryLoading || loading ? 'wait' : 'pointer',
+                  fontSize: 14,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 8,
+                }}
+              >
+                {summaryLoading
+                  ? t('calendar.summary.loading') || 'Reading your calendar…'
+                  : t('calendar.summary.cta') || 'Summarise this month'}
+              </button>
+              {/* Set my availability — only staff. Parents don't set
+                  bookable slots; they BOOK the slots staff offer. */}
+              {role && role !== 'parent' ? (
+                <Link
+                  href="/montree/dashboard/appointments"
+                  style={{
+                    background: 'rgba(52,211,153,0.10)',
+                    border: '1px solid rgba(52,211,153,0.35)',
+                    color: '#9bd5b0',
+                    padding: '10px 16px',
+                    borderRadius: 10,
+                    fontSize: 14,
+                    textDecoration: 'none',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 6,
+                  }}
+                >
+                  {t('calendar.manageAvailability') || 'Set my availability'} →
+                </Link>
+              ) : null}
+            </div>
           )}
           {summaryError ? (
             <div style={{ marginTop: 8, fontSize: 13, color: '#fca5a5' }}>{summaryError}</div>
