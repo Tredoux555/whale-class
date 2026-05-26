@@ -5135,4 +5135,7 @@ export const ko: Record<string, string> = {
   'calendar.summary.cta': '이번 달을 정리해요',
   'calendar.summary.loading': '캘린더를 읽는 중이에요…',
   'classroomOverview.classProgressTab': '학급 진도',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'nav.appointments': '일정',
 };

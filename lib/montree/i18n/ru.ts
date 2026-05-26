@@ -5132,4 +5132,7 @@ export const ru: Record<string, string> = {
   'calendar.summary.cta': 'Подвести итоги за месяц',
   'calendar.summary.loading': 'Чтение Вашего календаря…',
   'classroomOverview.classProgressTab': 'Прогресс класса',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'nav.appointments': 'Приемные часы',
 };

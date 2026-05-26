@@ -5106,4 +5106,7 @@ export const es: Record<string, string> = {
   'calendar.summary.cta': 'Resumir este mes',
   'calendar.summary.loading': 'Leyendo tu calendario…',
   'classroomOverview.classProgressTab': 'Progreso de la Clase',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'nav.appointments': 'Citas',
 };

@@ -182,13 +182,21 @@ export const appointmentsAdapter: CalendarAdapter = async (window, scope) => {
       title: kindToTitle(r.event_kind, r.intake_subject),
       detail: r.location || r.intake_body || null,
       status: mapStatus(r.status),
-      // Parents deep-link to their appointment row; staff to the calendar view.
+      // Parents deep-link to their appointment list; staff to the
+      // appointments calendar.
+      //
+      // Session 129 follow-up: REMOVED the auto-launch-into-Agora-call link
+      // for video appointments. Previously isVideo → /montree/dashboard/calls/${r.id}
+      // which booted straight into the call. Web-Claude audit accidentally
+      // triggered a live call by scrolling through the day-detail panel.
+      // The /dashboard/appointments calendar page has a deliberate Join
+      // button that opens within the ±2h window per Session 117/120 design —
+      // that's the correct path to a call. Tapping a card on a calendar
+      // surface should never auto-page another human.
       link:
         scope.role === 'parent'
           ? `/montree/parent/appointments`
-          : isVideo
-            ? `/montree/dashboard/calls/${r.id}`
-            : `/montree/dashboard/appointments`,
+          : `/montree/dashboard/appointments`,
       icon: iconFor(r.event_kind, isVideo),
       accent,
       host_role: hostRole,

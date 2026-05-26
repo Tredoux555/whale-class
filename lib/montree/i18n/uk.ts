@@ -5132,4 +5132,7 @@ export const uk: Record<string, string> = {
   'calendar.summary.cta': 'Узагальнити цей місяць',
   'calendar.summary.loading': 'Читання вашого календара…',
   'classroomOverview.classProgressTab': 'Прогрес класу',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'nav.appointments': 'Призначення',
 };

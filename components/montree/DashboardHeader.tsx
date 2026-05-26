@@ -693,14 +693,18 @@ function DashboardHeader() {
                     onClick={() => { setShowMoreMenu(false); router.push('/montree/dashboard/conversations'); }}
                   />
 
-                  {/* Calendar — Session 117 redesign. Calendar-first posture
-                      replaces the database-list view. Parents book meetings
-                      with this teacher; staff set their own open slots.
-                      Page itself shows a "feature disabled" hint when the school
-                      doesn't have the appointments flag on. */}
+                  {/* Appointments — Session 117 redesign. Calendar-first
+                      posture replaces the database-list view. Parents book
+                      meetings with this teacher; staff set their own open
+                      slots. Page itself shows a "feature disabled" hint when
+                      the school doesn't have the appointments flag on.
+                      Renamed Session 129 follow-up: previously labelled
+                      "Calendar" which collided visually with the new
+                      Universal Calendar (/montree/calendar) added in
+                      Session 128 — they're different surfaces. */}
                   <MenuRow
                     icon={Calendar}
-                    label="Calendar"
+                    label={t('nav.appointments') || 'Appointments'}
                     active={activePage === 'appointments'}
                     onClick={() => { setShowMoreMenu(false); router.push('/montree/dashboard/appointments'); }}
                   />
