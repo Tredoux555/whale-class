@@ -13,9 +13,12 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useI18n } from '@/lib/montree/i18n';
-import LanguageToggle from '@/components/montree/LanguageToggle';
 import QuickCreateMenu from '@/components/montree/calendar/QuickCreateMenu';
-import Link from 'next/link';
+// Session 129 follow-up — custom header (Montree wordmark + LanguageToggle)
+// removed in favor of the shared DashboardHeader rendered by
+// app/montree/calendar/layout.tsx. Same chrome as every other authenticated
+// surface: school name, user pill, EN toggle, camera/mic, 3-dot More menu.
+// Authenticated users no longer get bounced to the public landing on logo tap.
 import {
   getEventColor,
   getDotGlow,
@@ -192,39 +195,13 @@ export default function CalendarPage() {
   const inSelectedMonth = (d: Date) => d.getUTCMonth() === anchor.getUTCMonth();
 
   return (
+    // Session 129 follow-up — the wrapper div keeps the dark forest
+    // backdrop but no longer renders its own header. DashboardHeader is
+    // rendered by app/montree/calendar/layout.tsx ABOVE this div, which
+    // also honors env(safe-area-inset-top) itself — so the safe-area
+    // paddingTop hack I shipped on the custom header is now redundant
+    // (the layout's header carries that already).
     <div style={{ minHeight: '100dvh', background: '#0a1a0f', color: '#e2eee4' }}>
-      <header
-        style={{
-          // iOS notch / dynamic island safe-area honored — without this the
-          // Montree wordmark collides with the iOS time pill on notched
-          // devices (real bug shipped Session 129, fixed in follow-up).
-          paddingTop: 'calc(16px + env(safe-area-inset-top))',
-          paddingBottom: 16,
-          paddingLeft: 'calc(18px + env(safe-area-inset-left))',
-          paddingRight: 'calc(18px + env(safe-area-inset-right))',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          gap: 12,
-          borderBottom: '1px solid rgba(255,255,255,0.06)',
-        }}
-      >
-        <Link
-          href="/montree"
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: 8,
-            color: '#9bd5b0',
-            textDecoration: 'none',
-            fontSize: 14,
-          }}
-        >
-          🌱 <span style={{ fontFamily: 'Lora, serif', fontSize: 16 }}>Montree</span>
-        </Link>
-        <LanguageToggle />
-      </header>
-
       <main style={{
         maxWidth: 1100,
         margin: '0 auto',
