@@ -103,6 +103,9 @@ export default function CalendarPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedDay, setSelectedDay] = useState<string>(() => ymd(new Date()));
+  const [summary, setSummary] = useState<string | null>(null);
+  const [summaryLoading, setSummaryLoading] = useState(false);
+  const [summaryError, setSummaryError] = useState<string | null>(null);
 
   const monthCells = useMemo(() => buildMonthGrid(anchor), [anchor]);
   const windowFrom = useMemo(() => ymd(monthCells[0]), [monthCells]);
@@ -132,7 +135,31 @@ export default function CalendarPage() {
 
   useEffect(() => {
     fetchEvents();
+    // Window changed — the prior summary is stale.
+    setSummary(null);
+    setSummaryError(null);
   }, [fetchEvents]);
+
+  const fetchSummary = useCallback(async () => {
+    setSummaryLoading(true);
+    setSummaryError(null);
+    try {
+      const res = await fetch(
+        `/api/montree/calendar/summary?from=${windowFrom}&to=${windowTo}`,
+        { credentials: 'include' },
+      );
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body.error || `Summary failed (${res.status})`);
+      }
+      const data = (await res.json()) as { summary: string };
+      setSummary(data.summary || '');
+    } catch (e) {
+      setSummaryError(e instanceof Error ? e.message : 'Failed to load summary');
+    } finally {
+      setSummaryLoading(false);
+    }
+  }, [windowFrom, windowTo]);
 
   // Group events by YYYY-MM-DD (UTC) for the grid render.
   const eventsByDay = useMemo(() => {
@@ -252,6 +279,85 @@ export default function CalendarPage() {
         {error ? (
           <div style={{ ...card, color: '#fca5a5' }}>{error}</div>
         ) : null}
+
+        <section style={{ marginBottom: 18 }}>
+          {summary ? (
+            <div
+              style={{
+                ...card,
+                background: 'rgba(15,30,18,0.78)',
+                borderLeft: '3px solid #E8C96A',
+              }}
+            >
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  gap: 8,
+                  marginBottom: 8,
+                }}
+              >
+                <span
+                  style={{
+                    fontSize: 11,
+                    color: '#E8C96A',
+                    textTransform: 'uppercase',
+                    letterSpacing: 0.5,
+                  }}
+                >
+                  {t('calendar.summary.heading') || 'Summary'}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSummary(null);
+                    setSummaryError(null);
+                  }}
+                  style={{
+                    background: 'transparent',
+                    border: 'none',
+                    color: '#9bd5b0',
+                    cursor: 'pointer',
+                    fontSize: 12,
+                  }}
+                >
+                  ✕
+                </button>
+              </div>
+              <div
+                style={{ fontSize: 14, lineHeight: 1.55, whiteSpace: 'pre-wrap', color: '#e9f6ec' }}
+              >
+                {summary}
+              </div>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={fetchSummary}
+              disabled={summaryLoading || loading}
+              style={{
+                background: 'rgba(232,201,106,0.14)',
+                border: '1px solid rgba(232,201,106,0.4)',
+                color: '#E8C96A',
+                padding: '10px 16px',
+                borderRadius: 10,
+                cursor: summaryLoading || loading ? 'wait' : 'pointer',
+                fontSize: 14,
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 8,
+              }}
+            >
+              {summaryLoading
+                ? t('calendar.summary.loading') || 'Reading your calendar…'
+                : t('calendar.summary.cta') || 'Summarise this month'}
+            </button>
+          )}
+          {summaryError ? (
+            <div style={{ marginTop: 8, fontSize: 13, color: '#fca5a5' }}>{summaryError}</div>
+          ) : null}
+        </section>
 
         <div
           style={{
