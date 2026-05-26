@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useI18n } from '@/lib/montree/i18n';
 import LanguageToggle from '@/components/montree/LanguageToggle';
@@ -8,34 +8,35 @@ import MontreeLogo from '@/components/montree/MonteeLogo';
 
 // /montree/page.tsx — Montree landing page (v2 — deep forest palette)
 
-// Splash video by locale. The file paths live here (NOT in the i18n keys) —
-// they're static asset routes, not translation strings, and we don't want
-// to pollute the strict-parity translation surface with /public URLs.
-//
-// Any locale that doesn't have its own entry falls back to English.
-// To add a new locale's video:
-//   1. Drop the file into /public/ as montree-splash-video-<locale>.mp4
-//   2. Extract a poster: ffmpeg -ss 2 -i <video>.mp4 -frames:v 1 -q:v 3 <poster>.jpg
-//   3. Add the locale key here.
-//
-// SESSION 130: zh entry live (1080p MP4 shipped alongside the 720p en one).
-// Add more locales by dropping <video>.mp4 + extracting <poster>.jpg into
-// /public/ and registering a new key here.
-const SPLASH_VIDEO_BY_LOCALE: Record<string, { src: string; poster: string }> = {
+// Splash video assets — one per language we currently offer (EN + 中文 only).
+// The picker on the video itself is INDEPENDENT of the page-wide LanguageToggle
+// (which switches UI strings across 12 locales). The video toggle is a small
+// EN / 中文 pill pair overlaid on the corner-video; it only flips THIS video's
+// src + poster. Independent state by design — a French principal browsing the
+// site shouldn't be forced into the English video, and we don't want the EN
+// video to disappear the moment someone clicks 中文 on the UI toggle.
+const SPLASH_VIDEOS = {
   en: {
     src: '/montree-splash-video.mp4',
     poster: '/montree-splash-video-poster.jpg',
+    label: 'EN',
   },
   zh: {
     src: '/montree-splash-video-zh.mp4',
     poster: '/montree-splash-video-zh-poster.jpg',
+    label: '中文',
   },
-};
+} as const;
+type SplashVideoLocale = keyof typeof SPLASH_VIDEOS;
 
 export default function MontreeLanding() {
-  const { t, locale } = useI18n();
-  const splashVideo = SPLASH_VIDEO_BY_LOCALE[locale] || SPLASH_VIDEO_BY_LOCALE.en;
+  const { t } = useI18n();
   const revealRefs = useRef<HTMLElement[]>([]);
+
+  // Video-only locale state. Defaults to EN on every fresh page load.
+  // Not persisted — keep it simple; toggle is a stateless visual switch.
+  const [videoLocale, setVideoLocale] = useState<SplashVideoLocale>('en');
+  const splashVideo = SPLASH_VIDEOS[videoLocale];
 
   useEffect(() => {
     const obs = new IntersectionObserver(
@@ -144,6 +145,81 @@ export default function MontreeLanding() {
           font-size: 1rem;
         }
 
+        /* ── Hero corner video ──
+           Autoplay muted loop ambient clip pinned to the top-left of the
+           hero. Sits BELOW the sticky nav (which has its own z-index) and
+           to the LEFT of the centered hero text. Position is absolute so
+           it doesn't affect the centered text layout. The text just stays
+           centered as before; the video is decoration in the corner.
+
+           Mobile (≤640px): position becomes static — the video drops into
+           normal flow above the centered text. Sized down so it doesn't
+           dominate the small viewport.
+
+           Frame includes a self-contained EN / 中文 toggle overlay in the
+           bottom-right. Independent of the page-wide LanguageToggle.
+        */
+        .m-hero-corner-video {
+          position: absolute;
+          top: 32px;
+          left: 32px;
+          width: clamp(260px, 28vw, 360px);
+          z-index: 2;
+        }
+        .m-hero-corner-video-frame {
+          position: relative;
+          border-radius: 12px;
+          overflow: hidden;
+          background: #06140e;
+          border: 1px solid rgba(130,217,174,0.22);
+          box-shadow:
+            0 1px 0 rgba(130,217,174,0.08) inset,
+            0 18px 44px -18px rgba(0,0,0,0.75),
+            0 6px 14px -8px rgba(0,0,0,0.5);
+        }
+        .m-hero-corner-video-element {
+          display: block;
+          width: 100%;
+          height: auto;
+          aspect-ratio: 16 / 9;
+          background: #06140e;
+        }
+        .m-hero-corner-video-toggle {
+          position: absolute;
+          bottom: 8px;
+          right: 8px;
+          display: inline-flex;
+          gap: 2px;
+          padding: 3px;
+          border-radius: 999px;
+          background: rgba(0,0,0,0.55);
+          backdrop-filter: blur(8px);
+          -webkit-backdrop-filter: blur(8px);
+          border: 1px solid rgba(255,255,255,0.12);
+        }
+        .m-hero-corner-video-toggle-btn {
+          appearance: none;
+          border: 0;
+          background: transparent;
+          color: rgba(255,255,255,0.55);
+          font-family: inherit;
+          font-size: 11px;
+          font-weight: 600;
+          letter-spacing: 0.02em;
+          padding: 4px 10px;
+          border-radius: 999px;
+          cursor: pointer;
+          transition: background 160ms ease, color 160ms ease;
+          line-height: 1;
+        }
+        .m-hero-corner-video-toggle-btn:hover {
+          color: rgba(255,255,255,0.92);
+        }
+        .m-hero-corner-video-toggle-btn[aria-pressed='true'] {
+          background: rgba(232,201,106,0.92);
+          color: #1a1208;
+        }
+
         /* ── Nav ── */
         .m-nav {
           position: sticky;
@@ -192,6 +268,7 @@ export default function MontreeLanding() {
 
         /* ── Hero ── */
         .m-hero {
+          position: relative;
           min-height: calc(100vh - 70px);
           display: flex;
           flex-direction: column;
@@ -291,37 +368,6 @@ export default function MontreeLanding() {
           font-size: 0.78rem;
           color: rgba(255,255,255,0.32);
           letter-spacing: 0.02em;
-        }
-
-        /* ── Splash video ──
-           Sits between the hero and the three editorial blocks. Click-to-play
-           with native controls + sound (user's choice from the placement Q).
-           The poster is extracted at t=2s during build so the browser shows
-           a real frame instead of a black box. preload="metadata" keeps the
-           initial page weight light — only a few KB of headers download
-           until the user actually presses play.
-        */
-        .m-splash-video-section {
-          padding: 0 32px 100px;
-        }
-        .m-splash-video-frame {
-          max-width: 960px;
-          margin: 0 auto;
-          border-radius: 14px;
-          overflow: hidden;
-          border: 1px solid rgba(130,217,174,0.16);
-          background: #06140e;
-          box-shadow:
-            0 1px 0 rgba(130,217,174,0.06) inset,
-            0 24px 60px -24px rgba(6,20,14,0.9),
-            0 8px 24px -12px rgba(6,20,14,0.6);
-        }
-        .m-splash-video {
-          display: block;
-          width: 100%;
-          height: auto;
-          aspect-ratio: 16 / 9;
-          background: #06140e;
         }
 
         /* ── Editorial ── */
@@ -438,11 +484,19 @@ export default function MontreeLanding() {
           .m-nav-link-library { font-size: 0.875rem; }
           .m-nav-link-login { font-size: 0.875rem; }
           .m-nav-inner { padding: 14px 20px; }
-          .m-hero { padding: 80px 24px 100px; }
+          /* Mobile: hero stacks vertically with the corner video flowing in
+             above the centered text (static position) instead of overlapping. */
+          .m-hero { padding: 32px 24px 80px; }
           .m-hero .m-label { margin-bottom: 28px; }
           .m-hero-sub { margin-bottom: 32px; }
-          .m-splash-video-section { padding: 0 16px 64px; }
-          .m-splash-video-frame { border-radius: 10px; }
+          .m-hero-corner-video {
+            position: static;
+            width: min(280px, 75vw);
+            margin: 0 auto 36px;
+          }
+          .m-hero-corner-video-frame { border-radius: 10px; }
+          .m-hero-corner-video-toggle { bottom: 6px; right: 6px; }
+          .m-hero-corner-video-toggle-btn { font-size: 10px; padding: 3px 8px; }
           .m-editorial { padding: 40px 24px 100px; }
           .m-block { padding: 40px 0; }
           .m-closing { padding: 110px 24px 110px; }
@@ -526,16 +580,60 @@ export default function MontreeLanding() {
       </nav>
 
       {/* ── HERO ──
-          Session 130: brand-statement form.
-            1. Montree                                       — h1, brand name
-            2. the AI Montessori classroom revolution        — tagline directly below
-            3. Try it                                        — primary CTA
-            4. Work smarter not harder                       — italic gold kicker beneath
-          Personal-name references removed from the public surface (About
-          page + JSON-LD also scrubbed in the same session) so the platform
-          isn't tied to a specific teacher's identity.
+          Session 130: brand-statement form + corner autoplay video.
+            • Corner video: top-left, autoplay muted loop, EN/中文 toggle
+              overlaid. Independent of the page-wide LanguageToggle.
+            • Centered text stack:
+              1. Montree                                — h1, brand name
+              2. the AI Montessori classroom revolution — tagline below
+              3. Try it                                 — primary CTA
+              4. Work smarter not harder                — italic gold kicker
+
+          Why corner-video and not inline-below-hero / lightbox / pre-roll:
+          users landing on the page want to know what Montree is BEFORE
+          they read anything. The video plays the moment the page loads,
+          ambient and muted, in the corner where it doesn't fight the
+          centered text but is the first thing the eye picks up.
       */}
       <section className="m-hero">
+        {/* Corner video. NOT wrapped with ref={addReveal} — the reveal
+            pattern's JS-set opacity racing the <video>'s first paint
+            caused the 2ms flash users reported earlier. Visible from
+            first paint instead. */}
+        <div className="m-hero-corner-video">
+          <div className="m-hero-corner-video-frame">
+            {/* key={src} so React rebuilds the player when the user
+                flips EN ↔ 中文 — without that, the old buffer + playhead
+                point at the previous locale's MP4 and the new src
+                doesn't load. */}
+            <video
+              key={splashVideo.src}
+              className="m-hero-corner-video-element"
+              src={splashVideo.src}
+              poster={splashVideo.poster}
+              autoPlay
+              muted
+              loop
+              playsInline
+              preload="auto"
+              aria-label="Montree introduction video"
+            />
+            <div className="m-hero-corner-video-toggle" role="group" aria-label="Video language">
+              {(['en', 'zh'] as const).map((loc) => (
+                <button
+                  key={loc}
+                  type="button"
+                  className="m-hero-corner-video-toggle-btn"
+                  aria-pressed={videoLocale === loc}
+                  onClick={() => setVideoLocale(loc)}
+                >
+                  {SPLASH_VIDEOS[loc].label}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
         <div ref={addReveal} className="m-hero-stack">
           <h1>{t('landing.hero.title')}</h1>
           <p className="m-hero-tagline">{t('landing.hero.tagline')}</p>
@@ -543,33 +641,6 @@ export default function MontreeLanding() {
             {t('landing.hero.cta')}
           </Link>
           <span className="m-hero-kicker m-hero-kicker-below">{t('landing.hero.kicker')}</span>
-        </div>
-      </section>
-
-      {/* ── SPLASH VIDEO ──
-          ~65s branded narrative, click-to-play with sound. Sits between the
-          hero and the editorial blocks so it gets its own breathing room.
-          preload="metadata" keeps the initial page weight light. playsInline
-          stops iOS from launching its own fullscreen player on tap.
-      */}
-      <section className="m-splash-video-section" aria-label="Watch Montree" ref={addReveal}>
-        <div className="m-splash-video-frame">
-          {/*
-            key={splashVideo.src} forces React to unmount + remount the <video>
-            when the language toggle changes the resolved src — without that,
-            the player would keep its current buffer and playhead position
-            pointing at the previous locale's MP4.
-          */}
-          <video
-            key={splashVideo.src}
-            className="m-splash-video"
-            src={splashVideo.src}
-            poster={splashVideo.poster}
-            controls
-            preload="metadata"
-            playsInline
-            aria-label="Montree introduction video"
-          />
         </div>
       </section>
 
