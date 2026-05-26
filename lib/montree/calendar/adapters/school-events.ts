@@ -79,7 +79,10 @@ export const schoolEventsAdapter: CalendarAdapter = async (window, scope) => {
           ? `/montree/parent/events`
           : `/montree/admin/events`,
       icon: '📅',
-      accent: '#E8C96A',
+      // Session 129 — palette aligned with calendar dot system (blue = event).
+      // Was gold #E8C96A; gold reads better as a highlight than as the
+      // per-event dot color (which needs source-distinctive variety).
+      accent: '#60a5fa',
       school_id: r.school_id,
       classroom_id: r.classroom_id,
       child_id: null,
