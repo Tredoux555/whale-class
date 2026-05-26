@@ -1,15 +1,31 @@
 // app/api/montree/school/terms/route.ts
 // Calendar Plan §7b — academic term boundaries for a school.
 //
-// GET   — any authenticated school member; returns the school's terms,
-//         optionally including which is "current" for a given anchor date.
-// POST  — principal only; create a term.
-// PATCH — principal only; update one.
-// DELETE — principal only; remove one.
+// GET    — any authenticated school member.
+// POST   — staff (teacher OR principal OR super_admin) — see canManageTerms
+//          rationale below.
+// PATCH  — same as POST.
+// DELETE — same as POST.
 //
 // Super-admin can also write — they implicitly act for the school they're
 // scoped to via the standard cookie. Cross-pollination is enforced on every
 // query: rows are always filtered (and inserted) with the caller's school_id.
+//
+// Session 129 follow-up — opened term mutation to teachers.
+// Originally principal-only, but the Calendar's QuickCreateMenu now offers
+// the Term option to teachers (commit e34309b6) on the rationale that:
+//   - in personal_classroom / homeschool plans the teacher IS the principal
+//   - founder-principals logging in via the teacher login code get
+//     JWT.role='teacher' even though they're the school owner (Session 86
+//     mis-stamp bug class)
+//   - in multi-teacher school plans term creation is infrequent + benign +
+//     deliberate (the form requires explicit dates)
+// Keeping the server gate as principal-only meant the menu opened the form,
+// the user filled it in, then got a 403 on submit — worse than not having
+// the option at all. Audit caught this regression before it reached users.
+// If multi-teacher term-spam becomes a real concern, gate at the modal-
+// submit time on `plan_type` (NOT on role) — terms are a school-wide
+// governance act that the small-school product reality blurs.
 
 import { NextRequest, NextResponse } from 'next/server';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
@@ -33,8 +49,9 @@ function asDateOnly(input: unknown): string | null {
   return m ? input : null;
 }
 
-function isPrincipal(role: string | undefined): boolean {
-  return role === 'principal' || role === 'super_admin';
+function canManageTerms(role: string | undefined): boolean {
+  // Session 129 — opened to teachers. See header comment for rationale.
+  return role === 'teacher' || role === 'principal' || role === 'super_admin';
 }
 
 export async function GET(req: NextRequest) {
@@ -82,8 +99,8 @@ export async function POST(req: NextRequest) {
   const auth = await verifySchoolRequest(req);
   if (auth instanceof NextResponse) return auth;
   if (!auth.schoolId) return NextResponse.json({ error: 'No school in session' }, { status: 400 });
-  if (!isPrincipal(auth.role)) {
-    return NextResponse.json({ error: 'Only the principal can manage terms' }, { status: 403 });
+  if (!canManageTerms(auth.role)) {
+    return NextResponse.json({ error: 'Not authorised to manage terms' }, { status: 403 });
   }
 
   const body = await req.json().catch(() => ({}));
@@ -115,8 +132,8 @@ export async function PATCH(req: NextRequest) {
   const auth = await verifySchoolRequest(req);
   if (auth instanceof NextResponse) return auth;
   if (!auth.schoolId) return NextResponse.json({ error: 'No school in session' }, { status: 400 });
-  if (!isPrincipal(auth.role)) {
-    return NextResponse.json({ error: 'Only the principal can manage terms' }, { status: 403 });
+  if (!canManageTerms(auth.role)) {
+    return NextResponse.json({ error: 'Not authorised to manage terms' }, { status: 403 });
   }
 
   const body = await req.json().catch(() => ({}));
@@ -170,8 +187,8 @@ export async function DELETE(req: NextRequest) {
   const auth = await verifySchoolRequest(req);
   if (auth instanceof NextResponse) return auth;
   if (!auth.schoolId) return NextResponse.json({ error: 'No school in session' }, { status: 400 });
-  if (!isPrincipal(auth.role)) {
-    return NextResponse.json({ error: 'Only the principal can manage terms' }, { status: 403 });
+  if (!canManageTerms(auth.role)) {
+    return NextResponse.json({ error: 'Not authorised to manage terms' }, { status: 403 });
   }
 
   const id = req.nextUrl.searchParams.get('id');
