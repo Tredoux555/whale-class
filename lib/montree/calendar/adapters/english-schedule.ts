@@ -28,14 +28,23 @@ export const englishScheduleAdapter: CalendarAdapter = async (window, scope) => 
 
   const supabase = getSupabase();
 
+  // Widen the SQL filter by 7 days on the left so we catch a week whose
+  // Monday sits BEFORE window.from but whose Tue–Sun still fall inside the
+  // window. We re-filter expanded days against window.from / window.to below
+  // so nothing outside the window leaks in.
+  const widenedFrom = (() => {
+    const d = new Date(`${window.from}T00:00:00Z`);
+    d.setUTCDate(d.getUTCDate() - 7);
+    return d.toISOString().slice(0, 10);
+  })();
   let q = supabase
     .from('montree_english_schedule')
     .select('id, school_id, classroom_id, week_start, schedule')
     .eq('school_id', scope.schoolId)
-    .gte('week_start', window.from)
+    .gte('week_start', widenedFrom)
     .lte('week_start', window.to)
     .order('week_start', { ascending: true })
-    .limit(20);
+    .limit(30);
 
   if (scope.classroomId) {
     q = q.eq('classroom_id', scope.classroomId);
@@ -55,6 +64,9 @@ export const englishScheduleAdapter: CalendarAdapter = async (window, scope) => 
     const days = row.schedule?.days || [];
     for (const day of days) {
       if (!day.day || !/^\d{4}-\d{2}-\d{2}$/.test(day.day)) continue;
+      // Re-filter expanded days against the actual window — a week_start
+      // outside the window can still have days inside it, and vice versa.
+      if (day.day < window.from || day.day > window.to) continue;
       const n = Array.isArray(day.child_ids) ? day.child_ids.length : 0;
       if (n === 0) continue;
       // Place the event at school-tz midnight of the scheduled date.

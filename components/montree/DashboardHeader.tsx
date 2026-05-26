@@ -214,6 +214,7 @@ function DashboardHeader() {
     if (pathname === '/montree/dashboard/guru')               return 'guru';
     if (pathname === '/montree/dashboard/curriculum')         return 'curriculum';
     if (pathname === '/montree/dashboard/classroom-overview') return 'class-overview';
+    if (pathname?.startsWith('/montree/calendar')) return 'calendar';
     if (pathname === '/montree/dashboard/weekly-admin-docs')  return 'weekly-plan';
     if (pathname === '/montree/dashboard/albums')             return 'albums';
     if (pathname?.startsWith('/montree/library'))             return 'library';
@@ -652,6 +653,16 @@ function DashboardHeader() {
                     onClick={() => { setShowMoreMenu(false); router.push('/montree/dashboard/classroom-overview'); }}
                   />
 
+                  {/* Calendar — Calendar Plan (May 25): universal aggregation
+                      lens across appointments, reports, events, observations,
+                      milestones, meeting notes, terms, attention flags. */}
+                  <MenuRow
+                    icon={Calendar}
+                    label={t('nav.calendar') || 'Calendar'}
+                    active={activePage === 'calendar'}
+                    onClick={() => { setShowMoreMenu(false); router.push('/montree/calendar'); }}
+                  />
+
                   {/* Messages — Session 103: principal + parent threaded comms */}
                   <MenuRow
                     icon={MessageSquare}
@@ -879,8 +890,9 @@ function DashboardHeader() {
                         transition: 'background 100ms ease',
                       }}>
                       {student.photo_url ? (
-                        // eslint-disable-next-line @next/next/no-img-element -- Supabase signed URL, native <img> is correct (avoid Next/Image config overhead for tiny avatars)
                         // 🚨 Tier 5.1 — explicit width/height attrs prevent CLS while the avatar loads.
+                        // Supabase signed URL, native <img> is correct (avoid Next/Image config overhead for tiny avatars).
+                        // eslint-disable-next-line @next/next/no-img-element
                         <img src={student.photo_url} alt="" width={28} height={28} loading="lazy" decoding="async" style={{ width: 28, height: 28, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
                       ) : (
                         <span style={{

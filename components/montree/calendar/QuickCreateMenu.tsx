@@ -19,6 +19,10 @@ interface QuickCreateMenuProps {
   selectedDay: string;
   /** Calendar role — drives which actions show. */
   role: 'teacher' | 'principal' | 'parent' | 'super_admin';
+  /** School IANA timezone — date/time inputs are interpreted against this,
+   *  NOT against the teacher's browser tz, so a NYC-based teacher creating an
+   *  event for a Shanghai school doesn't accidentally book at 22:00 local. */
+  tz: string;
   /** Called after a successful inline create so the calendar refetches. */
   onCreated: () => void;
 }
@@ -62,9 +66,56 @@ const ACTION_META: Record<
   },
 };
 
+/**
+ * Compute the UTC offset of an IANA timezone at a given instant (ms).
+ * Client-side mirror of lib/montree/school-time.ts tzOffsetMs. Used so the
+ * modal can convert a {date, time} pair entered against the SCHOOL's local
+ * clock into the correct UTC ISO string for the API.
+ */
+function schoolTzOffsetMs(tz: string, at: Date): number {
+  try {
+    const dtf = new Intl.DateTimeFormat('en-US', {
+      timeZone: tz,
+      hour12: false,
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+    });
+    const parts = dtf.formatToParts(at);
+    const lookup: Record<string, string> = {};
+    for (const p of parts) lookup[p.type] = p.value;
+    const hour = lookup.hour === '24' ? '00' : lookup.hour;
+    const asIfUtc = Date.UTC(
+      Number(lookup.year),
+      Number(lookup.month) - 1,
+      Number(lookup.day),
+      Number(hour),
+      Number(lookup.minute),
+      Number(lookup.second),
+    );
+    return asIfUtc - at.getTime();
+  } catch {
+    return 0;
+  }
+}
+
+/** Build a UTC ISO string for "this YYYY-MM-DD at HH:mm in the given tz". */
+function schoolLocalToUtcIso(dateStr: string, timeStr: string, tz: string): string {
+  // Take the wall-clock value as if it were already UTC, then subtract the
+  // tz offset AT THAT INSTANT (so DST is honoured for the right moment, not
+  // for "now").
+  const naiveUtc = new Date(`${dateStr}T${timeStr}:00Z`);
+  const offset = schoolTzOffsetMs(tz, naiveUtc);
+  return new Date(naiveUtc.getTime() - offset).toISOString();
+}
+
 export default function QuickCreateMenu({
   selectedDay,
   role,
+  tz,
   onCreated,
 }: QuickCreateMenuProps) {
   const router = useRouter();
@@ -80,6 +131,7 @@ export default function QuickCreateMenu({
       setModalAction('event');
     } else if (action === 'term') {
       setModalAction('term');
+      void tz; // tz unused for terms (DATE-only)
     } else if (action === 'appointment') {
       router.push(`/montree/dashboard/appointments?date=${selectedDay}&action=create`);
     } else if (action === 'meeting_note') {
@@ -164,6 +216,7 @@ export default function QuickCreateMenu({
       {modalAction === 'event' ? (
         <EventQuickCreateModal
           selectedDay={selectedDay}
+          tz={tz}
           onClose={() => setModalAction(null)}
           onCreated={() => {
             setModalAction(null);
@@ -193,7 +246,11 @@ interface ModalProps {
   onCreated: () => void;
 }
 
-function EventQuickCreateModal({ selectedDay, onClose, onCreated }: ModalProps) {
+interface EventModalProps extends ModalProps {
+  tz: string;
+}
+
+function EventQuickCreateModal({ selectedDay, tz, onClose, onCreated }: EventModalProps) {
   const [title, setTitle] = useState('');
   const [time, setTime] = useState('09:00');
   const [location, setLocation] = useState('');
@@ -206,7 +263,7 @@ function EventQuickCreateModal({ selectedDay, onClose, onCreated }: ModalProps) 
     setSubmitting(true);
     setError(null);
     try {
-      const startIso = new Date(`${selectedDay}T${time}:00`).toISOString();
+      const startIso = schoolLocalToUtcIso(selectedDay, time, tz);
       const res = await fetch('/api/montree/admin/events', {
         method: 'POST',
         credentials: 'include',

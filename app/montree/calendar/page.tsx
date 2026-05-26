@@ -100,6 +100,7 @@ export default function CalendarPage() {
   });
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [role, setRole] = useState<CalendarRole | null>(null);
+  const [schoolTz, setSchoolTz] = useState<string>('UTC');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedDay, setSelectedDay] = useState<string>(() => ymd(new Date()));
@@ -125,6 +126,7 @@ export default function CalendarPage() {
       const data = (await res.json()) as ApiResponse;
       setEvents(data.events || []);
       if (data.role) setRole(data.role);
+      if (data.window?.tz) setSchoolTz(data.window.tz);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed to load calendar');
       setEvents([]);
@@ -561,6 +563,7 @@ export default function CalendarPage() {
                 <QuickCreateMenu
                   selectedDay={selectedDay}
                   role={role}
+                  tz={schoolTz}
                   onCreated={fetchEvents}
                 />
               ) : null}
@@ -624,6 +627,7 @@ export default function CalendarPage() {
                 <QuickCreateMenu
                   selectedDay={selectedDay}
                   role={role}
+                  tz={schoolTz}
                   onCreated={fetchEvents}
                 />
               ) : null}
