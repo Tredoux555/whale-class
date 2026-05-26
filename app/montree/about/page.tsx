@@ -17,14 +17,14 @@ import LanguageToggle from '@/components/montree/LanguageToggle';
 export const metadata: Metadata = {
   title: 'About Montree — Montessori School Management Platform',
   description:
-    'Montree is a Montessori school management platform built by a practicing AMS-certified Montessori teacher. Operated by Montree Limited, Hong Kong SAR.',
+    'Montree is a Montessori school management platform built by a practicing Montessori educator. Operated by Montree Limited, Hong Kong SAR.',
   alternates: {
     canonical: 'https://montree.xyz/montree/about',
   },
   openGraph: {
     title: 'About Montree — Montessori School Management Platform',
     description:
-      'Built by a practicing AMS-certified Montessori teacher. Operated by Montree Limited, Hong Kong SAR.',
+      'Built by a practicing Montessori educator. Operated by Montree Limited, Hong Kong SAR.',
     url: 'https://montree.xyz/montree/about',
     siteName: 'Montree',
     type: 'website',
@@ -42,7 +42,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'About Montree — Montessori School Management Platform',
     description:
-      'Built by a practicing AMS-certified Montessori teacher. Operated by Montree Limited, Hong Kong SAR.',
+      'Built by a practicing Montessori educator. Operated by Montree Limited, Hong Kong SAR.',
     images: ['https://montree.xyz/og-image.png'],
   },
   robots: { index: true, follow: true },
@@ -57,6 +57,11 @@ export const metadata: Metadata = {
 // BRN 80261361 carried under identifier as a Schema.org PropertyValue.
 // CR (Certificate of Incorporation) number to be added later as a second
 // identifier once the Vistra paperwork is in hand.
+//
+// Session 130: founder Person field deliberately omitted. The platform
+// is operated by Montree Limited; tying it to a named individual on
+// public surfaces lets schools cross-reference the founder with a
+// specific classroom, which we don't want. Company info stays.
 const organizationJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'Organization',
@@ -65,11 +70,6 @@ const organizationJsonLd = {
   alternateName: 'Montree',
   url: 'https://montree.xyz',
   logo: 'https://montree.xyz/logo-1024.png',
-  founder: {
-    '@type': 'Person',
-    name: 'Tredoux Willemse',
-    jobTitle: 'AMS-certified Montessori Young Learner Specialist',
-  },
   foundingDate: '2026-04-23',
   address: {
     '@type': 'PostalAddress',
@@ -331,10 +331,9 @@ export default function AboutPage() {
           <section aria-label="Built by a practicing Montessori teacher">
             <h2>Built by a practicing Montessori teacher</h2>
             <p>
-              Montree is built by Tredoux Willemse, an AMS-certified Montessori Young Learner
-              Specialist currently teaching a PreK 4 class in Beijing. Every feature in the
-              platform comes from the gap between what a Montessori teacher actually needs in a
-              classroom and what the existing software was built to do.
+              Montree is built by a practicing AMS-certified Montessori educator. Every feature
+              in the platform comes from the gap between what a Montessori teacher actually
+              needs in a classroom and what the existing software was built to do.
             </p>
             <p>
               The premise is simple: school management software for Montessori schools should be

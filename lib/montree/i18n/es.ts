@@ -3854,7 +3854,8 @@ export const es: Record<string, string> = {
   'landing.nav.login': 'Iniciar sesión',
   'landing.nav.getStarted': 'Comenzar',
   'landing.hero.label': 'Gestión del ambiente Montessori',
-  'landing.hero.title': 'La magia de Montree.',
+  'landing.hero.title': 'Montree',
+  'landing.hero.tagline': 'la revolución del aula Montessori con IA',
   'landing.hero.subtitle': 'Una docente toma una foto. Montree hace el resto.',
   'landing.hero.cta': 'Probalo',
   'landing.hero.fineprint': 'Un aula · $7 por estudiante activo / mes',
@@ -3961,7 +3962,7 @@ export const es: Record<string, string> = {
   'tools.sorting_mat_generator_desc': 'Bandejas de clasificación A4 con 2, 3 o 4 círculos rotulados para trabajo de categorías',
 
   // ─── Auto-filled missing keys (from Apr 30 audit) ───
-  'landing.hero.kicker': 'Cambiá tu vida',
+  'landing.hero.kicker': 'Trabajá con inteligencia, no con esfuerzo',
 
   // ─── Auto-filled missing keys (from Apr 30 audit) ───
   'admin.actions.ask': 'Preguntar',

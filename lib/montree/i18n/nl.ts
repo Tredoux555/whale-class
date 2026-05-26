@@ -3883,7 +3883,8 @@ export const nl: Record<string, string> = {
   'landing.nav.login': 'Inloggen',
   'landing.nav.getStarted': 'Aan de slag',
   'landing.hero.label': 'Montessori-klassenmanagement',
-  'landing.hero.title': 'De magie van Montree.',
+  'landing.hero.title': 'Montree',
+  'landing.hero.tagline': 'de AI Montessori-klasrevolutie',
   'landing.hero.subtitle': 'Een onderwijzer maakt een foto. Montree doet de rest.',
   'landing.hero.cta': 'Probeer het',
   'landing.hero.fineprint': 'Eén klas · $7 per actief kind / maand',
@@ -3990,7 +3991,7 @@ export const nl: Record<string, string> = {
   'tools.sorting_mat_generator_desc': 'A4 sorteermats met 2, 3 of 4 gelabelde cirkels voor categoriewerk',
 
   // ─── Auto-filled missing keys (from Apr 30 audit) ───
-  'landing.hero.kicker': 'Verander uw leven',
+  'landing.hero.kicker': 'Slimmer werken, niet harder',
 
   // ─── Auto-filled missing keys (from Apr 30 audit) ───
   'admin.actions.ask': 'Vragen',

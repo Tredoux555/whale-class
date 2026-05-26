@@ -3880,7 +3880,8 @@ export const ru: Record<string, string> = {
   'landing.nav.login': 'Войти',
   'landing.nav.getStarted': 'Начать',
   'landing.hero.label': 'Управление классом Монтессори',
-  'landing.hero.title': 'Волшебство Montree.',
+  'landing.hero.title': 'Montree',
+  'landing.hero.tagline': 'ИИ-революция в классе Монтессори',
   'landing.hero.subtitle': 'Педагог делает фотографию. Montree делает всё остальное.',
   'landing.hero.cta': 'Попробовать',
   'landing.hero.fineprint': 'Один класс · $7 за активного ребёнка / месяц',
@@ -3987,7 +3988,7 @@ export const ru: Record<string, string> = {
   'tools.sorting_mat_generator_desc': 'Сортировочные маты А4 с 2, 3 или 4 обозначенными кругами для работы с категориями',
 
   // ─── Auto-filled missing keys (from Apr 30 audit) ───
-  'landing.hero.kicker': 'Измените вашу жизнь',
+  'landing.hero.kicker': 'Работайте умнее, а не усерднее',
 
   // ─── Auto-filled missing keys (from Apr 30 audit) ───
   'admin.actions.ask': 'Спросить',

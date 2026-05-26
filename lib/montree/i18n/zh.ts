@@ -4286,7 +4286,8 @@ export const zh = {
   'landing.nav.login': '登录',
   'landing.nav.getStarted': '开始使用',
   'landing.hero.label': '蒙特梭利课室管理',
-  'landing.hero.title': 'Montree 的魔力。',
+  'landing.hero.title': 'Montree',
+  'landing.hero.tagline': 'AI 蒙台梭利教室革命',
   'landing.hero.subtitle': '老师拍照。Montree 完成其余工作。',
   'landing.hero.cta': '立即体验',
   'landing.hero.fineprint': '一个班级 · 每位活跃学生每月 $7 美元',
@@ -4393,7 +4394,7 @@ export const zh = {
   'tools.sorting_mat_generator_desc': '用于分类工作的A4分类垫，具有2个、3个或4个标记圆圈',
 
   // ─── Auto-filled missing keys (from Apr 30 audit) ───
-  'landing.hero.kicker': '改变你的生活',
+  'landing.hero.kicker': '聪明工作，而非辛苦',
 
   // ─── Auto-filled missing keys (from Apr 30 audit) ───
   'admin.actions.ask': '提问',

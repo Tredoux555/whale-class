@@ -3880,7 +3880,8 @@ export const uk: Record<string, string> = {
   'landing.nav.login': 'Увійти',
   'landing.nav.getStarted': 'Почати роботу',
   'landing.hero.label': 'Керування Монтессорі класом',
-  'landing.hero.title': 'Магія Montree.',
+  'landing.hero.title': 'Montree',
+  'landing.hero.tagline': 'AI-революція в класі Монтессорі',
   'landing.hero.subtitle': 'Педагог робить фото. Montree робить все решту.',
   'landing.hero.cta': 'Спробувати',
   'landing.hero.fineprint': 'Один клас · $7 за активну дитину / місяць',
@@ -3987,7 +3988,7 @@ export const uk: Record<string, string> = {
   'tools.sorting_mat_generator_desc': 'Сортувальні мати формату А4 з 2, 3 або 4 позначеними колами для роботи з категоріями',
 
   // ─── Auto-filled missing keys (from Apr 30 audit) ───
-  'landing.hero.kicker': 'Змініть своє життя',
+  'landing.hero.kicker': 'Працюйте розумніше, а не важче',
 
   // ─── Auto-filled missing keys (from Apr 30 audit) ───
   'admin.actions.ask': 'Запитати',
