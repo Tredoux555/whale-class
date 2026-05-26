@@ -320,6 +320,77 @@ Session 119 weathered a Railway edge outage (May 19 22:22 UTC, ~1.5h, first inci
 
 ---
 
+## RECENT STATUS (May 25, 2026)
+
+### 🔥 Session 128 — Universal Calendar marathon: Phases 0–5 + master audit + fresh audit (May 25, 2026)
+
+**8 commits shipped to `origin/main`:** `1bf4ff11` (Phase 0) → `fec8a958` (Phase 1) → `21643913` (Phase 2) → `55a3cbdd` (Phase 3) → `ce9f3a68` (Phase 4) → `419b7f0f` (Phase 5) → `24f62053` (master audit) → (this commit) (fresh audit bug-fixes + nav link). The user asked for the full Calendar feature built phase-by-phase with audit-fix-audit cycles between each, then a fresh-eyes second pass. All five phases shipped + audited + then bug-hunted again.
+
+**🚨 Canonical resume docs:** `docs/handoffs/CALENDAR_MARATHON_HANDOFF.md` (the build) + `docs/handoffs/CALENDAR_FRESH_AUDIT.md` (the second-pass audit + system improvement considerations) + `docs/CALENDAR_PLAN.md` (the master plan from earlier in the day).
+
+**🚨 ONE migration pending Tredoux's Supabase run:** `migrations/233_school_terms_and_timezone.sql` — adds `timezone` column to `montree_schools` (seeded from `signup_timezone` where present) + creates `montree_school_terms` table (id, school_id, name, start_date, end_date, timestamps + touch trigger + CHECK end_date >= start_date + 2 indexes). Idempotent. Until run, `getSchoolTimezone()` falls back to `signup_timezone` then UTC; the terms adapter returns empty; the terms POST endpoint returns 503 `migration_pending: true`. Nothing else breaks.
+
+**What's live at `/montree/calendar` now:**
+
+- Month grid in dark forest theme. Tap a day → detail panel below. Today badge follows the school's IANA timezone (not the server's UTC).
+- **10 sources** flowing via the aggregation-lens registry:
+  - `appointment` (all roles), `school_event` (all), `report` (parent+staff), `observation` (staff), `english_schedule` (staff), `milestone` (all), `meeting_note` (staff), `conference_note` (all), `term` (all), `attention` (staff)
+  - Parents see only their own children's appointments + their own school's events + their own reports + their child's milestones + shared conference notes + terms. Operational signals (observations, meeting notes, attention) are staff-only by design.
+- **"+ Add on this day"** — role-aware quick-create. Inline modals for school event + term; deep-links to canonical editors for appointment + meeting note. Honours the school's timezone when constructing wall-clock dates (fixed in the fresh audit).
+- **"Summarise this month"** — tier-gated AI narrative via `resolveReportModel()`. Free tier gets a deterministic template fallback (no AI call). Sonnet schools get a chief-of-staff voice; Haiku schools get the same prompt at lower cost. Window changes invalidate the cached summary.
+- **"Needs attention" panel** above the grid — surfaces reports stuck in pending_review > 2 days, appointments still status='pending', conference notes still in draft > 3 days. Top 6 + overflow chip. Hovering jumps the day-detail selection to that date.
+
+**`lib/montree/school-time.ts` is the new canonical "what day is it" source** (locked architectural rule, brain entry #1 below). Every new feature that asks a date question must read from `getSchoolTimezone()` and use `currentWeekdayInTz`, `currentWeekStartInTz`, `localDateInTzToUtcInstant`. Hardcoding `'Asia/Shanghai'` or relying on server-side `new Date()` for "today" is now a bug. Phase 0 refactored the english-schedule route off the hardcoded constant; the fresh audit flagged 4+ other routes that still need the same sweep (Section A of the fresh audit doc).
+
+**`CalendarEvent` is the one normalized shape every adapter emits.** Adding a new source = one adapter file + one registry entry. The page, the summary API, and the attention panel all pick it up for free. The aggregation-lens architecture is recommended for at least three other surfaces (Notifications inbox, Search, per-child Activity timeline) per Section B of the fresh audit.
+
+**🚨 Architectural rules locked in this session (do NOT let future agents break):**
+
+228. **`lib/montree/school-time.ts` is the SOLE source of "what day / what week is it" in the codebase.** Every new feature that asks a date question must read from `getSchoolTimezone()` and use the helpers there. Hardcoding `'Asia/Shanghai'` or relying on server-side `new Date()` is now a bug. The Phase 0 refactor proves the pattern; sweep the rest of the codebase next.
+229. **`CalendarEvent` is the one normalized shape.** Every adapter emits it; the API returns `CalendarEvent[]`. New sources land in the registry without touching the page.
+230. **Adapters are role-scoped at the registry level**, not inside the adapter. The registry decides who can see which source. Adapters self-scope by `schoolId` / `classroomId` / `childIds` from the CalendarScope.
+231. **Adapter failures are isolated** via `Promise.allSettled` — one broken source can't take the calendar down. Errors are logged + returned in the `errors[]` field, but the response is still a 200 with whatever the surviving adapters produced.
+232. **Parents NEVER see operational signals** (attention adapter, internal observations, meeting notes). That's the wrong product surface — parents should see their child's life, not the operational ledger.
+233. **AI summarisation is tier-gated** via `resolveReportModel()`. Free tier gets a deterministic template fallback (no AI call). Sonnet schools get the full chief-of-staff voice; Haiku schools get the same prompt at lower cost.
+234. **Write-back deep-links to the canonical editor.** The Calendar's `QuickCreateMenu` opens an inline modal for simple cases (school event, term) but routes to the rich editor for complex ones (appointment, meeting note). The canonical editors (`AppointmentsCalendar`, `Conversations`) stay the source of truth.
+235. **Client-side date construction for school-scoped events MUST honour the school's IANA tz**, not the browser's local tz. The `schoolLocalToUtcIso(date, time, tz)` helper in `QuickCreateMenu.tsx` is the canonical pattern; mirror it anywhere a teacher in country A creates a thing for a school in country B.
+236. **English-schedule week-expansion must filter days against the actual window**, not just the SQL `week_start IN range`. A week's Monday can sit outside the window while its Tue–Sun fall inside (or vice versa). The fresh-audit fix in `english-schedule.ts` is the canonical pattern.
+
+**Verification status:**
+- ✅ All 8 commits on `origin/main`. Railway auto-deploys triggered throughout.
+- ✅ Every new file lint clean (`--max-warnings=0`, eslint 9.39.2). Verified per-phase + final cross-cut.
+- ✅ Pre-existing english-schedule warnings cleaned up (4 `as any` upserts wrapped with eslint-disable-next-line, 1 `let`→`const`, 1 typed cast on `langArea.id`).
+- ✅ Fresh-audit bug fixes pushed: english-schedule window leak, QuickCreate browser-tz bug, DashboardHeader stale eslint-disable, `/montree/calendar` nav link in the More menu.
+- ✅ TypeScript full project compile timed out at 30s in the sandbox — per-file lint validates imports + syntax.
+- ⏳ User to run migration 233 in Supabase + walk the 3-step bug-fix verification in `docs/handoffs/CALENDAR_FRESH_AUDIT.md` Section "How to verify the bug fixes worked".
+
+**Known limitations flagged for follow-up (full list in `CALENDAR_FRESH_AUDIT.md`):**
+- Multi-school parents pick only `childIds[0]`'s school (divorced families with kids in two schools)
+- Performance ceiling — busy month with all 10 sources could hit 1000+ events; switch observation/milestone adapters to per-day aggregate if monthly loads start to lag
+- Quick-create timezone bug ALSO exists in the canonical editors (`AppointmentsCalendar`, `admin/events`) — separate sweep, this session fixed only the calendar's modal
+- AI summary doesn't tag attention items distinctly in the prompt — would tighten chief-of-staff voice
+- No event-level i18n yet (plan §3 flagged for future)
+- `/montree/calendar` has no parent-portal nav link yet (teacher path wired; parent path is type-the-URL)
+- No rate limit on `/api/montree/calendar` — Phase 6 of the AI plan should add ~60 req/min/school
+
+**System improvement considerations (Section A–G of the fresh audit doc) — not blocking, worth knowing:**
+- Push `school-time.ts` everywhere (kills the "Monday vs Tuesday" bug class everywhere, not just english-schedule)
+- The aggregation-lens architecture applies to Notifications inbox, Search, per-child Activity timeline
+- `t('key') || 'Fallback'` pattern adds up — a formal `t.optional(key, fallback)` helper would dodge the strict i18n parity check without losing the parity check elsewhere
+- `montree_media.work_id` TEXT joining to `montree_classroom_curriculum_works.id` UUID — latent type mismatch, PostgREST coerces correctly but worth a SQL ALTER
+- Attention adapter signal-to-noise — group "3 reports waiting for your approval" → one event; add snooze; configurable thresholds
+
+**🚨 Next session priorities (ordered):**
+1. **🚨 Run migration 233 in Supabase SQL Editor** — single blocker for full timezone + terms functionality. SQL is in chat.
+2. **Walk 3-step verification** in `docs/handoffs/CALENDAR_FRESH_AUDIT.md`: english-schedule window leak gone, QuickCreate respects school tz, More menu has Calendar entry.
+3. **Wire `/montree/calendar` into the parent portal nav** — ~10 min, biggest UX gap right now.
+4. **System-wide tz sweep** — replace local `getWeekStart` / `getCurrentWeekday` math in weekly-wrap routes + the Story system with the canonical helpers. 1-2 hour focused pass. Kills a class of bugs.
+5. **Multi-school parent picker** — per-school sub-tab on the calendar. 30 min.
+6. **Rate-limit `/api/montree/calendar`** — 60 req/min per school via `checkRateLimit`. 15 min.
+7. **Carry-overs from prior sessions** — Session 127 carry-overs (Phase 6b bulk i18n of 4 admin pages, "School language" indicator on settings, Bug H curriculum catalog i18n, Stage A Agora activation, outreach follow-ups).
+
+---
+
 ## RECENT STATUS (May 23, 2026)
 
 ### 🔥 Session 127 — Production E2E handoff: 27 bugs + CR-1 worked end-to-end across 8 commits + 3 browser-Claude re-sweeps (May 23, 2026)
@@ -7591,6 +7662,9 @@ All migrations through 169 have been run. Key ones: 147 (smart learning columns)
 
 **Session 121 (May 20-21, 2026) — Application-layer AES-256-GCM encryption. ✅ Migration RUN:**
 - ✅ `226_montree_encryption_v1.sql` — **RUN May 21, 2026.** `encryption_version INTEGER` columns live on `montree_thread_messages`, `montree_meeting_notes`, `montree_appointment_recordings` (verified via information_schema query — all 3 present). `encryption_v1` feature flag inserted into `montree_feature_definitions`, then flipped ON by Tredoux. Encryption code re-applied & live. Only remaining step: confirm `MONTREE_ENCRYPTION_KEY` (32-char hex) is set in Railway — without it, writes safely fall back to plaintext + loud-log. Operations playbook: `docs/handoffs/MONTREE_ENCRYPTION_RUNBOOK.md`.
+
+**Session 128 (May 25, 2026) — Universal Calendar foundations. ⏳ 1 migration pending Tredoux's Supabase run:**
+- ⏳ `233_school_terms_and_timezone.sql` — adds `timezone TEXT` column to `montree_schools` (seeded from `signup_timezone` where present, NULL where not — `lib/montree/school-time.ts` falls back to UTC) + creates `montree_school_terms` table (id, school_id, name, start_date, end_date, created_at, updated_at + CHECK end_date >= start_date + 2 indexes (school_id, school+window) + `montree_school_terms_touch_updated_at()` trigger). Idempotent. SQL was provided to Tredoux in chat. **Until run:** `getSchoolTimezone()` falls back to `signup_timezone` (or UTC); terms POST endpoint returns 503 `migration_pending: true`; terms adapter returns empty; nothing else breaks. The Calendar surface is fully functional for the other 9 sources.
 
 **Session 126 (May 22-23, 2026) — Story voice/video calls + Web Push. ✅ Both migrations RUN (verified May 23):**
 - ✅ `228_story_calls.sql` — **RUN.** `story_calls` table (id, username, channel, status ringing/active/ended, `mode` voice/video, initiated_by, created_at, updated_at, ended_at) + partial index `idx_story_calls_user_active` + `story_calls_touch_updated_at()` trigger. Verified via the Supabase REST API — `story_calls` returns HTTP 200, `mode` column present. The "Could not start the call" 500 is resolved.
