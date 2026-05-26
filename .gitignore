@@ -58,6 +58,13 @@ Promo Videos/
 Montree_Onboarding_Final.mp4
 Montree_Promo_Final.mp4
 
+# Splash page marketing videos — narrow carve-out from the *.mp4 block above.
+# Per-locale brand statements shown on /montree (the public landing). Kept
+# in git so they ship with the deploy, instead of routing through Supabase
+# Storage like the Whale Class videos. Each file is ~20 MB; only the splash-
+# video pattern is allowed. Don't widen this glob.
+!public/montree-splash-video*.mp4
+
 # Personal documents - not part of the app
 Montessori Documents/
 generated-images/

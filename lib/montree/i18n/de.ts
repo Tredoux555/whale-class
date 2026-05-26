@@ -3883,7 +3883,8 @@ export const de: Record<string, string> = {
   'landing.nav.login': 'Anmelden',
   'landing.nav.getStarted': 'Jetzt starten',
   'landing.hero.label': 'Montessori-Klassenzimmerverwaltung',
-  'landing.hero.title': 'Die Magie von Montree.',
+  'landing.hero.title': 'Montree',
+  'landing.hero.tagline': 'die KI-Montessori-Klassenrevolution',
   'landing.hero.subtitle': 'Eine Lehrkraft macht ein Foto. Montree macht den Rest.',
   'landing.hero.cta': 'Jetzt ausprobieren',
   'landing.hero.fineprint': 'Eine Klasse · $7 pro aktivem Kind / Monat',
@@ -3990,7 +3991,7 @@ export const de: Record<string, string> = {
   'tools.sorting_mat_generator_desc': 'A4-Sortier-Matten mit 2, 3 oder 4 beschrifteten Kreisen für Kategoriearbeit',
 
   // ─── Auto-filled missing keys (from Apr 30 audit) ───
-  'landing.hero.kicker': 'Verändern Sie Ihr Leben',
+  'landing.hero.kicker': 'Klüger arbeiten, nicht härter',
 
   // ─── Auto-filled missing keys (from Apr 30 audit) ───
   'admin.actions.ask': 'Fragen',

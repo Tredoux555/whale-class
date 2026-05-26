@@ -8,8 +8,32 @@ import MontreeLogo from '@/components/montree/MonteeLogo';
 
 // /montree/page.tsx — Montree landing page (v2 — deep forest palette)
 
+// Splash video by locale. The file paths live here (NOT in the i18n keys) —
+// they're static asset routes, not translation strings, and we don't want
+// to pollute the strict-parity translation surface with /public URLs.
+//
+// Any locale that doesn't have its own entry falls back to English.
+// To add a new locale's video:
+//   1. Drop the file into /public/ as montree-splash-video-<locale>.mp4
+//   2. Extract a poster: ffmpeg -ss 2 -i <video>.mp4 -frames:v 1 -q:v 3 <poster>.jpg
+//   3. Add the locale key here.
+//
+// SESSION 130: zh entry stubbed in (commented) so the next agent or session
+// can flip it on the moment the Chinese MP4 lands in public/.
+const SPLASH_VIDEO_BY_LOCALE: Record<string, { src: string; poster: string }> = {
+  en: {
+    src: '/montree-splash-video.mp4',
+    poster: '/montree-splash-video-poster.jpg',
+  },
+  // zh: {
+  //   src: '/montree-splash-video-zh.mp4',
+  //   poster: '/montree-splash-video-zh-poster.jpg',
+  // },
+};
+
 export default function MontreeLanding() {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
+  const splashVideo = SPLASH_VIDEO_BY_LOCALE[locale] || SPLASH_VIDEO_BY_LOCALE.en;
   const revealRefs = useRef<HTMLElement[]>([]);
 
   useEffect(() => {
@@ -237,8 +261,22 @@ export default function MontreeLanding() {
           line-height: 1.04;
           letter-spacing: -0.025em;
           color: #ffffff;
-          margin: 0 0 44px 0;
+          margin: 0 0 14px 0;
           max-width: 14ch;
+        }
+        /* Tagline sits directly under the h1 brand mark.
+           Same serif as the title for visual continuity, smaller + lighter so
+           the brand word "Montree" leads and the tagline supports it. */
+        .m-hero-tagline {
+          font-family: var(--font-lora), Georgia, serif;
+          font-weight: 400;
+          font-style: italic;
+          font-size: clamp(1.125rem, 2.4vw, 1.5rem);
+          line-height: 1.35;
+          letter-spacing: 0.005em;
+          color: rgba(255,255,255,0.7);
+          margin: 0 0 44px 0;
+          max-width: 26ch;
         }
         .m-hero-sub {
           font-size: 1.125rem;
@@ -252,6 +290,37 @@ export default function MontreeLanding() {
           font-size: 0.78rem;
           color: rgba(255,255,255,0.32);
           letter-spacing: 0.02em;
+        }
+
+        /* ── Splash video ──
+           Sits between the hero and the three editorial blocks. Click-to-play
+           with native controls + sound (user's choice from the placement Q).
+           The poster is extracted at t=2s during build so the browser shows
+           a real frame instead of a black box. preload="metadata" keeps the
+           initial page weight light — only a few KB of headers download
+           until the user actually presses play.
+        */
+        .m-splash-video-section {
+          padding: 0 32px 100px;
+        }
+        .m-splash-video-frame {
+          max-width: 960px;
+          margin: 0 auto;
+          border-radius: 14px;
+          overflow: hidden;
+          border: 1px solid rgba(130,217,174,0.16);
+          background: #06140e;
+          box-shadow:
+            0 1px 0 rgba(130,217,174,0.06) inset,
+            0 24px 60px -24px rgba(6,20,14,0.9),
+            0 8px 24px -12px rgba(6,20,14,0.6);
+        }
+        .m-splash-video {
+          display: block;
+          width: 100%;
+          height: auto;
+          aspect-ratio: 16 / 9;
+          background: #06140e;
         }
 
         /* ── Editorial ── */
@@ -371,6 +440,8 @@ export default function MontreeLanding() {
           .m-hero { padding: 80px 24px 100px; }
           .m-hero .m-label { margin-bottom: 28px; }
           .m-hero-sub { margin-bottom: 32px; }
+          .m-splash-video-section { padding: 0 16px 64px; }
+          .m-splash-video-frame { border-radius: 10px; }
           .m-editorial { padding: 40px 24px 100px; }
           .m-block { padding: 40px 0; }
           .m-closing { padding: 110px 24px 110px; }
@@ -454,21 +525,50 @@ export default function MontreeLanding() {
       </nav>
 
       {/* ── HERO ──
-          Session 113 V2 (revised): three elements, spaced cleanly.
-            1. The magic of Montree.   — title, leading the page
-            2. Try it                  — primary CTA
-            3. Change your life        — italic gold kicker beneath
-          The "Evolve your classroom" preheader added earlier today was
-          reverted per user directive. The Maria Montessori quote stays in
-          its own quiet block at the bottom of the page.
+          Session 130: brand-statement form.
+            1. Montree                                       — h1, brand name
+            2. the AI Montessori classroom revolution        — tagline directly below
+            3. Try it                                        — primary CTA
+            4. Work smarter not harder                       — italic gold kicker beneath
+          Personal-name references removed from the public surface (About
+          page + JSON-LD also scrubbed in the same session) so the platform
+          isn't tied to a specific teacher's identity.
       */}
       <section className="m-hero">
         <div ref={addReveal} className="m-hero-stack">
           <h1>{t('landing.hero.title')}</h1>
+          <p className="m-hero-tagline">{t('landing.hero.tagline')}</p>
           <Link className="m-pill m-pill-lg" href="/montree/login-select?signup=true">
             {t('landing.hero.cta')}
           </Link>
           <span className="m-hero-kicker m-hero-kicker-below">{t('landing.hero.kicker')}</span>
+        </div>
+      </section>
+
+      {/* ── SPLASH VIDEO ──
+          ~65s branded narrative, click-to-play with sound. Sits between the
+          hero and the editorial blocks so it gets its own breathing room.
+          preload="metadata" keeps the initial page weight light. playsInline
+          stops iOS from launching its own fullscreen player on tap.
+      */}
+      <section className="m-splash-video-section" aria-label="Watch Montree" ref={addReveal}>
+        <div className="m-splash-video-frame">
+          {/*
+            key={splashVideo.src} forces React to unmount + remount the <video>
+            when the language toggle changes the resolved src — without that,
+            the player would keep its current buffer and playhead position
+            pointing at the previous locale's MP4.
+          */}
+          <video
+            key={splashVideo.src}
+            className="m-splash-video"
+            src={splashVideo.src}
+            poster={splashVideo.poster}
+            controls
+            preload="metadata"
+            playsInline
+            aria-label="Montree introduction video"
+          />
         </div>
       </section>
 

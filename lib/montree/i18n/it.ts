@@ -3883,7 +3883,8 @@ export const it: Record<string, string> = {
   'landing.nav.login': 'Accedi',
   'landing.nav.getStarted': 'Inizia',
   'landing.hero.label': 'Gestione della classe Montessori',
-  'landing.hero.title': 'La magia di Montree.',
+  'landing.hero.title': 'Montree',
+  'landing.hero.tagline': 'la rivoluzione Montessori dell’IA in classe',
   'landing.hero.subtitle': 'Un insegnante scatta una foto. Montree fa il resto.',
   'landing.hero.cta': 'Provalo',
   'landing.hero.fineprint': 'Una classe · 7 $ per bambino attivo / mese',
@@ -3990,7 +3991,7 @@ export const it: Record<string, string> = {
   'tools.sorting_mat_generator_desc': 'Tappeti A4 con 2, 3 o 4 cerchi etichettati per il lavoro di categorizzazione',
 
   // ─── Auto-filled missing keys (from Apr 30 audit) ───
-  'landing.hero.kicker': 'Trasforma la tua vita',
+  'landing.hero.kicker': 'Lavora con intelligenza, non più duramente',
 
   // ─── Auto-filled missing keys (from Apr 30 audit) ───
   'admin.actions.ask': 'Chiedi',

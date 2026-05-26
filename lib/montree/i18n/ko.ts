@@ -3883,7 +3883,8 @@ export const ko: Record<string, string> = {
   'landing.nav.login': '로그인',
   'landing.nav.getStarted': '시작하기',
   'landing.hero.label': '몬테소리 교실 관리',
-  'landing.hero.title': 'Montree의 마법.',
+  'landing.hero.title': 'Montree',
+  'landing.hero.tagline': 'AI 몬테소리 교실 혁명',
   'landing.hero.subtitle': '교사가 사진을 찍으면, Montree가 나머지를 처리해요.',
   'landing.hero.cta': '체험해 보기',
   'landing.hero.fineprint': '교실 하나 · 활동 중인 학생당 월 $7',
@@ -3990,7 +3991,7 @@ export const ko: Record<string, string> = {
   'tools.sorting_mat_generator_desc': '카테고리 작업을 위한 2개, 3개 또는 4개의 라벨이 지정된 원이 있는 A4 정렬 매트입니다',
 
   // ─── Auto-filled missing keys (from Apr 30 audit) ───
-  'landing.hero.kicker': '자녀분의 삶을 바꿔보세요',
+  'landing.hero.kicker': '더 똑똑하게 일하세요, 더 힘들게 말고',
 
   // ─── Auto-filled missing keys (from Apr 30 audit) ───
   'admin.actions.ask': '질문하기',

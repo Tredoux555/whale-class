@@ -3883,7 +3883,8 @@ export const ja: Record<string, string> = {
   'landing.nav.login': 'ログイン',
   'landing.nav.getStarted': '始める',
   'landing.hero.label': 'モンテッソーリ教室管理',
-  'landing.hero.title': 'Montreeの魔法。',
+  'landing.hero.title': 'Montree',
+  'landing.hero.tagline': 'AIモンテッソーリ教室の革命',
   'landing.hero.subtitle': '先生が写真を撮ります。Montreeがあとはすべて行います。',
   'landing.hero.cta': '試してみる',
   'landing.hero.fineprint': 'クラス1つ · アクティブな園児1人につき月7ドル',
@@ -3990,7 +3991,7 @@ export const ja: Record<string, string> = {
   'tools.sorting_mat_generator_desc': 'カテゴリー分類作業用の2個、3個、または4個のラベル付きサークルを持つA4ソーティングマット',
 
   // ─── Auto-filled missing keys (from Apr 30 audit) ───
-  'landing.hero.kicker': 'あなたの人生を変える',
+  'landing.hero.kicker': '賢く働こう、無理せず',
 
   // ─── Auto-filled missing keys (from Apr 30 audit) ───
   'admin.actions.ask': '質問する',
