@@ -16,6 +16,12 @@ import { useI18n } from '@/lib/montree/i18n';
 import LanguageToggle from '@/components/montree/LanguageToggle';
 import QuickCreateMenu from '@/components/montree/calendar/QuickCreateMenu';
 import Link from 'next/link';
+import {
+  getEventColor,
+  getDotGlow,
+  getDotGlowStrong,
+  dedupeDayDots,
+} from '@/lib/montree/calendar/event-colors';
 
 interface CalendarEvent {
   id: string;
@@ -512,28 +518,49 @@ export default function CalendarPage() {
                     </span>
                   ) : null}
                 </div>
-                {cellEvents.length > 0 ? (
-                  <div style={{ display: 'flex', gap: 3, flexWrap: 'wrap' }}>
-                    {cellEvents.slice(0, 3).map((ev) => (
-                      <span
-                        key={ev.id}
-                        title={ev.title}
-                        style={{
-                          fontSize: 13,
-                          lineHeight: '14px',
-                          opacity: ev.status === 'cancelled' ? 0.5 : 1,
-                        }}
-                      >
-                        {ev.icon}
-                      </span>
-                    ))}
-                    {cellEvents.length > 3 ? (
-                      <span style={{ fontSize: 10, color: '#9bd5b0' }}>
-                        +{cellEvents.length - 3}
-                      </span>
-                    ) : null}
-                  </div>
-                ) : null}
+                {cellEvents.length > 0 ? (() => {
+                  // Session 129 — deduped colored dots replace the emoji strip.
+                  // Multiple parent-teacher appointments on one day collapse
+                  // into ONE green dot; +N appears only when distinct flavors
+                  // overflow. Cancelled events still influence color but the
+                  // whole cell row fades via opacity below.
+                  const allCancelled = cellEvents.every(e => e.status === 'cancelled');
+                  const { dots, overflow } = dedupeDayDots(cellEvents, 5);
+                  return (
+                    <div
+                      style={{
+                        display: 'flex',
+                        gap: 5,
+                        flexWrap: 'wrap',
+                        alignItems: 'center',
+                        opacity: allCancelled ? 0.45 : 1,
+                      }}
+                      aria-label={`${cellEvents.length} event${cellEvents.length === 1 ? '' : 's'} scheduled`}
+                    >
+                      {dots.map(d => (
+                        <span
+                          key={d.color}
+                          title={d.label}
+                          aria-hidden="true"
+                          style={{
+                            width: 8,
+                            height: 8,
+                            borderRadius: '50%',
+                            background: d.color,
+                            boxShadow: getDotGlow(d.color),
+                            display: 'inline-block',
+                            flexShrink: 0,
+                          }}
+                        />
+                      ))}
+                      {overflow > 0 ? (
+                        <span style={{ fontSize: 10, color: '#9bd5b0' }}>
+                          +{overflow}
+                        </span>
+                      ) : null}
+                    </div>
+                  );
+                })() : null}
               </button>
             );
           })}
@@ -573,6 +600,11 @@ export default function CalendarPage() {
               {selectedEvents.map((ev) => {
                 const time = ev.all_day ? null : formatTimeShort(ev.start);
                 const cancelled = ev.status === 'cancelled';
+                // Session 129 — glowing colored dot replaces the emoji icon.
+                // Dot color = canonical palette (event-colors.ts); the row's
+                // accent border on the left also uses this color via the
+                // adapter's `accent` field which we kept aligned.
+                const dotColor = getEventColor(ev);
                 return (
                   <a
                     key={ev.id}
@@ -581,15 +613,27 @@ export default function CalendarPage() {
                     style={{
                       ...card,
                       display: 'flex',
-                      gap: 12,
+                      gap: 14,
                       alignItems: 'flex-start',
                       textDecoration: 'none',
                       color: 'inherit',
-                      borderLeft: `3px solid ${ev.accent}`,
+                      borderLeft: `3px solid ${dotColor.color}`,
                       opacity: cancelled ? 0.55 : 1,
                     }}
                   >
-                    <span style={{ fontSize: 22 }}>{ev.icon}</span>
+                    <span
+                      aria-label={dotColor.label}
+                      style={{
+                        width: 14,
+                        height: 14,
+                        borderRadius: '50%',
+                        background: dotColor.color,
+                        boxShadow: getDotGlowStrong(dotColor.color),
+                        flexShrink: 0,
+                        marginTop: 4,
+                        display: 'inline-block',
+                      }}
+                    />
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div
                         style={{

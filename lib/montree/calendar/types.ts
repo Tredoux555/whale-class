@@ -53,6 +53,11 @@ export interface CalendarEvent {
   icon: string;
   /** Colour family per source (hex). */
   accent: string;
+  /** Optional — only meaningful for `source='appointment'`. Identifies the
+   *  primary host's role so the calendar dot can distinguish parent↔teacher
+   *  (green) from parent↔principal (red). null/undefined for non-appointments
+   *  or when no primary host is set. */
+  host_role?: 'teacher' | 'principal' | null;
   // Scoping — the cross-pollination contract.
   school_id: string;
   classroom_id: string | null;

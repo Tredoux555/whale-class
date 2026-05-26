@@ -70,7 +70,10 @@ export const meetingNotesAdapter: CalendarAdapter = async (window, scope) => {
       status: 'done',
       link: '/montree/dashboard/conversations',
       icon: '🗒️',
-      accent: '#f59e0b',
+      // Session 129 — orange in the canonical calendar dot palette.
+      // (Was amber #f59e0b — visually close to gold, didn't distinguish
+      // cleanly from school events on the day cell.)
+      accent: '#fb923c',
       school_id: r.school_id,
       classroom_id: r.classroom_id,
       child_id: r.child_id,

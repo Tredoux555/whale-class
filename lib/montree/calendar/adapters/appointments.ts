@@ -130,6 +130,36 @@ export const appointmentsAdapter: CalendarAdapter = async (window, scope) => {
     rows = (attempt.data || []) as ApptRow[];
   }
 
+  // Resolve primary host role for each appointment — Session 129 follow-up
+  // for the colored-dot system. parent↔teacher = emerald dot, parent↔principal
+  // = red dot. We only need is_primary=true rows; non-primary hosts (e.g.
+  // co-host teachers) don't change the dot color.
+  const hostRoleByApptId = new Map<string, 'teacher' | 'principal'>();
+  if (rows.length > 0) {
+    const apptIds = rows.map(r => r.id);
+    const { data: hostRows, error: hostsErr } = await supabase
+      .from('montree_appointment_hosts')
+      .select('appointment_id, host_role, is_primary')
+      .in('appointment_id', apptIds)
+      .eq('is_primary', true);
+    if (hostsErr && hostsErr.code !== '42P01') {
+      // Soft-degrade: if the hosts table query fails for any reason other
+      // than "table missing", log and fall back to no host_role (dot defaults
+      // to the teacher/parent-teacher color via the resolver).
+      console.warn('[CalendarAppointments] hosts lookup failed', hostsErr);
+    } else if (hostRows) {
+      for (const h of hostRows as Array<{
+        appointment_id: string;
+        host_role: string;
+        is_primary: boolean;
+      }>) {
+        if (h.host_role === 'teacher' || h.host_role === 'principal') {
+          hostRoleByApptId.set(h.appointment_id, h.host_role);
+        }
+      }
+    }
+  }
+
   const events: CalendarEvent[] = rows.map((r) => {
     const isVideo = Boolean(r.video_url || r.provider === 'agora' || r.event_kind === 'video_call');
     const end = r.scheduled_end
@@ -137,6 +167,11 @@ export const appointmentsAdapter: CalendarAdapter = async (window, scope) => {
       : r.duration_minutes
         ? new Date(new Date(r.scheduled_start).getTime() + r.duration_minutes * 60_000).toISOString()
         : null;
+    const hostRole = hostRoleByApptId.get(r.id) || null;
+    // Accent color tracks the dot color so anywhere downstream that reads
+    // `accent` (not just the calendar surface) sees the new palette.
+    // Principal-hosted = red, teacher-hosted = emerald.
+    const accent = hostRole === 'principal' ? '#f87171' : '#34d399';
     return {
       id: `appt:${r.id}`,
       source: 'appointment',
@@ -155,7 +190,8 @@ export const appointmentsAdapter: CalendarAdapter = async (window, scope) => {
             ? `/montree/dashboard/calls/${r.id}`
             : `/montree/dashboard/appointments`,
       icon: iconFor(r.event_kind, isVideo),
-      accent: isVideo ? '#6366f1' : '#10b981',
+      accent,
+      host_role: hostRole,
       school_id: r.school_id,
       classroom_id: r.classroom_id,
       child_id: r.child_id,

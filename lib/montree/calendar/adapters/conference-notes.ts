@@ -78,7 +78,9 @@ export const conferenceNotesAdapter: CalendarAdapter = async (window, scope) => 
           ? `/montree/parent/dashboard`
           : `/montree/dashboard/${r.child_id}`,
       icon: '🗣️',
-      accent: '#fb923c',
+      // Session 129 — sky blue in the canonical calendar dot palette.
+      // (Was orange #fb923c which collided with meeting notes' new orange.)
+      accent: '#38bdf8',
       school_id: r.school_id,
       classroom_id: childClassroom.get(r.child_id) || null,
       child_id: r.child_id,
