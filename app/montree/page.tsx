@@ -212,11 +212,11 @@ export default function MontreeLanding() {
            Frame includes a self-contained EN / 中文 toggle overlay in the
            top-right. Independent of the page-wide LanguageToggle.
 
-           Tap-for-sound pill (`.m-hero-corner-video-unmute`) sits in the
+           Tap-for-sound pill (.m-hero-corner-video-unmute) sits in the
            bottom-left of the frame ABOVE the native controls bar. Shown
            only when the active video is muted; disappears once the user
            consents to sound (either by tapping the pill or by using the
-           native unmute icon). The class names retain the `-corner-`
+           native unmute icon). The class names retain the -corner-
            historical prefix to minimize churn across S130's other refs.
         */
         .m-hero-corner-video {
