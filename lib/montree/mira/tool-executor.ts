@@ -828,6 +828,86 @@ ${fenceEnd}`;
         };
       }
 
+      // ── DOSSIER PREP: get_platform_signal ───────────────────────
+      // Session 133 Phase D — live platform numbers.
+      case 'get_platform_signal': {
+        const { getPlatformSignal } = await import('./tools/get_platform_signal');
+        const result = await getPlatformSignal(deps.supabase);
+        if (!result.ok) {
+          return { success: false, error: result.error || 'platform signal failed' };
+        }
+        const d = result.data!;
+        return {
+          success: true,
+          data: { ...d, from_cache: result.from_cache },
+          result_summary: `${d.active_schools} schools · ${d.active_children} children · ${d.active_languages} languages${result.from_cache ? ' (cached)' : ''}`,
+        };
+      }
+
+      // ── DOSSIER PREP: prepare_principal_pitch ───────────────────
+      // Session 133 Phase D — Mira's pitch dossier.
+      case 'prepare_principal_pitch': {
+        const { preparePitch } = await import('./tools/prepare_principal_pitch');
+        const principalName = String(input.principal_name || '').trim();
+        if (!principalName) {
+          return { success: false, error: 'principal_name is required' };
+        }
+        const schoolName = String(input.school_name || '').trim();
+        if (!schoolName) {
+          return { success: false, error: 'school_name is required' };
+        }
+        const schoolSize =
+          typeof input.school_size === 'string'
+            ? input.school_size.trim() || undefined
+            : undefined;
+        const country =
+          typeof input.country === 'string'
+            ? input.country.trim() || undefined
+            : undefined;
+        const language =
+          typeof input.language === 'string'
+            ? input.language.trim() || undefined
+            : deps.locale;
+        const knownPainPoints = Array.isArray(input.known_pain_points)
+          ? (input.known_pain_points as unknown[])
+              .map((p) => String(p))
+              .filter((p) => p.trim().length > 0)
+          : undefined;
+        const relationship =
+          typeof input.relationship === 'string'
+            ? input.relationship.trim() || undefined
+            : undefined;
+        const outputFormat =
+          input.output_format === 'html' ||
+          input.output_format === 'json' ||
+          input.output_format === 'markdown'
+            ? (input.output_format as 'markdown' | 'html' | 'json')
+            : 'markdown';
+
+        const result = await preparePitch({
+          principalName,
+          schoolName,
+          schoolSize,
+          country,
+          language,
+          knownPainPoints,
+          relationship,
+          agentId: deps.agentId,
+          outputFormat,
+          anthropic: deps.anthropic,
+          supabase: deps.supabase,
+        });
+        if (!result.ok) {
+          return { success: false, error: result.error || 'pitch dossier failed' };
+        }
+        const d = result.data!;
+        return {
+          success: true,
+          data: d,
+          result_summary: `${d.principal_name} (${d.school_name}) pitch ${d.from_cache ? '(cached)' : `(fresh, ${d.cost_usd?.toFixed(3)} USD)`}`,
+        };
+      }
+
       default:
         return { success: false, error: `Unknown tool: ${name}` };
     }
