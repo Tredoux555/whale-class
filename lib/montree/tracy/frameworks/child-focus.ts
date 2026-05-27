@@ -379,7 +379,15 @@ async function resolveChild(
 
 // ── 3. Fetch child context via direct DB ───────────────────────────────
 
-interface ChildContext {
+/**
+ * Full child context bundle that compose() works against. Exported in
+ * Session 133 so prepare_parent_meeting (a Tracy tool) can call
+ * fetchChildContext directly and weave the same context into its dossier
+ * prompt. The compose layer downstream is what differs between the two
+ * surfaces — Tracy's chat composes prose; the dossier composes structured
+ * sections.
+ */
+export interface ChildContext {
   child: { id: string; name: string };
   profile_summary: string | null;
   progress: Array<{
@@ -406,9 +414,37 @@ interface ChildContext {
     total_notes: number;
     days_since_last_observation: number | null;
   };
+  // ─────────────────────────────────────────────────────────────────────
+  // Session 133 — child settings JSONB surfaced for prepare_parent_meeting.
+  // These come from montree_children.settings which Guru writes to over time.
+  // All optional; consumers should treat missing/null as "no data yet".
+  //
+  //   guru_developmental_insights — array of {insight_type, description,
+  //     created_at} entries Guru recorded ('correlation' | 'milestone' |
+  //     'prediction' | 'concern').
+  //   guru_parent_states — FIFO 20-entry array of the parent's emotional
+  //     state recorded by Guru across conversations.
+  //   guru_parent_current_state — the most recent parent state object.
+  //   guru_weekly_advice — current week's pedagogical guidance from Guru.
+  //   game_plan — the rolling 5-area focus shelf, written by replan-child.
+  //   guru_area_reasons — per-area record of why each area is on the
+  //     current shelf.
+  // ─────────────────────────────────────────────────────────────────────
+  developmental_insights: Array<Record<string, unknown>>;
+  parent_states: Array<Record<string, unknown>>;
+  parent_current_state: Record<string, unknown> | null;
+  weekly_advice: string | null;
+  game_plan: Record<string, unknown> | null;
+  guru_area_reasons: Record<string, unknown>;
 }
 
-async function fetchChildContext(
+/**
+ * Build a child context bundle. Exported for downstream tools like
+ * prepare_parent_meeting which need the same data shape that compose() uses
+ * but want to drive their own template. Pass `area=null` to pull broad
+ * progress across all five areas; pass a specific area to focus.
+ */
+export async function fetchChildContext(
   child: ChildFocusMatch,
   area: Area | null,
   supabase: SupabaseClient
@@ -419,7 +455,7 @@ async function fetchChildContext(
   // Run everything in parallel for speed. Each query is school-scoped via
   // child_id (the child was already verified to belong to the school in
   // resolveChild — it's school-bound by foreign key).
-  const [profileRes, progressRes, mediaRes, notesRes, sessionsRes] =
+  const [profileRes, progressRes, mediaRes, notesRes, sessionsRes, settingsRes] =
     await Promise.all([
       supabase
         .from('montree_child_mental_profiles')
@@ -441,10 +477,14 @@ async function fetchChildContext(
             .eq('child_id', childId)
             .order('updated_at', { ascending: false })
             .limit(80),
-      // Recent confirmed photos with descriptions
+      // Recent confirmed photos with descriptions.
+      // Session 133 — montree_media has no work_name / area columns
+      // (work label lives on the joined montree_classroom_curriculum_works
+      // row via work_id). Use `caption`, not `teacher_caption`. Prior code
+      // selected non-existent columns and silently came back empty.
       supabase
         .from('montree_media')
-        .select('captured_at, work_name, area, teacher_caption, sonnet_draft')
+        .select('captured_at, caption, sonnet_draft, work_id')
         .eq('child_id', childId)
         .eq('teacher_confirmed', true)
         .order('captured_at', { ascending: false })
@@ -464,6 +504,13 @@ async function fetchChildContext(
         .not('notes', 'is', null)
         .order('observed_at', { ascending: false })
         .limit(10),
+      // Session 133 — settings JSONB (developmental insights, parent states,
+      // weekly advice, game plan, area reasons). Guru writes these over time.
+      supabase
+        .from('montree_children')
+        .select('settings')
+        .eq('id', childId)
+        .maybeSingle(),
     ]);
 
   // Build a profile summary string from whatever profile fields exist.
@@ -498,11 +545,19 @@ async function fetchChildContext(
         aiDescription = d.summary.slice(0, 240);
       }
     }
+    // Session 133 — DB column is `caption`. We keep the interface field
+    // `teacher_caption` so compose() and downstream callers don't have to
+    // re-learn the shape — just feed the right value into it.
+    // work_name + area are NOT columns on montree_media; left null. A
+    // future enhancement could JOIN onto montree_classroom_curriculum_works
+    // to surface the work label inline. For now compose() can still
+    // disclaim missing work context cleanly.
+    const dbCaption = (m as { caption?: string | null }).caption ?? null;
     return {
       captured_at_iso: m.captured_at,
-      work_name: m.work_name ?? null,
-      area: m.area ?? null,
-      teacher_caption: m.teacher_caption ?? null,
+      work_name: null,
+      area: null,
+      teacher_caption: dbCaption,
       ai_description: aiDescription,
     };
   });
@@ -546,6 +601,35 @@ async function fetchChildContext(
     }
   }
 
+  // Session 133 — settings JSONB. Defensive: settings can be NULL on a
+  // fresh child (no Guru interactions yet) or missing entirely on legacy
+  // rows. Every field is optional — empty array / null / empty object
+  // defaults preserve the consumer contract.
+  const settings = (settingsRes.data?.settings as Record<string, unknown> | undefined) || {};
+  const developmentalInsights = Array.isArray(settings.guru_developmental_insights)
+    ? (settings.guru_developmental_insights as Array<Record<string, unknown>>)
+    : [];
+  const parentStates = Array.isArray(settings.guru_parent_states)
+    ? (settings.guru_parent_states as Array<Record<string, unknown>>)
+    : [];
+  const parentCurrentState =
+    settings.guru_parent_current_state &&
+    typeof settings.guru_parent_current_state === 'object'
+      ? (settings.guru_parent_current_state as Record<string, unknown>)
+      : null;
+  const weeklyAdvice =
+    typeof settings.guru_weekly_advice === 'string' && settings.guru_weekly_advice.trim()
+      ? settings.guru_weekly_advice
+      : null;
+  const gamePlan =
+    settings.game_plan && typeof settings.game_plan === 'object'
+      ? (settings.game_plan as Record<string, unknown>)
+      : null;
+  const guruAreaReasons =
+    settings.guru_area_reasons && typeof settings.guru_area_reasons === 'object'
+      ? (settings.guru_area_reasons as Record<string, unknown>)
+      : {};
+
   return {
     child: { id: child.id, name: child.name },
     profile_summary: profileSummary,
@@ -557,6 +641,12 @@ async function fetchChildContext(
       total_notes: notesUnified.length,
       days_since_last_observation: daysSinceLastObservation,
     },
+    developmental_insights: developmentalInsights,
+    parent_states: parentStates,
+    parent_current_state: parentCurrentState,
+    weekly_advice: weeklyAdvice,
+    game_plan: gamePlan,
+    guru_area_reasons: guruAreaReasons,
   };
 }
 
