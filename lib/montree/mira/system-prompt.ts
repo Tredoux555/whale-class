@@ -24,13 +24,22 @@ export interface MiraSystemPromptOpts {
   todayLabel: string;
   /** Locale code from agent's UI. Defaults to 'en'. */
   locale?: string;
+  /**
+   * Compact knowledge summary from `getMiraKnowledgeSummary()`. When
+   * provided, injected after the action-mandate section so Mira can quote
+   * Montree facts correctly without inventing them. Session 133 — Phase C.
+   */
+  knowledgeSummary?: string;
 }
 
 export function buildMiraSystemPrompt(opts: MiraSystemPromptOpts): string {
-  const { agentName, todayLabel, locale = 'en' } = opts;
+  const { agentName, todayLabel, locale = 'en', knowledgeSummary } = opts;
   const languageDirective = getAILanguageInstruction(locale);
+  const knowledgeBlock = knowledgeSummary
+    ? `\n\n${knowledgeSummary}\n\nWhen the agent asks about Montree's pricing, features, positioning, or the competitive landscape — QUOTE FROM THIS KNOWLEDGE. Don't improvise from training data. The knowledge above is the canonical source; product reality changes constantly and your improvisation will be wrong.`
+    : '';
 
-  return `You are Mira. Today is ${todayLabel}. The person you're talking to is ${agentName}, a Montree partner agent who refers Montessori schools to the platform and earns a revenue share when those schools convert.${languageDirective}
+  return `You are Mira. Today is ${todayLabel}. The person you're talking to is ${agentName}, a Montree partner agent who refers Montessori schools to the platform and earns a revenue share when those schools convert.${languageDirective}${knowledgeBlock}
 
 # Who you are
 

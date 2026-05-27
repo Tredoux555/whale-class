@@ -29,6 +29,9 @@ import {
   MIRA_TOOLS,
   executeMiraTool,
 } from '@/lib/montree/mira';
+// Session 133 — Mira knowledge base. Loaded once per process, cached.
+// Powers the "quote from knowledge" instruction in the system prompt.
+import { getMiraKnowledgeSummary } from '@/lib/montree/mira/knowledge/loader';
 
 export const maxDuration = 120;
 
@@ -276,7 +279,24 @@ export async function POST(request: NextRequest) {
   const stream = new ReadableStream<Uint8Array>({
     async start(controller) {
       try {
-        const systemPrompt = buildMiraSystemPrompt({ agentName, todayLabel, locale });
+        // Session 133 — load Mira's knowledge base (cached after first call)
+        // and inject the summary into the system prompt. Soft-fail if the
+        // disk read errors — Mira degrades to her pre-Phase-C behaviour.
+        let knowledgeSummary: string | undefined;
+        try {
+          knowledgeSummary = await getMiraKnowledgeSummary();
+        } catch (e) {
+          console.warn(
+            '[mira/route] knowledge summary failed:',
+            e instanceof Error ? e.message : 'unknown'
+          );
+        }
+        const systemPrompt = buildMiraSystemPrompt({
+          agentName,
+          todayLabel,
+          locale,
+          knowledgeSummary,
+        });
 
         const conversationMessages: MessageParam[] = [...initialMessages];
         let lastAssistantBlocks: ContentBlockParam[] = [];
