@@ -462,7 +462,8 @@ async function tryTeacherLogin(supabase: ReturnType<typeof getSupabase>, code: s
 async function tryPrincipalLogin(supabase: ReturnType<typeof getSupabase>, code: string) {
   const fields = 'id, name, email, school_id, password_hash, role';
 
-  // Step 1: Legacy SHA-256
+  // Step 1: Legacy SHA-256 lookup against password_hash. Covers principals
+  // created before migration 194 + everyone whose code is in sync.
   const codeHash = legacySha256(code);
   const { data: hashMatch } = await supabase
     .from('montree_school_admins')
@@ -473,15 +474,46 @@ async function tryPrincipalLogin(supabase: ReturnType<typeof getSupabase>, code:
 
   let principal = hashMatch;
 
-  // NOTE: Principals do NOT have a login_code column on montree_school_admins.
-  // They authenticate via password_hash lookup only. The Step 2 ILIKE
-  // login_code lookup that used to live here was dead code — Postgres returned
-  // 42703 (undefined column), the destructured error was discarded, and
-  // codeMatch was always undefined. Step 1 (SHA-256 hash) and Step 3 (bcrypt
-  // scan) cover all real cases. See app/api/montree/invite-principal/route.ts
-  // for the same fix on the write side.
+  // Step 2: login_code column lookup. Session 98 / migration 194 ADDED the
+  // login_code column to montree_school_admins (reversing the Session 84
+  // rule). Principals created or reset by paths that wrote login_code but
+  // didn't realign password_hash will only match here. We still verify the
+  // hash before trusting the row — never auto-login on a column match
+  // alone if there's a hash on file.
+  if (!principal) {
+    const { data: codeMatch } = await supabase
+      .from('montree_school_admins')
+      .select(`${fields}, login_code`)
+      .ilike('login_code', escapeIlike(code))
+      .eq('role', 'principal')
+      .maybeSingle();
+    if (codeMatch) {
+      if (codeMatch.password_hash) {
+        // If a hash exists, it must match — either legacy SHA256 of the
+        // code, or bcrypt verifying the code. If neither matches, the
+        // row's hash is desynced from its login_code; refuse rather
+        // than silently authenticate.
+        const legacyOk = codeMatch.password_hash === codeHash;
+        const bcryptOk = codeMatch.password_hash.startsWith('$2')
+          ? (await verifyPassword(code, codeMatch.password_hash))
+            || (await verifyPassword(code.toLowerCase(), codeMatch.password_hash))
+          : false;
+        if (legacyOk || bcryptOk) {
+          principal = codeMatch;
+        } else {
+          console.warn(
+            `[unified-login] login_code match for principal ${codeMatch.id} but password_hash is desynced — refusing.`
+          );
+        }
+      } else {
+        // No hash on file at all — accept the login_code match.
+        principal = codeMatch;
+      }
+    }
+  }
 
-  // Step 3: bcrypt scan fallback
+  // Step 3: bcrypt scan fallback (covers principals who set a strong
+  // password via setup wizard).
   if (!principal) {
     const { data: candidates } = await supabase
       .from('montree_school_admins')
