@@ -27,6 +27,18 @@ export interface DossierCacheKeyInput {
   meeting_purpose: string;
   parent_context: string | null;
   output_format: DossierOutputFormat;
+  /**
+   * Owner scope — REQUIRED to prevent cache cross-tenant leaks.
+   * For Tracy: pass the school_id (so Principal A can't read Principal B's
+   * dossiers even if they pass an unrelated child_id).
+   * For Mira: pass the agent_id (so Agent A can't read Agent B's pitches).
+   *
+   * This is load-bearing security — the cache lookup happens BEFORE the
+   * ownership check inside preparePMeeting / preparePitch, so without
+   * this scope in the key, a malicious caller can use the cache as a
+   * data-leak side channel.
+   */
+  scope_owner_id: string;
   /** Optional extra inputs to include in the hash. Use for future fields. */
   extras?: Record<string, string | null | undefined>;
 }
@@ -79,19 +91,29 @@ function isMissingTableMessage(msg: string | null | undefined): boolean {
  * the input so Tracy and Mira can't collide on otherwise-identical keys.
  */
 export function makeDossierCacheKey(input: DossierCacheKeyInput): string {
+  // Session 133 audit fix: normalize ALL string values (not just the
+  // top-level ones) before hashing, so "country=Hong Kong" and
+  // "country=hong kong" hit the same cache row.
+  const normExtras = input.extras
+    ? Object.entries(input.extras)
+        .filter(([, v]) => v != null && v !== '')
+        .map(([k, v]) => [k, String(v).trim().toLowerCase()] as const)
+        .filter(([, v]) => v.length > 0)
+        .sort(([a], [b]) => a.localeCompare(b))
+        .map(([k, v]) => `${k}=${v}`)
+        .join('|')
+    : '';
   const payload = {
     a: input.audience_type,
+    // 🚨 owner_id is in the cache key by design — see the JSDoc on
+    // DossierCacheKeyInput.scope_owner_id. Removing it re-introduces
+    // the cross-tenant cache leak the security audit caught.
+    o: input.scope_owner_id,
     r: input.audience_ref.trim().toLowerCase(),
     p: input.meeting_purpose.trim().toLowerCase(),
     c: (input.parent_context ?? '').trim().toLowerCase(),
     f: input.output_format,
-    x: input.extras
-      ? Object.entries(input.extras)
-          .filter(([, v]) => v != null && v !== '')
-          .sort(([a], [b]) => a.localeCompare(b))
-          .map(([k, v]) => `${k}=${v}`)
-          .join('|')
-      : '',
+    x: normExtras,
   };
   return createHash('sha256').update(JSON.stringify(payload)).digest('hex');
 }

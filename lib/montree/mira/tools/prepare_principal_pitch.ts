@@ -122,12 +122,17 @@ export async function preparePitch(
   // The cache key also folds in language + country so a German-language
   // pitch and an English-language pitch to the same principal get
   // separate cached dossiers.
+  //
+  // 🚨 scope_owner_id = agentId. Two different agents pitching the same
+  // school/principal MUST get separate cached dossiers — Agent A's pitch
+  // wording is their own work and not visible to Agent B.
   const cacheKey = makeDossierCacheKey({
     audience_type: 'principal_pitch',
     audience_ref: audienceRef,
     meeting_purpose: (knownPainPoints || []).join('; '),
     parent_context: relationship || null,
     output_format: outputFormat,
+    scope_owner_id: agentId,
     extras: {
       language: language ?? null,
       country: country ?? null,

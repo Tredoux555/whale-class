@@ -391,15 +391,45 @@ export async function preparePMeeting(
   }
 
   // ── 0. Cache lookup ────────────────────────────────────────────────
+  // 🚨 scope_owner_id = schoolId (NOT principalId) — every principal at the
+  // same school SHOULD share the cache for the same child + same purpose
+  // (they're seeing the same meeting). Cross-SCHOOL leakage is what we're
+  // preventing; cross-PRINCIPAL within a school is fine.
   const cacheKey = makeDossierCacheKey({
     audience_type: 'parent_meeting',
     audience_ref: childId,
     meeting_purpose: meetingPurpose,
     parent_context: parentContext ?? null,
     output_format: outputFormat,
+    scope_owner_id: schoolId,
   });
   const cached = await readDossier(supabase, cacheKey);
   if (cached.found && cached.payload_text && cached.output_format) {
+    // 🚨 Session 133 audit fix: don't return child_name='(cached)' — that
+    // lie surfaces in the UI's dossier header. Do a fast child lookup
+    // (school-scoped; if the row doesn't belong here, we refuse the
+    // cache and re-generate cleanly). This also covers the case where
+    // the child was deleted since the cache was written.
+    const { data: cachedChild } = await supabase
+      .from('montree_children')
+      .select('id, name, classroom_id')
+      .eq('id', childId)
+      .maybeSingle();
+    if (cachedChild?.classroom_id) {
+      const { data: cachedClassroom } = await supabase
+        .from('montree_classrooms')
+        .select('school_id')
+        .eq('id', cachedChild.classroom_id)
+        .maybeSingle();
+      if (!cachedClassroom || cachedClassroom.school_id !== schoolId) {
+        // Cache hit but the child no longer belongs to this school.
+        // Refuse and fall through to fresh generation.
+        return {
+          ok: false,
+          error: 'child does not belong to this school',
+        };
+      }
+    }
     return {
       ok: true,
       data: {
@@ -411,6 +441,10 @@ export async function preparePMeeting(
         input_tokens: null,
         output_tokens: null,
         generation_ms: null,
+        // Cache-hit source_counts are deliberately zero — the cached
+        // payload has the real counts embedded in its Sources appendix.
+        // The UI should suppress the response-level source_counts when
+        // from_cache=true.
         source_counts: {
           observations: 0,
           behavioural_observations: 0,
@@ -422,7 +456,7 @@ export async function preparePMeeting(
           developmental_insights: 0,
           parent_states: 0,
         },
-        child_name: '(cached)',
+        child_name: cachedChild?.name || 'this child',
         cache_active: true,
       },
     };

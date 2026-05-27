@@ -87,9 +87,17 @@ export async function getMiraKnowledge(): Promise<MiraKnowledge> {
   if (cached) return cached;
   if (cachedPromise) return cachedPromise;
   cachedPromise = loadOnce();
-  cached = await cachedPromise;
-  cachedPromise = null;
-  return cached;
+  // 🚨 Session 133 audit fix: if loadOnce() ever throws (rare — it
+  // currently swallows per-file errors), we MUST clear cachedPromise
+  // in a finally so subsequent callers can retry. Without the finally,
+  // a single thrown promise becomes a permanent rejection that every
+  // future await sees — recoverable only by server restart.
+  try {
+    cached = await cachedPromise;
+    return cached;
+  } finally {
+    cachedPromise = null;
+  }
 }
 
 /**
