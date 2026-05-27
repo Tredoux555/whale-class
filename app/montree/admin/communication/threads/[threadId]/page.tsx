@@ -16,6 +16,9 @@ import VoiceComposer, { type VoiceReady } from '@/components/montree/messaging/V
 import VoiceBubble from '@/components/montree/messaging/VoiceBubble';
 import { parseAppointmentInvite } from '@/lib/montree/messaging/appointment-invite';
 import AppointmentInviteCard from '@/components/montree/messaging/AppointmentInviteCard';
+// Session 133 — Tracy's parent-meeting dossier button. Visible only on
+// parent_teacher + parent_principal threads where a child is attached.
+import { PrepareForMeetingButton } from '@/components/montree/dossier/PrepareForMeetingButton';
 
 const T = {
   emerald: '#34d399',
@@ -407,9 +410,26 @@ export default function ThreadPage() {
             </span>
           )}
         </div>
-        <h1 style={{ fontFamily: T.serif, fontSize: 24, fontWeight: 500, margin: 0, letterSpacing: -0.3 }}>
-          {thread.subject || '(no subject)'}
-        </h1>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
+          <h1 style={{ fontFamily: T.serif, fontSize: 24, fontWeight: 500, margin: 0, letterSpacing: -0.3, flex: '1 1 auto' }}>
+            {thread.subject || '(no subject)'}
+          </h1>
+          {/* Session 133 — dossier button. Surfaced for parent threads with
+              an attached child. Tracy pulls everything in the record and
+              builds the meeting-prep dossier. */}
+          {isParentThread && child && (
+            <div style={{ flex: '0 0 auto' }}>
+              <PrepareForMeetingButton
+                childId={child.id}
+                childName={child.name}
+                classroomName={classroom?.name ?? null}
+                variant="pill"
+                label="Prepare for the meeting"
+                defaultPurpose={thread.subject || ''}
+              />
+            </div>
+          )}
+        </div>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 12 }}>
           {participants.map((p) => (
             <span

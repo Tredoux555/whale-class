@@ -21,7 +21,7 @@ export type {
 } from './memory';
 
 // ── Session 133 — dossier-prep building blocks ─────────────────────────
-// These are exported because prepare_parent_meeting (Phase B) and the
+// These are exported because prepare_parent_meeting and the
 // `/api/montree/admin/dossier/parent-meeting` route call them directly,
 // outside of Tracy's tool-use loop.
 export { consultGuru } from './tools/consult_guru';
@@ -43,3 +43,8 @@ export type {
   ChildFocusResult,
   ChildFocusInput,
 } from './frameworks/child-focus';
+export { preparePMeeting } from './tools/prepare_parent_meeting';
+export type {
+  PrepareParentMeetingInput,
+  PrepareParentMeetingResult,
+} from './tools/prepare_parent_meeting';
