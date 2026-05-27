@@ -322,6 +322,76 @@ Session 119 weathered a Railway edge outage (May 19 22:22 UTC, ~1.5h, first inci
 
 ## RECENT STATUS (May 27, 2026)
 
+### 🔧 Session 131 — Splash video sound + bigger hero + Story vault device-upload + systemwide health check (May 27, 2026)
+
+**Three user-flagged items shipped in one commit. Health check audit also ran (4 parallel agents). Three consecutive clean audit passes before push.**
+
+**🚨 Canonical resume docs:** `docs/handoffs/SESSION_131_HANDOFF.md` (this session's build) + `docs/handoffs/HEALTH_CHECK_SESSION_131.md` (the health check) + 4 sub-docs per audit domain.
+
+**A. Splash video — tap-for-sound pill (`app/montree/page.tsx`):**
+
+Mobile + Safari autoplay-policy requires `muted=true` on initial mount. User reported "the video plays without any sound" — exactly that behavior, working as designed but undiscoverable. New gold "🔊 Tap for sound" pill bottom-left of the active video. One tap unmutes via imperative `videoRef.muted = false` (declarative `muted` attribute is sticky on Safari). Unmute persists across EN ↔ 中文 toggle via `userUnmuted` state — switching language doesn't re-mute. `onVolumeChange` listener catches native-controls unmute too, so the pill disappears whether the user taps it or uses the speaker icon.
+
+**B. Splash video — wide hero banner (same file):**
+
+Dropped S130's `position: absolute; top: 32px; left: 32px; width: 28vw` corner positioning. New posture: `position: relative; width: 100%; max-width: 720px; margin: 0 auto` — flows above the centered hero text as a wide banner. Mobile breakpoint widened from `min(280px, 75vw)` to `100%`. Border + box-shadow preserved (the "small border" user requested). Stale S130 comment block scrubbed to match.
+
+**C. Story vault — full device-upload (`VaultTab.tsx`, `useVault.ts`, `upload/route.ts`, dashboard `page.tsx`):**
+
+Old single-file `<input>` was hidden inside the locked vault tab AND rejected ~half of real iPhone captures (HEIC photos, MOV videos). Replaced with:
+- **Big drag-and-drop card** — primary desktop path, tap to open picker
+- **📷 Take photo button** — HTML5 `capture="environment"` opens rear camera on mobile, falls back to file picker on desktop (no UA sniff)
+- **🎥 Record video button** — same pattern, video flavor
+- **Multi-file pick** + sequential upload with "Uploading 3 of 7…" progress + inline progress bar
+- **Backend mime allowlist widened** from hardcoded `['jpeg','png','gif','mp4','webm']` to `image/*` OR `video/*` prefix check — now accepts HEIC, HEIF, WebP, MOV, 3GPP, x-matroska
+- **Per-file errors collected**, don't abort the batch — one failed HEIC won't stop the next JPEG
+- One `loadVaultFiles()` at end of batch (not per file) avoids N round-trips
+- `VaultUploadZone` is a private sub-component of `VaultTab.tsx`; extract only if a second consumer surfaces
+
+**D. Earlier in same session — Systemwide health check (4 parallel agents):**
+
+Same pattern as Sessions 76/118. Findings doc: `docs/handoffs/HEALTH_CHECK_SESSION_131.md`.
+
+🟢 **Big-rock architecture is holding:** SW narrow-intercept, no `dynamic({ ssr: false })` in Server Components, Stripe webhook idempotency, `.ilike()` escaping, cross-pollination contract, Tracy/Mira model pinning, photo pipeline v2 + prompt caching, i18n strict parity at **5,035 × 12 = 100%**, no `logApiUsage().catch()` regressions.
+
+🔴 **2 CRITICAL ship-blockers:**
+1. `/api/montree/feedback` is auth-less + trusts body identity (impersonation vector)
+2. Super-admin payouts PATCH bypasses period-lock for `mark_paid`/`manual_override`
+
+🟠 **5 AI routes missed by S76 tier-gating sweep.** Worst: `children/[childId]/onboard` (Sonnet × 20 children per Free onboarding burst = $2–6 burned per burst).
+
+🟡 **Mechanical cleanup backlog:** 52 files `100vh→100dvh`, 32 files `t() || 'fallback'` antipattern (broken UX for non-English users), 31 duplicate `en.ts` keys, 3 public POSTs missing rate-limit, 2 `.single()` regressions.
+
+**🚨 Architectural rules locked in this session (#256-263):**
+
+256. Hero video uses `userUnmuted` boolean + per-locale `videoRefs` map. Imperative `.muted = false` via ref is the only cross-browser reliable unmute path — declarative attribute is sticky on Safari.
+257. Tap-for-sound pill MUST disappear on first user gesture, never reappear. Both the pill click AND `onVolumeChange` (native-controls unmute path) flip `userUnmuted=true`.
+258. Hero video is a wide banner, NOT a corner widget. `position: relative; width: 100%; max-width: 720px`. Mobile inherits via `100%`. The `-corner-` class-name prefix is retained for churn-minimization across S130 refs.
+259. Vault upload route accepts `image/*` OR `video/*` prefix, not a hardcoded list. iPhone HEIC + MOV are first-class.
+260. `handleVaultUpload` accepts `File[]` and processes sequentially. Parallel would queue at the API; sequential gives a clean progress signal. Per-file errors collected, batch never aborts.
+261. `VaultUploadZone` is a private sub-component of `VaultTab.tsx`. One consumer; extract only if a second materializes.
+262. Camera-capture buttons use HTML5 `capture="environment"` and are ALWAYS visible. On mobile they open rear camera; on desktop they fall back to file picker. No UA sniff — the OS handles capability detection.
+263. Drag-and-drop counter lives in `useRef`, not `useState`. The only consumer is the boolean `dragActive`; storing the count in state would force a re-render per drag event.
+
+**Verification status:**
+- ✅ Three consecutive clean audit passes
+- ✅ ESLint clean on the 3 fully-authored files (`--max-warnings=0`, zero errors, zero warnings)
+- ✅ 5 pre-existing warnings on touched-but-not-authored files (`VaultTab.tsx`, dashboard `page.tsx`) — verified via `git show HEAD`, my changes added zero new warnings
+- ✅ Grep clean for stale refs
+- ✅ Security gates intact on upload route (`verifyAdminToken` + `verifyVaultToken` + `VAULT_PASSWORD` + `vault_audit_log`)
+- ⏳ User to walk the 8-step end-to-end verification in `docs/handoffs/SESSION_131_HANDOFF.md`
+
+**🚨 Next session priorities (ordered):**
+1. **Verify on production after Railway settles** — 8-step checklist in `SESSION_131_HANDOFF.md`: tap-for-sound on iPhone, hero size on desktop, drop-zone on desktop, multi-file batch, HEIC upload from iPhone Safari, camera-capture buttons.
+2. **🚨 Close the 2 CRITICAL items from the health check** (~35 min combined): `/api/montree/feedback` auth gate + super-admin payouts PATCH period-lock.
+3. **Tier-gate the 5 missed AI routes** (~2.5 hours) — biggest money win. `onboard` is the worst.
+4. **Rate-limit the 3 public POSTs** (~30 min).
+5. **Fix the 2 `.single()` regressions** (~5 min).
+6. **`t() || 'fallback'` sweep** (~2 hours) — 32 files, biggest non-English UX fix.
+7. **Dedupe locale files** (~1 hour) — 31 duplicate keys in `en.ts` + 25 in 10 others.
+
+---
+
 ### 🎬 Session 130 — Splash page refresh + corner autoplay video + name removal + HeyGen script (May 27, 2026)
 
 **6 commits shipped to `main`:** `9f36ce6c` → `1439fda3` → `98ea90ce` → `f2f805de` → `85b0ee7e` → `e6d7bfa0`. Full splash brand refresh, founder name scrubbed off the public surface, autoplay corner video bolted onto the hero with self-contained EN/中文 toggle. Plus a parallel agent produced a ready-to-paste HeyGen explainer script (~750 words / 5 min, both brand phrases worked in, no founder name).

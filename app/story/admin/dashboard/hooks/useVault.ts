@@ -7,6 +7,12 @@ export const useVault = (getSession: () => string | null) => {
   const [vaultUnlocked, setVaultUnlocked] = useState(false);
   const [vaultFiles, setVaultFiles] = useState<VaultFile[]>([]);
   const [uploadingVault, setUploadingVault] = useState(false);
+  // Per-batch upload progress so the UI can show "Uploading 3 of 7…"
+  // during multi-file uploads. Both stay 0/0 when idle.
+  const [uploadProgress, setUploadProgress] = useState<{ done: number; total: number }>({
+    done: 0,
+    total: 0,
+  });
   const [vaultError, setVaultError] = useState('');
   const [viewingImage, setViewingImage] = useState<{ url: string; filename: string } | null>(null);
   const [loadingView, setLoadingView] = useState(false);
@@ -175,42 +181,75 @@ export const useVault = (getSession: () => string | null) => {
     setViewingImage(null);
   }, [revokeAllThumbnails]);
 
-  const handleVaultUpload = useCallback(async (file: File) => {
+  // 🚨 Session 131 — multi-file upload. Accepts an array (or a single
+  // File for back-compat) and processes sequentially. Sequential not
+  // parallel because (a) the encryption step is CPU-heavy on the server
+  // and parallel would queue requests anyway, and (b) sequential gives
+  // us a reliable "X of N" progress signal. Per-file errors are
+  // collected but don't abort the batch — a failed HEIC won't stop the
+  // next JPEG from uploading.
+  const handleVaultUpload = useCallback(async (files: File | File[]) => {
+    const list = Array.isArray(files) ? files : [files];
+    if (list.length === 0) return;
+
     setUploadingVault(true);
     setVaultError('');
+    setUploadProgress({ done: 0, total: list.length });
 
-    try {
-      // 🚨 Session 113 V2 Story audit F-2.1 — vault token mandatory.
-      const headers = vaultHeaders();
-      if (!headers) {
-        setVaultError('Vault locked — please re-enter password');
-        setUploadingVault(false);
-        return;
-      }
-      const formData = new FormData();
-      formData.append('file', file);
-
-      const res = await fetch('/api/story/admin/vault/upload', {
-        method: 'POST',
-        headers,
-        body: formData
-      });
-
-      const data = await res.json();
-      if (res.ok) {
-        await loadVaultFiles();
-        // Load thumbnail for new file
-        if (data.file && isImageFile(data.file.filename || file.name)) {
-          await loadThumbnail(data.file.id);
-        }
-      } else {
-        setVaultError(data.error || 'Upload failed');
-      }
-    } catch {
-      setVaultError('Upload failed');
-    } finally {
+    // 🚨 Session 113 V2 Story audit F-2.1 — vault token mandatory.
+    const headers = vaultHeaders();
+    if (!headers) {
+      setVaultError('Vault locked — please re-enter password');
       setUploadingVault(false);
+      setUploadProgress({ done: 0, total: 0 });
+      return;
     }
+
+    const errors: string[] = [];
+    const newImageFileIds: number[] = [];
+
+    for (let i = 0; i < list.length; i++) {
+      const file = list[i];
+      try {
+        const formData = new FormData();
+        formData.append('file', file);
+
+        const res = await fetch('/api/story/admin/vault/upload', {
+          method: 'POST',
+          headers,
+          body: formData,
+        });
+
+        const data = await res.json();
+        if (res.ok) {
+          if (data.file && isImageFile(data.file.filename || file.name)) {
+            newImageFileIds.push(data.file.id);
+          }
+        } else {
+          errors.push(`${file.name}: ${data.error || 'Upload failed'}`);
+        }
+      } catch {
+        errors.push(`${file.name}: network error`);
+      } finally {
+        setUploadProgress({ done: i + 1, total: list.length });
+      }
+    }
+
+    // One list refresh at the end of the batch (avoids N round-trips).
+    await loadVaultFiles();
+    // Best-effort thumbnail load for new images.
+    for (const fileId of newImageFileIds) {
+      await loadThumbnail(fileId);
+    }
+
+    if (errors.length > 0) {
+      const head = errors.slice(0, 3).join(' · ');
+      const tail = errors.length > 3 ? ` (+${errors.length - 3} more)` : '';
+      setVaultError(`${errors.length} of ${list.length} failed: ${head}${tail}`);
+    }
+
+    setUploadingVault(false);
+    setUploadProgress({ done: 0, total: 0 });
   }, [vaultHeaders, loadVaultFiles, loadThumbnail]);
 
   const handleVaultDownload = useCallback(async (fileId: number, filename: string) => {
@@ -379,6 +418,7 @@ export const useVault = (getSession: () => string | null) => {
     setVaultUnlocked,
     vaultFiles,
     uploadingVault,
+    uploadProgress,
     vaultError,
     setVaultError,
     viewingImage,

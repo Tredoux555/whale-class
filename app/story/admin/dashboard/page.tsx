@@ -78,6 +78,7 @@ export default function AdminDashboard() {
     setVaultUnlocked,
     vaultFiles,
     uploadingVault,
+    uploadProgress,
     vaultError,
     setVaultError,
     viewingImage,
@@ -356,10 +357,8 @@ export default function AdminDashboard() {
                 vaultError={vaultError}
                 vaultFiles={vaultFiles}
                 uploadingVault={uploadingVault}
-                onVaultUpload={(e) => {
-                  const file = e.target.files?.[0];
-                  if (file) handleVaultUpload(file);
-                }}
+                onVaultUpload={(files) => handleVaultUpload(files)}
+                uploadProgress={uploadProgress}
                 onVaultDownload={handleVaultDownload}
                 onVaultDelete={handleVaultDelete}
                 viewingImage={viewingImage}

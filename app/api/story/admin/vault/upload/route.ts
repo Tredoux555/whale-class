@@ -36,9 +36,18 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'No file provided' }, { status: 400 });
     }
 
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'video/mp4', 'video/webm'];
-    if (!allowedTypes.includes(file.type)) {
-      return NextResponse.json({ error: 'File type not allowed' }, { status: 400 });
+    // 🚨 Session 131: widened mime allowlist to cover real mobile capture
+    // formats. The old whitelist (jpeg/png/gif + mp4/webm) silently rejected
+    // ~half of iPhone uploads (HEIC photos + MOV videos) and most Android
+    // video captures (3gpp, x-matroska). We accept anything image/* or
+    // video/*, then verify the prefix.
+    const isImage = file.type.startsWith('image/');
+    const isVideo = file.type.startsWith('video/');
+    if (!isImage && !isVideo) {
+      return NextResponse.json(
+        { error: `File type not allowed: ${file.type || 'unknown'}` },
+        { status: 400 }
+      );
     }
 
     if (file.size > 500 * 1024 * 1024) {
