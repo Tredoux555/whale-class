@@ -481,14 +481,27 @@ async function tryPrincipalLogin(supabase: ReturnType<typeof getSupabase>, code:
   // hash before trusting the row — never auto-login on a column match
   // alone if there's a hash on file.
   if (!principal) {
-    const { data: codeMatch } = await supabase
+    // ILIKE is case-insensitive — could match 2 rows ('XVYHHX' + 'xvyhhx')
+    // even though the partial UNIQUE index on login_code is case-sensitive.
+    // Use .limit(1) explicitly so maybeSingle never throws on duplicates;
+    // if there ARE two rows the older one wins (created_at ASC) which is
+    // safe (the original principal keeps their code; the duplicate has
+    // to reset).
+    const { data: codeMatches } = await supabase
       .from('montree_school_admins')
       .select(`${fields}, login_code`)
       .ilike('login_code', escapeIlike(code))
       .eq('role', 'principal')
-      .maybeSingle();
+      .order('created_at', { ascending: true })
+      .limit(1);
+    const codeMatch = codeMatches?.[0];
     if (codeMatch) {
-      if (codeMatch.password_hash) {
+      // Tighten the guard: empty-string and non-string hashes should NOT
+      // fall through to the "no hash on file" branch (which auto-accepts).
+      const hasHash =
+        typeof codeMatch.password_hash === 'string' &&
+        codeMatch.password_hash.length > 0;
+      if (hasHash) {
         // If a hash exists, it must match — either legacy SHA256 of the
         // code, or bcrypt verifying the code. If neither matches, the
         // row's hash is desynced from its login_code; refuse rather
@@ -506,7 +519,8 @@ async function tryPrincipalLogin(supabase: ReturnType<typeof getSupabase>, code:
           );
         }
       } else {
-        // No hash on file at all — accept the login_code match.
+        // Truly no hash on file (NULL or '' both fall here) — accept the
+        // login_code match as the sole credential.
         principal = codeMatch;
       }
     }

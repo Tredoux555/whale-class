@@ -81,21 +81,43 @@ interface AgentLogin {
   created_at: string;
 }
 
+interface ParentInviteLogin {
+  kind: 'parent_invite';
+  id: string;
+  invite_code: string;
+  parent_email: string | null;
+  child_id: string;
+  child_name: string | null;
+  classroom_id: string | null;
+  classroom_name: string | null;
+  school_id: string | null;
+  school_name: string | null;
+  is_active: boolean;
+  is_reusable: boolean;
+  use_count: number;
+  max_uses: number | null;
+  expires_at: string | null;
+  last_used_at: string | null;
+  created_at: string;
+}
+
 interface AllLoginsResponse {
   principals: PrincipalLogin[];
   teachers: TeacherLogin[];
   agents: AgentLogin[];
+  parent_invites: ParentInviteLogin[];
   desynced_principal_ids: string[];
   counts: {
     principals: number;
     teachers: number;
     agents: number;
+    parent_invites: number;
     total: number;
   };
   generated_at: string;
 }
 
-type RoleFilter = 'all' | 'principals' | 'teachers' | 'agents';
+type RoleFilter = 'all' | 'principals' | 'teachers' | 'agents' | 'parents';
 
 export default function AllLoginsPage() {
   const router = useRouter();
@@ -148,6 +170,10 @@ export default function AllLoginsPage() {
     [includeInactive, router]
   );
 
+  // Re-load whenever the token changes OR the includeInactive filter
+  // changes — the filter is a server-side query param, not just client-
+  // side filtering. Audit fix: was previously [token, load] which let
+  // the toggle silently no-op.
   useEffect(() => {
     if (token) void load(token);
   }, [token, load]);
@@ -156,9 +182,18 @@ export default function AllLoginsPage() {
     void navigator.clipboard.writeText(code).catch(() => {
       /* clipboard API may fail on non-https — ignore */
     });
+    // Audit fix: clear the prior timer BEFORE assigning the new one, so
+    // a stale 1500ms tick from a previous click can't blank the "Copied"
+    // state of the new one.
+    if (copyTimer.current) {
+      clearTimeout(copyTimer.current);
+      copyTimer.current = null;
+    }
     setCopiedId(id);
-    if (copyTimer.current) clearTimeout(copyTimer.current);
-    copyTimer.current = setTimeout(() => setCopiedId(null), 1500);
+    copyTimer.current = setTimeout(() => {
+      setCopiedId(null);
+      copyTimer.current = null;
+    }, 1500);
   }, []);
 
   useEffect(() => () => {
@@ -167,7 +202,7 @@ export default function AllLoginsPage() {
 
   // Filtered rows.
   const filtered = useMemo(() => {
-    if (!data) return { principals: [], teachers: [], agents: [] };
+    if (!data) return { principals: [], teachers: [], agents: [], parents: [] };
     const needle = search.trim().toLowerCase();
     const match = (s: string | null | undefined) =>
       !needle || (typeof s === 'string' && s.toLowerCase().includes(needle));
@@ -198,6 +233,17 @@ export default function AllLoginsPage() {
           ? data.agents.filter(
               (a) =>
                 match(a.name) || match(a.email) || match(a.login_code)
+            )
+          : [],
+      parents:
+        roleFilter === 'all' || roleFilter === 'parents'
+          ? data.parent_invites.filter(
+              (i) =>
+                match(i.parent_email) ||
+                match(i.invite_code) ||
+                match(i.child_name) ||
+                match(i.classroom_name) ||
+                match(i.school_name)
             )
           : [],
     };
@@ -271,6 +317,7 @@ export default function AllLoginsPage() {
           <CountChip label="Principals" value={data.counts.principals} />
           <CountChip label="Teachers" value={data.counts.teachers} />
           <CountChip label="Agents" value={data.counts.agents} />
+          <CountChip label="Parent invites" value={data.counts.parent_invites} />
           {data.desynced_principal_ids.length > 0 && (
             <span style={desyncChipStyle}>
               ⚠ {data.desynced_principal_ids.length} principal hash-desync
@@ -288,22 +335,26 @@ export default function AllLoginsPage() {
           placeholder="Search by name, email, code, school…"
           style={searchInputStyle}
         />
-        <div style={{ display: 'flex', gap: 6 }}>
-          {(['all', 'principals', 'teachers', 'agents'] as const).map((r) => (
-            <button
-              key={r}
-              onClick={() => setRoleFilter(r)}
-              style={roleFilterPillStyle(roleFilter === r)}
-            >
-              {r === 'all'
-                ? 'All'
-                : r === 'principals'
-                ? 'Principals'
-                : r === 'teachers'
-                ? 'Teachers'
-                : 'Agents'}
-            </button>
-          ))}
+        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+          {(['all', 'principals', 'teachers', 'agents', 'parents'] as const).map(
+            (r) => (
+              <button
+                key={r}
+                onClick={() => setRoleFilter(r)}
+                style={roleFilterPillStyle(roleFilter === r)}
+              >
+                {r === 'all'
+                  ? 'All'
+                  : r === 'principals'
+                  ? 'Principals'
+                  : r === 'teachers'
+                  ? 'Teachers'
+                  : r === 'agents'
+                  ? 'Agents'
+                  : 'Parents'}
+              </button>
+            )
+          )}
         </div>
         <label
           style={{
@@ -414,9 +465,64 @@ export default function AllLoginsPage() {
         </section>
       )}
 
+      {/* Parents */}
+      {filtered.parents.length > 0 && (
+        <section style={sectionStyle}>
+          <h2 style={sectionHeadingStyle}>
+            Parent invites · {filtered.parents.length}
+          </h2>
+          <div style={listStyle}>
+            {filtered.parents.map((i) => {
+              const usage =
+                i.max_uses != null
+                  ? `${i.use_count}/${i.max_uses} uses`
+                  : `${i.use_count} uses`;
+              const expired =
+                i.expires_at && new Date(i.expires_at).getTime() < Date.now();
+              const exhausted =
+                i.max_uses != null && i.use_count >= i.max_uses;
+              const warnings: string[] = [];
+              if (expired) warnings.push('EXPIRED');
+              if (exhausted) warnings.push('USES EXHAUSTED');
+              if (!i.is_active) warnings.push('INACTIVE');
+              return (
+                <LoginRow
+                  key={i.id}
+                  copiedId={copiedId}
+                  onCopy={handleCopy}
+                  id={i.id}
+                  code={i.invite_code}
+                  code_warning={
+                    warnings.length > 0
+                      ? `${warnings.join(' · ')} — won't authenticate`
+                      : null
+                  }
+                  name={
+                    i.parent_email ||
+                    (i.child_name
+                      ? `Parent of ${i.child_name}`
+                      : '(no email on file)')
+                  }
+                  email={i.parent_email ? null : null}
+                  meta={[
+                    i.school_name || '(school?)',
+                    i.classroom_name || '(no classroom)',
+                    i.child_name ? `child: ${i.child_name}` : '',
+                    usage,
+                    i.is_reusable ? 'reusable' : 'single-use',
+                  ].filter(Boolean)}
+                  last={i.last_used_at}
+                />
+              );
+            })}
+          </div>
+        </section>
+      )}
+
       {filtered.principals.length === 0 &&
         filtered.teachers.length === 0 &&
-        filtered.agents.length === 0 && (
+        filtered.agents.length === 0 &&
+        filtered.parents.length === 0 && (
           <p
             style={{
               color: T.textMuted,

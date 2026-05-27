@@ -71,6 +71,26 @@ interface AgentLogin {
   created_at: string;
 }
 
+interface ParentInviteLogin {
+  kind: 'parent_invite';
+  id: string;
+  invite_code: string;
+  parent_email: string | null;
+  child_id: string;
+  child_name: string | null;
+  classroom_id: string | null;
+  classroom_name: string | null;
+  school_id: string | null;
+  school_name: string | null;
+  is_active: boolean;
+  is_reusable: boolean;
+  use_count: number;
+  max_uses: number | null;
+  expires_at: string | null;
+  last_used_at: string | null;
+  created_at: string;
+}
+
 export async function GET(request: NextRequest) {
   const { valid } = await verifySuperAdminAuth(request.headers);
   if (!valid) {
@@ -82,9 +102,54 @@ export async function GET(request: NextRequest) {
 
   const supabase = getSupabase();
 
-  // Fan-out the three reads in parallel.
-  const [adminsRes, teachersRes, schoolsRes] = await Promise.all([
-    (async () => {
+  // Row shapes TS needs help inferring through Promise.all + IIFE.
+  type AdminRow = {
+    id: string;
+    name: string | null;
+    email: string | null;
+    login_code: string | null;
+    school_id: string;
+    role: string;
+    is_active: boolean | null;
+    last_login: string | null;
+    created_at: string;
+  };
+  type TeacherRow = {
+    id: string;
+    name: string | null;
+    email: string | null;
+    login_code: string | null;
+    school_id: string | null;
+    classroom_id: string | null;
+    role: string | null;
+    is_active: boolean | null;
+    is_agent: boolean | null;
+    agent_default_share_pct: number | null;
+    agent_login_set_at: string | null;
+    agent_login_last_used_at: string | null;
+    agent_suspended_at: string | null;
+    last_login_at: string | null;
+    created_at: string;
+  };
+  type ParentInviteRow = {
+    id: string;
+    invite_code: string | null;
+    parent_email: string | null;
+    child_id: string;
+    is_active: boolean | null;
+    is_reusable: boolean | null;
+    use_count: number | null;
+    max_uses: number | null;
+    expires_at: string | null;
+    last_used_at: string | null;
+    created_at: string;
+  };
+
+  // Fan-out the four reads in parallel. Cast on destructure — Promise.all
+  // can't always infer the per-IIFE return types cleanly when each is
+  // built off the Supabase client's polymorphic return shape.
+  const [adminsRes, teachersRes, schoolsRes, invitesRes] = (await Promise.all([
+    (async (): Promise<AdminRow[]> => {
       let q = supabase
         .from('montree_school_admins')
         .select(
@@ -95,9 +160,9 @@ export async function GET(request: NextRequest) {
       if (!includeInactive) q = q.eq('is_active', true);
       const { data, error } = await q.order('created_at', { ascending: false });
       if (error) throw new Error(`school_admins: ${error.message}`);
-      return data || [];
+      return ((data ?? []) as unknown) as AdminRow[];
     })(),
-    (async () => {
+    (async (): Promise<TeacherRow[]> => {
       // Teachers + agents are both in montree_teachers; is_agent splits them.
       let q = supabase
         .from('montree_teachers')
@@ -108,16 +173,30 @@ export async function GET(request: NextRequest) {
       if (!includeInactive) q = q.eq('is_active', true);
       const { data, error } = await q.order('created_at', { ascending: false });
       if (error) throw new Error(`teachers: ${error.message}`);
-      return data || [];
+      return ((data ?? []) as unknown) as TeacherRow[];
     })(),
-    (async () => {
+    (async (): Promise<SchoolRow[]> => {
       const { data, error } = await supabase
         .from('montree_schools')
         .select('id, name');
       if (error) throw new Error(`schools: ${error.message}`);
-      return (data || []) as SchoolRow[];
+      return ((data ?? []) as unknown) as SchoolRow[];
     })(),
-  ]);
+    (async (): Promise<ParentInviteRow[]> => {
+      // Parent invites — surface every invite_code so super-admin can resend
+      // / re-share / debug stuck parent logins. Filter by is_active by default.
+      let q = supabase
+        .from('montree_parent_invites')
+        .select(
+          'id, invite_code, parent_email, child_id, is_active, is_reusable, use_count, max_uses, expires_at, last_used_at, created_at'
+        )
+        .not('invite_code', 'is', null);
+      if (!includeInactive) q = q.eq('is_active', true);
+      const { data, error } = await q.order('created_at', { ascending: false });
+      if (error) throw new Error(`parent_invites: ${error.message}`);
+      return ((data ?? []) as unknown) as ParentInviteRow[];
+    })(),
+  ])) as [AdminRow[], TeacherRow[], SchoolRow[], ParentInviteRow[]];
 
   const schoolMap = new Map<string, string>();
   for (const s of schoolsRes) schoolMap.set(s.id, s.name);
@@ -136,7 +215,11 @@ export async function GET(request: NextRequest) {
       .from('montree_classrooms')
       .select('id, name')
       .in('id', classroomIds);
-    for (const c of classrooms || []) classroomMap.set(c.id, c.name);
+    const classroomRows = ((classrooms ?? []) as unknown) as Array<{
+      id: string;
+      name: string;
+    }>;
+    for (const c of classroomRows) classroomMap.set(c.id, c.name);
   }
 
   const principals: PrincipalLogin[] = adminsRes
@@ -192,9 +275,121 @@ export async function GET(request: NextRequest) {
     }
   }
 
+  // Look up child names + their classroom/school for the parent invites.
+  const inviteChildIds = Array.from(
+    new Set(
+      invitesRes
+        .map((i) => i.child_id)
+        .filter((id): id is string => typeof id === 'string')
+    )
+  );
+  const childInfoMap = new Map<
+    string,
+    { name: string; classroom_id: string | null }
+  >();
+  if (inviteChildIds.length > 0) {
+    const { data: children } = await supabase
+      .from('montree_children')
+      .select('id, name, classroom_id')
+      .in('id', inviteChildIds);
+    const childRows = ((children ?? []) as unknown) as Array<{
+      id: string;
+      name: string;
+      classroom_id: string | null;
+    }>;
+    for (const c of childRows) {
+      childInfoMap.set(c.id, {
+        name: c.name,
+        classroom_id: c.classroom_id ?? null,
+      });
+    }
+  }
+
+  // We also need classroom→school for invite rows whose classroom wasn't
+  // already loaded for the teachers.
+  const inviteClassroomIds = Array.from(
+    new Set(
+      Array.from(childInfoMap.values())
+        .map((c) => c.classroom_id)
+        .filter((id): id is string => typeof id === 'string')
+        .filter((id) => !classroomMap.has(id))
+    )
+  );
+  const classroomSchoolMap = new Map<string, string | null>();
+  if (inviteClassroomIds.length > 0) {
+    const { data: extraClassrooms } = await supabase
+      .from('montree_classrooms')
+      .select('id, name, school_id')
+      .in('id', inviteClassroomIds);
+    const extraRows = ((extraClassrooms ?? []) as unknown) as Array<{
+      id: string;
+      name: string;
+      school_id: string | null;
+    }>;
+    for (const c of extraRows) {
+      classroomMap.set(c.id, c.name);
+      classroomSchoolMap.set(c.id, c.school_id ?? null);
+    }
+  }
+  // For classrooms already in classroomMap (loaded via teachers), we need
+  // their school_id too. Look those up in one shot if missing.
+  const teacherClassroomIds = Array.from(classroomMap.keys()).filter(
+    (id) => !classroomSchoolMap.has(id)
+  );
+  if (teacherClassroomIds.length > 0) {
+    const { data: teacherClassrooms } = await supabase
+      .from('montree_classrooms')
+      .select('id, school_id')
+      .in('id', teacherClassroomIds);
+    const teacherClassroomRows = ((teacherClassrooms ?? []) as unknown) as Array<{
+      id: string;
+      school_id: string | null;
+    }>;
+    for (const c of teacherClassroomRows) {
+      classroomSchoolMap.set(c.id, c.school_id ?? null);
+    }
+  }
+
+  const parentInvites: ParentInviteLogin[] = invitesRes
+    .filter(
+      (i): i is ParentInviteRow & { invite_code: string } =>
+        typeof i.invite_code === 'string' && i.invite_code.length > 0
+    )
+    .map((i): ParentInviteLogin => {
+      const child = childInfoMap.get(i.child_id);
+      const classroomId = child?.classroom_id ?? null;
+      const classroomName = classroomId
+        ? classroomMap.get(classroomId) ?? null
+        : null;
+      const schoolId = classroomId
+        ? classroomSchoolMap.get(classroomId) ?? null
+        : null;
+      return {
+        kind: 'parent_invite',
+        id: i.id,
+        invite_code: i.invite_code,
+        parent_email: i.parent_email ?? null,
+        child_id: i.child_id,
+        child_name: child?.name ?? null,
+        classroom_id: classroomId,
+        classroom_name: classroomName,
+        school_id: schoolId,
+        school_name: schoolId ? schoolMap.get(schoolId) ?? null : null,
+        is_active: !!i.is_active,
+        is_reusable: !!i.is_reusable,
+        use_count: typeof i.use_count === 'number' ? i.use_count : 0,
+        max_uses: typeof i.max_uses === 'number' ? i.max_uses : null,
+        expires_at: i.expires_at ?? null,
+        last_used_at: i.last_used_at ?? null,
+        created_at: i.created_at,
+      };
+    });
+
   // Detect hash/code desync for principals so the UI can surface it.
-  // We check the password_hash too — if non-bcrypt and not matching
-  // legacy SHA256 of the login_code, flag.
+  // Audit fix: only flag rows where password_hash IS legacy-shape (64-char
+  // hex) and mismatches. Bcrypt rows ($2-prefixed) and any other shape
+  // are excluded — flagging them would tell the operator to "fix" a
+  // password that's actually valid via bcrypt verify.
   let desyncedPrincipalIds: string[] = [];
   try {
     const { data: hashRows } = await supabase
@@ -204,11 +399,20 @@ export async function GET(request: NextRequest) {
         'id',
         principals.map((p) => p.id)
       );
+    const hashRowsTyped = ((hashRows ?? []) as unknown) as Array<{
+      id: string;
+      login_code: string | null;
+      password_hash: string | null;
+    }>;
     const crypto = await import('crypto');
-    desyncedPrincipalIds = (hashRows || [])
+    const LEGACY_SHA256_RE = /^[a-f0-9]{64}$/i;
+    desyncedPrincipalIds = hashRowsTyped
       .filter((r) => {
         if (!r.login_code || !r.password_hash) return false;
-        if (r.password_hash.startsWith('$2')) return false; // bcrypt — can't tell from here
+        if (r.password_hash.startsWith('$2')) return false;
+        // Only flag if the stored hash LOOKS like legacy SHA256 — anything
+        // else (empty string, malformed) is its own problem, not a "desync".
+        if (!LEGACY_SHA256_RE.test(r.password_hash)) return false;
         const sha = crypto.createHash('sha256').update(r.login_code).digest('hex');
         return sha !== r.password_hash;
       })
@@ -222,12 +426,18 @@ export async function GET(request: NextRequest) {
       principals,
       teachers,
       agents,
+      parent_invites: parentInvites,
       desynced_principal_ids: desyncedPrincipalIds,
       counts: {
         principals: principals.length,
         teachers: teachers.length,
         agents: agents.length,
-        total: principals.length + teachers.length + agents.length,
+        parent_invites: parentInvites.length,
+        total:
+          principals.length +
+          teachers.length +
+          agents.length +
+          parentInvites.length,
       },
       generated_at: new Date().toISOString(),
     },
