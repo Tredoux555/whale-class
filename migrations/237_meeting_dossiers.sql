@@ -75,10 +75,16 @@ CREATE TABLE IF NOT EXISTS montree_meeting_dossiers (
 );
 
 -- Cache lookup index: the hot path is "do we have a fresh row for this
--- cache_key?" — partial index keeps it tight.
+-- cache_key?". A partial index `WHERE expires_at > NOW()` is REJECTED by
+-- PostgreSQL — NOW() is STABLE, not IMMUTABLE, and partial-index predicates
+-- must be IMMUTABLE (ERROR 42P17). A plain b-tree on (cache_key, expires_at)
+-- handles the same "WHERE cache_key = $1 AND expires_at > NOW()" query
+-- just as well — the b-tree can range-scan on expires_at after pinning
+-- cache_key. The DROP INDEX is for environments that ran the original
+-- (broken-partial) version of this migration before the fix.
+DROP INDEX IF EXISTS idx_meeting_dossiers_cache_lookup;
 CREATE INDEX IF NOT EXISTS idx_meeting_dossiers_cache_lookup
-  ON montree_meeting_dossiers (cache_key, expires_at)
-  WHERE expires_at > NOW();
+  ON montree_meeting_dossiers (cache_key, expires_at);
 
 -- Owner timeline index — used by the "my dossiers" list view in the UI
 -- (Phase E may surface this).

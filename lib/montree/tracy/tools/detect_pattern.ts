@@ -274,6 +274,17 @@ export async function detectPattern(
   const negatives = negativePhrases
     .map((p) => p.toLowerCase().trim())
     .filter((p) => p.length > 0);
+  // 🚨 Session 133 audit fix: if every theme phrase was whitespace-only,
+  // `positives` is now [] after the trim. JS `Array#every` on an empty
+  // array returns TRUE, so under match='all' EVERY record would match
+  // and the dossier would fill with noise. Refuse the input plainly.
+  if (positives.length === 0) {
+    return {
+      ok: false,
+      error:
+        'theme_phrases reduced to empty after trim — provide at least one non-whitespace phrase',
+    };
+  }
 
   const filtered = raw.filter((r) => {
     const lower = r.text.toLowerCase();
