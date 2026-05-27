@@ -10,3 +10,11 @@ export { executeMiraTool } from './tool-executor';
 export type { MiraToolResult, MiraToolDeps } from './tool-executor';
 
 export { miraKeys } from './storage-keys';
+
+// Session 133 — knowledge base. Markdown-on-disk + cached loader.
+export {
+  getMiraKnowledge,
+  getMiraKnowledgeSummary,
+  resetMiraKnowledgeCache,
+} from './knowledge/loader';
+export type { MiraKnowledge } from './knowledge/loader';
