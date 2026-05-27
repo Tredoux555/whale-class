@@ -25,6 +25,7 @@ import { unpackTeacher } from './frameworks/unpack-teacher';
 import { childFocus } from './frameworks/child-focus';
 import { consultGuru } from './tools/consult_guru';
 import { detectPattern } from './tools/detect_pattern';
+import { preparePMeeting } from './tools/prepare_parent_meeting';
 import {
   writeMemory,
   recallMemories,
@@ -822,16 +823,49 @@ export async function executeTracyTool(
         };
       }
 
-      // ── DOSSIER PREP: prepare_parent_meeting (Phase B implements) ─
-      // Definition is exposed in tool-definitions.ts; full implementation
-      // lands in Session 133 Phase B (lib/montree/tracy/tools/prepare_parent_meeting.ts).
-      // Until then this returns a graceful "not yet implemented" so Sonnet
-      // can recover by calling the underlying primitives directly.
+      // ── DOSSIER PREP: prepare_parent_meeting ──────────────────────
+      // Session 133 Phase B. Single Sonnet call, ~$0.05 per dossier,
+      // cached 24h. School-scoped + per-principal cache ownership.
       case 'prepare_parent_meeting': {
+        const childId = String(input.child_id || '').trim();
+        if (!childId) return { success: false, error: 'child_id is required' };
+        const meetingPurpose = String(input.meeting_purpose || '').trim();
+        if (!meetingPurpose) {
+          return { success: false, error: 'meeting_purpose is required' };
+        }
+        const parentContext =
+          typeof input.parent_context === 'string'
+            ? input.parent_context.trim() || undefined
+            : undefined;
+        const outputFormat =
+          input.output_format === 'html' ||
+          input.output_format === 'json' ||
+          input.output_format === 'markdown'
+            ? (input.output_format as 'markdown' | 'html' | 'json')
+            : 'markdown';
+
+        if (!principalId) {
+          return { success: false, error: 'principalId missing' };
+        }
+
+        const result = await preparePMeeting({
+          childId,
+          schoolId,
+          principalId,
+          meetingPurpose,
+          parentContext,
+          outputFormat,
+          anthropic,
+          supabase,
+        });
+        if (!result.ok) {
+          return { success: false, error: result.error || 'dossier failed' };
+        }
+        const d = result.data!;
         return {
-          success: false,
-          error:
-            'prepare_parent_meeting is not yet implemented in this build. Call child_focus + consult_guru + detect_pattern directly for now.',
+          success: true,
+          data: d,
+          result_summary: `${d.child_name} dossier ${d.from_cache ? '(cached)' : `(fresh, ${d.cost_usd?.toFixed(3)} USD)`}`,
         };
       }
 
