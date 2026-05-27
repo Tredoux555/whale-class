@@ -154,6 +154,61 @@ export const MIRA_TOOLS: Tool[] = [
       required: ['body'],
     },
   },
+  // ── DOSSIER PREP TOOLS (Session 133 — Phase D) ───────────────────────
+  // get_platform_signal returns live aggregate numbers Mira can quote in
+  // any pitch — never quote platform totals from memory. Cached 10 minutes.
+  {
+    name: 'get_platform_signal',
+    description:
+      "Pull live, current platform numbers for use as proof points in a pitch. Use whenever the agent needs a number ('how many schools?', 'how much data?', 'how many languages do you support?'). Returns active school count, active children, active classrooms, total confirmed observations, observations confirmed in the last 7 days, distinct languages, distinct countries. ALWAYS prefer this over stating numbers from memory — quoting a 6-month-old figure to a sophisticated principal is a credibility kill.",
+    input_schema: {
+      type: 'object',
+      properties: {},
+    },
+  },
+  // prepare_principal_pitch is the dossier builder — Sonnet call ~$0.05,
+  // cached 24h. Only call when the agent has explicitly asked for meeting
+  // prep, not as a generic info dump.
+  {
+    name: 'prepare_principal_pitch',
+    description:
+      "Produce a complete pre-pitch dossier for a meeting with a principal. CALL ONLY when the agent has explicitly asked for meeting prep — phrases like 'help me prepare for the Beijing principal', 'pull together a pitch dossier for [school]', 'I'm meeting [principal] tomorrow about Montree'. Calls get_platform_signal + the Mira knowledge base internally — DO NOT pull those separately first. Output is a structured Markdown dossier the agent reads once and walks into the meeting confident: opening message to send before the meeting, demo plan, pitch script (4 stages), probable objections + handlers, commission-disclosure section (framed as skin-in-the-game), things NOT to say, and three follow-up paths with literal text. Cached 24h. Cost ~\\$0.05 per dossier.",
+    input_schema: {
+      type: 'object',
+      properties: {
+        principal_name: {
+          type: 'string',
+          description: 'The principal\'s name (or best-known label, e.g. "Mrs Chen", "the Beijing principal").',
+        },
+        school_name: { type: 'string' },
+        school_size: {
+          type: 'string',
+          description: 'Free-text size description, e.g. "250 students across 15 classrooms" or "a single 20-student classroom".',
+        },
+        country: { type: 'string' },
+        language: {
+          type: 'string',
+          enum: ['en', 'zh', 'es', 'de', 'fr', 'pt', 'nl', 'it', 'ja', 'ko', 'uk', 'ru'],
+          description: 'The language the recommended phrasings in the dossier should be in. Defaults to the agent\'s UI locale.',
+        },
+        known_pain_points: {
+          type: 'array',
+          items: { type: 'string' },
+          description: 'Anything the agent knows about the principal\'s situation — overworked teachers, difficult parents, no Montessori training, etc. Each entry is 1-2 sentences.',
+        },
+        relationship: {
+          type: 'string',
+          description: 'Anything about how the agent knows this principal. e.g. "agent is a teacher at this school, principal doesn\'t yet know about Montree" / "principal replied to cold email asking for a demo" / "introduced via FAMM Argentina".',
+        },
+        output_format: {
+          type: 'string',
+          enum: ['markdown', 'html', 'json'],
+          description: 'Output container. Default \"markdown\" (renders as a copy-card on the agent\'s screen).',
+        },
+      },
+      required: ['principal_name', 'school_name'],
+    },
+  },
   {
     name: 'reply_in_thread',
     description:

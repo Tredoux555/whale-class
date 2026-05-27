@@ -18,3 +18,18 @@ export {
   resetMiraKnowledgeCache,
 } from './knowledge/loader';
 export type { MiraKnowledge } from './knowledge/loader';
+
+// Session 133 Phase D — pitch dossier + platform signal.
+export { preparePitch } from './tools/prepare_principal_pitch';
+export type {
+  PreparePrincipalPitchInput,
+  PreparePrincipalPitchResult,
+} from './tools/prepare_principal_pitch';
+export {
+  getPlatformSignal,
+  resetPlatformSignalCache,
+} from './tools/get_platform_signal';
+export type {
+  PlatformSignal,
+  GetPlatformSignalResult,
+} from './tools/get_platform_signal';
