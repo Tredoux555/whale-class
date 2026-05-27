@@ -417,10 +417,10 @@ export default function ThreadPage() {
           {/* Session 133 — dossier button. Surfaced for parent threads with
               an attached child. Tracy pulls everything in the record and
               builds the meeting-prep dossier. */}
-          {isParentThread && child && (
+          {isParentThread && child && thread.child_id && (
             <div style={{ flex: '0 0 auto' }}>
               <PrepareForMeetingButton
-                childId={child.id}
+                childId={thread.child_id}
                 childName={child.name}
                 classroomName={classroom?.name ?? null}
                 variant="pill"

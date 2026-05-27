@@ -91,7 +91,9 @@ export function PrepareForMeetingButton({
     }
     setState({ kind: 'loading' });
     try {
-      const res = await montreeApi<DossierResponse>(
+      // Session 133 — montreeApi returns a Response; we unwrap the JSON
+      // body ourselves. Same pattern as every other Tracy-side route call.
+      const res = await montreeApi(
         '/api/montree/admin/dossier/parent-meeting',
         {
           method: 'POST',
@@ -101,9 +103,25 @@ export function PrepareForMeetingButton({
             parent_context: parentContext.trim() || undefined,
             output_format: 'markdown',
           }),
+          timeout: 180_000, // dossier generation is slow — Sonnet at ~90s
         }
       );
-      setState({ kind: 'ready', data: res });
+      if (!res.ok) {
+        const body = await res.text().catch(() => '');
+        let errMsg = `Dossier generation failed (HTTP ${res.status})`;
+        try {
+          const parsed = JSON.parse(body) as { error?: string };
+          if (parsed && typeof parsed.error === 'string') {
+            errMsg = parsed.error;
+          }
+        } catch {
+          /* keep default */
+        }
+        setState({ kind: 'error', message: errMsg });
+        return;
+      }
+      const data = (await res.json()) as DossierResponse;
+      setState({ kind: 'ready', data });
     } catch (e) {
       setState({
         kind: 'error',
