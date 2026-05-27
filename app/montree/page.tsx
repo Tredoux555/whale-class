@@ -36,7 +36,64 @@ export default function MontreeLanding() {
   // Video-only locale state. Defaults to EN on every fresh page load.
   // Not persisted — keep it simple; toggle is a stateless visual switch.
   const [videoLocale, setVideoLocale] = useState<SplashVideoLocale>('en');
-  const splashVideo = SPLASH_VIDEOS[videoLocale];
+
+  // User-consent-to-sound state. Browser autoplay policy requires the
+  // initial mount to be muted. Once the user explicitly taps the "Tap
+  // for sound" overlay (or unmutes via native controls), we set this to
+  // true and the unmute state propagates across locale toggles — so the
+  // 中文 video also plays with sound once EN's been unmuted, and vice
+  // versa. Mirrors the YouTube / Instagram autoplay-with-sound pattern.
+  const [userUnmuted, setUserUnmuted] = useState(false);
+
+  // Refs to the two video elements so we can imperatively toggle the
+  // .muted property when the user taps the unmute overlay. React's
+  // declarative `muted` attribute is initial-state-only on some
+  // browsers (Chrome respects it via re-render, but Safari is sticky)
+  // — setting .muted directly via ref is the reliable cross-browser path.
+  const videoRefs = useRef<Record<SplashVideoLocale, HTMLVideoElement | null>>({
+    en: null,
+    zh: null,
+  });
+
+  // Whenever userUnmuted flips or videoLocale changes, sync the .muted
+  // property on every video element. Inactive videos stay muted always
+  // (they're background-buffering); only the active locale's video
+  // reflects userUnmuted. If the active video isn't playing audio (was
+  // muted via tap-to-unmute on first user gesture), the play() call
+  // succeeds because the user has interacted.
+  useEffect(() => {
+    (['en', 'zh'] as const).forEach((loc) => {
+      const el = videoRefs.current[loc];
+      if (!el) return;
+      const isActive = loc === videoLocale;
+      el.muted = !(isActive && userUnmuted);
+      // If the user just unmuted while the video was running, attempt
+      // to keep playing. Some browsers pause when .muted flips false
+      // on a previously-autoplay-muted video; nudging play() back keeps
+      // it seamless. Silent .catch — if it fails the user can still
+      // hit play via native controls.
+      if (isActive && userUnmuted) {
+        el.play().catch(() => {
+          /* user can re-trigger via native controls */
+        });
+      }
+    });
+  }, [videoLocale, userUnmuted]);
+
+  // Prime the HTTP cache for BOTH splash videos on page open. The dual
+  // <video preload="auto"> elements below also trigger the download, but
+  // some mobile browsers deprioritize the buffer of a hidden/transparent
+  // video element — this fetch() guarantees the bytes land in disk cache
+  // so swapping EN ↔ 中文 is instant. Fire-and-forget; failures are silent
+  // (the <video preload="auto"> path is the primary mechanism).
+  useEffect(() => {
+    const urls = Object.values(SPLASH_VIDEOS).map((v) => v.src);
+    urls.forEach((url) => {
+      fetch(url, { cache: 'force-cache', credentials: 'omit' }).catch(() => {
+        /* belt-and-suspenders; <video preload="auto"> is primary */
+      });
+    });
+  }, []);
 
   useEffect(() => {
     const obs = new IntersectionObserver(
@@ -145,29 +202,36 @@ export default function MontreeLanding() {
           font-size: 1rem;
         }
 
-        /* ── Hero corner video ──
-           Autoplay muted loop ambient clip pinned to the top-left of the
-           hero. Sits BELOW the sticky nav (which has its own z-index) and
-           to the LEFT of the centered hero text. Position is absolute so
-           it doesn't affect the centered text layout. The text just stays
-           centered as before; the video is decoration in the corner.
-
-           Mobile (≤640px): position becomes static — the video drops into
-           normal flow above the centered text. Sized down so it doesn't
-           dominate the small viewport.
+        /* ── Hero video ── (Session 131 redesign)
+           Autoplay muted loop ambient clip flowing ABOVE the centered
+           hero text. Was a 28vw top-left corner widget in S130; now a
+           wide hero banner. ~720px max-width on desktop so it stays
+           readable on ultra-wide displays; full width of the hero
+           content box on tablets and phones.
 
            Frame includes a self-contained EN / 中文 toggle overlay in the
-           bottom-right. Independent of the page-wide LanguageToggle.
+           top-right. Independent of the page-wide LanguageToggle.
+
+           Tap-for-sound pill (`.m-hero-corner-video-unmute`) sits in the
+           bottom-left of the frame ABOVE the native controls bar. Shown
+           only when the active video is muted; disappears once the user
+           consents to sound (either by tapping the pill or by using the
+           native unmute icon). The class names retain the `-corner-`
+           historical prefix to minimize churn across S130's other refs.
         */
         .m-hero-corner-video {
-          position: absolute;
-          top: 32px;
-          left: 32px;
-          width: clamp(260px, 28vw, 360px);
+          position: relative;
+          width: 100%;
+          max-width: 720px;
+          margin: 0 auto 44px;
           z-index: 2;
         }
         .m-hero-corner-video-frame {
           position: relative;
+          /* aspect-ratio lives on the frame (not the videos) because both
+             videos are absolutely positioned inside and stacked — the
+             frame defines the height all on its own. */
+          aspect-ratio: 16 / 9;
           border-radius: 12px;
           overflow: hidden;
           background: #06140e;
@@ -177,12 +241,21 @@ export default function MontreeLanding() {
             0 18px 44px -18px rgba(0,0,0,0.75),
             0 6px 14px -8px rgba(0,0,0,0.5);
         }
+        /* Both EN and 中文 video elements render simultaneously, stacked
+           inside the frame. Active one is opacity 1 + receives clicks /
+           keyboard / native controls. Inactive one is opacity 0 + ignored
+           by AT and pointers BUT continues to play muted in the background
+           so its buffer + decode pipeline stay warm. Swapping EN ↔ 中文 is
+           just an opacity flip — no remount, no re-fetch, no buffering. */
         .m-hero-corner-video-element {
+          position: absolute;
+          inset: 0;
           display: block;
           width: 100%;
-          height: auto;
-          aspect-ratio: 16 / 9;
+          height: 100%;
+          object-fit: cover;
           background: #06140e;
+          transition: opacity 180ms ease;
         }
         /* EN / 中文 pill pair lives TOP-RIGHT of the frame, not bottom,
            so it doesn't collide with the native video controls which
@@ -200,7 +273,9 @@ export default function MontreeLanding() {
           backdrop-filter: blur(8px);
           -webkit-backdrop-filter: blur(8px);
           border: 1px solid rgba(255,255,255,0.12);
-          z-index: 2;
+          /* Z-index 3 so the toggle floats above BOTH video elements
+             (active = z-index 2, inactive = z-index 1). */
+          z-index: 3;
         }
         .m-hero-corner-video-toggle-btn {
           appearance: none;
@@ -223,6 +298,42 @@ export default function MontreeLanding() {
         .m-hero-corner-video-toggle-btn[aria-pressed='true'] {
           background: rgba(232,201,106,0.92);
           color: #1a1208;
+        }
+        /* Tap-for-sound pill — Session 131. Sits BOTTOM-LEFT of the
+           video frame (native controls take the full bottom edge but
+           a small pill at left clears the iOS unmute icon on the right).
+           Visible only when the video is muted AND the user hasn't yet
+           consented to sound. Disappears the moment they tap. */
+        .m-hero-corner-video-unmute {
+          position: absolute;
+          bottom: 48px; /* sits above the native controls bar */
+          left: 12px;
+          z-index: 3;
+          appearance: none;
+          border: 1px solid rgba(232,201,106,0.45);
+          background: rgba(232,201,106,0.92);
+          color: #1a1208;
+          font-family: inherit;
+          font-size: 12px;
+          font-weight: 600;
+          letter-spacing: 0.02em;
+          padding: 7px 14px;
+          border-radius: 999px;
+          cursor: pointer;
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          line-height: 1;
+          box-shadow: 0 6px 18px -6px rgba(0,0,0,0.55);
+          transition: opacity 200ms ease, transform 200ms ease;
+          animation: m-hero-unmute-pulse 2400ms ease-in-out infinite;
+        }
+        .m-hero-corner-video-unmute:hover {
+          transform: translateY(-1px);
+        }
+        @keyframes m-hero-unmute-pulse {
+          0%, 100% { box-shadow: 0 6px 18px -6px rgba(232,201,106,0.55); }
+          50% { box-shadow: 0 6px 28px -4px rgba(232,201,106,0.85); }
         }
 
         /* ── Nav ── */
@@ -495,13 +606,21 @@ export default function MontreeLanding() {
           .m-hero .m-label { margin-bottom: 28px; }
           .m-hero-sub { margin-bottom: 32px; }
           .m-hero-corner-video {
-            position: static;
-            width: min(280px, 75vw);
-            margin: 0 auto 36px;
+            /* Mobile: video fills the hero's content area (hero padding
+               is 24px each side → ~94% of viewport on a 380px phone).
+               max-width inherited from desktop rule (720px) — never
+               exceeded on mobile because viewport is well under. */
+            width: 100%;
+            margin: 0 auto 32px;
           }
           .m-hero-corner-video-frame { border-radius: 10px; }
           .m-hero-corner-video-toggle { top: 6px; right: 6px; }
           .m-hero-corner-video-toggle-btn { font-size: 10px; padding: 3px 8px; }
+          .m-hero-corner-video-unmute {
+            font-size: 11px;
+            padding: 6px 12px;
+            bottom: 56px; /* clear of native controls on iOS */
+          }
           .m-editorial { padding: 40px 24px 100px; }
           .m-block { padding: 40px 0; }
           .m-closing { padding: 110px 24px 110px; }
@@ -607,37 +726,107 @@ export default function MontreeLanding() {
             first paint instead. */}
         <div className="m-hero-corner-video">
           <div className="m-hero-corner-video-frame">
-            {/* key={src} so React rebuilds the player when the user
-                flips EN ↔ 中文 — without that, the old buffer + playhead
-                point at the previous locale's MP4 and the new src
-                doesn't load.
+            {/* Dual-video preload pattern (Session 131): render BOTH EN
+                and 中文 video elements at the same time, stacked inside the
+                frame. Both autoplay muted with preload="auto" from first
+                paint — the browser downloads + decodes both files in
+                parallel. Only the active locale is visible (opacity 1) and
+                interactive (controls + pointer events + focusable + AT-
+                visible); the other is opacity 0, aria-hidden, tabIndex -1,
+                pointer-events none but STILL playing muted so its buffer
+                stays warm. Toggling EN ↔ 中文 is just an opacity flip — no
+                remount, no re-fetch, instant.
 
-                controls — gives the user full native HTML5 controls:
-                  • mute / unmute (autoplay starts muted by browser policy,
-                    user clicks the speaker icon to enable sound)
-                  • volume slider
-                  • play / pause
-                  • scrubber + duration
-                  • fullscreen button (rotation works automatically on
-                    devices that support orientation change)
-                  • picture-in-picture on supported browsers
+                Key off the LOCALE (not src) so React keeps each <video>
+                element across toggles. The element instance is stable;
+                only its style + a11y props flip. The old key={src} pattern
+                tore down the player on every flip and re-buffered from
+                scratch — that's what this fixes.
 
-                playsInline — kept so the video does NOT auto-fullscreen on
-                first tap (iOS Safari default). The user can still go
+                Why not just one <video> with a src swap? Same reason:
+                changing src forces a fresh download every time. With two
+                <video> elements, the bytes for both files are already on
+                disk + decoded the moment you toggle.
+
+                controls — only on the active locale's element, so the
+                hidden video's native control bar doesn't ghost-render
+                underneath. Active video gets the full native HTML5
+                control bar (mute/unmute, scrubber, fullscreen, PiP).
+
+                playsInline — kept so the video does NOT auto-fullscreen
+                on first tap (iOS Safari default). User can still go
                 fullscreen explicitly via the controls. */}
-            <video
-              key={splashVideo.src}
-              className="m-hero-corner-video-element"
-              src={splashVideo.src}
-              poster={splashVideo.poster}
-              autoPlay
-              muted
-              loop
-              controls
-              playsInline
-              preload="auto"
-              aria-label="Montree introduction video"
-            />
+            {(['en', 'zh'] as const).map((loc) => {
+              const isActive = videoLocale === loc;
+              const v = SPLASH_VIDEOS[loc];
+              return (
+                <video
+                  key={loc}
+                  ref={(el) => {
+                    videoRefs.current[loc] = el;
+                  }}
+                  className="m-hero-corner-video-element"
+                  src={v.src}
+                  poster={v.poster}
+                  autoPlay
+                  muted
+                  loop
+                  controls={isActive}
+                  playsInline
+                  preload="auto"
+                  aria-hidden={!isActive}
+                  aria-label={isActive ? 'Montree introduction video' : undefined}
+                  tabIndex={isActive ? 0 : -1}
+                  style={{
+                    opacity: isActive ? 1 : 0,
+                    pointerEvents: isActive ? 'auto' : 'none',
+                    zIndex: isActive ? 2 : 1,
+                  }}
+                  /* Volume-change listener: if the user unmutes via the
+                     native controls (speaker icon), reflect that into
+                     userUnmuted state so the pill disappears AND the
+                     unmute persists across locale toggle. Without this,
+                     a user could unmute via the speaker icon, hit 中文,
+                     and find sound gone again. */
+                  onVolumeChange={(e) => {
+                    if (!isActive) return;
+                    const el = e.currentTarget;
+                    if (!el.muted && !userUnmuted) {
+                      setUserUnmuted(true);
+                    }
+                  }}
+                />
+              );
+            })}
+            {/* Tap-for-sound pill — only when the active video is still
+                muted. Once tapped (or once the user uses native controls
+                to unmute), userUnmuted flips true and the pill is
+                removed forever for this page load. */}
+            {!userUnmuted && (
+              <button
+                type="button"
+                className="m-hero-corner-video-unmute"
+                aria-label="Tap to enable sound"
+                onClick={() => setUserUnmuted(true)}
+              >
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+                  <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
+                  <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
+                </svg>
+                Tap for sound
+              </button>
+            )}
             <div className="m-hero-corner-video-toggle" role="group" aria-label="Video language">
               {(['en', 'zh'] as const).map((loc) => (
                 <button

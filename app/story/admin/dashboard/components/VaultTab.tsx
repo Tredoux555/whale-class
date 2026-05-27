@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { VaultFile } from '../types';
 import { formatTime, getVaultFileIcon, isImageFile } from '../utils';
 import { VaultImageViewer } from '@/components/story/admin/VaultImageViewer';
@@ -14,7 +14,12 @@ interface VaultTabProps {
   vaultError: string;
   vaultFiles: VaultFile[];
   uploadingVault: boolean;
-  onVaultUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  /* Session 131 — `onVaultUpload` now accepts a FileList OR a File[].
+     Components that fire it pass `e.target.files` (FileList) from the
+     hidden <input multiple> and the drag-and-drop handler passes
+     `e.dataTransfer.files` (also FileList). */
+  onVaultUpload: (files: File[]) => void;
+  uploadProgress: { done: number; total: number };
   onVaultDownload: (fileId: number, filename: string) => void;
   onVaultDelete: (fileId: number) => void;
   viewingImage: { url: string; filename: string } | null;
@@ -40,6 +45,7 @@ export function VaultTab({
   vaultFiles,
   uploadingVault,
   onVaultUpload,
+  uploadProgress,
   onVaultDownload,
   onVaultDelete,
   viewingImage,
@@ -120,18 +126,16 @@ export function VaultTab({
               </button>
             </div>
 
-            <div className="mb-2">
-              <label className="block text-sm font-medium text-gray-700 mb-2">Upload Photo or Video</label>
-              <input
-                type="file"
-                onChange={onVaultUpload}
-                disabled={uploadingVault}
-                accept="image/*,video/*"
-                className="block w-full text-sm text-gray-600 border border-gray-300 rounded-lg p-3 hover:bg-gray-50 disabled:opacity-50 cursor-pointer"
-              />
-              <p className="mt-1 text-xs text-gray-500">Supported: Images and videos (max 500MB)</p>
-            </div>
-            {uploadingVault && <p className="text-sm text-indigo-600">⟳ Uploading...</p>}
+            <VaultUploadZone
+              uploadingVault={uploadingVault}
+              uploadProgress={uploadProgress}
+              onVaultUpload={onVaultUpload}
+            />
+            {uploadingVault && uploadProgress.total > 0 && (
+              <p className="text-sm text-indigo-600 mt-2">
+                ⟳ Uploading {uploadProgress.done + 1} of {uploadProgress.total}…
+              </p>
+            )}
             {vaultError && (
               <div className="p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">
                 ✗ {vaultError}
@@ -246,5 +250,209 @@ export function VaultTab({
       )}
     </div>
     </>
+  );
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   VaultUploadZone — Session 131
+   ─────────────────────────────────────────────────────────────────
+   Three entry points for getting media into the vault:
+
+     1. Big drag-and-drop card (desktop primary path; also accepts
+        clicks → opens file picker)
+     2. "📷 Take photo" button (mobile primary path; uses
+        `capture="environment"` to open the rear camera directly)
+     3. "🎥 Record video" button (mobile; captures video)
+
+   Multi-file is supported across all three: pick 20 photos from the
+   camera roll → they upload sequentially with a "X of N" indicator.
+
+   The component is intentionally inline inside VaultTab.tsx (not its
+   own file) because it has no other consumer. If a second consumer
+   surfaces, extract.
+   ─────────────────────────────────────────────────────────────── */
+interface VaultUploadZoneProps {
+  uploadingVault: boolean;
+  uploadProgress: { done: number; total: number };
+  onVaultUpload: (files: File[]) => void;
+}
+
+function VaultUploadZone({ uploadingVault, uploadProgress, onVaultUpload }: VaultUploadZoneProps) {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const cameraPhotoInputRef = useRef<HTMLInputElement>(null);
+  const cameraVideoInputRef = useRef<HTMLInputElement>(null);
+  const [dragActive, setDragActive] = useState(false);
+  // dragenter fires on every child element of the drop-zone, then
+  // dragleave fires when crossing OUT of a child even though the
+  // mouse is still inside the parent. Counting enter/leave events
+  // (via a ref — we never need to re-render off the counter, only
+  // off the derived bool) gives a flicker-free "is the mouse over
+  // the zone" signal.
+  const dragCounterRef = useRef(0);
+
+  const handleFileList = (list: FileList | null) => {
+    if (!list || list.length === 0) return;
+    onVaultUpload(Array.from(list));
+  };
+
+  const handleDragEnter = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    dragCounterRef.current += 1;
+    if (e.dataTransfer?.types?.includes('Files')) setDragActive(true);
+  };
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    dragCounterRef.current = Math.max(0, dragCounterRef.current - 1);
+    if (dragCounterRef.current <= 0) setDragActive(false);
+  };
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+    dragCounterRef.current = 0;
+    if (uploadingVault) return;
+    const files = e.dataTransfer?.files;
+    handleFileList(files);
+  };
+
+  const zoneBaseClass =
+    'relative w-full rounded-2xl border-2 border-dashed transition-all cursor-pointer';
+  const zoneIdleClass = 'border-gray-300 bg-gray-50 hover:border-indigo-400 hover:bg-indigo-50/40';
+  const zoneActiveClass = 'border-indigo-500 bg-indigo-50 ring-4 ring-indigo-100';
+  const zoneDisabledClass = 'opacity-60 cursor-wait';
+
+  const zoneClass = [
+    zoneBaseClass,
+    dragActive ? zoneActiveClass : zoneIdleClass,
+    uploadingVault ? zoneDisabledClass : '',
+  ]
+    .filter(Boolean)
+    .join(' ');
+
+  return (
+    <div>
+      {/* Hidden input — drives the drop-zone click + the "Choose files" button. */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        multiple
+        accept="image/*,video/*"
+        className="hidden"
+        disabled={uploadingVault}
+        onChange={(e) => {
+          handleFileList(e.target.files);
+          // Reset so picking the SAME file twice in a row still fires.
+          e.target.value = '';
+        }}
+      />
+      {/* Mobile camera — photo. `capture="environment"` asks the OS to
+          open the rear camera directly instead of the file picker.
+          On desktop this attr is ignored — it just behaves like a
+          normal photo picker. */}
+      <input
+        ref={cameraPhotoInputRef}
+        type="file"
+        accept="image/*"
+        capture="environment"
+        className="hidden"
+        disabled={uploadingVault}
+        onChange={(e) => {
+          handleFileList(e.target.files);
+          e.target.value = '';
+        }}
+      />
+      {/* Mobile camera — video. */}
+      <input
+        ref={cameraVideoInputRef}
+        type="file"
+        accept="video/*"
+        capture="environment"
+        className="hidden"
+        disabled={uploadingVault}
+        onChange={(e) => {
+          handleFileList(e.target.files);
+          e.target.value = '';
+        }}
+      />
+
+      {/* The drop-zone card */}
+      <div
+        className={zoneClass}
+        onDragEnter={handleDragEnter}
+        onDragLeave={handleDragLeave}
+        onDragOver={handleDragOver}
+        onDrop={handleDrop}
+        onClick={() => !uploadingVault && fileInputRef.current?.click()}
+        role="button"
+        tabIndex={0}
+        onKeyDown={(e) => {
+          if ((e.key === 'Enter' || e.key === ' ') && !uploadingVault) {
+            e.preventDefault();
+            fileInputRef.current?.click();
+          }
+        }}
+        aria-label="Upload photos or videos"
+        aria-disabled={uploadingVault}
+      >
+        <div className="flex flex-col items-center justify-center gap-3 p-8 text-center">
+          <div className="text-5xl select-none">
+            {uploadingVault
+              ? '⟳'
+              : dragActive
+                ? '📥'
+                : '📤'}
+          </div>
+          <div>
+            <p className="text-base font-semibold text-gray-800">
+              {uploadingVault
+                ? `Uploading ${uploadProgress.done + 1} of ${uploadProgress.total}…`
+                : dragActive
+                  ? 'Drop to upload'
+                  : 'Drag files here or tap to choose'}
+            </p>
+            <p className="mt-1 text-xs text-gray-500">
+              Photos and videos · multiple at once · max 500MB each
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Mobile-friendly camera buttons. Always visible (no UA sniff)
+          — on desktop they fall back to opening a normal file picker. */}
+      <div className="mt-3 grid grid-cols-2 gap-2">
+        <button
+          type="button"
+          disabled={uploadingVault}
+          onClick={() => cameraPhotoInputRef.current?.click()}
+          className="flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 active:bg-gray-100 disabled:opacity-50 disabled:cursor-wait transition-colors"
+        >
+          📷 Take photo
+        </button>
+        <button
+          type="button"
+          disabled={uploadingVault}
+          onClick={() => cameraVideoInputRef.current?.click()}
+          className="flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 active:bg-gray-100 disabled:opacity-50 disabled:cursor-wait transition-colors"
+        >
+          🎥 Record video
+        </button>
+      </div>
+
+      {/* Progress bar — only during multi-file uploads. */}
+      {uploadingVault && uploadProgress.total > 1 && (
+        <div className="mt-3 h-1.5 w-full bg-gray-200 rounded-full overflow-hidden">
+          <div
+            className="h-full bg-indigo-500 transition-all"
+            style={{ width: `${(uploadProgress.done / uploadProgress.total) * 100}%` }}
+          />
+        </div>
+      )}
+    </div>
   );
 }
