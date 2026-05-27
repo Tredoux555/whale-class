@@ -23,6 +23,8 @@ import type Anthropic from '@anthropic-ai/sdk';
 import { AI_MODEL } from '@/lib/ai/anthropic';
 import { unpackTeacher } from './frameworks/unpack-teacher';
 import { childFocus } from './frameworks/child-focus';
+import { consultGuru } from './tools/consult_guru';
+import { detectPattern } from './tools/detect_pattern';
 import {
   writeMemory,
   recallMemories,
@@ -733,6 +735,103 @@ export async function executeTracyTool(
           result_summary: `${memories.length} memor${
             memories.length === 1 ? 'y' : 'ies'
           }`,
+        };
+      }
+
+      // ── DOSSIER PREP: consult_guru ───────────────────────────────
+      // Session 133 — Tracy → Guru bridge. School-scoped via deps.schoolId,
+      // re-verified inside consultGuru() as belt-and-braces.
+      case 'consult_guru': {
+        const childId = String(input.child_id || '').trim();
+        if (!childId) return { success: false, error: 'child_id is required' };
+        const keywords = Array.isArray(input.topic_keywords)
+          ? (input.topic_keywords as unknown[])
+              .map((k) => String(k))
+              .filter((k) => k.trim().length > 0)
+          : undefined;
+        const limitRaw = Number(input.limit);
+        const result = await consultGuru(
+          {
+            childId,
+            schoolId,
+            topicKeywords: keywords,
+            limit: Number.isFinite(limitRaw) ? limitRaw : undefined,
+          },
+          supabase
+        );
+        if (!result.ok) {
+          return { success: false, error: result.error || 'consult_guru failed' };
+        }
+        const d = result.data!;
+        return {
+          success: true,
+          data: d,
+          result_summary: `${d.analyses.length} of ${d.total_matches} Guru analyses${
+            d.keyword_filtered ? ' (keyword-filtered)' : ''
+          }`,
+        };
+      }
+
+      // ── DOSSIER PREP: detect_pattern ─────────────────────────────
+      // Strict-phrase matching per the Yo-yo lesson. No AI spend; pure DB scan.
+      case 'detect_pattern': {
+        const childId = String(input.child_id || '').trim();
+        if (!childId) return { success: false, error: 'child_id is required' };
+        const themePhrases = Array.isArray(input.theme_phrases)
+          ? (input.theme_phrases as unknown[])
+              .map((p) => String(p))
+              .filter((p) => p.trim().length > 0)
+          : [];
+        if (themePhrases.length === 0) {
+          return {
+            success: false,
+            error: 'theme_phrases is required (non-empty array)',
+          };
+        }
+        const negativePhrases = Array.isArray(input.negative_phrases)
+          ? (input.negative_phrases as unknown[])
+              .map((p) => String(p))
+              .filter((p) => p.trim().length > 0)
+          : undefined;
+        const matchMode =
+          input.match === 'all' || input.match === 'any'
+            ? (input.match as 'all' | 'any')
+            : undefined;
+        const daysBackRaw = Number(input.days_back);
+        const maxQuotesRaw = Number(input.max_quotes);
+        const result = await detectPattern(
+          {
+            childId,
+            schoolId,
+            themePhrases,
+            match: matchMode,
+            negativePhrases,
+            daysBack: Number.isFinite(daysBackRaw) ? daysBackRaw : undefined,
+            maxQuotes: Number.isFinite(maxQuotesRaw) ? maxQuotesRaw : undefined,
+          },
+          supabase
+        );
+        if (!result.ok) {
+          return { success: false, error: result.error || 'detect_pattern failed' };
+        }
+        const d = result.data!;
+        return {
+          success: true,
+          data: d,
+          result_summary: `${d.event_count} event(s) across ${d.days_scanned} days, ${d.cluster_days.length} cluster day(s)`,
+        };
+      }
+
+      // ── DOSSIER PREP: prepare_parent_meeting (Phase B implements) ─
+      // Definition is exposed in tool-definitions.ts; full implementation
+      // lands in Session 133 Phase B (lib/montree/tracy/tools/prepare_parent_meeting.ts).
+      // Until then this returns a graceful "not yet implemented" so Sonnet
+      // can recover by calling the underlying primitives directly.
+      case 'prepare_parent_meeting': {
+        return {
+          success: false,
+          error:
+            'prepare_parent_meeting is not yet implemented in this build. Call child_focus + consult_guru + detect_pattern directly for now.',
         };
       }
 

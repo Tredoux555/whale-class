@@ -167,6 +167,100 @@ export const TRACY_TOOLS: Tool[] = [
     },
   },
 
+  // ── DOSSIER PREP TOOLS (Session 133 — Yo-yo workflow native) ─────────
+  // These three tools are the building blocks of the parent-meeting dossier
+  // workflow. They can be called in chat directly when the principal asks a
+  // specific question that maps to one of them — but their primary use is
+  // as sub-calls inside `prepare_parent_meeting`.
+  {
+    name: 'consult_guru',
+    description:
+      "Retrieve pedagogical and developmental analyses Guru has already produced for a specific child. Call this whenever the principal is preparing for a difficult parent conversation, when she asks 'what has Guru said about X?', 'what's the developmental read on Y?', or when you need the substantive pedagogical reasoning behind a recommendation. Each analysis returned includes Guru's insight, root cause, action plan, parent talking point, and outcome tracking. Filters out per-photo identification queries. Pass `topic_keywords` to narrow to relevant chats (e.g. ['sleep', 'rest', 'regulation']). Requires child_id — call child_focus or find_children_by_name first if you only have a name.",
+    input_schema: {
+      type: 'object',
+      properties: {
+        child_id: { type: 'string' },
+        topic_keywords: {
+          type: 'array',
+          items: { type: 'string' },
+          description:
+            "Optional keywords to narrow recall. Each entry is matched as a case-insensitive substring against the question + insight + root cause + parent talking point. E.g. ['sleep','rest','regulation']. If omitted, returns the most recent analyses.",
+        },
+        limit: {
+          type: 'number',
+          description: 'Max analyses to return. Default 8, cap 30.',
+        },
+      },
+      required: ['child_id'],
+    },
+  },
+  {
+    name: 'detect_pattern',
+    description:
+      "Scan a child's recent observations (photos + behavioural observations + teacher notes + work-session notes) for thematic patterns. Use when the principal asks 'is this happening often?', 'is there a pattern?', 'how often does X happen?', or before a parent meeting to identify the strongest signal in the record. STRICT-PHRASE MATCHING — pass multi-word phrases that must appear verbatim (e.g. ['lying down', 'lay down', 'asleep']) rather than single keywords ('sleep'). Pass `negative_phrases` to disqualify obvious false positives (e.g. ['resting hands','resting place']). Returns: event count, weekday distribution, hour distribution, cluster days (days with >1 event), and up to 8 representative quotes with dates.",
+    input_schema: {
+      type: 'object',
+      properties: {
+        child_id: { type: 'string' },
+        theme_phrases: {
+          type: 'array',
+          items: { type: 'string' },
+          description:
+            "Strict positive phrases. Each entry is a case-insensitive substring that signals the pattern you're looking for. Prefer multi-word phrases over single keywords to avoid false positives. Examples: ['lying down','lay down','went still','head on the mat'].",
+        },
+        match: {
+          type: 'string',
+          enum: ['any', 'all'],
+          description:
+            "How the positive phrases combine. 'any' (default) = a single match is enough. 'all' = every phrase must appear in the record.",
+        },
+        negative_phrases: {
+          type: 'array',
+          items: { type: 'string' },
+          description:
+            "Optional disqualifiers. Records containing any of these are dropped EVEN IF a positive phrase fires. The Yo-yo lesson: 'resting hands' is not a rest event, so include 'resting hands' here.",
+        },
+        days_back: {
+          type: 'number',
+          description: 'How many days back to scan. Default 90, cap 365.',
+        },
+        max_quotes: {
+          type: 'number',
+          description: 'Cap on representative quotes returned. Default 8, cap 40.',
+        },
+      },
+      required: ['child_id', 'theme_phrases'],
+    },
+  },
+  {
+    name: 'prepare_parent_meeting',
+    description:
+      "Produce a complete pre-meeting dossier for a parent conversation. CALL ONLY when the principal has explicitly asked for help preparing for a SPECIFIC parent meeting — phrases like 'help me prepare for Yo-yo's mum tomorrow', 'pull together a dossier on X', 'I'm meeting [parent] about [child]'. Calls child_focus + consult_guru + detect_pattern internally — DO NOT call those separately first; this tool orchestrates them. Output is a structured Markdown dossier the principal reads once the night before and walks into the meeting prepared (Tracy's note, child profile, what we're observing, working interpretation, parent context, conversation script, what NOT to say, pushback handlers, follow-up plan, sources). Result is cached for 24h so the principal can re-open without re-spending Sonnet tokens. Cost ~$0.05 per dossier — high-stakes deliberate call, never Haiku.",
+    input_schema: {
+      type: 'object',
+      properties: {
+        child_id: { type: 'string' },
+        meeting_purpose: {
+          type: 'string',
+          description:
+            "Short free-text describing what the meeting is about, in the principal's words. E.g. 'concerns about sleeping pattern', 'mother is unhappy about reading progress', 'introducing the developmental observation we've made'.",
+        },
+        parent_context: {
+          type: 'string',
+          description:
+            "Optional free-text override / nuance about the parent. Anything the principal knows that should inform tone — e.g. 'very expectation-driven, will fight any deficit framing', 'first-time parent, anxious', 'fluent in English but prefers Mandarin for emotional conversations'. The tool will ALSO auto-read `guru_parent_states` from the child's settings JSONB for inferred state; parent_context (when provided) wins on tone calibration.",
+        },
+        output_format: {
+          type: 'string',
+          enum: ['markdown', 'html', 'json'],
+          description:
+            "Output container. Default 'markdown' (renders as a copy-card on the principal's screen). 'html' for direct PDF rendering. 'json' for structured display in custom UI.",
+        },
+      },
+      required: ['child_id', 'meeting_purpose'],
+    },
+  },
+
   // ── MEMORY TOOLS (Session 99 — migration 195) ────────────────────────
   // Tracy's persistent relational memory. The active set (top-30 most recent)
   // is loaded into the system prompt header on every turn. These tools let
