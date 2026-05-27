@@ -668,6 +668,18 @@ export default function SuperAdminPage() {
               📚 Community
             </Link>
             <Link
+              href="/montree/super-admin/all-logins"
+              className="px-3 py-2 rounded-lg font-medium text-sm transition-colors"
+              style={{
+                background: 'rgba(8,20,12,0.55)',
+                border: '1px solid rgba(232,201,106,0.32)',
+                color: 'rgba(232,201,106,0.95)',
+              }}
+              title="Every login code in the system — principals, teachers, agents"
+            >
+              🔑 All logins
+            </Link>
+            <Link
               href="/montree/onboarding"
               className="px-3 py-2 rounded-lg font-medium text-sm transition-colors"
               style={{ background: '#34d399', color: '#0a1a0f' }}
