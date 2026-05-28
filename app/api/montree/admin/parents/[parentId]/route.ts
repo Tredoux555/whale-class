@@ -78,7 +78,7 @@ export async function PATCH(
   try {
     const { error } = await supabase
       .from('montree_parents')
-      .update(patch)
+      .update(patch as never)
       .eq('id', parentId)
       .eq('school_id', auth.schoolId);
     if (error) {
@@ -178,7 +178,7 @@ export async function DELETE(
       reason,
       meetings_count_at_deletion: meetingCount,
       profile_existed_at_deletion: profileExisted,
-    });
+    } as never);
   } catch (err) {
     // Non-fatal — log loudly + proceed. Without audit, a deletion is
     // still done, but the operator should notice the warning.

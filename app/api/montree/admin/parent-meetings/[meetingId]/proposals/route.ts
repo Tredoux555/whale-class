@@ -167,7 +167,7 @@ export async function POST(
           evaluated_by_role: 'principal',
           evaluated_by_id: auth.userId,
           last_evaluated_at: new Date().toISOString(),
-        })
+        } as never)
         .eq('id', existing.id)
         .eq('school_id', auth.schoolId);
     } else {
@@ -180,7 +180,7 @@ export async function POST(
         evaluated_by_role: 'principal',
         evaluated_by_id: auth.userId,
         last_evaluated_at: new Date().toISOString(),
-      });
+      } as never);
     }
   }
 
@@ -190,7 +190,7 @@ export async function POST(
     .update({
       proposals_reviewed_at: new Date().toISOString(),
       proposals_review_outcome: outcome,
-    })
+    } as never)
     .eq('id', analysis.id)
     .eq('school_id', auth.schoolId);
 

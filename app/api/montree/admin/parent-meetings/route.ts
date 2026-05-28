@@ -155,7 +155,7 @@ export async function POST(request: NextRequest) {
   try {
     const { data, error } = await supabase
       .from('montree_parent_meetings')
-      .insert(payload)
+      .insert(payload as never)
       .select('*')
       .single();
     if (error) {
@@ -304,7 +304,7 @@ export async function PATCH(request: NextRequest) {
 
   const { data, error } = await supabase
     .from('montree_parent_meetings')
-    .update(patch)
+    .update(patch as never)
     .eq('id', meetingId)
     .eq('school_id', auth.schoolId)
     .select('*')

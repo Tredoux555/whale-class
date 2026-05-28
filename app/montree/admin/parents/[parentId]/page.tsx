@@ -483,7 +483,7 @@ export default function ParentPage() {
                   {meetings.map((m) => (
                     <Link
                       key={m.id}
-                      href={`/montree/admin/parents/${parentId}/meetings/${m.id}/review`}
+                      href={`/montree/admin/parents/${parentId}/meetings/${m.id}`}
                       style={{
                         textDecoration: 'none',
                         color: T.textPrimary,

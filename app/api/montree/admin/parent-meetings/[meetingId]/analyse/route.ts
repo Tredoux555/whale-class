@@ -301,7 +301,7 @@ export async function POST(
       output_tokens: outputTokens,
       cost_usd: costUsd,
       generation_ms: generationMs,
-    })
+    } as never)
     .select('*')
     .single();
 
@@ -315,7 +315,7 @@ export async function POST(
   // 7. Link analysis onto the meeting + bump parent profile stats.
   await supabase
     .from('montree_parent_meetings')
-    .update({ analysis_id: analysisRow.id })
+    .update({ analysis_id: analysisRow.id } as never)
     .eq('id', meetingId)
     .eq('school_id', auth.schoolId);
 
@@ -326,7 +326,7 @@ export async function POST(
       .update({
         meeting_count: (existingProfile.meeting_count ?? 0) + 1,
         last_meeting_date: new Date().toISOString(),
-      })
+      } as never)
       .eq('parent_id', meeting.parent_id)
       .eq('school_id', auth.schoolId);
   }
