@@ -45,7 +45,22 @@ interface PostBody {
   meeting_purpose: string;
   parent_context?: string;
   output_format?: 'markdown' | 'html' | 'json';
+  /**
+   * Principal's UI locale. The dossier output (section headers, prose,
+   * blockquote scripts, follow-up plan) is produced in this language.
+   * Defaults to 'en'. Validated against SUPPORTED_LOCALES.
+   */
+  locale?: string;
 }
+
+// Subset of i18n SUPPORTED_LOCALES the dossier prompt knows how to handle.
+// Mirror of lib/montree/i18n/locale-config.ts — kept local to avoid
+// importing the whole config into a hot route. Validation here defends
+// against client-injected locale codes ("uk-UK", "<script>") flowing
+// into the Sonnet prompt unbounded.
+const SUPPORTED_DOSSIER_LOCALES = new Set([
+  'en', 'zh', 'es', 'de', 'fr', 'pt', 'nl', 'it', 'ja', 'ko', 'uk', 'ru',
+]);
 
 export async function POST(request: NextRequest) {
   const auth = await verifySchoolRequest(request);
@@ -120,6 +135,14 @@ export async function POST(request: NextRequest) {
       ? body.output_format
       : 'markdown';
 
+  // Validate locale against the supported set. Defaults to 'en' if the
+  // client sent something we don't recognise — fails open with English
+  // output rather than rejecting the request.
+  const locale =
+    typeof body.locale === 'string' && SUPPORTED_DOSSIER_LOCALES.has(body.locale)
+      ? body.locale
+      : 'en';
+
   const supabase = getSupabase();
 
   // Tier gate. Free schools get 402 with upgrade hint, same shape as
@@ -154,6 +177,7 @@ export async function POST(request: NextRequest) {
     meetingPurpose: body.meeting_purpose,
     parentContext: body.parent_context,
     outputFormat,
+    locale,
     anthropic,
     supabase,
   });
@@ -211,10 +235,15 @@ export async function GET(request: NextRequest) {
   const meetingPurpose = url.searchParams.get('meeting_purpose');
   const parentContext = url.searchParams.get('parent_context');
   const format = url.searchParams.get('format');
+  const localeParam = url.searchParams.get('locale');
   const outputFormat =
     format === 'html' || format === 'json' || format === 'markdown'
       ? (format as 'html' | 'json' | 'markdown')
       : 'html'; // default html for GET — it's the printable path
+  const locale =
+    localeParam && SUPPORTED_DOSSIER_LOCALES.has(localeParam)
+      ? localeParam
+      : 'en';
 
   if (!childId || !meetingPurpose) {
     return NextResponse.json(
@@ -252,6 +281,7 @@ export async function GET(request: NextRequest) {
     meetingPurpose,
     parentContext: parentContext ?? undefined,
     outputFormat,
+    locale,
     anthropic,
     supabase,
   });
@@ -272,6 +302,12 @@ export async function GET(request: NextRequest) {
         // the in-DB dossier cache where it can be invalidated when the
         // underlying child data changes.
         'Cache-Control': 'private, no-store',
+        // Reflect the dossier's locale to the browser. Combined with the
+        // <html lang="..."> emitted by renderDossierHtml, this means
+        // browser print-to-PDF picks up the right typography defaults
+        // and accessibility tools (screen readers, translation) treat
+        // the document as the principal's UI language.
+        'Content-Language': locale,
       },
     });
   }

@@ -22,6 +22,7 @@
 
 import { useState, useCallback } from 'react';
 import { montreeApi } from '@/lib/montree/api';
+import { useI18n } from '@/lib/montree/i18n';
 import { DossierRenderer } from './DossierRenderer';
 
 interface DossierResponse {
@@ -70,8 +71,11 @@ export function PrepareForMeetingButton({
   classroomName,
   defaultPurpose = '',
   variant = 'pill',
-  label = 'Prepare for a parent meeting',
+  label,
 }: PrepareForMeetingButtonProps) {
+  const { t, locale } = useI18n();
+  const buttonLabel = label ?? t('dossier.button.labelLong');
+
   const [state, setState] = useState<State>({ kind: 'idle' });
   const [purpose, setPurpose] = useState<string>(defaultPurpose);
   const [parentContext, setParentContext] = useState<string>('');
@@ -85,7 +89,7 @@ export function PrepareForMeetingButton({
     if (!purpose.trim()) {
       setState({
         kind: 'error',
-        message: 'Tell me what the meeting is about first.',
+        message: t('dossier.error.purposeRequired'),
       });
       return;
     }
@@ -93,6 +97,8 @@ export function PrepareForMeetingButton({
     try {
       // Session 133 — montreeApi returns a Response; we unwrap the JSON
       // body ourselves. Same pattern as every other Tracy-side route call.
+      // Pass `locale` so Sonnet writes the dossier in the principal's
+      // active UI language (validated server-side against SUPPORTED_DOSSIER_LOCALES).
       const res = await montreeApi(
         '/api/montree/admin/dossier/parent-meeting',
         {
@@ -102,13 +108,14 @@ export function PrepareForMeetingButton({
             meeting_purpose: purpose.trim(),
             parent_context: parentContext.trim() || undefined,
             output_format: 'markdown',
+            locale,
           }),
           timeout: 180_000, // dossier generation is slow — Sonnet at ~90s
         }
       );
       if (!res.ok) {
         const body = await res.text().catch(() => '');
-        let errMsg = `Dossier generation failed (HTTP ${res.status})`;
+        let errMsg = t('dossier.error.generic');
         try {
           const parsed = JSON.parse(body) as { error?: string };
           if (parsed && typeof parsed.error === 'string') {
@@ -125,10 +132,10 @@ export function PrepareForMeetingButton({
     } catch (e) {
       setState({
         kind: 'error',
-        message: e instanceof Error ? e.message : 'Dossier generation failed',
+        message: e instanceof Error ? e.message : t('dossier.error.generic'),
       });
     }
-  }, [childId, purpose, parentContext]);
+  }, [childId, purpose, parentContext, locale, t]);
 
   const printHref = (() => {
     if (state.kind !== 'ready') return undefined;
@@ -136,6 +143,7 @@ export function PrepareForMeetingButton({
       child_id: childId,
       meeting_purpose: purpose.trim(),
       format: 'html',
+      locale,
     });
     if (parentContext.trim()) params.set('parent_context', parentContext.trim());
     return `/api/montree/admin/dossier/parent-meeting?${params.toString()}`;
@@ -310,58 +318,51 @@ export function PrepareForMeetingButton({
           type="button"
           onClick={open}
           className={variant === 'block' ? 'btn-block' : 'btn-pill'}
-          title="Use Tracy to prepare a dossier for a parent meeting"
+          title={t('dossier.button.title')}
         >
           <span aria-hidden="true">📋</span>
-          <span>{label}</span>
+          <span>{buttonLabel}</span>
         </button>
       )}
 
       {state.kind === 'modal' && (
         <div className="overlay" onClick={close}>
           <div className="modal" onClick={(e) => e.stopPropagation()}>
-            <h2>Prepare for a meeting about {childName}</h2>
-            <p className="sub">
-              Tracy will pull every observation, Guru analysis, and pattern
-              in {childName}&apos;s record and build a dossier you can read
-              once and walk into the meeting prepared.
-            </p>
+            <h2>{t('dossier.modal.title', { childName })}</h2>
+            <p className="sub">{t('dossier.modal.subtitle', { childName })}</p>
 
             <div className="field">
-              <label htmlFor="purpose">What is the meeting about?</label>
+              <label htmlFor="purpose">{t('dossier.field.purpose.label')}</label>
               <textarea
                 id="purpose"
                 value={purpose}
                 onChange={(e) => setPurpose(e.target.value)}
-                placeholder="e.g. concerns about the emerging sleep pattern"
+                placeholder={t('dossier.field.purpose.placeholder')}
                 rows={2}
                 autoFocus
               />
-              <div className="field-hint">
-                A short sentence is plenty. Tracy fills in the rest.
-              </div>
+              <div className="field-hint">{t('dossier.field.purpose.hint')}</div>
             </div>
 
             <div className="field">
               <label htmlFor="parent_context">
-                Anything I should know about the parent? (optional)
+                {t('dossier.field.parentContext.label')}
               </label>
               <textarea
                 id="parent_context"
                 value={parentContext}
                 onChange={(e) => setParentContext(e.target.value)}
-                placeholder="e.g. expectation-driven, will fight any 'special' framing"
+                placeholder={t('dossier.field.parentContext.placeholder')}
                 rows={3}
               />
               <div className="field-hint">
-                Free-text wins on tone calibration. If you leave this blank,
-                Tracy uses what Guru has inferred about the parent.
+                {t('dossier.field.parentContext.hint')}
               </div>
             </div>
 
             <div className="actions">
               <button type="button" className="cancel" onClick={close}>
-                Cancel
+                {t('common.cancel')}
               </button>
               <button
                 type="button"
@@ -369,7 +370,7 @@ export function PrepareForMeetingButton({
                 onClick={fire}
                 disabled={!purpose.trim()}
               >
-                Build my dossier
+                {t('dossier.action.buildDossier')}
               </button>
             </div>
           </div>
@@ -381,9 +382,7 @@ export function PrepareForMeetingButton({
           <div className="modal">
             <div className="loading">
               <div className="spinner" />
-              <p>
-                Tracy is reading {childName}&apos;s record, pulling Guru&apos;s analyses, and writing the dossier. About a minute.
-              </p>
+              <p>{t('dossier.loading', { childName })}</p>
             </div>
           </div>
         </div>
@@ -392,18 +391,18 @@ export function PrepareForMeetingButton({
       {state.kind === 'error' && (
         <div className="overlay" onClick={close}>
           <div className="modal" onClick={(e) => e.stopPropagation()}>
-            <h2>Something went wrong</h2>
+            <h2>{t('dossier.error.title')}</h2>
             <div className="error">{state.message}</div>
             <div className="actions">
               <button type="button" className="cancel" onClick={close}>
-                Close
+                {t('common.close')}
               </button>
               <button
                 type="button"
                 className="primary"
                 onClick={() => setState({ kind: 'modal' })}
               >
-                Try again
+                {t('dossier.action.tryAgain')}
               </button>
             </div>
           </div>
@@ -421,8 +420,10 @@ export function PrepareForMeetingButton({
               childName={state.data.child_name}
               subtitle={
                 classroomName
-                  ? `${classroomName} · prepared by Tracy`
-                  : 'prepared by Tracy'
+                  ? t('dossier.renderer.subtitleWithClassroom', {
+                      classroom: classroomName,
+                    })
+                  : t('dossier.renderer.subtitle')
               }
               meta={{
                 generated_at: state.data.generated_at,

@@ -23,6 +23,9 @@
 // We deliberately do NOT support tables, fenced code blocks, or images.
 // If a future dossier section needs them, extend.
 
+import { getTranslator, getIntlLocale } from './i18n/server';
+import { isValidLocale, type Locale } from './i18n/locales';
+
 const ESCAPE_HTML: Record<string, string> = {
   '&': '&amp;',
   '<': '&lt;',
@@ -248,6 +251,13 @@ export interface DossierHtmlOpts {
   };
   /** Show a print button at the top of the page. Default true. */
   showPrintButton?: boolean;
+  /**
+   * Locale for the surrounding chrome ({@code <html lang>}, date formatting,
+   * "Generated:" / "Sources:" / "Print to PDF" labels). The dossier BODY is
+   * written in the requested locale by Sonnet upstream — this just makes the
+   * wrapper match. Defaults to 'en'.
+   */
+  locale?: Locale | string;
 }
 
 /**
@@ -259,11 +269,16 @@ export function renderDossierHtml(
   markdownBody: string,
   opts: DossierHtmlOpts
 ): string {
+  const localeRaw = opts.locale ?? 'en';
+  const locale: Locale = isValidLocale(localeRaw) ? localeRaw : 'en';
+  const t = getTranslator(locale);
+  const intlLocale = getIntlLocale(locale);
+
   const body = renderDossierMarkdownToHtml(markdownBody);
   const titleHtml = escapeHtml(opts.title);
   const subtitleHtml = opts.subtitle ? escapeHtml(opts.subtitle) : '';
   const generatedAt = opts.meta?.generated_at
-    ? new Date(opts.meta.generated_at).toLocaleString('en-US', {
+    ? new Date(opts.meta.generated_at).toLocaleString(intlLocale, {
         weekday: 'long',
         year: 'numeric',
         month: 'long',
@@ -274,8 +289,16 @@ export function renderDossierHtml(
     : null;
   const showPrint = opts.showPrintButton !== false;
 
+  // Strip the trailing colon from the React-side i18n keys; the chrome here
+  // re-adds it directly inside `<strong>...</strong>` and we want one source
+  // of truth in en.ts ("Prepared:" / "Sources:") that BOTH the inline
+  // DossierRenderer and this printable view can share.
+  const preparedLabel = t('dossier.renderer.prepared').replace(/:\s*$/, '');
+  const sourcesLabel = t('dossier.renderer.sources').replace(/:\s*$/, '');
+  const printLabel = t('dossier.printButton');
+
   return `<!DOCTYPE html>
-<html lang="en">
+<html lang="${escapeHtml(locale)}">
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -291,8 +314,8 @@ ${subtitleHtml ? `<p class="dossier-meta"><strong>${subtitleHtml}</strong></p>` 
 ${
   generatedAt || opts.meta?.source_counts
     ? `<div class="dossier-meta">${[
-        generatedAt ? `<strong>Generated:</strong> ${generatedAt}` : '',
-        opts.meta?.source_counts ? `<strong>Sources:</strong> ${escapeHtml(opts.meta.source_counts)}` : '',
+        generatedAt ? `<strong>${escapeHtml(preparedLabel)}:</strong> ${generatedAt}` : '',
+        opts.meta?.source_counts ? `<strong>${escapeHtml(sourcesLabel)}:</strong> ${escapeHtml(opts.meta.source_counts)}` : '',
       ]
         .filter(Boolean)
         .join(' &middot; ')}</div>`
@@ -302,7 +325,7 @@ ${
   showPrint
     ? `<div class="no-print" style="margin-bottom:24px;">
   <button onclick="window.print()" style="background:#34d399;color:#0d2818;border:none;padding:8px 16px;border-radius:6px;font-family:inherit;font-weight:600;cursor:pointer;font-size:14px;">
-    Print to PDF
+    ${escapeHtml(printLabel)}
   </button>
 </div>`
     : ''
