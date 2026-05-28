@@ -50,11 +50,23 @@ import {
   formatMemoriesForPrompt,
 } from '@/lib/montree/tracy/memory';
 
-export const maxDuration = 120;
+// Railway honours requests as long as the server keeps writing. The
+// previous 120s ceiling here paired with a 90s watchdog meant complex
+// Tracy tool chains (consult_guru → detect_pattern → child_focus on a
+// child with rich history) silently capped out and the user saw a
+// frozen thinking-dots avatar. Tracy genuinely needs ~150-180s on a
+// hard question; bumped to give that headroom plus margin.
+export const maxDuration = 300;
 
 const MAX_TOOL_ROUNDS = 5;
-const TOTAL_TIMEOUT_MS = 90_000;
-const API_TIMEOUT_MS = 50_000;
+// Watchdog ceiling on the full tool-use loop. Must be lower than
+// `maxDuration` so we surface a clean error to the client instead of
+// the platform killing the response mid-stream. Opus 4.6 + 3-4 tool
+// calls on a real child = realistically 60-150s; 240s gives slack.
+const TOTAL_TIMEOUT_MS = 240_000;
+// Per-Anthropic-call timeout. One Opus turn rarely exceeds 60s even
+// with tool use; 90s is generous but bounded.
+const API_TIMEOUT_MS = 90_000;
 const MAX_TOOL_RESULT_CHARS = 50_000;
 
 // Opus 4.6 pricing as of May 2026 — kept here so cost_usd in the log is
@@ -258,7 +270,19 @@ export async function POST(request: NextRequest) {
     ]);
     if (schoolRes.data?.name) schoolName = schoolRes.data.name;
     if (principalRes.data?.name) {
-      principalName = principalRes.data.name.split(' ')[0] || 'Principal';
+      // Resolve the name Tracy uses to address the principal.
+      //
+      // For a regular first+last name ("Tredoux Willemse"), we want the
+      // first name — Tracy greets warmly with "Hi, Tredoux". But when the
+      // row uses a title-prefixed name ("Principal Leu", "Ms Chen",
+      // "Mr Singh"), splitting on space gives just the title — "Hi,
+      // Principal" reads cold and wrong. Detect title prefixes and use
+      // the full name so the greeting lands as "Hi, Principal Leu".
+      const fullName = principalRes.data.name.trim();
+      const TITLE_PREFIXES = /^(principal|ms|mrs|mr|dr|prof|professor|teacher|head|director)\.?\s+/i;
+      principalName = TITLE_PREFIXES.test(fullName)
+        ? fullName
+        : (fullName.split(' ')[0] || 'Principal');
     }
   } catch {
     // Keep defaults.

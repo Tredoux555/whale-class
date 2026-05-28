@@ -53,7 +53,23 @@ export default function ThinkingIndicator({
       aria-live="polite"
       aria-label={ariaLabel}
     >
-      <span className="tracy-pulse" style={{ display: 'inline-flex' }}>
+      {/*
+        Wrapper sized EXACTLY to the avatar with line-height:0 so there's
+        no baseline gap below the inline element. Without these, the
+        box-shadow on `.tracy-pulse` was painting an asymmetric halo —
+        a few extra pixels of "wrapper" hung below the image, so the
+        bottom side of the glow looked further out than the top.
+      */}
+      <span
+        className="tracy-pulse"
+        style={{
+          display: 'inline-block',
+          width: size,
+          height: size,
+          lineHeight: 0,
+          verticalAlign: 'top',
+        }}
+      >
         <TracyAvatar size={size} />
       </span>
       <div style={{ flex: 1, minWidth: 0, paddingTop: 6 }}>
