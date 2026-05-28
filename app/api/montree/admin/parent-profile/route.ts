@@ -286,7 +286,7 @@ export async function POST(request: NextRequest) {
     // both perspectives; v1 keeps the schema simple.
     const { data, error } = await supabase
       .from('montree_parent_profiles')
-      .upsert(upsertPayload, { onConflict: 'parent_id,school_id' })
+      .upsert(upsertPayload as never, { onConflict: 'parent_id,school_id' })
       .select('*')
       .single();
 
@@ -399,7 +399,7 @@ export async function PATCH(request: NextRequest) {
 
   const { data, error } = await supabase
     .from('montree_parent_profiles')
-    .update(updatePayload)
+    .update(updatePayload as never)
     .eq('id', profileId)
     .eq('school_id', auth.schoolId)
     .select('*')
@@ -470,7 +470,7 @@ export async function DELETE(request: NextRequest) {
 
   const { error } = await supabase
     .from('montree_parent_profiles')
-    .update(cleared)
+    .update(cleared as never)
     .eq('id', profileId)
     .eq('school_id', auth.schoolId);
 

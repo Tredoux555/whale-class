@@ -260,7 +260,7 @@ export async function POST(
       chunk_count: finalized.chunkCount,
       cost_usd: chunkCost, // last-chunk cost; total accrues client-side
       generation_ms: whisperMs,
-    })
+    } as never)
     .select('id, created_at')
     .single();
 
@@ -284,7 +284,7 @@ export async function POST(
       transcript_id: transcriptRow.id,
       status: 'held',
       held_at: new Date().toISOString(),
-    })
+    } as never)
     .eq('id', meetingId)
     .eq('school_id', auth.schoolId);
 
