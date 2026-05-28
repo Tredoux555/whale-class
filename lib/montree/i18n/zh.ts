@@ -4381,6 +4381,48 @@ export const zh = {
   'tracy.progress.countingNotes': '正在统计笔记和覆盖范围…',
   'tracy.progress.scoringNotes': '正在评估笔记质量…',
 
+  // Tracy 家长会备忘录 UI (Session 133)
+  'dossier.button.label': '准备这场会议',
+  'dossier.button.labelLong': '准备一场家长会',
+  'dossier.button.title': '让 Tracy 为家长会准备一份备忘录',
+  'dossier.modal.title': '准备与 {childName} 家长的会议',
+  'dossier.modal.subtitle':
+    'Tracy 会调取 {childName} 档案中的每一条观察、每一次 Guru 分析和所有规律,生成一份您只需读一遍便可胸有成竹走进会议的备忘录。',
+  'dossier.field.purpose.label': '这次会议是关于什么的?',
+  'dossier.field.purpose.placeholder': '例如:关注最近浮现的睡眠规律',
+  'dossier.field.purpose.hint': '一句话就够了。其余的 Tracy 会补上。',
+  'dossier.field.parentContext.label': '关于这位家长,有什么需要我知道的吗?(可选)',
+  'dossier.field.parentContext.placeholder':
+    '例如:期望驱动型,会抗拒任何"特别"的措辞',
+  'dossier.field.parentContext.hint':
+    '自由文本对语气校准最有帮助。若留空,Tracy 会沿用 Guru 对这位家长的判断。',
+  'dossier.error.purposeRequired': '请先告诉我这次会议是关于什么的。',
+  'dossier.error.generic': '备忘录生成失败',
+  'dossier.error.title': '出错了',
+  'dossier.action.buildDossier': '生成我的备忘录',
+  'dossier.action.tryAgain': '重试',
+  'dossier.loading':
+    'Tracy 正在阅读 {childName} 的档案、调取 Guru 的分析并撰写备忘录。大约需要一分钟。',
+  'dossier.renderer.title': '{childName} — 家长会备忘录',
+  'dossier.renderer.subtitle': '由 Tracy 准备',
+  'dossier.renderer.subtitleWithClassroom': '{classroom} · 由 Tracy 准备',
+  'dossier.renderer.openPrintView': '打开打印视图 →',
+  'dossier.renderer.closeAriaLabel': '关闭备忘录',
+  'dossier.renderer.prepared': '准备时间:',
+  'dossier.renderer.cached': '(缓存)',
+  'dossier.renderer.sources': '资料来源:',
+  'dossier.renderer.sourceObservation': '{count} 条观察',
+  'dossier.renderer.sourceObservations': '{count} 条观察',
+  'dossier.renderer.sourceGuruSession': '{count} 次 Guru 会话',
+  'dossier.renderer.sourceGuruSessions': '{count} 次 Guru 会话',
+  'dossier.renderer.sourcePatternEvent': '{count} 个规律事件',
+  'dossier.renderer.sourcePatternEvents': '{count} 个规律事件',
+  'dossier.renderer.sourceDevInsight': '{count} 条发展洞察',
+  'dossier.renderer.sourceDevInsights': '{count} 条发展洞察',
+  'dossier.renderer.cacheWarning':
+    '迁移 237 尚未运行 — 本备忘录不会被缓存,再次打开将再次花费 Sonnet 调用。请提醒 Tredoux 在方便时运行迁移。',
+  'dossier.printButton': '打印为 PDF',
+
   // ─── Auto-filled missing keys (from Apr 30 audit) ───
   'library.sentenceMatchGeneratorTitle': '句子匹配图片生成器',
   'library.sentenceMatchGeneratorSubtitle': '创建三部分句子卡片 — 句子与图片相匹配',

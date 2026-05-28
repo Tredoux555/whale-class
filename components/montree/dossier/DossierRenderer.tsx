@@ -23,6 +23,8 @@
 
 import { useMemo } from 'react';
 import { renderDossierMarkdownToHtml } from '@/lib/montree/dossier_renderer';
+import { useI18n } from '@/lib/montree/i18n';
+import { getIntlLocale } from '@/lib/montree/i18n/locales';
 
 export interface DossierRendererProps {
   markdown: string;
@@ -53,6 +55,7 @@ export function DossierRenderer({
   showPrintLink = false,
   printLinkHref,
 }: DossierRendererProps) {
+  const { t, locale } = useI18n();
   const bodyHtml = useMemo(
     () => renderDossierMarkdownToHtml(markdown),
     [markdown]
@@ -61,25 +64,37 @@ export function DossierRenderer({
   const sourceSummary = meta?.source_counts
     ? [
         meta.source_counts.observations != null
-          ? `${meta.source_counts.observations} observation${
-              meta.source_counts.observations === 1 ? '' : 's'
-            }`
+          ? t(
+              meta.source_counts.observations === 1
+                ? 'dossier.renderer.sourceObservation'
+                : 'dossier.renderer.sourceObservations',
+              { count: String(meta.source_counts.observations) }
+            )
           : null,
         meta.source_counts.guru_analyses != null
-          ? `${meta.source_counts.guru_analyses} Guru session${
-              meta.source_counts.guru_analyses === 1 ? '' : 's'
-            }`
+          ? t(
+              meta.source_counts.guru_analyses === 1
+                ? 'dossier.renderer.sourceGuruSession'
+                : 'dossier.renderer.sourceGuruSessions',
+              { count: String(meta.source_counts.guru_analyses) }
+            )
           : null,
         meta.source_counts.pattern_events != null
-          ? `${meta.source_counts.pattern_events} pattern event${
-              meta.source_counts.pattern_events === 1 ? '' : 's'
-            }`
+          ? t(
+              meta.source_counts.pattern_events === 1
+                ? 'dossier.renderer.sourcePatternEvent'
+                : 'dossier.renderer.sourcePatternEvents',
+              { count: String(meta.source_counts.pattern_events) }
+            )
           : null,
         meta.source_counts.developmental_insights != null &&
         meta.source_counts.developmental_insights > 0
-          ? `${meta.source_counts.developmental_insights} developmental insight${
-              meta.source_counts.developmental_insights === 1 ? '' : 's'
-            }`
+          ? t(
+              meta.source_counts.developmental_insights === 1
+                ? 'dossier.renderer.sourceDevInsight'
+                : 'dossier.renderer.sourceDevInsights',
+              { count: String(meta.source_counts.developmental_insights) }
+            )
           : null,
       ]
         .filter(Boolean)
@@ -218,7 +233,9 @@ export function DossierRenderer({
 
       <header className="dossier-head">
         <div>
-          <h1 className="dossier-title">{childName} — Parent Meeting Dossier</h1>
+          <h1 className="dossier-title">
+            {t('dossier.renderer.title', { childName })}
+          </h1>
           {subtitle ? <p className="dossier-subtitle">{subtitle}</p> : null}
         </div>
         <div className="dossier-actions">
@@ -230,7 +247,7 @@ export function DossierRenderer({
               className="dossier-btn"
               style={{ textDecoration: 'none' }}
             >
-              Open print view →
+              {t('dossier.renderer.openPrintView')}
             </a>
           ) : null}
           {onClose ? (
@@ -238,7 +255,7 @@ export function DossierRenderer({
               type="button"
               onClick={onClose}
               className="dossier-close"
-              aria-label="Close dossier"
+              aria-label={t('dossier.renderer.closeAriaLabel')}
             >
               ×
             </button>
@@ -250,33 +267,32 @@ export function DossierRenderer({
         <div className="dossier-meta">
           {meta?.generated_at && (
             <>
-              <strong>Prepared:</strong>{' '}
-              {new Date(meta.generated_at).toLocaleString(undefined, {
-                weekday: 'long',
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric',
-                hour: 'numeric',
-                minute: '2-digit',
-              })}
-              {meta.from_cache ? ' (cached)' : ''}
+              <strong>{t('dossier.renderer.prepared')}</strong>{' '}
+              {new Date(meta.generated_at).toLocaleString(
+                getIntlLocale(locale),
+                {
+                  weekday: 'long',
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric',
+                  hour: 'numeric',
+                  minute: '2-digit',
+                }
+              )}
+              {meta.from_cache ? ` ${t('dossier.renderer.cached')}` : ''}
             </>
           )}
           {meta?.generated_at && sourceSummary && ' · '}
           {sourceSummary && (
             <>
-              <strong>Sources:</strong> {sourceSummary}
+              <strong>{t('dossier.renderer.sources')}</strong> {sourceSummary}
             </>
           )}
         </div>
       )}
 
       {meta?.cache_active === false && (
-        <div className="cache-warning">
-          Migration 237 hasn&apos;t been run yet — this dossier won&apos;t
-          be cached, so re-opening will spend Sonnet again. Ask Tredoux to
-          run the migration when convenient.
-        </div>
+        <div className="cache-warning">{t('dossier.renderer.cacheWarning')}</div>
       )}
 
       <div
