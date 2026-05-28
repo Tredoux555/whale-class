@@ -252,77 +252,43 @@ Wave 1 sends bounced for these addresses. None of these are flagged as `bounced`
 
 ---
 
-## 🚨 NEXT SESSION — CALL TO ACTION (queued May 28, 2026 morning, post-Session 133)
+## 🚨 NEXT SESSION — CALL TO ACTION (queued May 28, 2026 afternoon, post-Session 134)
 
-When you come back from a context refresh, run these in order. Full breakdown in `docs/handoffs/SESSION_133_STATUS.md`.
+Session 133's 13-commit branch is MERGED + LIVE on production. Session 134 added 4 fixes on top (i18n / Tracy stability / Story vault mobile). Full session breakdown in `docs/handoffs/SESSION_134_HANDOFF.md`.
 
-### 1. Run 4 SQL blocks in Supabase — unblocks dossier cache + 2 stuck principal logins
+### 1. 🚨 Run migration 237 in Supabase — ONLY remaining SQL
 
 ```sql
 -- Paste in Supabase SQL Editor:
 -- /Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/whale/migrations/237_meeting_dossiers.sql
 ```
 
-Then realign the 2 desynced principal logins (Whale Class + Phillip Ahn):
+Everything else is done. Until 237 runs, dossiers generate fine but every reopen burns ~$0.05 in Sonnet because there's no cache. UI surfaces a "migration 237 not run" hint when caching is off.
 
-```sql
--- Whale Class principal row — login: XVYHHX
--- (Hand-over: name changes to 'Principal Leu' in the next block.)
-UPDATE montree_school_admins
-SET password_hash = 'fe3eb5469e2863a04a4b63d2432368f1f436101128afea1a55599eea1968448f',
-    updated_at = NOW()
-WHERE id = '16eec1c0-bfb5-4edf-a160-059bb41803fb'
-  AND login_code = 'XVYHHX';
+### 2. Walk the 15-step verification checklist
 
--- Phillip Ahn — login: RGCCQR
-UPDATE montree_school_admins
-SET password_hash = '485c0d2fbf7e9b72812ef00e820c5258602e41547fd8248cd58e6cac6592b642',
-    updated_at = NOW()
-WHERE id = '7e73ab78-f5db-474b-b27a-ede3615d10d4'
-  AND login_code = 'RGCCQR';
-```
+In `docs/handoffs/SESSION_134_HANDOFF.md` — covers Tracy fixes (greeting "Hi, Principal Leu" / symmetric glow / 240s watchdog), Story vault save (inline error pill instead of suppressed alert), Chinese translatability (full dossier in Mandarin).
 
-Then hand over the Whale Class principal seat from Tredoux to Principal Leu:
+### 3. Closed in Session 134 (no action needed — done)
 
-```sql
-UPDATE montree_school_admins
-SET name = 'Principal Leu',
-    email = NULL,
-    updated_at = NOW()
-WHERE id = '16eec1c0-bfb5-4edf-a160-059bb41803fb';
--- After this: Tracy greets her as 'Hi, Principal Leu'; parent reports
--- sign '— Principal Leu'. Tredoux verbally hands XVYHHX to Leu in
--- person. He logs in via teacher portal (V8F8V9) going forward.
-```
+- ✅ All 4 SQL blocks from prior NEXT SESSION ran clean (migration 237 still pending; rest done)
+- ✅ Whale Class principal handover landed: name='Principal Leu', email='principal-leu@whale-class.local' (placeholder TLD that never resolves — `whale-class.local` is reserved), login XVYHHX, synced=true
+- ✅ Phillip Ahn realigned (login code changed to `NEWCODE` somewhere between sessions; synced=true regardless)
+- ✅ Branch `mira-tracy-upgrade-s133` merged to main + pushed via Desktop Commander
+- ✅ All-logins page LIVE at `/montree/super-admin/all-logins`
+- ✅ Chinese translatability on parent-meeting dossier — Sonnet now writes the entire dossier in the principal's UI locale (section headers + prose + scripts)
+- ✅ Tracy greeting "Hi, Principal Leu" (title-prefix names use full name, regular first+last names still split)
+- ✅ Tracy avatar glow is now perfectly symmetric (inline-block + line-height:0)
+- ✅ Tracy watchdog 90s → 240s (no more silent timeouts on complex tool chains)
+- ✅ Story vault save no longer fails silently on iOS Home-Screen PWAs (inline red error pill replaces suppressed `window.alert()`)
 
-Verify clean:
-```sql
-SELECT id, name, login_code,
-       encode(sha256(login_code::bytea), 'hex') = password_hash AS synced,
-       password_hash LIKE '$2%' AS is_bcrypt
-FROM montree_school_admins
-WHERE login_code IS NOT NULL AND role = 'principal' AND is_active = true
-ORDER BY name;
--- Every row should show synced=true OR is_bcrypt=true
-```
+### 4. Open from user feedback during testing (deferred — NOT done)
 
-### 2. Merge branch `mira-tracy-upgrade-s133` to main
-
-8 commits ready. Lint clean, tsc clean on Session-133 surface, all audits closed. After the SQL above is run, merge + push:
-
-```bash
-git checkout main
-git merge --ff-only mira-tracy-upgrade-s133
-git push origin main
-```
-
-### 3. Walk the Yo-yo dossier flow on production (after Railway settles)
-
-Login as Whale Class principal → open any parent_teacher thread with Yo-yo → click the new gold "📋 Prepare for the meeting" pill in the thread header → wait ~90s → read the dossier. Compare to `Yoyo_Sleep_Briefing_EN.md` — should match 1:1.
-
-### 4. Walk `/montree/super-admin/all-logins`
-
-Login as super-admin → click the new gold "🔑 All logins" button next to "Community" in the header → see 4 sections (principals + teachers + agents + parents) with one-tap copy on every code. Verify the 5-role filter pills work. Verify the hash-desync warning chip at top now reads "0 principal hash-desync" after the SQL above.
+- **"Home splash page can just be the calendar"** — user wants `/montree/admin` to surface the calendar by default instead of dropping straight into Tracy chat. Larger UX change — needs a focused session.
+- **"No Tracy icon. Tracy is top right corner"** — user wants TracyFloat visible on `/montree/admin` itself (currently hidden because that page IS Tracy in full). Couples with the calendar-as-home change above.
+- **Five admin pages still English-only** — `appointments`, `child/[childId]`, `communication/threads/[threadId]`, `guru` (Tracy chat itself), `people` don't use `useI18n()`. Mandarin principals see the dossier button translated but the surrounding page chrome is English. Larger refactor.
+- **`npm run i18n:fill-ui`** — Haiku-translate the 30 new `dossier.*` keys for the 10 non-zh/non-en locales (currently English fallback stubs).
+- **Pattern-phrase regex** in `prepare_parent_meeting.ts` covers en/zh/es/de/fr/pt for the 5 topic branches but not uk/ru/ja/ko/nl/it. Graceful fallback to generic emotional branch.
 
 ### 5. Optional polish (deferred from Session 133 audit, all non-blocking)
 
@@ -356,6 +322,118 @@ Full detail in `docs/handoffs/HEALTH_CHECK_SESSION_131.md`.
 ---
 
 ## RECENT STATUS (May 28, 2026)
+
+### 🚢 Session 134 — Session 133 SHIPPED to main + Chinese translatability + Principal Leu handover + Tracy stability + Story vault save fix (May 28, 2026 afternoon)
+
+**4 commits pushed to main, branch `mira-tracy-upgrade-s133` MERGED. The Session 133 13-commit branch is now live on production along with four ship-time fixes that surfaced during real user testing today.**
+
+**🚨 Canonical resume doc:** `docs/handoffs/SESSION_134_HANDOFF.md` — full commit table, audit trail, 15-step verification checklist, architectural rules.
+
+Final state of main (top → newer):
+
+```
+f631c6da  Fix Story vault save silent failure on mobile PWAs
+f5e392a8  Tracy fixes: greeting name + symmetric glow + larger timeout budget
+5c5633da  i18n audit fix: variant-aware dossier button label + Mira locale plumbing
+2323f109  Session 133 i18n audit: full Chinese translatability for parent-meeting dossier
+3ef1bdd0  Master audit close-out (prior Session 133 final)
+```
+
+**🚨 ONLY remaining SQL — migration 237 (dossier cache table)**. Everything else cleared. Migration 237 is non-blocking: dossiers generate fine without it, but every reopen burns ~$0.05 in Sonnet because there's no cache. UI surfaces a hint when caching is off.
+
+**SQL items closed this session:**
+- ✅ Whale Class principal hash realignment (Tredoux row, `XVYHHX`) — synced=true verified
+- ✅ Phillip Ahn realigned — synced=true verified (login_code now `NEWCODE`, not `RGCCQR` — got reset between sessions)
+- ✅ Whale Class principal handover to Principal Leu — name='Principal Leu', email='principal-leu@whale-class.local', login XVYHHX, synced=true. **The original `email = NULL` SQL failed because `montree_school_admins.email` has a NOT NULL constraint**; resolved with placeholder TLD (`whale-class.local` is reserved and never resolves to a real mail server — the email is a black hole by design).
+- ✅ Branch merged to main + pushed via Desktop Commander (SSH dropped once, retry with `ServerAliveInterval=15` succeeded)
+
+**A. `2323f109` — Chinese translatability for parent-meeting dossier:**
+
+User asked literally: *"audit the principals platform make sure its completely chinese translatable - do this properly."* Audit found the dossier orchestrator never received `locale` → Sonnet wrote in English even for Mandarin principals.
+
+Server-side locale plumbing:
+- `lib/montree/tracy/tools/prepare_parent_meeting.ts` — accepts `locale`, folds into `makeDossierCacheKey` extras (zh + en dossiers cache separately for the same {child, purpose}), injects `getAILanguageInstruction(locale)` into the system prompt with a strong "write every heading + paragraph in target language" directive. `inferPatternPhrases` regex widened to match Mandarin/Spanish/German/French/Portuguese for the 5 topic branches (sleep / eating / aggression / reading / math). Locale threaded into `renderDossierHtml`.
+- `app/api/montree/admin/dossier/parent-meeting/route.ts` — POST + GET validate locale against `SUPPORTED_DOSSIER_LOCALES` (12-locale allow-list — defends against client-injected codes), HTML response sets `Content-Language` header.
+- `lib/montree/dossier_renderer.ts` — `<html lang>` reflects locale, `toLocaleString(getIntlLocale(locale))` for region-correct dates, "Prepared:" / "Sources:" / "Print to PDF" chrome labels via `getTranslator(locale)` (shared with React DossierRenderer).
+
+UI components:
+- `PrepareForMeetingButton.tsx` — every hardcoded English string → `t('dossier.*')`, `locale` from `useI18n()` sent in POST body + print URL query.
+- `DossierRenderer.tsx` — source-count pluralization via `t()` per unit, date format via `getIntlLocale(locale)`, all chrome labels via `t()`.
+
+i18n keys: 30 new `dossier.*` keys × 12 locales = 360 entries. en + zh real translations. 10 other locales = English fallback stubs (run `npm run i18n:fill-ui` to Haiku-translate). Strict completeness check 12/12 = 100%.
+
+**B. `5c5633da` — audit-fix wave:**
+
+HIGH bug — parent thread page passed `label="Prepare for the meeting"` hardcoded in English, overriding the i18n default. Fix: variant-aware default in the component (`'pill'` → short label, `'block'` → long label) + dropped the hardcoded prop at the caller. MED — Mira's pitch tool didn't forward `language` to `renderDossierHtml`; now does.
+
+Two known gaps documented as deferred follow-ups: (1) 5 principal admin pages don't use `useI18n()` at all (`appointments`, `child/[childId]`, `communication/threads/[threadId]`, `guru`, `people`) — Mandarin principals see those pages in English regardless. (2) Pattern-phrase regex doesn't cover uk/ru/ja/ko/nl/it — graceful fallback to generic emotional branch.
+
+**C. `f5e392a8` — Tracy fixes after the Leu handover landed:**
+
+User opened `/montree/admin` post-handover and reported three things:
+
+1. **"Hi, Tredoux" instead of "Hi, Principal Leu"** — `principalRes.data.name.split(' ')[0]` returned "Principal" alone for "Principal Leu" (cold). Fix: title-prefix detection (`/^(principal|ms|mrs|mr|dr|prof|professor|teacher|head|director)\.?\s+/i`) — when matched, use the full name; otherwise still split. Mirrored in BOTH `app/api/montree/admin/principal-agent/route.ts` AND `app/montree/admin/page.tsx` empty-state greeting (lock-step). Stale in-progress conversations still render the old name (system prompt baked at conv start); fresh conversations pick up the new name.
+
+2. **Glow doesn't go all the way around the avatar** — `.tracy-pulse` was `inline-flex` which retains a baseline gap below the inline element. Box-shadow followed the wrapper's bounds → asymmetric glow tail below. Fix: `inline-block` + explicit width/height + `lineHeight: 0`. Halo now symmetric.
+
+3. **Tracy "cocking out" — long processing then no reply** — watchdog `TOTAL_TIMEOUT_MS = 90_000` fired silently on complex Opus 4.6 + tool chains. User saw frozen thinking dots. Fix: bumped budgets — `maxDuration` 120s → 300s, `TOTAL_TIMEOUT_MS` 90s → **240s**, `API_TIMEOUT_MS` 50s → 90s. Tracy gets realistic headroom on rich-history queries.
+
+**D. `f631c6da` — Story vault save silent failure on mobile PWAs:**
+
+User: "on iPhone, tick picture, hit big tick to save, UI reacts but doesn't save at all." **iOS Safari silently suppresses `window.alert()` inside Home-Screen PWAs.** The save handler had 3 `alert()` calls covering every failure path (vault locked / network error / server error / 401 expired); all swallowed. User saw spinner come/go with zero feedback.
+
+Fix — `app/story/admin/dashboard/hooks/useMessages.ts` + `MessagesTab.tsx` + `page.tsx`:
+- New `vaultSaveError` state `{messageId, message}` keyed by message id
+- Replaced 3 `alert()` calls with `setVaultSaveError` + `console.error`
+- Distinct messages per failure mode: no session / vault locked / network / 401 expired / other non-2xx
+- Red error pill renders inline at top of the failing message row, dismissible
+- `console.error` for desktop-Safari remote-inspect debugging
+
+Most likely real cause for the user's case: vault JWT is 1h TTL → unlocked >1h ago → 401 → suppressed alert → silent failure. Now the pill says "Vault session expired. Re-enter the vault password."
+
+**🚨 Architectural rules locked in this session (#285-289):**
+
+285. **`prepare_parent_meeting` MUST accept `locale` and thread it into BOTH the cache key extras AND the Sonnet system prompt.** Cache-key fold prevents wrong-language cache hits; prompt directive (`getAILanguageInstruction(locale)`) prevents Sonnet from biasing back to English. Mira's `prepare_principal_pitch` follows the same contract.
+
+286. **`renderDossierHtml(opts)` accepts optional `locale`.** Used for `<html lang>` (accessibility + browser print typography), `toLocaleString(getIntlLocale(locale))` (region-correct dates), and chrome labels via `getTranslator(locale)`. Single source of truth between server HTML and React DossierRenderer is the `dossier.renderer.*` i18n key set in `en.ts`.
+
+287. **Title-prefix names use FULL name; first+last names use first only.** Canonical regex: `/^(principal|ms|mrs|mr|dr|prof|professor|teacher|head|director)\.?\s+/i`. Logic MUST be mirrored in BOTH the principal-agent route AND `app/montree/admin/page.tsx` empty-state greeting — they share no helper today but must stay in lock-step. "Hi, Principal Leu" reads warm; "Hi, Principal" alone reads cold.
+
+288. **Tracy's tool-use loop watchdog (`TOTAL_TIMEOUT_MS`) is 240s, NOT 90s.** Opus 4.6 + a 3-tool chain on a child with rich history genuinely takes 60-180s. The 90s ceiling fired silently and the client saw frozen thinking-dots. Don't tighten back without first verifying all Tracy tool chains stay under the new ceiling.
+
+289. **iOS Home-Screen PWAs silently suppress `window.alert()`.** Every customer-facing error path on the Story system MUST use inline error UI, not `alert()`. Pattern: state variable `{id, message} | null`, rendered as a dismissible red pill inline next to the failing element. `console.error` for diagnostic logs (visible via Safari remote inspect). Same rule applies anywhere a PWA-installed user could trigger an error path.
+
+**Where everything lives after this session:**
+
+| Surface | URL | Status |
+|---|---|---|
+| Whale Class principal cockpit | `/montree/admin` | Live — Principal Leu, login XVYHHX |
+| Parent-meeting dossier modal | Parent thread headers | Live — i18n + locale flows to Sonnet |
+| Super-admin all-logins page | `/montree/super-admin/all-logins` | Live — 4 sections + copy buttons |
+| Tracy chat (`/montree/admin`) | Tracy chat page | Live — greeting + glow + watchdog all fixed |
+| Story vault save | Story admin → Messages tab | Live — inline error pill replaces suppressed alert |
+| Mira pitch dossier (printable HTML) | `/api/montree/agent/dossier/principal-pitch?format=html` | Live — locale flows from pitch language |
+| Migration 237 (dossier cache) | Supabase | ⏳ **STILL PENDING — run when convenient** |
+
+**Verification status:**
+- ✅ All 4 commits on `origin/main`. Railway auto-deployed throughout.
+- ✅ `eslint --max-warnings=0` clean on every changed file across all 4 commits.
+- ✅ Pre-commit i18n strict check passed (12 locales × 5070 keys = 100% parity).
+- ✅ Whale Class principal row verified post-rename: synced=true, name='Principal Leu', email='principal-leu@whale-class.local'.
+- ⏳ User to walk the 15-step verification checklist on iPhone (in `SESSION_134_HANDOFF.md`).
+
+**🚨 Next session priorities (ordered):**
+
+1. **🚨 Run migration 237 in Supabase** — only outstanding SQL. Until run, dossiers don't cache.
+2. **Walk the 15-step verification checklist** on a real iPhone (3 Tracy fixes + Story vault save + Chinese translatability).
+3. **User-feedback deferred items** — make calendar the default `/montree/admin` home + surface TracyFloat top-right (couples together; ~half-day focused session).
+4. **5 admin pages still English-only** — `appointments`, `child/[childId]`, `communication/threads/[threadId]`, `guru`, `people` need `useI18n()` wired.
+5. **`npm run i18n:fill-ui`** — Haiku-translate 30 dossier keys for 10 non-zh/non-en locales.
+6. **Pattern-phrase regex** — extend to uk/ru/ja/ko/nl/it.
+7. **Carry-overs from Session 131 health check** — 2 CRITICALs + 5 ungated AI routes + 3 public POSTs missing rate-limit (see CLAUDE.md NEXT SESSION block).
+8. **Carry-overs from Session 133** — Agora Stage A activation, `audioOnly` prop wiring, outreach follow-ups.
+
+---
 
 ### 🧠 Session 133 — Mira & Tracy dossier capability + login fix + super-admin all-logins page (May 27 night → May 28 morning, 2026)
 
@@ -7889,7 +7967,7 @@ Comprehensive update to the Active Reply Threads section reflecting all Session 
 ### Whale Class Data
 - School ID: `c6280fae-567c-45ed-ad4d-934eae79aabc` (Tredoux House)
 - Classroom ID: `51e7adb6-cd18-4e03-b707-eceb0a1d2e69` (Whale Class)
-- **Principal: Principal Leu** (handed over from Tredoux on May 28, 2026; row id `16eec1c0-bfb5-4edf-a160-059bb41803fb`; login `XVYHHX`; email NULL). Tracy memories from before the handover are still attached to this `principal_id` — they now belong to Principal Leu's memory stream. Wipe with `DELETE FROM montree_principal_memory WHERE principal_id = '16eec1c0-bfb5-4edf-a160-059bb41803fb';` if Leu wants a fresh start.
+- **Principal: Principal Leu** (handed over from Tredoux on May 28, 2026 — SQL landed Session 134; row id `16eec1c0-bfb5-4edf-a160-059bb41803fb`; login `XVYHHX`; email `principal-leu@whale-class.local` placeholder — `whale-class.local` is a reserved TLD that never resolves to real mail). Tracy memories from before the handover are still attached to this `principal_id` — they now belong to Principal Leu's memory stream. Wipe with `DELETE FROM montree_principal_memory WHERE principal_id = '16eec1c0-bfb5-4edf-a160-059bb41803fb';` if Leu wants a fresh start.
 - **Lead teacher: Tredoux** (login `V8F8V9` on `montree_teachers`, founder of the school, now operating purely as the classroom teacher).
 - 20 students: Amy, Austin, Eric, Gengerlyn, Hayden, Henry, Jimmy, Joey, Kayla, Kevin, KK, Leo, Lucky, MaoMao, MingXi, NiuNiu, Rachel, Segina, Stella, YueZe
 
@@ -8117,9 +8195,10 @@ All migrations through 169 have been run. Key ones: 147 (smart learning columns)
 **Session 128 (May 25, 2026) — Universal Calendar foundations. ✅ Migration RUN (verified Session 129):**
 - ✅ `233_school_terms_and_timezone.sql` — `timezone TEXT` column on `montree_schools` + `montree_school_terms` table (id, school_id, name, start_date, end_date, created_at, updated_at + CHECK end_date >= start_date + 2 indexes (school_id, school+window) + `montree_school_terms_touch_updated_at()` trigger). Idempotent. **Verified live via Web-Claude end-to-end Term creation test in Session 129** — POST `/api/montree/school/terms` returned 200, term row inserted, violet dot rendered on calendar grid. Either ran successfully at some point or the underlying table existed before this migration was needed.
 
-**Session 133 (May 28, 2026) — Mira & Tracy dossier capability. ⏳ 1 migration + 2 hash realignments pending Tredoux's Supabase run:**
+**Session 133 (May 28, 2026) — Mira & Tracy dossier capability. ⏳ 1 migration STILL pending Tredoux's Supabase run (hash realignments + Leu rename DONE in Session 134):**
 - ⏳ `237_meeting_dossiers.sql` — `montree_meeting_dossiers` table for the shared Tracy + Mira dossier cache. 18 columns (id, owner_id, owner_role principal|agent, school_id nullable, audience_type parent_meeting|principal_pitch, audience_ref TEXT, cache_key SHA-256, meeting_purpose, parent_context, output_format markdown|html|json, payload_text, model_used, input/output_tokens, cost_usd, generation_ms, generated_at, expires_at +24h default). Three indexes (cache_lookup b-tree, owner_recent DESC, audience_recent DESC). `montree_purge_expired_dossiers()` SECURITY DEFINER function for >7-day cleanup. Idempotent. **Original attempt failed with PG 42P17 ('functions in index predicate must be marked IMMUTABLE') because of a `WHERE expires_at > NOW()` partial-index predicate — patched to plain b-tree.** Until run, dossiers generate fine but every reopen spends Sonnet again (~$0.05).
-- ⏳ Principal hash-desync realignments — TWO active principals' `login_code` columns don't match SHA256 of their `password_hash`. Tredoux (`XVYHHX` on Whale Class, id `16eec1c0-bfb5-4edf-a160-059bb41803fb`) and Phillip Ahn (`RGCCQR`, id `7e73ab78-f5db-474b-b27a-ede3615d10d4`). Both are locked out of login until realigned. SQL in `docs/handoffs/SESSION_133_STATUS.md` Section "SQL to run in Supabase". Going forward, the route's Step 2 (login_code-column lookup) prevents new desyncs from silently passing — refuses with loud-log if a hash exists but doesn't verify.
+- ✅ **Principal hash-desync realignments — DONE Session 134.** Tredoux (`XVYHHX`) verified synced=true. Phillip Ahn realigned (login code now `NEWCODE`, not the original `RGCCQR` — got reset between sessions; synced=true either way).
+- ✅ **Whale Class principal handover to Principal Leu — DONE Session 134.** Row id `16eec1c0-bfb5-4edf-a160-059bb41803fb` now `name='Principal Leu', email='principal-leu@whale-class.local'` (placeholder TLD — `whale-class.local` is reserved and never resolves), login XVYHHX, synced=true. The original `email = NULL` SQL failed because `montree_school_admins.email` has a NOT NULL constraint; resolved with the placeholder.
 
 **Session 126 (May 22-23, 2026) — Story voice/video calls + Web Push. ✅ Both migrations RUN (verified May 23):**
 - ✅ `228_story_calls.sql` — **RUN.** `story_calls` table (id, username, channel, status ringing/active/ended, `mode` voice/video, initiated_by, created_at, updated_at, ended_at) + partial index `idx_story_calls_user_active` + `story_calls_touch_updated_at()` trigger. Verified via the Supabase REST API — `story_calls` returns HTTP 200, `mode` column present. The "Could not start the call" 500 is resolved.
