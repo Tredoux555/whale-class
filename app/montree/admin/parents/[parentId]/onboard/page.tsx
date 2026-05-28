@@ -778,17 +778,13 @@ export default function ParentOnboardPage() {
             >
               <Square size={32} />
             </button>
-            <style jsx>{`
-              @keyframes m-pulse {
-                0%,
-                100% {
-                  box-shadow: 0 0 0 0 rgba(220, 50, 50, 0.32);
-                }
-                50% {
-                  box-shadow: 0 0 0 18px rgba(220, 50, 50, 0);
-                }
-              }
-            `}</style>
+            {/* 🚨 Turbopack rejects nested <style jsx>. Inline via
+                dangerouslySetInnerHTML — same runtime effect (global keyframe). */}
+            <style
+              dangerouslySetInnerHTML={{
+                __html: `@keyframes m-pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(220, 50, 50, 0.32); } 50% { box-shadow: 0 0 0 18px rgba(220, 50, 50, 0); } }`,
+              }}
+            />
             <p style={{ color: T.textMuted, fontSize: 13, marginTop: 16 }}>
               Tap to stop. Speak naturally.
             </p>
@@ -826,13 +822,13 @@ export default function ParentOnboardPage() {
                 animation: 'spin 1s linear infinite',
               }}
             />
-            <style jsx>{`
-              @keyframes spin {
-                to {
-                  transform: rotate(360deg);
-                }
-              }
-            `}</style>
+            {/* 🚨 Turbopack rejects nested <style jsx>. Inline via
+                dangerouslySetInnerHTML — same runtime effect. */}
+            <style
+              dangerouslySetInnerHTML={{
+                __html: `@keyframes spin { to { transform: rotate(360deg); } }`,
+              }}
+            />
             <p style={{ color: T.textSecondary, fontSize: 15 }}>
               {stage === 'transcribing'
                 ? 'Transcribing your recording…'
