@@ -736,10 +736,43 @@ export default function AdminAgentPage() {
           updated.thinking = (updated.thinking || '') + String(evt.text || '');
           break;
         }
+        case 'meeting_brief_chunk': {
+          // Session 135 — incremental token from prepare_parent_meeting's
+          // streamed Sonnet call. Each chunk has { section, delta }. We
+          // append the delta to the appropriate side of the in-progress
+          // brief. The MeetingBriefCard renders the partial markdown live
+          // as it builds. After the stream finishes, the final
+          // `meeting_brief` event arrives and replaces the whole thing
+          // with the canonical full payload (for cache + correctness).
+          const section = evt.section === 'brief' ? 'brief' : 'dossier';
+          const delta = typeof evt.delta === 'string' ? evt.delta : '';
+          if (!delta) break;
+          const prev = updated.meetingBrief ?? {
+            brief_markdown: '',
+            dossier_markdown: '',
+            child_name: null,
+            from_cache: false,
+          };
+          if (section === 'brief') {
+            updated.meetingBrief = {
+              ...prev,
+              brief_markdown: (prev.brief_markdown ?? '') + delta,
+            };
+          } else {
+            updated.meetingBrief = {
+              ...prev,
+              dossier_markdown: (prev.dossier_markdown ?? '') + delta,
+            };
+          }
+          break;
+        }
         case 'meeting_brief': {
-          // Session 135 — structured brief + dossier from prepare_parent_meeting.
-          // The brief renders inline at the top of the turn; the dossier
-          // collapses behind a "Show me the full thinking" disclosure.
+          // Session 135 — final structured brief + dossier from
+          // prepare_parent_meeting. Sent at tool completion AFTER the
+          // streamed chunks (if any). Replaces the in-progress payload
+          // with the canonical version. Also the only event that fires
+          // on cache-hits (no streaming for cached responses, which are
+          // already complete on the server).
           const briefMd =
             typeof evt.brief_markdown === 'string' ? evt.brief_markdown : null;
           const dossierMd =

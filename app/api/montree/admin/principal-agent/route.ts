@@ -500,6 +500,24 @@ export async function POST(request: NextRequest) {
                       })
                     );
                   },
+                  // Session 135 — stream parent-meeting dossier tokens
+                  // directly to the client as they land. Each chunk
+                  // carries { section, delta }. The UI appends each
+                  // delta to turn.meetingBrief.brief_markdown (or
+                  // .dossier_markdown) progressively. First brief token
+                  // appears at ~3-5s instead of waiting ~25s for the
+                  // full block. The final meeting_brief event still
+                  // fires at tool completion for state-coherence + cache
+                  // metadata.
+                  onMeetingStream: (chunk) => {
+                    controller.enqueue(
+                      sse(encoder, {
+                        type: 'meeting_brief_chunk',
+                        section: chunk.section,
+                        delta: chunk.delta,
+                      })
+                    );
+                  },
                 }
               );
               const toolDuration = Date.now() - toolStart;

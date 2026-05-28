@@ -87,6 +87,26 @@ export interface PrepareParentMeetingInput {
   locale?: string;
   anthropic: Anthropic | null;
   supabase: SupabaseClient;
+  /**
+   * Session 135 — optional streaming callback. When provided, Sonnet's
+   * BRIEF + DOSSIER output is streamed token-by-token. Each chunk
+   * carries the section (brief vs dossier) and the new text delta.
+   * The literal `<<<BRIEF>>>` / `<<<DOSSIER>>>` delimiters are stripped
+   * before emission — consumers never see them.
+   *
+   * Cache-hit responses are NOT streamed (they're already complete) —
+   * the caller renders the cached payload via the meeting_brief event.
+   *
+   * The callback's order guarantees:
+   *   1. All BRIEF chunks arrive before any DOSSIER chunk.
+   *   2. Each chunk's delta is the next contiguous slice of its section.
+   *   3. Partial delimiters are never leaked.
+   *
+   * Errors thrown by the callback are caught and logged — never
+   * propagated to the caller (same posture as onProgress in
+   * TracyToolDeps). Streaming failure must not break the tool.
+   */
+  onStream?: (chunk: { section: 'brief' | 'dossier'; delta: string }) => void;
 }
 
 export interface PrepareParentMeetingResult {
@@ -483,6 +503,7 @@ export async function preparePMeeting(
     locale = 'en',
     anthropic,
     supabase,
+    onStream,
   } = input;
 
   if (!childId) return { ok: false, error: 'childId is required' };
@@ -786,16 +807,120 @@ ${structuredContext}
 Output: ${outputFormat === 'json' ? 'a SINGLE JSON object with one key per dossier section' : 'pure markdown using the structure described in the system prompt'}.`;
 
   const startedAt = Date.now();
-  let response;
+
+  // Session 135 — STREAMING Sonnet call.
+  //
+  // We use anthropic.messages.stream() and watch every text_delta event. As
+  // tokens land we run them through a delimiter-aware emitter that:
+  //   1. Discards preamble before <<<BRIEF>>>
+  //   2. Emits tokens as `section: 'brief'` until <<<DOSSIER>>> appears
+  //   3. Emits tokens as `section: 'dossier'` until stream ends
+  //   4. Holds the last 15 chars in a safety buffer so we never emit a
+  //      partial delimiter (the literal '<<<DOSSIER>>>' is 13 chars; 15
+  //      gives margin)
+  //   5. Catches any onStream throw and logs it — never propagates
+  //
+  // The full markdown is reassembled after the stream ends and goes
+  // through the existing cache + payload pipeline unchanged.
+  const BRIEF_TAG = '<<<BRIEF>>>';
+  const DOSSIER_TAG = '<<<DOSSIER>>>';
+  const HOLDBACK = 15;
+  let buffer = '';
+  let mode: 'preamble' | 'brief' | 'dossier' = 'preamble';
+  let emitCursor = 0;
+  const safeEmit = (section: 'brief' | 'dossier', delta: string) => {
+    if (!onStream || !delta) return;
+    try {
+      onStream({ section, delta });
+    } catch (err) {
+      console.warn('[prepare_parent_meeting] onStream threw (non-fatal):', err);
+    }
+  };
+  const drain = (isFinal: boolean) => {
+    // Walk through every delimiter transition that's now visible in buffer.
+    // Loop until no more transitions can fire OR we're stuck waiting for
+    // more tokens.
+    while (true) {
+      if (mode === 'preamble') {
+        const briefIdx = buffer.indexOf(BRIEF_TAG);
+        const dossierIdx = buffer.indexOf(DOSSIER_TAG);
+        // Take whichever tag we see first. Normal Sonnet output produces
+        // BRIEF first; the dossier-first branch covers the edge case
+        // where Sonnet skipped the brief entirely.
+        if (briefIdx !== -1 && (dossierIdx === -1 || briefIdx < dossierIdx)) {
+          emitCursor = briefIdx + BRIEF_TAG.length;
+          mode = 'brief';
+          continue;
+        }
+        if (dossierIdx !== -1) {
+          emitCursor = dossierIdx + DOSSIER_TAG.length;
+          mode = 'dossier';
+          continue;
+        }
+        // No tag yet; just keep the tail in case it arrives next chunk.
+        // On final flush, the legacy splitter at the end of the function
+        // catches the "no delimiters at all" case and treats the whole
+        // response as a dossier.
+        return;
+      }
+      if (mode === 'brief') {
+        const i = buffer.indexOf(DOSSIER_TAG, emitCursor);
+        const safeEnd = i === -1
+          ? (isFinal ? buffer.length : Math.max(emitCursor, buffer.length - HOLDBACK))
+          : i;
+        if (safeEnd > emitCursor) {
+          safeEmit('brief', buffer.slice(emitCursor, safeEnd));
+          emitCursor = safeEnd;
+        }
+        if (i === -1) return;
+        emitCursor = i + DOSSIER_TAG.length;
+        mode = 'dossier';
+        continue;
+      }
+      // dossier
+      const safeEnd = isFinal
+        ? buffer.length
+        : Math.max(emitCursor, buffer.length - HOLDBACK);
+      if (safeEnd > emitCursor) {
+        safeEmit('dossier', buffer.slice(emitCursor, safeEnd));
+        emitCursor = safeEnd;
+      }
+      return;
+    }
+  };
+
+  let inputTokens = 0;
+  let outputTokens = 0;
+  let markdown = '';
   try {
-    const callPromise = anthropic.messages.create({
+    const stream = anthropic.messages.stream({
       model: PREPARE_MEETING_MODEL,
       max_tokens: PREPARE_MEETING_MAX_TOKENS,
       system: fullSystem,
       messages: [{ role: 'user', content: userPrompt }],
     });
-    response = await Promise.race([
-      callPromise,
+
+    const streamPromise = (async () => {
+      for await (const event of stream) {
+        if (
+          event.type === 'content_block_delta' &&
+          event.delta.type === 'text_delta'
+        ) {
+          buffer += event.delta.text;
+          drain(false);
+        }
+      }
+      // Flush whatever's left in the buffer.
+      drain(true);
+      const finalMessage = await stream.finalMessage();
+      const block = finalMessage.content.find((b) => b.type === 'text');
+      markdown = block && block.type === 'text' ? block.text.trim() : '';
+      inputTokens = finalMessage.usage.input_tokens;
+      outputTokens = finalMessage.usage.output_tokens;
+    })();
+
+    await Promise.race([
+      streamPromise,
       new Promise<never>((_, reject) =>
         setTimeout(
           () => reject(new Error('prepare_parent_meeting Sonnet timeout')),
@@ -814,13 +939,9 @@ Output: ${outputFormat === 'json' ? 'a SINGLE JSON object with one key per dossi
   }
   const generationMs = Date.now() - startedAt;
 
-  const block = response.content.find((b) => b.type === 'text');
-  if (!block || block.type !== 'text') {
+  if (!markdown) {
     return { ok: false, error: 'Sonnet returned no text block' };
   }
-  const markdown = block.text.trim();
-  const inputTokens = response.usage.input_tokens;
-  const outputTokens = response.usage.output_tokens;
   const costUsd =
     (inputTokens / 1_000_000) * SONNET_INPUT_USD_PER_MTOK +
     (outputTokens / 1_000_000) * SONNET_OUTPUT_USD_PER_MTOK;
