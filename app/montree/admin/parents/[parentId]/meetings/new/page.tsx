@@ -442,17 +442,13 @@ export default function NewMeetingPage() {
           Recording — {formatTime(elapsed)} · {chunksUploaded} chunk(s) uploaded · tap stop below to finish
         </div>
       )}
-      <style jsx global>{`
-        @keyframes m-blink {
-          0%,
-          100% {
-            opacity: 1;
-          }
-          50% {
-            opacity: 0.3;
-          }
-        }
-      `}</style>
+      {/* 🚨 Turbopack rejects nested <style jsx>. Inline via
+          dangerouslySetInnerHTML — same runtime effect (global keyframe). */}
+      <style
+        dangerouslySetInnerHTML={{
+          __html: `@keyframes m-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }`,
+        }}
+      />
 
       <header
         style={{
@@ -716,17 +712,13 @@ export default function NewMeetingPage() {
             >
               <Square size={48} />
             </button>
-            <style jsx>{`
-              @keyframes m-pulse-rec {
-                0%,
-                100% {
-                  box-shadow: 0 0 0 0 rgba(220, 50, 50, 0.4);
-                }
-                50% {
-                  box-shadow: 0 0 0 20px rgba(220, 50, 50, 0);
-                }
-              }
-            `}</style>
+            {/* 🚨 Turbopack rejects nested <style jsx>. Inline via
+                dangerouslySetInnerHTML — same runtime effect (global keyframe). */}
+            <style
+              dangerouslySetInnerHTML={{
+                __html: `@keyframes m-pulse-rec { 0%, 100% { box-shadow: 0 0 0 0 rgba(220, 50, 50, 0.4); } 50% { box-shadow: 0 0 0 20px rgba(220, 50, 50, 0); } }`,
+              }}
+            />
             <p style={{ color: T.textMuted, fontSize: 13, marginTop: 16 }}>
               Tap to stop. Place the phone face-down on the table — it&apos;s still picking you up.
             </p>
@@ -843,13 +835,13 @@ function Spinner() {
         animation: 'spin 1s linear infinite',
       }}
     >
-      <style jsx>{`
-        @keyframes spin {
-          to {
-            transform: rotate(360deg);
-          }
-        }
-      `}</style>
+      {/* 🚨 Turbopack rejects nested <style jsx>. Inline via
+          dangerouslySetInnerHTML — same runtime effect (global keyframe). */}
+      <style
+        dangerouslySetInnerHTML={{
+          __html: `@keyframes spin { to { transform: rotate(360deg); } }`,
+        }}
+      />
     </div>
   );
 }
