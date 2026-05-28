@@ -432,6 +432,107 @@ export const TRACY_TOOLS: Tool[] = [
     },
   },
 
+  // ── ACTION TOOLS: principal's agent (Ultimate Tracy v2) ──────────────
+  // The principal's VOICE COMMAND is the trigger pull. When she explicitly
+  // asks Tracy to send / schedule / update something, Tracy acts. Each tool
+  // is school-scoped + principal-only and goes through the inner endpoint's
+  // own auth + validation (defense in depth). Locale flows through so
+  // messages land in the right language.
+  {
+    name: 'send_parent_message',
+    description:
+      "Send a message to a parent on the principal's behalf. CALL when she says ANYTHING like 'send Mrs Chen a message saying...', 'tell [parent] that...', 'message [parent] about [topic]', 'let [parent] know...'. The message is sent AS the principal with 'Tracy drafted' indicator. Auto-creates a parent_teacher thread (with the child's lead teacher) if none exists, otherwise replies in the most recent thread. Voice + locale matched: if the principal speaks in Mandarin, the body lands in Mandarin. Requires parent_id (call list_parents_for_school first if you only have a name) and body. Optional child_id narrows the thread; otherwise picks the parent's first linked child.",
+    input_schema: {
+      type: 'object',
+      properties: {
+        parent_id: { type: 'string', description: 'Parent UUID.' },
+        child_id: { type: 'string', description: 'Optional child UUID — narrows thread context.' },
+        body: { type: 'string', description: 'The message content, ≤2000 chars, in the principal\'s UI locale.' },
+        subject: { type: 'string', description: 'Optional subject line for new threads. Ignored for replies.' },
+      },
+      required: ['parent_id', 'body'],
+    },
+  },
+  {
+    name: 'send_teacher_message',
+    description:
+      "Send a message to a teacher on the principal's behalf. CALL when she says 'message [teacher]', 'tell [teacher] that...', 'check in with [teacher]', 'thank [teacher] for...'. Uses internal thread_type. Requires teacher_id (call list_teachers_with_summary first if you only have a name) and body.",
+    input_schema: {
+      type: 'object',
+      properties: {
+        teacher_id: { type: 'string', description: 'Teacher UUID.' },
+        body: { type: 'string', description: 'The message content, ≤2000 chars.' },
+        subject: { type: 'string', description: 'Optional subject for new threads.' },
+      },
+      required: ['teacher_id', 'body'],
+    },
+  },
+  {
+    name: 'schedule_appointment',
+    description:
+      "Schedule a parent appointment on the principal's calendar. CALL when she says 'set up a meeting with [parent]', 'book [parent] for [date/time]', 'schedule a call with [parent]'. Requires parent_id, child_id, scheduled_start (ISO 8601). Optional: kind (parent_meeting|video_call, default parent_meeting), duration_minutes (5-240, default 30), subject, note. Auto-attaches the principal as primary host and auto-posts the invite card into the parent's thread.",
+    input_schema: {
+      type: 'object',
+      properties: {
+        parent_id: { type: 'string' },
+        child_id: { type: 'string' },
+        scheduled_start: { type: 'string', description: 'ISO 8601 UTC, MUST be in the future. E.g. 2026-06-15T14:00:00Z.' },
+        kind: { type: 'string', enum: ['parent_meeting', 'video_call'] },
+        duration_minutes: { type: 'number', description: '5-240. Default 30.' },
+        subject: { type: 'string' },
+        note: { type: 'string' },
+      },
+      required: ['parent_id', 'child_id', 'scheduled_start'],
+    },
+  },
+  {
+    name: 'create_parent_meeting_record',
+    description:
+      "Create a parent_meeting row (the Phase B meeting entity, distinct from the calendar appointment). CALL when the principal says 'log the meeting I just had with [parent]', 'mark the meeting with [parent] as held', 'I just finished with [parent]'. Use this when the meeting already happened and she wants to capture it. For SCHEDULING a future meeting, use schedule_appointment instead. Optional fields default sensibly (status='held' when held_at provided, otherwise 'planned'; meeting_type='parent_teacher_conference').",
+    input_schema: {
+      type: 'object',
+      properties: {
+        parent_id: { type: 'string' },
+        child_id: { type: 'string' },
+        meeting_type: { type: 'string', enum: ['parent_teacher_conference','intro','escalation','exit','behavioural','progress','other'] },
+        status: { type: 'string', enum: ['planned','held','cancelled','needs_follow_up','closed'] },
+        held_at: { type: 'string', description: 'ISO 8601 when it actually happened.' },
+        scheduled_at: { type: 'string', description: 'ISO 8601 when it is scheduled.' },
+        duration_minutes: { type: 'number' },
+      },
+      required: ['parent_id'],
+    },
+  },
+  {
+    name: 'update_parent_meeting',
+    description:
+      "Update an existing parent_meeting row — mark it held / closed / add outcome notes. CALL when she says 'add my note to the meeting with [parent]: ...', 'close the meeting with [parent]', 'mark [parent]'s meeting as needing follow-up'. Requires meeting_id (call list_parent_meetings first if you don't have it).",
+    input_schema: {
+      type: 'object',
+      properties: {
+        meeting_id: { type: 'string' },
+        status: { type: 'string', enum: ['planned','held','cancelled','needs_follow_up','closed'] },
+        outcome_notes: { type: 'string', description: 'One-line "how did it land" outcome.' },
+        held_at: { type: 'string', description: 'ISO 8601.' },
+        duration_minutes: { type: 'number' },
+      },
+      required: ['meeting_id'],
+    },
+  },
+  {
+    name: 'set_parent_recording_consent',
+    description:
+      "Toggle a parent's durable on-file recording consent. CALL when the principal says '[parent] said it's okay to record', 'mark [parent]'s consent on file', 'I have consent from [parent]' OR the inverse ('[parent] doesn't want to be recorded', 'revoke recording consent for [parent]'). Persistent flag — affects all FUTURE meetings with that parent. The per-meeting consent gate (Phase B) still fires for every recording — this just removes the need to acknowledge per meeting.",
+    input_schema: {
+      type: 'object',
+      properties: {
+        parent_id: { type: 'string' },
+        recording_consent_on_file: { type: 'boolean' },
+      },
+      required: ['parent_id', 'recording_consent_on_file'],
+    },
+  },
+
   // ── ACTION TOOL: draft_teacher_welcome_messages ──────────────────────
   // CALL IMMEDIATELY when the principal mentions ANYTHING about teachers
   // not having codes, needing to be onboarded, needing welcome messages,

@@ -45,7 +45,32 @@ async function loadParentInSchool(
   supabase: ReturnType<typeof getSupabase>,
   parentId: string,
   schoolId: string
-): Promise<ParentRow | null> {
+): Promise<(ParentRow & { recording_consent_on_file?: boolean }) | null> {
+  // Try wide select including consent flag (Phase E migration 243).
+  // Gracefully fall back to narrow select if column doesn't exist yet.
+  let row: (ParentRow & { recording_consent_on_file?: boolean }) | null = null;
+  try {
+    const { data, error } = await supabase
+      .from('montree_parents')
+      .select('id, school_id, name, email, recording_consent_on_file')
+      .eq('id', parentId)
+      .eq('school_id', schoolId)
+      .maybeSingle();
+    if (!error) {
+      row = (data as (ParentRow & { recording_consent_on_file?: boolean }) | null) ?? null;
+    } else if (error.code === '42703' || (error.message ?? '').includes('does not exist')) {
+      // Column doesn't exist yet — fall through to narrow select.
+    } else {
+      console.warn('[parent-profile] loadParent wide select error:', error.message);
+    }
+  } catch (err) {
+    const e = err as { code?: string };
+    if (e.code !== '42703') {
+      console.warn('[parent-profile] loadParent wide select threw:', err);
+    }
+  }
+  if (row !== null) return row;
+  // Narrow fallback.
   const { data } = await supabase
     .from('montree_parents')
     .select('id, school_id, name, email')
