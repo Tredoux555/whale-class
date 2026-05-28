@@ -57,6 +57,24 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Agent only' }, { status: 403 });
   }
 
+  // Session 103 rule #58 — defense-in-depth: re-verify is_agent + not
+  // suspended at request time, on top of the JWT claim. JWT lifetimes
+  // can outlive a suspension event; without this check, a suspended
+  // agent with a still-valid cookie can keep generating (billable)
+  // dossiers until expiry. Every sibling agent route does this.
+  const supabaseForCheck = getSupabase();
+  const { data: agentRow } = await supabaseForCheck
+    .from('montree_teachers')
+    .select('id, is_agent, agent_suspended_at')
+    .eq('id', auth.userId)
+    .maybeSingle();
+  if (!agentRow || !agentRow.is_agent || agentRow.agent_suspended_at) {
+    return NextResponse.json(
+      { error: 'Agent account is not active' },
+      { status: 403 }
+    );
+  }
+
   // Rate-limit per agent (not per IP — agents often work from coffee
   // shops with shared NAT). 30/hr per agent user-id is a full
   // legitimate sales day; abuse trips fast.
