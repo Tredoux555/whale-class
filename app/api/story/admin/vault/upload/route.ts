@@ -2,6 +2,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase, verifyAdminToken, verifyVaultToken } from '@/lib/story-db';
 import crypto from 'crypto';
 
+// Videos can be large + PBKDF2 + AES-GCM are CPU-bound. Bumped from default
+// 15s to 120s so multi-MB video uploads don't get killed mid-encryption,
+// which was matching the "vault not saving videos" symptom.
+export const maxDuration = 120;
+
 function encryptFile(fileBuffer: Buffer, password: string): { encrypted: Buffer; iv: string; authTag: string } {
   const iv = crypto.randomBytes(16);
   const salt = crypto.randomBytes(32);

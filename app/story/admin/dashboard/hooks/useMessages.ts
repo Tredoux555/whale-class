@@ -27,7 +27,9 @@ export const useMessages = (
   const loadMessages = useCallback(async () => {
     const session = getSession();
     try {
-      const res = await fetch(`/api/story/admin/message-history?limit=50&showExpired=${showExpired}`, {
+      // Per user request: only the latest message — not a history. The admin
+      // surface stays focused on what's CURRENTLY out there for the user.
+      const res = await fetch(`/api/story/admin/message-history?limit=1&showExpired=${showExpired}`, {
         headers: { 'Authorization': `Bearer ${session}` }
       });
       if (res.ok) {
