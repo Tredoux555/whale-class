@@ -1086,7 +1086,15 @@ export default function AdminAgentPage() {
               marginBottom: 22,
               maxHeight: '64vh',
               overflowY: 'auto',
-              paddingRight: 4,
+              // Session 135 — paddingLeft gives Tracy's avatar pulse + glow
+              // room to breathe on the left edge. Without it the box-shadow
+              // halo extending into negative x gets clipped by the scroll
+              // container's overflow boundary, producing the "glow on
+              // top/right/bottom but missing left" asymmetry the user
+              // reported. Symmetric L/R padding keeps the avatars centered
+              // visually inside the scrollable area.
+              paddingLeft: 8,
+              paddingRight: 8,
             }}
           >
             {visibleTurns.length === 0 ? (
