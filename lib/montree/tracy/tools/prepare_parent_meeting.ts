@@ -66,6 +66,13 @@ import {
   loadParentProfile,
   renderParentProfileForPrompt,
 } from '@/lib/montree/parent-profile/loader';
+// Ultimate Tracy Phase C — corpus RAG. Retrieve school-specific insights
+// keyed by meeting purpose + (optionally) the parent's archetype, inject
+// as a # CORPUS section. Failure is non-fatal — dossier still ships.
+import {
+  searchCorpus,
+  renderCorpusForPrompt,
+} from '../corpus/search';
 
 // Sonnet 4.6 is our canonical "deliberate output" model. Don't downgrade to
 // Haiku here — the dossier is the high-stakes artifact this whole feature
@@ -724,6 +731,40 @@ export async function preparePMeeting(
     `${_tracyDiag} parent_profile resolvedParent=${resolvedParent?.id ?? '(none)'} loadedProfile=${!!parentProfile}`
   );
 
+  // Phase C — RAG retrieval over the school-specific corpus. We use the
+  // meeting purpose as the query + (when known) the parent's archetype
+  // as a scope filter. Non-fatal on failure: dossier still ships
+  // without a corpus block.
+  let corpusEntries: Awaited<ReturnType<typeof searchCorpus>>['entries'] = [];
+  try {
+    const archetypeFilter =
+      parentProfile && parentProfile.archetypes.length > 0
+        ? parentProfile.archetypes[0]
+        : undefined;
+    const corpusRes = await searchCorpus(
+      {
+        schoolId,
+        query: meetingPurpose,
+        archetype: archetypeFilter,
+        minSimilarity: 0.5,
+        limit: 6,
+      },
+      supabase
+    );
+    if (corpusRes.ok) {
+      corpusEntries = corpusRes.entries;
+    }
+  } catch (err) {
+    console.warn(
+      '[prepare_parent_meeting] corpus search failed (non-fatal):',
+      err instanceof Error ? err.message : 'unknown'
+    );
+  }
+  const corpusBlock = renderCorpusForPrompt(corpusEntries, 5);
+  console.log(
+    `${_tracyDiag} corpus_search hits=${corpusEntries.length}`
+  );
+
   if (!guruRes.ok || !patternRes.ok) {
     // Non-fatal — we degrade gracefully if either fails. The dossier may
     // be thinner but still usable.
@@ -792,7 +833,7 @@ ${
     : '(no game plan on file)'
 }
 
-${parentProfileBlock ? `${parentProfileBlock}\n` : ''}
+${parentProfileBlock ? `${parentProfileBlock}\n` : ''}${corpusBlock ? `${corpusBlock}\n\n` : ''}
 # PARENT — AUTO-INFERRED STATE (from guru_parent_states)
 ${parentStateSummary}
 

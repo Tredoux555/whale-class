@@ -401,6 +401,37 @@ export const TRACY_TOOLS: Tool[] = [
     },
   },
 
+  // ── CORPUS TOOL (Ultimate Tracy Phase C — migration 242) ─────────────
+  // Tracy's self-improving brain. Every analysed meeting feeds school-
+  // specific insights into the corpus; semantic retrieval surfaces them
+  // when relevant.
+  {
+    name: 'search_corpus',
+    description:
+      "Retrieve school-specific insights Tracy has learned over time from analysed parent meetings. Use BEFORE drafting any parent response, preparing for a meeting, or answering 'what's worked with [parent] before?' / 'what should I avoid with [archetype] parents at our school?' / 'have we had this kind of meeting before?'. Returns up to 8 entries above similarity threshold, each with insight_text + insight_type + source_meeting_id + confidence + similarity. Optional archetype filter narrows to one archetype.",
+    input_schema: {
+      type: 'object',
+      properties: {
+        query: {
+          type: 'string',
+          description: 'Plain-English query — what you want to learn from past meetings.',
+        },
+        archetype: {
+          type: 'string',
+          enum: [
+            'expectation_driven',
+            'anxiety_projecting',
+            'hands_off',
+            'comparison_trapped',
+            'defended',
+          ],
+          description: 'Optional — narrow to insights tagged with one archetype.',
+        },
+      },
+      required: ['query'],
+    },
+  },
+
   // ── ACTION TOOL: draft_teacher_welcome_messages ──────────────────────
   // CALL IMMEDIATELY when the principal mentions ANYTHING about teachers
   // not having codes, needing to be onboarded, needing welcome messages,
