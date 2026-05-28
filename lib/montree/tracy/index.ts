@@ -48,3 +48,19 @@ export type {
   PrepareParentMeetingInput,
   PrepareParentMeetingResult,
 } from './tools/prepare_parent_meeting';
+
+// ── Session 136 — psychological knowledge base ─────────────────────────
+// Loaded from disk under lib/montree/tracy/knowledge/. The summary goes
+// into Tracy's chat system prompt every turn (via the route). The full
+// bundle is loaded inside prepare_parent_meeting. consult_tracy_knowledge
+// pulls one specific topic in full when chat needs depth.
+export {
+  getTracyKnowledge,
+  getTracyKnowledgeSummary,
+  getTracyKnowledgeFull,
+  resetTracyKnowledgeCache,
+} from './knowledge/loader';
+export type {
+  TracyKnowledge,
+  TracyKnowledgeTopic,
+} from './knowledge/loader';

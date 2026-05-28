@@ -58,6 +58,11 @@ import {
   loadActiveMemories,
   formatMemoriesForPrompt,
 } from '@/lib/montree/tracy/memory';
+// Session 136 — psychological knowledge base. Resolved once per request
+// (cached process-wide after first hit) and threaded into Tracy's system
+// prompt so every chat turn benefits from the framework depth, not just
+// parent-meeting dossiers.
+import { getTracyKnowledgeSummary } from '@/lib/montree/tracy/knowledge/loader';
 
 // 🚨 Session 135: Tracy moved from Opus 4.6 → Sonnet 4.6. Opus was a
 // "wow factor" choice (Session 96) that didn't pay off in real principal
@@ -299,7 +304,20 @@ export async function POST(request: NextRequest) {
   // and parent priorities across conversations and devices. Failure here
   // degrades gracefully to no-memory mode (loadActiveMemories returns []
   // on any error including "table doesn't exist yet").
-  const principalMemories = await loadActiveMemories(supabase, auth.userId, 30);
+  //
+  // Session 136 — also load the psychological knowledge summary. Parallel
+  // to memory load. Failure degrades gracefully (empty string → no
+  // knowledge block in the prompt; Tracy still works).
+  const [principalMemories, knowledgeSummary] = await Promise.all([
+    loadActiveMemories(supabase, auth.userId, 30),
+    getTracyKnowledgeSummary().catch((e) => {
+      console.warn(
+        '[principal-agent] knowledge summary load failed (non-fatal):',
+        e instanceof Error ? e.message : 'unknown error'
+      );
+      return '';
+    }),
+  ]);
   const memorySection = formatMemoriesForPrompt(principalMemories);
 
   const encoder = new TextEncoder();
@@ -396,6 +414,7 @@ export async function POST(request: NextRequest) {
           todayLabel,
           locale,
           memorySection,
+          knowledgeSummary,
         });
 
         const conversationMessages: MessageParam[] = [...initialMessages];
