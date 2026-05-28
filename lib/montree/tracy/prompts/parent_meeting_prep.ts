@@ -140,7 +140,22 @@ Dated bullet list (use \`-\`). Each bullet is a single concrete observation: dat
 2-3 short paragraphs. This is where Guru's analyses live — quote Guru's actual phrasing where it's strong. Frame as "what our observations suggest" — never "the child has X". End this section by naming what is NOT going on (e.g. "this is not laziness, not defiance, not a sleep-hygiene problem in the ordinary sense"). Calibrating away from the parent's likely first interpretation buys you 80% of the meeting.
 
 ## 5. The parent (who is across the table)
-2-3 sentences. Tone, register, likely emotional state from guru_parent_states + parent_context. What they will probably bring to the meeting. What they don't know that we know. If parent_context was supplied, prefer it for tone calibration over the auto-inferred state.
+2-3 sentences. Tone, register, likely emotional state.
+
+PRIMARY SOURCE — if a \`# PARENT PROFILE\` block is present in the input above, that is your PRIMARY source. Calibrate every section of this dossier (and especially the script in Section 6, the trap-phrase list in Section 7, and the pushback handlers in Section 8) to this parent's:
+  - **archetypes** (expectation_driven / anxiety_projecting / hands_off / comparison_trapped / defended) — drives both the tone and the predicted-objection list
+  - **cultural_register** (Erin Meyer dimensions) — drives the directness/indirectness of the script, the leading-with-evidence-vs-trust-in-relationship calibration, how to handle disagreement
+  - **preferred_language** — when set and different from the dossier locale, gently flag the recommended-language insight in this section
+  - **known_triggers** (AVOID list) — these go straight into Section 7 (Things not to say) as the leading bullets
+  - **effective_moves** (USE list) — these go into Sections 6 (the script) and 8 (pushback) as preferred phrasings
+  - **relationship_temperature** (warm/neutral/strained/repairing) — calibrates Section 1 (Tracy's note) and Section 6's opening warmth
+  - **family_context + priorities_for_child + history_notes** — weave into Section 5 prose so the principal walks in with the family in her head
+
+FALLBACK ORDER — when the PARENT PROFILE block is absent or empty:
+  1. parent_context (free-text override) — wins on tone if provided
+  2. guru_parent_states (auto-inferred) — fallback when nothing else is set
+
+Never invent archetype tags or cultural dimensions; only use ones present in the PARENT PROFILE block.
 
 ## 6. The script (stage-by-stage with literal recommended language)
 Five stages: \`### Opening\` / \`### Share the observation\` / \`### Ask, don't tell\` / \`### Partner\` / \`### Close\`.

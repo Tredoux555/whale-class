@@ -903,6 +903,173 @@ export async function executeTracyTool(
         };
       }
 
+      // ── PARENT TOOLS (Ultimate Tracy Phase A — migration 238) ────
+      // Parents as first-class entities. School-scoped via deps.schoolId.
+      // Defensive: every query joins via parent_id → montree_parents row
+      // whose school_id MUST match deps.schoolId.
+      case 'get_parent_profile': {
+        const parentId = String(input.parent_id || '').trim();
+        if (!parentId) return { success: false, error: 'parent_id is required' };
+
+        // Step 1: verify parent belongs to caller's school.
+        const { data: parent, error: pErr } = await supabase
+          .from('montree_parents')
+          .select('id, school_id, name, email, is_active')
+          .eq('id', parentId)
+          .eq('school_id', schoolId)
+          .maybeSingle();
+        if (pErr) {
+          // Migration 238 not run yet returns 42P01 on the parent_profiles
+          // lookup BELOW, not here. This branch is a real DB error.
+          return { success: false, error: pErr.message };
+        }
+        if (!parent) {
+          return {
+            success: true,
+            data: { found: false, reason: 'parent_not_in_school' },
+            result_summary: 'parent not found in this school',
+          };
+        }
+
+        // Step 2: load child links so Tracy can reference them by name.
+        const { data: junctionRows } = await supabase
+          .from('montree_parent_children')
+          .select('child_id')
+          .eq('parent_id', parentId);
+        const linkedChildIds = (junctionRows ?? []).map(
+          (r: { child_id: string }) => r.child_id
+        );
+        let linkedChildren: Array<{ id: string; name: string }> = [];
+        if (linkedChildIds.length > 0) {
+          const { data: childRows } = await supabase
+            .from('montree_children')
+            .select('id, name, classroom_id, is_active')
+            .in('id', linkedChildIds)
+            .eq('is_active', true);
+          // Belt-and-braces: school-scope via classroom.
+          const ids = (childRows ?? [])
+            .map((c: { classroom_id: string | null }) => c.classroom_id)
+            .filter((id: string | null): id is string => !!id);
+          let allowedClassroomIds = new Set<string>();
+          if (ids.length > 0) {
+            const { data: classroomRows } = await supabase
+              .from('montree_classrooms')
+              .select('id, school_id')
+              .in('id', ids);
+            allowedClassroomIds = new Set(
+              (classroomRows ?? [])
+                .filter((c: { school_id: string }) => c.school_id === schoolId)
+                .map((c: { id: string }) => c.id)
+            );
+          }
+          linkedChildren = (childRows ?? [])
+            .filter(
+              (c: { classroom_id: string | null }) =>
+                c.classroom_id && allowedClassroomIds.has(c.classroom_id)
+            )
+            .map((c: { id: string; name: string }) => ({
+              id: c.id,
+              name: c.name,
+            }));
+        }
+
+        // Step 3: load profile (migration-aware).
+        try {
+          const { data: profile, error: profileErr } = await supabase
+            .from('montree_parent_profiles')
+            .select(
+              'id, archetypes, cultural_register, preferred_language, known_triggers, effective_moves, relationship_temperature, family_context, priorities_for_child, history_notes, meeting_count, last_meeting_date, last_thread_message_at, source, evaluated_by_role, last_evaluated_at, updated_at'
+            )
+            .eq('parent_id', parentId)
+            .eq('school_id', schoolId)
+            .maybeSingle();
+
+          if (profileErr) {
+            const e = profileErr as { code?: string; message?: string };
+            if (e.code === '42P01' || (e.message ?? '').includes('does not exist')) {
+              return {
+                success: true,
+                data: {
+                  found: true,
+                  parent: { id: parent.id, name: parent.name, email: parent.email },
+                  linked_children: linkedChildren,
+                  profile: null,
+                  migration_pending: true,
+                },
+                result_summary: `${parent.name}: profile schema not yet migrated`,
+              };
+            }
+            return { success: false, error: profileErr.message };
+          }
+
+          return {
+            success: true,
+            data: {
+              found: true,
+              parent: {
+                id: parent.id,
+                name: parent.name,
+                email: parent.email,
+                is_active: parent.is_active !== false,
+              },
+              linked_children: linkedChildren,
+              profile: profile ?? null,
+            },
+            result_summary: profile
+              ? `${parent.name}: ${(profile.archetypes ?? []).join(',') || 'no archetype'} / ${profile.relationship_temperature ?? 'neutral'}`
+              : `${parent.name}: no profile yet`,
+          };
+        } catch (err) {
+          const e = err as { code?: string; message?: string };
+          if (e?.code === '42P01' || (e?.message ?? '').includes('does not exist')) {
+            return {
+              success: true,
+              data: {
+                found: true,
+                parent: { id: parent.id, name: parent.name, email: parent.email },
+                linked_children: linkedChildren,
+                profile: null,
+                migration_pending: true,
+              },
+              result_summary: `${parent.name}: profile schema not yet migrated`,
+            };
+          }
+          return {
+            success: false,
+            error: err instanceof Error ? err.message : 'profile fetch failed',
+          };
+        }
+      }
+
+      case 'list_parents_for_school': {
+        const classroomId =
+          typeof input.classroom_id === 'string' && input.classroom_id.trim().length > 0
+            ? input.classroom_id.trim()
+            : null;
+        const qs = classroomId ? `?classroom_id=${encodeURIComponent(classroomId)}` : '';
+        const result = await internalGet(
+          `/api/montree/admin/parent-profile/list${qs}`
+        );
+        if (!result.ok) {
+          return {
+            success: false,
+            error: `parent-profile/list returned ${result.status}`,
+          };
+        }
+        const data = result.data as
+          | { parents?: Array<{ parent_name?: string }>; migration_pending?: boolean }
+          | undefined;
+        const parents = Array.isArray(data?.parents) ? data!.parents! : [];
+        const summary = data?.migration_pending
+          ? `${parents.length} parent(s) (profile schema not yet migrated)`
+          : `${parents.length} parent(s)`;
+        return {
+          success: true,
+          data: result.data,
+          result_summary: summary,
+        };
+      }
+
       // ── KNOWLEDGE: consult_tracy_knowledge ───────────────────────
       // Session 136 — load one knowledge file in full so Tracy can
       // synthesize a chat reply with framework depth. No school
