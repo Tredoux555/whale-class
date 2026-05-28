@@ -49,7 +49,21 @@ export const getVaultFileIcon = (filename: string) => {
 
 export const isImageFile = (filename: string) => {
   const ext = filename.split('.').pop()?.toLowerCase();
-  return ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext || '');
+  // Extended to cover modern formats so iPhone HEIC and AVIF previews load
+  // in the vault gallery (previously fell through to "no thumbnail" path).
+  return ['jpg', 'jpeg', 'png', 'gif', 'webp', 'heic', 'heif', 'avif'].includes(
+    ext || ''
+  );
+};
+
+export const isVideoFile = (filename: string) => {
+  const ext = filename.split('.').pop()?.toLowerCase();
+  // Used by the vault gallery to recognise videos and at minimum render a
+  // ▶️ tile (the previous behaviour silently dropped videos from the
+  // thumbnail batch, making the upload look like it didn't save).
+  return ['mp4', 'webm', 'mov', 'avi', 'mkv', '3gp', '3g2', 'm4v', 'wmv'].includes(
+    ext || ''
+  );
 };
 
 export const getFileIcon = (mimeType: string, filename: string) => {

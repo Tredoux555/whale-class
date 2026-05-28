@@ -701,7 +701,11 @@ export default function StoryViewer() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-amber-50 to-orange-100 p-8">
+    // Themed to mirror the whale-class admin dark-slate gradient — gives the
+    // Story system the same Montree platform feel as the rest of the suite.
+    // The parchment-style story card inside (lines below) keeps its warm
+    // amber tone so the actual READING surface still feels like a letter.
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-4 sm:p-8">
       <PullRefreshIndicator
         pullDistance={pullState.pullDistance}
         isRefreshing={pullState.isRefreshing}

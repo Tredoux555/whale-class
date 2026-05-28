@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase, verifyAdminToken, verifyVaultToken } from '@/lib/story-db';
 import crypto from 'crypto';
 
+// Videos can be large + PBKDF2 + AES-GCM are CPU-bound. Railway's default
+// 15s function timeout was killing long video saves mid-encryption.
+export const maxDuration = 120;
+
 function encryptFile(fileBuffer: Buffer, password: string): Buffer {
   const iv = crypto.randomBytes(16);
   const salt = crypto.randomBytes(32);
@@ -14,11 +18,37 @@ function encryptFile(fileBuffer: Buffer, password: string): Buffer {
 }
 
 function getExtension(contentType: string): string {
+  // Extended mime map — was previously missing iPhone (HEIC/MOV), Android
+  // (3gpp), and some common variants. Without an extension, the vault listing
+  // can't render a preview or play the file back, so the admin sees the
+  // upload as "missing" even though the encrypted blob saved correctly.
   const map: Record<string, string> = {
-    'image/jpeg': '.jpg', 'image/png': '.png', 'image/gif': '.gif',
-    'image/webp': '.webp', 'video/mp4': '.mp4', 'video/webm': '.webm',
+    // Images
+    'image/jpeg': '.jpg',
+    'image/jpg': '.jpg',
+    'image/png': '.png',
+    'image/gif': '.gif',
+    'image/webp': '.webp',
+    'image/heic': '.heic',
+    'image/heif': '.heif',
+    'image/avif': '.avif',
+    // Videos
+    'video/mp4': '.mp4',
+    'video/webm': '.webm',
+    'video/quicktime': '.mov',
+    'video/x-quicktime': '.mov',
+    'video/x-matroska': '.mkv',
+    'video/3gpp': '.3gp',
+    'video/3gpp2': '.3g2',
+    'video/x-msvideo': '.avi',
+    'video/x-ms-wmv': '.wmv',
   };
-  return map[contentType] || '';
+  // Try direct match. If miss, try generic prefixes so unknown variants
+  // still get a sensible extension.
+  if (map[contentType]) return map[contentType];
+  if (contentType.startsWith('video/')) return '.mp4';
+  if (contentType.startsWith('image/')) return '.jpg';
+  return '';
 }
 
 export async function POST(req: NextRequest) {
