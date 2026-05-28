@@ -33,7 +33,25 @@ import {
   type PrincipalMemoryType,
   type RecallFilters,
 } from './memory';
+import {
+  getTracyKnowledgeFull,
+  type TracyKnowledgeTopic,
+} from './knowledge/loader';
 import { readEncryptedField } from '@/lib/montree/messaging-crypto';
+
+// Session 136 — canonical topics for consult_tracy_knowledge dispatch.
+// Kept here (vs imported as a Set from loader) so the validation is
+// co-located with the dispatch case and reads at a glance.
+const VALID_KNOWLEDGE_TOPICS = new Set<TracyKnowledgeTopic>([
+  'index',
+  'foundation',
+  'frameworks',
+  'nvc',
+  'patterns',
+  'cultural',
+  'montessori_anxieties',
+  'de_escalation',
+]);
 
 export interface TracyToolResult {
   success: boolean;
@@ -882,6 +900,24 @@ export async function executeTracyTool(
           success: true,
           data: d,
           result_summary: `${d.child_name} dossier ${d.from_cache ? '(cached)' : `(fresh, ${d.cost_usd?.toFixed(3)} USD)`}`,
+        };
+      }
+
+      // ── KNOWLEDGE: consult_tracy_knowledge ───────────────────────
+      // Session 136 — load one knowledge file in full so Tracy can
+      // synthesize a chat reply with framework depth. No school
+      // scoping (knowledge is universal — same content for every
+      // principal at every school).
+      case 'consult_tracy_knowledge': {
+        const rawTopic = String(input.topic || 'index').trim() as TracyKnowledgeTopic;
+        const topic: TracyKnowledgeTopic = VALID_KNOWLEDGE_TOPICS.has(rawTopic)
+          ? rawTopic
+          : 'index';
+        const content = await getTracyKnowledgeFull(topic);
+        return {
+          success: true,
+          data: { topic, content },
+          result_summary: `knowledge file: ${topic}`,
         };
       }
 

@@ -57,6 +57,15 @@ export interface TracySystemPromptOpts {
    * 195 — Tracy's persistent relational memory.
    */
   memorySection?: string;
+  /**
+   * Session 136 — pre-resolved psychological knowledge summary from
+   * `getTracyKnowledgeSummary()`. ~1500 tokens. When provided, gets injected
+   * after the BREVITY DISCIPLINE block. Tracy then has the foundation +
+   * difficult-conversation + NVC + cultural + de-escalation frameworks
+   * loaded on EVERY chat turn — not just parent-meeting dossiers. Async
+   * resolution happens upstream in the route so this builder stays sync.
+   */
+  knowledgeSummary?: string;
 }
 
 export function buildTracySystemPrompt(opts: TracySystemPromptOpts): string {
@@ -66,12 +75,18 @@ export function buildTracySystemPrompt(opts: TracySystemPromptOpts): string {
     todayLabel,
     locale = 'en',
     memorySection = '',
+    knowledgeSummary = '',
   } = opts;
   const languageDirective = getAILanguageInstruction(locale);
   // Memory block is empty when the principal is new. When non-empty, it
   // already arrives as a fully-formatted section with its own heading +
   // body (see formatMemoriesForPrompt in lib/montree/tracy/memory.ts).
   const memoryBlock = memorySection ? `\n\n${memorySection}` : '';
+  // Session 136 — knowledge block. Empty if the loader hasn't been wired
+  // by the caller. When non-empty, it arrives as a fully-formatted section
+  // with its own heading + body (see getTracyKnowledgeSummary in
+  // lib/montree/tracy/knowledge/loader.ts).
+  const knowledgeBlock = knowledgeSummary ? `\n\n${knowledgeSummary}` : '';
 
   return `You are Tracy, ${principalName}'s chief-of-staff at ${schoolName}. Today is ${todayLabel}.${languageDirective}
 
@@ -211,7 +226,7 @@ Hard guardrails:
   • If you have ≥250 words of substantive material, that's a sign you should call \`prepare_parent_meeting\` (which produces the BRIEF + DOSSIER split) instead of dumping a long-form reply.
   • Dense knowledge stays in tools. Tracy's job is the cue card on top.
 
-When ${principalName} needs depth, she'll ask. Reactive only. The default posture is THE ANSWER, not THE THINKING.
+When ${principalName} needs depth, she'll ask. Reactive only. The default posture is THE ANSWER, not THE THINKING.${knowledgeBlock}
 
 # Parent-meeting responses — the brief renders itself
 

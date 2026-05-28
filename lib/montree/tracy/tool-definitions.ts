@@ -335,6 +335,38 @@ export const TRACY_TOOLS: Tool[] = [
     },
   },
 
+  // ── KNOWLEDGE TOOL: consult_tracy_knowledge ──────────────────────────
+  // Session 136 — Tracy's psychological knowledge base, loaded from disk
+  // (lib/montree/tracy/knowledge/*.md). The compact summary is in the
+  // system prompt every turn; this tool pulls the FULL content of one
+  // specific topic when chat needs depth. Read-only. No school-scoping
+  // needed — knowledge is universal.
+  {
+    name: 'consult_tracy_knowledge',
+    description:
+      'Pull the FULL content of one psychological knowledge file when chat needs depth beyond the system-prompt summary. CALL THIS when the principal asks a chat question that benefits from theoretical grounding ("how do I handle a defended parent?", "what does Erin Meyer say about Chinese parents?", "talk me through the three-layer model on this thread"). Choose the topic by intent: foundation = Montessori developmental frame; frameworks = Stone/Patton/Heen + Crucial Conversations (the three-layer model, intent vs impact, AND-stance, safety); nvc = Marshall Rosenberg OFNR + four ways to receive criticism + validation-before-reframing; patterns = the five parent archetypes (expectation-driven, anxiety-projecting, hands-off, comparison-trapped, defended); cultural = Erin Meyer\'s Culture Map applied to international Montessori populations; montessori_anxieties = the recurring "is this rigorous enough?", "K-readiness", "play vs work" questions; de_escalation = Motivational Interviewing OARS + validation loops + the three-second pause + reset moves; index = the map of all topics. After fetching, synthesize a chat reply IN TRACY\'S VOICE that applies the framework to the principal\'s specific question — never dump the file content back at her.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        topic: {
+          type: 'string',
+          enum: [
+            'index',
+            'foundation',
+            'frameworks',
+            'nvc',
+            'patterns',
+            'cultural',
+            'montessori_anxieties',
+            'de_escalation',
+          ],
+          description: 'Which knowledge file to fetch in full.',
+        },
+      },
+      required: ['topic'],
+    },
+  },
+
   // ── ACTION TOOL: draft_teacher_welcome_messages ──────────────────────
   // CALL IMMEDIATELY when the principal mentions ANYTHING about teachers
   // not having codes, needing to be onboarded, needing welcome messages,
