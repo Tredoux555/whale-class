@@ -252,71 +252,214 @@ Wave 1 sends bounced for these addresses. None of these are flagged as `bounced`
 
 ---
 
-## 🚨 NEXT SESSION — CALL TO ACTION (queued May 20, 2026 morning, post-Session 119)
+## 🚨 NEXT SESSION — CALL TO ACTION (queued May 28, 2026 morning, post-Session 133)
 
-When you come back from a context refresh, run these in order:
+When you come back from a context refresh, run these in order. Full breakdown in `docs/handoffs/SESSION_133_STATUS.md`.
 
-### 1. Run migration 225 + walk the 12-step verification (THE UNBLOCK)
-
-**Full spec:** `docs/handoffs/SESSION_119_HANDOFF.md`
+### 1. Run 4 SQL blocks in Supabase — unblocks dossier cache + 2 stuck principal logins
 
 ```sql
 -- Paste in Supabase SQL Editor:
--- /Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/whale/migrations/225_child_english_progress.sql
+-- /Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/whale/migrations/237_meeting_dossiers.sql
 ```
 
-Then run the agent backfill so existing NULL-pct agents inherit the new 20% default:
+Then realign the 2 desynced principal logins (Tredoux + Phillip Ahn):
 
 ```sql
-UPDATE montree_teachers
-SET agent_default_share_pct = 20
-WHERE is_agent = true AND agent_default_share_pct IS NULL;
+-- Tredoux (Whale Class) — login: XVYHHX
+UPDATE montree_school_admins
+SET password_hash = 'fe3eb5469e2863a04a4b63d2432368f1f436101128afea1a55599eea1968448f',
+    updated_at = NOW()
+WHERE id = '16eec1c0-bfb5-4edf-a160-059bb41803fb'
+  AND login_code = 'XVYHHX';
+
+-- Phillip Ahn — login: RGCCQR
+UPDATE montree_school_admins
+SET password_hash = '485c0d2fbf7e9b72812ef00e820c5258602e41547fd8248cd58e6cac6592b642',
+    updated_at = NOW()
+WHERE id = '7e73ab78-f5db-474b-b27a-ede3615d10d4'
+  AND login_code = 'RGCCQR';
 ```
 
-Then walk the 12-step verification checklist in the handoff: Agora video call CSP fix (camera + mic should connect without retry storm), Parent Manager rename, WeChat-style chat tab, clickable `[[VCALL:...]]` invite cards, instant call from chat header, mobile header (no overlap on iPhone), Classroom Overview English Progress tab with class heatmap, super-admin Referrals 🔓 button (now wraps to second row instead of cropping), agent self-service code generation (no more "disabled" wall).
-
-### 2. AgoraVideoCall `audioOnly` prop wiring (~30 min)
-
-The voice-call button in parent-chats threads the `?audio=1` query through but AgoraVideoCall still mounts with video. Thread `audioOnly` from join page → AgoraVideoCall props → skip `createCameraVideoTrack` when true. Then the existing query param actually does what it promises.
-
-### 3. Lesson → curriculum work mapping in `lesson-map.ts`
-
-Add `lessonToWorks: Record<number, string[]>` table. Then `offerEnglishAdvance()` only fires the prompt when the confirmed work is actually mapped to the child's current lesson. Sharper UX; Phase 2 v1 fires on every Language confirm which is acceptable but noisy.
-
-### 4. Phase 2.5 — wire auto-advance into 5 component-level confirm surfaces
-
-PhotoInsightPopup, PhotoInsightButton ×2, TeachGuruWorkModal ×2, PhotoEditModal, TellAiSheet. Each has different local-var shapes; needs careful per-surface read. Lower confirm volume than photo-audit. ~30-45 min focused work.
-
-### 5. Send Simone the VAT-registration reply (OPS — not code)
-
-Tredoux already has a **DRAFT** in Gmail (subject "Re: next step is vat registration") saying *"So I need to do some business using the business and importing licence?"* — instinct is right. Suggested expanded version:
-
-> "Hi Simone, makes sense — but we haven't done any trading yet on the new business since the import licence was only approved today. I'll need to actually run some import/export deals through the company first before I can give you those documents. Should we just pause VAT registration until I've got a few months of real trading on the books? Or is there a path to register early?"
-
-**Why this matters:** Simone's request for 3 invoices totaling R50K+, 3 months of bank statements showing income, plus a SARS tax compliance letter is legit and standard for voluntary VAT registration. But Tredoux's Jeffy (Pty) Ltd hasn't traded yet — the import licence was approved this same morning. He can't supply those documents. Push it back to Simone politely and ask whether to pause or whether there's an early-registration path.
-
-### 6. Optional cleanup (low priority)
-
-If you want a fully clean DB (cosmetic — doesn't block anything):
-
+Verify clean:
 ```sql
-DELETE FROM montree_agent_audit WHERE agent_id IS NULL;
-DELETE FROM montree_referral_codes WHERE agent_id IS NULL;
+SELECT id, name, login_code,
+       encode(sha256(login_code::bytea), 'hex') = password_hash AS synced,
+       password_hash LIKE '$2%' AS is_bcrypt
+FROM montree_school_admins
+WHERE login_code IS NOT NULL AND role = 'principal' AND is_active = true
+ORDER BY name;
+-- Every row should show synced=true OR is_bcrypt=true
 ```
 
-These are 1 stale code + 11 audit rows left over from previously-deleted agents (FK was `ON DELETE SET NULL` so they survived earlier deletes). Whale Class is untouched.
+### 2. Merge branch `mira-tracy-upgrade-s133` to main
 
-### 7. Carry-overs (still relevant)
+8 commits ready. Lint clean, tsc clean on Session-133 surface, all audits closed. After the SQL above is run, merge + push:
 
-- Stage A Agora activation — migration 223 + flag flip + 2-device end-to-end test per `docs/handoffs/AGORA_STAGE_A_QUICKSTART.md`. Now even MORE valuable post-CSP-fix since calls actually connect.
-- Migration 224 (`photo_pipeline_v2`) — already confirmed RUN per Session 118. Skip this if already on production state.
-- Appointments i18n sweep — appointments + new calendar surface English-only. ~30 new keys × 12 locales via Haiku batch.
-- Mira → Tracy super-admin scope (Session 108 Phase 4.8).
+```bash
+git checkout main
+git merge --ff-only mira-tracy-upgrade-s133
+git push origin main
+```
+
+### 3. Walk the Yo-yo dossier flow on production (after Railway settles)
+
+Login as Whale Class principal → open any parent_teacher thread with Yo-yo → click the new gold "📋 Prepare for the meeting" pill in the thread header → wait ~90s → read the dossier. Compare to `Yoyo_Sleep_Briefing_EN.md` — should match 1:1.
+
+### 4. Walk `/montree/super-admin/all-logins`
+
+Login as super-admin → click the new gold "🔑 All logins" button next to "Community" in the header → see 4 sections (principals + teachers + agents + parents) with one-tap copy on every code. Verify the 5-role filter pills work. Verify the hash-desync warning chip at top now reads "0 principal hash-desync" after the SQL above.
+
+### 5. Optional polish (deferred from Session 133 audit, all non-blocking)
+
+- **"Fix this row" button** next to the hash-desync warning. Would call an existing principal-reset endpoint + realign in one click. ~30 min.
+- **Group-by-school toggle** on all-logins. Cheap add when school count grows past ~5.
+- **Agent-side "Prepare to pitch" button** wired onto `/montree/agent/codes` (route is live; UI is ~30 min wiring).
+- **5 small Mira utility tools** (`get_feature_details`, `compare_to`, `draft_objection_response`, `draft_follow_up`, `get_pricing_breakdown`) — Mira handles these conversationally from the knowledge base today; structured-output case covered by the pitch dossier. Defer until signal demands them.
+- **Server-side PDF via Playwright** (v1 ships HTML with print CSS).
+- **Naming sweep** — Session 133 files use `snake_case.ts`; rest of codebase uses kebab-case. Cosmetic.
+- **`preparePMeeting` → `prepareParentMeeting`** function-name rename for symmetry with `preparePrincipalPitch`. Cosmetic.
+
+### 6. Carry-overs from Session 131 health check (still relevant — not addressed in Session 133)
+
+- **🔴 CRIT-1** — `/api/montree/feedback` is auth-less + trusts body identity (impersonation vector). ~15 min.
+- **🔴 CRIT-2** — Super-admin payouts PATCH bypasses period-lock for `mark_paid`/`manual_override`. ~20 min.
+- **🟠 HIGH-1** — 5 AI routes still ungated (`onboard` is the worst — Sonnet × 20 children per Free-tier onboarding burst, ~$2-6 burned per burst). ~2.5 hours total.
+- **🟠 HIGH-2** — 3 public POSTs missing rate-limit (`become-an-agent/apply`, `leads`, `feedback`). ~30 min.
+- **🟠 HIGH-3** — 2 `.single()` regressions causing 500s (`guru/followup`, `guru/work-guide`). ~5 min.
+- **🟡 HIGH-6** — 32 files use `t() || 'fallback'` antipattern (broken UX for non-English users). ~2 hours.
+- **🟡 HIGH-7** — 31 duplicate keys in `en.ts` + 25 in 10 other locale files. ~1 hour.
+
+Full detail in `docs/handoffs/HEALTH_CHECK_SESSION_131.md`.
+
+### 7. Older carry-overs (still relevant)
+
+- Stage A Agora activation — migration 223 + flag flip + 2-device end-to-end test per `docs/handoffs/AGORA_STAGE_A_QUICKSTART.md`.
+- AgoraVideoCall `audioOnly` prop wiring (~30 min) — voice-call button threads `?audio=1` but AgoraVideoCall still mounts camera.
+- Appointments i18n sweep — ~30 new keys × 12 locales via Haiku batch.
 - Outreach follow-ups — FAMM Argentina, Cambridge Montessori Global, Otari NZ, Lions Gate, Montessori Norge.
 
-### 8. Railway warm-spare on Vercel (insurance, ~10 min)
+---
 
-Session 119 weathered a Railway edge outage (May 19 22:22 UTC, ~1.5h, first incident of this scale). Don't switch reactively (Vercel Pro caps function duration at 60s; Montree has 120s AI routes that would need rework). DO build a "warm spare" Vercel staging deployment — 10 min DNS-swap insurance if Railway has another major incident in the next 30 days.
+## RECENT STATUS (May 28, 2026)
+
+### 🧠 Session 133 — Mira & Tracy dossier capability + login fix + super-admin all-logins page (May 27 night → May 28 morning, 2026)
+
+**Overnight build of the Mira & Tracy upgrade plan (`docs/handoffs/MIRA_TRACY_UPGRADE_PLAN.md`) + a real production login bug fix + a new super-admin all-logins surface. 8 commits on branch `mira-tracy-upgrade-s133`, NOT pushed to main per the plan's hard rule. Tredoux merges + pushes after reviewing.**
+
+**🚨 Canonical resume doc:** `docs/handoffs/SESSION_133_STATUS.md` — full file-by-file change list, every commit, every architectural rule, the 4 SQL blocks to run.
+
+**🚨 Migration 237 pending Tredoux's Supabase run** — `migrations/237_meeting_dossiers.sql` creates `montree_meeting_dossiers` (shared cache table for Tracy + Mira dossiers) + 3 indexes + `montree_purge_expired_dossiers()` function. Idempotent. Originally failed on a partial-index `WHERE NOW()` clause (PG 42P17 — NOW() isn't IMMUTABLE) — patched to plain b-tree. Until run, dossiers generate but don't cache; every reopen spends Sonnet again. UI surfaces a "migration 237 not run" hint when caching is off.
+
+**🚨 Hash-desync SQL also pending** — two active principals have `login_code` ≠ SHA256(password_hash). Tredoux (XVYHHX) and Phillip Ahn (RGCCQR). SQL realignments in the handoff doc.
+
+**A. Phase A — Tracy data access tools (commit `3c84630f`):**
+
+3 new tools wired into Tracy: `consult_guru` (queries `montree_guru_interactions` for a child, optional keyword re-rank, school-scoped re-verification), `detect_pattern` (thematic-cluster detector across media + behavioural observations + teacher notes + work-session notes with strict-phrase positives + negative_phrases disqualifiers — the Yo-yo "resting hands" lesson codified), and an extended `child_focus` framework that now surfaces settings JSONB (developmental_insights, parent_states, parent_current_state, weekly_advice, game_plan, guru_area_reasons). Smoke tests verified end-to-end against real Whale Class data: 5 Guru analyses for Yo-yo, 24 sleep events with cluster days matching the briefing exactly (May 25 ×5, Apr 15 ×6, May 13 ×3, Apr 4 ×3).
+
+🚨 **Two pre-existing column bugs found + fixed**: `montree_media` has `caption` (not `teacher_caption`) and no `work_name`/`area` columns (work label lives via `work_id` on the joined `montree_classroom_curriculum_works`). Tracy's child-focus framework was silently returning empty observations on every child lookup. Captions now flow through.
+
+**B. Phase B — `prepare_parent_meeting` (commit `550b563c`):**
+
+The headline feature. Single Sonnet 4.6 call (~$0.05 / ~90s) that orchestrates `fetchChildContext` + `consultGuru` + `detectPattern` in parallel → composes structured 5K-token context → produces a 9-section markdown dossier (Tracy's note → child profile → what we're observing → working interpretation → parent context → conversation script → what NOT to say → pushback handlers → follow-up plan → sources appendix). Per-request random-nonce fence on parent-typed input.
+
+**Verified end-to-end**: reproduces the hand-built Yo-yo briefing (`Yoyo_Sleep_Briefing_EN.md`) 1:1 — same 9 sections, same voice, same dated observations + cluster days, and ADDS the Wednesday-clustering insight the hand-built briefing didn't have. Sources appendix lists every record type. 24h cache via shared `montree_meeting_dossiers` table.
+
+UI surface: gold pill "📋 Prepare for the meeting" on every parent_teacher + parent_principal thread with an attached child (in `/montree/admin/communication/threads/[id]`). Modal asks for meeting_purpose + optional parent_context (free-text wins over auto-inferred guru_parent_states on tone), then shows the dossier inline with a print-to-PDF link.
+
+**C. Phase C — Mira knowledge base (commit `7afa2e50`):**
+
+11 markdown files under `lib/montree/mira/knowledge/` (elevator / features / pricing / proof / pedagogical / competitive / personas / objections / demo_paths / cultural / follow_up). ~52KB total. Cached disk-read via `lib/montree/mira/knowledge/loader.ts`. `getMiraKnowledgeSummary()` returns a ~1555-token compact summary that's injected into Mira's chat system prompt on every turn with a "QUOTE FROM THIS KNOWLEDGE — don't improvise from training data" directive. Full ~13K-token bundle is reserved for `prepare_principal_pitch`.
+
+**D. Phase D + E — `prepare_principal_pitch` (commit `07b8596f`):**
+
+Mira's pitch dossier (mirror of Tracy's parent-meeting dossier). Parallel load of `getMiraKnowledge` + `getPlatformSignal` → Sonnet 4.6 call → 24h cache (`audience_type='principal_pitch'`). 9-section structure includes a "what's in it for you?" commission section framed as skin-in-the-game (per the Section 7 plan decision). Verified end-to-end with a Mandarin Beijing-principal pitch ($0.11, 94s, 165 lines, all 9 sections, persona-correct).
+
+`get_platform_signal` returns live aggregate numbers (active schools, children, classrooms, observations, languages, countries). 10-minute in-process cache. Aggregates only — no PII. Verified: 12 schools / 57 children / 510 observations / 3 languages / 4 countries.
+
+API route at `/api/montree/agent/dossier/principal-pitch`. Agent-only. NO tier gate (agents are paid partners).
+
+**E. Audit-fix wave 1 — CRITICAL cache cross-tenant leak (commit `cdfc9fbf`):**
+
+Three parallel agents audited Phases A–E. Security agent found a **CRITICAL** finding: the cache lookup in `prepare_parent_meeting` ran BEFORE the school-ownership check. A principal at school A could pass another school's child_id and receive the cached dossier text. Same class of bug for Mira (cross-agent leak).
+
+Fix: `makeDossierCacheKey` now requires a `scope_owner_id` field. TypeScript enforces it — non-optional `string` parameter, impossible to forget at a future call site. Tracy passes `schoolId`. Mira passes `agentId`. Tracy's cache-HIT path also re-verifies the child belongs to the school as belt-and-braces.
+
+Plus 4 more correctness fixes: `loader.ts` cachedPromise leak on throw (try/finally), `makeDossierCacheKey` extras normalization (lowercase + trim), cache-hit `child_name='(cached)'` lie (now does fast school-scoped child lookup on cache-hit path), `detect_pattern` whitespace-only positives blowup (explicit refusal).
+
+Verifier pass came back ALL 6 VERIFIED.
+
+**F. Principal login fix + super-admin all-logins page (commit `5b773b79`):**
+
+Tredoux reported logging in with `XVYHHX` returned 401. Diagnosed: migration 194 (Session 98) added `login_code` column to `montree_school_admins` but the unified login route's `tryPrincipalLogin` was never updated to read it — only checked `password_hash`. A prior code-reset had updated `login_code` without realigning `password_hash`.
+
+Fix to `tryPrincipalLogin`: added Step 2 lookup by `login_code` ILIKE column WITH hash-verification gate (refuses with loud-log on desync rather than silently authenticating). The route's three steps now: SHA256-by-password_hash → login_code-column ILIKE (with hash verification) → bcrypt scan.
+
+NEW `/montree/super-admin/all-logins` page + API. Every login code in the system on one neat surface (initially principals + teachers + agents; parents added in `788e72e8`). One-tap copy, search, role filter, include-inactive toggle. Inline `⚠ Hash desync` warning on broken principal rows. `Cache-Control: private, no-store` on the API.
+
+**G. Audit-fix wave 2 — parents + correctness (commit `788e72e8`):**
+
+Three more audits on commit `5b773b79`. Security CLEAN. Correctness + UX with gaps.
+
+Real bugs caught + fixed:
+- ILIKE duplicate-row crash on Step 2 (case-insensitive ILIKE vs case-sensitive partial UNIQUE index could match >1 row → `.maybeSingle()` would throw → 500). Switched to `.order('created_at', { ascending: true }).limit(1)` + index access.
+- Empty-string `password_hash` slipped past Step 2 guard (silently auth'd). Tightened to `typeof + length > 0` check.
+- `desynced_principal_ids` false-positive on bcrypt + malformed hashes. Tightened to `/^[a-f0-9]{64}$/i` — only flag rows whose stored hash LOOKS like legacy SHA256 and mismatches.
+- Copy-timer race on spam-click flickered "Copied" state. Clear timer BEFORE setting new state.
+- Multiple `Property does not exist on type 'never'` TS errors from Supabase `.select()` returns. Cast each result to typed row shape (12 sites).
+
+UX gap closed: **PARENTS missing from all-logins** (user said "everyone that needs to login"). Added `montree_parent_invites` to the API + a new "Parent invites" section on the page with child / classroom / school context + usage count (N/M uses) + expired/exhausted/inactive warnings. Role filter now 5-way: All / Principals / Teachers / Agents / Parents.
+
+**🚨 Architectural rules locked in this session (#264-281, full list in `docs/handoffs/SESSION_133_STATUS.md`):**
+
+264. `consult_guru` is the canonical bridge between Tracy and Guru's historical analyses. Don't query `montree_guru_interactions` directly from new Tracy code.
+265. `detect_pattern` uses strict-phrase matching, not loose keyword matching. The Yo-yo "resting hands" lesson is codified.
+266. `montree_media` has `caption` (not `teacher_caption`) and no `work_name`/`area` columns. Use `work_id` joined to `montree_classroom_curriculum_works` for work labels.
+267. `fetchChildContext` + `ChildContext` are exported — downstream dossier builders reuse the same context bundle.
+268. `prepare_parent_meeting` ALWAYS calls Sonnet, never Haiku. High-stakes deliberate artifact.
+269. Dossier output is canonical 9-section structure. Section order doesn't change. Sources appendix mandatory. "Things NOT to say" is the dossier's secret weapon — never drop it to save tokens.
+270. parent_context free-text wins on tone calibration when both it AND auto-inferred guru_parent_states are present.
+271. `montree_meeting_dossiers` is shared by Tracy + Mira; `audience_type` discriminates.
+272. Mira's knowledge base loads FROM DISK on each process start, not baked into the system prompt at build time. Product reality changes; stale prompt is worse than no prompt.
+273. The CHAT system prompt sees the ~1555-token SUMMARY. The full bundle is reserved for `prepare_principal_pitch`.
+274. When Mira quotes pricing / features / competitive — she quotes from knowledge. Improvising from training data is forbidden.
+275. Live platform numbers come from `get_platform_signal`, never from memory.
+276. `prepare_principal_pitch` includes a "what's in it for you?" commission section, framed as skin-in-the-game.
+277. Mira's pitch dossiers are agent-only — NO tier gate.
+278. `get_platform_signal` returns AGGREGATES only. No PII. Safe to quote in cold pitches.
+279. **`makeDossierCacheKey` REQUIRES `scope_owner_id`** (TypeScript-enforced non-optional). Without it the cache becomes a cross-tenant leak. Tracy passes schoolId; Mira passes agentId.
+280. Partial-index predicates cannot contain `NOW()` or any other STABLE function (PG 42P17). Use plain b-tree + WHERE-at-query-time.
+281. **`tryPrincipalLogin` walks three steps**: SHA256-by-password_hash → login_code-column ILIKE (with hash verification gate) → bcrypt scan. Step 2 NEVER silently authenticates when a password_hash exists but doesn't verify — loud-log and refuse. ILIKE-against-a-partial-UNIQUE column requires `.limit(1)` not `.maybeSingle()`. Every super-admin route returning plaintext credentials in bulk MUST set `Cache-Control: private, no-store`. Hash-desync detection only flags 64-char hex hashes that mismatch — bcrypt and malformed hashes excluded.
+
+**🚨 What lives at each new URL:**
+
+| URL | Owner | What |
+|---|---|---|
+| `/montree/admin/communication/threads/[id]` | Principal | New gold "📋 Prepare for the meeting" pill on every parent thread with attached child |
+| `/montree/super-admin/all-logins` | Tredoux | Every login code — principals + teachers + agents + parents. One-tap copy + search + role filter + hash-desync warnings. |
+| `/api/montree/admin/dossier/parent-meeting` | Principal | POST + GET. Tier-gated. |
+| `/api/montree/agent/dossier/principal-pitch` | Agent | POST + GET. No tier gate. |
+| `/api/montree/super-admin/all-logins` | Super-admin | GET. `Cache-Control: private, no-store`. |
+
+**Verification status:**
+- ✅ ESLint `--max-warnings=0` clean on every changed file across all 8 commits.
+- ✅ `npx tsc --noEmit -p .` clean on Session-133 surface. (11 pre-existing errors on `auth/unified/route.ts` lines 77–103 + 7 pre-existing errors on `agent/mira/route.ts` lines 170/199/421/443 are ALSO on `main` — not regressions.)
+- ✅ Both Yo-yo and Beijing pitch dossiers reproduced end-to-end against real Whale Class data + production schools/observations.
+- ✅ Cross-pollination contract verified on every new tool via grep.
+- ✅ Three audit cycles + 1 verifier pass. All findings closed or explicitly deferred.
+- ⏳ Tredoux to run 4 SQL blocks in Supabase (migration 237 + 2 hash realignments + verify query).
+- ⏳ Tredoux to test the Yo-yo dossier flow + the new all-logins page in production.
+- ⏳ Tredoux to merge branch to `main` when satisfied.
+
+**🚨 Pending operational items (non-blocking, flagged for future sessions):**
+1. "Fix this row" button next to hash-desync warning. ~30 min.
+2. Group-by-school toggle on all-logins (cheap add when school count grows past ~5).
+3. 5 small Mira utility tools (Mira covers these conversationally; deferred).
+4. Agent-side "Prepare to pitch" button surfaced on `/montree/agent/codes`. Route is live; UI is ~30 min wiring.
+5. Server-side PDF via Playwright (v1 ships HTML + print CSS + browser native dialog).
+6. Telemetry dashboard for dossier cost / cache-hit metrics.
+7. File-naming convention sweep (Session 133 files use snake_case; rest of codebase uses kebab-case).
+8. `preparePMeeting` → `prepareParentMeeting` rename for symmetry with `preparePrincipalPitch`.
 
 ---
 
@@ -7950,6 +8093,10 @@ All migrations through 169 have been run. Key ones: 147 (smart learning columns)
 
 **Session 128 (May 25, 2026) — Universal Calendar foundations. ✅ Migration RUN (verified Session 129):**
 - ✅ `233_school_terms_and_timezone.sql` — `timezone TEXT` column on `montree_schools` + `montree_school_terms` table (id, school_id, name, start_date, end_date, created_at, updated_at + CHECK end_date >= start_date + 2 indexes (school_id, school+window) + `montree_school_terms_touch_updated_at()` trigger). Idempotent. **Verified live via Web-Claude end-to-end Term creation test in Session 129** — POST `/api/montree/school/terms` returned 200, term row inserted, violet dot rendered on calendar grid. Either ran successfully at some point or the underlying table existed before this migration was needed.
+
+**Session 133 (May 28, 2026) — Mira & Tracy dossier capability. ⏳ 1 migration + 2 hash realignments pending Tredoux's Supabase run:**
+- ⏳ `237_meeting_dossiers.sql` — `montree_meeting_dossiers` table for the shared Tracy + Mira dossier cache. 18 columns (id, owner_id, owner_role principal|agent, school_id nullable, audience_type parent_meeting|principal_pitch, audience_ref TEXT, cache_key SHA-256, meeting_purpose, parent_context, output_format markdown|html|json, payload_text, model_used, input/output_tokens, cost_usd, generation_ms, generated_at, expires_at +24h default). Three indexes (cache_lookup b-tree, owner_recent DESC, audience_recent DESC). `montree_purge_expired_dossiers()` SECURITY DEFINER function for >7-day cleanup. Idempotent. **Original attempt failed with PG 42P17 ('functions in index predicate must be marked IMMUTABLE') because of a `WHERE expires_at > NOW()` partial-index predicate — patched to plain b-tree.** Until run, dossiers generate fine but every reopen spends Sonnet again (~$0.05).
+- ⏳ Principal hash-desync realignments — TWO active principals' `login_code` columns don't match SHA256 of their `password_hash`. Tredoux (`XVYHHX` on Whale Class, id `16eec1c0-bfb5-4edf-a160-059bb41803fb`) and Phillip Ahn (`RGCCQR`, id `7e73ab78-f5db-474b-b27a-ede3615d10d4`). Both are locked out of login until realigned. SQL in `docs/handoffs/SESSION_133_STATUS.md` Section "SQL to run in Supabase". Going forward, the route's Step 2 (login_code-column lookup) prevents new desyncs from silently passing — refuses with loud-log if a hash exists but doesn't verify.
 
 **Session 126 (May 22-23, 2026) — Story voice/video calls + Web Push. ✅ Both migrations RUN (verified May 23):**
 - ✅ `228_story_calls.sql` — **RUN.** `story_calls` table (id, username, channel, status ringing/active/ended, `mode` voice/video, initiated_by, created_at, updated_at, ended_at) + partial index `idx_story_calls_user_active` + `story_calls_touch_updated_at()` trigger. Verified via the Supabase REST API — `story_calls` returns HTTP 200, `mode` column present. The "Could not start the call" 500 is resolved.
