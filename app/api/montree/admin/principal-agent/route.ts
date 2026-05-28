@@ -451,7 +451,14 @@ export async function POST(request: NextRequest) {
             response = await client.messages.create(
               {
                 model,
-                max_tokens: 2048,
+                // 🚨 Bumped from 2048 → 4096 (May 29, 2026). With 25 tools +
+                // 13K-token psychological knowledge bundle + memory + new
+                // ACT-vs-DRAFT prompt block, the input context grew enough
+                // that Sonnet was hitting max_tokens mid-response and the
+                // tool-use loop would stall on a partial tool_use block.
+                // 4096 matches PREPARE_MEETING_MAX_TOKENS — same ceiling
+                // the dossier tool uses internally.
+                max_tokens: 4096,
                 system: systemPrompt,
                 tools: TRACY_TOOLS,
                 messages: messagesForRound,

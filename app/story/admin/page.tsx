@@ -3,6 +3,9 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
+// Story admin login — themed to mirror the Montree dark-forest cockpit.
+// Identical glass-card design as `app/story/page.tsx` for visual continuity.
+
 export default function AdminLogin() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -14,7 +17,7 @@ export default function AdminLogin() {
     e.preventDefault();
     setError('');
     setIsLoading(true);
-    
+
     try {
       const res = await fetch('/api/story/admin/auth', {
         method: 'POST',
@@ -38,69 +41,197 @@ export default function AdminLogin() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center p-4">
-      {/* Background decoration — mirrors whale class admin */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-blue-500/10 rounded-full blur-3xl" />
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-cyan-500/10 rounded-full blur-3xl" />
-      </div>
+    <div
+      style={{
+        minHeight: '100dvh',
+        background: '#0a1a0f',
+        position: 'relative',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: 16,
+        fontFamily: '"Inter", -apple-system, BlinkMacSystemFont, sans-serif',
+      }}
+    >
+      <div
+        style={{
+          position: 'fixed',
+          inset: 0,
+          pointerEvents: 'none',
+          background:
+            'radial-gradient(ellipse 1100px 900px at 88% 8%, rgba(39,129,90,0.32), transparent 60%)',
+          zIndex: 0,
+        }}
+      />
 
-      <div className="relative w-full max-w-md">
-        <div className="bg-slate-800/50 backdrop-blur-xl rounded-3xl shadow-2xl border border-slate-700/50 p-8">
-          {/* Header */}
-          <div className="text-center mb-8">
-            <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-blue-500/20">
-              <span className="text-4xl">🌳</span>
-            </div>
-            <h1 className="text-2xl font-bold text-white mb-1">Story Admin</h1>
-            <p className="text-slate-400 text-sm">Whale Montessori Platform</p>
+      <div
+        style={{
+          position: 'relative',
+          width: '100%',
+          maxWidth: 420,
+          background: 'rgba(8,20,12,0.55)',
+          border: '1px solid rgba(52,211,153,0.18)',
+          borderRadius: 24,
+          padding: 36,
+          backdropFilter: 'blur(18px)',
+          WebkitBackdropFilter: 'blur(18px)',
+          boxShadow: '0 20px 60px rgba(0,0,0,0.55)',
+          zIndex: 1,
+        }}
+      >
+        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 20 }}>
+          <div
+            style={{
+              width: 72,
+              height: 72,
+              borderRadius: 18,
+              background: 'linear-gradient(135deg, #34d399 0%, #1D6B48 100%)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              boxShadow: '0 0 32px rgba(52,211,153,0.35)',
+              fontSize: 36,
+            }}
+          >
+            🌳
+          </div>
+        </div>
+
+        <h1
+          style={{
+            fontFamily: 'var(--font-lora), Georgia, serif',
+            fontSize: 28,
+            fontWeight: 600,
+            color: 'rgba(255,255,255,0.95)',
+            textAlign: 'center',
+            margin: '0 0 6px',
+            letterSpacing: '-0.4px',
+          }}
+        >
+          Story admin
+        </h1>
+        <p
+          style={{
+            color: 'rgba(255,255,255,0.55)',
+            textAlign: 'center',
+            fontSize: 13,
+            margin: '0 0 28px',
+          }}
+        >
+          Whale Montessori Platform
+        </p>
+
+        <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <div>
+            <label
+              htmlFor="au"
+              style={{
+                display: 'block',
+                fontSize: 12,
+                fontWeight: 600,
+                color: 'rgba(52,211,153,0.85)',
+                textTransform: 'uppercase',
+                letterSpacing: '0.6px',
+                marginBottom: 8,
+              }}
+            >
+              Username
+            </label>
+            <input
+              id="au"
+              type="text"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              required
+              autoComplete="off"
+              style={{
+                width: '100%',
+                background: 'rgba(0,0,0,0.30)',
+                border: '1px solid rgba(52,211,153,0.18)',
+                borderRadius: 10,
+                padding: '12px 14px',
+                color: 'rgba(255,255,255,0.92)',
+                fontSize: 14,
+                fontFamily: 'inherit',
+                outline: 'none',
+                boxSizing: 'border-box',
+              }}
+            />
           </div>
 
-          <form onSubmit={handleLogin} className="space-y-5">
-            <div>
-              <label htmlFor="su" className="block text-sm font-medium text-slate-300 mb-2">
-                Username
-              </label>
-              <input
-                id="su"
-                type="text"
-                placeholder="Enter username"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                className="w-full px-4 py-3 bg-slate-700/50 border-2 border-slate-600 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
-                autoComplete="off"
-                required
-              />
-            </div>
-            <div>
-              <label htmlFor="sp" className="block text-sm font-medium text-slate-300 mb-2">
-                Password
-              </label>
-              <input
-                id="sp"
-                type="password"
-                placeholder="Enter password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-3 bg-slate-700/50 border-2 border-slate-600 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
-                autoComplete="off"
-                required
-              />
-            </div>
-            {error && (
-              <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-3 text-red-400 text-sm text-center">
-                {error}
-              </div>
-            )}
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="w-full bg-gradient-to-r from-blue-500 to-cyan-500 text-white py-3 px-4 rounded-xl font-medium shadow-lg shadow-blue-500/20 hover:shadow-xl hover:shadow-blue-500/30 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+          <div>
+            <label
+              htmlFor="ap"
+              style={{
+                display: 'block',
+                fontSize: 12,
+                fontWeight: 600,
+                color: 'rgba(52,211,153,0.85)',
+                textTransform: 'uppercase',
+                letterSpacing: '0.6px',
+                marginBottom: 8,
+              }}
             >
-              {isLoading ? 'Signing in…' : 'Sign In'}
-            </button>
-          </form>
-        </div>
+              Password
+            </label>
+            <input
+              id="ap"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              autoComplete="off"
+              style={{
+                width: '100%',
+                background: 'rgba(0,0,0,0.30)',
+                border: '1px solid rgba(52,211,153,0.18)',
+                borderRadius: 10,
+                padding: '12px 14px',
+                color: 'rgba(255,255,255,0.92)',
+                fontSize: 14,
+                fontFamily: 'inherit',
+                outline: 'none',
+                boxSizing: 'border-box',
+              }}
+            />
+          </div>
+
+          {error && (
+            <div
+              style={{
+                background: 'rgba(220,50,50,0.10)',
+                border: '1px solid rgba(220,50,50,0.30)',
+                borderRadius: 8,
+                padding: '10px 12px',
+                fontSize: 13,
+                color: 'rgba(255,180,180,0.92)',
+                textAlign: 'center',
+              }}
+            >
+              {error}
+            </div>
+          )}
+
+          <button
+            type="submit"
+            disabled={isLoading}
+            style={{
+              padding: '14px 18px',
+              borderRadius: 10,
+              background: 'linear-gradient(135deg, #34d399 0%, #1D6B48 100%)',
+              color: '#0a1a0f',
+              border: 'none',
+              fontSize: 15,
+              fontWeight: 600,
+              cursor: isLoading ? 'wait' : 'pointer',
+              opacity: isLoading ? 0.6 : 1,
+              boxShadow: '0 8px 24px rgba(52,211,153,0.30)',
+              marginTop: 4,
+            }}
+          >
+            {isLoading ? 'Signing in…' : 'Sign In'}
+          </button>
+        </form>
       </div>
     </div>
   );

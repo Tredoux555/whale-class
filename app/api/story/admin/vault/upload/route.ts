@@ -3,9 +3,15 @@ import { getSupabase, verifyAdminToken, verifyVaultToken } from '@/lib/story-db'
 import crypto from 'crypto';
 
 // Videos can be large + PBKDF2 + AES-GCM are CPU-bound. Bumped from default
-// 15s to 120s so multi-MB video uploads don't get killed mid-encryption,
-// which was matching the "vault not saving videos" symptom.
+// 15s to 120s so multi-MB video uploads don't get killed mid-encryption.
 export const maxDuration = 120;
+export const runtime = 'nodejs';
+// 🚨 Railway's reverse proxy caps request bodies at ~32MB by default. Any
+// upload above that fails silently before reaching this route handler.
+// We honour that ceiling client + server-side and surface a clear error
+// to the admin instead of letting them think "the vault doesn't save
+// videos" when really their 80MB iPhone clip got truncated at the proxy.
+const MAX_UPLOAD_BYTES = 30 * 1024 * 1024; // 30MB safe ceiling under Railway's 32MB cap
 
 function encryptFile(fileBuffer: Buffer, password: string): { encrypted: Buffer; iv: string; authTag: string } {
   const iv = crypto.randomBytes(16);
@@ -55,9 +61,19 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    if (file.size > 500 * 1024 * 1024) {
-      return NextResponse.json({ error: 'File too large (max 500MB)' }, { status: 400 });
+    if (file.size > MAX_UPLOAD_BYTES) {
+      const mb = (file.size / 1024 / 1024).toFixed(1);
+      return NextResponse.json(
+        {
+          error: `Video too large to upload through the vault: ${mb}MB. The server proxy caps body at 30MB. Trim or compress the video and try again.`,
+          file_size_bytes: file.size,
+          max_bytes: MAX_UPLOAD_BYTES,
+        },
+        { status: 413 }
+      );
     }
+
+    console.log(`[Vault Upload] received ${file.name} (${(file.size / 1024 / 1024).toFixed(2)}MB, ${file.type})`);
 
     const arrayBuffer = await file.arrayBuffer();
     const fileBuffer = Buffer.from(arrayBuffer);
@@ -77,8 +93,12 @@ export async function POST(req: NextRequest) {
       .upload(`vault/${filename}`, encrypted, { contentType: 'application/octet-stream', upsert: false });
 
     if (uploadError) {
-      console.error('[Vault Upload] Error:', uploadError);
-      return NextResponse.json({ error: 'Upload failed' }, { status: 500 });
+      console.error('[Vault Upload] Supabase Storage error:', uploadError);
+      const msg = (uploadError as { message?: string } | undefined)?.message ?? 'Upload failed';
+      return NextResponse.json(
+        { error: `Storage upload failed: ${msg}` },
+        { status: 500 }
+      );
     }
 
     const { data: urlData } = supabase.storage.from('vault-secure').getPublicUrl(`vault/${filename}`);
@@ -107,9 +127,11 @@ export async function POST(req: NextRequest) {
       success: true
     });
 
+    console.log(`[Vault Upload] SAVED ${file.name} → row ${result?.id}`);
     return NextResponse.json({ success: true, file: result });
   } catch (error) {
-    console.error('[Vault Upload] Error:', error);
-    return NextResponse.json({ error: 'Upload failed' }, { status: 500 });
+    console.error('[Vault Upload] Outer catch:', error);
+    const msg = error instanceof Error ? error.message : 'Upload failed';
+    return NextResponse.json({ error: msg }, { status: 500 });
   }
 }
