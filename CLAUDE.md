@@ -445,6 +445,12 @@ UX gap closed: **PARENTS missing from all-logins** (user said "everyone that nee
 280. Partial-index predicates cannot contain `NOW()` or any other STABLE function (PG 42P17). Use plain b-tree + WHERE-at-query-time.
 281. **`tryPrincipalLogin` walks three steps**: SHA256-by-password_hash → login_code-column ILIKE (with hash verification gate) → bcrypt scan. Step 2 NEVER silently authenticates when a password_hash exists but doesn't verify — loud-log and refuse. ILIKE-against-a-partial-UNIQUE column requires `.limit(1)` not `.maybeSingle()`. Every super-admin route returning plaintext credentials in bulk MUST set `Cache-Control: private, no-store`. Hash-desync detection only flags 64-char hex hashes that mismatch — bcrypt and malformed hashes excluded.
 
+**Master audit close-out (rules #282-283 — final pass before merge)**
+
+282. **Every Sonnet-billing route MUST be rate-limited at the JWT.sub level**, not just by IP. The dossier 24h cache shields most repeat opens but a caller with a valid JWT can bypass by tweaking input fields (meeting_purpose, parent_context, principal_name, known_pain_points) to produce a fresh cache key on every call. Pattern: `checkRateLimit(supabase, ${role}:${auth.userId}, route_path, limit, windowMin)` from `lib/rate-limiter.ts`. Returns 429 with Retry-After header. Currently: 20/hr per principal on `parent-meeting`; 30/hr per agent on `principal-pitch`.
+
+283. **Every agent route MUST re-verify `is_agent + agent_suspended_at` at request time**, on top of the JWT `role==='agent'` claim. JWT lifetimes outlive suspension events — without a DB recheck, a suspended agent can keep using paid features (including Sonnet-billing dossiers) until the cookie expires. Session 103 rule #58 generalized to every new agent surface. Pattern: fetch `montree_teachers.is_agent + agent_suspended_at` by `auth.userId`, return 403 'Agent account is not active' on any of: row not found / is_agent=false / agent_suspended_at IS NOT NULL.
+
 **🚨 What lives at each new URL:**
 
 | URL | Owner | What |
@@ -456,12 +462,13 @@ UX gap closed: **PARENTS missing from all-logins** (user said "everyone that nee
 | `/api/montree/super-admin/all-logins` | Super-admin | GET. `Cache-Control: private, no-store`. |
 
 **Verification status:**
-- ✅ ESLint `--max-warnings=0` clean on every changed file across all 8 commits.
+- ✅ ESLint `--max-warnings=0` clean on every changed file across all 11 code commits.
 - ✅ `npx tsc --noEmit -p .` clean on Session-133 surface. (11 pre-existing errors on `auth/unified/route.ts` lines 77–103 + 7 pre-existing errors on `agent/mira/route.ts` lines 170/199/421/443 are ALSO on `main` — not regressions.)
 - ✅ Both Yo-yo and Beijing pitch dossiers reproduced end-to-end against real Whale Class data + production schools/observations.
 - ✅ Cross-pollination contract verified on every new tool via grep.
-- ✅ Three audit cycles + 1 verifier pass. All findings closed or explicitly deferred.
-- ⏳ Tredoux to run 4 SQL blocks in Supabase (migration 237 + 2 hash realignments + verify query).
+- ✅ **Four audit waves** completed: (1) Phase A–E + verifier ALL 6 VERIFIED; (2) login + all-logins + parents; (3) grand TS audit; (4) master close-out (4 parallel agents — security + correctness + architecture + docs). All real findings closed in code.
+- ✅ Master audit fixes shipped in `35aea493` (rate-limit dossier routes + comment correction) and `9ad7f90f` (suspended-agent recheck on pitch route).
+- ⏳ Tredoux to run 4 SQL blocks in Supabase (migration 237 + 2 hash realignments + Leu rename + verify query).
 - ⏳ Tredoux to test the Yo-yo dossier flow + the new all-logins page in production.
 - ⏳ Tredoux to merge branch to `main` when satisfied.
 
