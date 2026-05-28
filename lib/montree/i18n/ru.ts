@@ -2456,6 +2456,15 @@ export const ru: Record<string, string> = {
   'weeklyAdmin.notesPlaceholder': 'например, Нет изменений с прошлой недели',
   'weeklyAdmin.summaryPlaceholder': 'Практическая Жизнь: ...\\nСенсорика: ...\\nМатематика: ...\\nЯзык: ...\\nКультура: ...',
   'weeklyAdmin.chineseNotePlaceholder': 'Фокус недели...',
+
+  // Monthly Summary (4th sub-tab in Weekly Admin)
+  'weeklyAdmin.monthlyTab': 'Ежемесячная сводка',
+  'weeklyAdmin.monthlyPeriod': 'Месяц',
+  'weeklyAdmin.monthlyPeriodHint': 'Автозаполнение извлекает активность Языка за {start} – {end}.',
+  'weeklyAdmin.monthlyPlaceholder': 'Сводка по Языку для каждого ребёнка — автоматически заполняется из подтверждённых фото и прогресса.',
+  'weeklyAdmin.monthlyDownloaded': 'Ежемесячная сводка загружена',
+  'weeklyAdmin.monthlyEmpty': 'Сохранённых ежемесячных заметок ещё нет. Нажмите Автозаполнение, проверьте, затем Сохранить.',
+  'weeklyAdmin.monthlyMigrationPending': 'Сначала выполните миграцию 238 в Supabase — Ежемесячная сводка заблокирована до этого момента.',
   'weeklyAdminCard.title': 'Еженедельный план и резюме',
   'weeklyAdminCard.childrenLabel': 'детей',
   'weeklyAdminCard.subtitle': 'Автоматически заполняется из фото · Скачать DOCX',

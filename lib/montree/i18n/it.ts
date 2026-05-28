@@ -2456,6 +2456,15 @@ export const it: Record<string, string> = {
   'weeklyAdmin.notesPlaceholder': 'es. Nessun cambiamento rispetto alla scorsa settimana',
   'weeklyAdmin.summaryPlaceholder': 'Vita Pratica: ...\nSensoriale: ...\nMatematica: ...\nLinguaggio: ...\nCulturale: ...',
   'weeklyAdmin.chineseNotePlaceholder': 'Obiettivo settimanale...',
+
+  // Monthly Summary (4th sub-tab in Weekly Admin)
+  'weeklyAdmin.monthlyTab': 'Riepilogo Mensile',
+  'weeklyAdmin.monthlyPeriod': 'Mese',
+  'weeklyAdmin.monthlyPeriodHint': 'Il riempimento automatico estrae l\'attività di Linguaggio per {start} – {end}.',
+  'weeklyAdmin.monthlyPlaceholder': 'Riepilogo di Linguaggio per bambino — compilato automaticamente da foto confermate e progressi.',
+  'weeklyAdmin.monthlyDownloaded': 'Riepilogo mensile scaricato',
+  'weeklyAdmin.monthlyEmpty': 'Nessuna nota mensile salvata. Fai clic su Riempimento automatico, rivedi, poi Salva.',
+  'weeklyAdmin.monthlyMigrationPending': 'Esegui prima la migrazione 238 in Supabase — il Riepilogo Mensile è bloccato fino ad allora.',
   'weeklyAdminCard.title': 'Piano Settimanale e Riepilogo',
   'weeklyAdminCard.childrenLabel': 'bambini',
   'weeklyAdminCard.subtitle': 'Compilazione automatica da foto · Scarica DOCX',

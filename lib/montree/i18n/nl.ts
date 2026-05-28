@@ -2456,6 +2456,15 @@ export const nl: Record<string, string> = {
   'weeklyAdmin.notesPlaceholder': 'bijv. Geen verandering ten opzichte van vorige week',
   'weeklyAdmin.summaryPlaceholder': 'Praktisch Leven: ...\nZintuiglijk: ...\nWiskunde: ...\nTaal: ...\nCultureel: ...',
   'weeklyAdmin.chineseNotePlaceholder': 'Weekfocus...',
+
+  // Monthly Summary (4th sub-tab in Weekly Admin)
+  'weeklyAdmin.monthlyTab': 'Maandelijkse Samenvatting',
+  'weeklyAdmin.monthlyPeriod': 'Maand',
+  'weeklyAdmin.monthlyPeriodHint': 'Auto-invullen haalt Taal-activiteit op voor {start} – {end}.',
+  'weeklyAdmin.monthlyPlaceholder': 'Taal-samenvatting per kind — automatisch ingevuld op basis van bevestigde foto\'s en voortgang.',
+  'weeklyAdmin.monthlyDownloaded': 'Maandelijkse samenvatting gedownload',
+  'weeklyAdmin.monthlyEmpty': 'Nog geen opgeslagen maandelijkse notities. Klik op Auto-invullen, controleer, en sla op.',
+  'weeklyAdmin.monthlyMigrationPending': 'Voer eerst migratie 238 uit in Supabase — de Maandelijkse Samenvatting is tot dan vergrendeld.',
   'weeklyAdminCard.title': 'Weekplan en -samenvatting',
   'weeklyAdminCard.childrenLabel': 'kinderen',
   'weeklyAdminCard.subtitle': 'Vult automatisch in op basis van foto\'s · Download DOCX',

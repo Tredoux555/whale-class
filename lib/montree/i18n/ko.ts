@@ -2456,6 +2456,15 @@ export const ko: Record<string, string> = {
   'weeklyAdmin.notesPlaceholder': '예: 지난주와 변화 없음',
   'weeklyAdmin.summaryPlaceholder': '일상생활: ...\n감각: ...\n수학: ...\n언어: ...\n문화: ...',
   'weeklyAdmin.chineseNotePlaceholder': '주간 중점사항...',
+
+  // Monthly Summary (4th sub-tab in Weekly Admin)
+  'weeklyAdmin.monthlyTab': '월간 요약',
+  'weeklyAdmin.monthlyPeriod': '월',
+  'weeklyAdmin.monthlyPeriodHint': '자동 채우기는 {start} – {end}의 언어 활동을 가져옵니다.',
+  'weeklyAdmin.monthlyPlaceholder': '학생별 언어 요약 — 확인된 사진과 진도에서 자동 채워집니다.',
+  'weeklyAdmin.monthlyDownloaded': '월간 요약이 다운로드되었습니다',
+  'weeklyAdmin.monthlyEmpty': '저장된 월간 메모가 아직 없습니다. 자동 채우기를 클릭하고, 검토한 후 저장하세요.',
+  'weeklyAdmin.monthlyMigrationPending': '먼저 Supabase에서 마이그레이션 238을 실행하세요 — 월간 요약은 그때까지 비활성화됩니다.',
   'weeklyAdminCard.title': '주간 계획 및 요약',
   'weeklyAdminCard.childrenLabel': '명',
   'weeklyAdminCard.subtitle': '사진에서 자동으로 채워집니다 · DOCX 다운로드',

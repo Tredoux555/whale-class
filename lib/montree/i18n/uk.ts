@@ -2456,6 +2456,15 @@ export const uk: Record<string, string> = {
   'weeklyAdmin.notesPlaceholder': 'напр. Без змін з минулого тижня',
   'weeklyAdmin.summaryPlaceholder': 'Практичне Життя: ...\\nСенсорний: ...\\nМатематика: ...\\nМова: ...\\nКультура: ...',
   'weeklyAdmin.chineseNotePlaceholder': 'Тижневий фокус...',
+
+  // Monthly Summary (4th sub-tab in Weekly Admin)
+  'weeklyAdmin.monthlyTab': 'Місячний підсумок',
+  'weeklyAdmin.monthlyPeriod': 'Місяць',
+  'weeklyAdmin.monthlyPeriodHint': 'Авто-заповнення витягує активність Мови за {start} – {end}.',
+  'weeklyAdmin.monthlyPlaceholder': 'Підсумок Мови на кожну дитину — автоматично заповнюється з підтверджених фото та прогресу.',
+  'weeklyAdmin.monthlyDownloaded': 'Місячний підсумок завантажено',
+  'weeklyAdmin.monthlyEmpty': 'Збережених місячних нотаток ще немає. Натисніть Авто-заповнення, перегляньте, потім Зберегти.',
+  'weeklyAdmin.monthlyMigrationPending': 'Спочатку виконайте міграцію 238 у Supabase — Місячний підсумок заблоковано до того часу.',
   'weeklyAdminCard.title': 'Тижневий план та резюме',
   'weeklyAdminCard.childrenLabel': 'дітей',
   'weeklyAdminCard.subtitle': 'Автоматично заповнюється з фото · Завантажити DOCX',

@@ -2456,6 +2456,15 @@ export const fr: Record<string, string> = {
   'weeklyAdmin.notesPlaceholder': 'par ex. Aucun changement par rapport à la semaine dernière',
   'weeklyAdmin.summaryPlaceholder': 'Vie Pratique : ...\nSensoriel : ...\nMathématiques : ...\nLangage : ...\nCulture : ...',
   'weeklyAdmin.chineseNotePlaceholder': 'Foyer hebdomadaire...',
+
+  // Monthly Summary (4th sub-tab in Weekly Admin)
+  'weeklyAdmin.monthlyTab': 'Résumé Mensuel',
+  'weeklyAdmin.monthlyPeriod': 'Mois',
+  'weeklyAdmin.monthlyPeriodHint': 'Le remplissage automatique extrait l\'activité de Langage pour {start} – {end}.',
+  'weeklyAdmin.monthlyPlaceholder': 'Résumé de Langage par enfant — auto-rempli depuis les photos confirmées et le progrès.',
+  'weeklyAdmin.monthlyDownloaded': 'Résumé mensuel téléchargé',
+  'weeklyAdmin.monthlyEmpty': 'Pas encore de notes mensuelles enregistrées. Cliquez sur Remplissage auto, vérifiez, puis Enregistrer.',
+  'weeklyAdmin.monthlyMigrationPending': 'Exécutez d\'abord la migration 238 dans Supabase — le Résumé Mensuel est bloqué jusque-là.',
   'weeklyAdminCard.title': 'Plan et Résumé Hebdomadaire',
   'weeklyAdminCard.childrenLabel': 'enfants',
   'weeklyAdminCard.subtitle': 'Remplissage automatique à partir de photos · Télécharger DOCX',

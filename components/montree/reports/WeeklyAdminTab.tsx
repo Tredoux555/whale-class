@@ -152,6 +152,46 @@ function shiftWeek(weekStart: string, weeks: number): string {
   return d.toISOString().slice(0, 10);
 }
 
+// ─── Monthly Summary helpers ─────────────────────────────────
+// Monthly Summary lives in the same Weekly Admin tab as a 4th sub-tab. It
+// uses month_start = 1st of month as its anchor. Storage reuses
+// montree_weekly_admin_notes with doc_type='monthly' (migration 238).
+
+function getCurrentMonthStart(): string {
+  const now = new Date();
+  return `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, '0')}-01`;
+}
+
+function shiftMonth(monthStart: string, months: number): string {
+  const d = new Date(`${monthStart}T00:00:00Z`);
+  d.setUTCMonth(d.getUTCMonth() + months);
+  return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}-01`;
+}
+
+const MONTH_NAMES_EN = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+function monthLabel(monthStart: string): string {
+  const d = new Date(`${monthStart}T00:00:00Z`);
+  if (isNaN(d.getTime())) return monthStart;
+  return `${MONTH_NAMES_EN[d.getUTCMonth()]} ${d.getUTCFullYear()}`;
+}
+
+/** "May 1 – May 28" — for the hint line under the month nav. */
+function monthRangeLabel(monthStart: string): { start: string; end: string } {
+  const d = new Date(`${monthStart}T00:00:00Z`);
+  const today = new Date();
+  const isCurrentMonth =
+    d.getUTCFullYear() === today.getUTCFullYear() && d.getUTCMonth() === today.getUTCMonth();
+  const startStr = `${MONTH_NAMES_EN[d.getUTCMonth()]} 1`;
+  if (isCurrentMonth) {
+    const endStr = `${MONTH_NAMES_EN[today.getUTCMonth()]} ${today.getUTCDate()}`;
+    return { start: startStr, end: endStr };
+  }
+  // Past month — full month
+  const last = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + 1, 0));
+  return { start: startStr, end: `${MONTH_NAMES_EN[d.getUTCMonth()]} ${last.getUTCDate()}` };
+}
+
 // ─── Component ───────────────────────────────────────────────
 
 export default function WeeklyAdminTab({ classroomId }: WeeklyAdminTabProps) {
@@ -166,9 +206,19 @@ export default function WeeklyAdminTab({ classroomId }: WeeklyAdminTabProps) {
   const [success, setSuccess] = useState('');
 
   const [weekStart, setWeekStart] = useState(() => getCurrentMonday());
-  const [activeTab, setActiveTab] = useState<'summary' | 'plan' | 'teaching'>('summary');
+  const [activeTab, setActiveTab] = useState<'summary' | 'plan' | 'teaching' | 'monthly'>('summary');
   const [summaryNotes, setSummaryNotes] = useState<SummaryNotes>({});
   const [planNotes, setPlanNotes] = useState<PlanNotes>({});
+
+  // Monthly Summary state — separate state branch with its own anchor (month
+  // start), notes (one per child), auto-fill, generate, save. Reuses the
+  // same montree_weekly_admin_notes table via doc_type='monthly' rows.
+  const [monthStart, setMonthStart] = useState<string>(() => getCurrentMonthStart());
+  const [monthlyNotes, setMonthlyNotes] = useState<Record<string, string>>({});
+  const [monthlyAutoFilling, setMonthlyAutoFilling] = useState(false);
+  const [monthlySaving, setMonthlySaving] = useState(false);
+  const [monthlyGenerating, setMonthlyGenerating] = useState(false);
+  const [monthlyMigrationPending, setMonthlyMigrationPending] = useState(false);
 
   // Custom date range — pull data from N academic weeks back instead of just
   // the displayed week. Default 1 (current week only). Max 8.
@@ -528,6 +578,195 @@ export default function WeeklyAdminTab({ classroomId }: WeeklyAdminTabProps) {
     }
   };
 
+  // ─── Monthly Summary handlers ──────────────────────────────
+  // Mirror of the Weekly Summary flow but anchored on the 1st of the month
+  // and persisted via /monthly-notes (doc_type='monthly' rows).
+
+  // Fetch saved monthly notes when the month changes, OR auto-fill on first
+  // open when no saved notes exist for the selected month.
+  const fetchMonthlyNotes = useCallback(async () => {
+    if (!classroomId || !monthStart) return;
+    try {
+      const res = await montreeApi(
+        `/api/montree/weekly-admin-docs/monthly-notes?classroom_id=${classroomId}&month_start=${monthStart}`
+      );
+      if (res.status === 503) {
+        const errData = await res.json().catch(() => ({}));
+        if (errData?.migration_pending) {
+          setMonthlyMigrationPending(true);
+          setMonthlyNotes({});
+          return;
+        }
+      }
+      if (!res.ok) return;
+      const data = await res.json();
+      setMonthlyMigrationPending(false);
+      const notes: Record<string, string> = {};
+      for (const row of (data.notes || []) as Array<{ child_id: string; english_text: string | null }>) {
+        if (row.english_text) notes[row.child_id] = row.english_text;
+      }
+      setMonthlyNotes(notes);
+
+      // Auto-fill on first visit only — never overwrite saved notes.
+      if (Object.keys(notes).length === 0) {
+        handleMonthlyAutoFill();
+      }
+    } catch {
+      // soft fail — leave notes empty, teacher can Auto-fill manually
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [classroomId, monthStart]);
+
+  // Refetch when the tab opens for the first time OR the user switches month
+  useEffect(() => {
+    if (activeTab === 'monthly') {
+      fetchMonthlyNotes();
+    }
+  }, [activeTab, monthStart, fetchMonthlyNotes]);
+
+  const handleMonthlyAutoFill = async () => {
+    if (!classroomId || !monthStart) return;
+    setMonthlyAutoFilling(true);
+    setError('');
+    setSuccess('');
+    try {
+      const res = await montreeApi(
+        `/api/montree/weekly-admin-docs/monthly-auto-fill?classroom_id=${classroomId}&month_start=${monthStart}`
+      );
+      if (!res.ok) {
+        setError(t('weeklyAdmin.autoFillFailed'));
+        return;
+      }
+      const data = await res.json();
+      const next: Record<string, string> = {};
+      let filled = 0;
+      for (const child of (data.children || []) as Array<{ childId: string; body: string }>) {
+        if (child.body) {
+          next[child.childId] = child.body;
+          filled++;
+        }
+      }
+      // Merge with existing — auto-fill always overwrites for this version
+      // because monthly bodies are derived data, not teacher prose. The
+      // teacher can still hand-edit after Auto-fill and the edit is preserved
+      // by Save (and reloaded on next fetch).
+      setMonthlyNotes(next);
+      setSuccess(`${t('weeklyAdmin.autoFilled')} (${filled})`);
+      setTimeout(() => { if (mountedRef.current) setSuccess(''); }, 3000);
+    } catch {
+      if (mountedRef.current) setError(t('weeklyAdmin.autoFillFailed'));
+    } finally {
+      if (mountedRef.current) setMonthlyAutoFilling(false);
+    }
+  };
+
+  const handleMonthlySave = async () => {
+    if (!classroomId || !monthStart) return;
+    setMonthlySaving(true);
+    setError('');
+    setSuccess('');
+    try {
+      const notes = Object.entries(monthlyNotes)
+        .filter(([, text]) => text && text.trim().length > 0)
+        .map(([child_id, english_text]) => ({ child_id, english_text }));
+      if (notes.length === 0) {
+        setError(t('weeklyAdmin.noNotes'));
+        return;
+      }
+      const res = await fetch('/api/montree/weekly-admin-docs/monthly-notes', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ classroom_id: classroomId, month_start: monthStart, notes }),
+      });
+      if (res.status === 503) {
+        const errData = await res.json().catch(() => ({}));
+        if (errData?.migration_pending) {
+          setMonthlyMigrationPending(true);
+          setError(t('weeklyAdmin.monthlyMigrationPending'));
+          return;
+        }
+      }
+      if (!res.ok) {
+        setError(t('weeklyAdmin.saveFailed'));
+        return;
+      }
+      setSuccess(t('weeklyAdmin.saved'));
+      setTimeout(() => { if (mountedRef.current) setSuccess(''); }, 3000);
+    } catch {
+      setError(t('weeklyAdmin.saveFailed'));
+    } finally {
+      if (mountedRef.current) setMonthlySaving(false);
+    }
+  };
+
+  const handleMonthlyGenerate = async () => {
+    if (!classroomId || !monthStart) return;
+    setMonthlyGenerating(true);
+    setError('');
+    setSuccess('');
+    // Save before generate so the docx reflects on-screen edits
+    try {
+      const notes = Object.entries(monthlyNotes)
+        .filter(([, text]) => text && text.trim().length > 0)
+        .map(([child_id, english_text]) => ({ child_id, english_text }));
+      if (notes.length > 0) {
+        await fetch('/api/montree/weekly-admin-docs/monthly-notes', {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ classroom_id: classroomId, month_start: monthStart, notes }),
+        });
+      }
+
+      const res = await fetch('/api/montree/weekly-admin-docs/monthly-generate', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ classroom_id: classroomId, month_start: monthStart }),
+      });
+      if (res.status === 503) {
+        const errData = await res.json().catch(() => ({}));
+        if (errData?.migration_pending) {
+          setMonthlyMigrationPending(true);
+          setError(t('weeklyAdmin.monthlyMigrationPending'));
+          return;
+        }
+      }
+      if (!res.ok) {
+        setError(t('weeklyAdmin.generateFailed'));
+        return;
+      }
+      const blob = await res.blob();
+      // Honour the server-supplied filename (Content-Disposition), with a sensible fallback.
+      // Server pattern: `<ClassroomName>_<MonthName>_Language_Summary.docx`.
+      let filename = `Monthly_Summary_${monthStart}.docx`;
+      const cd = res.headers.get('Content-Disposition');
+      if (cd) {
+        const m = cd.match(/filename="([^"]+)"/);
+        if (m) filename = m[1];
+      }
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      setSuccess(t('weeklyAdmin.monthlyDownloaded'));
+      setTimeout(() => { if (mountedRef.current) setSuccess(''); }, 3000);
+    } catch {
+      setError(t('weeklyAdmin.generateFailed'));
+    } finally {
+      if (mountedRef.current) setMonthlyGenerating(false);
+    }
+  };
+
+  const updateMonthlyNote = (childId: string, value: string) => {
+    setMonthlyNotes(prev => ({ ...prev, [childId]: value }));
+  };
+
   // ─── Note Update Helpers ───────────────────────────────────
 
   const updateSummaryNote = (childId: string, field: 'english_text' | 'chinese_text', value: string) => {
@@ -576,8 +815,8 @@ export default function WeeklyAdminTab({ classroomId }: WeeklyAdminTabProps) {
         flexDirection: 'column',
         gap: 12,
       }}>
-        {/* Week navigation */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+        {/* Week navigation (hidden on Monthly Summary — has its own period nav) */}
+        {activeTab !== 'monthly' && <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <label style={{
             fontFamily: T.sans,
             fontSize: 12,
@@ -702,12 +941,81 @@ export default function WeeklyAdminTab({ classroomId }: WeeklyAdminTabProps) {
               <Plus size={12} strokeWidth={1.75} />
             </button>
           </div>
-        </div>
+        </div>}
+
+        {/* Month navigation — only shown for the Monthly Summary tab */}
+        {activeTab === 'monthly' && <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+          <label style={{
+            fontFamily: T.sans,
+            fontSize: 12,
+            fontWeight: 600,
+            color: T.textSecondary,
+            letterSpacing: 0.3,
+            textTransform: 'uppercase',
+          }}>
+            {t('weeklyAdmin.monthlyPeriod')}:
+          </label>
+          <button
+            onClick={() => setMonthStart(shiftMonth(monthStart, -1))}
+            aria-label="Previous month"
+            style={{ ...ghostBtn, width: 28, height: 28, padding: 0 }}
+          >
+            <ChevronLeft size={14} strokeWidth={1.75} />
+          </button>
+          <span style={{
+            minWidth: 130,
+            textAlign: 'center',
+            fontFamily: T.serif,
+            fontSize: 14,
+            fontWeight: 500,
+            color: T.textPrimary,
+            padding: '5px 12px',
+            borderRadius: 8,
+            background: 'rgba(255,255,255,0.05)',
+            border: '1px solid rgba(255,255,255,0.08)',
+          }}>
+            {monthLabel(monthStart)}
+          </span>
+          <button
+            onClick={() => {
+              const next = shiftMonth(monthStart, 1);
+              const cur = getCurrentMonthStart();
+              if (next <= cur) setMonthStart(next);
+            }}
+            disabled={monthStart >= getCurrentMonthStart()}
+            aria-label="Next month"
+            style={{
+              ...ghostBtn,
+              width: 28,
+              height: 28,
+              padding: 0,
+              opacity: monthStart >= getCurrentMonthStart() ? 0.30 : 1,
+              cursor: monthStart >= getCurrentMonthStart() ? 'not-allowed' : 'pointer',
+            }}
+          >
+            <ChevronRight size={14} strokeWidth={1.75} />
+          </button>
+          {/* Period hint — "Auto-fill pulls Language activity for May 1 – May 28." */}
+          <span style={{
+            fontFamily: T.sans,
+            fontSize: 11,
+            color: T.textMuted,
+            marginLeft: 8,
+          }}>
+            {(() => {
+              const r = monthRangeLabel(monthStart);
+              return t('weeklyAdmin.monthlyPeriodHint')
+                .replace('{start}', r.start)
+                .replace('{end}', r.end);
+            })()}
+          </span>
+        </div>}
 
         {/* Tab selector + action buttons */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
           {[
             { id: 'summary' as const, label: t('weeklyAdmin.summaryTab'), icon: FileText },
+            { id: 'monthly' as const, label: t('weeklyAdmin.monthlyTab'), icon: FileText },
             { id: 'plan' as const, label: t('weeklyAdmin.planTab'), icon: ClipboardList },
             ...(isEnabled('weekly_teaching_notes')
               ? [{ id: 'teaching' as const, label: 'Teaching Notes', icon: BookOpen }]
@@ -750,7 +1058,7 @@ export default function WeeklyAdminTab({ classroomId }: WeeklyAdminTabProps) {
 
           <div style={{ flex: 1 }} />
 
-          {activeTab !== 'teaching' && (
+          {activeTab !== 'teaching' && activeTab !== 'monthly' && (
             <>
               <button
                 onClick={handleAutoFill}
@@ -789,6 +1097,49 @@ export default function WeeklyAdminTab({ classroomId }: WeeklyAdminTabProps) {
               >
                 <Save size={12} strokeWidth={2} />
                 {saving ? t('common.loading') : t('common.save')}
+              </button>
+            </>
+          )}
+
+          {activeTab === 'monthly' && (
+            <>
+              <button
+                onClick={handleMonthlyAutoFill}
+                disabled={monthlyAutoFilling || monthlyMigrationPending}
+                style={{
+                  ...ctaAmber,
+                  opacity: (monthlyAutoFilling || monthlyMigrationPending) ? 0.55 : 1,
+                  cursor: (monthlyAutoFilling || monthlyMigrationPending) ? 'not-allowed' : 'pointer',
+                }}
+              >
+                <Sparkles size={12} strokeWidth={1.75} />
+                {monthlyAutoFilling ? '...' : t('weeklyAdmin.autoFill')}
+              </button>
+
+              <button
+                onClick={handleMonthlyGenerate}
+                disabled={monthlyGenerating || monthlyMigrationPending}
+                style={{
+                  ...ctaPrimary,
+                  opacity: (monthlyGenerating || monthlyMigrationPending) ? 0.55 : 1,
+                  cursor: (monthlyGenerating || monthlyMigrationPending) ? 'not-allowed' : 'pointer',
+                }}
+              >
+                <Download size={12} strokeWidth={2} />
+                {monthlyGenerating ? t('weeklyAdmin.generating') : t('weeklyAdmin.generate')}
+              </button>
+
+              <button
+                onClick={handleMonthlySave}
+                disabled={monthlySaving || monthlyMigrationPending}
+                style={{
+                  ...ctaPrimary,
+                  opacity: (monthlySaving || monthlyMigrationPending) ? 0.55 : 1,
+                  cursor: (monthlySaving || monthlyMigrationPending) ? 'not-allowed' : 'pointer',
+                }}
+              >
+                <Save size={12} strokeWidth={2} />
+                {monthlySaving ? t('common.loading') : t('common.save')}
               </button>
             </>
           )}
@@ -906,8 +1257,8 @@ export default function WeeklyAdminTab({ classroomId }: WeeklyAdminTabProps) {
         />
       )}
 
-      {/* Children Cards */}
-      {!loading && activeTab !== 'teaching' && (
+      {/* Children Cards — Weekly Summary + Weekly Plan */}
+      {!loading && activeTab !== 'teaching' && activeTab !== 'monthly' && (
         <div style={{
           padding: '20px 16px',
           display: 'flex',
@@ -962,6 +1313,102 @@ export default function WeeklyAdminTab({ classroomId }: WeeklyAdminTabProps) {
                   onUpdate={updatePlanNote}
                 />
               )}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Monthly Summary cards — separate branch, doesn't gate on `loading`
+          (that flag is the weekly fetch state, unrelated to monthly). */}
+      {activeTab === 'monthly' && (
+        <div style={{
+          padding: '20px 16px',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 14,
+        }}>
+          {monthlyMigrationPending && (
+            <div style={{
+              padding: '12px 14px',
+              background: T.amberSoft,
+              border: `1px solid ${T.amberBorder}`,
+              borderRadius: 12,
+              color: T.amber,
+              fontFamily: T.sans,
+              fontSize: 13,
+            }}>
+              <AlertTriangle size={14} strokeWidth={1.75} style={{ display: 'inline', verticalAlign: '-2px', marginRight: 6 }} />
+              {t('weeklyAdmin.monthlyMigrationPending')}
+            </div>
+          )}
+
+          {children.length === 0 && (
+            <div style={{
+              textAlign: 'center',
+              color: T.textMuted,
+              fontFamily: T.sans,
+              fontSize: 14,
+              padding: '40px 0',
+            }}>
+              {t('weeklyAdmin.noChildren')}
+            </div>
+          )}
+
+          {!monthlyAutoFilling && !monthlyMigrationPending && children.length > 0 && Object.keys(monthlyNotes).length === 0 && (
+            <div style={{
+              textAlign: 'center',
+              color: T.textMuted,
+              fontFamily: T.sans,
+              fontSize: 12,
+              padding: '20px 0',
+            }}>
+              {t('weeklyAdmin.monthlyEmpty')}
+            </div>
+          )}
+
+          {children.map(child => (
+            <div
+              key={child.id}
+              style={{
+                background: T.card,
+                border: T.cardBorder,
+                borderRadius: T.cardRadius,
+                backdropFilter: T.blur,
+                WebkitBackdropFilter: T.blur,
+                padding: 16,
+              }}
+            >
+              <h3 style={{
+                margin: '0 0 12px',
+                fontFamily: T.serif,
+                fontSize: 17,
+                fontWeight: 500,
+                color: T.textPrimary,
+                letterSpacing: -0.2,
+              }}>
+                {child.name}
+              </h3>
+              <textarea
+                className="wat-textarea"
+                value={monthlyNotes[child.id] || ''}
+                onChange={(e) => updateMonthlyNote(child.id, e.target.value)}
+                placeholder={t('weeklyAdmin.monthlyPlaceholder')}
+                rows={4}
+                style={{
+                  width: '100%',
+                  padding: '10px 12px',
+                  borderRadius: 12,
+                  background: T.inputBg,
+                  border: `1px solid ${T.inputBorder}`,
+                  color: T.textPrimary,
+                  fontFamily: T.sans,
+                  fontSize: 13,
+                  lineHeight: 1.5,
+                  outline: 'none',
+                  resize: 'vertical',
+                  boxSizing: 'border-box',
+                }}
+              />
             </div>
           ))}
         </div>

@@ -2841,6 +2841,15 @@ export const en = {
   'weeklyAdmin.summaryPlaceholder': 'Practical Life: ...\nSensorial: ...\nMathematics: ...\nLanguage: ...\nCultural: ...',
   'weeklyAdmin.chineseNotePlaceholder': 'Weekly focus...',
 
+  // Monthly Summary (4th sub-tab in Weekly Admin)
+  'weeklyAdmin.monthlyTab': 'Monthly Summary',
+  'weeklyAdmin.monthlyPeriod': 'Month',
+  'weeklyAdmin.monthlyPeriodHint': 'Auto-fill pulls Language activity for {start} – {end}.',
+  'weeklyAdmin.monthlyPlaceholder': 'Per-child Language summary — auto-filled from confirmed photos and progress.',
+  'weeklyAdmin.monthlyDownloaded': 'Monthly summary downloaded',
+  'weeklyAdmin.monthlyEmpty': 'No saved monthly notes yet. Click Auto-fill, review, then Save.',
+  'weeklyAdmin.monthlyMigrationPending': 'Run migration 238 in Supabase first — Monthly Summary is gated until then.',
+
   // Weekly Admin Card (dashboard)
   'weeklyAdminCard.title': 'Weekly Plan & Summary',
   'weeklyAdminCard.childrenLabel': 'children',

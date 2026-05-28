@@ -2456,6 +2456,15 @@ export const ja: Record<string, string> = {
   'weeklyAdmin.notesPlaceholder': '例）先週から変化なし',
   'weeklyAdmin.summaryPlaceholder': '日常生活：...\n感覚：...\n算数：...\n言語：...\n文化：...',
   'weeklyAdmin.chineseNotePlaceholder': '週間の焦点...',
+
+  // Monthly Summary (4th sub-tab in Weekly Admin)
+  'weeklyAdmin.monthlyTab': '月次サマリー',
+  'weeklyAdmin.monthlyPeriod': '月',
+  'weeklyAdmin.monthlyPeriodHint': '自動入力は {start} – {end} の言語活動を取得します。',
+  'weeklyAdmin.monthlyPlaceholder': '子どもごとの言語サマリー — 確認済みの写真と進捗から自動入力されます。',
+  'weeklyAdmin.monthlyDownloaded': '月次サマリーをダウンロードしました',
+  'weeklyAdmin.monthlyEmpty': '保存された月次メモはまだありません。自動入力をクリックし、確認してから保存してください。',
+  'weeklyAdmin.monthlyMigrationPending': 'まず Supabase でマイグレーション 238 を実行してください — それまで月次サマリーは無効です。',
   'weeklyAdminCard.title': 'ウィークリープラン＆サマリー',
   'weeklyAdminCard.childrenLabel': '園児',
   'weeklyAdminCard.subtitle': '写真から自動入力 · DOCX形式でダウンロード',
