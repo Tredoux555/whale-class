@@ -23,6 +23,15 @@
 // Response: SSE stream of { type, ... } events:
 //   { type: 'tool_call', tool, input }            — Tracy invoked a tool
 //   { type: 'tool_progress', tool, phase, vars }   — live status from inside a tool
+//   { type: 'meeting_brief_init', child_id, meeting_purpose }
+//     — (Session 136) fires the instant prepare_parent_meeting starts,
+//       BEFORE the cache check + Sonnet call. UI shows "Preparing the
+//       dossier…" immediately. Diagnostic signal: if init fires but no
+//       chunks follow, we know the tool started but stalled; if init
+//       never fires, the tool never started.
+//   { type: 'meeting_brief_chunk', section, delta } — streaming dossier tokens
+//   { type: 'meeting_brief', brief_markdown, dossier_markdown, child_name, from_cache }
+//     — final structured brief + dossier; fires AFTER chunks (or on cache hit)
 //   { type: 'tool_result', tool, success, summary } — tool returned
 //   { type: 'thinking', text }                     — interim text between tool calls
 //   { type: 'text', text }                         — final answer chunk
@@ -475,6 +484,29 @@ export async function POST(request: NextRequest) {
                   input: block.input,
                 })
               );
+
+              // Session 136 — diagnostic init event for prepare_parent_meeting.
+              // Fires the INSTANT the tool starts (before any cache check,
+              // before any Sonnet call). UI can render "Preparing the
+              // dossier…" immediately instead of staring at a silent
+              // tool chip spinner for 3-5s while the cache key resolves +
+              // the first Sonnet token lands. This is the canonical
+              // diagnostic signal — if init fires but no meeting_brief or
+              // meeting_brief_chunk follows, we know the tool started but
+              // stalled. If init never fires, the tool never started.
+              if (block.name === 'prepare_parent_meeting') {
+                const inputObj = (block.input ?? {}) as Record<string, unknown>;
+                controller.enqueue(
+                  sse(encoder, {
+                    type: 'meeting_brief_init',
+                    child_id: typeof inputObj.childId === 'string' ? inputObj.childId : null,
+                    meeting_purpose:
+                      typeof inputObj.meetingPurpose === 'string'
+                        ? inputObj.meetingPurpose.slice(0, 240)
+                        : null,
+                  })
+                );
+              }
 
               const result = await executeTracyTool(
                 block.name,

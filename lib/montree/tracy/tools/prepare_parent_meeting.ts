@@ -506,6 +506,13 @@ export async function preparePMeeting(
     onStream,
   } = input;
 
+  // Session 136 — function-entry marker. Logged BEFORE any DB hit + any
+  // input validation so we can confirm in Railway logs that the tool was
+  // actually invoked (the prior strikeout was diagnosed by absence: the
+  // user reported zero logs, suggesting the tool may never have started).
+  const _tracyDiag = `[prepare_parent_meeting] childId=${childId ?? '(missing)'} school=${schoolId ?? '(missing)'} principal=${principalId ?? '(missing)'} purposeLen=${meetingPurpose?.length ?? 0} locale=${locale ?? 'en'}`;
+  console.log(`${_tracyDiag} entry`);
+
   if (!childId) return { ok: false, error: 'childId is required' };
   if (!schoolId) return { ok: false, error: 'schoolId is required' };
   if (!principalId) return { ok: false, error: 'principalId is required' };
@@ -535,6 +542,9 @@ export async function preparePMeeting(
     extras: { locale },
   });
   const cached = await readDossier(supabase, cacheKey);
+  console.log(
+    `${_tracyDiag} cache_check found=${cached.found} hasPayload=${!!cached.payload_text} fmt=${cached.output_format ?? '(none)'}`
+  );
   if (cached.found && cached.payload_text && cached.output_format) {
     // 🚨 Session 133 audit fix: don't return child_name='(cached)' — that
     // lie surfaces in the UI's dossier header. Do a fast child lookup
@@ -643,6 +653,7 @@ export async function preparePMeeting(
   }
 
   const phrases = inferPatternPhrases(meetingPurpose);
+  console.log(`${_tracyDiag} fetching_context+guru+pattern (parallel) phrases=${phrases.positives.length}`);
 
   const [contextRes, guruRes, patternRes] = await Promise.all([
     fetchChildContext(
@@ -892,6 +903,25 @@ Output: ${outputFormat === 'json' ? 'a SINGLE JSON object with one key per dossi
   let inputTokens = 0;
   let outputTokens = 0;
   let markdown = '';
+  // Session 136 — per-chunk watchdog. If no text_delta event arrives for
+  // 30 consecutive seconds, fail fast with an explicit "Sonnet stalled"
+  // error instead of waiting the full PREPARE_MEETING_TIMEOUT_MS (180s).
+  // The user reported "Tracy struck out completely" — current behaviour
+  // is a silent 180s wait that bubbles a generic "Sonnet timeout" with
+  // no diagnostic signal about WHERE it stalled (before any token? mid
+  // stream?). The per-chunk watchdog distinguishes those cases in logs.
+  const PER_CHUNK_TIMEOUT_MS = 30_000;
+  let lastChunkAt = Date.now();
+  let chunkCount = 0;
+  console.log(`${_tracyDiag} sonnet_call_start model=${PREPARE_MEETING_MODEL} max_tokens=${PREPARE_MEETING_MAX_TOKENS}`);
+
+  // Captured outside the try so we can include in error responses.
+  let sonnetErrorDetail: {
+    name?: string;
+    status?: number;
+    type?: string;
+  } | null = null;
+
   try {
     const stream = anthropic.messages.stream({
       model: PREPARE_MEETING_MODEL,
@@ -907,6 +937,8 @@ Output: ${outputFormat === 'json' ? 'a SINGLE JSON object with one key per dossi
           event.delta.type === 'text_delta'
         ) {
           buffer += event.delta.text;
+          lastChunkAt = Date.now();
+          chunkCount++;
           drain(false);
         }
       }
@@ -919,25 +951,70 @@ Output: ${outputFormat === 'json' ? 'a SINGLE JSON object with one key per dossi
       outputTokens = finalMessage.usage.output_tokens;
     })();
 
-    await Promise.race([
-      streamPromise,
-      new Promise<never>((_, reject) =>
-        setTimeout(
-          () => reject(new Error('prepare_parent_meeting Sonnet timeout')),
-          PREPARE_MEETING_TIMEOUT_MS
-        )
-      ),
-    ]);
+    // Per-chunk watchdog. Polls every 5s; fires if no token in 30s.
+    let watchdogTimer: ReturnType<typeof setInterval> | null = null;
+    const watchdogPromise = new Promise<never>((_, reject) => {
+      watchdogTimer = setInterval(() => {
+        const idleMs = Date.now() - lastChunkAt;
+        if (idleMs > PER_CHUNK_TIMEOUT_MS) {
+          if (watchdogTimer) clearInterval(watchdogTimer);
+          reject(
+            new Error(
+              `Sonnet stalled — no token for ${Math.floor(idleMs / 1000)}s ` +
+                `(chunks_received=${chunkCount}, total_elapsed_ms=${Date.now() - startedAt})`
+            )
+          );
+        }
+      }, 5_000);
+    });
+
+    // Outer timeout still in force as backstop — 180s ceiling on the
+    // whole operation regardless of chunk cadence.
+    const outerTimeoutPromise = new Promise<never>((_, reject) =>
+      setTimeout(
+        () =>
+          reject(
+            new Error(
+              `prepare_parent_meeting Sonnet timeout after ${Math.floor(PREPARE_MEETING_TIMEOUT_MS / 1000)}s ` +
+                `(chunks_received=${chunkCount})`
+            )
+          ),
+        PREPARE_MEETING_TIMEOUT_MS
+      )
+    );
+
+    try {
+      await Promise.race([streamPromise, watchdogPromise, outerTimeoutPromise]);
+    } finally {
+      if (watchdogTimer) clearInterval(watchdogTimer);
+    }
   } catch (e) {
+    // Structured error capture — pull apart Anthropic SDK errors so we
+    // know whether it was a rate-limit (429), overload (529), auth
+    // failure (401), or other.
+    if (e && typeof e === 'object') {
+      const ee = e as Record<string, unknown>;
+      sonnetErrorDetail = {
+        name: typeof ee.name === 'string' ? ee.name : undefined,
+        status: typeof ee.status === 'number' ? ee.status : undefined,
+        type: typeof ee.type === 'string' ? ee.type : undefined,
+      };
+    }
+    const msg = e instanceof Error ? e.message : 'Sonnet call failed';
+    console.error(
+      `${_tracyDiag} sonnet_call_FAIL chunks=${chunkCount} elapsed_ms=${Date.now() - startedAt} ` +
+        `error=${JSON.stringify(sonnetErrorDetail)} message="${msg}"`
+    );
     return {
       ok: false,
-      error:
-        e instanceof Error
-          ? `Sonnet call failed: ${e.message}`
-          : 'Sonnet call failed',
+      error: `Sonnet call failed: ${msg}`,
     };
   }
   const generationMs = Date.now() - startedAt;
+  console.log(
+    `${_tracyDiag} sonnet_call_DONE chunks=${chunkCount} elapsed_ms=${generationMs} ` +
+      `input_tokens=${inputTokens} output_tokens=${outputTokens} markdown_chars=${markdown.length}`
+  );
 
   if (!markdown) {
     return { ok: false, error: 'Sonnet returned no text block' };
