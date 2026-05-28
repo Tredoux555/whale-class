@@ -39,7 +39,7 @@ import type {
 import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { resolveReportModel } from '@/lib/montree/reports/resolve-model';
-import { anthropic, OPUS_MODEL } from '@/lib/ai/anthropic';
+import { anthropic, AI_MODEL, OPUS_MODEL } from '@/lib/ai/anthropic';
 import {
   buildTracySystemPrompt,
   TRACY_TOOLS,
@@ -50,38 +50,33 @@ import {
   formatMemoriesForPrompt,
 } from '@/lib/montree/tracy/memory';
 
-// Railway honours requests as long as the server keeps writing. The
-// previous 120s ceiling here paired with a 90s watchdog meant complex
-// Tracy tool chains (consult_guru → detect_pattern → child_focus on a
-// child with rich history) silently capped out and the user saw a
-// frozen thinking-dots avatar. Tracy genuinely needs ~150-180s on a
-// hard question; bumped to give that headroom plus margin.
-export const maxDuration = 300;
+// 🚨 Session 135: Tracy moved from Opus 4.6 → Sonnet 4.6. Opus was a
+// "wow factor" choice (Session 96) that didn't pay off in real principal
+// use — too slow (60-180s) and too expensive ($0.20+ per interaction)
+// for what's mostly synthesis. Sonnet matches the quality on these tasks
+// and lands in 20-40s. The model swap let us drop the watchdog from 240s
+// → 120s. To revert: import OPUS_MODEL instead of AI_MODEL at the model
+// constant below and restore the 240s/300s budgets.
+export const maxDuration = 180;
 
 const MAX_TOOL_ROUNDS = 5;
 // Watchdog ceiling on the full tool-use loop. Must be lower than
 // `maxDuration` so we surface a clean error to the client instead of
-// the platform killing the response mid-stream. Opus 4.6 + 3-4 tool
-// calls on a real child = realistically 60-150s; 240s gives slack.
-const TOTAL_TIMEOUT_MS = 240_000;
-// Per-Anthropic-call timeout. One Opus turn rarely exceeds 60s even
-// with tool use; 90s is generous but bounded.
-const API_TIMEOUT_MS = 90_000;
+// the platform killing the response mid-stream. Sonnet 4.6 + 3-4 tool
+// calls on a real child = realistically 20-60s; 120s gives slack.
+const TOTAL_TIMEOUT_MS = 120_000;
+// Per-Anthropic-call timeout. One Sonnet turn rarely exceeds 30s even
+// with tool use; 60s is generous but bounded.
+const API_TIMEOUT_MS = 60_000;
 const MAX_TOOL_RESULT_CHARS = 50_000;
 
-// Opus 4.6 pricing as of May 2026 — kept here so cost_usd in the log is
-// accurate even when the upstream price changes (just bump these constants).
-// COST_MODEL is the model these prices are valid for — if `model` resolves
-// to something different at runtime we refuse to log a misleading cost
-// (see assertSupportedCostModel below).
-//
-// Tracy uses Opus (not Sonnet like the rest of the app) because the principal
-// is the high-trust voice surface — she meets parents, board members, and
-// hard situations. Voice quality matters more than per-call cost here. ~5x
-// Sonnet pricing; per-greeting still well under $0.25.
-const COST_MODEL = 'claude-opus-4-6';
-const OPUS_INPUT_USD_PER_MTOK = 15;
-const OPUS_OUTPUT_USD_PER_MTOK = 75;
+// Sonnet 4.6 pricing — kept here so cost_usd in the log is accurate.
+// Session 135 swap from Opus → Sonnet ($15/$75 → $3/$15 per MTok = 5× cheaper).
+// COST_MODEL is the model these prices are valid for — if `model` resolves to
+// anything else at runtime, assertSupportedCostModel logs loudly (see below).
+const COST_MODEL = 'claude-sonnet-4-6';
+const SONNET_INPUT_USD_PER_MTOK = 3;
+const SONNET_OUTPUT_USD_PER_MTOK = 15;
 
 // 🚨 Session 113 V2 Tracy + Mira audit quick win: cost-model drift now logs
 // to montree_server_errors in addition to console. Without the DB write, a
@@ -240,17 +235,18 @@ export async function POST(request: NextRequest) {
       { status: 402 }
     );
   }
-  // We use Opus for Tracy regardless of the school's haiku/sonnet tier — the
-  // principal's voice surface is the trust moment. Tracy meets parents, board
-  // members, and hard situations through the principal's read of her, so
-  // per-call cost is the wrong axis to optimise on. ~5x Sonnet, still well
-  // under $0.25 per interaction at typical lengths.
-  const model = OPUS_MODEL;
+  // Session 135: Tracy on Sonnet 4.6 (was Opus). 5× cheaper, 3× faster, same
+  // synthesis quality for the principal's chief-of-staff workload. Reverting
+  // to Opus is a single-line change — swap AI_MODEL → OPUS_MODEL here AND
+  // update COST_MODEL + the pricing constants above. OPUS_MODEL is still
+  // imported so the swap is one identifier away.
+  const model = AI_MODEL;
   // Catch the "Anthropic changed the default and we forgot" failure mode:
-  // if OPUS_MODEL drifts to anything other than COST_MODEL, the cost we log
+  // if AI_MODEL drifts to anything other than COST_MODEL, the cost we log
   // becomes silently wrong. We log loudly so super-admin's cost view doesn't
   // mislead Tredoux for weeks.
   assertSupportedCostModel(model);
+  void OPUS_MODEL; // intentionally kept imported as the documented reversion path
 
   // Best-effort school + principal name lookup for the system prompt
   let schoolName = 'your school';
@@ -525,6 +521,39 @@ export async function POST(request: NextRequest) {
                 })
               );
 
+              // Session 135 — when prepare_parent_meeting succeeds, emit a
+              // dedicated `meeting_brief` event with the BRIEF + DOSSIER
+              // markdown. The UI renders the brief as the primary artifact
+              // and tucks the dossier behind a "Show me the full thinking"
+              // disclosure. This bypasses Tracy's text stream for the
+              // payload itself — Tracy's job becomes just the one-line
+              // introduction. Without this event the UI would have to
+              // parse out the markdown from Tracy's prose; this is cleaner.
+              if (
+                block.name === 'prepare_parent_meeting' &&
+                result.success &&
+                result.data &&
+                typeof result.data === 'object'
+              ) {
+                const d = result.data as {
+                  brief_markdown?: string | null;
+                  dossier_markdown?: string | null;
+                  child_name?: string;
+                  from_cache?: boolean;
+                };
+                if (d.brief_markdown || d.dossier_markdown) {
+                  controller.enqueue(
+                    sse(encoder, {
+                      type: 'meeting_brief',
+                      brief_markdown: d.brief_markdown ?? null,
+                      dossier_markdown: d.dossier_markdown ?? null,
+                      child_name: d.child_name ?? null,
+                      from_cache: d.from_cache ?? false,
+                    })
+                  );
+                }
+              }
+
               const resultText = result.success
                 ? JSON.stringify(result.data)
                 : `Error: ${result.error || 'unknown'}`;
@@ -558,8 +587,8 @@ export async function POST(request: NextRequest) {
 
         // Compute cost
         const costUsd =
-          (totalInputTokens / 1_000_000) * OPUS_INPUT_USD_PER_MTOK +
-          (totalOutputTokens / 1_000_000) * OPUS_OUTPUT_USD_PER_MTOK;
+          (totalInputTokens / 1_000_000) * SONNET_INPUT_USD_PER_MTOK +
+          (totalOutputTokens / 1_000_000) * SONNET_OUTPUT_USD_PER_MTOK;
 
         const totalDuration = Date.now() - startTime;
 
@@ -615,8 +644,8 @@ export async function POST(request: NextRequest) {
             output_tokens: totalOutputTokens,
             cost_usd: Number(
               (
-                (totalInputTokens / 1_000_000) * OPUS_INPUT_USD_PER_MTOK +
-                (totalOutputTokens / 1_000_000) * OPUS_OUTPUT_USD_PER_MTOK
+                (totalInputTokens / 1_000_000) * SONNET_INPUT_USD_PER_MTOK +
+                (totalOutputTokens / 1_000_000) * SONNET_OUTPUT_USD_PER_MTOK
               ).toFixed(6)
             ),
             duration_ms: Date.now() - startTime,

@@ -96,6 +96,17 @@ export interface PrepareParentMeetingResult {
     /** The composed dossier in the requested format. */
     payload: string;
     output_format: 'markdown' | 'html' | 'json';
+    /**
+     * Session 135 — split outputs. Sonnet now produces TWO sections in
+     * one call, separated by <<<BRIEF>>> / <<<DOSSIER>>> literal
+     * delimiters. The brief is the ≤200-word in-the-moment cue card;
+     * the dossier is the deep 9-section thinking. The UI renders brief
+     * by default and reveals dossier behind a "Show me the full
+     * thinking" disclosure. Both nullable for back-compat with cached
+     * pre-Session-135 responses (which only have a flat markdown).
+     */
+    brief_markdown: string | null;
+    dossier_markdown: string | null;
     /** When this dossier was generated (or cached). */
     generated_at: string;
     /** Whether this came from cache (true) or fresh Sonnet (false). */
@@ -122,6 +133,52 @@ export interface PrepareParentMeetingResult {
     /** Whether migration 237 is run — UI may surface a "save your dossier" hint when false. */
     cache_active: boolean;
   };
+}
+
+/**
+ * Parse Sonnet's response into the BRIEF + DOSSIER split.
+ * Session 135 — Sonnet emits two sections separated by literal delimiters:
+ *
+ *   <<<BRIEF>>>
+ *   …brief markdown…
+ *   <<<DOSSIER>>>
+ *   …dossier markdown…
+ *
+ * If the delimiters are missing (older Sonnet response, pre-Session-135
+ * cached payload, or a model that drifted), we treat the entire string
+ * as the dossier and return null for the brief. The UI falls back to
+ * rendering the dossier when brief is null.
+ */
+export function splitBriefAndDossier(raw: string): {
+  brief: string | null;
+  dossier: string | null;
+} {
+  if (!raw) return { brief: null, dossier: null };
+  const trimmed = raw.trim();
+  const briefIdx = trimmed.indexOf('<<<BRIEF>>>');
+  const dossierIdx = trimmed.indexOf('<<<DOSSIER>>>');
+
+  // Both delimiters present → standard split.
+  if (briefIdx !== -1 && dossierIdx !== -1 && dossierIdx > briefIdx) {
+    const brief = trimmed.slice(briefIdx + '<<<BRIEF>>>'.length, dossierIdx).trim();
+    const dossier = trimmed.slice(dossierIdx + '<<<DOSSIER>>>'.length).trim();
+    return { brief: brief || null, dossier: dossier || null };
+  }
+
+  // Only DOSSIER delimiter (model skipped brief) → dossier only.
+  if (dossierIdx !== -1) {
+    const dossier = trimmed.slice(dossierIdx + '<<<DOSSIER>>>'.length).trim();
+    return { brief: null, dossier: dossier || null };
+  }
+
+  // Only BRIEF delimiter (model skipped dossier — unusual) → brief only.
+  if (briefIdx !== -1) {
+    const brief = trimmed.slice(briefIdx + '<<<BRIEF>>>'.length).trim();
+    return { brief: brief || null, dossier: null };
+  }
+
+  // No delimiters — back-compat for old cached payloads. Whole thing is dossier.
+  return { brief: null, dossier: trimmed };
 }
 
 // ── Helpers ────────────────────────────────────────────────────────────
@@ -487,11 +544,20 @@ export async function preparePMeeting(
         };
       }
     }
+    // Session 135 — split the cached payload into brief + dossier.
+    // For markdown caches written pre-Session-135 (no delimiters), the
+    // splitter returns brief=null and surfaces the whole payload as
+    // dossier. The UI falls back gracefully when brief is null.
+    const split = cached.output_format === 'markdown'
+      ? splitBriefAndDossier(cached.payload_text)
+      : { brief: null, dossier: null };
     return {
       ok: true,
       data: {
         payload: cached.payload_text,
         output_format: cached.output_format,
+        brief_markdown: split.brief,
+        dossier_markdown: split.dossier,
         generated_at: cached.generated_at!,
         from_cache: true,
         cost_usd: null,
@@ -833,11 +899,20 @@ Output: ${outputFormat === 'json' ? 'a SINGLE JSON object with one key per dossi
     console.warn('[prepare_parent_meeting] cache write failed:', writeRes.error);
   }
 
+  // Session 135 — split brief + dossier from the raw markdown response.
+  // We split BEFORE the output-format branch so the split is consistent
+  // regardless of whether the caller asked for markdown / html / json.
+  // For html/json the payload is transformed; brief_markdown +
+  // dossier_markdown always carry the source-of-truth markdown.
+  const split = splitBriefAndDossier(markdown);
+
   return {
     ok: true,
     data: {
       payload,
       output_format: outputFormat,
+      brief_markdown: split.brief,
+      dossier_markdown: split.dossier,
       generated_at: new Date().toISOString(),
       from_cache: false,
       cost_usd: costUsd,

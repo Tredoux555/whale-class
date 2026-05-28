@@ -92,6 +92,20 @@ interface ProgressEvent {
   vars?: Record<string, string>;
 }
 
+/**
+ * Session 135 — meeting_brief SSE payload.
+ * Sent by the principal-agent route when prepare_parent_meeting succeeds.
+ * Renders as a scannable brief at the top of the assistant turn, with
+ * the full 9-section dossier collapsed behind a "Show me the full
+ * thinking" disclosure.
+ */
+interface MeetingBrief {
+  brief_markdown: string | null;
+  dossier_markdown: string | null;
+  child_name: string | null;
+  from_cache: boolean;
+}
+
 interface ConvTurn {
   role: 'user' | 'assistant';
   text: string;
@@ -105,6 +119,10 @@ interface ConvTurn {
    *  instead of a plain red error toast. Triggered by 402 responses. */
   requiresUpgrade?: boolean;
   costUsd?: number;
+  /** When prepare_parent_meeting succeeds, the structured brief + dossier
+   *  render at the top of the assistant turn (Session 135). The brief is
+   *  shown by default; the dossier collapses behind a disclosure. */
+  meetingBrief?: MeetingBrief;
 }
 
 const MAX_PERSISTED_TURNS = 30;
@@ -220,6 +238,128 @@ function UserBubble({ text }: { text: string }) {
   );
 }
 
+/**
+ * Session 135 — parent-meeting brief + dossier disclosure.
+ *
+ * Renders as a structured artifact at the top of an assistant turn when
+ * Tracy's prepare_parent_meeting tool has emitted a `meeting_brief` SSE
+ * event. The brief is shown by default (≤200 words, scannable in 15
+ * seconds — the literal cue card the principal reads in the room). The
+ * full 9-section dossier collapses behind a "Show me the full thinking"
+ * disclosure for the principal who wants to study the meeting the night
+ * before.
+ *
+ * Graceful fallbacks:
+ *   - brief missing → render dossier inline (no disclosure, brief was the
+ *     primary artifact and there isn't one)
+ *   - dossier missing → render brief alone (no disclosure either, nothing
+ *     to expand)
+ *   - both missing → render nothing (the SSE event shouldn't have fired
+ *     in the first place but this is belt-and-braces)
+ */
+function MeetingBriefCard({ brief }: { brief: MeetingBrief }) {
+  const [expanded, setExpanded] = useState(false);
+  const hasBrief = !!brief.brief_markdown;
+  const hasDossier = !!brief.dossier_markdown;
+  if (!hasBrief && !hasDossier) return null;
+
+  // When only dossier is present (no brief), render it inline. Old cached
+  // payloads pre-Session-135 land here.
+  if (!hasBrief && hasDossier) {
+    return (
+      <div
+        style={{
+          background: 'rgba(255,255,255,0.04)',
+          border: '1px solid rgba(232,201,106,0.20)',
+          borderRadius: 14,
+          padding: '14px 18px',
+          marginBottom: 12,
+        }}
+      >
+        <TracyBody
+          text={brief.dossier_markdown!}
+          style={{
+            fontFamily: T.sans,
+            fontSize: 14.5,
+            lineHeight: 1.7,
+            color: T.textSoft,
+          }}
+        />
+      </div>
+    );
+  }
+
+  return (
+    <div
+      style={{
+        background: 'rgba(232,201,106,0.06)',
+        border: '1px solid rgba(232,201,106,0.32)',
+        borderRadius: 14,
+        padding: '14px 18px',
+        marginBottom: 12,
+      }}
+    >
+      {/* Brief — always visible at the top. The cue card. */}
+      <TracyBody
+        text={brief.brief_markdown!}
+        style={{
+          fontFamily: T.sans,
+          fontSize: 14.5,
+          lineHeight: 1.65,
+          color: T.textSoft,
+        }}
+      />
+
+      {/* Disclosure — only render when there's a dossier to expand to. */}
+      {hasDossier && (
+        <>
+          <button
+            type="button"
+            onClick={() => setExpanded(v => !v)}
+            style={{
+              marginTop: 14,
+              padding: '6px 12px',
+              background: 'rgba(232,201,106,0.10)',
+              border: '1px solid rgba(232,201,106,0.30)',
+              borderRadius: 999,
+              color: '#E8C96A',
+              fontFamily: T.sans,
+              fontSize: 12.5,
+              fontWeight: 500,
+              cursor: 'pointer',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 6,
+            }}
+          >
+            <span style={{ fontSize: 11 }}>{expanded ? '▴' : '▾'}</span>
+            {expanded ? 'Hide the full thinking' : 'Show me the full thinking'}
+          </button>
+          {expanded && (
+            <div
+              style={{
+                marginTop: 14,
+                paddingTop: 14,
+                borderTop: '1px solid rgba(232,201,106,0.18)',
+              }}
+            >
+              <TracyBody
+                text={brief.dossier_markdown!}
+                style={{
+                  fontFamily: T.sans,
+                  fontSize: 14,
+                  lineHeight: 1.7,
+                  color: T.textSoft,
+                }}
+              />
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  );
+}
+
 function AssistantBubble({ turn }: { turn: ConvTurn }) {
   const { t } = useI18n();
   const { body, action } = splitActionLine(turn.text);
@@ -265,6 +405,12 @@ function AssistantBubble({ turn }: { turn: ConvTurn }) {
     >
       <TracyAvatar size={36} />
       <div style={{ flex: 1, minWidth: 0, paddingTop: 4 }}>
+        {/* Session 135 — parent-meeting brief renders at the top of the turn.
+            Brief is shown by default; dossier collapses behind a disclosure.
+            See prepare_parent_meeting tool + meeting_brief SSE event. */}
+        {turn.meetingBrief && (
+          <MeetingBriefCard brief={turn.meetingBrief} />
+        )}
         {/* Body prose (everything except the closing action line). Fenced
             code blocks render as CopyableMessageCard via TracyBody. */}
         {body && (
@@ -588,6 +734,25 @@ export default function AdminAgentPage() {
         }
         case 'thinking': {
           updated.thinking = (updated.thinking || '') + String(evt.text || '');
+          break;
+        }
+        case 'meeting_brief': {
+          // Session 135 — structured brief + dossier from prepare_parent_meeting.
+          // The brief renders inline at the top of the turn; the dossier
+          // collapses behind a "Show me the full thinking" disclosure.
+          const briefMd =
+            typeof evt.brief_markdown === 'string' ? evt.brief_markdown : null;
+          const dossierMd =
+            typeof evt.dossier_markdown === 'string' ? evt.dossier_markdown : null;
+          const childName =
+            typeof evt.child_name === 'string' ? evt.child_name : null;
+          const fromCache = !!evt.from_cache;
+          updated.meetingBrief = {
+            brief_markdown: briefMd,
+            dossier_markdown: dossierMd,
+            child_name: childName,
+            from_cache: fromCache,
+          };
           break;
         }
         case 'done': {
