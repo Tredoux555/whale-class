@@ -273,12 +273,10 @@ export async function parseVoiceIntake(
       clearTimeout(timer);
     }
 
-    // Find the tool_use block.
-    const toolUse = response.content.find(
-      (b): b is { type: 'tool_use'; name: string; input: unknown } =>
-        b.type === 'tool_use'
-    );
-    if (!toolUse || toolUse.name !== 'structure_parent_profile') {
+    // Find the tool_use block — narrow via discriminant in if-guard
+    // (the canonical codebase pattern; see lib/montree/reports/replan-child.ts).
+    const toolUse = response.content.find((b) => b.type === 'tool_use');
+    if (!toolUse || toolUse.type !== 'tool_use' || toolUse.name !== 'structure_parent_profile') {
       console.warn('[parent-profile/voice-intake] no tool_use block returned');
       return {
         draft: fallbackDraft,
