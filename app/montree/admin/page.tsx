@@ -793,7 +793,20 @@ export default function AdminAgentPage() {
     }
   };
 
-  const firstName = (principal?.name || '').split(' ')[0] || '';
+  // Resolve the greeting name. For "Tredoux Willemse" we want "Tredoux".
+  // For "Principal Leu" / "Ms Chen" / etc. we want the full name —
+  // splitting on space would render "Hi, Principal" which reads cold.
+  // Must stay in sync with the same logic in the principal-agent route's
+  // system-prompt name resolver.
+  const greetingName = (() => {
+    const fullName = (principal?.name || '').trim();
+    if (!fullName) return '';
+    const TITLE_PREFIXES = /^(principal|ms|mrs|mr|dr|prof|professor|teacher|head|director)\.?\s+/i;
+    if (TITLE_PREFIXES.test(fullName)) return fullName;
+    return fullName.split(' ')[0] || '';
+  })();
+  // Kept alias for the legacy prop name; underlying value now handles titles.
+  const firstName = greetingName;
 
   return (
     <div style={{ fontFamily: T.sans, color: T.textSoft }}>
