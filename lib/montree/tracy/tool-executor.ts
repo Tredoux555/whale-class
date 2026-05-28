@@ -148,8 +148,36 @@ export async function executeTracyTool(
     const data = await res.json();
     return { ok: true as const, status: res.status, data };
   };
-  // (internalPost removed — no current Tracy tool POSTs to internal endpoints.
-  // Re-add when an action tool needs to mutate via an internal route.)
+  // Internal mutation helpers — used by Tracy's ACTION tools. Forward the
+  // principal's cookie so each inner endpoint re-verifies via
+  // verifySchoolRequest + does its own school-scoping + consent-gating
+  // (defense in depth). Tracy never bypasses the inner endpoint's auth.
+  const internalPost = async (path: string, body: Record<string, unknown>) => {
+    const res = await fetch(`${origin}${path}`, {
+      method: 'POST',
+      headers: { cookie: cookieHeader, 'content-type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    if (!res.ok) {
+      const errBody = await res.text().catch(() => '');
+      return { ok: false as const, status: res.status, body: errBody };
+    }
+    const data = await res.json();
+    return { ok: true as const, status: res.status, data };
+  };
+  const internalPatch = async (path: string, body: Record<string, unknown>) => {
+    const res = await fetch(`${origin}${path}`, {
+      method: 'PATCH',
+      headers: { cookie: cookieHeader, 'content-type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    if (!res.ok) {
+      const errBody = await res.text().catch(() => '');
+      return { ok: false as const, status: res.status, body: errBody };
+    }
+    const data = await res.json();
+    return { ok: true as const, status: res.status, data };
+  };
 
   try {
     switch (name) {
@@ -1108,6 +1136,326 @@ export async function executeTracyTool(
           success: true,
           data: { entries: result.entries },
           result_summary: `${result.entries.length} corpus entr${result.entries.length === 1 ? 'y' : 'ies'}${archetype ? ` for archetype=${archetype}` : ''}`,
+        };
+      }
+
+      // ── ACTION TOOLS (Ultimate Tracy v2) ─────────────────────────
+      // The principal's voice command IS the trigger pull. Each tool
+      // forwards her cookie to the inner endpoint, which re-verifies
+      // school + role + cross-pollination (defense in depth).
+      case 'send_parent_message': {
+        const parentId = String(input.parent_id || '').trim();
+        const body = String(input.body || '').trim();
+        const childId = typeof input.child_id === 'string' ? input.child_id.trim() : '';
+        const subject = typeof input.subject === 'string' ? input.subject.trim().slice(0, 200) : '';
+        if (!parentId) return { success: false, error: 'parent_id is required' };
+        if (body.length < 1 || body.length > 2000) {
+          return { success: false, error: 'body must be 1-2000 chars' };
+        }
+
+        // 1. Verify parent + school + resolve a child to anchor the thread.
+        const { data: parent } = await supabase
+          .from('montree_parents')
+          .select('id, school_id, name')
+          .eq('id', parentId)
+          .eq('school_id', schoolId)
+          .maybeSingle();
+        if (!parent) {
+          return { success: false, error: 'parent not in this school' };
+        }
+        let anchorChildId = childId;
+        if (!anchorChildId) {
+          const { data: link } = await supabase
+            .from('montree_parent_children')
+            .select('child_id')
+            .eq('parent_id', parentId)
+            .limit(1)
+            .maybeSingle();
+          anchorChildId = link?.child_id ?? '';
+        }
+        if (!anchorChildId) {
+          return { success: false, error: 'parent has no linked child to anchor thread' };
+        }
+
+        // 2. Find the child's classroom for thread context + the lead teacher.
+        const { data: child } = await supabase
+          .from('montree_children')
+          .select('id, classroom_id, name')
+          .eq('id', anchorChildId)
+          .maybeSingle();
+        if (!child?.classroom_id) {
+          return { success: false, error: 'child has no classroom' };
+        }
+        const { data: classroom } = await supabase
+          .from('montree_classrooms')
+          .select('id, school_id, name')
+          .eq('id', child.classroom_id)
+          .maybeSingle();
+        if (!classroom || classroom.school_id !== schoolId) {
+          return { success: false, error: 'child not in caller school' };
+        }
+        const { data: teachers } = await supabase
+          .from('montree_teachers')
+          .select('id, name, role')
+          .eq('classroom_id', child.classroom_id)
+          .eq('is_active', true)
+          .order('role', { ascending: true })
+          .limit(1);
+        const teacherRow = teachers?.[0];
+
+        // 3. Look for an existing parent_teacher thread for this parent + child.
+        const { data: existingThreads } = await supabase
+          .from('montree_message_threads')
+          .select('id')
+          .eq('school_id', schoolId)
+          .eq('child_id', anchorChildId)
+          .eq('thread_type', 'parent_teacher')
+          .order('last_message_at', { ascending: false, nullsFirst: false })
+          .limit(1);
+        let threadId = existingThreads?.[0]?.id as string | undefined;
+
+        // 4. Create thread if needed.
+        if (!threadId) {
+          if (!teacherRow) {
+            return { success: false, error: 'no active teacher in child\'s classroom — cannot create parent_teacher thread' };
+          }
+          const createRes = await internalPost('/api/montree/messages/threads', {
+            thread_type: 'parent_teacher',
+            subject: subject || `Regarding ${child.name || 'your child'}`,
+            classroom_id: child.classroom_id,
+            child_id: anchorChildId,
+            participants: [
+              { role: 'parent', id: parentId, is_primary: true, can_reply: true },
+              { role: 'teacher', id: teacherRow.id, is_primary: true, can_reply: true },
+            ],
+          });
+          if (!createRes.ok) {
+            return { success: false, error: `thread create failed: ${createRes.status}` };
+          }
+          const cd = createRes.data as { thread_id?: string };
+          threadId = cd.thread_id;
+        }
+        if (!threadId) {
+          return { success: false, error: 'no thread id resolved' };
+        }
+
+        // 5. Post the message AS Tracy-drafted on principal's behalf.
+        const sendRes = await internalPost(
+          `/api/montree/messages/threads/${threadId}/messages`,
+          {
+            body,
+            body_locale: locale,
+            ai_drafted: true,
+            ai_draft_source: 'tracy',
+          }
+        );
+        if (!sendRes.ok) {
+          return { success: false, error: `message send failed: ${sendRes.status} — ${sendRes.body.slice(0, 200)}` };
+        }
+        return {
+          success: true,
+          data: { thread_id: threadId, parent_name: parent.name },
+          result_summary: `sent to ${parent.name || 'parent'}`,
+        };
+      }
+
+      case 'send_teacher_message': {
+        const teacherId = String(input.teacher_id || '').trim();
+        const body = String(input.body || '').trim();
+        const subject = typeof input.subject === 'string' ? input.subject.trim().slice(0, 200) : '';
+        if (!teacherId) return { success: false, error: 'teacher_id is required' };
+        if (body.length < 1 || body.length > 2000) {
+          return { success: false, error: 'body must be 1-2000 chars' };
+        }
+
+        const { data: teacher } = await supabase
+          .from('montree_teachers')
+          .select('id, school_id, name')
+          .eq('id', teacherId)
+          .eq('school_id', schoolId)
+          .maybeSingle();
+        if (!teacher) return { success: false, error: 'teacher not in this school' };
+
+        // Find existing internal thread principal↔teacher.
+        const { data: existing } = await supabase
+          .from('montree_message_threads')
+          .select('id')
+          .eq('school_id', schoolId)
+          .eq('thread_type', 'internal')
+          .order('last_message_at', { ascending: false, nullsFirst: false })
+          .limit(20);
+        // Filter to threads where both principal + teacher are participants.
+        let threadId: string | undefined;
+        if (existing && existing.length > 0) {
+          const ids = (existing as Array<{ id: string }>).map((t) => t.id);
+          const { data: parts } = await supabase
+            .from('montree_message_thread_participants')
+            .select('thread_id, participant_id, participant_role')
+            .in('thread_id', ids);
+          const byThread = new Map<string, Array<{ id: string; role: string }>>();
+          for (const p of parts ?? []) {
+            const list = byThread.get((p as { thread_id: string }).thread_id) ?? [];
+            list.push({
+              id: (p as { participant_id: string }).participant_id,
+              role: (p as { participant_role: string }).participant_role,
+            });
+            byThread.set((p as { thread_id: string }).thread_id, list);
+          }
+          for (const [tid, participants] of byThread.entries()) {
+            const hasPrincipal = participants.some((p) => p.id === principalId && p.role === 'principal');
+            const hasTeacher = participants.some((p) => p.id === teacherId && p.role === 'teacher');
+            if (hasPrincipal && hasTeacher) {
+              threadId = tid;
+              break;
+            }
+          }
+        }
+
+        if (!threadId) {
+          const createRes = await internalPost('/api/montree/messages/threads', {
+            thread_type: 'internal',
+            subject: subject || `From the office`,
+            participants: [
+              { role: 'teacher', id: teacherId, is_primary: false, can_reply: true },
+            ],
+          });
+          if (!createRes.ok) {
+            return { success: false, error: `thread create failed: ${createRes.status}` };
+          }
+          const cd = createRes.data as { thread_id?: string };
+          threadId = cd.thread_id;
+        }
+        if (!threadId) return { success: false, error: 'no thread id resolved' };
+
+        const sendRes = await internalPost(
+          `/api/montree/messages/threads/${threadId}/messages`,
+          { body, body_locale: locale, ai_drafted: true, ai_draft_source: 'tracy' }
+        );
+        if (!sendRes.ok) {
+          return { success: false, error: `message send failed: ${sendRes.status}` };
+        }
+        return {
+          success: true,
+          data: { thread_id: threadId, teacher_name: teacher.name },
+          result_summary: `sent to ${teacher.name || 'teacher'}`,
+        };
+      }
+
+      case 'schedule_appointment': {
+        const parentId = String(input.parent_id || '').trim();
+        const childId = String(input.child_id || '').trim();
+        const scheduledStart = String(input.scheduled_start || '').trim();
+        if (!parentId || !childId || !scheduledStart) {
+          return {
+            success: false,
+            error: 'parent_id, child_id, scheduled_start required',
+          };
+        }
+        const startMs = Date.parse(scheduledStart);
+        if (!Number.isFinite(startMs) || startMs <= Date.now() + 30_000) {
+          return { success: false, error: 'scheduled_start must be a valid future ISO datetime' };
+        }
+        const duration = typeof input.duration_minutes === 'number'
+          ? input.duration_minutes
+          : 30;
+        const kind = input.kind === 'video_call' ? 'video_call' : 'parent_meeting';
+        const subject = typeof input.subject === 'string'
+          ? input.subject.trim().slice(0, 200)
+          : undefined;
+        const note = typeof input.note === 'string'
+          ? input.note.trim().slice(0, 2000)
+          : undefined;
+
+        const res = await internalPost('/api/montree/appointments', {
+          parent_id: parentId,
+          child_id: childId,
+          scheduled_start: scheduledStart,
+          duration_minutes: duration,
+          kind,
+          subject,
+          note,
+        });
+        if (!res.ok) {
+          return { success: false, error: `appointment failed: ${res.status} — ${res.body.slice(0, 200)}` };
+        }
+        return {
+          success: true,
+          data: res.data,
+          result_summary: `${kind} scheduled for ${new Date(startMs).toLocaleString(locale || 'en')}`,
+        };
+      }
+
+      case 'create_parent_meeting_record': {
+        const parentId = String(input.parent_id || '').trim();
+        if (!parentId) return { success: false, error: 'parent_id is required' };
+
+        const body: Record<string, unknown> = { parent_id: parentId };
+        if (typeof input.child_id === 'string' && input.child_id.trim().length > 0) {
+          body.child_id = input.child_id.trim();
+        }
+        if (typeof input.meeting_type === 'string') body.meeting_type = input.meeting_type;
+        if (typeof input.status === 'string') body.status = input.status;
+        if (typeof input.held_at === 'string') body.held_at = input.held_at;
+        if (typeof input.scheduled_at === 'string') body.scheduled_at = input.scheduled_at;
+        if (typeof input.duration_minutes === 'number') body.duration_minutes = input.duration_minutes;
+        if (locale) body.locale = locale;
+
+        const res = await internalPost('/api/montree/admin/parent-meetings', body);
+        if (!res.ok) {
+          return { success: false, error: `create meeting failed: ${res.status}` };
+        }
+        const d = res.data as { meeting?: { id: string; meeting_type: string } };
+        return {
+          success: true,
+          data: res.data,
+          result_summary: `${d.meeting?.meeting_type ?? 'meeting'} recorded (${d.meeting?.id?.slice(0, 8) ?? '?'})`,
+        };
+      }
+
+      case 'update_parent_meeting': {
+        const meetingId = String(input.meeting_id || '').trim();
+        if (!meetingId) return { success: false, error: 'meeting_id is required' };
+
+        const body: Record<string, unknown> = {};
+        if (typeof input.status === 'string') body.status = input.status;
+        if (typeof input.outcome_notes === 'string') body.outcome_notes = input.outcome_notes;
+        if (typeof input.held_at === 'string') body.held_at = input.held_at;
+        if (typeof input.duration_minutes === 'number') body.duration_minutes = input.duration_minutes;
+        if (Object.keys(body).length === 0) {
+          return { success: false, error: 'no editable fields supplied' };
+        }
+        const res = await internalPatch(
+          `/api/montree/admin/parent-meetings?id=${encodeURIComponent(meetingId)}`,
+          body
+        );
+        if (!res.ok) {
+          return { success: false, error: `update meeting failed: ${res.status}` };
+        }
+        return {
+          success: true,
+          data: res.data,
+          result_summary: 'meeting updated',
+        };
+      }
+
+      case 'set_parent_recording_consent': {
+        const parentId = String(input.parent_id || '').trim();
+        const consent = input.recording_consent_on_file === true;
+        if (!parentId) return { success: false, error: 'parent_id is required' };
+        if (typeof input.recording_consent_on_file !== 'boolean') {
+          return { success: false, error: 'recording_consent_on_file must be boolean' };
+        }
+        const res = await internalPatch(
+          `/api/montree/admin/parents/${encodeURIComponent(parentId)}`,
+          { recording_consent_on_file: consent }
+        );
+        if (!res.ok) {
+          return { success: false, error: `consent toggle failed: ${res.status}` };
+        }
+        return {
+          success: true,
+          data: { recording_consent_on_file: consent },
+          result_summary: consent ? 'consent on file' : 'consent revoked',
         };
       }
 

@@ -11,13 +11,17 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import {
   ChevronLeft,
   Mic,
   Phone,
   FileText,
   AlertCircle,
+  Download,
+  Trash2,
+  CheckCircle2,
+  XCircle,
 } from 'lucide-react';
 
 const T = {
@@ -70,6 +74,7 @@ interface ParentInfo {
     school_id: string;
     name: string;
     email: string | null;
+    recording_consent_on_file?: boolean;
   };
   profile: ProfileShape | null;
 }
@@ -90,6 +95,7 @@ interface MeetingRow {
 
 export default function ParentPage() {
   const params = useParams();
+  const router = useRouter();
   const parentId = String(params.parentId || '');
 
   const [info, setInfo] = useState<ParentInfo | null>(null);
@@ -98,6 +104,9 @@ export default function ParentPage() {
   const [loading, setLoading] = useState(true);
   const [profileMigrationPending, setProfileMigrationPending] = useState(false);
   const [meetingsMigrationPending, setMeetingsMigrationPending] = useState(false);
+  const [consentBusy, setConsentBusy] = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -248,7 +257,7 @@ export default function ParentPage() {
             )}
 
             {/* Action row */}
-            <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 24 }}>
+            <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 16 }}>
               <Link
                 href={`/montree/admin/parents/${parentId}/onboard`}
                 style={primaryButtonStyle}
@@ -261,6 +270,187 @@ export default function ParentPage() {
               >
                 <Phone size={16} /> Record new meeting
               </Link>
+            </div>
+
+            {/* Privacy actions row */}
+            <div
+              style={{
+                display: 'flex',
+                gap: 10,
+                flexWrap: 'wrap',
+                marginBottom: 24,
+                padding: '12px 14px',
+                background: T.card,
+                border: T.cardBorder,
+                borderRadius: 12,
+                alignItems: 'center',
+              }}
+            >
+              {info.parent.recording_consent_on_file !== undefined && (
+                <button
+                  onClick={async () => {
+                    if (!info.parent) return;
+                    setConsentBusy(true);
+                    try {
+                      const next = !info.parent.recording_consent_on_file;
+                      const res = await fetch(
+                        `/api/montree/admin/parents/${encodeURIComponent(parentId)}`,
+                        {
+                          method: 'PATCH',
+                          headers: { 'content-type': 'application/json' },
+                          body: JSON.stringify({ recording_consent_on_file: next }),
+                        }
+                      );
+                      if (res.ok) {
+                        setInfo((prev) =>
+                          prev
+                            ? {
+                                ...prev,
+                                parent: {
+                                  ...prev.parent,
+                                  recording_consent_on_file: next,
+                                },
+                              }
+                            : prev
+                        );
+                      } else {
+                        setErrorMsg(`Consent toggle failed (HTTP ${res.status})`);
+                      }
+                    } catch (err) {
+                      setErrorMsg(err instanceof Error ? err.message : 'unknown');
+                    } finally {
+                      setConsentBusy(false);
+                    }
+                  }}
+                  disabled={consentBusy}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 6,
+                    padding: '8px 14px',
+                    borderRadius: 8,
+                    fontSize: 13,
+                    cursor: consentBusy ? 'wait' : 'pointer',
+                    background: info.parent.recording_consent_on_file
+                      ? 'rgba(52,211,153,0.18)'
+                      : 'rgba(255,255,255,0.04)',
+                    border: info.parent.recording_consent_on_file
+                      ? '1px solid rgba(52,211,153,0.55)'
+                      : '1px solid rgba(255,255,255,0.10)',
+                    color: info.parent.recording_consent_on_file
+                      ? T.emerald
+                      : T.textSecondary,
+                  }}
+                >
+                  {info.parent.recording_consent_on_file ? (
+                    <>
+                      <CheckCircle2 size={14} /> Recording consent on file
+                    </>
+                  ) : (
+                    <>
+                      <XCircle size={14} /> No recording consent on file
+                    </>
+                  )}
+                </button>
+              )}
+              <a
+                href={`/api/montree/admin/parents/${encodeURIComponent(parentId)}/export`}
+                download
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 6,
+                  padding: '8px 14px',
+                  borderRadius: 8,
+                  fontSize: 13,
+                  cursor: 'pointer',
+                  background: 'rgba(255,255,255,0.04)',
+                  border: '1px solid rgba(255,255,255,0.10)',
+                  color: T.textSecondary,
+                  textDecoration: 'none',
+                }}
+              >
+                <Download size={14} /> Export data (GDPR)
+              </a>
+              <div style={{ marginLeft: 'auto' }}>
+                {deleteConfirm ? (
+                  <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                    <span style={{ fontSize: 12, color: 'rgba(255,180,180,0.92)' }}>
+                      Delete parent + all data?
+                    </span>
+                    <button
+                      onClick={async () => {
+                        setDeleting(true);
+                        try {
+                          const res = await fetch(
+                            `/api/montree/admin/parents/${encodeURIComponent(parentId)}`,
+                            {
+                              method: 'DELETE',
+                              headers: { 'content-type': 'application/json' },
+                              body: JSON.stringify({ reason: 'principal deleted via UI' }),
+                            }
+                          );
+                          if (res.ok) {
+                            router.push('/montree/admin/parents');
+                          } else {
+                            setErrorMsg(`Delete failed (HTTP ${res.status})`);
+                            setDeleteConfirm(false);
+                          }
+                        } catch (err) {
+                          setErrorMsg(err instanceof Error ? err.message : 'unknown');
+                          setDeleteConfirm(false);
+                        } finally {
+                          setDeleting(false);
+                        }
+                      }}
+                      disabled={deleting}
+                      style={{
+                        padding: '6px 12px',
+                        borderRadius: 8,
+                        fontSize: 12,
+                        cursor: deleting ? 'wait' : 'pointer',
+                        background: 'rgba(220,50,50,0.20)',
+                        border: '1px solid rgba(220,50,50,0.55)',
+                        color: 'rgba(255,180,180,0.95)',
+                      }}
+                    >
+                      {deleting ? 'Deleting…' : 'Yes, delete'}
+                    </button>
+                    <button
+                      onClick={() => setDeleteConfirm(false)}
+                      style={{
+                        padding: '6px 12px',
+                        borderRadius: 8,
+                        fontSize: 12,
+                        cursor: 'pointer',
+                        background: 'transparent',
+                        border: '1px solid rgba(255,255,255,0.10)',
+                        color: T.textSecondary,
+                      }}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => setDeleteConfirm(true)}
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: 6,
+                      padding: '8px 14px',
+                      borderRadius: 8,
+                      fontSize: 13,
+                      cursor: 'pointer',
+                      background: 'transparent',
+                      border: '1px solid rgba(255,255,255,0.10)',
+                      color: T.textMuted,
+                    }}
+                  >
+                    <Trash2 size={14} /> Delete
+                  </button>
+                )}
+              </div>
             </div>
 
             {/* Profile card */}
