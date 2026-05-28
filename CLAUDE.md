@@ -263,10 +263,11 @@ When you come back from a context refresh, run these in order. Full breakdown in
 -- /Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/whale/migrations/237_meeting_dossiers.sql
 ```
 
-Then realign the 2 desynced principal logins (Tredoux + Phillip Ahn):
+Then realign the 2 desynced principal logins (Whale Class + Phillip Ahn):
 
 ```sql
--- Tredoux (Whale Class) — login: XVYHHX
+-- Whale Class principal row — login: XVYHHX
+-- (Hand-over: name changes to 'Principal Leu' in the next block.)
 UPDATE montree_school_admins
 SET password_hash = 'fe3eb5469e2863a04a4b63d2432368f1f436101128afea1a55599eea1968448f',
     updated_at = NOW()
@@ -279,6 +280,19 @@ SET password_hash = '485c0d2fbf7e9b72812ef00e820c5258602e41547fd8248cd58e6cac659
     updated_at = NOW()
 WHERE id = '7e73ab78-f5db-474b-b27a-ede3615d10d4'
   AND login_code = 'RGCCQR';
+```
+
+Then hand over the Whale Class principal seat from Tredoux to Principal Leu:
+
+```sql
+UPDATE montree_school_admins
+SET name = 'Principal Leu',
+    email = NULL,
+    updated_at = NOW()
+WHERE id = '16eec1c0-bfb5-4edf-a160-059bb41803fb';
+-- After this: Tracy greets her as 'Hi, Principal Leu'; parent reports
+-- sign '— Principal Leu'. Tredoux verbally hands XVYHHX to Leu in
+-- person. He logs in via teacher portal (V8F8V9) going forward.
 ```
 
 Verify clean:
@@ -7868,6 +7882,8 @@ Comprehensive update to the Active Reply Threads section reflecting all Session 
 ### Whale Class Data
 - School ID: `c6280fae-567c-45ed-ad4d-934eae79aabc` (Tredoux House)
 - Classroom ID: `51e7adb6-cd18-4e03-b707-eceb0a1d2e69` (Whale Class)
+- **Principal: Principal Leu** (handed over from Tredoux on May 28, 2026; row id `16eec1c0-bfb5-4edf-a160-059bb41803fb`; login `XVYHHX`; email NULL). Tracy memories from before the handover are still attached to this `principal_id` — they now belong to Principal Leu's memory stream. Wipe with `DELETE FROM montree_principal_memory WHERE principal_id = '16eec1c0-bfb5-4edf-a160-059bb41803fb';` if Leu wants a fresh start.
+- **Lead teacher: Tredoux** (login `V8F8V9` on `montree_teachers`, founder of the school, now operating purely as the classroom teacher).
 - 20 students: Amy, Austin, Eric, Gengerlyn, Hayden, Henry, Jimmy, Joey, Kayla, Kevin, KK, Leo, Lucky, MaoMao, MingXi, NiuNiu, Rachel, Segina, Stella, YueZe
 
 ---

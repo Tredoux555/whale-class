@@ -75,7 +75,9 @@ COMMIT;
 ### 2. Principal hash-desync realignments (TWO rows currently desynced)
 
 ```sql
--- Tredoux's row (Whale Class principal) — login: XVYHHX
+-- Whale Class principal row — login: XVYHHX
+-- (This row is being handed over from Tredoux to a real principal named Leu.
+-- See section 2b below for the rename SQL.)
 UPDATE montree_school_admins
 SET password_hash = 'fe3eb5469e2863a04a4b63d2432368f1f436101128afea1a55599eea1968448f',
     updated_at = NOW()
@@ -89,6 +91,46 @@ SET password_hash = '485c0d2fbf7e9b72812ef00e820c5258602e41547fd8248cd58e6cac659
 WHERE id = '7e73ab78-f5db-474b-b27a-ede3615d10d4'
   AND login_code = 'RGCCQR';
 ```
+
+### 2b. Whale Class principal handover — Tredoux → Principal Leu
+
+Tredoux's been holding the principal seat on Whale Class while running the
+classroom as a teacher. A real principal named Leu is taking over the seat.
+
+Decisions locked (per Session 133 epilogue):
+- Display name: **Principal Leu** (Tracy greets her as "Hi, Principal Leu";
+  parent reports sign "— Principal Leu")
+- Email: **NULL** (no system emails sent; Leu logs in by code only)
+- Login code: **keep XVYHHX** (Tredoux verbally hands it to Leu in person;
+  he stops using principal access — his teacher login is `V8F8V9`)
+
+```sql
+UPDATE montree_school_admins
+SET name = 'Principal Leu',
+    email = NULL,
+    updated_at = NOW()
+WHERE id = '16eec1c0-bfb5-4edf-a160-059bb41803fb';
+
+-- Verify
+SELECT id, name, email, login_code, role, is_active
+FROM montree_school_admins
+WHERE id = '16eec1c0-bfb5-4edf-a160-059bb41803fb';
+-- Expected: name='Principal Leu', email=NULL, login_code='XVYHHX',
+--           role='principal', is_active=true
+```
+
+After this lands:
+- Tredoux's PRINCIPAL identity on Whale Class is now Leu's. Don't log into
+  the principal portal as Tredoux any more — log into the teacher portal
+  with `V8F8V9` instead.
+- Migration 195 (`montree_principal_memory`) — Tracy memories are scoped
+  per `principal_id`, not per name. The id (`16eec1c0-...`) stays the same,
+  so anything Tracy has remembered about "Tredoux" stays attached to this
+  row and now shows up as "Principal Leu" memories. If Leu wants a fresh
+  Tracy memory state, run:
+  `DELETE FROM montree_principal_memory WHERE principal_id = '16eec1c0-bfb5-4edf-a160-059bb41803fb';`
+  Otherwise Tracy will remember things about "Tredoux's preferences" until
+  Leu corrects them by chat.
 
 ### 3. Verify clean after running
 
