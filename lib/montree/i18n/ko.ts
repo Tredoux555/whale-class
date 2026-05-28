@@ -1401,6 +1401,7 @@ export const ko: Record<string, string> = {
   'weeklyWrap.generationFailed': '보고서 생성에 실패했습니다. 다시 시도해 주세요.',
   'adminNav.today': '오늘',
   'adminNav.classrooms': '학급',
+  'adminNav.parents': '학부모',
   'adminNav.communication': '소통',
   'adminNav.settings': '설정',
   'adminNav.calendar': '캘린더',

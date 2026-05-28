@@ -1401,6 +1401,7 @@ export const de: Record<string, string> = {
   'weeklyWrap.generationFailed': 'Berichterstellung fehlgeschlagen. Bitte versuchen Sie es erneut.',
   'adminNav.today': 'Heute',
   'adminNav.classrooms': 'Klassen',
+  'adminNav.parents': 'Eltern',
   'adminNav.communication': 'Kommunikation',
   'adminNav.settings': 'Einstellungen',
   'adminNav.calendar': 'Kalender',

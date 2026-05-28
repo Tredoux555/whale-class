@@ -1401,6 +1401,7 @@ export const ru: Record<string, string> = {
   'weeklyWrap.generationFailed': 'Не удалось создать отчёт. Попробуйте ещё раз.',
   'adminNav.today': 'Сегодня',
   'adminNav.classrooms': 'Классы',
+  'adminNav.parents': 'Родители',
   'adminNav.communication': 'Общение',
   'adminNav.settings': 'Настройки',
   'adminNav.calendar': 'Календарь',

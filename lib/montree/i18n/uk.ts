@@ -1401,6 +1401,7 @@ export const uk: Record<string, string> = {
   'weeklyWrap.generationFailed': 'Не вдалося згенерувати звіт. Спробуйте ще раз.',
   'adminNav.today': 'Сьогодні',
   'adminNav.classrooms': 'Класи',
+  'adminNav.parents': 'Батьки',
   'adminNav.communication': 'Спілкування',
   'adminNav.settings': 'Налаштування',
   'adminNav.calendar': 'Календар',

@@ -1459,6 +1459,7 @@ export const es: Record<string, string> = {
   'weeklyWrap.generationFailed': 'No se pudo generar el informe. Probá de nuevo.',
   'adminNav.today': 'Hoy',
   'adminNav.classrooms': 'Aulas',
+  'adminNav.parents': 'Padres',
   'adminNav.communication': 'Comunicación',
   'adminNav.settings': 'Configuración',
   'adminNav.calendar': 'Calendario',
