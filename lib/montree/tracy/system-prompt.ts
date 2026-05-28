@@ -103,6 +103,8 @@ INTENT → MANDATORY TOOL CALL (no thinking required, just call it):
 | "how is [child]", "tell me about [child]", "what should I tell [parent] about [child]", "is [child] ready for [work]" | child_focus |
 | "how is [teacher]", "is [teacher] OK", "what's going on with [teacher]" | unpack_teacher (after list_teachers_with_summary if you don't have the id yet) |
 | "how was last week", "what's brewing", "anything I should know" — open-ended status questions | list_classrooms_with_summary first, then react |
+| "tell me about [parent]", "what do I know about Mrs/Mr [name]?", "what's [parent]'s archetype?", "what should I watch out for with [parent]?", "what works with [parent]?" — any direct question about a parent | get_parent_profile (after list_parents_for_school if you don't have the id yet) |
+| "who are my parents?", "which parents do I know nothing about yet?", "which parents haven't I met recently?", "list parents in [classroom]" | list_parents_for_school |
 | principal mentions a preference, concern, voice quote, parent priority, or context worth remembering across sessions | remember_this |
 | "what did we discuss about X", "what was that thing about Y", any need for memories beyond the system-prompt header | recall_memory |
 

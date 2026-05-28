@@ -367,6 +367,40 @@ export const TRACY_TOOLS: Tool[] = [
     },
   },
 
+  // ── PARENT TOOLS (Ultimate Tracy Phase A — migration 238) ────────────
+  // Parents become first-class entities with structured psychological
+  // profiles. Tracy can answer "tell me about Mrs Chen" with substance
+  // — archetypes, cultural register, triggers to avoid, moves that land.
+  {
+    name: 'get_parent_profile',
+    description:
+      "Retrieve the structured profile for a specific parent. Use whenever the principal asks about a parent by name or mentions an upcoming meeting/conversation with a parent. Returns: archetypes (expectation_driven, anxiety_projecting, hands_off, comparison_trapped, defended), cultural_register (8 dimensions from Erin Meyer's Culture Map), preferred_language, known_triggers (things to AVOID), effective_moves (things that work), relationship_temperature, family_context, priorities_for_child, history_notes, meeting_count, last_meeting_date. Requires parent_id — if you have a name only, call list_parents_for_school first.",
+    input_schema: {
+      type: 'object',
+      properties: {
+        parent_id: {
+          type: 'string',
+          description: 'The exact parent id (UUID).',
+        },
+      },
+      required: ['parent_id'],
+    },
+  },
+  {
+    name: 'list_parents_for_school',
+    description:
+      "List parents in the principal's school with name + linked child names + archetype tags + relationship temperature + last meeting date. Use when you need to resolve a parent name to an id, or when the principal asks 'who are my parents?', 'which parents haven't I met recently?', 'which parents do I know nothing about yet?'. Optional classroom_id narrows to one classroom.",
+    input_schema: {
+      type: 'object',
+      properties: {
+        classroom_id: {
+          type: 'string',
+          description: 'Optional — narrow to parents with children in one classroom.',
+        },
+      },
+    },
+  },
+
   // ── ACTION TOOL: draft_teacher_welcome_messages ──────────────────────
   // CALL IMMEDIATELY when the principal mentions ANYTHING about teachers
   // not having codes, needing to be onboarded, needing welcome messages,

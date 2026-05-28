@@ -56,6 +56,16 @@ import { getAILanguageInstruction } from '@/lib/montree/i18n/locale-config';
 // cultural, and de-escalation frameworks instead of just the hard-coded
 // rules in PARENT_MEETING_PREP_SYSTEM_PROMPT.
 import { getTracyKnowledge } from '../knowledge/loader';
+// Ultimate Tracy Phase A — load the parent's rich structured profile
+// (archetypes, cultural register, triggers, moves, family context) so
+// Section 5 of the dossier personalises to THIS parent instead of just
+// to inferred guru_parent_states. Returns null gracefully when migration
+// 238 isn't yet run or no profile exists yet.
+import {
+  resolveParentForChild,
+  loadParentProfile,
+  renderParentProfileForPrompt,
+} from '@/lib/montree/parent-profile/loader';
 
 // Sonnet 4.6 is our canonical "deliberate output" model. Don't downgrade to
 // Haiku here — the dossier is the high-stakes artifact this whole feature
@@ -659,9 +669,15 @@ export async function preparePMeeting(
   }
 
   const phrases = inferPatternPhrases(meetingPurpose);
-  console.log(`${_tracyDiag} fetching_context+guru+pattern (parallel) phrases=${phrases.positives.length}`);
+  console.log(`${_tracyDiag} fetching_context+guru+pattern+parent_profile (parallel) phrases=${phrases.positives.length}`);
 
-  const [contextRes, guruRes, patternRes] = await Promise.all([
+  // Ultimate Tracy Phase A — fourth parallel branch: resolve the child's
+  // parent (preferring one named in meeting_purpose, falling back to the
+  // first linked parent) → load that parent's full structured profile if
+  // migration 238 has been run. Failure modes (no junction rows, missing
+  // migration, no profile yet) all degrade to `null` so the existing
+  // dossier flow continues unchanged for back-compat.
+  const [contextRes, guruRes, patternRes, resolvedParent] = await Promise.all([
     fetchChildContext(
       {
         id: childRow.id,
@@ -696,7 +712,17 @@ export async function preparePMeeting(
       },
       supabase
     ),
+    resolveParentForChild(supabase, childId, schoolId, meetingPurpose),
   ]);
+
+  // Phase A — load the parent profile if we resolved one. The loader
+  // returns null gracefully on missing-migration / missing-profile.
+  const parentProfile = resolvedParent
+    ? await loadParentProfile(supabase, resolvedParent.id, schoolId)
+    : null;
+  console.log(
+    `${_tracyDiag} parent_profile resolvedParent=${resolvedParent?.id ?? '(none)'} loadedProfile=${!!parentProfile}`
+  );
 
   if (!guruRes.ok || !patternRes.ok) {
     // Non-fatal — we degrade gracefully if either fails. The dossier may
@@ -727,6 +753,12 @@ export async function preparePMeeting(
   const fenceNonce = randomBytes(12).toString('hex');
   const beginFence = `[BEGIN_PRINCIPAL_INPUT_${fenceNonce}]`;
   const endFence = `[END_PRINCIPAL_INPUT_${fenceNonce}]`;
+
+  // Phase A — rendered parent profile block, empty string when no profile.
+  // Section 5 of the dossier ("The parent") should now lead from this
+  // structured data when present. Falls back to the auto-inferred state
+  // below when empty.
+  const parentProfileBlock = renderParentProfileForPrompt(parentProfile);
 
   const structuredContext = `# CHILD
 Name: ${ctx.child.name}${classroomName ? ` (classroom: ${classroomName})` : ''}
@@ -760,6 +792,7 @@ ${
     : '(no game plan on file)'
 }
 
+${parentProfileBlock ? `${parentProfileBlock}\n` : ''}
 # PARENT — AUTO-INFERRED STATE (from guru_parent_states)
 ${parentStateSummary}
 
