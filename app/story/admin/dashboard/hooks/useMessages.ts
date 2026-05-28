@@ -15,6 +15,14 @@ export const useMessages = (
   const [showExpired, setShowExpired] = useState(false);
   const [savedToVault, setSavedToVault] = useState<Set<number>>(new Set());
   const [savingToVault, setSavingToVault] = useState<number | null>(null);
+  // Inline error state keyed by message id. Previous version used
+  // window.alert() which iOS Home-Screen PWAs silently suppress —
+  // the user saw the save button toggle on/off with no feedback.
+  // Now the error renders inline next to the failing message.
+  const [vaultSaveError, setVaultSaveError] = useState<{
+    messageId: number;
+    message: string;
+  } | null>(null);
 
   const loadMessages = useCallback(async () => {
     const session = getSession();
@@ -34,37 +42,77 @@ export const useMessages = (
 
   const saveMessageToVault = useCallback(async (messageId: number, mediaUrl: string, filename: string | null) => {
     setSavingToVault(messageId);
+    // Clear any prior error on this message — a retry should reset the
+    // displayed error before showing the spinner.
+    setVaultSaveError((prev) =>
+      prev && prev.messageId === messageId ? null : prev
+    );
+
+    const setError = (message: string, logCtx?: unknown) => {
+      // Console log so devs can diagnose on iOS Safari remote-inspect
+      // (alerts are suppressed in PWA mode, so this is the only visible
+      // signal in the inspector).
+      console.error('[vault save]', message, logCtx ?? '');
+      setVaultSaveError({ messageId, message });
+    };
+
     try {
       const session = getSession();
+      if (!session) {
+        setError('Not signed in. Refresh the page and sign in again.');
+        return;
+      }
       // 🚨 Session 113 V2 Story audit F-2.1 — vault token is mandatory on
       // the server route. Without it, the call 401s with vault_locked=true.
       const vaultToken = getVaultToken ? getVaultToken() : null;
       if (!vaultToken) {
-        alert('Vault locked — please unlock the vault first');
-        setSavingToVault(null);
+        setError('Vault is locked. Open the Vault tab and re-enter the password.');
         return;
       }
-      const res = await fetch('/api/story/admin/vault/save-from-message', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session}`,
-          'x-vault-token': vaultToken,
-        },
-        body: JSON.stringify({ messageId, mediaUrl, filename })
-      });
+      let res: Response;
+      try {
+        res = await fetch('/api/story/admin/vault/save-from-message', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session}`,
+            'x-vault-token': vaultToken,
+          },
+          body: JSON.stringify({ messageId, mediaUrl, filename })
+        });
+      } catch (err) {
+        setError('Network error — check your connection and try again.', err);
+        return;
+      }
       if (res.ok) {
         setSavedToVault(prev => new Set(prev).add(messageId));
-      } else {
-        const data = await res.json();
-        alert(data.error || 'Save failed');
+        // Clear any stale error display on this message.
+        setVaultSaveError((prev) =>
+          prev && prev.messageId === messageId ? null : prev
+        );
+        return;
       }
-    } catch {
-      alert('Save to vault failed');
+      // Non-OK — extract the server's error message if it's JSON, fall
+      // back to a status hint otherwise. iOS Safari sometimes serves a
+      // 0-status (opaque) response on background-suspended PWAs; surface
+      // that distinctly so the user knows to re-open the app.
+      let serverError = `Save failed (HTTP ${res.status})`;
+      try {
+        const data = await res.json();
+        if (data && typeof data.error === 'string') serverError = data.error;
+        if (res.status === 401) serverError = 'Vault session expired. Re-enter the vault password.';
+      } catch {
+        /* keep the status fallback */
+      }
+      setError(serverError, { status: res.status });
     } finally {
       setSavingToVault(null);
     }
   }, [getSession, getVaultToken]);
+
+  // Clear the inline error explicitly (e.g. user dismisses the toast or
+  // navigates away from the failing message).
+  const clearVaultSaveError = useCallback(() => setVaultSaveError(null), []);
 
   return {
     messages,
@@ -73,6 +121,8 @@ export const useMessages = (
     setShowExpired,
     savedToVault,
     savingToVault,
+    vaultSaveError,
+    clearVaultSaveError,
     loadMessages,
     saveMessageToVault
   };
