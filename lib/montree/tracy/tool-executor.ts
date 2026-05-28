@@ -152,31 +152,62 @@ export async function executeTracyTool(
   // principal's cookie so each inner endpoint re-verifies via
   // verifySchoolRequest + does its own school-scoping + consent-gating
   // (defense in depth). Tracy never bypasses the inner endpoint's auth.
+  //
+  // 🚨 Hard 30s timeout via AbortController. Without this, a slow inner
+  // route could block the SSE response indefinitely — Tracy would appear
+  // hung to the principal with no error surfaced.
+  const INTERNAL_TIMEOUT_MS = 30_000;
   const internalPost = async (path: string, body: Record<string, unknown>) => {
-    const res = await fetch(`${origin}${path}`, {
-      method: 'POST',
-      headers: { cookie: cookieHeader, 'content-type': 'application/json' },
-      body: JSON.stringify(body),
-    });
-    if (!res.ok) {
-      const errBody = await res.text().catch(() => '');
-      return { ok: false as const, status: res.status, body: errBody };
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), INTERNAL_TIMEOUT_MS);
+    try {
+      const res = await fetch(`${origin}${path}`, {
+        method: 'POST',
+        headers: { cookie: cookieHeader, 'content-type': 'application/json' },
+        body: JSON.stringify(body),
+        signal: controller.signal,
+      });
+      if (!res.ok) {
+        const errBody = await res.text().catch(() => '');
+        return { ok: false as const, status: res.status, body: errBody };
+      }
+      const data = await res.json();
+      return { ok: true as const, status: res.status, data };
+    } catch (err) {
+      return {
+        ok: false as const,
+        status: 0,
+        body: err instanceof Error ? err.message : 'internalPost failed',
+      };
+    } finally {
+      clearTimeout(timer);
     }
-    const data = await res.json();
-    return { ok: true as const, status: res.status, data };
   };
   const internalPatch = async (path: string, body: Record<string, unknown>) => {
-    const res = await fetch(`${origin}${path}`, {
-      method: 'PATCH',
-      headers: { cookie: cookieHeader, 'content-type': 'application/json' },
-      body: JSON.stringify(body),
-    });
-    if (!res.ok) {
-      const errBody = await res.text().catch(() => '');
-      return { ok: false as const, status: res.status, body: errBody };
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), INTERNAL_TIMEOUT_MS);
+    try {
+      const res = await fetch(`${origin}${path}`, {
+        method: 'PATCH',
+        headers: { cookie: cookieHeader, 'content-type': 'application/json' },
+        body: JSON.stringify(body),
+        signal: controller.signal,
+      });
+      if (!res.ok) {
+        const errBody = await res.text().catch(() => '');
+        return { ok: false as const, status: res.status, body: errBody };
+      }
+      const data = await res.json();
+      return { ok: true as const, status: res.status, data };
+    } catch (err) {
+      return {
+        ok: false as const,
+        status: 0,
+        body: err instanceof Error ? err.message : 'internalPatch failed',
+      };
+    } finally {
+      clearTimeout(timer);
     }
-    const data = await res.json();
-    return { ok: true as const, status: res.status, data };
   };
 
   try {

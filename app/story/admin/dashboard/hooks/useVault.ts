@@ -208,9 +208,26 @@ export const useVault = (getSession: () => string | null) => {
     const errors: string[] = [];
     const newImageFileIds: number[] = [];
 
+    // 🚨 Mirror Railway proxy cap server-side. Files above this size will
+    // be rejected with 413 from the route, but skipping them client-side
+    // gives a faster + clearer error to the user.
+    const MAX_BYTES = 30 * 1024 * 1024;
+
     for (let i = 0; i < list.length; i++) {
       const file = list[i];
       try {
+        // Client-side pre-check so 80MB iPhone clips don't sit waiting
+        // 30s for a server 413.
+        if (file.size > MAX_BYTES) {
+          const mb = (file.size / 1024 / 1024).toFixed(1);
+          errors.push(`${file.name}: too large (${mb}MB) — limit 30MB`);
+          continue;
+        }
+
+        console.log(
+          `[Vault Upload] starting ${file.name} (${(file.size / 1024 / 1024).toFixed(2)}MB, type=${file.type})`
+        );
+
         const formData = new FormData();
         formData.append('file', file);
 
@@ -220,16 +237,23 @@ export const useVault = (getSession: () => string | null) => {
           body: formData,
         });
 
-        const data = await res.json();
-        if (res.ok) {
-          if (data.file && isImageFile(data.file.filename || file.name)) {
+        const data = await res.json().catch(() => ({}));
+        if (res.ok && data.file) {
+          console.log(`[Vault Upload] SAVED ${file.name} → row ${data.file.id}`);
+          if (isImageFile(data.file.filename || file.name)) {
             newImageFileIds.push(data.file.id);
           }
         } else {
-          errors.push(`${file.name}: ${data.error || 'Upload failed'}`);
+          const msg =
+            data.error ||
+            `HTTP ${res.status}${res.statusText ? ` ${res.statusText}` : ''}`;
+          console.warn(`[Vault Upload] FAILED ${file.name}: ${msg}`);
+          errors.push(`${file.name}: ${msg}`);
         }
-      } catch {
-        errors.push(`${file.name}: network error`);
+      } catch (err) {
+        const m = err instanceof Error ? err.message : 'unknown';
+        console.warn(`[Vault Upload] threw on ${file.name}:`, m);
+        errors.push(`${file.name}: ${m}`);
       } finally {
         setUploadProgress({ done: i + 1, total: list.length });
       }

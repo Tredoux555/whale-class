@@ -24,18 +24,29 @@ export async function embedText(text: string): Promise<number[]> {
     throw new Error('empty text');
   }
 
-  const res = await fetch(OPENAI_EMBEDDING_URL, {
-    method: 'POST',
-    headers: {
-      'content-type': 'application/json',
-      Authorization: `Bearer ${apiKey}`,
-    },
-    body: JSON.stringify({
-      model: EMBEDDING_MODEL,
-      input: trimmed.slice(0, 8000), // safe upper bound
-      encoding_format: 'float',
-    }),
-  });
+  // 🚨 Hard 15s timeout. Without this, a hung OpenAI fetch blocks
+  // prepare_parent_meeting indefinitely (the orchestrator's
+  // TOTAL_TIMEOUT_MS fires first and the principal sees silence).
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 15_000);
+  let res: Response;
+  try {
+    res = await fetch(OPENAI_EMBEDDING_URL, {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        Authorization: `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
+        model: EMBEDDING_MODEL,
+        input: trimmed.slice(0, 8000),
+        encoding_format: 'float',
+      }),
+      signal: controller.signal,
+    });
+  } finally {
+    clearTimeout(timer);
+  }
 
   if (!res.ok) {
     const body = await res.text().catch(() => '');

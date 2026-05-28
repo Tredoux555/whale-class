@@ -691,22 +691,65 @@ export default function StoryViewer() {
     );
   };
 
-  // Loading state — matches the dark-slate Montree platform theme so the
-  // flash before the story loads doesn't break the visual continuity.
+  // Loading state — Montree dark-forest cockpit theme. Same #0a1a0f base +
+  // radial emerald glow as `/montree/admin` so the flash before the story
+  // loads is visually continuous with the rest of the platform.
   if (!story) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
-        <div className="text-lg text-slate-400">Loading classroom activities…</div>
+      <div
+        style={{
+          minHeight: '100dvh',
+          background: '#0a1a0f',
+          position: 'relative',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          fontFamily: '"Inter", -apple-system, BlinkMacSystemFont, sans-serif',
+          color: 'rgba(255,255,255,0.55)',
+          fontSize: 14,
+        }}
+      >
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            pointerEvents: 'none',
+            background:
+              'radial-gradient(ellipse 1100px 900px at 88% 8%, rgba(39,129,90,0.32), transparent 60%)',
+            zIndex: 0,
+          }}
+        />
+        <div style={{ position: 'relative', zIndex: 1 }}>Loading classroom activities…</div>
       </div>
     );
   }
 
   return (
-    // Themed to mirror the whale-class admin dark-slate gradient — gives the
-    // Story system the same Montree platform feel as the rest of the suite.
-    // The parchment-style story card inside (lines below) keeps its warm
-    // amber tone so the actual READING surface still feels like a letter.
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-4 sm:p-8">
+    // Themed to mirror the Montree dark-forest cockpit (`/montree/admin`) —
+    // same #0a1a0f + radial emerald glow as the rest of the platform. The
+    // parchment-style story card inside keeps its warm cream tone so the
+    // actual READING surface still feels like a letter.
+    <div
+      style={{
+        minHeight: '100dvh',
+        background: '#0a1a0f',
+        position: 'relative',
+        fontFamily: '"Inter", -apple-system, BlinkMacSystemFont, sans-serif',
+      }}
+      className="p-4 sm:p-8"
+    >
+      {/* Radial emerald glow — matches /montree/admin cockpit exactly */}
+      <div
+        style={{
+          position: 'fixed',
+          inset: 0,
+          pointerEvents: 'none',
+          background:
+            'radial-gradient(ellipse 1100px 900px at 88% 8%, rgba(39,129,90,0.32), transparent 60%)',
+          zIndex: 0,
+        }}
+      />
+
       <PullRefreshIndicator
         pullDistance={pullState.pullDistance}
         isRefreshing={pullState.isRefreshing}
@@ -752,7 +795,10 @@ export default function StoryViewer() {
         </div>
       )}
 
-      <div className="max-w-3xl mx-auto bg-white rounded-lg shadow-xl p-12">
+      <div
+        className="max-w-3xl mx-auto bg-white rounded-lg shadow-xl p-12"
+        style={{ position: 'relative', zIndex: 1 }}
+      >
         <h1 className="text-4xl font-bold mb-4 text-center text-gray-800 font-serif">
           {story.title}
         </h1>
