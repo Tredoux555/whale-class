@@ -20,6 +20,7 @@ import {
   Mic,
   Calendar,
   CalendarDays,
+  Users,
 } from 'lucide-react';
 // 🚨 Perf Tier 2.4 (PERF_HEALTH_CHECK.md) — Tracy panel is 1,200 lines and
 // mounted on every /montree/admin/* page. Loading it eagerly added ~30-50 KB
@@ -81,6 +82,15 @@ const NAV: NavItem[] = [
     label: 'adminNav.classrooms',
     icon: GraduationCap,
     match: (p) => p.startsWith('/montree/admin/classrooms'),
+  },
+  // Ultimate Tracy Phase D — parents are first-class entities. Sits
+  // between Classrooms and Communication so the relational entities
+  // cluster together.
+  {
+    href: '/montree/admin/parents',
+    label: 'adminNav.parents',
+    icon: Users,
+    match: (p) => p.startsWith('/montree/admin/parents'),
   },
   {
     href: '/montree/admin/communication',

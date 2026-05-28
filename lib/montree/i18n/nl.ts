@@ -1401,6 +1401,7 @@ export const nl: Record<string, string> = {
   'weeklyWrap.generationFailed': 'Rapport genereren mislukt. Probeer het opnieuw.',
   'adminNav.today': 'Vandaag',
   'adminNav.classrooms': 'Klassen',
+  'adminNav.parents': 'Ouders',
   'adminNav.communication': 'Communicatie',
   'adminNav.settings': 'Instellingen',
   'adminNav.calendar': 'Agenda',

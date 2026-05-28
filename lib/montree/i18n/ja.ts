@@ -1401,6 +1401,7 @@ export const ja: Record<string, string> = {
   'weeklyWrap.generationFailed': 'レポートの生成に失敗しました。もう一度お試しください。',
   'adminNav.today': '今日',
   'adminNav.classrooms': 'クラス',
+  'adminNav.parents': '保護者',
   'adminNav.communication': 'コミュニケーション',
   'adminNav.settings': '設定',
   'adminNav.calendar': 'カレンダー',

@@ -1620,6 +1620,7 @@ export const zh = {
   'weeklyWrap.generationFailed': '报告生成失败。请重试。',
   'adminNav.today': '今天',
   'adminNav.classrooms': '班级',
+  'adminNav.parents': '家长',
   'adminNav.communication': '沟通',
   'adminNav.settings': '设置',
   'adminNav.calendar': '日历',

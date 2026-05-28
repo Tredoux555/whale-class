@@ -1656,6 +1656,7 @@ export const en = {
   'weeklyWrap.generationFailed': 'Report generation failed. Please try again.',
   'adminNav.today': 'Today',
   'adminNav.classrooms': 'Classrooms',
+  'adminNav.parents': 'Parents',
   'adminNav.communication': 'Communication',
   'adminNav.settings': 'Settings',
   'adminNav.calendar': 'Calendar',

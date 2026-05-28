@@ -1401,6 +1401,7 @@ export const it: Record<string, string> = {
   'weeklyWrap.generationFailed': 'Generazione del rapporto non riuscita. Riprovi.',
   'adminNav.today': 'Oggi',
   'adminNav.classrooms': 'Aule',
+  'adminNav.parents': 'Genitori',
   'adminNav.communication': 'Comunicazione',
   'adminNav.settings': 'Impostazioni',
   'adminNav.calendar': 'Calendario',
