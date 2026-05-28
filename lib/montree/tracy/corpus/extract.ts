@@ -167,11 +167,8 @@ export async function extractCorpusFromAnalysis(
         },
       ],
     });
-    const toolUse = sonnetResp.content.find(
-      (b): b is { type: 'tool_use'; name: string; input: unknown } =>
-        b.type === 'tool_use'
-    );
-    if (toolUse && toolUse.name === 'refine_corpus_entries') {
+    const toolUse = sonnetResp.content.find((b) => b.type === 'tool_use');
+    if (toolUse && toolUse.type === 'tool_use' && toolUse.name === 'refine_corpus_entries') {
       const input = toolUse.input as { entries?: unknown };
       const arr = Array.isArray(input.entries) ? input.entries : [];
       refined = (arr as unknown[])

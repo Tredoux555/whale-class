@@ -238,11 +238,8 @@ export async function POST(
   }
   const generationMs = Date.now() - startMs;
 
-  const toolUse = sonnetResp.content.find(
-    (b): b is { type: 'tool_use'; name: string; input: unknown } =>
-      b.type === 'tool_use'
-  );
-  if (!toolUse || toolUse.name !== 'analyse_parent_meeting') {
+  const toolUse = sonnetResp.content.find((b) => b.type === 'tool_use');
+  if (!toolUse || toolUse.type !== 'tool_use' || toolUse.name !== 'analyse_parent_meeting') {
     return NextResponse.json(
       { error: 'Sonnet did not return analyse_parent_meeting tool call' },
       { status: 502 }
