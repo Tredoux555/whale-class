@@ -78,6 +78,16 @@ export interface TracyToolDeps {
    * callback are caught and logged — never propagated to the caller.
    */
   onProgress?: (evt: TracyToolProgress) => void;
+  /**
+   * Session 135 — streaming callback for prepare_parent_meeting. The
+   * dossier-builder Sonnet call produces ~3-4K tokens over ~15-25s. With
+   * a synchronous call the principal sees nothing for the whole window;
+   * with streaming the brief appears word-by-word at ~3-5s and the
+   * dossier follows in the background. Section is 'brief' or 'dossier'
+   * depending on which side of the <<<DOSSIER>>> delimiter the token
+   * landed on. Delimiters themselves are stripped before emission.
+   */
+  onMeetingStream?: (chunk: { section: 'brief' | 'dossier'; delta: string }) => void;
 }
 
 export async function executeTracyTool(
@@ -93,6 +103,7 @@ export async function executeTracyTool(
     request,
     locale = 'en',
     onProgress,
+    onMeetingStream,
   } = deps;
 
   // Safe progress emitter — wraps the consumer's callback so a buggy listener
@@ -855,8 +866,13 @@ export async function executeTracyTool(
           meetingPurpose,
           parentContext,
           outputFormat,
+          locale,
           anthropic,
           supabase,
+          // Session 135 — wire the streaming callback so brief/dossier
+          // tokens hit the SSE pipe as they land instead of waiting for
+          // the full ~25s synchronous response.
+          onStream: onMeetingStream,
         });
         if (!result.ok) {
           return { success: false, error: result.error || 'dossier failed' };
