@@ -74,7 +74,14 @@ export function PrepareForMeetingButton({
   label,
 }: PrepareForMeetingButtonProps) {
   const { t, locale } = useI18n();
-  const buttonLabel = label ?? t('dossier.button.labelLong');
+  // Variant-aware default: 'pill' lives inline next to a thread title
+  // (short label fits better); 'block' is the chunky child-page CTA
+  // (long label feels right). Explicit `label` prop wins either way.
+  const buttonLabel =
+    label ??
+    (variant === 'pill'
+      ? t('dossier.button.label')
+      : t('dossier.button.labelLong'));
 
   const [state, setState] = useState<State>({ kind: 'idle' });
   const [purpose, setPurpose] = useState<string>(defaultPurpose);

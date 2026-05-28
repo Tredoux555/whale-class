@@ -424,7 +424,9 @@ export default function ThreadPage() {
                 childName={child.name}
                 classroomName={classroom?.name ?? null}
                 variant="pill"
-                label="Prepare for the meeting"
+                // No explicit `label` — the component's i18n default
+                // (`dossier.button.label`, variant-aware) is what we
+                // want. Hardcoding English here defeated the i18n fix.
                 defaultPurpose={thread.subject || ''}
               />
             </div>

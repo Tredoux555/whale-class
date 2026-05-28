@@ -317,6 +317,12 @@ Output: ${outputFormat === 'json' ? 'a single JSON object with one key per dossi
           ? `${signal.active_schools} schools · ${signal.active_children} children · ${signal.active_languages} languages live`
           : 'platform signal unavailable',
       },
+      // The pitch language is what the AGENT picked for THIS pitch
+      // (e.g. agent pitches a Mandarin school → language='zh'). The
+      // printable HTML's <html lang>, date format, and "Prepared:" /
+      // "Sources:" / "Print to PDF" labels should match so the printed
+      // PDF reads as a coherent document.
+      locale: language ?? 'en',
     });
   } else if (outputFormat === 'json') {
     payload = JSON.stringify(
