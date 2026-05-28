@@ -691,11 +691,12 @@ export default function StoryViewer() {
     );
   };
 
-  // Loading state
+  // Loading state — matches the dark-slate Montree platform theme so the
+  // flash before the story loads doesn't break the visual continuity.
   if (!story) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-amber-50 to-orange-100">
-        <div className="text-lg text-gray-600">Loading classroom activities...</div>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+        <div className="text-lg text-slate-400">Loading classroom activities…</div>
       </div>
     );
   }

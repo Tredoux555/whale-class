@@ -47,7 +47,7 @@ export function MessagesTab({
   return (
     <div className="bg-white rounded-lg shadow-sm p-6">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-lg font-bold text-gray-800">💬 Message History</h2>
+        <h2 className="text-lg font-bold text-gray-800">💬 Latest Message</h2>
         <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
           <input
             type="checkbox"
@@ -55,14 +55,14 @@ export function MessagesTab({
             onChange={(e) => onShowExpiredChange(e.target.checked)}
             className="w-4 h-4 rounded border-gray-300"
           />
-          Show expired messages
+          Include expired
         </label>
       </div>
 
       {messages.length === 0 ? (
         <div className="text-center py-8 text-gray-500">
           <div className="text-4xl mb-2">💭</div>
-          <p>No messages sent yet</p>
+          <p>No message currently out — send one above.</p>
         </div>
       ) : (
         <div className="space-y-3">
