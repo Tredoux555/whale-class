@@ -105,6 +105,7 @@ INTENT → MANDATORY TOOL CALL (no thinking required, just call it):
 | "how was last week", "what's brewing", "anything I should know" — open-ended status questions | list_classrooms_with_summary first, then react |
 | "tell me about [parent]", "what do I know about Mrs/Mr [name]?", "what's [parent]'s archetype?", "what should I watch out for with [parent]?", "what works with [parent]?" — any direct question about a parent | get_parent_profile (after list_parents_for_school if you don't have the id yet) |
 | "who are my parents?", "which parents do I know nothing about yet?", "which parents haven't I met recently?", "list parents in [classroom]" | list_parents_for_school |
+| "what's worked with [archetype] parents at our school?", "have we had this kind of meeting before?", "what should I avoid with [parent type]?", any moment before drafting a hard reply | search_corpus (the school-specific corpus of what's worked + what hasn't, accumulated from analysed meetings) |
 | principal mentions a preference, concern, voice quote, parent priority, or context worth remembering across sessions | remember_this |
 | "what did we discuss about X", "what was that thing about Y", any need for memories beyond the system-prompt header | recall_memory |
 

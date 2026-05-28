@@ -334,6 +334,35 @@ export async function POST(
       .eq('school_id', auth.schoolId);
   }
 
+  // Phase C — fire-and-forget corpus extraction. The analysis row now
+  // exists; the extraction job reads corpus_extractions, refines via
+  // Haiku, embeds via OpenAI, persists to montree_tracy_corpus.
+  // Failures inside extract are caught + logged + the analysis row is
+  // marked extracted to prevent retry loops.
+  if (analysisRow.id && corpus_extractions.length > 0) {
+    void (async () => {
+      try {
+        const { extractCorpusFromAnalysis } = await import(
+          '@/lib/montree/tracy/corpus/extract'
+        );
+        const result = await extractCorpusFromAnalysis(
+          analysisRow.id,
+          supabase,
+          anthropic
+        );
+        console.log(
+          '[parent-meeting/analyse] corpus extraction:',
+          result
+        );
+      } catch (err) {
+        console.warn(
+          '[parent-meeting/analyse] corpus extraction failed:',
+          err instanceof Error ? err.message : 'unknown'
+        );
+      }
+    })();
+  }
+
   return NextResponse.json({ analysis: analysisRow });
 }
 

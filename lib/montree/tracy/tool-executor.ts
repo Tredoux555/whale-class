@@ -1070,6 +1070,47 @@ export async function executeTracyTool(
         };
       }
 
+      // ── CORPUS (Ultimate Tracy Phase C) ──────────────────────────
+      case 'search_corpus': {
+        const query = String(input.query || '').trim();
+        if (!query) {
+          return { success: false, error: 'query is required' };
+        }
+        const archetypeRaw =
+          typeof input.archetype === 'string' ? input.archetype.trim() : '';
+        const VALID_ARCHETYPES = new Set([
+          'expectation_driven',
+          'anxiety_projecting',
+          'hands_off',
+          'comparison_trapped',
+          'defended',
+        ]);
+        const archetype = VALID_ARCHETYPES.has(archetypeRaw)
+          ? archetypeRaw
+          : undefined;
+
+        const { searchCorpus } = await import('./corpus/search');
+        const result = await searchCorpus(
+          { schoolId, query, archetype, limit: 8 },
+          supabase
+        );
+        if (!result.ok) {
+          if (result.error === 'migration_pending') {
+            return {
+              success: true,
+              data: { entries: [], migration_pending: true },
+              result_summary: 'corpus schema not yet migrated',
+            };
+          }
+          return { success: false, error: result.error || 'search failed' };
+        }
+        return {
+          success: true,
+          data: { entries: result.entries },
+          result_summary: `${result.entries.length} corpus entr${result.entries.length === 1 ? 'y' : 'ies'}${archetype ? ` for archetype=${archetype}` : ''}`,
+        };
+      }
+
       // ── KNOWLEDGE: consult_tracy_knowledge ───────────────────────
       // Session 136 — load one knowledge file in full so Tracy can
       // synthesize a chat reply with framework depth. No school
