@@ -63,6 +63,33 @@ Expected response: `{"ok": true, "total_ms": <50-300>, "steps": [...]}`. If `ok=
 
 ---
 
+## 2b. Recurring keepalive ping (Session 135 — fixes the slow login page)
+
+**What:** Hits `/api/ping` every 10 minutes to keep the Railway container warm. Cold-start adds 3-7s to the FIRST request after a quiet period — disastrous for the login page which is often the first hit when a teacher comes back to montree.xyz mid-day. The keepalive cron eliminates the cold-start penalty entirely.
+
+**Schedule:** Every 10 minutes. `*/10 * * * *`
+
+**Command:**
+
+```bash
+curl -sS 'https://montree.xyz/api/ping'
+```
+
+No auth header needed — `/api/ping` returns only `{ ok: true, t: <iso> }` and has no DB or AI side effects. Public ping endpoints are standard for keepalive crons.
+
+**Why `/api/ping` and not `/api/warm`:**
+- `/api/warm` (above) is heavier — loads the DB pool + AI SDK modules. Fine to run once after a deploy, but every 10 minutes would burn unnecessary DB connections + log volume.
+- `/api/ping` is the cheapest possible endpoint. <50ms response, no auth, no DB, no imports beyond NextResponse. Its only job is to keep the Node process warm in memory.
+
+**Alternative cron hosts** (if Railway's cron is unavailable):
+- **UptimeRobot** (free) — supports HEAD requests; supports 5-minute intervals. Most reliable for keepalive.
+- **GitHub Actions** — `on: schedule` with cron syntax, hits a URL via curl.
+- **cron-job.org** (free, 1-minute granularity).
+
+**Verification:** after wiring the cron, hit `/montree/login-select` after 30+ minutes of inactivity. Should render in <800ms (was 5s+). If it's still slow, check the cron's request log to confirm it's actually firing.
+
+---
+
 ## 3. Recurring op-expense scheduler
 
 **What:** Scans `montree_recurring_op_expenses` templates daily. For any active template where today's day-of-month ≥ template.day_of_month AND it hasn't fired yet this period, inserts a `finance_transactions` row with `type='op_expense'`. Idempotent via `last_fired_period_month`.
