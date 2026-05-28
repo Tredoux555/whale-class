@@ -26,6 +26,12 @@ interface MessagesTabProps {
   savingToVault: number | null;
   savedToVault: Set<number>;
   onSaveToVault: (messageId: number, mediaUrl: string, filename: string | null) => void;
+  // Inline error from the vault save flow. iOS Home-Screen PWAs swallow
+  // window.alert(); without an inline error the user sees the button
+  // toggle on/off with no feedback. Rendered as a red pill below the row
+  // when the messageId matches.
+  vaultSaveError?: { messageId: number; message: string } | null;
+  onClearVaultSaveError?: () => void;
 }
 
 export function MessagesTab({
@@ -34,7 +40,9 @@ export function MessagesTab({
   onShowExpiredChange,
   savingToVault,
   savedToVault,
-  onSaveToVault
+  onSaveToVault,
+  vaultSaveError,
+  onClearVaultSaveError,
 }: MessagesTabProps) {
   return (
     <div className="bg-white rounded-lg shadow-sm p-6">
@@ -65,6 +73,25 @@ export function MessagesTab({
                 msg.is_expired ? 'bg-gray-50 border-gray-200 opacity-60' : 'bg-blue-50 border-blue-200'
               }`}
             >
+              {/* Vault-save error pill — shown when the save for THIS
+                  message failed. Inline, mobile-friendly, dismissible.
+                  Replaces the suppressed window.alert() on iOS PWAs. */}
+              {vaultSaveError && vaultSaveError.messageId === msg.id && (
+                <div className="mb-3 flex items-start justify-between gap-2 bg-red-50 border border-red-200 text-red-800 text-xs px-3 py-2 rounded">
+                  <span className="leading-snug">
+                    <strong>Save failed:</strong> {vaultSaveError.message}
+                  </span>
+                  {onClearVaultSaveError && (
+                    <button
+                      onClick={onClearVaultSaveError}
+                      aria-label="Dismiss"
+                      className="text-red-600 hover:text-red-800 font-bold leading-none"
+                    >
+                      ×
+                    </button>
+                  )}
+                </div>
+              )}
               <div className="flex items-start justify-between mb-2">
                 <div className="flex items-center gap-2">
                   <span className="inline-block px-2 py-1 bg-gray-200 text-gray-700 text-xs font-semibold rounded">

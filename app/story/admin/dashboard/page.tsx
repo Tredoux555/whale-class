@@ -106,6 +106,8 @@ export default function AdminDashboard() {
     setShowExpired,
     savedToVault,
     savingToVault,
+    vaultSaveError,
+    clearVaultSaveError,
     loadMessages,
     saveMessageToVault
   } = useMessages(getSession, getVaultToken);
@@ -344,6 +346,8 @@ export default function AdminDashboard() {
                 savingToVault={savingToVault}
                 savedToVault={savedToVault}
                 onSaveToVault={saveMessageToVault}
+                vaultSaveError={vaultSaveError}
+                onClearVaultSaveError={clearVaultSaveError}
               />
             )}
 
