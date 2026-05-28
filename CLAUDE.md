@@ -252,11 +252,32 @@ Wave 1 sends bounced for these addresses. None of these are flagged as `bounced`
 
 ---
 
-## 🚨 NEXT SESSION — CALL TO ACTION (queued May 28, 2026 afternoon, post-Session 134)
+## 🚨 NEXT SESSION — CALL TO ACTION (queued May 28, 2026 night, post-Session 135 Ultimate Tracy Marathon)
 
-Session 133's 13-commit branch is MERGED + LIVE on production. Session 134 added 4 fixes on top (i18n / Tracy stability / Story vault mobile). Full session breakdown in `docs/handoffs/SESSION_134_HANDOFF.md`.
+Session 135 shipped the full Ultimate Tracy marathon (Phases A-E + cross-cut F) — parents are now first-class entities with structured profiles + meeting recording + transcription + Sonnet analysis + self-improving corpus + Parents UI tab + privacy controls. Five commits on origin/main, ending at `ae25cb51`. Full session breakdown in `docs/handoffs/ULTIMATE_TRACY_MARATHON_HANDOFF.md`.
 
-### 1. 🚨 Run migration 237 in Supabase — ONLY remaining SQL
+### 1. 🚨 Run 7 migrations in Supabase SQL Editor (numerical order matters)
+
+```
+migrations/238_parent_profiles.sql
+migrations/239_parent_meetings.sql
+migrations/240_parent_meeting_transcripts.sql
+migrations/241_parent_meeting_analyses.sql   (includes 241b FK retro-add)
+migrations/242_tracy_corpus.sql              (CREATE EXTENSION vector)
+migrations/242b_tracy_corpus_search_fn.sql
+migrations/243_parent_consent_flags.sql
+
+# Plus the carryover from Session 134:
+migrations/237_meeting_dossiers.sql
+```
+
+Until all 8 run, the new features API-respond `migration_pending=true` gracefully and the UI surfaces friendly fallbacks. Tracy's parent-meeting dossier still ships without parent-profile + corpus data — just without the depth.
+
+### 2. Walk the 10-step verification checklist
+
+In `docs/handoffs/ULTIMATE_TRACY_MARATHON_HANDOFF.md` Section 11 — covers voice onboarding, dossier integration, mock meeting recording, encrypted-transcript verification, profile-update proposals review, audio-never-persisted check, Tracy corpus retrieval in chat, Parents tab nav, super-admin corpus monitor.
+
+### 3. (Original) Run migration 237 in Supabase — STILL pending
 
 ```sql
 -- Paste in Supabase SQL Editor:
@@ -322,6 +343,130 @@ Full detail in `docs/handoffs/HEALTH_CHECK_SESSION_131.md`.
 ---
 
 ## RECENT STATUS (May 28, 2026)
+
+### 🧠 Session 135 — Ultimate Tracy Marathon: parents-as-first-class + meeting recording + self-improving corpus + Parents UI + privacy (May 28, 2026 evening, overnight build)
+
+**5 commits pushed to main, ending at `ae25cb51`. The full Ultimate Tracy marathon (Phases A-E + cross-cut audit F) shipped overnight per `docs/handoffs/ULTIMATE_TRACY_MARATHON_HANDOFF.md`.** Tracy now knows every parent in the school by name and archetype, can record + transcribe + analyse meetings end-to-end, learns from every meeting via a self-improving school-specific corpus, and the principal has a Parents tab in nav with full UI to manage all of it.
+
+**🚨 Canonical resume doc:** `docs/handoffs/ULTIMATE_TRACY_MARATHON_HANDOFF.md` — full architectural decisions, file index per phase, verification checklist.
+
+**🚨 SIX MIGRATIONS pending Tredoux's Supabase run (numerical order, matters):**
+- `migrations/238_parent_profiles.sql` — `montree_parent_profiles` table (archetypes + cultural_register + triggers/moves/priorities + relationship_temperature + family_context). UNIQUE(parent_id, school_id).
+- `migrations/239_parent_meetings.sql` — `montree_parent_meetings` table (lifecycle, host, type enum, status). Forward-ref FKs `transcript_id`/`analysis_id` deferred to 241b.
+- `migrations/240_parent_meeting_transcripts.sql` — encrypted-at-rest transcripts via AES-256-GCM (`gcm:<iv>:<tag>:<ct>` format) using existing `MONTREE_ENCRYPTION_KEY`. `audio_destroyed_at` audit-trail column.
+- `migrations/241_parent_meeting_analyses.sql` — Sonnet structured outputs + `profile_update_proposals` JSONB + `corpus_extractions[]` + Phase C extraction-pending partial index. INCLUDES retro-add of `transcript_id` + `analysis_id` FKs on `montree_parent_meetings`.
+- `migrations/242_tracy_corpus.sql` — `montree_tracy_corpus` + pgvector extension + 3 indexes (active/ranking/HNSW). Cosine similarity over 1536-dim OpenAI embeddings.
+- `migrations/242b_tracy_corpus_search_fn.sql` — `tracy_corpus_search()` + `tracy_corpus_bump_references()` SECURITY DEFINER RPCs. Search hard-scopes by school_id.
+- `migrations/243_parent_consent_flags.sql` — `recording_consent_on_file` flag + audit columns on `montree_parents` + `montree_parent_deletion_audit` table.
+
+**Commit table (oldest → newest):**
+
+| SHA | Phase | What |
+|---|---|---|
+| `15795141` | A | Parent profiles + voice intake + 2 Tracy tools + dossier integration |
+| `07c0e73d` | B | Meeting recording + chunked Whisper + Sonnet analysis + proposals UI |
+| `6b7fedf7` | C | Self-improving corpus + pgvector RAG + auto-extract trigger |
+| `ea391dc3` | D | Parents tab + parent list + per-parent page |
+| `ae25cb51` | E | Consent flag + GDPR export + delete-with-audit + super-admin corpus monitor |
+
+**A. Phase A — `montree_parent_profiles` + voice onboarding intake:**
+
+`lib/montree/parent-profile/voice-intake.ts` runs Sonnet 4.6 against a 60-90s principal voice transcript with a strict tool schema (5 canonical archetypes from knowledge file 04 + 8 Erin Meyer Culture Map dimensions from file 05 + triggers/moves lists + relationship_temperature enum). Failure modes (no client, malformed JSON, timeout) return graceful `degraded:true` draft with raw transcript in history_notes — never loses the recording.
+
+Two new Tracy tools (`get_parent_profile`, `list_parents_for_school`) school-scoped via `deps.schoolId`, defense-in-depth via `montree_parents.school_id` filter + classroom.school_id re-verification on linked-child queries. Migration-aware (`migration_pending=true` graceful fallback).
+
+`prepare_parent_meeting` now does FOUR parallel branches (was 3): added `resolveParentForChild` → `loadParentProfile`. The parent's profile injects as `# PARENT PROFILE` section into `structuredContext`. Section 5 of the dossier prompt was rewritten to PRIMARY-source from this block: archetypes drive Section 8 pushback handlers, cultural_register drives Section 6's script directness, known_triggers feed Section 7 "Things not to say", effective_moves feed Section 6's preferred phrasings.
+
+**B. Phase B — Meeting recording + transcription + analysis:**
+
+Three migrations + privacy-load-bearing pipeline. Audio NEVER persists: `transcribe-chunk` route holds chunks in module-scope memory keyed by `(school_id, meeting_id)` with 30-min TTL, drains on `final=true`, encrypts the stitched transcript via `messaging-crypto.encryptField()` (AES-256-GCM `gcm:<iv>:<tag>:<ct>` via `MONTREE_ENCRYPTION_KEY` env var), persists. `audio_destroyed_at` is the audit timestamp. Refuses to record without encryption configured (returns 503).
+
+Consent gate enforced both client + server: UI disables Record button until checkbox checked; server requires `consent_acknowledged=true` form field OR `montree_parents.recording_consent_on_file=true` column (Phase E adds column).
+
+Long meetings (>20 min) auto-chunk at 20-minute boundaries via `scheduleChunkBoundaryRef` self-rescheduling ref. Each chunk uploads non-final; final chunk on Stop flips `final=true` → server stitches + encrypts.
+
+Sonnet 4.6 analysis via `PARENT_MEETING_ANALYSIS_TOOL` (strict structured output): `summary_markdown` (3 paras chief-of-staff voice) + `parent_revealed[]` + `commitments_made[]` + `emotional_arc` + `triggers_observed[]` + `moves_that_landed[]` + `unresolved_threads[]` + `recommended_follow_up` + `profile_update_proposals` JSONB + `corpus_extractions[]` (feeds Phase C). System prompt specialises by meeting_type (intro/escalation/progress/etc.).
+
+Profile-update proposals NEVER auto-apply — principal reviews each field on `/montree/admin/parents/[parentId]/meetings/[meetingId]/review` page with Approve/Edit/Dismiss pills, then `/proposals` POST applies decisions to the live profile with `source='extracted_from_meeting'`.
+
+**C. Phase C — Auto-corpus + RAG:**
+
+`montree_tracy_corpus` school-scoped only (cross-school anonymized learning is a separate privacy build). pgvector HNSW index on 1536-dim OpenAI `text-embedding-3-small` embeddings. Two SECURITY DEFINER RPCs: `tracy_corpus_search(p_school_id, p_query_embedding, p_archetype, p_min_similarity, p_limit)` returns top-N similar entries; `tracy_corpus_bump_references(p_ids[])` fire-and-forget on every retrieval.
+
+`extractCorpusFromAnalysis` runs Haiku refinement on raw `corpus_extractions` (the principal's specifics get abstracted to school PATTERNS — names + quotes stripped, "Mrs Chen calmed when..." → "With expectation-driven parents at this school, showing the older sibling's progression has de-escalated reading concerns multiple times"). Fires fire-and-forget after every analysis row lands.
+
+`searchCorpus` tool wired into Tracy with INTENT TABLE entry. `prepare_parent_meeting` injects top-5 RAG hits as `# CORPUS` block keyed by `meeting_purpose` + primary archetype.
+
+**D. Phase D — Parents UI:**
+
+New `Users` nav entry between Classrooms and Communication. New `adminNav.parents` i18n key + native-language translations across all 12 locales (家长, Padres, Eltern, etc.). i18n strict parity passes at 5078 × 12 = 100%.
+
+`/montree/admin/parents` list page: search + filter pills (All/No profile/Profiled) + per-row archetype tag pills (color-coded) + relationship-temperature badge + meeting count + last_meeting_date.
+
+`/montree/admin/parents/[parentId]` per-parent page: profile card (archetype/temperature/triggers/moves/family context/history) + action row (Onboard via voice / Record new meeting) + meeting history list linked to review pages.
+
+**E. Phase E — Privacy + corpus monitor:**
+
+Migration 243 + audit table. New routes:
+- `GET /api/montree/admin/parents/[id]/export` — GDPR/CCPA JSON dump with decrypted transcripts.
+- `PATCH /api/montree/admin/parents/[id]` — toggle `recording_consent_on_file` with set_at + set_by audit columns.
+- `DELETE /api/montree/admin/parents/[id]` — hard-delete + cascade, writes `montree_parent_deletion_audit` row BEFORE destruction (FK-less so audit survives).
+- `GET /api/montree/super-admin/tracy-corpus` — per-school stats (total active, by-type breakdown, top-5 most-referenced, never-referenced >30d count).
+- `/montree/super-admin/tracy-corpus` page — UI surfacing the above.
+
+**🚨 Architectural rules locked in this session (do NOT let future agents break these):**
+
+290. **`montree_parent_profiles` has ONE row per (parent_id, school_id) pair.** Same human at two schools = two independent profiles. The archetype mapping you do at School A doesn't carry over to School B — relational knowledge is school-specific.
+
+291. **`prepare_parent_meeting` does FOUR parallel branches (was 3): childContext + consultGuru + detectPattern + resolveParentForChild → loadParentProfile.** Parent profile is the PRIMARY source for Section 5 of the dossier — auto-inferred guru_parent_states + parent_context override are FALLBACKS now.
+
+292. **Audio NEVER persists.** Buffer → Whisper → text → buffer destroyed. No Supabase Storage upload anywhere in the meeting transcribe pipeline. `audio_destroyed_at` column is the audit-trail timestamp proving it.
+
+293. **Transcripts are always encrypted at rest.** `transcribe-chunk` route refuses to record (returns 503) without `isEncryptionConfigured()`. Format `gcm:<iv>:<tag>:<ct>` via `messaging-crypto.encryptField()` using `MONTREE_ENCRYPTION_KEY`. Reads via `readEncryptedField(value, version)`.
+
+294. **Consent gate is enforced server + client.** `consent_acknowledged=true` form field OR `montree_parents.recording_consent_on_file=true` column. Server returns 403 `requires_consent: true` when neither passes.
+
+295. **Profile-update proposals NEVER auto-apply.** Sonnet's `profile_update_proposals` JSONB on the analysis row is a PROPOSAL. The principal reviews + approves on the UI → POST `/proposals` applies with `source='extracted_from_meeting'`.
+
+296. **`montree_tracy_corpus` is school-scoped only for v1.** Cross-school anonymized learning is a separate privacy build, out of scope. The RPC's WHERE clause is hard-coded `school_id = p_school_id`.
+
+297. **Corpus entries DO NOT quote verbatim.** Sonnet's raw `corpus_extractions` go through Haiku refinement that strips names + quotes + abstracts to school PATTERNS. The system prompt enforces this; the sanitizer rejects entries that violate.
+
+298. **`embedTextBatch` caps concurrency at 5.** OpenAI embedding requests are per-text; running unlimited parallel hurts rate limits and gains nothing.
+
+299. **`scheduleChunkBoundaryRef` pattern for self-rescheduling useCallback.** The chunk-boundary timer self-reschedules at 20-min intervals; using a ref instead of direct recursion is the only way to keep `useCallback` deps honest.
+
+300. **`montree_parent_deletion_audit` is FK-less by design.** The audit row must SURVIVE the cascade — adding a FK on `parent_id` would defeat the purpose. Schema-only enforcement.
+
+**Files added (43 across all phases) / modified (10):**
+
+Migrations: 238-243 + 242b (7 files).
+New libs: `lib/montree/parent-profile/{voice-intake,loader}.ts`, `lib/montree/parent-meeting/{analysis-prompt,transcribe}.ts`, `lib/montree/tracy/corpus/{embeddings,extract,search}.ts` (7 files).
+New API routes: `parent-profile/{route,list/route}.ts`, `parent-meetings/{route,[id]/{transcribe-chunk,analyse,proposals}/route}.ts`, `parents/[id]/{export,route}.ts`, `super-admin/tracy-corpus/route.ts` (10 files).
+New pages: `parents/{page,[id]/{page,onboard/page,meetings/{new/page,[id]/review/page}}}.tsx`, `super-admin/tracy-corpus/page.tsx` (7 files).
+Modified Tracy: tool-definitions + tool-executor + system-prompt + prepare_parent_meeting tool + parent_meeting_prep prompt (5 files).
+Modified other: layout.tsx (Users icon + Parents NAV) + 12 locale files (adminNav.parents) (13 files).
+
+**Verification status:**
+- ✅ All 5 commits on `origin/main`. Railway auto-deployed throughout.
+- ✅ Lint clean across all new + modified files (`--max-warnings=0` exit 0 on every phase).
+- ✅ i18n strict parity 12/12 at 100% (5078 keys each).
+- ✅ Cross-pollination grep audit: every new API route filters by `auth.schoolId`; every new tool dispatches with `deps.schoolId`; every new query has school_id WHERE clause.
+- ✅ Audio-never-persists grep audit: zero `storage.from` / `storage.upload` references in transcribe pipeline.
+- ✅ No plaintext transcript writes: only `transcript_text_encrypted` column is written; the export route's `transcript_text:` is a decrypted READ field returned in JSON for GDPR export.
+- ✅ All 19 Tracy tool definitions have matching dispatch cases.
+
+**🚨 Next-session priorities (ordered):**
+
+1. **🚨 Run all 7 migrations in Supabase SQL Editor**, in order: 238 → 239 → 240 → 241 → 242 → 242b → 243.
+2. **Walk the 10-step verification checklist** in `docs/handoffs/ULTIMATE_TRACY_MARATHON_HANDOFF.md` Section 11.
+3. **Onboard a test parent via voice** — open `/montree/admin/parents`, pick one, tap "Onboard via voice", record 60-90s, confirm fields populate.
+4. **Record a 2-minute mock meeting** + verify consent gate + encrypted transcript (`SELECT LEFT(transcript_text_encrypted, 12) FROM montree_parent_meeting_transcripts` should return `gcm:...`).
+5. **Ask Tracy "what should I watch out for with [parent name]?"** — should call both `get_parent_profile` AND `search_corpus`.
+6. **Verify audio destruction** — `SELECT COUNT(*) FROM storage.objects WHERE bucket_id IS NOT NULL AND name LIKE '%meeting%audio%'` should return 0.
+7. **Carry-over: Session 134 priorities** — calendar-as-home, 5 admin pages i18n, `npm run i18n:fill-ui` for 30 dossier keys, pattern-phrase regex expansion, CRIT-1/CRIT-2 from health check, ungated AI routes, outreach follow-ups.
+
+---
 
 ### 🚢 Session 134 — Session 133 SHIPPED to main + Chinese translatability + Principal Leu handover + Tracy stability + Story vault save fix (May 28, 2026 afternoon)
 
@@ -8194,6 +8339,17 @@ All migrations through 169 have been run. Key ones: 147 (smart learning columns)
 
 **Session 128 (May 25, 2026) — Universal Calendar foundations. ✅ Migration RUN (verified Session 129):**
 - ✅ `233_school_terms_and_timezone.sql` — `timezone TEXT` column on `montree_schools` + `montree_school_terms` table (id, school_id, name, start_date, end_date, created_at, updated_at + CHECK end_date >= start_date + 2 indexes (school_id, school+window) + `montree_school_terms_touch_updated_at()` trigger). Idempotent. **Verified live via Web-Claude end-to-end Term creation test in Session 129** — POST `/api/montree/school/terms` returned 200, term row inserted, violet dot rendered on calendar grid. Either ran successfully at some point or the underlying table existed before this migration was needed.
+
+**Session 135 (May 28, 2026 evening) — Ultimate Tracy Marathon. ⏳ 7 migrations pending Tredoux's Supabase run (numerical order, matters):**
+- ⏳ `238_parent_profiles.sql` — `montree_parent_profiles` table (18 columns: archetypes[], cultural_register JSONB, preferred_language, known_triggers[], effective_moves[], relationship_temperature CHECK enum, family_context, priorities_for_child[], history_notes, meeting_count, last_meeting_date, last_thread_message_at, source CHECK enum, evaluated_by_role CHECK enum, evaluated_by_id, last_evaluated_at, timestamps). UNIQUE(parent_id, school_id). 2 indexes + auto-touch trigger.
+- ⏳ `239_parent_meetings.sql` — `montree_parent_meetings` (lifecycle: planned/held/cancelled/needs_follow_up/closed) + meeting_type CHECK enum (parent_teacher_conference/intro/escalation/exit/behavioural/progress/other) + principal_id + teacher_id FKs + linked_dossier_id + outcome_notes + 2 indexes + touch trigger.
+- ⏳ `240_parent_meeting_transcripts.sql` — encrypted-at-rest. `transcript_text_encrypted` ALWAYS `gcm:<iv>:<tag>:<ct>` format via existing `MONTREE_ENCRYPTION_KEY`. `audio_destroyed_at` audit-trail column proving audio buffer was dropped post-Whisper. 2 indexes.
+- ⏳ `241_parent_meeting_analyses.sql` — Sonnet structured outputs (summary_markdown, parent_revealed[], commitments_made[], emotional_arc, triggers_observed[], moves_that_landed[], unresolved_threads[], recommended_follow_up, profile_update_proposals JSONB, corpus_extractions[] for Phase C, proposals_review_outcome CHECK enum). Partial index on unprocessed rows. **241 ALSO retro-adds `transcript_id` + `analysis_id` FKs on `montree_parent_meetings`** (forward refs not supported earlier).
+- ⏳ `242_tracy_corpus.sql` — `CREATE EXTENSION IF NOT EXISTS vector` (pgvector) + `montree_tracy_corpus` table (insight_text CHECK 20-2000 chars, insight_type CHECK enum, applies_to JSONB, confidence NUMERIC 0-1, reference_count, last_referenced_at, superseded_by/superseded_at chain, embedding vector(1536), validated_at). 3 partial indexes (active, ranking, HNSW vector cosine).
+- ⏳ `242b_tracy_corpus_search_fn.sql` — `tracy_corpus_search(p_school_id, p_query_embedding, p_archetype, p_min_similarity, p_limit)` SECURITY DEFINER RPC + `tracy_corpus_bump_references(p_ids[])` SECURITY DEFINER RPC. GRANT EXECUTE to anon/authenticated/service_role.
+- ⏳ `243_parent_consent_flags.sql` — `montree_parents.recording_consent_on_file BOOLEAN DEFAULT FALSE` + `recording_consent_set_at` + `recording_consent_set_by` (audit columns) + `montree_parent_deletion_audit` FK-less table for delete-survives-cascade audit trail.
+
+Until all 7 run: API routes return `migration_pending=true` gracefully; recording UI surfaces friendly fallback; `prepare_parent_meeting` still ships dossiers without parent-profile or corpus data; analyse route logs but doesn't crash on missing tables.
 
 **Session 133 (May 28, 2026) — Mira & Tracy dossier capability. ⏳ 1 migration STILL pending Tredoux's Supabase run (hash realignments + Leu rename DONE in Session 134):**
 - ⏳ `237_meeting_dossiers.sql` — `montree_meeting_dossiers` table for the shared Tracy + Mira dossier cache. 18 columns (id, owner_id, owner_role principal|agent, school_id nullable, audience_type parent_meeting|principal_pitch, audience_ref TEXT, cache_key SHA-256, meeting_purpose, parent_context, output_format markdown|html|json, payload_text, model_used, input/output_tokens, cost_usd, generation_ms, generated_at, expires_at +24h default). Three indexes (cache_lookup b-tree, owner_recent DESC, audience_recent DESC). `montree_purge_expired_dossiers()` SECURITY DEFINER function for >7-day cleanup. Idempotent. **Original attempt failed with PG 42P17 ('functions in index predicate must be marked IMMUTABLE') because of a `WHERE expires_at > NOW()` partial-index predicate — patched to plain b-tree.** Until run, dossiers generate fine but every reopen spends Sonnet again (~$0.05).

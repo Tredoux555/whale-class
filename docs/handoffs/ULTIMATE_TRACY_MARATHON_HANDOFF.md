@@ -1208,12 +1208,12 @@ session reads this doc, identifies the next phase, picks up.
 > short status line: COMPLETED / PARTIAL (with what's left) /
 > SKIPPED (with why).
 
-- Phase A — _pending_
-- Phase B — _pending_
-- Phase C — _pending_
-- Phase D — _pending_
-- Phase E — _pending_
-- Phase F — _pending_
+- Phase A — **COMPLETED** (commit `15795141` on `origin/main`). Migration 238 pending Tredoux's Supabase run. 11 files, +2976 lines. Lint clean. Two new tools wired into Tracy. Dossier integration live with PARENT PROFILE block + Section 5 calibration rules.
+- Phase B — **COMPLETED** (commit `07c0e73d` on `origin/main`). Migrations 239/240/241 pending Supabase run. 10 files. Lint clean. Recording UI + chunked Whisper + AES-256-GCM encrypted persistence + Sonnet analysis with structured tool_use + per-field Approve/Edit/Dismiss review workflow. Audio never persists. Consent gate enforced server + UI.
+- Phase C — **COMPLETED** (commit `6b7fedf7` on `origin/main`). Migrations 242 + 242b pending Supabase run. 8 files. Lint clean. pgvector HNSW + cosine search via SECURITY DEFINER RPCs. Auto-extract fires after every analysis. RAG injected into prepare_parent_meeting.
+- Phase D — **COMPLETED** (commit `ea391dc3` on `origin/main`). 15 files. Parents tab in nav, parent list with filters, per-parent page with profile card + meeting history + actions. i18n parity 12/12 at 100%. Two pre-existing layout.tsx setState-in-effect warnings flagged as NOT introduced by this phase.
+- Phase E — **COMPLETED** (commit `ae25cb51` on `origin/main`). Migration 243 pending Supabase run. 5 files. Lint clean. Consent flag column + audit table + data-export endpoint + delete-with-audit + super-admin corpus monitor (route + page).
+- Phase F — _in progress_
 
 ---
 
