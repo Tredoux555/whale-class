@@ -252,6 +252,29 @@ Wave 1 sends bounced for these addresses. None of these are flagged as `bounced`
 
 ---
 
+## 🚨 ARCHITECTURAL RULE LOCKED IN — May 29, 2026 (post-Session 135 build-failure debug)
+
+**Turbopack rejects `<style jsx>` tags that aren't at the top-level of their component's return statement.** ALL 12 deploys between commits `0e9a3c89` and `9a7a2e4f` failed with the same error — `Detected nested styled-jsx tag at app/montree/admin/parents/[parentId]/meetings/new/page.tsx:719:13` — because Phase B's record-meeting page wrapped 3 styled-jsx blocks inside conditional render branches. Phase A's voice-onboard page had 2 more in the same pattern.
+
+**Rule:** `<style jsx>` tags MUST be the DIRECT child of the outermost return-statement `<div>`. NEVER inside a conditional render branch like `{stage === 'X' && (...)}` or `{loading ? <Spinner/> : <Content/>}`.
+
+**When a keyframe / media query needs to live deep in the JSX tree:**
+```tsx
+{/* 🚨 Turbopack rejects nested <style jsx>. Inline via
+    dangerouslySetInnerHTML — same runtime effect. */}
+<style
+  dangerouslySetInnerHTML={{
+    __html: `@keyframes pulse { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }`,
+  }}
+/>
+```
+
+This pattern is now canonical in `app/montree/admin/parents/[parentId]/{meetings/new,onboard}/page.tsx`, `app/montree/admin/child/[childId]/page.tsx`, and `app/admin/english-guide/page.tsx`. Fixes shipped in commits `537bb4a4` + `1ef1d58d`.
+
+**For ANY new keyframe, media query, or scoped CSS:** if it lives inside a conditional render branch, use `<style dangerouslySetInnerHTML>` — not `<style jsx>`. Even `<style jsx global>` fails when nested. The 30+ files that currently use `<style jsx>` at the top-level of their return are fine; don't touch them.
+
+---
+
 ## 🚨 NEXT SESSION — CALL TO ACTION (queued May 28, 2026 night, post-Session 135 Ultimate Tracy Marathon)
 
 Session 135 shipped the full Ultimate Tracy marathon (Phases A-E + cross-cut F) — parents are now first-class entities with structured profiles + meeting recording + transcription + Sonnet analysis + self-improving corpus + Parents UI tab + privacy controls. Five commits on origin/main, ending at `ae25cb51`. Full session breakdown in `docs/handoffs/ULTIMATE_TRACY_MARATHON_HANDOFF.md`.
