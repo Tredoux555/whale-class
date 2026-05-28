@@ -27,7 +27,12 @@
 // inbound payments). PWA users on stale v7 were running 10-day-old shell with
 // new APIs underneath, causing felt lag on dashboard + photo audit + Tracy.
 // PWA users need to close + reopen the app once for v8 to activate.
-const CACHE_NAME = 'montree-v8';
+// Bumped to v9 (May 29, 2026) — Ultimate Tracy marathon (Phases A-E +
+// agency action tools + Story system retheme + Parents tab in nav).
+// The principal's PWA was on v8 from 2 weeks ago, missing every single
+// visible change: new Parents tab, Story dark theme, Tracy's 6 action
+// tools. v9 forces a clean shell purge on next PWA open.
+const CACHE_NAME = 'montree-v9';
 const OFFLINE_URL = '/montree/offline';
 
 // Only cache immutable assets — static files that change with build hashes.
