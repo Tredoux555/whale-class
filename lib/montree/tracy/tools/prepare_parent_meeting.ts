@@ -422,8 +422,12 @@ export async function preparePMeeting(
         .eq('id', cachedChild.classroom_id)
         .maybeSingle();
       if (!cachedClassroom || cachedClassroom.school_id !== schoolId) {
-        // Cache hit but the child no longer belongs to this school.
-        // Refuse and fall through to fresh generation.
+        // Cache hit but the child does not belong to the caller's school.
+        // REFUSE — do not serve the cached payload (it belongs to a
+        // different school) and do not fall through to fresh generation
+        // (that would also write a row for a child the caller can't
+        // legitimately see). The route's error → status mapping converts
+        // this string to a 404 so the UX matches "child not found".
         return {
           ok: false,
           error: 'child does not belong to this school',

@@ -25,9 +25,20 @@ import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { resolveReportModel } from '@/lib/montree/reports/resolve-model';
 import { preparePMeeting } from '@/lib/montree/tracy/tools/prepare_parent_meeting';
+// Session 133 post-merge audit-fix: rate-limit. The 24h cache shields
+// most repeat-opens, but a malicious caller can bypass by tweaking
+// meeting_purpose / parent_context to produce a fresh cache key on
+// every call and burn ~$0.05/Sonnet each time. Rate-limit by JWT.sub
+// (not IP — multiple users may share an IP on the same school wifi).
+import { checkRateLimit } from '@/lib/rate-limiter';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 120;
+
+// Rate limit: 20 dossier-builds per principal per hour. The legitimate
+// upper bound is "prepare for 3-4 parent meetings on a Friday afternoon"
+// — 20 is comfortably above that, well below abuse.
+const RATE_LIMIT_PER_HOUR = 20;
 
 interface PostBody {
   child_id: string;
@@ -43,6 +54,31 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       { error: 'Principal only' },
       { status: 403 }
+    );
+  }
+
+  // Rate-limit per principal (not per IP — Tredoux might be on the same
+  // wifi as a teacher and we don't want their photo capture to throttle
+  // her dossier prep). 20/hr per principal user-id is generous for real
+  // use, tight against abuse.
+  const supabaseForLimit = getSupabase();
+  const rate = await checkRateLimit(
+    supabaseForLimit,
+    `principal:${auth.userId}`,
+    '/api/montree/admin/dossier/parent-meeting',
+    RATE_LIMIT_PER_HOUR,
+    60
+  );
+  if (!rate.allowed) {
+    return NextResponse.json(
+      {
+        error: 'Too many dossier requests in the last hour — try again shortly.',
+        retry_after_seconds: rate.retryAfterSeconds,
+      },
+      {
+        status: 429,
+        headers: { 'Retry-After': String(rate.retryAfterSeconds) },
+      }
     );
   }
 

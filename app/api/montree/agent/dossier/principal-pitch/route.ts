@@ -25,9 +25,19 @@ import Anthropic from '@anthropic-ai/sdk';
 import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { preparePitch } from '@/lib/montree/mira/tools/prepare_principal_pitch';
+// Session 133 post-merge audit-fix: rate-limit. Agent dossiers have no
+// tier gate by design (agents are paid partners) — that puts the
+// burden on per-user rate-limiting to keep abuse bounded. Cache bypass
+// via tweaked principal_name / pain_points would cost $0.05-0.10/call.
+import { checkRateLimit } from '@/lib/rate-limiter';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 120;
+
+// Rate limit: 30 pitch dossiers per agent per hour. Higher than the
+// Tracy parent-meeting limit because agents legitimately pitch many
+// schools per day; 30/hr covers a full sales day with headroom.
+const RATE_LIMIT_PER_HOUR = 30;
 
 interface PostBody {
   principal_name: string;
@@ -45,6 +55,30 @@ export async function POST(request: NextRequest) {
   if (auth instanceof NextResponse) return auth;
   if (auth.role !== 'agent') {
     return NextResponse.json({ error: 'Agent only' }, { status: 403 });
+  }
+
+  // Rate-limit per agent (not per IP — agents often work from coffee
+  // shops with shared NAT). 30/hr per agent user-id is a full
+  // legitimate sales day; abuse trips fast.
+  const supabaseForLimit = getSupabase();
+  const rate = await checkRateLimit(
+    supabaseForLimit,
+    `agent:${auth.userId}`,
+    '/api/montree/agent/dossier/principal-pitch',
+    RATE_LIMIT_PER_HOUR,
+    60
+  );
+  if (!rate.allowed) {
+    return NextResponse.json(
+      {
+        error: 'Too many pitch dossiers in the last hour — try again shortly.',
+        retry_after_seconds: rate.retryAfterSeconds,
+      },
+      {
+        status: 429,
+        headers: { 'Retry-After': String(rate.retryAfterSeconds) },
+      }
+    );
   }
 
   let body: PostBody;
