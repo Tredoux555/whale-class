@@ -123,6 +123,12 @@ interface ConvTurn {
    *  render at the top of the assistant turn (Session 135). The brief is
    *  shown by default; the dossier collapses behind a disclosure. */
   meetingBrief?: MeetingBrief;
+  /** Session 136 — set true on meeting_brief_init SSE event (the tool
+   *  started; cache check + Sonnet call in flight). Cleared on the
+   *  final meeting_brief event or on done/error. The thinking indicator
+   *  uses this to render a more specific "Preparing the dossier…" line
+   *  instead of the generic spinner. */
+  preparingDossier?: boolean;
 }
 
 const MAX_PERSISTED_TURNS = 30;
@@ -364,11 +370,20 @@ function AssistantBubble({ turn }: { turn: ConvTurn }) {
   const { t } = useI18n();
   const { body, action } = splitActionLine(turn.text);
   // Show the rich animated indicator while we're waiting on Tracy AND have
-  // no text yet. Once tokens start streaming the indicator gives way to the
-  // body. Progress line (parsing → looking up → composing) renders below
-  // the avatar pulse + dots so the principal sees what Tracy is actually
-  // doing, not just that something is happening.
-  const isThinking = turn.pending && !turn.text && !turn.error;
+  // no text yet AND no meeting brief content has landed yet. Once tokens
+  // start streaming (either Tracy's text OR a meeting brief chunk) the
+  // indicator gives way to the body / MeetingBriefCard. Progress line
+  // (parsing → looking up → composing) renders below the avatar pulse +
+  // dots so the principal sees what Tracy is actually doing, not just
+  // that something is happening.
+  //
+  // Session 136 — meetingBrief chunks landing while pending used to leave
+  // the thinking indicator up and hide the streaming brief. Released now
+  // when either side of the brief has any content.
+  const hasBriefContent =
+    !!(turn.meetingBrief?.brief_markdown || turn.meetingBrief?.dossier_markdown);
+  const isThinking =
+    turn.pending && !turn.text && !turn.error && !hasBriefContent;
   const progressLine = (() => {
     if (!turn.progress) return null;
     const { phase, vars } = turn.progress;
@@ -387,15 +402,59 @@ function AssistantBubble({ turn }: { turn: ConvTurn }) {
     }
   })();
 
+  // Session 136 — slow-fallback timer. If isThinking has been true for
+  // ≥15s without any progress / chunk / completion event, render a
+  // reassurance line so the principal doesn't think Tracy died silently.
+  // Generic message by default; more specific "Preparing the dossier…"
+  // when prepare_parent_meeting is in flight (turn.preparingDossier).
+  // Hardcoded English strings — i18n sweep deferred to a follow-up so
+  // Phase 1 stays surgical (diagnostic plumbing only, no new i18n keys).
+  //
+  // The reset-to-false runs in the effect CLEANUP so the body never calls
+  // setState synchronously (avoids the react-hooks/set-state-in-effect
+  // warning). Cleanup also fires when any dep changes — so a fresh
+  // progress event or preparingDossier flip naturally resets the timer.
+  const [slowFallback, setSlowFallback] = useState(false);
+  useEffect(() => {
+    if (!isThinking) return;
+    const timer = setTimeout(() => setSlowFallback(true), 15_000);
+    return () => {
+      clearTimeout(timer);
+      setSlowFallback(false);
+    };
+  }, [isThinking, turn.progress, turn.preparingDossier]);
+
   // Pre-text state — pulsing avatar + animated dots + (optional) progress.
   // The whole row is replaced by the static avatar + body once tokens land.
   if (isThinking) {
     return (
-      <ThinkingIndicator
-        size={36}
-        progressLine={progressLine}
-        ariaLabel={t('tracy.thinkingAria')}
-      />
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 8, width: '100%' }}>
+        <ThinkingIndicator
+          size={36}
+          progressLine={
+            progressLine ||
+            (turn.preparingDossier
+              ? 'Preparing the dossier…'
+              : null)
+          }
+          ariaLabel={t('tracy.thinkingAria')}
+        />
+        {slowFallback && (
+          <div
+            style={{
+              marginLeft: 50, // align with body content (avatar 36px + 14px gap)
+              fontSize: 13,
+              lineHeight: 1.5,
+              color: 'rgba(255,255,255,0.55)',
+              fontStyle: 'italic',
+            }}
+          >
+            {turn.preparingDossier
+              ? "Still building the dossier — large parent meetings can take 30–60 seconds. Hold tight."
+              : "This is taking longer than usual — still working."}
+          </div>
+        )}
+      </div>
     );
   }
 
@@ -736,6 +795,15 @@ export default function AdminAgentPage() {
           updated.thinking = (updated.thinking || '') + String(evt.text || '');
           break;
         }
+        case 'meeting_brief_init': {
+          // Session 136 — prepare_parent_meeting started. UI flips to
+          // "Preparing the dossier…" instead of the generic spinner so
+          // the principal knows what's happening even before the first
+          // chunk lands. Cleared by the final meeting_brief event
+          // (success) or by done/error (failure).
+          updated.preparingDossier = true;
+          break;
+        }
         case 'meeting_brief_chunk': {
           // Session 135 — incremental token from prepare_parent_meeting's
           // streamed Sonnet call. Each chunk has { section, delta }. We
@@ -786,11 +854,16 @@ export default function AdminAgentPage() {
             child_name: childName,
             from_cache: fromCache,
           };
+          // Session 136 — final payload landed; clear preparingDossier
+          // so the UI stops showing "Preparing the dossier…" and the
+          // brief renders cleanly.
+          updated.preparingDossier = false;
           break;
         }
         case 'done': {
           updated.pending = false;
           updated.progress = null;
+          updated.preparingDossier = false;
           updated.costUsd =
             typeof evt.cost_usd === 'number' ? evt.cost_usd : undefined;
           break;
@@ -798,6 +871,7 @@ export default function AdminAgentPage() {
         case 'error': {
           updated.pending = false;
           updated.progress = null;
+          updated.preparingDossier = false;
           updated.error = String(evt.error || t('tracy.errors.transient'));
           break;
         }
