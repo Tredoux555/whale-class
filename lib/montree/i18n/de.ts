@@ -2456,6 +2456,15 @@ export const de: Record<string, string> = {
   'weeklyAdmin.notesPlaceholder': 'z. B. Keine Änderung zur letzten Woche',
   'weeklyAdmin.summaryPlaceholder': 'Praktisches Leben: ...\nSinnesmaterial: ...\nMathematik: ...\nSprache: ...\nKulturelle: ...',
   'weeklyAdmin.chineseNotePlaceholder': 'Wöchentlicher Fokus...',
+
+  // Monthly Summary (4th sub-tab in Weekly Admin)
+  'weeklyAdmin.monthlyTab': 'Monatszusammenfassung',
+  'weeklyAdmin.monthlyPeriod': 'Monat',
+  'weeklyAdmin.monthlyPeriodHint': 'Auto-Ausfüllen ruft Sprachaktivitäten für {start} – {end} ab.',
+  'weeklyAdmin.monthlyPlaceholder': 'Sprach-Zusammenfassung pro Kind — automatisch ausgefüllt aus bestätigten Fotos und Fortschritt.',
+  'weeklyAdmin.monthlyDownloaded': 'Monatszusammenfassung heruntergeladen',
+  'weeklyAdmin.monthlyEmpty': 'Noch keine gespeicherten Monatsnotizen. Klicke auf Auto-Ausfüllen, überprüfe, dann Speichern.',
+  'weeklyAdmin.monthlyMigrationPending': 'Führe zuerst Migration 238 in Supabase aus — die Monatszusammenfassung ist bis dahin gesperrt.',
   'weeklyAdminCard.title': 'Wöchentlicher Plan & Zusammenfassung',
   'weeklyAdminCard.childrenLabel': 'Kinder',
   'weeklyAdminCard.subtitle': 'Automatisch aus Fotos gefüllt · DOCX herunterladen',

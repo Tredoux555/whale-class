@@ -2802,6 +2802,15 @@ export const zh = {
   'weeklyAdmin.summaryPlaceholder': '日常生活：...\n感官：...\n数学：...\n语言：...\n文化：...',
   'weeklyAdmin.chineseNotePlaceholder': '本周重点...',
 
+  // Monthly Summary (4th sub-tab in Weekly Admin)
+  'weeklyAdmin.monthlyTab': '月度总结',
+  'weeklyAdmin.monthlyPeriod': '月份',
+  'weeklyAdmin.monthlyPeriodHint': '自动填充将提取 {start} – {end} 的语言活动。',
+  'weeklyAdmin.monthlyPlaceholder': '每位学生的语言总结 — 根据已确认照片和进度自动填充。',
+  'weeklyAdmin.monthlyDownloaded': '月度总结已下载',
+  'weeklyAdmin.monthlyEmpty': '尚未保存月度笔记。请点击"自动填充"，审核后保存。',
+  'weeklyAdmin.monthlyMigrationPending': '请先在 Supabase 中运行迁移 238 — 月度总结在此之前无法使用。',
+
   // Weekly Admin Card (dashboard)
   'weeklyAdminCard.title': '周计划 & 总结',
   'weeklyAdminCard.childrenLabel': '个学生',

@@ -2527,6 +2527,15 @@ export const es: Record<string, string> = {
   'weeklyAdmin.notesPlaceholder': 'Por ejemplo: Sin cambios desde la semana pasada',
   'weeklyAdmin.summaryPlaceholder': 'Vida Práctica: ...\\\\nSensorial: ...\\\\nMatemáticas: ...\\\\nLenguaje: ...\\\\nCultural: ...',
   'weeklyAdmin.chineseNotePlaceholder': 'Enfoque semanal...',
+
+  // Monthly Summary (4th sub-tab in Weekly Admin)
+  'weeklyAdmin.monthlyTab': 'Resumen Mensual',
+  'weeklyAdmin.monthlyPeriod': 'Mes',
+  'weeklyAdmin.monthlyPeriodHint': 'El auto-relleno extrae la actividad de Lenguaje de {start} – {end}.',
+  'weeklyAdmin.monthlyPlaceholder': 'Resumen de Lenguaje por estudiante — auto-rellenado desde fotos confirmadas y progreso.',
+  'weeklyAdmin.monthlyDownloaded': 'Resumen mensual descargado',
+  'weeklyAdmin.monthlyEmpty': 'No hay notas mensuales guardadas. Haz clic en Auto-relleno, revisa, y guarda.',
+  'weeklyAdmin.monthlyMigrationPending': 'Ejecuta la migración 238 en Supabase primero — el Resumen Mensual está bloqueado hasta entonces.',
   'weeklyAdminCard.title': 'Plan y Resumen Semanal',
   'weeklyAdminCard.childrenLabel': 'estudiantes',
   'weeklyAdminCard.subtitle': 'Auto-relleno desde fotos · Descargar DOCX',

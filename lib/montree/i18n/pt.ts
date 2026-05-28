@@ -2456,6 +2456,15 @@ export const pt: Record<string, string> = {
   'weeklyAdmin.notesPlaceholder': 'p.ex. Sem mudanças em relação à semana anterior',
   'weeklyAdmin.summaryPlaceholder': 'Vida Prática: ...\nSensorial: ...\nMatemática: ...\nLinguagem: ...\nCultural: ...',
   'weeklyAdmin.chineseNotePlaceholder': 'Foco semanal...',
+
+  // Monthly Summary (4th sub-tab in Weekly Admin)
+  'weeklyAdmin.monthlyTab': 'Resumo Mensal',
+  'weeklyAdmin.monthlyPeriod': 'Mês',
+  'weeklyAdmin.monthlyPeriodHint': 'O preenchimento automático extrai a atividade de Linguagem para {start} – {end}.',
+  'weeklyAdmin.monthlyPlaceholder': 'Resumo de Linguagem por criança — preenchido automaticamente a partir de fotos confirmadas e progresso.',
+  'weeklyAdmin.monthlyDownloaded': 'Resumo mensal baixado',
+  'weeklyAdmin.monthlyEmpty': 'Ainda não há notas mensais salvas. Clique em Preencher Automaticamente, revise, depois Salvar.',
+  'weeklyAdmin.monthlyMigrationPending': 'Execute a migração 238 no Supabase primeiro — o Resumo Mensal está bloqueado até lá.',
   'weeklyAdminCard.title': 'Planejamento e Resumo Semanal',
   'weeklyAdminCard.childrenLabel': 'crianças',
   'weeklyAdminCard.subtitle': 'Preenchimento automático de fotos · Baixar DOCX',
