@@ -785,7 +785,15 @@ export default function DashboardPage() {
                 <PendingAppointmentsBanner viewer="staff" selfUserId={session.teacher.id} />
               )}
 
-              {/* ── Student Grid — fills viewport height ── */}
+              {/* ── Student Grid — fills viewport height ──
+                  Avatar 58 + gap 10 + name 12 + per-link vertical padding
+                  ≈ 110px per row. Without a minmax floor, `1fr` rows
+                  collapse on short viewports and the bottom row's NAME
+                  clips below the viewport edge. The minmax(110px, 1fr)
+                  floor + scroll fallback on the grid prevents that —
+                  on tall viewports rows still distribute evenly, on
+                  short viewports the grid becomes scrollable instead
+                  of silently cutting off student names. */}
               {(() => {
                 const items = filteredChildren.length;
                 const cols = items <= 16 ? 4 : items <= 25 ? 5 : 6;
@@ -793,11 +801,12 @@ export default function DashboardPage() {
                 return (
                   <div
                     data-tutorial="student-grid"
-                    className="flex-1 grid"
+                    className="flex-1 grid overflow-y-auto"
                     style={{
                       gridTemplateColumns: `repeat(${cols}, 1fr)`,
-                      gridTemplateRows: `repeat(${rows}, 1fr)`,
+                      gridTemplateRows: `repeat(${rows}, minmax(110px, 1fr))`,
                       rowGap: 28, columnGap: 8,
+                      paddingBottom: 16,
                     }}
                   >
                     {filteredChildren.map((child, index) => {
