@@ -722,17 +722,13 @@ function ExchangeCard({ exchange }: { exchange: AnswerExchange }) {
               }}
             />
             Composing an answer…
-            <style jsx>{`
-              @keyframes pulse {
-                0%,
-                100% {
-                  opacity: 0.4;
-                }
-                50% {
-                  opacity: 1;
-                }
-              }
-            `}</style>
+            {/* 🚨 Turbopack rejects nested <style jsx>. Inline via
+                dangerouslySetInnerHTML — same runtime effect. */}
+            <style
+              dangerouslySetInnerHTML={{
+                __html: `@keyframes pulse { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }`,
+              }}
+            />
           </div>
         ) : exchange.error ? (
           <div

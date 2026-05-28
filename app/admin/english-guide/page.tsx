@@ -294,35 +294,13 @@ export default function EnglishGuidePage() {
         {/* SHELF SETUP VIEW */}
         {activeView === 'shelf' && (
           <div className="space-y-4 print-container">
-            {/* Print Styles */}
-            <style jsx global>{`
-              @media print {
-                @page {
-                  size: A4 portrait;
-                  margin: 0.5cm;
-                }
-                body {
-                  -webkit-print-color-adjust: exact !important;
-                  print-color-adjust: exact !important;
-                }
-                header, .no-print {
-                  display: none !important;
-                }
-                .print-container {
-                  transform: scale(0.7);
-                  transform-origin: top center;
-                  width: 142%;
-                  margin-left: -21%;
-                }
-                .print-container > div {
-                  break-inside: avoid;
-                  margin-bottom: 8px !important;
-                }
-                .bg-gradient-to-r {
-                  background: linear-gradient(to right, var(--tw-gradient-stops)) !important;
-                }
-              }
-            `}</style>
+            {/* 🚨 Turbopack rejects nested <style jsx>. Inline via
+                dangerouslySetInnerHTML — same runtime effect for print CSS. */}
+            <style
+              dangerouslySetInnerHTML={{
+                __html: `@media print { @page { size: A4 portrait; margin: 0.5cm; } body { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; } header, .no-print { display: none !important; } .print-container { transform: scale(0.7); transform-origin: top center; width: 142%; margin-left: -21%; } .print-container > div { break-inside: avoid; margin-bottom: 8px !important; } .bg-gradient-to-r { background: linear-gradient(to right, var(--tw-gradient-stops)) !important; } }`,
+              }}
+            />
             {/* Header */}
             <div className="bg-gradient-to-r from-teal-500 to-emerald-600 rounded-xl p-6 text-white text-center relative">
               <button
