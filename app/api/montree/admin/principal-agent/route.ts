@@ -511,7 +511,7 @@ export async function POST(request: NextRequest) {
 
         while (toolRound < MAX_TOOL_ROUNDS) {
           if (Date.now() - startTime > TOTAL_TIMEOUT_MS) {
-            logError = 'Total timeout (90s) exceeded';
+            logError = `Total timeout (${Math.round(TOTAL_TIMEOUT_MS / 1000)}s) exceeded`;
             controller.enqueue(
               sse(encoder, { type: 'error', error: logError })
             );
