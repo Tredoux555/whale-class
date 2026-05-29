@@ -278,10 +278,13 @@ Wave 1 sends bounced for these addresses. None of these are flagged as `bounced`
 306. Astra avatar = `/public/astra-avatar.png` (gold "A"); `TracyAvatar.tsx` is the single source.
 307. Verify audit-agent findings before acting — two were wrong this session (`loading.tsx` already existed app-wide; tier-gate transient-blip already covered by the fetch-retry).
 
+**✅ RESOLVED May 29 (the #1 latency lever):** Supabase is `ap-southeast-1` (Singapore). Railway `whale-class` service was in **EU West (Amsterdam)** — a cross-continent mismatch causing the >3s round-trips that made Astra's tools time out and fall back to memory. Tredoux moved Railway → **Southeast Asia (Singapore)** to co-locate with Supabase (Railway → service → Settings → Region; ~4.5 min redeploy). **NOTE: the pooler (`:6543`) was a red herring — this app's runtime data layer is PostgREST over HTTPS, not direct `pg`/`DATABASE_URL`. Region proximity was the whole fix.** The "multi-region replicas need Pro" notice is irrelevant — a single co-located region is correct. All the shipped graceful-degradation (fetch timeouts, 15s client skeleton bound, prompt caching, fallbacks) now rarely triggers because the latency is gone.
+
 **🚨 STILL OPEN — needs Tredoux (cannot do from sandbox):**
-1. **🔒 Supabase >3s latency (region + pooler) — THE highest-impact remaining lever.** By-PK lookups taking >3s is why Astra's tools time out and fall back to memory ("connection's dropping"). Fix: confirm Supabase region → pin Railway to same region → `DATABASE_URL` to pooler (`:6543`). ~15 min. Graceful degradation is shipped; this is the real cure.
-2. **🔒 Service-worker stale-while-revalidate API cache** — biggest returning-visit speed win, but cross-user cache-poisoning risk; needs multi-user shared-browser testing. Own session.
-3. Deferred/low-priority: unify the two client fetch layers (dead prefetch in `lib/montree/cache.ts` vs `montreeApi`); trim `select('*')` hot paths; pre-existing lint backlog on guru/onboard routes.
+1. **🔒 Service-worker stale-while-revalidate API cache** — biggest returning-visit speed win, but cross-user cache-poisoning risk; needs multi-user shared-browser testing. Own session.
+2. Deferred/low-priority: unify the two client fetch layers (dead prefetch in `lib/montree/cache.ts` vs `montreeApi`); trim `select('*')` hot paths; pre-existing lint backlog on guru/onboard routes.
+
+**Other Session 137 follow-on fixes (post-handoff):** Story admin shows 3 latest messages (was 1); `useMontreeData` + `prefetchUrl` got a 15s client fetch timeout so the dashboard skeleton always resolves instead of hanging ("leaves me there"). all-logins page confirmed already live (the 🔑 All logins super-admin button — principals + teachers + agents + parents).
 
 **Standing working rule (saved to memory):** push through ALL tasks autonomously, audit each to clean, review at end. Memory files: `feedback_autonomy_and_audit.md`, `montree_deploy_and_push.md`.
 
