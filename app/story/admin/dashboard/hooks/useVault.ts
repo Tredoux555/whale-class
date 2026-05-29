@@ -384,16 +384,34 @@ export const useVault = (getSession: () => string | null) => {
       }
 
       // 🚨 Session 153 — unencrypted direct (large-media) uploads are served
-      // via a short-lived signed url straight from Supabase. NEVER stream a
-      // 400MB video through the decrypt-proxy route (Node heap + Railway cap).
+      // via a short-lived signed url straight from Supabase (served INLINE so
+      // it plays/displays). NEVER stream a 400MB video through the decrypt-
+      // proxy route (Node heap + Railway cap).
+      //
+      // 📱 MOBILE FIX (Session 153): calling window.open() AFTER an `await`
+      // is blocked by mobile browsers (iOS Safari especially) — the user-tap
+      // activation is gone by the time the fetch resolves, so the media never
+      // opened on phones. Open the tab SYNCHRONOUSLY here (inside the tap),
+      // then point it at the signed url once we have it. If the browser still
+      // blocked the tab (win === null), fall back to a same-tab navigation,
+      // which always works.
       const target = vaultFiles.find(f => f.id === fileId);
       if (target && target.encrypted === false) {
-        const sigRes = await fetch(`/api/story/admin/vault/signed-download/${fileId}`, { headers });
-        const sig = await sigRes.json().catch(() => ({}));
-        if (sigRes.ok && sig.url) {
-          window.open(sig.url, '_blank', 'noopener,noreferrer');
-        } else {
-          alert(sig.error || 'Download failed');
+        const win = window.open('', '_blank');
+        try {
+          const sigRes = await fetch(`/api/story/admin/vault/signed-download/${fileId}`, { headers });
+          const sig = await sigRes.json().catch(() => ({}));
+          if (sigRes.ok && sig.url) {
+            if (win) win.location.href = sig.url;
+            else window.location.href = sig.url;
+          } else {
+            if (win) win.close();
+            alert(sig.error || 'Could not open media');
+          }
+        } catch (e) {
+          if (win) win.close();
+          console.error('Signed media open error:', e);
+          alert('Could not open media');
         }
         return;
       }
