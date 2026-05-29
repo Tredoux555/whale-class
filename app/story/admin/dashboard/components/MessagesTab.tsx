@@ -47,7 +47,7 @@ export function MessagesTab({
   return (
     <div className="bg-white rounded-lg shadow-sm p-6">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-lg font-bold text-gray-800">💬 Latest Message</h2>
+        <h2 className="text-lg font-bold text-gray-800">💬 Latest Messages</h2>
         <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
           <input
             type="checkbox"
