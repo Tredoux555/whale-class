@@ -310,12 +310,13 @@ export async function POST(request: NextRequest) {
             break;
           }
 
-          const messagesForRound: MessageParam[] = [...conversationMessages];
-          if (lastAssistantBlocks.length > 0 && pendingToolResults.length > 0) {
-            messagesForRound.push({ role: 'assistant', content: lastAssistantBlocks });
-            messagesForRound.push({ role: 'user', content: pendingToolResults });
-          }
-
+          // 🚨 SESSION 137 ROOT-CAUSE FIX (same bug Astra had) — send the FULL
+          // accumulated conversation each round. The OLD code built a one-shot
+          // array containing only the SINGLE most-recent assistant+tool
+          // exchange, so the transcript never grew: Mira called a tool every
+          // round, never learned she'd already called tools, exhausted
+          // MAX_TOOL_ROUNDS, and exited with no final text → blank bubble. We
+          // now append each round into conversationMessages (see below).
           let response;
           try {
             response = await client.messages.create(
@@ -324,7 +325,7 @@ export async function POST(request: NextRequest) {
                 max_tokens: 2048,
                 system: systemPrompt,
                 tools: MIRA_TOOLS,
-                messages: messagesForRound,
+                messages: conversationMessages,
               },
               { timeout: API_TIMEOUT_MS }
             );
@@ -406,6 +407,15 @@ export async function POST(request: NextRequest) {
             }
           }
 
+          // 🚨 SESSION 137 — accumulate THIS round into the running transcript
+          // so the next round (and the forced summary below) sees full history.
+          if (lastAssistantBlocks.length > 0) {
+            conversationMessages.push({ role: 'assistant', content: lastAssistantBlocks });
+          }
+          if (pendingToolResults.length > 0) {
+            conversationMessages.push({ role: 'user', content: pendingToolResults });
+          }
+
           const roundText = roundTextParts.join('').trim();
           if (roundText) {
             if (hasToolUse) {
@@ -418,6 +428,49 @@ export async function POST(request: NextRequest) {
 
           if (!hasToolUse) break;
           toolRound++;
+        }
+
+        // 🚨 SESSION 137 — blank-bubble safety net (mirrors Astra). If the loop
+        // exited with no final text (round-cap exhausted while still calling
+        // tools, OR an empty round broke early), force ONE tool-free summary
+        // turn over the full transcript so Mira always returns real text.
+        if (!finalAnswerText && !logError) {
+          console.warn('[mira] no final text after loop — forcing tool-free summary turn.');
+          try {
+            const forced = await client.messages.create(
+              {
+                model,
+                max_tokens: 1024,
+                system: systemPrompt,
+                tools: MIRA_TOOLS,
+                tool_choice: { type: 'none' },
+                messages: conversationMessages,
+              },
+              { timeout: API_TIMEOUT_MS }
+            );
+            if (forced.usage) {
+              totalInputTokens += forced.usage.input_tokens ?? 0;
+              totalOutputTokens += forced.usage.output_tokens ?? 0;
+            }
+            const forcedText = forced.content
+              .map((b) => (b.type === 'text' ? b.text : ''))
+              .join('')
+              .trim();
+            if (forcedText) {
+              finalAnswerText += forcedText;
+              controller.enqueue(sse(encoder, { type: 'text', text: forcedText }));
+            } else {
+              controller.enqueue(
+                sse(encoder, { type: 'error', error: "I couldn't put an answer together just now — please ask again." })
+              );
+            }
+          } catch (forceErr) {
+            logError = forceErr instanceof Error ? forceErr.message : 'forced summary failed';
+            console.error('[mira] forced summary failed:', logError);
+            controller.enqueue(
+              sse(encoder, { type: 'error', error: "I couldn't put an answer together just now — please ask again." })
+            );
+          }
         }
 
         const costUsd =
