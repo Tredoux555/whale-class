@@ -663,10 +663,18 @@ export default function AdminAgentPage() {
     if (convId && keysRef.current) writeConv(keysRef.current, convId, turns);
   }, [convId, turns]);
 
-  // Auto-scroll to bottom on new content
+  // Auto-scroll to bottom on new content — but ONLY when the user is
+  // already at (or near) the bottom. If they've scrolled UP to re-read an
+  // earlier message, leave them there; otherwise every streamed Sonnet
+  // token snaps the scroll to the bottom and they can never read Tracy's
+  // long replies. "Near the bottom" = within 80px so the user can be a
+  // line or two off the end and still get the live-stream behaviour.
   useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    const el = scrollRef.current;
+    if (!el) return;
+    const distanceFromBottom = el.scrollHeight - el.scrollTop - el.clientHeight;
+    if (distanceFromBottom <= 80) {
+      el.scrollTop = el.scrollHeight;
     }
   }, [turns]);
 
