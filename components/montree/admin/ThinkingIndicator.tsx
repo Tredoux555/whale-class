@@ -19,7 +19,7 @@
 // parent has overflow:hidden the halo can't get clipped at the bottom
 // (or any edge). The halo is a radial-gradient with no hard ring edge,
 // which looks naturally circular regardless of border-radius. The
-// inner avatar keeps its own T-monogram shape.
+// inner avatar keeps its own monogram shape (Astra "A").
 //
 // Used by:
 //   - app/montree/admin/page.tsx (full chat surface)

@@ -41,6 +41,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Anthropic from '@anthropic-ai/sdk';
 import type {
+  Message,
   MessageParam,
   ContentBlockParam,
   ToolResultBlockParam,
@@ -63,6 +64,7 @@ import {
 // prompt so every chat turn benefits from the framework depth, not just
 // parent-meeting dossiers.
 import { getTracyKnowledgeSummary } from '@/lib/montree/tracy/knowledge/loader';
+import { getAILanguageInstruction } from '@/lib/montree/i18n/locale-config';
 
 // 🚨 Session 135: Astra moved from Opus 4.6 → Sonnet 4.6. Opus was a
 // "wow factor" choice (Session 96) that didn't pay off in real principal
@@ -296,77 +298,74 @@ export async function POST(request: NextRequest) {
     ]);
   }
 
-  // Best-effort school + principal name lookup for the system prompt
-  let schoolName = 'your school';
-  let principalName = 'Principal';
-  try {
+  // Resolve the school context Astra needs for her system prompt:
+  // school name, principal name, persistent memories, knowledge summary.
+  //
+  // 🚨 SESSION 137 — this used to run BEFORE the ReadableStream was created,
+  // which blocked the Response headers from going out: the browser saw a
+  // pending POST with zero bytes for up to 13s and Astra looked frozen. It
+  // is now invoked INSIDE the stream's start() (after the keepalive flush),
+  // so the connection is alive and the glow is showing while these run.
+  //
+  // Timeouts are tight (2.5s names, 3s memory/knowledge) and ALL THREE run
+  // fully in parallel — total ceiling ~3s. The real fail-fast is now the
+  // hard fetch timeout in lib/supabase-client.ts; these are belt-and-braces.
+  // Any miss degrades gracefully to a sensible fallback and Astra still
+  // answers — the answer just lacks that school's name / memory / framework
+  // depth for that one turn.
+  async function resolveContext(): Promise<{
+    schoolName: string;
+    principalName: string;
+    memorySection: string;
+    knowledgeSummary: string;
+  }> {
     const namesPromise = Promise.all([
-      supabase
-        .from('montree_schools')
-        .select('name')
-        .eq('id', auth.schoolId)
-        .maybeSingle(),
-      supabase
-        .from('montree_school_admins')
-        .select('name')
-        .eq('id', auth.userId)
-        .maybeSingle(),
+      supabase.from('montree_schools').select('name').eq('id', auth.schoolId).maybeSingle(),
+      supabase.from('montree_school_admins').select('name').eq('id', auth.userId).maybeSingle(),
     ]);
-    const [schoolRes, principalRes] = await withTimeout(
-      namesPromise,
-      5_000,
-      [{ data: null, error: null }, { data: null, error: null }] as Awaited<typeof namesPromise>,
-      'school+principal name lookup'
-    );
+    const memoriesPromise = loadActiveMemories(supabase, auth.userId, 30);
+    const knowledgePromise = getTracyKnowledgeSummary().catch((e) => {
+      console.warn(
+        '[principal-agent] knowledge summary load failed (non-fatal):',
+        e instanceof Error ? e.message : 'unknown error'
+      );
+      return '';
+    });
+
+    const [names, principalMemories, knowledgeSummary] = await Promise.all([
+      withTimeout(
+        namesPromise,
+        2_500,
+        [{ data: null, error: null }, { data: null, error: null }] as Awaited<typeof namesPromise>,
+        'school+principal name lookup'
+      ),
+      withTimeout(memoriesPromise, 3_000, [], 'loadActiveMemories'),
+      withTimeout(knowledgePromise, 3_000, '', 'getTracyKnowledgeSummary'),
+    ]);
+
+    const [schoolRes, principalRes] = names;
+    let schoolName = 'your school';
+    let principalName = 'Principal';
     if (schoolRes.data?.name) schoolName = schoolRes.data.name;
     if (principalRes.data?.name) {
-      // Resolve the name Astra uses to address the principal.
-      //
-      // For a regular first+last name ("Tredoux Willemse"), we want the
-      // first name — Astra greets warmly with "Hi, Tredoux". But when the
-      // row uses a title-prefixed name ("Principal Leu", "Ms Chen",
-      // "Mr Singh"), splitting on space gives just the title — "Hi,
-      // Principal" reads cold and wrong. Detect title prefixes and use
-      // the full name so the greeting lands as "Hi, Principal Leu".
+      // For a regular first+last name ("Tredoux Willemse") use the first
+      // name — Astra greets warmly with "Hi, Tredoux". For a title-prefixed
+      // name ("Principal Leu", "Ms Chen") splitting on space gives just the
+      // title — "Hi, Principal" reads cold — so use the full name.
       const fullName = principalRes.data.name.trim();
       const TITLE_PREFIXES = /^(principal|ms|mrs|mr|dr|prof|professor|teacher|head|director)\.?\s+/i;
       principalName = TITLE_PREFIXES.test(fullName)
         ? fullName
         : (fullName.split(' ')[0] || 'Principal');
     }
-  } catch {
-    // Keep defaults.
-  }
 
-  // Load Astra's persistent memories for this principal (Session 99 /
-  // migration 195). Top-30 most recent active memories get injected into
-  // the system prompt so Astra "remembers" preferences, concerns, voice,
-  // and parent priorities across conversations and devices. Failure here
-  // degrades gracefully to no-memory mode (loadActiveMemories returns []
-  // on any error including "table doesn't exist yet").
-  //
-  // Session 136 — also load the psychological knowledge summary. Parallel
-  // to memory load. Failure degrades gracefully (empty string → no
-  // knowledge block in the prompt; Astra still works).
-  //
-  // 🚨 BOTH wrapped in 8s timeouts. The disk read for the knowledge
-  // summary is cached after first call (process lifetime), so it's
-  // fast on the warm path; the timeout is for the cold start. The
-  // memory load is a Supabase query with no SDK-level timeout — the
-  // race is the only protection against a stuck connection.
-  const memoriesPromise = loadActiveMemories(supabase, auth.userId, 30);
-  const knowledgePromise = getTracyKnowledgeSummary().catch((e) => {
-    console.warn(
-      '[principal-agent] knowledge summary load failed (non-fatal):',
-      e instanceof Error ? e.message : 'unknown error'
-    );
-    return '';
-  });
-  const [principalMemories, knowledgeSummary] = await Promise.all([
-    withTimeout(memoriesPromise, 8_000, [], 'loadActiveMemories'),
-    withTimeout(knowledgePromise, 8_000, '', 'getTracyKnowledgeSummary'),
-  ]);
-  const memorySection = formatMemoriesForPrompt(principalMemories);
+    return {
+      schoolName,
+      principalName,
+      memorySection: formatMemoriesForPrompt(principalMemories),
+      knowledgeSummary,
+    };
+  }
 
   const encoder = new TextEncoder();
 
@@ -468,6 +467,16 @@ export async function POST(request: NextRequest) {
         // entire response.
         controller.enqueue(encoder.encode(':keepalive\n\n'));
 
+        // 🚨 SESSION 137 — resolve school context HERE, inside the stream,
+        // not before it. The Response headers + keepalive have already gone
+        // out, so the client shows the glow while these lookups run. An
+        // explicit `thinking` event makes the indicator appear instantly
+        // even on clients that wait for a first parsed event before glowing.
+        controller.enqueue(sse(encoder, { type: 'thinking', text: '' }));
+
+        const { schoolName, principalName, memorySection, knowledgeSummary } =
+          await resolveContext();
+
         const systemPrompt = buildTracySystemPrompt({
           schoolName,
           principalName,
@@ -477,10 +486,28 @@ export async function POST(request: NextRequest) {
           knowledgeSummary,
         });
 
+        // Minimal, tool-free fallback prompt. Used ONLY as a last resort when
+        // the full prompt produces an empty Sonnet response (see the retry
+        // ladder below). No tools, no worked example, no knowledge bundle —
+        // just enough for Astra to answer in plain text. A prompt this small
+        // effectively never returns empty, which is the whole point: it
+        // guarantees the principal gets a real answer instead of a blank
+        // bubble or a "please try again" message.
+        const minimalSystemPrompt =
+          `You are Astra, ${principalName}'s chief-of-staff at ${schoolName}. ` +
+          `Today is ${todayLabel}.${getAILanguageInstruction(locale)}\n\n` +
+          `Answer the principal's question directly and concisely in a warm, ` +
+          `practical voice. If you'd need school data you don't have in front ` +
+          `of you, say briefly what you'd check, then give your best guidance ` +
+          `anyway. End with one concrete next step.`;
+
         const conversationMessages: MessageParam[] = [...initialMessages];
         let lastAssistantBlocks: ContentBlockParam[] = [];
         let pendingToolResults: ToolResultBlockParam[] = [];
         let toolRound = 0;
+        // One-shot guard: we recover from an empty Sonnet response at most once
+        // per request (see the empty-response recovery block below).
+        let emptyRecoveryDone = false;
 
         while (toolRound < MAX_TOOL_ROUNDS) {
           if (Date.now() - startTime > TOTAL_TIMEOUT_MS) {
@@ -745,22 +772,67 @@ export async function POST(request: NextRequest) {
           // your school context — please try again." rather than a
           // blank avatar.
           if (!hasToolUse && !roundText) {
-            const reason =
-              response.stop_reason === 'end_turn'
-                ? 'empty_end_turn'
-                : `empty_${response.stop_reason ?? 'unknown'}`;
-            logError = `Sonnet returned empty response (stop_reason=${response.stop_reason ?? 'unknown'}, blocks=${response.content.length})`;
+            // 🚨 SESSION 137 — empty-response RECOVERY (replaces the old
+            // "please try again" dead-end that defined the bug for 7 sessions).
+            //
+            // A round with no text AND no tool_use is the failure that produced
+            // the empty bubble. Instead of surfacing an error, recover
+            // automatically: re-ask Sonnet ONCE with a minimal, tool-free
+            // prompt and just the principal's question. Stripped of the 25-tool
+            // schema and the worked example, with a real question in front of
+            // it, Sonnet effectively always returns text — so the principal
+            // gets a real (if tool-free) answer instead of nothing. We only
+            // attempt this once per request.
+            if (!emptyRecoveryDone) {
+              emptyRecoveryDone = true;
+              console.warn(
+                `[principal-agent] empty response on round ${toolRound} ` +
+                `(stop_reason=${response.stop_reason ?? '?'}). Recovering with a ` +
+                `minimal tool-free prompt.`
+              );
+              let recovery: Message | null = null;
+              try {
+                recovery = await client.messages.create(
+                  {
+                    model,
+                    max_tokens: 1024,
+                    system: minimalSystemPrompt,
+                    messages: [{ role: 'user', content: question }],
+                  },
+                  { timeout: API_TIMEOUT_MS }
+                );
+              } catch (recErr) {
+                console.error(
+                  '[principal-agent] recovery call failed:',
+                  recErr instanceof Error ? recErr.message : 'unknown'
+                );
+              }
+              if (recovery?.usage) {
+                totalInputTokens += recovery.usage.input_tokens ?? 0;
+                totalOutputTokens += recovery.usage.output_tokens ?? 0;
+              }
+              const recoveryText = (recovery?.content ?? [])
+                .map((b) => (b.type === 'text' ? b.text : ''))
+                .join('')
+                .trim();
+              if (recoveryText) {
+                finalAnswerText += recoveryText;
+                controller.enqueue(sse(encoder, { type: 'text', text: recoveryText }));
+                break; // recovered — done
+              }
+              // Recovery itself came back empty (extremely rare). Fall through
+              // to the honest error below.
+            }
+            logError = `Sonnet returned empty response after recovery (stop_reason=${response.stop_reason ?? 'unknown'}, blocks=${response.content.length})`;
             console.error(
-              `[principal-agent] EMPTY RESPONSE — toolRound=${toolRound} reason=${reason} ` +
-              `Sonnet returned no text + no tool_use. Likely degraded prompt from ` +
-              `pre-flight Supabase timeouts. Emitting error to client so the user ` +
-              `sees something instead of an empty bubble.`
+              `[principal-agent] EMPTY RESPONSE (unrecovered) — toolRound=${toolRound} ` +
+              `stop_reason=${response.stop_reason ?? 'unknown'}.`
             );
             controller.enqueue(
               sse(encoder, {
                 type: 'error',
                 error:
-                  "I had trouble loading your school's context just now. Please try again — it usually clears on the second attempt.",
+                  "I couldn't put an answer together just now — please ask again.",
               })
             );
             break;
