@@ -518,21 +518,22 @@ export async function POST(request: NextRequest) {
             break;
           }
 
-          const messagesForRound: MessageParam[] = [...conversationMessages];
-          if (
-            lastAssistantBlocks.length > 0 &&
-            pendingToolResults.length > 0
-          ) {
-            messagesForRound.push({
-              role: 'assistant',
-              content: lastAssistantBlocks,
-            });
-            messagesForRound.push({
-              role: 'user',
-              content: pendingToolResults,
-            });
-          }
-
+          // 🚨 SESSION 137 ROOT-CAUSE FIX — send the FULL accumulated
+          // conversation each round, not a one-shot slice.
+          //
+          // The OLD code built a `messagesForRound` containing only the SINGLE
+          // most-recent assistant+tool exchange on top of the original
+          // question. Across multi-round tool use the transcript NEVER GREW:
+          // every round Sonnet saw "question + one tool call + one result" and
+          // never learned it had ALREADY called tools. So it called a tool
+          // every single round, exhausted MAX_TOOL_ROUNDS, and fell out of the
+          // loop with no final text → the blank bubble that haunted Astra for
+          // 7 sessions. (Production logs: stop_reason=tool_use every round,
+          // input_tokens frozen at 16736 = transcript not accumulating.)
+          //
+          // We now append each round's assistant turn + tool results into
+          // `conversationMessages` at the END of the round (see below), so each
+          // round carries the whole history and Sonnet converges to an answer.
           let response;
           try {
             response = await client.messages.create(
@@ -548,7 +549,7 @@ export async function POST(request: NextRequest) {
                 max_tokens: 4096,
                 system: systemPrompt,
                 tools: TRACY_TOOLS,
-                messages: messagesForRound,
+                messages: conversationMessages,
               },
               { timeout: API_TIMEOUT_MS }
             );
@@ -743,6 +744,26 @@ export async function POST(request: NextRequest) {
             }
           }
 
+          // 🚨 SESSION 137 — accumulate THIS round into the running transcript
+          // so the next round (and the forced summary below) sees the full
+          // history. Assistant turn first, then the tool results as the
+          // following user turn — the order the Anthropic API requires for
+          // multi-round tool use. This is the other half of the root-cause fix
+          // noted above: without it the conversation never grows and Sonnet
+          // never converges.
+          if (lastAssistantBlocks.length > 0) {
+            conversationMessages.push({
+              role: 'assistant',
+              content: lastAssistantBlocks,
+            });
+          }
+          if (pendingToolResults.length > 0) {
+            conversationMessages.push({
+              role: 'user',
+              content: pendingToolResults,
+            });
+          }
+
           const roundText = roundTextParts.join('').trim();
           if (roundText) {
             if (hasToolUse) {
@@ -840,6 +861,63 @@ export async function POST(request: NextRequest) {
 
           if (!hasToolUse) break;
           toolRound++;
+        }
+
+        // 🚨 SESSION 137 — round-cap safety net. If the tool-use loop ran out
+        // of rounds while Astra was still calling tools (hasToolUse every
+        // round), she never produced a final answer and finalAnswerText is
+        // empty. Rather than close with a blank bubble, make ONE final call
+        // over the full accumulated transcript with tool_choice:'none' so
+        // Sonnet MUST summarize what it gathered into plain text. Guarded on
+        // !finalAnswerText (only when there's genuinely no answer yet) and
+        // !logError (don't override an error already surfaced to the client).
+        if (!finalAnswerText && !logError) {
+          console.warn(
+            '[principal-agent] tool loop exhausted with no final text — ' +
+            'forcing a tool-free summary turn (tool_choice:none).'
+          );
+          try {
+            const forced = await client.messages.create(
+              {
+                model,
+                max_tokens: 1024,
+                system: systemPrompt,
+                tools: TRACY_TOOLS,
+                tool_choice: { type: 'none' },
+                messages: conversationMessages,
+              },
+              { timeout: API_TIMEOUT_MS }
+            );
+            if (forced.usage) {
+              totalInputTokens += forced.usage.input_tokens ?? 0;
+              totalOutputTokens += forced.usage.output_tokens ?? 0;
+            }
+            const forcedText = forced.content
+              .map((b) => (b.type === 'text' ? b.text : ''))
+              .join('')
+              .trim();
+            if (forcedText) {
+              finalAnswerText += forcedText;
+              controller.enqueue(sse(encoder, { type: 'text', text: forcedText }));
+            } else {
+              logError = 'Forced summary returned empty';
+              controller.enqueue(
+                sse(encoder, {
+                  type: 'error',
+                  error: "I couldn't put an answer together just now — please ask again.",
+                })
+              );
+            }
+          } catch (forceErr) {
+            logError = forceErr instanceof Error ? forceErr.message : 'forced summary failed';
+            console.error('[principal-agent] forced summary failed:', logError);
+            controller.enqueue(
+              sse(encoder, {
+                type: 'error',
+                error: "I couldn't put an answer together just now — please ask again.",
+              })
+            );
+          }
         }
 
         // Compute cost
