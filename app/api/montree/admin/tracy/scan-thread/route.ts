@@ -1,5 +1,5 @@
 // /api/montree/admin/tracy/scan-thread/route.ts
-// Session 97 — Tracy reads a parent thread end-to-end and returns a
+// Session 97 — Astra reads a parent thread end-to-end and returns a
 // chief-of-staff briefing: sentiment + pattern + recurring concerns +
 // recommended action. Principal-only.
 
@@ -45,7 +45,7 @@ export async function POST(request: NextRequest) {
   if (tier.tier === 'free' || !tier.model) {
     return NextResponse.json(
       {
-        error: 'Tracy thread scan requires an active AI tier.',
+        error: 'Astra thread scan requires an active AI tier.',
         tier: tier.tier,
         requires_upgrade: true,
         upgrade_url: '/montree/admin/billing',
@@ -68,7 +68,7 @@ export async function POST(request: NextRequest) {
 
   const [messagesRes, childRes, classroomRes] = await Promise.all([
     supabase
-      // 🚨 Session 121 — pull encryption_version + decrypt before Tracy sees it.
+      // 🚨 Session 121 — pull encryption_version + decrypt before Astra sees it.
       .from('montree_thread_messages')
       .select('sender_role, sender_name, body, encryption_version, sent_at')
       .eq('thread_id', body.thread_id)
@@ -121,7 +121,7 @@ export async function POST(request: NextRequest) {
 
   const languageDirective = getAILanguageInstruction(body.locale || 'en');
 
-  const systemPrompt = `You are Tracy. The principal has just opened a parent-teacher conversation thread and wants a quick chief-of-staff read. Give her one short paragraph (60-100 words) covering:
+  const systemPrompt = `You are Astra. The principal has just opened a parent-teacher conversation thread and wants a quick chief-of-staff read. Give her one short paragraph (60-100 words) covering:
 
 - The current state of the conversation (where it sits emotionally)
 - Any recurring concerns or unresolved questions
@@ -163,7 +163,7 @@ ${endFence}`;
       .trim();
 
     if (!text) {
-      return NextResponse.json({ error: 'Tracy returned an empty briefing' }, { status: 500 });
+      return NextResponse.json({ error: 'Astra returned an empty briefing' }, { status: 500 });
     }
 
     return NextResponse.json({
@@ -173,6 +173,6 @@ ${endFence}`;
     });
   } catch (err) {
     console.error('[tracy/scan-thread]', err);
-    return NextResponse.json({ error: 'Tracy could not scan the thread' }, { status: 500 });
+    return NextResponse.json({ error: 'Astra could not scan the thread' }, { status: 500 });
   }
 }

@@ -1,5 +1,5 @@
 // /api/montree/admin/tracy/draft-response/route.ts
-// Session 97 — Tracy drafts a parent reply for the principal to send. Reads
+// Session 97 — Astra drafts a parent reply for the principal to send. Reads
 // the thread + child context + principal's voice samples (her last 10 messages
 // across the school) to match her tone. Principal-only.
 
@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
   if (tier.tier === 'free' || !tier.model) {
     return NextResponse.json(
       {
-        error: 'Tracy reply drafting requires an active AI tier.',
+        error: 'Astra reply drafting requires an active AI tier.',
         tier: tier.tier,
         requires_upgrade: true,
         upgrade_url: '/montree/admin/billing',
@@ -135,7 +135,7 @@ export async function POST(request: NextRequest) {
 
   const languageDirective = getAILanguageInstruction(body.locale || 'en');
 
-  // === Parent Communication Playbook (the Tracy enrichment) ===
+  // === Parent Communication Playbook (the Astra enrichment) ===
   const playbook = `PARENT COMMUNICATION PLAYBOOK — keep these reflexes when drafting:
 
 DE-ESCALATION when a parent is frustrated:
@@ -157,7 +157,7 @@ LENGTH:
 - Most parent replies are 3-6 sentences. Short, warm, decisive. No bullet points. No headings.
 - One concrete next move at the end if appropriate ("I'll have [teacher] send you a photo from this week.").`;
 
-  const systemPrompt = `You are Tracy, drafting a reply to a parent on behalf of ${principalFirstName}, the school principal. Match HER voice — not yours.${languageDirective}
+  const systemPrompt = `You are Astra, drafting a reply to a parent on behalf of ${principalFirstName}, the school principal. Match HER voice — not yours.${languageDirective}
 
 ${playbook}
 
@@ -195,12 +195,12 @@ Draft ${principalFirstName}'s reply.`;
       .trim();
 
     if (!text) {
-      return NextResponse.json({ error: 'Tracy returned an empty draft' }, { status: 500 });
+      return NextResponse.json({ error: 'Astra returned an empty draft' }, { status: 500 });
     }
 
     return NextResponse.json({ draft: text });
   } catch (err) {
     console.error('[tracy/draft-response]', err);
-    return NextResponse.json({ error: 'Tracy could not draft a response' }, { status: 500 });
+    return NextResponse.json({ error: 'Astra could not draft a response' }, { status: 500 });
   }
 }

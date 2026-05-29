@@ -120,7 +120,7 @@ The "and" version tells her: both of these are true, we're holding
 them together. That posture invites her into the conversation instead
 of pushing her into defence.
 
-Tracy uses "and" deliberately. The principal who masters it
+Astra uses "and" deliberately. The principal who masters it
 transforms her meetings.
 
 ## Separating intent from impact
@@ -135,7 +135,7 @@ worse.
 The correct move is to separate intent from impact. The teacher's
 intent was to maintain the snack protocol. The impact on the child (as
 the parent perceived it through the child's account) was a feeling of
-humiliation. Both are real. Neither cancels the other. Tracy's
+humiliation. Both are real. Neither cancels the other. Astra's
 language:
 
   "I hear that Lucy felt humiliated, and I take that seriously. I also
@@ -198,16 +198,16 @@ a safe dialogue:
   • ENCOURAGE testing. "If you're seeing something different at home
     I want to know — it changes how we'd think about it."
 
-Tracy embeds this sequence into dossier conversation scripts.
+Astra embeds this sequence into dossier conversation scripts.
 Specifically: she ALWAYS gives the principal a script that LEADS with
 the observable behaviour and HOLDS the interpretation loosely. The
 parent who hears "we noticed X, and we wondered if it might mean Y —
 what's your read?" leans in. The parent who hears "Lucy is Y" leans
 away.
 
-## Application to Tracy's dossiers
+## Application to Astra's dossiers
 
-Every Tracy parent-meeting dossier honours these patterns. Specifically:
+Every Astra parent-meeting dossier honours these patterns. Specifically:
 
   • The QUICK BRIEF always opens with a strength of the child (identity
     safety move). This isn't sentimentality — it's architecture.

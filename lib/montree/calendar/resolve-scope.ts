@@ -28,7 +28,7 @@ export async function resolveCalendarScope(
     // Session 129 follow-up — defensive principal-upgrade.
     // Founder-principals (someone in BOTH montree_teachers AND
     // montree_school_admins) often get role='teacher' stamped on their JWT
-    // by the unified login (same bug class as Session 86 Tracy 403).
+    // by the unified login (same bug class as Session 86 Astra 403).
     // For the calendar surface that means QuickCreateMenu hides the Term
     // option because ACTIONS_BY_ROLE['teacher'] doesn't include it.
     //

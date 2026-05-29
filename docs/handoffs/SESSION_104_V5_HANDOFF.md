@@ -10,8 +10,8 @@
 |---|--------|------|
 | 20 | `fc28c603` | Webhook DLQ tab + Recurring template panel + FX sub-tab |
 | 21 | `77594ec0` | Print/PDF accountant pack + server-errors logger |
-| 22 | `7dd3e9af` | Server errors tab + Mira card + Tracy card + landing polish |
-| 23 | `af3a9127` | Health tab manual cron triggers + Tracy/Mira changelog entry |
+| 22 | `7dd3e9af` | Server errors tab + Mira card + Astra card + landing polish |
+| 23 | `af3a9127` | Health tab manual cron triggers + Astra/Mira changelog entry |
 
 ---
 

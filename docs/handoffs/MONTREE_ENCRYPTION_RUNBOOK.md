@@ -9,7 +9,7 @@
 > "Every parent-school message, every meeting summary, every call transcript is encrypted at rest with AES-256-GCM — the same algorithm banks and governments use to protect classified data. Even if an attacker stole our database, they'd see scrambled bytes."
 
 What you can NOT say:
-- "We can't read your data" — server holds the key, can decrypt. (That'd require Vault-style E2E which would break Tracy/Mira.)
+- "We can't read your data" — server holds the key, can decrypt. (That'd require Vault-style E2E which would break Astra/Mira.)
 - "Photos are encrypted by us" — photos are encrypted-at-rest by Supabase Storage, not by our application layer.
 
 ---
@@ -87,7 +87,7 @@ Push the Session 121 code. Railway auto-deploys. The flag is still OFF so the co
 
 ### Step 5 — Smoke test the key
 
-Visit `/montree/admin` as a principal. Tracy should still work. Open a parent thread, see existing messages render correctly (they're legacy plaintext, encryption_version NULL).
+Visit `/montree/admin` as a principal. Astra should still work. Open a parent thread, see existing messages render correctly (they're legacy plaintext, encryption_version NULL).
 
 ### Step 6 — Flip the flag
 
@@ -226,7 +226,7 @@ Done. All rows now encrypted with the new key. Old key can be archived (don't de
 |---|---|---|
 | `[Encrypted — could not decrypt]` sentinel appears in UI | Key in env doesn't match key used to encrypt | Restore the correct key from 1Password / paper backup |
 | 500 on POST a message after flag flip | `MONTREE_ENCRYPTION_KEY` env var not set OR wrong length | Set it in Railway; redeploy. Code falls back to plaintext on misconfig, but loud-logs `[montree-crypto] encryption_v1 flag ON but key missing` so check Railway logs |
-| Tracy returns blank or sentinel content | Tracy reads `montree_thread_messages.body`; if it's encrypted but read path doesn't decrypt, sentinel surfaces | Already fixed in Session 121 — Tracy's tool-executor decrypts via `readEncryptedField`. If broken, verify `encryption_version` is in the SELECT |
+| Astra returns blank or sentinel content | Astra reads `montree_thread_messages.body`; if it's encrypted but read path doesn't decrypt, sentinel surfaces | Already fixed in Session 121 — Astra's tool-executor decrypts via `readEncryptedField`. If broken, verify `encryption_version` is in the SELECT |
 | `42P01` error on writes | Migration 226 not run | Run it in Supabase SQL Editor |
 | Audit log shows mismatched `gcm:` prefixes after rotation | Old key still encrypting some rows | Wait for full Railway deploy; verify env var |
 | Backfill stuck at 0 rows | All rows are already encrypted, OR no rows match the filter | Read the dry-run output — `Encrypted: 0` means nothing to do. Run `--commit` if you have pending rows |

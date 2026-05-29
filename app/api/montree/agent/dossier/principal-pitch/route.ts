@@ -35,7 +35,7 @@ export const dynamic = 'force-dynamic';
 export const maxDuration = 120;
 
 // Rate limit: 30 pitch dossiers per agent per hour. Higher than the
-// Tracy parent-meeting limit because agents legitimately pitch many
+// Astra parent-meeting limit because agents legitimately pitch many
 // schools per day; 30/hr covers a full sales day with headroom.
 const RATE_LIMIT_PER_HOUR = 30;
 
@@ -199,7 +199,7 @@ export async function POST(request: NextRequest) {
   return NextResponse.json(result.data, { status: 200 });
 }
 
-// GET — printable HTML view. Same pattern as Tracy's GET.
+// GET — printable HTML view. Same pattern as Astra's GET.
 export async function GET(request: NextRequest) {
   const auth = await verifySchoolRequest(request);
   if (auth instanceof NextResponse) return auth;

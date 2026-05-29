@@ -249,7 +249,7 @@ export default function AgentThreadDetailPage() {
                           background: 'rgba(232,201,106,0.15)', color: '#E8C96A',
                           borderRadius: 999, fontSize: 10, fontWeight: 500,
                         }}>
-                          Tracy drafted
+                          Astra drafted
                         </span>
                       )}
                     </div>

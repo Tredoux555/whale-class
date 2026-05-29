@@ -179,7 +179,7 @@ This one is more personal. More intimate. Almost documentary. The opening line s
 
 **This is what people mean when they say AI is disruptive.**
 
-> [Cut to: rotating product shots — Montree work identification, parent report, Tracy interface, twelve languages flashing on screen.]
+> [Cut to: rotating product shots — Montree work identification, parent report, Astra interface, twelve languages flashing on screen.]
 
 **But Montree is not the destination.**
 
@@ -629,7 +629,7 @@ Why this one before the others:
 
 If Masterpiece II lands *immediately* and feels clean — no re-render needed — you still have 16 credits to play with. That's roughly:
 - One more masterpiece in 16:9 (Masterpiece I or III, ~10–12 credits), OR
-- Two supporting shorts (~16 credits, V07 Tracy + V08 The Magic — the two strongest from the playbook), OR
+- Two supporting shorts (~16 credits, V07 Astra + V08 The Magic — the two strongest from the playbook), OR
 - Hold the 16 credits for the next batch.
 
 ### What NOT to do with 46 credits

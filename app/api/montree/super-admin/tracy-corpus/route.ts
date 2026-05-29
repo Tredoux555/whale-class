@@ -1,6 +1,6 @@
 // app/api/montree/super-admin/tracy-corpus/route.ts
 //
-// Ultimate Tracy Phase E — super-admin view of Tracy's corpus.
+// Ultimate Astra Phase E — super-admin view of Astra's corpus.
 //
 // Returns per-school stats: total entries, by-type breakdown, most
 // referenced, never-referenced (>30 days old, candidates for pruning),

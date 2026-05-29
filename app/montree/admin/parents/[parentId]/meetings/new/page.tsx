@@ -1,6 +1,6 @@
 // app/montree/admin/parents/[parentId]/meetings/new/page.tsx
 //
-// Ultimate Tracy Phase B — record a parent meeting in-app.
+// Ultimate Astra Phase B — record a parent meeting in-app.
 //
 // FLOW
 //   1. Pick meeting type.
@@ -757,7 +757,7 @@ export default function NewMeetingPage() {
                 cursor: 'pointer',
               }}
             >
-              Read meeting (Tracy will analyse + propose profile updates)
+              Read meeting (Astra will analyse + propose profile updates)
             </button>
             <Link
               href={`/montree/admin/parents/${parentId}`}
@@ -779,7 +779,7 @@ export default function NewMeetingPage() {
           <div style={{ textAlign: 'center', marginTop: 64 }}>
             <Spinner />
             <p style={{ color: T.textSecondary, fontSize: 15 }}>
-              Tracy is reading the meeting…
+              Astra is reading the meeting…
             </p>
             <p style={{ color: T.textMuted, fontSize: 13, marginTop: 8 }}>
               About 30-60 seconds. Worth the wait.

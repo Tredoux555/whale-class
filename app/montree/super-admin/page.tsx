@@ -17,7 +17,7 @@ const VisitorsTab = dynamic(() => import('@/components/montree/super-admin/Visit
 // Renamed surface label from "Referrals" → "Agents". Component file stays as
 // ReferralsTab for now — phase 2 will refactor internals to be agent-centric
 // (list of people → drill into one → see their codes + schools + earnings).
-// Super-admin Guru was retired this session; Tracy on the principal portal
+// Super-admin Guru was retired this session; Astra on the principal portal
 // does the equivalent, school-scoped, and cross-school queries weren't used.
 const AgentsTab = dynamic(() => import('@/components/montree/super-admin/ReferralsTab'), { ssr: false });
 // Phase 6 — Money tab. Payouts list + Calculate trigger + state transitions.

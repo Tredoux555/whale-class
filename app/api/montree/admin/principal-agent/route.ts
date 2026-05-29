@@ -1,14 +1,14 @@
 // app/api/montree/admin/principal-agent/route.ts
 //
-// Tracy — the principal's chief-of-staff AI.
+// Astra — the principal's chief-of-staff AI.
 //
-// The principal types a question. Tracy figures out what data to fetch
+// The principal types a question. Astra figures out what data to fetch
 // (which child, which classroom, which teacher), calls one or more read-only
 // tools, and replies in a chief-of-staff voice that always ends with one
 // concrete next action. The whole point is that the principal doesn't have to
 // think about WHERE the answer lives — she just asks.
 //
-// This route is the SSE plumbing. Tracy's brain (system prompt, tool
+// This route is the SSE plumbing. Astra's brain (system prompt, tool
 // definitions, framework tools, executor) lives in lib/montree/tracy/ —
 // keep this file thin and don't drop architectural details into it.
 //
@@ -21,7 +21,7 @@
 //   the same id for follow-up questions in the same conversation.
 //
 // Response: SSE stream of { type, ... } events:
-//   { type: 'tool_call', tool, input }            — Tracy invoked a tool
+//   { type: 'tool_call', tool, input }            — Astra invoked a tool
 //   { type: 'tool_progress', tool, phase, vars }   — live status from inside a tool
 //   { type: 'meeting_brief_init', child_id, meeting_purpose }
 //     — (Session 136) fires the instant prepare_parent_meeting starts,
@@ -59,12 +59,12 @@ import {
   formatMemoriesForPrompt,
 } from '@/lib/montree/tracy/memory';
 // Session 136 — psychological knowledge base. Resolved once per request
-// (cached process-wide after first hit) and threaded into Tracy's system
+// (cached process-wide after first hit) and threaded into Astra's system
 // prompt so every chat turn benefits from the framework depth, not just
 // parent-meeting dossiers.
 import { getTracyKnowledgeSummary } from '@/lib/montree/tracy/knowledge/loader';
 
-// 🚨 Session 135: Tracy moved from Opus 4.6 → Sonnet 4.6. Opus was a
+// 🚨 Session 135: Astra moved from Opus 4.6 → Sonnet 4.6. Opus was a
 // "wow factor" choice (Session 96) that didn't pay off in real principal
 // use — too slow (60-180s) and too expensive ($0.20+ per interaction)
 // for what's mostly synthesis. Sonnet matches the quality on these tasks
@@ -92,7 +92,7 @@ const COST_MODEL = 'claude-sonnet-4-6';
 const SONNET_INPUT_USD_PER_MTOK = 3;
 const SONNET_OUTPUT_USD_PER_MTOK = 15;
 
-// 🚨 Session 113 V2 Tracy + Mira audit quick win: cost-model drift now logs
+// 🚨 Session 113 V2 Astra + Mira audit quick win: cost-model drift now logs
 // to montree_server_errors in addition to console. Without the DB write, a
 // silently-wrong cost_usd in audit logs is invisible until end-of-month
 // reconciliation. Module-scoped guard prevents log spam from a hot route.
@@ -123,7 +123,7 @@ function assertSupportedCostModel(model: string): void {
   }
 }
 
-// ── Tracy's brain lives in lib/montree/tracy/ ────────────────────────
+// ── Astra's brain lives in lib/montree/tracy/ ────────────────────────
 // System prompt: lib/montree/tracy/system-prompt.ts
 // Tool defs:     lib/montree/tracy/tool-definitions.ts (TRACY_TOOLS)
 // Executor:      lib/montree/tracy/tool-executor.ts (executeTracyTool)
@@ -172,7 +172,7 @@ export async function POST(request: NextRequest) {
   // a known JWT-mis-stamping case: someone who is BOTH a teacher row and a
   // school_admins row gets a teacher JWT from the unified login (which
   // tries tryTeacherLogin before tryPrincipalLogin) — even though they
-  // are, in fact, a principal in the DB. Without this fallback, Tracy
+  // are, in fact, a principal in the DB. Without this fallback, Astra
   // hard-403s and looks broken to the actual owner of the school.
   // Cross-table UUID collisions between montree_teachers and
   // montree_school_admins are not a concern here because both columns are
@@ -249,7 +249,7 @@ export async function POST(request: NextRequest) {
       { status: 402 }
     );
   }
-  // Session 135: Tracy on Sonnet 4.6 (was Opus). 5× cheaper, 3× faster, same
+  // Session 135: Astra on Sonnet 4.6 (was Opus). 5× cheaper, 3× faster, same
   // synthesis quality for the principal's chief-of-staff workload. Reverting
   // to Opus is a single-line change — swap AI_MODEL → OPUS_MODEL here AND
   // update COST_MODEL + the pricing constants above. OPUS_MODEL is still
@@ -265,10 +265,10 @@ export async function POST(request: NextRequest) {
   // 🚨 SESSION 136 HANG FIX (May 29, 2026)
   // Every pre-flight await BEFORE the ReadableStream is created blocks the
   // response headers from going out. The browser sees the POST as pending
-  // with NO SSE events arriving — Tracy looks frozen even though she's just
+  // with NO SSE events arriving — Astra looks frozen even though she's just
   // waiting on Supabase. Wrap every pre-flight DB lookup in a timeout race
-  // so a stuck Supabase connection can't hang Tracy forever. Defaults are
-  // used if any timeout fires — Tracy degrades gracefully to no-memory /
+  // so a stuck Supabase connection can't hang Astra forever. Defaults are
+  // used if any timeout fires — Astra degrades gracefully to no-memory /
   // no-knowledge mode, still works, the principal sees an answer.
   function withTimeout<T>(p: Promise<T>, ms: number, fallback: T, label: string): Promise<T> {
     // 🚨 AUDIT FIX (May 29, 2026)
@@ -320,10 +320,10 @@ export async function POST(request: NextRequest) {
     );
     if (schoolRes.data?.name) schoolName = schoolRes.data.name;
     if (principalRes.data?.name) {
-      // Resolve the name Tracy uses to address the principal.
+      // Resolve the name Astra uses to address the principal.
       //
       // For a regular first+last name ("Tredoux Willemse"), we want the
-      // first name — Tracy greets warmly with "Hi, Tredoux". But when the
+      // first name — Astra greets warmly with "Hi, Tredoux". But when the
       // row uses a title-prefixed name ("Principal Leu", "Ms Chen",
       // "Mr Singh"), splitting on space gives just the title — "Hi,
       // Principal" reads cold and wrong. Detect title prefixes and use
@@ -338,16 +338,16 @@ export async function POST(request: NextRequest) {
     // Keep defaults.
   }
 
-  // Load Tracy's persistent memories for this principal (Session 99 /
+  // Load Astra's persistent memories for this principal (Session 99 /
   // migration 195). Top-30 most recent active memories get injected into
-  // the system prompt so Tracy "remembers" preferences, concerns, voice,
+  // the system prompt so Astra "remembers" preferences, concerns, voice,
   // and parent priorities across conversations and devices. Failure here
   // degrades gracefully to no-memory mode (loadActiveMemories returns []
   // on any error including "table doesn't exist yet").
   //
   // Session 136 — also load the psychological knowledge summary. Parallel
   // to memory load. Failure degrades gracefully (empty string → no
-  // knowledge block in the prompt; Tracy still works).
+  // knowledge block in the prompt; Astra still works).
   //
   // 🚨 BOTH wrapped in 8s timeouts. The disk read for the knowledge
   // summary is cached after first call (process lifetime), so it's
@@ -432,7 +432,7 @@ export async function POST(request: NextRequest) {
   let finalAnswerText = '';
   let logError: string | null = null;
 
-  // Today's date label for Tracy's system prompt — formatted in the
+  // Today's date label for Astra's system prompt — formatted in the
   // principal's locale so "Monday, May 4, 2026" reads natively in zh/es/fr/etc.
   // Falls back to en-US if Intl can't resolve the locale.
   const todayLabel = (() => {
@@ -460,7 +460,7 @@ export async function POST(request: NextRequest) {
         // the response BODY starts streaming the moment the client connects.
         // Without this, the browser sees the headers come in but no body
         // bytes until the first Sonnet call returns (15-30s). The avatar
-        // pulses forever and the user thinks Tracy is broken. Sending an
+        // pulses forever and the user thinks Astra is broken. Sending an
         // SSE comment (`:` prefix) keeps the connection alive and tells
         // every proxy "data is flowing" without rendering anything on the
         // client. Some load balancers (Cloudflare, Railway's edge) also
@@ -541,7 +541,7 @@ export async function POST(request: NextRequest) {
             totalOutputTokens += response.usage.output_tokens ?? 0;
           }
 
-          // 🚨 May 29, 2026 — diagnostic. Tracy was returning empty bubbles
+          // 🚨 May 29, 2026 — diagnostic. Astra was returning empty bubbles
           // on Whale Class in Chinese. Without this log we had no idea
           // whether Sonnet was responding at all and what stop_reason it
           // hit. The empty-response detection below depends on knowing
@@ -674,10 +674,10 @@ export async function POST(request: NextRequest) {
               // dedicated `meeting_brief` event with the BRIEF + DOSSIER
               // markdown. The UI renders the brief as the primary artifact
               // and tucks the dossier behind a "Show me the full thinking"
-              // disclosure. This bypasses Tracy's text stream for the
-              // payload itself — Tracy's job becomes just the one-line
+              // disclosure. This bypasses Astra's text stream for the
+              // payload itself — Astra's job becomes just the one-line
               // introduction. Without this event the UI would have to
-              // parse out the markdown from Tracy's prose; this is cleaner.
+              // parse out the markdown from Astra's prose; this is cleaner.
               if (
                 block.name === 'prepare_parent_meeting' &&
                 result.success &&
@@ -738,7 +738,7 @@ export async function POST(request: NextRequest) {
           // blocks — no tool_use, no text. The loop then breaks
           // silently, the `done` event fires, and the client renders an
           // empty assistant bubble with no glow and no error message.
-          // The user thinks Tracy is broken.
+          // The user thinks Astra is broken.
           //
           // When this happens, emit a user-visible error instead of
           // silently closing. The principal sees "I had trouble loading

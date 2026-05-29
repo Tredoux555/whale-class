@@ -223,7 +223,7 @@ Preserved from v3:
 | Low | Photo bank improvements | ~half-day |
 | Low | Parent portal dark forest theme audit | ~1-2 hours |
 | Stretch | Mira proactive cards on agent dashboard | ~1 day |
-| Stretch | Tracy proactive cards on principal dashboard | ~1 day |
+| Stretch | Astra proactive cards on principal dashboard | ~1 day |
 | Stretch | Playwright smoke tests | ~1 week |
 | Stretch | HeyGen explainer videos | marketing — non-code |
 

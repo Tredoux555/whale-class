@@ -13,7 +13,7 @@
 // - Parents can ONLY initiate parent_teacher or parent_principal threads.
 //   Internal / broadcast / group threads remain principal/teacher-only.
 // - In v1, parents can NOT have AI draft for them. ai_drafted is always false
-//   on parent-posted messages. Tracy's draft tools belong to the principal.
+//   on parent-posted messages. Astra's draft tools belong to the principal.
 // - Invite-based parent sessions (sub=child_id only, no parentId) are
 //   READ-ONLY in the messaging surface. They cannot post or initiate threads
 //   because participants are people, not children. The dashboard remains

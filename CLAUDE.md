@@ -275,9 +275,9 @@ This pattern is now canonical in `app/montree/admin/parents/[parentId]/{meetings
 
 ---
 
-## 🚨 NEXT SESSION — CALL TO ACTION (queued May 28, 2026 night, post-Session 135 Ultimate Tracy Marathon)
+## 🚨 NEXT SESSION — CALL TO ACTION (queued May 28, 2026 night, post-Session 135 Ultimate Astra Marathon)
 
-Session 135 shipped the full Ultimate Tracy marathon (Phases A-E + cross-cut F) — parents are now first-class entities with structured profiles + meeting recording + transcription + Sonnet analysis + self-improving corpus + Parents UI tab + privacy controls. Five commits on origin/main, ending at `ae25cb51`. Full session breakdown in `docs/handoffs/ULTIMATE_TRACY_MARATHON_HANDOFF.md`.
+Session 135 shipped the full Ultimate Astra marathon (Phases A-E + cross-cut F) — parents are now first-class entities with structured profiles + meeting recording + transcription + Sonnet analysis + self-improving corpus + Parents UI tab + privacy controls. Five commits on origin/main, ending at `ae25cb51`. Full session breakdown in `docs/handoffs/ULTIMATE_TRACY_MARATHON_HANDOFF.md`.
 
 ### 1. 🚨 Run 7 migrations in Supabase SQL Editor (numerical order matters)
 
@@ -294,11 +294,11 @@ migrations/243_parent_consent_flags.sql
 migrations/237_meeting_dossiers.sql
 ```
 
-Until all 8 run, the new features API-respond `migration_pending=true` gracefully and the UI surfaces friendly fallbacks. Tracy's parent-meeting dossier still ships without parent-profile + corpus data — just without the depth.
+Until all 8 run, the new features API-respond `migration_pending=true` gracefully and the UI surfaces friendly fallbacks. Astra's parent-meeting dossier still ships without parent-profile + corpus data — just without the depth.
 
 ### 2. Walk the 10-step verification checklist
 
-In `docs/handoffs/ULTIMATE_TRACY_MARATHON_HANDOFF.md` Section 11 — covers voice onboarding, dossier integration, mock meeting recording, encrypted-transcript verification, profile-update proposals review, audio-never-persisted check, Tracy corpus retrieval in chat, Parents tab nav, super-admin corpus monitor.
+In `docs/handoffs/ULTIMATE_TRACY_MARATHON_HANDOFF.md` Section 11 — covers voice onboarding, dossier integration, mock meeting recording, encrypted-transcript verification, profile-update proposals review, audio-never-persisted check, Astra corpus retrieval in chat, Parents tab nav, super-admin corpus monitor.
 
 ### 3. (Original) Run migration 237 in Supabase — STILL pending
 
@@ -311,7 +311,7 @@ Everything else is done. Until 237 runs, dossiers generate fine but every reopen
 
 ### 2. Walk the 15-step verification checklist
 
-In `docs/handoffs/SESSION_134_HANDOFF.md` — covers Tracy fixes (greeting "Hi, Principal Leu" / symmetric glow / 240s watchdog), Story vault save (inline error pill instead of suppressed alert), Chinese translatability (full dossier in Mandarin).
+In `docs/handoffs/SESSION_134_HANDOFF.md` — covers Astra fixes (greeting "Hi, Principal Leu" / symmetric glow / 240s watchdog), Story vault save (inline error pill instead of suppressed alert), Chinese translatability (full dossier in Mandarin).
 
 ### 3. Closed in Session 134 (no action needed — done)
 
@@ -321,16 +321,16 @@ In `docs/handoffs/SESSION_134_HANDOFF.md` — covers Tracy fixes (greeting "Hi, 
 - ✅ Branch `mira-tracy-upgrade-s133` merged to main + pushed via Desktop Commander
 - ✅ All-logins page LIVE at `/montree/super-admin/all-logins`
 - ✅ Chinese translatability on parent-meeting dossier — Sonnet now writes the entire dossier in the principal's UI locale (section headers + prose + scripts)
-- ✅ Tracy greeting "Hi, Principal Leu" (title-prefix names use full name, regular first+last names still split)
-- ✅ Tracy avatar glow is now perfectly symmetric (inline-block + line-height:0)
-- ✅ Tracy watchdog 90s → 240s (no more silent timeouts on complex tool chains)
+- ✅ Astra greeting "Hi, Principal Leu" (title-prefix names use full name, regular first+last names still split)
+- ✅ Astra avatar glow is now perfectly symmetric (inline-block + line-height:0)
+- ✅ Astra watchdog 90s → 240s (no more silent timeouts on complex tool chains)
 - ✅ Story vault save no longer fails silently on iOS Home-Screen PWAs (inline red error pill replaces suppressed `window.alert()`)
 
 ### 4. Open from user feedback during testing (deferred — NOT done)
 
-- **"Home splash page can just be the calendar"** — user wants `/montree/admin` to surface the calendar by default instead of dropping straight into Tracy chat. Larger UX change — needs a focused session.
-- **"No Tracy icon. Tracy is top right corner"** — user wants TracyFloat visible on `/montree/admin` itself (currently hidden because that page IS Tracy in full). Couples with the calendar-as-home change above.
-- **Five admin pages still English-only** — `appointments`, `child/[childId]`, `communication/threads/[threadId]`, `guru` (Tracy chat itself), `people` don't use `useI18n()`. Mandarin principals see the dossier button translated but the surrounding page chrome is English. Larger refactor.
+- **"Home splash page can just be the calendar"** — user wants `/montree/admin` to surface the calendar by default instead of dropping straight into Astra chat. Larger UX change — needs a focused session.
+- **"No Astra icon. Astra is top right corner"** — user wants TracyFloat visible on `/montree/admin` itself (currently hidden because that page IS Astra in full). Couples with the calendar-as-home change above.
+- **Five admin pages still English-only** — `appointments`, `child/[childId]`, `communication/threads/[threadId]`, `guru` (Astra chat itself), `people` don't use `useI18n()`. Mandarin principals see the dossier button translated but the surrounding page chrome is English. Larger refactor.
 - **`npm run i18n:fill-ui`** — Haiku-translate the 30 new `dossier.*` keys for the 10 non-zh/non-en locales (currently English fallback stubs).
 - **Pattern-phrase regex** in `prepare_parent_meeting.ts` covers en/zh/es/de/fr/pt for the 5 topic branches but not uk/ru/ja/ko/nl/it. Graceful fallback to generic emotional branch.
 
@@ -367,9 +367,9 @@ Full detail in `docs/handoffs/HEALTH_CHECK_SESSION_131.md`.
 
 ## RECENT STATUS (May 28, 2026)
 
-### 🧠 Session 135 — Ultimate Tracy Marathon: parents-as-first-class + meeting recording + self-improving corpus + Parents UI + privacy (May 28, 2026 evening, overnight build)
+### 🧠 Session 135 — Ultimate Astra Marathon: parents-as-first-class + meeting recording + self-improving corpus + Parents UI + privacy (May 28, 2026 evening, overnight build)
 
-**5 commits pushed to main, ending at `ae25cb51`. The full Ultimate Tracy marathon (Phases A-E + cross-cut audit F) shipped overnight per `docs/handoffs/ULTIMATE_TRACY_MARATHON_HANDOFF.md`.** Tracy now knows every parent in the school by name and archetype, can record + transcribe + analyse meetings end-to-end, learns from every meeting via a self-improving school-specific corpus, and the principal has a Parents tab in nav with full UI to manage all of it.
+**5 commits pushed to main, ending at `ae25cb51`. The full Ultimate Astra marathon (Phases A-E + cross-cut audit F) shipped overnight per `docs/handoffs/ULTIMATE_TRACY_MARATHON_HANDOFF.md`.** Astra now knows every parent in the school by name and archetype, can record + transcribe + analyse meetings end-to-end, learns from every meeting via a self-improving school-specific corpus, and the principal has a Parents tab in nav with full UI to manage all of it.
 
 **🚨 Canonical resume doc:** `docs/handoffs/ULTIMATE_TRACY_MARATHON_HANDOFF.md` — full architectural decisions, file index per phase, verification checklist.
 
@@ -386,7 +386,7 @@ Full detail in `docs/handoffs/HEALTH_CHECK_SESSION_131.md`.
 
 | SHA | Phase | What |
 |---|---|---|
-| `15795141` | A | Parent profiles + voice intake + 2 Tracy tools + dossier integration |
+| `15795141` | A | Parent profiles + voice intake + 2 Astra tools + dossier integration |
 | `07c0e73d` | B | Meeting recording + chunked Whisper + Sonnet analysis + proposals UI |
 | `6b7fedf7` | C | Self-improving corpus + pgvector RAG + auto-extract trigger |
 | `ea391dc3` | D | Parents tab + parent list + per-parent page |
@@ -396,7 +396,7 @@ Full detail in `docs/handoffs/HEALTH_CHECK_SESSION_131.md`.
 
 `lib/montree/parent-profile/voice-intake.ts` runs Sonnet 4.6 against a 60-90s principal voice transcript with a strict tool schema (5 canonical archetypes from knowledge file 04 + 8 Erin Meyer Culture Map dimensions from file 05 + triggers/moves lists + relationship_temperature enum). Failure modes (no client, malformed JSON, timeout) return graceful `degraded:true` draft with raw transcript in history_notes — never loses the recording.
 
-Two new Tracy tools (`get_parent_profile`, `list_parents_for_school`) school-scoped via `deps.schoolId`, defense-in-depth via `montree_parents.school_id` filter + classroom.school_id re-verification on linked-child queries. Migration-aware (`migration_pending=true` graceful fallback).
+Two new Astra tools (`get_parent_profile`, `list_parents_for_school`) school-scoped via `deps.schoolId`, defense-in-depth via `montree_parents.school_id` filter + classroom.school_id re-verification on linked-child queries. Migration-aware (`migration_pending=true` graceful fallback).
 
 `prepare_parent_meeting` now does FOUR parallel branches (was 3): added `resolveParentForChild` → `loadParentProfile`. The parent's profile injects as `# PARENT PROFILE` section into `structuredContext`. Section 5 of the dossier prompt was rewritten to PRIMARY-source from this block: archetypes drive Section 8 pushback handlers, cultural_register drives Section 6's script directness, known_triggers feed Section 7 "Things not to say", effective_moves feed Section 6's preferred phrasings.
 
@@ -418,7 +418,7 @@ Profile-update proposals NEVER auto-apply — principal reviews each field on `/
 
 `extractCorpusFromAnalysis` runs Haiku refinement on raw `corpus_extractions` (the principal's specifics get abstracted to school PATTERNS — names + quotes stripped, "Mrs Chen calmed when..." → "With expectation-driven parents at this school, showing the older sibling's progression has de-escalated reading concerns multiple times"). Fires fire-and-forget after every analysis row lands.
 
-`searchCorpus` tool wired into Tracy with INTENT TABLE entry. `prepare_parent_meeting` injects top-5 RAG hits as `# CORPUS` block keyed by `meeting_purpose` + primary archetype.
+`searchCorpus` tool wired into Astra with INTENT TABLE entry. `prepare_parent_meeting` injects top-5 RAG hits as `# CORPUS` block keyed by `meeting_purpose` + primary archetype.
 
 **D. Phase D — Parents UI:**
 
@@ -467,7 +467,7 @@ Migrations: 238-243 + 242b (7 files).
 New libs: `lib/montree/parent-profile/{voice-intake,loader}.ts`, `lib/montree/parent-meeting/{analysis-prompt,transcribe}.ts`, `lib/montree/tracy/corpus/{embeddings,extract,search}.ts` (7 files).
 New API routes: `parent-profile/{route,list/route}.ts`, `parent-meetings/{route,[id]/{transcribe-chunk,analyse,proposals}/route}.ts`, `parents/[id]/{export,route}.ts`, `super-admin/tracy-corpus/route.ts` (10 files).
 New pages: `parents/{page,[id]/{page,onboard/page,meetings/{new/page,[id]/review/page}}}.tsx`, `super-admin/tracy-corpus/page.tsx` (7 files).
-Modified Tracy: tool-definitions + tool-executor + system-prompt + prepare_parent_meeting tool + parent_meeting_prep prompt (5 files).
+Modified Astra: tool-definitions + tool-executor + system-prompt + prepare_parent_meeting tool + parent_meeting_prep prompt (5 files).
 Modified other: layout.tsx (Users icon + Parents NAV) + 12 locale files (adminNav.parents) (13 files).
 
 **Verification status:**
@@ -477,7 +477,7 @@ Modified other: layout.tsx (Users icon + Parents NAV) + 12 locale files (adminNa
 - ✅ Cross-pollination grep audit: every new API route filters by `auth.schoolId`; every new tool dispatches with `deps.schoolId`; every new query has school_id WHERE clause.
 - ✅ Audio-never-persists grep audit: zero `storage.from` / `storage.upload` references in transcribe pipeline.
 - ✅ No plaintext transcript writes: only `transcript_text_encrypted` column is written; the export route's `transcript_text:` is a decrypted READ field returned in JSON for GDPR export.
-- ✅ All 19 Tracy tool definitions have matching dispatch cases.
+- ✅ All 19 Astra tool definitions have matching dispatch cases.
 
 **🚨 Next-session priorities (ordered):**
 
@@ -485,13 +485,13 @@ Modified other: layout.tsx (Users icon + Parents NAV) + 12 locale files (adminNa
 2. **Walk the 10-step verification checklist** in `docs/handoffs/ULTIMATE_TRACY_MARATHON_HANDOFF.md` Section 11.
 3. **Onboard a test parent via voice** — open `/montree/admin/parents`, pick one, tap "Onboard via voice", record 60-90s, confirm fields populate.
 4. **Record a 2-minute mock meeting** + verify consent gate + encrypted transcript (`SELECT LEFT(transcript_text_encrypted, 12) FROM montree_parent_meeting_transcripts` should return `gcm:...`).
-5. **Ask Tracy "what should I watch out for with [parent name]?"** — should call both `get_parent_profile` AND `search_corpus`.
+5. **Ask Astra "what should I watch out for with [parent name]?"** — should call both `get_parent_profile` AND `search_corpus`.
 6. **Verify audio destruction** — `SELECT COUNT(*) FROM storage.objects WHERE bucket_id IS NOT NULL AND name LIKE '%meeting%audio%'` should return 0.
 7. **Carry-over: Session 134 priorities** — calendar-as-home, 5 admin pages i18n, `npm run i18n:fill-ui` for 30 dossier keys, pattern-phrase regex expansion, CRIT-1/CRIT-2 from health check, ungated AI routes, outreach follow-ups.
 
 ---
 
-### 🚢 Session 134 — Session 133 SHIPPED to main + Chinese translatability + Principal Leu handover + Tracy stability + Story vault save fix (May 28, 2026 afternoon)
+### 🚢 Session 134 — Session 133 SHIPPED to main + Chinese translatability + Principal Leu handover + Astra stability + Story vault save fix (May 28, 2026 afternoon)
 
 **4 commits pushed to main, branch `mira-tracy-upgrade-s133` MERGED. The Session 133 13-commit branch is now live on production along with four ship-time fixes that surfaced during real user testing today.**
 
@@ -501,7 +501,7 @@ Final state of main (top → newer):
 
 ```
 f631c6da  Fix Story vault save silent failure on mobile PWAs
-f5e392a8  Tracy fixes: greeting name + symmetric glow + larger timeout budget
+f5e392a8  Astra fixes: greeting name + symmetric glow + larger timeout budget
 5c5633da  i18n audit fix: variant-aware dossier button label + Mira locale plumbing
 2323f109  Session 133 i18n audit: full Chinese translatability for parent-meeting dossier
 3ef1bdd0  Master audit close-out (prior Session 133 final)
@@ -536,7 +536,7 @@ HIGH bug — parent thread page passed `label="Prepare for the meeting"` hardcod
 
 Two known gaps documented as deferred follow-ups: (1) 5 principal admin pages don't use `useI18n()` at all (`appointments`, `child/[childId]`, `communication/threads/[threadId]`, `guru`, `people`) — Mandarin principals see those pages in English regardless. (2) Pattern-phrase regex doesn't cover uk/ru/ja/ko/nl/it — graceful fallback to generic emotional branch.
 
-**C. `f5e392a8` — Tracy fixes after the Leu handover landed:**
+**C. `f5e392a8` — Astra fixes after the Leu handover landed:**
 
 User opened `/montree/admin` post-handover and reported three things:
 
@@ -544,7 +544,7 @@ User opened `/montree/admin` post-handover and reported three things:
 
 2. **Glow doesn't go all the way around the avatar** — `.tracy-pulse` was `inline-flex` which retains a baseline gap below the inline element. Box-shadow followed the wrapper's bounds → asymmetric glow tail below. Fix: `inline-block` + explicit width/height + `lineHeight: 0`. Halo now symmetric.
 
-3. **Tracy "cocking out" — long processing then no reply** — watchdog `TOTAL_TIMEOUT_MS = 90_000` fired silently on complex Opus 4.6 + tool chains. User saw frozen thinking dots. Fix: bumped budgets — `maxDuration` 120s → 300s, `TOTAL_TIMEOUT_MS` 90s → **240s**, `API_TIMEOUT_MS` 50s → 90s. Tracy gets realistic headroom on rich-history queries.
+3. **Astra "cocking out" — long processing then no reply** — watchdog `TOTAL_TIMEOUT_MS = 90_000` fired silently on complex Opus 4.6 + tool chains. User saw frozen thinking dots. Fix: bumped budgets — `maxDuration` 120s → 300s, `TOTAL_TIMEOUT_MS` 90s → **240s**, `API_TIMEOUT_MS` 50s → 90s. Astra gets realistic headroom on rich-history queries.
 
 **D. `f631c6da` — Story vault save silent failure on mobile PWAs:**
 
@@ -567,7 +567,7 @@ Most likely real cause for the user's case: vault JWT is 1h TTL → unlocked >1h
 
 287. **Title-prefix names use FULL name; first+last names use first only.** Canonical regex: `/^(principal|ms|mrs|mr|dr|prof|professor|teacher|head|director)\.?\s+/i`. Logic MUST be mirrored in BOTH the principal-agent route AND `app/montree/admin/page.tsx` empty-state greeting — they share no helper today but must stay in lock-step. "Hi, Principal Leu" reads warm; "Hi, Principal" alone reads cold.
 
-288. **Tracy's tool-use loop watchdog (`TOTAL_TIMEOUT_MS`) is 240s, NOT 90s.** Opus 4.6 + a 3-tool chain on a child with rich history genuinely takes 60-180s. The 90s ceiling fired silently and the client saw frozen thinking-dots. Don't tighten back without first verifying all Tracy tool chains stay under the new ceiling.
+288. **Astra's tool-use loop watchdog (`TOTAL_TIMEOUT_MS`) is 240s, NOT 90s.** Opus 4.6 + a 3-tool chain on a child with rich history genuinely takes 60-180s. The 90s ceiling fired silently and the client saw frozen thinking-dots. Don't tighten back without first verifying all Astra tool chains stay under the new ceiling.
 
 289. **iOS Home-Screen PWAs silently suppress `window.alert()`.** Every customer-facing error path on the Story system MUST use inline error UI, not `alert()`. Pattern: state variable `{id, message} | null`, rendered as a dismissible red pill inline next to the failing element. `console.error` for diagnostic logs (visible via Safari remote inspect). Same rule applies anywhere a PWA-installed user could trigger an error path.
 
@@ -578,7 +578,7 @@ Most likely real cause for the user's case: vault JWT is 1h TTL → unlocked >1h
 | Whale Class principal cockpit | `/montree/admin` | Live — Principal Leu, login XVYHHX |
 | Parent-meeting dossier modal | Parent thread headers | Live — i18n + locale flows to Sonnet |
 | Super-admin all-logins page | `/montree/super-admin/all-logins` | Live — 4 sections + copy buttons |
-| Tracy chat (`/montree/admin`) | Tracy chat page | Live — greeting + glow + watchdog all fixed |
+| Astra chat (`/montree/admin`) | Astra chat page | Live — greeting + glow + watchdog all fixed |
 | Story vault save | Story admin → Messages tab | Live — inline error pill replaces suppressed alert |
 | Mira pitch dossier (printable HTML) | `/api/montree/agent/dossier/principal-pitch?format=html` | Live — locale flows from pitch language |
 | Migration 237 (dossier cache) | Supabase | ⏳ **STILL PENDING — run when convenient** |
@@ -593,7 +593,7 @@ Most likely real cause for the user's case: vault JWT is 1h TTL → unlocked >1h
 **🚨 Next session priorities (ordered):**
 
 1. **🚨 Run migration 237 in Supabase** — only outstanding SQL. Until run, dossiers don't cache.
-2. **Walk the 15-step verification checklist** on a real iPhone (3 Tracy fixes + Story vault save + Chinese translatability).
+2. **Walk the 15-step verification checklist** on a real iPhone (3 Astra fixes + Story vault save + Chinese translatability).
 3. **User-feedback deferred items** — make calendar the default `/montree/admin` home + surface TracyFloat top-right (couples together; ~half-day focused session).
 4. **5 admin pages still English-only** — `appointments`, `child/[childId]`, `communication/threads/[threadId]`, `guru`, `people` need `useI18n()` wired.
 5. **`npm run i18n:fill-ui`** — Haiku-translate 30 dossier keys for 10 non-zh/non-en locales.
@@ -603,25 +603,25 @@ Most likely real cause for the user's case: vault JWT is 1h TTL → unlocked >1h
 
 ---
 
-### 🧠 Session 133 — Mira & Tracy dossier capability + login fix + super-admin all-logins page (May 27 night → May 28 morning, 2026)
+### 🧠 Session 133 — Mira & Astra dossier capability + login fix + super-admin all-logins page (May 27 night → May 28 morning, 2026)
 
-**Overnight build of the Mira & Tracy upgrade plan (`docs/handoffs/MIRA_TRACY_UPGRADE_PLAN.md`) + a real production login bug fix + a new super-admin all-logins surface. 8 commits on branch `mira-tracy-upgrade-s133`, NOT pushed to main per the plan's hard rule. Tredoux merges + pushes after reviewing.**
+**Overnight build of the Mira & Astra upgrade plan (`docs/handoffs/MIRA_TRACY_UPGRADE_PLAN.md`) + a real production login bug fix + a new super-admin all-logins surface. 8 commits on branch `mira-tracy-upgrade-s133`, NOT pushed to main per the plan's hard rule. Tredoux merges + pushes after reviewing.**
 
 **🚨 Canonical resume doc:** `docs/handoffs/SESSION_133_STATUS.md` — full file-by-file change list, every commit, every architectural rule, the 4 SQL blocks to run.
 
-**🚨 Migration 237 pending Tredoux's Supabase run** — `migrations/237_meeting_dossiers.sql` creates `montree_meeting_dossiers` (shared cache table for Tracy + Mira dossiers) + 3 indexes + `montree_purge_expired_dossiers()` function. Idempotent. Originally failed on a partial-index `WHERE NOW()` clause (PG 42P17 — NOW() isn't IMMUTABLE) — patched to plain b-tree. Until run, dossiers generate but don't cache; every reopen spends Sonnet again. UI surfaces a "migration 237 not run" hint when caching is off.
+**🚨 Migration 237 pending Tredoux's Supabase run** — `migrations/237_meeting_dossiers.sql` creates `montree_meeting_dossiers` (shared cache table for Astra + Mira dossiers) + 3 indexes + `montree_purge_expired_dossiers()` function. Idempotent. Originally failed on a partial-index `WHERE NOW()` clause (PG 42P17 — NOW() isn't IMMUTABLE) — patched to plain b-tree. Until run, dossiers generate but don't cache; every reopen spends Sonnet again. UI surfaces a "migration 237 not run" hint when caching is off.
 
 **🚨 Hash-desync SQL also pending** — two active principals have `login_code` ≠ SHA256(password_hash). Tredoux (XVYHHX) and Phillip Ahn (RGCCQR). SQL realignments in the handoff doc.
 
-**A. Phase A — Tracy data access tools (commit `3c84630f`):**
+**A. Phase A — Astra data access tools (commit `3c84630f`):**
 
-3 new tools wired into Tracy: `consult_guru` (queries `montree_guru_interactions` for a child, optional keyword re-rank, school-scoped re-verification), `detect_pattern` (thematic-cluster detector across media + behavioural observations + teacher notes + work-session notes with strict-phrase positives + negative_phrases disqualifiers — the Yo-yo "resting hands" lesson codified), and an extended `child_focus` framework that now surfaces settings JSONB (developmental_insights, parent_states, parent_current_state, weekly_advice, game_plan, guru_area_reasons). Smoke tests verified end-to-end against real Whale Class data: 5 Guru analyses for Yo-yo, 24 sleep events with cluster days matching the briefing exactly (May 25 ×5, Apr 15 ×6, May 13 ×3, Apr 4 ×3).
+3 new tools wired into Astra: `consult_guru` (queries `montree_guru_interactions` for a child, optional keyword re-rank, school-scoped re-verification), `detect_pattern` (thematic-cluster detector across media + behavioural observations + teacher notes + work-session notes with strict-phrase positives + negative_phrases disqualifiers — the Yo-yo "resting hands" lesson codified), and an extended `child_focus` framework that now surfaces settings JSONB (developmental_insights, parent_states, parent_current_state, weekly_advice, game_plan, guru_area_reasons). Smoke tests verified end-to-end against real Whale Class data: 5 Guru analyses for Yo-yo, 24 sleep events with cluster days matching the briefing exactly (May 25 ×5, Apr 15 ×6, May 13 ×3, Apr 4 ×3).
 
-🚨 **Two pre-existing column bugs found + fixed**: `montree_media` has `caption` (not `teacher_caption`) and no `work_name`/`area` columns (work label lives via `work_id` on the joined `montree_classroom_curriculum_works`). Tracy's child-focus framework was silently returning empty observations on every child lookup. Captions now flow through.
+🚨 **Two pre-existing column bugs found + fixed**: `montree_media` has `caption` (not `teacher_caption`) and no `work_name`/`area` columns (work label lives via `work_id` on the joined `montree_classroom_curriculum_works`). Astra's child-focus framework was silently returning empty observations on every child lookup. Captions now flow through.
 
 **B. Phase B — `prepare_parent_meeting` (commit `550b563c`):**
 
-The headline feature. Single Sonnet 4.6 call (~$0.05 / ~90s) that orchestrates `fetchChildContext` + `consultGuru` + `detectPattern` in parallel → composes structured 5K-token context → produces a 9-section markdown dossier (Tracy's note → child profile → what we're observing → working interpretation → parent context → conversation script → what NOT to say → pushback handlers → follow-up plan → sources appendix). Per-request random-nonce fence on parent-typed input.
+The headline feature. Single Sonnet 4.6 call (~$0.05 / ~90s) that orchestrates `fetchChildContext` + `consultGuru` + `detectPattern` in parallel → composes structured 5K-token context → produces a 9-section markdown dossier (Astra's note → child profile → what we're observing → working interpretation → parent context → conversation script → what NOT to say → pushback handlers → follow-up plan → sources appendix). Per-request random-nonce fence on parent-typed input.
 
 **Verified end-to-end**: reproduces the hand-built Yo-yo briefing (`Yoyo_Sleep_Briefing_EN.md`) 1:1 — same 9 sections, same voice, same dated observations + cluster days, and ADDS the Wednesday-clustering insight the hand-built briefing didn't have. Sources appendix lists every record type. 24h cache via shared `montree_meeting_dossiers` table.
 
@@ -633,7 +633,7 @@ UI surface: gold pill "📋 Prepare for the meeting" on every parent_teacher + p
 
 **D. Phase D + E — `prepare_principal_pitch` (commit `07b8596f`):**
 
-Mira's pitch dossier (mirror of Tracy's parent-meeting dossier). Parallel load of `getMiraKnowledge` + `getPlatformSignal` → Sonnet 4.6 call → 24h cache (`audience_type='principal_pitch'`). 9-section structure includes a "what's in it for you?" commission section framed as skin-in-the-game (per the Section 7 plan decision). Verified end-to-end with a Mandarin Beijing-principal pitch ($0.11, 94s, 165 lines, all 9 sections, persona-correct).
+Mira's pitch dossier (mirror of Astra's parent-meeting dossier). Parallel load of `getMiraKnowledge` + `getPlatformSignal` → Sonnet 4.6 call → 24h cache (`audience_type='principal_pitch'`). 9-section structure includes a "what's in it for you?" commission section framed as skin-in-the-game (per the Section 7 plan decision). Verified end-to-end with a Mandarin Beijing-principal pitch ($0.11, 94s, 165 lines, all 9 sections, persona-correct).
 
 `get_platform_signal` returns live aggregate numbers (active schools, children, classrooms, observations, languages, countries). 10-minute in-process cache. Aggregates only — no PII. Verified: 12 schools / 57 children / 510 observations / 3 languages / 4 countries.
 
@@ -643,7 +643,7 @@ API route at `/api/montree/agent/dossier/principal-pitch`. Agent-only. NO tier g
 
 Three parallel agents audited Phases A–E. Security agent found a **CRITICAL** finding: the cache lookup in `prepare_parent_meeting` ran BEFORE the school-ownership check. A principal at school A could pass another school's child_id and receive the cached dossier text. Same class of bug for Mira (cross-agent leak).
 
-Fix: `makeDossierCacheKey` now requires a `scope_owner_id` field. TypeScript enforces it — non-optional `string` parameter, impossible to forget at a future call site. Tracy passes `schoolId`. Mira passes `agentId`. Tracy's cache-HIT path also re-verifies the child belongs to the school as belt-and-braces.
+Fix: `makeDossierCacheKey` now requires a `scope_owner_id` field. TypeScript enforces it — non-optional `string` parameter, impossible to forget at a future call site. Astra passes `schoolId`. Mira passes `agentId`. Astra's cache-HIT path also re-verifies the child belongs to the school as belt-and-braces.
 
 Plus 4 more correctness fixes: `loader.ts` cachedPromise leak on throw (try/finally), `makeDossierCacheKey` extras normalization (lowercase + trim), cache-hit `child_name='(cached)'` lie (now does fast school-scoped child lookup on cache-hit path), `detect_pattern` whitespace-only positives blowup (explicit refusal).
 
@@ -672,14 +672,14 @@ UX gap closed: **PARENTS missing from all-logins** (user said "everyone that nee
 
 **🚨 Architectural rules locked in this session (#264-281, full list in `docs/handoffs/SESSION_133_STATUS.md`):**
 
-264. `consult_guru` is the canonical bridge between Tracy and Guru's historical analyses. Don't query `montree_guru_interactions` directly from new Tracy code.
+264. `consult_guru` is the canonical bridge between Astra and Guru's historical analyses. Don't query `montree_guru_interactions` directly from new Astra code.
 265. `detect_pattern` uses strict-phrase matching, not loose keyword matching. The Yo-yo "resting hands" lesson is codified.
 266. `montree_media` has `caption` (not `teacher_caption`) and no `work_name`/`area` columns. Use `work_id` joined to `montree_classroom_curriculum_works` for work labels.
 267. `fetchChildContext` + `ChildContext` are exported — downstream dossier builders reuse the same context bundle.
 268. `prepare_parent_meeting` ALWAYS calls Sonnet, never Haiku. High-stakes deliberate artifact.
 269. Dossier output is canonical 9-section structure. Section order doesn't change. Sources appendix mandatory. "Things NOT to say" is the dossier's secret weapon — never drop it to save tokens.
 270. parent_context free-text wins on tone calibration when both it AND auto-inferred guru_parent_states are present.
-271. `montree_meeting_dossiers` is shared by Tracy + Mira; `audience_type` discriminates.
+271. `montree_meeting_dossiers` is shared by Astra + Mira; `audience_type` discriminates.
 272. Mira's knowledge base loads FROM DISK on each process start, not baked into the system prompt at build time. Product reality changes; stale prompt is worse than no prompt.
 273. The CHAT system prompt sees the ~1555-token SUMMARY. The full bundle is reserved for `prepare_principal_pitch`.
 274. When Mira quotes pricing / features / competitive — she quotes from knowledge. Improvising from training data is forbidden.
@@ -687,7 +687,7 @@ UX gap closed: **PARENTS missing from all-logins** (user said "everyone that nee
 276. `prepare_principal_pitch` includes a "what's in it for you?" commission section, framed as skin-in-the-game.
 277. Mira's pitch dossiers are agent-only — NO tier gate.
 278. `get_platform_signal` returns AGGREGATES only. No PII. Safe to quote in cold pitches.
-279. **`makeDossierCacheKey` REQUIRES `scope_owner_id`** (TypeScript-enforced non-optional). Without it the cache becomes a cross-tenant leak. Tracy passes schoolId; Mira passes agentId.
+279. **`makeDossierCacheKey` REQUIRES `scope_owner_id`** (TypeScript-enforced non-optional). Without it the cache becomes a cross-tenant leak. Astra passes schoolId; Mira passes agentId.
 280. Partial-index predicates cannot contain `NOW()` or any other STABLE function (PG 42P17). Use plain b-tree + WHERE-at-query-time.
 281. **`tryPrincipalLogin` walks three steps**: SHA256-by-password_hash → login_code-column ILIKE (with hash verification gate) → bcrypt scan. Step 2 NEVER silently authenticates when a password_hash exists but doesn't verify — loud-log and refuse. ILIKE-against-a-partial-UNIQUE column requires `.limit(1)` not `.maybeSingle()`. Every super-admin route returning plaintext credentials in bulk MUST set `Cache-Control: private, no-store`. Hash-desync detection only flags 64-char hex hashes that mismatch — bcrypt and malformed hashes excluded.
 
@@ -762,7 +762,7 @@ Old single-file `<input>` was hidden inside the locked vault tab AND rejected ~h
 
 Same pattern as Sessions 76/118. Findings doc: `docs/handoffs/HEALTH_CHECK_SESSION_131.md`.
 
-🟢 **Big-rock architecture is holding:** SW narrow-intercept, no `dynamic({ ssr: false })` in Server Components, Stripe webhook idempotency, `.ilike()` escaping, cross-pollination contract, Tracy/Mira model pinning, photo pipeline v2 + prompt caching, i18n strict parity at **5,035 × 12 = 100%**, no `logApiUsage().catch()` regressions.
+🟢 **Big-rock architecture is holding:** SW narrow-intercept, no `dynamic({ ssr: false })` in Server Components, Stripe webhook idempotency, `.ilike()` escaping, cross-pollination contract, Astra/Mira model pinning, photo pipeline v2 + prompt caching, i18n strict parity at **5,035 × 12 = 100%**, no `logApiUsage().catch()` regressions.
 
 🔴 **2 CRITICAL ship-blockers:**
 1. `/api/montree/feedback` is auth-less + trusts body identity (impersonation vector)
@@ -846,7 +846,7 @@ Global `*.mp4` block (line 50) was blocking the splash video. Added one-line neg
 
 **F. HeyGen explainer script (parallel agent — not in git):**
 
-~750 words / 5 minutes spoken, walks through all 12 major features (photo→observation flip, Weekly Wrap, Tracy, Guru, growing brain, 12-language localisation, library tools, parent portal, principal cockpit, voice onboarding, pricing, Montree Limited HK). Both brand phrases ("the AI Montessori classroom revolution" at top + close, "work smarter, not harder" near the end). Founder name NOT mentioned. Ready-to-paste prose with no scene markers. Paste-target: HeyGen Builder → Script to Video → 8 credits. Script preserved in the Session 130 final assistant message (chat transcript only — not saved to a file).
+~750 words / 5 minutes spoken, walks through all 12 major features (photo→observation flip, Weekly Wrap, Astra, Guru, growing brain, 12-language localisation, library tools, parent portal, principal cockpit, voice onboarding, pricing, Montree Limited HK). Both brand phrases ("the AI Montessori classroom revolution" at top + close, "work smarter, not harder" near the end). Founder name NOT mentioned. Ready-to-paste prose with no scene markers. Paste-target: HeyGen Builder → Script to Video → 8 credits. Script preserved in the Session 130 final assistant message (chat transcript only — not saved to a file).
 
 **🚨 Architectural rules locked in this session (#248–255):**
 
@@ -1103,7 +1103,7 @@ Instead: **Hidden** the "Appointments" `MenuRow` in `DashboardHeader.tsx` (comme
 - **Locale** — `setLocale` broadcasts a `montree:locale-change` window event + a `storage` listener so every switcher + tab syncs; the principal admin layout bounces on cross-tab sign-out; lazy locale-chunk loads retry up to twice on failure; `<html lang>` tracks the active locale.
 - **i18n leaks** — principal sidebar nav, billing footnote, login "See pricing", Add Student modal strings, "N works in rotation", bulk-import date hint, AI-tier error, FR login verb agreement — all wired to `t()` across 12 locales.
 
-**Re-sweep findings A–J all fixed.** B (Tracy greeting doesn't relocalize — AI-generated text, not a static string) and H (English Montessori work names inside localized prose) are confirmed by-design / known-limitation.
+**Re-sweep findings A–J all fixed.** B (Astra greeting doesn't relocalize — AI-generated text, not a static string) and H (English Montessori work names inside localized prose) are confirmed by-design / known-limitation.
 
 **🚨 Architectural rules locked in this session:**
 - `[childId]`: a 403/404 renders the 404 boundary; only 401 → logout. `montreeApi` 403 must never tear down a session.
@@ -1163,7 +1163,7 @@ Instead: **Hidden** the "Appointments" `MenuRow` in `DashboardHeader.tsx` (comme
 **🚨 Next-session priorities:**
 1. **Run migration 228** in Supabase, then walk the verification checklist in `docs/handoffs/SESSION_126_HANDOFF.md` on two devices/profiles.
 2. Optional: close the "declined / no answer" gap — admin call screen polls call status. ~30-45 min.
-3. Carry-overs from Session 125: `demo/*` + super-admin home-link/toggle sweep; duplicate-key cleanup in `en.ts` + locale files; i18n the library tool pages; Stage A Agora activation; Mira → Tracy super-admin scope; outreach follow-ups (FAMM Argentina, Cambridge Montessori Global, Otari NZ, Lions Gate, Montessori Norge).
+3. Carry-overs from Session 125: `demo/*` + super-admin home-link/toggle sweep; duplicate-key cleanup in `en.ts` + locale files; i18n the library tool pages; Stage A Agora activation; Mira → Astra super-admin scope; outreach follow-ups (FAMM Argentina, Cambridge Montessori Global, Otari NZ, Lions Gate, Montessori Norge).
 
 ---
 
@@ -1260,7 +1260,7 @@ No new commits — verification + state confirmation. Migrations 228 + 229 confi
 
 **🚨 Architectural rules locked in this session:**
 - `ClassEnglishHeatmap` destructures `kids` — never bare `children` inside it.
-- The AI assistant float (Mira/Tracy) is TOP-RIGHT on every screen/platform. Nav controls never share the top-right corner; the agent-nav hamburger lives on the left.
+- The AI assistant float (Mira/Astra) is TOP-RIGHT on every screen/platform. Nav controls never share the top-right corner; the agent-nav hamburger lives on the left.
 - The transcription pipeline resolves the encryption decision ONCE; the transcript write clears stale summary + re-stamps `encryption_version` — every row's encrypted columns always share one version.
 - `TFn` must be `ReturnType<typeof useI18n>['t']` — never a loose `(key: string) => string` (contravariance error).
 - Every customer-facing page has a top-left home affordance + `LanguageToggle`. Shared chrome carries it where possible (`DashboardHeader`, `admin/layout.tsx`, `AgentNav`); parent + public pages carry it per-page.
@@ -1278,7 +1278,7 @@ No new commits — verification + state confirmation. Migrations 228 + 229 confi
 1. `demo/*` pages + super-admin — not swept for home-link/toggle (internal/demo, deferred).
 2. Duplicate-key cleanup in `en.ts` + locale files.
 3. i18n the library tool pages + remaining teacher surfaces (toggle is present everywhere; bodies still English).
-4. Carry-overs from Session 124: stale-lesson flag; weave reading position into the AI weekly-wrap narrative *prose* (currently a separate card); Stage A Agora activation; Mira → Tracy super-admin scope.
+4. Carry-overs from Session 124: stale-lesson flag; weave reading position into the AI weekly-wrap narrative *prose* (currently a separate card); Stage A Agora activation; Mira → Astra super-admin scope.
 5. Outreach follow-ups — FAMM Argentina, Cambridge Montessori Global, Otari NZ, Lions Gate, Montessori Norge.
 
 ---
@@ -1326,7 +1326,7 @@ No new commits — verification + state confirmation. Migrations 228 + 229 confi
 Closed the Session 119 carry-over. Voice-call button threads `?audio=1` from parent-chats → instant-call route → join page → AgoraVideoCall, which now skips `createCameraVideoTrack`, renders `VoiceTile` (large initial avatar, Apple-style) instead of `VideoTile`, hides the camera toggle, switches copy to "Voice call with X". `[[VCALL:<id>:audio]]` marker extended so the parent's invite card preserves audio mode end-to-end — card label + Phone icon flip on all 3 [[VCALL:]] render sites.
 
 **2. Application-layer AES-256-GCM encryption — built → reverted → RE-SHIPPED.**
-Mirror of the Story system. `lib/montree/messaging-crypto.ts` (AES-256-GCM), per-row `encryption_version` column (NULL = legacy plaintext, 1 = v1), `encryption_v1` feature flag. Wrapped 32 files: every read/write of `montree_thread_messages.body` + `montree_meeting_notes.{summary,transcript,notes}` + `montree_appointment_recordings.{transcript,summary}`. Reads branch on `encryption_version` (via `readEncryptedField`); writes encrypt when the flag is on (via `writeEncryptedField`). Tracy + Mira decrypt before passing content to Opus/Sonnet. 32/32 self-test passed; two audits.
+Mirror of the Story system. `lib/montree/messaging-crypto.ts` (AES-256-GCM), per-row `encryption_version` column (NULL = legacy plaintext, 1 = v1), `encryption_v1` feature flag. Wrapped 32 files: every read/write of `montree_thread_messages.body` + `montree_meeting_notes.{summary,transcript,notes}` + `montree_appointment_recordings.{transcript,summary}`. Reads branch on `encryption_version` (via `readEncryptedField`); writes encrypt when the flag is on (via `writeEncryptedField`). Astra + Mira decrypt before passing content to Opus/Sonnet. 32/32 self-test passed; two audits.
 
 🚨 **Deploy-ordering lesson (locked in):** the first push of the encryption code (`80879d57`) referenced the `encryption_version` column unconditionally — but migration 226 hadn't run yet. An audit caught it (verified live: `42703 column does not exist`); it was reverted (`39a10c7f`) to keep production safe, then re-applied AFTER migration 226 was confirmed run. **Schema-coupled code must ship WITH or AFTER its migration — Railway auto-deploy-on-push does not wait for manual Supabase steps.**
 
@@ -1497,7 +1497,7 @@ User reported: "as I join as the teacher the connection is lost on the parent si
 4. **`audioOnly` prop wiring** (Session 119 carry-over) — voice-call button still mounts AgoraVideoCall with camera. Thread `audioOnly` through to skip `createCameraVideoTrack`. ~30 min.
 5. **Run migration 225** if not done — English Progress Tracker (Session 119 carry-over).
 6. **Send Simone the VAT-registration reply** (Session 119 carry-over).
-7. **Carry-overs from prior sessions** — Mira → Tracy super-admin scope, appointments i18n sweep, outreach follow-ups (FAMM Argentina, Cambridge Montessori Global, Otari NZ).
+7. **Carry-overs from prior sessions** — Mira → Astra super-admin scope, appointments i18n sweep, outreach follow-ups (FAMM Argentina, Cambridge Montessori Global, Otari NZ).
 
 ---
 
@@ -1672,7 +1672,7 @@ Tap any sub-category → photo saved with `sonnet_draft.is_other = true` + `sonn
 192. **`handleConfirmHaikuDraft` uses three-tier resolution** before opening the picker: `proposed_name` → `closest_existing_match.work_name` → `top_candidates[0].workName` → picker. Picker is the rare fallback, not the default.
 193. **Customer-facing inputs MUST be `fontSize >= 16`** (Session 95 rule, reinforced after the bc8022c4 regression caught in audit).
 194. **Parent portal Montree home anchor is universal.** Every parent surface has a tappable sprout + wordmark top-left → `/montree/parent/dashboard`. New parent pages MUST include it.
-195. **Welcome messages on every invite surface include the "Save to Home Screen" PWA install tip.** Three surfaces in lockstep: Tracy's `draft_teacher_welcome_messages`, classroom-page Send-mailto, parent-codes `buildWelcomeMessage`. Update all three together.
+195. **Welcome messages on every invite surface include the "Save to Home Screen" PWA install tip.** Three surfaces in lockstep: Astra's `draft_teacher_welcome_messages`, classroom-page Send-mailto, parent-codes `buildWelcomeMessage`. Update all three together.
 196. **`other_category` JSONB whitelist is the canonical Others taxonomy.** Three values: `'behavioral_observation' | 'outdoor_play' | 'special_event'`. Server-side validation on `/api/montree/photo-audit/resolve`.
 197. **`photo_pipeline_v2` is the canonical kill-switch for the entire 4-fix bundle.** Don't split fixes A/B/C/D into separate flags — they were diagnosed together as a coordinated regression and must roll back together.
 
@@ -1692,7 +1692,7 @@ Tap any sub-category → photo saved with `sonnet_draft.is_other = true` + `sonn
 4. **Carry-over: Stage A Agora activation** — migration 223 + flag flip + 2-device end-to-end test per `docs/handoffs/AGORA_STAGE_A_QUICKSTART.md`. ~5 min Tredoux time.
 5. **Carry-over: Agent default revenue share % unblock** — discussed mid-session, not implemented. ~10 min change to default agents to 20% instead of disabling self-service code generation when `agent_default_share_pct IS NULL`.
 6. **Carry-over: Appointments i18n sweep** — appointments + new calendar surface English-only. ~30 new keys × 12 locales via Haiku batch.
-7. **Carry-over: Mira → Tracy super-admin scope** (Session 108 Phase 4.8).
+7. **Carry-over: Mira → Astra super-admin scope** (Session 108 Phase 4.8).
 8. **Carry-over outreach** — FAMM Argentina + Cambridge Montessori Global + Otari NZ + Lions Gate + Montessori Norge follow-ups.
 
 ---
@@ -1749,7 +1749,7 @@ Tap any sub-category → photo saved with `sonnet_draft.is_other = true` + `sonn
 - **Unread badge on Messages icon** — deferred. Would need polling cost analysis.
 - **Stage A Agora activation** (carry-over from main Session 117 handoff — migration 223 + flag flip + 2-device test).
 - **Appointments i18n sweep** (carry-over).
-- **Mira → Tracy tool extension** (Session 108 plan, Phase 4.8 — super-admin scope).
+- **Mira → Astra tool extension** (Session 108 plan, Phase 4.8 — super-admin scope).
 - **Unrelated working-tree edits** — `app/admin/*.tsx` + `lib/curriculum/classroom.ts` + others remain unstaged from a prior Whale-Class admin audit. Do NOT mix them into the next commit batch.
 
 ---
@@ -1789,7 +1789,7 @@ Tap any sub-category → photo saved with `sonnet_draft.is_other = true` + `sonn
 179. **`ai_drafted=false` is FORCED on every Mira-written message.** Same Session 84 rule that applies to the HTTP agent messages route. Mira composed the message; the message is the agent's. AI attribution would be misleading.
 180. **`school_id=NULL` is allowed ONLY for `thread_type='agent_super_admin'`.** Migration 204's gated CHECK enforces this. Every Mira write to `montree_message_threads` passes both values.
 181. **Tool description + system prompt MUST agree on when to call.** When introducing a new write tool, the tool's description AND the system prompt's posture section both say "fire ONLY when X". One without the other is a footgun (Session 87 architectural lesson: when descriptions disagree, the tool description wins because that's what Opus reads at decision moment).
-182. **Phase 4.8 (Tracy super-admin scope) is recommended as a separate `/montree/super-admin/tracy` route**, not bolted onto the principal Tracy. The principal Tracy is gated to a single school's data; super-admin Tracy scans across all agents. Different identity, different gating, different system prompt. This is the natural counterpart to Phase 4.7 and the next obvious build for the agent ↔ super-admin loop.
+182. **Phase 4.8 (Astra super-admin scope) is recommended as a separate `/montree/super-admin/tracy` route**, not bolted onto the principal Astra. The principal Astra is gated to a single school's data; super-admin Astra scans across all agents. Different identity, different gating, different system prompt. This is the natural counterpart to Phase 4.7 and the next obvious build for the agent ↔ super-admin loop.
 
 ---
 
@@ -1832,7 +1832,7 @@ Tap any sub-category → photo saved with `sonnet_draft.is_other = true` + `sonn
 2. **Stage B (recording + AI briefings) activation** — operational only after Stage A confirmed working. Requires credit card on Agora + Cloud Recording enable + Supabase Storage bucket + 4 more Railway env vars + flip `video_recording` flag.
 3. **Appointments i18n sweep** — translate the entire appointments surface (parent + staff + calendar) across 12 locales. ~30 new keys × 12 locales via Haiku batch. Half-day focused work.
 4. **Carry-over outreach** — FAMM Argentina + Cambridge Montessori Global + others (see Active Reply Threads block).
-5. **Mira → Tracy tool extension** (Session 84 + 85 architectural carry-over).
+5. **Mira → Astra tool extension** (Session 84 + 85 architectural carry-over).
 6. **Multilingual sweep** (Session 75 carry-over).
 
 ---
@@ -1929,7 +1929,7 @@ He's right. Current `/montree/dashboard/appointments` (and `/montree/admin/appoi
 2. **Calendar-first UI build per section E above** — 4-6 hours. Single biggest UX win remaining in the appointments stack. Tredoux's explicit ask.
 3. **Stage B (recording + AI briefings) activation** — operational only after Stage A confirmed working. Requires credit card on Agora + Cloud Recording enable + Supabase Storage bucket + 4 more Railway env vars + flip `video_recording` flag.
 4. **Carry-over outreach work** — FAMM Argentina + Cambridge Montessori Global + others (see Active Reply Threads block in this file).
-5. **Mira → Tracy tool extension** (Session 84 + 85 architectural carry-over).
+5. **Mira → Astra tool extension** (Session 84 + 85 architectural carry-over).
 6. **Multilingual sweep** (Session 75 carry-over).
 
 ---
@@ -2034,7 +2034,7 @@ After: new Story logins produce a clean `/story/active` URL. No JWT in path, bro
 
 ## RECENT STATUS (May 16, 2026)
 
-### 🔥 Session 113 V2 — Saturday burn: 8 deep audits (Photo + Tracy/Mira + Finance + Agent + Parent + Story + Whale-Class + Outreach + Legacy-API + Photo-AI-Quality) — closed 10 CRITICAL + 30+ HIGH + 10+ MED across the whole product (May 16-17, 2026)
+### 🔥 Session 113 V2 — Saturday burn: 8 deep audits (Photo + Astra/Mira + Finance + Agent + Parent + Story + Whale-Class + Outreach + Legacy-API + Photo-AI-Quality) — closed 10 CRITICAL + 30+ HIGH + 10+ MED across the whole product (May 16-17, 2026)
 
 **51 commits pushed to main:** `2f5b5643` → `fe68f0c2`. Continuous Saturday-into-Sunday burn. User explicitly asked to "burn through usage in next 48 hours" then kept saying "keep burning" / "burn burn burn" through every fork. **The single highest-leverage 48-hour security + correctness push the project has had.**
 
@@ -2449,7 +2449,7 @@ Removed ~20 lurking unused imports/vars/helpers from past refactors that were hi
 
 ### ⚡ Session 111 perf push — PWA mobile lag fixes (commits `19de89fb` + `624b2aab`)
 
-User reported the app felt laggy on PWA mobile (dashboard + photo audit + Tracy). Dispatched a parallel investigation agent which ranked 5 causes by severity. Shipped 6 of the 7 actionable items across two commits.
+User reported the app felt laggy on PWA mobile (dashboard + photo audit + Astra). Dispatched a parallel investigation agent which ranked 5 causes by severity. Shipped 6 of the 7 actionable items across two commits.
 
 **Commit `19de89fb` — three trivial-but-high-leverage fixes:**
 
@@ -2461,7 +2461,7 @@ User reported the app felt laggy on PWA mobile (dashboard + photo audit + Tracy)
 
 **Commit `624b2aab` — three larger high-leverage builds:**
 
-4. **Tracy memory cache** (`lib/montree/tracy/memory.ts`). Tracy used to re-read up to 30 memory rows from `montree_principal_memory` on every message. With Opus 4.6 latency on top, first-token felt 3-8s. New in-process cache with 5min TTL keyed by `principal_id` eliminates the DB roundtrip on consecutive turns. Bounded at 1000 entries (FIFO eviction). `writeMemory()` invalidates cache on insert/supersede so the next turn rebuilds from canonical state. Multi-instance Railway: each instance has its own cache; cross-instance staleness self-heals at TTL. Exports `invalidateMemoryCache()` + `clearMemoryCache()` for advanced callers.
+4. **Astra memory cache** (`lib/montree/tracy/memory.ts`). Astra used to re-read up to 30 memory rows from `montree_principal_memory` on every message. With Opus 4.6 latency on top, first-token felt 3-8s. New in-process cache with 5min TTL keyed by `principal_id` eliminates the DB roundtrip on consecutive turns. Bounded at 1000 entries (FIFO eviction). `writeMemory()` invalidates cache on insert/supersede so the next turn rebuilds from canonical state. Multi-instance Railway: each instance has its own cache; cross-instance staleness self-heals at TTL. Exports `invalidateMemoryCache()` + `clearMemoryCache()` for advanced callers.
 
 5. **`find_children_missing_work` tool** (`lib/montree/guru/tool-{definitions,executor}.ts`). Closes the capability gap user hit today asking Guru "who hasn't been tagged for bingo this week" — existing `get_weekly_area_summary` answers per-AREA not per-WORK. New tool fuzzy-matches the work name against the curriculum, queries confirmed photos + group-photo junction + progress entries, returns both done and missing children plus which curriculum work names matched. Pairs with `group_students` for planning a session for the missing children. Updated `conversational-prompt.ts` with usage examples (bingo, Pink Tower, etc.).
 
@@ -2473,7 +2473,7 @@ User reported the app felt laggy on PWA mobile (dashboard + photo audit + Tracy)
 
 **Pre-existing dead-code disables added:** `FocusWorksSection.tsx` and `[childId]/page.tsx` have ~20 lurking unused imports/vars from past refactors (game-plan inline render moved to GamePlanCard, copyText moved elsewhere). Surfaced when these files joined strict lint scope via the NoteField extraction. Added targeted file-level `eslint-disable` headers with TODO markers for a dedicated dead-code cleanup pass. Plus one inline disable for the deliberate `isEnabled`-not-in-deps `useEffect` at `[childId]/page.tsx:405`.
 
-**Architectural rule clarification:** AI surfaces that load per-user context on every turn (Tracy, future similar agents) MUST cache the context with a TTL — direct DB reads on every message stack with model latency to create perceived lag.
+**Architectural rule clarification:** AI surfaces that load per-user context on every turn (Astra, future similar agents) MUST cache the context with a TTL — direct DB reads on every message stack with model latency to create perceived lag.
 
 Files: 10 changed across two commits, +535 / -118 lines. Lint clean. i18n strict parity passes.
 
@@ -2481,7 +2481,7 @@ Files: 10 changed across two commits, +535 / -118 lines. Lint clean. i18n strict
 1. **Tier 1.1 SW stale-while-revalidate** — half-day dedicated session, needs 2-user iPhone testing. ~80% returning-visit lag fix.
 2. **Photo-audit initial fetch limit** — lower 200/500 → 100 + add "load more" infinite scroll. 2-3 hours.
 3. **FocusWorksSection + [childId]/page.tsx dead-code cleanup** — remove the ~20 lurking unused imports/vars behind the disables. 1 hour.
-4. **Tier 2.2 Tracy SSE retry-with-resume** — reliability not perf, but related.
+4. **Tier 2.2 Astra SSE retry-with-resume** — reliability not perf, but related.
 
 ---
 
@@ -2814,7 +2814,7 @@ Each idempotent. Safe to re-run.
 - Real Xero API calls in `scripts/sync-to-xero.mjs` (one-line flip after accountant confirms account codes)
 - Phase A operational setup (Xero account, accountant, Stripe-Xero integration, env vars)
 - Translation sweep (72 pages identified in Session 108 audit still English-only)
-- Mira + Tracy AI tool extensions (Phase 4.7 + 4.8 from Session 108 plan)
+- Mira + Astra AI tool extensions (Phase 4.7 + 4.8 from Session 108 plan)
 
 ---
 
@@ -2839,9 +2839,9 @@ The whole inbound application pipeline.
 - `components/montree/super-admin/ReferralsTab.tsx` — reads prefill URL params on mount, opens "+ Issue code" form pre-filled. After successful code creation, fires PATCH to mark the application 'sent' (drops out of pending alert).
 - `app/montree/super-admin/page.tsx` — reads `?tab=` on mount for deep-linking.
 
-**Phase 4 — Agent ↔ super-admin threaded messaging (✅ shipped, Mira/Tracy assist deferred):**
+**Phase 4 — Agent ↔ super-admin threaded messaging (✅ shipped, Mira/Astra assist deferred):**
 
-Extends the existing `montree_message_threads` infrastructure rather than forking. Same tables, new thread type. Means future Mira + Tracy tool extensions can scan/draft natively.
+Extends the existing `montree_message_threads` infrastructure rather than forking. Same tables, new thread type. Means future Mira + Astra tool extensions can scan/draft natively.
 
 - `lib/montree/agent-super-admin-messaging/types.ts` + `access.ts` — `SUPER_ADMIN_SENTINEL_UUID = '00000000-0000-0000-0000-000000000000'` for FK shape, `resolveMessagingAgent` (no schools required, unlike `agent_principal` resolver) + `resolveMessagingSuperAdmin`.
 - Agent-side APIs (3 routes):
@@ -2880,7 +2880,7 @@ Reading the route at `app/api/montree/agent/connect-status/route.ts`, the ONLY 4
 
 49. `montree_message_threads.school_id` is nullable ONLY for `thread_type='agent_super_admin'` (migration 204 gated CHECK). Every other type stays mandatorily school-scoped.
 50. Super-admin participant identity uses `SUPER_ADMIN_SENTINEL_UUID = '00000000-0000-0000-0000-000000000000'`. Role string is canonical identity; UUID is FK-shape filler. Never change this value — old threads would orphan.
-51. `ai_drafted` is FORCED false on agent posts. May be true on super-admin posts when Tracy drafts. Session 84 rule extended to agent_super_admin scope.
+51. `ai_drafted` is FORCED false on agent posts. May be true on super-admin posts when Astra drafts. Session 84 rule extended to agent_super_admin scope.
 52. `resolveMessagingAgent` (super-admin scope) does NOT require schoolIds. Different from `agent_principal` resolver. An agent without referrals can still ping Tredoux.
 53. Agent applications use `contact_type='agent_application'` + `status='agent_applied'` on `montree_outreach_contacts`. Structured payload lives in `application_details JSONB`.
 54. The PATCH endpoint for agent applications validates `contact_type='agent_application'` server-side before mutating. Won't accidentally update a demo_request or outreach contact.
@@ -2949,7 +2949,7 @@ Recommendation accepted: **no UI 🗑 button.** Operator judgment via SQL only. 
 - **Phase 1 — E2E validation** with real Stripe + bank info. User-action only. Plan at `docs/handoffs/AGENT_E2E_TEST_PLAN.md`. Cleanup at `scripts/cleanup-test-agent.sql`. Until walked, the impersonation 404 hypothesis stays unconfirmed.
 - **Phase 2 — Impersonation 404 hot-fix.** Conditional on Phase 1.
 - **Mira tool extensions** for `start_thread_with_tredoux` + `reply_in_thread` (Phase 4.7 in plan). Messaging infrastructure ready. Half-day follow-up.
-- **Tracy super-admin scope** for `scan_agent_messages` + `draft_agent_reply` with role-based tool gating (Phase 4.8). Recommended separate `/montree/super-admin/tracy` route. Half-day follow-up.
+- **Astra super-admin scope** for `scan_agent_messages` + `draft_agent_reply` with role-based tool gating (Phase 4.8). Recommended separate `/montree/super-admin/tracy` route. Half-day follow-up.
 - **Full i18n batch** for new strings (~50–80 keys × 12 locales). English-only for v1.
 
 **🚨 Next session priorities (ordered):**
@@ -2960,7 +2960,7 @@ Recommendation accepted: **no UI 🗑 button.** Operator judgment via SQL only. 
 4. **Phase 1 E2E test** per `AGENT_E2E_TEST_PLAN.md`. This isolates the Stripe Refresh 404. Real $1 wire optional.
 5. **Phase 2 hot-fix** if Phase 1 confirms impersonation flow is broken.
 6. **Onboard Gloria** once Phases 1 + 2 are done. The infrastructure (Stripe Connect live, Agent Inbox live, recruitment funnel live) is all there.
-7. **Mira + Tracy AI assistance** (deferred Phase 4.7 + 4.8). Both half-day follow-ups on existing infrastructure.
+7. **Mira + Astra AI assistance** (deferred Phase 4.7 + 4.8). Both half-day follow-ups on existing infrastructure.
 8. **i18n batch** for new agent system strings.
 9. **Carry-overs from Session 107:** HK banker confirmation, HK accountant package, 5 Railway crons, Resend domain verification, the 7 deferred PERF items (Tier 1.1 SW SWR is the biggest — ~80% returning-visit lag), outreach follow-ups (FAMM Argentina, Cambridge Montessori Global, Otari NZ, Lions Gate, Montessori Norge, Paint Pots, Ardtona dead leads cleanup, 14+ Wave 1 bounces).
 
@@ -3049,10 +3049,10 @@ All operational state items (Migration 202 RUN, Stripe Connect LIVE, env vars de
 | **1.2** | `loading.tsx` for 11 routes (cockpit, communication, classrooms, people, pulse, child briefing, dashboard, child week, photo audit, parent dashboard, parent messages) | Skeleton on cold nav instead of blank screen |
 | **1.3** | Lora via `next/font/google` (CSS vars `--font-lora` + `--font-inter`) | Killed the `@import` waterfall; font loads with the HTML |
 | **1.4** | Cookie-based locale dispatch (`mt_locale`) + lazy locale loading | ~700KB gzip saved per non-en page load + eliminates English-flash on first paint |
-| **2.1** | Tracy SSE token rAF throttle via `pendingTextRef` + `flushTextBuffer()` | ~80% CPU drop on mobile Tracy streaming |
-| **2.2 (safe half)** | AbortController cleanup on Tracy SSE | No more orphaned streams when user navigates mid-response |
-| **2.3** | Static templated greeting on Tracy first paint — `fireGreeting()` REMOVED | Tracy first-frame is instant; no Sonnet/Opus call on mount |
-| **2.4** | Lazy-mount Tracy panel via `next/dynamic` | Tracy chunk doesn't ship until user expands the panel |
+| **2.1** | Astra SSE token rAF throttle via `pendingTextRef` + `flushTextBuffer()` | ~80% CPU drop on mobile Astra streaming |
+| **2.2 (safe half)** | AbortController cleanup on Astra SSE | No more orphaned streams when user navigates mid-response |
+| **2.3** | Static templated greeting on Astra first paint — `fireGreeting()` REMOVED | Astra first-frame is instant; no Sonnet/Opus call on mount |
+| **2.4** | Lazy-mount Astra panel via `next/dynamic` | Astra chunk doesn't ship until user expands the panel |
 | **3.1** | Weekly Wrap teacher + parent reports parallelized per child via `Promise.all` (Stage 0 replan first preserved) | 3–5 min faster per 20-child wrap |
 | **3.2** | Photo-ID pre-Pass-1 parallelize | 200–450ms faster per capture |
 | **3.3 (partial)** | `select(*)` → explicit columns on safe internal-use paths | Smaller payloads, faster decode |
@@ -3065,7 +3065,7 @@ All operational state items (Migration 202 RUN, Stripe Connect LIVE, env vars de
 | **5.1 (partial)** | Image dimension attrs on top 8 hot surfaces | ~80% of perceived CLS impact gone |
 | **5.4** | JSZip dynamic-import on 4 client pages | JSZip chunk lazy-loaded only when needed |
 | **6.1** | Pull-to-refresh on teacher dashboard | iOS-style refresh gesture works |
-| **6.2** | iOS keyboard handling in Tracy chat (float + page) via visualViewport listener + onFocus scrollIntoView | Keyboard no longer hides the chat input |
+| **6.2** | iOS keyboard handling in Astra chat (float + page) via visualViewport listener + onFocus scrollIntoView | Keyboard no longer hides the chat input |
 | **6.4** | Investigated — both manifests in active use, no change needed | — |
 
 **Other shipping in same push:**
@@ -3080,7 +3080,7 @@ All operational state items (Migration 202 RUN, Stripe Connect LIVE, env vars de
 | Tier | What | Why deferred |
 |---|---|---|
 | **1.1** | SW stale-while-revalidate API cache | **CVE-class auth-leak risk.** Needs real iPhone + iPad testing with different users on same browser to confirm no cross-user cache poisoning. THIS IS THE SINGLE BIGGEST PERCEIVED-LATENCY WIN IN THE WHOLE DOC (~80% returning-visit lag gone). Worth a dedicated session. |
-| **2.2 retry-with-resume** | Tracy SSE resumes on VPN flap | Needs real Astrill-toggle-mid-stream testing. Risk of double-Sonnet-charge if retry races wrong. |
+| **2.2 retry-with-resume** | Astra SSE resumes on VPN flap | Needs real Astrill-toggle-mid-stream testing. Risk of double-Sonnet-charge if retry races wrong. |
 | **4.2** | Direct fetch → `montreeApi` migration | Each candidate endpoint (Whisper, photo upload, onboard) needs bespoke 120s timeout that `montreeApi`'s 30s default would break. Per-endpoint judgment call, not bulk migration. |
 | **5.1 remaining ~80 imgs** | Image dims full sweep | Python regex `<img\s+[^>]*?/?>` matched `>` inside JSX arrow functions (`onError={() =>`), breaking 9+ files. Needs proper JSX parser OR manual file-by-file. Top 8 surfaces shipped covers ~80% of CLS impact. |
 | **5.3** | NoteField extract on 1,040-line child page | Cursor-jump risk on every keystroke without real-device testing. |
@@ -3099,7 +3099,7 @@ All operational state items (Migration 202 RUN, Stripe Connect LIVE, env vars de
 44. **`setLocale()` MUST write both localStorage AND the `mt_locale` cookie.** The cookie is read server-side on the next page render to seed locale without client round trip.
 45. **For non-en users, the server-side layout MUST load the locale file** (via `loadServerLocale`) and pass `initialMessages` to the provider. Eliminates English-flash on first paint.
 46. **SSE token streams MUST buffer through useRef + rAF flush.** Never `setState` per token in a streaming handler. Pattern canonical at `flushTextBuffer()` in both `app/montree/admin/page.tsx` and `TracyFloat.tsx`.
-47. **Tracy's first paint is STATIC** — no Sonnet/Opus call on mount. AI fires only when user types. The greeting is a templated assistant turn pushed into state directly. `fireGreeting()` is GONE; do not bring it back without explicit perf-impact reasoning.
+47. **Astra's first paint is STATIC** — no Sonnet/Opus call on mount. AI fires only when user types. The greeting is a templated assistant turn pushed into state directly. `fireGreeting()` is GONE; do not bring it back without explicit perf-impact reasoning.
 48. **Weekly Wrap teacher + parent reports run in parallel per child.** Stage 0 → Stage N ordering preserved (replan first, then reports).
 
 ### Operational state after this session
@@ -3120,7 +3120,7 @@ All operational state items (Migration 202 RUN, Stripe Connect LIVE, env vars de
 ### 🚨 Next session priorities (ordered)
 
 1. **🚨🚨🚨 Generate Gloria's onboarding link** — Super-admin Referrals → 💳 → reveal-once URL → send to Gloria with `docs/agents/GLORIA_STRIPE_ONBOARDING.md`.
-2. **Walk the 8-step smoke test** in `docs/handoffs/SESSION_107_HANDOFF.md`: Stripe Connect webhook fires on Gloria submit → per-school billing override modal → pull-to-refresh on teacher dashboard → optimistic send on messaging → Tracy iOS keyboard → static greeting → photo bank bulk ops → loading skeletons on cold nav.
+2. **Walk the 8-step smoke test** in `docs/handoffs/SESSION_107_HANDOFF.md`: Stripe Connect webhook fires on Gloria submit → per-school billing override modal → pull-to-refresh on teacher dashboard → optimistic send on messaging → Astra iOS keyboard → static greeting → photo bank bulk ops → loading skeletons on cold nav.
 3. **Confirm with HK banker** — courtesy email to Wallex about Stripe Connect Express + HKD wires.
 4. **Send HK accountant** `docs/finance/HK_FINANCIAL_ADVISOR_SUMMARY.md`.
 5. **Configure 5 Railway crons** per `docs/perf/CRON_SETUP.md`.
@@ -3135,7 +3135,7 @@ All operational state items (Migration 202 RUN, Stripe Connect LIVE, env vars de
 
 ---
 
-### ⚡ Session 106 — Tracy 402 universal + sonnet chips + agent mobile + parent audit + bulk-reply demo leads (May 12, 2026)
+### ⚡ Session 106 — Astra 402 universal + sonnet chips + agent mobile + parent audit + bulk-reply demo leads (May 12, 2026)
 
 **0 commits pushed yet — 32 files in working tree, 0 errors, i18n 100% parity (4430/4430 × 12 locales).** Five clean workstreams ready for `git add . && git commit && git push`. **No SQL — all migrations through 201 remain run.**
 
@@ -3168,7 +3168,7 @@ All operational state items (Migration 202 RUN, Stripe Connect LIVE, env vars de
 
 ### Five workstreams shipped this session
 
-**A. Tracy 402 pattern universally applied** — Architectural rule #29 fully realized. 13 server routes + 11 client surfaces patched. Every paid AI feature now returns `{ requires_upgrade: true, upgrade_url: '/montree/admin/billing', feature: '<key>', tier, error }` on 402, and every client renders the warm UpgradeCard (gold/amber, matches Tracy's design from Session 105) instead of a red error toast. Features covered: weekly_wrap, snap_identify, weekly_review (POST + PATCH), language_presentation, language_semester, teaching_instructions, generate_work_content, child_briefing, parent_question, tracy_scan, tracy_draft, vault_transcribe (+ tracy already done Session 105). New shared component at `components/montree/UpgradeCard.tsx` with helper `extractUpgradeFromResponse(res)`. 27 i18n keys × 12 locales = 324 translations.
+**A. Astra 402 pattern universally applied** — Architectural rule #29 fully realized. 13 server routes + 11 client surfaces patched. Every paid AI feature now returns `{ requires_upgrade: true, upgrade_url: '/montree/admin/billing', feature: '<key>', tier, error }` on 402, and every client renders the warm UpgradeCard (gold/amber, matches Astra's design from Session 105) instead of a red error toast. Features covered: weekly_wrap, snap_identify, weekly_review (POST + PATCH), language_presentation, language_semester, teaching_instructions, generate_work_content, child_briefing, parent_question, tracy_scan, tracy_draft, vault_transcribe (+ tracy already done Session 105). New shared component at `components/montree/UpgradeCard.tsx` with helper `extractUpgradeFromResponse(res)`. 27 i18n keys × 12 locales = 324 translations.
 
 **🚨 Photo Identification deliberately NOT tier-gated** per Session 57 architectural decision — free schools still need basic photo capture working.
 
@@ -3218,11 +3218,11 @@ See `docs/handoffs/SESSION_106_HANDOFF.md` "Files changed this session" section 
 
 **🚨 Canonical resume doc:** `docs/handoffs/SESSION_105_HANDOFF.md` — full 16-commit log, 14-step smoke test, architectural rules, deferred backlog. Pick up Session 106 cold from there.
 
-**The headline:** Every Session 104 surface (Money tab + Health tab + DLQ + Errors + Tracy/Mira cards + Changelog + TrialBanner + Recurring + parent-codes + agent messaging) is now translatable across all 12 locales. PLUS a comprehensive operational layer:
+**The headline:** Every Session 104 surface (Money tab + Health tab + DLQ + Errors + Astra/Mira cards + Changelog + TrialBanner + Recurring + parent-codes + agent messaging) is now translatable across all 12 locales. PLUS a comprehensive operational layer:
 - Stripe Connect + Customer **deep-links** from both Schools and Money tabs
 - **Failed-payout retry** via 🔄 Reset to pending
 - **Demo-request drip campaign** (day 3 / 7 / 14) with full visibility + one-click trial-link reply
-- **Tracy 402 → upgrade card** (vs red error toast)
+- **Astra 402 → upgrade card** (vs red error toast)
 - **Top-3 candidate chips** on photo audit + **React.memo** to stop the 200-photo grid choking
 - **Billing page i18n** (closes trial→paid funnel for non-English principals)
 
@@ -3295,16 +3295,16 @@ Two new cards bring the Health tab to **8 status cards** total (DB · Stripe · 
 
 2. **Stripe webhook card upgrade** — subtitle now shows `⚠ N pending in DLQ — last 7d` when count > 0 (queries `montree_webhook_deadletter` where status='pending'). Card flips from ok → warn when any DLQ events are pending. The full chain (webhook delivery → DLQ resolution → ledger) is visible from one screen.
 
-**G. Tracy 402 → upgrade card (`0192bad6`):**
+**G. Astra 402 → upgrade card (`0192bad6`):**
 
-Carry-over from Session 98 priority #14. When a Free-tier school hits Tracy, server returned 402 with generic error — client rendered as red error toast, treating a billing state like a bug.
+Carry-over from Session 98 priority #14. When a Free-tier school hits Astra, server returned 402 with generic error — client rendered as red error toast, treating a billing state like a bug.
 
 - Server adds `requires_upgrade: true` + `upgrade_url: '/montree/admin/billing'` + `feature: 'tracy'` to the 402 payload
 - `ConvTurn` type gains `requiresUpgrade?: boolean`
 - Frontend handler reads `requires_upgrade` from 402 body and routes to a friendly amber/gold upgrade card with "Set up billing" CTA — instead of the red error box
 - Plain transient errors still render as red (separate branch)
 
-**🚨 Architectural rule (#29):** All AI 402 routes should adopt the same shape (`requires_upgrade` + `upgrade_url` + `feature`). Tracy is the first; Weekly Wrap, Photo Identification, Snap Identify, etc. are deferred follow-up work.
+**🚨 Architectural rule (#29):** All AI 402 routes should adopt the same shape (`requires_upgrade` + `upgrade_url` + `feature`). Astra is the first; Weekly Wrap, Photo Identification, Snap Identify, etc. are deferred follow-up work.
 
 **H. Photo audit polish (`7cc53298`) — top-3 candidates + memo fix:**
 
@@ -3356,7 +3356,7 @@ Both addressed in one commit:
 **🚨 Next session priorities (Session 106, ordered):**
 
 1. **Walk the 14-step smoke test** in `SESSION_105_HANDOFF.md` after Railway settles. Verify each shipped surface works.
-2. **Apply Tracy 402 upgrade-card pattern to other AI routes** — Weekly Wrap, Photo Identification, Snap Identify all return generic 402 errors. Same `requires_upgrade` + `upgrade_url` shape + matching client cards. ~1-2 hours per surface.
+2. **Apply Astra 402 upgrade-card pattern to other AI routes** — Weekly Wrap, Photo Identification, Snap Identify all return generic 402 errors. Same `requires_upgrade` + `upgrade_url` shape + matching client cards. ~1-2 hours per surface.
 3. **Virtual scroll on photo-audit grid** — `React.memo` helps but 500 photos in DOM is still heavy. Add `react-window` or `react-virtuoso`. ~2-3 hours.
 4. **Agent dashboard polish** — Schools / Codes / Payouts / Settings pages. Mobile-first re-audit. ~half-day.
 5. **Top-3 chips on `sonnet_drafted` card** too (currently only on Haiku cards). `closest_existing_match` could be repurposed.
@@ -3607,16 +3607,16 @@ The first half of Session 104 shipped 8 commits (parent invites + agent messagin
 - `lib/montree/server-errors.ts` — `logServerError()` + `logCaughtError()`. Fire-and-forget, NEVER throws (logger failure must not compound original error).
 - `/api/montree/super-admin/server-errors` — GET (filter state/origin/severity) + PATCH (mark resolved) + DELETE.
 
-**S. Server errors tab + Mira card + Tracy card + landing polish (`7dd3e9af`):**
+**S. Server errors tab + Mira card + Astra card + landing polish (`7dd3e9af`):**
 
 - `ServerErrorsTab.tsx` — super-admin 🐛 Errors tab. State filter (unresolved/resolved/all), severity badges, origin pills. Resolve/delete actions. Expand for stack + context.
 - `/api/montree/agent/snapshot` — per-school signals for agent: active students, students_added_7d, photos_30d, last_guru_interaction, last_photo_at. Computes `signal` (growing/active/quiet/silent) + `suggested_action`.
 - `MiraProactiveCard.tsx` — agent dashboard card surfacing actionable schools (growing first, then silent). Amber container with per-signal colored borders. Top 5 only. Dismissible.
 - `/api/montree/admin/snapshot` — per-classroom + per-teacher signals for principal: stale classrooms (no photos 7d), idle teachers (>7d no login), pending_photos_7d. Returns `suggestions[]` array.
-- `TracyProactiveCard.tsx` — principal Today page card. 'Tracy noticed:' + suggestions line + clickable chips for stale classrooms + idle teachers. Dismissible.
+- `TracyProactiveCard.tsx` — principal Today page card. 'Astra noticed:' + suggestions line + clickable chips for stale classrooms + idle teachers. Dismissible.
 - Landing page (`app/montree/page.tsx`) parallel-agent polish: added "Play is the work of the child." — Maria Montessori quote above "Change your life" (small italic Lora, muted color, attribution on own line). Removed duplicate "Get started" nav button.
 
-**T. Health tab manual cron triggers + Tracy/Mira changelog entry (`af3a9127`):**
+**T. Health tab manual cron triggers + Astra/Mira changelog entry (`af3a9127`):**
 
 - `CronTriggers` component added inside HealthTab. 4 one-click buttons: monthly payout calc / recurring op-expense / trial drip / warm. Auth via x-super-admin-token (no cron-secret needed for manual). Shows response JSON in expandable result panel.
 - Useful BEFORE Railway crons are configured — Tredoux fires manually until then.
@@ -3715,10 +3715,10 @@ The first half of Session 104 shipped 8 commits (parent invites + agent messagin
 
 **🚨 Next session priorities (ordered):**
 
-1. Smoke-test end-to-end: Money tab all 6 sub-tabs / Health tab / DLQ / Errors / Mira card on agent / Tracy card on principal / parent-codes teacher page / agent messaging
+1. Smoke-test end-to-end: Money tab all 6 sub-tabs / Health tab / DLQ / Errors / Mira card on agent / Astra card on principal / parent-codes teacher page / agent messaging
 2. Enable Stripe Connect → wire Gloria's first real payout
 3. Send Gloria + HK accountant packages
-4. **i18n batch** — ~80+ keys × 12 locales via Haiku. The biggest remaining English-only surface debt: parent-codes teacher page, agent messaging UI, Money tab labels, MoneyLedgerView, Health tab, ChangelogModal, TrialExpiringBanner, ServerErrorsTab, Mira/Tracy proactive cards, WebhookDLQTab. ~1 hour focused.
+4. **i18n batch** — ~80+ keys × 12 locales via Haiku. The biggest remaining English-only surface debt: parent-codes teacher page, agent messaging UI, Money tab labels, MoneyLedgerView, Health tab, ChangelogModal, TrialExpiringBanner, ServerErrorsTab, Mira/Astra proactive cards, WebhookDLQTab. ~1 hour focused.
 5. Mobile-first re-audit of all new pages — real-device testing
 6. Photo bank improvements (carry-over)
 7. Parent portal dark forest theme audit
@@ -3738,7 +3738,7 @@ Mirrors parent's Session 98 rebuild for the teacher. Replaces the March 15 flat-
 
 New surfaces:
 - `/montree/dashboard/messages` — thread list with floating + compose modal. Dark forest theme. Empty state explains the + button.
-- `/montree/dashboard/messages/[threadId]` — iMessage-style detail with sticky reply composer. Auto-marks read on open. Renders "Tracy drafted" amber pill on incoming messages with `ai_drafted=true`.
+- `/montree/dashboard/messages/[threadId]` — iMessage-style detail with sticky reply composer. Auto-marks read on open. Renders "Astra drafted" amber pill on incoming messages with `ai_drafted=true`.
 - `/api/montree/dashboard/messages/recipients` — children-in-classroom bundles (each with linked parents) + the school principal.
 
 Compose targets: `parent_teacher` (about a child, to one of their parents) and `internal` (to the school principal, no child). `addPrincipalObserver()` (Session 97) still runs server-side on every parent_teacher thread for transparency. Server forces `ai_drafted=false` on teacher posts.
@@ -3798,7 +3798,7 @@ Deferred to Session 104: 0.10 backdrop-filter audit, 0.11 Railway region pin (da
 10. **All Web Vitals payload fields from the client are untrusted** — analytics slicing only, never authorization.
 11. **`last_sender_is_me` is the canonical "You" signal on thread list rows** — never role-based. Server compares `sender_id` to the authenticated userId/parentId.
 12. **Both `/api/montree/messages/threads` AND `/api/montree/parent/messages/threads` are canonical `ThreadListItem` sources.** Any field added to the type MUST be populated by both routes (parent uses `parent.parentId`, unified uses `auth.userId`).
-13. **Tracy's `scan_threads` tool builds its own anonymous shape**, not `ThreadListItem`. AI tools refer to participants by name, no "You" signal needed.
+13. **Astra's `scan_threads` tool builds its own anonymous shape**, not `ThreadListItem`. AI tools refer to participants by name, no "You" signal needed.
 14. **`useEffect` keyed on `pathname` re-runs on every SPA route change.** If you bind external listeners with no unsubscribe API (web-vitals, etc.), bind ONCE on mount and use a `pathnameRef` for the current route at fire time — never re-bind, otherwise listeners multiplicate.
 15. **`.tsbuildinfo` incremental cache masks type errors** when imported module shapes change. Always force `rm tsconfig.tsbuildinfo && npx tsc --noEmit` before declaring a type-shape change clean. `next build` won't catch it either because `typescript.ignoreBuildErrors=true` in this project.
 
@@ -3828,9 +3828,9 @@ Deferred to Session 104: 0.10 backdrop-filter audit, 0.11 Railway region pin (da
 
 ## RECENT STATUS (May 10, 2026)
 
-### ⚡ Session 100 — THE MARATHON: Stripe LIVE + Communication 4-cycle audit + Tracy memory + Tracy proactivity v3 + Tracy warmth + Tracy thinking indicator + copy blocks + photo bank cleanup + landing kicker (May 10, 2026)
+### ⚡ Session 100 — THE MARATHON: Stripe LIVE + Communication 4-cycle audit + Astra memory + Astra proactivity v3 + Astra warmth + Astra thinking indicator + copy blocks + photo bank cleanup + landing kicker (May 10, 2026)
 
-**The most productive single session in the project's history. Real money flows. Tracy has memory, voice, and visual life. Communication system bulletproofed. Photo bank purged. Landing polished.**
+**The most productive single session in the project's history. Real money flows. Astra has memory, voice, and visual life. Communication system bulletproofed. Photo bank purged. Landing polished.**
 
 **🚨 Canonical resume doc:** `docs/handoffs/SESSION_100_HANDOFF.md` — comprehensive single source of truth for picking up Session 101 cold.
 
@@ -3839,12 +3839,12 @@ Deferred to Session 104: 0.10 backdrop-filter audit, 0.11 Railway region pin (da
 **Headline outcomes:**
 1. **Stripe LIVE mode end-to-end proven** — Test School 2 subscribed via real Visa, $21 invoice paid (`GGPEZ19T-0001`), Customer Portal live, tier auto-flipped Pro. Live price `price_1TVUiLRngZj3YCje8azeSIsN`, live webhook `we_1TVUwXRngZj3YCjedD20xX5s`. Live secret key rotated TWICE (once after exposure in chat, once cleanly). Cancel direction will auto-prove on Jun 10 via `cancel_at_period_end`.
 2. **Communication system: 4 audit-fix-audit cycles to CLEAN.** 19 original fixes + 5 regression fixes + 1 sibling fix. Three consecutive clean passes confirmed. 11 architectural rules enforced across every messaging endpoint. Whale Class READY to flip `parent_messaging` ON when human handoff is ready.
-3. **Tracy persistent memory live** (migration 195 RUN) — `montree_principal_memory` table + atomic supersede function + `remember_this` / `recall_memory` tools. True relational memory across conversations + devices. Memory injected on every turn (capped 30 most recent).
-4. **Tracy proactivity v3** — root cause finally found: tool description for `draft_teacher_welcome_messages` was telling her to offer first ("Use this whenever the principal accepts an offer"). Both system prompt + tool description rewritten. **Architectural rule locked: when adjusting AI proactivity, system prompt AND tool descriptions MUST agree. If they disagree, tool wins because that's what Opus reads at decision moment.**
-5. **Tracy warmth** — added "one warm sentence" framing between action and artifact. Strict guardrails: warmth allowed ("Here you go — three quick welcomes"); architecture forbidden ("Here's how it works...").
-6. **Tracy thinking indicator + copy blocks** (commit `78e62880`) — pulsing gold avatar + animated dots + progress label while loading; markdown code fences render as styled `<CopyableMessageCard>` with one-tap copy. Tracy's system prompt updated to wrap every draft message in fences with bold heading above.
+3. **Astra persistent memory live** (migration 195 RUN) — `montree_principal_memory` table + atomic supersede function + `remember_this` / `recall_memory` tools. True relational memory across conversations + devices. Memory injected on every turn (capped 30 most recent).
+4. **Astra proactivity v3** — root cause finally found: tool description for `draft_teacher_welcome_messages` was telling her to offer first ("Use this whenever the principal accepts an offer"). Both system prompt + tool description rewritten. **Architectural rule locked: when adjusting AI proactivity, system prompt AND tool descriptions MUST agree. If they disagree, tool wins because that's what Opus reads at decision moment.**
+5. **Astra warmth** — added "one warm sentence" framing between action and artifact. Strict guardrails: warmth allowed ("Here you go — three quick welcomes"); architecture forbidden ("Here's how it works...").
+6. **Astra thinking indicator + copy blocks** (commit `78e62880`) — pulsing gold avatar + animated dots + progress label while loading; markdown code fences render as styled `<CopyableMessageCard>` with one-tap copy. Astra's system prompt updated to wrap every draft message in fences with bold heading above.
 7. **Photo bank cleanup** — 510 photos → 389 photos. 121 non-JPEGs (PNG/WebP/AVIF, 24% of bank) purged from storage + DB. JPEG-only validation locked at upload + UI accept attributes tightened across 6 photo input surfaces. Per-photo delete button added. `montree_media` photo uploads also locked to JPEG-only.
-8. **Migrations 193 + 194 + 195 ALL RUN.** Parent messaging flag (default OFF), school_admins.login_code column (reverses Session 84 rule), Tracy memory table + Postgres function.
+8. **Migrations 193 + 194 + 195 ALL RUN.** Parent messaging flag (default OFF), school_admins.login_code column (reverses Session 84 rule), Astra memory table + Postgres function.
 9. **Landing page kicker** — "Change your life" in brand gold (Lora italic, soft gold glow) above "The magic of Montree." All 12 locales translated.
 10. **Stale Stripe state cleanup pattern** — Test School 2 had `cus_UUNyBWUuiGdn69` from yesterday's test mode. Cleared via SQL UPDATE → live customer created cleanly. Same SQL applies to any school migrating from test→live.
 
@@ -3854,10 +3854,10 @@ Deferred to Session 104: 0.10 backdrop-filter audit, 0.11 Railway region pin (da
 2. **Stripe live mode keys live ONLY in Railway env vars.** Never CLAUDE.md, never git, never persistent files. Product/Price/Webhook IDs are non-sensitive object identifiers and OK to record. `sk_live_*` and `whsec_*` are credentials and stay out.
 3. **`subscription_status='trialing'` ≠ "has Stripe subscription".** Always check `stripe_customer_id !== null` before assuming Stripe customer exists. Both frontend (Session 98 `a6d00a17`) AND backend (Session 100 `f7560471`) enforce this.
 4. **Test mode customer IDs become invalid in live mode.** When switching modes, schools with stale `stripe_customer_id` need cleanup. Pattern: `UPDATE montree_schools SET stripe_customer_id=NULL, stripe_subscription_id=NULL, stripe_price_id_active=NULL, current_period_end=NULL, last_synced_to_stripe_at=NULL, monthly_charge_estimate_cents=NULL, subscription_status='trialing' WHERE id='<school_id>';`
-5. **Tracy memories are SEMANTIC, not EPISODIC.** Save preferences/concerns/voice samples; don't save "asked about X today" — that already lives in `montree_principal_agent_log`.
+5. **Astra memories are SEMANTIC, not EPISODIC.** Save preferences/concerns/voice samples; don't save "asked about X today" — that already lives in `montree_principal_agent_log`.
 6. **Memory injection on every turn**, capped at 30 most recent for cost control. `recall_memory` is for deeper recall beyond that cap.
 7. **Memories scoped per `principal_id`**, never per school. Multi-principal schools have separate memory streams.
-8. **Tracy's draft messages MUST be wrapped in markdown code fences** for copy blocks. The frontend renders fences as `<CopyableMessageCard>`. Recipient name goes BEFORE the fence as bold heading. Action line stays as prose AFTER all fences.
+8. **Astra's draft messages MUST be wrapped in markdown code fences** for copy blocks. The frontend renders fences as `<CopyableMessageCard>`. Recipient name goes BEFORE the fence as bold heading. Action line stays as prose AFTER all fences.
 9. **The `→ ` action-line marker** is load-bearing — front-end parses it. Don't change `splitActionLine()`.
 10. **Photo bank is shared public** by design (`is_public=true`, no `school_id`). Don't add ownership without explicit decision.
 11. **Every messaging endpoint** validates participant school membership + child-classroom linkage before insert.
@@ -3868,25 +3868,25 @@ Deferred to Session 104: 0.10 backdrop-filter audit, 0.11 Railway region pin (da
 ```
 f58742ed  Landing: 'Change your life' gold kicker
 f7560471  Stripe checkout: don't bail on local-trial schools
-6d4283b4  Tracy proactivity: ACTION FIRST rewrite
-a799b4d7  Tracy proactivity v3: top-of-prompt mandate + tool description
+6d4283b4  Astra proactivity: ACTION FIRST rewrite
+a799b4d7  Astra proactivity v3: top-of-prompt mandate + tool description
 e4c93cf4  Communication audit: critical + high
 fb232065  Communication audit: medium + low
 bd96deb1  Communication audit: 4 regression fixes
 8f4db60b  AUDIT-1: recipients route principal ordering
-04395543  Tracy persistent memory: migration 195 + tools + injection
+04395543  Astra persistent memory: migration 195 + tools + injection
 97566d54  Photo upload: JPEG-only across montree_media routes
 d51df3c4  Photo bank audit script
 15fea956  Photo bank: JPEG-only + delete button + DELETE API
 27b176ad  Photo bank: cleanup utilities (4 files, +456)
-a2a1d3d5  Tracy voice: warm one-sentence intro
-78e62880  Tracy: thinking indicator + copy-able cards
+a2a1d3d5  Astra voice: warm one-sentence intro
+78e62880  Astra: thinking indicator + copy-able cards
 ```
 
 **🚨 Carry-overs / next session priorities:**
 
 1. **🚨 Onboard Gloria as first agent today** — super-admin Referrals → 🔑 Issue agent login → reveal-once code → send to Gloria. Then 💳 Stripe Connect onboarding link → Gloria fills bank/tax in Stripe Express → done. Real money infrastructure complete.
-2. **🚨 Run migration 184** — `montree_principal_agent_log` table never created. Tracy interactions silently fail to log. File exists at `migrations/184_principal_agent_log.sql`. Fire-and-forget so doesn't break Tracy. Task #40.
+2. **🚨 Run migration 184** — `montree_principal_agent_log` table never created. Astra interactions silently fail to log. File exists at `migrations/184_principal_agent_log.sql`. Fire-and-forget so doesn't break Astra. Task #40.
 3. **🚨 Fix admin.\* i18n keys** — Settings page reveals raw `admin.actions.saveChanges` / `admin.labels.subscription` / etc. to users. ~31 missing keys per Session 98 #15. Run `npm run i18n:fill-ui` after adding to `en.ts`. Task #39.
 4. **UI glitch sweep** across principal portal — tied to admin.* fix. The brittleness undermines the otherwise polished feel.
 5. **In-app billing history filter** — cosmetic. Filter out failed-then-paid duplicate webhook events so principals don't see ghost "Payment failed" rows next to successful charges.
@@ -3896,19 +3896,19 @@ a2a1d3d5  Tracy voice: warm one-sentence intro
 
 **Test plan for Session 101 (smoke test the Session 100 work):**
 
-1. **Tracy memory** — open `/montree/admin`, tell her *"Remember — I prefer messages under 3 sentences"*, click "New conversation", ask any drafting question. Drafts should be short. Cross-device test: open same school in incognito, same memory loads.
-2. **Tracy thinking indicator** — send Tracy *"how do I onboard my teachers"*. Avatar pulses gold during wait, three dots animate, progress label rolls forward.
-3. **Tracy copy blocks** — same response should render as stacked copy cards (one per teacher), each with bold name + copy icon. Click copy → checkmark for 1.2s, paste in WhatsApp/Notes → clean text.
+1. **Astra memory** — open `/montree/admin`, tell her *"Remember — I prefer messages under 3 sentences"*, click "New conversation", ask any drafting question. Drafts should be short. Cross-device test: open same school in incognito, same memory loads.
+2. **Astra thinking indicator** — send Astra *"how do I onboard my teachers"*. Avatar pulses gold during wait, three dots animate, progress label rolls forward.
+3. **Astra copy blocks** — same response should render as stacked copy cards (one per teacher), each with bold name + copy icon. Click copy → checkmark for 1.2s, paste in WhatsApp/Notes → clean text.
 4. **Stripe live billing** — Customer Portal accessible from `/montree/admin/billing`, shows `10 May 2026 · US$21.00 · Paid · Montree subscription`. Cancel from portal would prove cancel direction without waiting for Jun 10.
 5. **Communication system flag flip** (when ready) — `INSERT INTO montree_school_features (school_id, feature_key, enabled) VALUES ('c6280fae-567c-45ed-ad4d-934eae79aabc', 'parent_messaging', true) ON CONFLICT (school_id, feature_key) DO UPDATE SET enabled = true;`
 
 ---
 
-### ⚡ Session 99 — Tracy persistent memory (migration 195) + remember_this / recall_memory tools (May 10, 2026)
+### ⚡ Session 99 — Astra persistent memory (migration 195) + remember_this / recall_memory tools (May 10, 2026)
 
-**The headline:** Tracy now has true relational memory across conversations and devices. Until this session, she had ONLY episodic memory (last 10 turns of the active conversation, sent client-side from localStorage). Across "New conversation" clicks, fresh devices, or any cross-session interaction, she remembered nothing — the principal had to re-explain her preferences, voice, concerns, and parent priorities every time. That's now fixed.
+**The headline:** Astra now has true relational memory across conversations and devices. Until this session, she had ONLY episodic memory (last 10 turns of the active conversation, sent client-side from localStorage). Across "New conversation" clicks, fresh devices, or any cross-session interaction, she remembered nothing — the principal had to re-explain her preferences, voice, concerns, and parent priorities every time. That's now fixed.
 
-**✅ Migration 195 (`migrations/195_principal_memory.sql`) RUN in Supabase May 10, 2026 16:30 — confirmed via "Success. No rows returned".** Table `montree_principal_memory` + 4 partial indexes + `supersede_and_insert_memory()` Postgres function (SECURITY DEFINER, GRANT EXECUTE to anon/authenticated/service_role) are live. Tracy's memory is wired end-to-end and active in production. Stop telling future sessions to run this — it's done.
+**✅ Migration 195 (`migrations/195_principal_memory.sql`) RUN in Supabase May 10, 2026 16:30 — confirmed via "Success. No rows returned".** Table `montree_principal_memory` + 4 partial indexes + `supersede_and_insert_memory()` Postgres function (SECURITY DEFINER, GRANT EXECUTE to anon/authenticated/service_role) are live. Astra's memory is wired end-to-end and active in production. Stop telling future sessions to run this — it's done.
 
 **A. Migration 195 — `montree_principal_memory` table + atomic supersede function:**
 
@@ -3916,7 +3916,7 @@ The table stores semantic facts about the principal (`preference`, `concern`, `v
 
 Four indexes: active memories per principal, type-filtered lookups, child-related, teacher-related — all partial indexes on `WHERE superseded_at IS NULL` so the superseded rows don't slow active queries.
 
-The `supersede_and_insert_memory()` Postgres function handles the atomic update path. When Tracy decides an existing memory is outdated, the new memory must be inserted AND the old marked superseded in a single step, otherwise concurrent reads briefly see both as active. Also bidirectional: `superseded_by` on the old row points at the new id. SECURITY DEFINER, GRANT EXECUTE to anon/authenticated/service_role.
+The `supersede_and_insert_memory()` Postgres function handles the atomic update path. When Astra decides an existing memory is outdated, the new memory must be inserted AND the old marked superseded in a single step, otherwise concurrent reads briefly see both as active. Also bidirectional: `superseded_by` on the old row points at the new id. SECURITY DEFINER, GRANT EXECUTE to anon/authenticated/service_role.
 
 Defense in depth: the function filters the supersede UPDATE by `principal_id`, so even if a malicious caller passed someone else's memory id as `p_supersedes_id`, it would no-op rather than mark it superseded.
 
@@ -3924,14 +3924,14 @@ Defense in depth: the function filters the supersede UPDATE by `principal_id`, s
 
 Five functions:
 - `loadActiveMemories(supabase, principalId, limit=30)` — top-N most recent active memories. Capped at 100. Returns `[]` on error (graceful pre-migration fallback).
-- `formatMemoriesForPrompt(memories)` — renders as a system-prompt section grouped by type with each memory's id in brackets. Empty string when no memories. Includes guidance for Tracy on supersede + saves.
+- `formatMemoriesForPrompt(memories)` — renders as a system-prompt section grouped by type with each memory's id in brackets. Empty string when no memories. Includes guidance for Astra on supersede + saves.
 - `writeMemory(supabase, schoolId, principalId, input)` — atomic write. When `supersedes_id` is provided, routes through the Postgres RPC. Otherwise plain insert. Validates memory_type enum, content length cap (1000), all UUID fields. Returns `{ ok, id }` or `{ ok, error }`.
 - `recallMemories(supabase, principalId, filters, limit=20)` — filtered read for the `recall_memory` tool. ILIKE-escapes the query string (pattern metachars in PostgreSQL ILIKE: `%`, `_`, `\`).
 - `bumpMemoryReference(supabase, memoryIds)` — fire-and-forget reference-count bump. Best-effort read-then-write since a non-critical pruning signal isn't worth another RPC.
 
 **C. Tool definitions — `remember_this` and `recall_memory`:**
 
-Two new tools added to `TRACY_TOOLS` in `lib/montree/tracy/tool-definitions.ts`. Schemas allow optional `related_child_id`/`related_teacher_id`/`related_parent_id` UUIDs, optional `source` annotation, and `supersedes_id` for updates. The tool descriptions include explicit "DO save semantic / DO NOT save episodic" guidance so Tracy doesn't pollute the table with one-off conversation facts.
+Two new tools added to `TRACY_TOOLS` in `lib/montree/tracy/tool-definitions.ts`. Schemas allow optional `related_child_id`/`related_teacher_id`/`related_parent_id` UUIDs, optional `source` annotation, and `supersedes_id` for updates. The tool descriptions include explicit "DO save semantic / DO NOT save episodic" guidance so Astra doesn't pollute the table with one-off conversation facts.
 
 **D. Tool executor — dispatch cases + `principalId` on TracyToolDeps:**
 
@@ -3939,7 +3939,7 @@ Extended `TracyToolDeps` with `principalId: string` (was: schoolId only). Both n
 
 **E. System prompt — Memory section + INTENT TABLE entries + dynamic memory injection:**
 
-`buildTracySystemPrompt()` now accepts an optional `memorySection: string`. When non-empty, gets injected after the "WORKED EXAMPLE" block and before "# Who you are" — Tracy reads her own memory at the top of every turn. The Memory documentation section explains both tools, their use cases, and the rule that she shouldn't cite memory ids back to the principal.
+`buildTracySystemPrompt()` now accepts an optional `memorySection: string`. When non-empty, gets injected after the "WORKED EXAMPLE" block and before "# Who you are" — Astra reads her own memory at the top of every turn. The Memory documentation section explains both tools, their use cases, and the rule that she shouldn't cite memory ids back to the principal.
 
 Two new entries in the INTENT → MANDATORY TOOL CALL table:
 - principal mentions a preference / concern / voice quote / context worth remembering → `remember_this`
@@ -3947,20 +3947,20 @@ Two new entries in the INTENT → MANDATORY TOOL CALL table:
 
 **F. Route wiring — `app/api/montree/admin/principal-agent/route.ts`:**
 
-Added `loadActiveMemories(supabase, auth.userId, 30)` + `formatMemoriesForPrompt()` calls before the encoder is created. Result threaded into `buildTracySystemPrompt({ ..., memorySection })`. `principalId: auth.userId` added to `executeTracyTool` deps. Failure to load memories degrades gracefully (memorySection becomes "" and Tracy behaves as if she has no memories yet).
+Added `loadActiveMemories(supabase, auth.userId, 30)` + `formatMemoriesForPrompt()` calls before the encoder is created. Result threaded into `buildTracySystemPrompt({ ..., memorySection })`. `principalId: auth.userId` added to `executeTracyTool` deps. Failure to load memories degrades gracefully (memorySection becomes "" and Astra behaves as if she has no memories yet).
 
 **🚨 Architectural rules locked in this session (do NOT let future agents break these):**
 
 1. **Memories are SEMANTIC, not EPISODIC.** "Principal prefers short messages" is a memory. "Principal asked about Austin on 2026-05-10" is NOT — that already lives in `montree_principal_agent_log`.
-2. **Tracy decides what's memorable.** Not every turn writes a memory. The system prompt explicitly tells her to save durable knowledge only.
+2. **Astra decides what's memorable.** Not every turn writes a memory. The system prompt explicitly tells her to save durable knowledge only.
 3. **Memories are scoped per `principal_id`** — never per school. Multi-principal schools have separate memory streams. This is the cross-pollination contract for everything memory-related.
 4. **The `superseded_by` chain handles updates atomically via the Postgres function.** NEVER do a multi-statement client-side update for supersede — race condition.
 5. **Memory injection is on every turn** (system prompt rebuilt per request) capped at 30 most recent for cost control.
 6. **`recall_memory` is for DEEPER recall** beyond the 30 in the system prompt — filtered by topic / child / teacher / parent / text query.
 7. **`reference_count` + `last_referenced_at` are pruning signals.** Don't surface to the user. Fire-and-forget bumps from `recall_memory` dispatch.
-8. **Do NOT save sensitive personal facts** unless the principal explicitly asked Tracy to remember them. Do NOT save private parent/teacher info that wasn't shared in the principal's chat.
+8. **Do NOT save sensitive personal facts** unless the principal explicitly asked Astra to remember them. Do NOT save private parent/teacher info that wasn't shared in the principal's chat.
 9. **Memory id citation is forbidden** in user-facing output. The bracketed `[id: ...]` in the system prompt is for tool calls only.
-10. **Failure to load memories never crashes the agent.** `loadActiveMemories()` returns `[]` on any error. `memorySection` becomes `""`. Tracy degrades to no-memory mode silently.
+10. **Failure to load memories never crashes the agent.** `loadActiveMemories()` returns `[]` on any error. `memorySection` becomes `""`. Astra degrades to no-memory mode silently.
 
 **Files changed (8 files):**
 - NEW: `migrations/195_principal_memory.sql`
@@ -3979,12 +3979,12 @@ Added `loadActiveMemories(supabase, auth.userId, 30)` + `formatMemoriesForPrompt
 4. Onboard first agent (Gloria) — issue agent login + Stripe Connect onboarding (carry-over).
 
 **Test plan (after migration 195 lands):**
-1. Open `/montree/admin` in fresh browser (or click "New conversation"). Tell Tracy something durable: *"I prefer short, warm messages — no more than 3 sentences."* She should call `remember_this` with `memory_type='preference'`.
-2. Click "New conversation" again. Verify the system-prompt header now contains `# What you remember about this principal` with the preference line. Ask Tracy a drafting question — she should match the preference.
+1. Open `/montree/admin` in fresh browser (or click "New conversation"). Tell Astra something durable: *"I prefer short, warm messages — no more than 3 sentences."* She should call `remember_this` with `memory_type='preference'`.
+2. Click "New conversation" again. Verify the system-prompt header now contains `# What you remember about this principal` with the preference line. Ask Astra a drafting question — she should match the preference.
 3. From a different device or incognito window, log in as the same principal. Same memory should be loaded (it lives in DB, not localStorage).
-4. Tell Tracy something that supersedes: *"Actually I want medium-length messages now, not short ones."* She should call `remember_this` with `memory_type='preference'` AND `supersedes_id=<id of the previous preference>`. Verify in Supabase: old row has `superseded_at` and `superseded_by` set; new row is the live one.
-5. Quote a real message the principal wrote: *"Save this as a voice sample: 'Hi Mary, hope you're well — wanted to share a quick update on Austin's progress this week.'"* — Tracy should call `remember_this` with `memory_type='voice_sample'`. Future parent-reply drafts should match this voice.
-6. Ask "what did we discuss about Austin?" — Tracy should call `recall_memory` with `query='Austin'`. Verify in Supabase that `reference_count` on returned rows incremented + `last_referenced_at` updated.
+4. Tell Astra something that supersedes: *"Actually I want medium-length messages now, not short ones."* She should call `remember_this` with `memory_type='preference'` AND `supersedes_id=<id of the previous preference>`. Verify in Supabase: old row has `superseded_at` and `superseded_by` set; new row is the live one.
+5. Quote a real message the principal wrote: *"Save this as a voice sample: 'Hi Mary, hope you're well — wanted to share a quick update on Austin's progress this week.'"* — Astra should call `remember_this` with `memory_type='voice_sample'`. Future parent-reply drafts should match this voice.
+6. Ask "what did we discuss about Austin?" — Astra should call `recall_memory` with `query='Austin'`. Verify in Supabase that `reference_count` on returned rows incremented + `last_referenced_at` updated.
 7. Verify in `montree_principal_agent_log` that the conversations are still being logged (the memory system is parallel to the log, not a replacement).
 
 ---
@@ -4023,7 +4023,7 @@ Every parent messaging API entry handler funnels through this helper before any 
 | GET | `/api/montree/parent/messages/threads/[id]` | Thread detail + participants + child + classroom hydration. Marks `is_me` on participant rows for UI convenience. |
 | PATCH | `/api/montree/parent/messages/threads/[id]` | `mark_read` action only. Updates `last_read_at` on parent's participant row. |
 | GET | `/api/montree/parent/messages/threads/[id]/messages` | Paginated message list (max 500). |
-| POST | `/api/montree/parent/messages/threads/[id]/messages` | Post reply. Enforces `can_reply` on parent's participant row. **`ai_drafted` always forced false on parent posts** — Tracy's drafting is principal-only. |
+| POST | `/api/montree/parent/messages/threads/[id]/messages` | Post reply. Enforces `can_reply` on parent's participant row. **`ai_drafted` always forced false on parent posts** — Astra's drafting is principal-only. |
 | GET | `/api/montree/parent/messages/recipients` | Per-child bundle: `{ child, classroom, teachers[], principal }`. Lead teachers sort first, then alpha. Used by compose modal. |
 
 **Cross-pollination contract verified across all 4 routes:**
@@ -4035,7 +4035,7 @@ Every parent messaging API entry handler funnels through this helper before any 
 
 `app/montree/parent/messages/page.tsx` — REPLACED the legacy flat-table inbox entirely. New version: probes `/api/montree/parent/messages/threads` on mount → if 401/403/404 → `router.replace('/montree/parent/dashboard')`. If 200 → renders the thread list (dark forest theme, mobile-first, mirrors admin/communication structure). Floating + button opens a compose modal that pulls from `/api/montree/parent/messages/recipients` and lets the parent pick child → recipient (teacher in classroom OR principal) → subject + body → send. Sender label shows "You" for parent's own messages.
 
-`app/montree/parent/messages/[threadId]/page.tsx` — thread detail with sticky header (back button + thread title + child/classroom subtitle), iMessage-style bubble layout (parent right-aligned in emerald, others left-aligned in glass cards), sticky bottom reply composer. Auto-marks read on open. Same flag check pattern (404 → bounce to dashboard). The "Tracy drafted" amber pill renders when an incoming message has `ai_drafted=true` so parents can see when the principal's reply was AI-assisted (transparency).
+`app/montree/parent/messages/[threadId]/page.tsx` — thread detail with sticky header (back button + thread title + child/classroom subtitle), iMessage-style bubble layout (parent right-aligned in emerald, others left-aligned in glass cards), sticky bottom reply composer. Auto-marks read on open. Same flag check pattern (404 → bounce to dashboard). The "Astra drafted" amber pill renders when an incoming message has `ai_drafted=true` so parents can see when the principal's reply was AI-assisted (transparency).
 
 **F. Milestones page deprecated (hide-don't-delete):**
 
@@ -4043,7 +4043,7 @@ Every parent messaging API entry handler funnels through this helper before any 
 
 **G. AI tier auto-flip on Stripe events (added late Session 98):**
 
-User flagged the customer journey: "activating the trial turns it to pro automatically. cancelling subscription turns it back to free." Tracy is the conversion moment — Free principals hit Tracy → 402 → "Activate Tracy" CTA → Stripe Checkout → trial begins → school becomes Pro → Tracy unlocked. Cancel → back to Free.
+User flagged the customer journey: "activating the trial turns it to pro automatically. cancelling subscription turns it back to free." Astra is the conversion moment — Free principals hit Astra → 402 → "Activate Astra" CTA → Stripe Checkout → trial begins → school becomes Pro → Astra unlocked. Cancel → back to Free.
 
 **`lib/montree/billing.ts`** extended with:
 - `tierForSubscriptionStatus(status)` — maps Stripe status → tier action: `active`/`trialing` → `'premium'`, `canceled`/`unpaid`/`incomplete_expired` → `'free'`, `past_due`/`incomplete`/`paused` → `null` (leave unchanged, grace period).
@@ -4053,7 +4053,7 @@ User flagged the customer journey: "activating the trial turns it to pro automat
 
 **🚨 Architectural rule:** Stripe subscription events are the single source of truth for AI tier in production. Manual super-admin override remains for special cases (legacy schools, demo accounts). The `enabled_by` column distinguishes auto-flips (`stripe_webhook`) from manual overrides (`super_admin_tier_change`). Don't add additional ways to flip tier without going through `setSchoolAiTier()`.
 
-**Frontend follow-up (task #14):** The Tracy 402 response is currently a generic error. Need to extend it with `requires_upgrade: true` so the UI can render an "Activate Tracy" upgrade card with a button leading to `/api/montree/billing/checkout` instead of a red error toast. Same pattern should apply to all other 402'd AI surfaces (Weekly Wrap reports, etc.) via a shared `<UpgradeCard>` component.
+**Frontend follow-up (task #14):** The Astra 402 response is currently a generic error. Need to extend it with `requires_upgrade: true` so the UI can render an "Activate Astra" upgrade card with a button leading to `/api/montree/billing/checkout` instead of a red error toast. Same pattern should apply to all other 402'd AI surfaces (Weekly Wrap reports, etc.) via a shared `<UpgradeCard>` component.
 
 ---
 
@@ -4064,7 +4064,7 @@ User flagged the customer journey: "activating the trial turns it to pro automat
 3. **Invite-based parent sessions cannot participate in messaging.** Participants are people, not children. `resolveMessagingParent()` returns 403 for sessions without `parentId`.
 4. **Parent messages flow into the SAME `montree_message_threads` tables** as Session 97's Communication system. No parallel schema. Principal sees parent threads in `/montree/admin/communication` exactly as if a teacher drafted them.
 5. **`addPrincipalObserver()` runs automatically** on every parent_teacher and parent_principal thread via `createThreadWithParticipants()` from Session 97. Don't bypass it — that's the transparency contract.
-6. **Parents have NO AI drafting in v1.** Reply API forces `ai_drafted=false`, `approved_by_id=null`. Tracy belongs to the principal.
+6. **Parents have NO AI drafting in v1.** Reply API forces `ai_drafted=false`, `approved_by_id=null`. Astra belongs to the principal.
 7. **Hide-don't-delete on milestones page.** Comment header documents the decision. Don't extend or surface in nav.
 8. **Legacy parent /messages page (flat-table inbox) is GONE.** File rewritten in place. The legacy `MessageCard` / `MessageComposer` / `InboxHeader` components remain — teacher-side `/montree/dashboard/messages` still uses them.
 
@@ -4146,16 +4146,16 @@ i18n: only en.ts updated. Other 11 locales will fall back to keys until `npm run
 5. **Story app retheme + Yo-yo entry** (task #21) — dark forest theme across teacherpotato.xyz/story/* + hidden entry mechanism (only clicking the second "yo" in "Yo-yo" enters a session). Both visual upgrade and personality touch.
 6. **Become-an-agent page rewrite** (task #20) — pivot /for-teachers content from "teachers, use Montree" to "agents, refer schools, earn 20% revenue share."
 7. **Defer parent_messaging flag flip-on** until principal has been on `/montree/admin/communication` for ≥2 weeks AND there's a clear human handoff from Tredoux.
-8. **🚨 Tracy proactivity fix.** Real product feedback during Stripe test on May 10, 08:14: Tracy is too explanatory. She tells the principal what she COULD do instead of just doing it. User asked "okay what now" three times and each time Tracy responded with "I can draft a welcome message" + 4-step explanation, instead of drafting the message with the code embedded and saying "here it is, copy and send." Fix in `lib/montree/tracy/system-prompt.ts` voice rules — default to ACTION not OFFER. When intent is clear (new teacher added → welcome them next), call `draft_teacher_welcome_messages` immediately and present the artifact ready to copy/send. The "→ " action line should be the next concrete thing to click, never "let me know if you'd like me to draft." Quote from user: "She needs to write the message not tell me about it. Know what I need before I ask."
+8. **🚨 Astra proactivity fix.** Real product feedback during Stripe test on May 10, 08:14: Astra is too explanatory. She tells the principal what she COULD do instead of just doing it. User asked "okay what now" three times and each time Astra responded with "I can draft a welcome message" + 4-step explanation, instead of drafting the message with the code embedded and saying "here it is, copy and send." Fix in `lib/montree/tracy/system-prompt.ts` voice rules — default to ACTION not OFFER. When intent is clear (new teacher added → welcome them next), call `draft_teacher_welcome_messages` immediately and present the artifact ready to copy/send. The "→ " action line should be the next concrete thing to click, never "let me know if you'd like me to draft." Quote from user: "She needs to write the message not tell me about it. Know what I need before I ask."
 5. **Reply CTA on Weekly Wrap report viewer** — small button in `/montree/parent/report/[reportId]` page that POSTs a new thread with report context. Easy add when the flag flips for any school.
 6. **Carry-overs from Session 97:** Migration 192 (Mira table rename), InVideo refund email (Gmail draft `r-47687054011919665`), Stripe verification status check, Stripe Team audit (Richful Deyong removal), Mira end-to-end test on production, drop `/public/mira-avatar.png` when ready, Phase 5 Payout calculator, Phase 6 super-admin Money tab, migration 188, Resend domain verification, Sarah's agent login.
 7. **Outreach follow-ups:** FAMM Argentina, Cambridge Montessori Global, Otari NZ, Lions Gate, Montessori Norge.
 
 ---
 
-### ⚡ Session 97 — Communication system + dashboard revamp + Tracy parent-comms (May 9, 2026)
+### ⚡ Session 97 — Communication system + dashboard revamp + Astra parent-comms (May 9, 2026)
 
-**Last cut before Gloria's first real school. Built the Communication system end-to-end + simplified the dashboard for principal-as-overseer + enriched Tracy with a parent-comms playbook + scan/draft tools.**
+**Last cut before Gloria's first real school. Built the Communication system end-to-end + simplified the dashboard for principal-as-overseer + enriched Astra with a parent-comms playbook + scan/draft tools.**
 
 **🚨 Canonical resume doc:** `docs/handoffs/SESSION_97_HANDOFF.md`. **🚨 Migration 190 must be run in Supabase SQL Editor before any new endpoint functions.**
 
@@ -4164,7 +4164,7 @@ i18n: only en.ts updated. Other 11 locales will fall back to keys until `npm run
 Five new tables. Idempotent, FK-cascading, indexed for the common query patterns.
 - `montree_message_threads` — conversation container, school_id-scoped, thread_type ∈ {parent_teacher, parent_principal, internal, broadcast, group}.
 - `montree_message_thread_participants` — composite-key participant rows with last_read_at, can_reply, is_observer, is_primary.
-- `montree_thread_messages` — actual messages. ai_drafted + ai_draft_source + approved_by_id capture the Tracy → principal → send audit trail.
+- `montree_thread_messages` — actual messages. ai_drafted + ai_draft_source + approved_by_id capture the Astra → principal → send audit trail.
 - `montree_message_groups` — principal-defined custom groups (mixable teacher/parent/principal).
 - `montree_message_group_members` — composite-key membership rows.
 
@@ -4180,13 +4180,13 @@ Five tabs: **By classroom** (default — classroom selector → teachers + paren
 
 Compose modal handles 1:1 (creates thread + posts) and broadcast (creates one broadcast thread + fans recipients + posts the body). Group builder modal lets the principal mix teachers + parents into one group.
 
-Each thread page (`threads/[threadId]/page.tsx`) renders the conversation, marks read on open, and surfaces Tracy's scan + draft buttons inline on parent threads.
+Each thread page (`threads/[threadId]/page.tsx`) renders the conversation, marks read on open, and surfaces Astra's scan + draft buttons inline on parent threads.
 
 **D. Principal transparency:**
 
 `addPrincipalObserver()` in `lib/montree/messaging/thread-resolver.ts` runs inside `createThreadWithParticipants()` for every parent_teacher / parent_principal thread. Auto-adds the principal as `is_observer=true, can_reply=true` so they see every parent ↔ teacher conversation in their school. The threads-list endpoint widens to "every thread in school" for principal callers via `verifyThreadAccess()`. Teachers + parents see only their own threads.
 
-**E. Tracy enrichment:**
+**E. Astra enrichment:**
 
 System prompt extended with a "Parent communication playbook" section (`lib/montree/tracy/system-prompt.ts`):
 - Acknowledge before explaining when frustrated
@@ -4194,12 +4194,12 @@ System prompt extended with a "Parent communication playbook" section (`lib/mont
 - Cross-cultural sensitivity (light touch — Chinese parents value academic clarity; Anglophone parents value child autonomy + observation language)
 - Honesty rules: no medical claims, no future promises, "let me check with [teacher]"
 
-Three new Tracy tools (`tool-definitions.ts` + `tool-executor.ts`):
+Three new Astra tools (`tool-definitions.ts` + `tool-executor.ts`):
 - **`list_recent_threads`** — top 20 with type, subject, last sender, snippet. Filters by thread_type / classroom_id.
 - **`scan_parent_thread`** — Opus reads thread end-to-end → 60-100 word chief-of-staff briefing with `→ ` action line. Routed via new `/api/montree/admin/tracy/scan-thread`.
 - **`draft_parent_response`** — Opus drafts reply in principal's voice using her last 10 messages as voice samples. Optional `guidance` parameter. Routed via `/api/montree/admin/tracy/draft-response`.
 
-**🚨 The principal always pulls the trigger.** Tracy never sends autonomously. When she drafts, the message posts with `ai_drafted=true, approved_by_id=<principal_id>` — permanent audit trail rendered as a "Tracy drafted" pill in the UI. Both Tracy AI endpoints tier-gate via `resolveReportModel()` — Free schools get 402 with friendly message pointing to `SUPPORT_EMAIL` env var.
+**🚨 The principal always pulls the trigger.** Astra never sends autonomously. When she drafts, the message posts with `ai_drafted=true, approved_by_id=<principal_id>` — permanent audit trail rendered as a "Astra drafted" pill in the UI. Both Astra AI endpoints tier-gate via `resolveReportModel()` — Free schools get 402 with friendly message pointing to `SUPPORT_EMAIL` env var.
 
 **F. Classroom drill-down progress data:**
 
@@ -4212,7 +4212,7 @@ Three new Tracy tools (`tool-definitions.ts` + `tool-executor.ts`):
 Every endpoint: `verifySchoolRequest()` entry guard, school_id filter on every Supabase query, `homeschool_parent` mapped to `parent` for participant lookup, `verifyThreadAccess()` double-checks both school + participant membership before any read or write.
 
 **🚨 Architectural rules locked in:**
-1. Principal always pulls the trigger. Tracy can scan/draft/propose; never sends autonomously.
+1. Principal always pulls the trigger. Astra can scan/draft/propose; never sends autonomously.
 2. Cross-pollination contract on every messaging endpoint via `verifySchoolRequest()` + `verifyThreadAccess()`.
 3. Principal auto-observed on every parent thread for transparency. Don't bypass `addPrincipalObserver()`.
 4. `montree_messages` (flat) is legacy — extend `montree_thread_messages` instead.
@@ -4226,7 +4226,7 @@ Every endpoint: `verifySchoolRequest()` entry guard, school_id filter on every S
 - ✅ Three consecutive clean audits achieved (3x AUDIT cycle complete).
 - ✅ Migration 190 idempotent + FK-cascading + indexed. **CONFIRMED RUN.**
 - ✅ All 10 new endpoints school-scoped + auth-gated.
-- ✅ All Tracy tool dispatch cases return cleanly.
+- ✅ All Astra tool dispatch cases return cleanly.
 - ✅ Inefficient client-side filter on directory route fixed (now server-side via `.in()`).
 
 ---
@@ -4236,7 +4236,7 @@ Every endpoint: `verifySchoolRequest()` entry guard, school_id filter on every S
 After shipping the Communication system, the session continued with five more commits covering super-admin polish, Gloria (the agent's frontline AI), and a thorough super-admin retheme. **All migrations confirmed run by user. All 7 commits live in `origin/main`.**
 
 **Commits (oldest → newest):**
-- `47382fb3` — Communication system + Tracy parent-comms (above)
+- `47382fb3` — Communication system + Astra parent-comms (above)
 - `3c58f6dd` — Super-admin Schools rows: login codes labelled by role + person
 - `54d52133` — Gloria — agent's frontline AI on Opus
 - `a10bc050` — Super-admin cleanup (sub-pages): agent attribution + dark-forest API Usage + culled social-manager stubs
@@ -4250,7 +4250,7 @@ The super-admin Schools tab was showing a flat comma list of codes. Now each cod
 
 **B. Gloria — agent's frontline AI on Opus (`54d52133`, `aa23920b`):**
 
-Mirror of Tracy's architecture, agent-scoped. Same SSE plumbing, same `→ ` action-line marker, same "always pulls the trigger" rule.
+Mirror of Astra's architecture, agent-scoped. Same SSE plumbing, same `→ ` action-line marker, same "always pulls the trigger" rule.
 
 | File | Role |
 |------|------|
@@ -4278,10 +4278,10 @@ Mirror of Tracy's architecture, agent-scoped. Same SSE plumbing, same `→ ` act
 3. Opus orchestrator + Haiku drafts (cost discipline).
 4. No tier gate (agents are paid partners). Daily 80/24h rate limit catches loops.
 5. Storage keys scoped by `agent_id`. No cross-agent bleed.
-6. `hasMet` flag flips only on successful `done` SSE event (audit fix `aa23920b`). Mirror of Tracy from Session 96.
+6. `hasMet` flag flips only on successful `done` SSE event (audit fix `aa23920b`). Mirror of Astra from Session 96.
 7. Drop `/public/gloria-avatar.png` when ready — CSS "G" fallback works in the meantime.
 
-Naming decision: AI named **Gloria** as a tribute to the human Gloria (first real partner). Tracy is principal's chief-of-staff; Gloria is the agent's growth partner. Both Opus, both with the same architecture. If Gloria-the-human ever asks to change the AI's name, it's a constant in the system prompt + a couple UI labels — trivial fix.
+Naming decision: AI named **Gloria** as a tribute to the human Gloria (first real partner). Astra is principal's chief-of-staff; Gloria is the agent's growth partner. Both Opus, both with the same architecture. If Gloria-the-human ever asks to change the AI's name, it's a constant in the system prompt + a couple UI labels — trivial fix.
 
 **C. Super-admin sub-pages cleanup (`a10bc050`, `b7346029`):**
 
@@ -4308,7 +4308,7 @@ Lora font loaded via inline `<style jsx global>` (mirror of `/montree/admin/layo
 
 **🚨 Session 97 architectural posture summary:**
 
-The canonical "dark forest" theme — `#0a1a0f` base + emerald `#34d399` accent + gold `#E8C96A` Tracy/Gloria action lines + Lora serif headings + Inter body — is now consistent across `/montree/admin`, `/montree/parent/*`, `/montree/agent/*`, `/montree/admin/communication/*`, and the main `/montree/super-admin` page. New surfaces should inherit these tokens.
+The canonical "dark forest" theme — `#0a1a0f` base + emerald `#34d399` accent + gold `#E8C96A` Astra/Gloria action lines + Lora serif headings + Inter body — is now consistent across `/montree/admin`, `/montree/parent/*`, `/montree/agent/*`, `/montree/admin/communication/*`, and the main `/montree/super-admin` page. New surfaces should inherit these tokens.
 
 Cross-pollination contract is now uniformly enforced: principal → school_id, teacher → school_id, parent → child_id (via `montree_parent_children`), agent → user_id (founding_teacher_id). No exceptions.
 
@@ -4343,7 +4343,7 @@ Session ran longer than usual. Two more code commits + an operational milestone 
 
 **A. GloriaFloat → MiraFloat (`612d518b` + `5a42c289`):**
 
-Mirror of TracyFloat from Session 96, but agent-scoped. Visible top-right on every `/montree/agent/*` page (Dashboard, Schools, Codes, Earnings, Payouts, Settings). Hides on the dedicated chat page itself. Per-agent localStorage namespacing via `gloriaKeys` (now `miraKeys`). hasMet flag flips ONLY on successful `done` SSE event (Tracy's audit rule from Session 96 honored).
+Mirror of TracyFloat from Session 96, but agent-scoped. Visible top-right on every `/montree/agent/*` page (Dashboard, Schools, Codes, Earnings, Payouts, Settings). Hides on the dedicated chat page itself. Per-agent localStorage namespacing via `gloriaKeys` (now `miraKeys`). hasMet flag flips ONLY on successful `done` SSE event (Astra's audit rule from Session 96 honored).
 
 Layout integration: `app/montree/agent/layout.tsx` injects the float after `{children}`. Removed duplicate AgentNav and standalone background from the dedicated chat page (layout already provides them).
 
@@ -4357,7 +4357,7 @@ Layout integration: `app/montree/agent/layout.tsx` injects the float after `{chi
 
 **🚨 Migration 192 must be run in Supabase** before next agent test — otherwise the Mira route's logging will fail.
 
-Naming decision locked in: Mira beats Gloria/Sarah/Vera because (1) two-syllable rhythm matches Tracy + Guru, (2) no real-person collision (Sarah is an existing agent, Vera is Tredoux's sister, Gloria the human is the model partner), (3) reads cleanly across languages, (4) no whimsy that ages badly.
+Naming decision locked in: Mira beats Gloria/Sarah/Vera because (1) two-syllable rhythm matches Astra + Guru, (2) no real-person collision (Sarah is an existing agent, Vera is Tredoux's sister, Gloria the human is the model partner), (3) reads cleanly across languages, (4) no whimsy that ages badly.
 
 **B. Operational milestone — Stripe + Airwallex linked (no code, but business-critical):**
 
@@ -4411,7 +4411,7 @@ Third-attempt refund email for Plus Yearly subscription ($200 USD, receipt #2326
 **Session 97 final commit log (11 commits in main):**
 
 ```
-47382fb3  Communication system + Tracy parent-comms
+47382fb3  Communication system + Astra parent-comms
 3c58f6dd  Login codes labelled by role + person
 54d52133  Gloria — agent's frontline AI on Opus (later renamed Mira)
 a10bc050  Super-admin cleanup (sub-pages)
@@ -4428,24 +4428,24 @@ aa23920b  Gloria hasMet flag fix (audit catch)
 
 ## RECENT STATUS (May 8, 2026)
 
-### ⚡ Session 96 — Tracy as cockpit-wide chief-of-staff + classroom drill-down redesign + Opus + first-meeting protocol + privacy fix + Free-tier degradation + welcome template (May 8, 2026, evening)
+### ⚡ Session 96 — Astra as cockpit-wide chief-of-staff + classroom drill-down redesign + Opus + first-meeting protocol + privacy fix + Free-tier degradation + welcome template (May 8, 2026, evening)
 
 **8 commits pushed to main this session: `10296b3e` → `61d938e9` → `673a5fc2` → `575b29cb` → `d0188438` → `926d5531` → `451dc548` → `5b108ef0`. Plus a 1440-line redesign of the classroom drill-down page. Big push on the principal-as-overseer experience.**
 
 **🚨 Canonical resume doc:** `docs/handoffs/SESSION_96_HANDOFF.md` — full file-by-file change list, architectural rules, verification checklist, next-session priorities, and parent-communication theorizing block.
 
-**A. Tracy as cockpit-wide float (`575b29cb`):**
+**A. Astra as cockpit-wide float (`575b29cb`):**
 
-New `components/montree/admin/TracyFloat.tsx` injected into the principal layout. Visible on every cockpit page except `/montree/admin` (chat page IS Tracy in full there). Collapsed: 56px gold-bordered avatar upper-right with notification dot. Expanded: ~380×540 chat panel with conversation thread + input. Auto-opens with situational greeting on first session login; subsequent navigation respects persisted state. Question-form action lines ending in `?` surface inline `Yes, please` / `Not now` buttons that auto-send back to Tracy (Pattern A — clean conversation flow, no special UI state).
+New `components/montree/admin/TracyFloat.tsx` injected into the principal layout. Visible on every cockpit page except `/montree/admin` (chat page IS Astra in full there). Collapsed: 56px gold-bordered avatar upper-right with notification dot. Expanded: ~380×540 chat panel with conversation thread + input. Auto-opens with situational greeting on first session login; subsequent navigation respects persisted state. Question-form action lines ending in `?` surface inline `Yes, please` / `Not now` buttons that auto-send back to Astra (Pattern A — clean conversation flow, no special UI state).
 
-New action tool `draft_teacher_welcome_messages` — Tracy's first non-read-only tool. Generates copy-paste-ready welcome messages with each teacher's login code, school name, classroom name, principal sign-off. Scope: `'all'` (default) | `'classroom'` | `'teacher'`. School-scoped via the executor's `schoolId` filter (Phase 7d cross-pollination contract preserved).
+New action tool `draft_teacher_welcome_messages` — Astra's first non-read-only tool. Generates copy-paste-ready welcome messages with each teacher's login code, school name, classroom name, principal sign-off. Scope: `'all'` (default) | `'classroom'` | `'teacher'`. School-scoped via the executor's `schoolId` filter (Phase 7d cross-pollination contract preserved).
 
-**B. Tracy switched to Opus + voice rewrite + first-meeting protocol (`d0188438`):**
+**B. Astra switched to Opus + voice rewrite + first-meeting protocol (`d0188438`):**
 
 Switched the principal-agent route from Sonnet 4.6 → Opus 4.6 via new `OPUS_MODEL` constant in `lib/ai/anthropic.ts`. Cost goes from ~$0.04 to ~$0.20 per interaction. ~$1/day per active principal — worth it for the "wow factor" first-impression marketing window. Rest of the app (Guru, weekly reports, AI pipelines) stays on Sonnet. To revert later: one-line constant swap.
 
-System prompt rewritten as natural prose describing who Tracy is, with rules embedded as natural consequences of her character rather than commandments shouted in caps. Added explicit anti-AI-tells list (`I had a look around`, `Based on what I'm seeing`, `Hope this helps`, etc.). Two distinct kickoff prompts:
-- `[GREETING_FIRST]` — fires the very first time a principal meets Tracy on this device. She introduces herself naturally, then situational, then offer.
+System prompt rewritten as natural prose describing who Astra is, with rules embedded as natural consequences of her character rather than commandments shouted in caps. Added explicit anti-AI-tells list (`I had a look around`, `Based on what I'm seeing`, `Hope this helps`, etc.). Two distinct kickoff prompts:
+- `[GREETING_FIRST]` — fires the very first time a principal meets Astra on this device. She introduces herself naturally, then situational, then offer.
 - `[GREETING]` — every session after that. No reintroduction. Just `Hi, [name]. [observation]. → [offer]?`
 
 Both kickoff prompts are filtered from render on every chat surface — synthetic prompts never appear as stray user messages. Tracked via `localStorage.montree.tracyFloat.hasMet.<schoolId>`.
@@ -4460,17 +4460,17 @@ Lead teachers sort first and get a brighter emerald border. The role dropdown th
 
 **D. Conversation leak privacy fix (`451dc548`):**
 
-Tracy was leaking conversation between schools — logging into Whale Class then Test School 1 in the same browser surfaced Whale Class's old Amy chat in the Test School 1 float. Fixed via per-school storage namespacing.
+Astra was leaking conversation between schools — logging into Whale Class then Test School 1 in the same browser surfaced Whale Class's old Amy chat in the Test School 1 float. Fixed via per-school storage namespacing.
 
 New module `lib/montree/tracy/storage-keys.ts` is the single source of truth. Key shape: `montree.admin.agentConvId.<schoolId>`, `montree.admin.agentConv.<schoolId>.<convId>`, `montree.tracyFloat.hasMet.<schoolId>`, `montree.tracyFloat.greetedSession.<schoolId>`. Both surfaces (TracyFloat + `/montree/admin` chat page) read/write through this module so they never diverge. Old unscoped keys are now orphaned; browser eviction handles cleanup.
 
 **E. Free-tier graceful degradation (`451dc548`):**
 
-When the principal-agent route 402s (school has no AI tier), the float no longer shows a red error. Static welcome takes its place introducing Tracy and pointing to `tredoux555@gmail.com` for activation. `hasMet` only flips on a successful `done` SSE event, so Free-tier schools keep firing `[GREETING_FIRST]` every session until AI is enabled — the real introduction lands the moment AI lights up.
+When the principal-agent route 402s (school has no AI tier), the float no longer shows a red error. Static welcome takes its place introducing Astra and pointing to `tredoux555@gmail.com` for activation. `hasMet` only flips on a successful `done` SSE event, so Free-tier schools keep firing `[GREETING_FIRST]` every session until AI is enabled — the real introduction lands the moment AI lights up.
 
 **F. Welcome message template lockstep (`451dc548`):**
 
-Classroom-page Send button (`sendEmailToTeacher`) and Tracy's `draft_teacher_welcome_messages` tool now produce identical text — feels like one product whether the principal sends from the row or asks Tracy to draft. Template includes Hi/welcome/login code/montree.xyz instruction/PWA install hint (explicit iPhone share-icon + Android menu instructions)/pointer to Guru/sign-off.
+Classroom-page Send button (`sendEmailToTeacher`) and Astra's `draft_teacher_welcome_messages` tool now produce identical text — feels like one product whether the principal sends from the row or asks Astra to draft. Template includes Hi/welcome/login code/montree.xyz instruction/PWA install hint (explicit iPhone share-icon + Android menu instructions)/pointer to Guru/sign-off.
 
 **G. Bug fixes that landed this session:**
 
@@ -4481,25 +4481,25 @@ Classroom-page Send button (`sendEmailToTeacher`) and Tracy's `draft_teacher_wel
 
 **🚨 Architectural rules locked in this session (do NOT let future agents break these):**
 
-1. **Tracy is the principal's only AI chat surface.** Guru is per-child Maria-Montessori-in-pocket for teachers. Tracy can call Guru as a sub-tool (`consult_guru` reserved for future).
-2. **Tracy runs on Opus.** All other AI stays on Sonnet. The OPUS_MODEL constant in `lib/ai/anthropic.ts` is what the principal-agent route imports.
-3. **Tracy's storage is school-scoped via `lib/montree/tracy/storage-keys.ts`.** Both TracyFloat and the chat page read/write through this module. NEVER use the old unscoped keys. NEVER bypass the helper.
-4. **Tracy's voice rules** — short, smart, no narration of process, principal-as-overseer reframe, end with one concrete next move. Two kickoff prompts. The `→ ` arrow marker is load-bearing — front-end parses it.
+1. **Astra is the principal's only AI chat surface.** Guru is per-child Maria-Montessori-in-pocket for teachers. Astra can call Guru as a sub-tool (`consult_guru` reserved for future).
+2. **Astra runs on Opus.** All other AI stays on Sonnet. The OPUS_MODEL constant in `lib/ai/anthropic.ts` is what the principal-agent route imports.
+3. **Astra's storage is school-scoped via `lib/montree/tracy/storage-keys.ts`.** Both TracyFloat and the chat page read/write through this module. NEVER use the old unscoped keys. NEVER bypass the helper.
+4. **Astra's voice rules** — short, smart, no narration of process, principal-as-overseer reframe, end with one concrete next move. Two kickoff prompts. The `→ ` arrow marker is load-bearing — front-end parses it.
 5. **Free-tier 402 on a kickoff prompt → static welcome, never a red error.** `hasMet` only flips on successful `done` event.
 6. **The principal-as-overseer mental model is the canonical posture for cockpit pages.** Foreground what the principal actually does (sharing codes, supporting teachers). Explain (not nag) what isn't her job. Tuck rare admin actions behind progressive disclosure (kebab + Advanced setup). Classroom drill-down is the reference implementation.
-7. **Welcome message template lives in TWO places** (classroom-page Send button + Tracy's draft tool) and they MUST stay in lockstep. Both files have a comment pointing at the other.
+7. **Welcome message template lives in TWO places** (classroom-page Send button + Astra's draft tool) and they MUST stay in lockstep. Both files have a comment pointing at the other.
 8. **`backdrop-filter` creates a CSS stacking context** — sibling elements with `backdrop-filter` create their own. Dropdowns inside one need a parent zIndex bump to escape above siblings.
 
-**Multi-teacher classrooms — confirmed working.** Test School 1 already has 3 teachers in one classroom, all rendering with their own login codes. Schema (`montree_teachers` with single `classroom_id` per teacher, multiple teachers sharing the same classroom_id) supports any number per classroom. No upper limit. Photo confirmation is first-come-first-served. No team-level "what did we do this week" surface yet (Tracy's `unpack_teacher` is per-teacher). No notification routing for multi-teacher classrooms — becomes relevant when parent-reply notifications are built.
+**Multi-teacher classrooms — confirmed working.** Test School 1 already has 3 teachers in one classroom, all rendering with their own login codes. Schema (`montree_teachers` with single `classroom_id` per teacher, multiple teachers sharing the same classroom_id) supports any number per classroom. No upper limit. Photo confirmation is first-come-first-served. No team-level "what did we do this week" surface yet (Astra's `unpack_teacher` is per-teacher). No notification routing for multi-teacher classrooms — becomes relevant when parent-reply notifications are built.
 
 **Verification status:**
 - ✅ All 8 commits on `origin/main`. Railway auto-deploys triggered throughout.
 - ✅ Lint clean across all new + changed files.
-- ⏳ User to verify on production after Railway settles: kebab dropdown ABOVE next row not behind it; conversation leak gone (Tracy on Test School 1 shows fresh thread); Send mailto template includes PWA install + Guru pointer; Free-tier flip shows static welcome, not red error.
+- ⏳ User to verify on production after Railway settles: kebab dropdown ABOVE next row not behind it; conversation leak gone (Astra on Test School 1 shows fresh thread); Send mailto template includes PWA install + Guru pointer; Free-tier flip shows static welcome, not red error.
 
 **🚨 Next session priorities (ordered):**
-1. **🚨 PARENT COMMUNICATION through the app — theorize-first session.** Rough scope: how do parents and teachers/principal communicate IN Montree (vs. email/WhatsApp/etc.)? What channels, what gates, what notification routing for multi-teacher classrooms, how does Tracy / Guru fit into drafting parent messages? See `docs/handoffs/SESSION_96_HANDOFF.md` "Parent Communication Theorizing" block for the kickoff prompts.
-2. **Tracy float overlap on viewports < ~1330px** — page content extends into Tracy's panel zone. Layout-shift when float is open. ~30 min.
+1. **🚨 PARENT COMMUNICATION through the app — theorize-first session.** Rough scope: how do parents and teachers/principal communicate IN Montree (vs. email/WhatsApp/etc.)? What channels, what gates, what notification routing for multi-teacher classrooms, how does Astra / Guru fit into drafting parent messages? See `docs/handoffs/SESSION_96_HANDOFF.md` "Parent Communication Theorizing" block for the kickoff prompts.
+2. **Astra float overlap on viewports < ~1330px** — page content extends into Astra's panel zone. Layout-shift when float is open. ~30 min.
 3. **Continue dashboard redesign page-by-page** following the overseer mental model: Classrooms list → Today (architectural decision) → People → Pulse → Settings.
 4. **Stripe wiring per `docs/STRIPE_BILLING_SETUP.md`** (carry-over from Session 93). Migration 189 already run — env vars + webhook only.
 5. **Run migration 188** (carry-over from Session 91) — required before agent dashboard authenticates.
@@ -5275,30 +5275,30 @@ Reviewed `/montree/library/photo-bank` route + component + API after Tredoux rep
 2. **Continue outreach push** — ~57 more individual schools at `status='sent'` `follow_up_count=0`. Use the short video-prompt template from today, respect the dedup discipline.
 3. **Bounce-recovery email research** — Paint Pots UK (Apr 30 bounce), Copenhagen (verify `info@montessori-cph.dk`), Opera Nazionale Italy (use `segreteria@montessori.it` from their auto-reply), Montessori St Nicholas UK, Montessori Society UK, SAMA South Africa.
 4. **Stale-address verification** — Maria Montessori Toronto, Peterson Mexico, Porirua NZ, Studio Montessori SF, FAMM cdleon. Web-search before any future send.
-5. **Resume Session 87 code priorities** (untouched today): Vault end-to-end test, Tracy play-by-play verification, per-song Share button verification, super-admin 👤 modal verification, Stripe upgrade flow, Tracy `→ ` vs em-dash, `unpack_teacher` progress events, super-admin simplification.
+5. **Resume Session 87 code priorities** (untouched today): Vault end-to-end test, Astra play-by-play verification, per-song Share button verification, super-admin 👤 modal verification, Stripe upgrade flow, Astra `→ ` vs em-dash, `unpack_teacher` progress events, super-admin simplification.
 6. **Listen to the Suno output of *Round and Round*** before the solar system week starts — confirm the simplified ESL pace actually sings well, adjust if not.
 
 ---
 
 ## RECENT STATUS (May 4, 2026)
 
-### ⚡ Session 87 — Super-admin Principals modal + Tracy live play-by-play + Principal Vault prototype + per-song Share button + Tracy avatar shipped (May 4, 2026 evening)
+### ⚡ Session 87 — Super-admin Principals modal + Astra live play-by-play + Principal Vault prototype + per-song Share button + Astra avatar shipped (May 4, 2026 evening)
 
-**6 commits pushed to main this session.** Sat on top of Session 86's morning work. Headline: the principal portal got dramatically richer — live play-by-play status under Tracy's avatar, an end-to-end encrypted parent-meeting Vault gated to Tredoux on Whale Class, the real T monogram avatar from Canva, super-admin principal management UI, and per-song Share buttons that retire the slug-typo class of bugs from the QR generator.
+**6 commits pushed to main this session.** Sat on top of Session 86's morning work. Headline: the principal portal got dramatically richer — live play-by-play status under Astra's avatar, an end-to-end encrypted parent-meeting Vault gated to Tredoux on Whale Class, the real T monogram avatar from Canva, super-admin principal management UI, and per-song Share buttons that retire the slug-typo class of bugs from the QR generator.
 
 **Commits (oldest first):**
 - `445ec181` — Whale-class audio rendering fix + super-admin 👤 Principals modal
-- `59041e63` — Tracy: live play-by-play progress events under each tool chip
+- `59041e63` — Astra: live play-by-play progress events under each tool chip
 - `d097c22d` — Principal Vault prototype — encrypted parent-meeting recordings (Tredoux-only)
 - `fc7d7ac2` — Per-song Share button + QR modal on whale-class pages
-- `adfbfd63` — Tracy avatar via /tracy-avatar.png + drop Ask Guru from principal sidebar
-- `ac4c24b6` — Add Tracy T monogram avatar asset
+- `adfbfd63` — Astra avatar via /tracy-avatar.png + drop Ask Guru from principal sidebar
+- `ac4c24b6` — Add Astra T monogram avatar asset
 
 **Outside git:**
 - 🚨 **Migration 185 run** in Supabase SQL Editor (`montree_principal_vault` table created, all 12 columns verified by user)
 - **Tredoux's principal code reset to `ZNGLJT`** (the prior code's plaintext was unrecoverable; new SHA-256 hash written directly to `montree_school_admins.password_hash` for Whale Class principal `16eec1c0-bfb5-4edf-a160-059bb41803fb`)
 - **Brand Kit Word doc generated** at `whale/Montree_Brand_Kit.docx` — portable reference for the Canva setup (11-color palette with rendered swatches, fonts, logo asset table, voice & tone, photography guidance, Canva Brand Voice prompt)
-- Tracy in Chinese verified working end-to-end on production
+- Astra in Chinese verified working end-to-end on production
 
 **A. Whale-class audio rendering fix + super-admin 👤 (`445ec181`):**
 
@@ -5308,9 +5308,9 @@ Plus the super-admin gap: until this commit there was no UI to add/list/reset co
 
 🚨 **Architectural rules locked in (Session 84 confirmed):** `montree_school_admins` has NO `login_code` column — codes are SHA-256 hashes in `password_hash`, alphabet excludes I/O/0/1. UNIQUE on `(school_id, email)`. Plain code returned in JSON exactly once.
 
-**B. Tracy live play-by-play progress events (`59041e63`):**
+**B. Astra live play-by-play progress events (`59041e63`):**
 
-Until this commit, the principal saw a single soft `…` while Tracy was working. Session 85's architecture collapsed parse → resolve → fetch → compose into one server-side `child_focus` tool, which was cheaper but opaque from the client's perspective. A 1-3s delay with no visibility looked like a freeze.
+Until this commit, the principal saw a single soft `…` while Astra was working. Session 85's architecture collapsed parse → resolve → fetch → compose into one server-side `child_focus` tool, which was cheaper but opaque from the client's perspective. A 1-3s delay with no visibility looked like a freeze.
 
 `childFocus()` now accepts an optional `onProgress?: ChildFocusProgressFn` parameter and emits structured `{ phase, vars }` events at each phase boundary: `parsing → lookingUp` (or `lookingUpName` if a name was extracted) `→ fetchingContext → composing`. Errors thrown by listeners are swallowed in a try/catch — the orchestrator never crashes. `TracyToolDeps` in `tool-executor.ts` gains `onProgress?` in deps; the executor wraps the consumer's callback in try/catch via a local `emitProgress()` helper. The principal-agent route wires `onProgress` into a closure that emits a new SSE event type `tool_progress` with `{ type, tool, phase, vars }`. Frontend's `handleEvent` catches `tool_progress` and stores the latest as `turn.progress = { phase, vars }`. The `AssistantBubble` renders the formatted message via `t('tracy.progress.<phase>', vars)`. On unknown phase the fallback is the existing thinking-dots, so a future server emitting an unknown phase doesn't render `tracy.progress.foo` raw.
 
@@ -5353,17 +5353,17 @@ Wired into both production listings: `app/page.tsx` (root teacherpotato.xyz, blu
 
 🚨 **Architectural rule:** Share URLs MUST be derived from `lib/slugify.ts`. Hardcoded slugs in QR generators or comms drift over time.
 
-**E. Tracy avatar wiring + drop Ask Guru (`adfbfd63` + `ac4c24b6`):**
+**E. Astra avatar wiring + drop Ask Guru (`adfbfd63` + `ac4c24b6`):**
 
 `TracyAvatar` component now renders `<img src="/tracy-avatar.png" />` with `onError` → fallback to original CSS-rendered gold-circle T placeholder. Rounded-square corners (border-radius ≈ 22% of size) preserve the design's composition — the T's stem and leaf grow out of the bottom edge of the square, a circle crop would clip them. No border ring; the gold reads as a self-contained card against the dark forest UI on its own.
 
 Asset shipped in `ac4c24b6`: 1024×1024 PNG, 71 KB, valid 8-bit RGB. User saved to `public/tracy-avatar.png` directly via Finder after we figured out that pasting images inline in chat doesn't put them on disk (chat sees them as multimodal context, not files).
 
-Plus dropped Ask Guru from the principal sidebar. Tracy IS the principal's chief-of-staff AI surface. Guru is per-child Maria Montessori in your pocket for teachers, and Tracy can call it as a sub-tool when child-pedagogical depth is needed (Session 85 carry-over `consult_guru`, not yet implemented). Removed `Sparkles` import + `'Ask Guru'` NAV entry. Simplified `activeNav` logic — now just appends Conversations to base NAV for vault-enabled principals.
+Plus dropped Ask Guru from the principal sidebar. Astra IS the principal's chief-of-staff AI surface. Guru is per-child Maria Montessori in your pocket for teachers, and Astra can call it as a sub-tool when child-pedagogical depth is needed (Session 85 carry-over `consult_guru`, not yet implemented). Removed `Sparkles` import + `'Ask Guru'` NAV entry. Simplified `activeNav` logic — now just appends Conversations to base NAV for vault-enabled principals.
 
 **Sidebar order after this commit:** Today / Classrooms / People / Pulse / Settings (+ 🔒 Conversations for vault principals). Teacher-side `/montree/dashboard/guru` route untouched.
 
-🚨 **Architectural rules:** Tracy is the principal's only AI chat surface. Tracy avatar is `/public/tracy-avatar.png` with CSS-T fallback — never break the fallback path.
+🚨 **Architectural rules:** Astra is the principal's only AI chat surface. Astra avatar is `/public/tracy-avatar.png` with CSS-T fallback — never break the fallback path.
 
 **F. Brand Kit consolidation (no commit, deliverable):**
 
@@ -5371,12 +5371,12 @@ Generated `whale/Montree_Brand_Kit.docx` (13.6 KB Word doc, validated clean) con
 
 **Verification status:**
 - ✅ Migration 185 run in Supabase, all 12 columns confirmed
-- ✅ Tracy in Chinese verified working
-- ✅ Tracy avatar PNG on disk and pushed
+- ✅ Astra in Chinese verified working
+- ✅ Astra avatar PNG on disk and pushed
 - ✅ Tredoux logged in successfully with `ZNGLJT`
 - ⏳ Audio rendering on whale-class (code shipped, not user-tested)
 - ⏳ Super-admin 👤 modal (code shipped, not user-tested)
-- ⏳ Tracy play-by-play SSE (code shipped, not user-tested)
+- ⏳ Astra play-by-play SSE (code shipped, not user-tested)
 - ⏳ Vault end-to-end (NOT tested — full Whisper → Sonnet → encrypt → decrypt round-trip)
 - ⏳ Per-song Share button (code shipped, not user-tested)
 
@@ -5384,28 +5384,28 @@ Generated `whale/Montree_Brand_Kit.docx` (13.6 KB Word doc, validated clean) con
 
 **🚨 Next session priorities (ordered):**
 1. **Vault end-to-end test** — Open `/montree/admin` → Conversations → set vault password → record 30-sec dummy → Encrypt & save → reload → re-enter password → tap row → verify decrypted summary + transcript display. Full pipeline (mic → Whisper → Sonnet → AES-GCM → DB → AES-GCM → render) is unverified.
-2. **Verify Tracy play-by-play in production** — ask Tracy a child question, expect rolling status line under her avatar (parsing → looking up → fetching → composing) before the answer streams in.
+2. **Verify Astra play-by-play in production** — ask Astra a child question, expect rolling status line under her avatar (parsing → looking up → fetching → composing) before the answer streams in.
 3. **Verify per-song Share button** — root teacherpotato → click Share → confirm QR + URL + native share work.
 4. **Verify super-admin 👤 modal** — click 👤 on Chen9 row, run through list/add/reset/deactivate flows.
-5. **Tracy `→ ` vs `—` action-line marker** — Tracy is using em-dash where the system prompt asked for arrow. Cosmetic; one-line check on `buildTracySystemPrompt`.
+5. **Astra `→ ` vs `—` action-line marker** — Astra is using em-dash where the system prompt asked for arrow. Cosmetic; one-line check on `buildTracySystemPrompt`.
 6. **`unpack_teacher` progress events** — three i18n keys pre-translated, ~15 min follow-up.
-7. **Super-admin simplification** — multi-session refactor (5-tab structure: Schools / Principals / Money / Outreach / Tracy Insights, archive 18 dead marketing sub-pages and `social-manager/` subtree, retire colored tile ribbon). Worth a fresh head.
+7. **Super-admin simplification** — multi-session refactor (5-tab structure: Schools / Principals / Money / Outreach / Astra Insights, archive 18 dead marketing sub-pages and `social-manager/` subtree, retire colored tile ribbon). Worth a fresh head.
 8. **Avatar polish** (optional) — tighter T crop, slightly larger sprout for better small-size legibility.
 9. **Send the 3 hot lead Gmail drafts** (carry-over) — Ardtona, FAMM, Тамі.
 10. **Update CLAUDE.md lead state** (carry-over) — Paint Pots BOUNCED, Ardtona email correction (`vheavey@ardtonahouseschool.ie`), Copenhagen verification.
 
 ---
 
-### ⚡ Session 86 — Tracy multilingual + dashboard empty-state race + QR domain isolation + JWT mis-stamp fix (May 4, 2026)
+### ⚡ Session 86 — Astra multilingual + dashboard empty-state race + QR domain isolation + JWT mis-stamp fix (May 4, 2026)
 
-**6 commits pushed to main this session.** Tracy is now fully translated across all 12 locales, the recurring "Bulk Import Students" empty-state flash is fixed at the root cache layer, the QR generator now points songs at teacherpotato.xyz (the canonical Whale Class domain) with middleware enforcement of the product split, and a long-standing JWT role mis-stamp bug that was 403'ing principals out of Tracy is patched at both ends.
+**6 commits pushed to main this session.** Astra is now fully translated across all 12 locales, the recurring "Bulk Import Students" empty-state flash is fixed at the root cache layer, the QR generator now points songs at teacherpotato.xyz (the canonical Whale Class domain) with middleware enforcement of the product split, and a long-standing JWT role mis-stamp bug that was 403'ing principals out of Astra is patched at both ends.
 
 **Commits (oldest first):**
 - `a86ec6ba` — QR generator: fix indefinite "Loading videos…" on the Song picker
-- `87b5d526` — Tracy: full multilingual support (12 locales) + universal action-line marker
+- `87b5d526` — Astra: full multilingual support (12 locales) + universal action-line marker
 - `3d9969da` — Dashboard: kill the "Bulk Import Students" flash on back-nav
 - `734a2b5f` — Domain isolation: QR codes point at teacherpotato.xyz + middleware blocks Whale routes on montree.xyz
-- `ca1e13bc` — Tracy 403 'Only principals can use the home agent.' — fix JWT role mis-stamping
+- `ca1e13bc` — Astra 403 'Only principals can use the home agent.' — fix JWT role mis-stamping
 
 **A. QR generator stuck-loading + wrong domain (`a86ec6ba`, `734a2b5f`):**
 
@@ -5415,9 +5415,9 @@ Then user flagged the QR was pointing at `https://montree.xyz/whale-class` but t
 
 **Resolved — teacherpotato.xyz is fine, sandbox curl was misleading:** Mid-session I curl'd `https://teacherpotato.xyz/whale-class` from the sandbox and got 404s + DNS pointing at `15.197.225.128 / 3.33.251.168`. Concluded the deployment was broken, reverted the QR base URL to `montree.xyz` in commit `3dc7364a`. User then confirmed the site loads fine from their browser — re-flipped the QR back to `teacherpotato.xyz` in commit `7e9bce37`. Final state: QR base URL = `https://teacherpotato.xyz/whale-class`. Middleware does NOT redirect Whale routes from montree.xyz (that piece was added in `734a2b5f` and removed in `3dc7364a` — both domains serve their own routes independently). **Lesson:** don't trust sandbox curl for production reachability checks; verify with the user before reverting work on a deployment-outage assumption.
 
-**B. Tracy multilingual (`87b5d526`):**
+**B. Astra multilingual (`87b5d526`):**
 
-Backend: `buildTracySystemPrompt(opts)` now accepts optional `locale` and appends `getAILanguageInstruction(locale)`. New action-line directive in the system prompt: Tracy MUST begin her closing action with the literal arrow `→ ` (universal across languages). `composeAnswer()` and `childFocus()` thread `locale` through to the Sonnet compose system prompt. Haiku parse step stays English-only (returns structured data). `TracyToolDeps` gains `locale`. Route at `/api/montree/admin/principal-agent/route.ts` reads `locale` from request body, allow-lists against 12 supported locales, passes through. `todayLabel` formats in the principal's locale.
+Backend: `buildTracySystemPrompt(opts)` now accepts optional `locale` and appends `getAILanguageInstruction(locale)`. New action-line directive in the system prompt: Astra MUST begin her closing action with the literal arrow `→ ` (universal across languages). `composeAnswer()` and `childFocus()` thread `locale` through to the Sonnet compose system prompt. Haiku parse step stays English-only (returns structured data). `TracyToolDeps` gains `locale`. Route at `/api/montree/admin/principal-agent/route.ts` reads `locale` from request body, allow-lists against 12 supported locales, passes through. `todayLabel` formats in the principal's locale.
 
 Frontend (`app/montree/admin/page.tsx`): `useI18n()` + `LanguageToggle` dropped into the page header. Hardcoded strings replaced with `t()` keys: greeting, help prompt, placeholder, "New conversation", viewer-mode banner, error fallbacks, send/thinking aria labels. `splitActionLine()` rewritten to parse the universal `→ ` marker plus the legacy `I'd …` fallback for cached responses. Request body sends `locale` so the server uses it.
 
@@ -5441,9 +5441,9 @@ Fix 2 — defensive skeleton guard in `app/montree/dashboard/page.tsx`: never re
 
 Sessions 70/72/81 had taken stabs at related symptoms but missed the actual cache race. This commit closes the underlying mechanism, not just the symptom.
 
-**D. Tracy 403 'Only principals can use the home agent.' (`ca1e13bc`):**
+**D. Astra 403 'Only principals can use the home agent.' (`ca1e13bc`):**
 
-User reported Tracy 403'ing despite being logged in as principal (dashboard correctly displays "PRINCIPAL"). Root cause: `app/api/montree/auth/unified/route.ts` tried `tryTeacherLogin` BEFORE `tryPrincipalLogin`. For founder-principals (someone in BOTH `montree_teachers` as a teacher in their own school AND `montree_school_admins` as the principal), the same login code matches both tables. Teacher matched first, JWT got stamped `role: 'teacher'`, and the principal-agent route correctly rejected it.
+User reported Astra 403'ing despite being logged in as principal (dashboard correctly displays "PRINCIPAL"). Root cause: `app/api/montree/auth/unified/route.ts` tried `tryTeacherLogin` BEFORE `tryPrincipalLogin`. For founder-principals (someone in BOTH `montree_teachers` as a teacher in their own school AND `montree_school_admins` as the principal), the same login code matches both tables. Teacher matched first, JWT got stamped `role: 'teacher'`, and the principal-agent route correctly rejected it.
 
 Fix 1 — swap order in unified login: principal first, teacher second. Principal is strictly more privileged; if the same code matches both, principal wins. Other login flows (`/api/montree/principal/login` direct) already issue the correct role — this only affects the unified code-entry path.
 
@@ -5456,8 +5456,8 @@ Both branches log loudly so Railway logs surface how many users are in the broke
 1. **`https://teacherpotato.xyz/whale-class` is the canonical Whale Class song URL.** Never point QR codes at montree.xyz.
 2. **`/whale-class`, `/admin`, `/teacher`, `/story`, `/games`, `/auth` are Whale-Class-only top-level routes.** Middleware redirects them from montree.xyz to teacherpotato.xyz. `/api/*` is intentionally excluded.
 3. **Unified login order: principal → teacher → parent.** A code matching both principal and teacher records grants principal.
-4. **Tracy's action line uses the universal `→ ` marker.** `splitActionLine()` parses this in any language. Don't revert to "I'd" English-only matching.
-5. **Tracy's `child_focus` parse step stays English-only.** Returns structured data regardless of question language. Compose step is locale-aware.
+4. **Astra's action line uses the universal `→ ` marker.** `splitActionLine()` parses this in any language. Don't revert to "I'd" English-only matching.
+5. **Astra's `child_focus` parse step stays English-only.** Returns structured data regardless of question language. Compose step is locale-aware.
 6. **`fetchData` in `useMontreeData` MUST defer to a more recent `setCacheData` write.** Don't remove the `fetchStartTime >= existingCached.timestamp` guard.
 7. **`montree_school_admins` is the source of truth for principal identity.** Other principal-only routes should adopt the same defensive fallback if bitten by a JWT mis-stamp.
 
@@ -5479,26 +5479,26 @@ Both branches log loudly so Railway logs surface how many users are in the broke
 
 **🚨 Next session priorities (ordered):**
 
-1. **Verify Tracy on production in Chinese** — open `/montree/admin`, switch to 中文, ask "告诉我关于奥斯汀英语进步的情况". Expect Chinese response with `→ ` action-line.
+1. **Verify Astra on production in Chinese** — open `/montree/admin`, switch to 中文, ask "告诉我关于奥斯汀英语进步的情况". Expect Chinese response with `→ ` action-line.
 2. **Verify dashboard empty-state fix on production** — create a fresh classroom, bulk-import, click into a child, update shelf, click back. Grid must remain populated through every step.
 3. **Verify QR code end-to-end** — generate one from `/admin/qr-generator`, scan it, confirm it lands on `https://teacherpotato.xyz/whale-class#song-{slug}` and the page renders.
-4. **🚨 Run migration 184** in Supabase SQL Editor — required for `montree_principal_agent_log` to receive Tracy interaction rows (carry-over from Session 84/85).
+4. **🚨 Run migration 184** in Supabase SQL Editor — required for `montree_principal_agent_log` to receive Astra interaction rows (carry-over from Session 84/85).
 5. **Translation gap audit** — user reported seeing some untranslated strings system-wide. Open dashboard in zh/fr/uk page-by-page, screenshot any English bleed-through, do targeted t() conversions. Infrastructure is solid; gaps are likely individual hardcoded strings that pre-date i18n adoption.
 6. **Drop Canva-exported T monogram into `/public/tracy-avatar.png`** (Session 85 carry-over).
-7. **Voice input for Tracy via Whisper** (Session 85 priority 4 carry-over).
-8. **First-run onboarding for Tracy** (Session 85 priority 5 carry-over).
-9. **Family data model for Tracy** (Session 85 priority 7 carry-over).
+7. **Voice input for Astra via Whisper** (Session 85 priority 4 carry-over).
+8. **First-run onboarding for Astra** (Session 85 priority 5 carry-over).
+9. **Family data model for Astra** (Session 85 priority 7 carry-over).
 10. **Send the 3 hot lead Gmail drafts** — Ardtona, FAMM, Тамі (Session 84 carry-over).
 11. **Update CLAUDE.md lead state** — Paint Pots BOUNCED, Ardtona email correction (`vheavey@ardtonahouseschool.ie` not `info@ardtonahouse.co.uk`), Copenhagen email verification (Session 84 carry-over).
 
 ---
 
-### ⚡ Session 85 — Tracy: build → 5 audit cycles → frontend port → child_focus restructure (May 4, 2026)
+### ⚡ Session 85 — Astra: build → 5 audit cycles → frontend port → child_focus restructure (May 4, 2026)
 
-**7 commits pushed to main this session.** Tracy went from architectural brief to shipped, audited five times (10 real bugs caught and fixed across the cycles), frontend ported to match the friendly mockup, then completely re-architected when the canonical use case ("tell me about Austin's English progress") proved fragile under chained-tool orchestration.
+**7 commits pushed to main this session.** Astra went from architectural brief to shipped, audited five times (10 real bugs caught and fixed across the cycles), frontend ported to match the friendly mockup, then completely re-architected when the canonical use case ("tell me about Austin's English progress") proved fragile under chained-tool orchestration.
 
 **Commits (oldest first):**
-- `bc018674` — Tracy phase 1: chief-of-staff brain + unpack_teacher framework tool
+- `bc018674` — Astra phase 1: chief-of-staff brain + unpack_teacher framework tool
 - `a693674a` — Audit #1 fixes: phantom consult_guru tool, qualityOk excluded no_notes, brand-new children flagged as 21d stalled
 - `7c7a02e5` — Audit #2 fixes: phantom find_teacher_by_name, empty-roster nonsense, setTimeout leak in Promise.race
 - `a2779360` — Audit #3 fixes: prompt rule contradiction, off-roster note coverage inflation, missing prompt-injection fence on note-quality
@@ -5506,15 +5506,15 @@ Both branches log loudly so Railway logs surface how many users are in the broke
 - `7ac24885` — Frontend port: friendly mockup → /montree/admin page (gold T avatar, "Hi [Name]. How can I help you?", action line styled distinctly)
 - `e4c59894` — child_focus single-tool architecture: replaces fragile chained-tool path with end-to-end server-side flow
 
-**A. Tracy is now live (`/montree/admin`):**
+**A. Astra is now live (`/montree/admin`):**
 
-Empty state is just a gold T avatar + `Hi [Name].` + `How can I help you?` and an input. No date, no school name, no system noise. When the principal asks something, Tracy streams a chief-of-staff response that always ends with one concrete action line (parsed via `splitActionLine()` and rendered distinctly with a warm gold dash + 18px breathing room).
+Empty state is just a gold T avatar + `Hi [Name].` + `How can I help you?` and an input. No date, no school name, no system noise. When the principal asks something, Astra streams a chief-of-staff response that always ends with one concrete action line (parsed via `splitActionLine()` and rendered distinctly with a warm gold dash + 18px breathing room).
 
 Architecture: `lib/montree/tracy/` module — `system-prompt.ts`, `tool-definitions.ts`, `tool-executor.ts`, `frameworks/child-focus.ts`, `frameworks/unpack-teacher.ts`, `frameworks/note-quality.ts`, `index.ts`. The route at `/api/montree/admin/principal-agent/route.ts` imports the module — same SSE/auth/streaming/cost-model machinery from Session 84.
 
 **B. The child_focus restructure (commit `e4c59894`) — the biggest architectural move:**
 
-After 5 audit passes the BACKEND was solid. But on production the user tested "I want to know about Austin's English progress" and Tracy tripped — likely Railway deploy lag, but the user correctly identified the architecture was fragile regardless. *"The be-end-and-end of this system is to answer specific questions about specific children. If it doesn't have this capability you need to restructure its architecture to be competent in this regard."*
+After 5 audit passes the BACKEND was solid. But on production the user tested "I want to know about Austin's English progress" and Astra tripped — likely Railway deploy lag, but the user correctly identified the architecture was fragile regardless. *"The be-end-and-end of this system is to answer specific questions about specific children. If it doesn't have this capability you need to restructure its architecture to be competent in this regard."*
 
 OLD path: Sonnet decides find_children_by_name → internal HTTP fetch → auth re-verify → returns matches → Sonnet decides answer_about_child → internal HTTP fetch → auth re-verify → Sonnet inside that route composes → Sonnet relays. **4 Sonnet rounds, 2 internal HTTP hops, 2 auth re-verifications, ~$0.05/question, multiple failure points.**
 
@@ -5524,15 +5524,15 @@ The user proposed the Haiku-as-parser/Sonnet-as-composer flow himself: *"Haiku d
 
 **C. Architectural rules locked in this session (do NOT let future agents break these):**
 
-1. **Action rule** — every SUBSTANTIVE Tracy response ends with ONE concrete next action. Pure acknowledgments ("Thanks", "OK") are exempt.
-2. **Reactive only** — Tracy never volunteers adjacent problems.
-3. **Honesty** — Tracy only quotes dates verbatim (ISO YYYY-MM-DD). Never invents observations, names, classrooms, parents.
-4. **Don't lead with pedagogy** — Tracy uses developmental knowledge as substrate, not as the lead.
+1. **Action rule** — every SUBSTANTIVE Astra response ends with ONE concrete next action. Pure acknowledgments ("Thanks", "OK") are exempt.
+2. **Reactive only** — Astra never volunteers adjacent problems.
+3. **Honesty** — Astra only quotes dates verbatim (ISO YYYY-MM-DD). Never invents observations, names, classrooms, parents.
+4. **Don't lead with pedagogy** — Astra uses developmental knowledge as substrate, not as the lead.
 5. **School-scoping contract preserved** — every direct Supabase query in framework tools filters by `schoolId`. Internal-endpoint wraps re-verify via cookie forwarding.
 6. **🚨 No internal HTTP for child questions** — the canonical use case is end-to-end inside `child_focus` via direct Supabase. No HTTP hops, no auth re-verification cascade, no chained-tool fragility. This is the architectural lesson of Session 85.
-7. **Per-request random-nonce fences for ANY user-input → AI prompt boundary** — Session 84 canonical pattern. Applied THREE times in Tracy alone: `note-quality.ts`, the parse step in `child-focus.ts`, AND the compose step in `child-focus.ts`.
+7. **Per-request random-nonce fences for ANY user-input → AI prompt boundary** — Session 84 canonical pattern. Applied THREE times in Astra alone: `note-quality.ts`, the parse step in `child-focus.ts`, AND the compose step in `child-focus.ts`.
 8. **Heuristic fallbacks for every AI step** — `parseQuestion()` has regex-based fallback if Haiku fails, `composeAnswer()` returns defensive sentence if Sonnet fails, `scoreNoteQuality()` returns `[]` if Haiku fails. No path throws unhandled.
-9. **`montree_children` columns confirmed**: `school_id` (migration 126/143), `enrolled_at` (113), `is_active`, `created_at`. All load-bearing for Tracy's queries.
+9. **`montree_children` columns confirmed**: `school_id` (migration 126/143), `enrolled_at` (113), `is_active`, `created_at`. All load-bearing for Astra's queries.
 10. **`montree_teacher_notes.teacher_id` IS reliable** (migration 148 line 18). The strongest per-teacher attribution signal. `montree_media.confirmed_by` is best-effort and not used for attribution in unpack_teacher.
 11. **`unpack_teacher` quality layer treats `'no_notes'` as NEUTRAL** — only `'thin'` notes count against the verdict.
 12. **Brand-new children (enrolled <21d) skipped from stalled-detection** — they couldn't be "stalled 3 weeks" by definition.
@@ -5551,7 +5551,7 @@ Audit #4: find_children_by_name description claimed `classroom` field but actual
 
 Audit #5: came back clean.
 
-**E. Tracy's voice and visual design conversations:**
+**E. Astra's voice and visual design conversations:**
 
 User pushed twice on the surface design. First mockup feedback: *"I want it simpler and more friendly — does she really need to know the date, the day and the school's name?"* Stripped to just `Hi [Name].` + greeting + input. Second: *"How can I help you?"* — the simplest, most timeless version. *"A real person asking, not a service bot."*
 
@@ -5559,21 +5559,21 @@ Avatar exploration in Canva Pro: started with three options (illustrated portrai
 
 **F. Carry-overs that are STILL unresolved:**
 
-1. **🚨 Migration 184 still hasn't been run in Supabase** (carry-over from Session 84). `montree_principal_agent_log` table doesn't exist. Until run, every Tracy interaction's logging silently fails. Tredoux can't see what principals are asking via `/montree/super-admin/principal-questions`.
-2. **Resend `RESEND_API_KEY` env var on Railway still placeholder** (carry-over from Session 83/84). Affects principal invite emails, unrelated to Tracy.
+1. **🚨 Migration 184 still hasn't been run in Supabase** (carry-over from Session 84). `montree_principal_agent_log` table doesn't exist. Until run, every Astra interaction's logging silently fails. Tredoux can't see what principals are asking via `/montree/super-admin/principal-questions`.
+2. **Resend `RESEND_API_KEY` env var on Railway still placeholder** (carry-over from Session 83/84). Affects principal invite emails, unrelated to Astra.
 
-**G. Pre-existing 401 noise (NOT introduced by Tracy):**
+**G. Pre-existing 401 noise (NOT introduced by Astra):**
 
 User's console showed a 401 on `/api/montree/auth/me`. Diagnosed as pre-existing: `recoverSession()` in `lib/montree/auth.ts:94` expects a teacher session shape. Principals 401 silently. Function catches the failure and returns null. Noisy console output, harmless function impact.
 
 **Files changed (7 commits):**
 - NEW: `lib/montree/tracy/` (system-prompt, tool-definitions, tool-executor, index, frameworks/child-focus, frameworks/unpack-teacher, frameworks/note-quality)
-- MODIFIED: `app/api/montree/admin/principal-agent/route.ts` (imports Tracy module)
-- REWRITTEN: `app/montree/admin/page.tsx` (Tracy frontend, +348/−438 lines)
+- MODIFIED: `app/api/montree/admin/principal-agent/route.ts` (imports Astra module)
+- REWRITTEN: `app/montree/admin/page.tsx` (Astra frontend, +348/−438 lines)
 
 **Cost analysis (real numbers):**
-- Per Tracy child question: ~$0.028 (3 Sonnet + 1 Haiku)
-- Per Tracy teacher question: ~$0.015 (2 Sonnet + 1 Haiku for note quality)
+- Per Astra child question: ~$0.028 (3 Sonnet + 1 Haiku)
+- Per Astra teacher question: ~$0.015 (2 Sonnet + 1 Haiku for note quality)
 - 20-30 questions/day per principal × ~$0.025/question = **$15-25/month per active principal**
 
 **Handoff doc:** `docs/handoffs/SESSION_85_HANDOFF.md` — full file-by-file change list, audit-cycle bug catalogue, architectural restructure rationale, deferred items, 9-step production verification checklist, next-session priorities.
@@ -5582,11 +5582,11 @@ User's console showed a 401 on `/api/montree/auth/me`. Diagnosed as pre-existing
 
 1. Hard refresh `/montree/admin` (Cmd+Shift+R) to clear any cached bundle.
 2. Confirm empty state: gold T avatar + `Hi [Name].` + `How can I help you?`.
-3. Try "How is [a real student name] doing?" → expect Tracy calls `child_focus` once, returns grounded prose.
+3. Try "How is [a real student name] doing?" → expect Astra calls `child_focus` once, returns grounded prose.
 4. Try "Tell me about [student]'s English progress" → expect prose specifically about their language area.
 5. Try "What should I tell [parent] about [child]'s math?" → expect parent-ready paragraph.
 6. Try "How is Frodo doing?" (nonexistent name) → expect honest "I couldn't find" response, NOT system error.
-7. Try "How is [a real teacher] doing?" → expect Tracy calls `unpack_teacher`, returns chief-of-staff assessment.
+7. Try "How is [a real teacher] doing?" → expect Astra calls `unpack_teacher`, returns chief-of-staff assessment.
 8. Verify closing "I'd …" line renders distinctly with warm gold dash treatment.
 9. Run migration 184 in Supabase (if not done), verify rows in `/montree/super-admin/principal-questions`.
 
@@ -5595,11 +5595,11 @@ User's console showed a 401 on `/api/montree/auth/me`. Diagnosed as pre-existing
 1. **Run migration 184 in Supabase SQL Editor** — required for principal-agent logging to work. Until run, the questions log is dark and we can't learn from real principal usage.
 2. **Verify production works for real child questions** — run the 9-step checklist above. If anything trips, send screenshot.
 3. **Drop Canva-exported T monogram into `/public/tracy-avatar.png`** — when Tredoux has chosen his preferred variant. `TracyAvatar` swap to `<img>` is one-line.
-4. **Voice input for Tracy** — biggest UX win remaining. Whisper integration shipped elsewhere in the app (see Sessions 79-80). Mic button next to send. Half a day's work.
-5. **First-run onboarding** — Tracy introduces herself once on first visit: *"Hi, I'm Tracy. I'm here to help you run the school — ask me anything."* Then steps back to clean home forever after.
+4. **Voice input for Astra** — biggest UX win remaining. Whisper integration shipped elsewhere in the app (see Sessions 79-80). Mic button next to send. Half a day's work.
+5. **First-run onboarding** — Astra introduces herself once on first visit: *"Hi, I'm Astra. I'm here to help you run the school — ask me anything."* Then steps back to clean home forever after.
 6. **System prompt nudge for closing-action variety** — closing actions feel slightly mechanical right now. Want range: "Worth a check-in tomorrow", "Leave it for now", "I'd reply with this paragraph as written."
-7. **Family data model — Phase 3 of the original Tracy plan** — the largest novel-capability unlock. New tables: `montree_families`, `montree_family_members`, `montree_family_interactions`. Then build `family_context` framework tool. Without this, Tracy can't answer "what's the latest with Emma's family?"
-8. **`consult_guru` Tracy → Guru bridge** — when a question goes pedagogically deep on a single child, Tracy currently answers from her own training. A consult_guru tool would let her hand off to Guru properly.
+7. **Family data model — Phase 3 of the original Astra plan** — the largest novel-capability unlock. New tables: `montree_families`, `montree_family_members`, `montree_family_interactions`. Then build `family_context` framework tool. Without this, Astra can't answer "what's the latest with Emma's family?"
+8. **`consult_guru` Astra → Guru bridge** — when a question goes pedagogically deep on a single child, Astra currently answers from her own training. A consult_guru tool would let her hand off to Guru properly.
 9. **Send the 3 hot lead drafts in Gmail** (carry-over from Session 84) — Ardtona, FAMM Argentina, Тамі.
 10. **Update CLAUDE.md lead state** (carry-over) — Paint Pots BOUNCED, Ardtona email correction (`vheavey@ardtonahouseschool.ie`), Copenhagen email verification.
 
@@ -5716,28 +5716,28 @@ After shipping the V2 agent home, user pushed back on the "proactive briefing" d
 
 Naming decision locked in: **the principal's AI is named TRACY.** Distinct from Guru:
 - **Guru** = Maria Montessori in your pocket. Per-child, pedagogical, teacher-focused.
-- **Tracy** = principal's chief-of-staff. Whole-school scope (every child, every teacher, every note, every observation, every parent signal). Can CALL Guru as a sub-tool when child-pedagogical depth is needed.
+- **Astra** = principal's chief-of-staff. Whole-school scope (every child, every teacher, every note, every observation, every parent signal). Can CALL Guru as a sub-tool when child-pedagogical depth is needed.
 - Voice: chief-of-staff, decisive, **always ends with what she should DO**, never delivers new problems she didn't ask about.
-- Question categories Tracy must answer well:
-  - **Teachers (her core job):** *"How is Susan doing in the classroom?"* — Tracy unpacks vague-on-purpose into activity + coverage + quality + pattern + verdict
-  - **Parent-trigger child synthesis:** *"Emily's mom is asking about her math — what do I say?"* — Tracy pulls child data + relevant teacher note + stitches an honest, defensible, parent-ready answer in the principal's voice
+- Question categories Astra must answer well:
+  - **Teachers (her core job):** *"How is Susan doing in the classroom?"* — Astra unpacks vague-on-purpose into activity + coverage + quality + pattern + verdict
+  - **Parent-trigger child synthesis:** *"Emily's mom is asking about her math — what do I say?"* — Astra pulls child data + relevant teacher note + stitches an honest, defensible, parent-ready answer in the principal's voice
   - **Parent relationships:** *"What's the latest with Emma's family?"* — needs new parent-as-first-class-entity data model (current biggest gap)
 
-🚨 **Tracy is theorize-first.** Next session does NOT build code. Next session uses the 3×3×3×3×3 method (Session 82 canonical) and produces `docs/TRACY_FRAMEWORK_PLAN.md`. Brief lives at `docs/TRACY_FRAMEWORK_BRIEF.md` with full scope of what to research, what's already decided, and what NOT to do. Build comes after the plan + investigate + audit cycles are complete.
+🚨 **Astra is theorize-first.** Next session does NOT build code. Next session uses the 3×3×3×3×3 method (Session 82 canonical) and produces `docs/TRACY_FRAMEWORK_PLAN.md`. Brief lives at `docs/TRACY_FRAMEWORK_BRIEF.md` with full scope of what to research, what's already decided, and what NOT to do. Build comes after the plan + investigate + audit cycles are complete.
 
 **Decisions already locked (do not re-debate next session):**
-1. AI is named Tracy.
-2. Tracy is distinct from Guru. Different surface, different voice, different scope.
-3. Tracy can call Guru as a sub-tool.
+1. AI is named Astra.
+2. Astra is distinct from Guru. Different surface, different voice, different scope.
+3. Astra can call Guru as a sub-tool.
 4. Home page has no proactive content. Reactive only.
-5. Tracy lives on the existing `/montree/admin` route (replaces principal-agent prompt + tools — doesn't replace the route).
+5. Astra lives on the existing `/montree/admin` route (replaces principal-agent prompt + tools — doesn't replace the route).
 6. Logging continues to `montree_principal_agent_log` (migration 184).
 7. Whether to rename the existing `/montree/admin/guru` sidebar item is a separate question, decide in the plan, not now.
 
 **Next session priorities (ordered):**
 1. **🚨 Run migration 184** in Supabase SQL Editor — required for principal-agent logging.
 2. **🚨 TRACY THEORIZE PHASE.** Open `docs/TRACY_FRAMEWORK_BRIEF.md`. Run Phases 1–3 of the 3×3×3×3×3 (RESEARCH × 3 → PLAN × 3 → INVESTIGATE × 3). Produce `docs/TRACY_FRAMEWORK_PLAN.md`. Audit the plan. **Do not write code in that session.**
-3. **Verify V2 principal-agent on production** (current state, before Tracy lands) — open `/montree/admin`, ask 5-10 questions covering the agent's full tool surface. Watch the super-admin questions log fill in. This validates the plumbing before Tracy reframes the brain.
+3. **Verify V2 principal-agent on production** (current state, before Astra lands) — open `/montree/admin`, ask 5-10 questions covering the agent's full tool surface. Watch the super-admin questions log fill in. This validates the plumbing before Astra reframes the brain.
 4. **Send the 3 hot lead drafts in Gmail** — Ardtona, FAMM, Тамі. All passed dedup checks, ready to send.
 5. **Update CLAUDE.md lead state** — Paint Pots BOUNCED, Ardtona email correction (`vheavey@ardtonahouseschool.ie` not `info@ardtonahouse.co.uk`, .ie not .co.uk), Copenhagen email verification.
 6. **Resolve the Resend block** — set `RESEND_API_KEY` on Railway with a real key + verify `montree.xyz` domain.
@@ -8135,7 +8135,7 @@ Comprehensive update to the Active Reply Threads section reflecting all Session 
 ### Whale Class Data
 - School ID: `c6280fae-567c-45ed-ad4d-934eae79aabc` (Tredoux House)
 - Classroom ID: `51e7adb6-cd18-4e03-b707-eceb0a1d2e69` (Whale Class)
-- **Principal: Principal Leu** (handed over from Tredoux on May 28, 2026 — SQL landed Session 134; row id `16eec1c0-bfb5-4edf-a160-059bb41803fb`; login `XVYHHX`; email `principal-leu@whale-class.local` placeholder — `whale-class.local` is a reserved TLD that never resolves to real mail). Tracy memories from before the handover are still attached to this `principal_id` — they now belong to Principal Leu's memory stream. Wipe with `DELETE FROM montree_principal_memory WHERE principal_id = '16eec1c0-bfb5-4edf-a160-059bb41803fb';` if Leu wants a fresh start.
+- **Principal: Principal Leu** (handed over from Tredoux on May 28, 2026 — SQL landed Session 134; row id `16eec1c0-bfb5-4edf-a160-059bb41803fb`; login `XVYHHX`; email `principal-leu@whale-class.local` placeholder — `whale-class.local` is a reserved TLD that never resolves to real mail). Astra memories from before the handover are still attached to this `principal_id` — they now belong to Principal Leu's memory stream. Wipe with `DELETE FROM montree_principal_memory WHERE principal_id = '16eec1c0-bfb5-4edf-a160-059bb41803fb';` if Leu wants a fresh start.
 - **Lead teacher: Tredoux** (login `V8F8V9` on `montree_teachers`, founder of the school, now operating purely as the classroom teacher).
 - 20 students: Amy, Austin, Eric, Gengerlyn, Hayden, Henry, Jimmy, Joey, Kayla, Kevin, KK, Leo, Lucky, MaoMao, MingXi, NiuNiu, Rachel, Segina, Stella, YueZe
 
@@ -8325,8 +8325,8 @@ All migrations through 169 have been run. Key ones: 147 (smart learning columns)
 - ✅ `193_parent_messaging_feature.sql` — adds `parent_messaging` to `montree_feature_definitions` with `default_enabled=false`. Idempotent. Verified via `SELECT feature_key, default_enabled FROM montree_feature_definitions WHERE feature_key = 'parent_messaging'` → 1 row returned. Schools opt in individually via super-admin.
 - ✅ `194_school_admin_login_code.sql` — adds `login_code TEXT` column to `montree_school_admins` + partial unique index `idx_school_admins_login_code_unique`. Reverses Session 84's "principal codes are never persisted" rule. Verified via `SELECT column_name FROM information_schema.columns WHERE table_name = 'montree_school_admins' AND column_name = 'login_code'` → returned `login_code`. Idempotent via `ADD COLUMN IF NOT EXISTS` and `CREATE UNIQUE INDEX IF NOT EXISTS`.
 
-**Session 99 (May 10, 2026, 16:30) — Tracy persistent memory migration RUN:**
-- ✅ `195_principal_memory.sql` — `montree_principal_memory` table (15 columns) + 4 partial indexes (`idx_principal_memory_active`, `_type`, `_child`, `_teacher`) + `supersede_and_insert_memory()` Postgres function (SECURITY DEFINER, GRANT EXECUTE to anon/authenticated/service_role). Idempotent. **CONFIRMED RUN May 10, 2026 16:30 — "Success. No rows returned".** Tracy's `remember_this` / `recall_memory` tools are now active in production. `loadActiveMemories()` returns up to 30 most-recent active memories, injected into the system prompt every turn. Stop telling future sessions to run this — it's done.
+**Session 99 (May 10, 2026, 16:30) — Astra persistent memory migration RUN:**
+- ✅ `195_principal_memory.sql` — `montree_principal_memory` table (15 columns) + 4 partial indexes (`idx_principal_memory_active`, `_type`, `_child`, `_teacher`) + `supersede_and_insert_memory()` Postgres function (SECURITY DEFINER, GRANT EXECUTE to anon/authenticated/service_role). Idempotent. **CONFIRMED RUN May 10, 2026 16:30 — "Success. No rows returned".** Astra's `remember_this` / `recall_memory` tools are now active in production. `loadActiveMemories()` returns up to 30 most-recent active memories, injected into the system prompt every turn. Stop telling future sessions to run this — it's done.
 
 **Session 103 (May 11, 2026, 17:45) — Web Vitals telemetry migration RUN:**
 - ✅ `196_perf_vitals.sql` — `montree_perf_vitals` table (12 columns) + 3 partial indexes (`idx_perf_vitals_metric_route`, `_school`, `_recent`). No FK on `school_id` by design — measurements are append-only telemetry; school deletes must not wipe historical baseline data. Idempotent. **CONFIRMED RUN May 11, 2026 17:45 — "Success. No rows returned".** `POST /api/montree/perf/vitals` now persists Core Web Vitals (LCP, INP, CLS, FCP, TTFB) tagged with route + role + school_id + connection. Client-side `<WebVitalsReporter />` reports via `sendBeacon` on every route change. Stop telling future sessions to run this — it's done.
@@ -8363,7 +8363,7 @@ All migrations through 169 have been run. Key ones: 147 (smart learning columns)
 **Session 128 (May 25, 2026) — Universal Calendar foundations. ✅ Migration RUN (verified Session 129):**
 - ✅ `233_school_terms_and_timezone.sql` — `timezone TEXT` column on `montree_schools` + `montree_school_terms` table (id, school_id, name, start_date, end_date, created_at, updated_at + CHECK end_date >= start_date + 2 indexes (school_id, school+window) + `montree_school_terms_touch_updated_at()` trigger). Idempotent. **Verified live via Web-Claude end-to-end Term creation test in Session 129** — POST `/api/montree/school/terms` returned 200, term row inserted, violet dot rendered on calendar grid. Either ran successfully at some point or the underlying table existed before this migration was needed.
 
-**Session 135 (May 28, 2026 evening) — Ultimate Tracy Marathon. ⏳ 7 migrations pending Tredoux's Supabase run (numerical order, matters):**
+**Session 135 (May 28, 2026 evening) — Ultimate Astra Marathon. ⏳ 7 migrations pending Tredoux's Supabase run (numerical order, matters):**
 - ⏳ `238_parent_profiles.sql` — `montree_parent_profiles` table (18 columns: archetypes[], cultural_register JSONB, preferred_language, known_triggers[], effective_moves[], relationship_temperature CHECK enum, family_context, priorities_for_child[], history_notes, meeting_count, last_meeting_date, last_thread_message_at, source CHECK enum, evaluated_by_role CHECK enum, evaluated_by_id, last_evaluated_at, timestamps). UNIQUE(parent_id, school_id). 2 indexes + auto-touch trigger.
 - ⏳ `239_parent_meetings.sql` — `montree_parent_meetings` (lifecycle: planned/held/cancelled/needs_follow_up/closed) + meeting_type CHECK enum (parent_teacher_conference/intro/escalation/exit/behavioural/progress/other) + principal_id + teacher_id FKs + linked_dossier_id + outcome_notes + 2 indexes + touch trigger.
 - ⏳ `240_parent_meeting_transcripts.sql` — encrypted-at-rest. `transcript_text_encrypted` ALWAYS `gcm:<iv>:<tag>:<ct>` format via existing `MONTREE_ENCRYPTION_KEY`. `audio_destroyed_at` audit-trail column proving audio buffer was dropped post-Whisper. 2 indexes.
@@ -8374,8 +8374,8 @@ All migrations through 169 have been run. Key ones: 147 (smart learning columns)
 
 Until all 7 run: API routes return `migration_pending=true` gracefully; recording UI surfaces friendly fallback; `prepare_parent_meeting` still ships dossiers without parent-profile or corpus data; analyse route logs but doesn't crash on missing tables.
 
-**Session 133 (May 28, 2026) — Mira & Tracy dossier capability. ⏳ 1 migration STILL pending Tredoux's Supabase run (hash realignments + Leu rename DONE in Session 134):**
-- ⏳ `237_meeting_dossiers.sql` — `montree_meeting_dossiers` table for the shared Tracy + Mira dossier cache. 18 columns (id, owner_id, owner_role principal|agent, school_id nullable, audience_type parent_meeting|principal_pitch, audience_ref TEXT, cache_key SHA-256, meeting_purpose, parent_context, output_format markdown|html|json, payload_text, model_used, input/output_tokens, cost_usd, generation_ms, generated_at, expires_at +24h default). Three indexes (cache_lookup b-tree, owner_recent DESC, audience_recent DESC). `montree_purge_expired_dossiers()` SECURITY DEFINER function for >7-day cleanup. Idempotent. **Original attempt failed with PG 42P17 ('functions in index predicate must be marked IMMUTABLE') because of a `WHERE expires_at > NOW()` partial-index predicate — patched to plain b-tree.** Until run, dossiers generate fine but every reopen spends Sonnet again (~$0.05).
+**Session 133 (May 28, 2026) — Mira & Astra dossier capability. ⏳ 1 migration STILL pending Tredoux's Supabase run (hash realignments + Leu rename DONE in Session 134):**
+- ⏳ `237_meeting_dossiers.sql` — `montree_meeting_dossiers` table for the shared Astra + Mira dossier cache. 18 columns (id, owner_id, owner_role principal|agent, school_id nullable, audience_type parent_meeting|principal_pitch, audience_ref TEXT, cache_key SHA-256, meeting_purpose, parent_context, output_format markdown|html|json, payload_text, model_used, input/output_tokens, cost_usd, generation_ms, generated_at, expires_at +24h default). Three indexes (cache_lookup b-tree, owner_recent DESC, audience_recent DESC). `montree_purge_expired_dossiers()` SECURITY DEFINER function for >7-day cleanup. Idempotent. **Original attempt failed with PG 42P17 ('functions in index predicate must be marked IMMUTABLE') because of a `WHERE expires_at > NOW()` partial-index predicate — patched to plain b-tree.** Until run, dossiers generate fine but every reopen spends Sonnet again (~$0.05).
 - ✅ **Principal hash-desync realignments — DONE Session 134.** Tredoux (`XVYHHX`) verified synced=true. Phillip Ahn realigned (login code now `NEWCODE`, not the original `RGCCQR` — got reset between sessions; synced=true either way).
 - ✅ **Whale Class principal handover to Principal Leu — DONE Session 134.** Row id `16eec1c0-bfb5-4edf-a160-059bb41803fb` now `name='Principal Leu', email='principal-leu@whale-class.local'` (placeholder TLD — `whale-class.local` is reserved and never resolves), login XVYHHX, synced=true. The original `email = NULL` SQL failed because `montree_school_admins.email` has a NOT NULL constraint; resolved with the placeholder.
 

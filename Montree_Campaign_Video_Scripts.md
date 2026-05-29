@@ -232,16 +232,16 @@ every week to paperwork. Here's the fix."
 
 ---
 
-## VIDEO 6 — Tracy, the principal's AI
+## VIDEO 6 — Astra, the principal's AI
 *Format: 9:16 · ~24s · talking-head*
 
 **NARRATION** *(5 scenes)*
 
 > A principal can't be in every classroom at once.
 >
-> Tracy can.
+> Astra can.
 >
-> Tracy is Montree's AI for the principal. Ask her anything — which children need attention, how a classroom is doing, what to tell a worried parent.
+> Astra is Montree's AI for the principal. Ask her anything — which children need attention, how a classroom is doing, what to tell a worried parent.
 >
 > The whole school, in one conversation.
 >
@@ -252,7 +252,7 @@ every week to paperwork. Here's the fix."
 | Scene | On-screen text |
 |---|---|
 | 1 | A principal can't be everywhere |
-| 2 | Tracy can |
+| 2 | Astra can |
 | 3 | Ask her anything about your school |
 | 4 | The whole school, in one conversation |
 | 5 | Send this to a Montessori principal |

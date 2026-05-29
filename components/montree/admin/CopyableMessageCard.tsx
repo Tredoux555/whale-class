@@ -1,12 +1,12 @@
 // components/montree/admin/CopyableMessageCard.tsx
 //
-// When Tracy generates a draft message (welcome to teachers, parent reply,
+// When Astra generates a draft message (welcome to teachers, parent reply,
 // social media copy, anything copy-paste-ready) it renders as a styled
 // card with a copy icon — like Claude's code blocks, but for plain text.
 // The principal taps the icon, the message lands on her clipboard ready
 // to paste into WhatsApp / Gmail / WeChat / wherever it actually goes.
 //
-// Tracy is instructed (in lib/montree/tracy/system-prompt.ts) to wrap every
+// Astra is instructed (in lib/montree/tracy/system-prompt.ts) to wrap every
 // such message in a markdown code fence, with an optional bold recipient
 // label on the line just before the fence. The body renderer detects this
 // shape and substitutes <CopyableMessageCard /> for the plain code block.

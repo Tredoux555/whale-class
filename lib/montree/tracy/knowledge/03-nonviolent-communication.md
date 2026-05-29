@@ -9,7 +9,7 @@ almost any adversarial conversation into a partnership conversation.
 The principal does not need to perform NVC openly in a parent meeting.
 The parent doesn't want to be facilitated. But the principal who has
 internalised NVC will find herself reaching for its moves
-instinctively, especially in the meetings that go sideways. Tracy
+instinctively, especially in the meetings that go sideways. Astra
 embeds NVC structure into her conversation scripts so the principal
 doesn't have to remember the framework — she just has to read what's
 in front of her.
@@ -96,7 +96,7 @@ The request format gives the parent agency. Agency is what makes her
 ACTUALLY do it. Demands generate compliance at best and resistance at
 worst; requests generate partnership.
 
-Tracy's conversation scripts ALWAYS end with a request format on any
+Astra's conversation scripts ALWAYS end with a request format on any
 ask of the parent. Never "you should." Always "would you be open to."
 
 ## The four ways to receive criticism
@@ -182,7 +182,7 @@ is not flattery — it's NAMING what the parent has done well (paid
 close attention) and ACKNOWLEDGING that her concern is real before
 offering perspective on it.
 
-Tracy embeds this pattern into every conversation script. The
+Astra embeds this pattern into every conversation script. The
 principal's opening line, in any difficult meeting, validates the
 parent's experience before delivering the school's perspective. Even
 when the school's perspective is "this isn't the problem you think it
@@ -216,9 +216,9 @@ A small collection of trap phrases and their NVC-translated versions:
 The pattern: observation + curiosity + request. Never diagnosis +
 demand.
 
-## What Tracy does with NVC
+## What Astra does with NVC
 
-Every dossier conversation script Tracy produces passes through these
+Every dossier conversation script Astra produces passes through these
 filters:
 
   • Does every claim sit at the level of observation, not evaluation?
@@ -232,4 +232,4 @@ filters:
     have a restoration move ready?
 
 When all five filters pass, the script is shippable. When any one
-fails, Tracy rewrites the script before showing it to the principal.
+fails, Astra rewrites the script before showing it to the principal.

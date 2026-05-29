@@ -1,6 +1,6 @@
 // components/montree/admin/TracyAvatar.tsx
 //
-// Tracy's avatar — gold T monogram, falls back to a CSS-rendered placeholder
+// Astra's avatar — gold T monogram, falls back to a CSS-rendered placeholder
 // if /public/tracy-avatar.png is missing in the deploy. Shared between the
 // /montree/admin chat page and the TracyFloat (cockpit-wide). Keep this file
 // the single source of truth for avatar rendering — bumping the version or
@@ -59,7 +59,7 @@ export default function TracyAvatar({ size = 36 }: { size?: number }) {
     // eslint-disable-next-line @next/next/no-img-element
     <img
       src={`/tracy-avatar.png?v=${TRACY_AVATAR_VERSION}`}
-      alt="Tracy"
+      alt="Astra"
       onError={() => setImgFailed(true)}
       width={size}
       height={size}

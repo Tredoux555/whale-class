@@ -138,7 +138,7 @@ NOT every URL persists. Only allow-listed URLs are written to IndexedDB:
 - `/api/montree/intelligence/daily-brief` (today's plan)
 
 NOT cached (no point or actively wrong):
-- AI endpoints (Tracy, Mira, Guru, photo-identification, weekly-wrap) — costs money on retry
+- AI endpoints (Astra, Mira, Guru, photo-identification, weekly-wrap) — costs money on retry
 - Auth endpoints
 - Any POST/PATCH/DELETE
 - Any user-write endpoint
@@ -289,7 +289,7 @@ interface MontreeDB {
 - Open a child profile that was viewed online — loads from cache
 - Open a child profile NEVER viewed online — graceful "not available offline" state, not a crash
 - Toggle back online → indicator clears → background refresh fires → indicator stays clear
-- Tracy / Mira / weekly wrap correctly fail with "this needs network" instead of attempting cached AI responses
+- Astra / Mira / weekly wrap correctly fail with "this needs network" instead of attempting cached AI responses
 
 ---
 
@@ -331,7 +331,7 @@ Lock in: which fields are which? Need a per-endpoint conflict policy table.
 
 #### C3. AI endpoint queueing
 
-When teacher triggers Tracy / Mira / weekly-wrap offline:
+When teacher triggers Astra / Mira / weekly-wrap offline:
 - Record the request in operation log with type='ai_request'
 - Show pending state in UI
 - When online: replay request, surface result in original location (notification + scroll-to)

@@ -8,7 +8,7 @@
 // PROPS
 //   markdown       — the dossier body text
 //   childName      — header title
-//   subtitle       — e.g. "Whale Class · prepared by Tracy"
+//   subtitle       — e.g. "Whale Class · prepared by Astra"
 //   meta           — { generated_at, source_counts, cache_active }
 //   onClose        — optional close callback (used inside a modal)
 //   showPrintLink  — when true, surfaces a "Open print view" link that

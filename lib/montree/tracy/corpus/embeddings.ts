@@ -1,6 +1,6 @@
 // lib/montree/tracy/corpus/embeddings.ts
 //
-// Ultimate Tracy Phase C — embedding helper.
+// Ultimate Astra Phase C — embedding helper.
 //
 // Uses OpenAI text-embedding-3-small (1536 dims, ~$0.00002 per insight —
 // negligible). Same OPENAI_API_KEY already used for Whisper.

@@ -9,7 +9,7 @@ Audience: principal who has 10 minutes between meetings and wants to know if thi
 1. **Open** (30s) — the brand line: *"A teacher takes a photo. Montree does the rest."*
 2. **Show the photo flow** (3 min) — open Whale Class, take a photo of a real Montessori material (carry one with you OR use the screenshot library), demonstrate the two-pass AI identifying the work, the one-tap confirm.
 3. **Show a Weekly Wrap** (3 min) — pull up a real parent report (use a sanitised Whale Class one OR a generated one), let her READ a paragraph. The Friday-afternoon-changes story.
-4. **Show Tracy** (2 min) — ask Tracy "what should I tell Yo-yo's mum about his math?" — Tracy returns a grounded parent-ready paragraph in under 30 seconds.
+4. **Show Astra** (2 min) — ask Astra "what should I tell Yo-yo's mum about his math?" — Astra returns a grounded parent-ready paragraph in under 30 seconds.
 5. **Close** (1 min) — "Free month, one classroom, no card. If your teachers' Friday afternoon feels different at the end of it, we keep going."
 
 ## 30-minute demo — the "let me actually evaluate" flow
@@ -29,7 +29,7 @@ Audience: principal who has shown real interest and wants to evaluate properly.
 4. **The principal's cockpit** (8 min):
    - Today page (digest + attention + tiles).
    - Communication hub (5 tabs).
-   - Tracy: scan a thread + draft a reply + (if time) **prepare a parent-meeting dossier**. The dossier is the killer feature.
+   - Astra: scan a thread + draft a reply + (if time) **prepare a parent-meeting dossier**. The dossier is the killer feature.
 5. **Pricing + close** (5 min):
    - Free month, $7/student/month after, one plan.
    - The three payment rails.
@@ -52,7 +52,7 @@ Audience: a multi-campus director, an association, a buyer who wants pedagogical
    - The mental profile (sensitive periods, learning modality, family notes).
    - The English Progression Tracker (Pink/Blue/Green) — full demo of the lesson sequence.
    - Decodable readers (Pink Phase, 15 books).
-4. **Tracy (15 min)** — full demo:
+4. **Astra (15 min)** — full demo:
    - Q&A about a real child.
    - Scan a parent thread end-to-end with sentiment + recommended next move.
    - Draft a reply in the principal's voice from her last 10 messages.

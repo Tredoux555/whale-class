@@ -50,7 +50,7 @@ No other migrations pending from this session.
 
 ### 3. Parent welcome message PWA install tip (`9d1997a8`)
 
-10 insertions / 5 deletions in `app/montree/dashboard/parent-codes/page.tsx`. Brings the parent-invite welcome in lockstep with the teacher welcome (Tracy's `draft_teacher_welcome_messages` + admin classroom Send button, which already had this). Adds the line:
+10 insertions / 5 deletions in `app/montree/dashboard/parent-codes/page.tsx`. Brings the parent-invite welcome in lockstep with the teacher welcome (Astra's `draft_teacher_welcome_messages` + admin classroom Send button, which already had this). Adds the line:
 
 > Tip: once you're in, save the page to your home screen so it works like an app — on iPhone tap the share icon then "Add to Home Screen", on Android tap the menu then "Install app" or "Add to Home Screen". You won't have to log in again.
 
@@ -170,7 +170,7 @@ iOS Safari zooms in on focus for any input below 16px. The 15px shipped in commi
 
 7. **Parent portal Montree home anchor is universal.** Every parent surface (messages list, thread detail, appointments, report) has a tappable sprout + wordmark top-left → `/montree/parent/dashboard`. New parent pages MUST include it.
 
-8. **Welcome messages on every invite surface include the "Save to Home Screen" PWA install tip.** Three surfaces in lockstep: Tracy's `draft_teacher_welcome_messages`, classroom-page Send-mailto, parent-codes `buildWelcomeMessage`. Update all three together.
+8. **Welcome messages on every invite surface include the "Save to Home Screen" PWA install tip.** Three surfaces in lockstep: Astra's `draft_teacher_welcome_messages`, classroom-page Send-mailto, parent-codes `buildWelcomeMessage`. Update all three together.
 
 9. **`other_category` JSONB whitelist is the canonical Others taxonomy.** Three values: `'behavioral_observation' | 'outdoor_play' | 'special_event'`. Server-side validation on `/api/montree/photo-audit/resolve`. Don't add new categories without thinking through report-grouping implications.
 
@@ -205,7 +205,7 @@ iOS Safari zooms in on focus for any input below 16px. The 15px shipped in commi
 
 1. **Stage A Agora activation** — migration 223 + flag flip + 2-device end-to-end test (per `docs/handoffs/AGORA_STAGE_A_QUICKSTART.md`). User to handle ~5 min in Supabase.
 2. **Appointments i18n sweep** — appointments + new calendar surface English-only. ~30 new keys × 12 locales via Haiku batch. Half-day focused work.
-3. **Mira → Tracy super-admin scope** (Session 108 Phase 4.8) — separate `/montree/super-admin/tracy` route.
+3. **Mira → Astra super-admin scope** (Session 108 Phase 4.8) — separate `/montree/super-admin/tracy` route.
 4. **Agent default revenue share % unblock** — discussed mid-session, not implemented. ~10 min change to default agents to 20% instead of disabling self-service code generation when `agent_default_share_pct IS NULL`.
 5. **Whale-Class admin SPA broken links** (Session 113 V2 carry-over).
 6. **Photo bank improvements** (multi-session carry-over).

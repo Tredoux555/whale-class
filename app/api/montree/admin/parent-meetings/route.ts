@@ -1,6 +1,6 @@
 // app/api/montree/admin/parent-meetings/route.ts
 //
-// Ultimate Tracy Phase B — parent-meetings CRUD.
+// Ultimate Astra Phase B — parent-meetings CRUD.
 //
 // POST   create a meeting (status='planned' or 'held')
 // GET    list meetings for a parent (?parent_id=X) or the school

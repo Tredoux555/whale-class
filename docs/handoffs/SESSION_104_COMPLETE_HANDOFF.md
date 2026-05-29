@@ -131,8 +131,8 @@ All auth via `x-cron-secret` header. Docs at `docs/perf/CRON_SETUP.md`. **OR** f
 | 18 | `698d1f53` | v4 handoff |
 | 19 | `fc28c603` | Webhook DLQ tab + Recurring template panel + FX sub-tab |
 | 20 | `77594ec0` | Print/PDF accountant pack + server-errors logger (mig 201) |
-| 21 | `7dd3e9af` | Server errors tab + Mira card + Tracy card + landing polish |
-| 22 | `af3a9127` | Health tab manual cron triggers + Tracy/Mira changelog entry |
+| 21 | `7dd3e9af` | Server errors tab + Mira card + Astra card + landing polish |
+| 22 | `af3a9127` | Health tab manual cron triggers + Astra/Mira changelog entry |
 | 23 | `72edd675` | v5 handoff |
 | 24 | (this) | CLAUDE.md comprehensive update + this consolidated handoff |
 
@@ -222,7 +222,7 @@ After Stripe Connect enabled:
 
 | Priority | Item | Effort |
 |----------|------|--------|
-| Medium | **i18n batch** — ~80 keys × 12 locales via Haiku. Surfaces: parent-codes, agent messaging, Money tab, MoneyLedgerView, Health tab, ChangelogModal, TrialExpiringBanner, ServerErrorsTab, Mira/Tracy cards, WebhookDLQTab | ~1 hour focused |
+| Medium | **i18n batch** — ~80 keys × 12 locales via Haiku. Surfaces: parent-codes, agent messaging, Money tab, MoneyLedgerView, Health tab, ChangelogModal, TrialExpiringBanner, ServerErrorsTab, Mira/Astra cards, WebhookDLQTab | ~1 hour focused |
 | Medium | Mobile-first re-audit of all new pages | ~half-day real-device |
 | Low | Photo bank improvements (carry-over) | ~half-day |
 | Low | Parent portal dark forest theme audit | ~1-2 hours |

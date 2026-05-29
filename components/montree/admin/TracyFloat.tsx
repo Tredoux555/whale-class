@@ -1,13 +1,13 @@
 // components/montree/admin/TracyFloat.tsx
 //
-// Tracy as a floating chief-of-staff that lives in the principal cockpit
+// Astra as a floating chief-of-staff that lives in the principal cockpit
 // shell. Visible on every /montree/admin/* page EXCEPT /montree/admin
-// itself (the dedicated chat page IS Tracy there — the float would just
+// itself (the dedicated chat page IS Astra there — the float would just
 // duplicate the surface).
 //
 // BEHAVIOUR (load-bearing):
 //   - First mount of the browser session → fire a hidden "[GREETING]" user
-//     message, stream Tracy's situational greeting back, auto-open the
+//     message, stream Astra's situational greeting back, auto-open the
 //     panel. The greeting is stored in conversation history so follow-up
 //     turns ("yes draft them") have context.
 //   - Subsequent mounts (page navigation in the same session) → respect
@@ -15,14 +15,14 @@
 //   - Conversation state is SHARED with /montree/admin (same convId, same
 //     localStorage keys) so navigating between surfaces preserves the thread.
 //   - Question-form action lines ending in "?" surface inline Yes/No
-//     buttons; "Yes, please" auto-sends and Tracy executes the tool.
+//     buttons; "Yes, please" auto-sends and Astra executes the tool.
 //
 // Hidden-greeting rendering trick: the user turn with text exactly equal
 // to '[GREETING]' is filtered out at render time on both the float and
 // the chat page. The server logs it normally — super-admin can see it.
 //
 // PRIVACY (Session — May 8 2026):
-//   All Tracy localStorage keys are scoped by school_id (see
+//   All Astra localStorage keys are scoped by school_id (see
 //   lib/montree/tracy/storage-keys.ts). Logging into different schools on
 //   the same browser never bleeds conversation between them. Old unscoped
 //   keys are now orphaned; browser eviction handles cleanup.
@@ -30,7 +30,7 @@
 // FREE-TIER GRACEFUL DEGRADATION:
 //   When the principal-agent route 402s (school has no AI tier yet), the
 //   float does NOT show a red error — it replaces the assistant turn with
-//   a static welcome introducing Tracy and pointing to tredoux555@gmail.com
+//   a static welcome introducing Astra and pointing to tredoux555@gmail.com
 //   for activation. hasMet stays false on the failed kickoff so the next
 //   session re-attempts the introduction once AI is enabled.
 'use client';
@@ -48,7 +48,7 @@ import {
   TRACY_FLOAT_OPEN_KEY,
   type TracyStorageKeys,
 } from '@/lib/montree/tracy/storage-keys';
-// Canonical action-line parser — single source of truth across Tracy + Mira
+// Canonical action-line parser — single source of truth across Astra + Mira
 // surfaces. Session 113 V2 audit MED-5.
 import { splitActionLine } from '@/lib/montree/ai/split-action-line';
 
@@ -91,7 +91,7 @@ interface ConvTurn {
   // Session 107 — when the principal-agent route returns 402 with
   // requires_upgrade=true, set this flag instead of a generic error. The
   // bubble then renders a gold upgrade card with a CTA to /montree/admin/
-  // billing, matching the main admin/page.tsx Tracy chat pattern.
+  // billing, matching the main admin/page.tsx Astra chat pattern.
   requiresUpgrade?: boolean;
   costUsd?: number;
 }
@@ -102,7 +102,7 @@ const GREETING_PROMPT = '[GREETING]';
 const GREETING_FIRST_PROMPT = '[GREETING_FIRST]';
 
 // The synthetic kickoff prompts are filtered from render on every chat surface
-// — the principal sees Tracy's reply, never her own kickoff prompt.
+// — the principal sees Astra's reply, never her own kickoff prompt.
 function isHiddenKickoff(text: string): boolean {
   return text === GREETING_PROMPT || text === GREETING_FIRST_PROMPT;
 }
@@ -115,7 +115,7 @@ function isKickoff(text: string): boolean {
 // active AI tier yet). Replaces the assistant turn — no red error UI. The
 // principal still gets the introduction; AI features light up once Tredoux
 // flips the school to a paid tier.
-const FREE_TIER_STATIC_WELCOME = `Hi, I'm Tracy. I'll be your assistant once your school's AI features are switched on — Montessori expert in your pocket, drafting messages for your teachers, helping you handle parent questions, all the school operations work.
+const FREE_TIER_STATIC_WELCOME = `Hi, I'm Astra. I'll be your assistant once your school's AI features are switched on — Montessori expert in your pocket, drafting messages for your teachers, helping you handle parent questions, all the school operations work.
 
 Right now AI isn't active for this school. Drop me a line at tredoux555@gmail.com and I'll get you set up.
 
@@ -161,16 +161,16 @@ function newConvId(): string {
 // splitActionLine is imported from the canonical helper at the top of this file.
 // Session 113 V2 audit MED-5 — drift across 4 copies eliminated.
 
-// Detect question-form offers Tracy can execute on (e.g. "Want me to draft…?").
+// Detect question-form offers Astra can execute on (e.g. "Want me to draft…?").
 // These get inline Yes/No buttons. Plain declarative actions ("Send Susan a
-// thank-you note") do NOT — those are for the principal to act on, not Tracy.
+// thank-you note") do NOT — those are for the principal to act on, not Astra.
 function isQuestionOffer(action: string | null): boolean {
   if (!action) return false;
   const trimmed = action.trim();
   if (!trimmed.endsWith('?')) return false;
   // English + a couple of other-locale offer phrasings. Conservative — false
   // negatives just hide a button (still usable via free-text), false
-  // positives would surface buttons Tracy can't actually execute on.
+  // positives would surface buttons Astra can't actually execute on.
   return /(want me to|would you like me to|shall i|should i|可以让我|让我|要不要我|¿quieres que)/i.test(
     trimmed
   );
@@ -196,7 +196,7 @@ export default function TracyFloat() {
   const initialisedRef = useRef(false);
 
   // 🚨 Perf Tier 2.1 (PERF_HEALTH_CHECK.md) — SSE token rAF throttle.
-  // Same pattern as app/montree/admin/page.tsx. Without this, every Tracy
+  // Same pattern as app/montree/admin/page.tsx. Without this, every Astra
   // streaming token triggered a setTurns → full re-render of the conversation
   // panel. Now tokens buffer in pendingTextRef and one rAF flush per frame
   // applies the accumulated chunk. ~80% CPU reduction during stream on
@@ -263,7 +263,7 @@ export default function TracyFloat() {
     setOpen(persistedOpen);
 
     // Once-per-session greeting trigger — also school-scoped so logging out
-    // of school A and into school B in the same tab still triggers Tracy's
+    // of school A and into school B in the same tab still triggers Astra's
     // greeting on B.
     let alreadyGreeted = false;
     try {
@@ -289,8 +289,8 @@ export default function TracyFloat() {
       // 🚨 Perf Tier 2.3 (PERF_HEALTH_CHECK.md): STATIC GREETING ON FIRST PAINT.
       // Previously we fired [GREETING] / [GREETING_FIRST] via the Sonnet/Opus
       // route on every cold session — user saw thinking dots for 2-5s before
-      // Tracy's greeting streamed in (worse on flaky VPN). Now we push a
-      // static templated assistant turn directly into state. Tracy's "first
+      // Astra's greeting streamed in (worse on flaky VPN). Now we push a
+      // static templated assistant turn directly into state. Astra's "first
       // frame" is instant. The AI only fires when the user types their first
       // question — which is the same moment AI is genuinely needed.
       //
@@ -328,7 +328,7 @@ export default function TracyFloat() {
       // Push the static greeting as the conversation's opening assistant turn.
       // It's persisted via the same writeConv path as any other turn so a
       // refresh shows the same greeting and the AI's history slice in the
-      // next call sees Tracy's opening line.
+      // next call sees Astra's opening line.
       setTurns((prev) => {
         // If the conversation already has turns (resumed from storage), don't
         // double-greet — just keep what we read from readConv.
@@ -366,7 +366,7 @@ export default function TracyFloat() {
 
   // 🚨 Perf Tier 6.2 (PERF_HEALTH_CHECK.md) — iOS keyboard handling.
   // When the soft keyboard slides in, window.visualViewport shrinks while
-  // window.innerHeight stays the same — Tracy's fixed panel can end up with
+  // window.innerHeight stays the same — Astra's fixed panel can end up with
   // its input hidden behind the keyboard. Listen on visualViewport.resize
   // and re-scroll the conversation to bottom so the user always sees the
   // most recent message + the input.
@@ -558,7 +558,7 @@ export default function TracyFloat() {
       }
 
       // Track whether the response succeeded — used to flip hasMet=true on a
-      // GREETING_FIRST that actually landed (so Tracy doesn't keep
+      // GREETING_FIRST that actually landed (so Astra doesn't keep
       // re-introducing herself once she's done it once).
       let succeeded = false;
       const kickoff = isKickoff(questionText);
@@ -589,10 +589,10 @@ export default function TracyFloat() {
         if (res.status === 402) {
           // FREE-TIER GRACEFUL DEGRADATION:
           // The school doesn't have an active AI tier yet. Don't surface a
-          // red error — Tracy still introduces herself with a static welcome
+          // red error — Astra still introduces herself with a static welcome
           // and points the principal to tredoux555@gmail.com for activation.
           // hasMet stays false, so once AI is enabled, the next session
-          // fires GREETING_FIRST again and the real Tracy meets her.
+          // fires GREETING_FIRST again and the real Astra meets her.
           if (kickoff) {
             setTurns((prev) =>
               prev.map((tt, i) =>
@@ -678,7 +678,7 @@ export default function TracyFloat() {
               handleEvent(evt);
               if (evt.type === 'done') succeeded = true;
               if (evt.type === 'error') succeeded = false;
-              // If the panel is closed and Tracy started speaking, mark unread.
+              // If the panel is closed and Astra started speaking, mark unread.
               if (
                 !open &&
                 (evt.type === 'text' || evt.type === 'done' || evt.type === 'error')
@@ -693,7 +693,7 @@ export default function TracyFloat() {
         }
 
         // Mark hasMet=true once the GREETING_FIRST kickoff has landed
-        // successfully. Means Tracy has properly introduced herself once on
+        // successfully. Means Astra has properly introduced herself once on
         // this school — subsequent sessions skip the introduction.
         if (
           succeeded &&
@@ -726,7 +726,7 @@ export default function TracyFloat() {
                   ...tt,
                   pending: false,
                   error:
-                    t('tracy.errors.connection') || 'Could not reach Tracy.',
+                    t('tracy.errors.connection') || 'Could not reach Astra.',
                 }
               : tt
           )
@@ -743,7 +743,7 @@ export default function TracyFloat() {
   );
 
   // 🚨 Perf Tier 2.3 — fireGreeting REMOVED. Was firing [GREETING]/[GREETING_FIRST]
-  // through the Sonnet/Opus route on every cold session, blocking Tracy's first
+  // through the Sonnet/Opus route on every cold session, blocking Astra's first
   // frame for 2-5s. Replaced by the static greeting pushed directly to `turns`
   // in the initial-mount useEffect above. The AI now only fires when the user
   // types their first question, which is the same moment AI is actually needed.
@@ -790,7 +790,7 @@ export default function TracyFloat() {
     return (
       <button
         onClick={() => setOpen(true)}
-        aria-label="Open Tracy"
+        aria-label="Open Astra"
         style={{
           position: 'fixed',
           // Notch-safe top inset so the avatar clears the iPhone status bar /
@@ -846,7 +846,7 @@ export default function TracyFloat() {
   return (
     <div
       role="dialog"
-      aria-label="Tracy"
+      aria-label="Astra"
       style={{
         position: 'fixed',
         top: 'calc(env(safe-area-inset-top, 0px) + 16px)',
@@ -887,11 +887,11 @@ export default function TracyFloat() {
             letterSpacing: -0.2,
           }}
         >
-          Tracy
+          Astra
         </div>
         <button
           onClick={() => setOpen(false)}
-          aria-label="Close Tracy"
+          aria-label="Close Astra"
           style={{
             background: 'transparent',
             border: 'none',
@@ -931,7 +931,7 @@ export default function TracyFloat() {
             }}
           >
             <TracyAvatar size={28} />
-            <span>Tracy here. Ask me anything about your school.</span>
+            <span>Astra here. Ask me anything about your school.</span>
           </div>
         ) : (
           visibleTurns.map((turn, i) => {
@@ -1004,7 +1004,7 @@ export default function TracyFloat() {
                 target.scrollIntoView({ block: 'end', behavior: 'smooth' });
               }, 300);
             }}
-            placeholder="Ask Tracy…"
+            placeholder="Ask Astra…"
             rows={1}
             maxLength={1500}
             disabled={submitting}
@@ -1092,7 +1092,7 @@ function AssistantBubble({
 }) {
   // 🚨 Pre-existing latent bug fixed in audit: the 402 upgrade card below
   // calls t(...) but t was never brought into scope here — a Free-tier
-  // principal hitting Tracy would crash this bubble. AssistantBubble is a
+  // principal hitting Astra would crash this bubble. AssistantBubble is a
   // component, so useI18n() is valid.
   const { t } = useI18n();
   const { body, action } = splitActionLine(turn.text);
@@ -1110,7 +1110,7 @@ function AssistantBubble({
       <ThinkingIndicator
         size={28}
         progressLine={progressLabel ?? null}
-        ariaLabel="Tracy is thinking"
+        ariaLabel="Astra is thinking"
       />
     );
   }
@@ -1194,7 +1194,7 @@ function AssistantBubble({
         {/* Upgrade prompt — when school is Free tier, render a friendly gold
             card with a CTA to activate billing. Replaces the red error for
             the 402 case, which is a billing state not a bug. Mirrors the
-            inline upgrade card on the main admin/page.tsx Tracy chat. */}
+            inline upgrade card on the main admin/page.tsx Astra chat. */}
         {turn.error && turn.requiresUpgrade && (
           <div
             style={{
@@ -1209,10 +1209,10 @@ function AssistantBubble({
             }}
           >
             <p style={{ margin: 0, fontWeight: 600, color: '#E8C96A' }}>
-              ✨ {t('tracy.upgrade.title') || 'Activate Tracy'}
+              ✨ {t('tracy.upgrade.title') || 'Activate Astra'}
             </p>
             <p style={{ margin: '6px 0 10px', color: 'rgba(255,255,255,0.78)' }}>
-              {t('tracy.upgrade.body') || 'Set up billing to unlock Tracy and the rest of your AI features.'}
+              {t('tracy.upgrade.body') || 'Set up billing to unlock Astra and the rest of your AI features.'}
             </p>
             <a
               href="/montree/admin/billing"

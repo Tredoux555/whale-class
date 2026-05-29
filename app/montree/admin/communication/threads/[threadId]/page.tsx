@@ -1,9 +1,9 @@
 // /montree/admin/communication/threads/[threadId]/page.tsx
 // Session 97 — single thread view for the principal Communication hub.
 //
-// Principal-only surface. Shows full transcript + composer. Tracy tools:
-//   - "Tracy, scan this thread" → POST /api/montree/admin/tracy/scan-thread
-//   - "Tracy, draft a response" → POST /api/montree/admin/tracy/draft-response
+// Principal-only surface. Shows full transcript + composer. Astra tools:
+//   - "Astra, scan this thread" → POST /api/montree/admin/tracy/scan-thread
+//   - "Astra, draft a response" → POST /api/montree/admin/tracy/draft-response
 // When the principal posts, the thread is school-scoped + observer-aware.
 'use client';
 
@@ -16,7 +16,7 @@ import VoiceComposer, { type VoiceReady } from '@/components/montree/messaging/V
 import VoiceBubble from '@/components/montree/messaging/VoiceBubble';
 import { parseAppointmentInvite } from '@/lib/montree/messaging/appointment-invite';
 import AppointmentInviteCard from '@/components/montree/messaging/AppointmentInviteCard';
-// Session 133 — Tracy's parent-meeting dossier button. Visible only on
+// Session 133 — Astra's parent-meeting dossier button. Visible only on
 // parent_teacher + parent_principal threads where a child is attached.
 import { PrepareForMeetingButton } from '@/components/montree/dossier/PrepareForMeetingButton';
 
@@ -230,7 +230,7 @@ export default function ThreadPage() {
   }
 
   // Voice-note send. Mirrors `send()` but with media_* on the payload.
-  // ai_drafted is always false on voice notes (Tracy doesn't draft audio).
+  // ai_drafted is always false on voice notes (Astra doesn't draft audio).
   async function handleVoiceReady(data: VoiceReady) {
     if (sending) return;
     setSending(true);
@@ -301,12 +301,12 @@ export default function ThreadPage() {
       }
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        throw new Error(data?.error || 'Tracy could not scan');
+        throw new Error(data?.error || 'Astra could not scan');
       }
       const data = await res.json();
       setTracyBriefing(data.summary);
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Tracy scan failed');
+      setError(err instanceof Error ? err.message : 'Astra scan failed');
     } finally {
       setTracyLoading(null);
     }
@@ -329,13 +329,13 @@ export default function ThreadPage() {
       }
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        throw new Error(data?.error || 'Tracy could not draft');
+        throw new Error(data?.error || 'Astra could not draft');
       }
       const data = await res.json();
       setDraft(data.draft);
       setAiDrafted(true);
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Tracy draft failed');
+      setError(err instanceof Error ? err.message : 'Astra draft failed');
     } finally {
       setTracyLoading(null);
     }
@@ -415,7 +415,7 @@ export default function ThreadPage() {
             {thread.subject || '(no subject)'}
           </h1>
           {/* Session 133 — dossier button. Surfaced for parent threads with
-              an attached child. Tracy pulls everything in the record and
+              an attached child. Astra pulls everything in the record and
               builds the meeting-prep dossier. */}
           {isParentThread && child && thread.child_id && (
             <div style={{ flex: '0 0 auto' }}>
@@ -458,7 +458,7 @@ export default function ThreadPage() {
         </div>
       </header>
 
-      {/* Tracy actions (only for parent threads) */}
+      {/* Astra actions (only for parent threads) */}
       {isParentThread && (
         <div
           style={{
@@ -475,7 +475,7 @@ export default function ThreadPage() {
         >
           <Sparkles size={16} strokeWidth={1.75} color={T.gold} />
           <span style={{ fontSize: 13, color: T.textSecondary, flex: 1 }}>
-            Ask Tracy to scan this thread or draft your reply.
+            Ask Astra to scan this thread or draft your reply.
           </span>
           <button
             onClick={() => void tracyScan()}
@@ -522,7 +522,7 @@ export default function ThreadPage() {
         </div>
       )}
 
-      {/* Tracy briefing */}
+      {/* Astra briefing */}
       {tracyBriefing && (
         <div
           style={{
@@ -544,7 +544,7 @@ export default function ThreadPage() {
               marginBottom: 8,
             }}
           >
-            Tracy&apos;s read
+            Astra&apos;s read
           </div>
           <div style={{ fontSize: 14, lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>{tracyBriefing}</div>
         </div>
@@ -595,7 +595,7 @@ export default function ThreadPage() {
             }}
           >
             <Sparkles size={12} strokeWidth={1.75} />
-            Tracy drafted this — review before sending
+            Astra drafted this — review before sending
           </div>
         )}
         <textarea
@@ -648,7 +648,7 @@ export default function ThreadPage() {
             }}
           >
             <Send size={14} strokeWidth={1.75} />
-            {sending ? 'Sending…' : aiDrafted ? 'Send Tracy\'s draft' : 'Send'}
+            {sending ? 'Sending…' : aiDrafted ? 'Send Astra\'s draft' : 'Send'}
           </button>
         </div>
       </div>
@@ -692,7 +692,7 @@ function MessageBubble({ message }: { message: Message }) {
               }}
             >
               <Sparkles size={9} strokeWidth={1.75} />
-              Tracy drafted
+              Astra drafted
             </span>
           )}
         </div>

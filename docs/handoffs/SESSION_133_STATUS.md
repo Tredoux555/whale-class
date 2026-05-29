@@ -8,7 +8,7 @@
 
 ## TL;DR
 
-Full Mira + Tracy dossier capability shipped end-to-end. Tracy's `prepare_parent_meeting` reproduces the hand-built Yo-yo briefing 1:1 against real Whale Class data ($0.08 / 96s). Mira's `prepare_principal_pitch` produces a Mandarin Beijing-principal pitch with all 9 sections including commission disclosure ($0.11 / 94s). Mira's knowledge base (11 markdown files, ~52KB) loads on every chat turn.
+Full Mira + Astra dossier capability shipped end-to-end. Astra's `prepare_parent_meeting` reproduces the hand-built Yo-yo briefing 1:1 against real Whale Class data ($0.08 / 96s). Mira's `prepare_principal_pitch` produces a Mandarin Beijing-principal pitch with all 9 sections including commission disclosure ($0.11 / 94s). Mira's knowledge base (11 markdown files, ~52KB) loads on every chat turn.
 
 Plus three drive-by wins surfaced from Tredoux's day:
 1. A real production login bug (his principal code `XVYHHX` was failing with 401) — diagnosed as hash/code desync from migration 194, fixed with SQL + a route-hardening Step 2 lookup.
@@ -108,7 +108,7 @@ SET name = 'Principal Leu',
 WHERE id = '16eec1c0-bfb5-4edf-a160-059bb41803fb';
 ```
 
-🚨 **Privacy note:** Tracy's persistent memories are scoped per `principal_id`, not per name. Anything Tracy remembered as "Tredoux's preferences" now silently surfaces as Leu's. If Leu wants a fresh slate, run:
+🚨 **Privacy note:** Astra's persistent memories are scoped per `principal_id`, not per name. Anything Astra remembered as "Tredoux's preferences" now silently surfaces as Leu's. If Leu wants a fresh slate, run:
 ```sql
 DELETE FROM montree_principal_memory WHERE principal_id = '16eec1c0-bfb5-4edf-a160-059bb41803fb';
 ```
@@ -145,8 +145,8 @@ cdfc9fbf  Audit-fix wave: critical cache cross-tenant leak + 4 high-impact bugs
 4b963640  Grand audit fix: TypeScript correctness on the parent thread + dossier button
 07b8596f  Phase D+E: Mira prepare_principal_pitch + platform signal + status note
 7afa2e50  Phase C: Mira knowledge base — 11 markdown files + cached loader
-550b563c  Phase B: Tracy prepare_parent_meeting (dossier builder) + cache + UI
-3c84630f  Phase A: Tracy data access tools (consult_guru, detect_pattern, child-focus settings)
+550b563c  Phase B: Astra prepare_parent_meeting (dossier builder) + cache + UI
+3c84630f  Phase A: Astra data access tools (consult_guru, detect_pattern, child-focus settings)
 [pending] (this handoff revision + brain update)
 ```
 
@@ -156,7 +156,7 @@ cdfc9fbf  Audit-fix wave: critical cache cross-tenant leak + 4 high-impact bugs
 
 ## What ships in each commit
 
-### Phase A — Tracy data access tools (`3c84630f`)
+### Phase A — Astra data access tools (`3c84630f`)
 
 | File | Status | What |
 |---|---|---|
@@ -176,7 +176,7 @@ cdfc9fbf  Audit-fix wave: critical cache cross-tenant leak + 4 high-impact bugs
 |---|---|---|
 | `lib/montree/tracy/prompts/parent_meeting_prep.ts` | NEW | System prompt + Yo-yo worked example. Codifies voice + forbidden-phrase list + 9-section structure. |
 | `lib/montree/tracy/tools/prepare_parent_meeting.ts` | NEW | Orchestrator. Parallel `fetchChildContext` + `consultGuru` + `detectPattern` → structured context → Sonnet 4.6 call → cache 24h. Per-request random-nonce fence on parent-typed input. |
-| `lib/montree/dossier_cache.ts` | NEW | Shared cache for Tracy + Mira dossiers. Handles missing-table gracefully (42P01 + PGRST205 + message-match). |
+| `lib/montree/dossier_cache.ts` | NEW | Shared cache for Astra + Mira dossiers. Handles missing-table gracefully (42P01 + PGRST205 + message-match). |
 | `lib/montree/dossier_renderer.ts` | NEW | Markdown → styled HTML with print CSS. Self-contained output. |
 | `migrations/237_meeting_dossiers.sql` | NEW (pending run) | Cache table + indexes + purge function. **Patched in commit `788e72e8`** to drop the partial-index `WHERE NOW()` clause. |
 | `app/api/montree/admin/dossier/parent-meeting/route.ts` | NEW | POST + GET. Principal-only. Tier-gated 402 with `requires_upgrade`. Rate-limit added in `35aea493`. |
@@ -212,11 +212,11 @@ Three parallel agents on Phases A–E. Security found CRITICAL: cache cross-tena
 
 | Finding | Severity | Fix |
 |---|---|---|
-| Cache cross-tenant leak (Tracy + Mira) | CRITICAL | `makeDossierCacheKey` REQUIRES `scope_owner_id` (TypeScript-enforced non-optional). Tracy: schoolId. Mira: agentId. Tracy cache-HIT also re-verifies child↔school. |
+| Cache cross-tenant leak (Astra + Mira) | CRITICAL | `makeDossierCacheKey` REQUIRES `scope_owner_id` (TypeScript-enforced non-optional). Astra: schoolId. Mira: agentId. Astra cache-HIT also re-verifies child↔school. |
 | Migration 237 `WHERE NOW()` rejected with PG 42P17 | Real bug | Dropped WHERE; plain b-tree. |
 | `loader.ts` `cachedPromise` permanent rejection on throw | Real bug | try/finally. |
 | `makeDossierCacheKey` extras not normalized | Real bug | Trim + lowercase. |
-| Tracy cache-hit `child_name='(cached)'` lie | Real bug | School-scoped child lookup on cache-hit. |
+| Astra cache-hit `child_name='(cached)'` lie | Real bug | School-scoped child lookup on cache-hit. |
 | `detect_pattern` whitespace-only positives | Real bug | Explicit refusal if positives empty after trim. |
 
 Verifier pass came back ALL 6 VERIFIED.
@@ -277,11 +277,11 @@ Final 4-agent master audit. 2 returned SHIP IT (security + docs), 2 retried afte
 | `get_platform_signal` | ✅ 12 schools / 57 children / 510 observations / 3 languages / 4 countries |
 | `prepare_principal_pitch` Beijing principal in Mandarin | ✅ 165 lines, 9 sections incl. commission disclosure, $0.1068, 94s |
 | Principal login `tryPrincipalLogin` Step 2 path | ✅ Hash-verify gate prevents silent auth on desync |
-| Cache cross-tenant isolation (Tracy schoolId, Mira agentId) | ✅ TypeScript-enforced; verified via grep + audit pass |
+| Cache cross-tenant isolation (Astra schoolId, Mira agentId) | ✅ TypeScript-enforced; verified via grep + audit pass |
 | Migration 237 idempotency | ✅ DROP INDEX IF EXISTS before CREATE INDEX IF NOT EXISTS |
 | Hash-desync scan on production | Found 2 desynced principals — SQL above realigns both |
 | Suspended-agent on pitch route | ✅ DB recheck refuses 403 (Session 103 rule #58 compliance) |
-| Rate-limit on dossier routes | ✅ 20/hr (Tracy), 30/hr (Mira), keyed by JWT.sub, returns 429 |
+| Rate-limit on dossier routes | ✅ 20/hr (Astra), 30/hr (Mira), keyed by JWT.sub, returns 429 |
 | All-logins page surfaces parents + principals + teachers + agents | ✅ All 4 sections + 5-role filter + copy-on-tap |
 | ESLint `--max-warnings=0` on every changed file | ✅ Clean |
 | `npx tsc --noEmit -p .` clean on Session-133 surface | ✅ Clean (pre-existing errors on `auth/unified` + `agent/mira` lines are also on `main`) |
@@ -291,7 +291,7 @@ Final 4-agent master audit. 2 returned SHIP IT (security + docs), 2 retried afte
 ## Architectural rules locked in this session
 
 **Phase A** (rules 264-267)
-- A1. `consult_guru` is the canonical bridge between Tracy and Guru's historical analyses.
+- A1. `consult_guru` is the canonical bridge between Astra and Guru's historical analyses.
 - A2. `detect_pattern` uses strict-phrase matching, not loose keyword matching.
 - A3. `montree_media` has `caption` (not `teacher_caption`) and no `work_name`/`area` columns.
 - A4. `fetchChildContext` + `ChildContext` are exported — downstream dossier builders reuse the same context bundle.
@@ -303,7 +303,7 @@ Final 4-agent master audit. 2 returned SHIP IT (security + docs), 2 retried afte
 - B4. `parent_context` free-text wins on tone calibration over auto-inferred `guru_parent_states`.
 - B5. Cache write is await'd. `cache_active` flag in response is honest.
 - B6. Migration-pending case (table missing) is silent + graceful.
-- B7. `montree_meeting_dossiers` is shared by Tracy + Mira; `audience_type` discriminates.
+- B7. `montree_meeting_dossiers` is shared by Astra + Mira; `audience_type` discriminates.
 
 **Phase C** (rules 272-275)
 - C1. Mira's knowledge base loads FROM DISK on each process start, not baked into prompts.
@@ -343,7 +343,7 @@ Final 4-agent master audit. 2 returned SHIP IT (security + docs), 2 retried afte
 - i18n of dossier UI labels (system prompts already respect locale).
 - Telemetry dashboard for dossier cost / cache-hit metrics. Data is recorded per-row; no view yet.
 - `AbortSignal` on the Sonnet call so timed-out requests don't keep billing.
-- Tracy cache-hit could also sanity-check that the cached `audience_ref` (childId) still has a non-null classroom row.
+- Astra cache-hit could also sanity-check that the cached `audience_ref` (childId) still has a non-null classroom row.
 
 ### Naming inconsistencies flagged by architecture audit (cosmetic, deferred)
 - Session 133 files use `snake_case.ts`; rest of codebase uses `kebab-case`. Sweep before merge if you care.
@@ -361,7 +361,7 @@ Final 4-agent master audit. 2 returned SHIP IT (security + docs), 2 retried afte
 2. **Hard-refresh** any open Montree tabs after Railway redeploys.
 3. **Test the Yo-yo dossier flow** — login as Whale Class principal → open any parent_teacher thread with Yo-yo → click the gold "📋 Prepare for the meeting" pill → wait ~90s.
 4. **Test `/montree/super-admin/all-logins`** — login as super-admin → click gold "🔑 All logins" button → see 4 sections.
-5. **Test Leu's login** — login with `XVYHHX`, Tracy should greet "Hi, Principal Leu".
+5. **Test Leu's login** — login with `XVYHHX`, Astra should greet "Hi, Principal Leu".
 6. **Decide:** merge branch to `main` (`git checkout main && git merge --ff-only mira-tracy-upgrade-s133 && git push origin main`), or keep on the branch.
 
 ---

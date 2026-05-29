@@ -125,7 +125,7 @@ paddingRight: 'calc(18px + env(safe-area-inset-right))'
 Three of five findings from Web-Claude's first audit round shipped:
 
 1. **Duplicate "Calendar" entry in More menu** — the new Universal Calendar (`/montree/calendar`) and the legacy Appointments calendar (`/montree/dashboard/appointments`) were both labelled "Calendar". Renamed the older entry to "Appointments" via new `nav.appointments` i18n key. Haiku-batched all 11 sibling locales.
-2. **Term option missing for principals** — `QuickCreateMenu.ACTIONS_BY_ROLE['principal']` correctly included `term`, but Tredoux's session resolved as `role='teacher'` (same JWT mis-stamp bug class as Session 86 Tracy 403). First attempt at a defensive principal-upgrade in `resolve-scope.ts` — see "audit lessons" below for the saga.
+2. **Term option missing for principals** — `QuickCreateMenu.ACTIONS_BY_ROLE['principal']` correctly included `term`, but Tredoux's session resolved as `role='teacher'` (same JWT mis-stamp bug class as Session 86 Astra 403). First attempt at a defensive principal-upgrade in `resolve-scope.ts` — see "audit lessons" below for the saga.
 3. **Appointment cards auto-launching video call on tap** — `appointments.ts` adapter was setting `link = /montree/dashboard/calls/${r.id}` for video appointments, tap booted straight into Agora. Web-Claude accidentally paged another human while scrolling. All staff appointment cards now link to `/montree/dashboard/appointments` (the calendar surface with the deliberate ±2h Join button per Session 117/120 design).
 
 ### G. Principal-upgrade fix saga (commits `cb811f25`, `e34309b6`, `3d483325`)

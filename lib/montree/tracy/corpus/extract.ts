@@ -1,6 +1,6 @@
 // lib/montree/tracy/corpus/extract.ts
 //
-// Ultimate Tracy Phase C — corpus extraction.
+// Ultimate Astra Phase C — corpus extraction.
 //
 // Reads montree_parent_meeting_analyses rows where corpus_extracted_at
 // IS NULL and refines + abstracts the `corpus_extractions` array into
@@ -94,7 +94,7 @@ const VALID_INSIGHT_TYPES = new Set([
 ]);
 
 function refineSystemPrompt(): string {
-  return `You are an abstraction step in Tracy's self-improving corpus. Raw extractions from one parent-meeting analysis are given to you. You produce REFINED insights that follow strict abstraction rules.
+  return `You are an abstraction step in Astra's self-improving corpus. Raw extractions from one parent-meeting analysis are given to you. You produce REFINED insights that follow strict abstraction rules.
 
 CRITICAL RULES — every refined entry must:
   1. Contain NO parent names. NO child names. NO direct quotes that name an individual.

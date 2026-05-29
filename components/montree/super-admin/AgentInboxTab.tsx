@@ -8,7 +8,7 @@
 // route). Back button returns to the inbox.
 //
 // Replying to an agent flows through POST /super-admin/agent-messages/threads/[id]/messages.
-// ai_drafted=false (Tracy-assisted drafting will be a future extension).
+// ai_drafted=false (Astra-assisted drafting will be a future extension).
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 
@@ -296,7 +296,7 @@ export default function AgentInboxTab({ saToken }: { saToken: string }) {
                 )}
                 <div className="whitespace-pre-wrap break-words">{m.body}</div>
                 {m.ai_drafted && mine && (
-                  <div className="text-[10px] mt-1 opacity-70">Tracy drafted</div>
+                  <div className="text-[10px] mt-1 opacity-70">Astra drafted</div>
                 )}
                 <div className={`text-[10px] mt-1 ${mine ? 'text-emerald-950/60' : 'text-slate-400'} text-right`}>
                   {daysAgo(m.sent_at)}

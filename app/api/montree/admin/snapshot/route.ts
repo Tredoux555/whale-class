@@ -1,5 +1,5 @@
 // /api/montree/admin/snapshot/route.ts
-// Tracy's proactive snapshot for the principal dashboard.
+// Astra's proactive snapshot for the principal dashboard.
 //
 // School-scoped (auth.schoolId). Returns signals the principal can act on.
 

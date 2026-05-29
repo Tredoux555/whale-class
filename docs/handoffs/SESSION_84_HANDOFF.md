@@ -182,9 +182,9 @@ This is the opposite of what I'd designed in my own dashboard mockup ("Pay atten
 
 ### Naming decision locked in: TRACY
 
-The principal's AI is named **Tracy**. Distinct from Guru:
+The principal's AI is named **Astra**. Distinct from Guru:
 
-| | Guru | Tracy |
+| | Guru | Astra |
 |---|---|---|
 | Who it serves | Teachers, parents, principals (per-child context) | Principal only |
 | Mental model | Maria Montessori in your pocket | Trusted chief-of-staff who knows the whole building |
@@ -193,20 +193,20 @@ The principal's AI is named **Tracy**. Distinct from Guru:
 | Push or pull? | Mostly pull | **Pull only.** Never pushes. Never delivers new problems she didn't ask about. |
 | Output ends with | Insight | An action she can take |
 
-**Tracy can call Guru as a sub-tool** when the question requires child-pedagogical depth (e.g., "Emily's mom is asking about her math" needs Tracy to pull the child's data, but Guru's voice/lens to interpret the math-resistance angle). The principal never sees Guru directly through Tracy's surface — she sees Tracy's synthesised answer in the chief-of-staff voice.
+**Astra can call Guru as a sub-tool** when the question requires child-pedagogical depth (e.g., "Emily's mom is asking about her math" needs Astra to pull the child's data, but Guru's voice/lens to interpret the math-resistance angle). The principal never sees Guru directly through Astra's surface — she sees Astra's synthesised answer in the chief-of-staff voice.
 
-### Question categories Tracy must answer well
+### Question categories Astra must answer well
 
 From the conversation:
 
-**Teachers (her core job):** *"How is Susan doing in the classroom?"* — vague on purpose. Tracy unpacks into:
+**Teachers (her core job):** *"How is Susan doing in the classroom?"* — vague on purpose. Astra unpacks into:
 - Activity (47 photos confirmed, 12 notes written, last login)
 - Coverage (14 of 18 children observed; 4 missed and named: Aiden, Sofia, Marco, Liam)
 - Quality (notes have substance, not "good day" boilerplate)
 - Pattern (heaviest on Math, light on Language and Cultural)
 - Verdict ("She's pulling her weight. The four she's missed are the ones to flag.")
 
-**Parent-trigger child synthesis:** *"Emily's mom is asking about her math — what do I say?"* — Tracy:
+**Parent-trigger child synthesis:** *"Emily's mom is asking about her math — what do I say?"* — Astra:
 - Pulls Emily's math state (focus works, mastered, recent observations)
 - Surfaces the relevant teacher note (one from two weeks ago: "Emily resistant to math today, wanted to do collage instead")
 - Drafts a parent-ready answer the principal can read aloud or paraphrase, woven INTO her voice — not handed to her as raw data
@@ -217,7 +217,7 @@ From the conversation:
 
 ### Theorize-first directive
 
-🚨 **Tracy is theorize-first. The next session does NOT build code.** This is critical.
+🚨 **Astra is theorize-first. The next session does NOT build code.** This is critical.
 
 The next session opens `docs/TRACY_FRAMEWORK_BRIEF.md` and runs the 3×3×3×3×3 method (Session 82 canonical) but **only Phases 1–3** (RESEARCH × 3, PLAN × 3, INVESTIGATE × 3). Output is `docs/TRACY_FRAMEWORK_PLAN.md` with all 8 plan sections filled in:
 
@@ -234,11 +234,11 @@ Build comes after the plan + investigate + audit cycles are complete.
 
 ### Decisions already locked (do not re-debate)
 
-1. AI is named **Tracy**.
-2. Tracy is **distinct from Guru**.
-3. Tracy can **call Guru as a sub-tool**.
+1. AI is named **Astra**.
+2. Astra is **distinct from Guru**.
+3. Astra can **call Guru as a sub-tool**.
 4. Home page has **no proactive content**.
-5. Tracy lives on existing `/montree/admin` route — replaces principal-agent prompt + tools, doesn't replace the route.
+5. Astra lives on existing `/montree/admin` route — replaces principal-agent prompt + tools, doesn't replace the route.
 6. Logging continues to `montree_principal_agent_log` (migration 184).
 7. Whether to rename `/montree/admin/guru` sidebar item — decide in the plan, not now.
 
@@ -247,7 +247,7 @@ Build comes after the plan + investigate + audit cycles are complete.
 - Do not write any new API routes
 - Do not write any new database migrations
 - Do not change `principal-agent/route.ts`
-- Do not pick a "Tracy avatar" or design polish
+- Do not pick a "Astra avatar" or design polish
 - Do not overengineer the parent data model speculatively. Talk to Chen first if possible.
 
 ---
@@ -256,7 +256,7 @@ Build comes after the plan + investigate + audit cycles are complete.
 
 1. **🚨 Run migration 184** in Supabase SQL Editor — required for principal-agent logging.
 2. **🚨 TRACY THEORIZE PHASE.** Open `docs/TRACY_FRAMEWORK_BRIEF.md`. Run RESEARCH × 3 → PLAN × 3 → INVESTIGATE × 3. Produce `docs/TRACY_FRAMEWORK_PLAN.md`. Audit the plan with a fresh-eye agent. **Do not write code.**
-3. **Verify V2 principal-agent on production** (current state, before Tracy lands) — open `/montree/admin`, ask 5-10 questions across the full tool surface. Watch the super-admin questions log fill in. Validates plumbing before Tracy reframes the brain.
+3. **Verify V2 principal-agent on production** (current state, before Astra lands) — open `/montree/admin`, ask 5-10 questions across the full tool surface. Watch the super-admin questions log fill in. Validates plumbing before Astra reframes the brain.
 4. **Send the 3 hot lead drafts in Gmail** — Ardtona, FAMM, Тамі. All passed dedup checks, ready to send.
 5. **Update CLAUDE.md lead state** — Paint Pots BOUNCED, Ardtona email correction, Copenhagen email verification needed.
 6. **Resolve the Resend block** — set `RESEND_API_KEY` on Railway with a real key + verify `montree.xyz` domain.

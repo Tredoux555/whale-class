@@ -181,7 +181,7 @@
 | Low | Photo bank improvements | ~half-day |
 | Low | Parent portal dark forest theme audit | ~1-2 hours |
 | Stretch | Mira proactive cards (recent students surfaced on agent dashboard) | ~1 day |
-| Stretch | Tracy proactive cards (principal dashboard) | ~1 day |
+| Stretch | Astra proactive cards (principal dashboard) | ~1 day |
 | Stretch | Playwright smoke test suite | ~1 week |
 | Stretch | HeyGen explainer videos | marketing — non-code |
 | Stretch | Webhook dead-letter queue | ~half-day |

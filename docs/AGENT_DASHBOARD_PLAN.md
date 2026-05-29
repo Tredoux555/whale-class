@@ -555,7 +555,7 @@ After Phase 7 launches, we know it's working when:
 | 7e Polish | 0.5 day | ~$0.30 | Tests + edge cases |
 | **Total** | **~5 days** | **~$3.30** | |
 
-Plus ~$0.001 per dashboard page-load in production (Anthropic-powered Tracy isn't on this surface; just data fetches).
+Plus ~$0.001 per dashboard page-load in production (Anthropic-powered Astra isn't on this surface; just data fetches).
 
 ---
 

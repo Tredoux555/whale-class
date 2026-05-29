@@ -17,7 +17,7 @@
 //   2. Teaching team — the focal section
 //   3. Students — calm empty state OR avatar grid
 //
-// Tracy floats upper-right via the layout. She'll greet on first session
+// Astra floats upper-right via the layout. She'll greet on first session
 // login and offer to draft welcome messages with codes — that flow runs in
 // parallel to whatever the principal does on this page.
 'use client';
@@ -224,10 +224,10 @@ export default function ClassroomDetailPage({
     const schoolName = school?.name || 'our school';
     const classroomName = classroom?.name || 'your classroom';
     const subject = `Welcome to ${schoolName} — your Montree login`;
-    // Keep this body in lockstep with Tracy's draft_teacher_welcome_messages
+    // Keep this body in lockstep with Astra's draft_teacher_welcome_messages
     // tool (lib/montree/tracy/tool-executor.ts). Both paths produce the same
     // welcome — feels like one product whether the principal sends from the
-    // classroom row or asks Tracy to draft for the whole team.
+    // classroom row or asks Astra to draft for the whole team.
     const body =
       `Hi ${firstName},\n\n` +
       `Welcome to ${schoolName}'s classroom system. Your login code for Montree is ${teacher.login_code}.\n\n` +

@@ -1,4 +1,4 @@
-# Session 134 — Mira/Tracy upgrade ship to main + Chinese translatability + Principal Leu handover + Tracy stability + Story vault save fix (May 28, 2026)
+# Session 134 — Mira/Astra upgrade ship to main + Chinese translatability + Principal Leu handover + Astra stability + Story vault save fix (May 28, 2026)
 
 **4 commits pushed to main, branch `mira-tracy-upgrade-s133` merged in. The Session 133 13-commit branch is now LIVE on production along with four targeted fixes for issues that surfaced during real user testing today.**
 
@@ -6,7 +6,7 @@ Final state of `main`:
 
 ```
 f631c6da  Fix Story vault save silent failure on mobile PWAs
-f5e392a8  Tracy fixes: greeting name + symmetric glow + larger timeout budget
+f5e392a8  Astra fixes: greeting name + symmetric glow + larger timeout budget
 5c5633da  i18n audit fix: variant-aware dossier button label + Mira locale plumbing
 2323f109  Session 133 i18n audit: full Chinese translatability for parent-meeting dossier
 3ef1bdd0  Master audit close-out: final handoff + brain update     ← prior session 133 final
@@ -16,7 +16,7 @@ f5e392a8  Tracy fixes: greeting name + symmetric glow + larger timeout budget
 f23f0d8a  Session 133 final handoff + brain update
 ```
 
-The 13-commit branch from Session 133 (Tracy data tools → prepare_parent_meeting → Mira knowledge base → prepare_principal_pitch → login fix + all-logins page → parents added → master audit close-out) was merged via fast-forward earlier today and ships live now. This session adds the four ship-time fixes on top.
+The 13-commit branch from Session 133 (Astra data tools → prepare_parent_meeting → Mira knowledge base → prepare_principal_pitch → login fix + all-logins page → parents added → master audit close-out) was merged via fast-forward earlier today and ships live now. This session adds the four ship-time fixes on top.
 
 ---
 
@@ -52,7 +52,7 @@ The Leu rename hit a snag: `montree_school_admins.email` has a NOT NULL constrai
 - `lib/montree/tracy/tools/prepare_parent_meeting.ts`
   - `PrepareParentMeetingInput.locale?` accepted (defaults to 'en')
   - Folded into `makeDossierCacheKey` extras — zh + en dossiers cache separately for the same {child, purpose} pair. Without this fold, an English cache hit serves the wrong language back to a Mandarin principal.
-  - `getAILanguageInstruction(locale)` injected into the system prompt with a strong directive: "The entire dossier — section headers, prose, blockquote conversation scripts, follow-up plan — MUST be in the target language. The Yo-yo worked example is in English as voice/structure reference only; don't copy its wording. Translate section headers naturally (e.g. for Mandarin: '## 1. Tracy 的话', '## 2. 这个孩子')."
+  - `getAILanguageInstruction(locale)` injected into the system prompt with a strong directive: "The entire dossier — section headers, prose, blockquote conversation scripts, follow-up plan — MUST be in the target language. The Yo-yo worked example is in English as voice/structure reference only; don't copy its wording. Translate section headers naturally (e.g. for Mandarin: '## 1. Astra 的话', '## 2. 这个孩子')."
   - `inferPatternPhrases` regex widened to match Mandarin/Spanish/German/French/Portuguese keywords for sleep / eating / aggression / reading / math branches. (Ukrainian/Russian/Italian/Dutch/Japanese/Korean not yet covered — graceful fallback to generic emotional branch.)
   - `locale` threaded into `renderDossierHtml` so the printable view's `<html lang>` + date format + chrome labels also match.
 
@@ -105,10 +105,10 @@ Fix: `locale: language ?? 'en'` in the renderDossierHtml call.
 
 **Two known gaps documented but NOT fixed (out of scope this session):**
 
-1. **Five principal admin pages don't use `useI18n()` at all** — `appointments`, `child/[childId]`, `communication/threads/[threadId]`, **`guru` (Tracy chat itself!)**, `people`. The whole page renders English regardless of locale. The dossier feature inside these pages is now translated, but the surrounding chrome is not. Full translation is a much larger refactor — flag for a focused session.
+1. **Five principal admin pages don't use `useI18n()` at all** — `appointments`, `child/[childId]`, `communication/threads/[threadId]`, **`guru` (Astra chat itself!)**, `people`. The whole page renders English regardless of locale. The dossier feature inside these pages is now translated, but the surrounding chrome is not. Full translation is a much larger refactor — flag for a focused session.
 2. **Pattern-phrase trigger regex** in `prepare_parent_meeting.ts` covers en/zh/es/de/fr/pt for the 5 topic branches but not uk/ru/ja/ko/nl/it. Principals in those locales fall through to the generic emotional/behavioural branch — still works, just less targeted detection.
 
-### 3. `f5e392a8` — Tracy fixes: greeting name + symmetric glow + larger timeout budget
+### 3. `f5e392a8` — Astra fixes: greeting name + symmetric glow + larger timeout budget
 
 After the Leu handover SQL landed, user opened `/montree/admin` on production and reported three things:
 
@@ -116,7 +116,7 @@ After the Leu handover SQL landed, user opened `/montree/admin` on production an
 
 `app/api/montree/admin/principal-agent/route.ts` line 273 did `principalRes.data.name.split(' ')[0]` to extract the first name. For "Tredoux Willemse" → "Tredoux" ✓. For "Principal Leu" → "Principal" ✗ (cold, weird).
 
-Fix: detect title prefixes (`/^(principal|ms|mrs|mr|dr|prof|professor|teacher|head|director)\.?\s+/i`) and use the FULL name when one is present. Regular first+last names still split. Tracy now greets "Hi, Principal Leu".
+Fix: detect title prefixes (`/^(principal|ms|mrs|mr|dr|prof|professor|teacher|head|director)\.?\s+/i`) and use the FULL name when one is present. Regular first+last names still split. Astra now greets "Hi, Principal Leu".
 
 Same logic mirrored in `app/montree/admin/page.tsx` (the static empty-state greeting) — must stay in lock-step with the server resolver.
 
@@ -128,16 +128,16 @@ Same logic mirrored in `app/montree/admin/page.tsx` (the static empty-state gree
 
 Fix: switched to `inline-block` with explicit `width: size`, `height: size`, `lineHeight: 0`. Halo now perfectly symmetric around the avatar.
 
-**C. Tracy "cocking out" — long processing then no reply:**
+**C. Astra "cocking out" — long processing then no reply:**
 
-Watchdog `TOTAL_TIMEOUT_MS = 90_000` was the ceiling on the full tool-use loop. Opus 4.6 + a Tracy tool chain (consult_guru → detect_pattern → child_focus on a child with rich history like Yo-yo's sleep query) genuinely takes 60-180s. When the watchdog fired the route enqueued an error event then `break`d out of the loop — but the error rendering was hidden behind the avatar's thinking dots and the user just saw a frozen state.
+Watchdog `TOTAL_TIMEOUT_MS = 90_000` was the ceiling on the full tool-use loop. Opus 4.6 + a Astra tool chain (consult_guru → detect_pattern → child_focus on a child with rich history like Yo-yo's sleep query) genuinely takes 60-180s. When the watchdog fired the route enqueued an error event then `break`d out of the loop — but the error rendering was hidden behind the avatar's thinking dots and the user just saw a frozen state.
 
-Fix: bumped budgets to give Tracy proper headroom:
+Fix: bumped budgets to give Astra proper headroom:
 - `maxDuration` 120s → 300s (informational on Railway, but signals intent)
 - `TOTAL_TIMEOUT_MS` 90s → **240s** (watchdog ceiling, must stay below maxDuration)
 - `API_TIMEOUT_MS` 50s → 90s (per-Anthropic-call timeout)
 
-Complex Tracy queries now have realistic headroom.
+Complex Astra queries now have realistic headroom.
 
 ### 4. `f631c6da` — Fix Story vault save silent failure on mobile PWAs
 
@@ -174,11 +174,11 @@ User reported: on iPhone Home-Screen PWA, ticking a picture and hitting the save
 
 285. **`prepare_parent_meeting` MUST accept `locale` and thread it into BOTH the cache key extras AND the Sonnet system prompt.** Without the cache-key fold, an English cache hit serves the wrong language back to a Mandarin principal. Without the prompt directive (`getAILanguageInstruction(locale)`), Sonnet biases toward the prompt's language and produces an English dossier even when asked for Mandarin in the user message. Mira's `prepare_principal_pitch` follows the same contract.
 
-286. **`renderDossierHtml(opts)` MUST accept optional `locale`.** Defaults to 'en'. Used by `<html lang>` (accessibility tools + browser print typography), `toLocaleString(getIntlLocale(locale))` (region-correct date formatting), and the chrome labels (Prepared / Sources / Print to PDF) via `getTranslator(locale)`. Mira's pitch tool passes its per-pitch `language`; Tracy passes the principal's UI `locale`. Single source of truth between server-rendered HTML and the React DossierRenderer is the `dossier.renderer.*` i18n key set in `en.ts`.
+286. **`renderDossierHtml(opts)` MUST accept optional `locale`.** Defaults to 'en'. Used by `<html lang>` (accessibility tools + browser print typography), `toLocaleString(getIntlLocale(locale))` (region-correct date formatting), and the chrome labels (Prepared / Sources / Print to PDF) via `getTranslator(locale)`. Mira's pitch tool passes its per-pitch `language`; Astra passes the principal's UI `locale`. Single source of truth between server-rendered HTML and the React DossierRenderer is the `dossier.renderer.*` i18n key set in `en.ts`.
 
 287. **Title-prefix names use FULL name; first+last names use first only.** Canonical regex: `/^(principal|ms|mrs|mr|dr|prof|professor|teacher|head|director)\.?\s+/i`. Logic MUST be mirrored in BOTH the principal-agent route AND `app/montree/admin/page.tsx` empty-state greeting — they share no helper today, but must stay in lock-step. "Hi, Principal Leu" reads warm; "Hi, Principal" alone reads cold.
 
-288. **Tracy's tool-use loop watchdog (`TOTAL_TIMEOUT_MS`) is 240s, NOT 90s.** Opus 4.6 + a 3-tool chain on a child with rich history genuinely takes 60-180s. The 90s ceiling was firing silently and the client saw frozen thinking-dots. Don't tighten back without first verifying that all Tracy tool chains stay under the new ceiling.
+288. **Astra's tool-use loop watchdog (`TOTAL_TIMEOUT_MS`) is 240s, NOT 90s.** Opus 4.6 + a 3-tool chain on a child with rich history genuinely takes 60-180s. The 90s ceiling was firing silently and the client saw frozen thinking-dots. Don't tighten back without first verifying that all Astra tool chains stay under the new ceiling.
 
 289. **iOS Home-Screen PWAs silently suppress `window.alert()`.** Every customer-facing error path on the Story system MUST use inline error UI, not `alert()`. Pattern: state variable `{id, message} | null`, rendered as a dismissible red pill inline next to the failing element. `console.error` for diagnostic logs (visible via Safari remote inspect from desktop). Same rule applies anywhere a PWA-installed Story user could trigger an error path — no exceptions.
 
@@ -191,7 +191,7 @@ User reported: on iPhone Home-Screen PWA, ticking a picture and hitting the save
 | Whale Class principal cockpit | `/montree/admin` | Live — name "Principal Leu", login XVYHHX |
 | Parent-meeting dossier modal | Parent thread headers | Live — i18n-translated, locale flows to Sonnet |
 | Super-admin all-logins page | `/montree/super-admin/all-logins` | Live — 4 sections (principals/teachers/agents/parents), copy buttons |
-| Tracy chat (`/montree/admin`) | Tracy chat page | Live — greeting + glow + watchdog all fixed |
+| Astra chat (`/montree/admin`) | Astra chat page | Live — greeting + glow + watchdog all fixed |
 | Story vault save | Story admin → Messages tab | Live — inline error pill replaces suppressed alert |
 | Mira pitch dossier (printable HTML) | `/api/montree/agent/dossier/principal-pitch?format=html` | Live — locale flows from pitch language to `<html lang>` |
 | Migration 237 (dossier cache) | Supabase | ⏳ **PENDING — run when convenient** |
@@ -200,10 +200,10 @@ User reported: on iPhone Home-Screen PWA, ticking a picture and hitting the save
 
 ## Verification checklist (do this on a phone after Railway settles)
 
-**Tracy fixes (commit `f5e392a8`):**
+**Astra fixes (commit `f5e392a8`):**
 1. Open `/montree/admin` on iPhone — header should read "Tredoux House / PRINCIPAL"
-2. Click "New conversation" — Tracy should greet "Hi, Principal Leu" (NOT "Hi, Tredoux")
-3. Ask Tracy a complex child question (e.g. "tell me about Yo-yo's sleep patterns") — Tracy should respond within ~60-120s. If she times out, the watchdog now fires at 240s with a visible error pill, NOT a frozen avatar.
+2. Click "New conversation" — Astra should greet "Hi, Principal Leu" (NOT "Hi, Tredoux")
+3. Ask Astra a complex child question (e.g. "tell me about Yo-yo's sleep patterns") — Astra should respond within ~60-120s. If she times out, the watchdog now fires at 240s with a visible error pill, NOT a frozen avatar.
 4. Watch the thinking-dots avatar — the gold glow should form a perfect symmetric ring around the avatar (no asymmetric tail below).
 
 **Story vault save (commit `f631c6da`):**
@@ -218,7 +218,7 @@ User reported: on iPhone Home-Screen PWA, ticking a picture and hitting the save
 11. Open a parent thread with an attached child → tap the "📋 准备这场会议" button
 12. Modal labels should be in Mandarin (这次会议是关于什么的? / 生成我的备忘录 / etc.)
 13. Submit a meeting purpose in Mandarin → wait ~90s
-14. Dossier should render with Mandarin section headers (## 1. Tracy 的话 / ## 2. 这个孩子 / etc.) AND Mandarin prose throughout
+14. Dossier should render with Mandarin section headers (## 1. Astra 的话 / ## 2. 这个孩子 / etc.) AND Mandarin prose throughout
 15. Click "打开打印视图 →" → printable HTML opens with `<html lang="zh">` + Mandarin chrome
 
 ---
@@ -232,7 +232,7 @@ User reported: on iPhone Home-Screen PWA, ticking a picture and hitting the save
 
 ### Lower priority / polish
 4. **Pattern-phrase regex coverage** — add uk/ru/ja/ko/nl/it keywords to the 5 topic branches in `prepare_parent_meeting.ts`. Currently graceful fallback to generic emotional branch for those locales.
-5. **User's earlier feedback: "Home splash page can just be the calendar I think"** — would move Tracy chat from `/montree/admin` (current default) to a sub-route, and make calendar the home. Also "no tracy icon" — user wants TracyFloat visible on `/montree/admin` (currently hidden because that page IS Tracy in full).
+5. **User's earlier feedback: "Home splash page can just be the calendar I think"** — would move Astra chat from `/montree/admin` (current default) to a sub-route, and make calendar the home. Also "no tracy icon" — user wants TracyFloat visible on `/montree/admin` (currently hidden because that page IS Astra in full).
 6. **Pre-existing lint warnings on `app/story/admin/dashboard/page.tsx`** — `loginLogs`, `setVaultUnlocked`, `setVaultError`, `statistics` unused. Cosmetic.
 7. **System-wide TS errors carried over from Session 133** — 11 in `auth/unified/route.ts` + 7 in `agent/mira/route.ts`. All pre-existing, not regressions.
 
@@ -253,5 +253,5 @@ User reported: on iPhone Home-Screen PWA, ticking a picture and hitting the save
 1. Read this doc top to bottom.
 2. **Run migration 237** in Supabase SQL Editor (`migrations/237_meeting_dossiers.sql`).
 3. Walk the 15-step verification checklist above on a real iPhone.
-4. If anything trips, the inline error messages should now tell you exactly what failed (vault save) or surface a watchdog error pill (Tracy hang).
+4. If anything trips, the inline error messages should now tell you exactly what failed (vault save) or surface a watchdog error pill (Astra hang).
 5. Hand back any production reports here and I'll triage from line item 1.

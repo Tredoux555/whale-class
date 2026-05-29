@@ -1,8 +1,8 @@
 // lib/montree/tracy/memory.ts
 //
-// Tracy's persistent relational memory.
+// Astra's persistent relational memory.
 //
-// Until migration 195, Tracy had ONLY episodic memory (last 10 turns of the
+// Until migration 195, Astra had ONLY episodic memory (last 10 turns of the
 // active conversation). Across conversations / devices / "New conversation"
 // clicks, she remembered nothing — the principal had to re-explain her
 // preferences, voice, concerns every time. This module implements semantic
@@ -30,7 +30,7 @@
 //     to the user.
 //   - Memory injection is on every turn (capped at 30 in the system prompt).
 //     The recall_memory tool is for DEEPER recall.
-//   - Tracy decides what's memorable. Not every turn writes a memory.
+//   - Astra decides what's memorable. Not every turn writes a memory.
 
 import type { SupabaseClient } from '@supabase/supabase-js';
 
@@ -62,21 +62,21 @@ const RECALL_HARD_CAP = 50;
 
 // ── Process-local memory cache (Session 111 perf push) ──────────────────
 //
-// Tracy used to re-read up to 30 memory rows on EVERY message via
+// Astra used to re-read up to 30 memory rows on EVERY message via
 // loadActiveMemories. With Opus 4.6 latency on top, first-token felt 3-8s.
 // This module caches the load by principal_id with a 5-minute TTL.
 //
 // Cache scope: the Railway Node process. Cleared on redeploy (acceptable —
 // fresh deploy = stale memory cache miss = one extra DB read on first turn).
 // Multi-instance Railway: each instance has its own cache. Worst case:
-// principal writes a memory on instance A, then talks to Tracy on instance B
+// principal writes a memory on instance A, then talks to Astra on instance B
 // with up to 5 min stale view. Memory writes invalidate cache on the SAME
 // instance via invalidateMemoryCache(); cross-instance staleness self-heals
 // at TTL expiry.
 //
 // Bounded size: 1000 entries (~30 memories × ~250 chars each = ~7.5MB ceiling).
 // On overflow we delete the oldest-entered entry. FIFO not LRU — simpler and
-// the access pattern (Tracy turns) doesn't favor LRU much.
+// the access pattern (Astra turns) doesn't favor LRU much.
 const MEMORY_CACHE_TTL_MS = 5 * 60 * 1000;
 const MEMORY_CACHE_MAX_ENTRIES = 1000;
 const memoryCache = new Map<string, { memories: PrincipalMemory[]; expires: number }>();
@@ -227,7 +227,7 @@ export async function loadActiveMemories(
 
   if (error) {
     // Don't crash the agent if the table doesn't exist yet (pre-migration)
-    // or the read fails. Tracy degrades to no-memory mode silently. Don't
+    // or the read fails. Astra degrades to no-memory mode silently. Don't
     // cache an empty result on error — next turn retries.
     console.warn('[tracy/memory] loadActiveMemories error:', error.message);
     return [];
@@ -241,8 +241,8 @@ export async function loadActiveMemories(
 /**
  * Render memories as a system-prompt section. Empty string when no memories.
  *
- * Grouped by memory_type so Tracy can scan it visually. We deliberately
- * include each memory's id so Tracy can pass it back as supersedes_id when
+ * Grouped by memory_type so Astra can scan it visually. We deliberately
+ * include each memory's id so Astra can pass it back as supersedes_id when
  * she decides a memory is outdated.
  */
 export function formatMemoriesForPrompt(memories: PrincipalMemory[]): string {
@@ -463,7 +463,7 @@ export async function recallMemories(
  * so frequently-referenced memories surface to the top of pruning analysis
  * later.
  *
- * 🚨 Session 113 V2 (Tracy + Mira audit, HIGH-1): switched from a
+ * 🚨 Session 113 V2 (Astra + Mira audit, HIGH-1): switched from a
  * 1-SELECT + N-UPDATE pattern to a single RPC. The old pattern incurred
  * 21 round-trips for a 20-memory return — ~600-1500ms of pure waste on
  * a non-critical pruning signal. Migration 212 added the

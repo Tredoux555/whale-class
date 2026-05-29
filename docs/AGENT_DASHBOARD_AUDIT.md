@@ -2,7 +2,7 @@
 
 *Session 113 V2 follow-up audit · 2026-05-16 · Read-only investigation*
 
-This audit applies the same methodology as the recent photo pipeline / Tracy+Mira / finance audits: three cycles of file-by-file reading focused on correctness, cross-pollination, auth, race conditions, audit logging, rate limits, and pages. Scope: the entire `/montree/agent/*` surface plus the referral code lifecycle, Stripe Connect onboarding, manual wire rail, application flow, and agent ↔ super-admin messaging.
+This audit applies the same methodology as the recent photo pipeline / Astra+Mira / finance audits: three cycles of file-by-file reading focused on correctness, cross-pollination, auth, race conditions, audit logging, rate limits, and pages. Scope: the entire `/montree/agent/*` surface plus the referral code lifecycle, Stripe Connect onboarding, manual wire rail, application flow, and agent ↔ super-admin messaging.
 
 ---
 

@@ -190,7 +190,7 @@ Recommended: **Calendar** as the navigation label. Page title can be "Your week"
 |---|---|---|---|
 | 210 | photo identification CHECK | ✅ Run | Allows `haiku_drafted` status |
 | 211 | pipeline telemetry | ✅ Run | Append-only, no FKs |
-| 212 | bump_memory_references RPC | ✅ Run | Tracy memory perf |
+| 212 | bump_memory_references RPC | ✅ Run | Astra memory perf |
 | 213 | outreach log retention + drip uniqueness | ✅ Run | Archive + UNIQUE index |
 | 214-222 | (carried over from prior sessions) | ✅ Run | Meeting notes / appointments / events / calendar / Jitsi |
 | 223 | Agora recordings + feature flags | ⏳ PENDING | Tredoux to paste in SQL Editor |

@@ -11,7 +11,7 @@ Four parallel audit agents ran in parallel against the codebase. This document i
 
 ## TL;DR
 
-**🟢 The big-rock architectural rules are holding.** Service worker still narrow-intercept (v8), no `dynamic({ ssr: false })` in Server Components, Stripe webhook idempotency intact, `.ilike()` escaping consistent, cross-pollination contract honored on every recently-touched route, Tracy/Mira model pinning intact, photo pipeline v2 fully wired with prompt caching at the right cache boundaries, i18n strict parity at **5,035 / 5,035 keys × 12 locales = 100%**, no `logApiUsage().catch()` regressions, no hardcoded model strings in customer-facing routes.
+**🟢 The big-rock architectural rules are holding.** Service worker still narrow-intercept (v8), no `dynamic({ ssr: false })` in Server Components, Stripe webhook idempotency intact, `.ilike()` escaping consistent, cross-pollination contract honored on every recently-touched route, Astra/Mira model pinning intact, photo pipeline v2 fully wired with prompt caching at the right cache boundaries, i18n strict parity at **5,035 / 5,035 keys × 12 locales = 100%**, no `logApiUsage().catch()` regressions, no hardcoded model strings in customer-facing routes.
 
 **🔴 Two genuine ship-blockers found.** One is a cross-pollination violation that lets unauthenticated callers impersonate any user on any school (`/api/montree/feedback`). The other is a missing period-lock guard on the super-admin payout PATCH that lets closed-period reconciled payouts be silently mutated (`super-admin/payouts/route.ts`).
 
@@ -142,7 +142,7 @@ Also affected: `dashboard/page.tsx`, both parent + teacher messaging detail page
 |----|------|--------|
 | MED-1 | Service worker stale (v8, 13 days, ~70 commits since bump). Recommend v9. | 2 min |
 | MED-2 | ~50 images missing `width`+`height` across hot surfaces. Worst: `raz/page.tsx` (10 imgs, no lazy, no dims). Photo-audit + gallery 3 each. | ~1.5 hours |
-| MED-3 | Tracy memory hard ceiling is 100; soft default is 30. Tighten hard to 50 — Opus prompt cost balloons proportional to memory size. | 5 min |
+| MED-3 | Astra memory hard ceiling is 100; soft default is 30. Tighten hard to 50 — Opus prompt cost balloons proportional to memory size. | 5 min |
 | MED-4 | 2 hardcoded English strings in `dashboard/parent-chats/page.tsx:215-216` — last leak from S121 sweep. | 10 min |
 | MED-5 | One-off Whale-Class scripts still inline `claude-haiku-4-5-20251001` instead of the constant. Not customer-facing but breaks "single source of truth" rule. | 15 min |
 
@@ -181,7 +181,7 @@ Also affected: `dashboard/page.tsx`, both parent + teacher messaging detail page
 - `.ilike()` escape pattern (S107 rule #39)
 - Stripe webhook idempotency + 200-on-error (S100 rule)
 - `maxDuration` on AI routes (S81/S107 rule)
-- Tracy on `OPUS_MODEL` (S84 rule)
+- Astra on `OPUS_MODEL` (S84 rule)
 - Mira on `OPUS_MODEL` orchestrator + `HAIKU_MODEL` drafts (S97 rule)
 - Photo pipeline v2 flag still gates Fixes A/B/C/D (S118 rule #197)
 - Prompt caching `Array<TextBlockParam>` shape (S113 V2 rule #135)
@@ -201,5 +201,5 @@ Also affected: `dashboard/page.tsx`, both parent + teacher messaging detail page
 |---------------|-----------|
 | `HEALTH_CHECK_S131_FRONTEND.md` | SW state, dynamic imports, 100vh count, image dims, dead code state, recent commit risk, bundle bloat |
 | `HEALTH_CHECK_S131_API_DB.md` | CRIT-1, CRIT-2, HIGH-2, HIGH-3, HIGH-4, cross-pollination spot-checks |
-| `HEALTH_CHECK_S131_AI_COST.md` | HIGH-1 (the 5 missed routes), Tracy/Mira posture, photo pipeline v2 wiring, prompt caching, Tracy memory cap |
+| `HEALTH_CHECK_S131_AI_COST.md` | HIGH-1 (the 5 missed routes), Astra/Mira posture, photo pipeline v2 wiring, prompt caching, Astra memory cap |
 | `HEALTH_CHECK_S131_I18N.md` | HIGH-6, HIGH-7, strict parity %, S121 surface spot-checks, curriculum seed coverage |

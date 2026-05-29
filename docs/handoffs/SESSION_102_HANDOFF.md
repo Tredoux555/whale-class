@@ -126,7 +126,7 @@ Ship Tier 0 next (~3h, single commit):
 11. Postgres EXPLAIN audit on 8 hot queries
 12. Post-deploy pre-warm ping loop
 
-Then Tier 1 (foundation), Tier 2 (Tracy resilience), etc. Full plan in `docs/PERF_HEALTH_CHECK.md`. Comfortable rollout in `docs/handoffs/SESSION_101_HANDOFF.md`.
+Then Tier 1 (foundation), Tier 2 (Astra resilience), etc. Full plan in `docs/PERF_HEALTH_CHECK.md`. Comfortable rollout in `docs/handoffs/SESSION_101_HANDOFF.md`.
 
 ### UX issues discovered today (small)
 1. **Compose modal scrolls off-screen** — Send button hidden below the fold on principal's `/montree/admin/communication` compose. Either constrain modal height or scroll-into-view the Send button. ~15 min.

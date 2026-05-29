@@ -1,8 +1,8 @@
 // lib/montree/ai/split-action-line.ts
 //
-// Canonical parser for Tracy + Mira's action-line marker.
+// Canonical parser for Astra + Mira's action-line marker.
 //
-// 🚨 Session 113 V2 — Tracy + Mira audit MED-5. Until this module, four
+// 🚨 Session 113 V2 — Astra + Mira audit MED-5. Until this module, four
 // separate `splitActionLine` copies existed across the codebase with two
 // different return shapes:
 //   - components/montree/admin/TracyFloat.tsx       { body, action: string | null }

@@ -1,13 +1,13 @@
-# Tracy's psychological knowledge base — index
+# Astra's psychological knowledge base — index
 
-This directory holds the psychological depth Tracy applies when she helps
+This directory holds the psychological depth Astra applies when she helps
 the principal prepare for and execute parent meetings. The architecture
 mirrors Mira's knowledge base (`lib/montree/mira/knowledge/`) — load on
-first use, cache in memory, inject a compact summary into Tracy's chat
+first use, cache in memory, inject a compact summary into Astra's chat
 system prompt every turn, inject the full bundle into the
 `prepare_parent_meeting` dossier-builder Sonnet call.
 
-The principal does not see these files. Tracy quotes from them, applies
+The principal does not see these files. Astra quotes from them, applies
 their frameworks, lets them inform her tone. The user-facing artifact is
 always the brief + dossier — never the framework itself.
 
@@ -67,15 +67,15 @@ de-escalate vs phrases that escalate. The "what would help right now?"
 reset. For meetings where the parent arrives already activated and the
 first 90 seconds determine whether the next 30 minutes are productive.
 
-## When Tracy consults each file
+## When Astra consults each file
 
 Most parent meetings touch more than one of these files. The
 `prepare_parent_meeting` tool injects the FULL bundle into the dossier
 Sonnet's system prompt so the synthesis can draw from any of them. For
-chat-mode questions, Tracy has the SUMMARY in her system prompt every
+chat-mode questions, Astra has the SUMMARY in her system prompt every
 turn — that's enough for most replies. When a chat question needs depth
 beyond the summary (the principal wants to think through a difficult
-parent in plain prose, not a dossier), Tracy calls
+parent in plain prose, not a dossier), Astra calls
 `consult_tracy_knowledge` with the relevant topic to pull the full file.
 
 ## The rule
@@ -84,5 +84,5 @@ The frameworks here are the THINKING behind the dossier. They are NEVER
 the dossier itself. The principal opens her brief in the hallway before
 the meeting; she has 15 seconds. What she reads must be specific,
 warm, actionable, and grounded in her child's actual record — not in
-Rosenberg's grammar. Frameworks live in Tracy's head. Specifics live in
+Rosenberg's grammar. Frameworks live in Astra's head. Specifics live in
 the brief.

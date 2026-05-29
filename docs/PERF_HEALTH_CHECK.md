@@ -16,7 +16,7 @@ The app is functionally rich but has **three structural perceived-perf gaps**:
 
 1. **Every navigation is a cold network call.** Service worker only caches static assets. On flaky VPN, every dashboard return is a fresh spinner.
 2. **No `loading.tsx` files anywhere** (verified empty via `Glob app/**/loading.tsx`). On cold chunk download, blank screen until JS executes.
-3. **Tracy SSE has no retry, no resume, no rAF throttling.** On VPN hiccup, question + partial answer lost. During streaming, one re-render per token.
+3. **Astra SSE has no retry, no resume, no rAF throttling.** On VPN hiccup, question + partial answer lost. During streaming, one re-render per token.
 
 Plus mechanical wins (Lora `@import` waterfalls in 6 files, eager-loaded locale files, missing `maxDuration` on 4 AI routes, `select('*')` on hot paths, no image dimensions on 93 `<img>` tags causing CLS).
 
@@ -29,11 +29,11 @@ Plus mechanical wins (Lora `@import` waterfalls in 6 files, eager-loaded locale 
 | First Contentful Paint | < 800ms | `web-vitals` library → `/api/montree/client-error` (Tier 0.12) |
 | Time-to-Interactive on cockpit | < 1.5s warm, < 3s cold | same |
 | Tap → next-screen visible | < 100ms (warm cache served by SW) | manual measurement on real device |
-| Tracy first token | < 2s | timestamp on SSE first chunk |
+| Astra first token | < 2s | timestamp on SSE first chunk |
 | Photo confirm tap → UI update | < 50ms (optimistic) | manual |
 | Cumulative Layout Shift | 0.0 | web-vitals CLS metric |
 | Re-render count during typing | 1 per keystroke, scoped to input | React DevTools Profiler |
-| VPN drop mid-Tracy | invisible — auto-resume | manual VPN-toggle test |
+| VPN drop mid-Astra | invisible — auto-resume | manual VPN-toggle test |
 | Cold-start container response | < 1.5s after wake | Railway logs + Tier 0.14 ping loop |
 
 ---
@@ -161,7 +161,7 @@ const messages = locale === 'en' ? enMessages : await import(`@/lib/montree/i18n
 
 ---
 
-## Tier 2 — Tracy: principal's daily entrypoint (REORDERED)
+## Tier 2 — Astra: principal's daily entrypoint (REORDERED)
 
 🚨 **REORDERED from v1.** Old order: 2.1 → 2.2 → 2.3 → 2.4. New order: **2.1 (rAF throttle) → 2.2 (AbortController + retry) → 2.4 (skip Sonnet greeting) → 2.3 (lazy panel mount).**
 
@@ -179,7 +179,7 @@ const messages = locale === 'en' ? enMessages : await import(`@/lib/montree/i18n
 
 ### 2.2 SSE AbortController + retry-with-resume
 
-**Problem:** Tracy SSE has no `AbortController` (memory leak on navigation). On VPN drop, generic error swallows question + partial answer.
+**Problem:** Astra SSE has no `AbortController` (memory leak on navigation). On VPN drop, generic error swallows question + partial answer.
 
 **Fix:** Three-part:
 1. Wrap the `fetch()` with `new AbortController()`. Return `controller.abort()` from `useEffect` cleanup.
@@ -188,7 +188,7 @@ const messages = locale === 'en' ? enMessages : await import(`@/lib/montree/i18n
 
 **Effort:** 4-6h.
 
-**Win:** Tracy survives VPN drops invisibly.
+**Win:** Astra survives VPN drops invisibly.
 
 ### 2.3 Skip Sonnet greeting on first paint (PROMOTED — was 2.4)
 
@@ -198,9 +198,9 @@ const messages = locale === 'en' ? enMessages : await import(`@/lib/montree/i18n
 
 **Effort:** 2h.
 
-**Win:** Tracy's first frame goes from 2-5s to instant. No Sonnet cost wasted on no-question sessions. **MUST land before 2.4 lazy-mount or UX regresses.**
+**Win:** Astra's first frame goes from 2-5s to instant. No Sonnet cost wasted on no-question sessions. **MUST land before 2.4 lazy-mount or UX regresses.**
 
-### 2.4 Tracy float: instant paint, lazy-mount panel content (REORDERED — was 2.3)
+### 2.4 Astra float: instant paint, lazy-mount panel content (REORDERED — was 2.3)
 
 **Problem:** TracyFloat (1,074 lines) mounts on every `/montree/admin/*` page. All sub-components load eagerly.
 
@@ -338,7 +338,7 @@ Pick whichever is faster after a 30-min spike.
 
 **Effort:** 2-3h.
 
-### 6.2 iOS keyboard handling in Tracy chat
+### 6.2 iOS keyboard handling in Astra chat
 
 (Unchanged.) `scrollIntoView({block: 'end'})` on focus + `visualViewport` listener.
 
@@ -360,7 +360,7 @@ Pick whichever is faster after a 30-min spike.
 
 ## Tier 7 — Things to leave alone
 
-(Unchanged from v1.) Visual memory context loader, correction enrichment, replan as Stage 0, Tracy on Opus, SW narrow-intercept on documents (Tier 1.1 ADDS API caching as separate runtime rule, doesn't modify document handling).
+(Unchanged from v1.) Visual memory context loader, correction enrichment, replan as Stage 0, Astra on Opus, SW narrow-intercept on documents (Tier 1.1 ADDS API caching as separate runtime rule, doesn't modify document handling).
 
 ---
 
@@ -389,12 +389,12 @@ Pick whichever is faster after a 30-min spike.
 - Day 5-7: Tier 1.1 SW SWR with auth-keyed cache + broadcastUpdate (12-16h, careful)
 - Day 8: Tier 1.2 loading.tsx files (6h)
 
-**Week 2 (Tier 2 Tracy, ~10h):**
+**Week 2 (Tier 2 Astra, ~10h):**
 - 2.1 rAF throttle (1.5h)
 - 2.2 AbortController + retry-with-resume (4-6h)
 - 2.3 skip Sonnet greeting (2h) — must precede 2.4
 - 2.4 lazy-mount panel content (1.5-2h)
-- Re-validate via web-vitals: Tracy first-token, INP during typing
+- Re-validate via web-vitals: Astra first-token, INP during typing
 
 **Week 3 (Tier 3 backend wins + Tier 4 resilience, ~12h):**
 - Tier 3.1 Weekly Wrap parallelize (dedicated session, 1h)
@@ -445,7 +445,7 @@ Pick whichever is faster after a 30-min spike.
 After each Tier ships:
 
 1. **Web vitals telemetry** (Tier 0.12) shows the deltas per route per percentile.
-2. **Manual flaky-VPN test** on Astrill Frankfurt: Beijing → cockpit nav → child page → photo audit → Tracy → toggle VPN off → Tracy retries → toggle back on → conversation continues.
+2. **Manual flaky-VPN test** on Astrill Frankfurt: Beijing → cockpit nav → child page → photo audit → Astra → toggle VPN off → Astra retries → toggle back on → conversation continues.
 3. **Real-device tap test** on iPhone PWA install: home-screen tap → cockpit shell renders < 1.5s warm.
 4. **Lighthouse CI** on landing page: target FCP < 800ms, LCP < 2.5s, CLS < 0.1, TBT < 200ms.
 

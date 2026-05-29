@@ -610,11 +610,11 @@ export default function PrincipalSetupPage() {
             </div>
 
             {/*
-              Tracy celebration card — appears at the setup-complete moment.
-              No AI call; static greeting that uses Tracy's visual voice
+              Astra celebration card — appears at the setup-complete moment.
+              No AI call; static greeting that uses Astra's visual voice
               (avatar + gold action-line arrow) to congratulate the principal
               and point them at the next concrete step.
-              Per user directive: 'I want Tracy to pop up here congratulating
+              Per user directive: 'I want Astra to pop up here congratulating
               the principal on creating her classrooms and guiding her to
               the next step of making a message to send to the teachers.'
             */}

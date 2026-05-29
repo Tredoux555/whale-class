@@ -1,6 +1,6 @@
 // app/montree/admin/parents/[parentId]/meetings/[meetingId]/review/page.tsx
 //
-// Ultimate Tracy Phase B — review the Sonnet analysis + approve / edit /
+// Ultimate Astra Phase B — review the Sonnet analysis + approve / edit /
 // dismiss profile-update proposals.
 
 'use client';
@@ -291,7 +291,7 @@ export default function MeetingReviewPage() {
               No analysis yet
             </h2>
             <p style={{ color: T.textSecondary, fontSize: 14, marginTop: 12 }}>
-              This meeting hasn&apos;t been analysed. Tracy will read the
+              This meeting hasn&apos;t been analysed. Astra will read the
               transcript when you trigger analysis from the new-meeting page.
             </p>
           </div>
@@ -307,7 +307,7 @@ export default function MeetingReviewPage() {
                 color: T.textPrimary,
               }}
             >
-              Tracy&apos;s read
+              Astra&apos;s read
             </h1>
             <p
               style={{

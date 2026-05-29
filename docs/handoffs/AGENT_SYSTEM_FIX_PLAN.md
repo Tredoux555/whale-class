@@ -42,7 +42,7 @@ Grouped by domain. ✅ = working, 🚧 = partial/broken, ❌ = missing, 🎨 = p
 | ID | Status | Issue |
 |---|---|---|
 | C1 | ❌ | Agent → Tredoux direct channel missing. Today Gloria emails / WhatsApps externally; nothing surfaces in-app |
-| C2 | ❌ | Tracy-assisted triage for incoming agent messages — depends on C1 |
+| C2 | ❌ | Astra-assisted triage for incoming agent messages — depends on C1 |
 | C3 | 🎨 | Decision: leave existing "Help" Tredoux-DM panel (legacy flat `montree_messages`, used by teachers per Session 103) as-is, or migrate teachers to threaded too |
 
 ### D. Stripe Connect & payouts (money)
@@ -197,11 +197,11 @@ Structure:
 
 ## Phase 4 — Architectural agent ↔ super-admin messaging
 
-**Goal:** Threaded messaging between agents and Tredoux, built on the existing `montree_message_threads` infrastructure. No parallel legacy DM rail. Mira + Tracy can natively scan and draft.
+**Goal:** Threaded messaging between agents and Tredoux, built on the existing `montree_message_threads` infrastructure. No parallel legacy DM rail. Mira + Astra can natively scan and draft.
 
 **Effort:** 1 – 1.5 days.
 
-**Risk:** Medium. FK chain extensions, cross-pollination security verification, role-based tool gating for Tracy.
+**Risk:** Medium. FK chain extensions, cross-pollination security verification, role-based tool gating for Astra.
 
 **Scope:**
 
@@ -254,7 +254,7 @@ Four routes under `/api/montree/agent/messages-tredoux/`:
 Three routes under `/api/montree/super-admin/agent-messages/`:
 - `GET /threads` — list ALL agent_super_admin threads across all agents (paginated, filterable by agent, by unread, by recency)
 - `GET /threads/[id]` — thread detail with agent identity
-- `GET/POST /threads/[id]/messages` — read + send (super-admin posts have `ai_drafted` forced false; Tracy-drafted variants set `ai_drafted=true, approved_by_id=tredoux_userid`)
+- `GET/POST /threads/[id]/messages` — read + send (super-admin posts have `ai_drafted` forced false; Astra-drafted variants set `ai_drafted=true, approved_by_id=tredoux_userid`)
 
 ### 4.5 Agent UI
 
@@ -276,9 +276,9 @@ Extend `lib/montree/mira/tool-definitions.ts` + `lib/montree/mira/tool-executor.
 
 System prompt update: when agent says "let me know what Tredoux thinks" / "ask Tredoux" / similar, route to `start_thread_with_tredoux`.
 
-### 4.8 Tracy proactive (super-admin scope)
+### 4.8 Astra proactive (super-admin scope)
 
-This is the new bit. Today Tracy is principal-scoped. Adding super-admin scope requires role-based tool gating.
+This is the new bit. Today Astra is principal-scoped. Adding super-admin scope requires role-based tool gating.
 
 `lib/montree/tracy/role-gating.ts` (new file):
 - `getTracyToolsForRole(role: 'principal' | 'super_admin')` — returns tool subset
@@ -295,26 +295,26 @@ This is the new bit. Today Tracy is principal-scoped. Adding super-admin scope r
 - Drafts a reply in his voice
 - Sets `ai_drafted=true, approved_by_id=tredoux_userid` on post
 
-### 4.9 Tracy avatar/route — super-admin scope
+### 4.9 Astra avatar/route — super-admin scope
 
-Tredoux today has Tracy as principal-of-Whale-Class. We need her to behave differently when accessed from super-admin context.
+Tredoux today has Astra as principal-of-Whale-Class. We need her to behave differently when accessed from super-admin context.
 
-Decision: Tracy at `/montree/admin` stays principal-scoped (Whale Class context). A new Tracy surface at `/montree/super-admin/tracy` is super-admin-scoped. Same `lib/montree/tracy/` module, different role passed in.
+Decision: Astra at `/montree/admin` stays principal-scoped (Whale Class context). A new Astra surface at `/montree/super-admin/tracy` is super-admin-scoped. Same `lib/montree/tracy/` module, different role passed in.
 
-OR: extend the existing Tracy at `/montree/admin` to check role and show different tools. Less clean — risk of accidentally mixing contexts.
+OR: extend the existing Astra at `/montree/admin` to check role and show different tools. Less clean — risk of accidentally mixing contexts.
 
 **Recommendation:** separate route. Cleaner mental model.
 
 ### 4.10 i18n
 
-~40 new keys (agent nav, super-admin tab, thread UI, Tracy strings) × 12 locales = ~480 translations.
+~40 new keys (agent nav, super-admin tab, thread UI, Astra strings) × 12 locales = ~480 translations.
 
 **Acceptance:**
 1. Gloria, logged into her dashboard, clicks "Tredoux" in nav → empty thread list (none yet)
 2. Clicks compose → sends "Hi Tredoux, the Cambridge prospect is asking about Mandarin support"
 3. Tredoux's super-admin Agent Inbox shows the message within ~5s
-4. Tredoux opens Tracy super-admin → "scan agent messages" → Tracy summarizes Gloria's note + suggests reply
-5. Tredoux refines Tracy's draft → sends → Gloria sees the reply on her side
+4. Tredoux opens Astra super-admin → "scan agent messages" → Astra summarizes Gloria's note + suggests reply
+5. Tredoux refines Astra's draft → sends → Gloria sees the reply on her side
 6. Audit: `ai_drafted=true, approved_by_id=tredoux_userid` on Tredoux's message in the thread row
 
 **Cross-pollination test:** create a second test agent. Confirm they can't see Gloria's threads or vice versa.
@@ -409,7 +409,7 @@ Phase 3 and Phase 4 are **independent** — can be done in either order or in pa
 | 1. E2E test | 2h + wait | Low | Low | Trivial (cleanup script) |
 | 2. 404 fix | 0.5–2h | Low | Low | Trivial (one route change) |
 | 3. Recruitment | 0.5–1d | Low | Medium (public copy) | Medium (revert page, drop column) |
-| 4. Messaging | 1–1.5d | Medium (FK + cross-pollination + Tracy role gating) | Low | Low (CHECK constraint reversible, code revert standard) |
+| 4. Messaging | 1–1.5d | Medium (FK + cross-pollination + Astra role gating) | Low | Low (CHECK constraint reversible, code revert standard) |
 | 5. Polish | 1–2h | Low | Low | Trivial |
 
 ---
@@ -422,7 +422,7 @@ Phase 3 and Phase 4 are **independent** — can be done in either order or in pa
 
 3. **Auto-acknowledgement email on application submit:** yes/no? If yes, what tone? Recommend yes, warm/short Tredoux-voice.
 
-4. **Tracy super-admin scope:** separate route at `/montree/super-admin/tracy`, or extend existing `/montree/admin` Tracy with role-based tool gating? Recommend separate route — cleaner separation.
+4. **Astra super-admin scope:** separate route at `/montree/super-admin/tracy`, or extend existing `/montree/admin` Astra with role-based tool gating? Recommend separate route — cleaner separation.
 
 5. **Help-DM panel for teachers:** leave legacy or migrate to threaded? Recommend leave.
 
@@ -448,7 +448,7 @@ Things initially missed and added back:
 - Health tab card for agent applications → added as 5.5
 - Anti-spam on application form → added as 3.6
 - Resend domain verification impact on auto-ack emails → noted in 3.3
-- Tracy role-based tool gating (super-admin vs principal context) → added as 4.8–4.9
+- Astra role-based tool gating (super-admin vs principal context) → added as 4.8–4.9
 - The "agent handbook" documentation piece → added as open question 10
 - Cross-pollination test in Phase 4 acceptance → added
 
@@ -461,7 +461,7 @@ What could go wrong, and how the plan mitigates:
 - **Phase 3 application form gets spammed.** Mitigations: honeypot, rate limit, optional Turnstile if it gets bad.
 - **Phase 4 migration breaks existing agent_principal threads.** Mitigation: CHECK constraint extension is purely additive. Test against staging DB first. Existing rows continue to work.
 - **Phase 4 cross-pollination bug — one agent sees another's threads.** Mitigation: explicit cross-pollination test in acceptance criteria (4.10). Code review pattern matches Session 104's verified-clean pattern.
-- **Phase 4 Tracy role gating leaks.** Mitigation: role check at tool-definition-time (server-side), not just at UI level. Test: as Tredoux-as-principal-of-Whale-Class, agent tools must NOT appear in Tracy's surface.
+- **Phase 4 Astra role gating leaks.** Mitigation: role check at tool-definition-time (server-side), not just at UI level. Test: as Tredoux-as-principal-of-Whale-Class, agent tools must NOT appear in Astra's surface.
 - **Phase 5.1 (try?ref= reorder) breaks an active redemption mid-flow.** Mitigation: deploy outside of high-redemption window. Currently only Gloria has a code, and no active redemptions.
 
 ### Pass 3 — Final cleanup audit
@@ -470,7 +470,7 @@ Things refined in the final pass:
 
 - Phase 2's "most likely candidates" list — added Stripe-state hypothesis (Gloria's account deleted on Stripe side → 502 misread as 404)
 - Phase 4 i18n estimate — bumped from "minimal" to "~40 keys" after counting against existing thread UI patterns
-- Phase 4.9 — clarified that Tracy stays principal-scoped at `/montree/admin` AND gets a separate super-admin route, not a role-detection extension of the same surface
+- Phase 4.9 — clarified that Astra stays principal-scoped at `/montree/admin` AND gets a separate super-admin route, not a role-detection extension of the same surface
 - Recommended order between Phase 3 and 4 — clarified Phase 4 first (Gloria benefits) then Phase 3 (scaling)
 - Open question 8 (Stripe cleanup timing) — added explicit recommendation
 - Risk matrix — added Reversibility column

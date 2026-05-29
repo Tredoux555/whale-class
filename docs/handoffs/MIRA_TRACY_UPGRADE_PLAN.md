@@ -1,4 +1,4 @@
-# Mira & Tracy — Upgrade Plan
+# Mira & Astra — Upgrade Plan
 ### `prepare_meeting` as the unified high-stakes-conversation capability
 
 **Prepared:** 27 May 2026
@@ -65,7 +65,7 @@ file on disk — he will review and merge in the morning.
 
 - **Do not push to `main`.** Stay on `mira-tracy-upgrade-s133`.
 - **Do not run migrations in Supabase.** SQL files on disk only.
-- **Do not modify `lib/montree/guru/*`.** Guru is canonical — Tracy can call
+- **Do not modify `lib/montree/guru/*`.** Guru is canonical — Astra can call
   it via `consult_guru` but the Guru system itself is not in scope.
 - **Do not touch the Whale Class data.** Read it for testing, never write to it.
 - **Do not delete CLAUDE.md or any handoff docs.**
@@ -80,18 +80,18 @@ You don't need to finish all five phases. Done means:
 - The status note tells the morning agent exactly where to pick up
 - Nothing is half-done in a way that breaks the existing codebase
 
-Good luck. The work matters — this is the feature that makes Tracy and Mira
+Good luck. The work matters — this is the feature that makes Astra and Mira
 earn their keep.
 
 ---
 
 ## 0. Why this exists
 
-Today, Tracy can pull a child's profile and draft a parent message. Today, Mira can list referrals and draft cold-pitch emails. **Neither can do what the founder did by hand in Session 132 to prepare the Yo-yo dossier**: orchestrate every available signal — photos, observations, Guru interactions, mental profile, prior parent communication — and synthesise a single chief-of-staff dossier with facts, working interpretation, conversation script, "what not to say" list, pushback handlers, and follow-up plan.
+Today, Astra can pull a child's profile and draft a parent message. Today, Mira can list referrals and draft cold-pitch emails. **Neither can do what the founder did by hand in Session 132 to prepare the Yo-yo dossier**: orchestrate every available signal — photos, observations, Guru interactions, mental profile, prior parent communication — and synthesise a single chief-of-staff dossier with facts, working interpretation, conversation script, "what not to say" list, pushback handlers, and follow-up plan.
 
 That is the killer-feature workflow. It is the same workflow whether the audience is:
 
-- A **principal** preparing to meet a difficult **parent** (Tracy's job)
+- A **principal** preparing to meet a difficult **parent** (Astra's job)
 - An **agent** preparing to pitch a **principal** (Mira's job)
 
 This document is the build plan for that capability — once, with two front doors.
@@ -108,7 +108,7 @@ Reverse-engineered from the Yo-yo work, the workflow is:
 prepare_meeting(audience, context, purpose)
   │
   ├─ Step 1: Pull all signal sources in parallel
-  │     Tracy: media + observations + notes + mental_profile + guru_interactions + parent_thread_history
+  │     Astra: media + observations + notes + mental_profile + guru_interactions + parent_thread_history
   │     Mira:  product_features + pricing + competitive + signal_proof_points + principal_persona + objection_library
   │
   ├─ Step 2: Filter the signal to what is relevant to the meeting purpose
@@ -116,7 +116,7 @@ prepare_meeting(audience, context, purpose)
   │     Discard noise (false-positive keyword matches like "resting hands")
   │
   ├─ Step 3: Synthesise into the working interpretation
-  │     Developmental lens (Tracy) or sales lens (Mira)
+  │     Developmental lens (Astra) or sales lens (Mira)
   │     Hold lightly, present as "what we believe", not "the diagnosis"
   │
   ├─ Step 4: Generate the literal script
@@ -136,13 +136,13 @@ Same six steps. Different data sources, different voice, different output templa
 
 ---
 
-## 2. What Tracy needs that she doesn't have today
+## 2. What Astra needs that she doesn't have today
 
 ### 2.1 Read-access to Guru analyses
 
-**Gap:** Tracy currently has no tool to query `montree_guru_interactions`. Session 97 reserved `consult_guru` as a tool name but never built it. The Yo-yo dossier's most powerful sections are quoted directly from Guru's analyses — Tracy must be able to do the same.
+**Gap:** Astra currently has no tool to query `montree_guru_interactions`. Session 97 reserved `consult_guru` as a tool name but never built it. The Yo-yo dossier's most powerful sections are quoted directly from Guru's analyses — Astra must be able to do the same.
 
-**Build:** New tool on Tracy.
+**Build:** New tool on Astra.
 
 ```typescript
 // lib/montree/tracy/tools/consult_guru.ts
@@ -173,7 +173,7 @@ Cross-pollination contract: query is scoped by `school_id = auth.schoolId` (alre
 
 ### 2.2 Read-access to the rich child settings JSONB
 
-**Gap:** `montree_children.settings` contains a goldmine — `guru_developmental_insights`, `guru_parent_states`, `guru_weekly_advice`, `guru_area_reasons`, `game_plan`. Tracy doesn't currently read this.
+**Gap:** `montree_children.settings` contains a goldmine — `guru_developmental_insights`, `guru_parent_states`, `guru_weekly_advice`, `guru_area_reasons`, `game_plan`. Astra doesn't currently read this.
 
 **Build:** Extend the existing `child_focus` tool to pull and parse the settings blob, surfacing structured fields:
 
@@ -226,7 +226,7 @@ The strict-phrase list is the same heuristic the Yo-yo `build_album.py` used to 
 
 ### 2.4 The dossier-builder tool itself
 
-**Gap:** The synthesising step is currently done by Sonnet in the chat conversation. For high-stakes meeting prep, Tracy needs a dedicated tool that calls a longer, more deliberate Sonnet prompt and returns a structured dossier.
+**Gap:** The synthesising step is currently done by Sonnet in the chat conversation. For high-stakes meeting prep, Astra needs a dedicated tool that calls a longer, more deliberate Sonnet prompt and returns a structured dossier.
 
 **Build:** `prepare_parent_meeting`.
 
@@ -272,7 +272,7 @@ export const preparePMeetingTool: TracyTool = {
 This is the substance of the Yo-yo dossier voice, codified. Drop into `lib/montree/tracy/prompts/parent_meeting_prep.ts`:
 
 ```
-You are Tracy, the principal's chief of staff. The principal has asked you to
+You are Astra, the principal's chief of staff. The principal has asked you to
 prepare them for a meeting with a parent. You have access to everything the
 school has documented about this child and this parent.
 
@@ -301,7 +301,7 @@ NEVER USE
 
 STRUCTURE
 Always produce these sections in this order:
-1. Tracy's note (1 paragraph, what the principal must know in one breath)
+1. Astra's note (1 paragraph, what the principal must know in one breath)
 2. The child (one-line bio + the asymmetry: what the parent thinks vs what
    the record shows)
 3. What we are observing (facts, dated, with specific counts)
@@ -420,7 +420,7 @@ export const preparePitchTool: MiraTool = {
   //      - opening_message (the literal message to send before the meeting)
   //      - what_to_demo (the 3-4 features that will land for THIS principal,
   //        with the demo sequence)
-  //      - the_pitch (opening / share / ask / close — same shape as Tracy's
+  //      - the_pitch (opening / share / ask / close — same shape as Astra's
   //        script but with sales-stage names)
   //      - probable_objections (3-4 most likely objections from THIS
   //        principal type + handlers)
@@ -460,7 +460,7 @@ PRINCIPLES
   ranges or anecdotes ("schools running this have reported…").
 - Always lead with the pain point you've been told about. If the principal
   is described as overworking teachers, lead with what relieves teacher
-  workload (the photo audit, weekly wrap auto-generation, Tracy).
+  workload (the photo audit, weekly wrap auto-generation, Astra).
 - For Chinese principals: explicitly note bilingual capability, Mandarin
   parent reports, and the 中文 demo. Do not English-pitch a Chinese principal.
 - For principals with no education background: emphasise that the
@@ -485,7 +485,7 @@ Always produce these sections in this order:
    for each)
 ```
 
-Same pattern as Tracy's prompt. Use Sonnet. Per-dossier cost ~$0.04–0.07.
+Same pattern as Astra's prompt. Use Sonnet. Per-dossier cost ~$0.04–0.07.
 
 ### 3.5 Mira tools, smaller utility level
 
@@ -507,7 +507,7 @@ These are useful in the back-and-forth of normal Mira chat. The big `prepare_pri
 
 ### 4.1 Output cache
 
-Both `prepare_parent_meeting` (Tracy) and `prepare_principal_pitch` (Mira) should cache results for 24 hours. The user opens the dossier the night before, may reopen it in the morning, may share it. Re-spending Sonnet tokens each time is waste.
+Both `prepare_parent_meeting` (Astra) and `prepare_principal_pitch` (Mira) should cache results for 24 hours. The user opens the dossier the night before, may reopen it in the morning, may share it. Re-spending Sonnet tokens each time is waste.
 
 ```typescript
 // lib/montree/dossier_cache.ts
@@ -529,13 +529,13 @@ Server-side Chrome via Playwright (lightweight, single dependency) or a headless
 async function renderHtmlToPdf(html: string, opts?: PdfOpts): Promise<Buffer>;
 ```
 
-Tracy and Mira both call it. The dossier-templating logic is shared — only the section content differs.
+Astra and Mira both call it. The dossier-templating logic is shared — only the section content differs.
 
 ### 4.3 The dossier UI surface
 
-In both `/montree/admin` (Tracy) and `/montree/agent` (Mira), add a "Prepare for…" button on the contextual surfaces:
+In both `/montree/admin` (Astra) and `/montree/agent` (Mira), add a "Prepare for…" button on the contextual surfaces:
 
-- Tracy: on each parent thread row, on each child page → "Prepare for a meeting with this parent"
+- Astra: on each parent thread row, on each child page → "Prepare for a meeting with this parent"
 - Mira: on each pending referral code, on each principal contact → "Prepare to pitch this principal"
 
 Click → modal asks for the 2–3 free-text context fields → fires the tool → renders the dossier inline + offers PDF download.
@@ -546,20 +546,20 @@ Click → modal asks for the 2–3 free-text context fields → fires the tool �
 
 Suggested order for a fresh agent picking this up. Each phase ships independently and is testable on its own.
 
-**Phase A — Tracy's data access (3 hours)**
+**Phase A — Astra's data access (3 hours)**
 1. Build `consult_guru` tool
 2. Extend `child_focus` to surface settings JSONB
 3. Build `detect_pattern` tool with the strict-phrase filter
-4. Wire all three into Tracy's tool registry
-5. Manual test: ask Tracy "tell me about Yo-yo's sleep pattern" — she should now find the same 9 events I found by hand
+4. Wire all three into Astra's tool registry
+5. Manual test: ask Astra "tell me about Yo-yo's sleep pattern" — she should now find the same 9 events I found by hand
 
-**Phase B — Tracy's `prepare_parent_meeting` (3 hours)**
+**Phase B — Astra's `prepare_parent_meeting` (3 hours)**
 1. Write the system prompt + worked example (from Yo-yo)
 2. Build the tool itself
 3. Add the dossier cache table + helpers
 4. Add the PDF renderer
 5. Surface "Prepare for…" button in `/montree/admin/communication/threads/[id]`
-6. Manual test: prepare Yo-yo dossier via Tracy. Compare to the hand-built one. If 80% match, ship.
+6. Manual test: prepare Yo-yo dossier via Astra. Compare to the hand-built one. If 80% match, ship.
 
 **Phase C — Mira's knowledge base (2 hours)**
 1. Write the 10 markdown knowledge files (most of the content is already in CLAUDE.md, the website, the existing pitch decks — assembly job, not generation)
@@ -572,7 +572,7 @@ Suggested order for a fresh agent picking this up. Each phase ships independentl
 2. Build the tool
 3. Wire into Mira's tool registry
 4. Surface "Prepare to pitch…" button in `/montree/agent/codes` or similar
-5. Manual test: prepare a pitch dossier for the principal described in this session (250 students, 15 classes, ChatGPT-over-staff, etc.). Should produce the same shape of artefact as Tracy's parent dossier, but for sales.
+5. Manual test: prepare a pitch dossier for the principal described in this session (250 students, 15 classes, ChatGPT-over-staff, etc.). Should produce the same shape of artefact as Astra's parent dossier, but for sales.
 
 **Phase E — Polish (2 hours)**
 1. i18n the dossier templates (start with EN + ZH — the two languages Tredoux's pipeline most often pitches in)
@@ -588,14 +588,14 @@ Total: ~13 hours focused.
 
 Add these to CLAUDE.md once the build ships, so future agents don't unwind them:
 
-1. **`consult_guru` is the canonical bridge between Tracy and Guru's historical analyses.** Don't query `montree_guru_interactions` directly from new Tracy code — use this tool.
+1. **`consult_guru` is the canonical bridge between Astra and Guru's historical analyses.** Don't query `montree_guru_interactions` directly from new Astra code — use this tool.
 2. **`detect_pattern` uses strict-phrase matching, not loose keyword matching.** The Yo-yo lesson: 20 keyword matches reduced to 9 true positives via phrase-list discipline. Lose the strict list and the dossier fills with noise.
 3. **`prepare_*_meeting` ALWAYS calls Sonnet, never Haiku.** This is the high-stakes deliberate output; cost is not the optimisation target.
 4. **`prepare_*_meeting` caches for 24h.** The user opens the dossier multiple times. Pay Sonnet once.
-5. **The dossier output template is canonical** (Tracy's note → child/principal profile → what we observe → working interpretation → script → what NOT to say → pushback → follow-up → sources). Sections may grow; their order doesn't change.
+5. **The dossier output template is canonical** (Astra's note → child/principal profile → what we observe → working interpretation → script → what NOT to say → pushback → follow-up → sources). Sections may grow; their order doesn't change.
 6. **"What NOT to say" is the dossier's secret weapon.** It is what makes the meeting feel professional rather than performative. Never drop this section to save tokens.
 7. **The "sources" appendix is mandatory.** It is what makes the user trust the synthesis. Listing counts (67 photos, 32 Guru sessions, etc.) costs nothing and is worth the trust it builds.
-8. **Tracy and Mira read MIRA_KNOWLEDGE from disk on each generation** — do not bake it into system prompts permanently, because product changes constantly and a stale prompt is worse than no prompt.
+8. **Astra and Mira read MIRA_KNOWLEDGE from disk on each generation** — do not bake it into system prompts permanently, because product changes constantly and a stale prompt is worse than no prompt.
 
 ---
 
@@ -603,7 +603,7 @@ Add these to CLAUDE.md once the build ships, so future agents don't unwind them:
 
 Two decisions I'd want confirmed before a fresh agent starts:
 
-1. **Should `prepare_parent_meeting` automatically detect when the parent is "difficult" and adjust the tone?** Right now I'm proposing it takes a `parent_context` free-text field where you say "unhinged, will fight any 'special' framing." Alternative: build a structured parent-state inference (we already have `guru_parent_states` in the child settings — Guru has been quietly assessing the parent's emotional posture). Tracy could read that and self-calibrate without you having to brief her. Cleaner — but inferred state can be wrong. My recommendation: support both. Free-text overrides inferred state.
+1. **Should `prepare_parent_meeting` automatically detect when the parent is "difficult" and adjust the tone?** Right now I'm proposing it takes a `parent_context` free-text field where you say "unhinged, will fight any 'special' framing." Alternative: build a structured parent-state inference (we already have `guru_parent_states` in the child settings — Guru has been quietly assessing the parent's emotional posture). Astra could read that and self-calibrate without you having to brief her. Cleaner — but inferred state can be wrong. My recommendation: support both. Free-text overrides inferred state.
 
 2. **Mira's dossier — should it draft the agent's commission disclosure?** Some principals will ask "what's in it for you?" The agent currently has to handle that off the cuff. The dossier could include a section "if she asks about your incentive, here's what to say." My recommendation: yes, in a way that makes the agent look more credible (the answer to "what's in it for you" is "I get a share — and that's why I have skin in the game on this working for your school"). But this is a judgement call you should make explicitly.
 
@@ -655,10 +655,10 @@ EXTENDED
 
 ## 9. What this unlocks once shipped
 
-Beyond the obvious (Tracy and Mira become dramatically more useful), this build is the **product moat** Montree has been quietly accumulating toward:
+Beyond the obvious (Astra and Mira become dramatically more useful), this build is the **product moat** Montree has been quietly accumulating toward:
 
 - Every other Montessori-platform competitor has photos + observations + parent comms. None of them turn those into a meeting-ready dossier. This is the first feature that **demonstrably makes the principal look more prepared than she would without us**. The Yo-yo dossier is exhibit A.
-- Once `prepare_parent_meeting` exists, every parent meeting in the school becomes a chance for Tracy to earn her keep. The principal who experiences this feature once will refuse to run a parent meeting without it.
+- Once `prepare_parent_meeting` exists, every parent meeting in the school becomes a chance for Astra to earn her keep. The principal who experiences this feature once will refuse to run a parent meeting without it.
 - Once `prepare_principal_pitch` exists, the agent program scales. New agents don't need product training — they need Mira. The barrier to becoming a Montree agent drops from "study the product for two weeks" to "log in, click prepare."
 
 That's worth the 13 hours.

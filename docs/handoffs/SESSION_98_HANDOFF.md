@@ -47,7 +47,7 @@ ON CONFLICT (school_id, feature_key) DO UPDATE SET enabled = true;
 
 5. **Parent messages flow into the SAME `montree_message_threads` tables as Session 97's Communication system.** No parallel schema. When a parent posts a thread, the principal sees it in `/montree/admin/communication` exactly as if a teacher drafted it. The principal is auto-added as observer per Session 96's transparency rule via `addPrincipalObserver()`.
 
-6. **Parents have NO AI drafting in v1.** The reply API forces `ai_drafted=false`, `approved_by_id=null`. Tracy's drafting tools belong to the principal. If we add parent-side AI later (e.g. translation help), it gets its own column / its own posture decision — never silently flipped on.
+6. **Parents have NO AI drafting in v1.** The reply API forces `ai_drafted=false`, `approved_by_id=null`. Astra's drafting tools belong to the principal. If we add parent-side AI later (e.g. translation help), it gets its own column / its own posture decision — never silently flipped on.
 
 7. **Hide-don't-delete on retired parent surfaces.** Milestones page stays on disk with a deprecation header at the top. Direct URLs still resolve. Future agents must not extend this page or surface it in any nav.
 
@@ -138,7 +138,7 @@ ON CONFLICT (school_id, feature_key) DO UPDATE SET enabled = true;
 | Reply CTA on Weekly Wrap report viewer ("Reply to teacher about this week") | Defer until parent_messaging flips ON for any school. Easy to add — small button in `/montree/parent/report/[reportId]` page that POSTs a new thread with the report context. |
 | Push notifications when parent gets a reply | Out of scope. Email triggers also deferred. |
 | Auto-translation of message bodies between locales | Both sides have LanguageToggle — sufficient for v1. |
-| Parent-side AI drafting (e.g. translation suggestions, "soften this") | Tracy belongs to the principal. Parents drafting with AI is a separate posture decision; defer. |
+| Parent-side AI drafting (e.g. translation suggestions, "soften this") | Astra belongs to the principal. Parents drafting with AI is a separate posture decision; defer. |
 | File attachments | Schema columns exist (`media_url`, `media_type`); UI doesn't expose. Defer until a school asks. |
 | i18n parity | New UI strings have inline English fallbacks via `t('key') || 'English'`. Run `npm run i18n:fill-ui` to backfill 11 other locales when ready. |
 | Photos page surfacing on dashboard | User explicitly excluded — dashboard stays report-only. |
@@ -273,10 +273,10 @@ To get a working principal code now: super admin → Schools row → click 👤 
 
 ## Tasks captured for next session
 
-- **#12 — Tracy proactivity fix** — system prompt change in `lib/montree/tracy/system-prompt.ts` so she drafts artifacts immediately instead of offering ("I can draft a welcome message for her right now"). User feedback during onboarding test: "she needs to write the message not tell me about it. Know what I need before I ask."
-- **#14 — Tracy 402 → Activate Tracy CTA** — currently the principal-agent route returns generic 402 error on Free tier. Should extend response with `requires_upgrade: true` so frontend renders an upgrade card with button leading to `/api/montree/billing/checkout` instead of a red error toast.
+- **#12 — Astra proactivity fix** — system prompt change in `lib/montree/tracy/system-prompt.ts` so she drafts artifacts immediately instead of offering ("I can draft a welcome message for her right now"). User feedback during onboarding test: "she needs to write the message not tell me about it. Know what I need before I ask."
+- **#14 — Astra 402 → Activate Astra CTA** — currently the principal-agent route returns generic 402 error on Free tier. Should extend response with `requires_upgrade: true` so frontend renders an upgrade card with button leading to `/api/montree/billing/checkout` instead of a red error toast.
 - **#15 — Missing admin.* i18n keys** — settings page calls `t('admin.*')` 31 times but `lib/montree/i18n/en.ts` has zero `admin.*` keys defined. Pre-existing bug. Settings page unusable until fixed.
-- **#18 — Uniform header pattern** — top-left identity → home, top-right ••• overflow menu containing Sign out. Tracy/Mira coexist with overflow menu (visible at top-right next to ••• icon). Apply across principal / agent / parent / teacher portals.
+- **#18 — Uniform header pattern** — top-left identity → home, top-right ••• overflow menu containing Sign out. Astra/Mira coexist with overflow menu (visible at top-right next to ••• icon). Apply across principal / agent / parent / teacher portals.
 - **#19 — Top-left identity clicks back to home** — clicking school/classroom/Montree-logo always routes to that role's home page. Standard web convention.
 
 ## Verification checklist for next session (Stripe test continuation)
@@ -298,7 +298,7 @@ User had to stop mid-test. Resume from:
    - Budget bumps to $9999/warn
    - Cache cleared
 8. Refresh super admin Schools list → Test School 2's pill should auto-flip Free → **Pro** (purple).
-9. Open Tracy in Test School 2 → she now responds (no more 402).
+9. Open Astra in Test School 2 → she now responds (no more 402).
 10. To test the cancel direction: in billing page, click "Manage billing in Stripe" → Customer Portal → Cancel subscription → return → super admin should auto-flip Pro → **Free** within seconds.
 
 ## Once test passes — flip to Live mode

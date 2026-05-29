@@ -162,7 +162,7 @@ You're out of the loop. The audit log still shows you what happened (`actor_role
 - ReferralsTab 📋 tax-form button + modal (30 min UI on top of B5 API)
 - Real Xero API calls in `scripts/sync-to-xero.mjs` (one-line flip after accountant)
 - Phase A operational setup (Xero account, accountant, env vars)
-- Mira + Tracy AI tool extensions (Phase 4.7 + 4.8)
+- Mira + Astra AI tool extensions (Phase 4.7 + 4.8)
 - Translation sweep (72 pages identified Session 108)
 - i18n batch for new agent/finance strings
 

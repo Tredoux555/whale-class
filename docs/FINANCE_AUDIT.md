@@ -265,7 +265,7 @@ Every `insertFinanceTx` call from webhook handlers uses `source_ref: '{event.id}
 
 - **Where:** `lib/montree/billing.ts:920-948`
 - **What:** When upsert of `ai_tier_haiku` or `ai_tier_sonnet` fails (DB hiccup, RLS misconfig, etc.), it logs `console.error` and continues. Caller has no idea the tier wasn't actually flipped. The school's `monthly_ai_budget_usd` ends up out of sync with the feature flags.
-- **Why it matters:** Real-money trial-to-paid conversion: principal pays $7/student → Stripe webhook → setSchoolAiTier called → ai_tier_haiku upsert fails (rare but possible) → Tracy stays gated (402 errors). Customer paid but can't use the product.
+- **Why it matters:** Real-money trial-to-paid conversion: principal pays $7/student → Stripe webhook → setSchoolAiTier called → ai_tier_haiku upsert fails (rare but possible) → Astra stays gated (402 errors). Customer paid but can't use the product.
 - **Repro:** Drop the RLS policy on `montree_school_features` temporarily. Trigger a subscription event. School billed but tier doesn't flip.
 - **Fix:** Either propagate the error up the stack (caller can capture-to-DLQ), or write a reconciliation cron that walks all `subscription_status='active'` schools and re-asserts their feature flags. Probably the latter — robust against transient DB issues.
 
@@ -475,7 +475,7 @@ These look like bugs at first glance but are deliberate architectural decisions:
 - **Race-safe customer + subscription creation.** Conditional UPDATE WHERE customer_id IS NULL, re-fetch on race-lose.
 - **Webhook fire-and-forget + DLQ.** 200 returned immediately. Handler errors go to deadletter for offline retry. Stripe retry storms can't form.
 - **Period-lock graceful degrade.** Migration-not-run → `42P01` → fail-open. The lock infrastructure can be deployed BEFORE the migration runs without breaking writes.
-- **AI tier auto-flip across all three rails.** Stripe webhook, alipay-paid, manual-wire-recorded all call `setSchoolAiTier('premium')`. Customer's Tracy access flips in lockstep with payment.
+- **AI tier auto-flip across all three rails.** Stripe webhook, alipay-paid, manual-wire-recorded all call `setSchoolAiTier('premium')`. Customer's Astra access flips in lockstep with payment.
 - **`ANNUAL_RECOGNITION_MODE` constant marked at the flip-point.** Switching to single-row recognition is one constant change, not a refactor.
 - **Calculator + aggregator race-safe.** Both use insert-then-update-on-23505 with re-read for paid/override locks.
 - **Manual-wire wire_ref is THE idempotency key.** Re-recording the same wire returns the existing record cleanly — no duplicate ledger row.

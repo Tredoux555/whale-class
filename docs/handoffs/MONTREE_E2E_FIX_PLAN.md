@@ -73,9 +73,9 @@ Each phase: **Goal · Items closed · Root cause · Approach · Likely files · 
   1. Establish ONE `TRIAL_DURATION_DAYS = 7` constant. Drive `school.trial_ends_at` (= `created_at + 7d`) from it.
   2. Stripe: align `trial_period_days` if a Stripe trial backs the subscription.
   3. Copy: "First month" / "Primer mes" → "Trial" / "Prueba" / "试用"; update the count; ES + ZH keys.
-  4. Tracy upsell copy on `/admin`, all "X days left" banners.
+  4. Astra upsell copy on `/admin`, all "X days left" banners.
   5. Email templates: welcome + trial-ending warnings re-timed to **T-3 / T-1 / T-0** (was geared to a long trial).
-- **Likely files:** trial constant module, school-creation route, `lib/montree/billing.ts` (Stripe), `app/montree/admin/billing/page.tsx`, Tracy fallback copy, email templates, i18n files.
+- **Likely files:** trial constant module, school-creation route, `lib/montree/billing.ts` (Stripe), `app/montree/admin/billing/page.tsx`, Astra fallback copy, email templates, i18n files.
 - **Audit:** 🔬 **Subagent audit** (Stripe + email timing are real-money / customer-facing — worth the extra eyes despite this being "config"). Verify a freshly created school gets `trial_ends_at == created_at + 7d`.
 - **Acceptance:** New school's billing card reads "Trial — 7 days left" in EN/ES/ZH; Stripe `trial_end` matches; trial-ending email fires at T-3/T-1/T-0.
 
@@ -108,12 +108,12 @@ Each phase: **Goal · Items closed · Root cause · Approach · Likely files · 
 
 ### Phase 6b — Wire hardcoded English to `t()` 🟠 HIGH (i18n batch)
 
-- **Items closed:** #10 (principal sidebar), #11 (whole pages: classrooms / communication / pulse / events), #12 (Tracy replies EN on ES + upsell card), #13 (login screen), #17 (setup-complete welcome).
+- **Items closed:** #10 (principal sidebar), #11 (whole pages: classrooms / communication / pulse / events), #12 (Astra replies EN on ES + upsell card), #13 (login screen), #17 (setup-complete welcome).
 - **Root cause:** Strings hardcoded, never wired to `t()` — "TYPE A" debt in CLAUDE.md's terms.
-- **Approach:** Wrap strings in `t()` keys; add ES + ZH copy (use the project's `npm run i18n:fill-ui` Haiku batch translator + the strict parity pre-commit hook). For Tracy (#12): pass the active locale into the LLM call as a system instruction, and localize the static upsell card.
-- **Likely files:** admin sidebar/drawer, the four `/admin/*` pages, `/montree/login` + `/login-select`, Tracy route + upsell component, signup-wizard final step, all 12 locale files.
+- **Approach:** Wrap strings in `t()` keys; add ES + ZH copy (use the project's `npm run i18n:fill-ui` Haiku batch translator + the strict parity pre-commit hook). For Astra (#12): pass the active locale into the LLM call as a system instruction, and localize the static upsell card.
+- **Likely files:** admin sidebar/drawer, the four `/admin/*` pages, `/montree/login` + `/login-select`, Astra route + upsell component, signup-wizard final step, all 12 locale files.
 - **Audit:** Lint + i18n strict parity check (must pass — it's a pre-commit gate). Self-review screenshot pass in ES + ZH.
-- **Acceptance:** No English on these surfaces when locale = ES or ZH (brand names excepted); Tracy replies in the active locale.
+- **Acceptance:** No English on these surfaces when locale = ES or ZH (brand names excepted); Astra replies in the active locale.
 
 ### Phase 6c — i18n polish 🟡 MEDIUM
 
@@ -124,7 +124,7 @@ Each phase: **Goal · Items closed · Root cause · Approach · Likely files · 
 
 ### Phase 7 — UI polish + the login-code security decision 🟡 LOW
 
-- **Items closed:** #23 (login code = referral code — pending Tredoux's decision, see §4), #24 (saved note needs reload — mutate local cache on save), #26 (feature page styling), #27 (Tracy upsell card not styled as a Tracy message).
+- **Items closed:** #23 (login code = referral code — pending Tredoux's decision, see §4), #24 (saved note needs reload — mutate local cache on save), #26 (feature page styling), #27 (Astra upsell card not styled as a Astra message).
 - **Audit:** Lint + self-review.
 - **Acceptance:** Per item.
 
@@ -232,9 +232,9 @@ Phases 0–6a were executed in this session. Every changed file is lint-clean (0
 **Precise spec for the 6b/6c session:**
 1. **#10 sidebar** — `app/montree/admin/layout.tsx` (already `'use client'`, already imports nothing i18n). Add `useI18n`, replace the `NAV` label literals (`Today`, `Classrooms`, `Communication`, `Settings`, `Calendar`, `Events`, `Parent Meetings`, `Conversations`) + `Sign out` + the `PRINCIPAL` header with `t()` keys (`adminNav.*`). ~11 keys.
 2. **#11 four pages** — `app/montree/admin/{classrooms,communication,pulse,events}/page.tsx`. Every title/subtitle/card/tab/empty-state/CTA → `t()`. Largest item, ~120 keys. Namespaces `admin.classrooms.*` etc.
-3. **#12 Tracy EN-on-ES** — verified NOT a separate bug: `/admin/page.tsx` already sends `locale` and `principal-agent/route.ts` already passes it to `buildTracySystemPrompt`. It surfaced EN only because the locale wasn't active on `/admin` — resolved by the Phase 6a sync + cookie seed. No code change needed; just verify.
+3. **#12 Astra EN-on-ES** — verified NOT a separate bug: `/admin/page.tsx` already sends `locale` and `principal-agent/route.ts` already passes it to `buildTracySystemPrompt`. It surfaced EN only because the locale wasn't active on `/admin` — resolved by the Phase 6a sync + cookie seed. No code change needed; just verify.
 4. **#13 login** — `/montree/login` + `/montree/login-select` → `t()`. ~8 keys.
-5. **#17** — setup-wizard final-step Tracy welcome message in user locale.
+5. **#17** — setup-wizard final-step Astra welcome message in user locale.
 6. **6c polish** — #14 teacher drawer leftovers, #15 parent-chats mixed locale, #16 ICU plurals (`{count, plural, …}`), #18 work-title consistency, #19 billing fine-print, #21 features raw-slug headers. PLUS: the 12 trial-copy keys in the **9 non-EN/ZH/ES locales** still say "first month" (Phase 3 carry-over).
    - Workflow: add all keys to `en.ts`, mirror into the other 11 files, run `npm run i18n:fill-ui`, then `npm run i18n:check` (strict — it's a pre-commit gate).
 

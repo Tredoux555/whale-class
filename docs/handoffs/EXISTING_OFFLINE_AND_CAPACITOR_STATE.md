@@ -182,10 +182,10 @@ The apps are SCAFFOLDED and BUILD. Unknown: are they SUBMITTED to Google Play or
 
 ### 6. AI offline graceful degradation
 
-Tracy, Mira, Guru, photo-identification, weekly-wrap all require network. When offline:
+Astra, Mira, Guru, photo-identification, weekly-wrap all require network. When offline:
 
 - Photo identification: currently the queued photo gets uploaded eventually, then identification fires server-side. ALREADY DEGRADES OK because the queue handles it.
-- Tracy / Mira chat: would just hang or 503 with the network error. Needs UI handling — surface "Tracy can't reach the server right now — try again when you're back online" instead of a generic error.
+- Astra / Mira chat: would just hang or 503 with the network error. Needs UI handling — surface "Astra can't reach the server right now — try again when you're back online" instead of a generic error.
 - Weekly wrap: usually triggered manually, can fail clean.
 
 Minor polish work — 2-3 hours across all AI surfaces. Not blocking anything.

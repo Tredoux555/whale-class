@@ -4,8 +4,8 @@
 //
 // GET  — list messages in this thread
 // POST — Tredoux sends a message. ai_drafted/approved_by_id fields preserved
-//        for future Tracy-assisted draft support; currently always
-//        ai_drafted=false (set true only when Tracy drafts).
+//        for future Astra-assisted draft support; currently always
+//        ai_drafted=false (set true only when Astra drafts).
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
@@ -67,7 +67,7 @@ export async function GET(
 interface SendBody {
   body?: string;
   /**
-   * Optional — set true when Tracy drafted this message and Tredoux approved
+   * Optional — set true when Astra drafted this message and Tredoux approved
    * it. ai_draft_source can carry the tool name (e.g. 'tracy.draft_agent_reply').
    * Both default to false / null.
    */

@@ -1,6 +1,6 @@
 // lib/montree/tracy/tool-executor.ts
 //
-// Tracy's tool dispatch. Called from the principal-agent SSE route inside the
+// Astra's tool dispatch. Called from the principal-agent SSE route inside the
 // Sonnet tool-use loop. Returns { success, data?, error?, result_summary? }.
 //
 // SCHOOL-SCOPING CONTRACT (load-bearing — see Session 84 architectural rules):
@@ -62,7 +62,7 @@ export interface TracyToolResult {
 
 /**
  * Per-tool progress event emitted by framework tools (child_focus,
- * unpack_teacher) so the principal sees what Tracy is doing in real time.
+ * unpack_teacher) so the principal sees what Astra is doing in real time.
  * The route serializes this onto the SSE channel as a `tool_progress` event;
  * the client formats it via `tracy.progress.<phase>` i18n keys with `vars`
  * interpolated.
@@ -148,13 +148,13 @@ export async function executeTracyTool(
     const data = await res.json();
     return { ok: true as const, status: res.status, data };
   };
-  // Internal mutation helpers — used by Tracy's ACTION tools. Forward the
+  // Internal mutation helpers — used by Astra's ACTION tools. Forward the
   // principal's cookie so each inner endpoint re-verifies via
   // verifySchoolRequest + does its own school-scoping + consent-gating
-  // (defense in depth). Tracy never bypasses the inner endpoint's auth.
+  // (defense in depth). Astra never bypasses the inner endpoint's auth.
   //
   // 🚨 Hard 30s timeout via AbortController. Without this, a slow inner
-  // route could block the SSE response indefinitely — Tracy would appear
+  // route could block the SSE response indefinitely — Astra would appear
   // hung to the principal with no error surfaced.
   const INTERNAL_TIMEOUT_MS = 30_000;
   const internalPost = async (path: string, body: Record<string, unknown>) => {
@@ -323,7 +323,7 @@ export async function executeTracyTool(
       // (answer_about_child removed — subsumed by child_focus, which handles
       // resolution + context + composition in one call. The
       // /api/montree/admin/parent-question route still exists and is used by
-      // the deep-link child page; Tracy just doesn't call it via tool anymore.)
+      // the deep-link child page; Astra just doesn't call it via tool anymore.)
 
       case 'list_classrooms_with_summary': {
         const { data: classrooms, error: cErr } = await supabase
@@ -429,7 +429,7 @@ export async function executeTracyTool(
 
         const ids = threads.map((t) => t.id);
         // 🚨 Session 121 — pull encryption_version so we decrypt body
-        // before Tracy (Opus) sees it. Tracy must never see ciphertext.
+        // before Astra (Opus) sees it. Astra must never see ciphertext.
         const { data: lastMsgs } = await supabase
           .from('montree_thread_messages')
           .select('thread_id, body, encryption_version, sender_role, sender_name, sent_at')
@@ -624,7 +624,7 @@ export async function executeTracyTool(
             // Keep this template in lockstep with sendEmailToTeacher() in
             // app/montree/admin/classrooms/[classroomId]/page.tsx. Both paths
             // produce the same welcome — feels like one product whether the
-            // principal sends from the classroom row or asks Tracy to draft.
+            // principal sends from the classroom row or asks Astra to draft.
             const messageText =
               `Hi ${firstName},\n\n` +
               `Welcome to ${schoolName}'s classroom system. Your login code for Montree is ${t.login_code}.\n\n` +
@@ -735,7 +735,7 @@ export async function executeTracyTool(
       }
 
       // ── MEMORY: remember_this ────────────────────────────────────
-      // Tracy decides what's worth remembering across conversations.
+      // Astra decides what's worth remembering across conversations.
       // Validation happens in writeMemory() — invalid input returns
       // ok=false rather than throwing.
       case 'remember_this': {
@@ -808,7 +808,7 @@ export async function executeTracyTool(
           filters.query = input.query.trim();
         }
         const memories = await recallMemories(supabase, principalId, filters, 20);
-        // Fire-and-forget reference bump — Tracy doesn't wait. Pass
+        // Fire-and-forget reference bump — Astra doesn't wait. Pass
         // principalId so the bump uses the migration 212 RPC fast path
         // (1 round-trip) instead of the legacy N+1 fallback.
         if (memories.length > 0) {
@@ -828,7 +828,7 @@ export async function executeTracyTool(
       }
 
       // ── DOSSIER PREP: consult_guru ───────────────────────────────
-      // Session 133 — Tracy → Guru bridge. School-scoped via deps.schoolId,
+      // Session 133 — Astra → Guru bridge. School-scoped via deps.schoolId,
       // re-verified inside consultGuru() as belt-and-braces.
       case 'consult_guru': {
         const childId = String(input.child_id || '').trim();
@@ -962,7 +962,7 @@ export async function executeTracyTool(
         };
       }
 
-      // ── PARENT TOOLS (Ultimate Tracy Phase A — migration 238) ────
+      // ── PARENT TOOLS (Ultimate Astra Phase A — migration 238) ────
       // Parents as first-class entities. School-scoped via deps.schoolId.
       // Defensive: every query joins via parent_id → montree_parents row
       // whose school_id MUST match deps.schoolId.
@@ -990,7 +990,7 @@ export async function executeTracyTool(
           };
         }
 
-        // Step 2: load child links so Tracy can reference them by name.
+        // Step 2: load child links so Astra can reference them by name.
         const { data: junctionRows } = await supabase
           .from('montree_parent_children')
           .select('child_id')
@@ -1129,7 +1129,7 @@ export async function executeTracyTool(
         };
       }
 
-      // ── CORPUS (Ultimate Tracy Phase C) ──────────────────────────
+      // ── CORPUS (Ultimate Astra Phase C) ──────────────────────────
       case 'search_corpus': {
         const query = String(input.query || '').trim();
         if (!query) {
@@ -1170,7 +1170,7 @@ export async function executeTracyTool(
         };
       }
 
-      // ── ACTION TOOLS (Ultimate Tracy v2) ─────────────────────────
+      // ── ACTION TOOLS (Ultimate Astra v2) ─────────────────────────
       // The principal's voice command IS the trigger pull. Each tool
       // forwards her cookie to the inner endpoint, which re-verifies
       // school + role + cross-pollination (defense in depth).
@@ -1270,7 +1270,7 @@ export async function executeTracyTool(
           return { success: false, error: 'no thread id resolved' };
         }
 
-        // 5. Post the message AS Tracy-drafted on principal's behalf.
+        // 5. Post the message AS Astra-drafted on principal's behalf.
         const sendRes = await internalPost(
           `/api/montree/messages/threads/${threadId}/messages`,
           {
@@ -1491,7 +1491,7 @@ export async function executeTracyTool(
       }
 
       // ── KNOWLEDGE: consult_tracy_knowledge ───────────────────────
-      // Session 136 — load one knowledge file in full so Tracy can
+      // Session 136 — load one knowledge file in full so Astra can
       // synthesize a chat reply with framework depth. No school
       // scoping (knowledge is universal — same content for every
       // principal at every school).

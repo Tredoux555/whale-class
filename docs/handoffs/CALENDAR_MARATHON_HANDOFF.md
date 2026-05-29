@@ -90,7 +90,7 @@ runs:
   "Attendance: 87%" stat — left for a focused follow-up if needed.
 - **Super-admin + billing adapters.** Operational surfaces with their own
   canonical pages; can register as sources later when there's signal.
-- **Tracy tool wiring.** Tracy (principal AI) could gain a `summarise_calendar(from, to)`
+- **Astra tool wiring.** Astra (principal AI) could gain a `summarise_calendar(from, to)`
   tool that wraps the summary route — easy follow-up, not in this build.
 - **Push to GitHub/Railway.** Commits land on local `main`; user pushes
   when ready.

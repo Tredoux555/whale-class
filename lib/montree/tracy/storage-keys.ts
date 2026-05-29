@@ -1,6 +1,6 @@
 // lib/montree/tracy/storage-keys.ts
 //
-// Tracy's localStorage / sessionStorage key namespacing. Every Tracy state
+// Astra's localStorage / sessionStorage key namespacing. Every Astra state
 // key is scoped by school_id so logging into different schools on the same
 // browser never bleeds conversations between them.
 //

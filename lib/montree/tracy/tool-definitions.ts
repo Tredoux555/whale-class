@@ -1,6 +1,6 @@
 // lib/montree/tracy/tool-definitions.ts
 //
-// Tracy's tool surface. Read-only by design (v1).
+// Astra's tool surface. Read-only by design (v1).
 //
 // Tools fall into two tiers:
 //
@@ -14,7 +14,7 @@
 //     - list_classrooms_with_summary — school-wide classroom view
 //     - list_teachers_with_summary   — school-wide teacher view
 //
-// Tracy's PRIMARY path for any question naming a specific child is
+// Astra's PRIMARY path for any question naming a specific child is
 // child_focus — single tool, single failure surface, end-to-end answer
 // (Haiku parses the question, direct DB resolves the child + fetches context,
 // Sonnet composes a grounded answer). The chained-tool path
@@ -24,7 +24,7 @@
 //
 // Future: synthesize_parent_answer (parent-conversation framing layer over
 // child_focus), family_context, school_pulse, recent_conversations,
-// consult_guru (Tracy → Guru bridge). Build them as Tracy proves out — only
+// consult_guru (Astra → Guru bridge). Build them as Astra proves out — only
 // after we see them in real principal questions (montree_principal_agent_log).
 
 import type { Tool } from '@anthropic-ai/sdk/resources/messages';
@@ -117,10 +117,10 @@ export const TRACY_TOOLS: Tool[] = [
   },
 
   // ── COMMUNICATION TOOLS ──────────────────────────────────────────────
-  // Session 97 — Tracy scans parent threads and drafts principal replies.
+  // Session 97 — Astra scans parent threads and drafts principal replies.
   // The principal always pulls the trigger; these tools READ + DRAFT only.
   // Sending a drafted reply is done by the principal in the thread UI
-  // (with the ai_drafted indicator). Tracy never sends autonomously.
+  // (with the ai_drafted indicator). Astra never sends autonomously.
   {
     name: 'list_recent_threads',
     description:
@@ -235,7 +235,7 @@ export const TRACY_TOOLS: Tool[] = [
   {
     name: 'prepare_parent_meeting',
     description:
-      "Produce a complete pre-meeting dossier for a parent conversation. CALL ONLY when the principal has explicitly asked for help preparing for a SPECIFIC parent meeting — phrases like 'help me prepare for Yo-yo's mum tomorrow', 'pull together a dossier on X', 'I'm meeting [parent] about [child]'. Calls child_focus + consult_guru + detect_pattern internally — DO NOT call those separately first; this tool orchestrates them. Output is a structured Markdown dossier the principal reads once the night before and walks into the meeting prepared (Tracy's note, child profile, what we're observing, working interpretation, parent context, conversation script, what NOT to say, pushback handlers, follow-up plan, sources). Result is cached for 24h so the principal can re-open without re-spending Sonnet tokens. Cost ~$0.05 per dossier — high-stakes deliberate call, never Haiku.",
+      "Produce a complete pre-meeting dossier for a parent conversation. CALL ONLY when the principal has explicitly asked for help preparing for a SPECIFIC parent meeting — phrases like 'help me prepare for Yo-yo's mum tomorrow', 'pull together a dossier on X', 'I'm meeting [parent] about [child]'. Calls child_focus + consult_guru + detect_pattern internally — DO NOT call those separately first; this tool orchestrates them. Output is a structured Markdown dossier the principal reads once the night before and walks into the meeting prepared (Astra's note, child profile, what we're observing, working interpretation, parent context, conversation script, what NOT to say, pushback handlers, follow-up plan, sources). Result is cached for 24h so the principal can re-open without re-spending Sonnet tokens. Cost ~$0.05 per dossier — high-stakes deliberate call, never Haiku.",
     input_schema: {
       type: 'object',
       properties: {
@@ -262,7 +262,7 @@ export const TRACY_TOOLS: Tool[] = [
   },
 
   // ── MEMORY TOOLS (Session 99 — migration 195) ────────────────────────
-  // Tracy's persistent relational memory. The active set (top-30 most recent)
+  // Astra's persistent relational memory. The active set (top-30 most recent)
   // is loaded into the system prompt header on every turn. These tools let
   // her WRITE new memories and DEEPER-recall when the header isn't enough.
   {
@@ -336,7 +336,7 @@ export const TRACY_TOOLS: Tool[] = [
   },
 
   // ── KNOWLEDGE TOOL: consult_tracy_knowledge ──────────────────────────
-  // Session 136 — Tracy's psychological knowledge base, loaded from disk
+  // Session 136 — Astra's psychological knowledge base, loaded from disk
   // (lib/montree/tracy/knowledge/*.md). The compact summary is in the
   // system prompt every turn; this tool pulls the FULL content of one
   // specific topic when chat needs depth. Read-only. No school-scoping
@@ -367,9 +367,9 @@ export const TRACY_TOOLS: Tool[] = [
     },
   },
 
-  // ── PARENT TOOLS (Ultimate Tracy Phase A — migration 238) ────────────
+  // ── PARENT TOOLS (Ultimate Astra Phase A — migration 238) ────────────
   // Parents become first-class entities with structured psychological
-  // profiles. Tracy can answer "tell me about Mrs Chen" with substance
+  // profiles. Astra can answer "tell me about Mrs Chen" with substance
   // — archetypes, cultural register, triggers to avoid, moves that land.
   {
     name: 'get_parent_profile',
@@ -401,14 +401,14 @@ export const TRACY_TOOLS: Tool[] = [
     },
   },
 
-  // ── CORPUS TOOL (Ultimate Tracy Phase C — migration 242) ─────────────
-  // Tracy's self-improving brain. Every analysed meeting feeds school-
+  // ── CORPUS TOOL (Ultimate Astra Phase C — migration 242) ─────────────
+  // Astra's self-improving brain. Every analysed meeting feeds school-
   // specific insights into the corpus; semantic retrieval surfaces them
   // when relevant.
   {
     name: 'search_corpus',
     description:
-      "Retrieve school-specific insights Tracy has learned over time from analysed parent meetings. Use BEFORE drafting any parent response, preparing for a meeting, or answering 'what's worked with [parent] before?' / 'what should I avoid with [archetype] parents at our school?' / 'have we had this kind of meeting before?'. Returns up to 8 entries above similarity threshold, each with insight_text + insight_type + source_meeting_id + confidence + similarity. Optional archetype filter narrows to one archetype.",
+      "Retrieve school-specific insights Astra has learned over time from analysed parent meetings. Use BEFORE drafting any parent response, preparing for a meeting, or answering 'what's worked with [parent] before?' / 'what should I avoid with [archetype] parents at our school?' / 'have we had this kind of meeting before?'. Returns up to 8 entries above similarity threshold, each with insight_text + insight_type + source_meeting_id + confidence + similarity. Optional archetype filter narrows to one archetype.",
     input_schema: {
       type: 'object',
       properties: {
@@ -432,16 +432,16 @@ export const TRACY_TOOLS: Tool[] = [
     },
   },
 
-  // ── ACTION TOOLS: principal's agent (Ultimate Tracy v2) ──────────────
+  // ── ACTION TOOLS: principal's agent (Ultimate Astra v2) ──────────────
   // The principal's VOICE COMMAND is the trigger pull. When she explicitly
-  // asks Tracy to send / schedule / update something, Tracy acts. Each tool
+  // asks Astra to send / schedule / update something, Astra acts. Each tool
   // is school-scoped + principal-only and goes through the inner endpoint's
   // own auth + validation (defense in depth). Locale flows through so
   // messages land in the right language.
   {
     name: 'send_parent_message',
     description:
-      "Send a message to a parent on the principal's behalf. CALL when she says ANYTHING like 'send Mrs Chen a message saying...', 'tell [parent] that...', 'message [parent] about [topic]', 'let [parent] know...'. The message is sent AS the principal with 'Tracy drafted' indicator. Auto-creates a parent_teacher thread (with the child's lead teacher) if none exists, otherwise replies in the most recent thread. Voice + locale matched: if the principal speaks in Mandarin, the body lands in Mandarin. Requires parent_id (call list_parents_for_school first if you only have a name) and body. Optional child_id narrows the thread; otherwise picks the parent's first linked child.",
+      "Send a message to a parent on the principal's behalf. CALL when she says ANYTHING like 'send Mrs Chen a message saying...', 'tell [parent] that...', 'message [parent] about [topic]', 'let [parent] know...'. The message is sent AS the principal with 'Astra drafted' indicator. Auto-creates a parent_teacher thread (with the child's lead teacher) if none exists, otherwise replies in the most recent thread. Voice + locale matched: if the principal speaks in Mandarin, the body lands in Mandarin. Requires parent_id (call list_parents_for_school first if you only have a name) and body. Optional child_id narrows the thread; otherwise picks the parent's first linked child.",
     input_schema: {
       type: 'object',
       properties: {
@@ -538,7 +538,7 @@ export const TRACY_TOOLS: Tool[] = [
   // not having codes, needing to be onboarded, needing welcome messages,
   // or being told to log in. NEVER offer first. The principal is paying
   // per-message in real money — every turn she has to repeat herself
-  // because Tracy offered instead of acted is wasted budget.
+  // because Astra offered instead of acted is wasted budget.
   {
     name: 'draft_teacher_welcome_messages',
     description:

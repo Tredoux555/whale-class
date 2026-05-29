@@ -57,8 +57,8 @@ Architecture rule violation otherwise rare — most routes use `.maybeSingle()` 
 
 Spot-checked 5 PATCH/POST routes. **Stripe webhook (`billing/webhook/route.ts:95`) correctly fires the handler chain in a `void (async () => {…})()` IIFE** with idempotency keys + DLQ capture — exactly the Session 100 architectural rule. **`photo-audit/resolve/route.ts` fires `enrichCustomWorkInBackground()` correctly fire-and-forget.** **`progress/update/route.ts` IIFEs (Session 83 rule #74) preserved.**
 
-### MED-3 — Tracy scan-thread + draft-response don't log to `montree_principal_agent_log` async
-Both `admin/tracy/scan-thread/route.ts` and `admin/tracy/draft-response/route.ts` complete the Opus call inline. Audit/log writes (if any) need to be fire-and-forget — verify in a focused read. The current implementations probably do this correctly but Session 100 architectural rule warrants a spot-check during a slow-Tracy investigation.
+### MED-3 — Astra scan-thread + draft-response don't log to `montree_principal_agent_log` async
+Both `admin/tracy/scan-thread/route.ts` and `admin/tracy/draft-response/route.ts` complete the Opus call inline. Audit/log writes (if any) need to be fire-and-forget — verify in a focused read. The current implementations probably do this correctly but Session 100 architectural rule warrants a spot-check during a slow-Astra investigation.
 
 ---
 
@@ -74,7 +74,7 @@ Both query `montree_api_usage` for cost aggregation. `montree_api_usage` grows ~
 `montree_finance_transactions` SELECT without explicit `.limit()`. Acceptable for current ~1K row table; revisit at ~100K.
 
 ### LOW-2 — `messages/threads/route.ts`, `messages/broadcast/route.ts`, `admin/tracy/scan-thread/route.ts` — unbounded `montree_thread_messages`
-The Tracy scan reads a single thread by `thread_id` (bounded by thread). Broadcast iterates participants. Acceptable for now; if any school reaches 10K+ messages on a single thread, scan-thread will OOM the prompt budget.
+The Astra scan reads a single thread by `thread_id` (bounded by thread). Broadcast iterates participants. Acceptable for now; if any school reaches 10K+ messages on a single thread, scan-thread will OOM the prompt budget.
 
 ---
 
@@ -151,4 +151,4 @@ The CRON's `recurring/run` correctly checks `isPeriodClosed`, but **manual CRUD 
 4. **HIGH-1 / HIGH-2** — Sweep `guru/followup/route.ts` lines 38-50 and `guru/work-guide/route.ts` lines 83/91 from `.single()` → `.maybeSingle()`. New custom works will 0-row these queries and currently throw + log noise.
 5. **MED-4** — Bound `agent/earnings/route.ts` and `agent/schools/[id]/route.ts` `montree_api_usage` SELECTs by date range. Future-proofs the agent dashboard against 12-month growth.
 
-**Not in this audit (recommended next pass):** `stripe/connect-webhook/route.ts` idempotency verification, Tracy/Mira logging IIFE check, full `.single()` → `.maybeSingle()` sweep across all 180 sites.
+**Not in this audit (recommended next pass):** `stripe/connect-webhook/route.ts` idempotency verification, Astra/Mira logging IIFE check, full `.single()` → `.maybeSingle()` sweep across all 180 sites.

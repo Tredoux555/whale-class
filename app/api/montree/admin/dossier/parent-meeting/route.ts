@@ -1,6 +1,6 @@
 // /api/montree/admin/dossier/parent-meeting/route.ts
 //
-// Session 133 — Tracy's parent-meeting dossier endpoint.
+// Session 133 — Astra's parent-meeting dossier endpoint.
 //
 // PRINCIPAL-ONLY. Free-tier schools get 402.
 //

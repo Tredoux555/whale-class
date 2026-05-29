@@ -278,7 +278,7 @@ If any exist, log in as Teacher A and confirm Teacher B's last reply renders as 
 11. **The telemetry endpoint is auth-free by design** — we want metrics from anonymous visitors too. Don't add auth without a discussion.
 12. **All Web Vitals payload fields from the client are untrusted** — used for analytics slicing only, never for authorization gates.
 13. **`last_sender_is_me` is the canonical "You" signal on thread list rows** — never use `last_sender_role === '<my role>'` because it mislabels any same-role participant as the caller. Server computes by comparing `sender_id` to the authenticated userId/parentId.
-14. **Tracy's `scan_threads` tool builds its own anonymous shape** (not `ThreadListItem`) and intentionally only exposes role + name to Sonnet — not `is_me`. AI tools don't need a "You" signal; they should refer to participants by name.
+14. **Astra's `scan_threads` tool builds its own anonymous shape** (not `ThreadListItem`) and intentionally only exposes role + name to Sonnet — not `is_me`. AI tools don't need a "You" signal; they should refer to participants by name.
 15. **Both `/api/montree/messages/threads` AND `/api/montree/parent/messages/threads` are canonical sources of `ThreadListItem`.** Any field added to the type MUST be populated by both routes. The parent route uses `parent.parentId` (from `resolveMessagingParent`), the unified route uses `auth.userId` (from `verifySchoolRequest`).
 16. **`.tsbuildinfo` incremental cache will mask type errors** when imported module shapes change. Force `rm tsconfig.tsbuildinfo && npx tsc --noEmit` from a clean state to verify type-shape changes. `next build` also gates on `typescript.ignoreBuildErrors` which is `true` for this project — type errors don't fail the deploy.
 

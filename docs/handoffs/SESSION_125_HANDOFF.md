@@ -40,7 +40,7 @@ Found via the overnight encryption audit (otherwise clean — no ciphertext leak
 - Safe-area insets on the principal mobile nav + drawer, the Agora video-call top/bottom bars (controls were obscured by the notch / home indicator during live calls), and the parent-chats sticky header.
 - `QuickSetAppointmentModal` inputs 14px → 16px (iOS zoom-on-focus).
 - Parent reschedule hardening: attach host rows to the new appointment BEFORE cancelling the old one, with rollback on failure — a host-attach failure no longer strands the parent with a cancelled-old + un-joinable-new pair.
-- `100vh → 100dvh` across the parent platform + all messaging surfaces + the Mira/Tracy float panels (19 files) — content was hiding behind mobile-Safari browser chrome.
+- `100vh → 100dvh` across the parent platform + all messaging surfaces + the Mira/Astra float panels (19 files) — content was hiding behind mobile-Safari browser chrome.
 
 ### F. i18n — the new feature set is now translatable (`ef07ad0c`, `72702638`)
 
@@ -62,7 +62,7 @@ Every customer-facing page across all 4 platforms — plus the public funnel + l
 ## Architectural rules locked in this session
 
 - **`ClassEnglishHeatmap` destructures `kids`** — never reference bare `children` inside it.
-- **The AI assistant float (Mira / Tracy) is TOP-RIGHT on every screen and platform.** Nav controls never share the top-right corner; the agent-nav hamburger lives on the left.
+- **The AI assistant float (Mira / Astra) is TOP-RIGHT on every screen and platform.** Nav controls never share the top-right corner; the agent-nav hamburger lives on the left.
 - **Transcription pipeline resolves the encryption decision once** and the transcript write clears any stale summary + re-stamps `encryption_version` — every row's encrypted columns always share one version.
 - **`TFn` must be `ReturnType<typeof useI18n>['t']`** — never a loose `(key: string) => string` (function-parameter contravariance error).
 - **Every customer-facing page has a top-left home affordance + a `LanguageToggle`.** Shared chrome carries it where possible: `DashboardHeader` (teacher), `admin/layout.tsx` (principal), `AgentNav` (agent). Parent + public pages carry it per-page.
@@ -87,5 +87,5 @@ Every customer-facing page across all 4 platforms — plus the public funnel + l
 1. **`demo/*` pages + super-admin** — not swept for home-link/toggle (internal/demo, deferred). Easy follow-up if wanted.
 2. **Duplicate-key cleanup** in `en.ts` + locale files — dedicated pass.
 3. **i18n the library tool pages + remaining teacher surfaces** — the toggle is present everywhere; tool/curriculum page bodies are still English.
-4. Carry-overs from Session 124: stale-lesson flag on the English Progression tab; weave reading position into the AI weekly-wrap *narrative prose* (currently a separate card); Stage A Agora activation; Mira → Tracy super-admin scope.
+4. Carry-overs from Session 124: stale-lesson flag on the English Progression tab; weave reading position into the AI weekly-wrap *narrative prose* (currently a separate card); Stage A Agora activation; Mira → Astra super-admin scope.
 5. Outreach follow-ups — FAMM Argentina, Cambridge Montessori Global, Otari NZ, Lions Gate, Montessori Norge.

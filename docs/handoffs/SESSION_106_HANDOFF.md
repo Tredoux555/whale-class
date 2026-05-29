@@ -1,6 +1,6 @@
 # Session 106 Handoff — May 12, 2026
 
-**Theme:** Tracy 402 universal rollout + sonnet chips + agent mobile polish + parent theme audit + bulk-reply stale demo leads. **Plus a complete Stripe Connect activation playbook** ready for Tredoux to walk through.
+**Theme:** Astra 402 universal rollout + sonnet chips + agent mobile polish + parent theme audit + bulk-reply stale demo leads. **Plus a complete Stripe Connect activation playbook** ready for Tredoux to walk through.
 
 **0 commits pushed yet** — everything in working tree, ready for `git add . && git commit && git push` after Tredoux reviews. **No SQL.** All migrations through 201 remain run (last confirmed Session 105).
 
@@ -12,7 +12,7 @@
 
 | # | Workstream | Files | Scope |
 |---|---|---|---|
-| 1 | **Tracy 402 pattern universally applied** | 14 server routes + 11 client surfaces + 1 new shared component + 27 i18n keys × 12 locales = 324 translations | Architectural rule #29 fully realised. Every paid AI feature renders the warm UpgradeCard instead of a red error toast on a free-tier school's tap. |
+| 1 | **Astra 402 pattern universally applied** | 14 server routes + 11 client surfaces + 1 new shared component + 27 i18n keys × 12 locales = 324 translations | Architectural rule #29 fully realised. Every paid AI feature renders the warm UpgradeCard instead of a red error toast on a free-tier school's tap. |
 | 2 | **Top-3 candidate chips on sonnet_drafted card** | 1 file (photo-audit) | Extends Session 105 rule #32 to the Sonnet-drafted teal card. One-tap fix when Sonnet's #1 was wrong but #2/#3 is right. Falls back to `closest_existing_match` shape so older drafts still get chips. |
 | 3 | **Agent dashboard mobile polish** | 10 files | MiraFloat repositioned bottom-right on mobile (was overlapping AgentNav hamburger). iOS zoom-on-focus killed (16px font on every input/textarea). Touch targets bumped to 44pt on primary CTAs. Earnings table → per-school cards below 640px. |
 | 4 | **Parent portal dark forest theme audit** | 4 files | Real find: `STATUS_META` map was using Tailwind class strings as inline `style.color` values — they silently never worked. Replaced with real CSS hex values matching the dark forest palette. Dashboard now varies pill color by status (emerald/blue/gold) instead of hardcoded amber. Plus iOS zoom + sign-out tap target. |
@@ -22,9 +22,9 @@
 
 ---
 
-## Workstream 1 — Tracy 402 pattern universally applied
+## Workstream 1 — Astra 402 pattern universally applied
 
-### Server (13 routes patched + Tracy already done in Session 105)
+### Server (13 routes patched + Astra already done in Session 105)
 
 Architectural rule #29 says AI 402s must return `{ requires_upgrade: true, upgrade_url: '/montree/admin/billing', feature: '<key>', tier, error }`. Every AI route now follows the shape:
 
@@ -42,7 +42,7 @@ Architectural rule #29 says AI 402s must return `{ requires_upgrade: true, upgra
 | `admin/tracy/scan-thread` | `tracy_scan` |
 | `admin/tracy/draft-response` | `tracy_draft` |
 | `admin/conversations/transcribe` | `vault_transcribe` |
-| `admin/principal-agent` (Tracy itself) | `tracy` (already done Session 105 `0192bad6`) |
+| `admin/principal-agent` (Astra itself) | `tracy` (already done Session 105 `0192bad6`) |
 
 **Photo Identification deliberately NOT tier-gated** per the Session 57 architectural decision — free-tier schools still need basic photo capture working. The `process` route doesn't return 402 today and we kept it that way.
 
@@ -64,7 +64,7 @@ Architectural rule #29 says AI 402s must return `{ requires_upgrade: true, upgra
 
 ### New shared component
 
-`components/montree/UpgradeCard.tsx` — gold/amber card matching the Tracy design exactly. Props:
+`components/montree/UpgradeCard.tsx` — gold/amber card matching the Astra design exactly. Props:
 - `feature?: string` — feature key for per-feature title/body override
 - `upgradeUrl?: string` — defaults to `/montree/admin/billing`
 - `title?` / `body?` / `cta?` — explicit overrides win over i18n lookup
@@ -306,7 +306,7 @@ The moment the webhook is wired and Connect is on:
 
 After `git push` and Railway redeploys:
 
-1. **Tracy 402 upgrade card** — switch Whale Class to Free tier, hit Tracy. Should see amber/gold "Activate Tracy" card with billing CTA, not red error.
+1. **Astra 402 upgrade card** — switch Whale Class to Free tier, hit Astra. Should see amber/gold "Activate Astra" card with billing CTA, not red error.
 2. **Weekly Wrap upgrade card** — same tier, hit photo-audit → Weekly Wrap → Generate. Should see "Activate Weekly Wrap reports" card.
 3. **Language Semester upgrade card** — open `/montree/dashboard/language-semester`, click Generate. Should see "Activate semester reports" card.
 4. **Snap Identify upgrade toast** — capture a photo via /snap. Should see actionable toast "Activate Snap Identify — ...".

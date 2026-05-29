@@ -9,7 +9,7 @@ Mira float position, audit the encryption, and run a system-wide health check.
 |-----|------|
 | `05ca6a04` | English Progression: this-week coverage flag + reading position in parent narrative + `?child_id=` filter |
 | `f61693f0` | **Fix English Progress tab crash** — `ClassEnglishHeatmap` used bare `children` instead of its `kids` prop |
-| `9ac5cff4` | AI float (Mira/Tracy) top-right uniform on every screen — agent nav hamburger moved left, notch-safe insets |
+| `9ac5cff4` | AI float (Mira/Astra) top-right uniform on every screen — agent nav hamburger moved left, notch-safe insets |
 | `34f2701b` | Fix recording encryption — stale-summary / `encryption_version` desync on a flag-flip re-run |
 | `b3ff75c2` | Mobile safe-area (principal nav/drawer, Agora call bars, parent-chats header) + reschedule hardening + appointment modal inputs 16px |
 | `80be337d` | `100vh → 100dvh` across parent platform + messaging surfaces + AI float panels (19 files) |
@@ -38,7 +38,7 @@ A full audit of all 32 files touching the encrypted columns
 `montree_appointment_recordings.{transcript,summary}`):
 
 - **No ciphertext leaks on the normal path.** Every thread-list snippet, every
-  read path, Tracy + Mira AI context — all decrypt correctly. No `.ilike()`/sort
+  read path, Astra + Mira AI context — all decrypt correctly. No `.ilike()`/sort
   on an encrypted column. The rollout was actually well done.
 - **One real bug (fixed):** the recording transcription pipeline could leave a
   stale, undecryptable summary if the `encryption_v1` flag was flipped between
@@ -57,7 +57,7 @@ breakage, but nothing encrypts.
 
 Mira was bottom-right on mobile (a Session 106 decision to dodge the agent nav
 hamburger). Fixed properly: the **agent nav hamburger moved to the left**, so
-Mira sits **top-right on every screen and platform**, uniform with Tracy.
+Mira sits **top-right on every screen and platform**, uniform with Astra.
 TracyFloat was already top-right — added notch-safe insets so it clears the
 iPhone Dynamic Island.
 
@@ -73,7 +73,7 @@ iPhone Dynamic Island.
 - `QuickSetAppointmentModal` inputs were 14px (iOS auto-zooms anything <16px) →
   bumped to 16px.
 - `100vh → 100dvh` swept across the whole parent platform + all messaging
-  surfaces + the Mira/Tracy float panels (content was hiding behind mobile
+  surfaces + the Mira/Astra float panels (content was hiding behind mobile
   Safari's browser chrome).
 
 ## 5. Backend — no critical defects

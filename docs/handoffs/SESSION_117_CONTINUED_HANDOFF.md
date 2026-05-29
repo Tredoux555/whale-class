@@ -103,7 +103,7 @@ Server-side filtering by `auth.role + auth.userId + auth.schoolId` via `verifySc
 
 181. **Tool description + system prompt MUST agree on when to call.** When introducing a new write tool, the tool's description AND the system prompt's posture section both say "fire ONLY when X". One without the other is a footgun (Session 87 architectural lesson: tool description wins because that's what Opus reads at decision moment). Self-violation caught in same session — see commit `c918aa61`.
 
-182. **Phase 4.8 (Tracy super-admin scope) is recommended as a separate `/montree/super-admin/tracy` route**, not bolted onto the principal Tracy. The principal Tracy is gated to a single school's data; super-admin Tracy would scan across all agents. Different identity, different gating, different system prompt.
+182. **Phase 4.8 (Astra super-admin scope) is recommended as a separate `/montree/super-admin/tracy` route**, not bolted onto the principal Astra. The principal Astra is gated to a single school's data; super-admin Astra would scan across all agents. Different identity, different gating, different system prompt.
 
 (Earlier this session, Session 117 main run, added rules #171-177 — see `SESSION_117_HANDOFF.md`.)
 
@@ -115,7 +115,7 @@ Server-side filtering by `auth.role + auth.userId + auth.schoolId` via `verifySc
 
 2. **Stage B Agora activation — operational, ~15 min.** Requires credit card on Agora + Cloud Recording enable + Supabase Storage bucket + 4 more Railway env vars + flip `video_recording` flag. Walks through `docs/handoffs/AGORA_SETUP_PLAYBOOK.md` Steps 2-3 + 5.
 
-3. **Phase 4.8 — Tracy super-admin scope (~4-6h focused session).** Symmetric counterpart to Phase 4.7. Recommended new route `/montree/super-admin/tracy` with role-based tool gating. Tools: `list_pending_agent_threads`, `scan_agent_thread`, `draft_agent_reply`, `send_agent_reply`. System prompt: "Tracy-as-Tredoux's-chief-of-staff", different posture from principal Tracy. Infrastructure (`/api/montree/super-admin/agent-messages/*` routes) already in place from Session 108.
+3. **Phase 4.8 — Astra super-admin scope (~4-6h focused session).** Symmetric counterpart to Phase 4.7. Recommended new route `/montree/super-admin/tracy` with role-based tool gating. Tools: `list_pending_agent_threads`, `scan_agent_thread`, `draft_agent_reply`, `send_agent_reply`. System prompt: "Astra-as-Tredoux's-chief-of-staff", different posture from principal Astra. Infrastructure (`/api/montree/super-admin/agent-messages/*` routes) already in place from Session 108.
 
 4. **Appointments i18n sweep (~1-2h).** Translate the entire appointments surface (parent + staff + calendar) across 12 locales. ~40 new keys × 12 locales via Haiku batch. Pre-commit hook will block until all 12 are filled — use `scripts/fill-missing-i18n-keys.mjs` after adding to `en.ts`.
 
@@ -152,4 +152,4 @@ Server-side filtering by `auth.role + auth.userId + auth.schoolId` via `verifySc
 
 ## H. Cold-resume TL;DR
 
-If you're picking up cold: this run shipped the calendar-first appointments redesign and the Mira messaging tools (Phase 4.7). 7 commits on main. The Mira system-prompt contradiction caught in self-audit was fixed in the same session. The natural next builds are (1) finish Stage A Agora activation operational steps to test the killer feature inside the new calendar UI, (2) Phase 4.8 Tracy super-admin scope as the symmetric counterpart to Mira's tools. CLAUDE.md has been updated with both new architectural rule blocks (#178-#182 for Mira, #171-#177 from earlier Session 117 main run).
+If you're picking up cold: this run shipped the calendar-first appointments redesign and the Mira messaging tools (Phase 4.7). 7 commits on main. The Mira system-prompt contradiction caught in self-audit was fixed in the same session. The natural next builds are (1) finish Stage A Agora activation operational steps to test the killer feature inside the new calendar UI, (2) Phase 4.8 Astra super-admin scope as the symmetric counterpart to Mira's tools. CLAUDE.md has been updated with both new architectural rule blocks (#178-#182 for Mira, #171-#177 from earlier Session 117 main run).

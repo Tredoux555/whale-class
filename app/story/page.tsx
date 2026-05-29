@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 
 // Story user login — themed to mirror the Montree dark-forest cockpit
 // (`/montree/admin/*`). Same #0a1a0f base + emerald accent + Lora serif
-// + glass card as Tracy's home. Per user request: the lock screen should
+// + glass card as Astra's home. Per user request: the lock screen should
 // feel like part of the Montree platform, not a separate light-themed
 // child app.
 

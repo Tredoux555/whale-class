@@ -325,6 +325,6 @@ If you're picking this up cold (e.g. a fresh session next morning), here's the o
 - End-to-end test Sentence Match + Sorting Mat generators (Session 89)
 - Test super-admin Leads bulk clean (Session 89)
 - Two-stage Language Presentation flow (Session 89, paused)
-- Run migration 184 (Tracy interaction logging — still not run)
+- Run migration 184 (Astra interaction logging — still not run)
 - Send 3 hot lead Gmail drafts: Ardtona, FAMM, Тамі (Session 84-87)
 - Decide on `/montree/for-teachers` landing page (Phase 7)

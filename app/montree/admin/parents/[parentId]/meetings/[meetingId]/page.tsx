@@ -1,6 +1,6 @@
 // app/montree/admin/parents/[parentId]/meetings/[meetingId]/page.tsx
 //
-// Ultimate Tracy — per-meeting detail page (Spec §8.1).
+// Ultimate Astra — per-meeting detail page (Spec §8.1).
 //
 // Renders the meeting record + analysis summary + decrypt-on-demand
 // transcript viewer. Distinct from /review which is the proposals

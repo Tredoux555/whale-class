@@ -3,7 +3,7 @@
 // Mobile-style privacy lock. The moment the page is hidden (screen locks, app
 // backgrounds, tab loses focus on a phone), an overlay snaps in over the
 // app. When the user comes back, the overlay STAYS until they tap the Montree
-// logo to dismiss — banking-app pattern. Keeps Tracy chats, parent messages,
+// logo to dismiss — banking-app pattern. Keeps Astra chats, parent messages,
 // child data off the screen if someone else picks up the device.
 //
 // Cookie-based session is preserved underneath — tapping the logo is a
@@ -32,7 +32,7 @@ const APP_LOCK_ENABLED = false;
 // library, login flows, signup) stays unlocked — no surprise overlay on the
 // public marketing pages.
 const LOCKABLE_PREFIXES = [
-  '/montree/admin',           // principal cockpit (Tracy, finance, parent comms)
+  '/montree/admin',           // principal cockpit (Astra, finance, parent comms)
   '/montree/dashboard',       // teacher dashboard (child data, photos, notes)
   '/montree/agent',           // agent dashboard (Mira, school list, earnings)
   '/montree/super-admin',     // super-admin everything
@@ -127,7 +127,7 @@ export default function AppLockOverlay() {
       style={{
         position: 'fixed',
         inset: 0,
-        zIndex: 99999, // above Tracy (9999) and the present-mode overlay (9999)
+        zIndex: 99999, // above Astra (9999) and the present-mode overlay (9999)
         background: FOREST_BG,
         backgroundImage: EMERALD_GLOW,
         display: 'flex',

@@ -1,6 +1,6 @@
 // app/montree/admin/parents/[parentId]/onboard/page.tsx
 //
-// Ultimate Tracy Phase A — voice-first parent onboarding.
+// Ultimate Astra Phase A — voice-first parent onboarding.
 //
 // Mirrors the teacher voice-onboarding pattern (MediaRecorder + optional
 // SpeechRecognition live transcription) but for a single parent. The
@@ -851,7 +851,7 @@ export default function ParentOnboardPage() {
               Review {parent.parent_name.split(' ')[0]}&apos;s profile
             </h1>
             <p style={{ color: T.textSecondary, fontSize: 14, marginBottom: 24 }}>
-              Tracy structured what you said. Edit any field, then save.
+              Astra structured what you said. Edit any field, then save.
             </p>
 
             {degraded && (
@@ -1117,7 +1117,7 @@ export default function ParentOnboardPage() {
               Saved.
             </h2>
             <p style={{ color: T.textSecondary, fontSize: 15, marginBottom: 24 }}>
-              {parent.parent_name}&apos;s profile is on file. Tracy will use it the
+              {parent.parent_name}&apos;s profile is on file. Astra will use it the
               next time you prepare for a meeting.
             </p>
             <Link

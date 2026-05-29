@@ -71,7 +71,7 @@ Application-layer AES-256-GCM, mirroring the Story system's `lib/message-encrypt
 - `lib/montree/messaging-crypto.ts` — `encryptField`, `decryptField`, `readEncryptedField(value, version)`, `writeEncryptedField(plain, enabled)`, `isEncryptionEnabledForSchool()`, `isEncryptionConfigured()`. Ciphertext format `gcm:<iv>:<authTag>:<ciphertext>`.
 - Each row carries an `encryption_version` column — NULL = legacy plaintext (read as-is), 1 = AES-256-GCM v1.
 - Reads branch on `encryption_version`. Writes branch on the `encryption_v1` feature flag. Mixed plaintext + ciphertext rows coexist forever.
-- 32 files wrapped — 16 messaging routes, 4 meeting-notes routes, 2 recording routes + transcription pipeline, 6 helper libs. Tracy + Mira decrypt before passing content to Opus/Sonnet.
+- 32 files wrapped — 16 messaging routes, 4 meeting-notes routes, 2 recording routes + transcription pipeline, 6 helper libs. Astra + Mira decrypt before passing content to Opus/Sonnet.
 - 32-test self-test passed 32/32; two independent audits.
 
 **Current state:**

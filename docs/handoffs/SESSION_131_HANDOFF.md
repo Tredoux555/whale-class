@@ -94,4 +94,4 @@ See `docs/handoffs/HEALTH_CHECK_SESSION_131.md` for the full report + per-domain
 - 52 files using `100vh` → `100dvh` migration
 - ~50 images missing dimension attrs (raz, photo-audit, gallery worst offenders)
 - Service worker bump v8 → v9 (13 days, ~70 commits stale)
-- Tracy memory hard ceiling 100 → 50 (Opus prompt cost balloon)
+- Astra memory hard ceiling 100 → 50 (Opus prompt cost balloon)

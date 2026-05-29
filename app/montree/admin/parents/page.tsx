@@ -1,6 +1,6 @@
 // app/montree/admin/parents/page.tsx
 //
-// Ultimate Tracy Phase D — parents-as-first-class-entities home.
+// Ultimate Astra Phase D — parents-as-first-class-entities home.
 //
 // Lists every parent in the school with archetype tags, relationship
 // temperature, child links, meeting count, last meeting date. Search

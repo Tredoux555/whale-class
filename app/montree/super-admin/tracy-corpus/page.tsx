@@ -1,6 +1,6 @@
 // app/montree/super-admin/tracy-corpus/page.tsx
 //
-// Ultimate Tracy Phase E — super-admin corpus monitor.
+// Ultimate Astra Phase E — super-admin corpus monitor.
 // Shows per-school stats so Tredoux can watch corpus quality + pruning
 // candidates over time.
 
@@ -201,7 +201,7 @@ export default function TracyCorpusPage() {
             color: T.textPrimary,
           }}
         >
-          Tracy corpus
+          Astra corpus
         </h1>
         <p style={{ color: T.textSecondary, fontSize: 14, marginBottom: 24 }}>
           Self-improving school memory. Per-school totals + top-referenced +

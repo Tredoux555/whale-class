@@ -1,6 +1,6 @@
 // app/api/montree/admin/parent-meetings/[meetingId]/transcribe-chunk/route.ts
 //
-// Ultimate Tracy Phase B — receive one audio chunk, run Whisper, hold
+// Ultimate Astra Phase B — receive one audio chunk, run Whisper, hold
 // the transcript text in the per-meeting cache. On final=true, stitch
 // the chunks, encrypt, persist to montree_parent_meeting_transcripts,
 // and return the transcript_id.

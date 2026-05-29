@@ -11,7 +11,7 @@
 //   - Storage keys scoped by agent_id (NOT school_id)
 //   - Hits /api/montree/agent/mira (NOT /api/montree/admin/principal-agent)
 //   - hasMet flag flips ONLY on successful 'done' SSE event (audit fix from
-//     Session 97 commit aa23920b — same rule as Tracy)
+//     Session 97 commit aa23920b — same rule as Astra)
 //
 // BEHAVIOUR:
 //   - First mount of the browser session → fire [GREETING_FIRST] (or

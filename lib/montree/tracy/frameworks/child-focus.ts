@@ -1,6 +1,6 @@
 // lib/montree/tracy/frameworks/child-focus.ts
 //
-// "Tell me about Austin's English progress." — the canonical Tracy use case.
+// "Tell me about Austin's English progress." — the canonical Astra use case.
 //
 // One server-side framework tool that handles a child question end-to-end:
 //
@@ -11,8 +11,8 @@
 //   4. Sonnet COMPOSES the grounded answer — same honesty rules + fence
 //      pattern as the canonical parent-question route
 //
-// Tracy from the outside calls one tool. There's exactly one failure surface,
-// and each failure mode returns a structured response Tracy can prose over.
+// Astra from the outside calls one tool. There's exactly one failure surface,
+// and each failure mode returns a structured response Astra can prose over.
 // No chained tool calls, no auth cascade, no fragile orchestration.
 //
 // SCHOOL-SCOPING: every Supabase query filters by schoolId passed from the
@@ -29,15 +29,15 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import type Anthropic from '@anthropic-ai/sdk';
 import { randomBytes } from 'crypto';
 
-// 🚨 Session 113 V2 Tracy + Mira audit MED-6: localized compose fallback strings.
-// When Sonnet returns empty or errors mid-compose, Tracy previously fell through
+// 🚨 Session 113 V2 Astra + Mira audit MED-6: localized compose fallback strings.
+// When Sonnet returns empty or errors mid-compose, Astra previously fell through
 // to a hardcoded English sentence. Multilingual users (zh/es/fr/de/etc.) saw
 // English-in-Mandarin-UI on the rare failure. Now we pick a locale-appropriate
 // fallback. Real human translations — no Google output.
 //
 // Two variants: SOFT (Sonnet returned empty) is gentler than HARD (Sonnet
 // threw). Both end with "ask the teacher" since the teacher is always the
-// next move when Tracy can't compose.
+// next move when Astra can't compose.
 function getComposeFallback(locale: string, variant: 'soft' | 'hard', childName: string): string {
   const key = (locale || 'en').toLowerCase().slice(0, 2);
   const t = COMPOSE_FALLBACKS[key] || COMPOSE_FALLBACKS.en;
@@ -158,7 +158,7 @@ export interface ChildFocusResult {
     };
     answer?: {
       text: string;
-      sparse: boolean;     // true if the data was thin and Tracy should disclaim
+      sparse: boolean;     // true if the data was thin and Astra should disclaim
       grounded_in: string[]; // human-readable list of evidence types that fed the answer
     };
   };
@@ -313,7 +313,7 @@ async function resolveChild(
   not_found_query?: string;
 }> {
   if (!name) {
-    // No name parsed — Tracy can't focus on a specific child. Return
+    // No name parsed — Astra can't focus on a specific child. Return
     // not_found so the compose layer prompts the principal to clarify.
     return { resolution: 'not_found', not_found_query: '' };
   }
@@ -381,10 +381,10 @@ async function resolveChild(
 
 /**
  * Full child context bundle that compose() works against. Exported in
- * Session 133 so prepare_parent_meeting (a Tracy tool) can call
+ * Session 133 so prepare_parent_meeting (a Astra tool) can call
  * fetchChildContext directly and weave the same context into its dossier
  * prompt. The compose layer downstream is what differs between the two
- * surfaces — Tracy's chat composes prose; the dossier composes structured
+ * surfaces — Astra's chat composes prose; the dossier composes structured
  * sections.
  */
 export interface ChildContext {

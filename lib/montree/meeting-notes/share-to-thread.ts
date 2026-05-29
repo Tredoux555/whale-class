@@ -17,7 +17,7 @@
 //     note) rather than appending to long-running parent_teacher threads.
 //     The thread subject names the meeting so it's clear what it's about.
 //   - Sets ai_drafted=false on the message — this is the teacher's /
-//     principal's words being shared, not Tracy's draft.
+//     principal's words being shared, not Astra's draft.
 //   - Returns the thread_id on success; null + reason otherwise.
 //
 // SCHOOL-SCOPING CONTRACT: every Supabase query in here filters by

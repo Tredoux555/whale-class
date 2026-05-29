@@ -136,7 +136,7 @@ POST endpoint at `app/api/montree/messages/threads/[threadId]/messages/route.ts:
 
 ## What to verify on production after Railway redeploys `e4ad132d`
 
-1. **Tracy avatar + cockpit headings + weekly wrap UI** — the Lora serif should now actually render in Lora (not Georgia). Hard refresh on `/montree/admin` and look at the Tracy avatar's "T" + the school name in the header. If they look thicker / more rounded than before, Lora is rendering. If they look exactly the same, you were already on a system that had Lora installed locally (Mac with Lora installed → fallback was invisible; iPhone / fresh device → fallback to Georgia was visible).
+1. **Astra avatar + cockpit headings + weekly wrap UI** — the Lora serif should now actually render in Lora (not Georgia). Hard refresh on `/montree/admin` and look at the Astra avatar's "T" + the school name in the header. If they look thicker / more rounded than before, Lora is rendering. If they look exactly the same, you were already on a system that had Lora installed locally (Mac with Lora installed → fallback was invisible; iPhone / fresh device → fallback to Georgia was visible).
 
 2. **Optimistic send race** — open principal communication thread. Type message → send. Before the success roundtrip lands, IMMEDIATELY type message #2 → send. Both bubbles should stay visible the whole time. Previously message #2 would briefly disappear (load() wipe) then reappear.
 

@@ -1,8 +1,8 @@
-# Session 85 Handoff — Tracy: Build → 5 Audits → Frontend → Restructure
+# Session 85 Handoff — Astra: Build → 5 Audits → Frontend → Restructure
 
 **Date:** May 4, 2026
 **Branch:** `main` — all 7 commits pushed to `origin/main`
-**Theme:** Tracy went from architectural brief to shipped, audited five times, frontend ported, then completely re-architected when the canonical use case proved fragile. Signal: by the end of the session the architecture is meaningfully more reliable than what shipped first.
+**Theme:** Astra went from architectural brief to shipped, audited five times, frontend ported, then completely re-architected when the canonical use case proved fragile. Signal: by the end of the session the architecture is meaningfully more reliable than what shipped first.
 
 ---
 
@@ -10,26 +10,26 @@
 
 | Hash | Subject | Net |
 |------|---------|-----|
-| `bc018674` | Tracy phase 1: chief-of-staff brain + unpack_teacher framework tool | +1,214 / −416 |
-| `a693674a` | Tracy audit fixes: 3 bugs caught in self-audit pass | +55 / −16 |
-| `7c7a02e5` | Tracy second audit: 3 more bugs + lint clean | +103 / −8 |
-| `a2779360` | Tracy audit #3: 3 more bugs (prompt contradiction, coverage inflation, fence) | +30 / −5 |
-| `4f17a3cc` | Tracy audit #4: 1 minor bug — find_children_by_name field name | +1 / −1 |
-| `7ac24885` | Tracy frontend: port the chief-of-staff surface | +348 / −438 |
-| `e4c59894` | Tracy child_focus: single-tool architecture for the canonical use case | +783 / −65 |
+| `bc018674` | Astra phase 1: chief-of-staff brain + unpack_teacher framework tool | +1,214 / −416 |
+| `a693674a` | Astra audit fixes: 3 bugs caught in self-audit pass | +55 / −16 |
+| `7c7a02e5` | Astra second audit: 3 more bugs + lint clean | +103 / −8 |
+| `a2779360` | Astra audit #3: 3 more bugs (prompt contradiction, coverage inflation, fence) | +30 / −5 |
+| `4f17a3cc` | Astra audit #4: 1 minor bug — find_children_by_name field name | +1 / −1 |
+| `7ac24885` | Astra frontend: port the chief-of-staff surface | +348 / −438 |
+| `e4c59894` | Astra child_focus: single-tool architecture for the canonical use case | +783 / −65 |
 
 **10 real bugs caught and fixed across 5 audit passes**, then a full re-architecture when the user pushed back on the canonical use case ("tell me about Austin's English progress") proving fragile under the chained-tool architecture.
 
 ---
 
-## What Tracy is now
+## What Astra is now
 
 The principal opens `/montree/admin`. Sees a quiet greeting:
 
 > **Hi [Name].**
 > How can I help you?
 
-Asks anything. Tracy answers in a chief-of-staff voice that always ends with one concrete next action. That's the entire surface.
+Asks anything. Astra answers in a chief-of-staff voice that always ends with one concrete next action. That's the entire surface.
 
 Under the hood, she has Sonnet's reasoning, two server-side framework tools (`child_focus` and `unpack_teacher`), four primitives, the same logging-to-`montree_principal_agent_log` machinery from Session 84, and the same auth/streaming/cost-model assertion patterns.
 
@@ -44,15 +44,15 @@ The two framework tools are the value:
 
 These are non-negotiable going forward. Future agents will break these at their peril.
 
-1. **Action rule** — every SUBSTANTIVE Tracy response ends with ONE concrete next action. Pure acknowledgments ("Thanks", "OK") are exempt.
-2. **Reactive only** — Tracy never volunteers adjacent problems. Principal sets the agenda; Tracy serves it.
-3. **Honesty** — Tracy only quotes dates verbatim from tool output (ISO YYYY-MM-DD). Never invents observations, names, classrooms, parents.
-4. **Don't lead with pedagogy** — Tracy uses developmental knowledge as substrate, not as the lead. Pedagogical lectures are not her voice.
+1. **Action rule** — every SUBSTANTIVE Astra response ends with ONE concrete next action. Pure acknowledgments ("Thanks", "OK") are exempt.
+2. **Reactive only** — Astra never volunteers adjacent problems. Principal sets the agenda; Astra serves it.
+3. **Honesty** — Astra only quotes dates verbatim from tool output (ISO YYYY-MM-DD). Never invents observations, names, classrooms, parents.
+4. **Don't lead with pedagogy** — Astra uses developmental knowledge as substrate, not as the lead. Pedagogical lectures are not her voice.
 5. **School-scoping contract** — every direct Supabase query in a framework tool filters by `schoolId`. Internal-endpoint wraps re-verify via cookie forwarding. Never trust the agent loop alone.
 6. **No internal HTTP for child questions** — the canonical use case (answer about a specific child) is end-to-end inside `child_focus` via direct Supabase. No HTTP hops, no auth re-verification, no chained-tool fragility.
-7. **Per-request random-nonce fences for ANY user-input → AI prompt boundary** — Session 84 canonical pattern. Applied to `note-quality.ts`, the parse step in `child-focus.ts`, AND the compose step in `child-focus.ts`. Three fenced surfaces in Tracy alone.
+7. **Per-request random-nonce fences for ANY user-input → AI prompt boundary** — Session 84 canonical pattern. Applied to `note-quality.ts`, the parse step in `child-focus.ts`, AND the compose step in `child-focus.ts`. Three fenced surfaces in Astra alone.
 8. **Heuristic fallbacks for every AI step** — `parseQuestion()` in child-focus has a regex-based fallback if Haiku fails. `composeAnswer()` returns a defensive sentence if Sonnet fails. `scoreNoteQuality()` returns `[]` if Haiku fails (caller has word-count fallback). No path throws unhandled.
-9. **`montree_children` has `school_id`, `enrolled_at`, `is_active`** — confirmed via migrations 113, 126, 143. All three columns are load-bearing for Tracy's queries.
+9. **`montree_children` has `school_id`, `enrolled_at`, `is_active`** — confirmed via migrations 113, 126, 143. All three columns are load-bearing for Astra's queries.
 10. **`montree_teacher_notes.teacher_id` IS reliable** — per migration 148 line 18. The strongest per-teacher attribution signal. `montree_media.confirmed_by` is best-effort and not used for attribution.
 11. **`unpack_teacher` quality layer treats `'no_notes'` as NEUTRAL** — only `'thin'` notes count against the verdict. A teacher who photographs well + children progressing but doesn't write notes shouldn't be penalised.
 12. **Brand-new children (enrolled <21d) are skipped from stalled-detection** — they couldn't be "stalled 3 weeks" by definition.
@@ -68,7 +68,7 @@ These are non-negotiable going forward. Future agents will break these at their 
 ```
 lib/montree/tracy/
   index.ts                        # Barrel exports
-  system-prompt.ts                # Tracy's persona, voice, action rule, honesty rules
+  system-prompt.ts                # Astra's persona, voice, action rule, honesty rules
   tool-definitions.ts             # 6 tools: child_focus + unpack_teacher (framework) + 4 primitives
   tool-executor.ts                # Dispatcher with school-scoping contract
   frameworks/
@@ -79,15 +79,15 @@ lib/montree/tracy/
 
 ### MODIFIED: `app/api/montree/admin/principal-agent/route.ts`
 
-Imports from `lib/montree/tracy/` instead of having an inline system prompt + tool definitions + executor. Same SSE/auth/streaming/cost-model machinery from Session 84. Today's date is now passed into Tracy's system prompt builder (so she knows what day it is when she answers).
+Imports from `lib/montree/tracy/` instead of having an inline system prompt + tool definitions + executor. Same SSE/auth/streaming/cost-model machinery from Session 84. Today's date is now passed into Astra's system prompt builder (so she knows what day it is when she answers).
 
 ### REWRITTEN: `app/montree/admin/page.tsx`
 
 Same SSE/streaming/auth/persistence machinery. Visual treatment ported from the friendly mockup we agreed on:
 - Strips the school-name hero, the verbose "ask me anything about your school..." subtitle, the "Try one of these" suggestions block
 - Empty state: gold T avatar + "Hi [Name]." + "How can I help you?"
-- Tool chips hidden — Tracy's mechanism is invisible to the principal
-- Closing "I'd …" action line parsed out of Tracy's text via `splitActionLine()`, rendered distinctly with warm gold dash + 18px breathing room
+- Tool chips hidden — Astra's mechanism is invisible to the principal
+- Closing "I'd …" action line parsed out of Astra's text via `splitActionLine()`, rendered distinctly with warm gold dash + 18px breathing room
 - Send button reduced to single emerald circle with arrow icon
 - Pending state is just `…` (italic dots) — no Sparkles, no labels
 
@@ -132,7 +132,7 @@ After 5 audit passes the BACKEND was solid. But the user tested production and t
 ### Old path for "how is Austin doing?"
 
 ```
-Sonnet (Tracy) decides find_children_by_name
+Sonnet (Astra) decides find_children_by_name
   → internal HTTP fetch /api/montree/admin/students/search
     → auth re-verification
     → returns matches
@@ -148,17 +148,17 @@ Sonnet (Tracy) decides find_children_by_name
 ### New path
 
 ```
-Sonnet (Tracy) decides child_focus(question)
+Sonnet (Astra) decides child_focus(question)
   → server-side, single tool:
     Step 1 (Haiku): parse question → { name, area, focus }
     Step 2 (direct DB): resolve child by ilike search
     Step 3 (direct DB, parallel): fetch progress + observations + notes + profile
     Step 4 (Sonnet): compose grounded answer
   ← returns { resolution, child?, candidates?, answer? }
-Sonnet (Tracy) relays the answer.text
+Sonnet (Astra) relays the answer.text
 ```
 
-3 Sonnet + 1 Haiku. Zero internal HTTP. Zero auth re-verification. ~$0.028 per question (~50% cheaper). Three explicit failure modes (`found` / `not_found` / `ambiguous`) each returning useful prose for Tracy to relay.
+3 Sonnet + 1 Haiku. Zero internal HTTP. Zero auth re-verification. ~$0.028 per question (~50% cheaper). Three explicit failure modes (`found` / `not_found` / `ambiguous`) each returning useful prose for Astra to relay.
 
 ### Why this matters
 
@@ -168,7 +168,7 @@ The old path failed silently when ANY hop returned non-200. Auth could fail in R
 
 - `answer_about_child` tool (subsumed by `child_focus`)
 - The `internalPost('/api/montree/admin/parent-question', ...)` path inside the executor for that tool
-- Tracy's three-bullet child-question section in the system prompt (now ONE canonical instruction)
+- Astra's three-bullet child-question section in the system prompt (now ONE canonical instruction)
 
 ### What was kept
 
@@ -178,9 +178,9 @@ The old path failed silently when ANY hop returned non-200. Auth could fail in R
 
 ---
 
-## Tracy's voice: design conversations this session
+## Astra's voice: design conversations this session
 
-The user pushed twice on Tracy's surface to make it feel friendlier and more personified:
+The user pushed twice on Astra's surface to make it feel friendlier and more personified:
 
 **First mockup feedback:** "I want it simpler and more friendly — does she really need to know the date, the day and the school's name?" Stripped to just `Hi [Name].` + greeting + input.
 
@@ -191,7 +191,7 @@ The user pushed twice on Tracy's surface to make it feel friendlier and more per
 - Tested portraits in Canva (Watercolour style) — generic AI woman, rejected
 - Tested monograms in Canva (Ink print style) — gold T's on dark forest green, looked good
 - Settled on T monogram in elegant serif, no leaf (cleaner) — the "leaf doesn't fit on the M but does on the T" call from Tredoux led to MIXED treatment
-- Tracy's `T` ended up clean. Montree's `M` exploration started but didn't finalize.
+- Astra's `T` ended up clean. Montree's `M` exploration started but didn't finalize.
 - Final asset is still pending Tredoux's chosen Canva export. The CSS-rendered T placeholder works for now.
 
 **Cost reasoning Tredoux explicitly accepted:**
@@ -206,18 +206,18 @@ At ~$0.028 per question and 20-30 questions/day per principal, that's $15-25/mon
 
 ### Carry-overs from Session 84 (still unresolved)
 
-1. **🚨 Run migration 184 in Supabase** — `montree_principal_agent_log` table. Until run, every Tracy interaction's logging silently fails. Fire-and-forget catches the error in `console.error` but no rows accrue, which means Tredoux can't see what principals are asking via the super-admin questions log.
+1. **🚨 Run migration 184 in Supabase** — `montree_principal_agent_log` table. Until run, every Astra interaction's logging silently fails. Fire-and-forget catches the error in `console.error` but no rows accrue, which means Tredoux can't see what principals are asking via the super-admin questions log.
 2. **TRACY THEORIZE phase** — was deferred per Session 84 brief. We instead built directly. The brief at `docs/TRACY_FRAMEWORK_BRIEF.md` is now historical reference, not a pending action.
-3. **Resend `RESEND_API_KEY` env var on Railway** — still placeholder. Affects principal invite emails (Session 83), unrelated to Tracy.
+3. **Resend `RESEND_API_KEY` env var on Railway** — still placeholder. Affects principal invite emails (Session 83), unrelated to Astra.
 
 ### New (introduced this session)
 
 1. **Drop the real Canva-exported T monogram into `/public/tracy-avatar.png`** — `TracyAvatar` component swap is one-line: change the CSS placeholder to `<img>`. Tredoux has the Canva project saved with several monogram options.
-2. **Voice input for Tracy** — biggest UX win remaining. Whisper integration shipped elsewhere in the app (`/api/montree/voice-notes/transcribe` per CLAUDE.md Sessions 79-80). Mic button next to the send button, hold-to-speak or tap-toggle. Half a day's work.
-3. **First-run onboarding** — when a principal opens Tracy for the first time, she introduces herself once: *"Hi, I'm Tracy. I'm here to help you run the school — ask me anything about your teachers, children, or parents."* Then steps back to the clean home forever after.
-4. **System prompt nudge for closing-action variety** — Tracy currently closes substantive responses with "I'd send Susan a 2-line thank-you note for the Jimmy observation" (slightly mechanical). Want more variety: "Worth a check-in with Lucky tomorrow", "Leave it — nothing here needs you yet", "I'd reply to Emily's mum with this paragraph as written." Range and warmth.
-5. **Family data model — Phase 3 of original plan** — the largest novel-capability unlock. New tables: `montree_families`, `montree_family_members`, `montree_family_interactions`. Then build `family_context` framework tool. Without this, Tracy can't answer "what's the latest with Emma's family?" — every parent interaction looks new.
-6. **`consult_guru` Tracy → Guru bridge** — when a question goes pedagogically deep on a single child, Tracy currently answers from her own training. A consult_guru tool would let her hand off to Guru properly. Documented as future in `tool-definitions.ts` comments.
+2. **Voice input for Astra** — biggest UX win remaining. Whisper integration shipped elsewhere in the app (`/api/montree/voice-notes/transcribe` per CLAUDE.md Sessions 79-80). Mic button next to the send button, hold-to-speak or tap-toggle. Half a day's work.
+3. **First-run onboarding** — when a principal opens Astra for the first time, she introduces herself once: *"Hi, I'm Astra. I'm here to help you run the school — ask me anything about your teachers, children, or parents."* Then steps back to the clean home forever after.
+4. **System prompt nudge for closing-action variety** — Astra currently closes substantive responses with "I'd send Susan a 2-line thank-you note for the Jimmy observation" (slightly mechanical). Want more variety: "Worth a check-in with Lucky tomorrow", "Leave it — nothing here needs you yet", "I'd reply to Emily's mum with this paragraph as written." Range and warmth.
+5. **Family data model — Phase 3 of original plan** — the largest novel-capability unlock. New tables: `montree_families`, `montree_family_members`, `montree_family_interactions`. Then build `family_context` framework tool. Without this, Astra can't answer "what's the latest with Emma's family?" — every parent interaction looks new.
+6. **`consult_guru` Astra → Guru bridge** — when a question goes pedagogically deep on a single child, Astra currently answers from her own training. A consult_guru tool would let her hand off to Guru properly. Documented as future in `tool-definitions.ts` comments.
 
 ### Deferred / known limitations
 
@@ -234,11 +234,11 @@ After Railway has fully redeployed `e4c59894`:
 
 1. Hard refresh `/montree/admin` (Cmd+Shift+R)
 2. Confirm empty state: gold T avatar + "Hi [Name]." + "How can I help you?"
-3. Try **"How is Austin doing?"** → expect Tracy to call `child_focus` once, return grounded prose about Austin
+3. Try **"How is Austin doing?"** → expect Astra to call `child_focus` once, return grounded prose about Austin
 4. Try **"Tell me about Austin's English progress"** → expect prose specifically about Austin's language area
 5. Try **"What should I tell Emily's mum about her math?"** → expect parent-ready paragraph
 6. Try **"How is Frodo doing?"** (a name that doesn't exist in your school) → expect honest "I couldn't find a child by that name" response, NOT a system error
-7. Try **"How is Susan doing?"** (substituting a real teacher's name) → expect Tracy to call `unpack_teacher`, return chief-of-staff assessment with closing action
+7. Try **"How is Susan doing?"** (substituting a real teacher's name) → expect Astra to call `unpack_teacher`, return chief-of-staff assessment with closing action
 8. Verify the closing "I'd …" line renders distinctly with the warm gold dash treatment
 9. Open the super-admin questions log at `/montree/super-admin/principal-questions` and verify rows are appearing (this requires migration 184 to be run first — if not, log is empty)
 
@@ -247,7 +247,7 @@ After Railway has fully redeployed `e4c59894`:
 ## Architectural state at end of session
 
 ```
-Tracy (lib/montree/tracy/)
+Astra (lib/montree/tracy/)
 ├── system-prompt.ts          [STABLE — 5 audit cycles done]
 ├── tool-definitions.ts       [STABLE — 6 tools, 2 framework + 4 primitives]
 ├── tool-executor.ts          [STABLE — school-scoping contract preserved]
@@ -258,7 +258,7 @@ Tracy (lib/montree/tracy/)
     └── note-quality.ts       [STABLE — Haiku-scored note substance]
 
 Route (/api/montree/admin/principal-agent/route.ts)
-└── Imports Tracy module. SSE/auth/streaming/cost-model from Session 84.
+└── Imports Astra module. SSE/auth/streaming/cost-model from Session 84.
 
 Frontend (/app/montree/admin/page.tsx)
 └── Friendly mockup ported. Gold T avatar (CSS placeholder).
@@ -269,7 +269,7 @@ Logging
     Until run, principal questions silently fail to log.
 
 Cost
-└── ~$0.028 per Tracy question on the canonical path.
+└── ~$0.028 per Astra question on the canonical path.
     ~$15-25/month per active principal at 20-30 questions/day.
 ```
 

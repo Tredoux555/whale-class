@@ -138,4 +138,4 @@ Mid-audit Tredoux reported "regardless of what parent I log in as the screen alw
 2. **Audit weekly-wrap for skeleton-draft creation** — should we skip empty children?
 3. **Stage A Agora activation** (carried over from the main Session 117 handoff — migration 223 + flag flip + 2-device test).
 4. **Appointments i18n sweep** (carried over).
-5. **Mira → Tracy tool extension** (Session 108 plan, Phase 4.8 — agent-side equivalent for super-admin).
+5. **Mira → Astra tool extension** (Session 108 plan, Phase 4.8 — agent-side equivalent for super-admin).

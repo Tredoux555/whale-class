@@ -616,7 +616,7 @@ export async function sendTrialConvertedEmail(
     <ul style="font-size:14px;line-height:1.7;color:#1f2d24;padding-left:20px;margin:0 0 16px;">
       <li>Billing is $7 per active student, per month. Quantity syncs automatically as you add or remove children.</li>
       <li>Cancel any time from your <a href="https://montree.xyz/montree/admin/billing" style="color:#10b981;">billing page</a> — Stripe customer portal.</li>
-      <li>Every AI feature (Tracy, photo identification, Weekly Wrap, parent narratives) is now unlocked.</li>
+      <li>Every AI feature (Astra, photo identification, Weekly Wrap, parent narratives) is now unlocked.</li>
       <li>Questions or anything off? Reply to this email — it goes directly to me.</li>
     </ul>
     <p style="font-size:14px;line-height:1.55;margin:24px 0 0;color:#5b6b73;">Kind regards,<br/>Tredoux<br/><a href="https://montree.xyz" style="color:#10b981;">montree.xyz</a></p>
@@ -652,7 +652,7 @@ const DRIP_COPY: Record<TrialDripDay, { subject: string; greeting: string; body:
   day4: {
     subject: "How's your Montree trial going?",
     greeting: "Hi {name},",
-    body: "You're partway through your 7-day trial of {school} on Montree. Two quick things worth trying if you haven't yet:\n\n1. **Snap a few photos** from your classroom in the Photo Audit screen — Tracy auto-identifies the work in seconds.\n2. **Generate your first Weekly Wrap** — every parent gets a personal narrative their child's teacher would have written.\n\nIf anything's getting in the way, reply to this email. I read everything personally.",
+    body: "You're partway through your 7-day trial of {school} on Montree. Two quick things worth trying if you haven't yet:\n\n1. **Snap a few photos** from your classroom in the Photo Audit screen — Astra auto-identifies the work in seconds.\n2. **Generate your first Weekly Wrap** — every parent gets a personal narrative their child's teacher would have written.\n\nIf anything's getting in the way, reply to this email. I read everything personally.",
     cta: 'Open Montree → https://montree.xyz/montree/dashboard',
   },
   day6: {
