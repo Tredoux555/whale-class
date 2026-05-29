@@ -950,6 +950,12 @@ export async function executeTracyTool(
           // tokens hit the SSE pipe as they land instead of waiting for
           // the full ~25s synchronous response.
           onStream: onMeetingStream,
+          // May 29, 2026 — wire progress events so the chat UI renders
+          // a live status line (Looking up X, Fetching observations,
+          // Composing the dossier...) instead of the 3-dot indicator
+          // for 60-90s while Sonnet works.
+          onProgress: (evt) =>
+            emitProgress('prepare_parent_meeting', evt.phase, evt.vars),
         });
         if (!result.ok) {
           return { success: false, error: result.error || 'dossier failed' };
