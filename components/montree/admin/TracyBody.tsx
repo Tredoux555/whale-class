@@ -106,16 +106,12 @@ function parseSegments(text: string): ParsedSegment[] {
 }
 
 /**
- * Render `**bold**` as <strong> inside otherwise-plain prose. We accept
+ * Render `**bold**` as <strong> inside otherwise-plain text. We accept
  * unmatched `**` (just render as text) so Astra's stray asterisks don't
  * collapse the rest of her message.
  */
-function renderProse(text: string): ReactNode[] {
+function renderInline(text: string): ReactNode[] {
   const parts: ReactNode[] = [];
-  // Split on **...** while keeping the matched groups so we can render
-  // them as <strong>. The pattern matches the shortest run between the
-  // delimiters and refuses to span newlines so a stray `**` lower in the
-  // text doesn't bold paragraphs of content.
   const re = /\*\*([^*\n]+?)\*\*/g;
   let lastIndex = 0;
   let match: RegExpExecArray | null;
@@ -135,6 +131,73 @@ function renderProse(text: string): ReactNode[] {
     parts.push(<Fragment key={`p${key++}`}>{text.slice(lastIndex)}</Fragment>);
   }
   return parts;
+}
+
+// 🚨 Session 153 — render Astra's inline photo markdown `![alt](url)` as real
+// thumbnails so the principal can SEE a child's photos directly in chat (the
+// same access a teacher has on their page), not just read raw markdown.
+//
+// SECURITY: we ONLY render images whose URL is our own first-party media proxy
+// (`/api/montree/media/proxy/...`). Any other image URL the model emits stays
+// plain text — this prevents arbitrary/external <img> (tracking pixels, SSRF,
+// exfil via image requests) from model-generated output. The proxy serves
+// public buckets, so no credentials ride along.
+const PROXY_IMG_RE = /!\[([^\]]*)\]\((\/api\/montree\/media\/proxy\/[^)\s]+)\)/g;
+
+function thumbUrl(url: string): string {
+  // Ask the proxy for a fast, bandwidth-light thumbnail; the full image opens
+  // on click. Proxy falls back to the raw object if transforms are unsupported.
+  return url + (url.includes('?') ? '&' : '?') + 'w=480&q=72';
+}
+
+/**
+ * Render prose with bold spans AND first-party photo thumbnails. Images are
+ * split out first; the text between them keeps full bold/whitespace handling.
+ */
+function renderProse(text: string): ReactNode[] {
+  const out: ReactNode[] = [];
+  let lastIndex = 0;
+  let key = 0;
+  let m: RegExpExecArray | null;
+  PROXY_IMG_RE.lastIndex = 0;
+  while ((m = PROXY_IMG_RE.exec(text)) !== null) {
+    if (m.index > lastIndex) {
+      out.push(<Fragment key={`t${key++}`}>{renderInline(text.slice(lastIndex, m.index))}</Fragment>);
+    }
+    const alt = m[1] || 'photo';
+    const url = m[2];
+    out.push(
+      <a
+        key={`img${key++}`}
+        href={url}
+        target="_blank"
+        rel="noopener noreferrer"
+        title={alt}
+        style={{ display: 'inline-block', margin: '4px 6px 4px 0', verticalAlign: 'top' }}
+      >
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={thumbUrl(url)}
+          alt={alt}
+          loading="lazy"
+          style={{
+            width: 132,
+            height: 132,
+            objectFit: 'cover',
+            borderRadius: 10,
+            border: '1px solid rgba(255,255,255,0.12)',
+            background: 'rgba(255,255,255,0.04)',
+            cursor: 'zoom-in',
+          }}
+        />
+      </a>
+    );
+    lastIndex = m.index + m[0].length;
+  }
+  if (lastIndex < text.length) {
+    out.push(<Fragment key={`t${key++}`}>{renderInline(text.slice(lastIndex))}</Fragment>);
+  }
+  return out;
 }
 
 export default function TracyBody({ text, style }: TracyBodyProps) {
