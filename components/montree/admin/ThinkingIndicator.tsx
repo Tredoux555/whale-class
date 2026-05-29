@@ -52,8 +52,14 @@ export default function ThinkingIndicator({
   return (
     <div
       style={{
+        // 🚨 alignItems: 'center' — the avatar wrapper has 18px padding so
+        // it's 18px taller on each side than its bare avatar. Without
+        // center alignment, the dots column sits at the top of the row
+        // while the avatar+halo center sits 18px below — dots appear ABOVE
+        // the avatar's center, looks wrong. Center alignment puts both at
+        // the same vertical midline regardless of padding math.
         display: 'flex',
-        alignItems: 'flex-start',
+        alignItems: 'center',
         gap: 14,
         width: '100%',
       }}
@@ -92,7 +98,9 @@ export default function ThinkingIndicator({
           <TracyAvatar size={size} />
         </span>
       </span>
-      <div style={{ flex: 1, minWidth: 0, paddingTop: 18 }}>
+      {/* paddingTop: 0 — the outer flex container now centers vertically,
+          so the dots column doesn't need padding to align with the avatar. */}
+      <div style={{ flex: 1, minWidth: 0 }}>
         <div
           aria-hidden
           style={{
