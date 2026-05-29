@@ -12,6 +12,15 @@
 //      tool_progress event is active (parsing / lookingUp / fetchingContext
 //      / composing) — already wired in /api/montree/admin/principal-agent.
 //
+// 🚨 GLOW ARCHITECTURE — May 29, 2026 final fix.
+// The halo is rendered by a ::before pseudo-element on .tracy-pulse
+// that's absolutely positioned with inset:-10px. This puts the halo
+// INSIDE the .tracy-pulse-wrap element's padding box — so even if a
+// parent has overflow:hidden the halo can't get clipped at the bottom
+// (or any edge). The halo is a radial-gradient with no hard ring edge,
+// which looks naturally circular regardless of border-radius. The
+// inner avatar keeps its own T-monogram shape.
+//
 // Used by:
 //   - app/montree/admin/page.tsx (full chat surface)
 //   - components/montree/admin/TracyFloat.tsx (cockpit-wide float)
@@ -32,7 +41,6 @@ interface ThinkingIndicatorProps {
 }
 
 const GOLD = '#E8C96A';
-const GOLD_DIM = 'rgba(232,201,106,0.45)';
 const TEXT_MUTED = 'rgba(255,255,255,0.40)';
 const SANS = '"Inter", -apple-system, BlinkMacSystemFont, sans-serif';
 
@@ -54,25 +62,37 @@ export default function ThinkingIndicator({
       aria-label={ariaLabel}
     >
       {/*
-        Wrapper sized EXACTLY to the avatar with line-height:0 so there's
-        no baseline gap below the inline element. Without these, the
-        box-shadow on `.tracy-pulse` was painting an asymmetric halo —
-        a few extra pixels of "wrapper" hung below the image, so the
-        bottom side of the glow looked further out than the top.
+        Outer wrapper has padding equal to the halo's max reach (18px),
+        so the halo lives INSIDE the wrapper's layout box and can't be
+        clipped by any parent overflow boundary. flexShrink:0 prevents
+        the wrapper from getting squeezed below the avatar+halo size
+        when the row is tight.
       */}
       <span
-        className="tracy-pulse"
+        className="tracy-pulse-wrap"
         style={{
+          position: 'relative',
           display: 'inline-block',
-          width: size,
-          height: size,
+          padding: 18,
           lineHeight: 0,
           verticalAlign: 'top',
+          flexShrink: 0,
         }}
       >
-        <TracyAvatar size={size} />
+        <span
+          className="tracy-pulse"
+          style={{
+            display: 'block',
+            position: 'relative',
+            width: size,
+            height: size,
+            borderRadius: '50%',
+          }}
+        >
+          <TracyAvatar size={size} />
+        </span>
       </span>
-      <div style={{ flex: 1, minWidth: 0, paddingTop: 6 }}>
+      <div style={{ flex: 1, minWidth: 0, paddingTop: 18 }}>
         <div
           aria-hidden
           style={{
@@ -104,17 +124,34 @@ export default function ThinkingIndicator({
       </div>
 
       <style jsx>{`
-        .tracy-pulse {
-          animation: tracyAvatarPulse 1.6s ease-in-out infinite;
-          /* 🚨 Glow shape — May 29, 2026.
-             border-radius on the .tracy-pulse wrapper controls the box-shadow
-             halo's shape (NOT the inner avatar's shape — the <img> has its
-             own border-radius). 22% produced a soft-square halo that the
-             user reported as "not round". 50% makes the halo a perfect
-             circle around the T-monogram avatar, which itself keeps its
-             rounded-square crop. */
+        /* Halo lives on a ::before pseudo-element of .tracy-pulse.
+           inset:-10px puts it 10px outside the avatar on all sides;
+           the wrapper's 18px padding above keeps everything inside the
+           parent's layout box. Radial-gradient with no hard edge looks
+           naturally circular. */
+        .tracy-pulse::before {
+          content: '';
+          position: absolute;
+          inset: -10px;
           border-radius: 50%;
-          will-change: transform, box-shadow;
+          background: radial-gradient(
+            circle,
+            rgba(232, 201, 106, 0.32) 0%,
+            rgba(232, 201, 106, 0.12) 45%,
+            rgba(232, 201, 106, 0) 72%
+          );
+          opacity: 0;
+          animation: tracyHaloPulse 1.6s ease-in-out infinite;
+          pointer-events: none;
+          z-index: 0;
+        }
+        .tracy-pulse {
+          animation: tracyAvatarBreathe 1.6s ease-in-out infinite;
+          will-change: transform;
+        }
+        .tracy-pulse > * {
+          position: relative;
+          z-index: 1;
         }
         .tracy-dot {
           display: inline-block;
@@ -134,16 +171,24 @@ export default function ThinkingIndicator({
         .tracy-dot-3 {
           animation-delay: 0.4s;
         }
-        @keyframes tracyAvatarPulse {
+        @keyframes tracyHaloPulse {
+          0%,
+          100% {
+            opacity: 0;
+            transform: scale(0.9);
+          }
+          50% {
+            opacity: 1;
+            transform: scale(1.05);
+          }
+        }
+        @keyframes tracyAvatarBreathe {
           0%,
           100% {
             transform: scale(1);
-            box-shadow: 0 0 0 0 rgba(232, 201, 106, 0);
           }
           50% {
             transform: scale(1.04);
-            box-shadow: 0 0 0 6px rgba(232, 201, 106, 0.08),
-              0 0 14px 2px ${GOLD_DIM};
           }
         }
         @keyframes tracyDotFade {
@@ -160,11 +205,16 @@ export default function ThinkingIndicator({
         }
         @media (prefers-reduced-motion: reduce) {
           .tracy-pulse,
+          .tracy-pulse::before,
           .tracy-dot {
             animation: none;
           }
           .tracy-dot {
             opacity: 0.7;
+          }
+          .tracy-pulse::before {
+            opacity: 0.5;
+            transform: scale(1);
           }
         }
       `}</style>
@@ -186,38 +236,23 @@ export function ToolChipSpinner({ size = 14 }: { size?: number }) {
         height={size}
         viewBox="0 0 24 24"
         fill="none"
-        xmlns="http://www.w3.org/2000/svg"
+        stroke="currentColor"
+        strokeWidth="2.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        style={{
+          animation: 'toolChipSpin 1s linear infinite',
+          color: '#34d399',
+          flexShrink: 0,
+        }}
         aria-hidden
-        className="tracy-tool-spinner"
-        style={{ flexShrink: 0 }}
       >
-        <circle
-          cx="12"
-          cy="12"
-          r="9"
-          stroke="rgba(52,211,153,0.18)"
-          strokeWidth="1.5"
-        />
-        <path
-          d="M12 3 a9 9 0 0 1 9 9"
-          stroke="#34d399"
-          strokeWidth="1.75"
-          strokeLinecap="round"
-          fill="none"
-        />
+        <path d="M21 12a9 9 0 1 1-6.219-8.56" />
       </svg>
       <style jsx>{`
-        .tracy-tool-spinner {
-          animation: tracyToolSpin 1s linear infinite;
-        }
-        @keyframes tracyToolSpin {
+        @keyframes toolChipSpin {
           to {
             transform: rotate(360deg);
-          }
-        }
-        @media (prefers-reduced-motion: reduce) {
-          .tracy-tool-spinner {
-            animation: none;
           }
         }
       `}</style>
