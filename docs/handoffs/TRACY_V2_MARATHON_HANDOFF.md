@@ -1,4 +1,4 @@
-# Tracy v2 — Marathon Build Handoff
+# Astra v2 — Marathon Build Handoff
 
 > **For: the next agent picking this up after a fresh session.**
 >
@@ -17,12 +17,12 @@
 
 ## 1. Mission
 
-The principal (Leu / future principals) uses **Tracy** — a chief-of-staff
-AI — to prepare for and execute parent meetings. Tracy's defining real-use
+The principal (Leu / future principals) uses **Astra** — a chief-of-staff
+AI — to prepare for and execute parent meetings. Astra's defining real-use
 case: *"prepare me for a meeting with Yo-yo's mother about his behavioural
 issues and K-class readiness."*
 
-**The product gap we're closing:** Tracy currently has hard-coded "do say
+**The product gap we're closing:** Astra currently has hard-coded "do say
 X / don't say Y" rules and a 9-section dossier structure. She lacks the
 **psychological depth** to apply those rules with judgment. The user's
 words: *"Guru has the right psychological mind. Can we basically duplicate
@@ -41,11 +41,11 @@ pedagogy.
 
 | Commit | What | Status |
 |---|---|---|
-| `7eb91f94` | Tracy streams parent-meeting tokens directly (option 1) | ✅ Live |
-| `f2fa4c14` | Tracy Sonnet swap + quick-brief default + brevity discipline | ✅ Live |
+| `7eb91f94` | Astra streams parent-meeting tokens directly (option 1) | ✅ Live |
+| `f2fa4c14` | Astra Sonnet swap + quick-brief default + brevity discipline | ✅ Live |
 | `07b9c0ad` | Dashboard: student grid bottom-row name clipping fix | ✅ Live |
 | `98681b0b` | Monthly Summary feature — 4th sub-tab in Weekly Admin | ✅ Live |
-| Session 134 chain (`f631c6da`, `f5e392a8`, `5c5633da`, `2323f109`, `3ef1bdd0`) | Chinese translatability + Tracy stability + principal handover + story vault | ✅ Live |
+| Session 134 chain (`f631c6da`, `f5e392a8`, `5c5633da`, `2323f109`, `3ef1bdd0`) | Chinese translatability + Astra stability + principal handover + story vault | ✅ Live |
 
 ### 2b. What's in the working tree, audit-clean but NOT yet committed
 
@@ -95,7 +95,7 @@ Should exit 0.
 ```
 Dashboard glow clip + keepalive route + cron docs
 
-- Chat scroll container paddingLeft/Right 8px so Tracy avatar's
+- Chat scroll container paddingLeft/Right 8px so Astra avatar's
   box-shadow halo isn't clipped by overflow:auto. Root-causes the
   3-4-time recurring "glow missing on left" issue — every prior fix
   was at the avatar level (size, shape, lineHeight); none addressed
@@ -121,9 +121,9 @@ mcp__Desktop_Commander__start_process({
 
 ---
 
-### Phase 1 — Diagnose Tracy's strikeout (~45 min)
+### Phase 1 — Diagnose Astra's strikeout (~45 min)
 
-**Background — what the user reported:** "Tracy took the question — *'Tracy,
+**Background — what the user reported:** "Astra took the question — *'Astra,
 I have a meeting with Yo-yo's parents about his behavioral issues and
 viability to graduate and cope in the k-class or lack thereof. Can you
 gather all the data on yo-yo and prepare me for a meeting with the mother'*
@@ -179,7 +179,7 @@ gather all the data on yo-yo and prepare me for a meeting with the mother'*
 | `lib/montree/tracy/tools/prepare_parent_meeting.ts` | Add `[prepare_parent_meeting]` console.log markers at: function-entry, post-cache-check, pre-Sonnet-call, on each section transition, on stream-complete, on timeout, in catch block. | Railway logs will tell us EXACTLY where it died next time. |
 | `lib/montree/tracy/tools/prepare_parent_meeting.ts` | Wrap the streaming loop with try/catch that captures Anthropic SDK errors specifically (status code, error type) | Right now `e instanceof Error ? e.message` swallows the structured error. Pull it apart. |
 | `lib/montree/tracy/tools/prepare_parent_meeting.ts` | Add per-chunk watchdog: if no `content_block_delta` arrives for 30s, log + fail with explicit "Sonnet stalled" error | Currently the outer 180s timeout is the only guard. A stalled stream silently waits the full window. |
-| `app/montree/admin/page.tsx` | UI fallback: if a tool chip has been spinning >15s without any further events, render "Tracy is taking longer than usual — still working..." | Users don't think it died silently. |
+| `app/montree/admin/page.tsx` | UI fallback: if a tool chip has been spinning >15s without any further events, render "Astra is taking longer than usual — still working..." | Users don't think it died silently. |
 | `lib/montree/tracy/tools/prepare_parent_meeting.ts` | Verify the executor passes `onMeetingStream` correctly — re-trace `tool-executor.ts:875`. | Last session verified once but the user saw a strikeout post-ship, so verify again. |
 
 **Don't speculate-fix anything in Phase 1 — INSTRUMENT FIRST.** The plumbing
@@ -195,9 +195,9 @@ ships, the logs will pinpoint it and Phase 1.5 fixes the real bug.
 
 ---
 
-### Phase 2 — Give Tracy Guru's psychological mind (~3 hours)
+### Phase 2 — Give Astra Guru's psychological mind (~3 hours)
 
-**The architectural mandate:** duplicate Guru's depth, retain Tracy's
+**The architectural mandate:** duplicate Guru's depth, retain Astra's
 principal-facing voice + whole-school scope.
 
 #### 2.1 Information to gather first (~30 min reading)
@@ -207,7 +207,7 @@ Read these files in full before writing anything:
 | File | What to extract |
 |---|---|
 | `lib/montree/guru/conversational-prompt.ts` | Guru's complete system prompt. Extract: (a) the Maria Montessori philosophy section, (b) the child development frame, (c) the "Maria Montessori in your pocket" voice. These become source material for `01-psychological-foundation.md`. |
-| `lib/montree/guru/tool-definitions.ts` | Full tool surface — for context, but NOT for replication. Tracy doesn't need write tools (set_focus_work, save_observation, etc.) — principals don't write per-child data, teachers do. |
+| `lib/montree/guru/tool-definitions.ts` | Full tool surface — for context, but NOT for replication. Astra doesn't need write tools (set_focus_work, save_observation, etc.) — principals don't write per-child data, teachers do. |
 | `lib/montree/mira/knowledge/loader.ts` | THE template. Mirror this pattern exactly for `lib/montree/tracy/knowledge/loader.ts`. |
 | `lib/montree/mira/knowledge/*.md` | Length / depth / format conventions. Each Mira knowledge file is ~500-1500 words, focused topic, declarative prose. Match the format. |
 | `lib/montree/tracy/system-prompt.ts` | Current state — where to inject the knowledge summary. Look for the `# BREVITY DISCIPLINE` section added Session 135; the new `# PSYCHOLOGICAL FOUNDATION` block goes RIGHT AFTER it. |
@@ -233,7 +233,7 @@ Read these files in full before writing anything:
 lib/montree/tracy/knowledge/
 ├── INDEX.md                              [~600 words]
 │   The map. For Sonnet's benefit + future agents. Names each file,
-│   says when Tracy should consult it. Top of the loader-returned
+│   says when Astra should consult it. Top of the loader-returned
 │   summary references this index.
 ├── 01-psychological-foundation.md        [~2000 words]
 │   Adapted from Guru's Maria Montessori + child-development prompt.
@@ -255,7 +255,7 @@ lib/montree/tracy/knowledge/
 │   Why validation must come before reframing. Specific NVC parent
 │   conversation examples.
 ├── 04-parent-psychology-patterns.md       [~1800 words]
-│   Five parent archetypes Tracy recognises:
+│   Five parent archetypes Astra recognises:
 │     - EXPECTATION-DRIVEN (most affluent parents; Madeline Levine)
 │     - ANXIETY-PROJECTING (Carol Dweck's fixed-mindset transmission)
 │     - HANDS-OFF (the "I'm trusting you to handle it" parent)
@@ -286,7 +286,7 @@ lib/montree/tracy/knowledge/
     Reads + caches the markdown files (process-level cache, invalidate
     on file mtime change). Two public functions:
       getTracyKnowledgeSummary() → ~1500-token compressed summary,
-        injected into Tracy's main system prompt on every turn.
+        injected into Astra's main system prompt on every turn.
       getTracyKnowledgeFull(topic: TracyKnowledgeTopic) → returns the
         full markdown for one file. Tool-callable via
         consult_tracy_knowledge.
@@ -299,7 +299,7 @@ Total knowledge content: **~10,200 words**, ~13K tokens.
 
 | File | Change |
 |---|---|
-| `lib/montree/tracy/system-prompt.ts` | Add `# PSYCHOLOGICAL FOUNDATION` section AFTER the existing `# BREVITY DISCIPLINE` block. Inject `getTracyKnowledgeSummary()` result. Tracy now ALWAYS has the framework loaded — every turn benefits, not just parent meetings. |
+| `lib/montree/tracy/system-prompt.ts` | Add `# PSYCHOLOGICAL FOUNDATION` section AFTER the existing `# BREVITY DISCIPLINE` block. Inject `getTracyKnowledgeSummary()` result. Astra now ALWAYS has the framework loaded — every turn benefits, not just parent meetings. |
 | `lib/montree/tracy/tool-definitions.ts` | New `consult_tracy_knowledge` tool with input schema: `{ topic: 'foundation' \| 'frameworks' \| 'nvc' \| 'patterns' \| 'cultural' \| 'montessori_anxieties' \| 'de_escalation' \| 'index' }`. Returns the full file content. |
 | `lib/montree/tracy/tool-executor.ts` | Dispatch case for `consult_tracy_knowledge`. No school-scoping needed (knowledge is universal). |
 | `lib/montree/tracy/tools/prepare_parent_meeting.ts` | Inject the FULL knowledge bundle (~13K tokens) into the dossier-builder Sonnet's system prompt — between `PARENT_MEETING_PREP_SYSTEM_PROMPT` and `PARENT_MEETING_PREP_WORKED_EXAMPLE`. Current dossier prompt has hard-coded rules; the knowledge files provide the WHY behind those rules so Sonnet can apply them with judgment instead of mechanically. |
@@ -312,7 +312,7 @@ Total knowledge content: **~10,200 words**, ~13K tokens.
 - **Cache compatibility**: dossier cache key (in `dossier_cache.ts`) folds `meeting_purpose` + locale + scope_owner_id. Adding the knowledge bundle to the prompt doesn't change the cache contract. Existing cached dossiers remain valid (they were generated without the knowledge bundle, but the cache hit serves them correctly; new dossiers post-deploy get the richer prompt).
 - **Streaming compatibility**: the new system prompt content increases input tokens (~+13K) but doesn't change the streaming flow. Brief + dossier still split via `<<<BRIEF>>>` / `<<<DOSSIER>>>` delimiters.
 - **Cost impact**: extra ~$0.04 per parent-meeting (13K input × $3/MTok). Wholesale cost per dossier: ~$0.04 → ~$0.08. Still under $0.10/meeting. Worth it.
-- **Voice contract**: Tracy stays chief-of-staff. The knowledge informs WHAT she knows, not HOW she sounds. The `# BREVITY DISCIPLINE` block stays in effect — Tracy's chat responses default to ≤120 words. Knowledge gets used INSIDE dossier prep + when she explicitly consults a file.
+- **Voice contract**: Astra stays chief-of-staff. The knowledge informs WHAT she knows, not HOW she sounds. The `# BREVITY DISCIPLINE` block stays in effect — Astra's chat responses default to ≤120 words. Knowledge gets used INSIDE dossier prep + when she explicitly consults a file.
 - **i18n**: knowledge files are English-only deliberately. Sonnet handles framework-in-English → response-in-target-language correctly. Adding multilingual knowledge bundles ~triples the work for marginal benefit.
 - **Cross-pollination**: no impact (knowledge is universal, not school-scoped).
 
@@ -345,7 +345,7 @@ Total knowledge content: **~10,200 words**, ~13K tokens.
 4. Unit-test the loader: create a tiny test file that calls `getTracyKnowledgeFull('frameworks')` and asserts the returned markdown is non-empty + contains a known section heading.
 5. Re-verify the SSE event flow: `tool_call → tool_progress → meeting_brief_init → meeting_brief_chunk* → meeting_brief → tool_result` end-to-end via grep.
 6. Verify i18n strict parity (no new keys this phase — knowledge files are English-only deliberately, since they're knowledge not UI strings). `node scripts/check-i18n-completeness.mjs --strict` should still pass at 100% × 12 locales.
-7. Verify Tracy's existing tool surface still works — grep for all `case 'name':` in tool-executor.ts and confirm dispatch coverage.
+7. Verify Astra's existing tool surface still works — grep for all `case 'name':` in tool-executor.ts and confirm dispatch coverage.
 
 ---
 
@@ -365,12 +365,12 @@ Total knowledge content: **~10,200 words**, ~13K tokens.
 
 **Commit message structure:**
 ```
-Tracy v2: psychological mind via Guru-pattern knowledge base + Phase 1 diagnostic plumbing
+Astra v2: psychological mind via Guru-pattern knowledge base + Phase 1 diagnostic plumbing
 
-The headline change. Tracy now has 10,200 words of psychological depth
+The headline change. Astra now has 10,200 words of psychological depth
 baked in via 7 markdown files in lib/montree/tracy/knowledge/, mirroring
 Mira's knowledge architecture (Session 133). The user's words: "Guru has
-the right psychological mind. Can we duplicate Guru but give Tracy a
+the right psychological mind. Can we duplicate Guru but give Astra a
 principal facing attitude?" Answer: yes — same loader pattern as Mira,
 same depth as Guru, different content domain (adult interpersonal +
 difficult conversations, not child pedagogy).
@@ -395,7 +395,7 @@ ARCHITECTURE:
 - lib/montree/tracy/knowledge/loader.ts (mirrors lib/montree/mira/
   knowledge/loader.ts pattern)
 - getTracyKnowledgeSummary() injects ~1500-token compact summary into
-  Tracy's main system prompt on every turn
+  Astra's main system prompt on every turn
 - getTracyKnowledgeFull(topic) returns one file's content, callable
   via new consult_tracy_knowledge tool
 - prepare_parent_meeting Sonnet call gets the FULL knowledge bundle
@@ -413,7 +413,7 @@ COST IMPACT: +$0.04 per parent-meeting dossier (13K extra input tokens
 $0.10/meeting. Worth the depth.
 
 NO REGRESSION TO TRACY VOICE: BREVITY DISCIPLINE block from Session 135
-still in force. Tracy's chat responses default to ≤120 words. Knowledge
+still in force. Astra's chat responses default to ≤120 words. Knowledge
 gets used INSIDE dossier prep + when she explicitly consults a file.
 ```
 
@@ -424,8 +424,8 @@ gets used INSIDE dossier prep + when she explicitly consults a file.
 ## 4. Things explicitly NOT in scope for this marathon
 
 - **#10 dual-role login** (separate cookies per role, header role-switcher). Half-day on its own. Document as next priority but don't build.
-- **Don't replicate Guru's WRITE tools** (set_focus_work, save_observation, save_developmental_insight, etc.). Principals don't typically write per-child observations themselves — teachers do via Guru. Adding write tools to Tracy is feature creep; adding the PSYCHOLOGICAL DEPTH is the actual unlock.
-- **Don't change Tracy's voice/personality contract** — chief-of-staff stays chief-of-staff. The knowledge informs WHAT she knows, not HOW she sounds.
+- **Don't replicate Guru's WRITE tools** (set_focus_work, save_observation, save_developmental_insight, etc.). Principals don't typically write per-child observations themselves — teachers do via Guru. Adding write tools to Astra is feature creep; adding the PSYCHOLOGICAL DEPTH is the actual unlock.
+- **Don't change Astra's voice/personality contract** — chief-of-staff stays chief-of-staff. The knowledge informs WHAT she knows, not HOW she sounds.
 - **Don't change the dossier 9-section structure or the BRIEF format** — those landed Session 135, working as intended.
 - **Don't web-fetch source material** unless the user explicitly approves the cost+time. All source material is well within training corpus. Synthesize from there.
 
@@ -435,7 +435,7 @@ gets used INSIDE dossier prep + when she explicitly consults a file.
 
 ### 5.1 Cookie / auth state
 
-The user previously reported Tracy 403'ing with "Only principals can use the home agent." Root cause: only ONE auth cookie (`montree-auth`). Logging in as teacher overwrites the principal cookie. The principal-agent route has a defensive school_admins fallback (Session 86 commit `ca1e13bc`) — when JWT role isn't 'principal' but `auth.userId` matches an active row in `montree_school_admins` for the current school, it allows through. **This means:** as long as the same UUID appears in both `montree_teachers` and `montree_school_admins`, the user can access Tracy regardless of which cookie is set. **This is NOT the case for Tredoux** — his teacher row has a different UUID than his (former) principal row, which is why he hit 403 when he was on the teacher cookie. **Workaround for testing:** log out fully, log in with principal code (`XVYHHX` for Leu, or whatever the current principal code is).
+The user previously reported Astra 403'ing with "Only principals can use the home agent." Root cause: only ONE auth cookie (`montree-auth`). Logging in as teacher overwrites the principal cookie. The principal-agent route has a defensive school_admins fallback (Session 86 commit `ca1e13bc`) — when JWT role isn't 'principal' but `auth.userId` matches an active row in `montree_school_admins` for the current school, it allows through. **This means:** as long as the same UUID appears in both `montree_teachers` and `montree_school_admins`, the user can access Astra regardless of which cookie is set. **This is NOT the case for Tredoux** — his teacher row has a different UUID than his (former) principal row, which is why he hit 403 when he was on the teacher cookie. **Workaround for testing:** log out fully, log in with principal code (`XVYHHX` for Leu, or whatever the current principal code is).
 
 **Tredoux's current state in DB:**
 - `montree_teachers`: id=`26c365b0-...`, name='Tredoux', role='lead_teacher', email=null, login_code='V8F8V9'
@@ -444,14 +444,14 @@ The user previously reported Tracy 403'ing with "Only principals can use the hom
 ### 5.2 SSE event sequence (post-Session-135)
 
 ```
-tool_call           → Tracy invoked a tool (chip appears)
+tool_call           → Astra invoked a tool (chip appears)
 tool_progress       → Live status from inside a tool (Guru-style status line)
 tool_result         → Tool returned (chip turns green/red)
 meeting_brief_chunk → (Session 135 streaming) — each chunk has section + delta
 meeting_brief       → (Session 135) final structured brief + dossier — fires
                        at tool completion AFTER chunks; replaces in-progress
                        payload with canonical version; also fires on cache-hits
-thinking            → Interim Tracy text between tool calls
+thinking            → Interim Astra text between tool calls
 text                → Final answer chunk
 done                → Closing summary (cost_usd, duration_ms)
 error               → Fatal error
@@ -466,7 +466,7 @@ meeting_brief_init  → (NEW Phase 1) fires when prepare_parent_meeting tool
 
 ### 5.3 BREVITY DISCIPLINE rules (from Session 135)
 
-Tracy's responses default to ≤120 words. If she finds herself writing the third paragraph, stop and cut. Specific over rich. ONE number, ONE date, ONE name. If she has ≥250 words of substantive material, call `prepare_parent_meeting` instead of dumping a long-form reply. **Knowledge bundle Phase 2 ships does NOT break this rule** — the knowledge is for Tracy's INTERNAL judgment + the dossier-builder Sonnet, not for verbose chat responses.
+Astra's responses default to ≤120 words. If she finds herself writing the third paragraph, stop and cut. Specific over rich. ONE number, ONE date, ONE name. If she has ≥250 words of substantive material, call `prepare_parent_meeting` instead of dumping a long-form reply. **Knowledge bundle Phase 2 ships does NOT break this rule** — the knowledge is for Astra's INTERNAL judgment + the dossier-builder Sonnet, not for verbose chat responses.
 
 ### 5.4 Audit cycle pattern (proven this session)
 
@@ -494,16 +494,16 @@ cd ~/Desktop/Master\ Brain/ACTIVE/whale && \
 
 | File | What it does |
 |---|---|
-| `lib/ai/anthropic.ts` | `AI_MODEL = 'claude-sonnet-4-6'`, `OPUS_MODEL = 'claude-opus-4-6'`, `HAIKU_MODEL = 'claude-haiku-4-5-20251001'`. Tracy uses AI_MODEL (Session 135 swap from Opus). |
-| `lib/montree/tracy/system-prompt.ts` | Tracy's voice contract. `# BREVITY DISCIPLINE` block + `# Parent-meeting responses` block + (Phase 2 adds) `# PSYCHOLOGICAL FOUNDATION` block. |
-| `lib/montree/tracy/tool-definitions.ts` | All Tracy tools. Phase 2 adds `consult_tracy_knowledge`. |
+| `lib/ai/anthropic.ts` | `AI_MODEL = 'claude-sonnet-4-6'`, `OPUS_MODEL = 'claude-opus-4-6'`, `HAIKU_MODEL = 'claude-haiku-4-5-20251001'`. Astra uses AI_MODEL (Session 135 swap from Opus). |
+| `lib/montree/tracy/system-prompt.ts` | Astra's voice contract. `# BREVITY DISCIPLINE` block + `# Parent-meeting responses` block + (Phase 2 adds) `# PSYCHOLOGICAL FOUNDATION` block. |
+| `lib/montree/tracy/tool-definitions.ts` | All Astra tools. Phase 2 adds `consult_tracy_knowledge`. |
 | `lib/montree/tracy/tool-executor.ts` | Tool dispatch. Phase 2 adds `consult_tracy_knowledge` case. |
 | `lib/montree/tracy/tools/prepare_parent_meeting.ts` | The dossier builder. Phase 1 adds diagnostic logging + per-chunk watchdog. Phase 2 injects the full knowledge bundle into the Sonnet system prompt. |
 | `lib/montree/tracy/prompts/parent_meeting_prep.ts` | The dossier-builder Sonnet's system prompt. Has `PARENT_MEETING_PREP_SYSTEM_PROMPT` (rules) + `PARENT_MEETING_PREP_WORKED_EXAMPLE` (Yo-yo anchor). Phase 2 sits BETWEEN these two. |
-| `app/api/montree/admin/principal-agent/route.ts` | Tracy's SSE route. Phase 1 adds `meeting_brief_init` event emission. |
-| `app/montree/admin/page.tsx` | Tracy's chat UI. Already has `MeetingBriefCard` (Session 135). Phase 1 adds "preparing..." fallback after 15s. |
-| `lib/montree/mira/knowledge/loader.ts` | TEMPLATE for Tracy's loader. Read this first. |
-| `lib/montree/guru/conversational-prompt.ts` | Source material for Tracy's `01-psychological-foundation.md`. |
+| `app/api/montree/admin/principal-agent/route.ts` | Astra's SSE route. Phase 1 adds `meeting_brief_init` event emission. |
+| `app/montree/admin/page.tsx` | Astra's chat UI. Already has `MeetingBriefCard` (Session 135). Phase 1 adds "preparing..." fallback after 15s. |
+| `lib/montree/mira/knowledge/loader.ts` | TEMPLATE for Astra's loader. Read this first. |
+| `lib/montree/guru/conversational-prompt.ts` | Source material for Astra's `01-psychological-foundation.md`. |
 
 ### 5.7 Environment
 
@@ -517,8 +517,8 @@ cd ~/Desktop/Master\ Brain/ACTIVE/whale && \
 ### 5.8 The user's frustration history (read this so you know the stakes)
 
 - The glow clip has been "fixed" 3-4 times. Each prior fix was at the avatar level. THIS time the structural root cause (scroll container overflow clipping box-shadow) is being addressed. If THIS doesn't stick, something else is going on (browser viewport, focus ring, etc.) — escalate, don't just patch again.
-- Tracy struck out completely on the Yo-yo parent-meeting question this morning. Zero reply, zero console logs. **The diagnostic plumbing in Phase 1 is non-negotiable** — if the strikeout repros, you NEED the logs to diagnose. Don't skip Phase 1 to rush Phase 2.
-- The user explicitly said "this is becoming quite an epic failure" about Tracy. Principal Leu's introduction depends on Tracy working. Phase 2 (psychological depth) is the headline feature for that introduction. Get it right.
+- Astra struck out completely on the Yo-yo parent-meeting question this morning. Zero reply, zero console logs. **The diagnostic plumbing in Phase 1 is non-negotiable** — if the strikeout repros, you NEED the logs to diagnose. Don't skip Phase 1 to rush Phase 2.
+- The user explicitly said "this is becoming quite an epic failure" about Astra. Principal Leu's introduction depends on Astra working. Phase 2 (psychological depth) is the headline feature for that introduction. Get it right.
 
 ---
 
@@ -576,5 +576,5 @@ re-debate decisions, ship in coherent commits with thorough messages.
 Don't ask permission for things in this plan — execute them. Ask only
 if something concrete breaks or a new decision surfaces.
 
-Tracy's psychological depth is the headline feature for Principal Leu's
+Astra's psychological depth is the headline feature for Principal Leu's
 introduction. Get it right.

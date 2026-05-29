@@ -1,6 +1,6 @@
 // app/api/montree/admin/parent-profile/route.ts
 //
-// Ultimate Tracy Phase A — parent profile CRUD.
+// Ultimate Astra Phase A — parent profile CRUD.
 //
 // GET    ?parent_id=X   → returns the profile (school-scoped via auth)
 // POST                  → upsert from voice intake. Body: { parent_id, transcript, locale? }

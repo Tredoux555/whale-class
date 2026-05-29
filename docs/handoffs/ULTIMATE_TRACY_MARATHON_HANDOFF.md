@@ -2,7 +2,7 @@
 
 > **For: the overnight agent picking this up cold.**
 >
-> **Mission:** make Tracy know every parent in the school by name, every
+> **Mission:** make Astra know every parent in the school by name, every
 > meeting that's ever happened, every pattern she's learned. Self-improving
 > brain. Conversation memory. Parent-as-first-class-entity.
 >
@@ -25,7 +25,7 @@
 
 ## 1. Mission
 
-The Ultimate Tracy is a chief-of-staff who knows every parent in the
+The Ultimate Astra is a chief-of-staff who knows every parent in the
 school by name and history — not just by email. She can prepare for any
 meeting by reading both the CHILD's record (already done) AND the
 PARENT's profile (new). She can listen to a meeting, transcribe it,
@@ -33,17 +33,17 @@ extract structured insights, propose profile updates. And she builds her
 own corpus of school-specific wisdom over time — what works with which
 archetype, what landed, what backfired.
 
-This unlocks three things Tracy can't do today:
+This unlocks three things Astra can't do today:
 1. **Personalised parent-meeting dossiers.** Not just "here's what we
    know about Yo-yo" but "here's what we know about Yo-yo AND here's
    how to talk to his mother specifically."
 2. **Institutional memory.** Every meeting feeds back into the system.
-   Six months in, Tracy's read of any parent is sharper than a fresh
+   Six months in, Astra's read of any parent is sharper than a fresh
    principal's. The school's relational knowledge accumulates instead
    of evaporating each year.
-3. **Self-improvement.** Tracy starts learning from her own
+3. **Self-improvement.** Astra starts learning from her own
    conversations — same auto-corpus pattern Guru uses for child
-   pedagogy. Tracy's adult-relational craft will sharpen with every
+   pedagogy. Astra's adult-relational craft will sharpen with every
    real meeting that goes through the system.
 
 ---
@@ -53,24 +53,24 @@ This unlocks three things Tracy can't do today:
 ### 2a. Commits on `main` (top → newer)
 
 ```
-1ffdb24a  Tracy v2: psychological mind via Guru-pattern knowledge base
-0a1f2aa0  Tracy Phase 1: diagnostic plumbing for parent-meeting strikeout
+1ffdb24a  Astra v2: psychological mind via Guru-pattern knowledge base
+0a1f2aa0  Astra Phase 1: diagnostic plumbing for parent-meeting strikeout
 ee52f898  Dashboard glow clip + keepalive route + cron docs
-7eb91f94  Tracy: stream parent-meeting tokens directly to client
-f2fa4c14  Tracy: Sonnet swap + quick-brief default + brevity discipline
+7eb91f94  Astra: stream parent-meeting tokens directly to client
+f2fa4c14  Astra: Sonnet swap + quick-brief default + brevity discipline
 ```
 
 ### 2b. What's already live (don't rebuild)
 
 | System | Where | Status |
 |---|---|---|
-| Tracy's persistent memory per principal | `montree_principal_memory` (migration 195) | ✅ Live |
-| Tracy's psychological knowledge base | `lib/montree/tracy/knowledge/*.md` (7 files + INDEX + loader.ts) | ✅ Live |
-| Tracy's chat system prompt with knowledge summary | `lib/montree/tracy/system-prompt.ts` | ✅ Live |
+| Astra's persistent memory per principal | `montree_principal_memory` (migration 195) | ✅ Live |
+| Astra's psychological knowledge base | `lib/montree/tracy/knowledge/*.md` (7 files + INDEX + loader.ts) | ✅ Live |
+| Astra's chat system prompt with knowledge summary | `lib/montree/tracy/system-prompt.ts` | ✅ Live |
 | `consult_tracy_knowledge` tool | `lib/montree/tracy/tool-{definitions,executor}.ts` | ✅ Live |
 | Dossier cache table + 24h TTL | `montree_meeting_dossiers` (migration 237) | ✅ RUN per Tredoux's Supabase verification screenshot |
 | Diagnostic plumbing on prepare_parent_meeting | `[prepare_parent_meeting]` logs + per-chunk watchdog + 15s UI fallback | ✅ Live |
-| 16 Tracy tools (child_focus, unpack_teacher, prepare_parent_meeting, etc.) | `lib/montree/tracy/tool-definitions.ts` | ✅ Live |
+| 16 Astra tools (child_focus, unpack_teacher, prepare_parent_meeting, etc.) | `lib/montree/tracy/tool-definitions.ts` | ✅ Live |
 | Audio-free meeting notes (teacher + principal) | `/montree/dashboard/conversations` + `/montree/admin/meeting-notes` (migrations 214 + 215) | ✅ Live |
 | Whisper transcription pipeline | `/api/montree/voice-notes/transcribe` | ✅ Live, reusable |
 | Vault encryption pattern | `lib/montree/vault-crypto.ts` (AES-256-GCM, PBKDF2) | ✅ Live, reusable |
@@ -80,7 +80,7 @@ f2fa4c14  Tracy: Sonnet swap + quick-brief default + brevity discipline
 
 | Item | Status | Action |
 |---|---|---|
-| Tracy knowledge files have ZERO i18n (English-only) | Deliberate — frameworks not UI | No action |
+| Astra knowledge files have ZERO i18n (English-only) | Deliberate — frameworks not UI | No action |
 | `montree_parents` rich profile data | DOES NOT EXIST | **Phase A builds it** |
 | Meeting recording for IN-PERSON meetings (not video) | DOES NOT EXIST | **Phase B builds it** |
 | Auto-corpus / self-improving brain | DOES NOT EXIST | **Phase C builds it** |
@@ -103,7 +103,7 @@ f2fa4c14  Tracy: Sonnet swap + quick-brief default + brevity discipline
    pattern for "static markdown files cached in process memory". Phase C
    corpus retrieval mirrors this for dynamic content.
 
-4. **`/api/montree/admin/principal-agent/route.ts`** — Tracy's SSE
+4. **`/api/montree/admin/principal-agent/route.ts`** — Astra's SSE
    route. Phase A + C add new tool wirings here. DO NOT touch the SSE
    plumbing or the cost-model assertion logic.
 
@@ -218,7 +218,7 @@ guidelines.
    `school_id`. Already-existing helpers (`verifySchoolRequest`,
    `verifyChildBelongsToSchool`) wrap every endpoint.
 
-9. **Corpus retrieval RAG is also school-scoped.** When Tracy retrieves
+9. **Corpus retrieval RAG is also school-scoped.** When Astra retrieves
    corpus entries for a chat or dossier, the WHERE filter on
    `montree_tracy_corpus` is hard-coded `school_id = principalSchoolId`.
    No exceptions, no global insights bleeding across schools.
@@ -232,14 +232,14 @@ guidelines.
 ## 5. Phase A — Parent Profiles + Voice Onboarding
 
 **Goal:** parents become first-class entities with rich psychological
-profiles. Tracy can answer "tell me about Mrs Chen" with substance, not
+profiles. Astra can answer "tell me about Mrs Chen" with substance, not
 just metadata.
 
 **Effort:** ~2 days condensed. Aim for 2.5-3 hours.
 
 **Minimum viable demonstration** (if context gets tight): migration
 runs, voice onboarding works, profile shows on a per-parent surface,
-`get_parent_profile` tool returns the profile to Tracy. Skip the
+`get_parent_profile` tool returns the profile to Astra. Skip the
 dossier integration — that's the cherry, but the foundation is the
 profile itself.
 
@@ -256,7 +256,7 @@ CREATE TABLE IF NOT EXISTS montree_parent_profiles (
   parent_id UUID NOT NULL REFERENCES montree_parents(id) ON DELETE CASCADE,
   school_id UUID NOT NULL REFERENCES montree_schools(id) ON DELETE CASCADE,
 
-  -- The five canonical archetypes from Tracy's knowledge file 04.
+  -- The five canonical archetypes from Astra's knowledge file 04.
   -- Stored as text[] because parents often span 2 archetypes.
   archetypes TEXT[] NOT NULL DEFAULT '{}',
 
@@ -286,7 +286,7 @@ CREATE TABLE IF NOT EXISTS montree_parent_profiles (
   -- Moves that work — specific things that have consistently landed.
   effective_moves TEXT[] NOT NULL DEFAULT '{}',
 
-  -- Relationship temperature — Tracy reads this from threads + meetings.
+  -- Relationship temperature — Astra reads this from threads + meetings.
   relationship_temperature TEXT NOT NULL DEFAULT 'neutral'
     CHECK (relationship_temperature IN ('warm', 'neutral', 'strained', 'repairing')),
 
@@ -397,7 +397,7 @@ Flow:
 6. Editable card view: principal can adjust each field.
 7. Save button → POST → persisted.
 
-### 5.5 Tracy tool wiring
+### 5.5 Astra tool wiring
 
 **Add to** `lib/montree/tracy/tool-definitions.ts`:
 
@@ -478,7 +478,7 @@ Before commit:
 - [ ] Tool dispatch coverage: 2 new tools, 2 new cases
 - [ ] `get_parent_profile` correctly returns 404 when parent doesn't
       belong to the principal's school
-- [ ] Tracy's system prompt updated INTENT TABLE to mention
+- [ ] Astra's system prompt updated INTENT TABLE to mention
       `get_parent_profile` for "tell me about [parent name]"
 - [ ] `prepare_parent_meeting` dossier visibly uses the parent profile
       data when it exists (verify by reading the prompt assembly code)
@@ -487,10 +487,10 @@ Before commit:
 
 Single commit. Title:
 ```
-Ultimate Tracy Phase A: parents become first-class entities
+Ultimate Astra Phase A: parents become first-class entities
 
 Adds montree_parent_profiles + voice-first onboarding intake + 2 new
-Tracy tools (get_parent_profile, list_parents_for_school). The
+Astra tools (get_parent_profile, list_parents_for_school). The
 parent-meeting dossier now personalises to this parent's archetype +
 cultural register + known triggers, not just to the child's record.
 
@@ -514,7 +514,7 @@ If context is healthy (<60%), proceed straight to Phase B.
 
 ## 6. Phase B — Meeting Recording + Transcription + Analysis
 
-**Goal:** the principal records a parent meeting in-app, Tracy
+**Goal:** the principal records a parent meeting in-app, Astra
 transcribes + analyses + proposes profile updates + writes a follow-up
 plan. The headline feature.
 
@@ -715,7 +715,7 @@ Flow:
    (Whisper's safe ceiling), uploads each chunk to `/api/montree/admin/parents/[parentId]/meetings/transcribe-chunk`.
 6. Persistent banner during recording: red dot + "Recording active —
    tap to stop". Tapping pauses; long-press stops.
-7. On stop: spinner + "Tracy is reading the meeting…" — final analysis
+7. On stop: spinner + "Astra is reading the meeting…" — final analysis
    call fires.
 8. Result screen: summary + structured extractions + profile-update
    proposals (reviewable).
@@ -747,7 +747,7 @@ Flow:
 **New module:** `lib/montree/parent-meeting/analysis-prompt.ts`
 
 Exports `PARENT_MEETING_ANALYSIS_SYSTEM_PROMPT` (~1500 words). Should
-reference Tracy's knowledge base — specifically files 02 (difficult
+reference Astra's knowledge base — specifically files 02 (difficult
 conversations), 04 (archetypes), 05 (cultural), 07 (de-escalation) —
 NOT by quoting them, but by name so Sonnet knows the frameworks it's
 applying.
@@ -790,7 +790,7 @@ new value, mark `proposals_review_outcome = 'approved_all'` or
 
 ### 6.8 Phase B commit + push
 
-Single commit. Title: `Ultimate Tracy Phase B: meeting recording +
+Single commit. Title: `Ultimate Astra Phase B: meeting recording +
 transcription + analysis pipeline`
 
 ### 6.9 Refresh checkpoint
@@ -801,17 +801,17 @@ context window of 50K tokens.
 
 ---
 
-## 7. Phase C — Auto-Corpus + Retrieval-Augmented Tracy
+## 7. Phase C — Auto-Corpus + Retrieval-Augmented Astra
 
-**Goal:** Tracy starts learning from every meeting analysis and every
+**Goal:** Astra starts learning from every meeting analysis and every
 long parent thread. Corpus entries get retrieved by semantic similarity
-+ filter and injected into Tracy's prompts when relevant.
++ filter and injected into Astra's prompts when relevant.
 
 **Effort:** ~2 days condensed. Aim for 2-2.5 hours.
 
 **Minimum viable demonstration** (if context gets tight): migration
 runs, extraction job extracts insights from at least one analysed
-meeting, `search_corpus` tool works, Tracy uses retrieved insights in
+meeting, `search_corpus` tool works, Astra uses retrieved insights in
 at least one chat reply. Skip the pgvector embeddings — fall back to
 keyword search for v1. Embeddings can be added in a follow-up.
 
@@ -858,7 +858,7 @@ CREATE TABLE IF NOT EXISTS montree_tracy_corpus (
   reference_count INTEGER NOT NULL DEFAULT 0,
   last_referenced_at TIMESTAMPTZ,
 
-  -- Supersede chain (same pattern as Tracy's memory).
+  -- Supersede chain (same pattern as Astra's memory).
   superseded_by UUID REFERENCES montree_tracy_corpus(id) ON DELETE SET NULL,
   superseded_at TIMESTAMPTZ,
 
@@ -928,7 +928,7 @@ academic progression has de-escalated reading concerns 2/2 times."
 //   → bump reference_count + last_referenced_at on returned entries
 ```
 
-### 7.5 Tracy tool
+### 7.5 Astra tool
 
 **Add to** `lib/montree/tracy/tool-definitions.ts`:
 
@@ -936,7 +936,7 @@ academic progression has de-escalated reading concerns 2/2 times."
 {
   name: 'search_corpus',
   description:
-    "Retrieve school-specific insights Tracy has learned over time. Use when preparing for a parent meeting, drafting a parent response, or answering any question where past patterns at THIS school would inform the answer. Examples: 'what's worked with Mrs Chen before?', 'what should I avoid with expectation-driven parents at our school?', 'have we had this kind of meeting before?'. Returns up to 10 relevant insights with their source meeting + confidence.",
+    "Retrieve school-specific insights Astra has learned over time. Use when preparing for a parent meeting, drafting a parent response, or answering any question where past patterns at THIS school would inform the answer. Examples: 'what's worked with Mrs Chen before?', 'what should I avoid with expectation-driven parents at our school?', 'have we had this kind of meeting before?'. Returns up to 10 relevant insights with their source meeting + confidence.",
   input_schema: {
     type: 'object',
     properties: {
@@ -974,12 +974,12 @@ into the dossier prompt as a new section:
 - [ ] Reference count bumps on retrieval
 - [ ] Extraction job refines + abstracts (verify by reading output —
       no PII leaking in)
-- [ ] Tracy actually USES corpus retrieval in at least one test
+- [ ] Astra actually USES corpus retrieval in at least one test
       conversation
 
 ### 7.8 Phase C commit + push
 
-Single commit. `Ultimate Tracy Phase C: self-improving corpus + RAG`
+Single commit. `Ultimate Astra Phase C: self-improving corpus + RAG`
 
 ---
 
@@ -998,7 +998,7 @@ loads, shows profile + meeting list. Skip the timeline UX polish.
 - `app/montree/admin/parents/page.tsx` — list view of all parents in
   school with archetype tags + last meeting date + search.
 - `app/montree/admin/parents/[parentId]/page.tsx` — per-parent page.
-  Profile card + meeting list + Tracy's read (summary) + "Onboard" /
+  Profile card + meeting list + Astra's read (summary) + "Onboard" /
   "Record meeting" / "Prepare for meeting" actions.
 - `app/montree/admin/parents/[parentId]/meetings/[meetingId]/page.tsx` —
   per-meeting detail. Summary + structured analysis + transcript (with
@@ -1010,9 +1010,9 @@ Add "Parents" tab to `app/montree/admin/layout.tsx` (or wherever the
 principal nav lives — verify path against current state). Position
 between "People" and "Pulse" so the relational entities sit together.
 
-### 8.3 Tracy nav integration
+### 8.3 Astra nav integration
 
-When Tracy returns a `get_parent_profile` or `list_parents_for_school`
+When Astra returns a `get_parent_profile` or `list_parents_for_school`
 result, the UI should render the parent name as a clickable link to
 `/montree/admin/parents/[parentId]`. Same pattern as child links work
 today.
@@ -1027,7 +1027,7 @@ today.
 
 ### 8.5 Phase D commit + push
 
-Single commit. `Ultimate Tracy Phase D: Parents tab + per-parent UI`
+Single commit. `Ultimate Astra Phase D: Parents tab + per-parent UI`
 
 ---
 
@@ -1087,7 +1087,7 @@ Super-admin page at `/montree/super-admin/tracy-corpus` shows:
 
 ### 9.6 Phase E commit + push
 
-Single commit. `Ultimate Tracy Phase E: privacy + corpus monitor`
+Single commit. `Ultimate Astra Phase E: privacy + corpus monitor`
 
 ---
 
@@ -1126,7 +1126,7 @@ Grep checks:
 ### 10.4 Final commit + push
 
 Catch-all commit if any audit fixes were needed. Title:
-`Ultimate Tracy cross-cut audit fixes + Session N closeout`
+`Ultimate Astra cross-cut audit fixes + Session N closeout`
 
 ### 10.5 Update CLAUDE.md
 
@@ -1174,7 +1174,7 @@ left in.
 7. **Verify audio never persisted** —
    `SELECT COUNT(*) FROM storage.objects WHERE bucket_id = '...' AND name LIKE '%meeting%audio%';`
    should be 0.
-8. **Ask Tracy in chat: "what should I watch out for with [parent name]?"**
+8. **Ask Astra in chat: "what should I watch out for with [parent name]?"**
    Verify she calls `get_parent_profile` AND `search_corpus`, and her
    answer uses both.
 9. **Check the Parents tab in nav.** Verify list view + per-parent
@@ -1208,7 +1208,7 @@ session reads this doc, identifies the next phase, picks up.
 > short status line: COMPLETED / PARTIAL (with what's left) /
 > SKIPPED (with why).
 
-- Phase A — **COMPLETED** (commit `15795141` on `origin/main`). Migration 238 pending Tredoux's Supabase run. 11 files, +2976 lines. Lint clean. Two new tools wired into Tracy. Dossier integration live with PARENT PROFILE block + Section 5 calibration rules.
+- Phase A — **COMPLETED** (commit `15795141` on `origin/main`). Migration 238 pending Tredoux's Supabase run. 11 files, +2976 lines. Lint clean. Two new tools wired into Astra. Dossier integration live with PARENT PROFILE block + Section 5 calibration rules.
 - Phase B — **COMPLETED** (commit `07c0e73d` on `origin/main`). Migrations 239/240/241 pending Supabase run. 10 files. Lint clean. Recording UI + chunked Whisper + AES-256-GCM encrypted persistence + Sonnet analysis with structured tool_use + per-field Approve/Edit/Dismiss review workflow. Audio never persists. Consent gate enforced server + UI.
 - Phase C — **COMPLETED** (commit `6b7fedf7` on `origin/main`). Migrations 242 + 242b pending Supabase run. 8 files. Lint clean. pgvector HNSW + cosine search via SECURITY DEFINER RPCs. Auto-extract fires after every analysis. RAG injected into prepare_parent_meeting.
 - Phase D — **COMPLETED** (commit `ea391dc3` on `origin/main`). 15 files. Parents tab in nav, parent list with filters, per-parent page with profile card + meeting history + actions. i18n parity 12/12 at 100%. Two pre-existing layout.tsx setState-in-effect warnings flagged as NOT introduced by this phase.
@@ -1229,14 +1229,14 @@ Log. Save state. Commit + push what you have. Don't guess.
 
 If you complete the full build: write the CLAUDE.md status entry,
 draft the next-morning verification checklist, push, and exit
-cleanly. Tredoux wakes up to The Ultimate Tracy.
+cleanly. Tredoux wakes up to The Ultimate Astra.
 
 If you complete part of it: be honest about what landed. The next
 session will pick up exactly where you left off because this doc
 told them where that is.
 
-Tracy's relational mind is the headline feature for Principal Leu's
+Astra's relational mind is the headline feature for Principal Leu's
 introduction to real schools. Get it right.
 
-— Handoff written May 28, 2026 by the agent who built Tracy v2
+— Handoff written May 28, 2026 by the agent who built Astra v2
    psychological mind earlier that same evening.

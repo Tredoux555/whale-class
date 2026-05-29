@@ -628,7 +628,7 @@ function MessageBubble({
             color: T.gold,
             fontWeight: 600,
           }}>
-            ✨ Tracy drafted
+            ✨ Astra drafted
           </span>
         )}
       </div>

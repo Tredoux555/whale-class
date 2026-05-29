@@ -273,9 +273,9 @@ export async function GET(request: NextRequest) {
     steps.push(demoRequests.step);
 
     // 9. Cost-model drift — surfaces silently-wrong cost_usd logging from
-    // Tracy + Mira routes. assertSupportedCostModel writes a server_errors
+    // Astra + Mira routes. assertSupportedCostModel writes a server_errors
     // row when OPUS_MODEL diverges from the hardcoded COST_MODEL constant
-    // (audit Tracy + Mira Session 113 V2 quick win). If any drift row
+    // (audit Astra + Mira Session 113 V2 quick win). If any drift row
     // appears in the last 7 days, the health card flips to warn so we
     // notice within hours instead of at end-of-month reconciliation.
     const costModelDrift = await timed('cost_model_drift_7d', async () => {

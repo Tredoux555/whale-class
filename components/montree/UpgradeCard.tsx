@@ -7,7 +7,7 @@
 // Replaces the red error toast that used to appear when an AI route returned
 // 402 with `requires_upgrade: true`. Renders a warm amber/gold card with a
 // per-feature title + body and a CTA pointing the principal at their billing
-// page. The design mirrors the original Tracy upgrade card in
+// page. The design mirrors the original Astra upgrade card in
 // `app/montree/admin/page.tsx` (Session 105 commit `0192bad6`) so the family
 // of upgrade prompts looks coherent across the product.
 //

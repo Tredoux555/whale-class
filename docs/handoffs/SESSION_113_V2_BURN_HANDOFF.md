@@ -2,7 +2,7 @@
 
 **Session window:** Saturday May 16 evening → Sunday May 17 morning (continuation from `SESSION_113_V2_HANDOFF.md` which covered the Saturday-afternoon Blue+Green Phase + Photo Pipeline audit work)
 **Commits pushed to `origin/main`:** 38 (`11f7e17a` → `f8499645`)
-**Audit docs added today:** 5 (Tracy/Mira, Finance, Agent, Parent, Story) + 3 in the late-late session (Whale-Class admin, Outreach, Legacy /api/, Photo AI quality) = 8 total in `docs/`
+**Audit docs added today:** 5 (Astra/Mira, Finance, Agent, Parent, Story) + 3 in the late-late session (Whale-Class admin, Outreach, Legacy /api/, Photo AI quality) = 8 total in `docs/`
 **CRITICALs closed:** 10
 **HIGHs closed:** 30+
 **MEDs closed:** 10+
@@ -22,7 +22,7 @@ The session ran a now-canonical pattern: dispatch a parallel general-purpose sub
 | Doc | Surface | Findings | Top severity closed in code |
 |---|---|---|---|
 | `PHOTO_PIPELINE_AUDIT.md` | Photo identification infrastructure | 10 (Session 74 carry-over) | All 10 closed in Saturday-afternoon push |
-| `TRACY_MIRA_AUDIT.md` | Principal Tracy + Agent Mira AI | 7 HIGH + 7 MED + 2 LOW | Memory N+1, Mira fences, splitActionLine canonical, compose fallback locales, cost-model drift |
+| `TRACY_MIRA_AUDIT.md` | Principal Astra + Agent Mira AI | 7 HIGH + 7 MED + 2 LOW | Memory N+1, Mira fences, splitActionLine canonical, compose fallback locales, cost-model drift |
 | `FINANCE_AUDIT.md` | Billing + payouts + period locks | 1 CRITICAL + 3 HIGH + 10+ MED | F-C-1 reconciliation column names, F-P-1 period_lock on 4 paths |
 | `AGENT_DASHBOARD_AUDIT.md` | Agent referral + payout system | 1 CRITICAL + 1 HIGH | Referral redemption race, defensive `is_agent` + `agent_suspended_at` rechecks on 4 routes |
 | `PARENT_PORTAL_AUDIT.md` | Parent-facing portal | 1 CRITICAL + 10 HIGH + 13 MED | F-1.1 stale child link (resolveAuthorizedParent helper), F-1.2 forgeable base64, F-1.3 localStorage→cookie, F-3.x photo filter triple-gate, F-6.1 signup rollback, F-6.2 reusable invites, F-3.6/3.7 |
@@ -39,10 +39,10 @@ The session ran a now-canonical pattern: dispatch a parallel general-purpose sub
 ```
 11f7e17a Photo-debug recent decisions view
 63eceb6d Gallery: 'Saved as Other' chip
-322b952c Tracy + Mira HIGH-1 + HIGH-2
-a66e7e32 Tracy + Mira batch 5: Mira 429 + splitActionLine canonical
-7bff4ce9 Tracy compose fallback 12 locales (MED-6)
-10822862 Tracy + Mira batch 6: cost-model drift surfacing (MED-7)
+322b952c Astra + Mira HIGH-1 + HIGH-2
+a66e7e32 Astra + Mira batch 5: Mira 429 + splitActionLine canonical
+7bff4ce9 Astra compose fallback 12 locales (MED-6)
+10822862 Astra + Mira batch 6: cost-model drift surfacing (MED-7)
 b629e0a6 Finance audit + CRITICAL F-C-1 reconciliation column names
 8b26c5b0 Finance audit batch 2: cron secret hardening + source label
 439aeab1 Agent audit CRITICAL: referral race + defensive auth
@@ -186,7 +186,7 @@ Full list in CLAUDE.md `Session 113 V2` entry.
 - F-C-2 HIGH — FX assumption silently corrupts non-USD income. Dormant until Alipay denominates non-USD; queue as ALSO-WHEN-ALIPAY-LAUNCHES.
 - F-I-2 + F-I-3 MED — Alipay invoice double-issue idempotency + annual prepayment partial-rollback.
 
-**Tracy + Mira (audit doc `TRACY_MIRA_AUDIT.md`):**
+**Astra + Mira (audit doc `TRACY_MIRA_AUDIT.md`):**
 - Several LOW items remain in the doc — none worth a dedicated session, but worth tucking into the next quiet half-day.
 
 ### 🥈 Unaudited surfaces still on the map
@@ -218,7 +218,7 @@ Each is a half-day audit + half-day fixes. Probably worth one more burn-session 
 
 - The `rate-limiter` library (separate concern; deep)
 - The Photo Pipeline AI prompt structure (this audit already changed it materially; let the changes settle)
-- The Tracy + Mira system prompts (recently rewritten in Sessions 108-113)
+- The Astra + Mira system prompts (recently rewritten in Sessions 108-113)
 - The Stripe Connect Express flow (currently working; touching this risks money flow)
 
 ---
@@ -227,7 +227,7 @@ Each is a half-day audit + half-day fixes. Probably worth one more burn-session 
 
 - **Session duration:** Saturday evening → Sunday morning (~16 hours of agent activity, mostly auto-running while user said "keep burning")
 - **Commits to main today:** 38
-- **Audit docs landed today:** 5 (Tracy/Mira, Finance, Agent, Parent, Story) + 3 in the late session (Whale-Class, Outreach, Legacy-API, Photo AI quality) = 8 total
+- **Audit docs landed today:** 5 (Astra/Mira, Finance, Agent, Parent, Story) + 3 in the late session (Whale-Class, Outreach, Legacy-API, Photo AI quality) = 8 total
 - **CRITICALs closed:** 10
 - **HIGHs closed:** 30+
 - **MEDs closed:** 10+

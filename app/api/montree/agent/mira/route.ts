@@ -2,7 +2,7 @@
 //
 // Mira — the agent's frontline AI. SSE streaming over an Opus tool-use loop.
 //
-// Mirrors /api/montree/admin/principal-agent (Tracy). Differences:
+// Mirrors /api/montree/admin/principal-agent (Astra). Differences:
 //   - Auth requires role='agent' (not 'principal').
 //   - Cross-pollination filter is auth.userId via founding_teacher_id, NOT
 //     schoolId (schoolId on agent JWTs is INERT).
@@ -12,7 +12,7 @@
 //
 // POST body: { question: string, conversation_id: string, history?: [...], locale?: string }
 //
-// Same SSE event shape as Tracy: tool_call / tool_result / thinking / text / done / error.
+// Same SSE event shape as Astra: tool_call / tool_result / thinking / text / done / error.
 
 import { NextRequest, NextResponse } from 'next/server';
 import Anthropic from '@anthropic-ai/sdk';
@@ -44,12 +44,12 @@ const MAX_TOOL_RESULT_CHARS = 50_000;
 // not throttle real use. ~$10/day at average length.
 const DAILY_INTERACTION_CAP = 80;
 
-// Opus 4.6 pricing — same constants Tracy uses.
+// Opus 4.6 pricing — same constants Astra uses.
 const COST_MODEL = 'claude-opus-4-6';
 const OPUS_INPUT_USD_PER_MTOK = 15;
 const OPUS_OUTPUT_USD_PER_MTOK = 75;
 
-// 🚨 Session 113 V2 Tracy + Mira audit quick win: cost-model drift now logs
+// 🚨 Session 113 V2 Astra + Mira audit quick win: cost-model drift now logs
 // to montree_server_errors in addition to console. Without the DB write, a
 // silently-wrong cost_usd in audit logs is invisible until end-of-month
 // reconciliation. With it, a single drift event surfaces in the super-admin
@@ -156,7 +156,7 @@ export async function POST(request: NextRequest) {
       .eq('agent_id', auth.userId)
       .gte('asked_at', since);
     if (!error && typeof count === 'number' && count >= DAILY_INTERACTION_CAP) {
-      // 🚨 Tracy + Mira audit quick win (Session 113 V2): include
+      // 🚨 Astra + Mira audit quick win (Session 113 V2): include
       // `remaining` and `resets_at` in the 429 body so the frontend can
       // show "you're at the daily cap, comes back at <time>" instead of
       // just a flat error. resets_at = oldest_in_window + 24h.
@@ -210,7 +210,7 @@ export async function POST(request: NextRequest) {
   const encoder = new TextEncoder();
   const client = anthropic as Anthropic;
 
-  // Sanitize history (same defence as Tracy).
+  // Sanitize history (same defence as Astra).
   const sanitizeHistory = (raw: unknown): MessageParam[] => {
     if (!Array.isArray(raw)) return [];
     const out: MessageParam[] = [];

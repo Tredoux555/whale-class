@@ -2,8 +2,8 @@
 // Session 103 — Teacher thread detail + reply composer.
 //
 // Mirrors parent's Session 98 thread detail. Auto-marks read on open.
-// Server forces ai_drafted=false on every teacher post — Tracy drafting is
-// principal-only. The "Tracy drafted" amber pill renders on incoming
+// Server forces ai_drafted=false on every teacher post — Astra drafting is
+// principal-only. The "Astra drafted" amber pill renders on incoming
 // messages with ai_drafted=true so the teacher can see when a principal
 // reply was AI-assisted (transparency).
 
@@ -506,7 +506,7 @@ export default function TeacherThreadDetailPage() {
                       fontSize: 9,
                       fontWeight: 700,
                     }}>
-                      {t('teacherMessages.tracyDrafted') || 'Tracy drafted'}
+                      {t('teacherMessages.tracyDrafted') || 'Astra drafted'}
                     </span>
                   )}
                 </div>

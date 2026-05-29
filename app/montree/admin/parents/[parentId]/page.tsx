@@ -1,10 +1,10 @@
 // app/montree/admin/parents/[parentId]/page.tsx
 //
-// Ultimate Tracy Phase D — per-parent page.
+// Ultimate Astra Phase D — per-parent page.
 // Profile card + meeting list + key actions:
 //   - Onboard / re-onboard (voice)
 //   - Record new meeting
-//   - Prepare for next meeting (Tracy dossier — links into existing
+//   - Prepare for next meeting (Astra dossier — links into existing
 //     prepare_parent_meeting modal pattern on parent threads)
 
 'use client';
@@ -459,7 +459,7 @@ export default function ParentPage() {
                 <ProfileBlock profile={info.profile} />
               ) : (
                 <p style={{ margin: 0, fontSize: 13, color: T.textMuted }}>
-                  No profile yet. Tap &ldquo;Onboard via voice&rdquo; to teach Tracy what
+                  No profile yet. Tap &ldquo;Onboard via voice&rdquo; to teach Astra what
                   you know about this parent in 60-90 seconds.
                 </p>
               )}

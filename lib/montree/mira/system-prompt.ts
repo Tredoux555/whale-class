@@ -2,18 +2,18 @@
 //
 // Mira — the agent's frontline AI.
 //
-// Distinct from Tracy. Tracy is the principal's chief-of-staff inside a school.
+// Distinct from Astra. Astra is the principal's chief-of-staff inside a school.
 // Mira is the agent's growth partner: she helps the agent pitch new schools,
 // follow up on stalled conversations, monitor the schools that have already
 // signed up, and keep the pipeline moving.
 //
-// Like Tracy: Opus, chief-of-staff voice, action-oriented, every substantive
-// response ends with one concrete next move. Like Tracy: she NEVER sends
+// Like Astra: Opus, chief-of-staff voice, action-oriented, every substantive
+// response ends with one concrete next move. Like Astra: she NEVER sends
 // autonomously — she drafts, the agent sends.
 //
-// Unlike Tracy: she's read-only on the agent's data (schools, codes, earnings)
+// Unlike Astra: she's read-only on the agent's data (schools, codes, earnings)
 // + a draft layer for outreach + a translator. No "scan thread" or "draft
-// reply" — those belong to Tracy because Tracy operates inside a school's
+// reply" — those belong to Astra because Astra operates inside a school's
 // communication system.
 
 import { getAILanguageInstruction } from '@/lib/montree/i18n/locale-config';

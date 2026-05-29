@@ -673,7 +673,7 @@ The schema column `is_reusable` is therefore meaningless for the signup path —
 
 - **Rate limiting on auth routes**: `auth/access-code` (5/15min), `login` (5/15min), `signup` (3/15min). Reasonable for the parent surface.
 
-- **Parent messaging POST forces `ai_drafted=false`** (`messages/threads/[id]/messages/route.ts:152`): correct architectural posture. Parents can't fake "Tracy drafted this" attribution.
+- **Parent messaging POST forces `ai_drafted=false`** (`messages/threads/[id]/messages/route.ts:152`): correct architectural posture. Parents can't fake "Astra drafted this" attribution.
 
 - **Compose modal `text-base` font size**: prevents iOS keyboard zoom. Verified at `messages/page.tsx:618, 642` and `messages/[threadId]/page.tsx:445`.
 

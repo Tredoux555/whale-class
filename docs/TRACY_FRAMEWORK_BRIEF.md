@@ -1,4 +1,4 @@
-# Tracy Framework Brief
+# Astra Framework Brief
 
 **Status:** THEORIZE FIRST. Do not write code in the next session that picks this up. The first session is research + plan only. Build comes after.
 
@@ -13,11 +13,11 @@
 
 ---
 
-## What Tracy is
+## What Astra is
 
-**Tracy is the principal's chief-of-staff AI.** Distinct from Guru.
+**Astra is the principal's chief-of-staff AI.** Distinct from Guru.
 
-| | Guru | Tracy |
+| | Guru | Astra |
 |---|---|---|
 | **Who it serves** | Teachers, parents, principals (per-child) | Principal only |
 | **Mental model** | Maria Montessori in your pocket — about ONE child | Trusted deputy who knows the WHOLE building |
@@ -26,23 +26,23 @@
 | **Push or pull?** | Mostly pull (teacher asks, Guru answers) | **Pull only.** Never pushes. Never delivers new problems the principal didn't ask about. |
 | **Output ends with** | Insight | An action she can take |
 
-**Critical: Tracy can call Guru as a tool.** When a question requires child-pedagogical depth (e.g., "Emily's mom is asking about her math"), Tracy invokes Guru as one of its tools. The principal never sees Guru directly through Tracy's surface — she sees Tracy's synthesised answer in her chief-of-staff's voice.
+**Critical: Astra can call Guru as a tool.** When a question requires child-pedagogical depth (e.g., "Emily's mom is asking about her math"), Astra invokes Guru as one of its tools. The principal never sees Guru directly through Astra's surface — she sees Astra's synthesised answer in her chief-of-staff's voice.
 
 ---
 
-## What the principal actually wants from Tracy
+## What the principal actually wants from Astra
 
 Captured from the May 3 conversation between user and agent. The principal:
 
 - **Doesn't want a daily briefing.** Has enough to deal with outside Montree. The last thing she wants is Montree adding new problems to her plate every Monday.
 - **Doesn't care about individual children at the pedagogical level.** That's the teacher's job, not hers.
 - **Cares about the business.** Parent retention. Teacher accountability. School reputation. Money.
-- **Wants competence on demand.** When a parent stops her, when she has a quiet five minutes, when she's worried about a teacher — she opens Tracy and asks. The answer needs to be the answer a thoughtful chief-of-staff would give.
+- **Wants competence on demand.** When a parent stops her, when she has a quiet five minutes, when she's worried about a teacher — she opens Astra and asks. The answer needs to be the answer a thoughtful chief-of-staff would give.
 - **Categories of questions she actually asks:**
-  - **Teachers (her core job):** *"How is Susan doing in the classroom?"* — vague on purpose. Tracy unpacks: activity, coverage, quality, pattern, verdict.
-  - **Parent-trigger child synthesis:** *"Emily's mom is asking about her math — what do I say?"* — Tracy pulls the child's data, the relevant teacher note, stitches an honest, defensible, parent-ready answer.
-  - **Parent relationships:** *"What's the latest with Emma's family?"* — Tracy reports on engagement, last touchpoint, retention risk.
-  - **Business state:** rare, but *"is everything OK in the school right now?"* — Tracy answers honestly and ends with what she should DO if anything.
+  - **Teachers (her core job):** *"How is Susan doing in the classroom?"* — vague on purpose. Astra unpacks: activity, coverage, quality, pattern, verdict.
+  - **Parent-trigger child synthesis:** *"Emily's mom is asking about her math — what do I say?"* — Astra pulls the child's data, the relevant teacher note, stitches an honest, defensible, parent-ready answer.
+  - **Parent relationships:** *"What's the latest with Emma's family?"* — Astra reports on engagement, last touchpoint, retention risk.
+  - **Business state:** rare, but *"is everything OK in the school right now?"* — Astra answers honestly and ends with what she should DO if anything.
 
 ---
 
@@ -58,20 +58,20 @@ No briefing. No celebrate list. No quiet signal. No proactive content of any kin
 
 ### Round 1: existing capability audit
 - Read `app/api/montree/admin/principal-agent/route.ts` — current 5 tools, current Sonnet pattern, current logging.
-- Read `lib/montree/admin/guru-tools.ts` + `guru-executor.ts` + `guru-prompt.ts` — the 12-tool Principal Admin Guru that already exists. Map what overlaps with what Tracy will need.
-- Read `lib/montree/guru/conversational-prompt.ts` + `guru/brain.ts` + `guru/tool-definitions.ts` — Teacher Guru. Understand its tool surface and how it could be wrapped as a sub-tool by Tracy.
-- Read `app/montree/admin/page.tsx` — current agent home page, the surface Tracy will live on.
+- Read `lib/montree/admin/guru-tools.ts` + `guru-executor.ts` + `guru-prompt.ts` — the 12-tool Principal Admin Guru that already exists. Map what overlaps with what Astra will need.
+- Read `lib/montree/guru/conversational-prompt.ts` + `guru/brain.ts` + `guru/tool-definitions.ts` — Teacher Guru. Understand its tool surface and how it could be wrapped as a sub-tool by Astra.
+- Read `app/montree/admin/page.tsx` — current agent home page, the surface Astra will live on.
 
 Output: a section in the plan doc that lists what we already have, what we'll reuse, what we'll wrap.
 
 ### Round 2: data audit
-For each question category Tracy needs to answer, audit the data:
+For each question category Astra needs to answer, audit the data:
 
 - **Teacher questions:** Do we have `last_login_at` on `montree_teachers`? `confirmed_by` on `montree_media`? `teacher_id` on `montree_work_sessions`? What's the quality of teacher notes — do they have substance or are they "good day" boilerplate? (Pull a sample.)
 - **Parent questions:** Do we track when a parent opens a report? When they last logged in? Do we have any "parent signal" data at all, or is it all child-side? **This is likely the biggest gap.** Document exactly what's missing.
 - **Cross-classroom questions:** Can we query "which children haven't been observed this week across the entire school"? Performance — does this scale to 200-child schools?
 
-Output: a section in the plan doc titled "Data Gaps" listing every missing piece, ordered by how often it's needed for Tracy's question categories.
+Output: a section in the plan doc titled "Data Gaps" listing every missing piece, ordered by how often it's needed for Astra's question categories.
 
 ### Round 3: prompt + voice audit
 Read three places where Sonnet is currently asked to be in a specific voice for a specific user role:
@@ -79,9 +79,9 @@ Read three places where Sonnet is currently asked to be in a specific voice for 
 - `app/api/montree/admin/child-briefing/[childId]/route.ts` — chief-of-staff briefing
 - `app/api/montree/admin/principal-agent/route.ts` — current ask-anything system prompt
 
-Map: what works in each prompt? What doesn't translate to Tracy? What new rules does Tracy need (chief-of-staff voice, never push problems, always end with action)?
+Map: what works in each prompt? What doesn't translate to Astra? What new rules does Astra need (chief-of-staff voice, never push problems, always end with action)?
 
-Output: a draft system prompt for Tracy at the bottom of the plan doc.
+Output: a draft system prompt for Astra at the bottom of the plan doc.
 
 ---
 
@@ -90,14 +90,14 @@ Output: a draft system prompt for Tracy at the bottom of the plan doc.
 Write `docs/TRACY_FRAMEWORK_PLAN.md` (a separate doc — this brief is just the scoping). Sections:
 
 ### 1. Tool surface
-List every tool Tracy needs. For each tool: name, description, input schema, output shape, which existing thing it wraps (if any), risk notes. Aim for 8–12 tools, no more. Each tool should answer a question category, not a granular data fetch.
+List every tool Astra needs. For each tool: name, description, input schema, output shape, which existing thing it wraps (if any), risk notes. Aim for 8–12 tools, no more. Each tool should answer a question category, not a granular data fetch.
 
 Likely tools (to be validated in research):
 - `get_teacher_summary(teacher_id)` — activity + coverage + quality + pattern + verdict
 - `list_teachers_overview()` — all teachers, lightly summarised
 - `get_classroom_state(classroom_id)` — pulse of one classroom
 - `find_children_by_name(query)` — already exists
-- `get_child_state(child_id)` — wraps existing child-briefing, but lighter (Tracy's version)
+- `get_child_state(child_id)` — wraps existing child-briefing, but lighter (Astra's version)
 - `ask_guru_about_child(child_id, question)` — wraps Guru as a sub-tool. **Critical and new.** Returns Guru's answer pre-digested.
 - `get_parent_state(parent_id)` — only buildable after parent data model is added
 - `find_parent_by_child(child_id)` — same caveat
@@ -107,19 +107,19 @@ Likely tools (to be validated in research):
 Document the parent-as-first-class-entity addition. Schema. Migration outline. Backfill plan if needed.
 
 ### 3. System prompt
-Final Tracy prompt. Includes the chief-of-staff voice, the no-push rule, the always-end-with-action rule, the honesty rules from Sonnet routes already shipped.
+Final Astra prompt. Includes the chief-of-staff voice, the no-push rule, the always-end-with-action rule, the honesty rules from Sonnet routes already shipped.
 
 ### 4. Home page UX
 Spec the empty state. Spec what conversation history persistence looks like. Spec the input affordance and CTAs.
 
 ### 5. Logging
-Tracy uses the existing `montree_principal_agent_log` table. Document any new fields (e.g., did Tracy invoke Guru as a sub-tool? log it).
+Astra uses the existing `montree_principal_agent_log` table. Document any new fields (e.g., did Astra invoke Guru as a sub-tool? log it).
 
 ### 6. Trust + correction model
-When Tracy is wrong, how does the principal say so? Does Tracy learn from corrections (like Guru's brain)? Or is each conversation isolated?
+When Astra is wrong, how does the principal say so? Does Astra learn from corrections (like Guru's brain)? Or is each conversation isolated?
 
 ### 7. Cost ceiling
-Estimate per-question cost. Tool-use loop. Sub-tool calls (Tracy → Guru is two AI calls). Cache strategy. Realistic monthly cost per principal.
+Estimate per-question cost. Tool-use loop. Sub-tool calls (Astra → Guru is two AI calls). Cache strategy. Realistic monthly cost per principal.
 
 ### 8. Risks + open questions
 What might break? What's underspecified? What requires Chen's input before we can finalize?
@@ -149,8 +149,8 @@ Fresh-eye audit pattern (Session 82 canonical). Don't ship until 3 consecutive c
 - Don't write any new API routes
 - Don't write any new database migrations
 - Don't change `principal-agent/route.ts` even if it's tempting
-- Don't pick a "Tracy avatar" or design polish — these come last
-- Don't overengineer the parent data model speculatively. Talk to Chen first if possible to learn which parent signals she actually wants Tracy to track.
+- Don't pick a "Astra avatar" or design polish — these come last
+- Don't overengineer the parent data model speculatively. Talk to Chen first if possible to learn which parent signals she actually wants Astra to track.
 
 ## What SUCCESS for the next session looks like
 
@@ -160,10 +160,10 @@ A `docs/TRACY_FRAMEWORK_PLAN.md` document, somewhere between 800 and 2,000 words
 
 ## Decisions already made (don't re-debate)
 
-- The AI is named **Tracy.**
-- Tracy is **distinct from Guru** — different surface, different voice, different scope.
-- Tracy can **call Guru as a sub-tool.**
+- The AI is named **Astra.**
+- Astra is **distinct from Guru** — different surface, different voice, different scope.
+- Astra can **call Guru as a sub-tool.**
 - The home page has **no proactive content.**
-- The home page lives at `/montree/admin` (current agent surface — Tracy replaces the current principal-agent prompt + tools, doesn't replace the route).
+- The home page lives at `/montree/admin` (current agent surface — Astra replaces the current principal-agent prompt + tools, doesn't replace the route).
 - Logging continues to land in `montree_principal_agent_log` (migration 184).
-- Whatever rebrand happens to the existing `/montree/admin/guru` sidebar item ("Ask Guru" — the Principal Admin Guru) is a separate question from Tracy. Either rename it Tracy too, or keep it as the principal's per-child Guru wrapper. Decide in the plan, don't decide now.
+- Whatever rebrand happens to the existing `/montree/admin/guru` sidebar item ("Ask Guru" — the Principal Admin Guru) is a separate question from Astra. Either rename it Astra too, or keep it as the principal's per-child Guru wrapper. Decide in the plan, don't decide now.

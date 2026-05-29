@@ -1,6 +1,6 @@
 // app/api/montree/admin/parents/[parentId]/route.ts
 //
-// Ultimate Tracy Phase E — per-parent endpoint.
+// Ultimate Astra Phase E — per-parent endpoint.
 //   PATCH  — set recording_consent_on_file (the durable consent flag)
 //   DELETE — hard-delete the parent + cascade (with audit log)
 //

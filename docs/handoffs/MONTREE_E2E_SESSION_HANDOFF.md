@@ -43,7 +43,7 @@ Companion docs: `MONTREE_E2E_FIX_PLAN.md` (the phased plan + §8 execution log),
 Re-sweep findings **A–J all fixed**: A (cross-tab sign-out), C (3 EN leaks),
 D (FR login verb), E (parent récit follows `primary_locale`), F (error screen
 localized), G (broken teacher-preview link removed), I (login "See pricing"),
-J (Add Student modal strings). B (Tracy greeting) + H (English work names in
+J (Add Student modal strings). B (Astra greeting) + H (English work names in
 localized prose) are confirmed by-design / known-limitation, no action.
 
 ---

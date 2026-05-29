@@ -1,25 +1,25 @@
 # Session 87 Handoff — May 4, 2026 (evening)
 
-A long focused session. Six commits to `main`, one Supabase migration run, the Montree Brand Kit consolidated into a portable Word doc, and Tracy went from a placeholder gold-circle to her real Canva-designed T monogram avatar.
+A long focused session. Six commits to `main`, one Supabase migration run, the Montree Brand Kit consolidated into a portable Word doc, and Astra went from a placeholder gold-circle to her real Canva-designed T monogram avatar.
 
-This session was the second block on May 4 — Session 86 (morning) shipped Tracy multilingual + the dashboard empty-state race fix + QR domain isolation + the JWT mis-stamp fix. This session sat on top of that and pushed the principal portal further: live play-by-play status streaming, the encrypted parent-meeting Vault, super-admin principal management, per-song Share buttons on the public page.
+This session was the second block on May 4 — Session 86 (morning) shipped Astra multilingual + the dashboard empty-state race fix + QR domain isolation + the JWT mis-stamp fix. This session sat on top of that and pushed the principal portal further: live play-by-play status streaming, the encrypted parent-meeting Vault, super-admin principal management, per-song Share buttons on the public page.
 
 ## Commits shipped (all on `origin/main`)
 
 | Commit | Title |
 |--------|-------|
 | `445ec181` | Whale-class audio rendering + super-admin principal management 👤 modal |
-| `59041e63` | Tracy: live play-by-play progress events under each tool chip |
+| `59041e63` | Astra: live play-by-play progress events under each tool chip |
 | `d097c22d` | Principal Vault prototype — encrypted parent-meeting recordings (Tredoux-only) |
 | `fc7d7ac2` | Per-song Share button + QR modal on whale-class pages |
-| `adfbfd63` | Tracy avatar via /tracy-avatar.png + drop Ask Guru from principal sidebar |
-| `ac4c24b6` | Add Tracy T monogram avatar asset |
+| `adfbfd63` | Astra avatar via /tracy-avatar.png + drop Ask Guru from principal sidebar |
+| `ac4c24b6` | Add Astra T monogram avatar asset |
 
 Also done outside git:
 - **Migration 185** (`montree_principal_vault`) run in Supabase SQL Editor — verified by user with the 12-column information_schema check.
 - **Tredoux's principal code reset to `ZNGLJT`** (the prior code's plaintext was unrecoverable; new SHA-256 hash written directly to `montree_school_admins.password_hash`). Login at `/montree/login-select` → "I have a code" → `ZNGLJT`.
 - **Brand Kit Word doc generated** at `whale/Montree_Brand_Kit.docx` — portable reference for the Canva setup.
-- Tracy in Chinese verified working end-to-end on production (screenshot confirmed).
+- Astra in Chinese verified working end-to-end on production (screenshot confirmed).
 
 ---
 
@@ -62,11 +62,11 @@ SchoolsTab gained a 👤 button in the per-row action column between `⚙️` an
 
 ---
 
-## B. Tracy live play-by-play progress events — `59041e63`
+## B. Astra live play-by-play progress events — `59041e63`
 
-Until this commit, the principal saw a single soft `…` while Tracy was working. Session 85's architecture collapsed the chained-tool flow into one server-side `child_focus` tool that runs parse → resolve → fetch → compose entirely server-side. Cheaper and more reliable, but opaque from the client's perspective. A 1-3s delay with no visibility looked like a freeze.
+Until this commit, the principal saw a single soft `…` while Astra was working. Session 85's architecture collapsed the chained-tool flow into one server-side `child_focus` tool that runs parse → resolve → fetch → compose entirely server-side. Cheaper and more reliable, but opaque from the client's perspective. A 1-3s delay with no visibility looked like a freeze.
 
-This commit emits structured progress events from inside framework tools, which the client renders as an italic dim status line under Tracy's avatar.
+This commit emits structured progress events from inside framework tools, which the client renders as an italic dim status line under Astra's avatar.
 
 ### Architecture (server stays language-agnostic)
 
@@ -186,7 +186,7 @@ Both modals are dynamic-imported (`ssr: false`) so the qrcode library only ships
 
 ---
 
-## E. Tracy avatar wiring + drop Ask Guru — `adfbfd63` + `ac4c24b6`
+## E. Astra avatar wiring + drop Ask Guru — `adfbfd63` + `ac4c24b6`
 
 Two pieces.
 
@@ -202,7 +202,7 @@ User saved the Canva-designed PNG to `whale/public/tracy-avatar.png` directly vi
 
 ### Drop Ask Guru from principal sidebar (also in `adfbfd63`)
 
-Tracy IS the principal's chief-of-staff AI surface. Guru is the per-child Maria Montessori in your pocket for teachers, and Tracy can call it as a sub-tool when child-pedagogical depth is needed. The principal didn't need a separate Guru chat surface — it just added noise to the sidebar.
+Astra IS the principal's chief-of-staff AI surface. Guru is the per-child Maria Montessori in your pocket for teachers, and Astra can call it as a sub-tool when child-pedagogical depth is needed. The principal didn't need a separate Guru chat surface — it just added noise to the sidebar.
 
 Removed the `Sparkles` import + the `'Ask Guru'` NAV entry. Simplified the `activeNav` logic in the layout — now just appends `Conversations` to the base `NAV` if the principal is on the vault allow-list, no more juggling Guru-at-the-end.
 
@@ -213,8 +213,8 @@ The teacher-side `/montree/dashboard/guru` route is untouched. Teachers still ha
 
 ### Architectural rules
 
-- **Tracy is the principal's only AI chat surface.** Guru calls happen via `consult_guru` tool from inside Tracy (Session 85 carry-over, not yet implemented).
-- **Tracy avatar is `/public/tracy-avatar.png` with CSS-T fallback.** Never break the fallback path — the page must look correct in both states.
+- **Astra is the principal's only AI chat surface.** Guru calls happen via `consult_guru` tool from inside Astra (Session 85 carry-over, not yet implemented).
+- **Astra avatar is `/public/tracy-avatar.png` with CSS-T fallback.** Never break the fallback path — the page must look correct in both states.
 
 ---
 
@@ -243,13 +243,13 @@ Doc lives at `whale/Montree_Brand_Kit.docx`. Not committed to git (it's a delive
 2. **`(school_id, email)` is UNIQUE on `montree_school_admins`** — re-inviting same email regenerates the code on the same row.
 3. **Plaintext principal codes are returned in JSON exactly once on create or reset.** Server can never recompute them.
 4. **Whale-class page renders `<audio>` for `mediaType==='audio'` rows, `<video>` otherwise.** Don't regress this.
-5. **Tracy framework tools (`child_focus`, `unpack_teacher`) accept an optional `onProgress` callback.** Errors in the listener are caught — the orchestrator never crashes from a buggy consumer.
-6. **Tracy emits structured `{ phase, vars }` progress events.** Server stays language-agnostic; client formats via `tracy.progress.<phase>` i18n keys.
+5. **Astra framework tools (`child_focus`, `unpack_teacher`) accept an optional `onProgress` callback.** Errors in the listener are caught — the orchestrator never crashes from a buggy consumer.
+6. **Astra emits structured `{ phase, vars }` progress events.** Server stays language-agnostic; client formats via `tracy.progress.<phase>` i18n keys.
 7. **Principal Vault is end-to-end encrypted.** PBKDF2-SHA256 600k iterations + AES-256-GCM, plain text never sent to server, password never persisted.
 8. **Vault gates: server (`PRINCIPAL_VAULT_ENABLED_FOR`) + client (`VAULT_ENABLED_PRINCIPAL_IDS`).** Both must include any principal_id for the feature to surface.
 9. **AES-GCM auth-tag failure on decrypt = wrong password.** No separate password-check blob.
 10. **Share URLs derive from `lib/slugify.ts`** — a single canonical source for slugs across the app.
-11. **Tracy avatar = `/tracy-avatar.png` with CSS-T fallback via `onError`.** Both render paths must look correct.
+11. **Astra avatar = `/tracy-avatar.png` with CSS-T fallback via `onError`.** Both render paths must look correct.
 12. **Principal sidebar order:** Today / Classrooms / People / Pulse / Settings (+ 🔒 Conversations for vault principals). No Ask Guru.
 
 ---
@@ -259,12 +259,12 @@ Doc lives at `whale/Montree_Brand_Kit.docx`. Not committed to git (it's a delive
 | Item | Status |
 |------|--------|
 | Migration 185 run | ✅ Confirmed via 12-column information_schema query |
-| Tracy in Chinese | ✅ User screenshot of full Chinese response with action line |
-| Tracy avatar PNG on disk | ✅ 1024×1024 PNG at `whale/public/tracy-avatar.png` |
+| Astra in Chinese | ✅ User screenshot of full Chinese response with action line |
+| Astra avatar PNG on disk | ✅ 1024×1024 PNG at `whale/public/tracy-avatar.png` |
 | Principal code reset | ✅ Tredoux logged in successfully with `ZNGLJT` |
 | Audio rendering on whale-class | ⏳ Code shipped, not user-tested |
 | Super-admin 👤 modal | ⏳ Code shipped, not user-tested |
-| Tracy play-by-play SSE | ⏳ Code shipped, not user-tested (next test in any locale will surface it) |
+| Astra play-by-play SSE | ⏳ Code shipped, not user-tested (next test in any locale will surface it) |
 | Vault end-to-end | ⏳ Migration ready, code shipped, NOT tested |
 | Per-song Share button | ⏳ Code shipped, not user-tested |
 
@@ -274,13 +274,13 @@ Doc lives at `whale/Montree_Brand_Kit.docx`. Not committed to git (it's a delive
 
 ### High-priority verification
 1. **Vault end-to-end test.** Open `/montree/admin` as principal → tap **Conversations** → set vault password → record 30-sec dummy → Encrypt & save → reload → re-enter password → tap row → verify decrypted summary + transcript display. The full pipeline (mic permission → Whisper → Sonnet → AES-GCM encrypt → DB → AES-GCM decrypt → render) is unverified.
-2. **Verify Tracy play-by-play in production.** Ask Tracy a child question; expect to see the rolling status line under her avatar (parsing → looking up → fetching → composing) before the answer streams in.
+2. **Verify Astra play-by-play in production.** Ask Astra a child question; expect to see the rolling status line under her avatar (parsing → looking up → fetching → composing) before the answer streams in.
 3. **Verify per-song Share button.** Open `/` (teacherpotato root) → click Share on a card → confirm QR + URL + native share work; then `/whale-class` → same.
 4. **Verify super-admin 👤 modal.** Click 👤 on Chen9 row → list/add/reset/deactivate flows.
 
 ### Other open work
-5. **Super-admin simplification** (proposed, not built). Multi-session refactor: 5-tab structure (Schools / Principals / Money / Outreach / Tracy Insights), archive 18 dead marketing sub-pages and the `social-manager/` subtree, retire the colored tile ribbon. Worth a fresh head.
-6. **Tracy `→ ` vs `—` action-line marker.** Tracy is using em-dash where the system prompt asked for arrow; cosmetic, but worth a one-line check on `buildTracySystemPrompt`. `splitActionLine` already handles arrow; em-dash is rendering as styled body text.
+5. **Super-admin simplification** (proposed, not built). Multi-session refactor: 5-tab structure (Schools / Principals / Money / Outreach / Astra Insights), archive 18 dead marketing sub-pages and the `social-manager/` subtree, retire the colored tile ribbon. Worth a fresh head.
+6. **Astra `→ ` vs `—` action-line marker.** Astra is using em-dash where the system prompt asked for arrow; cosmetic, but worth a one-line check on `buildTracySystemPrompt`. `splitActionLine` already handles arrow; em-dash is rendering as styled body text.
 7. **`unpack_teacher` progress events.** Three i18n keys are already pre-translated. ~15 min follow-up.
 8. **Avatar polish** (optional). User noted the T could be tighter to the canvas edges and the sprout slightly larger for better legibility at smaller sizes. Future iteration.
 
@@ -323,7 +323,7 @@ A whale/Montree_Brand_Kit.docx (deliverable, not committed)
 
 1. **Hard refresh `/montree/admin`** (Cmd+Shift+R) to clear any cached bundle. Confirm:
    - Sidebar reads: Today / Classrooms / People / Pulse / Settings / 🔒 Conversations
-   - Tracy's avatar is the gold-T-on-dark-green PNG (not the CSS circle)
+   - Astra's avatar is the gold-T-on-dark-green PNG (not the CSS circle)
    - Asking a child question shows the live status line ("正在阅读问题…" → "正在查找 X…" → "正在获取…") before the answer
 
 2. **Vault end-to-end** — full flow on `/montree/admin/conversations`:

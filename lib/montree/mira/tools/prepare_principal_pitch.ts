@@ -2,7 +2,7 @@
 //
 // Mira's pitch dossier. Session 133 Phase D.
 //
-// Same shape as Tracy's prepare_parent_meeting:
+// Same shape as Astra's prepare_parent_meeting:
 //   1. Load knowledge base + live platform numbers in parallel
 //   2. Compose structured context
 //   3. Single Sonnet call with PITCH_PREP_SYSTEM_PROMPT
@@ -14,7 +14,7 @@
 // PROMPT-INJECTION: principal_name + known_pain_points + relationship +
 // school_size all flow into the user prompt from agent-typed input. We
 // wrap them in a session-unique random-nonce fence (same pattern as
-// Tracy's prepare_parent_meeting).
+// Astra's prepare_parent_meeting).
 
 import { randomBytes } from 'crypto';
 import type Anthropic from '@anthropic-ai/sdk';

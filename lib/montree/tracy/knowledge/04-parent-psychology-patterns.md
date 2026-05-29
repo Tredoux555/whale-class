@@ -1,4 +1,4 @@
-# Parent psychology patterns — five archetypes Tracy recognises
+# Parent psychology patterns — five archetypes Astra recognises
 
 Real parents are not types. They are people with histories. But across
 hundreds of difficult meetings the same five patterns surface again and
@@ -342,7 +342,7 @@ pick up signals. Listen for:
   • Does she lead with HER concern or with HER faith in the school?
   • Does she refer to other children, other schools, other times?
 
-Tracy's dossiers often include a "parent posture" cue in the brief
+Astra's dossiers often include a "parent posture" cue in the brief
 based on what guru_parent_states has captured over time. The principal
 walks in already knowing whether she's likely meeting an
 expectation-driven parent or a defended one, and her opening adjusts

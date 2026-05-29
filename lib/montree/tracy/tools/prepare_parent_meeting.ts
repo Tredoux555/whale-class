@@ -56,7 +56,7 @@ import { getAILanguageInstruction } from '@/lib/montree/i18n/locale-config';
 // cultural, and de-escalation frameworks instead of just the hard-coded
 // rules in PARENT_MEETING_PREP_SYSTEM_PROMPT.
 import { getTracyKnowledge } from '../knowledge/loader';
-// Ultimate Tracy Phase A — load the parent's rich structured profile
+// Ultimate Astra Phase A — load the parent's rich structured profile
 // (archetypes, cultural register, triggers, moves, family context) so
 // Section 5 of the dossier personalises to THIS parent instead of just
 // to inferred guru_parent_states. Returns null gracefully when migration
@@ -66,7 +66,7 @@ import {
   loadParentProfile,
   renderParentProfileForPrompt,
 } from '@/lib/montree/parent-profile/loader';
-// Ultimate Tracy Phase C — corpus RAG. Retrieve school-specific insights
+// Ultimate Astra Phase C — corpus RAG. Retrieve school-specific insights
 // keyed by meeting purpose + (optionally) the parent's archetype, inject
 // as a # CORPUS section. Failure is non-fatal — dossier still ships.
 import {
@@ -678,7 +678,7 @@ export async function preparePMeeting(
   const phrases = inferPatternPhrases(meetingPurpose);
   console.log(`${_tracyDiag} fetching_context+guru+pattern+parent_profile (parallel) phrases=${phrases.positives.length}`);
 
-  // Ultimate Tracy Phase A — fourth parallel branch: resolve the child's
+  // Ultimate Astra Phase A — fourth parallel branch: resolve the child's
   // parent (preferring one named in meeting_purpose, falling back to the
   // first linked parent) → load that parent's full structured profile if
   // migration 238 has been run. Failure modes (no junction rows, missing
@@ -881,7 +881,7 @@ ${parentContext ? `${beginFence}\n${parentContext}\n${endFence}` : '(no override
   // reference; only the rendered output language changes.
   const languageDirective = getAILanguageInstruction(locale);
   const localeBlock = languageDirective
-    ? `\n\n# LANGUAGE OF OUTPUT\n${languageDirective}\n\nThe entire dossier you produce — section headers (## 1. Tracy's note, ## 2. The child, etc.), all prose, the literal blockquote conversation scripts, the bullet lists, the follow-up plan, and the sources appendix — MUST be in the target language. The Yo-yo worked example above is in English as a voice + structure reference only; do not copy its English wording. Keep the dossier's nine-section STRUCTURE identical; only the rendered language changes. Translate section headers naturally for the language (e.g. for Mandarin: '## 1. Tracy 的话', '## 2. 这个孩子', etc.) — don't leave English headers.`
+    ? `\n\n# LANGUAGE OF OUTPUT\n${languageDirective}\n\nThe entire dossier you produce — section headers (## 1. Astra's note, ## 2. The child, etc.), all prose, the literal blockquote conversation scripts, the bullet lists, the follow-up plan, and the sources appendix — MUST be in the target language. The Yo-yo worked example above is in English as a voice + structure reference only; do not copy its English wording. Keep the dossier's nine-section STRUCTURE identical; only the rendered language changes. Translate section headers naturally for the language (e.g. for Mandarin: '## 1. Astra 的话', '## 2. 这个孩子', etc.) — don't leave English headers.`
     : '';
 
   // Session 136 — load the FULL psychological knowledge bundle and inject it
@@ -1016,7 +1016,7 @@ Output: ${outputFormat === 'json' ? 'a SINGLE JSON object with one key per dossi
   // Session 136 — per-chunk watchdog. If no text_delta event arrives for
   // 30 consecutive seconds, fail fast with an explicit "Sonnet stalled"
   // error instead of waiting the full PREPARE_MEETING_TIMEOUT_MS (180s).
-  // The user reported "Tracy struck out completely" — current behaviour
+  // The user reported "Astra struck out completely" — current behaviour
   // is a silent 180s wait that bubbles a generic "Sonnet timeout" with
   // no diagnostic signal about WHERE it stalled (before any token? mid
   // stream?). The per-chunk watchdog distinguishes those cases in logs.
@@ -1150,7 +1150,7 @@ Output: ${outputFormat === 'json' ? 'a SINGLE JSON object with one key per dossi
   if (outputFormat === 'html') {
     payload = renderDossierHtml(markdown, {
       title: `${ctx.child.name} — Parent Meeting Dossier`,
-      subtitle: classroomName ? `${classroomName} · prepared by Tracy` : 'prepared by Tracy',
+      subtitle: classroomName ? `${classroomName} · prepared by Astra` : 'prepared by Astra',
       meta: {
         generated_at: new Date().toISOString(),
         source_counts: `${sourceCounts.observations} observations · ${sourceCounts.guru_analyses} Guru analyses · ${sourceCounts.pattern_events} pattern events · ${sourceCounts.developmental_insights} developmental insights`,

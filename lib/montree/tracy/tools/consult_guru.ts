@@ -1,6 +1,6 @@
 // lib/montree/tracy/tools/consult_guru.ts
 //
-// Tracy → Guru bridge. Tracy queries the historical Guru analyses for a child.
+// Astra → Guru bridge. Astra queries the historical Guru analyses for a child.
 //
 // CONTEXT:
 //   Guru is the per-child Maria-Montessori-in-pocket AI that teachers use. Every
@@ -10,7 +10,7 @@
 //
 //   The Yo-yo dossier (Session 132) pulled directly from these analyses — the
 //   working interpretation of the sleep pattern was largely Guru's, repackaged
-//   into Tracy's chief-of-staff voice. This tool makes that workflow native.
+//   into Astra's chief-of-staff voice. This tool makes that workflow native.
 //
 // FILTER RULES:
 //   - Skip photo-identification queries. The convention used elsewhere is
@@ -21,11 +21,11 @@
 //     `montree_guru_interactions.child_id` is FK'd to children, and children
 //     are FK'd to classrooms, and classrooms have `school_id`, the easiest
 //     defence-in-depth check is to verify the child belongs to the school
-//     BEFORE running the lookup. The caller (Tracy's tool executor) already
+//     BEFORE running the lookup. The caller (Astra's tool executor) already
 //     does this when it resolves the child via `child_focus`.
 //
 // CROSS-POLLINATION CONTRACT:
-//   - childId is the cross-school boundary. Tracy must NEVER pass a childId
+//   - childId is the cross-school boundary. Astra must NEVER pass a childId
 //     she didn't resolve from a school-scoped query first.
 //   - This module re-verifies the child belongs to the school as
 //     belt-and-braces, but the canonical guard lives in the caller.

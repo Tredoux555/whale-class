@@ -174,7 +174,7 @@ Implication for parent meetings:
 
 Most international Montessori principals naturally lean
 relationship-based and slightly under-deliver on the explicit data
-that task-based parents need. Tracy's dossiers add dates and counts
+that task-based parents need. Astra's dossiers add dates and counts
 so the data is THERE for task-based parents, while the conversation
 script supplies the relational warmth for relationship-based ones.
 
@@ -309,9 +309,9 @@ These are sketches, not rules. Every parent is more than her culture.
     families; the principal should not assume the mother is the
     decision-maker for school topics or the father is. Ask.
 
-## What Tracy does with this
+## What Astra does with this
 
-Tracy's dossiers should be CULTURALLY ADAPTIVE when the principal's
+Astra's dossiers should be CULTURALLY ADAPTIVE when the principal's
 notes (or guru_parent_states) signal a specific cultural context. The
 conversation script adapts:
 
@@ -324,7 +324,7 @@ conversation script adapts:
   • Question phrasing adjusts (egalitarian parents asked openly;
     hierarchical parents invited explicitly)
 
-When Tracy doesn't have cultural context, the default is warmth +
+When Astra doesn't have cultural context, the default is warmth +
 specificity. That works across all eight dimensions.
 
 The principal who has internalised these dimensions can hold a

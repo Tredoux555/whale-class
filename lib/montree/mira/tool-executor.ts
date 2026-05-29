@@ -28,7 +28,7 @@ import {
   readEncryptedField,
 } from '@/lib/montree/messaging-crypto';
 
-// 🚨 PROMPT-INJECTION DEFENCE (Tracy + Mira audit HIGH-2, Session 113 V2).
+// 🚨 PROMPT-INJECTION DEFENCE (Astra + Mira audit HIGH-2, Session 113 V2).
 //
 // Mira's draft tools accept agent-typed input (school_name, country,
 // context, text) that flows directly into Haiku's user prompt. Without a

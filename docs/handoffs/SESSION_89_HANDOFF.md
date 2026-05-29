@@ -270,4 +270,4 @@ f1aaa011 — Term reports closing colour fix (bg1 → tx1)
 
 8. **Potential future work mentioned in user discussion:**
    - Two-stage Language Presentation flow (Stage 1 = teacher picks photos manually with optional AI-suggest button; Stage 2 = AI writes captions around chosen photos). User confirmed direction but I cancelled the build mid-stream when grammar fix took priority. Pick this back up when ready.
-   - Family data model for Tracy (Phase 3 of Session 85's plan)
+   - Family data model for Astra (Phase 3 of Session 85's plan)

@@ -8,7 +8,7 @@
 //   - Reply enforces can_reply on the parent's participant row.
 //
 // AI POSTURE:
-//   - ai_drafted is ALWAYS false on parent posts. Tracy's drafting tools
+//   - ai_drafted is ALWAYS false on parent posts. Astra's drafting tools
 //     belong to the principal. Parents have no AI drafting in v1.
 
 import { NextRequest, NextResponse } from 'next/server';

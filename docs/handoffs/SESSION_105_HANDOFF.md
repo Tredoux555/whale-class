@@ -19,7 +19,7 @@ agent payout** (carry-over from Session 104).
 
 | # | Hash | Headline |
 |---|------|----------|
-| 1 | `bde404d8` | **i18n full sweep** — 327 new keys across 13 Session 104 surfaces × 12 locales (Money, Health, DLQ, Errors, Tracy/Mira cards, Changelog, TrialBanner, Recurring, parent-codes, agent messaging) |
+| 1 | `bde404d8` | **i18n full sweep** — 327 new keys across 13 Session 104 surfaces × 12 locales (Money, Health, DLQ, Errors, Astra/Mira cards, Changelog, TrialBanner, Recurring, parent-codes, agent messaging) |
 | 2 | `5338a406` | Fix newline escape bug in `confirmWire` + `emailBody` (`\\n\\n` → literal `\n\n` text at runtime; normalized to `\n\n` across 12 locales) |
 | 3 | `d99dfd31` | Money tab: 🔄 Reset to pending button on failed payouts (recovery path; preserves failure notes) |
 | 4 | `48aa7b52` | **Demo-request drip campaign** — day 3 / 7 / 14 auto-emails to status=`demo_requested` leads, stops the moment status flips |
@@ -30,7 +30,7 @@ agent payout** (carry-over from Session 104).
 | 9 | `317d585f` | Health tab: 🐛 Server Errors card (unresolved count, fatal flag, last 7d total) |
 | 10 | `dc0a449e` | Schools tab: Stripe Customer pill deep-links to `dashboard.stripe.com/customers/{id}` |
 | 11 | `2f4d5f04` | DemoRequestAlert: shows drip activity per row + adds Not interested action |
-| 12 | `0192bad6` | Tracy 402 → friendly upgrade card with "Set up billing" CTA (vs red error toast). Carry-over from Session 98 priority #14. |
+| 12 | `0192bad6` | Astra 402 → friendly upgrade card with "Set up billing" CTA (vs red error toast). Carry-over from Session 98 priority #14. |
 | 13 | `c0c12a2c` | DemoRequestAlert: 📧 Reply with trial link button (mailto with pre-filled warm reply + auto-marks contacted) |
 | 14 | `453cd9b6` | Session 105 handoff doc (v1) |
 | 15 | `7cc53298` | **Photo audit: top-3 candidate chips** (one-tap fix on Haiku misses) **+ React.memo on AuditPhotoCard** (fixes "system choked" on 200+ photo grids) |
@@ -76,7 +76,7 @@ Per-lead row now shows:
 - **Fully translated end-to-end** (status pills, tiles, buttons, error messages, invoice history, drift warning, configured/not-configured branches)
 - Locale-aware date + currency formatting via `getIntlLocale()`
 
-### ✨ Tracy upgrade card
+### ✨ Astra upgrade card
 - 402 responses include `requires_upgrade: true` + `upgrade_url` + `feature`
 - Frontend renders friendly amber/gold card with "Set up billing" CTA → `/montree/admin/billing`
 - Plain transient errors still render red (separate branch)
@@ -130,7 +130,7 @@ After Railway settles `7cc53298`, run these on production:
 7. **Demo request drip manual trigger** — Health tab cron triggers panel → "Demo-request drip". Ok response (empty outcomes if no leads at day 3/7/14).
 8. **DemoRequestAlert** — super-admin home. Pending leads show age + drips + 3 buttons.
 9. **Reply with trial link** — click 📧 button. Mail client opens with pre-filled warm reply + trial URL. Lead disappears from alert (marked contacted).
-10. **Tracy upgrade card** — switch a school to Free tier. Log in as that principal. Hit Tracy. Should see amber/gold upgrade card with "Set up billing" → `/montree/admin/billing`, NOT a red error toast.
+10. **Astra upgrade card** — switch a school to Free tier. Log in as that principal. Hit Astra. Should see amber/gold upgrade card with "Set up billing" → `/montree/admin/billing`, NOT a red error toast.
 11. **Billing page in Chinese** — `/montree/admin/billing` in zh locale. Status pills + tiles + buttons all Chinese.
 12. **Trial conversion success message** — sign up fresh trial, hit Stripe Checkout with `4242 4242 4242 4242`, verify return-page shows localized "thank you" message.
 13. **🆕 Photo audit top-3 chips** — open `/montree/dashboard/photo-audit`. Find a haiku_matched (yellow) or haiku_drafted (teal) photo. Look below the work name for "or pick: [chip] [chip]" — top-2 sibling candidates. Click a chip → photo should auto-attach to that work and move out of the queue.
@@ -153,7 +153,7 @@ After Railway settles `7cc53298`, run these on production:
 
 | Priority | Item | Effort |
 |----------|------|--------|
-| Medium | **Apply Tracy 402 upgrade-card pattern to other AI routes** — Weekly Wrap, Photo Identification, Snap Identify, etc. Each route returns 402 with `requires_upgrade: true` and clients render the matching card. ~1-2 hours per surface. |
+| Medium | **Apply Astra 402 upgrade-card pattern to other AI routes** — Weekly Wrap, Photo Identification, Snap Identify, etc. Each route returns 402 with `requires_upgrade: true` and clients render the matching card. ~1-2 hours per surface. |
 | Medium | **Agent dashboard polish** — Schools / Codes / Payouts / Settings pages. Mobile-first re-audit. ~half-day. |
 | Medium | **Virtual scroll on photo-audit grid** — `React.memo` helps but 500 photos in DOM is still heavy. Add `react-window` or `react-virtuoso` for true windowing. ~2-3 hours. |
 | Medium | **Photo bank improvements** — half-day (carry-over) |
@@ -172,14 +172,14 @@ After Railway settles `7cc53298`, run these on production:
 - Money tab: `components/montree/super-admin/MoneyTab.tsx`, `MoneyLedgerView.tsx`
 - Health tab: `components/montree/super-admin/HealthTab.tsx`, `WebhookDLQTab.tsx`, `ServerErrorsTab.tsx`, `RecurringOpExpensePanel.tsx`
 - Demo + Schools: `components/montree/super-admin/SchoolsTab.tsx`, `app/montree/super-admin/page.tsx`
-- Tracy + admin: `components/montree/admin/TracyProactiveCard.tsx`, `TrialExpiringBanner.tsx`, `app/montree/admin/page.tsx`, `app/montree/admin/billing/page.tsx`
+- Astra + admin: `components/montree/admin/TracyProactiveCard.tsx`, `TrialExpiringBanner.tsx`, `app/montree/admin/page.tsx`, `app/montree/admin/billing/page.tsx`
 - Agent: `components/montree/agent/MiraProactiveCard.tsx`, `app/montree/agent/messages/page.tsx`, `app/montree/agent/messages/[threadId]/page.tsx`
 - Misc: `components/montree/ChangelogModal.tsx`, `app/montree/dashboard/parent-codes/page.tsx`, `app/montree/dashboard/photo-audit/page.tsx`
 
 **Server routes (5):**
-- `app/api/montree/admin/snapshot/route.ts` (Tracy proactive — returns suggestion_keys)
+- `app/api/montree/admin/snapshot/route.ts` (Astra proactive — returns suggestion_keys)
 - `app/api/montree/agent/snapshot/route.ts` (Mira proactive — returns action keys + params)
-- `app/api/montree/admin/principal-agent/route.ts` (Tracy 402 → requires_upgrade)
+- `app/api/montree/admin/principal-agent/route.ts` (Astra 402 → requires_upgrade)
 - `app/api/montree/super-admin/payouts/route.ts` (reset_failed action)
 - `app/api/montree/super-admin/health/route.ts` (server_errors + demo_requests + DLQ count steps)
 - `app/api/montree/super-admin/demo-requests/route.ts` (drip activity enrichment)

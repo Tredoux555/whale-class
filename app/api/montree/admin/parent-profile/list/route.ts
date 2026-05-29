@@ -1,12 +1,12 @@
 // app/api/montree/admin/parent-profile/list/route.ts
 //
-// Ultimate Tracy Phase A — list every parent in the school with their
+// Ultimate Astra Phase A — list every parent in the school with their
 // profile summary (archetype tags, meeting count, last meeting date) and
 // linked child names.
 //
 // Used by:
 //   - The /montree/admin/parents page (Phase D)
-//   - Tracy's `list_parents_for_school` tool (Phase A — tool dispatch)
+//   - Astra's `list_parents_for_school` tool (Phase A — tool dispatch)
 //
 // SCHOOL-SCOPING:
 //   Hard-scoped on auth.schoolId. No exceptions.

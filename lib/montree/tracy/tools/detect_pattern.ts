@@ -19,7 +19,7 @@
 //
 // PROMPT-INJECTION:
 //   No AI call in this module. Input phrases come from Sonnet upstream
-//   (Tracy's tool call) — they're treated as literal substring patterns.
+//   (Astra's tool call) — they're treated as literal substring patterns.
 //   We use case-insensitive substring matching on text columns; no SQL
 //   injection vector because everything is parameterised via Supabase.
 //

@@ -220,7 +220,7 @@ These rules generalise from Sessions 97, 114, 115, and the ecosystem build:
 
 From the draft phase:
 
-1. **Pro tier pricing — does it stay at $7?** Yes. Compass 2.0's Growth Suite launched without raising base price. Montree's competitive angle is depth (Tracy, Mira, meeting notes, ecosystem) at the same price, not premium pricing.
+1. **Pro tier pricing — does it stay at $7?** Yes. Compass 2.0's Growth Suite launched without raising base price. Montree's competitive angle is depth (Astra, Mira, meeting notes, ecosystem) at the same price, not premium pricing.
 2. **Calendar shape — own implementation vs. Cal.com embed?** **Own implementation.** Cal.com's data model concepts are the reference but the dependency cost (auth federation, theme override, billing relationship) exceeds the build savings.
 3. **Parent social groups timing?** Phase 5 — after calendar + newsletter ship. Legal audit gates the start.
 4. **Newsletter design — drag-drop vs. structured-template?** **Structured-template for v1.** Drag-drop is a future polish phase.
@@ -232,9 +232,9 @@ From the draft phase:
 
 | Tier | Today | After all 6 phases ship |
 |---|---|---|
-| **Free** ($0) | Photo identification only | Photo identification + Tracy/Mira preview |
+| **Free** ($0) | Photo identification only | Photo identification + Astra/Mira preview |
 | **Core** ($7/student/mo) | Above + meeting notes + photo ID + weekly wraps (Haiku) | Above + **parent ↔ principal messaging** |
-| **Pro** ($7/student/mo Premium) | Above + Sonnet AI + Tracy/Mira full | Above + **appointments + newsletter + events + social groups + birthday calendar** |
+| **Pro** ($7/student/mo Premium) | Above + Sonnet AI + Astra/Mira full | Above + **appointments + newsletter + events + social groups + birthday calendar** |
 
 The Pro upgrade story: "Same $7 price as Core, plus the full school ecosystem and the Sonnet AI."
 

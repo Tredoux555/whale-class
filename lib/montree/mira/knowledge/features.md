@@ -18,10 +18,10 @@
 
 ## For the principal
 
-**Tracy (chief of staff).** The principal's AI. Opus-powered. Knows every child, every teacher, every observation, every note. Three modes:
-- *Reactive Q&A.* "How is Susan doing?" — Tracy unpacks vague into activity + coverage + quality + pattern + verdict.
-- *Parent communication.* Tracy scans every parent thread, drafts the principal's reply in her voice, surfaces the "Tracy drafted" pill so the parent knows it's AI-assisted.
-- *Parent meeting prep.* Tracy pulls every observation + Guru analysis + behavioural pattern and builds a meeting-prep dossier the principal reads once and walks in prepared.
+**Astra (chief of staff).** The principal's AI. Opus-powered. Knows every child, every teacher, every observation, every note. Three modes:
+- *Reactive Q&A.* "How is Susan doing?" — Astra unpacks vague into activity + coverage + quality + pattern + verdict.
+- *Parent communication.* Astra scans every parent thread, drafts the principal's reply in her voice, surfaces the "Astra drafted" pill so the parent knows it's AI-assisted.
+- *Parent meeting prep.* Astra pulls every observation + Guru analysis + behavioural pattern and builds a meeting-prep dossier the principal reads once and walks in prepared.
 
 **Communication hub.** Five tabs (By classroom / All teachers / All parents / Custom groups / Inbox). Principal sees every conversation in the school. Auto-observer on every parent thread for transparency.
 

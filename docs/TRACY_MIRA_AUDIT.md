@@ -1,20 +1,20 @@
-# Tracy + Mira Deep Audit — May 16, 2026
+# Astra + Mira Deep Audit — May 16, 2026
 
-Triple-cycle audit of the Tracy (principal chief-of-staff) and Mira (agent growth partner) AI systems. Both run on Opus 4.6, share the SSE/tool-use orchestrator architecture, and were built in parallel across Sessions 84–100 (Tracy) and 96–97 (Mira).
+Triple-cycle audit of the Astra (principal chief-of-staff) and Mira (agent growth partner) AI systems. Both run on Opus 4.6, share the SSE/tool-use orchestrator architecture, and were built in parallel across Sessions 84–100 (Astra) and 96–97 (Mira).
 
 ## Executive summary
 
-The Tracy + Mira systems are **architecturally sound and observably correct on the canonical paths.** Three audit passes did not surface a CRITICAL show-stopper of the photo-pipeline class (silent CHECK-constraint failures, race-clobbered teacher decisions). They surfaced **2 HIGH-severity issues that materially affect cost/UX**, plus **6 MED + 5 LOW findings** that are real but recoverable.
+The Astra + Mira systems are **architecturally sound and observably correct on the canonical paths.** Three audit passes did not surface a CRITICAL show-stopper of the photo-pipeline class (silent CHECK-constraint failures, race-clobbered teacher decisions). They surfaced **2 HIGH-severity issues that materially affect cost/UX**, plus **6 MED + 5 LOW findings** that are real but recoverable.
 
 Top 3 by severity:
 
 1. **HIGH — `recall_memory` reference-count bumps issue O(N) UPDATE round-trips** per call. `bumpMemoryReference` reads 1–20 rows then fires `Promise.all` of 1 UPDATE per row. For a recall returning 20 memories that's 21 DB calls instead of 1 RPC. Pure waste on every recall.
-2. **HIGH — Mira passes `school_name` straight from the tool input into the Haiku draft prompt with no fence-wrap.** Every other AI surface in Tracy/Mira fences untrusted user text (parent-question, scan-thread, child-focus, note-quality). The school name comes from the agent — typically trustworthy — but the field flows directly into the prompt, so a determined agent OR a future tool that auto-fills `school_name` from web search would have an injection vector. Inconsistent posture vs the rest of the codebase.
-3. **HIGH — Migration 184 (`montree_principal_agent_log`) is still flagged "pending" in CLAUDE.md.** Every Tracy turn fire-and-forgets an insert; the route doesn't gate on table existence. If unrun in prod, Tredoux can't see what principals are asking, but the agent works fine — silent observability gap.
+2. **HIGH — Mira passes `school_name` straight from the tool input into the Haiku draft prompt with no fence-wrap.** Every other AI surface in Astra/Mira fences untrusted user text (parent-question, scan-thread, child-focus, note-quality). The school name comes from the agent — typically trustworthy — but the field flows directly into the prompt, so a determined agent OR a future tool that auto-fills `school_name` from web search would have an injection vector. Inconsistent posture vs the rest of the codebase.
+3. **HIGH — Migration 184 (`montree_principal_agent_log`) is still flagged "pending" in CLAUDE.md.** Every Astra turn fire-and-forgets an insert; the route doesn't gate on table existence. If unrun in prod, Tredoux can't see what principals are asking, but the agent works fine — silent observability gap.
 
 ## Architecture as built
 
-### Tracy flow — `child_focus` (canonical use case)
+### Astra flow — `child_focus` (canonical use case)
 
 ```mermaid
 sequenceDiagram
@@ -54,7 +54,7 @@ Same orchestrator, simpler tools. **No tier-gating** (agents are paid partners, 
 
 - **Mira file location is `lib/montree/mira/` and `app/api/montree/agent/mira/route.ts`** — the rename from `gloria` is complete on disk. CLAUDE.md says "look for either path" — code-side cleanup is done; only migration 192 (`gloria → mira` table rename) is flagged pending. Until that runs, `montree_agent_mira_log` writes 42P01-fail silently (route catches).
 - **Migration 184** (principal_agent_log) is flagged pending in two places in CLAUDE.md (Session 84 and Session 99 still mention it). The principal-agent route writes to it on every turn fire-and-forget. Silent observability loss if unrun.
-- **`consult_guru` Tracy→Guru bridge** mentioned in Session 84/85 architectural notes — **not implemented**. tool-definitions.ts has no such entry. System prompt does not advertise it. Not a regression; just a planned tool that didn't ship.
+- **`consult_guru` Astra→Guru bridge** mentioned in Session 84/85 architectural notes — **not implemented**. tool-definitions.ts has no such entry. System prompt does not advertise it. Not a regression; just a planned tool that didn't ship.
 
 ## Findings — categorized
 
@@ -66,15 +66,15 @@ Same orchestrator, simpler tools. **No tier-gating** (agents are paid partners, 
 - Why minor: The Haiku parse is the primary path; heuristic only fires when Haiku is null or returns unparseable output (both rare).
 - Fix sketch: Add tests to lock the fallback behavior. No code change.
 
-**[MED] `splitActionLine` parser inconsistency between Tracy chat page and TracyFloat.**
+**[MED] `splitActionLine` parser inconsistency between Astra chat page and TracyFloat.**
 - Where:
   - `app/montree/admin/page.tsx:161` — uses arrow regex AND legacy "I'd …" fallback
   - `app/montree/agent/mira/page.tsx:613` — uses `text.lastIndexOf('\n→ ')` only
   - `components/montree/agent/MiraFloat.tsx:124` — uses paragraph-split arrow regex
-- What: Three different action-line parsers across surfaces. Mira's dedicated chat page only matches `\n→ ` (newline-prefix) — misses single-line responses ending in `→`. Tracy's parser handles paragraph-split AND legacy English fallback. MiraFloat handles paragraph-split but not the legacy English fallback.
-- Why it matters: If Tracy or Mira emits the action line without a preceding blank line OR with a `->` ASCII fallback OR in a malformed shape, different surfaces render it differently. Mira's chat page is the weakest — could leave the `→` rendered inline as body text on edge cases.
+- What: Three different action-line parsers across surfaces. Mira's dedicated chat page only matches `\n→ ` (newline-prefix) — misses single-line responses ending in `→`. Astra's parser handles paragraph-split AND legacy English fallback. MiraFloat handles paragraph-split but not the legacy English fallback.
+- Why it matters: If Astra or Mira emits the action line without a preceding blank line OR with a `->` ASCII fallback OR in a malformed shape, different surfaces render it differently. Mira's chat page is the weakest — could leave the `→` rendered inline as body text on edge cases.
 - Repro: Have Mira respond with `Some text. → Action` on a single line. The chat page renders it as body; MiraFloat would still detect it (single-line fallback at line 138).
-- Fix sketch: Extract one `splitActionLine` helper into `lib/montree/agent-action-line.ts` (or similar) and import everywhere. Use Tracy's paragraph-split + single-line + legacy-English version as canonical.
+- Fix sketch: Extract one `splitActionLine` helper into `lib/montree/agent-action-line.ts` (or similar) and import everywhere. Use Astra's paragraph-split + single-line + legacy-English version as canonical.
 
 **[MED] Mira's draft tools don't fence the `school_name` / `context` inputs.**
 - Where: `lib/montree/mira/tool-executor.ts:303` (`draft_outreach_email`), `:344` (`draft_followup_email`)
@@ -85,7 +85,7 @@ Same orchestrator, simpler tools. **No tier-gating** (agents are paid partners, 
 
 **[LOW] `child_focus` does not gracefully handle an empty question after Haiku parse.**
 - Where: `lib/montree/tracy/frameworks/child-focus.ts:251` — `if (!name) return { resolution: 'not_found', not_found_query: '' }`
-- What: When Haiku can't extract a name (e.g. "how is everyone doing?"), the framework returns `not_found` with empty `not_found_query`. The Tracy compose layer then can't relay anything sensible — Opus sees `resolution=not_found, not_found_query=""` and has to invent a clarifying response. Works but inelegant.
+- What: When Haiku can't extract a name (e.g. "how is everyone doing?"), the framework returns `not_found` with empty `not_found_query`. The Astra compose layer then can't relay anything sensible — Opus sees `resolution=not_found, not_found_query=""` and has to invent a clarifying response. Works but inelegant.
 - Why minor: Opus usually handles it correctly — the system prompt has rules. Edge case.
 - Fix sketch: Add a 4th resolution type `'no_name'` so Opus has explicit guidance.
 
@@ -99,8 +99,8 @@ Same orchestrator, simpler tools. **No tier-gating** (agents are paid partners, 
 
 **[HIGH] `recall_memory` fires N+1 UPDATEs per call.**
 - Where: `lib/montree/tracy/memory.ts:478–496` (`bumpMemoryReference`)
-- What: When Tracy calls `recall_memory`, the dispatch fire-and-forgets `bumpMemoryReference(supabase, returnedIds)`. That function does `SELECT id, reference_count FROM montree_principal_memory WHERE id IN (ids)` then `Promise.all(rows.map(r => supabase.update(...)))`. For a 20-row recall that's 1 SELECT + 20 UPDATEs = 21 DB round-trips. Pure overhead — `reference_count` is a non-critical pruning signal.
-- Why it matters: Tracy is now a per-message latency-sensitive surface. Every `recall_memory` call burns ~200–500ms of DB time the principal waits on (yes it's fire-and-forget but it still occupies the Postgres connection pool). At scale, this also wastes Postgres CPU.
+- What: When Astra calls `recall_memory`, the dispatch fire-and-forgets `bumpMemoryReference(supabase, returnedIds)`. That function does `SELECT id, reference_count FROM montree_principal_memory WHERE id IN (ids)` then `Promise.all(rows.map(r => supabase.update(...)))`. For a 20-row recall that's 1 SELECT + 20 UPDATEs = 21 DB round-trips. Pure overhead — `reference_count` is a non-critical pruning signal.
+- Why it matters: Astra is now a per-message latency-sensitive surface. Every `recall_memory` call burns ~200–500ms of DB time the principal waits on (yes it's fire-and-forget but it still occupies the Postgres connection pool). At scale, this also wastes Postgres CPU.
 - Repro: Call `recall_memory` with a query that returns 10+ memories. Watch Railway logs for DB times.
 - Fix sketch: Add an RPC `bump_memory_references(ids uuid[])` to migration 195 (or new migration 212). One round-trip. Memory function already has a SECURITY DEFINER precedent.
 
@@ -125,7 +125,7 @@ Same orchestrator, simpler tools. **No tier-gating** (agents are paid partners, 
 - Cache is keyed by `principalId`. `invalidateMemoryCache(principalId)` only affects that one key.
 - The `supersede_and_insert_memory` RPC defense-in-depth filters by `principal_id` on the supersede UPDATE so a malicious caller can't supersede another principal's row.
 
-**[PASS — verified clean] Tracy's direct-DB tools school-scope every read.**
+**[PASS — verified clean] Astra's direct-DB tools school-scope every read.**
 - `list_classrooms_with_summary`: `.eq('school_id', schoolId)`.
 - `list_teachers_with_summary`: `.eq('school_id', schoolId)`.
 - `child_focus.resolveChild`: filters by `classroom_id IN (school's classrooms)`.
@@ -148,7 +148,7 @@ Same orchestrator, simpler tools. **No tier-gating** (agents are paid partners, 
 
 **[HIGH] Migration 184 (`montree_principal_agent_log`) flagged pending in CLAUDE.md.**
 - Where: `app/api/montree/admin/principal-agent/route.ts:534–554` and `:562–590`
-- What: Every Tracy turn does `void supabase.from('montree_principal_agent_log').insert(...).then(...)`. The `.then` callback catches errors and `console.error`s them — does NOT throw. If the table doesn't exist (42P01), every insert fails silently. Tredoux loses visibility into what principals are asking, which CLAUDE.md explicitly identifies as the signal he uses to decide what to build next.
+- What: Every Astra turn does `void supabase.from('montree_principal_agent_log').insert(...).then(...)`. The `.then` callback catches errors and `console.error`s them — does NOT throw. If the table doesn't exist (42P01), every insert fails silently. Tredoux loses visibility into what principals are asking, which CLAUDE.md explicitly identifies as the signal he uses to decide what to build next.
 - Why it matters: Sessions 84/85/99/108 all reference migration 184 as "pending." If never run on prod, observability is dark.
 - Repro: `SELECT count(*) FROM montree_principal_agent_log;` in Supabase. If 42P01, migration is pending.
 - Fix sketch: Run migration 184 in Supabase. Add a healthcheck step in `/api/montree/super-admin/health` that asserts the table exists.
@@ -173,11 +173,11 @@ Same orchestrator, simpler tools. **No tier-gating** (agents are paid partners, 
 
 ### Error handling
 
-**[MED] If Sonnet compose returns empty, Tracy emits a defensive English string regardless of locale.**
+**[MED] If Sonnet compose returns empty, Astra emits a defensive English string regardless of locale.**
 - Where: `lib/montree/tracy/frameworks/child-focus.ts:638` (`I have ${childName}'s file open but the system didn't put together...`)
 - What: Both fallback paths (`if (!text)` and `catch (err)`) produce hardcoded English text. A Chinese or Spanish principal sees broken localization on failure.
 - Why it matters: Failures are rare but when they happen, the principal sees an English string in a Mandarin UI — looks like a system bug.
-- Fix sketch: Localize the fallback strings via `getAILanguageInstruction(locale)`-style helpers, or return a structured `{ resolution: 'compose_failed', child_name }` for the Tracy orchestrator to handle (Opus can localize naturally).
+- Fix sketch: Localize the fallback strings via `getAILanguageInstruction(locale)`-style helpers, or return a structured `{ resolution: 'compose_failed', child_name }` for the Astra orchestrator to handle (Opus can localize naturally).
 
 **[MED] Mira's draft tools return raw "Draft came back empty — try again." in English.**
 - Where: `lib/montree/mira/tool-executor.ts:333`, `:377`, `:401`
@@ -192,7 +192,7 @@ Same orchestrator, simpler tools. **No tier-gating** (agents are paid partners, 
 
 ### Free-tier gating
 
-**[PASS — verified clean] Tracy 402s correctly on free tier.**
+**[PASS — verified clean] Astra 402s correctly on free tier.**
 - `app/api/montree/admin/principal-agent/route.ts:200–212` checks `aiTier.tier === 'free' || !aiTier.model || !anthropic` and returns 402 with `requires_upgrade: true`.
 - Sub-route `scan-thread` 402s with `feature: 'tracy_scan'`.
 - Sub-route `draft-response` 402s with `feature: 'tracy_draft'`.
@@ -203,7 +203,7 @@ Same orchestrator, simpler tools. **No tier-gating** (agents are paid partners, 
 
 **[MED] Action-line action is rendered using `—` em-dash in MiraFloat but `→` arrow in Mira's dedicated chat page.**
 - Where: `components/montree/agent/MiraFloat.tsx:881` (renders `<span>{T.goldDimDash}</span> + action`) vs `app/montree/agent/mira/page.tsx:598` (renders `<span>→</span> + action`).
-- What: The internal marker is `→ ` everywhere per system-prompt rule. Front-end rendering decoration is inconsistent — em-dash on float, arrow on chat page. Tracy is consistent (arrow everywhere).
+- What: The internal marker is `→ ` everywhere per system-prompt rule. Front-end rendering decoration is inconsistent — em-dash on float, arrow on chat page. Astra is consistent (arrow everywhere).
 - Why minor: Cosmetic. Both communicate "this is an action." But it's a visible inconsistency the agent will notice if she uses both surfaces.
 - Fix sketch: Pick one (recommend arrow). Update MiraFloat.
 
@@ -213,10 +213,10 @@ Same orchestrator, simpler tools. **No tier-gating** (agents are paid partners, 
 - Why minor: 4 of Mira's 12 supported locales (en/zh-2/es) have triggers. Other 8 locales render the action line without buttons — agents have to type "yes" manually.
 - Fix sketch: Extend the regex for remaining 8 locales OR drop the language-keyword check and rely on the `?` suffix alone.
 
-**[LOW] Tracy's copy-card rendering doesn't handle nested fences.**
+**[LOW] Astra's copy-card rendering doesn't handle nested fences.**
 - Where: `components/montree/admin/TracyBody.tsx:57` — `FENCE_RE = /```[a-zA-Z0-9_-]*\n([\s\S]*?)\n?```/g`
 - What: Greedy regex on `[\s\S]*?` is non-greedy so handles consecutive fences. But a fence containing literal backticks inside its body would terminate early.
-- Why minor: Tracy's drafts are messages-for-humans, not code samples. Unlikely.
+- Why minor: Astra's drafts are messages-for-humans, not code samples. Unlikely.
 - Fix sketch: Document as a known limitation OR switch to a tokenizer.
 
 ### Migration state
@@ -235,8 +235,8 @@ Same orchestrator, simpler tools. **No tier-gating** (agents are paid partners, 
 | 2 | **Run migration 192 in Supabase** | 5 min | MED | n/a | Restores observability of agent questions. Mira behaves same either way. |
 | 3 | **Add `bump_memory_references(ids)` RPC** | 30 min | HIGH (cost) | migrations/212 + memory.ts | Collapses 1+N round-trips to 1. Pure perf win on a hot path. |
 | 4 | **Fence the Mira draft tool inputs** | 20 min | HIGH (security posture consistency) | tool-executor.ts | Brings Mira up to the canonical fence pattern. Eliminates prompt-injection vector from agent-typed context. |
-| 5 | **Extract one `splitActionLine` helper** | 20 min | MED | new lib + 3 import sites | Removes drift across Tracy/Mira surfaces. Single source of truth for action-line parsing. |
-| 6 | **Localize Tracy/Mira compose fallback strings** | 30 min | MED | child-focus.ts + mira/tool-executor.ts | Fixes "English in Mandarin UI" appearance on rare failure. |
+| 5 | **Extract one `splitActionLine` helper** | 20 min | MED | new lib + 3 import sites | Removes drift across Astra/Mira surfaces. Single source of truth for action-line parsing. |
+| 6 | **Localize Astra/Mira compose fallback strings** | 30 min | MED | child-focus.ts + mira/tool-executor.ts | Fixes "English in Mandarin UI" appearance on rare failure. |
 | 7 | **Add cost-model drift to health endpoint** | 15 min | MED | health route | Surfaces silent cost mislogging in days, not months. |
 | 8 | **Unify MiraFloat → arrow marker** | 10 min | LOW (cosmetic) | MiraFloat.tsx | Cosmetic alignment. |
 
@@ -250,13 +250,13 @@ Same orchestrator, simpler tools. **No tier-gating** (agents are paid partners, 
 
 ## What NOT to change (deliberate decisions)
 
-1. **Opus for both Tracy and Mira.** Voice quality at the trust surface. ~5x Sonnet cost is acceptable per Session 84/97 lock-in.
-2. **Tracy's `child_focus` is end-to-end inside one tool (Haiku-parse + Sonnet-compose).** Session 85's pivot from chained tool calls to a single framework tool eliminated multi-hop fragility. Don't go back.
+1. **Opus for both Astra and Mira.** Voice quality at the trust surface. ~5x Sonnet cost is acceptable per Session 84/97 lock-in.
+2. **Astra's `child_focus` is end-to-end inside one tool (Haiku-parse + Sonnet-compose).** Session 85's pivot from chained tool calls to a single framework tool eliminated multi-hop fragility. Don't go back.
 3. **Mira has NO tier gate.** Agents are paid partners. Session 97 explicit decision.
 4. **Memory cache is process-local with 5-min TTL.** Multi-instance staleness self-heals. Adding Redis is premature.
 5. **`recall_memory` returns up to 20 memories.** RECALL_HARD_CAP=50 is the ceiling. Don't widen — system-prompt top-30 + recall-20 is the working budget.
 6. **Fire-and-forget logging via `void supabase.insert(...).then(...)`.** Doesn't block stream close. Don't await.
-7. **Storage keys school-scoped (Tracy) and agent-scoped (Mira).** Privacy contract from Session 96 + 97 audit fixes. Don't share keys across surfaces.
+7. **Storage keys school-scoped (Astra) and agent-scoped (Mira).** Privacy contract from Session 96 + 97 audit fixes. Don't share keys across surfaces.
 8. **The `→ ` action-line marker is load-bearing.** System prompt + frontend parser depend on it. Don't replace with markdown bullets or em-dash semantics.
 9. **`ai_drafted=true` audit pill on parent-thread inserts.** Transparency contract. Drafted messages must always advertise their AI origin.
 10. **`montree_principal_agent_log` insert is fire-and-forget.** Never block the user on log writes. The .then() catch is intentional silencing.

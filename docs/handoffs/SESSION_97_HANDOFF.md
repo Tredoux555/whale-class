@@ -10,7 +10,7 @@
 
 | Commit | What |
 |--------|------|
-| `47382fb3` | Communication system + Tracy parent-comms (migration 190 + 10 APIs + 2 UI pages + Tracy enrichment) |
+| `47382fb3` | Communication system + Astra parent-comms (migration 190 + 10 APIs + 2 UI pages + Astra enrichment) |
 | `3c58f6dd` | Super-admin Schools rows: login codes labelled by role + person |
 | `54d52133` | Gloria — agent's frontline AI on Opus (migration 191 + entire system) |
 | `a10bc050` | Super-admin cleanup: agent attribution + dark-forest API Usage + culled social-manager stubs |
@@ -37,7 +37,7 @@
 |-------|---------|
 | `montree_message_threads` | The conversation container. school_id-scoped. |
 | `montree_message_thread_participants` | Who's in the thread + read state + can_reply + is_observer. |
-| `montree_thread_messages` | Actual messages. ai_drafted + approved_by_id capture Tracy → principal → send. |
+| `montree_thread_messages` | Actual messages. ai_drafted + approved_by_id capture Astra → principal → send. |
 | `montree_message_groups` | Principal-defined custom groups (mixable teachers + parents). |
 | `montree_message_group_members` | Group membership rows. |
 
@@ -49,7 +49,7 @@ The legacy `montree_messages` table stays. Parent portal continues to use the ol
 
 | Old | New |
 |-----|-----|
-| Today | Today (kept as Tracy chat) |
+| Today | Today (kept as Astra chat) |
 | Classrooms | Classrooms (kept; drill-down enriched, see #6) |
 | People | **Communication** (replaces) |
 | Pulse | (hidden from nav; route still works for direct URL) |
@@ -67,13 +67,13 @@ Five tabs across the top:
 - **Custom groups** — list of principal-defined groups + "New group" CTA → group builder modal (mixable teacher/parent picker). Click a group → composer pre-filled with that group's members.
 - **Inbox** — flat list of all threads in the school, sorted by last activity. Unread badge per thread.
 
-Compose modal handles both 1:1 (creates a thread + posts) and broadcast (creates a single broadcast thread + fans out participants + posts the body). Thread page (`threads/[threadId]/page.tsx`) renders the conversation, marks as read on open, and surfaces Tracy's scan + draft buttons inline on parent threads.
+Compose modal handles both 1:1 (creates a thread + posts) and broadcast (creates a single broadcast thread + fans out participants + posts the body). Thread page (`threads/[threadId]/page.tsx`) renders the conversation, marks as read on open, and surfaces Astra's scan + draft buttons inline on parent threads.
 
 ### 4. Principal transparency
 
 Every parent_teacher and parent_principal thread auto-adds the school's principal as `is_observer=true, can_reply=true` via `addPrincipalObserver()` in `lib/montree/messaging/thread-resolver.ts`. The participants table is the source of truth for "who's in this thread"; the threads-list endpoint widens to "every thread in the school" for principal callers via the `verifyThreadAccess()` helper. Principals see everything; teachers + parents see only their own.
 
-### 5. Tracy enrichment — parent communication playbook + 3 new tools
+### 5. Astra enrichment — parent communication playbook + 3 new tools
 
 `lib/montree/tracy/system-prompt.ts` gained a "Parent communication playbook" section between the role rules and the honesty rules. Three reflexes:
 - Acknowledge before explaining when frustrated
@@ -81,13 +81,13 @@ Every parent_teacher and parent_principal thread auto-adds the school's principa
 - Cross-cultural sensitivity (Chinese parents value academic clarity; Anglophone parents value child autonomy + observation language). Light touch, never preachy.
 - Honesty: no medical claims, no future promises, "let me check with [teacher]" instead of inventing.
 
-Three new Tracy tools in `lib/montree/tracy/tool-definitions.ts` and `tool-executor.ts`:
+Three new Astra tools in `lib/montree/tracy/tool-definitions.ts` and `tool-executor.ts`:
 
 - **`list_recent_threads`** — pulls top 20 threads with type, subject, last sender, last snippet. Optional filters: thread_type, classroom_id, unread_only.
 - **`scan_parent_thread`** — Opus reads a thread end-to-end and returns a 60-100 word chief-of-staff briefing (sentiment, recurring concerns, recommended next move with `→ ` action line). Routed via the new `/api/montree/admin/tracy/scan-thread` endpoint.
 - **`draft_parent_response`** — Opus drafts a reply in the principal's voice, using her last 10 messages as voice samples. Returns a single text body for the principal to send (or edit + send). Optional `guidance` parameter for "keep it warm but firm about the late pickup policy" style direction. Routed via `/api/montree/admin/tracy/draft-response`.
 
-The principal **always pulls the trigger.** Tracy never sends autonomously. When she drafts, the principal hits Send and the message posts with `ai_drafted=true, approved_by_id=<principal_id>` — a permanent audit trail.
+The principal **always pulls the trigger.** Astra never sends autonomously. When she drafts, the principal hits Send and the message posts with `ai_drafted=true, approved_by_id=<principal_id>` — a permanent audit trail.
 
 Both AI endpoints tier-gate via `resolveReportModel()`. Free schools get 402 with a friendly message pointing to `SUPPORT_EMAIL` env var (defaults to tredoux555@gmail.com).
 
@@ -119,8 +119,8 @@ Key endpoints:
 | PATCH | `/api/montree/messages/groups/[id]` | Edit name/desc, add/remove members. |
 | DELETE | `/api/montree/messages/groups/[id]` | Soft-archive. |
 | GET | `/api/montree/admin/communication/directory` | School roster: classrooms + teachers + parents (grouped by classroom + flat). Principal-only / teacher-readable. |
-| POST | `/api/montree/admin/tracy/scan-thread` | Tracy scan (Opus). 402 if Free tier. |
-| POST | `/api/montree/admin/tracy/draft-response` | Tracy draft (Opus + voice samples). 402 if Free tier. |
+| POST | `/api/montree/admin/tracy/scan-thread` | Astra scan (Opus). 402 if Free tier. |
+| POST | `/api/montree/admin/tracy/draft-response` | Astra draft (Opus + voice samples). 402 if Free tier. |
 
 ### 8. Existing surfaces preserved
 
@@ -133,7 +133,7 @@ Key endpoints:
 
 ## Architectural rules locked in this session — DO NOT BREAK
 
-1. **The principal always pulls the trigger.** Tracy can scan, draft, and propose — but every message that posts in her name has `approved_by_id = principal.userId`. There is no autonomous send tool. Don't add one.
+1. **The principal always pulls the trigger.** Astra can scan, draft, and propose — but every message that posts in her name has `approved_by_id = principal.userId`. There is no autonomous send tool. Don't add one.
 
 2. **Cross-pollination contract is mandatory on every messaging endpoint.** `verifySchoolRequest()` provides school_id; every Supabase query funnels through it (or via `verifyThreadAccess()` which double-checks both school + participant membership).
 
@@ -141,13 +141,13 @@ Key endpoints:
 
 4. **`montree_messages` (flat) is legacy.** New code uses `montree_thread_messages`. Parent portal still on legacy temporarily — fine. Don't extend `montree_messages`; extend the new system.
 
-5. **`ai_drafted=true` + `approved_by_id` is the audit trail.** Server overrides any client-supplied `approved_by_id` with `auth.userId`. Renders as a "Tracy drafted" pill in the UI.
+5. **`ai_drafted=true` + `approved_by_id` is the audit trail.** Server overrides any client-supplied `approved_by_id` with `auth.userId`. Renders as a "Astra drafted" pill in the UI.
 
-6. **Tier-gate every Opus call via `resolveReportModel()`.** Free schools get 402 with an actionable error, not a silent failure. The Tracy tools are useless without Opus, so this is correct.
+6. **Tier-gate every Opus call via `resolveReportModel()`.** Free schools get 402 with an actionable error, not a silent failure. The Astra tools are useless without Opus, so this is correct.
 
 7. **`homeschool_parent` always maps to `'parent'` for participant lookups.** This invariant is in three places (threads/route.ts, threads/[id]/route.ts, messages/route.ts). Never deviate.
 
-8. **The principal's school storage namespace stays scoped.** `lib/montree/tracy/storage-keys.ts` from Session 96 is unaffected — Tracy's float on the new Communication pages reuses the same per-school keys.
+8. **The principal's school storage namespace stays scoped.** `lib/montree/tracy/storage-keys.ts` from Session 96 is unaffected — Astra's float on the new Communication pages reuses the same per-school keys.
 
 9. **Sidebar nav is now four items.** Today / Classrooms / Communication / Settings. Pulse hidden by design. Don't re-surface it; if the principal needs it, Settings → Advanced takes her there.
 
@@ -164,13 +164,13 @@ Key endpoints:
 5. From the parent column, click Message all → broadcast composer opens → Send → all parents in classroom receive a thread participant + first message.
 6. Switch to Custom Groups → create a group with mixed teachers + parents → message the group → confirm all members get the thread.
 7. Switch to Inbox → see every thread in the school sorted by recency. Unread count shows.
-8. Open a parent thread → see "Tracy's read" buttons. Click "Scan thread" → Tracy briefing renders. Click "Draft my reply" → composer pre-fills with Tracy's draft + amber border + "Tracy drafted" indicator. Hit Send → message posts with the indicator.
+8. Open a parent thread → see "Astra's read" buttons. Click "Scan thread" → Astra briefing renders. Click "Draft my reply" → composer pre-fills with Astra's draft + amber border + "Astra drafted" indicator. Hit Send → message posts with the indicator.
 9. Confirm the principal sees parent ↔ teacher threads they didn't initiate (transparency).
 10. From a teacher login, confirm the teacher only sees their own threads, not other teachers' threads.
 11. From a parent login (legacy `/montree/parent/messages` still works on old data), confirm nothing's broken.
 12. `/montree/admin/people` 302s to `/montree/admin/communication`.
 13. `/montree/admin/settings` shows Advanced & reporting links to Pulse / Activity / Reports / Features / Import.
-14. Verify Free-tier degradation: flip a school to Free in super-admin, click Tracy "Scan thread" → see "AI features require an active tier" error, no red crash.
+14. Verify Free-tier degradation: flip a school to Free in super-admin, click Astra "Scan thread" → see "AI features require an active tier" error, no red crash.
 
 ---
 
@@ -256,7 +256,7 @@ The super-admin Schools tab was showing a flat comma-separated list of login cod
 
 # Part 3 — Gloria, the agent's frontline AI on Opus (commits `54d52133`, `aa23920b`)
 
-Mirror of Tracy's architecture, agent-scoped. Helps agents (Gloria-the-human, Sarah, future referral partners) draft outreach, monitor their pipeline, and keep schools moving without losing the human touch.
+Mirror of Astra's architecture, agent-scoped. Helps agents (Gloria-the-human, Sarah, future referral partners) draft outreach, monitor their pipeline, and keep schools moving without losing the human touch.
 
 ## What Gloria can do
 
@@ -302,9 +302,9 @@ Mirror of Tracy's architecture, agent-scoped. Helps agents (Gloria-the-human, Sa
 
 ## Audit findings + fixes
 
-Independent audit caught one real bug: the `hasMet` flag was being set immediately after `send()` returned, regardless of whether the greeting POST succeeded. Fixed in `aa23920b` — `pendingFirstMeetingRef` now tracks first-meeting fires and only flips the localStorage flag inside the `done` event handler. Mirror of Tracy's pattern from Session 96.
+Independent audit caught one real bug: the `hasMet` flag was being set immediately after `send()` returned, regardless of whether the greeting POST succeeded. Fixed in `aa23920b` — `pendingFirstMeetingRef` now tracks first-meeting fires and only flips the localStorage flag inside the `done` event handler. Mirror of Astra's pattern from Session 96.
 
-Audit also flagged Opus pricing as `$5/$25 per MTok` — false positive. Anthropic's actual published Opus 4.6 pricing is `$15/$75`, which is what both Tracy and Gloria use. No change.
+Audit also flagged Opus pricing as `$5/$25 per MTok` — false positive. Anthropic's actual published Opus 4.6 pricing is `$15/$75`, which is what both Astra and Gloria use. No change.
 
 ## Schema column references verified
 
@@ -409,7 +409,7 @@ User feedback after first real test: "Gloria using Gloria is weird" — the huma
 
 External reference updates: AgentNav nav entry path + label, agent layout.tsx import + JSX + comments.
 
-Naming rationale locked in: Mira beats Gloria/Sarah/Vera because (1) two-syllable rhythm matches Tracy and Guru, (2) no real-person collision in Tredoux's orbit (Sarah is an existing agent, Vera is his sister, Gloria the human is the model partner), (3) reads cleanly across languages (Hindi/Spanish/Slavic all resolve the same way), (4) no whimsy that ages badly.
+Naming rationale locked in: Mira beats Gloria/Sarah/Vera because (1) two-syllable rhythm matches Astra and Guru, (2) no real-person collision in Tredoux's orbit (Sarah is an existing agent, Vera is his sister, Gloria the human is the model partner), (3) reads cleanly across languages (Hindi/Spanish/Slavic all resolve the same way), (4) no whimsy that ages badly.
 
 ---
 
@@ -499,7 +499,7 @@ Architectural rule for future sessions: **don't try to drive financial UIs via C
 ## Final session commit log (10 commits live in main)
 
 ```
-47382fb3  Communication system + Tracy parent-comms
+47382fb3  Communication system + Astra parent-comms
 3c58f6dd  Login codes labelled by role + person
 54d52133  Gloria — agent's frontline AI on Opus
 a10bc050  Super-admin cleanup (sub-pages)

@@ -1,6 +1,6 @@
 // lib/montree/parent-meeting/analysis-prompt.ts
 //
-// Ultimate Tracy Phase B — Sonnet system prompt for analysing a
+// Ultimate Astra Phase B — Sonnet system prompt for analysing a
 // parent-meeting transcript into structured insight, organised by
 // meeting type.
 //
@@ -55,7 +55,7 @@ export function buildAnalysisSystemPrompt(opts: {
   const guidance =
     MEETING_TYPE_GUIDANCE[meetingType] ?? MEETING_TYPE_GUIDANCE.other;
 
-  return `You are Tracy, the principal's chief of staff. The principal just finished a meeting with ${parentName}${childName ? ` about their child ${childName}` : ''}. You are reading the transcript to produce a structured analysis.
+  return `You are Astra, the principal's chief of staff. The principal just finished a meeting with ${parentName}${childName ? ` about their child ${childName}` : ''}. You are reading the transcript to produce a structured analysis.
 
 # MEETING TYPE
 ${meetingType} — ${guidance}
@@ -65,7 +65,7 @@ ONE tool call to \`analyse_parent_meeting\`. Every field in the schema is popula
 
 # FRAMEWORKS YOU APPLY
 You have internalised:
-  - The five parent archetypes (expectation_driven, anxiety_projecting, hands_off, comparison_trapped, defended) from Tracy's knowledge file 04.
+  - The five parent archetypes (expectation_driven, anxiety_projecting, hands_off, comparison_trapped, defended) from Astra's knowledge file 04.
   - Erin Meyer's 8 Culture Map dimensions from knowledge file 05.
   - Stone/Patton/Heen's three-layer model from knowledge file 02 (What happened / Feelings / Identity).
   - Rosenberg's OFNR + four ways to receive criticism from knowledge file 03.

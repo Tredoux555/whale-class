@@ -35,7 +35,7 @@ Per `docs/handoffs/AGENT_SYSTEM_FIX_PLAN.md` (the 3×3×3 plan). Phases 1 (E2E t
 - ReferralsTab: reads `?prefill_name=`, `?prefill_email=`, `?from_application=` URL params, opens issue-code form pre-filled, marks application 'sent' after code is issued
 - super-admin/page.tsx: reads `?tab=` for deep-linking (so AgentApplicationAlert's Accept button lands in the right tab)
 
-**Phase 4 — Agent ↔ super-admin threaded messaging** (✅ shipped, Mira/Tracy assist deferred)
+**Phase 4 — Agent ↔ super-admin threaded messaging** (✅ shipped, Mira/Astra assist deferred)
 - Migration 204 — extends 4 messaging CHECK constraints (thread_type, created_by_role, participant_role, sender_role) to include 'agent_super_admin' / 'super_admin'. Drops NOT NULL on `montree_message_threads.school_id` with gated CHECK constraint (only agent_super_admin threads may have NULL school_id). Adds partial index for super-admin inbox queries.
 - Helper module: `lib/montree/agent-super-admin-messaging/` with `types.ts` (SUPER_ADMIN_SENTINEL_UUID + display name) and `access.ts` (resolveMessagingAgent / resolveMessagingSuperAdmin)
 - Agent-side APIs:
@@ -100,7 +100,7 @@ Until these land, the new features either degrade gracefully (Phase 3 applicatio
 
 **Mira tool extensions** (Phase 4.7 in original plan): `start_thread_with_tredoux` / `reply_in_thread` for the agent-side AI. The messaging infrastructure is ready — Mira just needs the tool definitions and dispatch. Deferred to a focused build session.
 
-**Tracy super-admin scope** (Phase 4.8): `scan_agent_messages` / `draft_agent_reply` with role-based tool gating, separate route at `/montree/super-admin/tracy`. The thread schema supports `ai_drafted=true, ai_draft_source='tracy.draft_agent_reply'` already — Tracy just needs the tools and the new route. Deferred.
+**Astra super-admin scope** (Phase 4.8): `scan_agent_messages` / `draft_agent_reply` with role-based tool gating, separate route at `/montree/super-admin/tracy`. The thread schema supports `ai_drafted=true, ai_draft_source='tracy.draft_agent_reply'` already — Astra just needs the tools and the new route. Deferred.
 
 **Full i18n batch** for Phase 3 + Phase 4 strings: English-only for v1. Recruitment page + form labels + new nav entries + thread UI strings. Add to next i18n sweep.
 
@@ -110,7 +110,7 @@ Until these land, the new features either degrade gracefully (Phase 3 applicatio
 
 49. `montree_message_threads.school_id` is **nullable ONLY for `thread_type='agent_super_admin'`** (migration 204 gated CHECK). Every other thread type stays mandatorily school-scoped.
 50. **Super-admin participant identity uses `SUPER_ADMIN_SENTINEL_UUID = '00000000-0000-0000-0000-000000000000'`** in `participant_id` and `sender_id`. The role string (`'super_admin'`) is the canonical identity signal; the UUID is FK-shape filler. Don't change this value — old threads would orphan.
-51. **`ai_drafted` is FORCED false on agent posts**, can be true on super-admin posts when Tracy drafts. Same Session 84 rule extended to agent_super_admin scope.
+51. **`ai_drafted` is FORCED false on agent posts**, can be true on super-admin posts when Astra drafts. Same Session 84 rule extended to agent_super_admin scope.
 52. **`resolveMessagingAgent` (super-admin scope) does NOT require schools.** An agent without referrals can still message Tredoux. Different from `agent_principal` scope which requires founded schools.
 53. **Agent applications use `contact_type='agent_application'` + `status='agent_applied'`** on `montree_outreach_contacts`. The structured form payload lives in `application_details JSONB`.
 54. **The PATCH endpoint for agent applications double-checks `contact_type='agent_application'`** before mutating (defense in depth — won't accidentally update a demo_request or outreach contact).
@@ -174,7 +174,7 @@ EXTENDED:
 4. **Phase 1 E2E validation** per `AGENT_E2E_TEST_PLAN.md` — Tredoux's own agent test, real Stripe, $1 wire.
 5. **Phase 2** if Phase 1 revealed the impersonation 404.
 6. **Mira tool extensions** (deferred from Phase 4.7) — half-day build.
-7. **Tracy super-admin scope** (deferred from Phase 4.8) — needs careful role-based tool gating audit. Plan to use separate `/montree/super-admin/tracy` route for cleaner separation.
+7. **Astra super-admin scope** (deferred from Phase 4.8) — needs careful role-based tool gating audit. Plan to use separate `/montree/super-admin/tracy` route for cleaner separation.
 8. **i18n batch** for new strings — ~50-80 keys × 12 locales via Haiku.
 9. **Onboard Gloria** once Phase 1 passes and Phase 2 (if needed) lands.
 
@@ -188,4 +188,4 @@ Operational: Agent logs in → dashboard → can message Tredoux directly via "T
 
 Financial: (already in place from Session 107) Agent completes Stripe Connect → webhook fires → status flips → payout calc cron runs → ⚡ Wire → commission lands in agent's bank → audit trail in finance_transactions.
 
-The whole chain — recruitment → application → vetting → code issuance → onboarding → operations → comms → payouts — is now wired end-to-end. The remaining work is human validation (Phase 1) and incremental AI assistance (Mira + Tracy extensions).
+The whole chain — recruitment → application → vetting → code issuance → onboarding → operations → comms → payouts — is now wired end-to-end. The remaining work is human validation (Phase 1) and incremental AI assistance (Mira + Astra extensions).

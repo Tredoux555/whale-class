@@ -6,14 +6,14 @@
 
 ## Locked decisions (DO NOT re-debate)
 
-1. **Principal always pulls the trigger.** Tracy can draft, suggest, scan — but never sends without principal confirmation. No autonomous action.
-2. **Teachers onboard parents.** Principal can ask Tracy to draft an onboarding push to all teachers asking them to invite their parents.
+1. **Principal always pulls the trigger.** Astra can draft, suggest, scan — but never sends without principal confirmation. No autonomous action.
+2. **Teachers onboard parents.** Principal can ask Astra to draft an onboarding push to all teachers asking them to invite their parents.
 3. **Full transparency to principal.** Principal sees every parent ↔ teacher thread in their school. Read-only by default, but principal can insert herself.
 4. **Custom groups can be mixed or exclusive.** Mix teachers + parents in one group is fine.
 5. **Hide features, don't delete.** Pulse, Activity, Reports stay at routes — sidebar nav drops them. FeaturesProvider gates.
 6. **Don't build hidden features.** Just hide them.
 7. **AI inserts into thread on principal's behalf with explicit principal confirmation.** Drafted message appears, principal hits Send.
-8. **Tracy's enrichment = conversation context loading + communication playbook + principal voice samples.** Don't build a "brain" like Guru. Opus + context is enough.
+8. **Astra's enrichment = conversation context loading + communication playbook + principal voice samples.** Don't build a "brain" like Guru. Opus + context is enough.
 
 ---
 
@@ -21,7 +21,7 @@
 
 | Old | New |
 |-----|-----|
-| Today | Today (simplified — Tracy chat, no extras) |
+| Today | Today (simplified — Astra chat, no extras) |
 | Classrooms | Classrooms (kept, drill-down enriched with progress scan) |
 | People | **Communication** (replaces, see below) |
 | Pulse | (hidden behind feature flag) |
@@ -45,8 +45,8 @@
 **Each thread page** (`/montree/admin/communication/threads/[threadId]`):
 - Header: subject, participants, child context if applicable, status badges (parent thread, AI-drafted, broadcast).
 - Message list: sender role badges, AI-drafted indicator if applicable, timestamps.
-- Composer: textarea, "Suggest response" button (calls Tracy `draft_parent_response`), Send.
-- Insert flow (parent threads only): "Insert reply with Tracy" → Tracy drafts → modal preview → principal confirms → message posted as principal.
+- Composer: textarea, "Suggest response" button (calls Astra `draft_parent_response`), Send.
+- Insert flow (parent threads only): "Insert reply with Astra" → Astra drafts → modal preview → principal confirms → message posted as principal.
 
 ---
 
@@ -177,16 +177,16 @@ Full migration also handles: backfill of any pending parent invites, ensure RLS-
 | POST | `/api/montree/teacher/parents/invite` | teacher | Generate invite code + email parent. Creates `montree_parent_invites` row. |
 | GET | `/api/montree/teacher/parents` | teacher | List parents per child (joined view). |
 
-### Tracy AI
+### Astra AI
 
 | Method | Path | Who | Purpose |
 |--------|------|-----|---------|
-| POST | `/api/montree/admin/tracy/scan-thread` | principal | Tracy reads a thread → returns sentiment/pattern/suggested-direction summary. |
-| POST | `/api/montree/admin/tracy/draft-response` | principal | Tracy drafts a message body for principal to send into thread. |
+| POST | `/api/montree/admin/tracy/scan-thread` | principal | Astra reads a thread → returns sentiment/pattern/suggested-direction summary. |
+| POST | `/api/montree/admin/tracy/draft-response` | principal | Astra drafts a message body for principal to send into thread. |
 
 ---
 
-## Tracy enrichment (winning combo)
+## Astra enrichment (winning combo)
 
 ### New tools (`lib/montree/tracy/frameworks/`)
 - **`scan-parent-thread.ts`** — Loads thread + child context + recent observations. Haiku parses pattern/sentiment, Sonnet/Opus composes a chief-of-staff briefing for the principal. Returns: summary paragraph + recommended action.
@@ -194,7 +194,7 @@ Full migration also handles: backfill of any pending parent invites, ensure RLS-
 - **`insert-parent-message.ts`** (action tool) — Posts a message into the thread on principal's behalf, marked `ai_drafted=true, approved_by_id=<principal_id>`.
 
 ### System prompt extension
-- Inline a 200-word "Parent Communication Playbook" section into Tracy's system prompt:
+- Inline a 200-word "Parent Communication Playbook" section into Astra's system prompt:
   - De-escalation phrases for frustrated parents
   - Cross-cultural sensitivity notes (concise, not preachy)
   - Honesty rule: never invent, never promise outcomes
@@ -202,7 +202,7 @@ Full migration also handles: backfill of any pending parent invites, ensure RLS-
   - Length rule: parent replies stay short, warm, decisive
 
 ### Conversation context
-- When principal asks Tracy about a specific thread, the relevant thread + child context get loaded inline. Stateless per question; no Guru-style brain accumulation. Opus + good context = enough.
+- When principal asks Astra about a specific thread, the relevant thread + child context get loaded inline. Stateless per question; no Guru-style brain accumulation. Opus + good context = enough.
 
 ---
 
@@ -257,7 +257,7 @@ Both principal and teacher can compose-to-many. Implemented via `/api/montree/me
 |------|----------|
 | 1 | Migration 190 + lib/montree/messaging/* core + sidebar revamp + Today simplification + hide Pulse/Activity/Reports + Settings reorg with billing |
 | 2 | Threads/messages APIs + broadcast + groups + Communication tab UI (By Classroom + All Teachers + All Parents + Custom Groups + Inbox) + thread page |
-| 3 | Tracy tools (scan-parent-thread + draft-parent-response + insert-parent-message) + system prompt enrichment + insert-into-thread UI flow |
+| 3 | Astra tools (scan-parent-thread + draft-parent-response + insert-parent-message) + system prompt enrichment + insert-into-thread UI flow |
 | 4 | Classroom drill-down progress scan extension |
 | 5 | Parent portal Messages page + Reply CTA on report viewer |
 | 6 | Teacher portal Parents page + invite flow |
@@ -283,7 +283,7 @@ Pragmatic shortcut: i18n keys English-only first, batch-fill all 11 other locale
 |------|-----------|
 | Migration size with FK | Use `IF NOT EXISTS` everywhere, idempotent. |
 | Cross-pollination breach via thread participation | Every endpoint MUST verify both `school_id` AND participant membership. |
-| Tracy hallucinating quoted text in drafts | Never quote dates verbatim except ISO YYYY-MM-DD; honesty rule in system prompt. |
+| Astra hallucinating quoted text in drafts | Never quote dates verbatim except ISO YYYY-MM-DD; honesty rule in system prompt. |
 | AI cost on draft generation | Gate on `ai_tier='sonnet'`; Free/Haiku tiers get template fallback or unavailable. |
 | Existing `montree_messages` data in production | Leave the table alone; new system uses `montree_thread_messages`. Migration includes optional backfill plan but can run later. |
 | UI complexity in Communication tab | Keep first ship spartan: by-classroom + all-teachers + all-parents + custom-groups + inbox. No filters beyond unread. |
@@ -316,7 +316,7 @@ Pragmatic shortcut: i18n keys English-only first, batch-fill all 11 other locale
 - `app/api/montree/admin/tracy/draft-response/route.ts` (NEW)
 - `app/api/montree/admin/classrooms/[classroomId]/route.ts` (EXTEND with weekly activity)
 
-### Tracy
+### Astra
 - `lib/montree/tracy/frameworks/scan-parent-thread.ts` (NEW)
 - `lib/montree/tracy/frameworks/draft-parent-response.ts` (NEW)
 - `lib/montree/tracy/frameworks/insert-parent-message.ts` (NEW)
@@ -326,7 +326,7 @@ Pragmatic shortcut: i18n keys English-only first, batch-fill all 11 other locale
 
 ### Admin UI
 - `app/montree/admin/layout.tsx` (NAV revamp + hide Pulse + Settings reorg)
-- `app/montree/admin/page.tsx` (Today simplification — leave Tracy chat as-is, drop noise)
+- `app/montree/admin/page.tsx` (Today simplification — leave Astra chat as-is, drop noise)
 - `app/montree/admin/people/page.tsx` (REPLACE with redirect to /communication)
 - `app/montree/admin/communication/page.tsx` (NEW — main hub with tabs)
 - `app/montree/admin/communication/threads/[threadId]/page.tsx` (NEW)
@@ -365,8 +365,8 @@ Pragmatic shortcut: i18n keys English-only first, batch-fill all 11 other locale
 7. Teacher creates parent invite → parent receives email → clicks → lands on /montree/parent/login → enters code → arrives at dashboard.
 8. Parent on weekly report → "Reply" → creates thread with lead teacher → teacher receives.
 9. Principal views Communication → sees all parent threads in school (transparency).
-10. Principal opens a parent thread → "Suggest response" → Tracy drafts → principal confirms → message posted as principal in thread.
-11. Tracy scan-parent-thread answers cleanly via principal-agent.
+10. Principal opens a parent thread → "Suggest response" → Astra drafts → principal confirms → message posted as principal in thread.
+11. Astra scan-parent-thread answers cleanly via principal-agent.
 12. Classroom drill-down shows per-teacher activity + per-student progress.
 13. Settings page shows Billing section.
 14. /montree/admin/people redirects to /montree/admin/communication.

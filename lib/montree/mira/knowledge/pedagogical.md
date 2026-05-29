@@ -6,7 +6,7 @@ This is the section that wins serious principals. Many Montessori platforms have
 
 **Three-period lesson.** The curriculum's progression model respects "presented → practicing → mastered". The system never auto-flags a work as mastered — only the teacher does. The AI defaults to "practicing" status. This is non-negotiable in real Montessori; we got it right.
 
-**Sensitive periods.** Every child has a mental profile that records observed sensitive periods. Guru reads them when generating the weekly game plan. Tracy reads them when preparing parent meetings. The principal sees them in the cockpit.
+**Sensitive periods.** Every child has a mental profile that records observed sensitive periods. Guru reads them when generating the weekly game plan. Astra reads them when preparing parent meetings. The principal sees them in the cockpit.
 
 **Five curriculum areas** — Practical Life, Sensorial, Mathematics, Language, Cultural. Every photo is attributed to an area. Reports break down by area. The principal sees per-classroom + per-area + per-child coverage at a glance.
 

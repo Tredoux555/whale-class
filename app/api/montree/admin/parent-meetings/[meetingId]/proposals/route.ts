@@ -1,6 +1,6 @@
 // app/api/montree/admin/parent-meetings/[meetingId]/proposals/route.ts
 //
-// Ultimate Tracy Phase B — apply approved profile-update proposals from
+// Ultimate Astra Phase B — apply approved profile-update proposals from
 // an analysis row to the live parent profile.
 //
 // POST body:

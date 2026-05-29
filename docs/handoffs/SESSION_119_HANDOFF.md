@@ -73,7 +73,7 @@ Verified independently: token-builder is sound (UID deterministic per role+ident
 - NEW `/montree/dashboard/parent-chats/[parentId]/page.tsx` (stream view + send composer)
 - Chat icon added to Parent Manager page (top-right of title)
 
-**Architecturally:** uses the EXISTING `montree_message_threads` + `montree_thread_messages` schema. No parallel data model. Principal-observer transparency (Session 97) keeps working. Tracy drafting indicator keeps working. Send goes to most-recently-active shared thread, or creates a fresh parent_teacher thread (no child anchor) when none exists.
+**Architecturally:** uses the EXISTING `montree_message_threads` + `montree_thread_messages` schema. No parallel data model. Principal-observer transparency (Session 97) keeps working. Astra drafting indicator keeps working. Send goes to most-recently-active shared thread, or creates a fresh parent_teacher thread (no child anchor) when none exists.
 
 **Audit catches fixed:** schema column is `sent_at` not `created_at` (would have silently returned 0 messages). `deleted_at IS NULL` filter added. Order DESC + limit (not ASC + limit — would have truncated newest messages).
 
@@ -197,7 +197,7 @@ Built during the Railway outage; pushed after recovery. The most substantive fea
 
 - **Stage A Agora activation** (Session 117 carry-over) — migration 223 + flag flip + 2-device end-to-end test per `docs/handoffs/AGORA_STAGE_A_QUICKSTART.md`. ~5 min Tredoux time. Now even MORE valuable post-CSP-fix since calls actually work.
 - **Appointments i18n sweep** — appointments + new calendar surface English-only. ~30 new keys × 12 locales via Haiku batch.
-- **Mira → Tracy super-admin scope** (Session 108 Phase 4.8).
+- **Mira → Astra super-admin scope** (Session 108 Phase 4.8).
 - **Outreach follow-ups** — FAMM Argentina, Cambridge Montessori Global, Otari NZ, Lions Gate, Montessori Norge.
 
 ---

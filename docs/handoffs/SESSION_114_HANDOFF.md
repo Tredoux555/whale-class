@@ -13,7 +13,7 @@ Seven focused ships in one continuous burn — none of them mega-features, all o
 
 1. **iPad menu logout fix** — `100vh` → `100dvh` so iOS dynamic toolbars stop clipping the bottom of the dashboard More menu (logout was bouncing out of reach).
 2. **Present-mode per-photo hide + revert tray** — teacher can hide a photo mid-meeting, see a "N hidden" pill, tap to bring any of them back.
-3. **Mobile screensaver lock overlay** — banking-app pattern. When the phone backgrounds, an immediate Montree-branded full-screen overlay drops in over Tracy, parent messages, finance, etc. Tap top-left lock icon to unlock.
+3. **Mobile screensaver lock overlay** — banking-app pattern. When the phone backgrounds, an immediate Montree-branded full-screen overlay drops in over Astra, parent messages, finance, etc. Tap top-left lock icon to unlock.
 4. **Story F-1.2 fully closed** — JWT no longer goes in the URL on new Story logins. Two phases: cookie auth plumbing (Phase A), then login redirect → static path (Phase B). Audit finding closed.
 5. **Parent meeting notes (audio-free)** — voice-record a parent meeting, get a Whisper transcript + Sonnet 3-paragraph summary, save the summary (NOT the audio). Teacher-side surface + dropped the principal allow-list so every principal also gets the existing vault.
 6. **PWA polish** — offline page rethemed to dark forest; new floating online/offline status banner that pops top-of-viewport when connectivity drops.
@@ -81,7 +81,7 @@ New `components/montree/AppLockOverlay.tsx`:
 - Centered Montree sprout logo + Lora serif "Montree" wordmark + "Tap the lock to come back" hint.
 - Top-left small gold lock icon button. Tap → `setLocked(false)`. The httpOnly cookie is still intact — no password retype.
 - `pathname`-gated. Locks ONLY on sensitive surfaces (`/montree/admin/*`, `/montree/dashboard/*`, `/montree/agent/*`, `/montree/super-admin/*`, `/montree/parent/{dashboard,photos,report,milestones,messages,...}`). Public surfaces (landing, library, login flows, signup) opt out.
-- z-index 99999 — above Tracy (9999) and the present-mode overlay (9999).
+- z-index 99999 — above Astra (9999) and the present-mode overlay (9999).
 - Respects `env(safe-area-inset-*)` for notch + home indicator.
 - Body scroll locked while overlay is up (page underneath doesn't drift).
 
@@ -337,7 +337,7 @@ Larger scope, half-day to a day.
 
 - Stripe Connect Express flow (live money — risky without dedicated time)
 - Photo Pipeline AI prompts (Session 113 V2 reshuffled them materially; let the changes settle and watch metrics)
-- Tracy + Mira system prompts (recently rewritten)
+- Astra + Mira system prompts (recently rewritten)
 - Rate-limiter library
 
 ---

@@ -1,5 +1,5 @@
 // lib/montree/tracy/index.ts
-// Barrel export for Tracy — the principal's chief-of-staff AI.
+// Barrel export for Astra — the principal's chief-of-staff AI.
 
 export { buildTracySystemPrompt } from './system-prompt';
 export type { TracySystemPromptOpts } from './system-prompt';
@@ -23,7 +23,7 @@ export type {
 // ── Session 133 — dossier-prep building blocks ─────────────────────────
 // These are exported because prepare_parent_meeting and the
 // `/api/montree/admin/dossier/parent-meeting` route call them directly,
-// outside of Tracy's tool-use loop.
+// outside of Astra's tool-use loop.
 export { consultGuru } from './tools/consult_guru';
 export type {
   ConsultGuruInput,
@@ -51,7 +51,7 @@ export type {
 
 // ── Session 136 — psychological knowledge base ─────────────────────────
 // Loaded from disk under lib/montree/tracy/knowledge/. The summary goes
-// into Tracy's chat system prompt every turn (via the route). The full
+// into Astra's chat system prompt every turn (via the route). The full
 // bundle is loaded inside prepare_parent_meeting. consult_tracy_knowledge
 // pulls one specific topic in full when chat needs depth.
 export {

@@ -103,7 +103,7 @@ export function PrepareForMeetingButton({
     setState({ kind: 'loading' });
     try {
       // Session 133 — montreeApi returns a Response; we unwrap the JSON
-      // body ourselves. Same pattern as every other Tracy-side route call.
+      // body ourselves. Same pattern as every other Astra-side route call.
       // Pass `locale` so Sonnet writes the dossier in the principal's
       // active UI language (validated server-side against SUPPORTED_DOSSIER_LOCALES).
       const res = await montreeApi(

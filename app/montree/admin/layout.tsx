@@ -22,19 +22,19 @@ import {
   CalendarDays,
   Users,
 } from 'lucide-react';
-// 🚨 Perf Tier 2.4 (PERF_HEALTH_CHECK.md) — Tracy panel is 1,200 lines and
+// 🚨 Perf Tier 2.4 (PERF_HEALTH_CHECK.md) — Astra panel is 1,200 lines and
 // mounted on every /montree/admin/* page. Loading it eagerly added ~30-50 KB
 // of JS to the cockpit's initial bundle even for principals who never open
-// Tracy. Dynamic-import with ssr:false defers the load until first client
-// paint. Tracy's static greeting (Tier 2.3) means there's no AI call on mount
+// Astra. Dynamic-import with ssr:false defers the load until first client
+// paint. Astra's static greeting (Tier 2.3) means there's no AI call on mount
 // either way, so a 100-300ms delayed render is invisible to the user.
 const TracyFloat = dynamic(() => import('@/components/montree/admin/TracyFloat'), {
   ssr: false,
   loading: () => null,
 });
-// "Sparkles" (Ask Guru) was previously in the sidebar but Tracy IS the
+// "Sparkles" (Ask Guru) was previously in the sidebar but Astra IS the
 // principal's chief-of-staff AI surface — Guru is the per-child Maria
-// Montessori in your pocket for teachers, and Tracy can call it as a
+// Montessori in your pocket for teachers, and Astra can call it as a
 // sub-tool when child-pedagogical depth is needed. The principal doesn't
 // need a separate Guru chat. Removed from the principal sidebar; the
 // teacher-side /montree/dashboard/guru entry is unaffected.
@@ -83,7 +83,7 @@ const NAV: NavItem[] = [
     icon: GraduationCap,
     match: (p) => p.startsWith('/montree/admin/classrooms'),
   },
-  // Ultimate Tracy Phase D — parents are first-class entities. Sits
+  // Ultimate Astra Phase D — parents are first-class entities. Sits
   // between Classrooms and Communication so the relational entities
   // cluster together.
   {
@@ -500,8 +500,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         {children}
       </main>
 
-      {/* Tracy — chief-of-staff float, visible on every cockpit page except
-          /montree/admin (which IS Tracy in full-page form). The component
+      {/* Astra — chief-of-staff float, visible on every cockpit page except
+          /montree/admin (which IS Astra in full-page form). The component
           renders null on that route internally, so nothing to gate here. */}
       <TracyFloat />
 

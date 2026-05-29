@@ -10,7 +10,7 @@
 - The most-mentioned competitor. Wide-spread in established Montessori schools.
 - Per-classroom pricing. Mid-tier capability.
 - Strong: lesson planning, progress trees, parent emails.
-- Weak: AI is bolt-on, not native. No photo-to-observation pipeline. No Tracy / Guru equivalent. English-only UI. No native Chinese support.
+- Weak: AI is bolt-on, not native. No photo-to-observation pipeline. No Astra / Guru equivalent. English-only UI. No native Chinese support.
 - **What to say if the principal mentions them:** "Many of the schools we work with came from Montessori Compass. Compass is great for tracking what was presented. Montree adds the layer that automates the observation itself, and writes the parent report at the end of the week."
 
 ### Transparent Classroom
@@ -37,7 +37,7 @@
 
 1. **Photo to observation in one tap.** No competitor has this. The two-pass Haiku → Sonnet pipeline is genuinely novel.
 
-2. **Tracy.** No competitor has a chief-of-staff AI. The dossier for the difficult parent meeting is the feature that makes the principal refuse to run a parent meeting without us, once she's used it once.
+2. **Astra.** No competitor has a chief-of-staff AI. The dossier for the difficult parent meeting is the feature that makes the principal refuse to run a parent meeting without us, once she's used it once.
 
 3. **12 languages, native quality.** Most competitors are English-only or have machine-translated UI. Our Mandarin / Spanish / etc. are real translations, and the AI generates parent reports in the family's language.
 

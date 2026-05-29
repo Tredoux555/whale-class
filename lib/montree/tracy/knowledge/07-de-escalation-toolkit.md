@@ -264,9 +264,9 @@ escalated parent moment:
 That sequence, executed across 3-5 minutes, brings almost any
 meeting back from the edge.
 
-## What Tracy does with this
+## What Astra does with this
 
-When Tracy writes a parent-meeting dossier for a HIGH-TEMPERATURE
+When Astra writes a parent-meeting dossier for a HIGH-TEMPERATURE
 meeting (the principal flagged this, or guru_parent_states shows the
 parent is activated), the brief and conversation script weight
 heavily toward:

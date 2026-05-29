@@ -131,7 +131,7 @@ Verified solid (no change): auth/cross-pollination, channel uniqueness, token re
 
 1. **Run migration 228** + walk the verification checklist on two devices.
 2. **Optional: close limitation #1** — admin "declined / no answer" feedback.
-3. Carry-overs from Session 125 (unchanged): `demo/*` + super-admin home-link/toggle sweep; duplicate-key cleanup in `en.ts` + locale files; i18n the library tool pages; Stage A Agora activation; Mira → Tracy super-admin scope; outreach follow-ups (FAMM Argentina, Cambridge Montessori Global, Otari NZ, Lions Gate, Montessori Norge).
+3. Carry-overs from Session 125 (unchanged): `demo/*` + super-admin home-link/toggle sweep; duplicate-key cleanup in `en.ts` + locale files; i18n the library tool pages; Stage A Agora activation; Mira → Astra super-admin scope; outreach follow-ups (FAMM Argentina, Cambridge Montessori Global, Otari NZ, Lions Gate, Montessori Norge).
 
 ---
 

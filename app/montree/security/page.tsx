@@ -166,7 +166,7 @@ export default function SecurityPage() {
 
           <p>
             We&rsquo;re not going to say &ldquo;we can&rsquo;t read your data.&rdquo; That would be
-            untrue. We hold the encryption key — we have to, so Tracy (our AI chief-of-staff) can
+            untrue. We hold the encryption key — we have to, so Astra (our AI chief-of-staff) can
             scan parent messages and draft responses for the principal. True
             zero-knowledge end-to-end encryption would break every AI feature we ship.
           </p>

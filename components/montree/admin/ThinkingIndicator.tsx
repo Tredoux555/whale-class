@@ -1,6 +1,6 @@
 // components/montree/admin/ThinkingIndicator.tsx
 //
-// While Tracy is processing (request in flight, before tokens stream OR
+// While Astra is processing (request in flight, before tokens stream OR
 // while a tool is running) the surface must always have something visibly
 // alive. A static spinner reads as "frozen" — the principal pays per turn
 // and a still surface makes her wonder whether anything is happening.
@@ -47,7 +47,7 @@ const SANS = '"Inter", -apple-system, BlinkMacSystemFont, sans-serif';
 export default function ThinkingIndicator({
   size = 36,
   progressLine = null,
-  ariaLabel = 'Tracy is thinking',
+  ariaLabel = 'Astra is thinking',
 }: ThinkingIndicatorProps) {
   return (
     <div

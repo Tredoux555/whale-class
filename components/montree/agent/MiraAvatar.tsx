@@ -25,7 +25,7 @@ interface MiraAvatarProps {
 
 export default function MiraAvatar({ size = 56, className, style }: MiraAvatarProps) {
   const [imgError, setImgError] = useState(false);
-  const radius = Math.round(size * 0.22); // rounded square — same as Tracy
+  const radius = Math.round(size * 0.22); // rounded square — same as Astra
 
   if (!MIRA_PNG_AVAILABLE || imgError) {
     return (

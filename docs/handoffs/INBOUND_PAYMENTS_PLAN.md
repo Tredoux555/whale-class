@@ -279,7 +279,7 @@ Files:
 11. Reconciliation report for the period — expect zero discrepancy across all rails
 12. Annual statement for a manual_invoice school — generates correctly (rule #64 mirror — paid rows only)
 13. Mira → "How is my billing?" → Mira reads payment_method + current_period_end + last invoice → returns correct status
-14. Tracy (principal-side) → "When's our next bill?" → returns rail-aware answer
+14. Astra (principal-side) → "When's our next bill?" → returns rail-aware answer
 15. Health tab — webhook delivery card, Stripe usage card, AI cost card — all still healthy
 
 ---
@@ -432,7 +432,7 @@ Test 6 — Manual invoice + period lock → 409 on wire in closed month.
 Test 7 — Refund test on each rail.
 Test 8 — Tier auto-flip on each rail.
 Test 9 — Reconciliation report — zero discrepancy.
-Test 10 — Mira / Tracy billing-question answers.
+Test 10 — Mira / Astra billing-question answers.
 ```
 
 ---

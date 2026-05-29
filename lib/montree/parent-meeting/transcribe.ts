@@ -1,6 +1,6 @@
 // lib/montree/parent-meeting/transcribe.ts
 //
-// Ultimate Tracy Phase B — chunked-audio transcription helpers for the
+// Ultimate Astra Phase B — chunked-audio transcription helpers for the
 // parent-meeting recording flow.
 //
 // Long meetings (>~20-25 minutes) blow past Whisper's per-request limits,

@@ -11,7 +11,7 @@
 1. **Stripe Connect Express is live** on the Montree Limited account. Webhook `dynamic-brilliance` at `/api/stripe/connect-webhook` listens to `account.updated` on Connected accounts. `STRIPE_CONNECT_WEBHOOK_SECRET` is set in Railway. The whole referral-agent payout infrastructure (Sessions 90, 91, 92) is now operational end-to-end.
 2. **Migration 202 run** — `montree_schools.billing_override_usd` + `billing_override_note` columns live. Per-school early-adopter pricing functional via super-admin 💲 button.
 3. **PERF_HEALTH_CHECK.md ~75% complete.** The remaining 6 items each have a documented blocker that needs a human in the testing loop (CVE testing, VPN-drop testing, real-device cursor testing, JSX parser, iPhone visual audit). They're not "deferred forever" — they're "wrong moment for autonomous."
-4. **Real felt impact for users:** dashboards paint a skeleton instead of blank-screen on cold nav. Tracy first-frame instant. Tracy streaming 80% CPU drop on mobile. Weekly Wrap 3-5 min faster. Photo capture 200-450ms faster. ~700KB gzip off every non-en page load. iOS keyboard no longer hides Tracy chat. Pull-to-refresh on teacher dashboard. Messages send optimistically with retry-on-fail.
+4. **Real felt impact for users:** dashboards paint a skeleton instead of blank-screen on cold nav. Astra first-frame instant. Astra streaming 80% CPU drop on mobile. Weekly Wrap 3-5 min faster. Photo capture 200-450ms faster. ~700KB gzip off every non-en page load. iOS keyboard no longer hides Astra chat. Pull-to-refresh on teacher dashboard. Messages send optimistically with retry-on-fail.
 
 ---
 
@@ -42,21 +42,21 @@
 | 5 | `8ba437b2` | — | Photo bank URLs through Cloudflare proxy |
 | 6 | `0eb04cef` | **1.2 + 1.3** | `loading.tsx` for 11 routes + Lora via `next/font/google` |
 | 7 | `5ad1e2c6` | **1.4** | Cookie-based locale dispatch — ~700KB gzip saved/page |
-| 8 | `e3563b66` | **2.1 + 2.3** | Tracy rAF token throttle + static greeting on first paint |
+| 8 | `e3563b66` | **2.1 + 2.3** | Astra rAF token throttle + static greeting on first paint |
 | 9 | `19865c79` | **3.1** | Weekly Wrap parallelize teacher + parent reports |
-| 10 | `53b0a8c5` | **2.4** | Lazy-mount Tracy panel via `next/dynamic` |
+| 10 | `53b0a8c5` | **2.4** | Lazy-mount Astra panel via `next/dynamic` |
 | 11 | `e19eab3c` | **3.2 + 3.6** | Photo-ID pre-Pass-1 + Photo bank GET parallelize |
 | 12 | `a91de211` | **3.3** | `select(*)` → explicit columns (safe internal-use paths) |
 | 13 | `13f06308` | **3.4 + 3.5** | Validation chain parallelize + billing webhook fire-and-forget |
 | 14 | `01a78bf2` | **4.1** | `montreeApi()` auto-retry on network errors (GET/HEAD only) |
 | 15 | `f09a59df` | **5.4** | JSZip dynamic-import on 4 client pages |
-| 16 | `79a0b522` | **6.2** | iOS keyboard handling in Tracy chat (float + page) |
+| 16 | `79a0b522` | **6.2** | iOS keyboard handling in Astra chat (float + page) |
 | 17 | `7ce8a464` | **6.1** | Pull-to-refresh on teacher dashboard |
 | 18 | `b42bdac9` | **4.4** | `prefetchUrl` wiring on dashboard child grid |
 | 19 | `08805f5e` | **5.1 (partial)** | Image dimension attrs on 3 hot surfaces |
 | 20 | `08bcec0b` | **4.3** | Optimistic send-state in principal communication thread |
 | 21 | `c19a440c` | **4.3** | Extend optimistic send to parent + teacher + agent messaging |
-| 22 | `17768cd3` | **2.2 (safe half)** | AbortController cleanup on Tracy SSE |
+| 22 | `17768cd3` | **2.2 (safe half)** | AbortController cleanup on Astra SSE |
 | 23 | `baa38292` | **5.1 (partial)** | Image dims on 4 more high-traffic surfaces |
 
 All on `origin/main`. Working tree clean. Railway auto-deploys triggered throughout.
@@ -73,8 +73,8 @@ All on `origin/main`. Working tree clean. Railway auto-deploys triggered through
 - **Tier 1.4** Cookie-based locale dispatch
 - **Tier 2.1** SSE token rAF throttle
 - **Tier 2.2 (safe half)** AbortController cleanup
-- **Tier 2.3** Static greeting on Tracy first paint
-- **Tier 2.4** Lazy-mount Tracy panel content
+- **Tier 2.3** Static greeting on Astra first paint
+- **Tier 2.4** Lazy-mount Astra panel content
 - **Tier 3.1** Weekly Wrap parallelize
 - **Tier 3.2** Photo-ID pre-Pass-1 parallelize
 - **Tier 3.3 (partial — safe internal-use paths)** `select(*)` cleanup
@@ -87,7 +87,7 @@ All on `origin/main`. Working tree clean. Railway auto-deploys triggered through
 - **Tier 5.1 (partial — top 8 surfaces)** Image dimensions sweep
 - **Tier 5.4** Dynamic-import heavy libs
 - **Tier 6.1** Pull-to-refresh on teacher dashboard
-- **Tier 6.2** iOS keyboard handling in Tracy chat
+- **Tier 6.2** iOS keyboard handling in Astra chat
 - **Tier 6.4** Investigated — both manifests in active use, no change needed
 
 ### 🔒 Deferred — each needs human-in-the-loop testing
@@ -95,7 +95,7 @@ All on `origin/main`. Working tree clean. Railway auto-deploys triggered through
 | Tier | What | Blocker |
 |---|---|---|
 | **1.1** | SW stale-while-revalidate API cache | CVE-class auth-leak risk. Needs real iPhone + iPad testing with different users on same browser to confirm no cross-user cache poisoning. Doc says "block ship without it." THIS IS THE SINGLE BIGGEST PERCEIVED-LATENCY WIN IN THE WHOLE DOC (~80% returning-visit lag gone). Worth a dedicated session. |
-| **2.2 retry-with-resume** | Tracy SSE resumes on VPN flap | Needs real Astrill-toggle-mid-stream testing. Risk of double-Sonnet-charge if retry races wrong. (Safe half — AbortController cleanup — already shipped this session.) |
+| **2.2 retry-with-resume** | Astra SSE resumes on VPN flap | Needs real Astrill-toggle-mid-stream testing. Risk of double-Sonnet-charge if retry races wrong. (Safe half — AbortController cleanup — already shipped this session.) |
 | **4.2** | Direct fetch → `montreeApi` migration | Doc was over-optimistic. Each candidate endpoint (Whisper, photo upload, onboard) needs bespoke 120s timeout that `montreeApi`'s 30s default would break. Per-endpoint judgment call, not bulk migration. |
 | **5.1 remaining ~80 imgs** | Image dims full sweep | Python regex sweep broke on JSX arrow functions (`onError={() =>` matched the `>` as tag-closer). Needs proper JSX parser OR manual file-by-file at ~30s per img. Top 8 hot surfaces already shipped — covers ~80% of perceived CLS impact per the doc. |
 | **5.3** | NoteField extract on 1,040-line child page | Cursor-jump risk on every keystroke without real-device testing. Either Option A (extract `<NoteField>` with local state, commit on blur) or Option B (`useDeferredValue`). Pick whichever is faster after a 30-min spike with iPhone in hand. |
@@ -118,7 +118,7 @@ All on `origin/main`. Working tree clean. Railway auto-deploys triggered through
 | 44 | `setLocale()` MUST write both localStorage AND the `mt_locale` cookie. The cookie is read server-side on the next page render to seed the locale without a client round trip. |
 | 45 | For non-en users, the server-side layout MUST load the locale file (via `loadServerLocale`) and pass `initialMessages` to the provider. Eliminates the English-flash on first paint. |
 | 46 | SSE token streams MUST buffer through useRef + rAF flush. Never `setState` per token in a streaming handler. Pattern is canonical at `flushTextBuffer()` in both `app/montree/admin/page.tsx` and `TracyFloat.tsx`. |
-| 47 | Tracy's first paint is STATIC — no Sonnet/Opus call on mount. AI fires only when the user types. The greeting is a templated assistant turn pushed into state directly. `fireGreeting()` is gone; do not bring it back without explicit perf-impact reasoning. |
+| 47 | Astra's first paint is STATIC — no Sonnet/Opus call on mount. AI fires only when the user types. The greeting is a templated assistant turn pushed into state directly. `fireGreeting()` is gone; do not bring it back without explicit perf-impact reasoning. |
 | 48 | Weekly Wrap teacher + parent reports run in parallel per child. Stage 0 → Stage N ordering preserved (replan first, then reports). |
 
 ---
@@ -219,9 +219,9 @@ After Railway settles + you've sent Gloria her link, walk this:
 
 - On iPhone PWA, open teacher dashboard → pull down → indicator slides → release → children re-fetch
 
-### 4. Perf — Tracy static greeting
+### 4. Perf — Astra static greeting
 
-- Cold-load `/montree/admin` → Tracy panel should show greeting **instantly** (no 2-5s thinking-dots wait)
+- Cold-load `/montree/admin` → Astra panel should show greeting **instantly** (no 2-5s thinking-dots wait)
 - Type a question → AI fires normally → response streams in with rAF-smoothed render
 
 ### 5. Perf — locale dispatch
@@ -270,10 +270,10 @@ After Railway settles + you've sent Gloria her link, walk this:
 | Metric | Before | After |
 |---|---|---|
 | Cockpit cold nav | Blank screen 1-2s | Shape-matched skeleton instant |
-| Tracy first frame | Thinking-dots 2-5s | Greeting instant (static) |
-| Tracy streaming CPU | Spike per token | ~80% drop via rAF |
-| Tracy on iPhone keyboard | Input hidden by keyboard | Auto-scrolls into view |
-| Tracy unmount | Stream leaked until server timeout | Aborts cleanly |
+| Astra first frame | Thinking-dots 2-5s | Greeting instant (static) |
+| Astra streaming CPU | Spike per token | ~80% drop via rAF |
+| Astra on iPhone keyboard | Input hidden by keyboard | Auto-scrolls into view |
+| Astra unmount | Stream leaked until server timeout | Aborts cleanly |
 | Weekly Wrap (20 kids) | ~10 min | ~5-7 min (parallelize) |
 | Photo capture | 450-650ms pre-Pass-1 setup | 200ms (parallelize) |
 | Child page nav | 200-500ms wait | Instant (prefetched on hover) |
@@ -292,7 +292,7 @@ After Railway settles + you've sent Gloria her link, walk this:
 2. **Generate Gloria's onboarding link + send her the package.** This is the moment of truth — the entire Stripe Connect infrastructure becomes operational.
 3. **Tier 1.1 SW stale-while-revalidate** — biggest single perf win. Dedicated session with iPhone + Astrill in hand for CVE testing.
 4. **Tier 5.1 image dims full sweep** — proper JSX parser approach (NOT regex). Or manual file-by-file. ~80 imgs across ~45 files.
-5. **Tier 2.2 retry-with-resume** — VPN-drop testing for Tracy SSE recovery.
+5. **Tier 2.2 retry-with-resume** — VPN-drop testing for Astra SSE recovery.
 6. **Tier 5.3 NoteField extract** — real-device cursor testing.
 7. **Tier 6.3 tap target audit** — visual sweep with iPhone in hand.
 8. **5 Railway crons** per `docs/perf/CRON_SETUP.md`.

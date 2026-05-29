@@ -1,12 +1,12 @@
 // components/montree/admin/TracyBody.tsx
 //
-// Renders Tracy's body prose with copy cards substituted in for fenced
+// Renders Astra's body prose with copy cards substituted in for fenced
 // code blocks. The fence convention is documented in
-// lib/montree/tracy/system-prompt.ts: any message Tracy drafts that the
+// lib/montree/tracy/system-prompt.ts: any message Astra drafts that the
 // principal will copy and forward gets wrapped in a triple-backtick fence,
 // with an optional bold recipient label on the line immediately before.
 //
-// Example shape Tracy emits:
+// Example shape Astra emits:
 //
 //   Here you go — short welcomes for each teacher, codes baked in.
 //
@@ -30,7 +30,7 @@
 //   - Everything else → plain whitespace-preserving text
 //
 // What we INTENTIONALLY don't render specially:
-//   - Bullet lists, headings, links — Tracy is instructed not to use them
+//   - Bullet lists, headings, links — Astra is instructed not to use them
 //     in body prose. If she does, it renders as plain text with the
 //     symbols visible. That's fine and keeps this component honest.
 'use client';
@@ -59,7 +59,7 @@ const FENCE_RE = /```[a-zA-Z0-9_-]*\n([\s\S]*?)\n?```/g;
 const TRAILING_BOLD_HEADER_RE = /\*\*([^*\n]+?)\*\*\s*$/;
 
 /**
- * Parse Tracy's body prose into an ordered list of prose + card segments.
+ * Parse Astra's body prose into an ordered list of prose + card segments.
  * Recipient labels are detected as `**Name**` on the line immediately
  * preceding a fence — when found, the label is stripped from the prose
  * segment and attached to the card.
@@ -107,7 +107,7 @@ function parseSegments(text: string): ParsedSegment[] {
 
 /**
  * Render `**bold**` as <strong> inside otherwise-plain prose. We accept
- * unmatched `**` (just render as text) so Tracy's stray asterisks don't
+ * unmatched `**` (just render as text) so Astra's stray asterisks don't
  * collapse the rest of her message.
  */
 function renderProse(text: string): ReactNode[] {

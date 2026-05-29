@@ -1,6 +1,6 @@
 // lib/montree/tracy/corpus/search.ts
 //
-// Ultimate Tracy Phase C — semantic search over the school-scoped corpus.
+// Ultimate Astra Phase C — semantic search over the school-scoped corpus.
 //
 // searchCorpus({ schoolId, query, archetype?, parentId?, minSimilarity?, limit? })
 //   1. Embed the query text via OpenAI.
@@ -13,7 +13,7 @@
 //   path.
 //
 // FAILURE
-//   Returns { ok: false, entries: [] } on any error. Tracy's reply path
+//   Returns { ok: false, entries: [] } on any error. Astra's reply path
 //   degrades gracefully when corpus retrieval fails.
 
 import type { SupabaseClient } from '@supabase/supabase-js';

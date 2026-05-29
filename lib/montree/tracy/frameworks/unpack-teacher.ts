@@ -1,10 +1,10 @@
 // lib/montree/tracy/frameworks/unpack-teacher.ts
 //
 // "How is Susan doing?" — server-side analysis that returns the structured
-// intermediate Tracy proses over.
+// intermediate Astra proses over.
 //
 // The framework: ACTIVITY → COVERAGE → QUALITY → PATTERN → VERDICT.
-// Each layer produces a small, named field. Tracy's prose layer reads the
+// Each layer produces a small, named field. Astra's prose layer reads the
 // intermediate and writes a chief-of-staff answer. The structure means the
 // answer's SHAPE is consistent every time — what varies is the substance.
 //
@@ -39,7 +39,7 @@ export interface UnpackTeacherInput {
 export interface UnpackTeacherResult {
   ok: boolean;
   error?: string;
-  // Structured intermediate Tracy proses over.
+  // Structured intermediate Astra proses over.
   data?: {
     teacher: {
       id: string;
@@ -65,7 +65,7 @@ export interface UnpackTeacherResult {
       neglected_children: Array<{ id: string; name: string }>;
       coverage_pct: number; // 0-100
       distribution: 'even' | 'mild_skew' | 'strong_skew';
-      // Top 3 children by evidence count (photos+notes) so Tracy can
+      // Top 3 children by evidence count (photos+notes) so Astra can
       // mention if there are obvious favourites.
       most_observed: Array<{ id: string; name: string; evidence_count: number }>;
     };
@@ -92,7 +92,7 @@ export interface UnpackTeacherResult {
       //   'concerning'    — low coverage AND (thin notes OR stalled OR very stale login)
       //   'no_data'       — teacher has no classroom assigned or empty roster
       //                     (so coverage/pattern/etc. are meaningless)
-      // Computed deterministically from the layers above so Tracy's prose
+      // Computed deterministically from the layers above so Astra's prose
       // doesn't drift in tone.
       label:
         | 'strong_week'
@@ -261,7 +261,7 @@ export async function unpackTeacher(
   if (daysSinceLogin === null) loginBucket = 'never';
   else if (daysSinceLogin <= 3) loginBucket = 'recent';
   else if (daysSinceLogin <= 14) loginBucket = 'stale';
-  else loginBucket = 'stale'; // 15+ still 'stale' — Tracy's prose can read days_since_last_login for the precise number
+  else loginBucket = 'stale'; // 15+ still 'stale' — Astra's prose can read days_since_last_login for the precise number
 
   // ── 4. Coverage layer ──────────────────────────────────────────────
   const childrenWithEvidence = new Set<string>();
@@ -435,7 +435,7 @@ export async function unpackTeacher(
   }
 
   // ── 7. Deterministic verdict ───────────────────────────────────────
-  // Combine layers into a single label so Tracy's prose tone doesn't drift.
+  // Combine layers into a single label so Astra's prose tone doesn't drift.
   // Strong week: high coverage + non-thin quality + progressing pattern.
   // Concerning: low coverage AND (thin notes OR stalled pattern OR very stale login).
   //
@@ -457,7 +457,7 @@ export async function unpackTeacher(
   const reasons: string[] = [];
 
   // Empty-roster special case — coverage/pattern/etc. are meaningless without
-  // children to observe. Tracy's prose layer reads 'no_data' and explains
+  // children to observe. Astra's prose layer reads 'no_data' and explains
   // honestly: "Susan isn't assigned to a classroom" / "her classroom has no
   // children yet". DON'T fall through to soft_week, that produced nonsense
   // like "Coverage at 0% — 0 children without evidence."

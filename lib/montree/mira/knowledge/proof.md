@@ -2,7 +2,7 @@
 
 ## The real story — Whale Class
 
-The founder runs Whale Class himself, in Beijing. It is the platform's first and most-used school. Every feature in Montree has been built against a real classroom of 20 children. Every report that goes out has been read by a real parent. Every Tracy answer has been used to handle a real conversation.
+The founder runs Whale Class himself, in Beijing. It is the platform's first and most-used school. Every feature in Montree has been built against a real classroom of 20 children. Every report that goes out has been read by a real parent. Every Astra answer has been used to handle a real conversation.
 
 This is not "we have a product idea." This is "we have a working product and a working school, and the founder is in the classroom every day."
 
@@ -19,7 +19,7 @@ That's a stronger answer than a number, because it tells the principal she's not
 This file should be updated by Tredoux as testimonials accumulate. As of Session 133 build:
 
 - Whale Class teachers report ~2 hours saved on Friday afternoons.
-- Tredoux himself has used Tracy to draft sensitive parent replies that landed well.
+- Tredoux himself has used Astra to draft sensitive parent replies that landed well.
 - The Yo-yo dossier (built for a real meeting in May 2026) shaped a successful parent conversation about an emerging sleep pattern.
 
 ## Numbers we can quote

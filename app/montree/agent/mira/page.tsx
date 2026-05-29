@@ -1,7 +1,7 @@
 // app/montree/agent/mira/page.tsx
 //
 // Mira's full-page chat surface for the agent. Mirrors /montree/admin
-// (Tracy's full-page chat) — same SSE streaming pattern, same persisted
+// (Astra's full-page chat) — same SSE streaming pattern, same persisted
 // conversation state, same action-line rendering with the "→ " marker.
 
 'use client';
@@ -249,7 +249,7 @@ export default function MiraChatPage() {
             // Flip hasMet flag ONLY on successful done (not on error/abort).
             // If the greeting POST fails (network, 503, rate limit), the next
             // session should still fire [GREETING_FIRST] so the agent eventually
-            // meets Mira properly. Mirrors Tracy's pattern from Session 96.
+            // meets Mira properly. Mirrors Astra's pattern from Session 96.
             if (pendingFirstMeetingRef.current && agent) {
               pendingFirstMeetingRef.current = false;
               try {
@@ -294,7 +294,7 @@ export default function MiraChatPage() {
   // hasMet flag is flipped ONLY on a successful `done` SSE event (handled
   // inside send()), not here — if the request fails, the next session should
   // fire [GREETING_FIRST] again so the agent eventually meets Mira properly.
-  // Mirrors Tracy's pattern from Session 96.
+  // Mirrors Astra's pattern from Session 96.
   const greetedRef = useRef(false);
   const pendingFirstMeetingRef = useRef(false);
   useEffect(() => {

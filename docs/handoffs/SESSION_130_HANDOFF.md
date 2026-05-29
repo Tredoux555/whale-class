@@ -113,7 +113,7 @@ Covers `montree-splash-video.mp4` (en) and `montree-splash-video-zh.mp4` (zh). A
 
 ### F. HeyGen explainer script (delivered via parallel agent — not in git)
 
-User asked for a long-form HeyGen explainer + promo script to be written in parallel while the splash work continued. Delivered ~750 words / ~5 minutes spoken, walking through all 12 major features (the photo→observation flip, Weekly Wrap reports, Tracy, Guru, the growing brain, 12-language localisation, library tools, parent portal, principal cockpit, voice onboarding, pricing). Both brand phrases worked in ("the AI Montessori classroom revolution" at top + close, "work smarter, not harder" near the end). Founder name NOT mentioned (just "a practicing AMS-certified Montessori educator"). Ready-to-paste prose with no scene markers.
+User asked for a long-form HeyGen explainer + promo script to be written in parallel while the splash work continued. Delivered ~750 words / ~5 minutes spoken, walking through all 12 major features (the photo→observation flip, Weekly Wrap reports, Astra, Guru, the growing brain, 12-language localisation, library tools, parent portal, principal cockpit, voice onboarding, pricing). Both brand phrases worked in ("the AI Montessori classroom revolution" at top + close, "work smarter, not harder" near the end). Founder name NOT mentioned (just "a practicing AMS-certified Montessori educator"). Ready-to-paste prose with no scene markers.
 
 Script paste-target: HeyGen Builder → Script to Video → 8 credits per render.
 

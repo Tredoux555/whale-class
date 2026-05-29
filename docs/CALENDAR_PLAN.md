@@ -252,7 +252,7 @@ nothing above it is correct without those two.
 The calendar produces a clean, structured stream of `CalendarEvent`s for any window
 and role. That stream is the perfect substrate for Montree's existing AI:
 
-- **Tracy** (principal chief-of-staff) reads the school's week/month of events and
+- **Astra** (principal chief-of-staff) reads the school's week/month of events and
   produces the operational summary — "here's your week", "here's what slipped".
 - **Guru** (teacher's per-child intelligence) reads a child's calendar slice for the
   warm narrative the parent sees.
@@ -261,7 +261,7 @@ The summary is **cheap** (Haiku for the digest), **on-demand**, and **cached** p
 (role, scope, window). It can also be **proactive** — a Monday-morning "here's your
 week" pushed via the existing scheduled-tasks + Web Push rails.
 
-And it is **bidirectional**: Tracy can *write* to the calendar — "schedule a parent
+And it is **bidirectional**: Astra can *write* to the calendar — "schedule a parent
 meeting Thursday" becomes a `montree_appointments` row (or a `montree_calendar_entries`
 row) that immediately appears as a calendar event. The calendar is the shared surface
 the AI and the human both act on.
@@ -325,7 +325,7 @@ today and next?*
 | **1 — Read-only calendar, 2 sources** | The calendar API + `CalendarEvent` model (i18n keys, §3) + adapters for `appointments` and `school_event`. Generalise `AppointmentsCalendar` into the calendar view. Role scoping — **single-classroom / homeschool degradation is a Phase 1 acceptance criterion, not a deferred question.** | A real calendar the teacher/parent/principal can open and read. Proves the adapter pattern end to end. |
 | **2 — More sources** | Adapters for `report`, `observation`, `english_schedule`, `milestone`, `meeting_note`, `term`. | The calendar now reflects what *happened*, not just what's booked — the plan/record duality (§5) is live. |
 | **3 — Write-back** | Tap a day → add an appointment / event / manual entry. `montree_calendar_entries`. | The calendar becomes a tool you *manage from*, not just read. |
-| **4 — AI summarisation** | The calendar → Tracy/Guru summary loop (§8). "Summarise my week/month." Optional proactive Monday digest. | "The calendar that summarises everything." |
+| **4 — AI summarisation** | The calendar → Astra/Guru summary loop (§8). "Summarise my week/month." Optional proactive Monday digest. | "The calendar that summarises everything." |
 | **5 — Calendar as home + management surfaces** | The `attention` source; billing/term overlays; the calendar becomes a candidate home surface. Management domains (attendance, staff scheduling) hang off it. | Montree is a time-organised school OS. |
 
 Phases 0–1 are the spine. 2–5 are growth. Stop after any phase and what shipped is

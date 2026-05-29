@@ -258,7 +258,7 @@ export async function POST(
       sender_name: senderName,
       body: enc.value,
       encryption_version: enc.version,
-      ai_drafted: false, // Parent-chats UI is never Tracy-assisted (per Session 97 rule).
+      ai_drafted: false, // Parent-chats UI is never Astra-assisted (per Session 97 rule).
     })
     .select('id, thread_id, sender_role, sender_id, sender_name, body, encryption_version, sent_at, ai_drafted')
     .maybeSingle();

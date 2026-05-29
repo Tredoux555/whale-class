@@ -120,7 +120,7 @@ Stripe Connect doesn't support ZA (verified via Stripe API error this session: "
 | Wallex CSV upload flow + `montree_bank_statements` table | Bank reconciliation needs a bucket + parser. Half-day. | 0.5d |
 | Real Xero API calls in sync script | Need accountant to confirm chart-of-accounts codes first. One-line flip after that. | 30m + accountant time |
 | Mira tool extensions (`start_thread_with_tredoux` etc.) | Phase 4.7 from prior plan. Half-day. | 0.5d |
-| Tracy super-admin scope tools | Phase 4.8 from prior plan. Separate route. Half-day. | 0.5d |
+| Astra super-admin scope tools | Phase 4.8 from prior plan. Separate route. Half-day. | 0.5d |
 | Auto-W-8BEN-E mandate before first payout | Logic exists architecturally (rule #66) — gate not yet wired. Half-day. | 0.5d |
 | Period close auto-suggested when reconciliation has 0 findings | Nice-to-have polish. | 1-2h |
 | Mandatory tax form before $600 cumulative payment | US 1099 threshold convention. Triggered alert + payout block. | 0.5d |
@@ -151,6 +151,6 @@ Stripe Connect doesn't support ZA (verified via Stripe API error this session: "
 3. **Open Xero account + connect Stripe** (Phase A).
 4. **Hire HK accountant** (Phase A).
 5. **Ship the deferred items** — ReferralsTab 📋 tax-form button, Wallex CSV upload, real Xero API calls (after accountant confirms account codes).
-6. **Mira + Tracy tool extensions** (Phases 4.7 + 4.8 from Session 108 plan).
+6. **Mira + Astra tool extensions** (Phases 4.7 + 4.8 from Session 108 plan).
 7. **Translation sweep** — the 72 non-translated pages from Session 108 audit. Public funnel first.
 8. **i18n batch** for all new agent-system + finance strings (~80 keys × 12 locales).

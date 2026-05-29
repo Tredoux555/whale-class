@@ -4379,21 +4379,21 @@ export const en = {
   'photoBank.sortName': 'A–Z',
   'photoBank.sortRecent': 'Newest',
 
-  // ── Tracy (principal home agent at /montree/admin) ────────────────────
-  // Greeting + prompt are intentionally short and warm. Tracy responds in
+  // ── Astra (principal home agent at /montree/admin) ────────────────────
+  // Greeting + prompt are intentionally short and warm. Astra responds in
   // the principal's locale automatically; these are the surface UI strings
   // around her conversation.
   'tracy.greeting': 'Hi.',
   'tracy.greetingNamed': 'Hi {name}.',
   'tracy.helpPrompt': 'How can I help you?',
-  'tracy.staticGreeting.first': 'Hi, {name}. I\'m Tracy — your chief-of-staff for the school. Ask me anything about your teachers, your students, or how a parent conversation should go.',
-  'tracy.staticGreeting.firstNoName': 'Hi. I\'m Tracy — your chief-of-staff for the school. Ask me anything about your teachers, your students, or how a parent conversation should go.',
+  'tracy.staticGreeting.first': 'Hi, {name}. I\'m Astra — your chief-of-staff for the school. Ask me anything about your teachers, your students, or how a parent conversation should go.',
+  'tracy.staticGreeting.firstNoName': 'Hi. I\'m Astra — your chief-of-staff for the school. Ask me anything about your teachers, your students, or how a parent conversation should go.',
   'tracy.staticGreeting.return': 'Hi, {name}. What\'s on your mind?',
   'tracy.staticGreeting.returnNoName': 'Hi. What\'s on your mind?',
   'tracy.placeholder': 'Type here…',
   'tracy.newConversation': 'New conversation',
   'tracy.sendAria': 'Send message',
-  'tracy.thinkingAria': 'Tracy is thinking',
+  'tracy.thinkingAria': 'Astra is thinking',
   // Viewer-mode banner (teacher-led schools where the principal is a viewer).
   'tracy.viewer.title': "You're a viewer.",
   'tracy.viewer.thisSchool': 'This school',
@@ -4402,8 +4402,8 @@ export const en = {
   // Error fallbacks. Server errors that come back with a localized `error`
   // field are preferred over these — these are the catch-all client copies.
   'tracy.errors.tier': 'AI features need an active plan — please contact support.',
-  'tracy.upgrade.title': 'Activate Tracy',
-  'tracy.upgrade.body': 'Tracy and the AI features are part of the full Montree plan. Set up billing to unlock them — $7 per active student per month, no contracts.',
+  'tracy.upgrade.title': 'Activate Astra',
+  'tracy.upgrade.body': 'Astra and the AI features are part of the full Montree plan. Set up billing to unlock them — $7 per active student per month, no contracts.',
   'tracy.upgrade.cta': 'Set up billing',
   // Shared UpgradeCard copy — used by every AI feature that returns a 402
   // with `requires_upgrade: true`. The generic title/body fits most surfaces;
@@ -4429,17 +4429,17 @@ export const en = {
   'upgrade.feature.child_briefing.body': 'AI briefings synthesise everything Montree knows about a child into a single paragraph. Set up billing to unlock them — $7 per active student per month, no contracts.',
   'upgrade.feature.parent_question.title': 'Activate parent answers',
   'upgrade.feature.parent_question.body': 'Parent-question answers draft a defensible reply in your school’s voice. Set up billing to unlock them — $7 per active student per month, no contracts.',
-  'upgrade.feature.tracy_scan.title': 'Activate Tracy thread scans',
-  'upgrade.feature.tracy_scan.body': 'Tracy scans the conversation and writes a chief-of-staff briefing. Set up billing to unlock it — $7 per active student per month, no contracts.',
-  'upgrade.feature.tracy_draft.title': 'Activate Tracy drafting',
-  'upgrade.feature.tracy_draft.body': 'Tracy drafts the parent reply in your voice from your last messages. Set up billing to unlock it — $7 per active student per month, no contracts.',
+  'upgrade.feature.tracy_scan.title': 'Activate Astra thread scans',
+  'upgrade.feature.tracy_scan.body': 'Astra scans the conversation and writes a chief-of-staff briefing. Set up billing to unlock it — $7 per active student per month, no contracts.',
+  'upgrade.feature.tracy_draft.title': 'Activate Astra drafting',
+  'upgrade.feature.tracy_draft.body': 'Astra drafts the parent reply in your voice from your last messages. Set up billing to unlock it — $7 per active student per month, no contracts.',
   'upgrade.feature.vault_transcribe.title': 'Activate Conversation Vault',
   'upgrade.feature.vault_transcribe.body': 'The Vault transcribes parent meetings and writes a private three-paragraph summary you can re-read later. Set up billing to unlock it — $7 per active student per month, no contracts.',
   'tracy.errors.transient': 'Something stopped me there — give me a second and try again.',
   'tracy.errors.noStream': 'No response stream — try again in a second.',
   'tracy.errors.connection': 'Connection failed — try again in a moment.',
   // Play-by-play progress lines emitted from inside framework tools so the
-  // principal sees what Tracy is doing in real time (parse → resolve → fetch →
+  // principal sees what Astra is doing in real time (parse → resolve → fetch →
   // compose). Server emits structured { phase, vars } events; client
   // formats with these keys.
   'tracy.progress.parsing': 'Reading the question…',
@@ -4451,31 +4451,31 @@ export const en = {
   'tracy.progress.countingNotes': 'Counting notes and coverage…',
   'tracy.progress.scoringNotes': 'Reading note quality…',
 
-  // Tracy parent-meeting dossier UI (Session 133)
+  // Astra parent-meeting dossier UI (Session 133)
   'dossier.button.label': 'Prepare for the meeting',
   'dossier.button.labelLong': 'Prepare for a parent meeting',
-  'dossier.button.title': 'Use Tracy to prepare a dossier for a parent meeting',
+  'dossier.button.title': 'Use Astra to prepare a dossier for a parent meeting',
   'dossier.modal.title': 'Prepare for a meeting about {childName}',
   'dossier.modal.subtitle':
-    "Tracy will pull every observation, Guru analysis, and pattern in {childName}'s record and build a dossier you can read once and walk into the meeting prepared.",
+    "Astra will pull every observation, Guru analysis, and pattern in {childName}'s record and build a dossier you can read once and walk into the meeting prepared.",
   'dossier.field.purpose.label': 'What is the meeting about?',
   'dossier.field.purpose.placeholder': 'e.g. concerns about the emerging sleep pattern',
-  'dossier.field.purpose.hint': 'A short sentence is plenty. Tracy fills in the rest.',
+  'dossier.field.purpose.hint': 'A short sentence is plenty. Astra fills in the rest.',
   'dossier.field.parentContext.label': 'Anything I should know about the parent? (optional)',
   'dossier.field.parentContext.placeholder':
     "e.g. expectation-driven, will fight any 'special' framing",
   'dossier.field.parentContext.hint':
-    'Free-text wins on tone calibration. If you leave this blank, Tracy uses what Guru has inferred about the parent.',
+    'Free-text wins on tone calibration. If you leave this blank, Astra uses what Guru has inferred about the parent.',
   'dossier.error.purposeRequired': 'Tell me what the meeting is about first.',
   'dossier.error.generic': 'Dossier generation failed',
   'dossier.error.title': 'Something went wrong',
   'dossier.action.buildDossier': 'Build my dossier',
   'dossier.action.tryAgain': 'Try again',
   'dossier.loading':
-    "Tracy is reading {childName}'s record, pulling Guru's analyses, and writing the dossier. About a minute.",
+    "Astra is reading {childName}'s record, pulling Guru's analyses, and writing the dossier. About a minute.",
   'dossier.renderer.title': '{childName} — Parent Meeting Dossier',
-  'dossier.renderer.subtitle': 'prepared by Tracy',
-  'dossier.renderer.subtitleWithClassroom': '{classroom} · prepared by Tracy',
+  'dossier.renderer.subtitle': 'prepared by Astra',
+  'dossier.renderer.subtitleWithClassroom': '{classroom} · prepared by Astra',
   'dossier.renderer.openPrintView': 'Open print view →',
   'dossier.renderer.closeAriaLabel': 'Close dossier',
   'dossier.renderer.prepared': 'Prepared:',
@@ -4660,7 +4660,7 @@ export const en = {
   'teacherMessages.teacherLabel': 'Teacher',
   'teacherMessages.title': 'Messages',
   'teacherMessages.toLabel': 'To',
-  'teacherMessages.tracyDrafted': 'Tracy drafted',
+  'teacherMessages.tracyDrafted': 'Astra drafted',
   'teacherMessages.you': 'You',
 
   // weeklyWrap.* — teacher-facing Weekly Wrap generation flow
@@ -4674,7 +4674,7 @@ export const en = {
 
   // ─────────────────────────────────────────────────────────────────────
   // Session 105 — i18n batch for Session 104 surfaces (Money, Health, DLQ,
-  // Errors, Tracy/Mira cards, Changelog, Trial banner, Recurring, parent-codes,
+  // Errors, Astra/Mira cards, Changelog, Trial banner, Recurring, parent-codes,
   // agent messaging). Comprehensive — every visible string. Haiku backfills the
   // other 11 locales via npm run i18n:fill-ui.
   // ─────────────────────────────────────────────────────────────────────
@@ -4697,7 +4697,7 @@ export const en = {
   'trialBanner.dismissForToday': 'Dismiss for today',
 
   // tracy.* — TracyProactiveCard on principal Today
-  'tracy.noticed': 'Tracy noticed',
+  'tracy.noticed': 'Astra noticed',
   'tracy.staleClassrooms': 'Classrooms without photos this week:',
   'tracy.teachersIdle': 'Teachers idle:',
   'tracy.unnamed': 'Unnamed',
@@ -5413,7 +5413,7 @@ export const en = {
   'meetingNotes.alsoSaveTranscript': 'Also save the full transcript (in addition to the summary).',
   'meetingNotes.autoSaveHint': 'Auto-saves when you click away.',
   'meetingNotes.backToList': 'Back to list',
-  'meetingNotes.backToTracy': 'Back to Tracy',
+  'meetingNotes.backToTracy': 'Back to Astra',
   'meetingNotes.confirmDelete': 'Delete this meeting note? The summary and notes will be permanently removed.',
   'meetingNotes.consentBody': "Recording someone without telling them is illegal in many places, and even where it's legal it's the wrong way to start a relationship. Use this for your own clarity, not as evidence. The audio is never saved — only the summary and your notes.",
   'meetingNotes.consentHeading': 'Tell the parent first.',
@@ -5519,7 +5519,7 @@ export const en = {
   'meetingNotes.vaultSummaryFieldLabel': 'Summary (auto-filled from transcript; edit anything)',
   'meetingNotes.vaultSummaryPlaceholder': 'Three short paragraphs: what was discussed, what was agreed, what to follow up on.',
   'meetingNotes.vaultTitle': 'Conversations',
-  'meetingNotes.vaultTracyNav': 'Tracy',
+  'meetingNotes.vaultTracyNav': 'Astra',
   'meetingNotes.vaultTranscribeSummarize': 'Transcribe & summarize',
   'meetingNotes.vaultUnlockBody': 'Enter the password you set for this vault. Wrong password? Try again — there are no lockouts, but every recording you saved is encrypted under whatever password you used at that moment.',
   'meetingNotes.vaultUnlockButton': 'Unlock',
@@ -5592,7 +5592,7 @@ export const en = {
 
   // Communication hub (admin)
   'comm.title': 'Communication',
-  'comm.subtitle': 'Reach your teachers and parents. Tracy drafts on request — you press send.',
+  'comm.subtitle': 'Reach your teachers and parents. Astra drafts on request — you press send.',
   'comm.tab.byClassroom': 'By classroom',
   'comm.tab.allTeachers': 'All teachers',
   'comm.tab.allParents': 'All parents',

@@ -20,7 +20,7 @@ Send these as a **sequence** over 24–48 hours. Not all at once. Each video ear
 | **V1** | Day 0, ~2 hours before the meeting (or the night before) | 30 sec | Personalised first-touch. Sets the tone. Single ask. |
 | **V2** | In the meeting OR sent immediately after the warm intro | 60 sec | "The magic." Photo → AI observation. The wow moment. |
 | **V3** | Mid-meeting, when she leans in | 90 sec | The Weekly Wrap. What parents receive. The biggest time-saver. |
-| **V4** | Mid-to-late meeting | 90 sec | **Tracy.** This is THE video for this principal. The "you'd never walk into a meeting blind again" video. |
+| **V4** | Mid-to-late meeting | 90 sec | **Astra.** This is THE video for this principal. The "you'd never walk into a meeting blind again" video. |
 | **V5** | Late meeting, if she asks about scale | 75 sec | The cockpit. What she sees across all 15 classrooms. |
 | **V6** | If she asks about parents in Chinese / other languages | 60 sec | Bilingual reports. Important if her family base is mixed. |
 | **V7** | The close | 45 sec | What happens next. The trial offer. No pressure. |
@@ -104,25 +104,25 @@ The Mandarin mention is critical for this principal's market. Don't bury it.
 
 ---
 
-## V4 — Tracy (≈90 seconds)
+## V4 — Astra (≈90 seconds)
 
 > **This is THE video for this principal.** Lead with it if you can. It is the single feature most calibrated to her described psychology — the principal who runs a school like a media campaign and never feels prepared.
 
 **Script:**
 
-> This is Tracy.
+> This is Astra.
 >
 > She is your chief of staff inside Montree.
 >
-> Every parent in your school, every child, every classroom, every moment — Tracy knows. She has read every observation, every photo caption, every developmental note. When a parent emails you, Tracy already knows who their child is and what to remind you about. When you have a difficult meeting tomorrow morning, you can ask Tracy the night before — and she will prepare you.
+> Every parent in your school, every child, every classroom, every moment — Astra knows. She has read every observation, every photo caption, every developmental note. When a parent emails you, Astra already knows who their child is and what to remind you about. When you have a difficult meeting tomorrow morning, you can ask Astra the night before — and she will prepare you.
 >
 > Not a paragraph. A *dossier*. The facts, what we believe is going on, what to say, what NOT to say, the exact questions to ask the parent. Word for word, if you want.
 >
-> I've used her for a meeting myself. The parent came in expecting a confrontation, and walked out asking when the next school event was. That was Tracy.
+> I've used her for a meeting myself. The parent came in expecting a confrontation, and walked out asking when the next school event was. That was Astra.
 >
-> You don't need to know your school like the back of your hand. Tracy already does. You just need to know what to ask her.
+> You don't need to know your school like the back of your hand. Astra already does. You just need to know what to ask her.
 >
-> Most principals running 250 children don't get to feel prepared. With Tracy, you do.
+> Most principals running 250 children don't get to feel prepared. With Astra, you do.
 
 **Why it works:**
 Every line is targeted. "You don't need to know your school like the back of your hand" — she doesn't, and she's tired of pretending. "Most principals don't get to feel prepared" — she doesn't, and she knows.
@@ -145,7 +145,7 @@ The Yo-yo dossier is the proof point. If she asks for an example, you have one l
 >
 > You don't have to *ask* the teachers for the data. You're not chasing observation forms anymore. The data has been quietly accumulating all week, and Montree has organised it for you.
 >
-> If something needs your attention, Tracy surfaces it. If nothing needs your attention, she doesn't bother you. That's the deal.
+> If something needs your attention, Astra surfaces it. If nothing needs your attention, she doesn't bother you. That's the deal.
 >
 > A 250-child school is a lot to hold in your head. The point of this isn't more information — it's that you can stop trying to hold it all.
 
@@ -166,7 +166,7 @@ The line "you don't have to ask the teachers for the data" is the sentence that 
 >
 > Every report Montree writes — every parent message, every weekly wrap, every developmental note — comes out in twelve languages. Not translated. *Written*, in proper, native, AMI-aligned Montessori language. A Mandarin-speaking parent receives a report that reads exactly like a Mandarin-speaking Montessori teacher wrote it, because the same intelligence that wrote the English version wrote the Mandarin version directly.
 >
-> If a parent prefers Mandarin, you set their language once. Every communication from then on arrives in Mandarin. Including this conversation we're having now — Tracy would have generated this preparation for you in Mandarin if I'd asked her to.
+> If a parent prefers Mandarin, you set their language once. Every communication from then on arrives in Mandarin. Including this conversation we're having now — Astra would have generated this preparation for you in Mandarin if I'd asked her to.
 >
 > Twelve languages. Real ones. Not Google Translate.
 
@@ -347,4 +347,4 @@ This library is built for that. The avatar in the videos is calm. The voice is s
 
 Good luck tomorrow.
 
-— Mira (drafted on Tredoux's behalf, with Tracy's blessing)
+— Mira (drafted on Tredoux's behalf, with Astra's blessing)

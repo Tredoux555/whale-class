@@ -7,9 +7,9 @@
 // in the staff member's voice. The briefing is what the NEXT staff member
 // walks into via the PriorConversationCard.
 //
-// VOICE: chief-of-staff (matches Tracy's voice from Session 96/97). Warm,
+// VOICE: chief-of-staff (matches Astra's voice from Session 96/97). Warm,
 // professional, action-oriented. Always ends with one concrete next move
-// (the "→ " action-line marker is load-bearing — see Tracy system prompt).
+// (the "→ " action-line marker is load-bearing — see Astra system prompt).
 //
 // STRUCTURED OUTPUT (Sonnet tool_use):
 //   - topics: the 2-5 themes that came up (e.g. "Eli's reading progress",

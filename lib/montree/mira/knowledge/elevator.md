@@ -18,7 +18,7 @@ Montree is an end-to-end school management system built specifically for Montess
 
 **Parents** receive a Weekly Wrap report that reads like the teacher wrote it themselves. Real, specific, dated. Twelve languages, native quality.
 
-**Principals** see the whole school through one cockpit. Tracy, their AI chief of staff, scans every parent thread, drafts every reply, prepares the dossier for every difficult meeting. The principal walks in prepared.
+**Principals** see the whole school through one cockpit. Astra, their AI chief of staff, scans every parent thread, drafts every reply, prepares the dossier for every difficult meeting. The principal walks in prepared.
 
 ## 5-minute (the full magic)
 

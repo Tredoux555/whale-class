@@ -14,7 +14,7 @@ These are the buyer archetypes. They are loose — most real principals are 60% 
 - They want to be in the room with the children, not at a desk.
 
 **What lands:**
-- Tracy. Specifically the parent-meeting dossier — they have hard parent conversations weekly, and currently prepare for them by re-reading the child's file at 11pm.
+- Astra. Specifically the parent-meeting dossier — they have hard parent conversations weekly, and currently prepare for them by re-reading the child's file at 11pm.
 - "Built by a Montessori teacher." They distrust software that doesn't get the language right.
 - The free month with no card.
 
@@ -36,7 +36,7 @@ These are the buyer archetypes. They are loose — most real principals are 60% 
 
 **What lands:**
 - **Lead with bilingual reports.** "Your teachers write notes in English; the parent receives the weekly wrap in Mandarin, written in your school's voice." This is the killer feature for this audience.
-- Tracy preparing for difficult parent meetings.
+- Astra preparing for difficult parent meetings.
 - The 30-day free trial. They are very risk-averse on commitment but very willing to try free.
 - Whale Class — the founder runs his classroom in Beijing. This is gold.
 - Alipay / WeChat Pay invoice rail — they can pay in renminbi.
@@ -121,7 +121,7 @@ These are the buyer archetypes. They are loose — most real principals are 60% 
 - Worried their teachers know more than they do.
 
 **What lands:**
-- "The pedagogical rigour is built in — you don't need to be Montessori-trained to run a Montessori-rigorous program. Tracy and Guru are your AMI Montessori experts on tap."
+- "The pedagogical rigour is built in — you don't need to be Montessori-trained to run a Montessori-rigorous program. Astra and Guru are your AMI Montessori experts on tap."
 - The 60-day free trial. They want a low-risk way to try.
 - Mira herself (in the pitch deck): "you have a growth partner who knows how to bring Montree to other schools like yours."
 

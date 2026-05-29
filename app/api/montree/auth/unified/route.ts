@@ -67,7 +67,7 @@ export async function POST(request: NextRequest) {
     // role is strictly more privileged — if the same code matches both
     // identities, the principal context is what the user intends. Putting
     // teacher first issued a teacher JWT to a principal, which then 403'd
-    // them out of /api/montree/admin/principal-agent (Tracy) and any other
+    // them out of /api/montree/admin/principal-agent (Astra) and any other
     // principal-only route. Principal first gives them the higher role.
     const principalResult = await tryPrincipalLogin(supabase, normalizedCode);
     if (principalResult) {

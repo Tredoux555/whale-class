@@ -1,10 +1,10 @@
 // lib/montree/tracy/knowledge/loader.ts
 //
-// Tracy's psychological knowledge base — loaded from disk on first
+// Astra's psychological knowledge base — loaded from disk on first
 // access, cached in memory across the process lifetime.
 //
 // DESIGN DECISION (Session 136 — mirrors Mira's pattern from Session 133)
-//   We do NOT bake this into Tracy's system prompt at build time. The
+//   We do NOT bake this into Astra's system prompt at build time. The
 //   frameworks here are stable but the principal-facing UX evolves with
 //   real-meeting feedback; loading from disk means a Tredoux edit to a
 //   markdown file shows up on the next server restart (or the next
@@ -19,10 +19,10 @@
 //     prepare_parent_meeting where Sonnet gets the FULL surface to
 //     reason from.
 //   - getTracyKnowledgeSummary() → compact ~1500-token summary suitable
-//     for Tracy's chat system prompt every turn. All sections present,
+//     for Astra's chat system prompt every turn. All sections present,
 //     stripped to leads + the most-quotable lines.
 //   - getTracyKnowledgeFull(topic) → single file's full content. Used by
-//     the consult_tracy_knowledge tool when Tracy needs depth on one
+//     the consult_tracy_knowledge tool when Astra needs depth on one
 //     specific area without dumping the whole bundle.
 //
 // SCHOOL-SCOPING CONTRACT
@@ -125,12 +125,12 @@ export function resetTracyKnowledgeCache(): void {
 }
 
 /**
- * Compact summary for Tracy's chat-mode system prompt. ~1500 tokens —
- * enough for Tracy to apply the frameworks during ordinary chat without
+ * Compact summary for Astra's chat-mode system prompt. ~1500 tokens —
+ * enough for Astra to apply the frameworks during ordinary chat without
  * dumping the full 13K-token bundle into every turn.
  *
  * The full bundle goes into prepare_parent_meeting. This summary is what
- * Tracy carries on every chat turn so even casual parent-thread questions
+ * Astra carries on every chat turn so even casual parent-thread questions
  * benefit from the psychological depth.
  */
 export async function getTracyKnowledgeSummary(): Promise<string> {
@@ -199,7 +199,7 @@ prepare_parent_meeting's dossier-builder prompt.)`;
  * Pull one knowledge file in full. Used by the consult_tracy_knowledge
  * tool when chat needs depth on one specific area (e.g. principal asks
  * "how should I handle a defended parent?" → tool fetches the patterns
- * file → Tracy synthesizes a chat reply from the depth).
+ * file → Astra synthesizes a chat reply from the depth).
  *
  * Defaults to 'index' when topic isn't recognised so the caller always
  * gets back something useful.

@@ -11,7 +11,7 @@
 **Montessori competitor verdict (Transparent Classroom, Montessori Compass, Tadpoles, Toddle):**
 
 - Nobody offers parent ↔ principal **appointment booking**, **parent social groups**, or a **birthday calendar**. This is open whitespace.
-- Transparent Classroom price-anchors the Montessori segment at **$2/child/mo** (3.5× cheaper than Montree's $7). Montree's gap-justification is Tracy/Mira + meeting notes + ecosystem features competitors don't have.
+- Transparent Classroom price-anchors the Montessori segment at **$2/child/mo** (3.5× cheaper than Montree's $7). Montree's gap-justification is Astra/Mira + meeting notes + ecosystem features competitors don't have.
 - Montessori Compass 2.0 launched a "Growth Suite" — they're moving toward ecosystem. **Time pressure.**
 
 **Broader EC platform verdict (Brightwheel, Procare, ClassDojo, ParentSquare, Lillio):**

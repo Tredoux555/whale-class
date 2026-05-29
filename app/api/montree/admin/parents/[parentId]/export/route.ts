@@ -1,6 +1,6 @@
 // app/api/montree/admin/parents/[parentId]/export/route.ts
 //
-// Ultimate Tracy Phase E — GDPR/CCPA data-export endpoint.
+// Ultimate Astra Phase E — GDPR/CCPA data-export endpoint.
 //
 // Returns ALL parent data (profile + meetings + decrypted transcripts +
 // analyses) as JSON for compliance with right-to-access requests. The

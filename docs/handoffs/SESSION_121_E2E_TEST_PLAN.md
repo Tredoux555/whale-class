@@ -48,7 +48,7 @@ Goal: a school principal signs up using the agent's referral code.
 - [ ] Verify gold "Referral code: AGENT-XXXX" banner shows on every step until success
 - [ ] Pick **Principal** role (gold CTA — should be primary because `?ref=` is present per Session 117 polish)
 - [ ] Fill in school name, principal email, language. Click "Let's go"
-- [ ] Expect: school created, redirected to `/montree/admin` (Tracy's dashboard)
+- [ ] Expect: school created, redirected to `/montree/admin` (Astra's dashboard)
   - Principal's code IS the referral code itself (Session 90 Phase 2: code becomes the principal's login)
 
 **Verify under the hood:**
@@ -64,10 +64,10 @@ In **Browser B** (as principal):
 - [ ] Inside the classroom drill-down, add a teacher (name + role)
 - [ ] Tap the green "Copy code" button → reveal-once teacher code
 - [ ] Tap "Send" → mailto opens with the welcome message template
-- [ ] Verify Tracy float pops up on every cockpit page
+- [ ] Verify Astra float pops up on every cockpit page
 
-**Test Tracy:**
-- [ ] Click Tracy float → ask "Who's my newest teacher?"
+**Test Astra:**
+- [ ] Click Astra float → ask "Who's my newest teacher?"
 - [ ] Expect: child_focus or list_classrooms tool fires, returns the teacher you just added
 
 ## Step 5 — Teacher Logs In + Onboards Children

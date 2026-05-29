@@ -1,9 +1,9 @@
 // /montree/admin/page.tsx
 //
-// Tracy — the principal's chief-of-staff AI.
+// Astra — the principal's chief-of-staff AI.
 //
-// The principal opens the page, sees a quiet greeting from Tracy, and asks.
-// Tracy streams back a chief-of-staff answer that always ends with one
+// The principal opens the page, sees a quiet greeting from Astra, and asks.
+// Astra streams back a chief-of-staff answer that always ends with one
 // concrete next action. That's the whole surface.
 //
 // What stays under the hood (load-bearing — do not remove):
@@ -14,11 +14,11 @@
 //
 // What this rewrite changes (the visual port from the mockup):
 //   - Strips the school-name hero + verbose subtitle (no system noise)
-//   - Empty state is just Tracy's avatar + "Hi [name]." + "How can I help you?"
-//   - Tool chips are hidden — Tracy's mechanism is invisible to the principal
-//   - Thinking interludes are hidden — Tracy speaks once at the end
+//   - Empty state is just Astra's avatar + "Hi [name]." + "How can I help you?"
+//   - Tool chips are hidden — Astra's mechanism is invisible to the principal
+//   - Thinking interludes are hidden — Astra speaks once at the end
 //   - Closing action line ("I'd …") is parsed out and rendered distinctly
-//   - Tracy's avatar (gold T circle) sits beside her replies
+//   - Astra's avatar (gold T circle) sits beside her replies
 //
 // The tool/thinking event data is still received and stored on the turn —
 // just not rendered. Future "show your work" toggle would be one render swap.
@@ -111,11 +111,11 @@ interface ConvTurn {
   text: string;
   tools?: ToolEvent[];
   thinking?: string;
-  /** Latest live status from inside Tracy's tools — rendered while pending. */
+  /** Latest live status from inside Astra's tools — rendered while pending. */
   progress?: ProgressEvent | null;
   pending?: boolean;
   error?: string;
-  /** When set, the assistant turn renders an "Activate Tracy" upgrade card
+  /** When set, the assistant turn renders an "Activate Astra" upgrade card
    *  instead of a plain red error toast. Triggered by 402 responses. */
   requiresUpgrade?: boolean;
   costUsd?: number;
@@ -172,7 +172,7 @@ function newConvId(): string {
 }
 
 // splitActionLine is imported from the canonical helper (top of this file).
-// Session 113 V2 audit MED-5 — single source of truth across Tracy + Mira surfaces.
+// Session 113 V2 audit MED-5 — single source of truth across Astra + Mira surfaces.
 
 // ── Subcomponents ────────────────────────────────────────────────────────
 // TracyAvatar lives in components/montree/admin/TracyAvatar.tsx — shared
@@ -248,7 +248,7 @@ function UserBubble({ text }: { text: string }) {
  * Session 135 — parent-meeting brief + dossier disclosure.
  *
  * Renders as a structured artifact at the top of an assistant turn when
- * Tracy's prepare_parent_meeting tool has emitted a `meeting_brief` SSE
+ * Astra's prepare_parent_meeting tool has emitted a `meeting_brief` SSE
  * event. The brief is shown by default (≤200 words, scannable in 15
  * seconds — the literal cue card the principal reads in the room). The
  * full 9-section dossier collapses behind a "Show me the full thinking"
@@ -369,12 +369,12 @@ function MeetingBriefCard({ brief }: { brief: MeetingBrief }) {
 function AssistantBubble({ turn }: { turn: ConvTurn }) {
   const { t } = useI18n();
   const { body, action } = splitActionLine(turn.text);
-  // Show the rich animated indicator while we're waiting on Tracy AND have
+  // Show the rich animated indicator while we're waiting on Astra AND have
   // no text yet AND no meeting brief content has landed yet. Once tokens
-  // start streaming (either Tracy's text OR a meeting brief chunk) the
+  // start streaming (either Astra's text OR a meeting brief chunk) the
   // indicator gives way to the body / MeetingBriefCard. Progress line
   // (parsing → looking up → composing) renders below the avatar pulse +
-  // dots so the principal sees what Tracy is actually doing, not just
+  // dots so the principal sees what Astra is actually doing, not just
   // that something is happening.
   //
   // Session 136 — meetingBrief chunks landing while pending used to leave
@@ -404,7 +404,7 @@ function AssistantBubble({ turn }: { turn: ConvTurn }) {
 
   // Session 136 — slow-fallback timer. If isThinking has been true for
   // ≥15s without any progress / chunk / completion event, render a
-  // reassurance line so the principal doesn't think Tracy died silently.
+  // reassurance line so the principal doesn't think Astra died silently.
   // Generic message by default; more specific "Preparing the dossier…"
   // when prepare_parent_meeting is in flight (turn.preparingDossier).
   // Hardcoded English strings — i18n sweep deferred to a follow-up so
@@ -583,7 +583,7 @@ export default function AdminAgentPage() {
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
   // 🚨 Perf Tier 2.1 (PERF_HEALTH_CHECK.md) — SSE token rAF throttle.
-  // Without this, every SSE token from Tracy triggered a setTurns call →
+  // Without this, every SSE token from Astra triggered a setTurns call →
   // O(N) render of the entire conversation per token → CPU spikes during
   // streaming. Now tokens accumulate in pendingTextRef and one rAF flush
   // per frame applies the buffered chunk. ~80% CPU reduction during stream.
@@ -666,7 +666,7 @@ export default function AdminAgentPage() {
   // Auto-scroll to bottom on new content — but ONLY when the user is
   // already at (or near) the bottom. If they've scrolled UP to re-read an
   // earlier message, leave them there; otherwise every streamed Sonnet
-  // token snaps the scroll to the bottom and they can never read Tracy's
+  // token snaps the scroll to the bottom and they can never read Astra's
   // long replies. "Near the bottom" = within 80px so the user can be a
   // line or two off the end and still get the live-stream behaviour.
   useEffect(() => {
@@ -1094,7 +1094,7 @@ export default function AdminAgentPage() {
       <ChangelogModal audience="principal" />
       {/* Trial-expiring warning when subscription is in last 14 days of trial. */}
       <TrialExpiringBanner />
-      {/* Tracy's proactive notice for stale classrooms / idle teachers / pending photos. */}
+      {/* Astra's proactive notice for stale classrooms / idle teachers / pending photos. */}
       <TracyProactiveCard />
       {/* ═══ Session 120 — Pending appointment invites banner ═══
           Surfaces appointment invites where the principal is primary host
@@ -1102,7 +1102,7 @@ export default function AdminAgentPage() {
       {principal?.id && (
         <PendingAppointmentsBanner viewer="staff" selfUserId={principal.id} />
       )}
-      {/* Compact language switcher — the principal can change Tracy's language
+      {/* Compact language switcher — the principal can change Astra's language
           here and her next response is in that language. Sits above the thread
           aligned right so it doesn't compete with the empty-state greeting. */}
       <div
@@ -1148,7 +1148,7 @@ export default function AdminAgentPage() {
           Filter out the synthetic kickoff turns ('[GREETING]' / '[GREETING_FIRST]')
           that the cockpit-wide TracyFloat injects on first session login.
           The server logs them (super-admin sees them) but the principal
-          shouldn't see her own kickoff prompt as a chat message. Tracy's
+          shouldn't see her own kickoff prompt as a chat message. Astra's
           reply is kept and rendered as the first assistant turn. */}
       {(() => {
         const visibleTurns = turns.filter(
@@ -1168,7 +1168,7 @@ export default function AdminAgentPage() {
               marginBottom: 22,
               maxHeight: '64vh',
               overflowY: 'auto',
-              // Session 135 — paddingLeft gives Tracy's avatar pulse + glow
+              // Session 135 — paddingLeft gives Astra's avatar pulse + glow
               // room to breathe on the left edge. Without it the box-shadow
               // halo extending into negative x gets clipped by the scroll
               // container's overflow boundary, producing the "glow on

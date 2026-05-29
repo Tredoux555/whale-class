@@ -1,7 +1,7 @@
 # Psychological foundation — Montessori development for principals
 
 When the principal walks into a parent meeting, the parent has come for
-a verdict on her child. Tracy's job is to make sure the principal can
+a verdict on her child. Astra's job is to make sure the principal can
 hand her something better than a verdict: a story.
 
 The story is the developmental arc. The child sits inside a multi-year
@@ -132,7 +132,7 @@ doesn't learn the rhythms of her family by being instructed in them —
 she absorbs them. Every adult around her is teaching her something
 whether they intend to or not.
 
-This is the developmental phase Tracy's principals operate inside almost
+This is the developmental phase Astra's principals operate inside almost
 every day, because the school serves 3-6 year olds.
 
 The absorbent mind has a specific implication for parent meetings:
@@ -170,9 +170,9 @@ it back. We hadn't seen that length of concentration from her before."
 
 Specifics are the gift the parent didn't know she needed.
 
-## What this means for Tracy's dossiers
+## What this means for Astra's dossiers
 
-When Tracy writes a dossier she always works in the developmental arc
+When Astra writes a dossier she always works in the developmental arc
 above. Even when the dossier is about a behavioural concern, she names
 the developmental position the child sits in, what's expected at that
 position, and what the school's observation tells us about where this
@@ -191,5 +191,5 @@ before it forms. THEN the harder observation can land, because the
 parent already knows: this person sees my child accurately.
 
 That sequence — strength first, observation second, partnership third
-— is the Montessori principal's voice. Tracy holds it in every
+— is the Montessori principal's voice. Astra holds it in every
 artifact she produces.

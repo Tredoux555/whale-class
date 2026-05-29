@@ -1,6 +1,6 @@
 # Health Check S131 — AI Cost, Model Usage & Tier-Gating
 
-Audit date: 2026-05-27. Scope: every `anthropic.messages.create` / `openai.*` call site, model-constant hygiene, tier-gating, prompt caching, Tracy + Mira posture, photo pipeline v2, replan observability, logApiUsage hygiene, free-tier UX.
+Audit date: 2026-05-27. Scope: every `anthropic.messages.create` / `openai.*` call site, model-constant hygiene, tier-gating, prompt caching, Astra + Mira posture, photo pipeline v2, replan observability, logApiUsage hygiene, free-tier UX.
 
 ---
 
@@ -11,7 +11,7 @@ Audit date: 2026-05-27. Scope: every `anthropic.messages.create` / `openai.*` ca
 | Route | Tier-gated? | Notes |
 |---|---|---|
 | `app/api/montree/reports/weekly-wrap/route.ts` | ✅ | Full tier ladder; 402 on free |
-| `app/api/montree/admin/principal-agent/route.ts` (Tracy) | ✅ | 402 `requires_upgrade` + `feature: tracy` |
+| `app/api/montree/admin/principal-agent/route.ts` (Astra) | ✅ | 402 `requires_upgrade` + `feature: tracy` |
 | `app/api/montree/admin/parent-question/route.ts` | ✅ | model from `aiTier.model` |
 | `app/api/montree/admin/child-briefing/[childId]/route.ts` | ✅ | tier-gated |
 | `app/api/montree/admin/tracy/{scan-thread,draft-response}/route.ts` | ✅ | tier-gated |
@@ -36,15 +36,15 @@ Audit date: 2026-05-27. Scope: every `anthropic.messages.create` / `openai.*` ca
 - **C7 — LOW** — `app/api/montree/admin/import/route.ts:204` — Whale-Class-only admin path. Not customer-facing.
 - **C8 — LOW** — `lib/montree/voice-notes/{extraction,weekly-admin}.ts` — used inside larger tier-gated routes; verified upstream gates.
 
-`requires_upgrade: true` shape is present in Tracy + Mira + recently-built routes; older snap-identify, generate-work-content also surface it. Apply the same `requires_upgrade + upgrade_url: '/montree/admin/billing' + feature` shape on every C1-C5 fix.
+`requires_upgrade: true` shape is present in Astra + Mira + recently-built routes; older snap-identify, generate-work-content also surface it. Apply the same `requires_upgrade + upgrade_url: '/montree/admin/billing' + feature` shape on every C1-C5 fix.
 
 ## 2. Hardcoded model strings
 
 Grep for `claude-(opus|sonnet|haiku)-` and `gpt-` outside `lib/ai/anthropic.ts` / `lib/montree/reports/resolve-model.ts` / test fixtures: zero unguarded literals found in route bodies. Some scripts (`scripts/batch-translate-*`, `scripts/run_replan_*.mjs`) hardcode model strings — these are one-off Whale-Class scripts and not customer-facing. Architectural rule #135 (use `AI_MODEL` / `HAIKU_MODEL` / `OPUS_MODEL` constants) is HOLDING for production routes.
 
-## 3. Tracy + Mira enforcement
+## 3. Astra + Mira enforcement
 
-- **Tracy** — `app/api/montree/admin/principal-agent/route.ts:236` pins `OPUS_MODEL` after a tier-gate (any non-free tier upgrades the principal to Opus). `assertSupportedCostModel(model)` runs, logs loudly on drift. ✅ Locked.
+- **Astra** — `app/api/montree/admin/principal-agent/route.ts:236` pins `OPUS_MODEL` after a tier-gate (any non-free tier upgrades the principal to Opus). `assertSupportedCostModel(model)` runs, logs loudly on drift. ✅ Locked.
 - **Mira** — `app/api/montree/agent/mira/route.ts:204` pins `OPUS_MODEL` for the orchestrator; `lib/montree/mira/tool-executor.ts:175` pins `HAIKU_MODEL` for draft tools. Agents have no tier gate by design (paid partners). ✅ Locked.
 
 No drift detected.
@@ -87,13 +87,13 @@ Grep for `logApiUsage(...).catch` against `.ts/.tsx`: zero runtime hits. Only ma
 
 `lib/montree/reports/replan-child.ts` emits `[Replan:<childName>]` at 12+ stage points (`START`, `STAGE_3`, `STAGE_3.5`, `STAGE_4`, `DONE`, plus per-stage `FAIL` lines with `stage=` + `msg=`). Session 95's diagnostic instrumentation is INTACT. ✅
 
-## 9. Tracy memory cap
+## 9. Astra memory cap
 
 `lib/montree/tracy/memory.ts:59` — `DEFAULT_LOAD_LIMIT = 30`. The cap is hard at 100 (`Math.min(limit, 100)` at line 207) — a future caller passing `limit: 100` would 3x the cost of the cached prompt prefix. Suggest tightening hard cap to 50 (5-line change) as a follow-up.
 
 ## 10. Free-tier UX
 
-Tracy (S105), generate-work-content, snap-identify, weekly-wrap, language-presentation, language-semester, parent-question, child-briefing, weekly-review — all return `{ requires_upgrade: true, upgrade_url, feature }` on Free 402. The frontend pattern from `components/montree/UpgradeCard.tsx` (Session 106) renders the warm amber card vs red error. Spot-check shows consistent shape.
+Astra (S105), generate-work-content, snap-identify, weekly-wrap, language-presentation, language-semester, parent-question, child-briefing, weekly-review — all return `{ requires_upgrade: true, upgrade_url, feature }` on Free 402. The frontend pattern from `components/montree/UpgradeCard.tsx` (Session 106) renders the warm amber card vs red error. Spot-check shows consistent shape.
 
 C1-C5 routes above currently 500 or silently bill Sonnet — fix forces them into the same friendly upgrade path.
 
@@ -105,6 +105,6 @@ C1-C5 routes above currently 500 or silently bill Sonnet — fix forces them int
 2. **C2 — Tier-gate `photo-audit/tell-ai/route.ts`** (line 104). Per-tap Sonnet on a customer-facing button. Add gate + UpgradeCard surface. **~15 min.**
 3. **C3 — Tier-gate `children/[childId]/weekly-admin/route.ts`** (line 369). Sonnet weekly-admin doc on Free schools is pure leak. **~15 min.**
 4. **C4 + C5 — Tier-gate `classroom-setup/describe` + `onboarding/voice/custom-work`**. Same one-line `resolveReportModel` insertion + 402 shape. **~20 min combined.**
-5. **Tracy memory cap tightening** (`tracy/memory.ts` line 207): drop the hard cap from 100→50 to prevent future callers from accidentally tripling Tracy prompt cost. Low-effort, no behavior change at current usage. **~5 min.**
+5. **Astra memory cap tightening** (`tracy/memory.ts` line 207): drop the hard cap from 100→50 to prevent future callers from accidentally tripling Astra prompt cost. Low-effort, no behavior change at current usage. **~5 min.**
 
 All five are zero-risk to existing paid schools (only add 402 paths for Free). Combined burn-down: half a session.

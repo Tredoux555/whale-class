@@ -2,7 +2,7 @@
 // Session 98 — Parent thread detail + reply composer.
 //
 // Same flag gate as the list page: 404 from any API call → redirect to dashboard.
-// AI is off on parent posts: composer never offers Tracy drafting.
+// AI is off on parent posts: composer never offers Astra drafting.
 
 'use client';
 
@@ -607,7 +607,7 @@ export default function ParentThreadDetailPage() {
                       fontSize: 9,
                       fontWeight: 700,
                     }}>
-                      Tracy drafted
+                      Astra drafted
                     </span>
                   )}
                 </div>

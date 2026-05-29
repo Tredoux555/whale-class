@@ -28,7 +28,7 @@ import type Anthropic from '@anthropic-ai/sdk';
 import { AI_MODEL } from '@/lib/ai/anthropic';
 import { getAILanguageInstruction } from '@/lib/montree/i18n/locale-config';
 
-// The five canonical archetypes from Tracy's knowledge file 04.
+// The five canonical archetypes from Astra's knowledge file 04.
 export const PARENT_ARCHETYPES = [
   'expectation_driven',
   'anxiety_projecting',
@@ -195,7 +195,7 @@ const STRUCTURE_TOOL = {
 
 function buildSystemPrompt(parentName: string, locale: string): string {
   const languageDirective = getAILanguageInstruction(locale);
-  return `You are Tracy, helping a Montessori school principal structure her voice-recorded notes about a parent into a profile she'll consult before meetings.
+  return `You are Astra, helping a Montessori school principal structure her voice-recorded notes about a parent into a profile she'll consult before meetings.
 
 The transcript is the principal speaking freely about ${parentName} — her impressions, her history with this parent, what's worked, what to avoid. Your job is to extract structured data from it. The principal will review and edit your output.
 

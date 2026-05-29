@@ -24,7 +24,7 @@ The agent never has to know which rail a school will use — Tredoux handles bil
 
 ## Trial
 
-**30 days from signup. One classroom only. No credit card.** The trial gives the full Montree experience — AI, photo audit, Weekly Wrap, Tracy, the works. If the school adds a second classroom before paying, they have to choose a plan.
+**30 days from signup. One classroom only. No credit card.** The trial gives the full Montree experience — AI, photo audit, Weekly Wrap, Astra, the works. If the school adds a second classroom before paying, they have to choose a plan.
 
 If the trial expires and they haven't paid, the school flips to Free AI tier (no AI features) but the data stays. They can resubscribe any time.
 

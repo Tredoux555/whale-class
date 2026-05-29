@@ -1,6 +1,6 @@
 // lib/montree/dossier_cache.ts
 //
-// 24-hour cache for prepare_parent_meeting (Tracy) and
+// 24-hour cache for prepare_parent_meeting (Astra) and
 // prepare_principal_pitch (Mira) dossiers.
 //
 // Both tools cache on the same table (montree_meeting_dossiers, migration
@@ -29,7 +29,7 @@ export interface DossierCacheKeyInput {
   output_format: DossierOutputFormat;
   /**
    * Owner scope — REQUIRED to prevent cache cross-tenant leaks.
-   * For Tracy: pass the school_id (so Principal A can't read Principal B's
+   * For Astra: pass the school_id (so Principal A can't read Principal B's
    * dossiers even if they pass an unrelated child_id).
    * For Mira: pass the agent_id (so Agent A can't read Agent B's pitches).
    *
@@ -88,7 +88,7 @@ function isMissingTableMessage(msg: string | null | undefined): boolean {
  * any two calls with the same inputs produce the same key.
  *
  * The hash is SHA-256, hex-encoded, 64 chars. We include audience_type in
- * the input so Tracy and Mira can't collide on otherwise-identical keys.
+ * the input so Astra and Mira can't collide on otherwise-identical keys.
  */
 export function makeDossierCacheKey(input: DossierCacheKeyInput): string {
   // Session 133 audit fix: normalize ALL string values (not just the

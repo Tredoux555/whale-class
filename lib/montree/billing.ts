@@ -932,12 +932,12 @@ export async function handleInvoicePaymentFailed(
 // ── AI tier auto-flip ─────────────────────────────────────────────────────
 //
 // Session 98 — when Stripe subscription events land, automatically flip the
-// school's AI tier feature flags so Tracy + AI reports activate / deactivate
+// school's AI tier feature flags so Astra + AI reports activate / deactivate
 // in lockstep with the subscription. Mirrors the super-admin tier-change
 // pattern exactly (toggles ai_tier_haiku + ai_tier_sonnet, sets budget,
 // clears budget cache).
 //
-// Architectural rule: the principal's "Activate Tracy" CTA → Stripe Checkout
+// Architectural rule: the principal's "Activate Astra" CTA → Stripe Checkout
 // completing → webhook fires customer.subscription.created with status=
 // 'trialing' (or 'active' if no trial) → this helper flips the school to
 // premium. Subscription cancel → status='canceled' → this helper flips back
@@ -1072,7 +1072,7 @@ export async function handleSubscriptionUpsert(
     .eq('id', school.id);
 
   // Auto-flip AI tier based on subscription status.
-  //   active / trialing → premium  (Tracy + Sonnet reports unlocked)
+  //   active / trialing → premium  (Astra + Sonnet reports unlocked)
   //   canceled / unpaid / incomplete_expired → free  (AI gates close)
   //   past_due / incomplete → leave unchanged (grace period; Stripe is
   //   retrying payment automatically)
