@@ -4450,6 +4450,8 @@ export const en = {
   'tracy.progress.unpacking': 'Unpacking {name}…',
   'tracy.progress.countingNotes': 'Counting notes and coverage…',
   'tracy.progress.scoringNotes': 'Reading note quality…',
+  'tracy.progress.searchingPatterns': 'Reviewing observations and patterns…',
+  'tracy.progress.composingDossier': 'Writing the dossier…',
 
   // Astra parent-meeting dossier UI (Session 133)
   'dossier.button.label': 'Prepare for the meeting',

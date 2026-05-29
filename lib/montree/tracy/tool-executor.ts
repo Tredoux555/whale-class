@@ -950,6 +950,9 @@ export async function executeTracyTool(
           // tokens hit the SSE pipe as they land instead of waiting for
           // the full ~25s synchronous response.
           onStream: onMeetingStream,
+          // Session 137 — live "thinking" stages during the pre-token window.
+          onProgress: (phase, vars) =>
+            emitProgress('prepare_parent_meeting', phase, vars),
         });
         if (!result.ok) {
           return { success: false, error: result.error || 'dossier failed' };

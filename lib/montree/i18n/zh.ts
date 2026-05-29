@@ -4390,6 +4390,8 @@ export const zh = {
   'tracy.progress.unpacking': '正在解析 {name}…',
   'tracy.progress.countingNotes': '正在统计笔记和覆盖范围…',
   'tracy.progress.scoringNotes': '正在评估笔记质量…',
+  'tracy.progress.searchingPatterns': '正在梳理观察记录与规律…',
+  'tracy.progress.composingDossier': '正在撰写会谈简报…',
 
   // Astra 家长会备忘录 UI (Session 133)
   'dossier.button.label': '准备这场会议',

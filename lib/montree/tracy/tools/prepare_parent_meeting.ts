@@ -130,6 +130,13 @@ export interface PrepareParentMeetingInput {
    * TracyToolDeps). Streaming failure must not break the tool.
    */
   onStream?: (chunk: { section: 'brief' | 'dossier'; delta: string }) => void;
+  /**
+   * Optional progress callback for live "thinking" status while the dossier
+   * builds (the ~3-5s of context-fetch + cache-check before the first token).
+   * Phase strings map to `tracy.progress.<phase>` i18n keys on the client.
+   * Fire-and-forget — a thrown listener never breaks the tool.
+   */
+  onProgress?: (phase: string, vars?: Record<string, string>) => void;
 }
 
 export interface PrepareParentMeetingResult {
@@ -527,7 +534,16 @@ export async function preparePMeeting(
     anthropic,
     supabase,
     onStream,
+    onProgress,
   } = input;
+
+  // Safe progress emitter — a thrown listener must never break the dossier.
+  const emitStage = (phase: string, vars?: Record<string, string>) => {
+    if (!onProgress) return;
+    try { onProgress(phase, vars); } catch (e) {
+      console.warn('[prepare_parent_meeting] onProgress threw (non-fatal):', e);
+    }
+  };
 
   // Session 136 — function-entry marker. Logged BEFORE any DB hit + any
   // input validation so we can confirm in Railway logs that the tool was
@@ -682,6 +698,11 @@ export async function preparePMeeting(
 
   const phrases = inferPatternPhrases(meetingPurpose);
   console.log(`${_tracyDiag} fetching_context+guru+pattern+parent_profile (parallel) phrases=${phrases.positives.length}`);
+
+  // Live "thinking" status — the context fetch + pattern detection is the
+  // multi-second window before the first dossier token. Tell the principal
+  // what's happening instead of a silent spinner.
+  emitStage('searchingPatterns');
 
   // Ultimate Astra Phase A — fourth parallel branch: resolve the child's
   // parent (preferring one named in meeting_purpose, falling back to the
@@ -933,6 +954,10 @@ ${structuredContext}
 Output: ${outputFormat === 'json' ? 'a SINGLE JSON object with one key per dossier section' : 'pure markdown using the structure described in the system prompt'}.`;
 
   const startedAt = Date.now();
+
+  // Context is assembled; the model call is the long part. Final "thinking"
+  // stage before the dossier tokens start streaming in.
+  emitStage('composingDossier');
 
   // Session 135 — STREAMING Sonnet call.
   //
