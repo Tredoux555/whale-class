@@ -563,4 +563,37 @@ export const TRACY_TOOLS: Tool[] = [
       },
     },
   },
+  // ── PHOTO TOOL: get_child_photos ─────────────────────────────────────
+  // Pulls a child's confirmed observation photos straight from the DB so
+  // the principal can show them in a meeting. School-scoped via
+  // verifyChildBelongsToSchool. Returns proxied (safe) image URLs + caption
+  // + date + work label. Astra presents them as markdown images so they
+  // render inline in chat.
+  {
+    name: 'get_child_photos',
+    description:
+      "Pull a child's actual observation photos from the database — use this when the principal asks to SEE or SHOW photos, or wants images to bring into a parent meeting (\"give me the photos\", \"show me Yo-yo's photos\", \"the rest-event pictures from May 25\", \"photos to show his mother\"). Returns the real images (proxied URLs) with caption, date, and the work each shows. After calling, present them inline as markdown images — `![caption — date](url)` — one per line, newest first, so they render in the chat. If the principal named specific dates (e.g. cluster days from a dossier), pass date_from/date_to to filter to those. Only returns teacher-confirmed photos that belong to this school's child.",
+    input_schema: {
+      type: 'object',
+      properties: {
+        child_id: {
+          type: 'string',
+          description: "The child's id (from find_children_by_name / child_focus / a dossier). Required.",
+        },
+        limit: {
+          type: 'number',
+          description: 'Max photos to return (default 12, capped at 30). Newest first.',
+        },
+        date_from: {
+          type: 'string',
+          description: 'Optional ISO date (YYYY-MM-DD). Only photos captured on/after this date.',
+        },
+        date_to: {
+          type: 'string',
+          description: 'Optional ISO date (YYYY-MM-DD). Only photos captured on/before this date.',
+        },
+      },
+      required: ['child_id'],
+    },
+  },
 ];

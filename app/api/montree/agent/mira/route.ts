@@ -1,6 +1,6 @@
 // app/api/montree/agent/mira/route.ts
 //
-// Mira — the agent's frontline AI. SSE streaming over an Opus tool-use loop.
+// Mira — the agent's frontline AI. SSE streaming over a Sonnet tool-use loop.
 //
 // Mirrors /api/montree/admin/principal-agent (Astra). Differences:
 //   - Auth requires role='agent' (not 'principal').
@@ -23,7 +23,7 @@ import type {
 } from '@anthropic-ai/sdk/resources/messages';
 import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
-import { anthropic, OPUS_MODEL } from '@/lib/ai/anthropic';
+import { anthropic, AI_MODEL } from '@/lib/ai/anthropic';
 import {
   buildMiraSystemPrompt,
   MIRA_TOOLS,
@@ -44,10 +44,14 @@ const MAX_TOOL_RESULT_CHARS = 50_000;
 // not throttle real use. ~$10/day at average length.
 const DAILY_INTERACTION_CAP = 80;
 
-// Opus 4.6 pricing — same constants Astra uses.
-const COST_MODEL = 'claude-opus-4-6';
-const OPUS_INPUT_USD_PER_MTOK = 15;
-const OPUS_OUTPUT_USD_PER_MTOK = 75;
+// Sonnet 4.6 pricing — same constants Astra uses.
+// Session 137 — Mira moved Opus → Sonnet 4.6 (matches Astra). Sonnet handles
+// the agent's pitch/draft/coach workload at the same quality, 5× cheaper and
+// faster. To revert: swap AI_MODEL → OPUS_MODEL at the model constant + restore
+// these to 'claude-opus-4-6' / 15 / 75.
+const COST_MODEL = 'claude-sonnet-4-6';
+const OPUS_INPUT_USD_PER_MTOK = 3;
+const OPUS_OUTPUT_USD_PER_MTOK = 15;
 
 // 🚨 Session 113 V2 Astra + Mira audit quick win: cost-model drift now logs
 // to montree_server_errors in addition to console. Without the DB write, a
@@ -204,7 +208,7 @@ export async function POST(request: NextRequest) {
     // keep default
   }
 
-  const model = OPUS_MODEL;
+  const model = AI_MODEL;
   assertSupportedCostModel(model);
 
   const encoder = new TextEncoder();
@@ -325,7 +329,7 @@ export async function POST(request: NextRequest) {
                 max_tokens: 2048,
                 // 🚨 Prompt caching (Session 137 health check) — caches the
                 // tools-then-system prefix so rounds 2-N + the forced-summary
-                // call read from cache. Mira runs on Opus, so this is a large
+                // call read from cache. Mira runs on Sonnet too, so this is a real
                 // per-request cost cut + latency win.
                 system: [{ type: 'text' as const, text: systemPrompt, cache_control: { type: 'ephemeral' as const } }],
                 tools: MIRA_TOOLS,
@@ -447,7 +451,7 @@ export async function POST(request: NextRequest) {
                 max_tokens: 1024,
                 // 🚨 Prompt caching (Session 137 health check) — caches the
                 // tools-then-system prefix so rounds 2-N + the forced-summary
-                // call read from cache. Mira runs on Opus, so this is a large
+                // call read from cache. Mira runs on Sonnet too, so this is a real
                 // per-request cost cut + latency win.
                 system: [{ type: 'text' as const, text: systemPrompt, cache_control: { type: 'ephemeral' as const } }],
                 tools: MIRA_TOOLS,
