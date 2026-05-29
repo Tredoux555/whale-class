@@ -252,6 +252,41 @@ Wave 1 sends bounced for these addresses. None of these are flagged as `bounced`
 
 ---
 
+## 🆕 Session 137 (May 29, 2026) — Astra/Mira blank-bubble CRACKED + Mira agent-enablement + health check + photo tool
+
+**9 commits pushed to main, `8b908df0` → `5d6baf9b`. Working tree clean, HEAD == origin/main.** 🚨 Canonical handoff: `docs/handoffs/SESSION_137_HANDOFF.md`.
+
+**THE HEADLINE — the 7-session blank-bubble bug was NOT the pre-flight timeouts.** The Session 136 theory (Supabase pre-flight timeouts → degraded prompt → empty Sonnet) was a red herring. The real cause, found in the user's production `sonnet_round=` logs: `input_tokens` frozen across rounds = **the tool-use loop never accumulated the conversation transcript.** `conversationMessages` was built once and only the latest single tool exchange was re-sent each round, so Sonnet never saw it had already called tools → called a tool every round → hit `MAX_TOOL_ROUNDS=5` → fell out with no text → blank bubble. Fix (`9a19a946`): accumulate assistant + tool_result turns each round + a `tool_choice:'none'` forced-summary safety net. **Mira had the identical bug** (`a82c4d4f`) — ported. **Guru** got an empty-stream guard (`5d6baf9b`). Lesson: the per-round diagnostic logging from Session 136 is what cracked it — read those logs FIRST on any blank-AI report.
+
+**Also shipped:**
+- **Supabase fetch timeout (root-cause hang fix, app-wide)** — `lib/supabase-client.ts` `fetchWithRetry` had NO timeout on the actual fetch; a stale keep-alive socket hung forever. Added 12s per-attempt `AbortSignal.timeout` (signal-combined). This is the real reason pre-flight "timed out."
+- **Astra reliability** — pre-flight moved INTO the stream (glow shows instantly), empty-response recovery (`8b908df0`).
+- **New Astra icon** — gold "A" monogram at `public/astra-avatar.png` (Lora-Bold); avatar was a stale Tracy "T". Single source `TracyAvatar.tsx` (file paths stay `tracy/`).
+- **Dossier Section 9 "Questions she'll probably ask (with answers ready)"** (`7ed33e42`) — distinct from Section 8 pushback handlers; 30-day plan → Section 10; cache `schema_version: 'v10'`. ALSO surfaced in Astra's from-memory fallback (`c0942564`).
+- **Dossier streaming "thinking"** (`a6a1696f`) — `searchingPatterns` + `composingDossier` progress stages via `onProgress`; 2 `tracy.progress.*` i18n keys × 12 locales (parity 100%).
+- **Mira full agent-enablement** (`0b23249f`) — `product.md` (ground-up Montree overview) + `playbook.md` (zero→first-paid-school + code/payout mechanics + economics) + `consult_knowledge` tool (pulls any full knowledge file on demand) + system-prompt reframe to coach blank-slate agents (product → playbook → drill, in small steps).
+- **Mira Opus → Sonnet** (`c0942564`) — 5× cheaper, same quality; cost constants updated.
+- **Astra `get_child_photos` tool** (`c0942564`) — pulls a child's `teacher_confirmed` photos from `montree_media`, school-scoped via `verifyChildBelongsToSchool`, proxied URLs + caption + date + work; presented as inline markdown images. Optional date_from/date_to/limit.
+- **Health-check perf** (`321d96b5`, `a82c4d4f`) — prompt caching on Astra/Mira/Guru (`system: [{...cache_control:{type:'ephemeral'}}]` caches the tools+system prefix, rounds 2-N read from cache); `isFeatureEnabled` cached (30s TTL, was uncached on ~30 hot routes); voice-onboarding (`onboard`) tier-gated (was ungated Sonnet — free schools burned $2-6/burst); stale "90s" timeout log strings fixed. social-guru verified super-admin-only (no change needed).
+
+**🚨 Architectural rules locked in (#301-307, informal):**
+301. Chat-AI tool-use loops MUST accumulate the full transcript into `conversationMessages` each round; never send only the latest exchange. `tool_choice:'none'` forced-summary after the loop is the canonical round-cap safety net.
+302. Every Supabase fetch has a hard 12s per-attempt timeout (`lib/supabase-client.ts`), signal-combined with caller aborts. Hung sockets must die + retry.
+303. Prompt-cache pattern: `system: [{ type:'text', text, cache_control:{type:'ephemeral'} }]` caches tools+system prefix. Applied to all 3 chat AIs.
+304. Any media-pulling tool MUST gate on `verifyChildBelongsToSchool` before reading `montree_media`.
+305. Meeting-prep briefs ALWAYS include likely parent questions — dossier Section 9 AND the from-memory fallback.
+306. Astra avatar = `/public/astra-avatar.png` (gold "A"); `TracyAvatar.tsx` is the single source.
+307. Verify audit-agent findings before acting — two were wrong this session (`loading.tsx` already existed app-wide; tier-gate transient-blip already covered by the fetch-retry).
+
+**🚨 STILL OPEN — needs Tredoux (cannot do from sandbox):**
+1. **🔒 Supabase >3s latency (region + pooler) — THE highest-impact remaining lever.** By-PK lookups taking >3s is why Astra's tools time out and fall back to memory ("connection's dropping"). Fix: confirm Supabase region → pin Railway to same region → `DATABASE_URL` to pooler (`:6543`). ~15 min. Graceful degradation is shipped; this is the real cure.
+2. **🔒 Service-worker stale-while-revalidate API cache** — biggest returning-visit speed win, but cross-user cache-poisoning risk; needs multi-user shared-browser testing. Own session.
+3. Deferred/low-priority: unify the two client fetch layers (dead prefetch in `lib/montree/cache.ts` vs `montreeApi`); trim `select('*')` hot paths; pre-existing lint backlog on guru/onboard routes.
+
+**Standing working rule (saved to memory):** push through ALL tasks autonomously, audit each to clean, review at end. Memory files: `feedback_autonomy_and_audit.md`, `montree_deploy_and_push.md`.
+
+---
+
 ## 🆕 Session 136 (May 29, 2026) — Tracy → Astra rename + production bug hunt + multiple iterations
 
 **8 commits pushed to main, ending `01557295`.** The chief-of-staff AI is now called **Astra**. Production has Astra responding but with a known degradation path: when Whale Class's Supabase queries time out (~21s of pre-flight on every turn), Astra falls back to a degraded prompt and Sonnet sometimes returns empty. Commit `3bfb7066` adds diagnostic logging + a user-visible error for that case so the bubble is never blank.
