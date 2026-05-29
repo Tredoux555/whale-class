@@ -60,9 +60,14 @@ export async function GET(
       return NextResponse.json({ error: 'Invalid file path' }, { status: 400 });
     }
 
+    // Serve INLINE (no `download` option) so the browser plays the video /
+    // shows the image when the signed url is opened, instead of forcing a
+    // multi-hundred-MB download on a phone. The object's stored content-type
+    // (e.g. video/quicktime) drives playback; Supabase storage honours HTTP
+    // range requests so the video is seekable.
     const { data: signed, error: signErr } = await supabase.storage
       .from('vault-secure')
-      .createSignedUrl(filePathMatch[0], SIGNED_URL_TTL_SECONDS, { download: file.filename });
+      .createSignedUrl(filePathMatch[0], SIGNED_URL_TTL_SECONDS);
 
     if (signErr || !signed) {
       console.error('[Vault SignedDownload] createSignedUrl error:', signErr);
