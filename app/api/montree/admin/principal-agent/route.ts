@@ -547,7 +547,14 @@ export async function POST(request: NextRequest) {
                 // 4096 matches PREPARE_MEETING_MAX_TOKENS — same ceiling
                 // the dossier tool uses internally.
                 max_tokens: 4096,
-                system: systemPrompt,
+                // 🚨 Prompt caching (Session 137 health check): the system
+                // prompt + tools are byte-identical across every round of this
+                // request (and across the agent's rapid follow-ups within the
+                // 5-min cache TTL). Marking the system block caches the
+                // tools-then-system prefix (~16K tokens) so rounds 2-N — and
+                // the recovery/forced-summary calls — read from cache instead
+                // of re-billing the full prefix. ~90% input-token cut + faster.
+                system: [{ type: 'text' as const, text: systemPrompt, cache_control: { type: 'ephemeral' as const } }],
                 tools: TRACY_TOOLS,
                 messages: conversationMessages,
               },
@@ -881,7 +888,14 @@ export async function POST(request: NextRequest) {
               {
                 model,
                 max_tokens: 1024,
-                system: systemPrompt,
+                // 🚨 Prompt caching (Session 137 health check): the system
+                // prompt + tools are byte-identical across every round of this
+                // request (and across the agent's rapid follow-ups within the
+                // 5-min cache TTL). Marking the system block caches the
+                // tools-then-system prefix (~16K tokens) so rounds 2-N — and
+                // the recovery/forced-summary calls — read from cache instead
+                // of re-billing the full prefix. ~90% input-token cut + faster.
+                system: [{ type: 'text' as const, text: systemPrompt, cache_control: { type: 'ephemeral' as const } }],
                 tools: TRACY_TOOLS,
                 tool_choice: { type: 'none' },
                 messages: conversationMessages,

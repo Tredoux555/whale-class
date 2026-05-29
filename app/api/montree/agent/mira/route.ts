@@ -323,7 +323,11 @@ export async function POST(request: NextRequest) {
               {
                 model,
                 max_tokens: 2048,
-                system: systemPrompt,
+                // 🚨 Prompt caching (Session 137 health check) — caches the
+                // tools-then-system prefix so rounds 2-N + the forced-summary
+                // call read from cache. Mira runs on Opus, so this is a large
+                // per-request cost cut + latency win.
+                system: [{ type: 'text' as const, text: systemPrompt, cache_control: { type: 'ephemeral' as const } }],
                 tools: MIRA_TOOLS,
                 messages: conversationMessages,
               },
@@ -441,7 +445,11 @@ export async function POST(request: NextRequest) {
               {
                 model,
                 max_tokens: 1024,
-                system: systemPrompt,
+                // 🚨 Prompt caching (Session 137 health check) — caches the
+                // tools-then-system prefix so rounds 2-N + the forced-summary
+                // call read from cache. Mira runs on Opus, so this is a large
+                // per-request cost cut + latency win.
+                system: [{ type: 'text' as const, text: systemPrompt, cache_control: { type: 'ephemeral' as const } }],
                 tools: MIRA_TOOLS,
                 tool_choice: { type: 'none' },
                 messages: conversationMessages,
