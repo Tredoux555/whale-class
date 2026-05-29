@@ -58,10 +58,12 @@ New tool: pulls a child's `teacher_confirmed` photos from `montree_media` (schoo
 6. **Astra avatar is `/public/astra-avatar.png`** (gold "A"); single source is `TracyAvatar.tsx` (file paths stay `tracy/` — non-breaking).
 7. **When an audit agent claims something is missing, verify** — this session two agent findings were wrong (`loading.tsx` already existed app-wide; tier-gate transient-blip already covered by the fetch-retry).
 
-## 7) 🔒 STILL OPEN — needs Tredoux (cannot do from sandbox)
+## 7) STILL OPEN — needs Tredoux (cannot do from sandbox)
 
-1. **🔒 THE BIG ONE — Supabase >3s latency (region + pooler).** By-PK lookups taking >3s is why Astra's tools time out and fall back to memory (the "connection's dropping" the user saw). Fix in dashboards: confirm Supabase region → pin Railway service to the same region → switch `DATABASE_URL` to the pooler (`:6543`). ~15 min. **Highest-impact remaining lever** — graceful degradation is shipped, but this is the real cure.
+1. **✅ DONE May 29 — Supabase region latency.** Supabase = `ap-southeast-1` (Singapore); Railway `whale-class` was in EU West (Amsterdam) — the cross-continent mismatch behind the >3s round-trips. Tredoux moved Railway → Singapore (co-located). **The pooler (`:6543`) was a red herring — runtime is PostgREST over HTTPS, not direct `pg`; region proximity was the whole fix.** "Multi-region replicas need Pro" notice is irrelevant (single co-located region is correct).
 2. **🔒 Service-worker stale-while-revalidate API cache** — biggest returning-visit speed win, but cross-user cache-poisoning risk; needs multi-user testing on a shared browser. Own focused session.
+
+**Post-handoff follow-on fixes:** Story admin shows 3 messages (was 1); `useMontreeData`/`prefetchUrl` got a 15s client fetch timeout (dashboard skeleton always resolves, no more "leaves me there"); all-logins page confirmed already live (🔑 All logins super-admin button).
 
 ## 8) Deferred / low-priority (not blocking, not asked)
 - Unify the two client fetch layers (`lib/montree/cache.ts` vs `montreeApi`) — the dashboard prefetch is currently dead code.
