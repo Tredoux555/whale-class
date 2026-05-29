@@ -30,6 +30,16 @@ const subscribers = new Map<string, Set<() => void>>();
 /** Default stale time: 30 seconds */
 const DEFAULT_STALE_TIME = 30_000;
 
+/**
+ * Hard client-side timeout on every cached GET (Session 137).
+ * Without this, a slow/hung API response (e.g. when Supabase is having a slow
+ * day) left `loading` stuck `true` forever — the dashboard "left you there" on
+ * the skeleton with no resolution. 15s is generous enough for a genuinely-slow
+ * round-trip to still succeed, but guarantees the skeleton ALWAYS resolves to
+ * data or an error/empty state instead of hanging.
+ */
+const CLIENT_FETCH_TIMEOUT_MS = 15_000;
+
 /** Max cache entries before LRU eviction */
 const MAX_CACHE_SIZE = 100;
 
@@ -127,7 +137,10 @@ export function useMontreeData<T = unknown>(
     // and the post-mutation cache entry gets wiped.
     const fetchStartTime = Date.now();
 
-    const promise = fetch(currentUrl, { credentials: 'same-origin' })
+    const promise = fetch(currentUrl, {
+      credentials: 'same-origin',
+      signal: AbortSignal.timeout(CLIENT_FETCH_TIMEOUT_MS),
+    })
       .then(async (res) => {
         if (!res.ok) throw new Error(`${res.status}`);
         const json = await res.json();
@@ -279,7 +292,10 @@ export function setCacheData(url: string, data: unknown): void {
 export function prefetchUrl(url: string): void {
   if (cache.has(url)) return; // Already cached
   if (inflight.has(url)) return; // Already fetching
-  const promise = fetch(url, { credentials: 'same-origin' })
+  const promise = fetch(url, {
+    credentials: 'same-origin',
+    signal: AbortSignal.timeout(CLIENT_FETCH_TIMEOUT_MS),
+  })
     .then(res => {
       if (!res.ok) return; // Don't cache error responses
       return res.json();
