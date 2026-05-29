@@ -58,3 +58,39 @@ export function localeForCountry(countryCode: string | null | undefined): Locale
   const mapped = COUNTRY_TO_LOCALE[countryCode.toUpperCase()];
   return isValidLocale(mapped) ? mapped : DEFAULT_LOCALE;
 }
+
+/**
+ * Resolve a browser `Accept-Language` header to the visitor's most-preferred
+ * SUPPORTED locale. This is a BETTER intent signal than geography — a German
+ * speaker travelling in Spain still wants German — so middleware tries this
+ * first and only falls back to country when none of the browser's languages
+ * are supported.
+ *
+ * Parses the standard quality-weighted list (e.g.
+ * `en-US,en;q=0.9,de;q=0.8`), orders by q-value, reduces each tag to its
+ * primary subtag (`pt-BR` → `pt`, `zh-Hant` → `zh`), and returns the first
+ * one we support. Returns null when nothing matches (caller falls back to
+ * country, then English).
+ */
+export function localeFromAcceptLanguage(header: string | null | undefined): Locale | null {
+  if (!header) return null;
+  const ranked = header
+    .split(',')
+    .map((part) => {
+      const [rawTag, ...params] = part.trim().split(';');
+      let q = 1;
+      for (const p of params) {
+        const m = p.trim().match(/^q=([0-9.]+)$/);
+        if (m) q = parseFloat(m[1]);
+      }
+      return { tag: rawTag.trim().toLowerCase(), q };
+    })
+    .filter((e) => e.tag && e.tag !== '*' && e.q > 0)
+    .sort((a, b) => b.q - a.q);
+
+  for (const { tag } of ranked) {
+    const primary = tag.split('-')[0];
+    if (isValidLocale(primary)) return primary;
+  }
+  return null;
+}
