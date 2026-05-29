@@ -252,6 +252,79 @@ Wave 1 sends bounced for these addresses. None of these are flagged as `bounced`
 
 ---
 
+## 🆕 Session 136 (May 29, 2026) — Tracy → Astra rename + production bug hunt + multiple iterations
+
+**8 commits pushed to main, ending `01557295`.** The chief-of-staff AI is now called **Astra**. Production has Astra responding but with a known degradation path: when Whale Class's Supabase queries time out (~21s of pre-flight on every turn), Astra falls back to a degraded prompt and Sonnet sometimes returns empty. Commit `3bfb7066` adds diagnostic logging + a user-visible error for that case so the bubble is never blank.
+
+**Canonical handoff:** `docs/handoffs/SESSION_136_ASTRA_HANDOFF.md` — read this first.
+
+### What shipped, in order
+
+| Commit | Headline |
+|---|---|
+| `9a7a2e4f` | Tracy hang fix #1 (embeddings timeout + max_tokens 4096 + internalPost timeouts) + Story dark forest theme on all 3 surfaces + Vault Railway 30MB cap |
+| `537bb4a4` + `1ef1d58d` | Convert 7 nested `<style jsx>` blocks → `<style dangerouslySetInnerHTML>` (12 deploys had been failing on this) |
+| `c8fd7770` | Architectural rule locked in CLAUDE.md (see block below) |
+| `457dbd2a` | Pre-flight Supabase timeouts (5s + 8s + 8s) + early `:keepalive` SSE comment |
+| `586850ac` | Smart auto-scroll (only follows if user is within 80px of bottom) + initial circular glow |
+| `b50911a1` | Glow rewrite — `::before` pseudo-element + 18px wrapper padding so halo can't be clipped by any parent overflow |
+| `5d733710` | Audit fixes — dot alignment via `alignItems: 'center'` + tamed `withTimeout` to swallow late rejections |
+| `7ec59bd3` | **REVERTED** — broke Astra (3 empty responses). Tried to ship streaming progress + Q+A section + Chinese anchor in one commit. Don't reintroduce all three at once. |
+| `57bbbfa3` | Revert of 7ec59bd3 |
+| `3bfb7066` | **Diagnostic logging** of every Sonnet round (`stop_reason`, block count, types, tokens) + **empty-response detection** that sends a user-visible error event instead of breaking silently |
+| `01557295` | **Tracy → Astra rename** — 1636 user-visible occurrences across 184 files via `\bTracy\b` regex |
+
+### The 21-second pre-flight problem (UNRESOLVED root cause)
+
+On Whale Class, EVERY Astra POST triggers three Supabase queries that ALL time out:
+- `school+principal name lookup` (5s ceiling) → uses default `'your school'` / `'Principal'`
+- `loadActiveMemories` (8s ceiling) → empty memory array
+- `getTracyKnowledgeSummary` (8s ceiling) → empty knowledge bundle
+
+These are by-PK lookups that should be sub-100ms. The audit suggested Railway↔Supabase region mismatch OR cold-container TCP/TLS handshakes. The fix shipped is graceful degradation, not root cause repair. Next session should investigate:
+- Railway region pinning
+- Move pre-flight INTO the stream's `start()` callback so SSE `:keepalive` flushes within ms of POST instead of after 21s
+- Tighten timeouts to 2+3+3 = 8s (current 5+8+8 = 21s)
+
+### The Astra rename — what's actually changed
+
+**Display only.** Word-boundary regex `\bTracy\b` matched the standalone word "Tracy" but NOT identifiers like `TracyAvatar`, `TracyFloat`, `TRACY_TOOLS`, `buildTracySystemPrompt`, or paths like `lib/montree/tracy/`. So:
+- System prompts now say "You are Astra"
+- UI labels + greetings + error messages say Astra
+- i18n VALUES across all 12 locale files say Astra
+- ARIA labels + screen reader text say Astra
+- Comments + JSDoc + markdown docs + CLAUDE.md (282 occurrences) say Astra
+- **File paths stay `lib/montree/tracy/*`** (no breaking change)
+- **TypeScript identifiers stay** (`TracyAvatar`, etc.)
+- **i18n key names stay** (`tracy.greeting`, `tracy.progress.parsing`, etc.)
+- **Storage keys stay** (`montree.tracy.*`, `montree.admin.tracy.*`)
+
+Future cleanup (separate dedicated session): rename the `lib/montree/tracy/` folder to `lib/montree/astra/` + update all imports + bump storage keys. That's a bigger break worth doing on its own.
+
+### Three changes queued for re-introduction (one at a time, with verification between)
+
+These were in the REVERTED 7ec59bd3 and need to be re-applied with isolation testing:
+
+1. **Streaming progress events for `prepare_parent_meeting`.** Currently only `child_focus` emits `onProgress`. The dossier tool runs silent for 60-90s. Wire 4 stages: `preparingDossier` (entry) → `fetchingObservations` (after cache check) → `searchingPatterns` (after corpus RAG) → `composingDossier` (right before Sonnet). Also need 4 new `tracy.progress.*` i18n keys (en + zh real, 10 fallback English).
+
+2. **New Section 9 in dossier prompt** — "Questions she'll probably ask (suggested answers)". 4-6 GENUINE questions parents ask (vs Section 8's pushback handlers which are objections). Each with 1-3 sentence answer in principal's voice. Renumbers old Section 9 (30-day plan) → 10. Need to bump `schema_version` in cache extras to invalidate 9-section cached dossiers.
+
+3. **Chinese-output anchor.** Sonnet biases toward English (from worked Yo-yo example). Add `🌐 OUTPUT LANGUAGE REQUIREMENT` directive at the TOP of the user prompt so target language signal lands BEFORE Sonnet reads the English example. Two unambiguous signals at both prompt layers.
+
+**Recommended order:** 1 → ship → verify Astra still responds → 2 → ship → verify dossier shows 10 sections → 3 → ship → verify Chinese dossier returns in Chinese.
+
+### Next-session priorities (ordered)
+
+1. **🚨 Verify production immediately.** Hit Astra on `/montree/admin`. Even on slow Supabase, she should now show either a real response OR a user-visible error message (no more empty bubbles). If still empty bubble, check Railway logs for the new `[principal-agent] sonnet_round=...` diagnostic line.
+2. **Verify the Astra rename visually** — sidebar label, greeting, system prompt response.
+3. **Investigate the 21s pre-flight slowness** — Railway region, Supabase region, query plan. The mitigation works but the root cause matters because it's wasting 21s of every turn.
+4. **Move pre-flight into `start()` callback** so the response body starts streaming before pre-flight runs. Client sees connection life immediately, even if Supabase is taking 20s.
+5. **Re-introduce the 3 queued changes** (streaming progress → Q+A section → Chinese anchor) one at a time.
+6. **Verify glow on production** — should be a perfectly circular gold pulse, fully visible on all 4 sides, dots vertically centered with avatar.
+7. **Verify auto-scroll** — when Astra is streaming a long answer, scroll up to read earlier portion; you should stay scrolled up (not snap to bottom every token).
+
+---
+
 ## 🚨 ARCHITECTURAL RULE LOCKED IN — May 29, 2026 (post-Session 135 build-failure debug)
 
 **Turbopack rejects `<style jsx>` tags that aren't at the top-level of their component's return statement.** ALL 12 deploys between commits `0e9a3c89` and `9a7a2e4f` failed with the same error — `Detected nested styled-jsx tag at app/montree/admin/parents/[parentId]/meetings/new/page.tsx:719:13` — because Phase B's record-meeting page wrapped 3 styled-jsx blocks inside conditional render branches. Phase A's voice-onboard page had 2 more in the same pattern.
