@@ -3958,10 +3958,6 @@ export const es: Record<string, string> = {
   'tracy.progress.unpacking': 'Desempaquetando {name}…',
   'tracy.progress.countingNotes': 'Contando registros y cobertura…',
   'tracy.progress.scoringNotes': 'Leyendo la calidad de los registros…',
-  'tracy.progress.preparingDossier': 'Preparing the dossier…',
-  'tracy.progress.fetchingObservations': "Pulling the child's recent observations…",
-  'tracy.progress.searchingPatterns': 'Searching past patterns ({hits} hits)…',
-  'tracy.progress.composingDossier': 'Composing the dossier…',
 
   // Tracy parent-meeting dossier UI (Session 133) — English fallback; run npm run i18n:fill-ui to translate
   'dossier.button.label': 'Prepare for the meeting',
