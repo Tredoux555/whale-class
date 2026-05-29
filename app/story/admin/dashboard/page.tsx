@@ -79,6 +79,7 @@ export default function AdminDashboard() {
     vaultFiles,
     uploadingVault,
     uploadProgress,
+    byteProgress,
     vaultError,
     setVaultError,
     viewingImage,
@@ -363,6 +364,7 @@ export default function AdminDashboard() {
                 uploadingVault={uploadingVault}
                 onVaultUpload={(files) => handleVaultUpload(files)}
                 uploadProgress={uploadProgress}
+                byteProgress={byteProgress}
                 onVaultDownload={handleVaultDownload}
                 onVaultDelete={handleVaultDelete}
                 viewingImage={viewingImage}
