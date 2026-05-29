@@ -3987,6 +3987,8 @@ export const ko: Record<string, string> = {
   'tracy.progress.unpacking': '{name}님의 정보를 분석하고 있어요…',
   'tracy.progress.countingNotes': '기록과 범위를 계산하고 있어요…',
   'tracy.progress.scoringNotes': '기록 품질을 검토하고 있어요…',
+  'tracy.progress.searchingPatterns': '관찰 기록과 패턴을 살펴보는 중…',
+  'tracy.progress.composingDossier': '자료를 작성하는 중…',
 
   // Astra parent-meeting dossier UI (Session 133) — English fallback; run npm run i18n:fill-ui to translate
   'dossier.button.label': 'Prepare for the meeting',

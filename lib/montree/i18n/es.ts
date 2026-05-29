@@ -3958,6 +3958,8 @@ export const es: Record<string, string> = {
   'tracy.progress.unpacking': 'Desempaquetando {name}…',
   'tracy.progress.countingNotes': 'Contando registros y cobertura…',
   'tracy.progress.scoringNotes': 'Leyendo la calidad de los registros…',
+  'tracy.progress.searchingPatterns': 'Revisando observaciones y patrones…',
+  'tracy.progress.composingDossier': 'Redactando el informe…',
 
   // Astra parent-meeting dossier UI (Session 133) — English fallback; run npm run i18n:fill-ui to translate
   'dossier.button.label': 'Prepare for the meeting',
