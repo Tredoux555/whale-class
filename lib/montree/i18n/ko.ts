@@ -3987,6 +3987,10 @@ export const ko: Record<string, string> = {
   'tracy.progress.unpacking': '{name}님의 정보를 분석하고 있어요…',
   'tracy.progress.countingNotes': '기록과 범위를 계산하고 있어요…',
   'tracy.progress.scoringNotes': '기록 품질을 검토하고 있어요…',
+  'tracy.progress.preparingDossier': 'Preparing the dossier…',
+  'tracy.progress.fetchingObservations': "Pulling the child's recent observations…",
+  'tracy.progress.searchingPatterns': 'Searching past patterns ({hits} hits)…',
+  'tracy.progress.composingDossier': 'Composing the dossier…',
 
   // Tracy parent-meeting dossier UI (Session 133) — English fallback; run npm run i18n:fill-ui to translate
   'dossier.button.label': 'Prepare for the meeting',

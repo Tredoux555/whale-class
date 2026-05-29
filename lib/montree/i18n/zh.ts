@@ -4390,6 +4390,10 @@ export const zh = {
   'tracy.progress.unpacking': '正在解析 {name}…',
   'tracy.progress.countingNotes': '正在统计笔记和覆盖范围…',
   'tracy.progress.scoringNotes': '正在评估笔记质量…',
+  'tracy.progress.preparingDossier': '正在准备会议简报…',
+  'tracy.progress.fetchingObservations': '正在调取孩子最近的观察记录…',
+  'tracy.progress.searchingPatterns': '正在搜索过往模式（{hits} 条匹配）…',
+  'tracy.progress.composingDossier': '正在撰写简报…',
 
   // Tracy 家长会备忘录 UI (Session 133)
   'dossier.button.label': '准备这场会议',
