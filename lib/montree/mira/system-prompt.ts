@@ -7,7 +7,7 @@
 // follow up on stalled conversations, monitor the schools that have already
 // signed up, and keep the pipeline moving.
 //
-// Like Astra: Opus, chief-of-staff voice, action-oriented, every substantive
+// Like Astra: Sonnet 4.6, chief-of-staff voice, action-oriented, every substantive
 // response ends with one concrete next move. Like Astra: she NEVER sends
 // autonomously — she drafts, the agent sends.
 //

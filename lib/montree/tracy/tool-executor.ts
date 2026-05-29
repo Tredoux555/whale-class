@@ -38,6 +38,8 @@ import {
   type TracyKnowledgeTopic,
 } from './knowledge/loader';
 import { readEncryptedField } from '@/lib/montree/messaging-crypto';
+import { verifyChildBelongsToSchool } from '@/lib/montree/verify-child-access';
+import { getProxyUrl } from '@/lib/montree/media/proxy-url';
 
 // Session 136 — canonical topics for consult_tracy_knowledge dispatch.
 // Kept here (vs imported as a Set from loader) so the validation is
@@ -1508,6 +1510,72 @@ export async function executeTracyTool(
           success: true,
           data: { topic, content },
           result_summary: `knowledge file: ${topic}`,
+        };
+      }
+
+      // ── PHOTO TOOL: get_child_photos ─────────────────────────────────
+      // Pull a child's confirmed photos so the principal can show them in a
+      // meeting. Cross-pollination guard: verifyChildBelongsToSchool MUST
+      // pass before any media read — a principal can only see her own
+      // school's children's photos.
+      case 'get_child_photos': {
+        const childId = String(input.child_id || '').trim();
+        if (!childId) return { success: false, error: 'child_id is required' };
+
+        const access = await verifyChildBelongsToSchool(childId, schoolId);
+        if (!access.allowed) {
+          return { success: false, error: 'That child is not in your school.' };
+        }
+
+        const rawLimit = typeof input.limit === 'number' ? input.limit : 12;
+        const limit = Math.max(1, Math.min(Math.floor(rawLimit) || 12, 30));
+
+        let q = supabase
+          .from('montree_media')
+          .select('id, storage_path, thumbnail_path, caption, captured_at, work_id')
+          .eq('child_id', childId)
+          .eq('teacher_confirmed', true)
+          .eq('media_type', 'photo')
+          .order('captured_at', { ascending: false })
+          .limit(limit);
+
+        const dateFrom = typeof input.date_from === 'string' ? input.date_from.trim() : '';
+        const dateTo = typeof input.date_to === 'string' ? input.date_to.trim() : '';
+        if (dateFrom) q = q.gte('captured_at', dateFrom);
+        // Inclusive upper bound: add a day so a YYYY-MM-DD date_to includes that whole day.
+        if (dateTo) q = q.lt('captured_at', `${dateTo}T23:59:59.999Z`);
+
+        const { data: rows, error } = await q;
+        if (error) {
+          return { success: false, error: `Could not load photos: ${error.message}` };
+        }
+
+        // Resolve work labels for any photos that carry a work_id.
+        const workIds = [...new Set((rows || []).map((r) => r.work_id).filter(Boolean))] as string[];
+        const workNameById = new Map<string, string>();
+        if (workIds.length) {
+          const { data: works } = await supabase
+            .from('montree_classroom_curriculum_works')
+            .select('id, name')
+            .in('id', workIds);
+          for (const w of works || []) workNameById.set(w.id, w.name);
+        }
+
+        const photos = (rows || []).map((r) => {
+          const path = r.thumbnail_path || r.storage_path;
+          return {
+            url: r.storage_path ? getProxyUrl(r.storage_path) : null,
+            thumbnail_url: path ? getProxyUrl(path) : null,
+            caption: r.caption || null,
+            captured_at: r.captured_at,
+            work: r.work_id ? workNameById.get(r.work_id) || null : null,
+          };
+        }).filter((p) => p.url);
+
+        return {
+          success: true,
+          data: { count: photos.length, photos },
+          result_summary: `${photos.length} photo(s) for child ${childId}`,
         };
       }
 

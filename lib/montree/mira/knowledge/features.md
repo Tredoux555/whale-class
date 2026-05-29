@@ -18,7 +18,7 @@
 
 ## For the principal
 
-**Astra (chief of staff).** The principal's AI. Opus-powered. Knows every child, every teacher, every observation, every note. Three modes:
+**Astra (chief of staff).** The principal's AI. Knows every child, every teacher, every observation, every note. Three modes:
 - *Reactive Q&A.* "How is Susan doing?" — Astra unpacks vague into activity + coverage + quality + pattern + verdict.
 - *Parent communication.* Astra scans every parent thread, drafts the principal's reply in her voice, surfaces the "Astra drafted" pill so the parent knows it's AI-assisted.
 - *Parent meeting prep.* Astra pulls every observation + Guru analysis + behavioural pattern and builds a meeting-prep dossier the principal reads once and walks in prepared.

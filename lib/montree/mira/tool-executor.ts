@@ -1,7 +1,7 @@
 // lib/montree/mira/tool-executor.ts
 //
 // Mira's tool dispatch. Called from the agent-mira SSE route inside the
-// Opus tool-use loop.
+// Sonnet tool-use loop.
 //
 // 🚨 CROSS-POLLINATION CONTRACT (load-bearing):
 //   Every read tool MUST self-scope by `agentId`. The agent role's JWT is
@@ -163,7 +163,7 @@ function deriveVerdict(activity: {
   return { verdict: 'healthy', days_since_last_activity: daysSince };
 }
 
-// ── Drafting helpers (Haiku for cost — Opus is the orchestrator's job) ──
+// ── Drafting helpers (Haiku for cost — the orchestrator does the reasoning) ──
 
 async function callHaikuForText(
   anthropic: Anthropic,
@@ -511,7 +511,7 @@ ${fenceEnd}`;
 
         // Last message per thread.
         // 🚨 Session 121 — pull encryption_version so we decrypt body
-        // before exposing it to Mira (Opus). Mira must never see ciphertext.
+        // before exposing it to Mira. Mira must never see ciphertext.
         const { data: lastMsgs } = await supabase
           .from('montree_thread_messages')
           .select('thread_id, body, encryption_version, sender_role, sent_at')
