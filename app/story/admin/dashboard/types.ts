@@ -55,6 +55,9 @@ export interface VaultFile {
   file_size: number;
   uploaded_by: string;
   uploaded_at: string;
+  // Session 153 — false for unencrypted direct (large-media) uploads, which
+  // download via the signed-url endpoint instead of the decrypt-proxy route.
+  encrypted?: boolean;
 }
 
 export interface SharedFile {

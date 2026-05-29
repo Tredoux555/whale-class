@@ -1,6 +1,14 @@
 import { useState, useCallback, useRef } from 'react';
 import { VaultFile } from '../types';
 import { isImageFile } from '../utils';
+import { createSupabaseClient } from '@/lib/supabase-client';
+
+// Session 153 — files larger than this are uploaded DIRECTLY from the browser
+// to Supabase (bypassing the Railway ~32MB body cap on the through-server
+// encrypted path). Files at or below it keep the legacy encrypted upload so
+// the common small-photo case stays AES-encrypted at rest.
+const DIRECT_UPLOAD_THRESHOLD = 20 * 1024 * 1024; // 20MB
+const MAX_VAULT_BYTES = 1024 * 1024 * 1024; // 1GB (matches the bucket limit)
 
 export const useVault = (getSession: () => string | null) => {
   const [vaultPassword, setVaultPassword] = useState('');
@@ -208,19 +216,14 @@ export const useVault = (getSession: () => string | null) => {
     const errors: string[] = [];
     const newImageFileIds: number[] = [];
 
-    // 🚨 Mirror Railway proxy cap server-side. Files above this size will
-    // be rejected with 413 from the route, but skipping them client-side
-    // gives a faster + clearer error to the user.
-    const MAX_BYTES = 30 * 1024 * 1024;
+    const jsonHeaders = { ...headers, 'Content-Type': 'application/json' };
 
     for (let i = 0; i < list.length; i++) {
       const file = list[i];
       try {
-        // Client-side pre-check so 80MB iPhone clips don't sit waiting
-        // 30s for a server 413.
-        if (file.size > MAX_BYTES) {
-          const mb = (file.size / 1024 / 1024).toFixed(1);
-          errors.push(`${file.name}: too large (${mb}MB) — limit 30MB`);
+        if (file.size > MAX_VAULT_BYTES) {
+          const mb = (file.size / 1024 / 1024).toFixed(0);
+          errors.push(`${file.name}: too large (${mb}MB) — limit 1GB`);
           continue;
         }
 
@@ -228,6 +231,58 @@ export const useVault = (getSession: () => string | null) => {
           `[Vault Upload] starting ${file.name} (${(file.size / 1024 / 1024).toFixed(2)}MB, type=${file.type})`
         );
 
+        // 🚨 Session 153 — large files (e.g. a 6-min iPhone video) can't fit
+        // through the encrypted server route (Railway ~32MB body cap). Push
+        // them DIRECTLY browser→Supabase via a one-time signed upload url,
+        // then record the metadata row. These are stored unencrypted in the
+        // private bucket (see signed-upload/route.ts for the rationale).
+        if (file.size > DIRECT_UPLOAD_THRESHOLD) {
+          const suRes = await fetch('/api/story/admin/vault/signed-upload', {
+            method: 'POST',
+            headers: jsonHeaders,
+            body: JSON.stringify({
+              filename: file.name,
+              contentType: file.type || 'application/octet-stream',
+              fileSize: file.size,
+            }),
+          });
+          const su = await suRes.json().catch(() => ({}));
+          if (!suRes.ok || !su.path || !su.token) {
+            errors.push(`${file.name}: ${su.error || `could not start upload (HTTP ${suRes.status})`}`);
+            continue;
+          }
+
+          const sb = createSupabaseClient();
+          const { error: upErr } = await sb.storage
+            .from('vault-secure')
+            .uploadToSignedUrl(su.path, su.token, file, {
+              contentType: file.type || undefined,
+            });
+          if (upErr) {
+            errors.push(`${file.name}: direct upload failed — ${upErr.message || 'unknown error'}`);
+            continue;
+          }
+
+          const finRes = await fetch('/api/story/admin/vault/finalize', {
+            method: 'POST',
+            headers: jsonHeaders,
+            body: JSON.stringify({
+              path: su.path,
+              filename: file.name,
+              fileSize: file.size,
+              contentType: file.type || 'application/octet-stream',
+            }),
+          });
+          const fin = await finRes.json().catch(() => ({}));
+          if (finRes.ok && fin.file) {
+            console.log(`[Vault Upload] SAVED (direct) ${file.name} → row ${fin.file.id}`);
+          } else {
+            errors.push(`${file.name}: ${fin.error || `finalize failed (HTTP ${finRes.status})`}`);
+          }
+          continue;
+        }
+
+        // Small files — keep the encrypted through-server path.
         const formData = new FormData();
         formData.append('file', file);
 
@@ -283,6 +338,22 @@ export const useVault = (getSession: () => string | null) => {
         alert('Vault locked — please re-enter password');
         return;
       }
+
+      // 🚨 Session 153 — unencrypted direct (large-media) uploads are served
+      // via a short-lived signed url straight from Supabase. NEVER stream a
+      // 400MB video through the decrypt-proxy route (Node heap + Railway cap).
+      const target = vaultFiles.find(f => f.id === fileId);
+      if (target && target.encrypted === false) {
+        const sigRes = await fetch(`/api/story/admin/vault/signed-download/${fileId}`, { headers });
+        const sig = await sigRes.json().catch(() => ({}));
+        if (sigRes.ok && sig.url) {
+          window.open(sig.url, '_blank', 'noopener,noreferrer');
+        } else {
+          alert(sig.error || 'Download failed');
+        }
+        return;
+      }
+
       const res = await fetch(`/api/story/admin/vault/download/${fileId}`, {
         headers,
       });
@@ -303,7 +374,7 @@ export const useVault = (getSession: () => string | null) => {
       console.error('Download error:', err);
       alert('Download failed');
     }
-  }, [vaultHeaders]);
+  }, [vaultHeaders, vaultFiles]);
 
   const handleVaultDelete = useCallback(async (fileId: number) => {
     if (!confirm('Delete this file?')) return;

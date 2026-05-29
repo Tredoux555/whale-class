@@ -24,7 +24,7 @@ export async function GET(req: NextRequest) {
 
     const { data: rows, error } = await supabase
       .from('vault_files')
-      .select('id, filename, file_size, file_url, uploaded_by, uploaded_at')
+      .select('id, filename, file_size, file_url, encrypted_key, uploaded_by, uploaded_at')
       .is('deleted_at', null)
       .order('uploaded_at', { ascending: false });
 
@@ -35,6 +35,9 @@ export async function GET(req: NextRequest) {
       filename: row.filename,
       file_size: row.file_size,
       file_url: row.file_url,
+      // 'plain' marks an unencrypted direct (large-media) upload — the client
+      // uses this to route downloads through the signed-url endpoint.
+      encrypted: row.encrypted_key !== 'plain',
       uploaded_by: row.uploaded_by,
       uploaded_at: row.uploaded_at
     }));
