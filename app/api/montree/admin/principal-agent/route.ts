@@ -262,11 +262,31 @@ export async function POST(request: NextRequest) {
   assertSupportedCostModel(model);
   void OPUS_MODEL; // intentionally kept imported as the documented reversion path
 
+  // 🚨 SESSION 136 HANG FIX (May 29, 2026)
+  // Every pre-flight await BEFORE the ReadableStream is created blocks the
+  // response headers from going out. The browser sees the POST as pending
+  // with NO SSE events arriving — Tracy looks frozen even though she's just
+  // waiting on Supabase. Wrap every pre-flight DB lookup in a timeout race
+  // so a stuck Supabase connection can't hang Tracy forever. Defaults are
+  // used if any timeout fires — Tracy degrades gracefully to no-memory /
+  // no-knowledge mode, still works, the principal sees an answer.
+  function withTimeout<T>(p: Promise<T>, ms: number, fallback: T, label: string): Promise<T> {
+    return Promise.race([
+      p,
+      new Promise<T>((resolve) =>
+        setTimeout(() => {
+          console.warn(`[principal-agent] pre-flight timeout (${label}, ${ms}ms) — using fallback`);
+          resolve(fallback);
+        }, ms)
+      ),
+    ]);
+  }
+
   // Best-effort school + principal name lookup for the system prompt
   let schoolName = 'your school';
   let principalName = 'Principal';
   try {
-    const [schoolRes, principalRes] = await Promise.all([
+    const namesPromise = Promise.all([
       supabase
         .from('montree_schools')
         .select('name')
@@ -278,6 +298,12 @@ export async function POST(request: NextRequest) {
         .eq('id', auth.userId)
         .maybeSingle(),
     ]);
+    const [schoolRes, principalRes] = await withTimeout(
+      namesPromise,
+      5_000,
+      [{ data: null, error: null }, { data: null, error: null }] as Awaited<typeof namesPromise>,
+      'school+principal name lookup'
+    );
     if (schoolRes.data?.name) schoolName = schoolRes.data.name;
     if (principalRes.data?.name) {
       // Resolve the name Tracy uses to address the principal.
@@ -308,15 +334,23 @@ export async function POST(request: NextRequest) {
   // Session 136 — also load the psychological knowledge summary. Parallel
   // to memory load. Failure degrades gracefully (empty string → no
   // knowledge block in the prompt; Tracy still works).
+  //
+  // 🚨 BOTH wrapped in 8s timeouts. The disk read for the knowledge
+  // summary is cached after first call (process lifetime), so it's
+  // fast on the warm path; the timeout is for the cold start. The
+  // memory load is a Supabase query with no SDK-level timeout — the
+  // race is the only protection against a stuck connection.
+  const memoriesPromise = loadActiveMemories(supabase, auth.userId, 30);
+  const knowledgePromise = getTracyKnowledgeSummary().catch((e) => {
+    console.warn(
+      '[principal-agent] knowledge summary load failed (non-fatal):',
+      e instanceof Error ? e.message : 'unknown error'
+    );
+    return '';
+  });
   const [principalMemories, knowledgeSummary] = await Promise.all([
-    loadActiveMemories(supabase, auth.userId, 30),
-    getTracyKnowledgeSummary().catch((e) => {
-      console.warn(
-        '[principal-agent] knowledge summary load failed (non-fatal):',
-        e instanceof Error ? e.message : 'unknown error'
-      );
-      return '';
-    }),
+    withTimeout(memoriesPromise, 8_000, [], 'loadActiveMemories'),
+    withTimeout(knowledgePromise, 8_000, '', 'getTracyKnowledgeSummary'),
   ]);
   const memorySection = formatMemoriesForPrompt(principalMemories);
 
@@ -408,6 +442,18 @@ export async function POST(request: NextRequest) {
   const stream = new ReadableStream<Uint8Array>({
     async start(controller) {
       try {
+        // 🚨 SESSION 136 HANG FIX — flush an immediate keepalive comment so
+        // the response BODY starts streaming the moment the client connects.
+        // Without this, the browser sees the headers come in but no body
+        // bytes until the first Sonnet call returns (15-30s). The avatar
+        // pulses forever and the user thinks Tracy is broken. Sending an
+        // SSE comment (`:` prefix) keeps the connection alive and tells
+        // every proxy "data is flowing" without rendering anything on the
+        // client. Some load balancers (Cloudflare, Railway's edge) also
+        // benefit from the early flush — without it they can buffer the
+        // entire response.
+        controller.enqueue(encoder.encode(':keepalive\n\n'));
+
         const systemPrompt = buildTracySystemPrompt({
           schoolName,
           principalName,
