@@ -908,6 +908,25 @@ ${fenceEnd}`;
         };
       }
 
+      case 'consult_knowledge': {
+        const { getMiraKnowledgeFull } = await import('./knowledge/loader');
+        const VALID_TOPICS = [
+          'product', 'playbook', 'elevator', 'features', 'pricing', 'proof',
+          'pedagogical', 'competitive', 'personas', 'objections', 'demo_paths',
+          'cultural', 'follow_up',
+        ] as const;
+        const requested = String(input.topic || '').trim();
+        const topic = (VALID_TOPICS as readonly string[]).includes(requested)
+          ? (requested as (typeof VALID_TOPICS)[number])
+          : 'product'; // default to the product overview so the agent always gets something useful
+        const content = await getMiraKnowledgeFull(topic);
+        return {
+          success: true,
+          data: { topic, content },
+          result_summary: `Loaded knowledge: ${topic}`,
+        };
+      }
+
       default:
         return { success: false, error: `Unknown tool: ${name}` };
     }

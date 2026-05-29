@@ -229,4 +229,41 @@ export const MIRA_TOOLS: Tool[] = [
       required: ['thread_id', 'body'],
     },
   },
+  // ── KNOWLEDGE TOOL: consult_knowledge ────────────────────────────────
+  // The system prompt carries only a SUMMARY of the knowledge base. This
+  // tool pulls the FULL content of one topic when the agent needs real
+  // depth — teaching a blank-slate agent the product, walking the
+  // step-by-step playbook, full objection handlers, demo scripts. Read-only,
+  // no scoping (knowledge is universal). After fetching, ALWAYS synthesize a
+  // reply in Mira's voice — never dump the file back at the agent.
+  {
+    name: 'consult_knowledge',
+    description:
+      "Pull the FULL content of one Montree knowledge file when chat needs depth beyond the system-prompt summary. CALL THIS whenever the agent wants to LEARN or go deep — they're new and don't know the product, they ask 'teach me Montree', 'how do I sell this?', 'walk me through a demo', 'what do I say when they object to price?', 'how do referral codes / payouts work?'. Pick the topic by intent: product = ground-up overview of what Montree is + every surface + magic moment (use this to teach a beginner the product); playbook = the step-by-step agent operating manual from zero to first paid school + the code/signup/payout mechanics + agent economics (use this for 'what do I do?', 'how do I get paid?', 'I have a school interested, now what?'); elevator = the short pitches; features = features by pain point; pricing = price + how to talk about it; proof = proof points; pedagogical = Montessori credibility for heads of school; competitive = positioning vs other tools; personas = who buys and how each one decides; objections = the eight most common objections + handlers; demo_paths = sequenced 10/30/90-minute demo flows; cultural = pitching by country/language; follow_up = follow-up templates by outcome. After fetching, synthesize an answer IN MIRA'S VOICE tailored to the agent's situation — teach it, don't paste it. When teaching a brand-new agent, lead with product, then playbook.",
+    input_schema: {
+      type: 'object',
+      properties: {
+        topic: {
+          type: 'string',
+          enum: [
+            'product',
+            'playbook',
+            'elevator',
+            'features',
+            'pricing',
+            'proof',
+            'pedagogical',
+            'competitive',
+            'personas',
+            'objections',
+            'demo_paths',
+            'cultural',
+            'follow_up',
+          ],
+          description: 'Which knowledge file to pull in full.',
+        },
+      },
+      required: ['topic'],
+    },
+  },
 ];
