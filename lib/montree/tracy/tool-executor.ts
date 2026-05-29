@@ -137,7 +137,18 @@ export async function executeTracyTool(
     }
   };
   const cookieHeader = request.headers.get('cookie') || '';
-  const origin = request.nextUrl.origin;
+  // 🚨 Session 153 — Astra's internal tool fetches (internalGet/Post/Patch)
+  // call the app's OWN API routes. Using the PUBLIC origin
+  // (request.nextUrl.origin = https://montree.xyz) forces the container to
+  // hairpin out to Railway's edge proxy and back. That loopback BROKE after
+  // the Amsterdam→Singapore region move (the new edge blocks the self-route),
+  // so every internalGet-based tool (find_children_by_name, get_child_photos,
+  // briefings, etc.) failed with a bare "fetch failed" while DIRECT Supabase
+  // tools (list_classrooms_with_summary, …) kept working. The standalone
+  // server binds 0.0.0.0:$PORT (start.sh), so hit it directly on the loopback
+  // — no edge, no TLS, no hairpin. Routing is by pathname, not Host, so the
+  // inner routes resolve identically and re-verify via the forwarded cookie.
+  const origin = `http://127.0.0.1:${process.env.PORT || 3000}`;
 
   const internalGet = async (path: string) => {
     const res = await fetch(`${origin}${path}`, {
