@@ -10,6 +10,7 @@ import { createClient } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { verifyAdminToken } from '@/lib/auth';
+import { localeForCountry } from '@/lib/montree/i18n/country-locale';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -104,6 +105,26 @@ export async function middleware(req: NextRequest) {
       headers: requestHeaders,
     },
   });
+
+  // ============================================
+  // FIRST-VISIT LANGUAGE DETECTION (Montree app)
+  // A brand-new visitor to the Montree app gets a default UI language based on
+  // the country Cloudflare reports via the `cf-ipcountry` header — a German
+  // visitor opens in German, Spanish in Spanish, etc.; any country whose
+  // language we don't support (or an unknown/anonymised code) falls back to
+  // English. We ONLY seed this when no `mt_locale` cookie exists yet, so a
+  // returning visitor's manual language-switcher choice ALWAYS wins. The
+  // Montree layout reads `mt_locale` server-side, so the correct language
+  // paints on first load with no English flash.
+  // ============================================
+  if (isMontree && pathname.startsWith('/montree') && !req.cookies.get('mt_locale')) {
+    const locale = localeForCountry(req.headers.get('cf-ipcountry'));
+    res.cookies.set('mt_locale', locale, {
+      path: '/',
+      maxAge: 60 * 60 * 24 * 365, // 1 year
+      sameSite: 'lax',
+    });
+  }
 
   // ============================================
   // EARLY EXIT: Static files, Next.js internals, SEO files
