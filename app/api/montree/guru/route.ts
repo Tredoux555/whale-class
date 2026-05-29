@@ -941,6 +941,19 @@ export async function POST(request: NextRequest) {
                   output_tokens: finalMessage.usage?.output_tokens || 0,
                 };
 
+                // 🚨 Session 137 — empty-response guard. If the stream
+                // completed but produced NO text (model returned only tool_use,
+                // or nothing), the client would get just `done` → a blank
+                // bubble. Emit the non-streaming fallback if we have one, or a
+                // friendly error, so the teacher/parent never sees nothing.
+                if (!fullText) {
+                  if (fallbackText) {
+                    controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'text', text: fallbackText })}\n\n`));
+                  } else {
+                    controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'error', error: "I couldn't put an answer together just now — please ask again." })}\n\n`));
+                  }
+                }
+
                 controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'done' })}\n\n`));
                 controller.close();
 
@@ -956,9 +969,12 @@ export async function POST(request: NextRequest) {
                 });
               } catch (streamErr) {
                 console.error('[Guru Stream] Streaming error, falling back:', streamErr);
-                // Fallback: send the non-streaming response we already have
+                // Fallback: send the non-streaming response we already have,
+                // or a friendly error so the user never gets a blank bubble.
                 if (!fullText && fallbackText) {
                   controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'text', text: fallbackText })}\n\n`));
+                } else if (!fullText) {
+                  controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'error', error: "I couldn't put an answer together just now — please ask again." })}\n\n`));
                 }
                 controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'done' })}\n\n`));
                 try { controller.close(); } catch {}
