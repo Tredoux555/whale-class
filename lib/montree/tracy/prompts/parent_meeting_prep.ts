@@ -170,7 +170,13 @@ The most likely 3-4 objections this parent will raise (informed by parent_contex
 - Bold the likely line as the parent might say it.
 - Below it, the principal's recommended response in a blockquote — calm, validating, redirecting.
 
-## 9. The 30 days after (follow-up plan)
+## 9. Questions she'll probably ask (with answers ready)
+DISTINCT from Section 8. Section 8 is the parent pushing back on what YOU said — defensiveness to absorb and redirect. THIS section is the parent asking YOU a real question she genuinely wants answered, where a fumbled or vague reply costs trust. Anticipate the 4-6 questions THIS parent is most likely to ask, and hand the principal a ready answer for each.
+- Bold the question exactly as she would phrase it.
+- Below it, a tight answer in the principal's voice (blockquote) — honest, specific, warm, never over-promising and never medicalising. If the honest answer is "we don't know yet", say so AND say what the next two weeks would tell us.
+Common territory to cover (pick what fits this child): readiness for the next class/grade, whether to see a doctor, what to do at home, whether the child is academically behind, whether this is "normal", and what happens if nothing changes.
+
+## 10. The 30 days after (follow-up plan)
 - **24h** — what the principal sends or does within 24h of the meeting (one specific note or action).
 - **2-week** — the classroom-side plan for the next two weeks.
 - **1-month** — the check-in date and what we hope to know by then.
@@ -327,7 +333,24 @@ Ask, then **be quiet** and let her talk.
 **"What should I do?"**
 > "Honestly, the most useful thing on your side is what you can tell us — about his sleep, his weekends, his energy. The 'doing' is mostly on our side right now. We just want to keep you in the loop so nothing about this surprises you."
 
-## 9. The 30 days after
+## 9. Questions she'll probably ask
+
+**"Is he going to be ready for the K class next year?"**
+> "Academically, yes — his language foundation is genuinely strong, and that part we are not worried about. The honest answer is that readiness for K is less about his mind and more about whether his body can sustain a longer, more structured day. That is exactly what these next two weeks will help us understand, and we will have a much clearer picture by the time we meet again."
+
+**"Should I take him to a doctor?"**
+> "Nothing we have seen points to a medical problem, so we would not send you running to one. If his sleep at home turns out to be disrupted, your paediatrician is a good person to mention it to — but let us first see what the next two weeks tell us. If you do want to raise it, we will share everything we have observed."
+
+**"Is he behind the other children?"**
+> "Not academically — in language he is right where we would want him, and in some areas ahead. He rests more than his peers during the day, and that is the thing we are paying attention to. But resting is not the same as falling behind."
+
+**"What can I do at home?"**
+> "The most useful thing is simple: protect his sleep and keep mornings calm and unrushed. If bedtime has drifted later, pulling it earlier by even thirty minutes can change a great deal. And tell us what you notice — you see a side of him at home that we never get to see."
+
+**"Is this normal?"**
+> "For some children, yes — bodies ask for rest at different rates, especially around big developmental shifts. What we want to be sure of is that it is developmental and not something else, and that is exactly why we are watching it together over the next two weeks rather than assuming either way."
+
+## 10. The 30 days after
 
 - **24h** — send a short, warm follow-up note thanking her for coming in, summarising the one or two things she shared about home (so she knows we listened), and confirming the 2-week check-in.
 - **2-week** — continue the gentle shelf, watch for change in the rest-frequency. Document any week where the count drops noticeably.
