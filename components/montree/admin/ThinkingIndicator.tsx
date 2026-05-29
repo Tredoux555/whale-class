@@ -106,7 +106,14 @@ export default function ThinkingIndicator({
       <style jsx>{`
         .tracy-pulse {
           animation: tracyAvatarPulse 1.6s ease-in-out infinite;
-          border-radius: 22%;
+          /* 🚨 Glow shape — May 29, 2026.
+             border-radius on the .tracy-pulse wrapper controls the box-shadow
+             halo's shape (NOT the inner avatar's shape — the <img> has its
+             own border-radius). 22% produced a soft-square halo that the
+             user reported as "not round". 50% makes the halo a perfect
+             circle around the T-monogram avatar, which itself keeps its
+             rounded-square crop. */
+          border-radius: 50%;
           will-change: transform, box-shadow;
         }
         .tracy-dot {
