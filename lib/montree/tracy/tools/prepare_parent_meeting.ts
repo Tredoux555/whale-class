@@ -562,7 +562,12 @@ export async function preparePMeeting(
     parent_context: parentContext ?? null,
     output_format: outputFormat,
     scope_owner_id: schoolId,
-    extras: { locale },
+    // schema_version bumped to 'v10' when the dossier structure changed from 9
+    // to 10 sections (Session 137 — added "Questions she'll probably ask").
+    // Bumping it makes every pre-existing cached dossier a cache miss so it
+    // regenerates with the new section instead of serving the stale 9-section
+    // copy. Bump this string any time the dossier section structure changes.
+    extras: { locale, schema_version: 'v10' },
   });
   const cached = await readDossier(supabase, cacheKey);
   console.log(
