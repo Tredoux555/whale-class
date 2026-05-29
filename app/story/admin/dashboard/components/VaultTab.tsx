@@ -417,7 +417,7 @@ function VaultUploadZone({ uploadingVault, uploadProgress, onVaultUpload }: Vaul
                   : 'Drag files here or tap to choose'}
             </p>
             <p className="mt-1 text-xs text-gray-500">
-              Photos and videos · multiple at once · max 500MB each
+              Photos and videos · multiple at once · up to 1GB each
             </p>
           </div>
         </div>
