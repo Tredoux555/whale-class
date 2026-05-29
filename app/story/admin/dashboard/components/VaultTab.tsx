@@ -20,6 +20,8 @@ interface VaultTabProps {
      `e.dataTransfer.files` (also FileList). */
   onVaultUpload: (files: File[]) => void;
   uploadProgress: { done: number; total: number };
+  // Session 153 — byte-level progress for the active large (chunked) upload.
+  byteProgress: { name: string; sent: number; total: number } | null;
   onVaultDownload: (fileId: number, filename: string) => void;
   onVaultDelete: (fileId: number) => void;
   viewingImage: { url: string; filename: string } | null;
@@ -46,6 +48,7 @@ export function VaultTab({
   uploadingVault,
   onVaultUpload,
   uploadProgress,
+  byteProgress,
   onVaultDownload,
   onVaultDelete,
   viewingImage,
@@ -131,11 +134,30 @@ export function VaultTab({
               uploadProgress={uploadProgress}
               onVaultUpload={onVaultUpload}
             />
-            {uploadingVault && uploadProgress.total > 0 && (
+            {byteProgress ? (
+              <div className="mt-3">
+                <div className="flex items-center justify-between mb-1.5">
+                  <p className="text-sm font-medium text-indigo-700 truncate pr-2">
+                    ⟳ Uploading {byteProgress.name}
+                  </p>
+                  <p className="text-sm tabular-nums text-indigo-600 whitespace-nowrap">
+                    {(byteProgress.sent / 1048576).toFixed(0)} / {(byteProgress.total / 1048576).toFixed(0)} MB
+                    {' '}({Math.floor((byteProgress.sent / Math.max(1, byteProgress.total)) * 100)}%)
+                  </p>
+                </div>
+                <div className="h-2.5 w-full bg-indigo-100 rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-indigo-500 rounded-full transition-[width] duration-300 ease-out"
+                    style={{ width: `${Math.min(100, (byteProgress.sent / Math.max(1, byteProgress.total)) * 100)}%` }}
+                  />
+                </div>
+                <p className="text-[11px] text-gray-400 mt-1">Large video — uploading in chunks. Keep this tab open.</p>
+              </div>
+            ) : uploadingVault && uploadProgress.total > 0 ? (
               <p className="text-sm text-indigo-600 mt-2">
                 ⟳ Uploading {uploadProgress.done + 1} of {uploadProgress.total}…
               </p>
-            )}
+            ) : null}
             {vaultError && (
               <div className="p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">
                 ✗ {vaultError}

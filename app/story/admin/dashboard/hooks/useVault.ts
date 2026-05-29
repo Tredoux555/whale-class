@@ -1,14 +1,15 @@
 import { useState, useCallback, useRef } from 'react';
 import { VaultFile } from '../types';
 import { isImageFile } from '../utils';
-import { createSupabaseClient } from '@/lib/supabase-client';
-
-// Session 153 — files larger than this are uploaded DIRECTLY from the browser
-// to Supabase (bypassing the Railway ~32MB body cap on the through-server
-// encrypted path). Files at or below it keep the legacy encrypted upload so
+// Session 153 — files larger than this go through the server-proxied CHUNKED
+// (resumable) upload: the browser streams the file to our server in pieces
+// under Railway's body cap, and the server relays each piece to Supabase via
+// a service-key resumable upload. Handles any size, from any device. Files at
+// or below the threshold keep the legacy encrypted through-server upload so
 // the common small-photo case stays AES-encrypted at rest.
 const DIRECT_UPLOAD_THRESHOLD = 20 * 1024 * 1024; // 20MB
 const MAX_VAULT_BYTES = 1024 * 1024 * 1024; // 1GB (matches the bucket limit)
+const UPLOAD_CHUNK_BYTES = 24 * 1024 * 1024; // 24MB — safely under Railway's ~30MB cap
 
 export const useVault = (getSession: () => string | null) => {
   const [vaultPassword, setVaultPassword] = useState('');
@@ -21,6 +22,10 @@ export const useVault = (getSession: () => string | null) => {
     done: 0,
     total: 0,
   });
+  // Session 153 — byte-level progress for the active large (chunked) upload so
+  // the UI can show a real "142MB / 535MB (27%)" bar. Null when no big upload
+  // is in flight.
+  const [byteProgress, setByteProgress] = useState<{ name: string; sent: number; total: number } | null>(null);
   const [vaultError, setVaultError] = useState('');
   const [viewingImage, setViewingImage] = useState<{ url: string; filename: string } | null>(null);
   const [loadingView, setLoadingView] = useState(false);
@@ -187,6 +192,7 @@ export const useVault = (getSession: () => string | null) => {
     setVaultUnlocked(false);
     setVaultPassword('');
     setViewingImage(null);
+    setByteProgress(null);
   }, [revokeAllThumbnails]);
 
   // 🚨 Session 131 — multi-file upload. Accepts an array (or a single
@@ -232,12 +238,14 @@ export const useVault = (getSession: () => string | null) => {
         );
 
         // 🚨 Session 153 — large files (e.g. a 6-min iPhone video) can't fit
-        // through the encrypted server route (Railway ~32MB body cap). Push
-        // them DIRECTLY browser→Supabase via a one-time signed upload url,
-        // then record the metadata row. These are stored unencrypted in the
-        // private bucket (see signed-upload/route.ts for the rationale).
+        // through the encrypted server route (Railway ~32MB body cap), a single
+        // direct PUT hits Supabase's standard-upload ceiling, and Supabase
+        // refuses public-key resumable uploads. So we stream the file to our
+        // server in <30MB chunks and the server relays each chunk to a
+        // service-key resumable upload. Stored unencrypted in the private
+        // bucket (see chunked/init/route.ts for the rationale).
         if (file.size > DIRECT_UPLOAD_THRESHOLD) {
-          const suRes = await fetch('/api/story/admin/vault/signed-upload', {
+          const initRes = await fetch('/api/story/admin/vault/chunked/init', {
             method: 'POST',
             headers: jsonHeaders,
             body: JSON.stringify({
@@ -246,36 +254,71 @@ export const useVault = (getSession: () => string | null) => {
               fileSize: file.size,
             }),
           });
-          const su = await suRes.json().catch(() => ({}));
-          if (!suRes.ok || !su.path || !su.token) {
-            errors.push(`${file.name}: ${su.error || `could not start upload (HTTP ${suRes.status})`}`);
+          const init = await initRes.json().catch(() => ({}));
+          if (!initRes.ok || !init.tusUrl || !init.path) {
+            errors.push(`${file.name}: ${init.error || `could not start upload (HTTP ${initRes.status})`}`);
             continue;
           }
 
-          const sb = createSupabaseClient();
-          const { error: upErr } = await sb.storage
-            .from('vault-secure')
-            .uploadToSignedUrl(su.path, su.token, file, {
-              contentType: file.type || undefined,
-            });
-          if (upErr) {
-            errors.push(`${file.name}: direct upload failed — ${upErr.message || 'unknown error'}`);
-            continue;
+          let offset = 0;
+          let failed = false;
+          setByteProgress({ name: file.name, sent: 0, total: file.size });
+          while (offset < file.size) {
+            const end = Math.min(offset + UPLOAD_CHUNK_BYTES, file.size);
+            const buf = await file.slice(offset, end).arrayBuffer();
+            let ok = false;
+            for (let attempt = 0; attempt < 4 && !ok; attempt++) {
+              try {
+                const cRes = await fetch('/api/story/admin/vault/chunked/chunk', {
+                  method: 'POST',
+                  headers: {
+                    ...headers,
+                    'Content-Type': 'application/offset+octet-stream',
+                    'x-tus-url': init.tusUrl,
+                    'x-upload-offset': String(offset),
+                  },
+                  body: buf,
+                });
+                if (cRes.ok) {
+                  const j = await cRes.json().catch(() => ({}));
+                  offset = typeof j.offset === 'number' && j.offset > offset ? j.offset : end;
+                  ok = true;
+                } else {
+                  if (cRes.status === 401) {
+                    errors.push(`${file.name}: vault locked mid-upload — re-unlock and retry`);
+                    failed = true;
+                    break;
+                  }
+                  await new Promise(r => setTimeout(r, 800 * (attempt + 1)));
+                }
+              } catch {
+                await new Promise(r => setTimeout(r, 800 * (attempt + 1)));
+              }
+            }
+            if (failed) break;
+            if (!ok) {
+              errors.push(`${file.name}: upload stalled at ${(offset / 1048576).toFixed(0)}MB — check your connection and retry`);
+              failed = true;
+              break;
+            }
+            setByteProgress({ name: file.name, sent: offset, total: file.size });
           }
+          if (failed) { setByteProgress(null); continue; }
 
           const finRes = await fetch('/api/story/admin/vault/finalize', {
             method: 'POST',
             headers: jsonHeaders,
             body: JSON.stringify({
-              path: su.path,
+              path: init.path,
               filename: file.name,
               fileSize: file.size,
               contentType: file.type || 'application/octet-stream',
             }),
           });
           const fin = await finRes.json().catch(() => ({}));
+          setByteProgress(null);
           if (finRes.ok && fin.file) {
-            console.log(`[Vault Upload] SAVED (direct) ${file.name} → row ${fin.file.id}`);
+            console.log(`[Vault Upload] SAVED (chunked) ${file.name} → row ${fin.file.id}`);
           } else {
             errors.push(`${file.name}: ${fin.error || `finalize failed (HTTP ${finRes.status})`}`);
           }
@@ -327,6 +370,7 @@ export const useVault = (getSession: () => string | null) => {
       setVaultError(`${errors.length} of ${list.length} failed: ${head}${tail}`);
     }
 
+    setByteProgress(null);
     setUploadingVault(false);
     setUploadProgress({ done: 0, total: 0 });
   }, [vaultHeaders, loadVaultFiles, loadThumbnail]);
@@ -514,6 +558,7 @@ export const useVault = (getSession: () => string | null) => {
     vaultFiles,
     uploadingVault,
     uploadProgress,
+    byteProgress,
     vaultError,
     setVaultError,
     viewingImage,
