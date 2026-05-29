@@ -170,22 +170,7 @@ The most likely 3-4 objections this parent will raise (informed by parent_contex
 - Bold the likely line as the parent might say it.
 - Below it, the principal's recommended response in a blockquote — calm, validating, redirecting.
 
-## 9. Questions the parent will probably ask (with suggested answers)
-The 4-6 most likely GENUINE questions this parent will raise during the meeting — not objections (those are in section 8), but real questions they'll want concrete answers to. Common shapes:
-- "Is he behind?" / "Where should he be at this age?"
-- "What can WE do at home?" / "How can we support what you're doing?"
-- "Is this normal?" / "Should we be worried?"
-- "What's the plan if X doesn't work?" / "How will we know?"
-- "How does he compare to the other children?" (sensitive — answer pivots to his individual trajectory)
-- "Will he be ready for the next class / school / grade?"
-
-For each question:
-- Bold the likely question phrasing.
-- Below it, a suggested answer in a blockquote — concrete, honest, anchored in what we've observed. NOT a script to read verbatim; the principal makes it her own. Each answer is 1-3 sentences max. Avoid jargon. Reference one specific observation, date, or fact from the structured context where possible.
-
-These prepare the principal for the parts of the meeting she didn't initiate. Section 8 is "they push back on what I said"; section 9 is "they ask me something I have to answer cleanly."
-
-## 10. The 30 days after (follow-up plan)
+## 9. The 30 days after (follow-up plan)
 - **24h** — what the principal sends or does within 24h of the meeting (one specific note or action).
 - **2-week** — the classroom-side plan for the next two weeks.
 - **1-month** — the check-in date and what we hope to know by then.
@@ -342,21 +327,7 @@ Ask, then **be quiet** and let her talk.
 **"What should I do?"**
 > "Honestly, the most useful thing on your side is what you can tell us — about his sleep, his weekends, his energy. The 'doing' is mostly on our side right now. We just want to keep you in the loop so nothing about this surprises you."
 
-## 9. Questions she'll probably ask (suggested answers)
-
-**"Is he behind?"**
-> "He's not behind in any way that worries me. Where he is right now — particularly with letter recognition and his sound work — is exactly where I'd expect a child his age in his second year. The rest is just one piece of how his body is pacing through the day."
-
-**"Will this affect his readiness for the next year?"**
-> "From what I'm seeing, no — and I'd tell you straight if I thought it would. We have another five months. The question I'm tracking is whether the pattern shifts, holds, or escalates. We'll know more by July."
-
-**"What can we do at home?"**
-> "The single most useful thing is just keeping us in the loop on what his weekends and evenings look like. If anything changes in his sleep, his appetite, his mood — text me. Information is what helps us most right now. Beyond that, you're already doing the work — he comes in rested, loved, ready. Don't fix something that isn't broken."
-
-**"Should we be worried?"**
-> "Not in the way most people mean that word. I'd be worried if I weren't seeing him recover after his rest sessions — I am. I'd be worried if the work were dropping in quality — it isn't. What I want is to keep watching, keep documenting, and check in with you again in two weeks. That's the watchfulness, not worry."
-
-## 10. The 30 days after
+## 9. The 30 days after
 
 - **24h** — send a short, warm follow-up note thanking her for coming in, summarising the one or two things she shared about home (so she knows we listened), and confirming the 2-week check-in.
 - **2-week** — continue the gentle shelf, watch for change in the rest-frequency. Document any week where the count drops noticeably.

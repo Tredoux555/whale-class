@@ -3987,10 +3987,6 @@ export const nl: Record<string, string> = {
   'tracy.progress.unpacking': '{name} uitpakken…',
   'tracy.progress.countingNotes': 'Notities en dekking tellen…',
   'tracy.progress.scoringNotes': 'Kwaliteit van notities lezen…',
-  'tracy.progress.preparingDossier': 'Preparing the dossier…',
-  'tracy.progress.fetchingObservations': "Pulling the child's recent observations…",
-  'tracy.progress.searchingPatterns': 'Searching past patterns ({hits} hits)…',
-  'tracy.progress.composingDossier': 'Composing the dossier…',
 
   // Tracy parent-meeting dossier UI (Session 133) — English fallback; run npm run i18n:fill-ui to translate
   'dossier.button.label': 'Prepare for the meeting',

@@ -4450,11 +4450,6 @@ export const en = {
   'tracy.progress.unpacking': 'Unpacking {name}…',
   'tracy.progress.countingNotes': 'Counting notes and coverage…',
   'tracy.progress.scoringNotes': 'Reading note quality…',
-  // May 29, 2026 — prepare_parent_meeting progress phases
-  'tracy.progress.preparingDossier': 'Preparing the dossier…',
-  'tracy.progress.fetchingObservations': "Pulling the child's recent observations…",
-  'tracy.progress.searchingPatterns': 'Searching past patterns ({hits} hits)…',
-  'tracy.progress.composingDossier': 'Composing the dossier…',
 
   // Tracy parent-meeting dossier UI (Session 133)
   'dossier.button.label': 'Prepare for the meeting',
