@@ -695,7 +695,10 @@ export async function POST(request: NextRequest) {
       const baseApiParams = {
         model: guruModel,
         max_tokens: guruMaxTokens,
-        system: systemPrompt,
+        // 🚨 Prompt caching (Session 137 health check) — caches the large
+        // Guru persona+context prefix. Hits across tool-loop rounds and a
+        // teacher's repeated questions about the same child within the TTL.
+        system: [{ type: 'text' as const, text: systemPrompt, cache_control: { type: 'ephemeral' as const } }],
         messages: currentMessages,
       };
       const apiParams = modeTools.length > 0
@@ -1212,7 +1215,10 @@ export async function POST(request: NextRequest) {
       anthropic.messages.create({
         model: AI_MODEL,
         max_tokens: MAX_TOKENS,
-        system: systemPrompt,
+        // 🚨 Prompt caching (Session 137 health check) — caches the large
+        // Guru persona+context prefix. Hits across tool-loop rounds and a
+        // teacher's repeated questions about the same child within the TTL.
+        system: [{ type: 'text' as const, text: systemPrompt, cache_control: { type: 'ephemeral' as const } }],
         messages: conversationMessages,
       }),
       API_TIMEOUT_MS,

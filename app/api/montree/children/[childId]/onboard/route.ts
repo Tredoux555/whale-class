@@ -7,7 +7,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { verifyChildBelongsToSchool } from '@/lib/montree/verify-child-access';
-import { anthropic, AI_MODEL, HAIKU_MODEL } from '@/lib/ai/anthropic';
+import { anthropic, HAIKU_MODEL } from '@/lib/ai/anthropic';
+import { resolveReportModel } from '@/lib/montree/reports/resolve-model';
 import { updateChildSettings } from '@/lib/montree/guru/settings-helper';
 import { getLocaleFromRequest } from '@/lib/montree/i18n/server';
 import type { Locale } from '@/lib/montree/i18n/locales';
@@ -182,8 +183,27 @@ export async function POST(
       );
     }
 
-    // Fetch child's name for context
     const supabase = getSupabase();
+
+    // 🚨 Tier gate (Session 137 health check). Voice onboarding ran Sonnet,
+    // hardcoded + ungated — a free school onboarding 20 children burned $2-6 of
+    // Sonnet per burst. Gate it like every other AI route: free → 402; Core →
+    // Haiku (sufficient for this structured extraction); Premium → Sonnet.
+    const aiTier = await resolveReportModel(supabase, auth.schoolId);
+    if (aiTier.tier === 'free' || !aiTier.model) {
+      return NextResponse.json(
+        {
+          error: 'Voice onboarding requires an active AI tier.',
+          tier: aiTier.tier,
+          requires_upgrade: true,
+          upgrade_url: '/montree/admin/billing',
+          feature: 'voice_onboarding',
+        },
+        { status: 402 }
+      );
+    }
+
+    // Fetch child's name for context
     const { data: child } = await supabase
       .from('montree_children')
       .select('name, date_of_birth')
@@ -239,7 +259,7 @@ export async function POST(
     const summaryLanguageInstruction = getAILanguageInstruction(locale);
 
     const response = await anthropic.messages.create({
-      model: AI_MODEL,
+      model: aiTier.model,
       max_tokens: 2000,
       tools: [EXTRACTION_TOOL],
       tool_choice: { type: 'tool', name: 'save_child_profile' },
