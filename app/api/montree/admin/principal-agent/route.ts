@@ -541,6 +541,19 @@ export async function POST(request: NextRequest) {
             totalOutputTokens += response.usage.output_tokens ?? 0;
           }
 
+          // 🚨 May 29, 2026 — diagnostic. Tracy was returning empty bubbles
+          // on Whale Class in Chinese. Without this log we had no idea
+          // whether Sonnet was responding at all and what stop_reason it
+          // hit. The empty-response detection below depends on knowing
+          // exactly what blocks came back.
+          console.log(
+            `[principal-agent] sonnet_round=${toolRound} stop_reason=${response.stop_reason ?? '?'} ` +
+            `blocks=${response.content.length} ` +
+            `types=${response.content.map((b) => b.type).join(',')} ` +
+            `input_tokens=${response.usage?.input_tokens ?? 0} ` +
+            `output_tokens=${response.usage?.output_tokens ?? 0}`
+          );
+
           lastAssistantBlocks = [];
           pendingToolResults = [];
           let hasToolUse = false;
@@ -715,6 +728,42 @@ export async function POST(request: NextRequest) {
                 sse(encoder, { type: 'text', text: roundText })
               );
             }
+          }
+
+          // 🚨 May 29, 2026 — empty-response detection.
+          // When all three pre-flight Supabase calls time out on a slow
+          // connection, the system prompt gets the 'your school' /
+          // 'Principal' / no-memory / no-knowledge fallbacks. Sonnet
+          // sometimes responds with stop_reason='end_turn' and zero
+          // blocks — no tool_use, no text. The loop then breaks
+          // silently, the `done` event fires, and the client renders an
+          // empty assistant bubble with no glow and no error message.
+          // The user thinks Tracy is broken.
+          //
+          // When this happens, emit a user-visible error instead of
+          // silently closing. The principal sees "I had trouble loading
+          // your school context — please try again." rather than a
+          // blank avatar.
+          if (!hasToolUse && !roundText) {
+            const reason =
+              response.stop_reason === 'end_turn'
+                ? 'empty_end_turn'
+                : `empty_${response.stop_reason ?? 'unknown'}`;
+            logError = `Sonnet returned empty response (stop_reason=${response.stop_reason ?? 'unknown'}, blocks=${response.content.length})`;
+            console.error(
+              `[principal-agent] EMPTY RESPONSE — toolRound=${toolRound} reason=${reason} ` +
+              `Sonnet returned no text + no tool_use. Likely degraded prompt from ` +
+              `pre-flight Supabase timeouts. Emitting error to client so the user ` +
+              `sees something instead of an empty bubble.`
+            );
+            controller.enqueue(
+              sse(encoder, {
+                type: 'error',
+                error:
+                  "I had trouble loading your school's context just now. Please try again — it usually clears on the second attempt.",
+              })
+            );
+            break;
           }
 
           if (!hasToolUse) break;
