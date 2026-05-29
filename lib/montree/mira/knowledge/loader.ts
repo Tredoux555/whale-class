@@ -26,6 +26,10 @@ import { readFile } from 'fs/promises';
 import { join } from 'path';
 
 export interface MiraKnowledge {
+  // product + playbook lead the bundle — they're the foundation a
+  // blank-slate agent needs before the sales-angled files make sense.
+  product: string;
+  playbook: string;
   elevator: string;
   features: string;
   pricing: string;
@@ -42,6 +46,8 @@ export interface MiraKnowledge {
 const KNOWLEDGE_DIR = join(process.cwd(), 'lib/montree/mira/knowledge');
 
 const FILES: Record<keyof MiraKnowledge, string> = {
+  product: 'product.md',
+  playbook: 'playbook.md',
   elevator: 'elevator.md',
   features: 'features.md',
   pricing: 'pricing.md',
@@ -78,8 +84,11 @@ async function loadOnce(): Promise<MiraKnowledge> {
   return out as MiraKnowledge;
 }
 
+/** A single knowledge topic — one markdown file. */
+export type MiraKnowledgeTopic = keyof MiraKnowledge;
+
 /**
- * Load all 11 knowledge markdown files. Cached after first call.
+ * Load all 13 knowledge markdown files. Cached after first call.
  * Use this in prepare_principal_pitch where we want the FULL knowledge
  * surface available to Sonnet.
  */
@@ -109,6 +118,21 @@ export function resetMiraKnowledgeCache(): void {
 }
 
 /**
+ * Pull ONE knowledge file in full. Used by the consult_knowledge tool when
+ * Mira needs depth on one topic beyond the system-prompt summary (e.g. the
+ * full product overview to teach a new agent, the full step-by-step playbook,
+ * the complete objection handlers or demo scripts). Falls back to the product
+ * overview when the topic isn't recognised so the caller always gets something
+ * useful.
+ */
+export async function getMiraKnowledgeFull(
+  topic: MiraKnowledgeTopic
+): Promise<string> {
+  const k = await getMiraKnowledge();
+  return k[topic] ?? k.product;
+}
+
+/**
  * Compact summary for Mira's chat-mode system prompt. ~3-4K tokens —
  * enough for Mira to answer most ad-hoc questions without calling the
  * full knowledge base, but lean enough not to dominate the prompt budget.
@@ -132,7 +156,17 @@ export async function getMiraKnowledgeSummary(): Promise<string> {
 
   return `# MONTREE KNOWLEDGE — load-bearing facts you must quote correctly
 
-The full source is on disk under \`lib/montree/mira/knowledge/\`. Mira can quote-from-knowledge directly in chat. When in doubt, get the live platform numbers via the get_platform_signal tool — never quote them from memory.
+This is a SUMMARY. For depth on any topic — full product detail, the step-by-step
+agent playbook, full objection handlers, demo scripts — call \`consult_knowledge\`
+with the matching topic; it returns that whole file. When in doubt about a live
+number (schools, children, languages), get it via \`get_platform_signal\` — never
+quote it from memory.
+
+## What Montree is (product foundation)
+${lead(k.product, 1200)}
+
+## The agent playbook (how to actually sell + the mechanics)
+${lead(k.playbook, 1200)}
 
 ## Elevator
 ${lead(k.elevator)}
