@@ -271,8 +271,22 @@ export async function POST(request: NextRequest) {
   // used if any timeout fires — Tracy degrades gracefully to no-memory /
   // no-knowledge mode, still works, the principal sees an answer.
   function withTimeout<T>(p: Promise<T>, ms: number, fallback: T, label: string): Promise<T> {
+    // 🚨 AUDIT FIX (May 29, 2026)
+    // The race resolves with `fallback` after `ms`, but the underlying
+    // promise `p` keeps running in the background. If `p` later rejects,
+    // the rejection becomes an unhandled-promise-rejection warning (and
+    // in stricter Node modes, a process exit). Attach a swallow-only
+    // .catch() to keep the background promise tame: any late settlement
+    // is logged but never propagated.
+    const tamed = p.catch((err) => {
+      console.warn(
+        `[principal-agent] late rejection on ${label} after timeout (suppressed):`,
+        err instanceof Error ? err.message : 'unknown'
+      );
+      return fallback;
+    });
     return Promise.race([
-      p,
+      tamed,
       new Promise<T>((resolve) =>
         setTimeout(() => {
           console.warn(`[principal-agent] pre-flight timeout (${label}, ${ms}ms) — using fallback`);
