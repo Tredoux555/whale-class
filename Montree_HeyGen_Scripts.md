@@ -527,3 +527,57 @@ identical file to TikTok, Reels and Shorts; all three suppress recycled video.
 *Companion doc: the Colossyan production system lives in
 `Montree_Campaign_Video_Scripts.md`. Same scripts, different tool. Use whichever
 generator is in front of you — the scripts are the asset.*
+
+---
+
+## ★ MAIN EXPLAINER (explainer-page hero) · `main-explainer`
+*9:16 · ~75s · talking-head · the all-encompassing overview film*
+
+**NARRATION** *(9 paragraphs = 9 scenes)*
+
+> Maria Montessori built her whole method on one quiet act. Watching the child.
+>
+> But teaching filled up with everything else. The forms. The reports. The endless writing. And the watching — the part that actually matters — got squeezed into the cracks.
+>
+> Montree exists to give it back.
+>
+> A teacher takes one photo. And everything that used to swallow the evening — the observation, the record, the parent report, the next lesson — quietly takes care of itself.
+>
+> Because behind it stands a mind that has read every word Maria Montessori ever wrote. Teachers call it Guru. Heads of school call it Astra. Ask it anything — about any child, at any hour — and it answers like it's known them for years. The master teacher, always at your shoulder.
+>
+> And it doesn't stop at your classroom. Montree quietly runs the whole school — every child, every class, every family, every conversation, in one calm place. From a single photo, to an entire school that finally runs itself.
+>
+> So you can look up. Be there. Follow the child — the way it was always meant to be.
+>
+> That's the whole idea. Not more software. More presence.
+>
+> Montree. Give yourself back to the children. Seven days free, the AI's on us. montree.xyz.
+
+**On-screen captions**
+
+| Scene | Caption |
+|---|---|
+| 1 | Montessori begins with one act: watching |
+| 2 | Then came the paperwork |
+| 3 | Montree gives it back |
+| 4 | One photo. The rest takes care of itself. |
+| 5 | Guru for teachers. Astra for heads of school. |
+| 6 | It runs the whole school — quietly |
+| 7 | Look up. Be there. Follow the child. |
+| 8 | Not more software. More presence. |
+| 9 | Give yourself back · montree.xyz |
+
+**Producer note —** Essence piece, not a feature tour. The soul is *presence* —
+it bookends the film (open on watching, close on following the child), and the
+features dissolve into "takes care of itself." Scenes 5 and 6 add the AI helpers
+and the whole-school scope but must stay in the *emotional* register: read
+scene 5 with quiet wonder ("the master teacher at your shoulder" — you're never
+alone), scene 6 with calm confidence (the scale line, not a list). Slow and warm
+on 1-4 and 7-9; let scene 6 swell on "an entire school that finally runs itself."
+Hard pause before "Montree gives it back" and before the final line. Same avatar
++ voice as the feature films. Portrait 9:16, ~80s. Once produced, upload to
+`montree-media/explainer/main-explainer.mp4` and the explainer hero goes live.
+
+**Alt opening hooks to A/B (3-sec cutdowns):**
+"When did teaching become paperwork?" ·
+"Montessori begins with watching. So does Montree."
