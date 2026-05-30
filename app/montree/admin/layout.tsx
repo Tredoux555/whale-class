@@ -396,6 +396,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             color: T.textPrimary,
             letterSpacing: -0.2,
             textDecoration: 'none',
+            // Session 140 — truncate so a long school name can't overflow the
+            // mobile bar and collide with the language toggle on a phone.
+            flex: 1,
+            minWidth: 0,
+            textAlign: 'center',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
+            padding: '0 10px',
           }}
         >
           {schoolName || 'School'}

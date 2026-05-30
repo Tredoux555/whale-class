@@ -100,7 +100,12 @@ export function useAstraVoice(opts: UseAstraVoiceOptions = {}) {
         error?: string;
       };
       if (tokenData.enabled === false) {
-        setStatus('disabled');
+        // Session 140 — was setStatus('disabled'), which makes AstraVoiceButton
+        // render null: the button silently VANISHED on click with no feedback or
+        // log. Surface a clear message instead and keep the button mounted so the
+        // user understands the flag is off (enable it at /montree/admin/features).
+        setError('Astra voice isn’t enabled for your school yet. Turn it on in Admin → Features.');
+        setStatus('error');
         return;
       }
       if (!tokenResp.ok || !tokenData.appId || !tokenData.token || !tokenData.channel) {
@@ -148,7 +153,8 @@ export function useAstraVoice(opts: UseAstraVoiceOptions = {}) {
       };
       if (agentData.enabled === false) {
         await stop();
-        setStatus('disabled');
+        setError('Astra voice isn’t enabled for your school yet. Turn it on in Admin → Features.');
+        setStatus('error');
         return;
       }
       if (!agentResp.ok || !agentData.agentId) {
