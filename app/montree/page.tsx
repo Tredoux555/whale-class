@@ -234,8 +234,8 @@ export default function MontreeLanding() {
              a fixed ~380px-wide phone-shaped preview. On ≤880px it returns to a
              full-width centred clip above the text (see media queries). */
           flex: 0 0 auto;
-          width: 380px;
-          max-width: 42vw;
+          width: 340px;
+          max-width: 40vw;
           margin: 0;
           z-index: 2;
         }
@@ -403,15 +403,15 @@ export default function MontreeLanding() {
         .m-hero {
           position: relative;
           min-height: calc(100vh - 70px);
-          max-width: 1140px;
+          max-width: 1040px;
           margin: 0 auto;
           display: flex;
           flex-direction: row;
           align-items: center;
           justify-content: center;
-          gap: clamp(40px, 6vw, 88px);
+          gap: clamp(44px, 5vw, 76px);
           text-align: left;
-          padding: 80px 32px 100px;
+          padding: 64px 40px 88px;
         }
         .m-hero .m-label { margin-bottom: 40px; }
         .m-hero-quote {
@@ -448,7 +448,7 @@ export default function MontreeLanding() {
           font-family: var(--font-lora), Georgia, serif;
           font-style: italic;
           font-weight: 400;
-          font-size: clamp(18px, 2.5vw, 28px);
+          font-size: clamp(16px, 1.5vw, 20px);
           letter-spacing: 0.04em;
           color: #E8C96A;
           margin-bottom: 18px;
@@ -458,7 +458,7 @@ export default function MontreeLanding() {
            breathes underneath the button instead of crowding the title above. */
         .m-hero-kicker.m-hero-kicker-below {
           margin-bottom: 0;
-          margin-top: 36px;
+          margin-top: 24px;
         }
         /* Vertical stack with proportional spacing between title → CTA → kicker.
            Title margin-bottom (44px) > CTA → kicker margin-top (36px) so the
@@ -467,18 +467,29 @@ export default function MontreeLanding() {
           display: flex;
           flex-direction: column;
           align-items: flex-start;
-          max-width: 30rem;
+          max-width: 28rem;
+        }
+        /* Gold eyebrow anchors the TOP of the text block so it reads as a unit
+           with a clear hierarchy (eyebrow → name → tagline → CTA → line)
+           instead of floating. Matches the site's section-label style. */
+        .m-hero-eyebrow {
+          font-size: 11px;
+          text-transform: uppercase;
+          letter-spacing: 0.16em;
+          font-weight: 500;
+          color: #E8C96A;
+          margin: 0 0 20px 0;
         }
         .m-hero h1 {
           font-family: var(--font-lora), Georgia, serif;
           font-weight: 400;
-          /* Sized to sit WITH the tagline in the right column, not shout over
-             it (the nav already carries the small wordmark). */
-          font-size: clamp(2.75rem, 5.4vw, 4.5rem);
-          line-height: 1.04;
+          /* Sits WITH the tagline in the column, not shouting over it (the nav
+             already carries the small wordmark). */
+          font-size: clamp(2.5rem, 4.4vw, 4rem);
+          line-height: 1.02;
           letter-spacing: -0.025em;
           color: #ffffff;
-          margin: 0 0 14px 0;
+          margin: 0 0 10px 0;
           max-width: 14ch;
         }
         /* Tagline sits directly under the h1 brand mark.
@@ -492,7 +503,7 @@ export default function MontreeLanding() {
           line-height: 1.35;
           letter-spacing: 0.005em;
           color: rgba(255,255,255,0.7);
-          margin: 0 0 44px 0;
+          margin: 0 0 32px 0;
           max-width: 26ch;
         }
         .m-hero-sub {
@@ -930,6 +941,7 @@ export default function MontreeLanding() {
         </div>
 
         <div ref={addReveal} className="m-hero-stack">
+          <span className="m-hero-eyebrow">{t('landing.hero.label')}</span>
           <h1>{t('landing.hero.title')}</h1>
           <p className="m-hero-tagline">{t('landing.hero.tagline')}</p>
           <Link className="m-pill m-pill-lg" href="/montree/login-select?signup=true">
