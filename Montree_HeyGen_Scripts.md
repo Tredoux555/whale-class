@@ -23,19 +23,24 @@ bucket at `explainer/<slug>.mp4` (served via the CDN proxy at
 
 | # | Slug | Video |
 |---|------|-------|
+| ★ | `main-explainer` | **Main explainer — the explainer-page hero (all-encompassing short)** |
 | 1 | `hero` | Hero (front page) — *uses the existing splash film* |
 | 2 | `smart-capture` | Smart Capture |
 | 3 | `weekly-reports` | AI Weekly Reports |
 | 4 | `guru` | Guru — the teacher's AI |
-| 5 | `child-profiles` | Child Profiles & Progress |
-| 6 | `astra` | Astra — the principal's AI |
-| 7 | `curriculum` | Curriculum & Planning |
-| 8 | `communication` | Communication Network |
-| 9 | `voice-onboarding` | Voice Onboarding |
-| 10 | `reading-tracker` | English Progression Tracker |
-| 11 | `appointments` | Appointments & Video Calls |
-| 12 | `library` | Library Teaching Tools |
-| 13 | `multilingual` | Multilingual |
+| 5 | `astra` | Astra — the principal's AI |
+| 6 | `curriculum` | Curriculum & Planning |
+| 7 | `communication` | Communication Network |
+| 8 | `voice-onboarding` | Voice Onboarding |
+| 9 | `reading-tracker` | English Progression Tracker |
+| 10 | `appointments` | Appointments & Video Calls |
+| 11 | `library` | Library Teaching Tools |
+| 12 | `multilingual` | Multilingual |
+
+*Video 5 (Child Profiles & Progress) was removed — the gallery and numbering
+above reflect the reshuffle. The `main-explainer` is the new headline film:
+once produced, upload it to `explainer/main-explainer.mp4` and it becomes the
+explainer-page hero.*
 
 ---
 
@@ -257,38 +262,7 @@ morning" quietly says *always there* without overclaiming.
 
 ---
 
-## 5 — Child Profiles & Progress · `child-profiles`
-*9:16 · ~24s · talking-head*
-
-**NARRATION** *(5 scenes)*
-
-> Twenty-five children. Five areas of the curriculum. Quick — where is each child, exactly?
->
-> Montree knows. Instantly.
->
-> Every child has a living profile — what they've mastered, what they're practising, what comes next. It updates itself every time you capture a photo. You never touch a spreadsheet.
->
-> You see the whole child, at a glance — and nothing slips through.
->
-> Send this to a lead teacher.
-
-**On-screen captions**
-
-| Scene | Caption |
-|---|---|
-| 1 | Where is each child, exactly? |
-| 2 | Montree knows. Instantly. |
-| 3 | Mastered · practising · what's next |
-| 4 | The whole child, at a glance |
-| 5 | Send this to a lead teacher |
-
-**Producer note —** The "quick — where is each child?" hook creates a small
-moment of pressure the viewer can't answer, then resolves it. "You never touch
-a spreadsheet" names the rival workflow and kills it.
-
----
-
-## 6 — Astra, the principal's AI · `astra`
+## Astra, the principal's AI · `astra`
 *9:16 · ~25s · talking-head*
 
 **NARRATION** *(5 scenes)*
