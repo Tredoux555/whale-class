@@ -66,9 +66,12 @@ export async function sendCallPush(
     .eq('username', username);
   if (error || !data || data.length === 0) return;
 
+  // Montree facade — the notification never reveals the caller's identity.
+  // It reads as a routine call request from a school.
+  void fromName;
   const payload = JSON.stringify({
-    title: `${fromName} is calling you`,
-    body: `Tap to join the ${mode} call.`,
+    title: 'Montree — call request',
+    body: `A school would like to speak with you. Tap to connect (${mode}).`,
     callId,
   });
 

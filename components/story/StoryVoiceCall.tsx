@@ -162,7 +162,7 @@ export default function StoryVoiceCall({ callId, as, authToken, onClose }: Story
         if (cancelled || !tokenData) return;
         const videoMode = tokenData.mode === 'video';
         setIsVideo(videoMode);
-        setRemoteName(tokenData.remoteName || (as === 'admin' ? 'Student' : 'Tredoux'));
+        setRemoteName(tokenData.remoteName || (as === 'admin' ? 'P' : 'J'));
 
         const mod = await import('agora-rtc-sdk-ng');
         if (cancelled) return;
