@@ -44,9 +44,8 @@ const HERO: ExplainerVideo = {
   line: 'A teacher takes a photo. Montree identifies the work, records the observation, writes the parent report, and tracks every child — automatically.',
   share: '',
   format: '9:16',
-  // The all-encompassing main explainer film is in production. Upload it to
-  // montree-media/explainer/main-explainer.mp4 and flip this to true to go live.
-  available: false,
+  // The all-encompassing main explainer film — live.
+  available: true,
   src: `${PROXY}/explainer/main-explainer.mp4`,
 };
 
