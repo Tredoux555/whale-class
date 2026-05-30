@@ -7,6 +7,26 @@ import Link from 'next/link';
 // SOCIAL MEDIA CONTENT PACK FOR MONTREE
 // ============================================
 
+// Session 140: <CopyButton> was used at the caption list below but never
+// defined in this file (react/jsx-no-undef → runtime ReferenceError that
+// crashed this page on render). Restored a local definition matching the
+// sibling marketing pages (sales-playbook / outreach).
+function CopyButton({ text }: { text: string }) {
+  const [copied, setCopied] = useState(false);
+  return (
+    <button
+      onClick={() => {
+        navigator.clipboard.writeText(text);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      }}
+      className="px-3 py-1 bg-slate-700 text-slate-300 rounded-lg text-xs hover:bg-emerald-600 hover:text-white transition-all"
+    >
+      {copied ? '✓ Copied' : 'Copy'}
+    </button>
+  );
+}
+
 // Shareable card designs as inline SVG-like components
 function LedgerProblemCard() {
   return (

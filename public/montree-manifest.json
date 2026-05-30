@@ -2,7 +2,7 @@
   "name": "Montree - Montessori Progress",
   "short_name": "Montree",
   "description": "Track your child's Montessori learning journey",
-  "start_url": "/montree",
+  "start_url": "/montree/",
   "scope": "/montree/",
   "display": "standalone",
   "background_color": "#0a261a",
