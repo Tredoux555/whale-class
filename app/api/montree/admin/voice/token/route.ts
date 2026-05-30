@@ -11,7 +11,7 @@ import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { isFeatureEnabled } from '@/lib/montree/features';
 import { isAgoraConfigured } from '@/lib/montree/appointments/agora/config';
-import { mintPrincipalVoiceToken } from '@/lib/montree/voice/session';
+import { mintPrincipalVoiceToken } from '@/lib/montree/voice-agent/session';
 
 export const maxDuration = 15;
 

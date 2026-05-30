@@ -19,12 +19,12 @@ import {
   voiceChannelForPrincipal,
   mintPrincipalVoiceToken,
   mintAgentVoiceToken,
-} from '@/lib/montree/voice/session';
-import { startVoiceAgent, stopVoiceAgent } from '@/lib/montree/voice/agent';
+} from '@/lib/montree/voice-agent/session';
+import { startVoiceAgent, stopVoiceAgent } from '@/lib/montree/voice-agent/agent';
 import {
   buildAstraVoicePrompt,
   buildAstraVoiceGreeting,
-} from '@/lib/montree/voice/astra-voice-prompt';
+} from '@/lib/montree/voice-agent/astra-voice-prompt';
 
 export const maxDuration = 30;
 
