@@ -83,6 +83,17 @@ modules; live routes verified 200 (`/montree`, `/montree/explainer`,
 
 ## Still pending / next
 
+**🎙️ NEXT BIG ARC — Real-time voice Astra + live co-pilot + home learning:**
+Full code-grounded build plan in
+`docs/handoffs/ASTRA_MIRA_VOICE_REALTIME_HANDOFF.md`. Hands-free multilingual
+voice Astra (Agora) that takes actions; turn the post-hoc parent-meeting
+pipeline into a LIVE co-pilot; a home learning program with children's
+oral-reading (the highest-leverage + hardest piece — spike it first); memory +
+multimodal "wow". Recommended start: Phase 0 oral-reading spike ∥ Phase 1
+hands-free Astra; first *code* increment = feature-flagged live co-pilot
+(reuses existing Whisper + Sonnet/Haiku, no new vendor). Blockers: Agora keys +
+reading-ASR vendor decision.
+
 **🚨 Carry-forward DB migrations from earlier sessions (NOT run yet — see CLAUDE.md):**
 - `237_meeting_dossiers.sql` (Session 133) — dossier cache; until run, every
   dossier reopen re-spends Sonnet (~$0.05).
