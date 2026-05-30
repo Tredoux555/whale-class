@@ -126,7 +126,7 @@ export async function POST(request: NextRequest) {
   const incoming = Array.isArray(body.messages) ? body.messages : [];
   const messages: MessageParam[] = incoming
     .filter((m) => m.role === 'user' || m.role === 'assistant')
-    .map((m) => ({
+    .map((m): MessageParam => ({
       role: m.role === 'assistant' ? 'assistant' : 'user',
       content: openAiText(m.content),
     }))
