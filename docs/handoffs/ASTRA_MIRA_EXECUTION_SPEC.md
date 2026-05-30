@@ -5,6 +5,21 @@ This is the **how** — every increment, the exact files, and the **audit gate**
 that must pass before each commit. Build order is chosen so each increment is
 independently shippable, feature-flagged OFF by default, and auditable.
 
+## BUILD STATUS (branch `astra-voice-copilot`, May 30, 2026)
+- ✅ **Increment 1a — live co-pilot endpoint** built + ESLint 0/0 (`c6f230fe`).
+  Still to do: 1b live-transcription wiring, 1c side-panel UI (+i18n 12/12),
+  1d corpus tie-in.
+- ✅ **Increment 2 — voice foundation** built + ESLint 0/0 (`1242dade`):
+  Agora ConvoAI agent start/stop, session tokens, voice prompt, token+agent
+  routes. Still to do: client mic/RTC hook, the action/tool layer (custom-LLM
+  shim → tool-executor), and the **on-device latency/voice test** (Tredoux).
+- ✅ **Increment 3 — learner memory** built + ESLint 0/0 (`155b54ad`):
+  migration 244 + loader. Still to do: write-path (record miscues/sessions).
+- ⏳ Increment 4 (home learning + oral reading) — GATED on the oral-reading
+  spike. Increment 5 (multimodal), 6 (outbound calls) — not started.
+- ⚪ Migrations 237–243 (+ new 244) must be run by Tredoux before the
+  meeting/voice/learner memory is live.
+
 **Global rules (apply to EVERY increment):**
 - Work on branch `astra-voice-copilot`, NOT `main` (main auto-deploys to Railway).
 - Every new capability is gated by `isFeatureEnabled(supabase, schoolId, '<flag>')`
