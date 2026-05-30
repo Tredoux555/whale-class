@@ -64,6 +64,28 @@ const nextConfig: NextConfig = {
           { key: 'Cache-Control', value: 'public, max-age=31536000, immutable' },
         ],
       },
+      // Service-worker scripts must NEVER be HTTP/edge-cached. Cloudflare was
+      // serving montree-sw.js with `public, max-age=14400`, so for up to 4h
+      // after each deploy existing clients kept running the OLD worker — the
+      // exact mechanism that lets a pre-v4 SW (which fabricated synthetic 503s
+      // on Next.js RSC prefetches) stay alive on real devices. `no-cache`
+      // forces the browser AND Cloudflare to revalidate every load, so a new
+      // SW lands immediately; its own skipWaiting()+clients.claim() then evict
+      // the stale one. (Session 140.)
+      {
+        source: '/montree-sw.js',
+        headers: [
+          { key: 'Cache-Control', value: 'no-cache, must-revalidate' },
+          { key: 'Service-Worker-Allowed', value: '/montree/' },
+        ],
+      },
+      {
+        source: '/story-sw.js',
+        headers: [
+          { key: 'Cache-Control', value: 'no-cache, must-revalidate' },
+          { key: 'Service-Worker-Allowed', value: '/story/' },
+        ],
+      },
       // API mutation routes: no browser caching (POST/PATCH/DELETE are not cached by browsers anyway,
       // but this ensures no proxy caching). Read-only GET routes set their own Cache-Control per-route.
       // NOTE: Removed blanket max-age=0 on /api/montree/(.*) — it was overriding per-route
