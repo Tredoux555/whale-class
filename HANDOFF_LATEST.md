@@ -1,144 +1,130 @@
 # Whale / Montree — Latest Handoff
 
-**Last updated:** Apr 30, 2026, end of day
-**Live on Railway:** commit `99b34723` (or whatever's latest after cleanup)
+**Last updated:** May 30, 2026, end of day (Session 136)
+**Live on Railway:** commit `3f8fc4cf` (or whatever's latest on `main`)
 
-This is the resume-from-here document. If you're a new session, read this first, then `CLAUDE.md` for full project context.
-
----
-
-## What just happened today (Apr 30, Session 76)
-
-A full audit & optimise sweep. Three audits → 17 fixes → all shipped. Then a Turbopack build fix. Then a root-folder cleanup.
-
-### Commits pushed today (in order)
-
-| SHA | What | Status |
-|-----|------|--------|
-| `022bef0f` | i18n auto-derived SELECTs + unified guide translator | ✓ live |
-| `f4fd150f` | Brain + i18n handoff doc | ✓ live |
-| `80921de6` | I18nProvider memo + service worker immutables-only + ai-generator tier-aware | ✓ live |
-| `5ef016b2` | DashboardHeader memo + photo-audit dynamic loading + daily-brief stale-works parallel + guide 404 cache | ✓ live |
-| `68ea89e2` | Tier-gate language-presentation + language-semester | ✓ live |
-| `149e5760` | Tier-gate 5 remaining Sonnet routes | ✓ live |
-| `f5e459e9` | Brain Session 76 + sweep handoff | ✓ live |
-| `9f81dc97` | **Build fix:** photo-audit `dynamic()` options must be inline literals (Turbopack) | ✓ live |
-| `5c0f63e4` | Brain: note Turbopack constraint | ✓ live |
-| `8aa8f94d` | Cleanup commit 1 — handoffs to docs/handoffs/ | ✓ live |
-| `0e9b1da9` | Cleanup commit 2 — outreach to docs/outreach/ (backup preserved in archive/) | ✓ live |
-| (next) | Cleanup commit 3 — marketing to docs/marketing/ | ✓ live |
-| (next) | Cleanup commit 4 — artifacts to docs/artifacts/ | ✓ live |
-| `d72c9c6c` | Cleanup commit 5 — orphaned scripts to scripts/legacy/ + delete dupes | ✓ live |
-| `99b34723` | Cleanup round 2 — 7 more scripts, 3 root icons, html prototype, phonics zip | ✓ live |
-
-> Exact intermediate SHAs may differ — `git log --oneline -20` for the full sequence.
+Resume-from-here document. New session: read this, then `CLAUDE.md` for full
+project context + the migration/session notes near its end.
 
 ---
 
-## Health check sweep — finished
+## What happened today (Session 136 — May 30) — Marketing site + English-area materials loop
 
-Frontend perf + AI cost + tier-gating across 17 items. All shipped. Highlights:
+A long build session. **No DB migrations.** Everything shipped to `main` and
+auto-deployed via Railway. Two big threads:
 
-- **I18nProvider value memoized** — locale switching no longer re-renders all 173 i18n importers on parent state changes.
-- **Service worker immutables-only** — fixed the Apr 30 stale-dashboard incident. HTML pages always go to network; only JS/CSS/fonts/images cached.
-- **8 routes now tier-gated** via `resolveReportModel()`: language-presentation, language-semester (3 calls), teaching-instructions, snap-identify, weekly-review POST+PATCH, generate-work-content. Plus ai-generator.ts now accepts a tier-aware `model` param. corrections/route.ts skips Sonnet enrichment for free-tier (correction itself still saves).
-- **DashboardHeader `memo()` wrapped**, photo-audit dynamic imports got `loading` fallbacks, guide 404 path got Cache-Control, daily-brief stale-works query parallelized with its dismissals query.
+### Thread 1 — Splash + Explainer marketing pages (all portrait, mobile-first)
 
-**Cost impact:** ~$300-400/month savings projected at 10 schools on Core tier (no more Sonnet rates on routes that should run Haiku for paying-but-not-Premium schools).
+- **Splash hero (`app/montree/page.tsx`) rebuilt as a split layout:** portrait
+  9:16 video LEFT, text block RIGHT (gold eyebrow → Montree → tagline → CTA →
+  kicker), collapses to a centred stack ≤880px. The hero videos are now the
+  **MAIN EXPLAINER film (EN)** + the **Chinese Astra clip (中文)**, served from
+  `montree-media/splash/montree-splash-video-v4.mp4` (EN) and `…-zh-v3.mp4`
+  (中文). Posters are portrait frames in `/public`.
+- **New `/montree/explainer` page** (`app/montree/explainer/page.tsx`): a
+  hero (the main explainer film) + a gallery of **11 feature films**. 10 are
+  live (smart-capture, weekly-reports, guru, astra, curriculum, communication,
+  voice-onboarding, appointments, library, multilingual); **reading-tracker is
+  still "coming soon"** (not produced yet). Video 5 (child-profiles) was
+  removed at Tredoux's request. "Explainer" nav link + teaser strip added to
+  the splash.
+- **Video pipeline:** HeyGen masters are 1080×1920 portrait. We re-encode to
+  720×1280 CRF26 + faststart (~2–6MB) and upload to
+  `montree-media/explainer/<slug>.mp4` (gallery) or `splash/…` (hero) via the
+  Supabase service key (`SUPABASE_SERVICE_ROLE_KEY` in `.env.local`). Uploads
+  can flake ("fetch failed") — the upload scripts retry. To add a film: encode,
+  upload to the right path, flip `available: true` on its entry.
+- **Scripts:** `Montree_HeyGen_Scripts.md` (root) holds all 13 scripts incl. the
+  final **MAIN EXPLAINER** ("Montessori begins with watching…") — essence-led,
+  Guru/Astra + whole-school woven in. The Colossyan twin is
+  `Montree_Campaign_Video_Scripts.md`. A browser-Claude runbook lives at
+  `Montree_HeyGen_Webclaud_Runbook.md`.
 
-### Known deferred (for next dedicated session)
+### Thread 2 — English-area curriculum: doc + the materials loop
 
-- **Weekly-wrap teacher + parent batching** — `app/api/montree/reports/weekly-wrap/route.ts`. Reports run sequentially per child today; parallelizing via `Promise.all` would halve wall-clock per child (~30-60s/child win). Not done because the refactor interleaves token totals, separate upserts, and skip flags. ⚠ **Replan must stay Stage 0** when you tackle it.
+This is the big one. **The classroom curriculum and the Library material
+generators are now joined**, so a teacher goes from "where this child is" to
+"print exactly these materials" in one click.
 
----
-
-## Root folder cleanup — finished
-
-Whale folder went from 90 → 42 root entries. Everything moved to its proper home:
-
-| Destination | What's there |
-|-------------|--------------|
-| `docs/handoffs/` | 8 stale .md plans/handoffs (CHINESE_LOCALIZATION, HEALTH_CHECK, SESSION_56, PLAN-v1/2/3, Web_Claude_*, etc.) |
-| `docs/outreach/` | 10 outreach .xlsx files + 1 cold-email .docx |
-| `docs/outreach/archive/` | `Montree_Master_Outreach_backup_pre_Apr16.xlsx` (preserved) |
-| `docs/marketing/` | HeyGen scripts, promo .docx, montree-pitch.html, montree-video-scripts.html, montree-icon-preview.png, thumbnails.jpg, montree-logo.png/.svg, montree-tree-icon.png, report-format-prototype.html |
-| `docs/artifacts/` | 10 generated reports + classroom PDFs + Language_Semester_Reports/ folder + phonics-images.zip |
-| `scripts/legacy/` | 14 orphaned root scripts (no code references): check-stale-corrections.js, ami-docx-builder.py, eric_*.py, esl_*.py, generate-*.{js,py}, etc. |
-
-**Deleted:** `document_1.docx` + `document_2.docx` (identical AutoSave dumps, same size + date), `.test_write`, `.DS_Store`, Excel `.~lock` files. All real data preserved.
-
-**Verified before moving:** zero references to relocated files in `app/`, `components/`, `lib/`, `public/`, `package.json`, or `Dockerfile`. The build is unaffected.
-
-### Possibly next-session candidates (left at root for now)
-
-- `3D Printed Classrooms/` and `3d-montessori/` — old project folders (Feb 24), unclear if active. Either move to `docs/artifacts/` or delete.
-- `tsconfig.tsbuildinfo` — TS incremental cache; should probably be in `.gitignore`.
-
----
-
-## Next session priorities (in priority order)
-
-1. **🚨 Verify Railway deploy is green.** Visit:
-   - `https://montree.xyz/montree/dashboard` — header renders, daily-brief panels load, no console errors
-   - `https://montree.xyz/montree/dashboard/photo-audit` — page loads, dynamic chunks show "Loading…" briefly then render
-   - Switch locale EN ↔ 中文 ↔ ES — should feel snappier, no flicker
-2. **🚨 Test the tier gates.** In `/montree/super-admin`:
-   - Set Whale Class to **Free** → try generating a Language Presentation → expect HTTP 402 + "requires an active AI tier"
-   - Try Snap Identify → expect 402
-   - Submit a photo correction → still saves (just no Sonnet enrichment)
-   - Set back to **Premium** → everything works
-3. **Per-locale parent narratives** — 6 routes still Chinese-only (Session 75 handoff has full list). Bigger scope.
-4. **Phase 10 — Super-admin dark forest** — 31 of 32 pages still need conversion.
-5. **Weekly-wrap teacher+parent parallelization** — the deferred ~30-60s/child perf win.
-6. **Send the 3 hot lead Gmail drafts** — Copenhagen, Paint Pots UK, Ardtona House UK.
-7. **FAMM Argentina follow-up** — past Apr 28 deadline.
-8. **Welcome Тамі** in Ukrainian — first organic Ukrainian signup.
-9. **Disable `tell_guru_onboarding` for Whale Class** if Amy's card is still appearing:
-   ```sql
-   UPDATE montree_school_features SET enabled=false
-     WHERE school_id='c6280fae-567c-45ed-ad4d-934eae79aabc'
-     AND feature_key='tell_guru_onboarding';
-   ```
-10. **Fix Resend domain** — verify montree.xyz in Resend, update `RESEND_FROM_EMAIL` in Railway.
+- **Curriculum doc:** `docs/English_Corner_Curriculum_Revamp.md` (+ `.docx`) —
+  the authentic Montessori prep→reading sequence, EAL-tuned (3–6, English as
+  additional language), with an independent-materials build list. This is the
+  *why/method* layer the Library's phonics scheme was missing.
+- **The join (the merge):** every one of the **85 word-bank groups** in
+  `lib/montree/phonics/phonics-data.ts` now carries `lessonNums` (the
+  `lesson-map.ts` lessons it teaches), and every group now has a stable `id`
+  (`id` is now **required** on `PhonicsWordGroup` — fixed a latent per-group
+  selection bug in the generators). 72 of 128 lessons resolve to groups; the
+  other 56 are oral/review/morphology (intentional gap).
+- **Resolvers:** `lib/montree/english-sequence/lesson-materials.ts` —
+  `getGroupsForLesson`, `getPhaseIdsForLesson`, `getLessonMaterials`,
+  `getLessonScope`, `getLessonScopeForPhase`, `getReadingPhaseForLesson`,
+  `lessonCoverage`. Plus a lean `lesson-coverage.ts` (just a 72-number Set +
+  `hasLessonMaterials()`) so the dashboard gates UI without bundling phonics-data.
+- **All 8 phonics-fast generators accept `?lesson=N`** (three-part-cards,
+  pink-box, blue-box, labels, bingo, reverse-bingo, command-cards,
+  sentence-cards, stories) — backward compatible with `?phase=`.
+- **Per-lesson launcher** `app/montree/library/lesson/[lesson]/page.tsx`: a
+  shareable page showing every generator (deep-linked `?lesson=N`) + reference
+  (lesson page, sound song, readers) for that lesson.
+- **English Progression tab** (`classroom-overview`) now shows a gated **"Make
+  materials"** button per child → opens the launcher for that child's
+  `current_lesson`.
 
 ---
 
-## Don't break these (architectural rules)
+## Health (end of session)
 
-- `maxDuration = 120` on `app/api/montree/photo-identification/process/route.ts` — Railway default 15s would kill the two-pass Haiku pipeline.
-- `HAIKU_TRUST_CONFIDENCE = 0.85` — Pass 2b discriminator threshold.
-- **Replan Stage 0 ordering** in `weekly-wrap/route.ts` — replan MUST run before reports.
-- Cross-pollination security: every route accepting `child_id` calls `verifyChildBelongsToSchool()`.
-- 173 files import via `lib/montree/i18n` barrel — don't change its public exports.
-- **Service worker MUST stay immutables-only.** If a future change adds HTML to the cache, the stale-shell-when-API-fails bug returns. The pattern lives in `public/montree-sw.js` `isCacheable()`.
-- **Every new Sonnet-calling route MUST tier-gate via `resolveReportModel()`** at the top after auth. Pattern: resolve → 402 if free → pass `aiTier.model` into `messages.create({ model, … })`.
-- **`enrichVisualMemoryFromCorrection()` is intentionally Free-tier-skipped** (moat-builder for paying schools only).
-- **`I18nProvider` value MUST stay memoized.** If a future change rebuilds the value on every render, you reintroduce the tree-wide re-render storm.
-- **Turbopack:** `next/dynamic(import, { … })` requires the options arg as an **inline object literal** at the call site. Hoisting into a `const dynamicOpts = { ... }` breaks the build with "next/dynamic options must be an object literal." Loading component reference is fine; just keep the surrounding `{ }` inline.
+ESLint 0/0 on all new files; i18n strict **12/12** in sync; tsc clean on new
+modules; live routes verified 200 (`/montree`, `/montree/explainer`,
+`/montree/library/lesson/42`, generators `?lesson=`); media 206. Build is green.
 
 ---
 
-## Where to find things now
+## Still pending / next
 
-- **Project rules + session log:** `CLAUDE.md` (root)
-- **This handoff:** `HANDOFF_LATEST.md` (root, also mirrored at `~/Desktop/Master Brain/HANDOFF_Apr30_audit.md`)
-- **Older handoffs:** `docs/handoffs/`
-- **Outreach spreadsheets + templates:** `docs/outreach/`
-- **Marketing materials:** `docs/marketing/`
-- **Generated reports + classroom PDFs:** `docs/artifacts/`
-- **AI cost audit (with Sonnet line numbers):** `docs/AI_COST_AUDIT.md`
-- **Multilingual handoff (Session 75):** `docs/I18N_REFACTOR_HANDOFF.md`
-- **Dark forest redesign progress:** `docs/DARK_FOREST_REDESIGN_HANDOFF.md`
-- **Orphaned old scripts (kept for archaeology):** `scripts/legacy/`
+**🚨 Carry-forward DB migrations from earlier sessions (NOT run yet — see CLAUDE.md):**
+- `237_meeting_dossiers.sql` (Session 133) — dossier cache; until run, every
+  dossier reopen re-spends Sonnet (~$0.05).
+- `238`–`243` + `242b` (Session 135 — Ultimate Astra Marathon) — parent
+  profiles, meetings, transcripts, analyses, Tracy corpus (pgvector), consent
+  flags. Routes degrade gracefully (`migration_pending=true`) until run.
+
+**This session's open items:**
+1. **Produce the MAIN EXPLAINER film** — *DONE & live* (uploaded to
+   `explainer/main-explainer.mp4` + `splash/…-v4.mp4`).
+2. **reading-tracker explainer film** — still to produce; upload to
+   `explainer/reading-tracker.mp4` and flip `available: true`.
+3. **Prep-stages chapter (the deeper next build):** fold the authentic prep
+   (spoken language, sound games, sandpaper letters, moveable alphabet) into the
+   same trackable/launchable model so the launcher covers the *foundation*, not
+   just the 72 reading lessons — with readiness gates as metadata. Bigger build.
+4. **(Minor)** Splash/explainer code comments say "Session 131–134" — those
+   numbers collide with the real 133/134/135; this work is actually Session 136.
+   Cosmetic only.
 
 ---
 
-## Status snapshot
+## Where things live (new this session)
 
-- **Codebase:** clean, ~42 root entries, all standard Next.js project structure
-- **AI tier system:** every Sonnet-calling route now respects Free/Core/Premium
-- **Service worker:** v2, immutables-only, no more stale-shell trap
-- **i18n:** auto-derived SELECTs + unified guide translator + 12 locales fully wired
-- **Photo identification pipeline:** hardened (Pass 1 capped, Pass 2b discriminator, adaptive visual memory budget)
-- **Outreach DB:** ~536 contacts, 3 hot leads awaiting Tredoux's send (Copenhagen, Paint Pots UK, Ardtona House UK), FAMM Argentina overdue for follow-up
-- **Tomorrow:** verify deploy, test tier gates, then pick from the priority list
+- Marketing pages: `app/montree/page.tsx`, `app/montree/explainer/page.tsx`
+- Lesson launcher: `app/montree/library/lesson/[lesson]/page.tsx`
+- The join: `lib/montree/phonics/phonics-data.ts` (lessonNums + ids),
+  `lib/montree/english-sequence/lesson-materials.ts`,
+  `lib/montree/english-sequence/lesson-coverage.ts`
+- Generators (all `?lesson=N`): `app/montree/library/tools/phonics-fast/*`
+- Curriculum doc: `docs/English_Corner_Curriculum_Revamp.md` / `.docx`
+- Video scripts: `Montree_HeyGen_Scripts.md`, `Montree_HeyGen_Webclaud_Runbook.md`
+
+---
+
+## Don't break these (still true)
+
+- Service worker stays immutables-only (`public/montree-sw.js`).
+- `LESSON_MAP` in `english-sequence/lesson-map.ts` is a CONSTANT — don't
+  renumber the 1–128 lessons (breaks `current_lesson`/`mastered_lessons`).
+- `phonics-data.ts` `lessonNums` ↔ `lesson-map.ts` is the source-of-truth join;
+  if you edit lessonNums, regenerate `lesson-coverage.ts` (lessonCoverage()).
+- Every Sonnet-calling route tier-gates via `resolveReportModel()`.
+- Splash/explainer media: encode portrait → 720×1280 CRF26 faststart → upload
+  to `montree-media`; versioned filenames bust the CDN cache.
