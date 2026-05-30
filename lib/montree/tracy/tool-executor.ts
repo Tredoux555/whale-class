@@ -1617,6 +1617,80 @@ export async function executeTracyTool(
         };
       }
 
+      case 'school_pulse': {
+        const sevenDaysAgo = new Date(
+          Date.now() - 7 * 24 * 60 * 60 * 1000
+        ).toISOString();
+        const thirtyDaysAgo = new Date(
+          Date.now() - 30 * 24 * 60 * 60 * 1000
+        ).toISOString();
+
+        const [classroomsRes, childrenRes, teachersRes, threadsRes] =
+          await Promise.all([
+            supabase
+              .from('montree_classrooms')
+              .select('*', { count: 'exact', head: true })
+              .eq('school_id', schoolId)
+              .eq('is_active', true),
+            supabase
+              .from('montree_children')
+              .select('*', { count: 'exact', head: true })
+              .eq('school_id', schoolId)
+              .eq('is_active', true),
+            supabase
+              .from('montree_teachers')
+              .select('*', { count: 'exact', head: true })
+              .eq('school_id', schoolId)
+              .eq('is_active', true),
+            supabase
+              .from('montree_message_threads')
+              .select('*', { count: 'exact', head: true })
+              .eq('school_id', schoolId)
+              .is('archived_at', null),
+          ]);
+
+        // Distinct children photo-observed in the last 7 days.
+        const { data: media } = await supabase
+          .from('montree_media')
+          .select('child_id')
+          .eq('school_id', schoolId)
+          .eq('teacher_confirmed', true)
+          .gte('captured_at', sevenDaysAgo)
+          .limit(5000);
+        const observedChildren = new Set(
+          (media ?? []).map((m) => (m as { child_id: string }).child_id)
+        ).size;
+
+        // Meetings held in the last 30 days (migration-aware — 239 may be absent).
+        let meetingsHeld30d: number | null = null;
+        try {
+          const { count, error } = await supabase
+            .from('montree_parent_meetings')
+            .select('*', { count: 'exact', head: true })
+            .eq('school_id', schoolId)
+            .gte('held_at', thirtyDaysAgo);
+          if (!error) meetingsHeld30d = count ?? 0;
+        } catch {
+          /* migration_pending — leave null */
+        }
+
+        const childCount = childrenRes.count ?? 0;
+        const data = {
+          classrooms: classroomsRes.count ?? 0,
+          children: childCount,
+          teachers: teachersRes.count ?? 0,
+          children_observed_7d: observedChildren,
+          children_not_observed_7d: Math.max(0, childCount - observedChildren),
+          open_threads: threadsRes.count ?? 0,
+          meetings_held_30d: meetingsHeld30d,
+        };
+        return {
+          success: true,
+          data,
+          result_summary: `${data.children} children · ${data.children_observed_7d} observed this week · ${data.classrooms} classroom(s) · ${data.open_threads} open thread(s)`,
+        };
+      }
+
       case 'family_context': {
         const childId = String(input.child_id || '').trim();
         if (!childId) return { success: false, error: 'child_id is required' };
