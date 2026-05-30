@@ -126,7 +126,8 @@ export async function POST(req: NextRequest) {
     expiresAt: token.expiresAt,
     // voice or video — the call UI uses this to decide on the camera.
     mode: call.mode === 'video' ? 'video' : 'voice',
-    // Who the OTHER person is, for the call UI.
-    remoteName: asHint === 'admin' ? call.username : call.initiated_by,
+    // Montree facade — never surface real identities in-call. The admin sees
+    // the other party as 'P'; the user sees the caller as 'J'.
+    remoteName: asHint === 'admin' ? 'P' : 'J',
   });
 }

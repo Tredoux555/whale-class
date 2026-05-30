@@ -770,10 +770,10 @@ export default function StoryViewer() {
               </span>
               <div className="min-w-0">
                 <p className="font-semibold truncate">
-                  {incomingCall.from} is calling you
+                  A school would like to talk
                 </p>
                 <p className="text-xs text-emerald-100">
-                  {incomingCall.mode === 'video' ? 'Video call' : 'Voice call'}
+                  Montree request · {incomingCall.mode === 'video' ? 'Video' : 'Voice'}
                 </p>
               </div>
             </div>
