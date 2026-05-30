@@ -14,6 +14,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import { createPortal } from 'react-dom';
 import PhotoLightbox from '@/components/montree/media/PhotoLightbox';
 
 export interface ChildPhotoItem {
@@ -145,17 +146,24 @@ export default function ChildPhotoAlbum({ photos }: { photos: ChildPhotoItem[] }
         ))}
       </div>
 
-      {lightboxIndex !== null && filtered[lightboxIndex] && (
-        <PhotoLightbox
-          isOpen
-          onClose={() => setLightboxIndex(null)}
-          src={filtered[lightboxIndex].url}
-          alt={filtered[lightboxIndex].work || filtered[lightboxIndex].area_label}
-          photos={lightboxPhotos}
-          currentIndex={lightboxIndex}
-          onNavigate={(idx) => setLightboxIndex(idx)}
-        />
-      )}
+      {/* Render the full-screen viewer through a PORTAL to <body> so it
+          escapes the chat column's stacking/transform context — otherwise
+          `position: fixed` is trapped inside the chat and the close ✕ ends up
+          unreachable (sidebar shows through). Portalling makes it truly cover
+          the viewport, with the ✕ at the real top-left. */}
+      {lightboxIndex !== null && filtered[lightboxIndex] && typeof document !== 'undefined' &&
+        createPortal(
+          <PhotoLightbox
+            isOpen
+            onClose={() => setLightboxIndex(null)}
+            src={filtered[lightboxIndex].url}
+            alt={filtered[lightboxIndex].work || filtered[lightboxIndex].area_label}
+            photos={lightboxPhotos}
+            currentIndex={lightboxIndex}
+            onNavigate={(idx) => setLightboxIndex(idx)}
+          />,
+          document.body
+        )}
     </div>
   );
 }
