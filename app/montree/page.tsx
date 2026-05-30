@@ -22,15 +22,17 @@ import MontreeLogo from '@/components/montree/MonteeLogo';
 // proxy URL is unchanged.
 const SPLASH_VIDEOS = {
   en: {
-    // v2 = downscaled 720x1280 + CRF26 + faststart (48MB→5.4MB) for instant,
-    // progressive playback. Versioned filename busts the CDN cache.
-    src: '/api/montree/media/proxy/splash/montree-splash-video-v2.mp4',
-    poster: '/montree-splash-video-poster.jpg',
+    // v3 (Session 132) = portrait 9:16 master, downscaled 720x1280 + CRF26 +
+    // faststart (50MB→4.3MB) for instant, progressive playback. Versioned
+    // filename busts the CDN cache. Poster is a portrait frame so the brief
+    // pre-play frame matches the 9:16 video.
+    src: '/api/montree/media/proxy/splash/montree-splash-video-v3.mp4',
+    poster: '/montree-splash-video-v3-poster.jpg',
     label: 'EN',
   },
   zh: {
-    src: '/api/montree/media/proxy/splash/montree-splash-video-zh-v2.mp4',
-    poster: '/montree-splash-video-zh-poster.jpg',
+    src: '/api/montree/media/proxy/splash/montree-splash-video-zh-v3.mp4',
+    poster: '/montree-splash-video-zh-v3-poster.jpg',
     label: '中文',
   },
 } as const;
