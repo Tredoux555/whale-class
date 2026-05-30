@@ -11,6 +11,8 @@ interface VaultImageViewerProps {
   albumIndex?: number;
   albumTotal?: number;
   loading?: boolean;
+  /** When true, render a <video> player instead of an <img>. */
+  isVideo?: boolean;
 }
 
 export function VaultImageViewer({
@@ -22,6 +24,7 @@ export function VaultImageViewer({
   albumIndex,
   albumTotal,
   loading,
+  isVideo,
 }: VaultImageViewerProps) {
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
     if (e.key === 'Escape') onClose();
@@ -81,6 +84,15 @@ export function VaultImageViewer({
         <div className="flex items-center justify-center w-full h-full" onClick={e => e.stopPropagation()}>
           {loading ? (
             <div className="text-white/60 text-lg">Loading...</div>
+          ) : isVideo ? (
+            <video
+              key={imageUrl}
+              src={imageUrl}
+              controls
+              autoPlay
+              playsInline
+              className="max-w-full max-h-full rounded-lg"
+            />
           ) : (
             <img
               src={imageUrl}
