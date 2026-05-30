@@ -59,26 +59,36 @@ function GuruContent() {
 
     // PARALLEL: Fetch children + guru status together
     const isParentUser = isHomeschoolParent(sess);
-    const fetches: Promise<void>[] = [
-      // Fetch children
-      fetch(`/api/montree/children?classroom_id=${sess.classroom?.id}`)
-        .then(r => { if (!r.ok) throw new Error(`Children fetch: ${r.status}`); return r.json(); })
-        .then(data => {
-          const kids = data.children || [];
-          setChildren(kids);
-          if (preselectedChildId) {
-            if (preselectedChildId === 'whole_class') {
-              setSelectedChild({ id: 'whole_class', name: t('guru.wholeClass') });
-            } else {
-              const preselected = kids.find((c: Child) => c.id === preselectedChildId);
-              if (preselected) setSelectedChild(preselected);
+    const fetches: Promise<void>[] = [];
+
+    // Fetch children — ONLY when we have a real classroom id. A pure principal
+    // (no classroomId on the session) was interpolating the literal string
+    // "undefined" → GET /api/montree/children?classroom_id=undefined → 404 →
+    // "failed to load" toast and an empty Guru. (Session 140.)
+    const classroomId = sess.classroom?.id;
+    if (classroomId) {
+      fetches.push(
+        fetch(`/api/montree/children?classroom_id=${classroomId}`)
+          .then(r => { if (!r.ok) throw new Error(`Children fetch: ${r.status}`); return r.json(); })
+          .then(data => {
+            const kids = data.children || [];
+            setChildren(kids);
+            if (preselectedChildId) {
+              if (preselectedChildId === 'whole_class') {
+                setSelectedChild({ id: 'whole_class', name: t('guru.wholeClass') });
+              } else {
+                const preselected = kids.find((c: Child) => c.id === preselectedChildId);
+                if (preselected) setSelectedChild(preselected);
+              }
             }
-          }
-        })
-        .catch(() => {
-          toast.error(t('dashboard.failedToLoad'));
-        }),
-    ];
+          })
+          .catch(() => {
+            toast.error(t('dashboard.failedToLoad'));
+          })
+      );
+    } else {
+      setChildren([]);
+    }
 
     // Fetch guru status for homeschool parents (billing/trial)
     if (isParentUser) {

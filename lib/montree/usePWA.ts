@@ -52,8 +52,15 @@ export function usePWA() {
     // Register service worker
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker
-        .register('/montree-sw.js', { scope: '/montree/' })
+        .register('/montree-sw.js', { scope: '/montree/', updateViaCache: 'none' })
         .then((registration) => {
+          // Proactively check for a newer worker on every load so a deployed SW
+          // update reaches existing clients immediately instead of waiting for
+          // the browser's periodic check. updateViaCache:'none' forces the
+          // script + its imports to bypass the HTTP cache during this check —
+          // together with the no-cache header on /montree-sw.js this evicts the
+          // stale worker that was freezing the dashboard. (Session 140.)
+          registration.update().catch(() => {});
         })
         .catch((error) => {
           console.error('[Montree] SW registration failed:', error);

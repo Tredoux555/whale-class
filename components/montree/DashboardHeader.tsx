@@ -463,6 +463,18 @@ function DashboardHeader() {
           .mt-header-right-cluster .mt-icon-btn { padding-left: 6px !important; padding-right: 6px !important; }
           .mt-header-icon-messages-inline { display: none !important; }
           .mt-header-teacher-name { max-width: 56px !important; }
+          /* Session 140 — at phone widths the right-cluster still overlapped
+             the wordmark + teacher pill (the logo block is flexShrink:0 and the
+             wordmark only capped at min(40vw,200px) ≈ 156px @390px). Tighten the
+             row padding/gap and hard-cap the wordmark so it truncates instead of
+             colliding with the EN toggle / camera / mic. */
+          .mt-header-row { padding-left: 10px !important; padding-right: 10px !important; gap: 8px !important; }
+          .mt-header-wordmark { max-width: 92px !important; }
+        }
+        @media (max-width: 380px) {
+          /* Very narrow phones: drop the wordmark entirely, keep the logo mark
+             so the action icons never overlap. */
+          .mt-header-wordmark { display: none !important; }
         }
       `}</style>
 
@@ -480,7 +492,7 @@ function DashboardHeader() {
         }}
       >
         {/* ── Main row ── */}
-        <div style={{
+        <div className="mt-header-row" style={{
           display: 'flex', alignItems: 'center', gap: 12,
           padding: '10px 18px', maxWidth: 1152, margin: '0 auto',
         }}>
@@ -489,7 +501,7 @@ function DashboardHeader() {
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, flex: 1, minWidth: 0 }}>
             <Link href="/montree/dashboard" data-guide="nav-home" style={{ display: 'flex', alignItems: 'center', gap: 8, textDecoration: 'none', flexShrink: 0 }}>
               <MontreeLogo size={28} />
-              <span style={{
+              <span className="mt-header-wordmark" style={{
                 fontFamily: SERIF, fontWeight: 500, fontSize: 17, color: '#fff',
                 letterSpacing: 0.3, overflow: 'hidden', textOverflow: 'ellipsis',
                 whiteSpace: 'nowrap',
