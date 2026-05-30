@@ -1,4 +1,4 @@
-// lib/montree/voice/session.ts
+// lib/montree/voice-agent/session.ts
 //
 // Channel + token helpers for an Astra VOICE session. Reuses the existing
 // appointment Agora token-builder (RtcTokenBuilder2) so voice sessions share

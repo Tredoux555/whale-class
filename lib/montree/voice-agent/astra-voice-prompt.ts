@@ -1,4 +1,4 @@
-// lib/montree/voice/astra-voice-prompt.ts
+// lib/montree/voice-agent/astra-voice-prompt.ts
 //
 // System prompt + greeting for the Astra VOICE agent. Kept separate from the
 // text Astra prompt (lib/montree/tracy) because the spoken register is
