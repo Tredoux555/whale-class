@@ -11,6 +11,7 @@ import {
   SIGHT_WORDS,
   type ShortStory,
 } from '@/lib/montree/phonics/phonics-data';
+import { getReadingPhaseForLesson } from '@/lib/montree/english-sequence/lesson-materials';
 
 type PrintMode = 'book' | 'cards' | 'comprehension';
 type FontSize = 'large' | 'xlarge';
@@ -32,7 +33,10 @@ const getPhaseColorBg = (phaseId: string): string => {
 
 export default function PhonicsStoriesPage() {
   const searchParams = useSearchParams();
-  const [selectedPhase, setSelectedPhase] = useState(searchParams.get('phase') || 'pink1');
+  const lessonParam = searchParams.get('lesson');
+  const lessonNum = lessonParam ? parseInt(lessonParam, 10) : NaN;
+  const lessonPhase = Number.isInteger(lessonNum) ? getReadingPhaseForLesson(lessonNum) : null;
+  const [selectedPhase, setSelectedPhase] = useState(lessonPhase || searchParams.get('phase') || 'pink1');
   const [selectedStory, setSelectedStory] = useState<ShortStory | null>(null);
   const [printMode, setPrintMode] = useState<PrintMode>('book');
   const [fontSize, setFontSize] = useState<FontSize>('large');

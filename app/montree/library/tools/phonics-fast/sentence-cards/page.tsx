@@ -11,6 +11,7 @@ import {
   getPhaseWords,
   type SentenceTemplate,
 } from '@/lib/montree/phonics/phonics-data';
+import { getReadingPhaseForLesson } from '@/lib/montree/english-sequence/lesson-materials';
 
 interface GeneratedSentence {
   text: string;
@@ -32,7 +33,10 @@ const BORDER_COLORS = [
 
 export default function SentenceCardsPage() {
   const searchParams = useSearchParams();
-  const initialPhaseId = searchParams.get('phase') || 'pink1';
+  const lessonParam = searchParams.get('lesson');
+  const lessonNum = lessonParam ? parseInt(lessonParam, 10) : NaN;
+  const lessonPhase = Number.isInteger(lessonNum) ? getReadingPhaseForLesson(lessonNum) : null;
+  const initialPhaseId = lessonPhase || searchParams.get('phase') || 'pink1';
 
   const [selectedPhaseId, setSelectedPhaseId] = useState(initialPhaseId);
   const [printMode, setPrintMode] = useState<PrintMode>('cards');
