@@ -597,6 +597,15 @@ export const TRACY_TOOLS: Tool[] = [
     },
   },
   {
+    name: 'school_pulse',
+    description:
+      "A one-call, school-wide snapshot for the principal: active classrooms, children, and teachers; how many children were photo-observed in the last 7 days (and how many were NOT); open message threads; and parent meetings held in the last 30 days. Use when the principal asks for the big picture — \"how's the school doing\", \"give me a pulse\", \"overview of the whole school\", \"what's the state of things this week\". Takes no inputs.",
+    input_schema: {
+      type: 'object',
+      properties: {},
+    },
+  },
+  {
     name: 'family_context',
     description:
       "Pull a child's whole-family context in one call — the linked parents (names + emails) and the child's siblings at this school. Use when the principal asks about a family as a unit (\"tell me about the Chen family\", \"who are Yo-yo's parents and siblings\", \"does this child have siblings here\") rather than a single child. For a parent's relational profile (archetypes, triggers, temperature) call get_parent_profile with a returned parent id. Pass the child_id from find_children_by_name / child_focus.",
