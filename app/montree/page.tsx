@@ -230,15 +230,13 @@ export default function MontreeLanding() {
         */
         .m-hero-corner-video {
           position: relative;
-          width: 100%;
-          /* Portrait hero (Session 132): phone-shaped 9:16 video, sized like a
-             Reel. ~360px cap so on desktop it reads as a phone preview centred
-             above the title rather than a wide banner; fills the screen on
-             mobile. NOTE: the splash master is currently landscape, so the
-             portrait frame centre-crops it (object-fit: cover) until a
-             portrait-shot 9:16 master is uploaded to montree-media/splash/. */
-          max-width: 360px;
-          margin: 0 auto 44px;
+          /* Portrait 9:16 video. Desktop: the LEFT column of the split hero —
+             a fixed ~380px-wide phone-shaped preview. On ≤880px it returns to a
+             full-width centred clip above the text (see media queries). */
+          flex: 0 0 auto;
+          width: 380px;
+          max-width: 42vw;
+          margin: 0;
           z-index: 2;
         }
         .m-hero-corner-video-frame {
@@ -397,16 +395,23 @@ export default function MontreeLanding() {
           font-size: 0.875rem;
         }
 
-        /* ── Hero ── */
+        /* ── Hero ── (Session 133: split layout)
+           Desktop: two columns — portrait video LEFT, text block RIGHT,
+           both vertically centred. Fills the horizontal space a tall 9:16
+           video would otherwise leave empty. Collapses back to a centred
+           stack at ≤880px (see media queries below). */
         .m-hero {
           position: relative;
           min-height: calc(100vh - 70px);
+          max-width: 1140px;
+          margin: 0 auto;
           display: flex;
-          flex-direction: column;
+          flex-direction: row;
           align-items: center;
           justify-content: center;
-          text-align: center;
-          padding: 120px 32px 140px;
+          gap: clamp(40px, 6vw, 88px);
+          text-align: left;
+          padding: 80px 32px 100px;
         }
         .m-hero .m-label { margin-bottom: 40px; }
         .m-hero-quote {
@@ -461,12 +466,15 @@ export default function MontreeLanding() {
         .m-hero-stack {
           display: flex;
           flex-direction: column;
-          align-items: center;
+          align-items: flex-start;
+          max-width: 30rem;
         }
         .m-hero h1 {
           font-family: var(--font-lora), Georgia, serif;
           font-weight: 400;
-          font-size: clamp(3.25rem, 8vw, 6rem);
+          /* Sized to sit WITH the tagline in the right column, not shout over
+             it (the nav already carries the small wordmark). */
+          font-size: clamp(2.75rem, 5.4vw, 4.5rem);
           line-height: 1.04;
           letter-spacing: -0.025em;
           color: #ffffff;
@@ -630,6 +638,27 @@ export default function MontreeLanding() {
           border: 1px solid rgba(130,217,174,0.18);
           opacity: 0.85;
           flex-shrink: 0;
+        }
+
+        /* ≤880px: the split hero collapses to a single centred column —
+           portrait video on top, text block (centred) below. */
+        @media (max-width: 880px) {
+          .m-hero {
+            flex-direction: column;
+            text-align: center;
+            gap: 0;
+            max-width: 540px;
+            padding: 56px 24px 90px;
+          }
+          .m-hero-corner-video {
+            width: 100%;
+            max-width: 340px;
+            margin: 0 auto 36px;
+          }
+          .m-hero-stack {
+            align-items: center;
+            max-width: 100%;
+          }
         }
 
         @media (max-width: 640px) {
