@@ -147,7 +147,7 @@ export async function POST(
     .eq('id', meeting.parent_id)
     .eq('school_id', auth.schoolId)
     .maybeSingle();
-  const parentName = parent?.name || 'this parent';
+  const parentName = (parent as { name?: string } | null)?.name || 'this parent';
 
   let childName: string | null = null;
   if (meeting.child_id) {
@@ -156,7 +156,7 @@ export async function POST(
       .select('name')
       .eq('id', meeting.child_id)
       .maybeSingle();
-    childName = child?.name ?? null;
+    childName = (child as { name?: string } | null)?.name ?? null;
   }
 
   const existingProfile = await loadParentProfile(

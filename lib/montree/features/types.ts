@@ -59,6 +59,11 @@ export type FeatureKey =
   // set in Railway. Migration 226. See lib/montree/messaging-crypto.ts +
   // docs/handoffs/MONTREE_ENCRYPTION_RUNBOOK.md.
   | 'encryption_v1'
+  // ── Astra/Mira voice + co-pilot + home-learning arc (branch
+  // astra-voice-copilot). All default OFF. ──────────────────────────────
+  | 'voice_astra' // hands-free Astra voice agent (Agora Conversational AI)
+  | 'live_copilot' // live meeting co-pilot suggestions panel
+  | 'home_learning' // home oral-reading tutor surface
   // Language presentation (semester presentation tool — once/twice per year)
   | 'language_presentation'
   // Parent messaging — Session 98 threaded surface at /montree/parent/messages.

@@ -73,7 +73,7 @@ export async function POST(request: NextRequest) {
   if (childErr) {
     return NextResponse.json({ error: childErr.message }, { status: 500 });
   }
-  if (!child || child.school_id !== auth.schoolId) {
+  if (!child || (child as { school_id: string }).school_id !== auth.schoolId) {
     return NextResponse.json({ error: 'child not in this school' }, { status: 403 });
   }
 
