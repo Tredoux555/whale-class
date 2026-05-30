@@ -32,6 +32,7 @@ import LanguageToggle from '@/components/montree/LanguageToggle';
 import TracyAvatar from '@/components/montree/admin/TracyAvatar';
 import ThinkingIndicator from '@/components/montree/admin/ThinkingIndicator';
 import TracyBody from '@/components/montree/admin/TracyBody';
+import ChildPhotoAlbum, { type ChildPhotoItem } from '@/components/montree/admin/ChildPhotoAlbum';
 import ChangelogModal from '@/components/montree/ChangelogModal';
 import TrialExpiringBanner from '@/components/montree/admin/TrialExpiringBanner';
 import TracyProactiveCard from '@/components/montree/admin/TracyProactiveCard';
@@ -129,6 +130,10 @@ interface ConvTurn {
    *  uses this to render a more specific "Preparing the dossier…" line
    *  instead of the generic spinner. */
   preparingDossier?: boolean;
+  /** Session 153 — structured photo array from get_child_photos, rendered as
+   *  a filterable, full-screen-swipeable album (ChildPhotoAlbum) instead of
+   *  inline markdown thumbnails. */
+  childPhotos?: ChildPhotoItem[];
 }
 
 const MAX_PERSISTED_TURNS = 30;
@@ -482,6 +487,12 @@ function AssistantBubble({ turn }: { turn: ConvTurn }) {
               color: T.textSoft,
             }}
           />
+        )}
+
+        {/* Session 153 — filterable, full-screen-swipeable photo album from
+            get_child_photos (structured child_photos SSE event). */}
+        {turn.childPhotos && turn.childPhotos.length > 0 && (
+          <ChildPhotoAlbum photos={turn.childPhotos} />
         )}
 
         {/* Action line — distinct gold treatment, set apart by spacing */}
@@ -866,6 +877,17 @@ export default function AdminAgentPage() {
           // so the UI stops showing "Preparing the dossier…" and the
           // brief renders cleanly.
           updated.preparingDossier = false;
+          break;
+        }
+        case 'child_photos': {
+          // Session 153 — structured photo array; render as a filterable
+          // full-screen album. Validate shape defensively.
+          if (Array.isArray(evt.photos)) {
+            updated.childPhotos = (evt.photos as unknown[]).filter(
+              (p): p is ChildPhotoItem =>
+                !!p && typeof p === 'object' && typeof (p as ChildPhotoItem).url === 'string'
+            );
+          }
           break;
         }
         case 'done': {

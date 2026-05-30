@@ -738,6 +738,26 @@ export async function POST(request: NextRequest) {
                 }
               }
 
+              // Session 153 — when get_child_photos succeeds, emit a dedicated
+              // `child_photos` event carrying the structured photo array (each
+              // with its curriculum area). The UI renders a filterable,
+              // full-screen swipeable album from this — Astra's prose stays a
+              // short narrative and does NOT paste image markdown (avoids
+              // duplicate rendering).
+              if (
+                block.name === 'get_child_photos' &&
+                result.success &&
+                result.data &&
+                typeof result.data === 'object'
+              ) {
+                const d = result.data as { photos?: unknown[] };
+                if (Array.isArray(d.photos) && d.photos.length) {
+                  controller.enqueue(
+                    sse(encoder, { type: 'child_photos', photos: d.photos })
+                  );
+                }
+              }
+
               const resultText = result.success
                 ? JSON.stringify(result.data)
                 : `Error: ${result.error || 'unknown'}`;
