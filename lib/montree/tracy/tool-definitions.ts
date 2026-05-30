@@ -596,4 +596,19 @@ export const TRACY_TOOLS: Tool[] = [
       required: ['child_id'],
     },
   },
+  {
+    name: 'family_context',
+    description:
+      "Pull a child's whole-family context in one call — the linked parents (names + emails) and the child's siblings at this school. Use when the principal asks about a family as a unit (\"tell me about the Chen family\", \"who are Yo-yo's parents and siblings\", \"does this child have siblings here\") rather than a single child. For a parent's relational profile (archetypes, triggers, temperature) call get_parent_profile with a returned parent id. Pass the child_id from find_children_by_name / child_focus.",
+    input_schema: {
+      type: 'object',
+      properties: {
+        child_id: {
+          type: 'string',
+          description: "The child's id (from find_children_by_name / child_focus). Required.",
+        },
+      },
+      required: ['child_id'],
+    },
+  },
 ];
