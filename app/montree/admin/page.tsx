@@ -37,6 +37,7 @@ import ChangelogModal from '@/components/montree/ChangelogModal';
 import TrialExpiringBanner from '@/components/montree/admin/TrialExpiringBanner';
 import TracyProactiveCard from '@/components/montree/admin/TracyProactiveCard';
 import PendingAppointmentsBanner from '@/components/montree/appointments/PendingAppointmentsBanner';
+import AstraVoiceButton from '@/components/montree/voice/AstraVoiceButton';
 // Canonical action-line parser — Session 113 V2 audit MED-5.
 import { splitActionLine } from '@/lib/montree/ai/split-action-line';
 import {
@@ -1285,6 +1286,8 @@ export default function AdminAgentPage() {
             <RotateCcw size={12} strokeWidth={1.75} />
             {t('tracy.newConversation')}
           </button>
+          {/* Hands-free Astra — renders null unless the voice_astra flag is on. */}
+          <AstraVoiceButton principalName={firstName} />
           <button
             type="button"
             onClick={submit}
