@@ -1578,6 +1578,19 @@ export async function executeTracyTool(
           for (const w of works || []) workById.set(w.id, { name: w.name ?? null, area_id: w.area_id ?? null });
         }
 
+        // A work's area_id is a UUID FK → resolve it to the area_key slug
+        // ('practical_life', 'language', …) that getAreaLabel + the album's
+        // category ordering expect (NOT the raw UUID).
+        const areaUuids = [...new Set([...workById.values()].map((w) => w.area_id).filter(Boolean))] as string[];
+        const areaKeyByUuid = new Map<string, string>();
+        if (areaUuids.length) {
+          const { data: areas } = await supabase
+            .from('montree_classroom_curriculum_areas')
+            .select('id, area_key')
+            .in('id', areaUuids);
+          for (const a of areas || []) areaKeyByUuid.set(a.id, a.area_key);
+        }
+
         const OBSERVATIONS_KEY = 'observations';
         const observationsLabel =
           ({ en: 'Observations', es: 'Observaciones', zh: '观察', de: 'Beobachtungen', fr: 'Observations', pt: 'Observações', nl: 'Observaties', it: 'Osservazioni', ja: '観察', ko: '관찰', uk: 'Спостереження', ru: 'Наблюдения' } as Record<string, string>)[locale] || 'Observations';
@@ -1585,15 +1598,15 @@ export async function executeTracyTool(
         const photos = (rows || []).map((r) => {
           const path = r.thumbnail_path || r.storage_path;
           const w = r.work_id ? workById.get(r.work_id) : undefined;
-          const areaId = w?.area_id || null;
+          const areaSlug = w?.area_id ? areaKeyByUuid.get(w.area_id) || null : null;
           return {
             url: r.storage_path ? getProxyUrl(r.storage_path) : null,
             thumbnail_url: path ? getProxyUrl(path) : null,
             caption: r.caption || null,
             captured_at: r.captured_at,
             work: w?.name || null,
-            area_key: areaId || OBSERVATIONS_KEY,
-            area_label: areaId ? getAreaLabel(areaId, locale) : observationsLabel,
+            area_key: areaSlug || OBSERVATIONS_KEY,
+            area_label: areaSlug ? getAreaLabel(areaSlug, locale) : observationsLabel,
           };
         }).filter((p) => p.url);
 
