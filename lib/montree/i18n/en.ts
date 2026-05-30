@@ -4177,6 +4177,26 @@ export const en = {
   'landing.closing.cta': 'Get started',
   'landing.quote.body': 'Play is the work of the child.',
   'landing.quote.attribution': 'Maria Montessori',
+  // Explainer nav + splash teaser strip
+  'landing.nav.explainer': 'Explainer',
+  'landing.explainerTeaser.label': 'See it in two minutes',
+  'landing.explainerTeaser.title': 'Watch Montree work.',
+  'landing.explainerTeaser.body': 'Short, honest explainers — one for every part of Montree. No demo to book. No sales call. Just press play.',
+  'landing.explainerTeaser.cta': 'Watch the explainers',
+
+  // Explainer page (montree.xyz/montree/explainer)
+  'explainer.nav.back': 'Back to home',
+  'explainer.hero.label': 'The explainer series',
+  'explainer.hero.title': 'See exactly what Montree does.',
+  'explainer.hero.sub': 'A short film for every part of Montree — what it does, who it is for, and the hours it hands back. Press play on any one.',
+  'explainer.hero.cta': 'Try it free for 7 days',
+  'explainer.features.label': 'Feature by feature',
+  'explainer.features.title': 'Every part of Montree, explained.',
+  'explainer.comingSoon': 'Coming soon',
+  'explainer.watch': 'Watch',
+  'explainer.closing.title': 'Stop watching. Start teaching.',
+  'explainer.closing.body': 'Your first 7 days are free while you set things up — the AI is on us. One plan. No tiers. No contracts.',
+  'explainer.closing.cta': 'Get started',
 
   // Classroom Overview
   'classroomOverview.shelfTab': 'Shelf Overview',

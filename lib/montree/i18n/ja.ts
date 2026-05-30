@@ -5190,4 +5190,23 @@ export const ja: Record<string, string> = {
 
   // ─── Auto-filled missing keys (from Apr 30 audit) ───
   'calendar.manageAvailability': '私の予定を設定します',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'landing.nav.explainer': '解説動画',
+  'landing.explainerTeaser.label': '2分で確認',
+  'landing.explainerTeaser.title': 'Montreeの実際の使い方を見る',
+  'landing.explainerTeaser.body': '短くて正直な解説動画です。Montreeのあらゆる機能に対応しています。デモの予約は不要。営業の電話もありません。再生ボタンを押すだけです。',
+  'landing.explainerTeaser.cta': '解説動画を見る',
+  'explainer.nav.back': 'ホームに戻る',
+  'explainer.hero.label': '解説動画シリーズ',
+  'explainer.hero.title': 'Montreeの全機能を詳しく確認できます',
+  'explainer.hero.sub': 'Montreeのあらゆる機能について、短い動画で説明します。機能の概要、対象者、そして時間の節約について。いずれかの動画を再生してください。',
+  'explainer.hero.cta': '7日間無料で試す',
+  'explainer.features.label': '機能ごとの説明',
+  'explainer.features.title': 'Montreeのすべての機能を詳しく解説',
+  'explainer.comingSoon': '近日公開',
+  'explainer.watch': '動画を見る',
+  'explainer.closing.title': '動画を見終わったら、教えることを始めましょう。',
+  'explainer.closing.body': '最初の7日間は無料です。セットアップの間、AIはすべてお任せください。プランは1つだけ。段階的な料金設定や契約はありません。',
+  'explainer.closing.cta': '始める',
 };

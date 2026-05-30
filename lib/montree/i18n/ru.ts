@@ -5187,4 +5187,23 @@ export const ru: Record<string, string> = {
 
   // ─── Auto-filled missing keys (from Apr 30 audit) ───
   'calendar.manageAvailability': 'Установить мою доступность',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'landing.nav.explainer': 'Демонстрация',
+  'landing.explainerTeaser.label': 'Посмотрите за две минуты',
+  'landing.explainerTeaser.title': 'Посмотрите, как работает Montree.',
+  'landing.explainerTeaser.body': 'Короткие и честные демонстрации — по одной для каждого раздела Montree. Никаких демо для бронирования. Никаких звонков с продажами. Просто нажмите воспроизведение.',
+  'landing.explainerTeaser.cta': 'Смотрите демонстрации',
+  'explainer.nav.back': 'Вернуться на главную',
+  'explainer.hero.label': 'Серия демонстраций',
+  'explainer.hero.title': 'Посмотрите, что именно делает Montree.',
+  'explainer.hero.sub': 'Короткий фильм для каждого раздела Montree — что он делает, для кого он предназначен и сколько часов он экономит. Нажмите воспроизведение на любой из них.',
+  'explainer.hero.cta': 'Попробуйте бесплатно в течение 7 дней',
+  'explainer.features.label': 'По функциям',
+  'explainer.features.title': 'Каждый раздел Montree объяснен.',
+  'explainer.comingSoon': 'Скоро',
+  'explainer.watch': 'Смотреть',
+  'explainer.closing.title': 'Перестаньте смотреть. Начните преподавать.',
+  'explainer.closing.body': 'Первые 7 дней бесплатны, пока вы все настраиваете — ИИ за наш счет. Один план. Без уровней. Без контрактов.',
+  'explainer.closing.cta': 'Начать',
 };

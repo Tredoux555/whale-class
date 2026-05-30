@@ -5190,4 +5190,23 @@ export const fr: Record<string, string> = {
 
   // ─── Auto-filled missing keys (from Apr 30 audit) ───
   'calendar.manageAvailability': 'Définir ma disponibilité',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'landing.nav.explainer': 'Guide explicatif',
+  'landing.explainerTeaser.label': 'Découvrez-le en deux minutes',
+  'landing.explainerTeaser.title': 'Montree en action.',
+  'landing.explainerTeaser.body': 'Des guides explicatifs courts et honnêtes — un pour chaque partie de Montree. Aucune démo à réserver. Aucun appel commercial. Il suffit d\'appuyer sur lecture.',
+  'landing.explainerTeaser.cta': 'Regarder les guides explicatifs',
+  'explainer.nav.back': 'Retour à l\'accueil',
+  'explainer.hero.label': 'La série de guides explicatifs',
+  'explainer.hero.title': 'Découvrez exactement ce que Montree fait.',
+  'explainer.hero.sub': 'Un court film pour chaque partie de Montree — ce qu\'il fait, à qui il s\'adresse, et le temps qu\'il vous redonne. Appuyez sur lecture pour n\'importe lequel.',
+  'explainer.hero.cta': 'Essayez gratuitement pendant 7 jours',
+  'explainer.features.label': 'Fonctionnalité par fonctionnalité',
+  'explainer.features.title': 'Chaque partie de Montree, expliquée.',
+  'explainer.comingSoon': 'Bientôt disponible',
+  'explainer.watch': 'Regarder',
+  'explainer.closing.title': 'Arrêtez de regarder. Commencez à enseigner.',
+  'explainer.closing.body': 'Vos 7 premiers jours sont gratuits pendant que vous configurez tout — l\'IA est offerte. Un seul forfait. Aucune catégorie. Aucun contrat.',
+  'explainer.closing.cta': 'Commencer',
 };

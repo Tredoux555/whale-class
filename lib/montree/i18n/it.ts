@@ -5190,4 +5190,23 @@ export const it: Record<string, string> = {
 
   // ─── Auto-filled missing keys (from Apr 30 audit) ───
   'calendar.manageAvailability': 'Imposta la mia disponibilità',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'landing.nav.explainer': 'Spiegazione',
+  'landing.explainerTeaser.label': 'Vedi in due minuti',
+  'landing.explainerTeaser.title': 'Guarda Montree in azione.',
+  'landing.explainerTeaser.body': 'Spiegazioni brevi e sincere — una per ogni parte di Montree. Nessuna demo da prenotare. Nessuna call commerciale. Basta premere play.',
+  'landing.explainerTeaser.cta': 'Guarda le spiegazioni',
+  'explainer.nav.back': 'Torna alla home',
+  'explainer.hero.label': 'La serie di spiegazioni',
+  'explainer.hero.title': 'Scopri esattamente cosa fa Montree.',
+  'explainer.hero.sub': 'Un breve video per ogni parte di Montree — cosa fa, per chi è, e le ore che riconsegna. Premi play su uno qualsiasi.',
+  'explainer.hero.cta': 'Provalo gratis per 7 giorni',
+  'explainer.features.label': 'Funzione per funzione',
+  'explainer.features.title': 'Ogni parte di Montree, spiegata.',
+  'explainer.comingSoon': 'Presto disponibile',
+  'explainer.watch': 'Guarda',
+  'explainer.closing.title': 'Smetti di guardare. Inizia a insegnare.',
+  'explainer.closing.body': 'I tuoi primi 7 giorni sono gratuiti mentre configuri tutto — l\'IA è a nostre spese. Un piano. Nessun livello. Nessun contratto.',
+  'explainer.closing.cta': 'Inizia',
 };
