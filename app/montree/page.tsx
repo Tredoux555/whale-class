@@ -22,12 +22,11 @@ import MontreeLogo from '@/components/montree/MonteeLogo';
 // proxy URL is unchanged.
 const SPLASH_VIDEOS = {
   en: {
-    // v3 (Session 132) = portrait 9:16 master, downscaled 720x1280 + CRF26 +
-    // faststart (50MB→4.3MB) for instant, progressive playback. Versioned
-    // filename busts the CDN cache. Poster is a portrait frame so the brief
-    // pre-play frame matches the 9:16 video.
-    src: '/api/montree/media/proxy/splash/montree-splash-video-v3.mp4',
-    poster: '/montree-splash-video-v3-poster.jpg',
+    // v4 (Session 134) = the all-encompassing MAIN EXPLAINER film as the EN
+    // hero (portrait 9:16, 720x1280 CRF26 faststart, ~5.9MB). The 中文 slot
+    // keeps the Astra clip. Versioned filename busts the CDN cache.
+    src: '/api/montree/media/proxy/splash/montree-splash-video-v4.mp4',
+    poster: '/montree-splash-video-v4-poster.jpg',
     label: 'EN',
   },
   zh: {
