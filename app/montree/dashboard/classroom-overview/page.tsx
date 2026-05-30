@@ -1686,11 +1686,11 @@ function ChildProgressCard({
             <button
               type="button"
               onClick={() => window.open(
-                `/montree/library/tools/phonics-fast/three-part-cards?lesson=${child.current_lesson}`,
+                `/montree/library/lesson/${child.current_lesson}`,
                 '_blank',
                 'noopener,noreferrer',
               )}
-              title={`Make three-part cards scoped to Lesson ${child.current_lesson}`}
+              title={`Open the materials launcher for Lesson ${child.current_lesson}`}
               style={{
                 marginTop: 6,
                 marginLeft: 8,
