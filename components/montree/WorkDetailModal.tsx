@@ -4,7 +4,7 @@
 
 'use client';
 
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef } from 'react';
 import { toast } from 'sonner';
 import { useI18n } from '@/lib/montree/i18n';
 import { useMedia } from '@/lib/media/useMedia';
@@ -173,16 +173,22 @@ export default function WorkDetailModal({
     }
   };
 
-  const stopCamera = useCallback(() => {
+  // NOTE (Session 140): these were `useCallback`s declared AFTER the
+  // `if (!isOpen || !assignment) return null` early return above — a
+  // react-hooks/rules-of-hooks violation (hook count changed when isOpen
+  // toggled, risking "rendered more hooks than previous render"). Converted to
+  // plain functions to match the other handlers in this file; neither is used
+  // in a dependency array, so memoization was never load-bearing.
+  const stopCamera = () => {
     if (streamRef.current) {
       streamRef.current.getTracks().forEach(track => track.stop());
       streamRef.current = null;
     }
     setCameraOpen(false);
     setCameraReady(false);
-  }, []);
+  };
 
-  const capturePhoto = useCallback(async () => {
+  const capturePhoto = async () => {
     if (!videoRef.current || !canvasRef.current || !cameraReady) return;
     
     const video = videoRef.current;
@@ -228,7 +234,7 @@ export default function WorkDetailModal({
     }, 'image/jpeg', 0.9);
     
     if (navigator.vibrate) navigator.vibrate(30);
-  }, [cameraReady, stopCamera, capture, childId, childName, assignment, onMediaCaptured]);
+  };
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];

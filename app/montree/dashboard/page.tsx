@@ -340,6 +340,26 @@ export default function DashboardPage() {
     }
   }, [router, session]);
 
+  // ── Principal-without-classroom guard (Session 140 — fixes infinite-skeleton dead-end) ──
+  // The principal JWT carries no classroomId — a pure principal is not bound to
+  // a single classroom — so recoverSession() rebuilds a session with
+  // classroom:null and `childrenUrl` below is null. The child-picker render
+  // guard (`childrenUrl === null` → <DashboardSkeleton/>) then TRAPS the
+  // principal on an infinite skeleton with no give-up path. This is exactly the
+  // "principal login isn't working / dashboard stuck loading" symptom: a
+  // principal who lands on /montree/dashboard (PWA start_url, a bookmark, or
+  // manual nav) instead of their real home at /montree/admin (their login
+  // redirect target). Bounce them to /montree/admin rather than dead-ending.
+  // Founder-principals who ALSO have a classroom keep using this dashboard
+  // normally (guard is skipped when a classroom is present).
+  useEffect(() => {
+    if (!session) return;
+    if (session.classroom?.id) return; // has a classroom — child-picker is valid
+    if (session.teacher?.role === 'principal') {
+      router.replace('/montree/admin');
+    }
+  }, [session, router]);
+
   // Extract searchParams value once (avoids object reference in deps)
   const justOnboarded = searchParams.get('onboarded') === '1';
 
