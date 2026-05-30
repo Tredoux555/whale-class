@@ -15,14 +15,19 @@ import MontreeLogo from '@/components/montree/MonteeLogo';
 // src + poster. Independent state by design — a French principal browsing the
 // site shouldn't be forced into the English video, and we don't want the EN
 // video to disappear the moment someone clicks 中文 on the UI toggle.
+// Videos are served from the montree-media Supabase bucket via the CDN-cached
+// media proxy (range-seekable, Cloudflare edge cache) rather than committed to
+// /public — they're 48-65MB each and don't belong in git. Posters stay local
+// (tiny). To swap a splash video: re-upload to montree-media/splash/ and the
+// proxy URL is unchanged.
 const SPLASH_VIDEOS = {
   en: {
-    src: '/montree-splash-video.mp4',
+    src: '/api/montree/media/proxy/splash/montree-splash-video.mp4',
     poster: '/montree-splash-video-poster.jpg',
     label: 'EN',
   },
   zh: {
-    src: '/montree-splash-video-zh.mp4',
+    src: '/api/montree/media/proxy/splash/montree-splash-video-zh.mp4',
     poster: '/montree-splash-video-zh-poster.jpg',
     label: '中文',
   },
