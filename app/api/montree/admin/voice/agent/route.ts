@@ -94,6 +94,10 @@ export async function POST(request: NextRequest) {
       systemPrompt,
       greeting,
       language,
+      // Enables the tool-capable shim when VOICE_LLM_SHARED_SECRET is set.
+      publicOrigin: new URL(request.url).origin,
+      schoolId: auth.schoolId,
+      principalId: auth.userId,
     });
   } catch (err) {
     return NextResponse.json(
