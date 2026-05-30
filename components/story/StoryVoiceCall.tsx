@@ -162,7 +162,11 @@ export default function StoryVoiceCall({ callId, as, authToken, onClose }: Story
         if (cancelled || !tokenData) return;
         const videoMode = tokenData.mode === 'video';
         setIsVideo(videoMode);
-        setRemoteName(tokenData.remoteName || (as === 'admin' ? 'P' : 'J'));
+        // Belt-and-braces: the in-call name is ALWAYS a facade. Anything that
+        // isn't already 'J'/'P' is coerced to the role-based facade so a real
+        // identity can never surface, even from a stale/edge-case payload.
+        const rn = tokenData.remoteName;
+        setRemoteName(rn === 'J' || rn === 'P' ? rn : as === 'admin' ? 'P' : 'J');
 
         const mod = await import('agora-rtc-sdk-ng');
         if (cancelled) return;

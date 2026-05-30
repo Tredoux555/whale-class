@@ -52,7 +52,8 @@ export async function GET(req: NextRequest) {
       id: data.id,
       status: data.status,
       mode: data.mode === 'video' ? 'video' : 'voice',
-      from: data.initiated_by,
+      // Montree facade — never send the real caller identity to the client.
+      from: 'Montree',
     },
   });
 }
