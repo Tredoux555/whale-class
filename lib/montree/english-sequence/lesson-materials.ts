@@ -109,3 +109,23 @@ export function lessonCoverage(): { covered: number[]; uncovered: number[] } {
   }
   return { covered, uncovered };
 }
+
+/** What a material generator needs to scope itself to a single lesson:
+ *  the phonics-data phase to select, and the group ids within it to keep
+ *  ticked. If the lesson's groups span multiple phases, we scope to the first
+ *  group's phase (single-phase generators can only show one phase at a time). */
+export interface LessonScope {
+  phaseId: string | null;
+  groupIds: string[];
+}
+
+export function getLessonScope(lesson: number): LessonScope {
+  const groups = getGroupsForLesson(lesson);
+  if (groups.length === 0) return { phaseId: null, groupIds: [] };
+  const phaseId = groups[0].phaseId;
+  const groupIds = groups
+    .filter((pg) => pg.phaseId === phaseId)
+    .map((pg) => pg.group.id)
+    .filter((id): id is string => Boolean(id));
+  return { phaseId, groupIds };
+}

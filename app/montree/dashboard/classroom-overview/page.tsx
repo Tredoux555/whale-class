@@ -17,6 +17,7 @@ import { useMontreeData } from '@/lib/montree/cache';
 import { AREA_CONFIG } from '@/lib/montree/types';
 import { normalizeArea } from '@/components/montree/shared/AreaBadge';
 import { useI18n, getIntlLocale, type TranslationKey } from '@/lib/montree/i18n';
+import { hasLessonMaterials } from '@/lib/montree/english-sequence/lesson-coverage';
 
 interface FocusWork {
   name: string;
@@ -1681,6 +1682,35 @@ function ChildProgressCard({
             </span>
             <BookOpen size={13} strokeWidth={1.75} style={{ flexShrink: 0, opacity: 0.8 }} />
           </button>
+          {hasLessonMaterials(child.current_lesson) && (
+            <button
+              type="button"
+              onClick={() => window.open(
+                `/montree/library/tools/phonics-fast/three-part-cards?lesson=${child.current_lesson}`,
+                '_blank',
+                'noopener,noreferrer',
+              )}
+              title={`Make three-part cards scoped to Lesson ${child.current_lesson}`}
+              style={{
+                marginTop: 6,
+                marginLeft: 8,
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 7,
+                fontSize: 12,
+                color: '#34d399',
+                background: 'rgba(52,211,153,0.10)',
+                border: '1px solid rgba(52,211,153,0.30)',
+                borderRadius: 8,
+                padding: '5px 9px',
+                cursor: 'pointer',
+                fontFamily: 'inherit',
+              }}
+            >
+              <Printer size={13} strokeWidth={1.75} style={{ flexShrink: 0 }} />
+              <span>Make materials</span>
+            </button>
+          )}
           {missingThisWeek && (
             <div style={{ marginTop: 6 }}>
               <span style={{

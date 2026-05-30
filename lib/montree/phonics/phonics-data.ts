@@ -14,7 +14,9 @@ export interface PhonicsWord {
 }
 
 export interface PhonicsWordGroup {
-  id?: string;
+  // Required: every group carries a stable id (used for selection state in the
+  // generators and for lesson scoping). All groups in phonics-data set one.
+  id: string;
   label: string;
   description: string;
   /**
@@ -93,6 +95,7 @@ export const BEGINNING_SOUNDS: PhonicsPhase = {
   description: 'Pre-reading vocabulary building. Children learn object names and associate beginning sounds. These words and pictures reappear throughout the phonics journey.',
   groups: [
     {
+      id: 'a-a-as-in-apple',
       label: 'A — /a/ as in apple',
       description: 'Words starting with the /a/ sound',
       lessonNums: [6],
@@ -105,6 +108,7 @@ export const BEGINNING_SOUNDS: PhonicsPhase = {
       ],
     },
     {
+      id: 'b-b-as-in-bus',
       label: 'B — /b/ as in bus',
       description: 'Words starting with the /b/ sound',
       lessonNums: [22],
@@ -117,6 +121,7 @@ export const BEGINNING_SOUNDS: PhonicsPhase = {
       ],
     },
     {
+      id: 'c-k-as-in-cat',
       label: 'C — /k/ as in cat',
       description: 'Words starting with the /k/ sound',
       lessonNums: [15],
@@ -129,6 +134,7 @@ export const BEGINNING_SOUNDS: PhonicsPhase = {
       ],
     },
     {
+      id: 'd-d-as-in-dog',
       label: 'D — /d/ as in dog',
       description: 'Words starting with the /d/ sound',
       lessonNums: [12],
@@ -141,6 +147,7 @@ export const BEGINNING_SOUNDS: PhonicsPhase = {
       ],
     },
     {
+      id: 'e-e-as-in-egg',
       label: 'E — /e/ as in egg',
       description: 'Words starting with the /e/ sound',
       lessonNums: [18],
@@ -153,6 +160,7 @@ export const BEGINNING_SOUNDS: PhonicsPhase = {
       ],
     },
     {
+      id: 'f-f-as-in-fish',
       label: 'F — /f/ as in fish',
       description: 'Words starting with the /f/ sound',
       lessonNums: [23],
@@ -165,6 +173,7 @@ export const BEGINNING_SOUNDS: PhonicsPhase = {
       ],
     },
     {
+      id: 'g-g-as-in-goat',
       label: 'G — /g/ as in goat',
       description: 'Words starting with the /g/ sound',
       lessonNums: [13],
@@ -177,6 +186,7 @@ export const BEGINNING_SOUNDS: PhonicsPhase = {
       ],
     },
     {
+      id: 'h-h-as-in-hat',
       label: 'H — /h/ as in hat',
       description: 'Words starting with the /h/ sound',
       lessonNums: [21],
@@ -189,6 +199,7 @@ export const BEGINNING_SOUNDS: PhonicsPhase = {
       ],
     },
     {
+      id: 'i-i-as-in-igloo',
       label: 'I — /i/ as in igloo',
       description: 'Words starting with the /i/ sound',
       lessonNums: [9],
@@ -201,6 +212,7 @@ export const BEGINNING_SOUNDS: PhonicsPhase = {
       ],
     },
     {
+      id: 'j-j-as-in-jug',
       label: 'J — /j/ as in jug',
       description: 'Words starting with the /j/ sound',
       lessonNums: [25],
@@ -213,6 +225,7 @@ export const BEGINNING_SOUNDS: PhonicsPhase = {
       ],
     },
     {
+      id: 'k-k-as-in-kite',
       label: 'K — /k/ as in kite',
       description: 'Words starting with the /k/ sound',
       lessonNums: [16],
@@ -225,6 +238,7 @@ export const BEGINNING_SOUNDS: PhonicsPhase = {
       ],
     },
     {
+      id: 'l-l-as-in-leaf',
       label: 'L — /l/ as in leaf',
       description: 'Words starting with the /l/ sound',
       lessonNums: [24],
@@ -237,6 +251,7 @@ export const BEGINNING_SOUNDS: PhonicsPhase = {
       ],
     },
     {
+      id: 'm-m-as-in-moon',
       label: 'M — /m/ as in moon',
       description: 'Words starting with the /m/ sound',
       lessonNums: [11],
@@ -249,6 +264,7 @@ export const BEGINNING_SOUNDS: PhonicsPhase = {
       ],
     },
     {
+      id: 'n-n-as-in-nest',
       label: 'N — /n/ as in nest',
       description: 'Words starting with the /n/ sound',
       lessonNums: [10],
@@ -261,6 +277,7 @@ export const BEGINNING_SOUNDS: PhonicsPhase = {
       ],
     },
     {
+      id: 'o-o-as-in-octopus',
       label: 'O — /o/ as in octopus',
       description: 'Words starting with the /o/ sound',
       lessonNums: [14],
@@ -273,6 +290,7 @@ export const BEGINNING_SOUNDS: PhonicsPhase = {
       ],
     },
     {
+      id: 'p-p-as-in-pig',
       label: 'P — /p/ as in pig',
       description: 'Words starting with the /p/ sound',
       lessonNums: [8],
@@ -285,6 +303,7 @@ export const BEGINNING_SOUNDS: PhonicsPhase = {
       ],
     },
     {
+      id: 'q-kw-as-in-queen',
       label: 'Q — /kw/ as in queen',
       description: 'Words starting with the /kw/ sound',
       lessonNums: [31],
@@ -297,6 +316,7 @@ export const BEGINNING_SOUNDS: PhonicsPhase = {
       ],
     },
     {
+      id: 'r-r-as-in-rain',
       label: 'R — /r/ as in rain',
       description: 'Words starting with the /r/ sound',
       lessonNums: [20],
@@ -309,6 +329,7 @@ export const BEGINNING_SOUNDS: PhonicsPhase = {
       ],
     },
     {
+      id: 's-s-as-in-sun',
       label: 'S — /s/ as in sun',
       description: 'Words starting with the /s/ sound',
       lessonNums: [5],
@@ -321,6 +342,7 @@ export const BEGINNING_SOUNDS: PhonicsPhase = {
       ],
     },
     {
+      id: 't-t-as-in-tree',
       label: 'T — /t/ as in tree',
       description: 'Words starting with the /t/ sound',
       lessonNums: [7],
@@ -333,6 +355,7 @@ export const BEGINNING_SOUNDS: PhonicsPhase = {
       ],
     },
     {
+      id: 'u-u-as-in-umbrella',
       label: 'U — /u/ as in umbrella',
       description: 'Words starting with the /u/ sound',
       lessonNums: [19],
@@ -345,6 +368,7 @@ export const BEGINNING_SOUNDS: PhonicsPhase = {
       ],
     },
     {
+      id: 'v-v-as-in-van',
       label: 'V — /v/ as in van',
       description: 'Words starting with the /v/ sound',
       lessonNums: [26],
@@ -357,6 +381,7 @@ export const BEGINNING_SOUNDS: PhonicsPhase = {
       ],
     },
     {
+      id: 'w-w-as-in-wave',
       label: 'W — /w/ as in wave',
       description: 'Words starting with the /w/ sound',
       lessonNums: [27],
@@ -369,6 +394,7 @@ export const BEGINNING_SOUNDS: PhonicsPhase = {
       ],
     },
     {
+      id: 'x-ks-as-in-x-ray',
       label: 'X — /ks/ as in x-ray',
       description: 'Words with the /ks/ sound (X has very few starting words in English)',
       lessonNums: [28],
@@ -379,6 +405,7 @@ export const BEGINNING_SOUNDS: PhonicsPhase = {
       ],
     },
     {
+      id: 'y-y-as-in-yam',
       label: 'Y — /y/ as in yam',
       description: 'Words starting with the /y/ sound',
       lessonNums: [29],
@@ -391,6 +418,7 @@ export const BEGINNING_SOUNDS: PhonicsPhase = {
       ],
     },
     {
+      id: 'z-z-as-in-zebra',
       label: 'Z — /z/ as in zebra',
       description: 'Words starting with the /z/ sound',
       lessonNums: [30],
@@ -737,6 +765,7 @@ export const BLUE_1: PhonicsPhase = {
   color: '#3B82F6',
   groups: [
     {
+      id: 'bl-blends',
       label: 'bl- blends',
       description: 'Words starting with bl-',
       lessonNums: [50],
@@ -747,6 +776,7 @@ export const BLUE_1: PhonicsPhase = {
       ],
     },
     {
+      id: 'br-blends',
       label: 'br- blends',
       description: 'Words starting with br-',
       lessonNums: [51],
@@ -757,6 +787,7 @@ export const BLUE_1: PhonicsPhase = {
         { word: 'brig', image: '⛵', miniature: 'small ship model', isNoun: true },
       ],
     },    {
+      id: 'cl-blends',
       label: 'cl- blends',
       description: 'Words starting with cl-',
       lessonNums: [50],
@@ -773,6 +804,7 @@ export const BLUE_1: PhonicsPhase = {
       ],
     },
     {
+      id: 'cr-blends',
       label: 'cr- blends',
       description: 'Words starting with cr-',
       lessonNums: [51],
@@ -785,6 +817,7 @@ export const BLUE_1: PhonicsPhase = {
       ],
     },
     {
+      id: 'dr-blends',
       label: 'dr- blends',
       description: 'Words starting with dr-',
       lessonNums: [51],
@@ -796,6 +829,7 @@ export const BLUE_1: PhonicsPhase = {
         { word: 'drab', image: '🟫', miniature: 'brown fabric swatch', isNoun: false },
       ],
     },    {
+      id: 'fl-blends',
       label: 'fl- blends',
       description: 'Words starting with fl-',
       lessonNums: [50],
@@ -813,6 +847,7 @@ export const BLUE_1: PhonicsPhase = {
       ],
     },
     {
+      id: 'fr-blends',
       label: 'fr- blends',
       description: 'Words starting with fr-',
       lessonNums: [51],
@@ -823,6 +858,7 @@ export const BLUE_1: PhonicsPhase = {
       ],
     },
     {
+      id: 'gl-blends',
       label: 'gl- blends',
       description: 'Words starting with gl-',
       lessonNums: [50],
@@ -835,6 +871,7 @@ export const BLUE_1: PhonicsPhase = {
         { word: 'glut', image: '🍽️', miniature: 'overflowing plate card', isNoun: true },
       ],
     },    {
+      id: 'gr-blends',
       label: 'gr- blends',
       description: 'Words starting with gr-',
       lessonNums: [51],
@@ -851,6 +888,7 @@ export const BLUE_1: PhonicsPhase = {
       ],
     },
     {
+      id: 'pl-blends',
       label: 'pl- blends',
       description: 'Words starting with pl-',
       lessonNums: [50],
@@ -865,6 +903,7 @@ export const BLUE_1: PhonicsPhase = {
       ],
     },
     {
+      id: 'pr-blends',
       label: 'pr- blends',
       description: 'Words starting with pr-',
       lessonNums: [51],
@@ -876,6 +915,7 @@ export const BLUE_1: PhonicsPhase = {
         { word: 'prop', image: '🎭', miniature: 'theater prop', isNoun: true },
       ],
     },    {
+      id: 'sc-sk-blends',
       label: 'sc/sk- blends',
       description: 'Words starting with sc- or sk-',
       lessonNums: [49],
@@ -893,6 +933,7 @@ export const BLUE_1: PhonicsPhase = {
       ],
     },
     {
+      id: 'sl-blends',
       label: 'sl- blends',
       description: 'Words starting with sl-',
       lessonNums: [50],
@@ -910,6 +951,7 @@ export const BLUE_1: PhonicsPhase = {
         { word: 'slum', image: '🏚️', miniature: 'old house card', isNoun: true },
       ],
     },    {
+      id: 'sm-sn-blends',
       label: 'sm/sn- blends',
       description: 'Words starting with sm- or sn-',
       lessonNums: [49],
@@ -925,6 +967,7 @@ export const BLUE_1: PhonicsPhase = {
       ],
     },
     {
+      id: 'sp-blends',
       label: 'sp- blends',
       description: 'Words starting with sp-',
       lessonNums: [49],
@@ -938,6 +981,7 @@ export const BLUE_1: PhonicsPhase = {
       ],
     },
     {
+      id: 'st-blends',
       label: 'st- blends',
       description: 'Words starting with st-',
       lessonNums: [49],
@@ -952,6 +996,7 @@ export const BLUE_1: PhonicsPhase = {
         { word: 'stun', image: '⚡', miniature: 'lightning card', isNoun: false },
       ],
     },    {
+      id: 'sw-blends',
       label: 'sw- blends',
       description: 'Words starting with sw-',
       lessonNums: [49],
@@ -965,6 +1010,7 @@ export const BLUE_1: PhonicsPhase = {
       ],
     },
     {
+      id: 'tr-blends',
       label: 'tr- blends',
       description: 'Words starting with tr-',
       lessonNums: [51],
@@ -988,6 +1034,7 @@ export const BLUE_2: PhonicsPhase = {
   color: '#2563EB',
   groups: [
     {
+      id: 'nd-endings',
       label: '-nd endings',
       description: 'Words ending in -nd',
       lessonNums: [47],
@@ -1008,6 +1055,7 @@ export const BLUE_2: PhonicsPhase = {
       ],
     },
     {
+      id: 'nk-endings',
       label: '-nk endings',
       description: 'Words ending in -nk',
       lessonNums: [48],
@@ -1029,6 +1077,7 @@ export const BLUE_2: PhonicsPhase = {
         { word: 'wink', image: '😉', miniature: 'winking face card', isNoun: false },
       ],
     },    {
+      id: 'nt-endings',
       label: '-nt endings',
       description: 'Words ending in -nt',
       lessonNums: [48],
@@ -1047,6 +1096,7 @@ export const BLUE_2: PhonicsPhase = {
       ],
     },
     {
+      id: 'mp-endings',
       label: '-mp endings',
       description: 'Words ending in -mp',
       lessonNums: [47],
@@ -1065,6 +1115,7 @@ export const BLUE_2: PhonicsPhase = {
         { word: 'romp', image: '🤸', miniature: 'tumbling figure', isNoun: false },
       ],
     },    {
+      id: 'ft-ct-pt-endings',
       label: '-ft/-ct/-pt endings',
       description: 'Words ending in -ft, -ct, or -pt',
       lessonNums: [47, 48],
@@ -1082,6 +1133,7 @@ export const BLUE_2: PhonicsPhase = {
       ],
     },
     {
+      id: 'st-sk-endings',
       label: '-st/-sk endings',
       description: 'Words ending in -st or -sk',
       lessonNums: [47],
@@ -1117,6 +1169,7 @@ export const BLUE_2: PhonicsPhase = {
         { word: 'tusk', image: '🐘', miniature: 'elephant figurine', isNoun: true },
       ],
     },    {
+      id: 'ld-lf-lt-endings',
       label: '-ld/-lf/-lt endings',
       description: 'Words ending in -ld, -lf, or -lt',
       lessonNums: [48],
@@ -1138,6 +1191,7 @@ export const BLUE_2: PhonicsPhase = {
       ],
     },
     {
+      id: 'ng-endings',
       label: '-ng endings',
       description: 'Words ending in -ng',
       lessonNums: [48],
@@ -1171,6 +1225,7 @@ export const BLUE_3: PhonicsPhase = {
   color: '#1D4ED8',
   groups: [
     {
+      id: 'll-endings',
       label: '-ll endings',
       description: 'Words ending in double l',
       lessonNums: [41],
@@ -1204,6 +1259,7 @@ export const BLUE_3: PhonicsPhase = {
         { word: 'yell', image: '📢', miniature: 'megaphone', isNoun: false },
       ],
     },    {
+      id: 'ss-endings',
       label: '-ss endings',
       description: 'Words ending in double s',
       lessonNums: [41],
@@ -1225,6 +1281,7 @@ export const BLUE_3: PhonicsPhase = {
       ],
     },
     {
+      id: 'ff-zz-endings',
       label: '-ff/-zz endings',
       description: 'Words ending in double f or double z',
       lessonNums: [41],
@@ -1244,6 +1301,7 @@ export const BLUE_3: PhonicsPhase = {
         { word: 'jazz', image: '🎷', miniature: 'saxophone card', isNoun: true },
       ],
     },    {
+      id: 'ck-endings',
       label: '-ck endings',
       description: 'Words ending in -ck (makes /k/ sound)',
       lessonNums: [17],
@@ -1294,6 +1352,7 @@ export const GREEN_1: PhonicsPhase = {
   color: '#22C55E',
   groups: [
     {
+      id: 'sh-words',
       label: 'sh words',
       description: 'The /sh/ sound — "sh" makes a single hushing sound',
       lessonNums: [42],
@@ -1325,6 +1384,7 @@ export const GREEN_1: PhonicsPhase = {
         { word: 'mush', image: '🥣', miniature: 'porridge bowl', isNoun: true },
       ],
     },    {
+      id: 'ch-words',
       label: 'ch words',
       description: 'The /ch/ sound — "ch" makes one sound (as in "chop")',
       lessonNums: [43],
@@ -1343,6 +1403,7 @@ export const GREEN_1: PhonicsPhase = {
       ],
     },
     {
+      id: 'th-words',
       label: 'th words',
       description: 'The /th/ sound — "th" makes one sound (voiced or unvoiced)',
       lessonNums: [44, 46],
@@ -1363,6 +1424,7 @@ export const GREEN_1: PhonicsPhase = {
       ],
     },
     {
+      id: 'wh-words',
       label: 'wh words',
       description: 'The /wh/ sound — "wh" (in many dialects sounds like /w/)',
       lessonNums: [45],
@@ -1385,6 +1447,7 @@ export const GREEN_2: PhonicsPhase = {
   color: '#16A34A',
   groups: [
     {
+      id: 'silent-e-a-e-i-e-o-e-u-e',
       label: 'Silent E (a_e, i_e, o_e, u_e)',
       description: 'The silent E makes the vowel say its name',
       lessonNums: [54, 55, 56, 57],
@@ -1421,6 +1484,7 @@ export const GREEN_2: PhonicsPhase = {
         { word: 'tube', image: '🧪', miniature: 'test tube', isNoun: true },
       ],
     },    {
+      id: 'ai-ay-vowel-teams',
       label: 'ai / ay vowel teams',
       description: 'The long /ā/ sound spelled "ai" (middle) or "ay" (end)',
       lessonNums: [84, 85],
@@ -1448,6 +1512,7 @@ export const GREEN_2: PhonicsPhase = {
       ],
     },
     {
+      id: 'ee-ea-vowel-teams',
       label: 'ee / ea vowel teams',
       description: 'The long /ē/ sound spelled "ee" or "ea"',
       lessonNums: [86, 87],
@@ -1476,6 +1541,7 @@ export const GREEN_2: PhonicsPhase = {
         { word: 'peak', image: '⛰️', miniature: 'mountain card', isNoun: true },
       ],
     },    {
+      id: 'oa-ow-long-o-vowel-teams',
       label: 'oa / ow (long o) vowel teams',
       description: 'The long /ō/ sound spelled "oa" or "ow"',
       lessonNums: [88, 89],
@@ -1500,6 +1566,7 @@ export const GREEN_2: PhonicsPhase = {
       ],
     },
     {
+      id: 'oo-vowel-team',
       label: 'oo vowel team',
       description: 'The /oo/ sounds — long (as in "moon") and short (as in "book")',
       lessonNums: [95, 96],
@@ -1523,6 +1590,7 @@ export const GREEN_2: PhonicsPhase = {
         { word: 'wool', image: '🐑', miniature: 'wool ball', isNoun: true },
       ],
     },    {
+      id: 'ou-ow-diphthong-vowel-teams',
       label: 'ou / ow (diphthong) vowel teams',
       description: 'The /ou/ diphthong sound (as in "out" and "cow")',
       lessonNums: [91, 92],
@@ -1553,6 +1621,7 @@ export const GREEN_2: PhonicsPhase = {
       ],
     },
     {
+      id: 'oi-oy-vowel-teams',
       label: 'oi / oy vowel teams',
       description: 'The /oi/ diphthong sound (as in "oil" and "boy")',
       lessonNums: [93, 94],
@@ -1572,6 +1641,7 @@ export const GREEN_2: PhonicsPhase = {
         { word: 'royal', image: '👑', miniature: 'crown card', isNoun: false },
       ],
     },    {
+      id: 'ue-ew-au-aw-vowel-teams',
       label: 'ue / ew / au / aw vowel teams',
       description: 'Less common vowel teams: /ue/ and /ew/ (long u), /au/ and /aw/ (as in "paw")',
       lessonNums: [97, 98, 99],
@@ -1612,6 +1682,7 @@ export const GREEN_3: PhonicsPhase = {
   color: '#15803D',
   groups: [
     {
+      id: 'ar-words-bossy-r',
       label: 'ar words (bossy r)',
       description: 'The /ar/ sound — "ar" as in "car"',
       lessonNums: [71],
@@ -1636,6 +1707,7 @@ export const GREEN_3: PhonicsPhase = {
         { word: 'shark', image: '🦈', miniature: 'shark figurine', isNoun: true },
       ],
     },    {
+      id: 'or-words-bossy-r',
       label: 'or words (bossy r)',
       description: 'The /or/ sound — "or" as in "fork"',
       lessonNums: [72],
@@ -1659,6 +1731,7 @@ export const GREEN_3: PhonicsPhase = {
       ],
     },
     {
+      id: 'er-ir-ur-words-bossy-r',
       label: 'er / ir / ur words (bossy r)',
       description: 'The /er/ sound — spelled "er", "ir", or "ur" (all sound the same)',
       lessonNums: [73, 74, 75],
@@ -1684,6 +1757,7 @@ export const GREEN_3: PhonicsPhase = {
         { word: 'nurse', image: '👩‍⚕️', miniature: 'nurse figurine', isNoun: true },
       ],
     },    {
+      id: 'igh-phonogram',
       label: 'igh phonogram',
       description: 'The /ī/ sound spelled "igh" (the "gh" is silent)',
       lessonNums: [90],
@@ -1702,6 +1776,7 @@ export const GREEN_3: PhonicsPhase = {
       ],
     },
     {
+      id: 'silent-letter-pairs-kn-wr',
       label: 'Silent letter pairs (kn, wr)',
       description: 'Words where the first letter is silent: kn- and wr-',
       lessonNums: [104, 105],
@@ -1721,6 +1796,7 @@ export const GREEN_3: PhonicsPhase = {
       ],
     },
     {
+      id: 'soft-c-and-soft-g',
       label: 'Soft c and soft g',
       description: 'C says /s/ before e, i, y. G says /j/ before e, i, y.',
       lessonNums: [58, 59],
