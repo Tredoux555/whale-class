@@ -15,7 +15,7 @@
 // Pure data/derivation, no React — safe to import on server or client.
 
 import { ALL_PHASES, type PhonicsPhase, type PhonicsWordGroup } from '@/lib/montree/phonics/phonics-data';
-import { TOTAL_LESSONS, getLesson, type EnglishLesson } from './lesson-map';
+import { TOTAL_LESSONS, getLesson, getPhaseFor, type EnglishLesson } from './lesson-map';
 
 /** A group paired with the phonics-data phase it lives in. */
 export interface PhaseGroup {
@@ -128,4 +128,29 @@ export function getLessonScope(lesson: number): LessonScope {
     .map((pg) => pg.group.id)
     .filter((id): id is string => Boolean(id));
   return { phaseId, groupIds };
+}
+
+/** Like getLessonScope, but restricted to phases whose id starts with a prefix
+ *  — for generators locked to one colour band (e.g. the Pink object box only
+ *  shows 'pink*' phases). Returns empty scope when the lesson has no group in
+ *  that band, so the generator keeps its default. */
+export function getLessonScopeForPhase(lesson: number, phasePrefix: string): LessonScope {
+  const groups = getGroupsForLesson(lesson).filter((pg) => pg.phaseId.startsWith(phasePrefix));
+  if (groups.length === 0) return { phaseId: null, groupIds: [] };
+  const phaseId = groups[0].phaseId;
+  const groupIds = groups
+    .filter((pg) => pg.phaseId === phaseId)
+    .map((pg) => pg.group.id)
+    .filter((id): id is string => Boolean(id));
+  return { phaseId, groupIds };
+}
+
+/** For phase-only generators that show reading content (command cards,
+ *  sentence cards, stories): the first phonics-data reading phase of a lesson's
+ *  colour band — pink→'pink1', blue→'blue1', green→'green1'. Returns null for
+ *  out-of-range lessons. Coarser than getLessonScope (band, not exact group),
+ *  which is the right grain for these tools. */
+export function getReadingPhaseForLesson(lesson: number): string | null {
+  const band = getPhaseFor(lesson);
+  return band ? `${band}1` : null;
 }

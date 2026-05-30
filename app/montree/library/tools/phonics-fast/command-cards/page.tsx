@@ -4,6 +4,7 @@ import React, { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { ALL_PHASES, getCommands } from '@/lib/montree/phonics/phonics-data';
+import { getReadingPhaseForLesson } from '@/lib/montree/english-sequence/lesson-materials';
 import { escapeHtml } from '@/lib/sanitize';
 import MontreeLogo from '@/components/montree/MonteeLogo';
 import LanguageToggle from '@/components/montree/LanguageToggle';
@@ -45,7 +46,10 @@ const GRID_LAYOUTS: Record<PrintOptions['cardsPerPage'], { cols: number; rows: n
 
 export default function PhonicsCommandCardsGenerator() {
   const searchParams = useSearchParams();
-  const initialPhase = searchParams.get('phase') || 'pink1';
+  const lessonParam = searchParams.get('lesson');
+  const lessonNum = lessonParam ? parseInt(lessonParam, 10) : NaN;
+  const lessonPhase = Number.isInteger(lessonNum) ? getReadingPhaseForLesson(lessonNum) : null;
+  const initialPhase = lessonPhase || searchParams.get('phase') || 'pink1';
 
   const [selectedPhase, setSelectedPhase] = useState(initialPhase);
   const [selectedLevel, setSelectedLevel] = useState<CardLevel>('all');

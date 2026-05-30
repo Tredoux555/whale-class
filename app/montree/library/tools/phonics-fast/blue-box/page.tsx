@@ -5,10 +5,11 @@
 //             Presentation Guide, Command Cards, Blend Sorting Mat
 'use client';
 
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { ALL_PHASES, getCommands } from '@/lib/montree/phonics/phonics-data';
+import { getLessonScopeForPhase } from '@/lib/montree/english-sequence/lesson-materials';
 import { resolvePhotoBankImages } from '@/lib/montree/phonics/photo-bank-resolver';
 import { escapeHtml } from '@/lib/sanitize';
 import MontreeLogo from '@/components/montree/MonteeLogo';
@@ -142,10 +143,13 @@ const BLUE_AMI_GUIDE = {
 
 export default function BlueBoxPage() {
   const searchParams = useSearchParams();
-  const initialPhase = searchParams.get('phase') || 'blue1';
+  const lessonParam = searchParams.get('lesson');
+  const lessonNum = lessonParam ? parseInt(lessonParam, 10) : NaN;
+  const lessonScope = Number.isInteger(lessonNum) ? getLessonScopeForPhase(lessonNum, 'blue') : null;
+  const initialPhase = lessonScope?.phaseId || searchParams.get('phase') || 'blue1';
 
   const [selectedPhase, setSelectedPhase] = useState(initialPhase.startsWith('blue') ? initialPhase : 'blue1');
-  const [selectedGroups, setSelectedGroups] = useState<string[]>([]);
+  const [selectedGroups, setSelectedGroups] = useState<string[]>(lessonScope?.groupIds ?? []);
   const [printMode, setPrintMode] = useState<PrintMode>('full-set');
   const [borderColor, setBorderColor] = useState('#3B82F6');
   const [borderColorHex, setBorderColorHex] = useState('#3B82F6');
@@ -164,7 +168,9 @@ export default function BlueBoxPage() {
 
   const currentPhase = BLUE_PHASES.find(p => p.id === selectedPhase) || BLUE_PHASES[0];
 
+  const skipInitialSelectAll = useRef<boolean>(Boolean(lessonScope?.groupIds?.length));
   useEffect(() => {
+    if (skipInitialSelectAll.current) { skipInitialSelectAll.current = false; return; }
     if (currentPhase) {
       setSelectedGroups(currentPhase.groups.map(g => g.id || g.label));
     }

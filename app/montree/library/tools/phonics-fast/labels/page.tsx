@@ -6,6 +6,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { ALL_PHASES, getPhaseWords, type PhonicsWord, type PhonicsPhase } from '@/lib/montree/phonics/phonics-data';
+import { getLessonScope } from '@/lib/montree/english-sequence/lesson-materials';
 import { resolvePhotoBankImages } from '@/lib/montree/phonics/photo-bank-resolver';
 import { escapeHtml } from '@/lib/sanitize';
 import MontreeLogo from '@/components/montree/MonteeLogo';
@@ -29,10 +30,13 @@ const BORDER_WIDTHS = {
 
 export default function LabelsPage() {
   const searchParams = useSearchParams();
-  const initialPhase = searchParams.get('phase') || 'pink1';
+  const lessonParam = searchParams.get('lesson');
+  const lessonNum = lessonParam ? parseInt(lessonParam, 10) : NaN;
+  const lessonScope = Number.isInteger(lessonNum) ? getLessonScope(lessonNum) : null;
+  const initialPhase = lessonScope?.phaseId || searchParams.get('phase') || 'pink1';
 
   const [selectedPhase, setSelectedPhase] = useState(initialPhase);
-  const [selectedGroups, setSelectedGroups] = useState<string[]>([]);
+  const [selectedGroups, setSelectedGroups] = useState<string[]>(lessonScope?.groupIds ?? []);
   const [labelSize, setLabelSize] = useState<LabelSize>('medium');
   const [borderColor, setBorderColor] = useState('#10b981');
   const [borderColorHex, setBorderColorHex] = useState('#10b981');
@@ -55,8 +59,10 @@ export default function LabelsPage() {
 
   const currentPhase = ALL_PHASES.find(p => p.id === selectedPhase);
 
-  // Select all groups by default
+  const skipInitialSelectAll = useRef<boolean>(Boolean(lessonScope?.groupIds?.length));
+  // Select all groups by default (skips the initial lesson-scoped render)
   useEffect(() => {
+    if (skipInitialSelectAll.current) { skipInitialSelectAll.current = false; return; }
     if (currentPhase) {
       setSelectedGroups(currentPhase.groups.map(g => g.id));
     }

@@ -4,6 +4,7 @@ import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { ALL_PHASES, type PhonicsWord } from '@/lib/montree/phonics/phonics-data';
+import { getLessonScope } from '@/lib/montree/english-sequence/lesson-materials';
 import { resolvePhotoBankImages } from '@/lib/montree/phonics/photo-bank-resolver';
 import MontreeLogo from '@/components/montree/MonteeLogo';
 import LanguageToggle from '@/components/montree/LanguageToggle';
@@ -84,10 +85,13 @@ function getSelectedWords(
 
 export default function ReverseBingoPage() {
   const searchParams = useSearchParams();
-  const initialPhaseId = searchParams.get('phase') || 'pink1';
+  const lessonParam = searchParams.get('lesson');
+  const lessonNum = lessonParam ? parseInt(lessonParam, 10) : NaN;
+  const lessonScope = Number.isInteger(lessonNum) ? getLessonScope(lessonNum) : null;
+  const initialPhaseId = lessonScope?.phaseId || searchParams.get('phase') || 'pink1';
 
   const [selectedPhaseId, setSelectedPhaseId] = useState(initialPhaseId);
-  const [selectedGroups, setSelectedGroups] = useState<Set<string>>(new Set());
+  const [selectedGroups, setSelectedGroups] = useState<Set<string>>(new Set(lessonScope?.groupIds ?? []));
   const [boardSize, setBoardSize] = useState<3 | 4 | 5>(4);
   const [numBoards, setNumBoards] = useState(6);
   const [hasFreeSpace, setHasFreeSpace] = useState(false);

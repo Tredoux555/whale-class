@@ -5,10 +5,11 @@
 //             Presentation Sequence Guide, Command Cards, Movable Alphabet Mat
 'use client';
 
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { ALL_PHASES, getCommands } from '@/lib/montree/phonics/phonics-data';
+import { getLessonScopeForPhase } from '@/lib/montree/english-sequence/lesson-materials';
 import { resolvePhotoBankImages } from '@/lib/montree/phonics/photo-bank-resolver';
 import { escapeHtml } from '@/lib/sanitize';
 import MontreeLogo from '@/components/montree/MonteeLogo';
@@ -117,10 +118,13 @@ const PINK_AMI_GUIDE = {
 
 export default function PinkBoxPage() {
   const searchParams = useSearchParams();
-  const initialPhase = searchParams.get('phase') || 'pink1';
+  const lessonParam = searchParams.get('lesson');
+  const lessonNum = lessonParam ? parseInt(lessonParam, 10) : NaN;
+  const lessonScope = Number.isInteger(lessonNum) ? getLessonScopeForPhase(lessonNum, 'pink') : null;
+  const initialPhase = lessonScope?.phaseId || searchParams.get('phase') || 'pink1';
 
   const [selectedPhase, setSelectedPhase] = useState(initialPhase.startsWith('pink') ? initialPhase : 'pink1');
-  const [selectedGroups, setSelectedGroups] = useState<string[]>([]);
+  const [selectedGroups, setSelectedGroups] = useState<string[]>(lessonScope?.groupIds ?? []);
   const [printMode, setPrintMode] = useState<PrintMode>('full-set');
   const [borderColor, setBorderColor] = useState('#ec4899');
   const [borderColorHex, setBorderColorHex] = useState('#ec4899');
@@ -139,8 +143,11 @@ export default function PinkBoxPage() {
 
   const currentPhase = PINK_PHASES.find(p => p.id === selectedPhase) || PINK_PHASES[0];
 
-  // Select all groups by default
+  const skipInitialSelectAll = useRef<boolean>(Boolean(lessonScope?.groupIds?.length));
+  // Select all groups by default (skips the initial lesson-scoped render so the
+  // ?lesson= subset survives).
   useEffect(() => {
+    if (skipInitialSelectAll.current) { skipInitialSelectAll.current = false; return; }
     if (currentPhase) {
       setSelectedGroups(currentPhase.groups.map(g => g.id || g.label));
     }
