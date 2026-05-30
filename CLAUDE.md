@@ -13,6 +13,72 @@ Local path: `/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/whale` (note spa
 
 ---
 
+## 🧠 SESSION 139 (May 30, 2026) — Astra/Mira voice arc + Story Montree-facade
+
+**Canonical handoffs:** `docs/handoffs/ASTRA_MIRA_VOICE_REALTIME_HANDOFF.md`
+(why/what), `ASTRA_MIRA_EXECUTION_SPEC.md` (increments + build status),
+`ASTRA_MIRA_ARCHITECTURE.md` (system design). Branch `astra-voice-copilot`
+merged → main, ending `d99de791`. **All new capabilities are feature-flagged
+OFF by default.**
+
+- **Voice Astra** (hands-free, multilingual). Agora Conversational AI Engine
+  REST `/conversational-ai-agent/v2/projects/{appid}/join` (Basic auth w/
+  `AGORA_CUSTOMER_KEY`/`SECRET` — already in Railway from video calls). Routes:
+  `POST /api/montree/admin/voice/token`, `POST|DELETE /api/montree/admin/voice/agent`.
+  Lib in **`lib/montree/voice-agent/`** (NOT `lib/montree/voice/` — that's the
+  teacher voice-NOTES module). Client: `hooks/useAstraVoice.ts` +
+  `components/montree/voice/AstraVoiceButton.tsx` (wired into the admin composer).
+  Flag `voice_astra`.
+- **Voice ACTIONS** — `app/api/montree/admin/voice/llm/route.ts` is an
+  OpenAI-style shim Agora calls as its "LLM"; it runs Astra's real tool-loop
+  (`TRACY_TOOLS` + `executeTracyTool`) and mints a short-lived principal token
+  (`createMontreeToken`) so the authenticated tool path works without a cookie.
+  Mutations hard-gated on `confirmed:true` (`voice-agent/voice-tools.ts`); auth
+  is fail-closed Bearer + HMAC scope (`voice-agent/llm-auth.ts`). **Needs env
+  `VOICE_LLM_SHARED_SECRET`** — until set, the LLM falls back to direct-Anthropic
+  (talk only, no actions).
+- **Live meeting co-pilot** — `…/parent-meetings/[meetingId]/copilot/route.ts`
+  (Haiku, rolling transcript, never persisted) + `copilot-prompt.ts`.
+  `components/montree/admin/MeetingCopilotPanel.tsx` transcribes ON-DEVICE
+  (Web Speech API) → next-best-response suggestions; wired into the meeting
+  detail page. Flag `live_copilot`.
+- **Learner memory** — migration **244** `montree_child_learning_state`
+  (per child+school; miscues/sounds/sessions; NO audio). `lib/montree/learner/`
+  `loader.ts` + `recorder.ts` + `POST /api/montree/admin/learner/record`.
+  Flag `home_learning` (tutor surface itself is future — gated on an
+  oral-reading accuracy spike).
+- **New Astra tools** (text + voice): `family_context` (child → parents +
+  siblings) and `school_pulse` (school-wide snapshot) in TRACY_TOOLS +
+  executeTracyTool. `consult_guru` already existed.
+- **Story Montree-facade (calls now covert):** push + banner read
+  "Montree — call request / A school would like to talk" (no caller name);
+  in-call names are facades (admin→'P', user→'J'); `current-call` API returns
+  `from:'Montree'` (real `initiated_by` never leaves server); StoryVoiceCall
+  coerces remoteName to J/P only. The two story identities were renamed in the
+  DB **T→J (admin) / Z→P (user)** across all `story_*` tables — required
+  dropping `story_users_username_check` + `story_admin_users_username_check`
+  (they locked usernames to the old set). **Login is now `J` / `P`.**
+
+**Migrations RUN this session (Supabase):** 237–243 + 242b (Ultimate Astra
+parent-meeting/profile/pgvector-corpus/consent) AND new **244**. All 15 objects
+verified present. `MONTREE_ENCRYPTION_KEY` set in Railway (distinct from
+`MESSAGE_ENCRYPTION_KEY`) so meeting transcripts persist.
+
+**New flags (default OFF, in `lib/montree/features/types.ts`):** `voice_astra`,
+`live_copilot`, `home_learning`.
+
+**To verify next:** `VOICE_LLM_SHARED_SECRET` in Railway → flip flags on a test
+school → on-device voice test (Chrome) incl. a confirm-gated action → co-pilot
+on a meeting → oral-reading spike before the home tutor. **Not built
+(deliberate):** outbound calling (needs Agora SIP/number), `synthesize_parent_answer`
+(redundant w/ prepare_parent_meeting + consult_guru).
+
+**Audit:** ESLint 0/0 on all ~24 changed files; full tsc run — new files clean
+(`ignoreBuildErrors:true`; remaining notes are pre-existing `agora-rtc-sdk-ng`
+module-types + loose Supabase row typing, same as existing components).
+
+---
+
 ## 🧠 SESSION 138 (May 30, 2026) — region-swap fallout, large-video vault, Astra album, i18n auto-detect
 
 **Canonical handoff: `docs/handoffs/SESSION_138_HANDOFF.md`.** Pushed `3f8d2b03`→`830443f2` (12 commits). SW bumped **v9→v10**.
