@@ -5599,4 +5599,23 @@ export const zh = {
 
   // ─── Auto-filled missing keys (from Apr 30 audit) ───
   'calendar.manageAvailability': '设置我的可用时间',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'landing.nav.explainer': '说明视频',
+  'landing.explainerTeaser.label': '两分钟了解',
+  'landing.explainerTeaser.title': '看 Montree 如何运作',
+  'landing.explainerTeaser.body': '简洁真实的说明视频 — Montree 的每个功能都有一个。无需预订演示。无销售电话。只需按播放。',
+  'landing.explainerTeaser.cta': '观看说明视频',
+  'explainer.nav.back': '返回首页',
+  'explainer.hero.label': '说明视频系列',
+  'explainer.hero.title': '准确了解 Montree 的功能',
+  'explainer.hero.sub': 'Montree 的每个功能都有一个短视频 — 它的用途、适用对象，以及能为您节省的时间。点击播放任何一个。',
+  'explainer.hero.cta': '免费试用 7 天',
+  'explainer.features.label': '逐个功能',
+  'explainer.features.title': 'Montree 的每个部分，已解析',
+  'explainer.comingSoon': '即将推出',
+  'explainer.watch': '观看',
+  'explainer.closing.title': '停止观看。开始教学。',
+  'explainer.closing.body': '您的前 7 天免费使用，便于您设置 — AI 由我们负责。一个计划。无等级。无合同。',
+  'explainer.closing.cta': '开始使用',
 } as const;

@@ -17,6 +17,17 @@ export interface PhonicsWordGroup {
   id?: string;
   label: string;
   description: string;
+  /**
+   * Lesson numbers (1..128, from english-sequence/lesson-map.ts) whose skill
+   * this group teaches — the join that lets material generators scope to the
+   * exact lesson a child is on, not just the phase. Populated for every group.
+   * See english-sequence/lesson-materials.ts for the resolver helpers.
+   *
+   * Note: the alphabet stage diverges between the two systems (phonics-data
+   * uses CMAT trays, lesson-map uses SATPIN order); these groups are mapped by
+   * the grapheme/skill each teaches, so a group may list several lesson nums.
+   */
+  lessonNums?: number[];
   words: PhonicsWord[];
 }
 
@@ -84,6 +95,7 @@ export const BEGINNING_SOUNDS: PhonicsPhase = {
     {
       label: 'A — /a/ as in apple',
       description: 'Words starting with the /a/ sound',
+      lessonNums: [6],
       words: [
         { word: 'apple', image: '🍎', miniature: 'plastic apple', isNoun: true },
         { word: 'ant', image: '🐜', miniature: 'plastic ant figurine', isNoun: true },
@@ -95,6 +107,7 @@ export const BEGINNING_SOUNDS: PhonicsPhase = {
     {
       label: 'B — /b/ as in bus',
       description: 'Words starting with the /b/ sound',
+      lessonNums: [22],
       words: [
         { word: 'bat', image: '🦇', miniature: 'plastic bat figurine', isNoun: true },
         { word: 'bus', image: '🚌', miniature: 'toy bus', isNoun: true },
@@ -106,6 +119,7 @@ export const BEGINNING_SOUNDS: PhonicsPhase = {
     {
       label: 'C — /k/ as in cat',
       description: 'Words starting with the /k/ sound',
+      lessonNums: [15],
       words: [
         { word: 'cat', image: '🐱', miniature: 'plastic cat figurine', isNoun: true },
         { word: 'cup', image: '🥤', miniature: 'dollhouse cup or shot glass', isNoun: true },
@@ -117,6 +131,7 @@ export const BEGINNING_SOUNDS: PhonicsPhase = {
     {
       label: 'D — /d/ as in dog',
       description: 'Words starting with the /d/ sound',
+      lessonNums: [12],
       words: [
         { word: 'dog', image: '🐕', miniature: 'plastic dog figurine', isNoun: true },
         { word: 'drum', image: '🥁', miniature: 'miniature drum', isNoun: true },
@@ -128,6 +143,7 @@ export const BEGINNING_SOUNDS: PhonicsPhase = {
     {
       label: 'E — /e/ as in egg',
       description: 'Words starting with the /e/ sound',
+      lessonNums: [18],
       words: [
         { word: 'egg', image: '🥚', miniature: 'wooden egg', isNoun: true },
         { word: 'elephant', image: '🐘', miniature: 'elephant figurine', isNoun: true },
@@ -139,6 +155,7 @@ export const BEGINNING_SOUNDS: PhonicsPhase = {
     {
       label: 'F — /f/ as in fish',
       description: 'Words starting with the /f/ sound',
+      lessonNums: [23],
       words: [
         { word: 'fan', image: '🪭', miniature: 'small folding fan', isNoun: true },
         { word: 'frog', image: '🐸', miniature: 'plastic frog', isNoun: true },
@@ -150,6 +167,7 @@ export const BEGINNING_SOUNDS: PhonicsPhase = {
     {
       label: 'G — /g/ as in goat',
       description: 'Words starting with the /g/ sound',
+      lessonNums: [13],
       words: [
         { word: 'gum', image: '💭', miniature: 'bubble gum picture', isNoun: true },
         { word: 'grip', image: '🤝', miniature: 'grip handle', isNoun: true },
@@ -161,6 +179,7 @@ export const BEGINNING_SOUNDS: PhonicsPhase = {
     {
       label: 'H — /h/ as in hat',
       description: 'Words starting with the /h/ sound',
+      lessonNums: [21],
       words: [
         { word: 'hat', image: '🎩', miniature: 'doll hat or mini hat', isNoun: true },
         { word: 'hand', image: '✋', miniature: 'hand model', isNoun: true },
@@ -172,6 +191,7 @@ export const BEGINNING_SOUNDS: PhonicsPhase = {
     {
       label: 'I — /i/ as in igloo',
       description: 'Words starting with the /i/ sound',
+      lessonNums: [9],
       words: [
         { word: 'igloo', image: '🏠', miniature: 'model igloo', isNoun: true },
         { word: 'insect', image: '🐛', miniature: 'plastic insect figurine', isNoun: true },
@@ -183,6 +203,7 @@ export const BEGINNING_SOUNDS: PhonicsPhase = {
     {
       label: 'J — /j/ as in jug',
       description: 'Words starting with the /j/ sound',
+      lessonNums: [25],
       words: [
         { word: 'jug', image: '🫗', miniature: 'small ceramic jug', isNoun: true },
         { word: 'jet', image: '✈️', miniature: 'toy jet', isNoun: true },
@@ -194,6 +215,7 @@ export const BEGINNING_SOUNDS: PhonicsPhase = {
     {
       label: 'K — /k/ as in kite',
       description: 'Words starting with the /k/ sound',
+      lessonNums: [16],
       words: [
         { word: 'kit', image: '🧰', miniature: 'small toolkit', isNoun: true },
         { word: 'king', image: '👑', miniature: 'crown', isNoun: true },
@@ -205,6 +227,7 @@ export const BEGINNING_SOUNDS: PhonicsPhase = {
     {
       label: 'L — /l/ as in leaf',
       description: 'Words starting with the /l/ sound',
+      lessonNums: [24],
       words: [
         { word: 'leg', image: '🦵', miniature: 'doll leg or toy figure', isNoun: true },
         { word: 'lamp', image: '💡', miniature: 'dollhouse lamp', isNoun: true },
@@ -216,6 +239,7 @@ export const BEGINNING_SOUNDS: PhonicsPhase = {
     {
       label: 'M — /m/ as in moon',
       description: 'Words starting with the /m/ sound',
+      lessonNums: [11],
       words: [
         { word: 'map', image: '🗺️', miniature: 'mini folded paper map', isNoun: true },
         { word: 'mast', image: '⛵', miniature: 'boat mast card', isNoun: true },
@@ -227,6 +251,7 @@ export const BEGINNING_SOUNDS: PhonicsPhase = {
     {
       label: 'N — /n/ as in nest',
       description: 'Words starting with the /n/ sound',
+      lessonNums: [10],
       words: [
         { word: 'net', image: '🥅', miniature: 'small fish net or mesh', isNoun: true },
         { word: 'nest', image: '🪺', miniature: 'bird nest', isNoun: true },
@@ -238,6 +263,7 @@ export const BEGINNING_SOUNDS: PhonicsPhase = {
     {
       label: 'O — /o/ as in octopus',
       description: 'Words starting with the /o/ sound',
+      lessonNums: [14],
       words: [
         { word: 'octopus', image: '🐙', miniature: 'octopus figurine', isNoun: true },
         { word: 'orange', image: '🍊', miniature: 'plastic orange', isNoun: true },
@@ -249,6 +275,7 @@ export const BEGINNING_SOUNDS: PhonicsPhase = {
     {
       label: 'P — /p/ as in pig',
       description: 'Words starting with the /p/ sound',
+      lessonNums: [8],
       words: [
         { word: 'pig', image: '🐷', miniature: 'plastic pig figurine', isNoun: true },
         { word: 'plug', image: '🔌', miniature: 'small plug', isNoun: true },
@@ -260,6 +287,7 @@ export const BEGINNING_SOUNDS: PhonicsPhase = {
     {
       label: 'Q — /kw/ as in queen',
       description: 'Words starting with the /kw/ sound',
+      lessonNums: [31],
       words: [
         { word: 'queen', image: '👸', miniature: 'queen figurine', isNoun: true },
         { word: 'quilt', image: '🛏️', miniature: 'small quilt', isNoun: true },
@@ -271,6 +299,7 @@ export const BEGINNING_SOUNDS: PhonicsPhase = {
     {
       label: 'R — /r/ as in rain',
       description: 'Words starting with the /r/ sound',
+      lessonNums: [20],
       words: [
         { word: 'rat', image: '🐀', miniature: 'plastic rat figurine', isNoun: true },
         { word: 'ramp', image: '📐', miniature: 'small ramp', isNoun: true },
@@ -282,6 +311,7 @@ export const BEGINNING_SOUNDS: PhonicsPhase = {
     {
       label: 'S — /s/ as in sun',
       description: 'Words starting with the /s/ sound',
+      lessonNums: [5],
       words: [
         { word: 'sun', image: '☀️', miniature: 'sun charm or cutout', isNoun: true },
         { word: 'sled', image: '🛷', miniature: 'toy sled', isNoun: true },
@@ -293,6 +323,7 @@ export const BEGINNING_SOUNDS: PhonicsPhase = {
     {
       label: 'T — /t/ as in tree',
       description: 'Words starting with the /t/ sound',
+      lessonNums: [7],
       words: [
         { word: 'top', image: '🔝', miniature: 'spinning top toy', isNoun: true },
         { word: 'tram', image: '🚋', miniature: 'toy tram', isNoun: true },
@@ -304,6 +335,7 @@ export const BEGINNING_SOUNDS: PhonicsPhase = {
     {
       label: 'U — /u/ as in umbrella',
       description: 'Words starting with the /u/ sound',
+      lessonNums: [19],
       words: [
         { word: 'umbrella', image: '☂️', miniature: 'mini umbrella', isNoun: true },
         { word: 'unicorn', image: '🦄', miniature: 'unicorn figurine', isNoun: true },
@@ -315,6 +347,7 @@ export const BEGINNING_SOUNDS: PhonicsPhase = {
     {
       label: 'V — /v/ as in van',
       description: 'Words starting with the /v/ sound',
+      lessonNums: [26],
       words: [
         { word: 'van', image: '🚐', miniature: 'toy van', isNoun: true },
         { word: 'vet', image: '👩‍⚕️', miniature: 'vet figurine', isNoun: true },
@@ -326,6 +359,7 @@ export const BEGINNING_SOUNDS: PhonicsPhase = {
     {
       label: 'W — /w/ as in wave',
       description: 'Words starting with the /w/ sound',
+      lessonNums: [27],
       words: [
         { word: 'web', image: '🕸️', miniature: 'plastic spider web', isNoun: true },
         { word: 'wand', image: '🪄', miniature: 'magic wand', isNoun: true },
@@ -337,6 +371,7 @@ export const BEGINNING_SOUNDS: PhonicsPhase = {
     {
       label: 'X — /ks/ as in x-ray',
       description: 'Words with the /ks/ sound (X has very few starting words in English)',
+      lessonNums: [28],
       words: [
         { word: 'xylophone', image: '🎵', miniature: 'toy xylophone', isNoun: true },
         { word: 'x-ray', image: '🩻', miniature: 'x-ray picture card', isNoun: true },
@@ -346,6 +381,7 @@ export const BEGINNING_SOUNDS: PhonicsPhase = {
     {
       label: 'Y — /y/ as in yam',
       description: 'Words starting with the /y/ sound',
+      lessonNums: [29],
       words: [
         { word: 'yam', image: '🍠', miniature: 'small yam or picture', isNoun: true },
         { word: 'yawn', image: '🥱', miniature: 'yawning face card', isNoun: true },
@@ -357,6 +393,7 @@ export const BEGINNING_SOUNDS: PhonicsPhase = {
     {
       label: 'Z — /z/ as in zebra',
       description: 'Words starting with the /z/ sound',
+      lessonNums: [30],
       words: [
         { word: 'zip', image: '🤐', miniature: 'zipper pull or sample', isNoun: true },
         { word: 'zoo', image: '🦁', miniature: 'zoo animal figurine', isNoun: true },
@@ -465,6 +502,7 @@ export const PINK_1: PhonicsPhase = {
       id: 'tray-1',
       label: 'Tray 1 — c m a t',
       description: 'First 4 sounds: /k/ /m/ /a/ /t/',
+      lessonNums: [6, 7, 11, 15],
       words: [
         { word: 'cat', image: '🐱', miniature: 'plastic cat figurine', isNoun: true },
         { word: 'mat', image: '🧶', miniature: 'small felt mat or coaster', isNoun: true },
@@ -474,6 +512,7 @@ export const PINK_1: PhonicsPhase = {
       id: 'tray-2',
       label: 'Tray 1+2 — add d n e k',
       description: 'Add: /d/ /n/ /e/ /k/',
+      lessonNums: [10, 12, 16, 18],
       words: [
         { word: 'can', image: '🥫', miniature: 'miniature tin can', isNoun: true },
         { word: 'men', image: '👨‍👨‍👦', miniature: 'small people figurines', isNoun: true },
@@ -485,6 +524,7 @@ export const PINK_1: PhonicsPhase = {
       id: 'tray-3',
       label: 'Tray 1+2+3 — add s r i p',
       description: 'Add: /s/ /r/ /i/ /p/',
+      lessonNums: [5, 8, 9, 20],
       words: [
         { word: 'sit', image: '🪑', miniature: 'small chair figurine', isNoun: false },
         { word: 'rip', image: '📃', miniature: 'torn paper sample', isNoun: false },
@@ -496,6 +536,7 @@ export const PINK_1: PhonicsPhase = {
       id: 'tray-4',
       label: 'Tray 1+2+3+4 — add h u j l',
       description: 'Add: /h/ /u/ /j/ /l/',
+      lessonNums: [19, 21, 24, 25],
       words: [
         { word: 'hut', image: '🛖', miniature: 'small hut figurine or picture', isNoun: true },
         { word: 'lip', image: '👄', miniature: 'lip picture card', isNoun: true },
@@ -507,6 +548,7 @@ export const PINK_1: PhonicsPhase = {
       id: 'tray-5',
       label: 'Tray 1+2+3+4+5 — add b f o g',
       description: 'Add: /b/ /f/ /o/ /g/',
+      lessonNums: [13, 14, 22, 23],
       words: [
         { word: 'bog', image: '🌿', miniature: 'picture card of bog/marsh', isNoun: true },
         { word: 'fig', image: '🫐', miniature: 'plastic fig or picture', isNoun: true },
@@ -519,6 +561,7 @@ export const PINK_1: PhonicsPhase = {
       id: 'tray-6',
       label: 'All Trays — add v w x y z q',
       description: 'Complete alphabet: /v/ /w/ /x/ /y/ /z/ /kw/',
+      lessonNums: [26, 27, 28, 29, 30, 31],
       words: [
         { word: 'van', image: '🚐', miniature: 'toy van', isNoun: true },
         { word: 'web', image: '🕸️', miniature: 'plastic spider web', isNoun: true },
@@ -544,6 +587,7 @@ export const PINK_2: PhonicsPhase = {
       id: 'short-a',
       label: 'Short A',
       description: 'Words with short /a/ sound (as in "cat")',
+      lessonNums: [35],
       words: [
         { word: 'bat', image: '🦇', miniature: 'plastic bat figurine', isNoun: true },
         { word: 'hat', image: '🎩', miniature: 'doll hat or mini hat', isNoun: true },
@@ -571,6 +615,7 @@ export const PINK_2: PhonicsPhase = {
       id: 'short-e',
       label: 'Short E',
       description: 'Words with short /e/ sound (as in "bed")',
+      lessonNums: [38],
       words: [
         { word: 'hen', image: '🐔', miniature: 'plastic hen figurine', isNoun: true },
         { word: 'pen', image: '🖊️', miniature: 'mini pen or real pen', isNoun: true },
@@ -593,6 +638,7 @@ export const PINK_2: PhonicsPhase = {
       id: 'short-i',
       label: 'Short I',
       description: 'Words with short /i/ sound (as in "sit")',
+      lessonNums: [36],
       words: [
         { word: 'pig', image: '🐷', miniature: 'plastic pig figurine', isNoun: true },
         { word: 'dig', image: '⛏️', miniature: 'mini shovel', isNoun: false },
@@ -620,6 +666,7 @@ export const PINK_2: PhonicsPhase = {
       id: 'short-o',
       label: 'Short O',
       description: 'Words with short /o/ sound (as in "dog")',
+      lessonNums: [37],
       words: [
         { word: 'dog', image: '🐕', miniature: 'plastic dog figurine', isNoun: true },
         { word: 'log', image: '🪵', miniature: 'small wooden dowel', isNoun: true },
@@ -648,6 +695,7 @@ export const PINK_2: PhonicsPhase = {
       id: 'short-u',
       label: 'Short U',
       description: 'Words with short /u/ sound (as in "hut")',
+      lessonNums: [39],
       words: [
         { word: 'cup', image: '🥤', miniature: 'dollhouse cup or shot glass', isNoun: true },
         { word: 'bug', image: '🐛', miniature: 'plastic bug figurine', isNoun: true },
@@ -691,6 +739,7 @@ export const BLUE_1: PhonicsPhase = {
     {
       label: 'bl- blends',
       description: 'Words starting with bl-',
+      lessonNums: [50],
       words: [
         { word: 'blob', image: '🫧', miniature: 'blob of clay', isNoun: true },
         { word: 'blot', image: '🖊️', miniature: 'ink blot card', isNoun: true },
@@ -700,6 +749,7 @@ export const BLUE_1: PhonicsPhase = {
     {
       label: 'br- blends',
       description: 'Words starting with br-',
+      lessonNums: [51],
       words: [
         { word: 'brim', image: '🎩', miniature: 'hat with brim', isNoun: true },
         { word: 'brat', image: '😤', miniature: 'child figurine', isNoun: true },
@@ -709,6 +759,7 @@ export const BLUE_1: PhonicsPhase = {
     },    {
       label: 'cl- blends',
       description: 'Words starting with cl-',
+      lessonNums: [50],
       words: [
         { word: 'clap', image: '👏', miniature: 'clapping hands card', isNoun: false },
         { word: 'clam', image: '🐚', miniature: 'clam shell', isNoun: true },
@@ -724,6 +775,7 @@ export const BLUE_1: PhonicsPhase = {
     {
       label: 'cr- blends',
       description: 'Words starting with cr-',
+      lessonNums: [51],
       words: [
         { word: 'crab', image: '🦀', miniature: 'plastic crab', isNoun: true },
         { word: 'cram', image: '📦', miniature: 'stuffed box picture', isNoun: false },
@@ -735,6 +787,7 @@ export const BLUE_1: PhonicsPhase = {
     {
       label: 'dr- blends',
       description: 'Words starting with dr-',
+      lessonNums: [51],
       words: [
         { word: 'drag', image: '🧳', miniature: 'small suitcase', isNoun: false },
         { word: 'drip', image: '💧', miniature: 'water dropper', isNoun: true },
@@ -745,6 +798,7 @@ export const BLUE_1: PhonicsPhase = {
     },    {
       label: 'fl- blends',
       description: 'Words starting with fl-',
+      lessonNums: [50],
       words: [
         { word: 'flag', image: '🚩', miniature: 'small flag', isNoun: true },
         { word: 'flat', image: '🫓', miniature: 'flat object card', isNoun: false },
@@ -761,6 +815,7 @@ export const BLUE_1: PhonicsPhase = {
     {
       label: 'fr- blends',
       description: 'Words starting with fr-',
+      lessonNums: [51],
       words: [
         { word: 'frog', image: '🐸', miniature: 'plastic frog', isNoun: true },
         { word: 'from', image: '📨', miniature: 'envelope', isNoun: false },
@@ -770,6 +825,7 @@ export const BLUE_1: PhonicsPhase = {
     {
       label: 'gl- blends',
       description: 'Words starting with gl-',
+      lessonNums: [50],
       words: [
         { word: 'glad', image: '😊', miniature: 'happy face card', isNoun: false },
         { word: 'glen', image: '🏞️', miniature: 'valley picture card', isNoun: true },
@@ -781,6 +837,7 @@ export const BLUE_1: PhonicsPhase = {
     },    {
       label: 'gr- blends',
       description: 'Words starting with gr-',
+      lessonNums: [51],
       words: [
         { word: 'grab', image: '✊', miniature: 'grabbing hand card', isNoun: false },
         { word: 'gram', image: '⚖️', miniature: 'small weight', isNoun: true },
@@ -796,6 +853,7 @@ export const BLUE_1: PhonicsPhase = {
     {
       label: 'pl- blends',
       description: 'Words starting with pl-',
+      lessonNums: [50],
       words: [
         { word: 'plan', image: '📋', miniature: 'clipboard', isNoun: true },
         { word: 'plod', image: '🚶', miniature: 'walking figure', isNoun: false },
@@ -809,6 +867,7 @@ export const BLUE_1: PhonicsPhase = {
     {
       label: 'pr- blends',
       description: 'Words starting with pr-',
+      lessonNums: [51],
       words: [
         { word: 'pram', image: '👶', miniature: 'toy pram', isNoun: true },
         { word: 'prep', image: '📝', miniature: 'preparation card', isNoun: false },
@@ -819,6 +878,7 @@ export const BLUE_1: PhonicsPhase = {
     },    {
       label: 'sc/sk- blends',
       description: 'Words starting with sc- or sk-',
+      lessonNums: [49],
       words: [
         { word: 'scab', image: '🩹', miniature: 'bandage', isNoun: true },
         { word: 'scam', image: '🎭', miniature: 'mask card', isNoun: true },
@@ -835,6 +895,7 @@ export const BLUE_1: PhonicsPhase = {
     {
       label: 'sl- blends',
       description: 'Words starting with sl-',
+      lessonNums: [50],
       words: [
         { word: 'slam', image: '🚪', miniature: 'door card', isNoun: false },
         { word: 'slap', image: '✋', miniature: 'hand card', isNoun: false },
@@ -851,6 +912,7 @@ export const BLUE_1: PhonicsPhase = {
     },    {
       label: 'sm/sn- blends',
       description: 'Words starting with sm- or sn-',
+      lessonNums: [49],
       words: [
         { word: 'smog', image: '🌫️', miniature: 'fog picture card', isNoun: true },
         { word: 'smug', image: '😏', miniature: 'smirking face card', isNoun: false },
@@ -865,6 +927,7 @@ export const BLUE_1: PhonicsPhase = {
     {
       label: 'sp- blends',
       description: 'Words starting with sp-',
+      lessonNums: [49],
       words: [
         { word: 'span', image: '📏', miniature: 'ruler', isNoun: true },
         { word: 'spit', image: '💦', miniature: 'water drop card', isNoun: false },
@@ -877,6 +940,7 @@ export const BLUE_1: PhonicsPhase = {
     {
       label: 'st- blends',
       description: 'Words starting with st-',
+      lessonNums: [49],
       words: [
         { word: 'stop', image: '🛑', miniature: 'stop sign', isNoun: false },
         { word: 'stem', image: '🌱', miniature: 'plant stem', isNoun: true },
@@ -890,6 +954,7 @@ export const BLUE_1: PhonicsPhase = {
     },    {
       label: 'sw- blends',
       description: 'Words starting with sw-',
+      lessonNums: [49],
       words: [
         { word: 'swim', image: '🏊', miniature: 'swimmer figurine', isNoun: false },
         { word: 'swan', image: '🦢', miniature: 'swan figurine', isNoun: true },
@@ -902,6 +967,7 @@ export const BLUE_1: PhonicsPhase = {
     {
       label: 'tr- blends',
       description: 'Words starting with tr-',
+      lessonNums: [51],
       words: [
         { word: 'trap', image: '🪤', miniature: 'mouse trap', isNoun: true },
         { word: 'tram', image: '🚋', miniature: 'toy tram', isNoun: true },
@@ -924,6 +990,7 @@ export const BLUE_2: PhonicsPhase = {
     {
       label: '-nd endings',
       description: 'Words ending in -nd',
+      lessonNums: [47],
       words: [
         { word: 'band', image: '🎵', miniature: 'rubber band', isNoun: true },
         { word: 'bend', image: '↩️', miniature: 'bent wire', isNoun: false },
@@ -943,6 +1010,7 @@ export const BLUE_2: PhonicsPhase = {
     {
       label: '-nk endings',
       description: 'Words ending in -nk',
+      lessonNums: [48],
       words: [
         { word: 'bank', image: '🏦', miniature: 'piggy bank', isNoun: true },
         { word: 'bunk', image: '🛏️', miniature: 'bunk bed card', isNoun: true },
@@ -963,6 +1031,7 @@ export const BLUE_2: PhonicsPhase = {
     },    {
       label: '-nt endings',
       description: 'Words ending in -nt',
+      lessonNums: [48],
       words: [
         { word: 'bent', image: '↩️', miniature: 'bent nail', isNoun: false },
         { word: 'dent', image: '🔨', miniature: 'dented can', isNoun: true },
@@ -980,6 +1049,7 @@ export const BLUE_2: PhonicsPhase = {
     {
       label: '-mp endings',
       description: 'Words ending in -mp',
+      lessonNums: [47],
       words: [
         { word: 'bump', image: '🤕', miniature: 'bump picture card', isNoun: true },
         { word: 'camp', image: '⛺', miniature: 'tent figurine', isNoun: true },
@@ -997,6 +1067,7 @@ export const BLUE_2: PhonicsPhase = {
     },    {
       label: '-ft/-ct/-pt endings',
       description: 'Words ending in -ft, -ct, or -pt',
+      lessonNums: [47, 48],
       words: [
         { word: 'raft', image: '🛶', miniature: 'toy raft', isNoun: true },
         { word: 'left', image: '⬅️', miniature: 'left arrow card', isNoun: false },
@@ -1013,6 +1084,7 @@ export const BLUE_2: PhonicsPhase = {
     {
       label: '-st/-sk endings',
       description: 'Words ending in -st or -sk',
+      lessonNums: [47],
       words: [
         { word: 'best', image: '🏆', miniature: 'trophy', isNoun: false },
         { word: 'bust', image: '🗿', miniature: 'bust statue', isNoun: true },
@@ -1047,6 +1119,7 @@ export const BLUE_2: PhonicsPhase = {
     },    {
       label: '-ld/-lf/-lt endings',
       description: 'Words ending in -ld, -lf, or -lt',
+      lessonNums: [48],
       words: [
         { word: 'held', image: '🤲', miniature: 'cupped hands card', isNoun: false },
         { word: 'meld', image: '🔀', miniature: 'merging arrows card', isNoun: false },
@@ -1067,6 +1140,7 @@ export const BLUE_2: PhonicsPhase = {
     {
       label: '-ng endings',
       description: 'Words ending in -ng',
+      lessonNums: [48],
       words: [
         { word: 'bang', image: '💥', miniature: 'explosion card', isNoun: true },
         { word: 'bung', image: '🪵', miniature: 'cork bung', isNoun: true },
@@ -1099,6 +1173,7 @@ export const BLUE_3: PhonicsPhase = {
     {
       label: '-ll endings',
       description: 'Words ending in double l',
+      lessonNums: [41],
       words: [
         { word: 'bell', image: '🔔', miniature: 'small bell', isNoun: true },
         { word: 'bill', image: '💵', miniature: 'dollar bill', isNoun: true },
@@ -1131,6 +1206,7 @@ export const BLUE_3: PhonicsPhase = {
     },    {
       label: '-ss endings',
       description: 'Words ending in double s',
+      lessonNums: [41],
       words: [
         { word: 'bass', image: '🐟', miniature: 'fish figurine', isNoun: true },
         { word: 'boss', image: '👔', miniature: 'tie card', isNoun: true },
@@ -1151,6 +1227,7 @@ export const BLUE_3: PhonicsPhase = {
     {
       label: '-ff/-zz endings',
       description: 'Words ending in double f or double z',
+      lessonNums: [41],
       words: [
         { word: 'buff', image: '💪', miniature: 'muscle card', isNoun: false },
         { word: 'cuff', image: '👔', miniature: 'shirt cuff card', isNoun: true },
@@ -1169,6 +1246,7 @@ export const BLUE_3: PhonicsPhase = {
     },    {
       label: '-ck endings',
       description: 'Words ending in -ck (makes /k/ sound)',
+      lessonNums: [17],
       words: [
         { word: 'back', image: '⬅️', miniature: 'back arrow card', isNoun: true },
         { word: 'beck', image: '🏞️', miniature: 'stream card', isNoun: true },
@@ -1218,6 +1296,7 @@ export const GREEN_1: PhonicsPhase = {
     {
       label: 'sh words',
       description: 'The /sh/ sound — "sh" makes a single hushing sound',
+      lessonNums: [42],
       words: [
         { word: 'ship', image: '🚢', miniature: 'toy ship', isNoun: true },
         { word: 'shop', image: '🏪', miniature: 'toy shop front', isNoun: true },
@@ -1248,6 +1327,7 @@ export const GREEN_1: PhonicsPhase = {
     },    {
       label: 'ch words',
       description: 'The /ch/ sound — "ch" makes one sound (as in "chop")',
+      lessonNums: [43],
       words: [
         { word: 'chip', image: '🍟', miniature: 'potato chip', isNoun: true },
         { word: 'chop', image: '🪓', miniature: 'chopping block', isNoun: false },
@@ -1265,6 +1345,7 @@ export const GREEN_1: PhonicsPhase = {
     {
       label: 'th words',
       description: 'The /th/ sound — "th" makes one sound (voiced or unvoiced)',
+      lessonNums: [44, 46],
       words: [
         { word: 'thin', image: '🧍', miniature: 'thin stick', isNoun: false },
         { word: 'than', image: '⚖️', miniature: 'comparison card', isNoun: false },
@@ -1284,6 +1365,7 @@ export const GREEN_1: PhonicsPhase = {
     {
       label: 'wh words',
       description: 'The /wh/ sound — "wh" (in many dialects sounds like /w/)',
+      lessonNums: [45],
       words: [
         { word: 'whip', image: '🏇', miniature: 'small whip', isNoun: true },
         { word: 'whim', image: '💭', miniature: 'thought bubble card', isNoun: true },
@@ -1305,6 +1387,7 @@ export const GREEN_2: PhonicsPhase = {
     {
       label: 'Silent E (a_e, i_e, o_e, u_e)',
       description: 'The silent E makes the vowel say its name',
+      lessonNums: [54, 55, 56, 57],
       words: [
         { word: 'cake', image: '🎂', miniature: 'toy cake', isNoun: true },
         { word: 'gate', image: '🚪', miniature: 'small gate', isNoun: true },
@@ -1340,6 +1423,7 @@ export const GREEN_2: PhonicsPhase = {
     },    {
       label: 'ai / ay vowel teams',
       description: 'The long /ā/ sound spelled "ai" (middle) or "ay" (end)',
+      lessonNums: [84, 85],
       words: [
         { word: 'rain', image: '🌧️', miniature: 'rain cloud card', isNoun: true },
         { word: 'tail', image: '🐕', miniature: 'dog tail card', isNoun: true },
@@ -1366,6 +1450,7 @@ export const GREEN_2: PhonicsPhase = {
     {
       label: 'ee / ea vowel teams',
       description: 'The long /ē/ sound spelled "ee" or "ea"',
+      lessonNums: [86, 87],
       words: [
         { word: 'bee', image: '🐝', miniature: 'bee figurine', isNoun: true },
         { word: 'fee', image: '💲', miniature: 'price tag', isNoun: true },
@@ -1393,6 +1478,7 @@ export const GREEN_2: PhonicsPhase = {
     },    {
       label: 'oa / ow (long o) vowel teams',
       description: 'The long /ō/ sound spelled "oa" or "ow"',
+      lessonNums: [88, 89],
       words: [
         { word: 'boat', image: '⛵', miniature: 'toy boat', isNoun: true },
         { word: 'coat', image: '🧥', miniature: 'doll coat', isNoun: true },
@@ -1416,6 +1502,7 @@ export const GREEN_2: PhonicsPhase = {
     {
       label: 'oo vowel team',
       description: 'The /oo/ sounds — long (as in "moon") and short (as in "book")',
+      lessonNums: [95, 96],
       words: [
         { word: 'moon', image: '🌙', miniature: 'moon figure', isNoun: true },
         { word: 'food', image: '🍕', miniature: 'food picture card', isNoun: true },
@@ -1438,6 +1525,7 @@ export const GREEN_2: PhonicsPhase = {
     },    {
       label: 'ou / ow (diphthong) vowel teams',
       description: 'The /ou/ diphthong sound (as in "out" and "cow")',
+      lessonNums: [91, 92],
       words: [
         { word: 'out', image: '🚪', miniature: 'exit sign card', isNoun: false },
         { word: 'loud', image: '📢', miniature: 'megaphone', isNoun: false },
@@ -1467,6 +1555,7 @@ export const GREEN_2: PhonicsPhase = {
     {
       label: 'oi / oy vowel teams',
       description: 'The /oi/ diphthong sound (as in "oil" and "boy")',
+      lessonNums: [93, 94],
       words: [
         { word: 'boil', image: '🫕', miniature: 'pot card', isNoun: false },
         { word: 'coin', image: '🪙', miniature: 'coin', isNoun: true },
@@ -1485,6 +1574,7 @@ export const GREEN_2: PhonicsPhase = {
     },    {
       label: 'ue / ew / au / aw vowel teams',
       description: 'Less common vowel teams: /ue/ and /ew/ (long u), /au/ and /aw/ (as in "paw")',
+      lessonNums: [97, 98, 99],
       words: [
         { word: 'blue', image: '🔵', miniature: 'blue card', isNoun: false },
         { word: 'clue', image: '🔍', miniature: 'magnifying glass', isNoun: true },
@@ -1524,6 +1614,7 @@ export const GREEN_3: PhonicsPhase = {
     {
       label: 'ar words (bossy r)',
       description: 'The /ar/ sound — "ar" as in "car"',
+      lessonNums: [71],
       words: [
         { word: 'car', image: '🚗', miniature: 'toy car', isNoun: true },
         { word: 'bar', image: '🍫', miniature: 'chocolate bar', isNoun: true },
@@ -1547,6 +1638,7 @@ export const GREEN_3: PhonicsPhase = {
     },    {
       label: 'or words (bossy r)',
       description: 'The /or/ sound — "or" as in "fork"',
+      lessonNums: [72],
       words: [
         { word: 'for', image: '🎁', miniature: 'gift card', isNoun: false },
         { word: 'or', image: '🔀', miniature: 'choice card', isNoun: false },
@@ -1569,6 +1661,7 @@ export const GREEN_3: PhonicsPhase = {
     {
       label: 'er / ir / ur words (bossy r)',
       description: 'The /er/ sound — spelled "er", "ir", or "ur" (all sound the same)',
+      lessonNums: [73, 74, 75],
       words: [
         { word: 'her', image: '👩', miniature: 'woman figurine', isNoun: false },
         { word: 'fern', image: '🌿', miniature: 'fern leaf', isNoun: true },
@@ -1593,6 +1686,7 @@ export const GREEN_3: PhonicsPhase = {
     },    {
       label: 'igh phonogram',
       description: 'The /ī/ sound spelled "igh" (the "gh" is silent)',
+      lessonNums: [90],
       words: [
         { word: 'high', image: '⬆️', miniature: 'tall tower card', isNoun: false },
         { word: 'light', image: '💡', miniature: 'lightbulb', isNoun: true },
@@ -1610,6 +1704,7 @@ export const GREEN_3: PhonicsPhase = {
     {
       label: 'Silent letter pairs (kn, wr)',
       description: 'Words where the first letter is silent: kn- and wr-',
+      lessonNums: [104, 105],
       words: [
         { word: 'knit', image: '🧶', miniature: 'knitting needles', isNoun: false },
         { word: 'knob', image: '🚪', miniature: 'door knob', isNoun: true },
@@ -1628,6 +1723,7 @@ export const GREEN_3: PhonicsPhase = {
     {
       label: 'Soft c and soft g',
       description: 'C says /s/ before e, i, y. G says /j/ before e, i, y.',
+      lessonNums: [58, 59],
       words: [
         { word: 'cell', image: '🔬', miniature: 'cell picture card', isNoun: true },
         { word: 'cent', image: '🪙', miniature: 'penny', isNoun: true },

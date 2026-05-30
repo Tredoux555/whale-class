@@ -5190,4 +5190,23 @@ export const ko: Record<string, string> = {
 
   // ─── Auto-filled missing keys (from Apr 30 audit) ───
   'calendar.manageAvailability': '제 시간을 설정해요',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'landing.nav.explainer': '설명 영상',
+  'landing.explainerTeaser.label': '2분 안에 확인해보세요',
+  'landing.explainerTeaser.title': 'Montree가 어떻게 작동하는지 보세요.',
+  'landing.explainerTeaser.body': '짧고 솔직한 설명 영상 — Montree의 모든 부분마다 하나씩 준비되어 있어요. 데모 예약할 필요 없고, 영업 전화도 없어요. 그냥 재생만 누르면 돼요.',
+  'landing.explainerTeaser.cta': '설명 영상 보기',
+  'explainer.nav.back': '홈으로 돌아가기',
+  'explainer.hero.label': '설명 영상 시리즈',
+  'explainer.hero.title': 'Montree가 정확히 어떤 역할을 하는지 알아보세요.',
+  'explainer.hero.sub': 'Montree의 모든 부분마다 짧은 영상이 있어요 — 무엇을 하는지, 누구를 위한 건지, 그리고 어떤 시간을 돌려줄 수 있는지 알려드려요. 아무거나 재생해보세요.',
+  'explainer.hero.cta': '7일 무료로 시작해보세요',
+  'explainer.features.label': '기능별 설명',
+  'explainer.features.title': 'Montree의 모든 부분, 설명해드려요.',
+  'explainer.comingSoon': '곧 공개됩니다',
+  'explainer.watch': '보기',
+  'explainer.closing.title': '보기만 하지 말고, 이제 가르쳐보세요.',
+  'explainer.closing.body': '처음 7일은 설정하면서 무료로 사용할 수 있어요 — AI는 우리가 챙겨요. 요금제는 하나뿐이에요. 티어도 없고 계약도 없어요.',
+  'explainer.closing.cta': '시작하기',
 };

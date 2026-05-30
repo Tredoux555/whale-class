@@ -5190,4 +5190,23 @@ export const nl: Record<string, string> = {
 
   // ─── Auto-filled missing keys (from Apr 30 audit) ───
   'calendar.manageAvailability': 'Mijn beschikbaarheid instellen',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'landing.nav.explainer': 'Uitlegvideo',
+  'landing.explainerTeaser.label': 'Bekijk het in twee minuten',
+  'landing.explainerTeaser.title': 'Montree in actie.',
+  'landing.explainerTeaser.body': 'Korte, eerlijke uitlegvideo\'s — één voor elk onderdeel van Montree. Geen demo om in te plannen. Geen verkoopgesprek. Gewoon op play drukken.',
+  'landing.explainerTeaser.cta': 'Bekijk de uitlegvideo\'s',
+  'explainer.nav.back': 'Terug naar startpagina',
+  'explainer.hero.label': 'De uitlegvideoserie',
+  'explainer.hero.title': 'Zie precies wat Montree doet.',
+  'explainer.hero.sub': 'Een korte film voor elk onderdeel van Montree — wat het doet, voor wie het is, en de uren die het u teruggeven. Druk op play bij elk filmpje.',
+  'explainer.hero.cta': 'Probeer het 7 dagen gratis',
+  'explainer.features.label': 'Functie voor functie',
+  'explainer.features.title': 'Elk onderdeel van Montree uitgelegd.',
+  'explainer.comingSoon': 'Binnenkort beschikbaar',
+  'explainer.watch': 'Bekijk',
+  'explainer.closing.title': 'Stop met kijken. Begin met lesgeven.',
+  'explainer.closing.body': 'Uw eerste 7 dagen zijn gratis terwijl u alles inricht — de AI is voor onze rekening. Één plan. Geen niveaus. Geen contracten.',
+  'explainer.closing.cta': 'Aan de slag',
 };

@@ -229,7 +229,13 @@ export default function MontreeLanding() {
         .m-hero-corner-video {
           position: relative;
           width: 100%;
-          max-width: 720px;
+          /* Portrait hero (Session 132): phone-shaped 9:16 video, sized like a
+             Reel. ~360px cap so on desktop it reads as a phone preview centred
+             above the title rather than a wide banner; fills the screen on
+             mobile. NOTE: the splash master is currently landscape, so the
+             portrait frame centre-crops it (object-fit: cover) until a
+             portrait-shot 9:16 master is uploaded to montree-media/splash/. */
+          max-width: 360px;
           margin: 0 auto 44px;
           z-index: 2;
         }
@@ -238,7 +244,7 @@ export default function MontreeLanding() {
           /* aspect-ratio lives on the frame (not the videos) because both
              videos are absolutely positioned inside and stacked — the
              frame defines the height all on its own. */
-          aspect-ratio: 16 / 9;
+          aspect-ratio: 9 / 16;
           border-radius: 12px;
           overflow: hidden;
           background: #06140e;
@@ -523,6 +529,32 @@ export default function MontreeLanding() {
           font-size: 1.0625rem;
         }
 
+        /* ── Explainer teaser strip ──
+           Sits between the three editorial statements and the closing CTA.
+           A quiet invitation into /montree/explainer — not a hard sell. */
+        .m-explainer-teaser {
+          padding: 96px 32px 96px;
+          text-align: center;
+          border-top: 1px solid rgba(255,255,255,0.06);
+        }
+        .m-explainer-teaser .m-label { display: block; margin-bottom: 18px; }
+        .m-explainer-teaser h2 {
+          font-family: var(--font-lora), Georgia, serif;
+          font-weight: 400;
+          font-size: clamp(1.875rem, 4vw, 2.75rem);
+          line-height: 1.15;
+          letter-spacing: -0.02em;
+          color: #ffffff;
+          margin-bottom: 18px;
+        }
+        .m-explainer-teaser-sub {
+          color: rgba(255,255,255,0.55);
+          font-size: 1.0625rem;
+          line-height: 1.7;
+          max-width: 44ch;
+          margin: 0 auto 32px;
+        }
+
         /* ── Closing CTA ── */
         .m-closing {
           padding: 160px 32px 160px;
@@ -613,12 +645,12 @@ export default function MontreeLanding() {
           .m-hero .m-label { margin-bottom: 28px; }
           .m-hero-sub { margin-bottom: 32px; }
           .m-hero-corner-video {
-            /* Mobile: video fills the hero's content area (hero padding
-               is 24px each side → ~94% of viewport on a 380px phone).
-               max-width inherited from desktop rule (720px) — never
-               exceeded on mobile because viewport is well under. */
-            width: 100%;
-            margin: 0 auto 32px;
+            /* Mobile: portrait 9:16. Cap width so a tall phone video doesn't
+               push the title too far down the fold — ~300px → ~533px tall,
+               comfortable on a typical ~700px-tall mobile hero. */
+            width: 86%;
+            max-width: 300px;
+            margin: 0 auto 28px;
           }
           .m-hero-corner-video-frame { border-radius: 10px; }
           .m-hero-corner-video-toggle { top: 6px; right: 6px; }
@@ -630,6 +662,7 @@ export default function MontreeLanding() {
           }
           .m-editorial { padding: 40px 24px 100px; }
           .m-block { padding: 40px 0; }
+          .m-explainer-teaser { padding: 64px 24px 64px; }
           .m-closing { padding: 110px 24px 110px; }
           .m-bottom-quote { padding: 56px 24px 72px; }
           .m-footer { padding: 40px 24px 48px; }
@@ -681,6 +714,21 @@ export default function MontreeLanding() {
               onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.55)')}
             >
               {t('landing.nav.library')}
+            </Link>
+            <Link
+              className="m-nav-link m-nav-link-library"
+              href="/montree/explainer"
+              style={{
+                fontSize: '0.875rem',
+                color: 'rgba(255,255,255,0.55)',
+                textDecoration: 'none',
+                letterSpacing: '0.01em',
+                transition: 'color 200ms ease',
+              }}
+              onMouseEnter={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.85)' )}
+              onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.55)')}
+            >
+              {t('landing.nav.explainer')}
             </Link>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
@@ -883,6 +931,18 @@ export default function MontreeLanding() {
           </article>
 
         </div>
+      </section>
+
+      {/* ── EXPLAINER TEASER ──
+          Invitation into the /montree/explainer video series. Quiet, not a
+          hard sell — a single button into the gallery. */}
+      <section className="m-explainer-teaser" ref={addReveal}>
+        <span className="m-label">{t('landing.explainerTeaser.label')}</span>
+        <h2>{t('landing.explainerTeaser.title')}</h2>
+        <p className="m-explainer-teaser-sub">{t('landing.explainerTeaser.body')}</p>
+        <Link className="m-pill m-pill-lg" href="/montree/explainer">
+          {t('landing.explainerTeaser.cta')}
+        </Link>
       </section>
 
       {/* ── CLOSING CTA ── */}

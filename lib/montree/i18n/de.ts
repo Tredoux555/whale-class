@@ -5190,4 +5190,23 @@ export const de: Record<string, string> = {
 
   // ─── Auto-filled missing keys (from Apr 30 audit) ───
   'calendar.manageAvailability': 'Meine Verfügbarkeit festlegen',
+
+  // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  'landing.nav.explainer': 'Erklärstücke',
+  'landing.explainerTeaser.label': 'Schauen Sie in zwei Minuten',
+  'landing.explainerTeaser.title': 'Montree in Aktion erleben.',
+  'landing.explainerTeaser.body': 'Kurze, ehrliche Erklärstücke — eines für jeden Bereich von Montree. Keine Demos zu buchen. Keine Verkaufsgespräche. Einfach abspielen.',
+  'landing.explainerTeaser.cta': 'Erklärstücke anschauen',
+  'explainer.nav.back': 'Zurück zur Startseite',
+  'explainer.hero.label': 'Die Erklärserie',
+  'explainer.hero.title': 'Sehen Sie genau, was Montree tut.',
+  'explainer.hero.sub': 'Ein Kurzvideo für jeden Bereich von Montree — was es tut, für wen es ist und welche Zeit es Ihnen gibt. Spielen Sie eines ab.',
+  'explainer.hero.cta': '7 Tage kostenlos testen',
+  'explainer.features.label': 'Feature für Feature',
+  'explainer.features.title': 'Jeder Bereich von Montree, erklärt.',
+  'explainer.comingSoon': 'Demnächst verfügbar',
+  'explainer.watch': 'Anschauen',
+  'explainer.closing.title': 'Hören Sie auf zu schauen. Fangen Sie an zu lehren.',
+  'explainer.closing.body': 'Ihre ersten 7 Tage sind kostenlos, während Sie alles einrichten — die KI übernehmen wir. Ein Plan. Keine Abstufungen. Keine Verträge.',
+  'explainer.closing.cta': 'Jetzt starten',
 };
