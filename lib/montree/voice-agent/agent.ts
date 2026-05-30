@@ -20,6 +20,7 @@
 
 import { getAgoraConfig } from '@/lib/montree/appointments/agora/config';
 import { AI_MODEL } from '@/lib/ai/anthropic';
+import { buildVoiceLlmUrl, isVoiceLlmConfigured } from './llm-auth';
 
 const AGORA_CONVOAI_BASE =
   'https://api.agora.io/api/conversational-ai-agent/v2/projects';
@@ -32,6 +33,12 @@ export interface StartVoiceAgentArgs {
   systemPrompt: string;
   greeting: string;
   language: string; // BCP-47, e.g. 'en-US', 'zh-CN'
+  // When all three are set AND VOICE_LLM_SHARED_SECRET is configured, the
+  // agent's LLM is bound to our tool-capable shim instead of Anthropic direct,
+  // giving the voice agent Astra's full (confirm-gated) action tools.
+  publicOrigin?: string;
+  schoolId?: string;
+  principalId?: string;
 }
 
 export interface VoiceAgentStartResult {
@@ -66,6 +73,33 @@ export async function startVoiceAgent(
   // (tts is a REQUIRED block in the Agora contract).
   if (!anthropicKey || !openaiKey) return null;
 
+  // Prefer the tool-capable shim (Astra can act) when it's configured;
+  // otherwise bind the LLM straight to Anthropic for a conversation-only agent.
+  const shimUrl =
+    args.publicOrigin && args.schoolId && args.principalId && isVoiceLlmConfigured()
+      ? buildVoiceLlmUrl(args.publicOrigin, args.schoolId, args.principalId)
+      : null;
+  const llm = shimUrl
+    ? {
+        url: shimUrl,
+        api_key: process.env.VOICE_LLM_SHARED_SECRET,
+        style: 'openai',
+        greeting_message: args.greeting,
+        failure_message: 'One moment please.',
+        max_history: 32,
+        params: { model: AI_MODEL },
+      }
+    : {
+        url: 'https://api.anthropic.com/v1/messages',
+        api_key: anthropicKey,
+        style: 'anthropic',
+        system_messages: [{ role: 'system', content: args.systemPrompt }],
+        greeting_message: args.greeting,
+        failure_message: 'One moment please.',
+        max_history: 32,
+        params: { model: AI_MODEL, max_tokens: 1024 },
+      };
+
   const body = {
     name: `astra-${args.channel}-${Date.now()}`,
     properties: {
@@ -75,16 +109,7 @@ export async function startVoiceAgent(
       remote_rtc_uids: [String(args.principalUid)],
       idle_timeout: 60,
       asr: { language: args.language },
-      llm: {
-        url: 'https://api.anthropic.com/v1/messages',
-        api_key: anthropicKey,
-        style: 'anthropic',
-        system_messages: [{ role: 'system', content: args.systemPrompt }],
-        greeting_message: args.greeting,
-        failure_message: 'One moment please.',
-        max_history: 32,
-        params: { model: AI_MODEL, max_tokens: 1024 },
-      },
+      llm,
       // OpenAI multilingual TTS (key already used for Whisper). Param names
       // follow Agora's TTS Overview — confirm/tune on the first device test.
       tts: {
