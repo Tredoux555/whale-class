@@ -162,7 +162,8 @@ export default function ImportPage() {
         <div className="flex items-center justify-between mb-6">
           <div>
             <Link href="/montree/admin" className="text-emerald-400 hover:text-emerald-300 text-sm mb-2 inline-block">
-              ← {t('import.backToAdmin' as TranslationKey)}
+              {/* Session 140: the translation already includes "←", so the literal arrow here made "← ← Back to Admin". */}
+              {t('import.backToAdmin' as TranslationKey)}
             </Link>
             <h1 className="text-2xl font-bold text-white">📄 {t('import.title' as TranslationKey)}</h1>
             <p className="text-emerald-300/70 mt-1">

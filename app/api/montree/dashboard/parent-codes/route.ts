@@ -10,6 +10,7 @@
 //   - Teachers call this one (classroom-wide).
 
 import { NextRequest, NextResponse } from 'next/server';
+import QRCode from 'qrcode';
 import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 
@@ -75,25 +76,35 @@ export async function GET(request: NextRequest) {
     }
 
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://montree.xyz';
-    const codes = children.map((child) => {
-      const inv = latestPerChild.get(child.id);
-      const code = inv?.invite_code || null;
-      return {
-        child_id: child.id,
-        child_name: child.name,
-        classroom_id: child.classroom_id,
-        invite_id: inv?.id || null,
-        code,
-        parent_url: code ? `${baseUrl}/montree/parent?code=${code}` : null,
-        qr_url: code
-          ? `https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=${encodeURIComponent(
-              `${baseUrl}/montree/parent?code=${code}`
-            )}`
-          : null,
-        expires_at: inv?.expires_at || null,
-        used: !!inv?.used_at,
-      };
-    });
+    // Session 140: QR codes were hot-linked from api.qrserver.com (503s + not in
+    // the CSP img-src allowlist). Generate locally as data: URLs with the
+    // bundled `qrcode` lib — see admin/parent-codes route for the full note.
+    const codes = await Promise.all(
+      children.map(async (child) => {
+        const inv = latestPerChild.get(child.id);
+        const code = inv?.invite_code || null;
+        const parentUrl = code ? `${baseUrl}/montree/parent?code=${code}` : null;
+        let qr_url: string | null = null;
+        if (parentUrl) {
+          try {
+            qr_url = await QRCode.toDataURL(parentUrl, { width: 240, margin: 1 });
+          } catch {
+            qr_url = null;
+          }
+        }
+        return {
+          child_id: child.id,
+          child_name: child.name,
+          classroom_id: child.classroom_id,
+          invite_id: inv?.id || null,
+          code,
+          parent_url: parentUrl,
+          qr_url,
+          expires_at: inv?.expires_at || null,
+          used: !!inv?.used_at,
+        };
+      })
+    );
 
     return NextResponse.json(
       { success: true, codes },
