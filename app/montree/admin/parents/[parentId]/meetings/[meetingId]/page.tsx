@@ -24,6 +24,7 @@ import {
   EyeOff,
   ClipboardEdit,
 } from 'lucide-react';
+import MeetingCopilotPanel from '@/components/montree/admin/MeetingCopilotPanel';
 
 const T = {
   bg: '#0a1a0f',
@@ -275,6 +276,11 @@ export default function MeetingDetailPage() {
               {meeting.duration_minutes ? <span>{meeting.duration_minutes} min</span> : null}
               {analysis?.cost_usd ? <span>${analysis.cost_usd.toFixed(3)} USD</span> : null}
             </p>
+
+            {/* Live co-pilot — on-device transcription → Astra suggestions */}
+            <div style={{ marginTop: 16 }}>
+              <MeetingCopilotPanel meetingId={meetingId} locale={meeting.locale} />
+            </div>
 
             {/* Outcome */}
             {meeting.outcome_notes && (
