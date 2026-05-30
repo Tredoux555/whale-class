@@ -13,6 +13,25 @@ Local path: `/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/whale` (note spa
 
 ---
 
+## 🧠 SESSION 138 (May 30, 2026) — region-swap fallout, large-video vault, Astra album, i18n auto-detect
+
+**Canonical handoff: `docs/handoffs/SESSION_138_HANDOFF.md`.** Pushed `3f8d2b03`→`830443f2` (12 commits). SW bumped **v9→v10**.
+
+Architectural rules locked this session (don't relearn them):
+- **Server-to-self HTTP calls use `http://127.0.0.1:${PORT}`, NEVER the public origin** (`request.nextUrl.origin`). The public hairpin breaks on Railway region/edge moves — that was the "Astra DB is down" outage (`tool-executor.ts` `internalGet`). In-process synthetic-`NextRequest` calls are unaffected.
+- **Large media → vault = service-key TUS *chunked relay* through our server** (`/vault/chunked/init` + `/chunked/chunk`, SSRF-guarded, ≤8MB chunks). Supabase REFUSES public-key resumable uploads (403 RLS, even with an anon policy); single-PUT ceilings out ~30-40MB. `vault-secure` is private, `file_size_limit`=1GB, large videos stored UNENCRYPTED (`encrypted_key='plain'`) — gated by admin + 1h vault token + short signed urls.
+- **Signed vault download urls serve INLINE** (no `download` opt) so video plays + is range-seekable.
+- **`window.open()` after `await` is BLOCKED on iOS** — open the tab synchronously in the tap, then set `.location`; same-tab fallback.
+- **Full-screen overlays inside the chat column must `createPortal(document.body)`** — an ancestor transform traps `position:fixed` (Astra `ChildPhotoAlbum` lightbox).
+- **Structured chat artifacts ride a dedicated SSE event** (`child_photos`, like `meeting_brief`), not parsed markdown.
+- DB direct host `db.<ref>.supabase.co` no longer resolves — use pooler `aws-1-ap-southeast-1.pooler.supabase.com:5432`, user `postgres.<ref>`.
+
+🚨 **HARD RULE — AUDIT BEFORE COMMIT.** Lint is not enough; trace each changed user path end-to-end **incl. mobile/iOS**. This session shipped a `window.open`-after-await mobile regression + a raw-UUID label bug that lint passed.
+
+**Open:** iPhone in-app vault upload still unconfirmed (likely was the stale v9 shell; v10 should fix on reopen) — the chunked init→chunk→finalize flow was never verified end-to-end from an authed client.
+
+---
+
 ## 🎬 MARKETING VIDEO CAMPAIGN (active — started May 24, 2026)
 
 **🚨 Canonical handoff: `docs/handoffs/MONTREE_CAMPAIGN_HANDOFF.md`. Scripts: `Montree_Campaign_Video_Scripts.md`. Read the handoff to pick this up.**
