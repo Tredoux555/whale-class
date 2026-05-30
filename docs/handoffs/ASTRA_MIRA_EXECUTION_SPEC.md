@@ -11,8 +11,15 @@ independently shippable, feature-flagged OFF by default, and auditable.
   1d corpus tie-in.
 - ✅ **Increment 2 — voice foundation** built + ESLint 0/0 (`1242dade`):
   Agora ConvoAI agent start/stop, session tokens, voice prompt, token+agent
-  routes. Still to do: client mic/RTC hook, the action/tool layer (custom-LLM
-  shim → tool-executor), and the **on-device latency/voice test** (Tredoux).
+  routes.
+- ✅ **Increment 4 — voice ACTION layer** built + ESLint 0/0 (`54c97c59`):
+  `voice/llm` shim (Agora's LLM) runs Astra's real tool-loop via
+  `executeTracyTool` with a server-minted principal token; `voice-tools`
+  adds a required `confirmed` flag to every mutation (hard-gated);
+  `llm-auth` fail-closed Bearer + HMAC scope; `agent.ts` uses the shim when
+  configured. **Inert until `VOICE_LLM_SHARED_SECRET` is set in Railway.**
+  Still to do for voice: client mic/RTC hook + **on-device latency/voice test**
+  (Tredoux), and verify cookie-less tool auth on the first live call.
 - ✅ **Increment 3 — learner memory** built + ESLint 0/0 (`155b54ad`):
   migration 244 + loader. Still to do: write-path (record miscues/sessions).
 - ⏳ Increment 4 (home learning + oral reading) — GATED on the oral-reading
