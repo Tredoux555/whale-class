@@ -40,6 +40,7 @@ import {
 import { readEncryptedField } from '@/lib/montree/messaging-crypto';
 import { verifyChildBelongsToSchool } from '@/lib/montree/verify-child-access';
 import { getProxyUrl } from '@/lib/montree/media/proxy-url';
+import { getAreaLabel } from '@/lib/montree/i18n/area-labels';
 
 // Session 136 — canonical topics for consult_tracy_knowledge dispatch.
 // Kept here (vs imported as a Set from loader) so the validation is
@@ -1538,8 +1539,10 @@ export async function executeTracyTool(
           return { success: false, error: 'That child is not in your school.' };
         }
 
-        const rawLimit = typeof input.limit === 'number' ? input.limit : 12;
-        const limit = Math.max(1, Math.min(Math.floor(rawLimit) || 12, 30));
+        // Default 24 (was 12) + cap 60 so the in-chat album has enough photos
+        // across curriculum areas for the category filter to be meaningful.
+        const rawLimit = typeof input.limit === 'number' ? input.limit : 24;
+        const limit = Math.max(1, Math.min(Math.floor(rawLimit) || 24, 60));
 
         let q = supabase
           .from('montree_media')
@@ -1561,25 +1564,36 @@ export async function executeTracyTool(
           return { success: false, error: `Could not load photos: ${error.message}` };
         }
 
-        // Resolve work labels for any photos that carry a work_id.
+        // Resolve work name + curriculum AREA for any photos that carry a
+        // work_id, so the in-chat album can group photos into category albums
+        // (Practical Life, Language, …). Photos with NO work_id are general
+        // 'Observations' (the principal's "behavioral observations").
         const workIds = [...new Set((rows || []).map((r) => r.work_id).filter(Boolean))] as string[];
-        const workNameById = new Map<string, string>();
+        const workById = new Map<string, { name: string | null; area_id: string | null }>();
         if (workIds.length) {
           const { data: works } = await supabase
             .from('montree_classroom_curriculum_works')
-            .select('id, name')
+            .select('id, name, area_id')
             .in('id', workIds);
-          for (const w of works || []) workNameById.set(w.id, w.name);
+          for (const w of works || []) workById.set(w.id, { name: w.name ?? null, area_id: w.area_id ?? null });
         }
+
+        const OBSERVATIONS_KEY = 'observations';
+        const observationsLabel =
+          ({ en: 'Observations', es: 'Observaciones', zh: '观察', de: 'Beobachtungen', fr: 'Observations', pt: 'Observações', nl: 'Observaties', it: 'Osservazioni', ja: '観察', ko: '관찰', uk: 'Спостереження', ru: 'Наблюдения' } as Record<string, string>)[locale] || 'Observations';
 
         const photos = (rows || []).map((r) => {
           const path = r.thumbnail_path || r.storage_path;
+          const w = r.work_id ? workById.get(r.work_id) : undefined;
+          const areaId = w?.area_id || null;
           return {
             url: r.storage_path ? getProxyUrl(r.storage_path) : null,
             thumbnail_url: path ? getProxyUrl(path) : null,
             caption: r.caption || null,
             captured_at: r.captured_at,
-            work: r.work_id ? workNameById.get(r.work_id) || null : null,
+            work: w?.name || null,
+            area_key: areaId || OBSERVATIONS_KEY,
+            area_label: areaId ? getAreaLabel(areaId, locale) : observationsLabel,
           };
         }).filter((p) => p.url);
 
