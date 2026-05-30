@@ -72,12 +72,17 @@ export default function TeachersPage() {
       ]);
       
       if (!teachersRes.ok) throw new Error('Failed to load teachers');
-      if (!classroomsRes.ok) throw new Error('Failed to load classrooms');
       const teachersData = await teachersRes.json();
-      const classroomsData = await classroomsRes.json();
-      
       setTeachers(teachersData.teachers || []);
-      setClassrooms(classroomsData.classrooms || []);
+
+      // Classrooms feed only the assign-classroom dropdown — a failure here must
+      // NOT blank the teachers list. (Session 140: classrooms GET used to 405,
+      // and `throw` ran before setTeachers, so the page showed "No teachers yet"
+      // despite the teachers API returning them.)
+      if (classroomsRes.ok) {
+        const classroomsData = await classroomsRes.json();
+        setClassrooms(classroomsData.classrooms || []);
+      }
     } catch (error) {
       toast.error(t('admin.teachers.failedToLoad'));
     } finally {

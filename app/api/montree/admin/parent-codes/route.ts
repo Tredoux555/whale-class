@@ -12,6 +12,7 @@
 // used at least once still appear (so the principal can re-share if needed).
 
 import { NextRequest, NextResponse } from 'next/server';
+import QRCode from 'qrcode';
 import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 
@@ -74,26 +75,35 @@ export async function GET(request: NextRequest) {
 
     // 4. Compose response — one row per child, code may be null if never generated.
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://montree.xyz';
-    const codes = children.map((child) => {
-      const inv = latestPerChild.get(child.id);
-      const code = inv?.invite_code || null;
-      return {
-        child_id: child.id,
-        child_name: child.name,
-        classroom_id: child.classroom_id,
-        code,
-        parent_url: code ? `${baseUrl}/montree/parent?code=${code}` : null,
-        // QR via the qrserver.com image API — same lightweight approach used by
-        // the existing parent-codes page (no extra dep needed).
-        qr_url: code
-          ? `https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=${encodeURIComponent(
-              `${baseUrl}/montree/parent?code=${code}`
-            )}`
-          : null,
-        expires_at: inv?.expires_at || null,
-        used: !!inv?.used_at,
-      };
-    });
+    // Session 140: QR codes were hot-linked from api.qrserver.com, which both
+    // returned 503 AND isn't in the CSP img-src allowlist — so every "Print
+    // Cards" QR was broken. Generate them locally as data: URLs (CSP already
+    // permits img-src 'data:') using the bundled `qrcode` lib. No external dep.
+    const codes = await Promise.all(
+      children.map(async (child) => {
+        const inv = latestPerChild.get(child.id);
+        const code = inv?.invite_code || null;
+        const parentUrl = code ? `${baseUrl}/montree/parent?code=${code}` : null;
+        let qr_url: string | null = null;
+        if (parentUrl) {
+          try {
+            qr_url = await QRCode.toDataURL(parentUrl, { width: 240, margin: 1 });
+          } catch {
+            qr_url = null;
+          }
+        }
+        return {
+          child_id: child.id,
+          child_name: child.name,
+          classroom_id: child.classroom_id,
+          code,
+          parent_url: parentUrl,
+          qr_url,
+          expires_at: inv?.expires_at || null,
+          used: !!inv?.used_at,
+        };
+      })
+    );
 
     return NextResponse.json(
       { success: true, codes },

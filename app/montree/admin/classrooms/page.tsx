@@ -82,8 +82,13 @@ export default function ClassroomsPage() {
   const fetchData = async () => {
     try {
       // Two parallel calls: classrooms list + plan info (today endpoint).
+      // Session 140: overview sets Cache-Control max-age=300, so after creating
+      // or deleting a classroom this page's re-fetch was served the stale
+      // pre-mutation list (only 1 of N classrooms; new card never appeared).
+      // This page mutates classrooms, so it must always read fresh — bypass the
+      // browser cache. Other read-only consumers keep the 5-min cache.
       const [overviewRes, todayRes] = await Promise.all([
-        fetch('/api/montree/admin/overview', { headers: getHeaders() }),
+        fetch('/api/montree/admin/overview', { headers: getHeaders(), cache: 'no-store' }),
         fetch('/api/montree/admin/today', { credentials: 'include' }),
       ]);
       if (overviewRes.status === 401) {
@@ -360,8 +365,10 @@ export default function ClassroomsPage() {
                     </div>
                     {assistants > 0 && (
                       <div style={{ color: T.emeraldDim, fontSize: 11, marginTop: 2 }}>
-                        +{assistants}{' '}
-                        {t('admin.assistantCount').replace('{count}', String(assistants))}
+                        {/* Session 140: was "+{assistants} {…{count} assistants}" → rendered
+                            "+3 3 assistants" (count shown twice). The translation already
+                            carries the count, so just prefix a "+". */}
+                        +{t('admin.assistantCount').replace('{count}', String(assistants))}
                       </div>
                     )}
                   </div>

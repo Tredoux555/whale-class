@@ -4,6 +4,37 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 
+// List classrooms for the authenticated school.
+// Session 140: this GET was missing — callers (e.g. the Teachers page, which
+// fetches teachers + classrooms in parallel) got a 405 here. On the Teachers
+// page that 405 threw BEFORE setTeachers ran, so the page rendered "No teachers
+// yet" even though the teachers API returned 200 with 4 teachers. Adding GET
+// fixes both the 405 and the empty-Teachers render.
+export async function GET(request: NextRequest) {
+  try {
+    const supabase = getSupabase();
+    const auth = await verifySchoolRequest(request);
+    if (auth instanceof NextResponse) return auth;
+
+    const { data: classrooms, error } = await supabase
+      .from('montree_classrooms')
+      .select('id, name, icon, color, age_group, is_active, created_at')
+      .eq('school_id', auth.schoolId)
+      .eq('is_active', true)
+      .order('created_at', { ascending: true });
+
+    if (error) throw error;
+
+    return NextResponse.json(
+      { classrooms: classrooms || [] },
+      { headers: { 'Cache-Control': 'private, no-store' } }
+    );
+  } catch (error) {
+    console.error('List classrooms error:', error);
+    return NextResponse.json({ error: 'Failed to load classrooms' }, { status: 500 });
+  }
+}
+
 // Create new classroom
 export async function POST(request: NextRequest) {
   try {

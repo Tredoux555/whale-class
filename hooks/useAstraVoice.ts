@@ -104,7 +104,7 @@ export function useAstraVoice(opts: UseAstraVoiceOptions = {}) {
         // render null: the button silently VANISHED on click with no feedback or
         // log. Surface a clear message instead and keep the button mounted so the
         // user understands the flag is off (enable it at /montree/admin/features).
-        setError('Astra voice isn’t enabled for your school yet. Turn it on in Admin → Features.');
+        setError('Astra voice isn’t enabled for your school yet. Contact Montree to turn it on.');
         setStatus('error');
         return;
       }
@@ -153,7 +153,7 @@ export function useAstraVoice(opts: UseAstraVoiceOptions = {}) {
       };
       if (agentData.enabled === false) {
         await stop();
-        setError('Astra voice isn’t enabled for your school yet. Turn it on in Admin → Features.');
+        setError('Astra voice isn’t enabled for your school yet. Contact Montree to turn it on.');
         setStatus('error');
         return;
       }
