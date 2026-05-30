@@ -32,7 +32,13 @@
 // The principal's PWA was on v8 from 2 weeks ago, missing every single
 // visible change: new Parents tab, Story dark theme, Tracy's 6 action
 // tools. v9 forces a clean shell purge on next PWA open.
-const CACHE_NAME = 'montree-v9';
+// Bumped to v10 (May 30, 2026) — Story vault large-video upload (server-proxied
+// chunked/resumable), in-chat photo album + category filter, video-in-gallery
+// inline playback, and country/browser language auto-detect. iPhone PWA users
+// stuck on the v9 shell were still running the OLD vault uploader that rejects
+// anything over 30MB — which is exactly why "I still can't upload from iPhone".
+// v10 purges the stale shell on next app open so the chunked uploader loads.
+const CACHE_NAME = 'montree-v10';
 const OFFLINE_URL = '/montree/offline';
 
 // Only cache immutable assets — static files that change with build hashes.
