@@ -3,10 +3,11 @@
 // Auto-resolves Photo Bank images where available; falls back to emoji
 'use client';
 
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import Link from 'next/link';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { ALL_PHASES, type PhonicsWord, type PhonicsPhase } from '@/lib/montree/phonics/phonics-data';
+import { ALL_PHASES, type PhonicsWord } from '@/lib/montree/phonics/phonics-data';
+import { getLessonScope } from '@/lib/montree/english-sequence/lesson-materials';
 import CardGenerator from '@/components/card-generator/CardGenerator';
 import type { Card } from '@/components/card-generator/types';
 import { resolvePhotoBankImages, urlToDataUrl } from '@/lib/montree/phonics/photo-bank-resolver';
@@ -33,10 +34,16 @@ function emojiToDataUrl(emoji: string, size = 400): string {
 export default function ThreePartCardsPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const initialPhase = searchParams.get('phase') || 'pink1';
+  // Lesson scoping: ?lesson=N pre-selects the exact phase + word groups that
+  // teach lesson N (via the lesson-map ↔ phonics-data join), so a teacher lands
+  // on precisely this child's lesson. Falls back to ?phase= / default.
+  const lessonParam = searchParams.get('lesson');
+  const lessonNum = lessonParam ? parseInt(lessonParam, 10) : NaN;
+  const lessonScope = Number.isInteger(lessonNum) ? getLessonScope(lessonNum) : null;
+  const initialPhase = lessonScope?.phaseId || searchParams.get('phase') || 'pink1';
 
   const [selectedPhase, setSelectedPhase] = useState(initialPhase);
-  const [selectedGroups, setSelectedGroups] = useState<string[]>([]);
+  const [selectedGroups, setSelectedGroups] = useState<string[]>(lessonScope?.groupIds ?? []);
   const [generatedCards, setGeneratedCards] = useState<Card[] | undefined>(undefined);
   const [generating, setGenerating] = useState(false);
 
@@ -58,18 +65,23 @@ export default function ThreePartCardsPage() {
     return () => { controller.abort(); };
   }, []);
 
-  // Select all groups by default when phase changes
+  // When lesson-scoped on first load, keep the pre-selected subset instead of
+  // auto-selecting the whole phase.
+  const skipInitialSelectAll = useRef<boolean>(Boolean(lessonScope?.groupIds?.length));
+  // Select all groups by default when phase changes (skips the initial
+  // lesson-scoped render so the ?lesson= subset survives).
   useEffect(() => {
+    if (skipInitialSelectAll.current) { skipInitialSelectAll.current = false; return; }
     if (currentPhase) {
       setSelectedGroups(currentPhase.groups.map(g => g.id));
     }
   }, [selectedPhase]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const selectedWords: PhonicsWord[] = currentPhase
+  const selectedWords: PhonicsWord[] = useMemo(() => currentPhase
     ? currentPhase.groups
         .filter(g => selectedGroups.includes(g.id))
         .flatMap(g => g.words)
-    : [];
+    : [], [currentPhase, selectedGroups]);
 
   // Convert phonics words to Card[] format for the original CardGenerator
   // Uses Photo Bank images where available, emoji fallback otherwise
