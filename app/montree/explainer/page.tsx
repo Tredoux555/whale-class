@@ -38,14 +38,16 @@ interface ExplainerVideo {
 // Hero reuses the existing, already-live splash film. The 12 feature clips
 // are scripted (Montree_HeyGen_Scripts.md) and land here as they're produced.
 const HERO: ExplainerVideo = {
-  slug: 'hero',
+  slug: 'main-explainer',
   category: 'Montree',
   title: 'What makes Montree different?',
   line: 'A teacher takes a photo. Montree identifies the work, records the observation, writes the parent report, and tracks every child — automatically.',
   share: '',
-  format: '16:9',
-  available: true,
-  src: `${PROXY}/splash/montree-splash-video-v2.mp4`,
+  format: '9:16',
+  // The all-encompassing main explainer film is in production. Upload it to
+  // montree-media/explainer/main-explainer.mp4 and flip this to true to go live.
+  available: false,
+  src: `${PROXY}/explainer/main-explainer.mp4`,
 };
 
 const FEATURES: ExplainerVideo[] = [
@@ -56,7 +58,7 @@ const FEATURES: ExplainerVideo[] = [
     line: 'One photo. Montree identifies the material, writes the observation, and updates the child’s progress on its own.',
     share: 'Send this to a teacher drowning in admin.',
     format: '9:16',
-    available: false,
+    available: true,
     src: `${PROXY}/explainer/smart-capture.mp4`,
   },
   {
@@ -66,7 +68,7 @@ const FEATURES: ExplainerVideo[] = [
     line: 'Warm, specific, beautiful parent reports with the week’s photos woven in — every child, every week.',
     share: 'Send this to a teacher who dreads report week.',
     format: '9:16',
-    available: false,
+    available: true,
     src: `${PROXY}/explainer/weekly-reports.mp4`,
   },
   {
@@ -76,18 +78,8 @@ const FEATURES: ExplainerVideo[] = [
     line: 'An assistant trained on everything Montessori wrote and the science of child development. Ask it anything, about any child.',
     share: 'Send this to a Montessori teacher you know.',
     format: '9:16',
-    available: false,
+    available: true,
     src: `${PROXY}/explainer/guru.mp4`,
-  },
-  {
-    slug: 'child-profiles',
-    category: 'Child Profiles',
-    title: 'The whole child, at a glance.',
-    line: 'Every child has a living profile — mastered, practising, what comes next — updated every time you capture a photo.',
-    share: 'Send this to a lead teacher.',
-    format: '9:16',
-    available: false,
-    src: `${PROXY}/explainer/child-profiles.mp4`,
   },
   {
     slug: 'astra',
@@ -96,7 +88,7 @@ const FEATURES: ExplainerVideo[] = [
     line: 'Montree’s AI for the head of school. Which children need attention, how a classroom is doing, what to tell a worried parent.',
     share: 'Send this to a Montessori principal.',
     format: '9:16',
-    available: false,
+    available: true,
     src: `${PROXY}/explainer/astra.mp4`,
   },
   {
@@ -106,7 +98,7 @@ const FEATURES: ExplainerVideo[] = [
     line: 'The full Montessori curriculum is built in. Montree sees where a child is and shows you exactly what comes next.',
     share: 'Send this to a teacher who still plans by hand.',
     format: '9:16',
-    available: false,
+    available: true,
     src: `${PROXY}/explainer/curriculum.mp4`,
   },
   {
@@ -116,7 +108,7 @@ const FEATURES: ExplainerVideo[] = [
     line: 'Teachers, parents, and the principal — one thread per family, the full history, always there. Nothing lost.',
     share: 'Send this to a school still chasing group chats.',
     format: '9:16',
-    available: false,
+    available: true,
     src: `${PROXY}/explainer/communication.mp4`,
   },
   {
@@ -126,7 +118,7 @@ const FEATURES: ExplainerVideo[] = [
     line: 'Tell Montree about a child — ninety seconds, in your own words — and it builds their whole profile from what you say.',
     share: 'Send this to a teacher starting a new year.',
     format: '9:16',
-    available: false,
+    available: true,
     src: `${PROXY}/explainer/voice-onboarding.mp4`,
   },
   {
@@ -146,7 +138,7 @@ const FEATURES: ExplainerVideo[] = [
     line: 'A parent picks a time and you meet by video, right inside the app. No links to chase. No apps to download.',
     share: 'Send this to a school doing parent conferences.',
     format: '9:16',
-    available: false,
+    available: true,
     src: `${PROXY}/explainer/appointments.mp4`,
   },
   {
@@ -156,7 +148,7 @@ const FEATURES: ExplainerVideo[] = [
     line: 'Three-part cards, picture bingo, sentence strips, flashcards — generated, printable, ready for tomorrow morning.',
     share: 'Send this to a teacher who makes their own cards.',
     format: '9:16',
-    available: false,
+    available: true,
     src: `${PROXY}/explainer/library.mp4`,
   },
   {
@@ -166,7 +158,7 @@ const FEATURES: ExplainerVideo[] = [
     line: 'Montree speaks twelve languages, end to end. Teachers work in theirs. Parents read reports in theirs. No family left out.',
     share: 'Send this to a school where English isn’t the first language.',
     format: '9:16',
-    available: false,
+    available: true,
     src: `${PROXY}/explainer/multilingual.mp4`,
   },
 ];
@@ -320,10 +312,10 @@ export default function MontreeExplainer() {
         .ex-hero-video {
           position: relative;
           width: 100%;
-          max-width: 760px;
+          max-width: 360px;
           margin: 0 auto;
-          aspect-ratio: 16 / 9;
-          border-radius: 14px;
+          aspect-ratio: 9 / 16;
+          border-radius: 16px;
           overflow: hidden;
           background: #06140e;
           border: 1px solid rgba(130,217,174,0.22);
@@ -339,6 +331,35 @@ export default function MontreeExplainer() {
           height: 100%;
           object-fit: cover;
           display: block;
+        }
+        /* Portrait "coming soon" slot — shown until the main explainer film is
+           produced and uploaded to explainer/main-explainer.mp4. */
+        .ex-hero-soon {
+          position: absolute;
+          inset: 0;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          gap: 12px;
+          background: linear-gradient(160deg, #154a32 0%, #0a2418 100%);
+        }
+        .ex-hero-soon-badge {
+          font-size: 11px;
+          text-transform: uppercase;
+          letter-spacing: 0.12em;
+          font-weight: 600;
+          color: rgba(255,255,255,0.85);
+          background: rgba(0,0,0,0.4);
+          border: 1px solid rgba(255,255,255,0.14);
+          padding: 6px 14px;
+          border-radius: 999px;
+        }
+        .ex-hero-soon-text {
+          font-family: var(--font-lora), Georgia, serif;
+          font-style: italic;
+          font-size: 1rem;
+          color: rgba(255,255,255,0.6);
         }
         .ex-hero-cta { margin-top: 36px; }
       `}</style>
@@ -598,17 +619,23 @@ export default function MontreeExplainer() {
           <h1>{t('explainer.hero.title')}</h1>
           <p className="ex-hero-sub">{t('explainer.hero.sub')}</p>
           <div className="ex-hero-video">
-            <video
-              src={HERO.src}
-              poster="/montree-splash-video-poster.jpg"
-              autoPlay
-              muted
-              loop
-              controls
-              playsInline
-              preload="auto"
-              aria-label="Montree introduction video"
-            />
+            {HERO.available ? (
+              <video
+                src={HERO.src}
+                autoPlay
+                muted
+                loop
+                controls
+                playsInline
+                preload="auto"
+                aria-label="Montree introduction video"
+              />
+            ) : (
+              <div className="ex-hero-soon">
+                <span className="ex-hero-soon-badge">{t('explainer.comingSoon')}</span>
+                <span className="ex-hero-soon-text">The film is on its way</span>
+              </div>
+            )}
           </div>
           <div className="ex-hero-cta">
             <a className="ex-pill ex-pill-lg" href="/montree/login-select?signup=true">
