@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { VaultFile } from '../types';
-import { formatTime, getVaultFileIcon, isImageFile } from '../utils';
+import { formatTime, getVaultFileIcon, isImageFile, isVideoFile } from '../utils';
 import { VaultImageViewer } from '@/components/story/admin/VaultImageViewer';
 
 interface VaultTabProps {
@@ -24,7 +24,7 @@ interface VaultTabProps {
   byteProgress: { name: string; sent: number; total: number } | null;
   onVaultDownload: (fileId: number, filename: string) => void;
   onVaultDelete: (fileId: number) => void;
-  viewingImage: { url: string; filename: string } | null;
+  viewingImage: { url: string; filename: string; isVideo?: boolean } | null;
   loadingView: boolean;
   onVaultView: (fileId: number, filename: string) => void;
   onCloseViewer: () => void;
@@ -63,7 +63,10 @@ export function VaultTab({
   onLoadThumbnail,
 }: VaultTabProps) {
   const imageFiles = vaultFiles.filter(f => isImageFile(f.filename));
-  const nonImageFiles = vaultFiles.filter(f => !isImageFile(f.filename));
+  // Photos AND videos share one gallery now — videos render as a ▶ tile and
+  // open in the same full-screen viewer (which plays them inline).
+  const mediaFiles = vaultFiles.filter(f => isImageFile(f.filename) || isVideoFile(f.filename));
+  const otherFiles = vaultFiles.filter(f => !isImageFile(f.filename) && !isVideoFile(f.filename));
 
   // Trigger thumbnail loading for any new images (e.g. after upload)
   useEffect(() => {
@@ -85,8 +88,9 @@ export function VaultTab({
           onPrev={() => onNavigateAlbum('prev')}
           onNext={() => onNavigateAlbum('next')}
           albumIndex={albumIndex}
-          albumTotal={imageFiles.length}
+          albumTotal={mediaFiles.length}
           loading={loadingView}
+          isVideo={viewingImage.isVideo}
         />
       )}
     <div className="space-y-4">
@@ -172,14 +176,15 @@ export function VaultTab({
             </div>
           ) : (
             <>
-              {/* Photo Album Grid */}
-              {imageFiles.length > 0 && (
+              {/* Photo + Video Gallery */}
+              {mediaFiles.length > 0 && (
                 <div className="bg-white rounded-lg shadow-sm p-4">
                   <h3 className="text-sm font-bold text-gray-800 mb-3">
-                    Photos ({imageFiles.length})
+                    Photos &amp; Videos ({mediaFiles.length})
                   </h3>
                   <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
-                    {imageFiles.map((file) => {
+                    {mediaFiles.map((file) => {
+                      const isVid = isVideoFile(file.filename);
                       const thumbUrl = thumbnails[file.id];
                       const isLoading = loadingThumbnails[file.id];
 
@@ -189,7 +194,12 @@ export function VaultTab({
                           className="relative group aspect-square rounded-lg overflow-hidden bg-gray-100 cursor-pointer hover:ring-2 hover:ring-indigo-400 transition-all"
                           onClick={() => onVaultView(file.id, file.filename)}
                         >
-                          {thumbUrl ? (
+                          {isVid ? (
+                            <div className="w-full h-full flex items-center justify-center bg-gray-900 relative">
+                              <span className="text-3xl text-white/90">▶</span>
+                              <span className="absolute top-1 right-1 text-[8px] bg-black/60 text-white px-1 py-0.5 rounded tracking-wide">VIDEO</span>
+                            </div>
+                          ) : thumbUrl ? (
                             <img
                               src={thumbUrl}
                               alt={file.filename}
@@ -233,12 +243,12 @@ export function VaultTab({
                 </div>
               )}
 
-              {/* Non-image files list */}
-              {nonImageFiles.length > 0 && (
+              {/* Other (non-media) files list */}
+              {otherFiles.length > 0 && (
                 <div className="bg-white rounded-lg shadow-sm p-6">
-                  <h3 className="text-sm font-bold text-gray-800 mb-4">Other Files ({nonImageFiles.length})</h3>
+                  <h3 className="text-sm font-bold text-gray-800 mb-4">Other Files ({otherFiles.length})</h3>
                   <div className="space-y-2">
-                    {nonImageFiles.map((file) => (
+                    {otherFiles.map((file) => (
                       <div key={file.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
                         <div className="flex items-center gap-3 flex-1">
                           <span className="text-lg">{getVaultFileIcon(file.filename)}</span>

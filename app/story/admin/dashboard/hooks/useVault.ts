@@ -1,6 +1,6 @@
 import { useState, useCallback, useRef } from 'react';
 import { VaultFile } from '../types';
-import { isImageFile } from '../utils';
+import { isImageFile, isVideoFile } from '../utils';
 // Session 153 — files larger than this go through the server-proxied CHUNKED
 // (resumable) upload: the browser streams the file to our server in pieces
 // under Railway's body cap, and the server relays each piece to Supabase via
@@ -9,7 +9,11 @@ import { isImageFile } from '../utils';
 // the common small-photo case stays AES-encrypted at rest.
 const DIRECT_UPLOAD_THRESHOLD = 20 * 1024 * 1024; // 20MB
 const MAX_VAULT_BYTES = 1024 * 1024 * 1024; // 1GB (matches the bucket limit)
-const UPLOAD_CHUNK_BYTES = 24 * 1024 * 1024; // 24MB — safely under Railway's ~30MB cap
+// 8MB chunks — comfortably under any reverse-proxy body cap AND light on
+// mobile-Safari memory (a 500MB video reads as ~60 small slices, each GC'd
+// after upload, instead of holding 24MB ArrayBuffers). Each chunk is still
+// ≥ Supabase's 5MB resumable part minimum.
+const UPLOAD_CHUNK_BYTES = 8 * 1024 * 1024; // 8MB
 
 export const useVault = (getSession: () => string | null) => {
   const [vaultPassword, setVaultPassword] = useState('');
@@ -27,7 +31,7 @@ export const useVault = (getSession: () => string | null) => {
   // is in flight.
   const [byteProgress, setByteProgress] = useState<{ name: string; sent: number; total: number } | null>(null);
   const [vaultError, setVaultError] = useState('');
-  const [viewingImage, setViewingImage] = useState<{ url: string; filename: string } | null>(null);
+  const [viewingImage, setViewingImage] = useState<{ url: string; filename: string; isVideo?: boolean } | null>(null);
   const [loadingView, setLoadingView] = useState(false);
   // 🚨 Session 113 V2 Story audit F-2.1 — vault token state. Captured from
   // the unlock response and sent on every subsequent vault fetch via the
@@ -464,8 +468,8 @@ export const useVault = (getSession: () => string | null) => {
         }
         // Close viewer if viewing deleted photo
         if (viewingImage) {
-          const currentImageFiles = vaultFiles.filter(f => isImageFile(f.filename));
-          const currentFile = currentImageFiles[albumIndex];
+          const currentMediaFiles = vaultFiles.filter(f => isImageFile(f.filename) || isVideoFile(f.filename));
+          const currentFile = currentMediaFiles[albumIndex];
           if (currentFile?.id === fileId) {
             setViewingImage(null);
           }
@@ -477,14 +481,44 @@ export const useVault = (getSession: () => string | null) => {
     }
   }, [vaultHeaders, loadVaultFiles, viewingImage, vaultFiles, albumIndex]);
 
+  // Resolve a viewable URL for a media file. PLAIN (unencrypted) videos get a
+  // short-lived signed url that plays inline + is seekable; images and
+  // encrypted videos are fetched via the decrypt-proxy and cached as a blob.
+  const loadMedia = useCallback(
+    async (
+      file: VaultFile,
+      headers: Record<string, string>
+    ): Promise<{ url: string; isVideo: boolean } | null> => {
+      const isVid = isVideoFile(file.filename);
+      if (isVid && file.encrypted === false) {
+        const r = await fetch(`/api/story/admin/vault/signed-download/${file.id}`, { headers });
+        const j = await r.json().catch(() => ({}));
+        if (r.ok && j.url) return { url: j.url as string, isVideo: true };
+        return null;
+      }
+      if (thumbnailsRef.current[file.id]) return { url: thumbnailsRef.current[file.id], isVideo: isVid };
+      const r = await fetch(`/api/story/admin/vault/download/${file.id}`, { headers });
+      if (!r.ok) return null;
+      const blob = await r.blob();
+      const url = window.URL.createObjectURL(blob);
+      thumbnailsRef.current[file.id] = url;
+      setThumbnails(prev => ({ ...prev, [file.id]: url }));
+      return { url, isVideo: isVid };
+    },
+    []
+  );
+
   const handleVaultView = useCallback(async (fileId: number, filename: string) => {
-    // If we already have the thumbnail, use it directly
-    if (thumbnailsRef.current[fileId]) {
-      setViewingImage({ url: thumbnailsRef.current[fileId], filename });
-      // Find album index
-      const imageFiles = vaultFiles.filter(f => isImageFile(f.filename));
-      const idx = imageFiles.findIndex(f => f.id === fileId);
-      setAlbumIndex(idx >= 0 ? idx : 0);
+    const mediaFiles = vaultFiles.filter(f => isImageFile(f.filename) || isVideoFile(f.filename));
+    const idx = mediaFiles.findIndex(f => f.id === fileId);
+    setAlbumIndex(idx >= 0 ? idx : 0);
+    const file = mediaFiles[idx] || vaultFiles.find(f => f.id === fileId);
+    if (!file) return;
+
+    // Fast path — cached image blob. Videos always re-resolve so signed urls
+    // stay fresh (and we never cache a 500MB blob).
+    if (!isVideoFile(file.filename) && thumbnailsRef.current[fileId]) {
+      setViewingImage({ url: thumbnailsRef.current[fileId], filename, isVideo: false });
       return;
     }
 
@@ -496,73 +530,53 @@ export const useVault = (getSession: () => string | null) => {
         setLoadingView(false);
         return;
       }
-      const res = await fetch(`/api/story/admin/vault/download/${fileId}`, {
-        headers,
-      });
-      if (res.ok) {
-        const blob = await res.blob();
-        const url = window.URL.createObjectURL(blob);
-        thumbnailsRef.current[fileId] = url;
-        setThumbnails(prev => ({ ...prev, [fileId]: url }));
-        setViewingImage({ url, filename });
-        const imageFiles = vaultFiles.filter(f => isImageFile(f.filename));
-        const idx = imageFiles.findIndex(f => f.id === fileId);
-        setAlbumIndex(idx >= 0 ? idx : 0);
-      } else {
-        setVaultError('Failed to load image');
-      }
+      const media = await loadMedia(file, headers);
+      if (media) setViewingImage({ url: media.url, filename, isVideo: media.isVideo });
+      else setVaultError('Failed to load media');
     } catch (err) {
       console.error('View error:', err);
-      setVaultError('Failed to load image');
+      setVaultError('Failed to load media');
     } finally {
       setLoadingView(false);
     }
-  }, [vaultHeaders, vaultFiles]);
+  }, [vaultHeaders, vaultFiles, loadMedia]);
 
   // Album navigation
   const navigateAlbum = useCallback(async (direction: 'prev' | 'next') => {
-    const imageFiles = vaultFiles.filter(f => isImageFile(f.filename));
-    if (imageFiles.length <= 1) return;
+    const mediaFiles = vaultFiles.filter(f => isImageFile(f.filename) || isVideoFile(f.filename));
+    if (mediaFiles.length <= 1) return;
 
     const newIndex = direction === 'next'
-      ? (albumIndex + 1) % imageFiles.length
-      : (albumIndex - 1 + imageFiles.length) % imageFiles.length;
+      ? (albumIndex + 1) % mediaFiles.length
+      : (albumIndex - 1 + mediaFiles.length) % mediaFiles.length;
 
-    const targetFile = imageFiles[newIndex];
+    const targetFile = mediaFiles[newIndex];
     setAlbumIndex(newIndex);
 
-    if (thumbnailsRef.current[targetFile.id]) {
-      setViewingImage({ url: thumbnailsRef.current[targetFile.id], filename: targetFile.filename });
-    } else {
-      // Load on demand
-      setLoadingView(true);
-      try {
-        const headers = vaultHeaders();
-        if (!headers) {
-          setVaultError('Vault locked — please re-enter password');
-          setLoadingView(false);
-          return;
-        }
-        const res = await fetch(`/api/story/admin/vault/download/${targetFile.id}`, {
-          headers,
-        });
-        if (res.ok) {
-          const blob = await res.blob();
-          const url = window.URL.createObjectURL(blob);
-          thumbnailsRef.current[targetFile.id] = url;
-          setThumbnails(prev => ({ ...prev, [targetFile.id]: url }));
-          setViewingImage({ url, filename: targetFile.filename });
-        } else {
-          setVaultError('Failed to load image');
-        }
-      } catch (err) {
-        console.error('Album nav error:', err);
-        setVaultError('Failed to load image');
-      } finally {
-        setLoadingView(false);
-      }
+    // Cached image blob — instant. Videos always re-resolve.
+    if (!isVideoFile(targetFile.filename) && thumbnailsRef.current[targetFile.id]) {
+      setViewingImage({ url: thumbnailsRef.current[targetFile.id], filename: targetFile.filename, isVideo: false });
+      return;
     }
-  }, [vaultHeaders, vaultFiles, albumIndex]);
+
+    setLoadingView(true);
+    try {
+      const headers = vaultHeaders();
+      if (!headers) {
+        setVaultError('Vault locked — please re-enter password');
+        setLoadingView(false);
+        return;
+      }
+      const media = await loadMedia(targetFile, headers);
+      if (media) setViewingImage({ url: media.url, filename: targetFile.filename, isVideo: media.isVideo });
+      else setVaultError('Failed to load media');
+    } catch (err) {
+      console.error('Album nav error:', err);
+      setVaultError('Failed to load media');
+    } finally {
+      setLoadingView(false);
+    }
+  }, [vaultHeaders, vaultFiles, albumIndex, loadMedia]);
 
   const handleCloseViewer = useCallback(() => {
     setViewingImage(null);
