@@ -1617,6 +1617,78 @@ export async function executeTracyTool(
         };
       }
 
+      case 'family_context': {
+        const childId = String(input.child_id || '').trim();
+        if (!childId) return { success: false, error: 'child_id is required' };
+
+        // Child + school-scope.
+        const { data: child, error: cErr } = await supabase
+          .from('montree_children')
+          .select('id, name, school_id')
+          .eq('id', childId)
+          .maybeSingle();
+        if (cErr) return { success: false, error: cErr.message };
+        if (!child || child.school_id !== schoolId) {
+          return {
+            success: true,
+            data: { found: false, reason: 'child_not_in_school' },
+            result_summary: 'child not found in this school',
+          };
+        }
+
+        // Linked parents (school-scoped).
+        const { data: junctionRows } = await supabase
+          .from('montree_parent_children')
+          .select('parent_id')
+          .eq('child_id', childId);
+        const parentIds = Array.from(
+          new Set((junctionRows ?? []).map((j) => (j as { parent_id: string }).parent_id))
+        );
+
+        let parents: Array<{ id: string; name: string | null; email: string | null }> = [];
+        if (parentIds.length > 0) {
+          const { data: parentRows } = await supabase
+            .from('montree_parents')
+            .select('id, name, email')
+            .in('id', parentIds)
+            .eq('school_id', schoolId);
+          parents = (parentRows ?? []) as typeof parents;
+        }
+
+        // Siblings = other children linked to any of these parents.
+        let siblings: Array<{ id: string; name: string | null }> = [];
+        if (parentIds.length > 0) {
+          const { data: sibJunction } = await supabase
+            .from('montree_parent_children')
+            .select('child_id')
+            .in('parent_id', parentIds);
+          const siblingIds = Array.from(
+            new Set((sibJunction ?? []).map((s) => (s as { child_id: string }).child_id))
+          ).filter((id) => id !== childId);
+          if (siblingIds.length > 0) {
+            const { data: sibRows } = await supabase
+              .from('montree_children')
+              .select('id, name, school_id')
+              .in('id', siblingIds)
+              .eq('school_id', schoolId);
+            siblings = ((sibRows ?? []) as Array<{ id: string; name: string | null }>).map(
+              (s) => ({ id: s.id, name: s.name })
+            );
+          }
+        }
+
+        return {
+          success: true,
+          data: {
+            found: true,
+            child: { id: child.id, name: child.name },
+            parents,
+            siblings,
+          },
+          result_summary: `${child.name ?? 'child'}: ${parents.length} parent(s), ${siblings.length} sibling(s) at this school`,
+        };
+      }
+
       default:
         return { success: false, error: `Unknown tool: ${name}` };
     }

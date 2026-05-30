@@ -20,8 +20,19 @@ independently shippable, feature-flagged OFF by default, and auditable.
   configured. **Inert until `VOICE_LLM_SHARED_SECRET` is set in Railway.**
   Still to do for voice: client mic/RTC hook + **on-device latency/voice test**
   (Tredoux), and verify cookie-less tool auth on the first live call.
-- ✅ **Increment 3 — learner memory** built + ESLint 0/0 (`155b54ad`):
-  migration 244 + loader. Still to do: write-path (record miscues/sessions).
+- ✅ **Increment 3 — learner memory** built + ESLint 0/0: migration 244 +
+  loader (`155b54ad`) AND write-path — `recorder.ts` + `POST /admin/learner/
+  record` (school-scoped, degrades pre-244).
+- ✅ **Voice client** built + ESLint 0/0: `hooks/useAstraVoice.ts` +
+  `components/montree/voice/AstraVoiceButton.tsx` (audio-only, mirrors
+  AgoraVideoCall). Makes voice reachable; needs wiring into the admin UI +
+  on-device test. i18n on button copy = follow-up.
+- ✅ **New Astra tool** `family_context` (child → parents + siblings),
+  added to TRACY_TOOLS + executeTracyTool (ESLint 0/0). Live for text AND
+  voice Astra once merged.
+- ⏳ Other future tools (school_pulse, synthesize_parent_answer, consult_guru
+  bridge) — net-new, need schema/Guru integration; recent_conversations
+  overlaps existing list_recent_threads.
 - ⏳ Increment 4 (home learning + oral reading) — GATED on the oral-reading
   spike. Increment 5 (multimodal), 6 (outbound calls) — not started.
 - ⚪ Migrations 237–243 (+ new 244) must be run by Tredoux before the
