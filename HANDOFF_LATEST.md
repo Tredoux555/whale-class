@@ -1,14 +1,46 @@
 # Whale / Montree — Latest Handoff
 
-**Last updated:** May 30, 2026, end of day (Session 136)
-**Live on Railway:** commit `3f8fc4cf` (or whatever's latest on `main`)
+**Last updated:** May 30, 2026, end of day (Session 139)
+**Live on Railway:** commit `d99de791` (or whatever's latest on `main`)
 
 Resume-from-here document. New session: read this, then `CLAUDE.md` for full
 project context + the migration/session notes near its end.
 
 ---
 
-## What happened today (Session 136 — May 30) — Marketing site + English-area materials loop
+## What happened today (Session 139 — May 30) — Astra/Mira voice arc + Story Montree-facade
+
+Big build marathon, merged `astra-voice-copilot` → main (ending `d99de791`).
+**Full detail: `docs/handoffs/ASTRA_MIRA_VOICE_REALTIME_HANDOFF.md`,
+`…_EXECUTION_SPEC.md`, `…_ARCHITECTURE.md`.** All new features feature-flagged
+OFF by default.
+
+- **Voice Astra** — hands-free multilingual agent via Agora Conversational AI
+  (lib `lib/montree/voice-agent/`; routes `…/admin/voice/{token,agent,llm}`;
+  client `hooks/useAstraVoice.ts` + `AstraVoiceButton` wired into the admin
+  composer). Actions reuse `executeTracyTool` via an OpenAI-style LLM shim with
+  confirm-gated mutations. Flag `voice_astra`. **Needs `VOICE_LLM_SHARED_SECRET`
+  in Railway for actions** (without it: talk-only).
+- **Live meeting co-pilot** — `…/parent-meetings/[id]/copilot` + on-device
+  `MeetingCopilotPanel` wired into the meeting page. Flag `live_copilot`.
+- **Learner memory** — migration 244 + `lib/montree/learner/{loader,recorder}.ts`
+  + `…/admin/learner/record`. Flag `home_learning`.
+- **New Astra tools** — `family_context`, `school_pulse` (text + voice).
+- **Story facade** — calls now read "Montree — call request"; in-call names
+  J/P; `current-call` returns `from:'Montree'`. DB renamed **T→J / Z→P** across
+  `story_*` (dropped the `*_username_check` constraints first). **Story login is
+  now J / P.**
+
+**Migrations RUN (Supabase, this session):** 237–243 + 242b + **244** (all 15
+objects verified). `MONTREE_ENCRYPTION_KEY` set in Railway.
+
+**Next (Tredoux):** add `VOICE_LLM_SHARED_SECRET`; flip `voice_astra` /
+`live_copilot` on a test school; on-device voice + co-pilot tests; oral-reading
+spike before building the home tutor.
+
+---
+
+## What happened earlier (Session 136 — May 30) — Marketing site + English-area materials loop
 
 A long build session. **No DB migrations.** Everything shipped to `main` and
 auto-deployed via Railway. Two big threads:
@@ -94,7 +126,10 @@ hands-free Astra; first *code* increment = feature-flagged live co-pilot
 (reuses existing Whisper + Sonnet/Haiku, no new vendor). Blockers: Agora keys +
 reading-ASR vendor decision.
 
-**🚨 Carry-forward DB migrations from earlier sessions (NOT run yet — see CLAUDE.md):**
+**✅ DB migrations — RUN (Session 139):** 237, 238–243, 242b AND 244 all applied
+& verified in Supabase. (Historical note on what each was, below.)
+
+**Earlier carry-forward list (now resolved):**
 - `237_meeting_dossiers.sql` (Session 133) — dossier cache; until run, every
   dossier reopen re-spends Sonnet (~$0.05).
 - `238`–`243` + `242b` (Session 135 — Ultimate Astra Marathon) — parent
