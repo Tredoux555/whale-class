@@ -1287,7 +1287,7 @@ export default function AdminAgentPage() {
             {t('tracy.newConversation')}
           </button>
           {/* Hands-free Astra — renders null unless the voice_astra flag is on. */}
-          <AstraVoiceButton principalName={firstName} />
+          <AstraVoiceButton principalName={firstName} locale={locale} />
           <button
             type="button"
             onClick={submit}
