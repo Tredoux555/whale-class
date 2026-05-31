@@ -13,6 +13,89 @@ Local path: `/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/whale` (note spa
 
 ---
 
+## 🧠 SESSION 140 (May 31, 2026) — Principal session lifecycle: blanket-401 root cause + clean logout
+
+**Canonical handoff:** `docs/handoffs/SESSION_140_HANDOFF.md`. Two commits on main:
+`cd55e448` (principal dashboard dead-end → redirect to /admin) + `d2b23e4e`
+(cockpit cookie validation + clean logout).
+
+**🚨 THE HEADLINE — the recurring "logged-in principal gets a wall of 401s"
+bug has a root cause, and it's an ops one-liner.** Symptom: `/montree/admin`
+renders the cockpit with a generic "School" sidebar while EVERY token-gated API
+(`/admin/snapshot`, `/billing/status`, `/admin/voice/token`, `/admin/today`)
+returns 401. Diagnosis (decisive): all those routes gate via
+`verifySchoolRequest` FIRST (401 on bad/missing token) and only THEN check role
+(which returns **403**, not 401). So a 401 wall = **the montree-auth JWT failed
+verification uniformly**, NOT an endpoint bug and NOT the principal role being
+rejected. The JWT is a **365-day** token (`createMontreeToken` ttl `'365d'`,
+cookie maxAge 365d) so it didn't expire. It failed because **the signing secret
+changed under it.**
+
+**Root cause — secret coupling (`lib/montree/server-auth.ts` `getSecretKey`):**
+```ts
+const secret = process.env.MONTREE_JWT_SECRET || process.env.ADMIN_SECRET;
+```
+If `MONTREE_JWT_SECRET` isn't pinned in Railway, Montree auth silently falls
+back to `ADMIN_SECRET` (the Whale-Class admin tool's secret). Any change to
+`ADMIN_SECRET` — OR env drift between deploys/replicas — instantly invalidates
+**every live Montree session at once**. The cockpit kept rendering because the
+admin layout trusted `localStorage` (`montree_principal`/`montree_school`), not
+the cookie — so it showed a stale "logged in" shell while all APIs 401'd.
+
+**🚨 OPS ACTION REQUIRED (permanent prevention, ~1 min, NOT yet done):** in
+Railway, set a dedicated **`MONTREE_JWT_SECRET`** to the **exact current value of
+`ADMIN_SECRET`** (copy it across). This decouples Montree auth from `ADMIN_SECRET`
+with **zero forced logouts** (same value → existing tokens still verify), so a
+future `ADMIN_SECRET` rotation can never nuke every Montree session again. (If you
+instead set it to a NEW random value, every current session dies once — acceptable
+but avoidable.) After pinning, never rotate `MONTREE_JWT_SECRET`.
+
+**Code fixes shipped this session (make it self-healing, not stuck):**
+- **`cd55e448`** — a pure principal's JWT has **no `classroomId`**. On
+  `/montree/dashboard` (teacher child-picker) `childrenUrl` was `null` → render
+  guard `if (childrenUrl === null) return <Skeleton/>` had no give-up path →
+  principals who landed there (PWA `start_url`, bookmark) were trapped on
+  skeletons forever. Fix: `useEffect` redirects a classroom-less
+  `role==='principal'` session to `/montree/admin`. Founder-principals with a
+  classroom keep the dashboard. No loop (/admin only redirects out on auth fail).
+- **`d2b23e4e`** — `app/montree/admin/layout.tsx`: the cockpit now **validates
+  the cookie via `GET /api/montree/auth/me` on mount** instead of trusting
+  localStorage alone. **401 → clear `montree_school/principal/session` + bounce
+  to `/montree/login-select`** (clean re-login, not frozen skeletons). **200 →
+  self-heal** schoolName + principalId + localStorage from the live session
+  (fixes the stale "School" sidebar). Transient errors (network blip / cold-start
+  503 → `Promise.reject(res.status)` non-401) do **NOT** log you out. And
+  **`handleLogout` now AWAITs** the logout API (was fire-and-forget → raced the
+  cookie clear → unclean logout), clears all 3 keys, and `window.location.href =
+  '/montree'` (hard nav), guarded against double-click.
+
+`auth/me` shape: `{ authenticated, role, teacher:{id,name,role,email},
+school:{id,name,slug}, classroom }` — for a pure principal `teacher` carries the
+`montree_school_admins` identity. A pre-existing cross-tab `storage` listener
+already bounces background tabs on `montree_principal` clear.
+
+**Lint note:** layout shows 2 pre-existing `react-hooks/set-state-in-effect`
+**warnings** (lines ~246 `setSchoolName`, ~370 `setDrawerOpen` — neither mine).
+`next.config.ts` has `typescript.ignoreBuildErrors:true` and no `eslint:` block →
+build fails on ESLint **errors** only, not warnings. Net-zero new warnings; my new
+`setState` calls are inside async `.then()` callbacks the rule doesn't flag.
+
+**🚨 Verify on production after the deploy + the MONTREE_JWT_SECRET pin:** log in
+as principal (`T`/`redoux`) → real school name in sidebar, all of
+`/auth/me`+`/admin/today`+`/admin/snapshot`+`/billing/status` return **200**, no
+401 wall. Delete the `montree-auth` cookie + reload → clean bounce to login (not
+skeletons). Sign out → lands `/montree`, cookie gone, re-nav to `/admin` → login.
+Earlier this session a fresh login should STAY valid for the full 365 days; if it
+401s again within hours, the secret is still unstable → confirm the env pin took.
+
+**Carry-overs (still ops, from S139/S140):** Astra voice agent needs
+`AGORA_CUSTOMER_KEY`/`SECRET` + `OPENAI_API_KEY` in Railway (agent route 503s
+"Voice provider keys are not configured" without them); origin instability ~20%
+`000` drops (Cloudflare↔Railway — see brain entry below + memory); optional
+Cloudflare cache-bypass rule for the SW files.
+
+---
+
 ## 🧠 SESSION 139 (May 30, 2026) — Astra/Mira voice arc + Story Montree-facade
 
 **Canonical handoffs:** `docs/handoffs/ASTRA_MIRA_VOICE_REALTIME_HANDOFF.md`
