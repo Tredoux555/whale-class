@@ -71,6 +71,7 @@ export async function GET(request: NextRequest) {
 
     const parentById = new Map((parents || []).map((p) => [p.id, p]));
     const childToClassroom = new Map(children.map((c) => [c.id, c.classroom_id]));
+    const childNameById = new Map(children.map((c) => [c.id, c.name]));
     const parentChildren = new Map<string, string[]>();
     const parentClassrooms = new Map<string, Set<string>>();
 
@@ -93,9 +94,22 @@ export async function GET(request: NextRequest) {
       const childIds = parentChildren.get(pid) || [];
       for (const cid of cids) {
         const arr = parentsByClassroom.get(cid) || [];
+        // Session 140: an unclaimed parent invite has name = "pending-<uuid>" (a
+        // DB placeholder). Don't surface that raw token in the directory — fall
+        // back to the linked child's name ("Eric’s parent"), then email, then a
+        // generic label. (Fixes the Communication "By classroom" view showing
+        // raw pending- IDs; the Parents page was already handled.)
+        const rawName = parent.name;
+        const firstChildName = childIds.map((cid2) => childNameById.get(cid2)).find(Boolean);
+        const friendlyName =
+          rawName && !rawName.startsWith('pending-')
+            ? rawName
+            : firstChildName
+              ? `${firstChildName}’s parent`
+              : parent.email || 'Pending invite';
         arr.push({
           id: parent.id,
-          name: parent.name || parent.email,
+          name: friendlyName,
           email: parent.email,
           child_ids: childIds,
         });
