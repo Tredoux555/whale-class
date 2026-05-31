@@ -302,15 +302,20 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         setSchoolName(s.name || '');
       } catch { /* ignore */ }
     }
-    if (!principalData) {
-      setAuthState('unauthed');
-      router.replace('/montree/login-select');
-      return;
+    // 🚨 Session 155 — do NOT bail to login just because montree_principal is
+    // missing from localStorage. A valid httpOnly cookie (e.g. recovered by
+    // login-select's recoverSession, which writes only montree_session, never
+    // montree_principal) is the real authority. Bailing here created an
+    // admin → login-select → dashboard → admin redirect LOOP (the "jumping"
+    // on Chrome) for a principal with a live cookie but no montree_principal
+    // mirror. auth/me below is the single authority and self-heals localStorage.
+    const hadLocalPrincipal = !!principalData;
+    if (principalData) {
+      try {
+        const p = JSON.parse(principalData);
+        if (p && typeof p.id === 'string') setPrincipalId(p.id);
+      } catch { /* ignore */ }
     }
-    try {
-      const p = JSON.parse(principalData);
-      if (p && typeof p.id === 'string') setPrincipalId(p.id);
-    } catch { /* ignore */ }
 
     // 🚨 Session 140 — validate the httpOnly cookie, don't trust localStorage
     // alone. When the auth cookie expires, the cockpit used to render from stale
@@ -322,10 +327,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       .then((res) => (res.ok ? res.json() : Promise.reject(res.status)))
       .then((data) => {
         if (cancelled) return;
-        // 200 but not authenticated shouldn't happen (the route 401s in that
-        // case) — but guard so we never strand the body on the skeleton.
+        // 200 but not authenticated → genuinely no live session. Go
+        // authenticate. Don't strand the body on the skeleton, and don't
+        // mount it into a 401 storm.
         if (!data?.authenticated) {
-          setAuthState('authed');
+          setAuthState('unauthed');
+          router.replace('/montree/login-select');
           return;
         }
         // Self-heal: repopulate the school name + principal id + localStorage
@@ -366,8 +373,16 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           } catch { /* ignore */ }
           setAuthState('unauthed');
           router.replace('/montree/login-select');
-        } else {
+        } else if (hadLocalPrincipal) {
+          // Transient (cold start / network blip / the ~20% origin drop) AND
+          // we have a local identity to fall back on — trust it and mount; the
+          // page's own fetches surface a real 401 if the cookie is truly gone.
           setAuthState('authed');
+        } else {
+          // Transient AND no local identity to fall back on — can't confirm
+          // auth and mounting a blank cockpit would just spin. Send to login.
+          setAuthState('unauthed');
+          router.replace('/montree/login-select');
         }
       });
     return () => {
