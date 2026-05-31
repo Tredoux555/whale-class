@@ -615,6 +615,10 @@ export default function AdminAgentPage() {
   // schoolId (no logged-in principal), the page redirects to login.
   const keysRef = useRef<TracyStorageKeys | null>(null);
 
+  // 🚨 Session 156 — debounce handle for the server-side thread save, so the
+  // conversation is uniform across every login/device (not just this browser).
+  const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   // ── Initial load ────────────────────────────────────────────────────
   useEffect(() => {
     const principalData = localStorage.getItem('montree_principal');
@@ -648,7 +652,31 @@ export default function AdminAgentPage() {
       }
     }
     setConvId(id);
-    setTurns(readConv(keys, id));
+    const localTurns = readConv(keys, id);
+    setTurns(localTurns);
+
+    // 🚨 Session 156 — hydrate the thread from the SERVER so the same
+    // conversation appears on every login/device. Server is the source of
+    // truth; localStorage is just a fast cache + offline fallback. We never
+    // clobber a longer (unsaved) local thread, and on any failure (offline /
+    // pre-migration) we keep the localStorage thread untouched.
+    fetch('/api/montree/admin/astra-thread', { credentials: 'include' })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (!d || !d.conversation_id || !Array.isArray(d.turns)) return;
+        if (d.turns.length < localTurns.length) return; // local is ahead — keep it
+        setConvId(d.conversation_id);
+        setTurns(d.turns);
+        try {
+          localStorage.setItem(keys.conversationId, d.conversation_id);
+          writeConv(keys, d.conversation_id, d.turns);
+        } catch {
+          // ignore
+        }
+      })
+      .catch(() => {
+        /* offline / pre-migration — keep the localStorage thread */
+      });
 
     fetch('/api/montree/admin/today', { credentials: 'include' })
       .then((res) => {
@@ -673,7 +701,30 @@ export default function AdminAgentPage() {
   // resolved at mount.
   useEffect(() => {
     if (convId && keysRef.current) writeConv(keysRef.current, convId, turns);
+    // 🚨 Session 156 — debounced server save so the thread is uniform across
+    // logins/devices. Fire-and-forget; never blocks the chat. Skip empty
+    // threads. On failure (offline / pre-migration) the localStorage cache
+    // above still holds the thread.
+    if (!convId || turns.length === 0) return;
+    if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    saveTimerRef.current = setTimeout(() => {
+      fetch('/api/montree/admin/astra-thread', {
+        method: 'PUT',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ conversation_id: convId, turns }),
+      }).catch(() => {
+        /* offline / pre-migration — localStorage cache holds the thread */
+      });
+    }, 1500);
   }, [convId, turns]);
+
+  // Clear the pending server-save timer on unmount.
+  useEffect(() => {
+    return () => {
+      if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    };
+  }, []);
 
   // Auto-scroll to bottom on new content — but ONLY when the user is
   // already at (or near) the bottom. If they've scrolled UP to re-read an
@@ -718,6 +769,16 @@ export default function AdminAgentPage() {
         // ignore
       }
     }
+    // 🚨 Session 156 — archive the current thread server-side too (kept as a
+    // record, just no longer the active one). Fire-and-forget.
+    fetch('/api/montree/admin/astra-thread', {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'new' }),
+    }).catch(() => {
+      /* offline / pre-migration — local new-conversation still applied */
+    });
     inputRef.current?.focus();
   }, [convId]);
 
