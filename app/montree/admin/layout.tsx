@@ -239,6 +239,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   useEffect(() => {
     const schoolData = localStorage.getItem('montree_school');
     const principalData = localStorage.getItem('montree_principal');
+    // Optimistic render from localStorage so the cockpit chrome appears instantly.
     if (schoolData) {
       try {
         const s = JSON.parse(schoolData);
@@ -253,6 +254,54 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       const p = JSON.parse(principalData);
       if (p && typeof p.id === 'string') setPrincipalId(p.id);
     } catch { /* ignore */ }
+
+    // 🚨 Session 140 — validate the httpOnly cookie, don't trust localStorage
+    // alone. When the auth cookie expires, the cockpit used to render from stale
+    // localStorage while every API 401'd, hanging the page on skeletons with a
+    // generic "School" sidebar and no way to tell you were logged out. auth/me
+    // is the authoritative check.
+    let cancelled = false;
+    fetch('/api/montree/auth/me', { credentials: 'include' })
+      .then((res) => (res.ok ? res.json() : Promise.reject(res.status)))
+      .then((data) => {
+        if (cancelled || !data?.authenticated) return;
+        // Self-heal: repopulate the school name + principal id + localStorage
+        // from the live session (fixes a stale or partial local session, e.g.
+        // the generic "School" sidebar).
+        if (data.school?.name) setSchoolName(data.school.name);
+        if (data.teacher?.id) setPrincipalId(data.teacher.id);
+        try {
+          if (data.school) localStorage.setItem('montree_school', JSON.stringify(data.school));
+          if (data.teacher) {
+            localStorage.setItem(
+              'montree_principal',
+              JSON.stringify({
+                id: data.teacher.id,
+                name: data.teacher.name,
+                email: data.teacher.email,
+                role: data.teacher.role,
+              })
+            );
+          }
+        } catch { /* ignore */ }
+      })
+      .catch((status) => {
+        if (cancelled) return;
+        // Only a real 401 means the cookie is dead — clear the stale local
+        // session and bounce to a clean login. A network blip / cold-start 503
+        // is transient and must NOT log the principal out.
+        if (status === 401) {
+          try {
+            localStorage.removeItem('montree_school');
+            localStorage.removeItem('montree_principal');
+            localStorage.removeItem('montree_session');
+          } catch { /* ignore */ }
+          router.replace('/montree/login-select');
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [router]);
 
   // Cross-tab sign-out: if the principal signs out in another tab the
@@ -321,11 +370,25 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     setDrawerOpen(false);
   }, [pathname]);
 
-  const handleLogout = () => {
-    localStorage.removeItem('montree_school');
-    localStorage.removeItem('montree_principal');
-    fetch('/api/montree/auth/logout', { method: 'POST' }).catch(() => {});
-    router.replace('/montree');
+  const [signingOut, setSigningOut] = useState(false);
+  const handleLogout = async () => {
+    if (signingOut) return;
+    setSigningOut(true);
+    // 🚨 Session 140 — AWAIT the logout so the httpOnly cookie is actually
+    // cleared before we navigate. The old fire-and-forget raced: the redirect
+    // fired before the cookie clear landed, leaving a half-dead session that
+    // couldn't cleanly log out. Clear localStorage regardless of API outcome.
+    try {
+      await fetch('/api/montree/auth/logout', { method: 'POST', credentials: 'include' });
+    } catch { /* even if the call fails, still clear local + leave */ }
+    try {
+      localStorage.removeItem('montree_school');
+      localStorage.removeItem('montree_principal');
+      localStorage.removeItem('montree_session');
+    } catch { /* ignore */ }
+    // Hard navigation guarantees a clean slate — no stale React state, no
+    // lingering cookie/localStorage race that a soft router.replace can hit.
+    window.location.href = '/montree';
   };
 
   const isActive = (item: NavItem) =>
