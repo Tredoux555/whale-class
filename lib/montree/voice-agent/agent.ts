@@ -148,7 +148,10 @@ export async function startVoiceAgent(
         params: {
           api_key: openaiKey,
           model: 'gpt-4o-mini-tts',
-          voice: 'alloy',
+          // Astra speaks with a warm female voice. OpenAI female-leaning
+          // options if you want to swap: 'nova' (warm), 'shimmer' (soft),
+          // 'coral' (friendly), 'sage' (calm). 'alloy'/'echo'/'onyx' read male.
+          voice: 'nova',
         },
       },
     },
