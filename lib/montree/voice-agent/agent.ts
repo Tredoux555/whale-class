@@ -114,8 +114,17 @@ export async function startVoiceAgent(
     : {
         url: 'https://api.anthropic.com/v1/messages',
         api_key: anthropicKey,
+        // 🚨 REQUIRED by Agora's "anthropic" style. Without the anthropic-version
+        // header, api.anthropic.com rejects EVERY request, so the agent connected
+        // + did ASR but spoke failure_message ('One moment please.') on every
+        // turn and never answered. Agora expects this as a STRINGIFIED JSON
+        // object (per Agora's Claude LLM docs sample), not a plain object.
+        headers: JSON.stringify({ 'anthropic-version': '2023-06-01' }),
         style: 'anthropic',
-        system_messages: [{ role: 'system', content: args.systemPrompt }],
+        // Agora's documented Claude sample uses role 'user' for system_messages
+        // (Anthropic has no 'system' role inside the messages array — Agora maps
+        // system_messages to the top-level system param).
+        system_messages: [{ role: 'user', content: args.systemPrompt }],
         greeting_message: args.greeting,
         failure_message: 'One moment please.',
         max_history: 32,
