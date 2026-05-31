@@ -206,16 +206,34 @@ export async function POST(req: NextRequest) {
         .eq('week_start_date', weekStartDate)
         .limit(1);
 
-      if (existing && existing.length > 0) {
-        await supabase.from('secret_stories')
-          .update({
+      // 🚨 The secret_stories write powers the parent page's tap-to-reveal
+      // ('t') hidden message. Its error MUST be checked — a silently
+      // swallowed failure here is exactly what broke the admin→story
+      // direction: a legacy CHECK constraint (secret_stories_message_author_check,
+      // message_author IN ('T','Z')) rejected the newer admin usernames
+      // ('J'/'P'), the UPDATE threw, and hidden_message kept the last
+      // PARENT message. Parent→admin worked because parents send as 'T'/'Z'.
+      //
+      // Migration 245 drops that obsolete constraint. The constraint-aware
+      // fallback below keeps admin notes publishing even on a DB where the
+      // migration hasn't run yet: on a CHECK violation (Postgres 23514) we
+      // retry the hidden_message write WITHOUT touching message_author so
+      // the note still reaches the story page.
+      type SbError = { message?: string; code?: string } | null;
+
+      async function writeSecretStory(includeAuthor: boolean): Promise<SbError> {
+        if (existing && existing.length > 0) {
+          const update: Record<string, unknown> = {
             hidden_message: encryptedMessage,
-            message_author: adminUsername,
             updated_at: new Date().toISOString(),
-          })
-          .eq('week_start_date', weekStartDate);
-      } else {
-        await supabase.from('secret_stories').insert({
+          };
+          if (includeAuthor) update.message_author = adminUsername;
+          const { error } = await supabase.from('secret_stories')
+            .update(update)
+            .eq('week_start_date', weekStartDate);
+          return error;
+        }
+        const insert: Record<string, unknown> = {
           week_start_date: weekStartDate,
           theme: 'Weekly Learning',
           story_title: 'Classroom Activities',
@@ -229,8 +247,31 @@ export async function POST(req: NextRequest) {
             ],
           },
           hidden_message: encryptedMessage,
-          message_author: adminUsername,
-        });
+        };
+        if (includeAuthor) insert.message_author = adminUsername;
+        const { error } = await supabase.from('secret_stories').insert(insert);
+        return error;
+      }
+
+      let secretStoriesError = await writeSecretStory(true);
+
+      // Legacy message_author CHECK constraint fallback (pre-migration-245 DBs).
+      if (
+        secretStoriesError &&
+        (secretStoriesError.code === '23514' ||
+          secretStoriesError.message?.includes('message_author_check') ||
+          secretStoriesError.message?.includes('check constraint'))
+      ) {
+        console.warn('[Send] secret_stories message_author rejected by CHECK constraint — retrying without author (apply migration 245)');
+        secretStoriesError = await writeSecretStory(false);
+      }
+
+      if (secretStoriesError) {
+        console.error('[Send] secret_stories hidden_message write failed:', secretStoriesError);
+        return NextResponse.json(
+          { error: 'Failed to publish note to the story page' },
+          { status: 500 }
+        );
       }
 
       return NextResponse.json({
