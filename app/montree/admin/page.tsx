@@ -139,6 +139,15 @@ interface ConvTurn {
 
 const MAX_PERSISTED_TURNS = 30;
 
+// 🚨 Session 156 — surfaces intentionally hidden for the principal's first-run
+// experience (keep a newly-onboarded, easily-distracted principal focused on the
+// chat that matters). Flip to true + redeploy to re-enable.
+//   SHOW_VOICE_ASTRA     — the "Talk to Astra" voice button. Re-enable once the
+//                          browser-native voice has been field-tested in real use.
+//   SHOW_ASTRA_PROACTIVE — the "Astra noticed / idle teachers" card (declutter).
+const SHOW_VOICE_ASTRA = false;
+const SHOW_ASTRA_PROACTIVE = false;
+
 // Conversation storage is school-scoped (lib/montree/tracy/storage-keys.ts).
 // readConv / writeConv take the keys object resolved from the school the
 // principal is currently logged into so two schools on the same browser
@@ -1178,8 +1187,10 @@ export default function AdminAgentPage() {
       <ChangelogModal audience="principal" />
       {/* Trial-expiring warning when subscription is in last 14 days of trial. */}
       <TrialExpiringBanner />
-      {/* Astra's proactive notice for stale classrooms / idle teachers / pending photos. */}
-      <TracyProactiveCard />
+      {/* Astra's proactive notice for stale classrooms / idle teachers / pending photos.
+          Session 156 — hidden by default (SHOW_ASTRA_PROACTIVE) to keep the Today page
+          focused on the chat for a newly-onboarded principal. */}
+      {SHOW_ASTRA_PROACTIVE && <TracyProactiveCard />}
       {/* ═══ Session 120 — Pending appointment invites banner ═══
           Surfaces appointment invites where the principal is primary host
           with response='pending'. Hides itself when empty. */}
@@ -1347,8 +1358,12 @@ export default function AdminAgentPage() {
             <RotateCcw size={12} strokeWidth={1.75} />
             {t('tracy.newConversation')}
           </button>
-          {/* Hands-free Astra — renders null unless the voice_astra flag is on. */}
-          <AstraVoiceButton principalName={firstName} locale={locale} />
+          {/* Hands-free Astra — Session 156: hidden by default (SHOW_VOICE_ASTRA)
+              until the browser-native voice has been field-tested. Flip the flag
+              to re-enable. */}
+          {SHOW_VOICE_ASTRA && (
+            <AstraVoiceButton principalName={firstName} locale={locale} />
+          )}
           <button
             type="button"
             onClick={submit}
