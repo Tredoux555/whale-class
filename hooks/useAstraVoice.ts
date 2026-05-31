@@ -2,177 +2,383 @@
 
 // hooks/useAstraVoice.ts
 //
-// Client hook for a hands-free Astra VOICE session. Mirrors the SDK lifecycle
-// of components/montree/appointments/AgoraVideoCall.tsx but audio-only:
-//   1. POST /api/montree/admin/voice/token   → principal join token
-//   2. dynamic-import agora-rtc-sdk-ng, join the channel, publish the mic
-//   3. POST /api/montree/admin/voice/agent   → drop the Astra agent in
-//   4. play the agent's TTS audio as it speaks
-// stop() reverses it (DELETE the agent, close mic, leave).
+// Browser-native hands-free Astra. NO Agora. The whole voice loop runs in the
+// browser + reuses the SAME text brain the cockpit already uses:
+//   1. listen — Web Speech API (SpeechRecognition) transcribes the mic
+//   2. think  — POST the transcript to /api/montree/admin/principal-agent
+//               (the existing SSE brain) and accumulate the spoken reply
+//   3. speak  — OpenAI TTS via /api/montree/tts (nova voice); falls back to
+//               the browser's built-in speechSynthesis if TTS is unavailable
+//   4. loop   — after Astra finishes speaking, listen again until stop()
 //
-// The whole thing is inert when the `voice_astra` flag is off — the token
-// route returns { enabled:false } and the hook lands in 'disabled'.
+// Why not Agora: the Agora ConvoAI pipeline (ASR->LLM->TTS) ran on Agora's
+// servers and was an opaque black box — every failure (missing keys, missing
+// anthropic-version header, silent agent) lived where we couldn't see it. This
+// keeps every step in code we control and reuses the brain that already works.
+//
+// Browser support: SpeechRecognition is available in Chrome, Edge and Safari
+// (webkit-prefixed). Firefox has no support -> status 'unsupported'.
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 export type AstraVoiceStatus =
   | 'idle'
-  | 'connecting'
-  | 'live'
-  | 'stopping'
-  | 'disabled'
+  | 'listening'
+  | 'thinking'
+  | 'speaking'
+  | 'unsupported'
   | 'error';
 
 export interface UseAstraVoiceOptions {
-  locale?: string; // BCP-47, defaults to the browser language
+  locale?: string; // BCP-47; defaults to the browser language
   principalName?: string;
   schoolName?: string;
 }
 
-// Minimal structural types for the lazily-imported SDK (avoid bundling types).
-type MicTrack = { setEnabled: (b: boolean) => Promise<void>; close: () => void };
-type RemoteUser = {
-  audioTrack?: { play: () => void; stop: () => void };
-};
-type RtcClient = {
-  join: (appId: string, channel: string, token: string, uid: number) => Promise<void>;
-  leave: () => Promise<void>;
-  publish: (tracks: unknown[]) => Promise<void>;
-  subscribe: (user: unknown, mediaType: 'audio' | 'video') => Promise<void>;
-  on: (event: string, handler: (...args: unknown[]) => void) => void;
-};
-type AgoraModule = {
-  createClient: (cfg: { mode: string; codec: string }) => RtcClient;
-  createMicrophoneAudioTrack: () => Promise<MicTrack>;
-};
+// ── Minimal structural types for the Web Speech API (avoid `any`) ──────────
+interface SpeechRecognitionAlternativeLike {
+  transcript: string;
+}
+interface SpeechRecognitionResultLike {
+  0: SpeechRecognitionAlternativeLike;
+  isFinal: boolean;
+  length: number;
+}
+interface SpeechRecognitionEventLike {
+  results: ArrayLike<SpeechRecognitionResultLike>;
+}
+interface SpeechRecognitionErrorEventLike {
+  error: string;
+}
+interface SpeechRecognitionLike {
+  lang: string;
+  continuous: boolean;
+  interimResults: boolean;
+  maxAlternatives: number;
+  start: () => void;
+  stop: () => void;
+  abort: () => void;
+  onresult: ((e: SpeechRecognitionEventLike) => void) | null;
+  onerror: ((e: SpeechRecognitionErrorEventLike) => void) | null;
+  onend: (() => void) | null;
+}
+type SpeechRecognitionCtor = new () => SpeechRecognitionLike;
+
+function getRecognitionCtor(): SpeechRecognitionCtor | null {
+  if (typeof window === 'undefined') return null;
+  const w = window as unknown as {
+    SpeechRecognition?: SpeechRecognitionCtor;
+    webkitSpeechRecognition?: SpeechRecognitionCtor;
+  };
+  return w.SpeechRecognition || w.webkitSpeechRecognition || null;
+}
+
+const MAX_HISTORY_TURNS = 8;
 
 export function useAstraVoice(opts: UseAstraVoiceOptions = {}) {
   const [status, setStatus] = useState<AstraVoiceStatus>('idle');
   const [error, setError] = useState<string | null>(null);
 
-  const clientRef = useRef<RtcClient | null>(null);
-  const micRef = useRef<MicTrack | null>(null);
-  const agentIdRef = useRef<string | null>(null);
+  const recognitionRef = useRef<SpeechRecognitionLike | null>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const abortRef = useRef<AbortController | null>(null);
+  // `active` is the user-intent flag — true between start() and stop(). The
+  // conversational loop only continues while this is true.
+  const activeRef = useRef(false);
+  const historyRef = useRef<{ role: 'user' | 'assistant'; content: string }[]>([]);
+  const convIdRef = useRef<string>('');
+  const localeRef = useRef<string>(opts.locale || '');
+  // startListening is defined after the turn handler; hold it in a ref so the
+  // handler can re-arm listening without a declaration-order cycle.
+  const startListeningRef = useRef<() => void>(() => {});
 
-  const stop = useCallback(async () => {
-    setStatus((s) => (s === 'idle' ? s : 'stopping'));
-    // Stop the server-side agent first so it stops talking.
-    if (agentIdRef.current) {
+  useEffect(() => {
+    localeRef.current =
+      opts.locale ||
+      (typeof navigator !== 'undefined' ? navigator.language : 'en-US');
+  }, [opts.locale]);
+
+  const stopAudio = useCallback(() => {
+    const a = audioRef.current;
+    if (a) {
       try {
-        await fetch(
-          `/api/montree/admin/voice/agent?agentId=${encodeURIComponent(agentIdRef.current)}`,
-          { method: 'DELETE' }
-        );
+        a.pause();
+        if (a.src && a.src.startsWith('blob:')) URL.revokeObjectURL(a.src);
+        a.src = '';
       } catch {
-        /* best-effort */
+        /* ignore */
       }
-      agentIdRef.current = null;
     }
-    try {
-      micRef.current?.close();
-    } catch {
-      /* ignore */
+    audioRef.current = null;
+    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+      try {
+        window.speechSynthesis.cancel();
+      } catch {
+        /* ignore */
+      }
     }
-    micRef.current = null;
-    try {
-      await clientRef.current?.leave();
-    } catch {
-      /* ignore */
-    }
-    clientRef.current = null;
-    setStatus('idle');
   }, []);
 
-  const start = useCallback(async () => {
-    setError(null);
-    setStatus('connecting');
-    try {
-      // 1. Token (also the feature-flag gate).
-      const tokenResp = await fetch('/api/montree/admin/voice/token', {
-        method: 'POST',
-      });
-      const tokenData = (await tokenResp.json()) as {
-        enabled?: boolean;
-        appId?: string;
-        channel?: string;
-        uid?: number;
-        token?: string;
-        error?: string;
-      };
-      if (tokenData.enabled === false) {
-        // Session 140 — was setStatus('disabled'), which makes AstraVoiceButton
-        // render null: the button silently VANISHED on click with no feedback or
-        // log. Surface a clear message instead and keep the button mounted so the
-        // user understands the flag is off (enable it at /montree/admin/features).
-        setError('Astra voice isn’t enabled for your school yet. Contact Montree to turn it on.');
-        setStatus('error');
-        return;
+  const stop = useCallback(() => {
+    activeRef.current = false;
+    if (abortRef.current) {
+      try {
+        abortRef.current.abort();
+      } catch {
+        /* ignore */
       }
-      if (!tokenResp.ok || !tokenData.appId || !tokenData.token || !tokenData.channel) {
-        throw new Error(tokenData.error || 'Could not start voice (token).');
-      }
-
-      // 2. Join + publish mic.
-      const AgoraRTC = (await import('agora-rtc-sdk-ng')).default as unknown as AgoraModule;
-      const client = AgoraRTC.createClient({ mode: 'rtc', codec: 'vp8' });
-      clientRef.current = client;
-
-      client.on('user-published', (...args: unknown[]) => {
-        const user = args[0] as RemoteUser;
-        const mediaType = args[1] as 'audio' | 'video';
-        void client.subscribe(user, mediaType).then(() => {
-          if (mediaType === 'audio') user.audioTrack?.play();
-        });
-      });
-
-      await client.join(
-        tokenData.appId,
-        tokenData.channel,
-        tokenData.token,
-        tokenData.uid ?? 0
-      );
-
-      const mic = await AgoraRTC.createMicrophoneAudioTrack();
-      micRef.current = mic;
-      await client.publish([mic]);
-
-      // 3. Start the Astra agent in the channel.
-      const agentResp = await fetch('/api/montree/admin/voice/agent', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          locale: opts.locale || (typeof navigator !== 'undefined' ? navigator.language : 'en-US'),
-          principalName: opts.principalName,
-          schoolName: opts.schoolName,
-        }),
-      });
-      const agentData = (await agentResp.json()) as {
-        enabled?: boolean;
-        agentId?: string;
-        error?: string;
-      };
-      if (agentData.enabled === false) {
-        await stop();
-        setError('Astra voice isn’t enabled for your school yet. Contact Montree to turn it on.');
-        setStatus('error');
-        return;
-      }
-      if (!agentResp.ok || !agentData.agentId) {
-        throw new Error(agentData.error || 'Could not start the Astra agent.');
-      }
-      agentIdRef.current = agentData.agentId;
-      setStatus('live');
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Voice failed to start.');
-      setStatus('error');
-      await stop();
+      abortRef.current = null;
     }
-  }, [opts.locale, opts.principalName, opts.schoolName, stop]);
+    const rec = recognitionRef.current;
+    if (rec) {
+      rec.onresult = null;
+      rec.onerror = null;
+      rec.onend = null;
+      try {
+        rec.abort();
+      } catch {
+        /* ignore */
+      }
+    }
+    recognitionRef.current = null;
+    stopAudio();
+    setStatus('idle');
+  }, [stopAudio]);
+
+  // Speak `text`: try OpenAI TTS (nova); on any failure fall back to the
+  // browser's built-in speechSynthesis so Astra still talks. Resolves when
+  // playback finishes (or immediately on hard failure).
+  const speak = useCallback(
+    (text: string) =>
+      new Promise<void>((resolve) => {
+        const fallback = () => {
+          if (typeof window === 'undefined' || !('speechSynthesis' in window)) {
+            resolve();
+            return;
+          }
+          try {
+            const u = new SpeechSynthesisUtterance(text.slice(0, 4096));
+            u.lang = localeRef.current || 'en-US';
+            u.onend = () => resolve();
+            u.onerror = () => resolve();
+            window.speechSynthesis.speak(u);
+          } catch {
+            resolve();
+          }
+        };
+
+        fetch('/api/montree/tts', {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text: text.slice(0, 4096) }),
+        })
+          .then(async (res) => {
+            if (!res.ok) throw new Error(`tts ${res.status}`);
+            const blob = await res.blob();
+            const url = URL.createObjectURL(blob);
+            const audio = new Audio(url);
+            audioRef.current = audio;
+            audio.onended = () => {
+              if (url.startsWith('blob:')) URL.revokeObjectURL(url);
+              resolve();
+            };
+            audio.onerror = () => {
+              if (url.startsWith('blob:')) URL.revokeObjectURL(url);
+              fallback();
+            };
+            await audio.play();
+          })
+          .catch(() => fallback());
+      }),
+    []
+  );
+
+  // Send a transcript to the existing principal-agent brain and accumulate the
+  // spoken (text) reply from its SSE stream.
+  const askBrain = useCallback(async (question: string): Promise<string> => {
+    const controller = new AbortController();
+    abortRef.current = controller;
+
+    const history = historyRef.current.slice(-MAX_HISTORY_TURNS);
+    const res = await fetch('/api/montree/admin/principal-agent', {
+      method: 'POST',
+      credentials: 'include',
+      signal: controller.signal,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        question,
+        conversation_id: convIdRef.current,
+        history,
+        locale: localeRef.current || 'en-US',
+      }),
+    });
+
+    if (res.status === 402) {
+      const p = await res.json().catch(() => ({}));
+      throw new Error(p?.error || 'Astra voice needs an active plan.');
+    }
+    if (!res.ok || !res.body) {
+      const p = await res.json().catch(() => ({}));
+      throw new Error(p?.error || 'Astra could not respond just now.');
+    }
+
+    const reader = res.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+    let finalText = '';
+
+    while (true) {
+      const { value, done } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+      let nlIdx;
+      while ((nlIdx = buffer.indexOf('\n\n')) !== -1) {
+        const raw = buffer.slice(0, nlIdx);
+        buffer = buffer.slice(nlIdx + 2);
+        if (!raw.startsWith('data:')) continue;
+        const json = raw.slice(5).trim();
+        if (!json) continue;
+        let evt: Record<string, unknown>;
+        try {
+          evt = JSON.parse(json);
+        } catch {
+          continue;
+        }
+        if (evt.type === 'text') {
+          finalText += String(evt.text || '');
+        } else if (evt.type === 'error') {
+          throw new Error(String(evt.error || 'Astra hit an error.'));
+        }
+      }
+    }
+    return finalText.trim();
+  }, []);
+
+  // One full turn: think -> speak -> relisten. Captures the heard transcript.
+  const handleTranscript = useCallback(
+    async (transcript: string) => {
+      const q = transcript.trim();
+      if (!q) {
+        if (activeRef.current) startListeningRef.current();
+        return;
+      }
+      historyRef.current.push({ role: 'user', content: q });
+      setStatus('thinking');
+      try {
+        const reply = await askBrain(q);
+        if (!activeRef.current) return; // stopped mid-think
+        const spoken = reply || 'Okay.';
+        historyRef.current.push({ role: 'assistant', content: spoken });
+        setStatus('speaking');
+        await speak(spoken);
+        if (!activeRef.current) return; // stopped mid-speech
+        startListeningRef.current(); // continue the conversation
+      } catch (err) {
+        if (!activeRef.current) return; // aborted by stop()
+        setError(err instanceof Error ? err.message : 'Astra hit a problem.');
+        setStatus('error');
+        activeRef.current = false;
+      }
+    },
+    [askBrain, speak]
+  );
+
+  // Begin a single listen cycle. SpeechRecognition fires onresult with the
+  // final transcript, then onend; onerror covers denied mic / no speech.
+  const startListening = useCallback(() => {
+    const Ctor = getRecognitionCtor();
+    if (!Ctor) {
+      setError('Voice input isn’t supported in this browser. Try Chrome or Safari.');
+      setStatus('unsupported');
+      activeRef.current = false;
+      return;
+    }
+    const rec = new Ctor();
+    recognitionRef.current = rec;
+    rec.lang = localeRef.current || 'en-US';
+    rec.continuous = false;
+    rec.interimResults = false;
+    rec.maxAlternatives = 1;
+
+    let gotResult = '';
+    rec.onresult = (e: SpeechRecognitionEventLike) => {
+      const results = e.results;
+      let text = '';
+      for (let i = 0; i < results.length; i++) {
+        const r = results[i];
+        if (r && r[0]) text += r[0].transcript;
+      }
+      gotResult = text;
+    };
+    rec.onerror = (e: SpeechRecognitionErrorEventLike) => {
+      if (e.error === 'no-speech' || e.error === 'aborted') return; // benign
+      if (e.error === 'not-allowed' || e.error === 'service-not-allowed') {
+        setError('Microphone access was blocked. Allow the mic and try again.');
+        setStatus('error');
+        activeRef.current = false;
+        return;
+      }
+      setError('Voice input error: ' + e.error);
+      setStatus('error');
+      activeRef.current = false;
+    };
+    rec.onend = () => {
+      recognitionRef.current = null;
+      if (!activeRef.current) return;
+      if (gotResult.trim()) {
+        void handleTranscript(gotResult);
+      } else {
+        // Heard nothing — end cleanly so the mic doesn't spin. Tap to talk again.
+        activeRef.current = false;
+        setStatus('idle');
+      }
+    };
+
+    try {
+      rec.start();
+      setStatus('listening');
+    } catch {
+      // start() throws if called too rapidly back-to-back; retry once shortly.
+      setTimeout(() => {
+        if (!activeRef.current) return;
+        try {
+          rec.start();
+          setStatus('listening');
+        } catch {
+          setError('Could not start the microphone.');
+          setStatus('error');
+          activeRef.current = false;
+        }
+      }, 250);
+    }
+  }, [handleTranscript]);
+
+  // Keep the ref in sync so handleTranscript can re-arm listening.
+  useEffect(() => {
+    startListeningRef.current = startListening;
+  }, [startListening]);
+
+  const start = useCallback(() => {
+    setError(null);
+    if (!getRecognitionCtor()) {
+      setError('Voice input isn’t supported in this browser. Try Chrome or Safari.');
+      setStatus('unsupported');
+      return;
+    }
+    convIdRef.current =
+      typeof crypto !== 'undefined' && 'randomUUID' in crypto
+        ? crypto.randomUUID()
+        : 'voice-' + Date.now().toString(36);
+    historyRef.current = [];
+    activeRef.current = true;
+    startListening();
+  }, [startListening]);
 
   // Tear down on unmount.
   useEffect(() => {
     return () => {
-      void stop();
+      stop();
     };
   }, [stop]);
 
