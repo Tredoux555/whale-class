@@ -839,25 +839,9 @@ export default function StoryViewer() {
           ))}
         </div>
 
-        {/* Session 140 (D-3 safety net): the media gallery is normally revealed
-            by tapping the last letter of the story — a deliberate "secret". But
-            that trigger is fragile (trailing whitespace / not discoverable), so
-            admin-sent photos could load yet never appear. This subtle, on-theme
-            prompt guarantees the week's media is always reachable. */}
-        {!showMediaSection && mediaItems.length > 0 && (
-          <button
-            onClick={() => {
-              setShowMediaSection(true);
-              setIsDecoded(false);
-              setIsEditing(false);
-              setShowRecentMessages(false);
-            }}
-            className="mt-2 mx-auto block text-sm transition-colors"
-            style={{ color: '#E8C96A' }}
-          >
-            ✿ {mediaItems.length} moment{mediaItems.length === 1 ? '' : 's'} to see — tap to view
-          </button>
-        )}
+        {/* The media gallery is revealed covertly — by tapping the last visible
+            letter of the story (see handleLetterClick). It is deliberately NOT
+            advertised on-screen; do not re-add a "moments to see" prompt here. */}
 
         {/* Recent Messages Section */}
         {showRecentMessages && recentMessages.length > 0 && (
