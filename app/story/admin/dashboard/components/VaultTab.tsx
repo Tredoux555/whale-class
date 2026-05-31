@@ -95,39 +95,39 @@ export function VaultTab({
       )}
     <div className="space-y-4">
       {!vaultUnlocked ? (
-        <div className="bg-white rounded-lg shadow-sm p-6">
-          <h2 className="text-lg font-bold text-gray-800 mb-4">🔒 Media Vault</h2>
-          <p className="text-gray-600 mb-4">This vault is password protected. Enter your password to access stored photos and videos.</p>
+        <div className="bg-[rgba(8,20,12,0.55)] border border-[rgba(52,211,153,0.18)] rounded-lg shadow-sm p-6 backdrop-blur-md">
+          <h2 className="text-lg font-bold text-white/90 mb-4">🔒 Media Vault</h2>
+          <p className="text-white/60 mb-4">This vault is password protected. Enter your password to access stored photos and videos.</p>
           <div className="flex gap-2">
             <input
               type="password"
               value={vaultPassword}
               onChange={(e) => onVaultPasswordChange(e.target.value)}
               placeholder="Enter vault password..."
-              className="flex-1 px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="flex-1 px-4 py-2 bg-black/30 border border-[rgba(52,211,153,0.25)] rounded-lg text-white/90 placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-emerald-500"
               onKeyPress={(e) => e.key === 'Enter' && onVaultUnlock()}
             />
             <button
               onClick={onVaultUnlock}
-              className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-medium"
+              className="px-6 py-2 bg-emerald-500 text-[#0a1a0f] rounded-lg hover:bg-emerald-600 transition-colors font-medium"
             >
               Unlock
             </button>
           </div>
           {vaultError && (
-            <div className="mt-3 p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">
+            <div className="mt-3 p-3 bg-red-500/10 border border-red-500/30 text-red-300 rounded-lg text-sm">
               ✗ {vaultError}
             </div>
           )}
         </div>
       ) : (
         <div className="space-y-4">
-          <div className="bg-white rounded-lg shadow-sm p-6">
+          <div className="bg-[rgba(8,20,12,0.55)] border border-[rgba(52,211,153,0.18)] rounded-lg shadow-sm p-6 backdrop-blur-md">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-bold text-gray-800">🔓 Vault Unlocked</h2>
+              <h2 className="text-lg font-bold text-white/90">🔓 Vault Unlocked</h2>
               <button
                 onClick={onVaultLock}
-                className="px-3 py-1 text-sm bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition-colors"
+                className="px-3 py-1 text-sm bg-white/10 text-white/70 border border-white/10 rounded hover:bg-white/15 transition-colors"
               >
                 Lock
               </button>
@@ -141,36 +141,36 @@ export function VaultTab({
             {byteProgress ? (
               <div className="mt-3">
                 <div className="flex items-center justify-between mb-1.5">
-                  <p className="text-sm font-medium text-indigo-700 truncate pr-2">
+                  <p className="text-sm font-medium text-emerald-300 truncate pr-2">
                     ⟳ Uploading {byteProgress.name}
                   </p>
-                  <p className="text-sm tabular-nums text-indigo-600 whitespace-nowrap">
+                  <p className="text-sm tabular-nums text-emerald-300 whitespace-nowrap">
                     {(byteProgress.sent / 1048576).toFixed(0)} / {(byteProgress.total / 1048576).toFixed(0)} MB
                     {' '}({Math.floor((byteProgress.sent / Math.max(1, byteProgress.total)) * 100)}%)
                   </p>
                 </div>
-                <div className="h-2.5 w-full bg-indigo-100 rounded-full overflow-hidden">
+                <div className="h-2.5 w-full bg-emerald-500/15 rounded-full overflow-hidden">
                   <div
-                    className="h-full bg-indigo-500 rounded-full transition-[width] duration-300 ease-out"
+                    className="h-full bg-emerald-500 rounded-full transition-[width] duration-300 ease-out"
                     style={{ width: `${Math.min(100, (byteProgress.sent / Math.max(1, byteProgress.total)) * 100)}%` }}
                   />
                 </div>
-                <p className="text-[11px] text-gray-400 mt-1">Large video — uploading in chunks. Keep this tab open.</p>
+                <p className="text-[11px] text-white/40 mt-1">Large video — uploading in chunks. Keep this tab open.</p>
               </div>
             ) : uploadingVault && uploadProgress.total > 0 ? (
-              <p className="text-sm text-indigo-600 mt-2">
+              <p className="text-sm text-emerald-300 mt-2">
                 ⟳ Uploading {uploadProgress.done + 1} of {uploadProgress.total}…
               </p>
             ) : null}
             {vaultError && (
-              <div className="p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">
+              <div className="p-3 bg-red-500/10 border border-red-500/30 text-red-300 rounded-lg text-sm">
                 ✗ {vaultError}
               </div>
             )}
           </div>
 
           {vaultFiles.length === 0 ? (
-            <div className="bg-gray-50 rounded-lg p-8 text-center text-gray-500">
+            <div className="bg-black/20 border border-white/10 rounded-lg p-8 text-center text-white/50">
               <div className="text-4xl mb-2">📁</div>
               <p>Vault is empty. Upload photos or videos to get started.</p>
             </div>
@@ -178,8 +178,8 @@ export function VaultTab({
             <>
               {/* Photo + Video Gallery */}
               {mediaFiles.length > 0 && (
-                <div className="bg-white rounded-lg shadow-sm p-4">
-                  <h3 className="text-sm font-bold text-gray-800 mb-3">
+                <div className="bg-[rgba(8,20,12,0.55)] border border-[rgba(52,211,153,0.18)] rounded-lg shadow-sm p-4 backdrop-blur-md">
+                  <h3 className="text-sm font-bold text-white/90 mb-3">
                     Photos &amp; Videos ({mediaFiles.length})
                   </h3>
                   <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
@@ -191,11 +191,11 @@ export function VaultTab({
                       return (
                         <div
                           key={file.id}
-                          className="relative group aspect-square rounded-lg overflow-hidden bg-gray-100 cursor-pointer hover:ring-2 hover:ring-indigo-400 transition-all"
+                          className="relative group aspect-square rounded-lg overflow-hidden bg-black/30 cursor-pointer hover:ring-2 hover:ring-emerald-400 transition-all"
                           onClick={() => onVaultView(file.id, file.filename)}
                         >
                           {isVid ? (
-                            <div className="w-full h-full flex items-center justify-center bg-gray-900 relative">
+                            <div className="w-full h-full flex items-center justify-center bg-black/60 relative">
                               <span className="text-3xl text-white/90">▶</span>
                               <span className="absolute top-1 right-1 text-[8px] bg-black/60 text-white px-1 py-0.5 rounded tracking-wide">VIDEO</span>
                             </div>
@@ -208,9 +208,9 @@ export function VaultTab({
                           ) : (
                             <div className="w-full h-full flex items-center justify-center">
                               {isLoading ? (
-                                <div className="w-6 h-6 border-2 border-gray-300 border-t-indigo-500 rounded-full animate-spin" />
+                                <div className="w-6 h-6 border-2 border-white/20 border-t-emerald-400 rounded-full animate-spin" />
                               ) : failedThumbnails[file.id] ? (
-                                <span className="text-xl text-gray-400">✕</span>
+                                <span className="text-xl text-white/40">✕</span>
                               ) : (
                                 <span className="text-2xl">🖼️</span>
                               )}
@@ -245,28 +245,28 @@ export function VaultTab({
 
               {/* Other (non-media) files list */}
               {otherFiles.length > 0 && (
-                <div className="bg-white rounded-lg shadow-sm p-6">
-                  <h3 className="text-sm font-bold text-gray-800 mb-4">Other Files ({otherFiles.length})</h3>
+                <div className="bg-[rgba(8,20,12,0.55)] border border-[rgba(52,211,153,0.18)] rounded-lg shadow-sm p-6 backdrop-blur-md">
+                  <h3 className="text-sm font-bold text-white/90 mb-4">Other Files ({otherFiles.length})</h3>
                   <div className="space-y-2">
                     {otherFiles.map((file) => (
-                      <div key={file.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                      <div key={file.id} className="flex items-center justify-between p-3 bg-black/20 border border-white/10 rounded-lg hover:bg-white/5 transition-colors">
                         <div className="flex items-center gap-3 flex-1">
                           <span className="text-lg">{getVaultFileIcon(file.filename)}</span>
                           <div className="flex-1">
-                            <p className="text-sm font-medium text-gray-800">{file.filename}</p>
-                            <p className="text-xs text-gray-500">{formatTime(file.uploaded_at)}</p>
+                            <p className="text-sm font-medium text-white/90">{file.filename}</p>
+                            <p className="text-xs text-white/50">{formatTime(file.uploaded_at)}</p>
                           </div>
                         </div>
                         <div className="flex gap-2">
                           <button
                             onClick={() => onVaultDownload(file.id, file.filename)}
-                            className="px-3 py-1 text-xs bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition-colors"
+                            className="px-3 py-1 text-xs bg-[rgba(52,211,153,0.12)] text-emerald-300 border border-[rgba(52,211,153,0.25)] rounded hover:bg-[rgba(52,211,153,0.20)] transition-colors"
                           >
                             ⬇ Download
                           </button>
                           <button
                             onClick={() => onVaultDelete(file.id)}
-                            className="px-3 py-1 text-xs bg-red-100 text-red-700 rounded hover:bg-red-200 transition-colors"
+                            className="px-3 py-1 text-xs bg-red-500/15 text-red-300 border border-red-500/30 rounded hover:bg-red-500/25 transition-colors"
                           >
                             🗑 Delete
                           </button>
@@ -355,8 +355,8 @@ function VaultUploadZone({ uploadingVault, uploadProgress, onVaultUpload }: Vaul
 
   const zoneBaseClass =
     'relative w-full rounded-2xl border-2 border-dashed transition-all cursor-pointer';
-  const zoneIdleClass = 'border-gray-300 bg-gray-50 hover:border-indigo-400 hover:bg-indigo-50/40';
-  const zoneActiveClass = 'border-indigo-500 bg-indigo-50 ring-4 ring-indigo-100';
+  const zoneIdleClass = 'border-[rgba(52,211,153,0.25)] bg-black/20 hover:border-emerald-400 hover:bg-[rgba(52,211,153,0.08)]';
+  const zoneActiveClass = 'border-emerald-500 bg-[rgba(52,211,153,0.12)] ring-4 ring-emerald-500/20';
   const zoneDisabledClass = 'opacity-60 cursor-wait';
 
   const zoneClass = [
@@ -441,14 +441,14 @@ function VaultUploadZone({ uploadingVault, uploadProgress, onVaultUpload }: Vaul
                 : '📤'}
           </div>
           <div>
-            <p className="text-base font-semibold text-gray-800">
+            <p className="text-base font-semibold text-white/90">
               {uploadingVault
                 ? `Uploading ${uploadProgress.done + 1} of ${uploadProgress.total}…`
                 : dragActive
                   ? 'Drop to upload'
                   : 'Drag files here or tap to choose'}
             </p>
-            <p className="mt-1 text-xs text-gray-500">
+            <p className="mt-1 text-xs text-white/50">
               Photos and videos · multiple at once · up to 1GB each
             </p>
           </div>
@@ -462,7 +462,7 @@ function VaultUploadZone({ uploadingVault, uploadProgress, onVaultUpload }: Vaul
           type="button"
           disabled={uploadingVault}
           onClick={() => cameraPhotoInputRef.current?.click()}
-          className="flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 active:bg-gray-100 disabled:opacity-50 disabled:cursor-wait transition-colors"
+          className="flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium text-white/80 bg-white/5 border border-white/15 rounded-lg hover:bg-white/10 active:bg-white/15 disabled:opacity-50 disabled:cursor-wait transition-colors"
         >
           📷 Take photo
         </button>
@@ -470,7 +470,7 @@ function VaultUploadZone({ uploadingVault, uploadProgress, onVaultUpload }: Vaul
           type="button"
           disabled={uploadingVault}
           onClick={() => cameraVideoInputRef.current?.click()}
-          className="flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 active:bg-gray-100 disabled:opacity-50 disabled:cursor-wait transition-colors"
+          className="flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium text-white/80 bg-white/5 border border-white/15 rounded-lg hover:bg-white/10 active:bg-white/15 disabled:opacity-50 disabled:cursor-wait transition-colors"
         >
           🎥 Record video
         </button>
@@ -478,9 +478,9 @@ function VaultUploadZone({ uploadingVault, uploadProgress, onVaultUpload }: Vaul
 
       {/* Progress bar — only during multi-file uploads. */}
       {uploadingVault && uploadProgress.total > 1 && (
-        <div className="mt-3 h-1.5 w-full bg-gray-200 rounded-full overflow-hidden">
+        <div className="mt-3 h-1.5 w-full bg-white/10 rounded-full overflow-hidden">
           <div
-            className="h-full bg-indigo-500 transition-all"
+            className="h-full bg-emerald-500 transition-all"
             style={{ width: `${(uploadProgress.done / uploadProgress.total) * 100}%` }}
           />
         </div>

@@ -275,17 +275,17 @@ export default function AdminDashboard() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
+      <div className="min-h-screen bg-[#0a1a0f] flex items-center justify-center">
         <div className="text-center">
           <div className="text-4xl mb-4">🏫</div>
-          <div className="text-lg font-semibold text-gray-700">Loading classroom...</div>
+          <div className="text-lg font-semibold text-white/70">Loading classroom...</div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+    <div className="min-h-screen bg-[#0a1a0f]">
       <PullRefreshIndicator
         pullDistance={pullState.pullDistance}
         isRefreshing={pullState.isRefreshing}

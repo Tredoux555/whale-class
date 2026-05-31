@@ -57,8 +57,8 @@ export function MessageComposer({
   selectedImage,
 }: MessageComposerProps) {
   return (
-    <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-      <h2 className="text-lg font-bold text-gray-800 mb-4">📝 Send Message to Students</h2>
+    <div className="bg-[rgba(8,20,12,0.55)] border border-[rgba(52,211,153,0.18)] rounded-lg shadow-sm p-6 mb-6 backdrop-blur-md">
+      <h2 className="text-lg font-bold text-white/90 mb-4">📝 Send Message to Students</h2>
       <div className="space-y-3">
         <div className="relative">
           <textarea
@@ -66,7 +66,7 @@ export function MessageComposer({
             onChange={(e) => onMessageChange(e.target.value.slice(0, 50000))}
             maxLength={50000}
             placeholder={selectedImage ? 'Add a caption (optional)...' : 'Write a message for your students...'}
-            className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
+            className="w-full px-4 py-3 bg-black/30 border border-[rgba(52,211,153,0.25)] rounded-lg text-white/90 placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-emerald-500 resize-none"
             rows={3}
           />
           <div className="absolute top-2 right-2">
@@ -76,11 +76,11 @@ export function MessageComposer({
             />
           </div>
         </div>
-        <p className="text-xs text-gray-400 text-right">{adminMessage.length.toLocaleString()} / 50,000</p>
+        <p className="text-xs text-white/40 text-right">{adminMessage.length.toLocaleString()} / 50,000</p>
 
         {imagePreview && (
           <div className="relative inline-block">
-            <img src={imagePreview} alt="Preview" className="max-w-xs max-h-48 rounded-lg border border-gray-200" />
+            <img src={imagePreview} alt="Preview" className="max-w-xs max-h-48 rounded-lg border border-white/10" />
             <button
               onClick={onImageClear}
               className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center text-sm hover:bg-red-600"
@@ -91,11 +91,11 @@ export function MessageComposer({
         )}
 
         {selectedAudio && (
-          <div className="flex items-center gap-3 p-3 bg-purple-50 border border-purple-200 rounded-lg">
+          <div className="flex items-center gap-3 p-3 bg-[rgba(52,211,153,0.08)] border border-[rgba(52,211,153,0.18)] rounded-lg">
             <span className="text-2xl">🎵</span>
             <div className="flex-1">
-              <p className="font-medium text-purple-800">{selectedAudio.name}</p>
-              <p className="text-xs text-purple-600">{(selectedAudio.size / (1024 * 1024)).toFixed(1)} MB</p>
+              <p className="font-medium text-white/90">{selectedAudio.name}</p>
+              <p className="text-xs text-white/50">{(selectedAudio.size / (1024 * 1024)).toFixed(1)} MB</p>
             </div>
             <button
               onClick={onAudioClear}
@@ -107,11 +107,11 @@ export function MessageComposer({
         )}
 
         {selectedVideo && (
-          <div className="flex items-center gap-3 p-3 bg-red-50 border border-red-200 rounded-lg">
+          <div className="flex items-center gap-3 p-3 bg-[rgba(52,211,153,0.08)] border border-[rgba(52,211,153,0.18)] rounded-lg">
             <span className="text-2xl">🎬</span>
             <div className="flex-1">
-              <p className="font-medium text-red-800">{selectedVideo.name}</p>
-              <p className="text-xs text-red-600">{(selectedVideo.size / (1024 * 1024)).toFixed(1)} MB</p>
+              <p className="font-medium text-white/90">{selectedVideo.name}</p>
+              <p className="text-xs text-white/50">{(selectedVideo.size / (1024 * 1024)).toFixed(1)} MB</p>
             </div>
             <button
               onClick={onVideoClear}
@@ -123,11 +123,11 @@ export function MessageComposer({
         )}
 
         {selectedDocument && (
-          <div className="flex items-center gap-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+          <div className="flex items-center gap-3 p-3 bg-[rgba(52,211,153,0.08)] border border-[rgba(52,211,153,0.18)] rounded-lg">
             <span className="text-2xl">📄</span>
             <div className="flex-1 min-w-0">
-              <p className="font-medium text-blue-800 truncate">{selectedDocument.name}</p>
-              <p className="text-xs text-blue-600">{(selectedDocument.size / (1024 * 1024)).toFixed(1)} MB</p>
+              <p className="font-medium text-white/90 truncate">{selectedDocument.name}</p>
+              <p className="text-xs text-white/50">{(selectedDocument.size / (1024 * 1024)).toFixed(1)} MB</p>
             </div>
             <button
               onClick={onDocumentClear}
@@ -139,7 +139,7 @@ export function MessageComposer({
         )}
 
         <div className="flex gap-2 flex-wrap">
-          <label className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 cursor-pointer transition-colors font-medium flex items-center gap-2">
+          <label className="px-4 py-2 bg-white/10 text-white/80 border border-white/10 rounded-lg hover:bg-white/15 cursor-pointer transition-colors font-medium flex items-center gap-2">
             📷 Add Photo
             <input
               type="file"
@@ -149,7 +149,7 @@ export function MessageComposer({
             />
           </label>
 
-          <label className="px-4 py-2 bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 cursor-pointer transition-colors font-medium flex items-center gap-2">
+          <label className="px-4 py-2 bg-[rgba(52,211,153,0.10)] text-emerald-300 border border-[rgba(52,211,153,0.25)] rounded-lg hover:bg-[rgba(52,211,153,0.18)] cursor-pointer transition-colors font-medium flex items-center gap-2">
             🎵 Add Song
             <input
               type="file"
@@ -159,7 +159,7 @@ export function MessageComposer({
             />
           </label>
 
-          <label className="px-4 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 cursor-pointer transition-colors font-medium flex items-center gap-2">
+          <label className="px-4 py-2 bg-[rgba(52,211,153,0.10)] text-emerald-300 border border-[rgba(52,211,153,0.25)] rounded-lg hover:bg-[rgba(52,211,153,0.18)] cursor-pointer transition-colors font-medium flex items-center gap-2">
             🎬 Add Video
             <input
               type="file"
@@ -169,7 +169,7 @@ export function MessageComposer({
             />
           </label>
 
-          <label className="px-4 py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 cursor-pointer transition-colors font-medium flex items-center gap-2">
+          <label className="px-4 py-2 bg-[rgba(52,211,153,0.10)] text-emerald-300 border border-[rgba(52,211,153,0.25)] rounded-lg hover:bg-[rgba(52,211,153,0.18)] cursor-pointer transition-colors font-medium flex items-center gap-2">
             📄 Add Document
             <input
               type="file"
@@ -189,7 +189,7 @@ export function MessageComposer({
               isUploadingDocument ||
               (!adminMessage.trim() && !selectedImage && !selectedAudio && !selectedVideo && !selectedDocument)
             }
-            className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors font-medium"
+            className="px-6 py-2 bg-emerald-500 text-[#0a1a0f] rounded-lg hover:bg-emerald-600 disabled:bg-white/15 disabled:text-white/40 disabled:cursor-not-allowed transition-colors font-medium"
           >
             {isUploadingDocument
               ? '⟳ Uploading Document...'
@@ -214,19 +214,19 @@ export function MessageComposer({
 
           <button
             onClick={onClearAll}
-            className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+            className="px-4 py-2 text-white/70 border border-white/15 rounded-lg hover:bg-white/5 transition-colors"
           >
             Clear
           </button>
         </div>
 
         {messageSent && (
-          <div className="p-3 bg-green-50 border border-green-200 text-green-700 rounded-lg text-sm">
+          <div className="p-3 bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 rounded-lg text-sm">
             ✓ Message sent successfully!
           </div>
         )}
         {messageError && (
-          <div className="p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">
+          <div className="p-3 bg-red-500/10 border border-red-500/30 text-red-300 rounded-lg text-sm">
             ✗ {messageError}
           </div>
         )}
