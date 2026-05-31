@@ -20,6 +20,7 @@
 // (webkit-prefixed). Firefox has no support -> status 'unsupported'.
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { getIntlLocale } from '@/lib/montree/i18n/locales';
 
 export type AstraVoiceStatus =
   | 'idle'
@@ -92,10 +93,13 @@ export function useAstraVoice(opts: UseAstraVoiceOptions = {}) {
   // handler can re-arm listening without a declaration-order cycle.
   const startListeningRef = useRef<() => void>(() => {});
 
+  // Cockpit locale as a SHORT code (e.g. 'zh') — sent as-is to the brain
+  // (which expects short codes) and mapped to BCP-47 (e.g. 'zh-CN') via
+  // getIntlLocale for the speech recognizer + TTS fallback. This is what makes
+  // Astra listen/think/speak in Chinese (or any of the 12 locales) when the
+  // cockpit language is set accordingly.
   useEffect(() => {
-    localeRef.current =
-      opts.locale ||
-      (typeof navigator !== 'undefined' ? navigator.language : 'en-US');
+    localeRef.current = opts.locale || 'en';
   }, [opts.locale]);
 
   const stopAudio = useCallback(() => {
@@ -158,7 +162,7 @@ export function useAstraVoice(opts: UseAstraVoiceOptions = {}) {
           }
           try {
             const u = new SpeechSynthesisUtterance(text.slice(0, 4096));
-            u.lang = localeRef.current || 'en-US';
+            u.lang = getIntlLocale(localeRef.current);
             u.onend = () => resolve();
             u.onerror = () => resolve();
             window.speechSynthesis.speak(u);
@@ -210,7 +214,7 @@ export function useAstraVoice(opts: UseAstraVoiceOptions = {}) {
         question,
         conversation_id: convIdRef.current,
         history,
-        locale: localeRef.current || 'en-US',
+        locale: localeRef.current || 'en',
       }),
     });
 
@@ -296,7 +300,7 @@ export function useAstraVoice(opts: UseAstraVoiceOptions = {}) {
     }
     const rec = new Ctor();
     recognitionRef.current = rec;
-    rec.lang = localeRef.current || 'en-US';
+    rec.lang = getIntlLocale(localeRef.current);
     rec.continuous = false;
     rec.interimResults = false;
     rec.maxAlternatives = 1;
