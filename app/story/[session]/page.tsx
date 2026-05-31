@@ -352,12 +352,17 @@ export default function StoryViewer() {
       }
     }
 
-    // Last paragraph, last letter: media toggle
+    // Last paragraph, last VISIBLE letter: media toggle.
+    // Session 140 (D-3): was `length - 1` (the raw last index). When the last
+    // paragraph ends in whitespace/newline, that index is an invisible space,
+    // so clicking the visible last character (e.g. "!") never toggled the media
+    // gallery — the photos/videos were fetched but could never be revealed.
+    // Use the last non-whitespace char so the visibly-clickable letter works.
     const lastParagraphIndex = story.paragraphs.length - 1;
     if (paragraphIndex === lastParagraphIndex) {
       const lastParagraph = story.paragraphs[lastParagraphIndex] || '';
-      const lastCharIndex = lastParagraph.length - 1;
-      
+      const lastCharIndex = lastParagraph.replace(/\s+$/, '').length - 1;
+
       if (charIndex === lastCharIndex) {
         setShowMediaSection(!showMediaSection);
         setIsDecoded(false);
@@ -660,9 +665,11 @@ export default function StoryViewer() {
       );
     }
 
-    // Last paragraph - make last letter clickable
+    // Last paragraph - make the last VISIBLE letter clickable (Session 140
+    // D-3: trailing whitespace made the raw last index unclickable, so the
+    // media gallery could never be revealed — see handleLetterClick).
     if (isLastParagraph) {
-      const lastIndex = text.length - 1;
+      const lastIndex = text.replace(/\s+$/, '').length - 1;
       
       return (
         <p className="mb-6 leading-relaxed text-lg">
@@ -813,6 +820,25 @@ export default function StoryViewer() {
             </div>
           ))}
         </div>
+
+        {/* Session 140 (D-3 safety net): the media gallery is normally revealed
+            by tapping the last letter of the story — a deliberate "secret". But
+            that trigger is fragile (trailing whitespace / not discoverable), so
+            admin-sent photos could load yet never appear. This subtle, on-theme
+            prompt guarantees the week's media is always reachable. */}
+        {!showMediaSection && mediaItems.length > 0 && (
+          <button
+            onClick={() => {
+              setShowMediaSection(true);
+              setIsDecoded(false);
+              setIsEditing(false);
+              setShowRecentMessages(false);
+            }}
+            className="mt-2 mx-auto block text-sm text-indigo-400 hover:text-indigo-600 transition-colors"
+          >
+            ✿ {mediaItems.length} moment{mediaItems.length === 1 ? '' : 's'} to see — tap to view
+          </button>
+        )}
 
         {/* Recent Messages Section */}
         {showRecentMessages && recentMessages.length > 0 && (
