@@ -56,6 +56,28 @@ function authHeader(): string | null {
 }
 
 /**
+ * Which required server credentials for the voice agent are absent. Returns
+ * the missing ENV VAR NAMES only (never values) so a 503 can tell the
+ * operator exactly what to set in Railway instead of an opaque failure.
+ * Empty array = fully configured.
+ */
+export function voiceAgentMissingConfig(): string[] {
+  const missing: string[] = [];
+  const { config } = getAgoraConfig();
+  if (!config?.appId) missing.push('AGORA_APP_ID');
+  if (!config?.appCertificate) missing.push('AGORA_APP_CERTIFICATE');
+  // ConvoAI REST join uses Basic auth with the same customer key/secret as
+  // Cloud Recording — a DIFFERENT credential from the App ID/certificate that
+  // signs join tokens. The client can mint a token + join the channel without
+  // these, which is why audio connects but the agent never starts.
+  if (!config?.customerKey) missing.push('AGORA_CUSTOMER_KEY');
+  if (!config?.customerSecret) missing.push('AGORA_CUSTOMER_SECRET');
+  if (!process.env.ANTHROPIC_API_KEY) missing.push('ANTHROPIC_API_KEY');
+  if (!process.env.OPENAI_API_KEY) missing.push('OPENAI_API_KEY'); // required for TTS
+  return missing;
+}
+
+/**
  * Start the Astra voice agent in a channel. Returns null when Agora /
  * provider keys are not configured (caller maps to 503). Throws on a
  * non-2xx Agora response so the route can surface the reason.

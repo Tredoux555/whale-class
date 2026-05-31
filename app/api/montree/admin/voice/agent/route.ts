@@ -20,7 +20,11 @@ import {
   mintPrincipalVoiceToken,
   mintAgentVoiceToken,
 } from '@/lib/montree/voice-agent/session';
-import { startVoiceAgent, stopVoiceAgent } from '@/lib/montree/voice-agent/agent';
+import {
+  startVoiceAgent,
+  stopVoiceAgent,
+  voiceAgentMissingConfig,
+} from '@/lib/montree/voice-agent/agent';
 import {
   buildAstraVoicePrompt,
   buildAstraVoiceGreeting,
@@ -71,8 +75,16 @@ export async function POST(request: NextRequest) {
   const agentTok = mintAgentVoiceToken(auth.schoolId, auth.userId);
   const principalTok = mintPrincipalVoiceToken(auth.schoolId, auth.userId);
   if (!agentTok || !principalTok) {
+    const missing = voiceAgentMissingConfig();
     return NextResponse.json(
-      { enabled: true, error: 'Voice is not configured on this server yet.' },
+      {
+        enabled: true,
+        error:
+          missing.length > 0
+            ? `Voice not configured — missing server env: ${missing.join(', ')}`
+            : 'Voice is not configured on this server yet.',
+        missing,
+      },
       { status: 503 }
     );
   }
@@ -110,8 +122,16 @@ export async function POST(request: NextRequest) {
   }
 
   if (!result) {
+    const missing = voiceAgentMissingConfig();
     return NextResponse.json(
-      { enabled: true, error: 'Voice provider keys are not configured.' },
+      {
+        enabled: true,
+        error:
+          missing.length > 0
+            ? `Voice provider keys are not configured — missing server env: ${missing.join(', ')}`
+            : 'Voice provider keys are not configured.',
+        missing,
+      },
       { status: 503 }
     );
   }
