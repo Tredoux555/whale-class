@@ -69,13 +69,21 @@ export default function ParentsListPage() {
 
   useEffect(() => {
     let cancelled = false;
+    // Session 140 (P1): the page was hanging on "Loading parents…" forever even
+    // though the API returns 200 — a cold-start response can send 200 headers
+    // then stall the body, so `await res.json()` never resolves and `finally`
+    // (which clears loading) never runs. Add a 12s abort watchdog so a stalled
+    // request surfaces an error + clears loading instead of trapping the page.
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 12000);
     (async () => {
       try {
-        const res = await fetch('/api/montree/admin/parent-profile/list');
+        const res = await fetch('/api/montree/admin/parent-profile/list', {
+          signal: controller.signal,
+        });
         if (!res.ok) {
           if (cancelled) return;
           setErrorMsg(`Failed to load parents (HTTP ${res.status})`);
-          setLoading(false);
           return;
         }
         const data = await res.json();
@@ -84,13 +92,24 @@ export default function ParentsListPage() {
         setParents(Array.isArray(data.parents) ? data.parents : []);
       } catch (err) {
         if (cancelled) return;
-        setErrorMsg(err instanceof Error ? err.message : 'unknown');
+        setErrorMsg(
+          (err as Error)?.name === 'AbortError'
+            ? 'Loading parents timed out — please reload to try again.'
+            : err instanceof Error
+              ? err.message
+              : 'unknown'
+        );
       } finally {
-        if (!cancelled) setLoading(false);
+        clearTimeout(timer);
+        // Always clear loading (even if cancelled) — a no-op setState on an
+        // unmounted component is harmless and prevents any stuck-loading path.
+        setLoading(false);
       }
     })();
     return () => {
       cancelled = true;
+      clearTimeout(timer);
+      controller.abort();
     };
   }, []);
 

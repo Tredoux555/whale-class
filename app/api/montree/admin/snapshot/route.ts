@@ -38,10 +38,14 @@ export async function GET(req: NextRequest) {
   const now = Date.now();
 
   // Classrooms in this school + their children counts.
+  // Session 140 (P2): was missing the is_active filter, so soft-deleted
+  // classrooms leaked into the "Astra noticed" banner ("X classrooms had no
+  // photos this week" listing deleted rooms).
   const { data: classrooms } = await supabase
     .from('montree_classrooms')
     .select('id, name')
-    .eq('school_id', auth.schoolId);
+    .eq('school_id', auth.schoolId)
+    .eq('is_active', true);
 
   const classroomList = (classrooms || []) as Array<{ id: string; name: string | null }>;
 
