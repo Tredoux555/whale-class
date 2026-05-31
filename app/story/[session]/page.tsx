@@ -607,7 +607,7 @@ export default function StoryViewer() {
               <span
                 key={i}
                 onClick={() => isClickable && handleLetterClick(char, i, index)}
-                className={isClickable ? 'cursor-pointer hover:text-indigo-600 transition-colors' : ''}
+                className={isClickable ? 'cursor-pointer hover:text-emerald-300 transition-colors' : ''}
               >
                 {char}
               </span>
@@ -636,7 +636,7 @@ export default function StoryViewer() {
                 value={messageInput}
                 onChange={(e) => setMessageInput(e.target.value)}
                 onKeyPress={handleKeyPress}
-                className="border-b-2 border-gray-400 outline-none px-2 py-1 bg-transparent animate-pulse min-w-[200px]"
+                className="border-b-2 border-emerald-400/50 outline-none px-2 py-1 bg-transparent animate-pulse min-w-[200px] text-white placeholder-white/40"
                 autoFocus
                 placeholder="Type note..."
                 disabled={isSaving}
@@ -644,18 +644,18 @@ export default function StoryViewer() {
               <button
                 onClick={saveMessage}
                 disabled={isSaving || !messageInput.trim()}
-                className="ml-3 text-sm bg-indigo-500 text-white px-4 py-1 rounded hover:bg-indigo-600 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+                className="ml-3 text-sm bg-emerald-500 text-[#0a1a0f] font-medium px-4 py-1 rounded hover:bg-emerald-600 disabled:bg-white/20 disabled:text-white/40 disabled:cursor-not-allowed transition-colors"
               >
                 {isSaving ? '⏳' : '💾'} Save
               </button>
               <button
                 onClick={() => { setIsEditing(false); setSaveError(''); }}
-                className="ml-2 text-sm bg-gray-300 text-gray-700 px-3 py-1 rounded hover:bg-gray-400 transition-colors"
+                className="ml-2 text-sm bg-white/10 text-white/80 px-3 py-1 rounded hover:bg-white/20 transition-colors"
               >
                 Cancel
               </button>
               {saveError && (
-                <span className="block mt-2 text-sm text-red-600 font-medium">
+                <span className="block mt-2 text-sm text-red-400 font-medium">
                   ⚠️ {saveError}
                 </span>
               )}
@@ -680,7 +680,7 @@ export default function StoryViewer() {
               <span
                 key={i}
                 onClick={() => isLastChar && handleLetterClick(char, i, index)}
-                className={isLastChar ? 'cursor-pointer hover:text-indigo-600 transition-colors' : ''}
+                className={isLastChar ? 'cursor-pointer hover:text-emerald-300 transition-colors' : ''}
               >
                 {char}
               </span>
@@ -803,17 +803,35 @@ export default function StoryViewer() {
       )}
 
       <div
-        className="max-w-3xl mx-auto bg-white rounded-lg shadow-xl p-12"
-        style={{ position: 'relative', zIndex: 1 }}
+        className="max-w-3xl mx-auto rounded-2xl p-8 sm:p-12"
+        style={{
+          position: 'relative',
+          zIndex: 1,
+          background: 'rgba(8,20,12,0.55)',
+          border: '1px solid rgba(52,211,153,0.18)',
+          backdropFilter: 'blur(18px)',
+          WebkitBackdropFilter: 'blur(18px)',
+          boxShadow: '0 20px 60px rgba(0,0,0,0.35)',
+        }}
       >
-        <h1 className="text-4xl font-bold mb-4 text-center text-gray-800 font-serif">
+        <h1
+          className="text-4xl mb-4 text-center"
+          style={{
+            fontFamily: 'var(--font-lora), Georgia, serif',
+            fontWeight: 500,
+            color: 'rgba(255,255,255,0.92)',
+          }}
+        >
           {story.title}
         </h1>
 
         {/* One-tap opt-in for call notifications (hides itself once enabled) */}
         <EnableNotificationsButton />
 
-        <div className="prose prose-lg max-w-none mt-8">
+        <div
+          className="prose prose-lg max-w-none mt-8"
+          style={{ color: 'rgba(245,240,230,0.90)' }}
+        >
           {story.paragraphs.map((paragraph, index) => (
             <div key={index}>
               {renderParagraph(paragraph, index)}
@@ -834,7 +852,8 @@ export default function StoryViewer() {
               setIsEditing(false);
               setShowRecentMessages(false);
             }}
-            className="mt-2 mx-auto block text-sm text-indigo-400 hover:text-indigo-600 transition-colors"
+            className="mt-2 mx-auto block text-sm transition-colors"
+            style={{ color: '#E8C96A' }}
           >
             ✿ {mediaItems.length} moment{mediaItems.length === 1 ? '' : 's'} to see — tap to view
           </button>
@@ -842,23 +861,23 @@ export default function StoryViewer() {
 
         {/* Recent Messages Section */}
         {showRecentMessages && recentMessages.length > 0 && (
-          <div className="mt-8 pt-8 border-t border-gray-200">
-            <h3 className="text-lg font-semibold mb-4 text-gray-700 flex items-center gap-2">
+          <div className="mt-8 pt-8 border-t border-white/10">
+            <h3 className="text-lg font-semibold mb-4 text-white/80 flex items-center gap-2">
               <span>💬</span> Recent Notes from Teacher
             </h3>
             <div className="space-y-3">
               {recentMessages.map((msg) => (
                 <div 
                   key={msg.id} 
-                  className="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-lg p-4 border border-indigo-100"
+                  className="bg-[rgba(52,211,153,0.08)] rounded-lg p-4 border border-[rgba(52,211,153,0.18)]"
                 >
                   <div className="flex items-start gap-3">
-                    <div className="w-8 h-8 bg-gradient-to-br from-indigo-400 to-purple-500 rounded-full flex items-center justify-center text-white text-sm font-bold flex-shrink-0">
+                    <div className="w-8 h-8 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-full flex items-center justify-center text-[#0a1a0f] text-sm font-bold flex-shrink-0">
                       {msg.author.charAt(0).toUpperCase()}
                     </div>
                     <div className="flex-1 min-w-0">
                       {msg.type === 'text' && msg.content && (
-                        <p className="text-gray-800">{msg.content}</p>
+                        <p className="text-white/90">{msg.content}</p>
                       )}
                       {msg.type === 'image' && msg.mediaUrl && (
                         <img src={msg.mediaUrl} alt="Shared" className="max-w-full h-auto rounded-lg max-h-48" />
@@ -887,19 +906,19 @@ export default function StoryViewer() {
                           href={msg.mediaUrl}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="flex items-center gap-3 p-3 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 transition-colors"
+                          className="flex items-center gap-3 p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-lg hover:bg-emerald-500/20 transition-colors"
                         >
                           <span className="text-2xl">📄</span>
                           <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-blue-800 truncate">{msg.mediaFilename || 'Document'}</p>
-                            <p className="text-xs text-blue-600">Tap to open</p>
+                            <p className="text-sm font-medium text-emerald-100 truncate">{msg.mediaFilename || 'Document'}</p>
+                            <p className="text-xs text-emerald-300">Tap to open</p>
                           </div>
                         </a>
                       )}
                       {msg.content && msg.type !== 'text' && (
-                        <p className="text-gray-600 text-sm mt-2">{msg.content}</p>
+                        <p className="text-white/60 text-sm mt-2">{msg.content}</p>
                       )}
-                      <p className="text-xs text-gray-400 mt-2">
+                      <p className="text-xs text-white/40 mt-2">
                         {msg.author} • {new Date(msg.createdAt).toLocaleDateString()} {new Date(msg.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
                       </p>
                     </div>
@@ -912,10 +931,10 @@ export default function StoryViewer() {
 
         {/* Media Section */}
         {showMediaSection && (
-          <div className="mt-8 pt-8 border-t border-gray-200">
+          <div className="mt-8 pt-8 border-t border-white/10">
             {/* Upload Section */}
             <div className="mb-6">
-              <h3 className="text-lg font-semibold mb-3 text-gray-700">
+              <h3 className="text-lg font-semibold mb-3 text-white/80">
                 Share classroom photos and songs 🎵
               </h3>
               <input
@@ -924,25 +943,25 @@ export default function StoryViewer() {
                 accept="image/*,video/*,audio/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
                 onChange={handleFileUpload}
                 disabled={isUploadingMedia}
-                className="block w-full text-sm text-gray-500
+                className="block w-full text-sm text-white/50
                   file:mr-4 file:py-2 file:px-4
                   file:rounded-lg file:border-0
                   file:text-sm file:font-semibold
-                  file:bg-indigo-50 file:text-indigo-700
-                  hover:file:bg-indigo-100
+                  file:bg-emerald-500/20 file:text-emerald-100
+                  hover:file:bg-emerald-500/30
                   disabled:opacity-50"
               />
-              <p className="mt-1 text-xs text-gray-400">
+              <p className="mt-1 text-xs text-white/40">
                 Supports: Images, Videos, Audio, and Documents (expires in 24 hours)
               </p>
               {isUploadingMedia && (
                 <div className="mt-2 flex items-center gap-2">
-                  <div className="w-4 h-4 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin" />
-                  <p className="text-sm text-indigo-600">Uploading — please keep this page open...</p>
+                  <div className="w-4 h-4 border-2 border-emerald-400 border-t-transparent rounded-full animate-spin" />
+                  <p className="text-sm text-emerald-300">Uploading — please keep this page open...</p>
                 </div>
               )}
               {uploadError && (
-                <p className="mt-2 text-sm text-red-500">{uploadError}</p>
+                <p className="mt-2 text-sm text-red-400">{uploadError}</p>
               )}
             </div>
 
@@ -958,24 +977,24 @@ export default function StoryViewer() {
                   {/* Songs Section */}
                   {songs.length > 0 && (
                     <div className="mb-6">
-                      <h3 className="text-lg font-semibold mb-3 text-gray-700 flex items-center gap-2">
+                      <h3 className="text-lg font-semibold mb-3 text-white/80 flex items-center gap-2">
                         <span>🎵</span> Classroom Songs
                       </h3>
                       <div className="space-y-3">
                         {songs.map((item) => (
                           <div 
                             key={item.id} 
-                            className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg p-4 border border-purple-100"
+                            className="bg-emerald-500/10 rounded-lg p-4 border border-emerald-500/20"
                           >
                             <div className="flex items-center gap-3 mb-2">
-                              <div className="w-10 h-10 bg-gradient-to-br from-purple-400 to-pink-500 rounded-full flex items-center justify-center text-white text-lg">
+                              <div className="w-10 h-10 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-full flex items-center justify-center text-white text-lg">
                                 🎵
                               </div>
                               <div className="flex-1">
-                                <p className="font-medium text-gray-800">
+                                <p className="font-medium text-white/90">
                                   {getAudioDisplayName(item)}
                                 </p>
-                                <p className="text-xs text-gray-500">
+                                <p className="text-xs text-white/50">
                                   Shared by {item.author} • {new Date(item.created_at).toLocaleDateString()}
                                 </p>
                               </div>
@@ -995,18 +1014,18 @@ export default function StoryViewer() {
                   {/* Photos Section */}
                   {images.length > 0 && (
                     <div className="mb-6">
-                      <h3 className="text-lg font-semibold mb-3 text-gray-700 flex items-center gap-2">
+                      <h3 className="text-lg font-semibold mb-3 text-white/80 flex items-center gap-2">
                         <span>📷</span> Classroom Photos
                       </h3>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {images.map((item) => (
-                          <div key={item.id} className="rounded-lg overflow-hidden bg-gray-50">
+                          <div key={item.id} className="rounded-lg overflow-hidden bg-white/5">
                             <img
                               src={item.url}
                               alt={item.filename || 'Classroom photo'}
                               className="w-full object-contain"
                             />
-                            <div className="p-2 text-sm text-gray-500">
+                            <div className="p-2 text-sm text-white/50">
                               <span className="font-medium">{item.author}</span>
                               <span className="mx-2">•</span>
                               <span>{new Date(item.created_at).toLocaleDateString()}</span>
@@ -1020,12 +1039,12 @@ export default function StoryViewer() {
                   {/* Videos Section */}
                   {videos.length > 0 && (
                     <div className="mb-6">
-                      <h3 className="text-lg font-semibold mb-3 text-gray-700 flex items-center gap-2">
+                      <h3 className="text-lg font-semibold mb-3 text-white/80 flex items-center gap-2">
                         <span>🎬</span> Classroom Videos
                       </h3>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {videos.map((item) => (
-                          <div key={item.id} className="rounded-lg overflow-hidden bg-gray-50">
+                          <div key={item.id} className="rounded-lg overflow-hidden bg-white/5">
                             <video
                               src={item.url}
                               controls
@@ -1040,7 +1059,7 @@ export default function StoryViewer() {
                                 }
                               }}
                             />
-                            <div className="p-2 text-sm text-gray-500">
+                            <div className="p-2 text-sm text-white/50">
                               <span className="font-medium">{item.author}</span>
                               <span className="mx-2">•</span>
                               <span>{new Date(item.created_at).toLocaleDateString()}</span>
@@ -1054,7 +1073,7 @@ export default function StoryViewer() {
                   {/* Uploaded Documents Section */}
                   {documents.length > 0 && (
                     <div className="mb-6">
-                      <h3 className="text-lg font-semibold mb-3 text-gray-700 flex items-center gap-2">
+                      <h3 className="text-lg font-semibold mb-3 text-white/80 flex items-center gap-2">
                         <span>📎</span> Shared Documents
                       </h3>
                       <div className="space-y-2">
@@ -1064,20 +1083,20 @@ export default function StoryViewer() {
                             href={item.url}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="flex items-center gap-3 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-100 hover:border-blue-300 transition-colors"
+                            className="flex items-center gap-3 p-4 bg-emerald-500/10 rounded-lg border border-emerald-500/20 hover:border-emerald-500/40 transition-colors"
                           >
-                            <div className="w-12 h-12 bg-gradient-to-br from-blue-400 to-indigo-500 rounded-lg flex items-center justify-center text-white text-2xl flex-shrink-0">
+                            <div className="w-12 h-12 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-lg flex items-center justify-center text-white text-2xl flex-shrink-0">
                               {getFileIcon('', item.filename || '')}
                             </div>
                             <div className="flex-1 min-w-0">
-                              <p className="font-medium text-gray-800 truncate">
+                              <p className="font-medium text-white/90 truncate">
                                 {item.filename || 'Document'}
                               </p>
-                              <p className="text-xs text-gray-500">
+                              <p className="text-xs text-white/50">
                                 Shared by {item.author} • {new Date(item.created_at).toLocaleDateString()}
                               </p>
                             </div>
-                            <div className="text-blue-600 text-sm font-medium flex-shrink-0">
+                            <div className="text-emerald-300 text-sm font-medium flex-shrink-0">
                               Open ↗
                             </div>
                           </a>
@@ -1088,7 +1107,7 @@ export default function StoryViewer() {
 
                   {/* Empty State */}
                   {mediaItems.length === 0 && sharedFiles.length === 0 && (
-                    <p className="text-gray-500 text-center py-4">
+                    <p className="text-white/50 text-center py-4">
                       No classroom photos, songs, or documents shared yet.
                     </p>
                   )}
@@ -1096,7 +1115,7 @@ export default function StoryViewer() {
                   {/* Documents Section */}
                   {sharedFiles.length > 0 && (
                     <div className="mb-6">
-                      <h3 className="text-lg font-semibold mb-3 text-gray-700 flex items-center gap-2">
+                      <h3 className="text-lg font-semibold mb-3 text-white/80 flex items-center gap-2">
                         <span>📁</span> Classroom Documents
                       </h3>
                       <div className="space-y-2">
@@ -1106,21 +1125,21 @@ export default function StoryViewer() {
                             href={file.public_url}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="flex items-center gap-3 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-100 hover:border-blue-300 transition-colors"
+                            className="flex items-center gap-3 p-4 bg-emerald-500/10 rounded-lg border border-emerald-500/20 hover:border-emerald-500/40 transition-colors"
                           >
-                            <div className="w-12 h-12 bg-gradient-to-br from-blue-400 to-indigo-500 rounded-lg flex items-center justify-center text-white text-2xl flex-shrink-0">
+                            <div className="w-12 h-12 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-lg flex items-center justify-center text-white text-2xl flex-shrink-0">
                               {getFileIcon(file.mime_type, file.original_filename)}
                             </div>
                             <div className="flex-1 min-w-0">
-                              <p className="font-medium text-gray-800 truncate">
+                              <p className="font-medium text-white/90 truncate">
                                 {file.original_filename}
                               </p>
-                              <p className="text-xs text-gray-500">
+                              <p className="text-xs text-white/50">
                                 {formatFileSize(file.file_size)} • Shared by {file.uploaded_by}
-                                {file.description && <span className="ml-2 text-blue-600">— {file.description}</span>}
+                                {file.description && <span className="ml-2 text-emerald-300">— {file.description}</span>}
                               </p>
                             </div>
-                            <div className="text-blue-600 text-sm font-medium flex-shrink-0">
+                            <div className="text-emerald-300 text-sm font-medium flex-shrink-0">
                               Download ⬇
                             </div>
                           </a>

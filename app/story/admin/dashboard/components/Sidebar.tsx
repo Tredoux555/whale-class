@@ -23,8 +23,8 @@ export function Sidebar({
 
   return (
     <div className="lg:col-span-1">
-      <div className="bg-white rounded-lg shadow-sm p-4 sticky top-6">
-        <h2 className="text-sm font-bold text-gray-700 uppercase tracking-wide mb-4">Navigation</h2>
+      <div className="bg-[rgba(8,20,12,0.55)] border border-[rgba(52,211,153,0.18)] rounded-lg shadow-sm p-4 sticky top-6 backdrop-blur-md">
+        <h2 className="text-sm font-bold text-white/70 uppercase tracking-wide mb-4">Navigation</h2>
         <div className="space-y-2">
           {tabs.map((tab) => (
             <button
@@ -33,15 +33,11 @@ export function Sidebar({
               className={`w-full text-left px-4 py-3 rounded-lg transition-colors text-sm font-medium ${
                 activeTab === tab
                   ? tab === 'controls'
-                    ? 'bg-red-600 text-white'
-                    : tab === 'files'
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-indigo-600 text-white'
+                    ? 'bg-red-500 text-[#0a1a0f]'
+                    : 'bg-emerald-500 text-[#0a1a0f]'
                   : tab === 'controls'
-                  ? 'text-red-700 hover:bg-red-50'
-                  : tab === 'files'
-                  ? 'text-blue-700 hover:bg-blue-50'
-                  : 'text-gray-700 hover:bg-indigo-50'
+                  ? 'text-red-300 hover:bg-red-500/10'
+                  : 'text-white/70 hover:bg-emerald-500/10'
               }`}
             >
               {tab === 'online' && `👥 Active Users (${onlineCount})`}
@@ -54,20 +50,20 @@ export function Sidebar({
           ))}
         </div>
 
-        <div className="border-t border-gray-200 mt-6 pt-4">
-          <h3 className="text-xs font-bold text-gray-600 uppercase tracking-wide mb-3">Quick Stats</h3>
+        <div className="border-t border-white/10 mt-6 pt-4">
+          <h3 className="text-xs font-bold text-white/60 uppercase tracking-wide mb-3">Quick Stats</h3>
           <div className="space-y-2 text-sm">
             <div className="flex justify-between">
-              <span className="text-gray-600">Total Students:</span>
-              <span className="font-semibold text-indigo-600">{totalUsers}</span>
+              <span className="text-white/60">Total Students:</span>
+              <span className="font-semibold text-emerald-400">{totalUsers}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-gray-600">Active Now:</span>
-              <span className="font-semibold text-green-600">{onlineCount}</span>
+              <span className="text-white/60">Active Now:</span>
+              <span className="font-semibold text-emerald-400">{onlineCount}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-gray-600">Messages:</span>
-              <span className="font-semibold text-blue-600">{messagesLength}</span>
+              <span className="text-white/60">Messages:</span>
+              <span className="font-semibold text-[#E8C96A]">{messagesLength}</span>
             </div>
           </div>
         </div>
