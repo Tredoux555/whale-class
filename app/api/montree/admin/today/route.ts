@@ -177,7 +177,9 @@ export async function GET(request: NextRequest) {
       attention,
       plan: planSummary,
     });
-    response.headers.set('Cache-Control', 'private, max-age=300, stale-while-revalidate=600');
+    // Session 140 (P6): no-store for consistency with /overview — this drives
+    // the principal cockpit and must never serve a stale classroom/teacher list.
+    response.headers.set('Cache-Control', 'private, no-store');
     return response;
   } catch (error) {
     console.error('[Admin Today] Error:', error);

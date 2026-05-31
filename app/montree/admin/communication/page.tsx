@@ -28,6 +28,16 @@ import {
 } from 'lucide-react';
 import { useI18n } from '@/lib/montree/i18n';
 
+// Session 140 (P4): un-onboarded parents carry a synthetic placeholder email
+// ("pending-<uuid>@parent.montree.local"). Don't surface that raw token as a
+// row subtitle — show "Pending invite" instead. Real emails pass through.
+function contactSubtitle(email: string | null | undefined): string {
+  if (email && /^pending-[0-9a-f-]+@parent\.montree\.local$/i.test(email)) {
+    return 'Pending invite';
+  }
+  return email || '';
+}
+
 // Session 125 rule #149: TFn must be ReturnType<typeof useI18n>['t'] —
 // never a loose (key: string) => string (contravariance error).
 type TFn = ReturnType<typeof useI18n>['t'];
@@ -553,7 +563,7 @@ function ByClassroomView({
                   key={p.id}
                   initial={(p.name || 'P').charAt(0).toUpperCase()}
                   name={p.name}
-                  subtitle={p.email}
+                  subtitle={contactSubtitle(p.email)}
                   badge={null}
                   onMessage={() =>
                     onOpenCompose({
@@ -657,7 +667,7 @@ function AllParentsView({
               key={p.id}
               initial={(p.name || 'P').charAt(0).toUpperCase()}
               name={p.name}
-              subtitle={p.email}
+              subtitle={contactSubtitle(p.email)}
               badge={null}
               onMessage={() => onComposeOne(p)}
             />
@@ -1513,7 +1523,7 @@ function GroupBuilderModal({
                   picked={picked.has(`parent:${p.id}`)}
                   onToggle={() => toggle('parent', p.id)}
                   name={p.name}
-                  subtitle={p.email}
+                  subtitle={contactSubtitle(p.email)}
                 />
               ))}
             </div>
