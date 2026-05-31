@@ -229,17 +229,73 @@ function SidebarContent({ schoolName, isActive, onLogout, nav }: SidebarContentP
   );
 }
 
+// Lightweight skeleton shown in the content area while the cockpit verifies
+// the auth cookie. Mirrors app/montree/admin/loading.tsx's shape so the
+// transition into the real page body is a fade, not a layout jump. Renders
+// nothing once we know the user is unauthed (a redirect is already in flight).
+function CockpitGateSkeleton({ show }: { show: boolean }) {
+  if (!show) return null;
+  return (
+    <div style={{ padding: '12px 0 12px', maxWidth: 1100 }} aria-hidden>
+      <div
+        className="animate-pulse"
+        style={{
+          display: 'flex', alignItems: 'center', gap: 14, marginBottom: 18,
+        }}
+      >
+        <div
+          style={{
+            width: 36, height: 36, borderRadius: '50%',
+            background: 'rgba(232,201,106,0.12)', flexShrink: 0,
+          }}
+        />
+        <div
+          style={{
+            height: 22, width: '40%',
+            background: 'rgba(232,201,106,0.10)', borderRadius: 8,
+          }}
+        />
+      </div>
+      <div
+        className="animate-pulse"
+        style={{
+          height: 14, width: '62%',
+          background: 'rgba(255,255,255,0.05)', borderRadius: 6,
+          marginLeft: 50,
+        }}
+      />
+    </div>
+  );
+}
+
+// 🚨 Session 154 — cockpit auth gate. The layout is the SINGLE source of
+// truth for whether the principal is authenticated. While 'checking', the
+// cockpit chrome renders but the page body (children) does NOT — so the
+// per-page data fetches (/today, /snapshot, /billing/status) never fire
+// against a dead cookie. This kills two bugs at once:
+//   1. The 401 request storm (snapshot + billing 401'ing in a tight pair).
+//   2. The redirect ping-pong / "jumping" — the page used to mount in the
+//      expired state, 401 on /today, and fire its OWN router.replace to
+//      login-select while the layout fired the same redirect, remounting
+//      the whole subtree in a loop. With the gate the page never mounts
+//      until auth is confirmed, so there is exactly one redirect, from one
+//      owner (this layout), exactly once.
+type AuthState = 'checking' | 'authed' | 'unauthed';
+
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname() || '';
   const router = useRouter();
   const [schoolName, setSchoolName] = useState('');
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [principalId, setPrincipalId] = useState<string | null>(null);
+  const [authState, setAuthState] = useState<AuthState>('checking');
 
   useEffect(() => {
     const schoolData = localStorage.getItem('montree_school');
     const principalData = localStorage.getItem('montree_principal');
-    // Optimistic render from localStorage so the cockpit chrome appears instantly.
+    // Optimistic render of the cockpit CHROME (sidebar school name) from
+    // localStorage so the shell appears instantly. The page BODY stays gated
+    // on authState until auth/me resolves (see render gate below).
     if (schoolData) {
       try {
         const s = JSON.parse(schoolData);
@@ -247,6 +303,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       } catch { /* ignore */ }
     }
     if (!principalData) {
+      setAuthState('unauthed');
       router.replace('/montree/login-select');
       return;
     }
@@ -264,7 +321,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     fetch('/api/montree/auth/me', { credentials: 'include' })
       .then((res) => (res.ok ? res.json() : Promise.reject(res.status)))
       .then((data) => {
-        if (cancelled || !data?.authenticated) return;
+        if (cancelled) return;
+        // 200 but not authenticated shouldn't happen (the route 401s in that
+        // case) — but guard so we never strand the body on the skeleton.
+        if (!data?.authenticated) {
+          setAuthState('authed');
+          return;
+        }
         // Self-heal: repopulate the school name + principal id + localStorage
         // from the live session (fixes a stale or partial local session, e.g.
         // the generic "School" sidebar).
@@ -284,19 +347,27 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             );
           }
         } catch { /* ignore */ }
+        // Auth confirmed — now (and only now) let the page body mount and
+        // fire its data fetches.
+        setAuthState('authed');
       })
       .catch((status) => {
         if (cancelled) return;
         // Only a real 401 means the cookie is dead — clear the stale local
         // session and bounce to a clean login. A network blip / cold-start 503
-        // is transient and must NOT log the principal out.
+        // is transient and must NOT log the principal out: in that case we
+        // optimistically trust localStorage and let the body mount (its own
+        // fetches will surface a real 401 if the cookie is genuinely gone).
         if (status === 401) {
           try {
             localStorage.removeItem('montree_school');
             localStorage.removeItem('montree_principal');
             localStorage.removeItem('montree_session');
           } catch { /* ignore */ }
+          setAuthState('unauthed');
           router.replace('/montree/login-select');
+        } else {
+          setAuthState('authed');
         }
       });
     return () => {
@@ -569,7 +640,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           maxWidth: 1280,
         }}
       >
-        {children}
+        {/* 🚨 Session 154 — auth gate. Only mount the page body once auth/me
+            has confirmed the cookie is live ('authed'). While 'checking' we
+            show a lightweight skeleton (no layout jump, no premature data
+            fetches). On 'unauthed' we render nothing and the redirect (fired
+            in the effect above) carries the principal to login. This is the
+            single mount point that stops the /snapshot + /billing/status 401
+            storm and the remount/jumping loop. */}
+        {authState === 'authed' ? children : <CockpitGateSkeleton show={authState === 'checking'} />}
       </main>
 
       {/* Astra — chief-of-staff float, visible on every cockpit page except
