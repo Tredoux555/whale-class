@@ -449,6 +449,45 @@ export default function ClassroomDetailPage({
             {stat}
           </p>
         </div>
+        {/* Session 140: classrooms had no UI delete affordance (and the item
+            DELETE route 405'd — now added). Soft-removes the classroom; students
+            and teachers stay in the system. */}
+        <button
+          onClick={async () => {
+            if (typeof window !== 'undefined' &&
+                !window.confirm(`Remove "${classroom.name}"? It will be hidden from your school. Students and teachers stay in the system.`)) {
+              return;
+            }
+            try {
+              const res = await fetch(`/api/montree/admin/classrooms/${classroomId}`, {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' },
+              });
+              if (res.ok) {
+                router.push('/montree/admin/classrooms');
+              } else {
+                alert('Could not remove the classroom. Please try again.');
+              }
+            } catch {
+              alert('Could not remove the classroom. Please try again.');
+            }
+          }}
+          title="Remove classroom"
+          style={{
+            flexShrink: 0,
+            alignSelf: 'flex-start',
+            background: 'transparent',
+            border: '1px solid rgba(248,113,113,0.35)',
+            color: 'rgba(248,113,113,0.92)',
+            borderRadius: 999,
+            padding: '6px 14px',
+            fontSize: 13,
+            fontFamily: T.sans,
+            cursor: 'pointer',
+          }}
+        >
+          Remove
+        </button>
       </header>
 
       {/* ── Teaching team section ─────────────────────────────────── */}

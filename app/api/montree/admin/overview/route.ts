@@ -128,7 +128,13 @@ export async function GET(request: NextRequest) {
       classrooms: activeClassrooms,
       stats,
     });
-    response.headers.set('Cache-Control', 'private, max-age=300, stale-while-revalidate=600');
+    // Session 140: was `max-age=300, stale-while-revalidate=600`. That 5-min
+    // SWR cache leaked DELETED classrooms into every consumer that reads this
+    // with a default-cache fetch — the Import "Import to Classroom" dropdown and
+    // the dashboard "Astra noticed" banner kept listing classrooms that had been
+    // removed, even on hard reload. This is the authoritative classroom/teacher
+    // list and is admin-only (low traffic), so correctness wins over the cache.
+    response.headers.set('Cache-Control', 'private, no-store');
     return response;
 
   } catch (error) {

@@ -187,3 +187,31 @@ export async function GET(
     return NextResponse.json({ error: 'Server error' }, { status: 500 });
   }
 }
+
+// Soft-delete a classroom (is_active=false). Session 140: this [classroomId]
+// route had only GET, so DELETE /api/montree/admin/classrooms/{id} returned 405
+// and there was no item-level delete path for the UI. Mirrors the collection
+// route's soft delete (DELETE /api/montree/admin/classrooms?id=).
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ classroomId: string }> }
+) {
+  try {
+    const supabase = getSupabase();
+    const auth = await verifySchoolRequest(request);
+    if (auth instanceof NextResponse) return auth;
+    const { classroomId } = await params;
+
+    const { error } = await supabase
+      .from('montree_classrooms')
+      .update({ is_active: false, updated_at: new Date().toISOString() })
+      .eq('id', classroomId)
+      .eq('school_id', auth.schoolId);
+
+    if (error) throw error;
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error('Delete classroom error:', error);
+    return NextResponse.json({ error: 'Failed to delete classroom' }, { status: 500 });
+  }
+}
