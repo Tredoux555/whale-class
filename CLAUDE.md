@@ -13,6 +13,78 @@ Local path: `/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/whale` (note spa
 
 ---
 
+## 🧠 SESSION 141 (June 1, 2026) — Story security audit + ephemeral mode + content-only nuke
+
+**Canonical handoff:** `docs/handoffs/SESSION_141_HANDOFF.md`. Two commits on main:
+`38551891` (audit docs + ephemeral + nuke + Tier-1) → `8389bad7` (nuke reduced to
+content-only, accounts preserved, scorch-admins option removed). Tredoux set the two
+activation env vars in Railway himself.
+
+**🚨 THE HONEST HEADLINE — Story is server-side encrypted, NOT end-to-end, and a web
+app cannot be made watertight against a state actor.** Full audit in
+`docs/STORY_SECURITY_AUDIT_2026-06.md` (all 37 Story routes + crypto core).
+`MESSAGE_ENCRYPTION_KEY` (messages) + `VAULT_PASSWORD` (Story vault) are **server-held**
+env vars; the server decrypts before sending to clients — so the operator and anyone who
+reaches the server can read content. True "nobody, not even a government" requires E2E with
+device-only keys (Signal / native app); a browser app can't achieve it because **the server
+delivers the JS that would do any client-side crypto** — a seized/compelled server just ships
+key-stealing code. China specifically has **no legal path** to Supabase (US co., AWS Singapore)
+or Railway (US) — realistic threats are credential/device compromise, GFW blocking
+(availability), and US-side compulsion. `docs/STORY_E2E_MARATHON_PLAN.md` scopes a real E2E
+rebuild (optional; only worth it for the server/subpoena threat).
+
+**What shipped (3 capabilities + audit):**
+
+1. **Ephemeral mode** — `lib/story/ephemeral.ts`, env `STORY_EPHEMERAL` (default OFF, now **set
+   true & LIVE**). On every message write (user `/message`, `/upload-media`; admin `/send`
+   text+media) `purgeOldStoryMessages()` keeps ONLY the newest `story_message_history` row,
+   hard-deletes older rows + their `story-uploads` media objects, prunes prior-week
+   `secret_stories`. Only the current message exists. Never throws. Lossy by design.
+
+2. **Content-only nuke** — `POST /api/story/admin/system-controls/nuke` + ☢️ panel in the Story
+   admin Controls tab. Wipes **13 Story content tables** + empties **3 buckets**
+   (`story-uploads`, `story-files`, `vault-secure`), recursively incl. orphans. 🚨 **Verified by
+   grep: names ONLY `story_*`/`secret_*`/`vault_*` tables + those 3 buckets — ZERO `montree_*`
+   tables, never `montree-media`. Does NOT delete `story_users`/`story_admin_users` (logins
+   survive). The Montree principal parent-meeting vault is SEPARATE (`montree_principal_vault`
+   TABLE, migration 185) and UNTOUCHED. The nuke CANNOT harm Montree.** Gate: secret
+   `STORY_NUKE_CODE` (timing-safe, fail-closed if unset/<12 chars), works locked-out. **Now set
+   in Railway → armed.** The earlier `scorchAdmins` lock-out option was REMOVED ("system stays
+   intact").
+
+3. **Tier-1 fixes** — `signed-download` URL TTL 1h→5min; vault `download` `Content-Disposition`
+   filename sanitized.
+
+**🚨 Architectural rules locked in:**
+- Nuke scope is hard-coded to `STORY_TABLES`(13) + `STORY_BUCKETS`(3). NEVER add a `montree_*`
+  table or `montree-media`. NEVER re-add account deletion — "system stays intact" is the contract.
+- `STORY_NUKE_CODE` is the sole nuke authority; value lives ONLY in Railway env — never git,
+  never a doc, never an agent transcript. Fail-closed.
+- `STORY_EPHEMERAL` default OFF; activation is a conscious env flag. `purgeOldStoryMessages`
+  keeps-newest / deletes-rest / never throws.
+- **NEVER reduce the shared Supabase backup/PITR retention** to solve a Story-only concern — that
+  DB is shared by ALL of Montree. If Story ever needs zero backup footprint, give it its OWN
+  Supabase project. (A WebClaude handoff this session wrongly suggested minimizing PITR —
+  retracted.)
+- Two distinct vaults: Story vault (`vault_files` + `vault-secure`) is nuked; Montree principal
+  vault (`montree_principal_vault` table) is separate and untouched.
+
+**WebClaude note:** a browser-agent activation was attempted; it (correctly) refused to minimize
+backups and to test-fire the nuke, and only ever saw a *jeffy-commerce / Parent-Meeting Vault*
+Supabase tab + no Railway. Resolution: **Tredoux self-served the two env vars** — don't route this
+through a browser agent again.
+
+**Still OPEN (deferred, non-blocking — see audit doc):** H1/F-2.3 Story vault single global
+`VAULT_PASSWORD`; C2 large vault media still `encrypted_key='plain'` (TTL shortened, encryption is
+the real fix); M1 admin token in login JSON body; M2 vault-unlock limiter on spoofable
+`x-forwarded-for` + fails open; M3 `factory_reset` gated only by static `'CONFIRM'`.
+
+**⏳ Verify next:** Story admin → Controls → confirm the ☢️ "NUKE — wipe all content" panel
+renders; on a phone send two messages and confirm ephemeral collapses to the latest. **Do NOT
+test-fire the nuke.**
+
+---
+
 ## 🧠 SESSION 140 (May 31, 2026) — Principal session lifecycle: blanket-401 root cause + clean logout
 
 **Canonical handoff:** `docs/handoffs/SESSION_140_HANDOFF.md`. Two commits on main:
