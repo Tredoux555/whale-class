@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase, verifyUserTokenFromRequest, getCurrentWeekStart } from '@/lib/story-db';
 import { getProxyUrl } from '@/lib/montree/media/proxy-url';
+import { purgeOldStoryMessages } from '@/lib/story/ephemeral';
 
 // Allow large uploads on slow mobile networks (videos up to 300MB)
 export const maxDuration = 300;
@@ -195,6 +196,9 @@ export async function POST(req: NextRequest) {
       console.error('[Upload Media] DB insert error:', insertError);
       return NextResponse.json({ error: 'Failed to save media record' }, { status: 500 });
     }
+
+    // Ephemeral mode: keep only this newest message; purge older rows + media.
+    await purgeOldStoryMessages(supabase);
 
     return NextResponse.json({
       success: true,

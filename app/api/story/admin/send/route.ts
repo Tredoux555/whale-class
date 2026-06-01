@@ -6,6 +6,7 @@ import {
   verifyStoryAdminToken,
 } from '@/lib/story/story-admin-auth';
 import { getProxyUrl } from '@/lib/montree/media/proxy-url';
+import { purgeOldStoryMessages } from '@/lib/story/ephemeral';
 
 // Allow large uploads (video up to 300MB — mobile 4G can take a few min)
 export const maxDuration = 300;
@@ -274,6 +275,9 @@ export async function POST(req: NextRequest) {
         );
       }
 
+      // Ephemeral mode: keep only this newest note; purge older rows + media.
+      await purgeOldStoryMessages(supabase);
+
       return NextResponse.json({
         success: true,
         message: 'Note sent successfully',
@@ -400,6 +404,9 @@ export async function POST(req: NextRequest) {
       console.error('[Send] Media message DB insert failed:', mediaInsertError);
       return NextResponse.json({ error: 'Failed to save media message' }, { status: 500 });
     }
+
+    // Ephemeral mode: keep only this newest message; purge older rows + media.
+    await purgeOldStoryMessages(supabase);
 
     return NextResponse.json({
       success: true,

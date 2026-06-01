@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase, verifyUserTokenFromRequest, getCurrentWeekStart } from '@/lib/story-db';
 import { encryptMessage, decryptMessage } from '@/lib/message-encryption';
+import { purgeOldStoryMessages } from '@/lib/story/ephemeral';
 
 export async function POST(req: NextRequest) {
   try {
@@ -66,6 +67,10 @@ export async function POST(req: NextRequest) {
       console.error('[Message] Update error:', updateError);
       return NextResponse.json({ error: 'Failed to save message' }, { status: 500 });
     }
+
+    // Ephemeral mode (STORY_EPHEMERAL=true): collapse the chat to only this
+    // newest message — older rows + their media are hard-deleted. No-op when off.
+    await purgeOldStoryMessages(supabase);
 
     return NextResponse.json({ success: true });
     

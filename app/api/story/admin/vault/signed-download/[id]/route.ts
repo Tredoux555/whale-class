@@ -11,7 +11,10 @@ import { getSupabase, verifyAdminToken, verifyVaultToken } from '@/lib/story-db'
 // using the legacy decrypt-proxy route.
 export const runtime = 'nodejs';
 
-const SIGNED_URL_TTL_SECONDS = 60 * 60; // 1h, matches the vault-token TTL
+// 🚨 Security audit C2 (Jun 2026) — was 1h. A bearer signed URL to an
+// unencrypted private object is shareable/loggable for its whole life, so keep
+// it as short as interactive playback allows. 5 min is ample to start a stream.
+const SIGNED_URL_TTL_SECONDS = 5 * 60; // 5 min
 
 export async function GET(
   req: NextRequest,

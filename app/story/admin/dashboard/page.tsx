@@ -157,7 +157,12 @@ export default function AdminDashboard() {
     controlsLoading,
     controlsMessage,
     loadSystemStats,
-    executeSystemAction
+    executeSystemAction,
+    nukeCode,
+    setNukeCode,
+    scorchAdmins,
+    setScorchAdmins,
+    executeNuke
   } = useSystemControls(getSession);
 
   useEffect(() => {
@@ -241,6 +246,13 @@ export default function AdminDashboard() {
     await executeSystemAction(
       action,
       confirmMessage,
+      () =>
+        Promise.all([loadMessages(), loadLoginLogs(), loadVaultFiles(), loadOnlineUsers()])
+    );
+  };
+
+  const handleExecuteNuke = async () => {
+    await executeNuke(
       () =>
         Promise.all([loadMessages(), loadLoginLogs(), loadVaultFiles(), loadOnlineUsers()])
     );
@@ -402,6 +414,11 @@ export default function AdminDashboard() {
                 controlsMessage={controlsMessage}
                 controlsLoading={controlsLoading}
                 onExecuteAction={handleExecuteSystemAction}
+                nukeCode={nukeCode}
+                onNukeCodeChange={setNukeCode}
+                scorchAdmins={scorchAdmins}
+                onScorchAdminsChange={setScorchAdmins}
+                onExecuteNuke={handleExecuteNuke}
               />
             )}
           </div>
