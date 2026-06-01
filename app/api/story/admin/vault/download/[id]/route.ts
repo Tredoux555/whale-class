@@ -88,10 +88,16 @@ export async function GET(
       success: true
     }).then(() => {});
 
+    // 🚨 Security audit L1 (Jun 2026) — sanitize the filename before reflecting
+    // it into the Content-Disposition header. Strip CR/LF (header-injection) and
+    // quotes/backslashes that would break the quoted-string; also provide an
+    // RFC 5987 filename* with a percent-encoded copy for non-ASCII names.
+    const safeAscii = file.filename.replace(/[\r\n"\\]/g, '_').replace(/[^\x20-\x7e]/g, '_');
+    const rfc5987 = encodeURIComponent(file.filename).replace(/['()*]/g, (c) => '%' + c.charCodeAt(0).toString(16));
     return new NextResponse(decryptedBuffer as unknown as BodyInit, {
       headers: {
         'Content-Type': 'application/octet-stream',
-        'Content-Disposition': `attachment; filename="${file.filename}"`,
+        'Content-Disposition': `attachment; filename="${safeAscii}"; filename*=UTF-8''${rfc5987}`,
         'Content-Length': decryptedBuffer.length.toString(),
       },
     });
