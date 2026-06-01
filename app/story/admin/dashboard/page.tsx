@@ -160,8 +160,6 @@ export default function AdminDashboard() {
     executeSystemAction,
     nukeCode,
     setNukeCode,
-    scorchAdmins,
-    setScorchAdmins,
     executeNuke
   } = useSystemControls(getSession);
 
@@ -416,8 +414,6 @@ export default function AdminDashboard() {
                 onExecuteAction={handleExecuteSystemAction}
                 nukeCode={nukeCode}
                 onNukeCodeChange={setNukeCode}
-                scorchAdmins={scorchAdmins}
-                onScorchAdminsChange={setScorchAdmins}
                 onExecuteNuke={handleExecuteNuke}
               />
             )}
