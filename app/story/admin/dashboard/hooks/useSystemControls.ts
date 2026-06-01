@@ -11,7 +11,6 @@ export const useSystemControls = (getSession: () => string | null) => {
   const [controlsLoading, setControlsLoading] = useState(false);
   const [controlsMessage, setControlsMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [nukeCode, setNukeCode] = useState('');
-  const [scorchAdmins, setScorchAdmins] = useState(false);
 
   const loadSystemStats = useCallback(async () => {
     const session = getSession();
@@ -77,9 +76,7 @@ export const useSystemControls = (getSession: () => string | null) => {
       }
       if (
         !confirm(
-          '☢️ NUKE EVERYTHING?\n\nThis permanently destroys ALL Story data — every message, photo, video, vault file, user account, and log — and empties all storage buckets.' +
-            (scorchAdmins ? '\n\nAdmin logins WILL ALSO be deleted — you will be locked out.' : '') +
-            '\n\nThis CANNOT be undone. Proceed?'
+          '☢️ NUKE ALL CONTENT?\n\nThis permanently destroys every message, photo, video, shared file, vault entry, and log, and empties all storage buckets.\n\nYour accounts and the app stay intact — everyone can still log in afterwards; there will just be nothing left inside.\n\nThis CANNOT be undone. Proceed?'
         )
       )
         return;
@@ -97,7 +94,6 @@ export const useSystemControls = (getSession: () => string | null) => {
           body: JSON.stringify({
             nukeCode: nukeCode.trim(),
             confirmPhrase: 'NUKE EVERYTHING',
-            scorchAdmins,
           }),
         });
         const data = await res.json();
@@ -115,7 +111,7 @@ export const useSystemControls = (getSession: () => string | null) => {
         setControlsLoading(false);
       }
     },
-    [nukeCode, scorchAdmins, getSession, loadSystemStats]
+    [nukeCode, getSession, loadSystemStats]
   );
 
   return {
@@ -126,8 +122,6 @@ export const useSystemControls = (getSession: () => string | null) => {
     executeSystemAction,
     nukeCode,
     setNukeCode,
-    scorchAdmins,
-    setScorchAdmins,
     executeNuke,
   };
 };

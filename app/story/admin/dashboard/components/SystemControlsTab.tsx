@@ -9,8 +9,6 @@ interface SystemControlsTabProps {
   onExecuteAction: (action: string, confirmMessage: string) => void;
   nukeCode: string;
   onNukeCodeChange: (v: string) => void;
-  scorchAdmins: boolean;
-  onScorchAdminsChange: (v: boolean) => void;
   onExecuteNuke: () => void;
 }
 
@@ -21,8 +19,6 @@ export function SystemControlsTab({
   onExecuteAction,
   nukeCode,
   onNukeCodeChange,
-  scorchAdmins,
-  onScorchAdminsChange,
   onExecuteNuke
 }: SystemControlsTabProps) {
   return (
@@ -175,15 +171,19 @@ export function SystemControlsTab({
       </div>
 
       <div className="bg-black border-2 border-red-500/70 rounded-lg shadow-sm p-6">
-        <h2 className="text-lg font-bold text-red-400 mb-2">☢️ NUKE — total destruction</h2>
+        <h2 className="text-lg font-bold text-red-400 mb-2">☢️ NUKE — wipe all content</h2>
         <p className="text-red-200/80 text-sm mb-1">
-          Destroys <strong>everything</strong>: every message, photo, video, vault file, login
-          record, AND all stored files in every bucket. The hidden messages themselves and the
-          media blobs that Factory Reset leaves behind are wiped too. Nothing recoverable remains.
+          Destroys <strong>all content</strong>: every message, photo, video, shared file, vault
+          entry, and log, plus all stored files in every bucket. The hidden messages and the media
+          blobs that Factory Reset leaves behind are wiped too.
+        </p>
+        <p className="text-emerald-200/80 text-xs mb-1">
+          Your accounts and the app stay intact — everyone can still log in afterwards; there&apos;s
+          just nothing left inside.
         </p>
         <p className="text-amber-200/70 text-xs mb-4">
           Note: this cannot un-do an attacker who already copied the data, and it does not erase
-          Supabase&apos;s own backups — handle backup retention separately.
+          Supabase&apos;s own backups.
         </p>
         <label className="block text-sm text-red-200/80 mb-1">Nuke code</label>
         <input
@@ -192,23 +192,15 @@ export function SystemControlsTab({
           onChange={(e) => onNukeCodeChange(e.target.value)}
           placeholder="Enter the secret nuke code"
           autoComplete="off"
-          className="w-full mb-3 px-3 py-2 rounded-lg bg-black/60 border border-red-500/40 text-white text-base focus:outline-none focus:border-red-400"
+          className="w-full mb-4 px-3 py-2 rounded-lg bg-black/60 border border-red-500/40 text-white text-base focus:outline-none focus:border-red-400"
         />
-        <label className="flex items-center gap-2 mb-4 text-sm text-red-200/80 cursor-pointer">
-          <input
-            type="checkbox"
-            checked={scorchAdmins}
-            onChange={(e) => onScorchAdminsChange(e.target.checked)}
-          />
-          Also delete admin logins (full scorched earth — you will be locked out)
-        </label>
         <button
           onClick={onExecuteNuke}
           disabled={controlsLoading || !nukeCode.trim()}
           className="w-full p-4 bg-red-700 border-2 border-red-400 rounded-lg text-center hover:bg-red-600 disabled:opacity-40 transition-colors"
         >
-          <div className="font-bold text-white tracking-wide">☢️ NUKE EVERYTHING</div>
-          <div className="text-sm text-red-100/80">Irreversible — only the current data exists to destroy</div>
+          <div className="font-bold text-white tracking-wide">☢️ NUKE ALL CONTENT</div>
+          <div className="text-sm text-red-100/80">Irreversible — wipes everything inside, keeps the system running</div>
         </button>
       </div>
 

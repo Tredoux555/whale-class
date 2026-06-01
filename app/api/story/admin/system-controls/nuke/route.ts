@@ -8,14 +8,17 @@ export const maxDuration = 120;
 // ============================================================================
 // STORY "NUKE" — total destruction of ALL Story data.
 //
-// Unlike `factory_reset` (which deliberately PRESERVES audit logs and never
-// touched secret_stories, the storage buckets, admin accounts, sessions, calls,
-// or push subscriptions), this wipes EVERYTHING the Story system holds:
-//   • Every Story DB table (15) — including secret_stories (the hidden
-//     messages themselves) and, optionally, the admin accounts.
+// Wipes all Story CONTENT while leaving the system usable. Unlike
+// `factory_reset` (which preserved audit logs but never touched secret_stories
+// or the storage buckets), this destroys:
+//   • Every Story CONTENT table — secret_stories (the hidden messages
+//     themselves), message history, files, vault entries, and all logs.
 //   • Every object in all three Story storage buckets (story-uploads,
 //     story-files, vault-secure) — recursively, including orphans not
 //     referenced by any DB row.
+// It deliberately PRESERVES the accounts (story_users + story_admin_users) so
+// after a nuke everyone can still log in and the app keeps working — there is
+// just nothing left inside it.
 //
 // GATE: requires the dedicated secret `STORY_NUKE_CODE` (env var, timing-safe
 // compare, fail-closed if unset) + the literal confirm phrase. It works WITH or
@@ -37,23 +40,25 @@ export const maxDuration = 120;
 
 const CONFIRM_PHRASE = 'NUKE EVERYTHING';
 
-// All Story DB tables. story_admin_users is wiped only when scorchAdmins=true
-// (otherwise the operator keeps a way to log in and confirm the wipe).
+// CONTENT tables wiped by the nuke — every message, media record, file, vault
+// entry, and log. The accounts that keep the system usable are deliberately
+// PRESERVED: story_users (the two logins) and story_admin_users (the admin
+// login) are NOT in this list, so after a nuke everyone can still log in and
+// the app keeps working — there's just nothing left in it.
 const STORY_TABLES = [
-  'secret_stories',
-  'story_message_history',
-  'story_message_reads',
-  'story_shared_files',
-  'story_calls',
-  'story_push_subscriptions',
-  'story_online_sessions',
-  'story_login_logs',
-  'story_admin_login_logs',
-  'story_visits',
-  'vault_files',
-  'vault_audit_log',
-  'vault_unlock_attempts',
-  'story_users',
+  'secret_stories',          // the current hidden message(s)
+  'story_message_history',   // all messages + media records
+  'story_message_reads',     // read receipts
+  'story_shared_files',      // shared-file records
+  'story_calls',             // call signalling rows
+  'story_push_subscriptions',// notification endpoints
+  'story_online_sessions',   // presence state
+  'story_login_logs',        // user login history
+  'story_admin_login_logs',  // admin login history
+  'story_visits',            // visit tracking
+  'vault_files',             // vault file records
+  'vault_audit_log',         // vault access log
+  'vault_unlock_attempts',   // vault unlock attempts
 ];
 
 // Story-dedicated storage buckets — these hold ONLY Story data, so we empty
@@ -150,14 +155,14 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  let body: { nukeCode?: string; confirmPhrase?: string; scorchAdmins?: boolean };
+  let body: { nukeCode?: string; confirmPhrase?: string };
   try {
     body = await request.json();
   } catch {
     return NextResponse.json({ error: 'Invalid request' }, { status: 400 });
   }
 
-  const { nukeCode, confirmPhrase, scorchAdmins } = body;
+  const { nukeCode, confirmPhrase } = body;
 
   // The secret code is the authority (works even without an admin session, so a
   // locked-out operator can still trigger it). We also note whether an admin
@@ -182,7 +187,7 @@ export async function POST(request: NextRequest) {
   }
 
   console.warn(
-    `[Story NUKE] FIRING — total wipe. scorchAdmins=${!!scorchAdmins} adminSession=${adminUsername ?? 'none'} ip=${request.headers.get('x-forwarded-for') ?? 'unknown'} at=${new Date().toISOString()}`,
+    `[Story NUKE] FIRING — content wipe (accounts preserved). adminSession=${adminUsername ?? 'none'} ip=${request.headers.get('x-forwarded-for') ?? 'unknown'} at=${new Date().toISOString()}`,
   );
 
   const supabase = getSupabase();
@@ -194,8 +199,7 @@ export async function POST(request: NextRequest) {
     buckets[bucket] = await emptyBucket(supabase, bucket);
   }
 
-  const tablesToWipe = scorchAdmins ? [...STORY_TABLES, 'story_admin_users'] : STORY_TABLES;
-  for (const table of tablesToWipe) {
+  for (const table of STORY_TABLES) {
     tables[table] = await wipeTable(supabase, table);
   }
 
@@ -211,10 +215,7 @@ export async function POST(request: NextRequest) {
     success: !anyError,
     message: anyError
       ? 'Nuke ran with some errors — review the report.'
-      : scorchAdmins
-        ? 'NUKED. All Story data and admin accounts destroyed.'
-        : 'NUKED. All Story data destroyed (admin accounts kept so you can log back in).',
-    scorchedAdmins: !!scorchAdmins,
+      : 'NUKED. All Story content destroyed. Accounts and the app are intact — everyone can still log in; there is just nothing left inside.',
     wiped: { tables, buckets },
     note: 'Provider-side backups (Supabase PITR) are not affected by this and must be handled separately.',
   });
