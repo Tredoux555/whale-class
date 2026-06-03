@@ -1,34 +1,54 @@
 import { getSupabase, getCurrentWeekStart } from '@/lib/story-db';
 
 // ============================================================================
-// STORY EPHEMERAL MODE — "only the current message exists"
+// STORY EPHEMERAL MODE — rolling window of the most-recent messages
 //
-// When enabled, every new message write collapses the chat to a SINGLE row:
-// the newest message survives, every older story_message_history row is
-// hard-deleted AND its media object is removed from the story-uploads bucket,
-// and prior-week secret_stories rows are pruned. The result is that a seizure,
-// subpoena, or live snapshot of the database finds at most the one current
-// message — there is no back-history to hand over.
+// When enabled, every new message write trims the chat down to a small
+// rolling window: the newest N rows survive (default 3), every older
+// story_message_history row is hard-deleted AND its media object is removed
+// from the story-uploads bucket, and prior-week secret_stories rows are
+// pruned. A seizure, subpoena, or live snapshot of the database therefore
+// finds at most the last N messages — there is no deep back-history to hand
+// over.
 //
 // This is data minimisation: the strongest real-world protection, because you
 // cannot be compelled to produce, and an attacker cannot read, data that no
 // longer exists.
 //
+// Each row counts as one message regardless of kind — a text note and a photo
+// (with or without a caption) each occupy one of the N slots. Once a 4th
+// message arrives, the oldest of the previous three is cleaned out.
+//
 // 🚨 HONEST LIMITS:
 //   • Provider-side backups / Supabase point-in-time-recovery retain
 //     overwritten rows for their retention window. To be truly gone, tighten
 //     Supabase backup retention separately (dashboard setting, not code).
-//   • Ephemeral is lossy by design: if you write twice before the other person
-//     reads, they never see the first message.
-//   • It shrinks the exposure window to "since the last message"; a real-time
+//   • The window is lossy by design: once a message rolls past slot N it is
+//     gone whether or not the other person read it.
+//   • It shrinks the exposure window to "the last N messages"; a real-time
 //     tap on the live DB still sees each message during its short life.
 //
 // Activation: set env STORY_EPHEMERAL=true. Unset/anything-else = OFF (safe
 // default) so deploying the code does not silently start destroying history —
 // you flip it on consciously.
+//
+// Window size: defaults to 3. Override with env STORY_KEEP_RECENT (an integer
+// ≥ 1) to change how many recent messages survive without touching code.
 // ============================================================================
 
 type Supa = ReturnType<typeof getSupabase>;
+
+// How many recent messages to keep. Default 3; override via STORY_KEEP_RECENT.
+// Anything non-numeric or < 1 falls back to the default so a typo can never
+// collapse the window to 0 (which would wipe even the current message).
+const DEFAULT_KEEP_RECENT = 3;
+
+export function getStoryKeepCount(): number {
+  const raw = process.env.STORY_KEEP_RECENT;
+  if (!raw) return DEFAULT_KEEP_RECENT;
+  const n = parseInt(raw, 10);
+  return Number.isFinite(n) && n >= 1 ? n : DEFAULT_KEEP_RECENT;
+}
 
 export function isEphemeralEnabled(): boolean {
   return process.env.STORY_EPHEMERAL === 'true';
@@ -42,13 +62,15 @@ function storagePathFromMediaUrl(url?: string | null): string | null {
   return m ? m[0] : null;
 }
 
-// Keep ONLY the single newest story_message_history row; hard-delete every
-// older row and its story-uploads media object. Also prune prior-week
+// Keep ONLY the newest N story_message_history rows (default 3); hard-delete
+// every older row and its story-uploads media object. Also prune prior-week
 // secret_stories rows. No-op unless STORY_EPHEMERAL=true. Never throws —
 // a purge failure must never break the message send that triggered it.
 export async function purgeOldStoryMessages(supabase: Supa): Promise<void> {
   if (!isEphemeralEnabled()) return;
   try {
+    const keep = getStoryKeepCount();
+
     const { data: rows, error } = await supabase
       .from('story_message_history')
       .select('id, media_url')
@@ -59,9 +81,9 @@ export async function purgeOldStoryMessages(supabase: Supa): Promise<void> {
       console.error('[ephemeral] could not list messages to purge', error);
       return;
     }
-    if (!rows || rows.length <= 1) return; // nothing older than the newest
+    if (!rows || rows.length <= keep) return; // nothing past the keep window
 
-    const stale = rows.slice(1); // everything except the newest message
+    const stale = rows.slice(keep); // everything older than the newest `keep`
 
     // 1) Remove the underlying media objects (so photos/videos don't linger
     //    in storage after their DB rows are gone).
