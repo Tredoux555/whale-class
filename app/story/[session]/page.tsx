@@ -68,6 +68,8 @@ export default function StoryViewer() {
   const [showMediaSection, setShowMediaSection] = useState(false);
   const [isUploadingMedia, setIsUploadingMedia] = useState(false);
   const [uploadError, setUploadError] = useState('');
+  // Optional note to send alongside a picture/file in the same message.
+  const [mediaCaption, setMediaCaption] = useState('');
   
   // Recent messages state
   const [recentMessages, setRecentMessages] = useState<RecentMessage[]>([]);
@@ -483,6 +485,10 @@ export default function StoryViewer() {
 
         const formData = new FormData();
         formData.append('file', uploadFile);
+        // Attach the optional note so the file + message arrive as one item.
+        if (mediaCaption.trim()) {
+          formData.append('caption', mediaCaption.trim());
+        }
 
         // 5-min timeout — mobile video uploads on slow networks need time (matches server maxDuration)
         const controller = new AbortController();
@@ -507,9 +513,12 @@ export default function StoryViewer() {
 
         if (res.ok) {
           await loadMedia();
+          // Refresh the notes view too so the file + caption pair shows up there.
+          await loadRecentMessages();
           if (fileInputRef.current) {
             fileInputRef.current.value = '';
           }
+          setMediaCaption('');
           setIsUploadingMedia(false);
           return; // Success — exit retry loop
         } else {
@@ -921,6 +930,19 @@ export default function StoryViewer() {
               <h3 className="text-lg font-semibold mb-3 text-white/80">
                 Share classroom photos and songs 🎵
               </h3>
+              {/* Optional note — type it BEFORE choosing a file, since picking a
+                  file starts the upload immediately. Sent with the file as one message. */}
+              <input
+                type="text"
+                value={mediaCaption}
+                onChange={(e) => setMediaCaption(e.target.value)}
+                disabled={isUploadingMedia}
+                maxLength={5000}
+                placeholder="Add a note (optional) — type it before choosing a file"
+                className="block w-full mb-3 px-3 py-2 rounded-lg bg-white/5 border border-emerald-500/20
+                  text-sm text-white/90 placeholder-white/40 outline-none
+                  focus:border-emerald-400/50 disabled:opacity-50"
+              />
               <input
                 ref={fileInputRef}
                 type="file"

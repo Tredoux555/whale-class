@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase, verifyUserTokenFromRequest, getCurrentWeekStart } from '@/lib/story-db';
 import { getProxyUrl } from '@/lib/montree/media/proxy-url';
 import { purgeOldStoryMessages } from '@/lib/story/ephemeral';
+import { encryptMessage } from '@/lib/message-encryption';
 
 // Allow large uploads on slow mobile networks (videos up to 300MB)
 export const maxDuration = 300;
@@ -86,9 +87,18 @@ export async function POST(req: NextRequest) {
 
     const formData = await req.formData();
     const file = formData.get('file') as File | null;
-    
+    // Optional caption — lets a user send a picture/file AND a message in one
+    // go. Stored (encrypted) in message_content, exactly like the admin send
+    // route, so the read side (recent-messages) renders the file + note together.
+    const caption = (formData.get('caption') as string) || '';
+
     if (!file) {
       return NextResponse.json({ error: 'No file provided' }, { status: 400 });
+    }
+
+    // Match the text-message cap so a media caption can't become a DoS payload.
+    if (caption.length > 5000) {
+      return NextResponse.json({ error: 'Caption too long (max 5,000 characters)' }, { status: 400 });
     }
 
     // Detect file type — browsers may send empty/wrong MIME for .mov, .m4v, etc.
@@ -164,10 +174,15 @@ export async function POST(req: NextRequest) {
     const expiresAt = new Date();
     expiresAt.setHours(expiresAt.getHours() + 24);
 
+    // Encrypt the optional caption (null when none) — message_content holds
+    // both text messages and media captions, all encrypted at rest.
+    const encryptedCaption = caption.trim() ? encryptMessage(caption.trim()) : null;
+
     // Core fields only — session linking columns not present in production
     const mediaRecord = {
       week_start_date: weekStartDate,
       message_type: fileType,
+      message_content: encryptedCaption,
       media_url: mediaUrl,
       media_filename: file.name,
       author: username,
@@ -197,7 +212,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Failed to save media record' }, { status: 500 });
     }
 
-    // Ephemeral mode: keep only this newest message; purge older rows + media.
+    // Ephemeral mode: keep the newest few messages (STORY_KEEP_RECENT, default
+    // 3); purge anything older + its media. No-op unless STORY_EPHEMERAL=true.
     await purgeOldStoryMessages(supabase);
 
     return NextResponse.json({
