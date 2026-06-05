@@ -13,6 +13,13 @@ const MODULES = [
     href: '/montree/super-admin/social-manager/guru',
     color: 'purple',
   },
+  {
+    name: 'Posting Playbook',
+    icon: '🎬',
+    desc: '8 feature videos · per-platform copy + hashtags · WebClaude command protocol',
+    href: '/montree/super-admin/social-playbook',
+    color: 'blue',
+  },
 ];
 
 const colorClasses = {
