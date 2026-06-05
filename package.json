@@ -17,7 +17,9 @@
     "i18n:fill-ui": "node scripts/fill-missing-i18n-keys.mjs",
     "i18n:fix-names": "node scripts/sync-curriculum-translations.mjs",
     "i18n:sync": "npm run i18n:fill-ui && npm run i18n:fix-names && node scripts/fix-bleedthrough.mjs && npm run i18n:check:strict",
-    "hooks:install": "git config core.hooksPath .githooks && echo '✓ Hooks enabled — pre-commit will check i18n drift'"
+    "hooks:install": "git config core.hooksPath .githooks && echo '✓ Hooks enabled — pre-commit will check i18n drift'",
+    "audit:tenant-scoping": "node scripts/audit-tenant-scoping.mjs",
+    "audit:ts-budget": "node scripts/ts-error-budget.mjs"
   },
   "dependencies": {
     "@alloc/quick-lru": "^5.2.0",
