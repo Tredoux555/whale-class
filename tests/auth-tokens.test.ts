@@ -10,7 +10,7 @@ import {
   createParentToken,
   verifyParentToken,
 } from '@/lib/montree/server-auth';
-import { SignJWT } from 'jose';
+import { SignJWT, decodeJwt } from 'jose';
 
 const SECRET = new TextEncoder().encode(
   'test-only-secret-do-not-use-in-prod-1234567890'
@@ -96,5 +96,23 @@ describe('auth-domain isolation (parent vs montree)', () => {
     const payload = await verifyParentToken(parent);
     expect(payload?.sub).toBe('child-1');
     expect(payload?.parentId).toBe('p-1');
+  });
+});
+
+describe('token TTL (step 4 — no more 365-day tokens)', () => {
+  it('issues a ~30-day token by default, not a year', async () => {
+    const token = await createMontreeToken({
+      sub: 'teacher-1',
+      schoolId: 'school-A',
+      role: 'principal',
+    });
+    const { iat, exp } = decodeJwt(token);
+    expect(iat).toBeTypeOf('number');
+    expect(exp).toBeTypeOf('number');
+    const days = ((exp as number) - (iat as number)) / 86400;
+    // Default is 30 days. Guard: must be well under the old 365-day value.
+    expect(days).toBeGreaterThan(0);
+    expect(days).toBeLessThanOrEqual(31);
+    expect(days).toBeLessThan(90);
   });
 });
