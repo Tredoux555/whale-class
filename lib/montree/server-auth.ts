@@ -23,6 +23,16 @@ function getSecretKey(): Uint8Array {
 // Cookie name for teacher/principal httpOnly auth cookie
 export const MONTREE_AUTH_COOKIE = 'montree-auth';
 
+// Session lifetime (days) for teacher/principal/parent-homeschool JWTs + cookie.
+// Was a 365-day "effectively non-expiring" token — a leaked token meant a YEAR
+// of access. Reduced 2026-06-06 to 30 days (a stolen token now dies in a month).
+// Override via MONTREE_JWT_TTL_DAYS env without a code change. Sliding refresh
+// can be layered on later; until then active users re-auth every TTL window.
+export const MONTREE_JWT_TTL_DAYS = Math.max(
+  1,
+  Number(process.env.MONTREE_JWT_TTL_DAYS) || 30
+);
+
 // Token payload shape — stored in httpOnly cookie.
 // 'agent' (Phase 7b) is the Sarah / multiplier-partner role. They span schools
 // via referrals; schoolId on their JWT is their montree_teachers row's
@@ -46,10 +56,10 @@ export interface ParentTokenPayload {
 
 /**
  * Create a signed JWT for a Montree teacher, principal, or homeschool parent session.
- * 365 days for all roles — paid subscriptions should not require frequent re-login.
+ * TTL is MONTREE_JWT_TTL_DAYS (default 30) — see constant above.
  */
 export async function createMontreeToken(payload: MontreeTokenPayload): Promise<string> {
-  const ttl = '365d';
+  const ttl = `${MONTREE_JWT_TTL_DAYS}d`;
   const token = await new SignJWT({
     schoolId: payload.schoolId,
     classroomId: payload.classroomId || null,
@@ -148,7 +158,7 @@ export async function verifyParentToken(token: string): Promise<ParentTokenPaylo
 /**
  * Set the montree-auth httpOnly cookie on a NextResponse.
  * Call this in login routes after creating the JWT token.
- * 365-day maxAge for all roles — paid subscription, effectively non-expiring.
+ * maxAge matches the JWT TTL (MONTREE_JWT_TTL_DAYS, default 30 days).
  */
 export function setMontreeAuthCookie(
   response: NextResponse,
@@ -159,7 +169,7 @@ export function setMontreeAuthCookie(
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   _role?: 'teacher' | 'principal' | 'homeschool_parent' | 'agent'
 ): void {
-  const maxAge = 365 * 24 * 60 * 60;  // 365 days — paid subscription, cookie should effectively not expire
+  const maxAge = MONTREE_JWT_TTL_DAYS * 24 * 60 * 60;  // matches JWT TTL
   response.cookies.set(MONTREE_AUTH_COOKIE, token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
