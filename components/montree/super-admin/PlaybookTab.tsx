@@ -11,6 +11,22 @@ import playbook from './playbook.json';
 
 const CONTENT: string = (playbook as { content: string }).content;
 
+// The 8 feature videos, in posting order. Hosted in montree-media/social/ and
+// served through the Cloudflare-cached media proxy (montree-media is the proxy
+// default bucket, so the path alone is the URL). Grab them here on any device.
+const VIDEOS: { n: number; key: string; label: string }[] = [
+  { n: 1, key: 'guru', label: 'Guru' },
+  { n: 2, key: 'astra', label: 'Astra' },
+  { n: 3, key: 'voice-onboarding', label: 'Voice onboarding' },
+  { n: 4, key: 'curriculum', label: 'Curriculum' },
+  { n: 5, key: 'library', label: 'Library (materials)' },
+  { n: 6, key: 'communication', label: 'Communication' },
+  { n: 7, key: 'appointments', label: 'Appointments' },
+  { n: 8, key: 'multilingual', label: 'Multilingual' },
+];
+
+const videoUrl = (n: number, key: string) => `/api/montree/media/proxy/social/${n}_${key}.mp4`;
+
 export default function PlaybookTab() {
   const [copied, setCopied] = useState(false);
 
@@ -48,6 +64,44 @@ export default function PlaybookTab() {
         >
           {copied ? 'Copied ✓' : 'Copy all'}
         </button>
+      </div>
+
+      {/* Video library — grab any of the 8 in order, on any device. */}
+      <div className="mb-6">
+        <h3 className="text-sm font-semibold text-slate-300 mb-2">🎞️ Video library (posting order)</h3>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          {VIDEOS.map(v => {
+            const url = videoUrl(v.n, v.key);
+            return (
+              <div
+                key={v.n}
+                className="rounded-xl overflow-hidden"
+                style={{ background: 'rgba(8,20,12,0.55)', border: '1px solid rgba(52,211,153,0.18)' }}
+              >
+                <video
+                  src={url}
+                  controls
+                  playsInline
+                  preload="metadata"
+                  className="w-full bg-black"
+                  style={{ aspectRatio: '9 / 16', maxHeight: 260, objectFit: 'contain' }}
+                />
+                <div className="flex items-center justify-between gap-2 px-3 py-2">
+                  <span className="text-xs text-slate-300 truncate">
+                    {v.n}. {v.label}
+                  </span>
+                  <a
+                    href={url}
+                    download={`${v.n}_${v.key}.mp4`}
+                    className="shrink-0 text-xs font-medium text-emerald-400 hover:text-emerald-300"
+                  >
+                    Download
+                  </a>
+                </div>
+              </div>
+            );
+          })}
+        </div>
       </div>
 
       <pre
