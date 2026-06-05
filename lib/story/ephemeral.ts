@@ -1,23 +1,27 @@
 import { getSupabase, getCurrentWeekStart } from '@/lib/story-db';
 
 // ============================================================================
-// STORY EPHEMERAL MODE — rolling window of the most-recent messages
+// STORY EPHEMERAL MODE — rolling window of the most-recent TEXT messages
 //
-// When enabled, every new message write trims the chat down to a small
-// rolling window: the newest N rows survive (default 3), every older
-// story_message_history row is hard-deleted AND its media object is removed
-// from the story-uploads bucket, and prior-week secret_stories rows are
-// pruned. A seizure, subpoena, or live snapshot of the database therefore
-// finds at most the last N messages — there is no deep back-history to hand
-// over.
+// When enabled, every new write trims the chat down to a small rolling window:
+// the newest N TEXT messages survive (default 3) and every older text
+// story_message_history row is hard-deleted; prior-week secret_stories rows
+// are pruned too. A seizure, subpoena, or live snapshot of the database
+// therefore finds at most the last N text messages — no deep back-history.
+//
+// MEDIA IS SEPARATE. Photos / videos / audio / files are NOT part of this
+// rolling window — they live on their own 24h TTL and are deleted by
+// lib/story/media-retention.ts, regardless of how many messages exist. This
+// keeps the two systems independent: "media stays 24h" and "messages" are two
+// different clocks.
 //
 // This is data minimisation: the strongest real-world protection, because you
 // cannot be compelled to produce, and an attacker cannot read, data that no
 // longer exists.
 //
-// Each row counts as one message regardless of kind — a text note and a photo
-// (with or without a caption) each occupy one of the N slots. Once a 4th
-// message arrives, the oldest of the previous three is cleaned out.
+// Only text messages occupy the N slots; media rows are ignored here (they
+// expire on their own 24h timer). Once a 4th text message arrives, the oldest
+// of the previous three is cleaned out.
 //
 // 🚨 HONEST LIMITS:
 //   • Provider-side backups / Supabase point-in-time-recovery retain
@@ -54,26 +58,21 @@ export function isEphemeralEnabled(): boolean {
   return process.env.STORY_EPHEMERAL === 'true';
 }
 
-// Reverse a stored media_url (a /api/montree/media/proxy/... URL, or a raw
-// path) back to its story-uploads storage path: `story-media/<week>/<file>`.
-function storagePathFromMediaUrl(url?: string | null): string | null {
-  if (!url) return null;
-  const m = url.match(/story-media\/[^?"']+/);
-  return m ? m[0] : null;
-}
-
-// Keep ONLY the newest N story_message_history rows (default 3); hard-delete
-// every older row and its story-uploads media object. Also prune prior-week
-// secret_stories rows. No-op unless STORY_EPHEMERAL=true. Never throws —
-// a purge failure must never break the message send that triggered it.
+// Keep ONLY the newest N TEXT story_message_history rows (default 3);
+// hard-delete every older TEXT row. Media rows are ignored (they expire on
+// their own 24h TTL — see lib/story/media-retention.ts). Also prune prior-week
+// secret_stories rows. No-op unless STORY_EPHEMERAL=true. Never throws — a
+// purge failure must never break the message send that triggered it.
 export async function purgeOldStoryMessages(supabase: Supa): Promise<void> {
   if (!isEphemeralEnabled()) return;
   try {
     const keep = getStoryKeepCount();
 
+    // TEXT messages only — media is governed separately by its 24h TTL.
     const { data: rows, error } = await supabase
       .from('story_message_history')
-      .select('id, media_url')
+      .select('id')
+      .eq('message_type', 'text')
       .order('created_at', { ascending: false })
       .limit(1000);
 
@@ -83,23 +82,9 @@ export async function purgeOldStoryMessages(supabase: Supa): Promise<void> {
     }
     if (!rows || rows.length <= keep) return; // nothing past the keep window
 
-    const stale = rows.slice(keep); // everything older than the newest `keep`
+    const stale = rows.slice(keep); // text rows older than the newest `keep`
 
-    // 1) Remove the underlying media objects (so photos/videos don't linger
-    //    in storage after their DB rows are gone).
-    const paths = stale
-      .map((r: { media_url?: string | null }) => storagePathFromMediaUrl(r.media_url))
-      .filter((p): p is string => !!p);
-    if (paths.length > 0) {
-      for (let i = 0; i < paths.length; i += 100) {
-        const { error: rmErr } = await supabase.storage
-          .from('story-uploads')
-          .remove(paths.slice(i, i + 100));
-        if (rmErr) console.error('[ephemeral] media object removal failed', rmErr);
-      }
-    }
-
-    // 2) Hard-delete the stale rows.
+    // Hard-delete the stale text rows.
     const ids = stale.map((r: { id: string }) => r.id);
     for (let i = 0; i < ids.length; i += 100) {
       const { error: delErr } = await supabase
@@ -109,7 +94,7 @@ export async function purgeOldStoryMessages(supabase: Supa): Promise<void> {
       if (delErr) console.error('[ephemeral] stale row deletion failed', delErr);
     }
 
-    // 3) Prune prior-week secret_stories rows (keep only the current week's
+    // Prune prior-week secret_stories rows (keep only the current week's
     //    overwrite-in-place note). Never touches the current week.
     const wk = getCurrentWeekStart();
     const { error: ssErr } = await supabase

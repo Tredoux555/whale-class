@@ -13,21 +13,23 @@ export async function GET(req: NextRequest) {
 
     const supabase = getSupabase();
 
-    // Session 140 — admin↔parent alignment fix (D-1, D-2). Previously this
-    // hard-filtered to the CURRENT week (week_start_date = this Monday) AND
-    // dropped anything past its 24h expiry. That made admin-sent photos/videos
-    // vanish from the parent the next Monday or after a day, while the admin
-    // (and the never-expiring hidden text note) still showed them — i.e. "the
-    // story admin isn't reflecting on the story page." Now show recent media
-    // regardless of week/expiry, bounded to the latest 100 within 60 days so it
-    // can't grow unbounded.
-    const sixtyDaysAgo = new Date(Date.now() - 60 * 24 * 60 * 60 * 1000).toISOString();
+    // Media has a 24h TTL: it shows until `expires_at`, then disappears and is
+    // hard-deleted by the expire-media sweep (lib/story/media-retention.ts).
+    //
+    // The earlier Session 140 fix dropped the WEEK gate (week_start_date =
+    // this Monday) because that made admin photos vanish the next Monday while
+    // the never-expiring hidden text note lingered — an admin↔parent mismatch.
+    // We keep the week gate gone, but DO honour the 24h expiry, applied
+    // symmetrically here, so media disappears at 24h for everyone at once (no
+    // mismatch). Null expiry (legacy rows) still shows. Bounded to latest 100.
+    const nowIso = new Date().toISOString();
 
     const { data: rows, error } = await supabase
       .from('story_message_history')
       .select('id, message_type, message_content, media_url, media_filename, author, created_at, expires_at')
       .in('message_type', ['image', 'video', 'audio', 'document'])
-      .gte('created_at', sixtyDaysAgo)
+      .eq('is_expired', false)
+      .or(`expires_at.is.null,expires_at.gt.${nowIso}`)
       .order('created_at', { ascending: false })
       .limit(100);
 
@@ -36,7 +38,7 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'Failed to load media' }, { status: 500 });
     }
 
-    // No expiry/week gating — see note above (admin↔parent alignment).
+    // 24h expiry gated in the query above; no week gating (admin↔parent align).
     const media = (rows || [])
       .map(row => {
         // Decrypt caption if present

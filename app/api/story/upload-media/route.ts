@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase, verifyUserTokenFromRequest, getCurrentWeekStart } from '@/lib/story-db';
 import { getProxyUrl } from '@/lib/montree/media/proxy-url';
 import { purgeOldStoryMessages } from '@/lib/story/ephemeral';
+import { deleteExpiredStoryMedia, computeMediaExpiry, getMediaTtlHours } from '@/lib/story/media-retention';
 import { encryptMessage } from '@/lib/message-encryption';
 
 // Allow large uploads on slow mobile networks (videos up to 300MB)
@@ -171,8 +172,9 @@ export async function POST(req: NextRequest) {
     // (HTTP Range support, China CDN, 7-day edge cache).
     const mediaUrl = getProxyUrl(storagePath, 'story-uploads');
 
-    const expiresAt = new Date();
-    expiresAt.setHours(expiresAt.getHours() + 24);
+    // Media lives for the 24h TTL (env STORY_MEDIA_TTL_HOURS) then gets
+    // hard-deleted by the expire-media sweep — independent of messages.
+    const expiresAt = computeMediaExpiry();
 
     // Encrypt the optional caption (null when none) — message_content holds
     // both text messages and media captions, all encrypted at rest.
@@ -212,8 +214,13 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Failed to save media record' }, { status: 500 });
     }
 
-    // Ephemeral mode: keep the newest few messages (STORY_KEEP_RECENT, default
-    // 3); purge anything older + its media. No-op unless STORY_EPHEMERAL=true.
+    // Media retention: opportunistically hard-delete any media past its 24h
+    // TTL (row + storage object). Self-cleans between cron runs. Media-only —
+    // never touches text messages or secret_stories. Awaited but never throws.
+    await deleteExpiredStoryMedia(supabase);
+
+    // Message ephemeral mode (STORY_EPHEMERAL=true): trims the TEXT-message
+    // rolling window only. No-op unless enabled. Does not touch media.
     await purgeOldStoryMessages(supabase);
 
     return NextResponse.json({
@@ -221,7 +228,7 @@ export async function POST(req: NextRequest) {
       mediaUrl,
       fileName: file.name,
       fileType,
-      expiresIn: '24 hours'
+      expiresIn: `${getMediaTtlHours()} hours`
     });
   } catch (error) {
     const errMsg = error instanceof Error ? error.message : String(error);
