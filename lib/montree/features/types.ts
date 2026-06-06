@@ -24,6 +24,10 @@ export type FeatureKey =
   | 'parent_reports'
   | 'batch_reports'
   | 'phonics_tools'
+  // Dark Phonics works pack — exposes the 49 Pink phonics lessons as Language-area
+  // works (tag + track like any work). Virtual/flag-gated in /api/montree/works.
+  // Default OFF; schools opt in. See lib/montree/phonics/phonics-works.ts.
+  | 'phonics_works'
   | 'curriculum_browser'
   | 'community_library'
   | 'picture_bank'
