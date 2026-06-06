@@ -4,42 +4,75 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Dark Phonics</title>
 <style>
-:root{--bg:#0b0b12;--bar:#12121c;--ink:#ececf2;--mut:#9a9ab0;--ac:#7c5cff;--line:#23233a;}
-*{box-sizing:border-box}html,body{margin:0;height:100%}
-body{background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;display:flex;flex-direction:column;height:100vh}
-header{background:var(--bar);border-bottom:1px solid var(--line);padding:10px 14px 0;flex:0 0 auto}
-.brand{font-size:20px;font-weight:700;letter-spacing:.5px;margin:0 0 8px}
-.brand .d{color:var(--ac)}
+:root{--bg:#0b0b12;--bar:#12121c;--card:#15151f;--ink:#ececf2;--mut:#9a9ab0;--ac:#7c5cff;--ac2:#16d39a;--y:#f0b85a;--line:#23233a;}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;line-height:1.5}
+header{position:sticky;top:0;z-index:5;background:var(--bar);border-bottom:1px solid var(--line);padding:10px 14px 0}
+.brand{font-size:20px;font-weight:700;letter-spacing:.5px;margin:0 0 8px}.brand .d{color:var(--ac)}
 .tabs{display:flex;gap:6px;flex-wrap:wrap}
-.tab{background:transparent;color:var(--mut);border:1px solid var(--line);border-bottom:none;
-border-radius:9px 9px 0 0;padding:8px 14px;font-size:13.5px;cursor:pointer;white-space:nowrap}
+.tab{background:transparent;color:var(--mut);border:1px solid var(--line);border-bottom:none;border-radius:9px 9px 0 0;padding:8px 14px;font-size:13.5px;cursor:pointer;white-space:nowrap;text-decoration:none;display:inline-block}
 .tab:hover{color:var(--ink);background:#191926}
-.tab.on{color:#fff;background:var(--bg);border-color:var(--ac);border-bottom:1px solid var(--bg);font-weight:600}
-.sep{width:1px;background:var(--line);margin:2px 4px}
-.tab.alt{opacity:.8}
-iframe{flex:1 1 auto;width:100%;border:0;background:var(--bg)}
+.tab.on{color:#fff;background:var(--bg);border-color:var(--ac);font-weight:600}
+.sep{width:1px;background:var(--line);margin:2px 4px}.tab.alt{opacity:.85}
+#content{padding:0 16px 80px}.wrap{max-width:760px;margin:0 auto}
+h1{font-size:30px;margin:30px 0 4px}h1 .d{color:var(--ac)}.sub{color:var(--mut);margin:0 0 8px}
+.note{background:var(--card);border:1px solid #262636;border-radius:12px;padding:14px 16px;color:var(--mut);font-size:14px;margin:18px 0 28px}.note b{color:var(--ink)}
+.song,.book{background:var(--card);border:1px solid #232333;border-radius:14px;padding:16px;margin:0 0 22px}
+.hd{display:flex;gap:10px;align-items:baseline;margin-bottom:4px;flex-wrap:wrap}
+.ls{background:var(--ac);color:#fff;font-size:12px;font-weight:600;padding:2px 8px;border-radius:999px}.ti,.lk{color:var(--mut);font-size:13.5px}
+.catch,.title{color:var(--y);font-size:18px;font-weight:600;margin:2px 0 12px}
+.dec{background:#10331f;color:var(--ac2);font-size:11px;padding:2px 8px;border-radius:999px;font-weight:600}
+.pg{border-top:1px solid #21212f;padding:12px 0 4px}.pgh{font-size:11px;letter-spacing:.6px;text-transform:uppercase;color:var(--ac);font-weight:600}
+.cref{color:var(--ac2);text-transform:none;letter-spacing:0;font-weight:400}.txt{font-size:18px;font-weight:600;margin:4px 0 8px}
+.box{margin:8px 0}.lab{display:flex;justify-content:space-between;align-items:center;font-size:11px;color:var(--mut);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
+.cp{background:#23233a;color:var(--ink);border:1px solid #34344e;border-radius:7px;font-size:12px;padding:3px 12px;cursor:pointer}
+.cp:hover{background:#2d2d4a}.cp.ok{background:var(--ac2);color:#022;border-color:var(--ac2)}
+pre{white-space:pre-wrap;word-wrap:break-word;background:#0e0e16;border:1px solid #21212f;border-radius:9px;padding:10px 12px;margin:0;font-size:12.5px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;color:#dcdce8}
+audio{height:36px;max-width:100%}
+.loading{color:var(--mut);padding:40px 0;text-align:center}
 </style></head>
 <body>
 <header>
   <div class="brand"><span class="d">Dark</span> Phonics</div>
-  <div class="tabs" id="tabs">
+  <div class="tabs">
     <button class="tab on" data-src="/dark-phonics-songs.html">🎵 Songs</button>
     <button class="tab" data-src="/dark-phonics-singalong.html">🎤 Sing-Along Cards</button>
     <button class="tab" data-src="/dark-phonics-books.html">📕 Picture Books</button>
     <button class="tab" data-src="/dark-phonics-readers.html">📗 Easy Readers</button>
     <div class="sep"></div>
-    <button class="tab alt" data-src="/pink-phase-songs-teacher.html">Original Songs</button>
-    <button class="tab alt" data-src="/pink-readers.html">Original Readers</button>
+    <a class="tab alt" href="/pink-phase-songs-teacher.html" target="_blank" rel="noopener">Original Songs ↗</a>
+    <a class="tab alt" href="/pink-readers.html" target="_blank" rel="noopener">Original Readers ↗</a>
   </div>
 </header>
-<iframe id="frame" src="/dark-phonics-songs.html" title="Dark Phonics content"></iframe>
+<div id="content"><div class="wrap"><div class="loading">Loading…</div></div></div>
 <script>
-  var tabs=document.querySelectorAll('.tab'), frame=document.getElementById('frame');
-  var saved=localStorage.getItem('dp_tab');
-  if(saved){ tabs.forEach(function(t){ if(t.dataset.src===saved){ tabs.forEach(function(x){x.classList.remove('on')}); t.classList.add('on'); frame.src=saved; } }); }
-  tabs.forEach(function(t){ t.addEventListener('click',function(){
-    tabs.forEach(function(x){x.classList.remove('on')});
-    t.classList.add('on'); frame.src=t.dataset.src; localStorage.setItem('dp_tab',t.dataset.src);
-  });});
+var content=document.getElementById('content');
+var tabs=document.querySelectorAll('button.tab');
+function load(url){
+  content.innerHTML='<div class="wrap"><div class="loading">Loading…</div></div>';
+  fetch(url).then(function(r){return r.text();}).then(function(t){
+    var doc=new DOMParser().parseFromString(t,'text/html');
+    var w=doc.querySelector('.wrap');
+    content.innerHTML='<div class="wrap">'+(w?w.innerHTML:'Could not load this set.')+'</div>';
+    window.scrollTo(0,0);
+  }).catch(function(){ content.innerHTML='<div class="wrap"><div class="loading">Could not load. <a style="color:var(--ac)" href="'+url+'">Open directly ↗</a></div></div>'; });
+}
+tabs.forEach(function(t){ t.addEventListener('click',function(){
+  tabs.forEach(function(x){x.classList.remove('on')}); t.classList.add('on');
+  localStorage.setItem('dp_tab',t.dataset.src); load(t.dataset.src);
+});});
+// copy buttons (delegated, works for injected content)
+document.addEventListener('click',function(e){
+  if(e.target&&e.target.classList&&e.target.classList.contains('cp')){
+    var box=e.target.closest('.box'); var pre=box&&box.querySelector('pre');
+    if(pre){navigator.clipboard.writeText(pre.textContent).then(function(){
+      e.target.textContent='copied';e.target.classList.add('ok');
+      setTimeout(function(){e.target.textContent='copy';e.target.classList.remove('ok')},1200);
+    });}
+  }
+});
+var saved=localStorage.getItem('dp_tab');
+var start=null;
+if(saved){tabs.forEach(function(t){if(t.dataset.src===saved){tabs.forEach(function(x){x.classList.remove('on')});t.classList.add('on');start=saved;}});}
+load(start||'/dark-phonics-songs.html');
 </script>
 </body></html>
