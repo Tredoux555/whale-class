@@ -9,6 +9,7 @@ import Link from 'next/link';
 import { toast, Toaster } from 'sonner';
 import { Building2, KeyRound, UserRound, CreditCard, ArrowRight, Activity, BarChart3, Sliders, Upload } from 'lucide-react';
 import { useI18n } from '@/lib/montree/i18n';
+import DeleteAccountSection from '@/components/montree/DeleteAccountSection';
 
 interface School {
   id: string;
@@ -342,6 +343,11 @@ export default function AdminSettingsPage() {
         >
           {saving ? t('admin.states.saving') : t('admin.actions.saveChanges')}
         </button>
+      </div>
+
+      {/* Delete Account (Apple App Store Guideline 5.1.1(v)) */}
+      <div style={{ marginTop: 24 }}>
+        <DeleteAccountSection redirectTo="/montree/login" />
       </div>
     </div>
   );

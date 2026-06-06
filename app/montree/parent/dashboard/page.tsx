@@ -692,6 +692,19 @@ export default function ParentDashboardPage() {
               </Link>
             )}
             <LanguageToggle />
+            <Link
+              href="/montree/parent/account"
+              style={{
+                padding: '10px 8px',
+                fontSize: 13,
+                fontWeight: 500,
+                color: T.textMuted,
+                textDecoration: 'none',
+                transition: 'color 140ms ease',
+              }}
+            >
+              Account
+            </Link>
             <button
               onClick={handleLogout}
               style={{
