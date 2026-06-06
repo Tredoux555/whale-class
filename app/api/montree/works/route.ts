@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { getSupabase } from '@/lib/supabase-client';
 import { buildLocalizedSelect } from '@/lib/montree/i18n/db-helpers';
+import { isFeatureEnabled } from '@/lib/montree/features/server';
+import { phonicsWorkRows } from '@/lib/montree/phonics/phonics-works';
 
 // GET /api/montree/works — returns all curriculum works for the teacher's classroom
 // Used by PhotoEditModal for manual work assignment
@@ -64,7 +66,12 @@ export async function GET(request: NextRequest) {
       };
     });
 
-    return NextResponse.json({ works, total: works.length }, {
+    // Dark Phonics works pack — flag-gated VIRTUAL append (no DB rows written).
+    // isFeatureEnabled fails closed, so any error just yields the base works.
+    const phonicsOn = await isFeatureEnabled(supabase, auth.schoolId, 'phonics_works');
+    const allWorks = phonicsOn ? [...works, ...phonicsWorkRows()] : works;
+
+    return NextResponse.json({ works: allWorks, total: allWorks.length }, {
       headers: { 'Cache-Control': 'private, max-age=300, stale-while-revalidate=600' }
     });
   } catch (error) {
