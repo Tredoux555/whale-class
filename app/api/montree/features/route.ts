@@ -5,6 +5,34 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { verifySuperAdminAuth } from '@/lib/verify-super-admin';
+import { syncPhonicsWorks } from '@/lib/montree/phonics/sync-phonics-works';
+
+// When the phonics_works feature flips, seed/hide the real curriculum rows for the school.
+// Best-effort: a sync hiccup must never fail the toggle itself (the flag still saves).
+async function syncPhonicsOnToggle(
+  supabase: ReturnType<typeof getSupabase>,
+  featureKey: string,
+  enabled: boolean,
+  ids: { school_id?: string; classroom_id?: string }
+): Promise<void> {
+  if (featureKey !== 'phonics_works') return;
+  try {
+    let schoolId = ids.school_id;
+    if (!schoolId && ids.classroom_id) {
+      const { data } = await supabase
+        .from('montree_classrooms')
+        .select('school_id')
+        .eq('id', ids.classroom_id)
+        .maybeSingle();
+      schoolId = (data as { school_id?: string } | null)?.school_id;
+    }
+    if (!schoolId) return;
+    const result = await syncPhonicsWorks(schoolId, enabled);
+    console.log('[Features] phonics_works sync:', JSON.stringify(result));
+  } catch (err) {
+    console.error('[Features] phonics_works sync failed (toggle still saved):', err);
+  }
+}
 
 // GET - Check which features are enabled for a classroom
 export async function GET(request: NextRequest) {
@@ -174,6 +202,7 @@ export async function POST(request: NextRequest) {
           { status: 500 }
         );
       }
+      await syncPhonicsOnToggle(supabase, feature_key, enabled, { classroom_id });
       return NextResponse.json({ success: true, toggle: data });
     }
 
@@ -198,6 +227,7 @@ export async function POST(request: NextRequest) {
           { status: 500 }
         );
       }
+      await syncPhonicsOnToggle(supabase, feature_key, enabled, { school_id });
       return NextResponse.json({ success: true, toggle: data });
     }
 
