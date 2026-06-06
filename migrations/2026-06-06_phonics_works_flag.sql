@@ -25,10 +25,8 @@ SET name = EXCLUDED.name,
     category = EXCLUDED.category,
     default_enabled = EXCLUDED.default_enabled;
 
--- ── Pilot: enable for your own school only. ────────────────────────────────
--- Uncomment and set your school name to switch it on for Whale Class to trial.
--- (Or just flip it in the features admin UI once this migration is applied.)
---
--- INSERT INTO montree_school_features (school_id, feature_key, enabled)
--- SELECT id, 'phonics_works', true FROM montree_schools WHERE name ILIKE '%whale%'
--- ON CONFLICT (school_id, feature_key) DO UPDATE SET enabled = true;
+-- ── Pilot: turn it ON for Whale Class. ─────────────────────────────────────
+INSERT INTO montree_school_features (school_id, feature_key, enabled, enabled_by, enabled_at)
+VALUES ('c6280fae-567c-45ed-ad4d-934eae79aabc', 'phonics_works', true, 'phonics_works_pilot', NOW())
+ON CONFLICT (school_id, feature_key)
+DO UPDATE SET enabled = true, enabled_by = 'phonics_works_pilot', enabled_at = NOW();
