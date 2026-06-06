@@ -264,6 +264,8 @@ export async function middleware(req: NextRequest) {
     '/teacher',     // Simple teacher login (Jasmine, Ivan, John, etc.)
     '/whale-class', // Parent-facing song page — QR codes link here, no login required
     '/pricing',     // Public pricing page — no login required
+    '/privacy',     // Privacy policy — public (required by App Store / kids-data law)
+    '/terms',       // Terms of service — public
   ];
   
   // Check if pathname matches exactly or starts with a public path
