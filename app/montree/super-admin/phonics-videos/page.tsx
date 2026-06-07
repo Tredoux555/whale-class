@@ -53,7 +53,7 @@ export default function PhonicsVideosPage() {
   const fileRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    const stored = sessionStorage.getItem('super-admin-token');
+    const stored = sessionStorage.getItem('sa_session');
     if (!stored) { router.push('/montree/super-admin'); return; }
     setToken(stored);
   }, [router]);
@@ -63,7 +63,7 @@ export default function PhonicsVideosPage() {
       const res = await fetch('/api/montree/super-admin/phonics-video-upload-url', {
         headers: { 'x-super-admin-token': t }, cache: 'no-store',
       });
-      if (res.status === 401) { sessionStorage.removeItem('super-admin-token'); router.push('/montree/super-admin'); return; }
+      if (res.status === 401) { sessionStorage.removeItem('sa_session'); router.push('/montree/super-admin'); return; }
       const json = await res.json();
       setUploaded(Array.isArray(json.uploaded) ? json.uploaded : []);
     } catch { /* leave as-is */ }
@@ -86,7 +86,7 @@ export default function PhonicsVideosPage() {
         headers: { 'Content-Type': 'application/json', 'x-super-admin-token': token },
         body: JSON.stringify({ lesson }),
       });
-      if (res.status === 401) { sessionStorage.removeItem('super-admin-token'); router.push('/montree/super-admin'); return; }
+      if (res.status === 401) { sessionStorage.removeItem('sa_session'); router.push('/montree/super-admin'); return; }
       const data = await res.json();
       if (!res.ok) throw new Error(data?.error || 'Could not start upload.');
 
