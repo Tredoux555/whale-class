@@ -681,6 +681,18 @@ export default function SuperAdminPage() {
               🔑 All logins
             </Link>
             <Link
+              href="/montree/super-admin/phonics-videos"
+              className="px-3 py-2 rounded-lg font-medium text-sm transition-colors"
+              style={{
+                background: 'rgba(8,20,12,0.55)',
+                border: '1px solid rgba(52,211,153,0.18)',
+                color: 'rgba(255,255,255,0.75)',
+              }}
+              title="Upload Dark Phonics song videos to the public songs page"
+            >
+              🎬 Phonics Videos
+            </Link>
+            <Link
               href="/montree/onboarding"
               className="px-3 py-2 rounded-lg font-medium text-sm transition-colors"
               style={{ background: '#34d399', color: '#0a1a0f' }}
