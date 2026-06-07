@@ -4,7 +4,7 @@
 **Audience:** Montessori / preschool **owners, principals, and teachers** (US-weighted, English).
 **Voice:** warm, practical, educator-to-educator. Not salesy.
 **Brand hashtags (every post):** `#Montree` `#MeetAstra` `#MontessoriAI`
-**Sign-up link:** `[SIGNUP]`  ← replace with the real URL before posting (or keep "link in bio").
+**Sign-up link:** `https://montree.xyz`  ← replace with the real URL before posting (or keep "link in bio").
 
 ---
 
@@ -33,7 +33,7 @@ WebClaude then does **Step B** (paste caption + hashtags + title where each plat
 - Paste that platform's caption / post body.
 - Add the platform's hashtags.
 - YouTube: paste **Title**, **Description**, and **Tags** separately.
-- Put `[SIGNUP]` in the caption/body (IG + TikTok also rely on link-in-bio).
+- Put `https://montree.xyz` in the caption/body (IG + TikTok also rely on link-in-bio).
 - **Stop at the pre-publish screen. Do not publish.** Report "Tab N ready for review."
 - If a platform asks for login or a captcha, pause and let me handle it, then continue.
 
@@ -70,29 +70,29 @@ Each block = ready to paste. Keep the hook as line 1.
 **Instagram (Reel)**
 > A guru for every single child in your room. 🌱
 > Montree's assistant is trained on your real classroom records — so the guidance is about *this* child, not generic advice. More presence, less guesswork.
-> Start free 👉 [SIGNUP]
+> Start free 👉 https://montree.xyz
 `#Montree #MeetAstra #MontessoriAI #montessori #montessorieducation #earlychildhoodeducation #preschool #montessoriteacher #montessorischool #teachersofinstagram #schoolleadership #aiforteachers`
 
 **TikTok**
-> One child. One puzzle. One guru who actually knows them. 🌱 Montree is trained on your real classroom records. Save this for your next staff meeting. [SIGNUP]
+> One child. One puzzle. One guru who actually knows them. 🌱 Montree is trained on your real classroom records. Save this for your next staff meeting. https://montree.xyz
 `#Montree #MeetAstra #MontessoriAI #montessori #teachersoftiktok #earlychildhoodeducation`
 
 **Facebook (Reel)**
-> What if every child in your school had a guru trained on their real records? That's Montree. Send this to your director 👉 [SIGNUP]
+> What if every child in your school had a guru trained on their real records? That's Montree. Send this to your director 👉 https://montree.xyz
 `#Montessori #EarlyChildhoodEducation #Montree`
 
 **X**
-> A guru for every child — trained on your real classroom records, not generic advice. That's Montree. 🌱 Start free 👉 [SIGNUP]
+> A guru for every child — trained on your real classroom records, not generic advice. That's Montree. 🌱 Start free 👉 https://montree.xyz
 `#Montree #MontessoriAI #aiforteachers`
 
 **LinkedIn**
 > Every Montessori guide wishes they could give each child fully individual attention. Montree's assistant is trained on your real classroom records, so the guidance is about *that* child — freeing teachers to be more present, not buried in notes.
-> See it free 👉 [SIGNUP]
+> See it free 👉 https://montree.xyz
 `#Montree #MontessoriAI #EarlyChildhoodEducation #EdTech #SchoolLeadership`
 
 **YouTube (Short)**
 > **Title:** A Montessori guru for every child | Montree
-> **Description:** Montree's assistant is trained on your real classroom records, so every child gets individual guidance — not generic advice. Start free: [SIGNUP]  #Shorts
+> **Description:** Montree's assistant is trained on your real classroom records, so every child gets individual guidance — not generic advice. Start free: https://montree.xyz  #Shorts
 > **Tags:** Montree, Montessori, Montessori AI, early childhood education, preschool, classroom management, AI for teachers, MeetAstra
 
 ---
@@ -102,29 +102,29 @@ Each block = ready to paste. Keep the hook as line 1.
 
 **Instagram (Reel)**
 > Meet Astra. 👋 Ask what any classroom is really doing — and get the answer in one conversation, from your real records. A dozen walk-arounds, in one question.
-> Start free 👉 [SIGNUP]
+> Start free 👉 https://montree.xyz
 `#Montree #MeetAstra #MontessoriAI #montessori #montessorieducation #schoolleadership #preschoolowner #earlychildhoodeducation #montessorischool #edtech #aiforteachers #schooladmin`
 
 **TikTok**
-> POV: you ask one question and finally know what's happening in every room. 👋 Meet Astra. Send this to your principal. [SIGNUP]
+> POV: you ask one question and finally know what's happening in every room. 👋 Meet Astra. Send this to your principal. https://montree.xyz
 `#Montree #MeetAstra #MontessoriAI #schooltok #edtech`
 
 **Facebook (Reel)**
-> A dozen walk-arounds → one conversation. Meet Astra, the AI chief-of-staff inside Montree. Try it free 👉 [SIGNUP]
+> A dozen walk-arounds → one conversation. Meet Astra, the AI chief-of-staff inside Montree. Try it free 👉 https://montree.xyz
 `#Montessori #EarlyChildhoodEducation #Montree`
 
 **X**
-> Meet Astra 👋 — ask what your classroom is really doing, get the answer in one conversation. A dozen walk-arounds in one question. [SIGNUP]
+> Meet Astra 👋 — ask what your classroom is really doing, get the answer in one conversation. A dozen walk-arounds in one question. https://montree.xyz
 `#Montree #MeetAstra #MontessoriAI`
 
 **LinkedIn**
 > Principals spend their day reconstructing what's actually happening across classrooms. Astra — the AI chief-of-staff inside Montree — answers that in one conversation, from real classroom records. Less management overhead, more leadership.
-> See Astra free 👉 [SIGNUP]
+> See Astra free 👉 https://montree.xyz
 `#Montree #MeetAstra #SchoolLeadership #MontessoriAI #EdTech`
 
 **YouTube (Short)**
 > **Title:** Meet Astra — your school's AI chief-of-staff | Montree
-> **Description:** Ask what any classroom is really doing and get the answer in one conversation, from real records — instead of a dozen walk-arounds. Start free: [SIGNUP]  #Shorts
+> **Description:** Ask what any classroom is really doing and get the answer in one conversation, from real records — instead of a dozen walk-arounds. Start free: https://montree.xyz  #Shorts
 > **Tags:** Montree, Astra, Montessori AI, school leadership, principal, classroom insights, early childhood education, AI assistant
 
 ---
@@ -134,29 +134,29 @@ Each block = ready to paste. Keep the hook as line 1.
 
 **Instagram (Reel)**
 > Set up your whole school by *talking.* 🎙️ No more hours of typing — just speak, and Montree logs it. Onboarding that takes minutes, not weekends.
-> Start free 👉 [SIGNUP]
+> Start free 👉 https://montree.xyz
 `#Montree #MeetAstra #MontessoriAI #montessori #earlychildhoodeducation #preschool #teacherlife #montessoriteacher #schooladmin #edtech #aiforteachers #earlyyears`
 
 **TikTok**
-> Setting up new software usually = hours of typing. Not this. 🎙️ You just talk, Montree logs it. Send this to a colleague who's drowning in data entry. [SIGNUP]
+> Setting up new software usually = hours of typing. Not this. 🎙️ You just talk, Montree logs it. Send this to a colleague who's drowning in data entry. https://montree.xyz
 `#Montree #MontessoriAI #teachersoftiktok #edtech #aitools`
 
 **Facebook (Reel)**
-> Hours of typing to set things up? Gone. With Montree you just talk — it does the logging. Try it free 👉 [SIGNUP]
+> Hours of typing to set things up? Gone. With Montree you just talk — it does the logging. Try it free 👉 https://montree.xyz
 `#Montessori #EarlyChildhoodEducation #Montree`
 
 **X**
-> Onboarding by voice 🎙️ — no hours of typing. You talk, Montree logs it. Start free 👉 [SIGNUP]
+> Onboarding by voice 🎙️ — no hours of typing. You talk, Montree logs it. Start free 👉 https://montree.xyz
 `#Montree #MontessoriAI #edtech`
 
 **LinkedIn**
 > The reason great tools die in schools? Setup. Montree lets you onboard by voice — you talk, it logs — so getting started takes minutes instead of lost weekends.
-> Try it free 👉 [SIGNUP]
+> Try it free 👉 https://montree.xyz
 `#Montree #MontessoriAI #EdTech #EarlyChildhoodEducation #SchoolLeadership`
 
 **YouTube (Short)**
 > **Title:** Set up your school by talking — voice onboarding | Montree
-> **Description:** No hours of typing. Speak, and Montree logs it — onboarding in minutes. Start free: [SIGNUP]  #Shorts
+> **Description:** No hours of typing. Speak, and Montree logs it — onboarding in minutes. Start free: https://montree.xyz  #Shorts
 > **Tags:** Montree, voice onboarding, Montessori AI, school setup, early childhood education, edtech, AI for teachers
 
 ---
@@ -166,29 +166,29 @@ Each block = ready to paste. Keep the hook as line 1.
 
 **Instagram (Reel)**
 > Curriculum that plans itself — for *every* child. 📋 Montree sees where each child is and maps the next step. No planning on paper, no Sunday-night prep.
-> Start free 👉 [SIGNUP]
+> Start free 👉 https://montree.xyz
 `#Montree #MeetAstra #MontessoriAI #montessori #montessorieducation #montessoriclassroom #preschoolteacher #earlyyearseducator #earlychildhoodeducation #teachersofinstagram #aiforteachers #montessoriguide`
 
 **TikTok**
-> No more planning on paper. 📋 Montree sees where each child is and plans the next step — for the whole room. Save this before Sunday-night prep. [SIGNUP]
+> No more planning on paper. 📋 Montree sees where each child is and plans the next step — for the whole room. Save this before Sunday-night prep. https://montree.xyz
 `#Montree #MontessoriAI #montessoriteacher #teachertok #earlychildhoodeducation`
 
 **Facebook (Reel)**
-> For every child, Montree sees where they are and plans what's next — no planning on paper. See how 👉 [SIGNUP]
+> For every child, Montree sees where they are and plans what's next — no planning on paper. See how 👉 https://montree.xyz
 `#Montessori #EarlyChildhoodEducation #Montree`
 
 **X**
-> Per-child curriculum that plans itself. Montree sees where each child is and maps the next step — no paper. 📋 [SIGNUP]
+> Per-child curriculum that plans itself. Montree sees where each child is and maps the next step — no paper. 📋 https://montree.xyz
 `#Montree #MontessoriAI #aiforteachers`
 
 **LinkedIn**
 > Individualised planning is the Montessori promise — and the biggest time sink. Montree sees where each child is and plans the next step for the whole room, so teachers spend their evenings living, not lesson-planning on paper.
-> See it free 👉 [SIGNUP]
+> See it free 👉 https://montree.xyz
 `#Montree #MontessoriAI #EarlyChildhoodEducation #EdTech #TeacherWellbeing`
 
 **YouTube (Short)**
 > **Title:** Per-child curriculum that plans itself | Montree
-> **Description:** Montree sees where each child is and maps the next step — no planning on paper. Start free: [SIGNUP]  #Shorts
+> **Description:** Montree sees where each child is and maps the next step — no planning on paper. Start free: https://montree.xyz  #Shorts
 > **Tags:** Montree, Montessori curriculum, lesson planning, Montessori AI, individualised learning, preschool, early childhood education
 
 ---
@@ -198,29 +198,29 @@ Each block = ready to paste. Keep the hook as line 1.
 
 **Instagram (Reel)**
 > Stop making materials by hand. 🖨️ Three-part cards, picture bingo, themed sets — generated, printable, ready in seconds. Your prep time, handed back.
-> Start free 👉 [SIGNUP]
+> Start free 👉 https://montree.xyz
 `#Montree #MeetAstra #MontessoriAI #montessori #montessorimaterials #montessoriclassroom #preschoolteacher #earlyyearseducator #teachersofinstagram #montessoriteacher #aiforteachers #earlychildhoodeducation`
 
 **TikTok**
-> The hours we spend making three-part cards by hand 😮‍💨 Montree generates them — printable, themed to your room — in seconds. Save this. [SIGNUP]
+> The hours we spend making three-part cards by hand 😮‍💨 Montree generates them — printable, themed to your room — in seconds. Save this. https://montree.xyz
 `#Montree #MontessoriAI #montessoriteacher #teachersoftiktok #teachertok`
 
 **Facebook (Reel)**
-> Three-part cards, picture bingo, themed materials — generated and printable in seconds, not made by hand. Get your prep time back 👉 [SIGNUP]
+> Three-part cards, picture bingo, themed materials — generated and printable in seconds, not made by hand. Get your prep time back 👉 https://montree.xyz
 `#Montessori #EarlyChildhoodEducation #Montree`
 
 **X**
-> Three-part cards, picture bingo, themed sets — generated, printable, in seconds. 🖨️ Your prep time, handed back. [SIGNUP]
+> Three-part cards, picture bingo, themed sets — generated, printable, in seconds. 🖨️ Your prep time, handed back. https://montree.xyz
 `#Montree #MontessoriAI #montessorimaterials`
 
 **LinkedIn**
 > Every Montessori teacher knows the late-night laminator. Montree generates printable, themed materials — three-part cards, picture bingo and more — in seconds, handing prep time back to your team.
-> See it free 👉 [SIGNUP]
+> See it free 👉 https://montree.xyz
 `#Montree #MontessoriAI #EarlyChildhoodEducation #EdTech #TeacherWellbeing`
 
 **YouTube (Short)**
 > **Title:** Printable Montessori materials in seconds | Montree
-> **Description:** Three-part cards, picture bingo, themed sets — generated and printable instantly. Your prep time, handed back. Start free: [SIGNUP]  #Shorts
+> **Description:** Three-part cards, picture bingo, themed sets — generated and printable instantly. Your prep time, handed back. Start free: https://montree.xyz  #Shorts
 > **Tags:** Montree, Montessori materials, three-part cards, printables, Montessori AI, preschool, early childhood education
 
 ---
@@ -230,29 +230,29 @@ Each block = ready to paste. Keep the hook as line 1.
 
 **Instagram (Reel)**
 > Email, WhatsApp, sticky notes everywhere? 💬 Montree puts teachers and parents in one thread — so anyone can pick up exactly where the last conversation left off.
-> Start free 👉 [SIGNUP]
+> Start free 👉 https://montree.xyz
 `#Montree #MeetAstra #MontessoriAI #montessori #earlychildhoodeducation #preschool #schooladmin #montessorischool #teachersofinstagram #schoolleadership #parentcommunication #edtech`
 
 **TikTok**
-> Parent comms scattered across email, WhatsApp AND sticky notes 😵 Montree = one thread, pick up right where you left off. Send this to your front desk. [SIGNUP]
+> Parent comms scattered across email, WhatsApp AND sticky notes 😵 Montree = one thread, pick up right where you left off. Send this to your front desk. https://montree.xyz
 `#Montree #MontessoriAI #schooltok #teachersoftiktok #edtech`
 
 **Facebook (Reel)**
-> Email, WhatsApp, and sticky notes — finally in one place. Teachers and parents, one thread. See how 👉 [SIGNUP]
+> Email, WhatsApp, and sticky notes — finally in one place. Teachers and parents, one thread. See how 👉 https://montree.xyz
 `#Montessori #EarlyChildhoodEducation #Montree`
 
 **X**
-> Email + WhatsApp + sticky notes → one thread. 💬 Teachers and parents pick up exactly where they left off. [SIGNUP]
+> Email + WhatsApp + sticky notes → one thread. 💬 Teachers and parents pick up exactly where they left off. https://montree.xyz
 `#Montree #MontessoriAI #edtech`
 
 **LinkedIn**
 > Parent communication leaks across email, WhatsApp and sticky notes — and context gets lost. Montree brings teachers and parents into one thread so anyone can pick up exactly where the last conversation ended.
-> See it free 👉 [SIGNUP]
+> See it free 👉 https://montree.xyz
 `#Montree #MontessoriAI #ParentEngagement #EarlyChildhoodEducation #EdTech`
 
 **YouTube (Short)**
 > **Title:** All your parent & teacher messages in one place | Montree
-> **Description:** Email, WhatsApp, sticky notes — Montree puts it in one thread so anyone picks up where the last conversation left off. Start free: [SIGNUP]  #Shorts
+> **Description:** Email, WhatsApp, sticky notes — Montree puts it in one thread so anyone picks up where the last conversation left off. Start free: https://montree.xyz  #Shorts
 > **Tags:** Montree, parent communication, Montessori AI, school communication, preschool, early childhood education, parent engagement
 
 ---
@@ -262,29 +262,29 @@ Each block = ready to paste. Keep the hook as line 1.
 
 **Instagram (Reel)**
 > Stop the "does Tuesday work?" email chain. 📅 Montree books parent meetings and tours for you — pick a slot, done.
-> Start free 👉 [SIGNUP]
+> Start free 👉 https://montree.xyz
 `#Montree #MeetAstra #MontessoriAI #montessori #preschool #schooladmin #preschoolowner #childcarebusiness #earlychildhoodeducation #montessorischool #schoolleadership #edtech`
 
 **TikTok**
-> The back-and-forth to book ONE parent meeting 😩 Montree just lets them pick a slot. Send this to whoever runs your front desk. [SIGNUP]
+> The back-and-forth to book ONE parent meeting 😩 Montree just lets them pick a slot. Send this to whoever runs your front desk. https://montree.xyz
 `#Montree #MontessoriAI #schooltok #smallbusiness #edtech`
 
 **Facebook (Reel)**
-> Parent meetings and tours, booked without the email ping-pong. See how Montree does it 👉 [SIGNUP]
+> Parent meetings and tours, booked without the email ping-pong. See how Montree does it 👉 https://montree.xyz
 `#Montessori #EarlyChildhoodEducation #Montree`
 
 **X**
-> Parent meetings & tours booked without the back-and-forth. 📅 They pick a slot, Montree handles the rest. [SIGNUP]
+> Parent meetings & tours booked without the back-and-forth. 📅 They pick a slot, Montree handles the rest. https://montree.xyz
 `#Montree #MontessoriAI #edtech`
 
 **LinkedIn**
 > Booking parent meetings and tours eats your admin team's day. Montree turns it into a self-serve slot picker — fewer no-shows, zero email ping-pong, more time for families.
-> See it free 👉 [SIGNUP]
+> See it free 👉 https://montree.xyz
 `#Montree #MontessoriAI #SchoolOperations #EarlyChildhoodEducation #EdTech`
 
 **YouTube (Short)**
 > **Title:** Book parent meetings & tours without the back-and-forth | Montree
-> **Description:** Parents pick a slot, Montree handles the rest — no email ping-pong. Start free: [SIGNUP]  #Shorts
+> **Description:** Parents pick a slot, Montree handles the rest — no email ping-pong. Start free: https://montree.xyz  #Shorts
 > **Tags:** Montree, scheduling, parent meetings, school tours, Montessori AI, preschool, school operations
 
 ---
@@ -294,29 +294,29 @@ Each block = ready to paste. Keep the hook as line 1.
 
 **Instagram (Reel)**
 > Every family, in their own language. 🌍 Montree translates communication automatically — so no parent is ever left out, whatever they speak at home.
-> Start free 👉 [SIGNUP]
+> Start free 👉 https://montree.xyz
 `#Montree #MeetAstra #MontessoriAI #montessori #earlychildhoodeducation #preschool #multilingual #inclusiveeducation #montessorischool #teachersofinstagram #parentcommunication #edtech`
 
 **TikTok**
-> Every parent gets updates in *their* language — automatically. 🌍 No family left out. Send this to a school with diverse families. [SIGNUP]
+> Every parent gets updates in *their* language — automatically. 🌍 No family left out. Send this to a school with diverse families. https://montree.xyz
 `#Montree #MontessoriAI #multilingual #teachersoftiktok #edtech`
 
 **Facebook (Reel)**
-> Reach every family in their own language — automatically. That's Montree. See how 👉 [SIGNUP]
+> Reach every family in their own language — automatically. That's Montree. See how 👉 https://montree.xyz
 `#Montessori #EarlyChildhoodEducation #Montree`
 
 **X**
-> Every family, in their own language — automatically. 🌍 No parent left out. [SIGNUP]
+> Every family, in their own language — automatically. 🌍 No parent left out. https://montree.xyz
 `#Montree #MontessoriAI #multilingual`
 
 **LinkedIn**
 > Inclusion starts with being understood. Montree translates parent communication automatically, so every family — whatever they speak at home — gets the same clear, timely updates.
-> See it free 👉 [SIGNUP]
+> See it free 👉 https://montree.xyz
 `#Montree #MontessoriAI #InclusiveEducation #ParentEngagement #EarlyChildhoodEducation`
 
 **YouTube (Short)**
 > **Title:** Reach every family in their own language | Montree
-> **Description:** Montree translates parent communication automatically — no family left out. Start free: [SIGNUP]  #Shorts
+> **Description:** Montree translates parent communication automatically — no family left out. Start free: https://montree.xyz  #Shorts
 > **Tags:** Montree, multilingual, translation, parent communication, Montessori AI, inclusive education, preschool
 
 ---
@@ -325,7 +325,7 @@ Each block = ready to paste. Keep the hook as line 1.
 - [ ] Video attached (you dropped it) — vertical 9:16
 - [ ] Caption pasted, hook on line 1
 - [ ] Hashtags added (brand tags always: #Montree #MeetAstra #MontessoriAI)
-- [ ] `[SIGNUP]` replaced with the real link (and in bio for IG/TikTok)
+- [ ] `https://montree.xyz` replaced with the real link (and in bio for IG/TikTok)
 - [ ] YouTube: title + description + tags filled, marked as Short
 - [ ] Captions/subtitles on
 - [ ] Reviewed — **you** hit Post
