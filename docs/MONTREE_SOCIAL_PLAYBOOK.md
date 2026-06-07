@@ -1,6 +1,10 @@
 # Montree — Social Posting Playbook (for WebClaude / Claude in Chrome)
 
-**Purpose:** post one feature video per day, as a Reel/Short, across **6 platforms** — Facebook, Instagram, TikTok, X, LinkedIn, **YouTube (Shorts)** — until all 8 are out.
+> **Two drills live here — pick the one that matches what we're posting:**
+> • **Montree explainer videos** (this page) — montree.xyz/playbook.html
+> • **Phonics songs** (Dark Phonics, 49 sound-songs) — montree.xyz/playbook-phonics.html
+
+**Purpose:** post the Montree **explainer videos** (the same set on montree.xyz/montree/explainer) as Reels/Shorts across **6 platforms** — Facebook, Instagram, TikTok, X, **LinkedIn**, **YouTube (Shorts)**. One per day until the full set is out.
 **Audience:** Montessori / preschool **owners, principals, and teachers** (US-weighted, English).
 **Voice:** warm, practical, educator-to-educator. Not salesy.
 **Brand hashtags (every post):** `#Montree` `#MeetAstra` `#MontessoriAI`
@@ -318,6 +322,102 @@ Each block = ready to paste. Keep the hook as line 1.
 > **Title:** Reach every family in their own language | Montree
 > **Description:** Montree translates parent communication automatically — no family left out. Start free: https://montree.xyz  #Shorts
 > **Tags:** Montree, multilingual, translation, parent communication, Montessori AI, inclusive education, preschool
+
+---
+
+## EXPLAINER — MAIN ("What makes Montree different?")
+*The 60-second overview: one platform that captures observations, writes reports, plans curriculum, and answers anything about your classroom.*
+
+**Instagram (Reel)**
+> What makes Montree different? 🌱 One platform that captures observations from a photo, writes your parent reports, plans each child's next lesson, and answers any question about your classroom — all built on real Montessori. Less admin, more presence.
+> Start free 👉 https://montree.xyz
+`#Montree #MeetAstra #MontessoriAI #montessori #montessorieducation #earlychildhoodeducation #preschool #montessoriteacher #schoolleadership #edtech #aiforteachers #montessorischool`
+
+**TikTok**
+> Everything a Montessori school does in admin — captured, written, and planned for you. 🌱 This is Montree. Send it to your director. https://montree.xyz
+`#Montree #MontessoriAI #teachersoftiktok #schooltok #edtech`
+
+**Facebook (Reel)**
+> What makes Montree different? One platform for observations, reports, curriculum and parent comms — built on real Montessori. See it 👉 https://montree.xyz
+`#Montessori #EarlyChildhoodEducation #Montree`
+
+**X**
+> What makes Montree different? 🌱 Observations, parent reports, curriculum planning, and answers about any child — one platform, built on real Montessori. https://montree.xyz
+`#Montree #MontessoriAI #edtech`
+
+**LinkedIn**
+> Most Montessori schools run on a patchwork of paper, spreadsheets and group chats. Montree brings it into one platform — observations captured from a photo, parent reports written for you, per-child curriculum planned, and an AI that answers anything about your classroom. Less admin, more presence with the children.
+> See it free 👉 https://montree.xyz
+`#Montree #MontessoriAI #SchoolLeadership #EarlyChildhoodEducation #EdTech`
+
+**YouTube (Short)**
+> **Title:** What makes Montree different? | Montree for Montessori schools
+> **Description:** One platform for Montessori schools: capture observations from a photo, write parent reports, plan each child's curriculum, and ask anything about your classroom. Start free: https://montree.xyz  #Shorts
+> **Tags:** Montree, Montessori, Montessori AI, Montessori software, early childhood education, preschool, classroom management, school leadership, EdTech
+
+---
+
+## EXPLAINER — SMART CAPTURE ("The end of writing observations")
+*One photo → Montree identifies the material, writes the observation, and updates the child's progress on its own.*
+
+**Instagram (Reel)**
+> The end of writing observations. 📸 Take one photo — Montree identifies the material, writes the observation, and updates that child's progress on its own. Send this to a teacher drowning in admin.
+> Start free 👉 https://montree.xyz
+`#Montree #MeetAstra #MontessoriAI #montessori #montessoriteacher #earlychildhoodeducation #preschoolteacher #teachersofinstagram #montessoriclassroom #edtech #aiforteachers #teacherlife`
+
+**TikTok**
+> POV: you snap one photo and the observation writes itself ✍️ Montree IDs the material + updates the child's progress. Send this to a teacher drowning in admin. https://montree.xyz
+`#Montree #MontessoriAI #teachersoftiktok #teachertok #montessoriteacher`
+
+**Facebook (Reel)**
+> One photo. Montree writes the observation and updates the child's progress for you. The end of writing observations 👉 https://montree.xyz
+`#Montessori #EarlyChildhoodEducation #Montree`
+
+**X**
+> The end of writing observations. 📸 One photo → Montree identifies the material, writes the observation, updates progress. https://montree.xyz
+`#Montree #MontessoriAI #aiforteachers`
+
+**LinkedIn**
+> Observation notes are the quiet tax on every Montessori teacher's day. Montree removes it: one photo, and the material is identified, the observation written, and the child's progress updated automatically — so teachers spend their attention on children, not paperwork.
+> See it free 👉 https://montree.xyz
+`#Montree #MontessoriAI #EarlyChildhoodEducation #TeacherWellbeing #EdTech`
+
+**YouTube (Short)**
+> **Title:** The end of writing observations | Montree
+> **Description:** Take one photo — Montree identifies the material, writes the observation, and updates the child's progress on its own. Start free: https://montree.xyz  #Shorts
+> **Tags:** Montree, Montessori observations, record keeping, Montessori AI, early childhood education, preschool, classroom documentation, AI for teachers
+
+---
+
+## EXPLAINER — WEEKLY REPORTS ("Forty-five minutes, written in moments")
+*Warm, specific parent reports with the week's photos woven in — every child, every week, written for you.*
+
+**Instagram (Reel)**
+> Report week, in moments. 🖊️ Warm, specific parent reports — with the week's photos woven in — for every child, written for you. Send this to a teacher who dreads report week.
+> Start free 👉 https://montree.xyz
+`#Montree #MeetAstra #MontessoriAI #montessori #earlychildhoodeducation #preschoolteacher #montessoriteacher #parentcommunication #teachersofinstagram #teacherlife #edtech #montessorischool`
+
+**TikTok**
+> Report week used to eat your weekend 😮‍💨 Montree writes warm, specific parent reports — photos woven in — for every child. Send to a teacher who dreads it. https://montree.xyz
+`#Montree #MontessoriAI #teachertok #teachersoftiktok #montessoriteacher`
+
+**Facebook (Reel)**
+> Warm, specific parent reports with the week's photos woven in — every child, every week, written for you. See how 👉 https://montree.xyz
+`#Montessori #EarlyChildhoodEducation #Montree`
+
+**X**
+> Forty-five minutes of report-writing → moments. 🖊️ Montree writes warm, specific parent reports with the week's photos woven in. https://montree.xyz
+`#Montree #MontessoriAI #edtech`
+
+**LinkedIn**
+> Family reports are where Montessori teachers lose their evenings. Montree writes warm, specific reports for every child — the week's photos woven in — turning report week from a weekend into a few moments, without losing the personal voice families value.
+> See it free 👉 https://montree.xyz
+`#Montree #MontessoriAI #ParentEngagement #EarlyChildhoodEducation #EdTech`
+
+**YouTube (Short)**
+> **Title:** Parent reports, written in moments | Montree
+> **Description:** Warm, specific parent reports with the week's photos woven in — every child, every week, written for you. Start free: https://montree.xyz  #Shorts
+> **Tags:** Montree, parent reports, Montessori reports, Montessori AI, early childhood education, preschool, parent communication, report writing
 
 ---
 
