@@ -47,6 +47,18 @@ audio{height:36px;max-width:100%}
 <script>
 var content=document.getElementById('content');
 var tabs=document.querySelectorAll('button.tab');
+function revealVideos(){
+  fetch('/api/montree/phonics-videos',{cache:'no-store'}).then(function(r){return r.json();}).then(function(j){
+    var up=(j&&j.uploaded)||[];
+    content.querySelectorAll('.dp-video[data-lesson]').forEach(function(d){
+      if(up.indexOf(parseInt(d.getAttribute('data-lesson'),10))>=0){
+        var v=d.querySelector('video');
+        if(v&&!v.getAttribute('src')){ v.src=d.getAttribute('data-vsrc'); }
+        d.style.display='block';
+      }
+    });
+  }).catch(function(){});
+}
 function load(url){
   content.innerHTML='<div class="wrap"><div class="loading">Loading…</div></div>';
   fetch(url).then(function(r){return r.text();}).then(function(t){
@@ -54,6 +66,7 @@ function load(url){
     var w=doc.querySelector('.wrap');
     content.innerHTML='<div class="wrap">'+(w?w.innerHTML:'Could not load this set.')+'</div>';
     window.scrollTo(0,0);
+    revealVideos();
   }).catch(function(){ content.innerHTML='<div class="wrap"><div class="loading">Could not load. <a style="color:var(--ac)" href="'+url+'">Open directly ↗</a></div></div>'; });
 }
 tabs.forEach(function(t){ t.addEventListener('click',function(){
