@@ -9,7 +9,10 @@
 // Resolution order (highest wins):
 //   1. ai_tier_sonnet feature flag on school
 //   2. ai_tier_haiku feature flag on school
-//   3. free (no AI)
+//   3. subscription_status 'trialing' or 'active' → haiku floor (so trials can
+//      actually use the AI features they're trialing — added 2026-06-09 after a
+//      brand-new trial school was 402'd out of its first voice onboarding)
+//   4. free (no AI)
 //
 // Fail-closed: any error returns 'free' tier.
 
@@ -41,6 +44,21 @@ export async function resolveReportModel(
 
     const haiku = await isFeatureEnabled(supabase, schoolId, 'ai_tier_haiku');
     if (haiku) {
+      return { tier: 'haiku', model: HAIKU_MODEL };
+    }
+
+    // Trial / active floor: a trialing (or active) subscription gets at least
+    // Haiku even without an explicit ai_tier_* flag. Without this, a brand-new
+    // trial school can't use the headline AI features (voice onboarding,
+    // reports, guru) on day one — which 402'd a new user out of setting up
+    // their first class. Haiku is cheap (~$0.10/class/week).
+    const { data: school } = await supabase
+      .from('montree_schools')
+      .select('subscription_status')
+      .eq('id', schoolId)
+      .maybeSingle();
+    const status = school?.subscription_status;
+    if (status === 'trialing' || status === 'active') {
       return { tier: 'haiku', model: HAIKU_MODEL };
     }
 

@@ -37,6 +37,7 @@ type Stage =
   | 'transition'
   | 'complete'
   | 'error_permission'
+  | 'needs_upgrade'
   | 'debug_error';
 
 interface ShelfRow {
@@ -121,6 +122,7 @@ export default function VoiceOnboardingPage() {
   const [currentUnmatchedIndex, setCurrentUnmatchedIndex] = useState(0);
   const [errorMsg, setErrorMsg] = useState('');
   const [debugError, setDebugError] = useState<DebugError | null>(null);
+  const [upgradeInfo, setUpgradeInfo] = useState<{ message: string; upgradeUrl: string } | null>(null);
   // Tracks which unmatched works the teacher has chosen to add inline (by work_name)
   const [addedCustomWorks, setAddedCustomWorks] = useState<Set<string>>(new Set());
   // Tracks which inline add is in-flight (visual feedback)
@@ -180,6 +182,7 @@ export default function VoiceOnboardingPage() {
   // Watchdog: if the pipeline hangs (no progress for 90s after stop), surface a
   // debug error instead of leaving the user staring at a spinner.
   const watchdogRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const clearWatchdog = () => { if (watchdogRef.current) { clearTimeout(watchdogRef.current); watchdogRef.current = null; } };
 
   // Load pending children — runs ONCE per mount, never refetches.
   const loadPending = useCallback(async () => {
@@ -442,6 +445,7 @@ export default function VoiceOnboardingPage() {
       try {
         tRes = await fetch('/api/montree/voice-notes/transcribe', { method: 'POST', body: form });
       } catch (fetchErr) {
+        clearWatchdog();
         setDebugError({
           step: 'TRANSCRIBE — fetch threw',
           url: '/api/montree/voice-notes/transcribe',
@@ -453,6 +457,7 @@ export default function VoiceOnboardingPage() {
       }
       if (!tRes.ok) {
         const errBody = await tRes.text().catch(() => '(could not read body)');
+        clearWatchdog();
         setDebugError({
           step: 'TRANSCRIBE — server returned error',
           url: '/api/montree/voice-notes/transcribe',
@@ -470,6 +475,7 @@ export default function VoiceOnboardingPage() {
     }
 
     if (!text || text.length < 20) {
+      clearWatchdog();
       setErrorMsg(t('voiceOnboarding.error.tooShort', { name: firstName }));
       setStage('idle');
       return;
@@ -500,6 +506,7 @@ export default function VoiceOnboardingPage() {
       // possibly-stale React state. This prevents the silent bump-to-idle bug.
       const lockedChild = recordingChildRef.current;
       if (!lockedChild?.id) {
+        clearWatchdog();
         setDebugError({
           step: 'PIPELINE — child identity lost',
           jsError: 'recordingChildRef.current is null at onboard step. This should be impossible if startRecording succeeded.',
@@ -526,6 +533,7 @@ export default function VoiceOnboardingPage() {
         });
         console.log('[VoiceOnboarding] ←onboard response', { ok: oRes.ok, status: oRes.status, statusText: oRes.statusText });
       } catch (fetchErr) {
+        clearWatchdog();
         setDebugError({
           step: 'ONBOARD — fetch threw',
           url: onboardUrl,
@@ -537,7 +545,22 @@ export default function VoiceOnboardingPage() {
       }
 
       if (!oRes.ok) {
+        clearWatchdog();
         const errBody = await oRes.text().catch(() => '(could not read body)');
+        // Tier/billing gate: a non-paid school → 402 with a requires_upgrade
+        // payload. Show a clean upgrade prompt + manual-setup fallback instead
+        // of the raw debug panel (and instead of the 90s watchdog later masking
+        // it as "pipeline hung").
+        let parsed: { error?: string; upgrade_url?: string; requires_upgrade?: boolean } | null = null;
+        try { parsed = JSON.parse(errBody); } catch { /* not JSON */ }
+        if (oRes.status === 402 || parsed?.requires_upgrade) {
+          setUpgradeInfo({
+            message: parsed?.error || 'Voice setup needs an active AI plan.',
+            upgradeUrl: parsed?.upgrade_url || '/montree/admin/billing',
+          });
+          setStage('needs_upgrade');
+          return;
+        }
         setDebugError({
           step: 'ONBOARD — server returned error',
           url: onboardUrl,
@@ -895,6 +918,30 @@ export default function VoiceOnboardingPage() {
           <button onClick={() => setStage('idle')} style={{ ...primaryButtonStyle, marginTop: 24 }}>
             {t('voiceOnboarding.review.tryAgain')}
           </button>
+        </div>
+      );
+    }
+
+    if (stage === 'needs_upgrade' && upgradeInfo) {
+      return (
+        <div style={{ ...centerStyle, maxWidth: 480, padding: '0 28px' }}>
+          <h2 style={{ ...titleStyle, fontSize: 22, marginBottom: 12 }}>
+            Voice setup needs an AI plan
+          </h2>
+          <p style={{ ...bodyStyle, color: 'rgba(255,255,255,0.7)', marginBottom: 28 }}>
+            {upgradeInfo.message} You can upgrade to unlock voice setup, or set up your class by hand — no AI needed.
+          </p>
+          <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
+            <button onClick={() => router.push(upgradeInfo.upgradeUrl)} style={primaryButtonStyle}>
+              Upgrade
+            </button>
+            <button
+              onClick={() => router.replace('/montree/dashboard?skipOnboarding=1')}
+              style={secondaryButtonStyle}
+            >
+              Set up by hand
+            </button>
+          </div>
         </div>
       );
     }
