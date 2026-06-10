@@ -11,7 +11,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, Send, Video, Phone, PlayCircle, Calendar } from 'lucide-react';
+import { ArrowLeft, Send, Video, Phone, PlayCircle, Calendar, Sparkles } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { useI18n, getIntlLocale } from '@/lib/montree/i18n';
 import { montreeApi } from '@/lib/montree/api';
@@ -72,6 +72,7 @@ export default function ParentChatStreamPage({ params }: { params: Promise<{ par
   const [error, setError] = useState<string | null>(null);
   const [draft, setDraft] = useState('');
   const [sending, setSending] = useState(false);
+  const [drafting, setDrafting] = useState(false);
   const [startingCall, setStartingCall] = useState<'voice' | 'video' | null>(null);
   // 🚨 Session 120 — quick-set-appointment modal state. The modal locks
   // parent + child from this thread context so the teacher doesn't have
@@ -161,6 +162,40 @@ export default function ParentChatStreamPage({ params }: { params: Promise<{ par
       handleSend();
     }
   };
+
+  // ✨ Parent Q&A loop — Guru drafts a grounded reply into the composer.
+  // Uses the parent's most-recent message as the question (if any), grounded
+  // on the thread's anchored child. Teacher reviews + edits + sends.
+  const handleDraftWithGuru = useCallback(async () => {
+    if (!parentId || !childAnchor || drafting || sending) return;
+    setDrafting(true);
+    setError(null);
+    try {
+      const lastParent = messages
+        ? [...messages].reverse().find(m => m.sender_role === 'parent')
+        : null;
+      const res = await montreeApi(`/api/montree/dashboard/parent-chats/${parentId}/draft-reply`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ child_id: childAnchor.id, question: lastParent?.body || '' }),
+      });
+      if (res.status === 402) {
+        setError('AI drafting needs an active AI tier for this school.');
+        return;
+      }
+      if (!res.ok) {
+        const j = await res.json().catch(() => ({}));
+        setError(j?.error || 'Could not draft a reply.');
+        return;
+      }
+      const data = await res.json();
+      if (data?.draft) setDraft(data.draft);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Draft failed');
+    } finally {
+      setDrafting(false);
+    }
+  }, [parentId, childAnchor, drafting, sending, messages]);
 
   // 🚨 Session 119 Task 3 — instant call. Creates an Agora appointment
   // for RIGHT NOW + auto-posts the invite into this thread + redirects
@@ -397,6 +432,28 @@ export default function ParentChatStreamPage({ params }: { params: Promise<{ par
               lineHeight: 1.4,
             }}
           />
+          <button
+            onClick={handleDraftWithGuru}
+            disabled={sending || drafting || !parent || !childAnchor}
+            aria-label="Draft a reply with Guru"
+            title={childAnchor ? 'Draft a reply with Guru' : 'Send a message first to anchor the thread to a child'}
+            style={{
+              flexShrink: 0,
+              width: 40,
+              height: 40,
+              borderRadius: 20,
+              border: '1px solid rgba(232,201,106,0.35)',
+              background: 'rgba(232,201,106,0.12)',
+              color: '#E8C96A',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: childAnchor && !drafting && !sending ? 'pointer' : 'not-allowed',
+              opacity: childAnchor ? 1 : 0.4,
+            }}
+          >
+            <Sparkles size={16} strokeWidth={2} style={drafting ? { animation: 'pulse 1s ease-in-out infinite' } : undefined} />
+          </button>
           <button
             onClick={() => setShowApptModal(true)}
             disabled={sending || !parent || !childAnchor}
