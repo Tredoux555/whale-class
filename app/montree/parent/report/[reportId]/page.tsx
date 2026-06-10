@@ -11,6 +11,7 @@ import MontreeLogo from '@/components/montree/MonteeLogo';
 import { useI18n, getIntlLocale } from '@/lib/montree/i18n';
 import LanguageToggle from '@/components/montree/LanguageToggle';
 import PhotoLightbox from '@/components/montree/media/PhotoLightbox';
+import HomePracticeCard from '@/components/montree/parent/HomePracticeCard';
 
 // Dark forest tokens
 const T = {
@@ -602,6 +603,14 @@ export default function ParentReportPage() {
             </div>
           </div>
         )}
+
+        {/* ═══ Home Practice Card (AI, matched to current work) ═══
+            Self-fetching + hide-when-empty: renders nothing on free tier,
+            flag off, or no current work to ground on. */}
+        {/* v1: heading English-only (component default); the AI activity body
+            is already generated in the parent's locale. i18n heading flagged
+            for the next Haiku key sweep. */}
+        <HomePracticeCard childId={(report as { child_id?: string }).child_id} />
 
         {/* ═══ Closing ═══ */}
         {report.closing && (
