@@ -65,6 +65,8 @@ export default function WeeklyWrapCard({ classroomId, children }: Props) {
     cost_usd: number;
   } | null>(null);
   const [error, setError] = useState('');
+  // Honest tier notice — Core tier refreshes plans but writes no reports.
+  const [notice, setNotice] = useState('');
   const mountedRef = useRef(true);
 
   useEffect(() => {
@@ -81,6 +83,7 @@ export default function WeeklyWrapCard({ classroomId, children }: Props) {
     if (generating) return;
     setGenerating(true);
     setError('');
+    setNotice('');
     setResult(null);
     setChildrenDone(0);
     setChildrenTotal(0);
@@ -145,6 +148,11 @@ export default function WeeklyWrapCard({ classroomId, children }: Props) {
                     failed: event.failed,
                     cost_usd: event.cost_usd,
                   });
+                  // Honest tier notice — wrap refreshed plans but wrote no
+                  // reports (Core tier). Show the message, not a bare "0".
+                  if (event.tier_skips_reports && (event.generated ?? 0) === 0 && event.message) {
+                    setNotice(event.message);
+                  }
                   setProgress('');
                 }
               } else if (event.type === 'error') {
@@ -166,6 +174,9 @@ export default function WeeklyWrapCard({ classroomId, children }: Props) {
             failed: data.failed,
             cost_usd: data.cost_usd,
           });
+          if (data.tier_skips_reports && (data.generated ?? 0) === 0 && data.message) {
+            setNotice(data.message);
+          }
           setProgress('');
         }
       }
@@ -352,6 +363,22 @@ export default function WeeklyWrapCard({ classroomId, children }: Props) {
           >
             Retry
           </button>
+        </div>
+      )}
+
+      {/* Honest tier notice — wrap refreshed plans but wrote no reports (Core tier). */}
+      {notice && !error && (
+        <div style={{
+          padding: '8px 12px',
+          borderRadius: 10,
+          background: 'rgba(232,201,106,0.10)',
+          border: '1px solid rgba(232,201,106,0.32)',
+          color: '#E8C96A',
+          fontFamily: T.sans,
+          fontSize: 11,
+          lineHeight: 1.5,
+        }}>
+          {notice}
         </div>
       )}
 

@@ -726,7 +726,15 @@ export async function POST(request: NextRequest) {
     // Pricing per million tokens (input, output):
     //   haiku  → claude-haiku-4-5    $0.80 in / $4.00 out
     //   sonnet → claude-sonnet-4-6   $3.00 in / $15.00 out
-    function buildSummary(results: Array<{ success: boolean; skipped?: boolean; tokens_used?: { input: number; output: number } }>) {
+    function buildSummary(
+      results: Array<{
+        success: boolean;
+        skipped?: boolean;
+        tokens_used?: { input: number; output: number };
+        teacher_report_preview?: string;
+        parent_narrative?: string;
+      }>
+    ) {
       const totalInputTokens = results.reduce((sum, r) => sum + (r.tokens_used?.input || 0), 0);
       const totalOutputTokens = results.reduce((sum, r) => sum + (r.tokens_used?.output || 0), 0);
       const PRICING: Record<string, [number, number]> = {
@@ -735,15 +743,48 @@ export async function POST(request: NextRequest) {
       };
       const [inPrice, outPrice] = PRICING[aiTier.tier] ?? PRICING.sonnet;
       const estimatedCost = (totalInputTokens * inPrice + totalOutputTokens * outPrice) / 1_000_000;
+
+      // A report row was actually WRITTEN only when a teacher insight or parent
+      // narrative was produced. On the Core (Haiku) tier both are tier-skipped,
+      // so the child is "processed + replanned" but no report exists — we must
+      // NOT report that as a generated report (the old `generated` count did,
+      // which is what made the response misleading). Jun 10 honesty fix.
+      const hasReport = (r: { teacher_report_preview?: string; parent_narrative?: string }) =>
+        !!(r.teacher_report_preview && r.teacher_report_preview.trim()) ||
+        !!(r.parent_narrative && r.parent_narrative.trim());
+
+      const reportsWritten = results.filter(r => r.success && !r.skipped && hasReport(r)).length;
+      const replanOnly = results.filter(r => r.success && !r.skipped && !hasReport(r)).length;
+      const tierSkipsReports = aiTier.tier !== 'sonnet';
+
+      // Honest, human message for the UI. When the tier writes no reports, say so.
+      let message: string;
+      if (tierSkipsReports && reportsWritten === 0 && replanOnly > 0) {
+        message = `Plans refreshed for ${replanOnly} ${replanOnly === 1 ? 'child' : 'children'}. ` +
+          `Parent & teacher reports need the Premium (Sonnet) AI tier — this school is on the ${aiTier.tier} tier, so no reports were written.`;
+      } else if (reportsWritten > 0) {
+        message = `${reportsWritten} report${reportsWritten === 1 ? '' : 's'} generated.`;
+      } else {
+        message = 'No reports generated.';
+      }
+
       return {
         success: true,
-        generated: results.filter(r => r.success && !r.skipped).length,
+        // `generated` now means "reports actually written" (was: any processed
+        // child, which over-counted on Core tier). reports_written is the
+        // explicit, unambiguous field; generated kept as its alias.
+        generated: reportsWritten,
+        reports_written: reportsWritten,
+        replan_only: replanOnly,
+        reports_skipped_tier: tierSkipsReports ? replanOnly : 0,
         skipped: results.filter(r => r.skipped).length,
         failed: results.filter(r => !r.success).length,
         total: results.length,
         cost_usd: Math.round(estimatedCost * 1000) / 1000,
         ai_tier: aiTier.tier,
         ai_model: aiTier.model,
+        tier_skips_reports: tierSkipsReports,
+        message,
         week_number: weekNumber,
         report_year: reportYear,
       };

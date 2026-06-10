@@ -395,6 +395,10 @@ export default function WeeklyWrapTab({ classroomId, view: externalView }: Weekl
   // Upgrade prompt when the AI tier gate returns 402 (Free tier hitting a
   // paid feature). Rendered as a warm UpgradeCard instead of a red error.
   const [upgrade, setUpgrade] = useState<{ feature: string; upgradeUrl: string } | null>(null);
+  // Honest post-generate notice — e.g. on the Core tier the wrap refreshes
+  // plans but writes no reports; tell the teacher plainly instead of leaving
+  // them on a silent "No reports for this week" (Jun 10 honesty fix).
+  const [genNotice, setGenNotice] = useState<string>('');
 
   // Sub-view — external prop overrides internal state
   const [internalSubView, setInternalSubView] = useState<'teacher' | 'parents'>('teacher');
@@ -615,6 +619,7 @@ export default function WeeklyWrapTab({ classroomId, view: externalView }: Weekl
     setGenTotal(0);
     setError('');
     setUpgrade(null);
+    setGenNotice('');
 
     try {
       const payload: Record<string, unknown> = {
@@ -665,6 +670,10 @@ export default function WeeklyWrapTab({ classroomId, view: externalView }: Weekl
               setGenProgress(evt.child_name);
             } else if (evt.type === 'complete') {
               setGenProgress('');
+              // Surface the honest tier message when the wrap wrote no reports.
+              if (evt.tier_skips_reports && (evt.reports_written ?? 0) === 0 && evt.message) {
+                setGenNotice(evt.message);
+              }
             }
           } catch { /* skip bad lines */ }
         }
@@ -674,7 +683,12 @@ export default function WeeklyWrapTab({ classroomId, view: externalView }: Weekl
       if (buffer.trim()) {
         try {
           const evt = JSON.parse(buffer);
-          if (evt.type === 'complete') setGenProgress('');
+          if (evt.type === 'complete') {
+            setGenProgress('');
+            if (evt.tier_skips_reports && (evt.reports_written ?? 0) === 0 && evt.message) {
+              setGenNotice(evt.message);
+            }
+          }
         } catch { /* skip */ }
       }
 
@@ -1012,6 +1026,23 @@ export default function WeeklyWrapTab({ classroomId, view: externalView }: Weekl
           fontFamily: T.sans,
         }}>
           {error}
+        </div>
+      )}
+
+      {/* Honest tier notice — wrap refreshed plans but wrote no reports (Core tier). */}
+      {genNotice && !error && !upgrade && (
+        <div style={{
+          margin: '12px 16px 0',
+          padding: '10px 14px',
+          background: 'rgba(232,201,106,0.10)',
+          border: '1px solid rgba(232,201,106,0.32)',
+          color: '#E8C96A',
+          fontSize: 13,
+          lineHeight: 1.5,
+          borderRadius: 12,
+          fontFamily: T.sans,
+        }}>
+          {genNotice}
         </div>
       )}
 
