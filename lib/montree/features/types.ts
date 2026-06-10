@@ -60,6 +60,10 @@ export type FeatureKey =
   // to the rest of the classroom, or with many never-presented works.
   // Deterministic, no AI cost. Default ON via migration 248.
   | 'curriculum_gap_radar'
+  // ✨ Home Practice Cards (Jun 10, 2026) — a tiny weekly "try this at home"
+  // activity on the parent report, matched to the child's current work. One
+  // Haiku call/child/week, tier-gated. Default ON via migration 249.
+  | 'home_practice_cards'
   // Photo pipeline v2 (Session 117+ regression fix bundle) — confidence-gated
   // is_curriculum_work routing + reduced moat budget + top_candidates on
   // sonnet_drafted + age-decayed visual memory ordering. Default ON via
