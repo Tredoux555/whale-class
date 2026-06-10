@@ -52,6 +52,10 @@ export type FeatureKey =
   | 'ai_tier_sonnet'
   // Photo audit UX
   | 'unified_photo_tagger'
+  // ✨ Group Lesson Suggester (Jun 10, 2026) — cross-child readiness grouping
+  // on the teacher dashboard ("Amy, Leo and Kayla are all ready for the Teen
+  // Board"). Deterministic, no AI cost. Default ON via migration 247.
+  | 'group_lesson_suggester'
   // Photo pipeline v2 (Session 117+ regression fix bundle) — confidence-gated
   // is_curriculum_work routing + reduced moat budget + top_candidates on
   // sonnet_drafted + age-decayed visual memory ordering. Default ON via
