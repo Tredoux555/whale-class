@@ -48,6 +48,7 @@ const TodaysFocusStrip = dynamic(() => import('@/components/montree/focus/Todays
 const OnboardingPathChoice = dynamic(() => import('@/components/montree/onboarding/OnboardingPathChoice'), { ssr: false });
 const ChangelogModal = dynamic(() => import('@/components/montree/ChangelogModal'), { ssr: false });
 const PendingAppointmentsBanner = dynamic(() => import('@/components/montree/appointments/PendingAppointmentsBanner'), { ssr: false });
+const GroupLessonCard = dynamic(() => import('@/components/montree/GroupLessonCard'), { ssr: false });
 
 
 interface Child {
@@ -804,6 +805,12 @@ export default function DashboardPage() {
               {session?.teacher?.id && (
                 <PendingAppointmentsBanner viewer="staff" selfUserId={session.teacher.id} />
               )}
+
+              {/* ✨ Group Lesson Suggester (Jun 10, 2026) — first cross-child
+                  intelligence surface: "Amy, Leo and Kayla are all ready for
+                  the Teen Board — group presentation?" Hide-when-empty +
+                  per-day dismiss. Flag default ON (migration 247). */}
+              {isEnabled('group_lesson_suggester') && <GroupLessonCard />}
 
               {/* ── Student Grid — fills viewport height ──
                   Avatar 58 + gap 10 + name 12 + per-link vertical padding
