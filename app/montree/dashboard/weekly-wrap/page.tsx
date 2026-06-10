@@ -133,6 +133,8 @@ export default function WeeklyWrapPage() {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<Tab>('teacher');
   const [error, setError] = useState('');
+  // Honest tier notice — Core tier refreshes plans but writes no reports.
+  const [genNotice, setGenNotice] = useState('');
 
   // Generate/regenerate state
   const [generating, setGenerating] = useState(false);
@@ -223,6 +225,7 @@ export default function WeeklyWrapPage() {
     if (!session || generating) return;
     setGenerating(true);
     setGenProgress(t('weeklyWrap.preparing'));
+    setGenNotice('');
     setGenDone(0);
     setGenTotal(0);
 
@@ -284,6 +287,9 @@ export default function WeeklyWrapPage() {
                 setGenDone(d => d + 1);
               } else if (event.type === 'complete') {
                 setGenProgress('');
+                if (event.tier_skips_reports && (event.reports_written ?? 0) === 0 && event.message) {
+                  setGenNotice(event.message);
+                }
               } else if (event.type === 'error') {
                 throw new Error(event.error || 'Generation failed');
               }
@@ -1473,6 +1479,13 @@ export default function WeeklyWrapPage() {
         {error && (
           <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-700">
             {error}
+          </div>
+        )}
+
+        {/* Honest tier notice — wrap refreshed plans but wrote no reports (Core tier). */}
+        {genNotice && !error && (
+          <div className="rounded-lg p-3 text-sm" style={{ background: 'rgba(232,201,106,0.10)', border: '1px solid rgba(232,201,106,0.32)', color: '#9a7d2e', lineHeight: 1.5 }}>
+            {genNotice}
           </div>
         )}
 
