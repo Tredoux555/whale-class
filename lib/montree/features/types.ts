@@ -56,6 +56,10 @@ export type FeatureKey =
   // on the teacher dashboard ("Amy, Leo and Kayla are all ready for the Teen
   // Board"). Deterministic, no AI cost. Default ON via migration 247.
   | 'group_lesson_suggester'
+  // ✨ Curriculum Gap Radar (Jun 10, 2026) — flags areas gone quiet relative
+  // to the rest of the classroom, or with many never-presented works.
+  // Deterministic, no AI cost. Default ON via migration 248.
+  | 'curriculum_gap_radar'
   // Photo pipeline v2 (Session 117+ regression fix bundle) — confidence-gated
   // is_curriculum_work routing + reduced moat budget + top_candidates on
   // sonnet_drafted + age-decayed visual memory ordering. Default ON via

@@ -49,6 +49,7 @@ const OnboardingPathChoice = dynamic(() => import('@/components/montree/onboardi
 const ChangelogModal = dynamic(() => import('@/components/montree/ChangelogModal'), { ssr: false });
 const PendingAppointmentsBanner = dynamic(() => import('@/components/montree/appointments/PendingAppointmentsBanner'), { ssr: false });
 const GroupLessonCard = dynamic(() => import('@/components/montree/GroupLessonCard'), { ssr: false });
+const CurriculumGapCard = dynamic(() => import('@/components/montree/CurriculumGapCard'), { ssr: false });
 
 
 interface Child {
@@ -811,6 +812,11 @@ export default function DashboardPage() {
                   the Teen Board — group presentation?" Hide-when-empty +
                   per-day dismiss. Flag default ON (migration 247). */}
               {isEnabled('group_lesson_suggester') && <GroupLessonCard />}
+
+              {/* ✨ Curriculum Gap Radar (Jun 10, 2026) — flags the quietest
+                  corner of the curriculum relative to the rest of the room.
+                  Hide-when-empty + per-day dismiss. Flag default ON (mig 248). */}
+              {isEnabled('curriculum_gap_radar') && <CurriculumGapCard />}
 
               {/* ── Student Grid — fills viewport height ──
                   Avatar 58 + gap 10 + name 12 + per-link vertical padding
