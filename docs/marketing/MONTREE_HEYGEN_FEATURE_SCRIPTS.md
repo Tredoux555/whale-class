@@ -1,5 +1,11 @@
-# Montree — HeyGen Feature Explainer Scripts (rolling)
-*Started Jun 10, 2026. One short script per smart-feature as it ships. Paste-ready for HeyGen Script-to-Video.*
+# Montree — HeyGen Feature Reels (rolling)
+*Started Jun 10, 2026. One tight ~45-second vertical reel per smart-feature, plus daily-volume variation angles. Paste-ready for HeyGen Script-to-Video.*
+
+## Format + posting
+- **One 9:16 vertical reel per feature, 40–48 seconds.** Same cut posted to TikTok, Reels, Shorts, LinkedIn. No platform-specific edits.
+- **Post DAILY.** Small account at ~300 views = feed-the-machine phase; daily consistency is what breaks the plateau. Completion rate is the #1 signal, so keep them tight — better to finish 45s than lose people at 0:40 of a 60.
+- **3 features ≠ 3 posts.** Each feature seeds 3–4 angles (below) → ~12 reels → ~2 weeks of daily content. Re-cut whatever wins.
+- Structure every reel: **0–3s hook line → 3–35s one idea, shown not told → 35–45s "The magic of Montree. montree.xyz."**
 
 ## Brand rules (every script obeys these)
 - Tagline always: **"The magic of Montree."** · site: **montree.xyz**
@@ -7,65 +13,72 @@
 - NEVER name the founder. NEVER name a competitor. No outcome guarantees / medical claims.
 - Sprout logo as the avatar/thumbnail mark — not the gold "M".
 - Tone: calm, confident, teacherly. Short sentences. One idea per beat.
-- `[brackets]` = production direction — strip before pasting if HeyGen reads them aloud.
-
-Each feature has: a **30s vertical hook** (TikTok/Reels/Shorts) and a **45–60s explainer** (YouTube/LinkedIn/site).
+- `[brackets]` = production direction — strip before pasting if HeyGen reads them aloud. Put the actual dashboard screen-capture behind the voice wherever you can — "show the real thing" is what makes people believe it's not vaporware.
 
 ---
 
-## Feature 1 — Group Lesson Suggester
+## Feature 1 — Group Lesson Suggester (~45s)
 
-### 30s hook
-[Open on a teacher mid-classroom, slightly overwhelmed, sticky notes everywhere.]
-You know every child's next step. But who's ready for the *same* step — today?
-[Beat. Montree card slides in: "Henry, Kevin, Lucky and Stella are all ready for Two-Handed Funnel Pouring."]
-Montree looks across your whole class and finds the children who are ready for the same work — so you can teach it once, together.
-That's a group lesson you didn't have to plan.
-The magic of Montree. montree.xyz
+> [Open on the real dashboard card.]
+> Here's hours of a Montessori teacher's week, gone: figuring out which children are ready for the same lesson at the same time.
+> You already track where every child is. But nobody's looking *across* the class.
+> Montree does. The moment you open your dashboard, it reads every child's position in every area — and finds the ones standing at the same doorway.
+> "Henry, Kevin, Lucky and Stella are all ready for the same work. Present it together?"
+> That's a group lesson you didn't have to plan. From data you already create every day.
+> Work smarter, not harder. The magic of Montree. montree.xyz
 
-### 45–60s explainer
-Every Montessori teacher tracks where each child is. But seeing it *across* the class — who's ready for the same presentation right now — that's hours of cross-referencing.
-[Montree dashboard, the Group Lesson card appears.]
-Montree does it the moment you open your dashboard. It reads every child's position in every area, finds the ones standing at the same doorway, and suggests the group: "These four are all ready for the Teen Board — present it together?"
-No extra tracking. No spreadsheets. It's reading the data you already create every day.
-You get back the time you used to spend planning — and spend it with the children.
-Work smarter, not harder. The magic of Montree. montree.xyz
+**Daily variation angles (same feature, fresh reels):**
+- *Problem-led:* "I used to spend Sunday nights cross-referencing 22 children to plan group lessons. Here's what replaced it." → show card.
+- *Demo-led:* screen-record only — open dashboard, card appears, tap a name. Voiceover names what's happening. 20s.
+- *Stat/curiosity:* "Your class is ready for more group lessons than you think. Watch." → card reveal.
 
 ---
 
-## Feature 2 — Curriculum Gap Radar
+## Feature 2 — Curriculum Gap Radar (~45s)
 
-### 30s hook
-[Teacher looking confident — then a thought flickers: "wait… when did we last do Maths?"]
-Every classroom has a blind spot. The shelf you haven't visited in weeks — without realising it.
-[Montree card slides in: "Mathematics has gone quiet — 20 days since the last Maths work, vs ~5 days everywhere else."]
-Montree watches every area of your curriculum and quietly tells you which corner has gone still.
-Not a scolding. A radar.
-The magic of Montree. montree.xyz
+> [Teacher looking confident, then a flicker of doubt.]
+> Every classroom has a blind spot. A shelf you haven't visited in weeks — and you don't notice until a parent asks.
+> You're attentive. But across five areas and hundreds of works, one always drifts.
+> Montree watches all of them. It compares every area against the rest of your room, and when one goes quiet, it just tells you:
+> "Mathematics has gone quiet — twenty days, while the rest of the room's been active this week."
+> Not a scolding. A radar. So nothing slips, and every child meets every part of the curriculum.
+> The magic of Montree. montree.xyz
 
-### 45–60s explainer
-You're attentive. But across five areas and hundreds of works, one shelf always drifts — and you don't notice until a parent asks.
-[Dashboard, Gap Radar card appears with the amber "Quietest area" tag.]
-Montree's Gap Radar compares every area of your curriculum against the rest of your classroom. When one goes quiet, it says so plainly: "Maths — 20 days quiet, while the rest of the room's been active this week."
-It's not guessing or nagging. It reads the activity you already log and surfaces the one thing worth a second look.
-So nothing slips. So every child meets every part of the curriculum.
-The magic of Montree. montree.xyz
+**Daily variation angles:**
+- *Confession hook:* "I went six weeks without noticing my Cultural shelf had gone cold. This would've caught it on day 20." → card.
+- *Demo-led:* screen-record the amber "Quietest area" card appearing. 20s, no face.
+- *Parent-trust angle:* "When a parent asks 'how's the maths going?' — never be caught off guard again."
 
 ---
 
-## Feature 3 — Home Practice Cards (parent-facing)
+## Feature 3 — Home Practice Cards (~45s)
 
-### 30s hook
-[Parent on a sofa, phone in hand, reading their child's weekly report.]
-Every week, parents ask the same quiet question: "What can I do at home?"
-[Card appears: "This week, try at home — line up your shoes from biggest to smallest together…"]
-Montree answers it for them — a tiny activity, five minutes, no special materials, matched to exactly what their child is working on this week.
-Not homework. A moment together.
-The magic of Montree. montree.xyz
+> [Parent on a sofa, reading the weekly report on a phone.]
+> Every week, parents ask the same quiet question: "What can I do at home?"
+> Most schools never answer it. Montree answers it for every family, automatically.
+> It reads what the child is actually working on this week — and writes one tiny activity, just for them. Five minutes. Using only what's already in the house.
+> "Find big and small spoons together. Let them lead."
+> Not homework. A moment together. Written fresh for each child, every week — and the teacher does nothing extra.
+> The magic of Montree. montree.xyz
 
-### 45–60s explainer
-A parent reads that their child explored the Pink Tower this week. They're delighted — and then a little stuck. "What do I do with that?"
-[The Home Practice card unfolds on the report.]
-Montree writes them a tiny activity, just for this week, matched to the exact work their child is focused on. Using only what's already in the house. "Find big and small spoons together. Let them lead." Five minutes. Warm, not homework.
-It's written fresh for each child, every week — because the system already knows what they're working on. The parent feels included. The child gets a gentle echo of the classroom at home. And the teacher does nothing extra.
-The magic of Montree. montree.xyz
+**Daily variation angles:**
+- *Parent-POV:* film as a parent reading it — "this came on my kid's report and I actually did it." (strongest for parent reach + forwarding to pilot families.)
+- *Demo-led:* screen-record the 🏡 card unfolding on a report. 15–20s.
+- *"What schools never do" hook:* "Schools send updates. They never tell you what to do with them. Watch what this one does."
+
+---
+
+## Feature 4 — Guru-Assisted Parent Replies (~45s)
+
+> [Teacher's phone — a parent message: "How's his maths coming along?"]
+> A parent asks a question about their child. You know the answer — but writing it warmly, at 7pm, after a full day, is the hard part.
+> Tap once. Montree drafts the reply for you — grounded in what their child is actually working on this week. In your voice. Warm, honest, specific.
+> "Henry's working with the Stamp Game right now — a hands-on way to feel how tens and hundreds fit together…"
+> And when it doesn't know? It says so, and offers to follow up — never makes anything up.
+> You read it, tweak it, send it. The relationship stays yours. The hour is yours again.
+> The magic of Montree. montree.xyz
+
+**Daily variation angles:**
+- *Time-of-day hook:* "It's 9pm and you've got six parent messages to answer. Watch this." → tap, draft appears.
+- *Honesty angle:* "The best thing this AI does? When it doesn't know, it admits it." → show the 'I'll observe and follow up' draft.
+- *Demo-led:* screen-record the tap → grounded draft filling the composer. 15–20s.
