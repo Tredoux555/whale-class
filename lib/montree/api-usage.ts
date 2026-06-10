@@ -31,6 +31,11 @@ interface CharPricing {
 type ModelPricing = TokenPricing | AudioPricing | CharPricing;
 
 const MODEL_PRICING: Record<string, ModelPricing> = {
+  // Anthropic — Opus family (Astra / principal chief-of-staff). ~5x Sonnet.
+  // Added 2026-06-10 — was missing, so Astra's Opus calls silently billed at
+  // the Sonnet fallback rate and under-reported cost in the AI budget + P&L.
+  'claude-opus-4-6': { type: 'token', inputPer1M: 15.00, outputPer1M: 75.00 },
+  'claude-opus-4': { type: 'token', inputPer1M: 15.00, outputPer1M: 75.00 },
   // Anthropic — Sonnet family
   'claude-sonnet-4-6': { type: 'token', inputPer1M: 3.00, outputPer1M: 15.00 },
   'claude-sonnet-4-20250514': { type: 'token', inputPer1M: 3.00, outputPer1M: 15.00 },

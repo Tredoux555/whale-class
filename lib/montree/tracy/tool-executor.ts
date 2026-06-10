@@ -151,26 +151,44 @@ export async function executeTracyTool(
   // inner routes resolve identically and re-verify via the forwarded cookie.
   const origin = `http://127.0.0.1:${process.env.PORT || 3000}`;
 
+  // Hard timeout shared by all internal helpers below. Without it a stalled
+  // inner route hangs Astra's SSE response with no error surfaced.
+  const INTERNAL_TIMEOUT_MS = 30_000;
+
+  // 🚨 Hard 30s timeout via AbortController (added 2026-06-10). internalGet
+  // backs Astra's most-used tools (find_children_by_name, briefings, photos);
+  // without a signal a stalled inner route hangs the SSE response with no error
+  // surfaced — Astra appears frozen to the principal.
   const internalGet = async (path: string) => {
-    const res = await fetch(`${origin}${path}`, {
-      headers: { cookie: cookieHeader },
-    });
-    if (!res.ok) {
-      const body = await res.text().catch(() => '');
-      return { ok: false as const, status: res.status, body };
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), INTERNAL_TIMEOUT_MS);
+    try {
+      const res = await fetch(`${origin}${path}`, {
+        headers: { cookie: cookieHeader },
+        signal: controller.signal,
+      });
+      if (!res.ok) {
+        const body = await res.text().catch(() => '');
+        return { ok: false as const, status: res.status, body };
+      }
+      const data = await res.json();
+      return { ok: true as const, status: res.status, data };
+    } catch (err) {
+      return {
+        ok: false as const,
+        status: 0,
+        body: err instanceof Error ? err.message : 'internalGet failed',
+      };
+    } finally {
+      clearTimeout(timer);
     }
-    const data = await res.json();
-    return { ok: true as const, status: res.status, data };
   };
   // Internal mutation helpers — used by Astra's ACTION tools. Forward the
   // principal's cookie so each inner endpoint re-verifies via
   // verifySchoolRequest + does its own school-scoping + consent-gating
   // (defense in depth). Astra never bypasses the inner endpoint's auth.
   //
-  // 🚨 Hard 30s timeout via AbortController. Without this, a slow inner
-  // route could block the SSE response indefinitely — Astra would appear
-  // hung to the principal with no error surfaced.
-  const INTERNAL_TIMEOUT_MS = 30_000;
+  // (INTERNAL_TIMEOUT_MS is declared above, shared with internalGet.)
   const internalPost = async (path: string, body: Record<string, unknown>) => {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), INTERNAL_TIMEOUT_MS);

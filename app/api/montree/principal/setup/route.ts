@@ -3,6 +3,7 @@
 // OVERHAULED: Use static curriculum as PRIMARY source for correct sequencing
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
+import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { loadAllCurriculumWorks, loadCurriculumAreas } from '@/lib/montree/curriculum-loader';
 import { legacySha256 } from '@/lib/montree/password';
 import { batchTranslateAllLocales } from '@/lib/montree/insert-curriculum-work';
@@ -140,6 +141,15 @@ export async function POST(request: NextRequest) {
   const startTime = Date.now();
 
   try {
+    // AUTH (added 2026-06-10): this route creates classrooms, teachers and
+    // login codes. It was previously unauthenticated — anyone could inject
+    // classrooms/teachers into any school by POSTing a schoolId. Now it
+    // requires a valid session and the schoolId MUST match the caller's own
+    // school. Principals are logged in by /principal/register and /try/instant
+    // before this page is reached, so the happy path is unaffected.
+    const auth = await verifySchoolRequest(request);
+    if (auth instanceof NextResponse) return auth;
+
     const supabase = getSupabase();
     const { schoolId, classrooms } = await request.json() as {
       schoolId: string;
@@ -149,6 +159,12 @@ export async function POST(request: NextRequest) {
 
     if (!schoolId) {
       return NextResponse.json({ error: 'School ID required' }, { status: 400 });
+    }
+    if (schoolId !== auth.schoolId) {
+      return NextResponse.json(
+        { error: 'You can only set up your own school' },
+        { status: 403 }
+      );
     }
     if (!classrooms?.length) {
       return NextResponse.json({ error: 'At least one classroom required' }, { status: 400 });

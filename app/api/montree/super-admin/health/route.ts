@@ -14,6 +14,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { verifySuperAdminAuth } from '@/lib/verify-super-admin';
+import { isEncryptionConfigured } from '@/lib/montree/messaging-crypto';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 30;
@@ -55,6 +56,45 @@ export async function GET(request: NextRequest) {
       return 'ok';
     });
     steps.push(dbPing.step);
+
+    // 1b. Encryption posture (Jun 2026 health check). The encryption_v1
+    // feature gates writes; MONTREE_ENCRYPTION_KEY does the actual work.
+    // FAIL when the flag is live anywhere but the key is missing/invalid —
+    // that combination silently writes PLAINTEXT rows with a loud log only.
+    const encryption = await timed('encryption_posture', async () => {
+      const keyOk = isEncryptionConfigured();
+
+      const [defResult, schoolResult] = await Promise.all([
+        supabase
+          .from('montree_feature_definitions')
+          .select('default_enabled')
+          .eq('feature_key', 'encryption_v1')
+          .maybeSingle(),
+        supabase
+          .from('montree_school_features')
+          .select('school_id', { count: 'exact', head: true })
+          .eq('feature_key', 'encryption_v1')
+          .eq('enabled', true),
+      ]);
+
+      const defaultEnabled = !!defResult.data?.default_enabled;
+      const schoolsEnabled = schoolResult.count ?? 0;
+      const flagLive = defaultEnabled || schoolsEnabled > 0;
+
+      if (flagLive && !keyOk) {
+        throw new Error(
+          `encryption_v1 is enabled (${schoolsEnabled} school(s)${defaultEnabled ? ' + default' : ''}) but MONTREE_ENCRYPTION_KEY is missing or not 32 chars — sensitive rows are being written in PLAINTEXT`,
+        );
+      }
+
+      return {
+        key_configured: keyOk,
+        flag_default_enabled: defaultEnabled,
+        schools_enabled: schoolsEnabled,
+        status: flagLive ? (keyOk ? 'encrypting' : 'BROKEN') : 'flag_off',
+      };
+    });
+    steps.push(encryption.step);
 
     // 2. Stripe webhook deliveries last 7d (count of finance_transactions
     // rows with source='stripe_webhook') + DLQ pending count. The DLQ

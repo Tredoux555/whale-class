@@ -108,7 +108,8 @@ export default function CommunityAdminPage() {
     try {
       const res = await fetch('/api/montree/community/seed', {
         method: 'POST',
-        headers: { 'x-admin-password': password },
+        // Seed route now uses the canonical super-admin header (Jun 2026).
+        headers: { 'x-super-admin-password': password },
       });
       const data = await res.json();
       if (data.success) {

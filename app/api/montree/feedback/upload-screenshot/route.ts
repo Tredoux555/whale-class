@@ -1,14 +1,42 @@
 // /api/montree/feedback/upload-screenshot/route.ts
 // Upload screenshot images for feedback submissions
+// 🔒 Security (Jun 2026 health check): requires an authenticated Montree
+// session + per-user rate limit. This endpoint was previously open to
+// anonymous uploads into a PUBLIC bucket. NOTE: the FeedbackButton UI was
+// unmounted from all layouts on Mar 10 — this route has no active callers
+// but stays gated in case the button returns.
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
+import { verifySchoolRequest } from '@/lib/montree/verify-request';
+import { checkRateLimit } from '@/lib/rate-limiter';
 
 const BUCKET_NAME = 'feedback-screenshots';
 const MAX_SIZE = 5 * 1024 * 1024; // 5MB max
 
 export async function POST(req: NextRequest) {
   try {
+    // Auth gate — any logged-in Montree user (teacher/principal/parent role on
+    // the montree-auth cookie). Anonymous callers get 401.
+    const auth = await verifySchoolRequest(req);
+    if (auth instanceof NextResponse) return auth;
+
+    // Rate limit: 10 uploads / 15 min per user — feedback screenshots are
+    // low-volume by nature; this stops storage-quota abuse with a stolen cookie.
+    const rl = await checkRateLimit(
+      getSupabase(),
+      `user:${auth.userId}`,
+      'feedback_upload_screenshot',
+      10,
+      15
+    );
+    if (!rl.allowed) {
+      return NextResponse.json(
+        { error: 'Too many uploads. Please try again later.' },
+        { status: 429 }
+      );
+    }
+
     const formData = await req.formData();
     const file = formData.get('file') as File | null;
 
