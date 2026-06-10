@@ -33,6 +33,7 @@ const anon = env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 const service = env.SUPABASE_SERVICE_ROLE_KEY;
 
 const SENSITIVE = [
+  // Phase 1 (2026-06-06)
   'montree_children',
   'montree_parents',
   'montree_media',
@@ -40,6 +41,26 @@ const SENSITIVE = [
   'montree_parent_profiles',
   'montree_schools',
   'montree_classrooms',
+  // Phase 2 (2026-06-10)
+  'montree_parent_deletion_audit',
+  'montree_child_learning_state',
+  'montree_principal_conversations',
+  // Phase 3 (2026-06-10 — legacy permissive-policy tables, highest-value subset)
+  'montree_work_sessions',
+  'montree_teachers',
+  'montree_weekly_reports',
+  'montree_voice_notes',
+  'montree_super_admin_audit',
+  'children',
+  'child_work_progress',
+  'parent_sessions',
+  'parent_access_codes',
+  'report_share_tokens',
+  'simple_teachers',
+  'users',
+  'game_sessions',
+  'assessment_results',
+  'voice_observation_sessions',
 ];
 
 const anonClient = createClient(url, anon, { auth: { persistSession: false } });

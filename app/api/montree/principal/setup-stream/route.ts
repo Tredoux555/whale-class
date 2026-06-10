@@ -1,7 +1,8 @@
 // /api/montree/principal/setup-stream/route.ts
 // Real-time streaming setup with Server-Sent Events
-import { NextRequest } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
+import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { loadAllCurriculumWorks, loadCurriculumAreas } from '@/lib/montree/curriculum-loader';
 import { legacySha256 } from '@/lib/montree/password';
 import { batchTranslateAllLocales } from '@/lib/montree/insert-curriculum-work';
@@ -29,6 +30,13 @@ const DEFAULT_AREAS = [
 // Brain area mapping removed — using static curriculum exclusively
 
 export async function POST(request: NextRequest) {
+  // AUTH (added 2026-06-10): was unauthenticated — anyone could create
+  // classrooms/teachers/login-codes in any school. Require a valid session;
+  // the schoolId in the body MUST match the caller's own school (checked below
+  // once the body is parsed). Principals are logged in before reaching setup.
+  const auth = await verifySchoolRequest(request);
+  if (auth instanceof NextResponse) return auth;
+
   const encoder = new TextEncoder();
 
   // Create a readable stream for SSE
@@ -44,6 +52,12 @@ export async function POST(request: NextRequest) {
 
         if (!schoolId || !classrooms?.length) {
           send('error', { message: 'Missing schoolId or classrooms' });
+          controller.close();
+          return;
+        }
+
+        if (schoolId !== auth.schoolId) {
+          send('error', { message: 'You can only set up your own school' });
           controller.close();
           return;
         }

@@ -3,6 +3,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
+import { verifySchoolRequest } from '@/lib/montree/verify-request';
 
 interface StudentInput {
   name: string;
@@ -12,6 +13,14 @@ interface StudentInput {
 
 export async function POST(request: NextRequest) {
   try {
+    // AUTH (added 2026-06-10): was unauthenticated — anyone could insert
+    // children + progress rows into any classroom by supplying its ID. Require
+    // a valid session; the target classroom MUST belong to the caller's school
+    // (checked below once the classroom is loaded). The teacher/homeschool
+    // signup flow logs the user in (try/instant sets the cookie) before this.
+    const auth = await verifySchoolRequest(request);
+    if (auth instanceof NextResponse) return auth;
+
     const supabase = getSupabase();
     const { classroomId, students } = await request.json() as {
       classroomId: string;
@@ -36,6 +45,13 @@ export async function POST(request: NextRequest) {
     if (classroomError || !classroom) {
       console.error('Classroom not found:', classroomError);
       return NextResponse.json({ error: 'Classroom not found' }, { status: 404 });
+    }
+
+    if (classroom.school_id !== auth.schoolId) {
+      return NextResponse.json(
+        { error: 'You can only add students to your own school' },
+        { status: 403 }
+      );
     }
 
     // Get curriculum areas for this classroom to map area_key to area_id (UUID)

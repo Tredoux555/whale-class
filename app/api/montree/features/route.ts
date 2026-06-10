@@ -35,6 +35,10 @@ async function syncPhonicsOnToggle(
 }
 
 // GET - Check which features are enabled for a classroom
+// 🔒 Security (Jun 2026 health check): requires super-admin token OR a valid
+// school session, and school-scoped callers may only read features for THEIR
+// OWN school/classroom. Previously anyone with a school UUID could enumerate
+// every school's feature state (incl. encryption + AI tier).
 export async function GET(request: NextRequest) {
   try {
     const supabase = getSupabase();
@@ -47,6 +51,25 @@ export async function GET(request: NextRequest) {
         { success: false, error: 'classroom_id or school_id required' },
         { status: 400 }
       );
+    }
+
+    // Auth gate — super-admin token first (super-admin panel), else school session.
+    const superAdminCheck = await verifySuperAdminAuth(request.headers);
+    let callerSchoolId: string | null = null;
+    if (!superAdminCheck.valid) {
+      const auth = await verifySchoolRequest(request);
+      if (auth instanceof NextResponse) return auth;
+      callerSchoolId = auth.schoolId;
+
+      // Ownership check: requested school must be the caller's own school.
+      if (schoolId && schoolId !== callerSchoolId) {
+        return NextResponse.json(
+          { success: false, error: 'Not authorized for this school' },
+          { status: 403 }
+        );
+      }
+      // classroom_id ownership is verified below once the classroom row
+      // (with its school_id) has been fetched.
     }
 
     // Fetch definitions (always needed) + parallel classroom/school data
@@ -64,6 +87,19 @@ export async function GET(request: NextRequest) {
 
       definitions = defsResult.data;
       classroomFeatures = cfResult.data || [];
+
+      // Ownership check for school-scoped callers: the classroom must belong
+      // to the caller's school. (Super-admin callers skip — callerSchoolId is null.)
+      if (
+        callerSchoolId &&
+        classroomResult.data?.school_id &&
+        classroomResult.data.school_id !== callerSchoolId
+      ) {
+        return NextResponse.json(
+          { success: false, error: 'Not authorized for this classroom' },
+          { status: 403 }
+        );
+      }
 
       // If classroom has a school, fetch school features
       if (classroomResult.data?.school_id) {

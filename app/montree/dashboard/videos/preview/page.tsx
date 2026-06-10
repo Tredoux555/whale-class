@@ -39,10 +39,11 @@ export default function VideoPreviewPage() {
 
 
   const sendAllToParents = async () => {
-    setSending(true);
-    // TODO: Implement actual sending via WeChat/email
-    await new Promise(r => setTimeout(r, 2000));
-    alert('Videos sent to all parents!');
+    // HONESTY FIX (2026-06-10): sending was never implemented — this used to
+    // fake a 2s delay then alert "Videos sent to all parents!", which lied to
+    // the teacher. Until a real send path (WeChat/email) exists, say so plainly
+    // instead of claiming success.
+    alert("Sending videos to parents isn't available yet — this feature is still being built.");
     setSending(false);
   };
 

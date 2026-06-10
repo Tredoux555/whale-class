@@ -6,6 +6,7 @@ import { hashPassword } from '@/lib/montree/password';
 import { validatePassword } from '@/lib/password-policy';
 import { checkRateLimit } from '@/lib/rate-limiter';
 import { getClientIP, getUserAgent } from '@/lib/montree/audit-logger';
+import { createMontreeToken, setMontreeAuthCookie } from '@/lib/montree/server-auth';
 
 function generateSlug(name: string): string {
   return name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').substring(0, 50);
@@ -118,7 +119,17 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Failed to create principal account' }, { status: 500 });
     }
 
-    return NextResponse.json({
+    // Log the principal in immediately by minting a session token + cookie.
+    // The follow-on /principal/setup call requires this session (it scopes
+    // classroom/teacher creation to the authenticated school). Without this,
+    // setup had to run unauthenticated — a critical open-write IDOR (closed
+    // 2026-06-10).
+    const token = await createMontreeToken({
+      sub: principal.id,
+      schoolId: school.id,
+      role: 'principal',
+    });
+    const response = NextResponse.json({
       success: true,
       school: {
         id: school.id,
@@ -132,6 +143,8 @@ export async function POST(request: NextRequest) {
         role: principal.role,
       },
     });
+    setMontreeAuthCookie(response, token, 'principal');
+    return response;
 
   } catch (error) {
     console.error('Registration error:', error);

@@ -41,7 +41,10 @@ export default function SchoolFeaturesModal({ schoolId, schoolName, onClose, ses
 
   const loadFeatures = useCallback(async () => {
     try {
-      const res = await fetch(`/api/montree/features?school_id=${schoolId}`);
+      // GET is auth-gated (Jun 2026) — super-admin reads must send the token.
+      const res = await fetch(`/api/montree/features?school_id=${schoolId}`, {
+        headers: { 'x-super-admin-token': sessionToken },
+      });
       if (!res.ok) throw new Error('Failed to fetch');
       const data = await res.json();
       setFeatures(data.features || []);
@@ -50,7 +53,7 @@ export default function SchoolFeaturesModal({ schoolId, schoolName, onClose, ses
     } finally {
       setLoading(false);
     }
-  }, [schoolId]);
+  }, [schoolId, sessionToken]);
 
   useEffect(() => {
     loadFeatures();

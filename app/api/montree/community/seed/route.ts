@@ -4,18 +4,35 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
-import { verifySuperAdminPassword } from '@/lib/verify-super-admin';
+import { verifySuperAdminAuth } from '@/lib/verify-super-admin';
+import { checkRateLimit } from '@/lib/rate-limiter';
 import { loadAllCurriculumWorks } from '@/lib/montree/curriculum-loader';
 
 export async function POST(request: NextRequest) {
   try {
-    const password = request.headers.get('x-admin-password') || '';
-    const auth = verifySuperAdminPassword(password);
+    const supabase = getSupabase();
+
+    // 🔒 Security (Jun 2026 health check): rate-limit BEFORE auth so password
+    // brute-forcing against this endpoint is capped at 5 attempts / 15 min per IP.
+    const ip =
+      request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
+      request.headers.get('x-real-ip') ||
+      'unknown';
+    const rl = await checkRateLimit(supabase, ip, 'community_seed', 5, 15);
+    if (!rl.allowed) {
+      return NextResponse.json(
+        { error: 'Too many attempts. Try again later.' },
+        { status: 429 }
+      );
+    }
+
+    // Prefers the super-admin JWT session token (x-super-admin-token); falls
+    // back to x-super-admin-password. The old x-admin-password header is no
+    // longer accepted.
+    const auth = await verifySuperAdminAuth(request.headers);
     if (!auth.valid) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
-
-    const supabase = getSupabase();
 
     // Load all curriculum works from static JSON
     let curriculumWorks;
