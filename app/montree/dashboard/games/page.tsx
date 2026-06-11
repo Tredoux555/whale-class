@@ -83,7 +83,7 @@ const CATEGORIES: Category[] = [
       { id: 'sensorial-sort', name: 'Sensorial Sort', emoji: '👁️', description: 'Color matching, grading & sorting', route: '/montree/dashboard/games/sensorial-sort', gradient: 'from-rose-500 to-pink-500' },
       { id: 'color-match', name: 'Color Matching', emoji: '🎨', description: 'Match pairs of identical colors', route: '/montree/dashboard/games/color-match', gradient: 'from-pink-500 to-purple-500', isNew: true },
       { id: 'color-grade', name: 'Color Grading', emoji: '🌈', description: 'Arrange shades light to dark', route: '/montree/dashboard/games/color-grade', gradient: 'from-violet-500 to-purple-500', isNew: true },
-      { id: 'match-attack', name: 'Match Attack', emoji: '⚡', description: 'Fast-paced matching game', route: '/montree/dashboard/games/match-attack', gradient: 'from-yellow-500 to-red-500' },
+      { id: 'match-attack', name: 'Match Attack', emoji: '⚡', description: 'Fast-paced matching game', route: '/montree/dashboard/games/match-attack-new', gradient: 'from-yellow-500 to-red-500' },
     ]
   },
 ];
