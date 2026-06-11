@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
 
     // Rate limiting
     const { allowed, retryAfterSeconds } = await checkRateLimit(
-      supabase, ip, '/api/montree/auth/unified', 5, 15
+      supabase, ip, '/api/montree/auth/unified', 5, 15, 'closed'
     );
     if (!allowed) {
       return NextResponse.json(
