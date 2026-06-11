@@ -8,6 +8,7 @@ import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { getSession, clearSession } from '@/lib/montree/auth';
 import { useI18n } from '@/lib/montree/i18n';
+import DeleteAccountSection from '@/components/montree/DeleteAccountSection';
 
 const SETTINGS_ITEMS = [
   { emoji: '🖼️', key: 'settings.mediaGallery', descKey: 'settings.mediaGalleryDesc', href: '/montree/dashboard/media' },
@@ -80,6 +81,9 @@ export default function SettingsPage() {
             </Link>
           ))}
         </div>
+
+        {/* Delete Account (Apple App Store Guideline 5.1.1(v)) */}
+        <DeleteAccountSection redirectTo="/montree/login" onDeleted={clearSession} />
 
         {/* Sign Out */}
         <div className="pt-4 border-t border-gray-200">
