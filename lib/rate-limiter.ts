@@ -26,8 +26,17 @@ export async function checkRateLimit(
   ip: string,
   endpoint: string,
   maxAttempts: number,
-  windowMinutes: number
+  windowMinutes: number,
+  // audit-fix (Jun 2026): callers guarding credentials can opt into failing
+  // CLOSED — if the rate-limit table is unreachable we deny rather than letting
+  // brute-force run unmetered. Default stays 'open' so nothing else changes.
+  failMode: 'open' | 'closed' = 'open'
 ): Promise<RateLimitResult> {
+  const onFailure = (): RateLimitResult =>
+    failMode === 'closed'
+      ? { allowed: false, retryAfterSeconds: 60 }
+      : { allowed: true };
+
   try {
     const windowStart = new Date(Date.now() - windowMinutes * 60 * 1000).toISOString();
 
@@ -40,9 +49,8 @@ export async function checkRateLimit(
       .gte('created_at', windowStart);
 
     if (countError) {
-      // If rate limit check fails, allow the request (fail open)
-      console.error('[RateLimit] Count query failed:', countError);
-      return { allowed: true };
+      console.error(`[RateLimit] Count query failed (fail-${failMode}):`, countError);
+      return onFailure();
     }
 
     if ((count || 0) >= maxAttempts) {
@@ -62,8 +70,7 @@ export async function checkRateLimit(
 
     return { allowed: true };
   } catch (e) {
-    // If anything goes wrong, fail open (allow the request)
-    console.error('[RateLimit] Unexpected error:', e);
-    return { allowed: true };
+    console.error(`[RateLimit] Unexpected error (fail-${failMode}):`, e);
+    return onFailure();
   }
 }

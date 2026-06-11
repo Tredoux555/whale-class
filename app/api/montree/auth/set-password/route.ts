@@ -19,7 +19,7 @@ export async function POST(request: NextRequest) {
 
     // Rate limiting: 3 attempts per IP per 15 min
     const { allowed, retryAfterSeconds } = await checkRateLimit(
-      supabase, ip, '/api/montree/auth/set-password', 3, 15
+      supabase, ip, '/api/montree/auth/set-password', 3, 15, 'closed'
     );
     if (!allowed) {
       return NextResponse.json(

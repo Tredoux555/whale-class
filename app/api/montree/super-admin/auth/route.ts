@@ -19,11 +19,13 @@ export async function POST(req: NextRequest) {
     const ip = getClientIP(req.headers);
     const userAgent = getUserAgent(req.headers);
 
-    // Rate limiting (non-blocking — if table doesn't exist yet, allow through)
+    // Rate limiting — audit-fix (Jun 2026): fails CLOSED. This route guards
+    // god-mode with a static password; if the rate-limit infrastructure is
+    // down we refuse logins rather than letting brute-force run unmetered.
     try {
       const supabase = getSupabase();
       const { allowed, retryAfterSeconds } = await checkRateLimit(
-        supabase, ip, '/api/montree/super-admin/auth', 5, 15
+        supabase, ip, '/api/montree/super-admin/auth', 5, 15, 'closed'
       );
       if (!allowed) {
         return NextResponse.json(
@@ -32,7 +34,11 @@ export async function POST(req: NextRequest) {
         );
       }
     } catch (e) {
-      console.error('[SuperAdminAuth] Rate limit check failed (non-blocking):', e);
+      console.error('[SuperAdminAuth] Rate limit infrastructure unavailable — refusing login (fail-closed):', e);
+      return NextResponse.json(
+        { error: 'Temporarily unavailable. Please try again shortly.' },
+        { status: 503, headers: { 'Retry-After': '60' } }
+      );
     }
 
     let body;
