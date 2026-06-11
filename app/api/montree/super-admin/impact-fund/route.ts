@@ -1,14 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
-
-const ADMIN_PASSWORD = process.env.SUPER_ADMIN_PASSWORD || '';
+// audit-fix (Jun 2026): this route previously compared the password with a
+// plain `!==` (not timing-safe) against `SUPER_ADMIN_PASSWORD || ''` — so a
+// missing env var meant an EMPTY password was accepted (fail-open). It also
+// took the password in the URL query string, where it lands in logs and
+// browser history. Now: shared timing-safe header auth, fail-closed.
+import { verifySuperAdminAuth, verifySuperAdminPassword } from '@/lib/verify-super-admin';
 
 // GET - Fetch impact fund transactions and summary
 export async function GET(request: NextRequest) {
-  const { searchParams } = new URL(request.url);
-  const password = searchParams.get('password');
-
-  if (password !== ADMIN_PASSWORD) {
+  const { valid } = await verifySuperAdminAuth(request.headers);
+  if (!valid) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
@@ -54,7 +56,11 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { password, transactionType, amountCents, recipientType, recipientName, recipientDescription, notes, sourceSchoolId } = body;
 
-    if (password !== ADMIN_PASSWORD) {
+    // Header auth (token/password) preferred; body password kept for
+    // backward compatibility — now timing-safe and fail-closed.
+    const headerAuth = await verifySuperAdminAuth(request.headers);
+    const valid = headerAuth.valid || verifySuperAdminPassword(password).valid;
+    if (!valid) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 

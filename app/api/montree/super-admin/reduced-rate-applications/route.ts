@@ -2,7 +2,7 @@
 // Session 106: Super Admin API - Reduced Rate Applications Management
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
-import { verifySuperAdminPassword } from '@/lib/verify-super-admin';
+import { verifySuperAdminAuth, verifySuperAdminPassword } from '@/lib/verify-super-admin';
 import { checkRateLimit } from '@/lib/rate-limiter';
 import { getClientIP } from '@/lib/montree/audit-logger';
 
@@ -26,11 +26,10 @@ export async function GET(request: NextRequest) {
       console.error('[ReducedRateApps] Rate limit check failed (non-blocking):', e);
     }
 
-    const { searchParams } = new URL(request.url);
-    const password = searchParams.get('password');
-
-    // Phase 9: Timing-safe password verification
-    const { valid } = verifySuperAdminPassword(password);
+    // audit-fix (Jun 2026): password moved out of the URL query string
+    // (URLs land in server/CDN logs and browser history) — auth now comes
+    // from headers like every other super-admin route.
+    const { valid } = await verifySuperAdminAuth(request.headers);
     if (!valid) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
@@ -78,8 +77,11 @@ export async function PATCH(request: NextRequest) {
       password,
     } = body;
 
-    // Phase 9: Timing-safe password verification
-    const { valid: patchValid } = verifySuperAdminPassword(password);
+    // audit-fix (Jun 2026): accept header auth (token/password) like GET;
+    // body password kept for backward compatibility (body is fine — it does
+    // not end up in logs the way query strings do).
+    const headerAuth = await verifySuperAdminAuth(request.headers);
+    const patchValid = headerAuth.valid || verifySuperAdminPassword(password).valid;
     if (!patchValid) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
