@@ -62,7 +62,9 @@ export default function TeacherRegisterPage() {
       localStorage.setItem('montree_school', JSON.stringify(data.school));
 
       // Redirect to teacher dashboard
-      router.push('/montree/teacher');
+      // audit-fix (Jun 2026): '/montree/teacher' has no page (404 dead-end
+      // straight after successful signup!) — the real dashboard is below.
+      router.push('/montree/dashboard');
 
     } catch (err) {
       setError(err instanceof Error ? err.message : t('validation.registrationFailed' as TranslationKey));
@@ -235,7 +237,7 @@ export default function TeacherRegisterPage() {
           </p>
           <p className="text-white/50 text-sm">
             {t('register.alreadyHaveAccount' as TranslationKey)}{' '}
-            <Link href="/montree/teacher/login" className="text-emerald-400 hover:text-emerald-300">
+            <Link href="/montree/login" className="text-emerald-400 hover:text-emerald-300">
               {t('register.signIn' as TranslationKey)}
             </Link>
           </p>
