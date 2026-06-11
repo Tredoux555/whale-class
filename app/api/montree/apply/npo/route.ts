@@ -2,10 +2,24 @@
 // NPO Community Impact Program Application Endpoint
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
+// audit-fix (Jun 2026): public endpoint — add rate limiting + input caps.
+import { checkRateLimit } from '@/lib/rate-limiter';
+import { getClientIP } from '@/lib/montree/audit-logger';
+import { isValidEmail, validateApplicationFields } from '@/lib/montree/apply-validation';
 
 export async function POST(request: NextRequest) {
   try {
     const supabase = getSupabase();
+
+    // Rate limit (fail-open: a real applicant must never be blocked by a DB blip)
+    const ip = getClientIP(request.headers);
+    const { allowed } = await checkRateLimit(supabase, ip, '/api/montree/apply/npo', 5, 60);
+    if (!allowed) {
+      return NextResponse.json(
+        { error: 'Too many submissions from this connection. Please try again later.' },
+        { status: 429 }
+      );
+    }
     const {
       organization_name,
       organization_type,
@@ -64,6 +78,19 @@ export async function POST(request: NextRequest) {
         { error: 'Community description is required' },
         { status: 400 }
       );
+    }
+
+    // audit-fix (Jun 2026): format + size caps on unauthenticated input
+    if (!isValidEmail(contact_email)) {
+      return NextResponse.json({ error: 'A valid contact email is required' }, { status: 400 });
+    }
+    const lenErr = validateApplicationFields({
+      organization_name, organization_type, registration_number, country, city,
+      mission_statement, community_served, estimated_students, tuition_model,
+      contact_name, contact_phone, documentation_url, additional_notes,
+    });
+    if (lenErr) {
+      return NextResponse.json({ error: lenErr }, { status: 400 });
     }
 
     // Insert application into database
