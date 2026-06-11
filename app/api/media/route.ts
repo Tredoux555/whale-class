@@ -225,7 +225,7 @@ export async function DELETE(request: NextRequest) {
       .from('child_work_media')
       .select('media_url, thumbnail_url')
       .eq('id', mediaId)
-      .single();
+      .single<{ media_url: string | null; thumbnail_url: string | null }>();
 
     // Delete from database
     const { error: dbError } = await supabase
