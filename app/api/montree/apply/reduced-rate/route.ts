@@ -2,10 +2,24 @@
 // Reduced rate application submission
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
+// audit-fix (Jun 2026): public endpoint — add rate limiting + input caps.
+import { checkRateLimit } from '@/lib/rate-limiter';
+import { getClientIP } from '@/lib/montree/audit-logger';
+import { isValidEmail, checkLen, checkStudentCount } from '@/lib/montree/apply-validation';
 
 export async function POST(request: NextRequest) {
   try {
     const supabase = getSupabase();
+
+    // Rate limit (fail-open: a real applicant must never be blocked by a DB blip)
+    const ip = getClientIP(request.headers);
+    const { allowed } = await checkRateLimit(supabase, ip, '/api/montree/apply/reduced-rate', 5, 60);
+    if (!allowed) {
+      return NextResponse.json(
+        { error: 'Too many submissions from this connection. Please try again later.' },
+        { status: 429 }
+      );
+    }
     const {
       schoolName,
       country,
@@ -50,6 +64,23 @@ export async function POST(request: NextRequest) {
     }
     if (!requestedTier?.trim()) {
       return NextResponse.json({ error: 'Requested tier is required' }, { status: 400 });
+    }
+
+    // audit-fix (Jun 2026): format + size caps on unauthenticated input
+    if (!isValidEmail(contactEmail)) {
+      return NextResponse.json({ error: 'A valid contact email is required' }, { status: 400 });
+    }
+    const lenChecks = [
+      checkLen(schoolName, 'schoolName', 200), checkLen(country, 'country', 100),
+      checkLen(city, 'city', 100), checkLen(contactName, 'contactName', 200),
+      checkLen(reason, 'reason', 200), checkLen(reasonDescription, 'reasonDescription', 5000),
+      checkLen(requestedTier, 'requestedTier', 100), checkLen(documentationUrl, 'documentationUrl', 500),
+      checkStudentCount(estimatedStudents),
+      (Number.isFinite(Number(monthlyBudget)) && Number(monthlyBudget) <= 10000000) ? null : 'monthlyBudget is out of range',
+    ];
+    const lenErr = lenChecks.find((e) => e !== null);
+    if (lenErr) {
+      return NextResponse.json({ error: lenErr }, { status: 400 });
     }
 
     // Insert into montree_reduced_rate_applications table
