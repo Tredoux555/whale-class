@@ -241,8 +241,12 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    // TODO: Clean up from storage if using Supabase Storage
-    // (Would need to extract path from URL and call storage.remove)
+    // audit-fix (Jun 2026): also remove the file(s) from storage (best-effort)
+    if (media) {
+      const { tryRemoveStorageObject } = await import('@/lib/montree/media/storage-path');
+      await tryRemoveStorageObject(supabase, media.media_url, 'media-delete');
+      await tryRemoveStorageObject(supabase, media.thumbnail_url, 'media-delete-thumb');
+    }
 
     return NextResponse.json({
       success: true,

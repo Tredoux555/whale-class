@@ -174,7 +174,11 @@ export async function DELETE(request: NextRequest) {
 
     if (error) throw error;
 
-    // TODO: Also delete from storage if using Supabase Storage
+    // audit-fix (Jun 2026): also remove the file from storage (best-effort)
+    if (photo) {
+      const { tryRemoveStorageObject } = await import('@/lib/montree/media/storage-path');
+      await tryRemoveStorageObject(supabase, photo.photo_url, 'photo-delete');
+    }
 
     return NextResponse.json({
       success: true,
