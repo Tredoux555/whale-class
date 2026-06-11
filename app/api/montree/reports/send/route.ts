@@ -572,14 +572,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Failed to save report' }, { status: 500 });
     }
 
-    // Get linked parents
-    const { data: links } = await supabase
-      .from('montree_child_parent_links')
-      .select('parent_email, relationship')
-      .eq('child_id', child_id)
-      .eq('status', 'active');
-
-    const parentEmails = links?.map(l => l.parent_email).filter(Boolean) || [];
+    // Get linked parents (audit-fix Jun 2026: was querying a table that
+    // never existed — montree_child_parent_links — so NO emails ever sent)
+    const { getParentEmailsForChild } = await import('@/lib/montree/parent-emails');
+    const parentEmails = await getParentEmailsForChild(supabase, child_id);
     let sent = 0;
 
     // Send emails if we have parents and Resend is configured

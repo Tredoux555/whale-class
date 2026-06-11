@@ -62,15 +62,10 @@ export async function POST(
       .eq('id', child.classroom_id)
       .maybeSingle();
 
-    // Get linked parents
-    const { data: links } = await supabase
-      .from('montree_child_parent_links')
-      .select('parent_email, relationship')
-      .eq('child_id', childId)
-      .eq('status', 'active');
-
-    const parentEmails = (links?.map(l => l.parent_email).filter(Boolean) || [])
-      .filter(e => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e));
+    // Get linked parents (audit-fix Jun 2026: was querying a table that
+    // never existed — montree_child_parent_links — so NO emails ever sent)
+    const { getParentEmailsForChild } = await import('@/lib/montree/parent-emails');
+    const parentEmails = await getParentEmailsForChild(supabase, childId);
 
     // Save report to DB
     const now = new Date();

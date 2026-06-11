@@ -100,16 +100,16 @@ export async function POST(request: NextRequest) {
 
     // Get children + parent links
     const childIds = drafts.map(d => d.child_id);
-    const [{ data: childrenRaw }, { data: linksRaw }, { data: classroomRaw }] = await Promise.all([
+    // audit-fix (Jun 2026): parent emails now come from the REAL tables
+    // (montree_parent_children → montree_parents). The old query hit a
+    // non-existent table, so weekly wraps were published but never emailed.
+    const { getParentEmailLinks } = await import('@/lib/montree/parent-emails');
+    const [{ data: childrenRaw }, links, { data: classroomRaw }] = await Promise.all([
       supabase
         .from('montree_children')
         .select('id, name')
         .in('id', childIds),
-      supabase
-        .from('montree_child_parent_links')
-        .select('child_id, parent_email, relationship')
-        .in('child_id', childIds)
-        .eq('status', 'active'),
+      getParentEmailLinks(supabase, childIds),
       supabase
         .from('montree_classrooms')
         .select('name')
@@ -118,7 +118,6 @@ export async function POST(request: NextRequest) {
     ]);
 
     const children = (childrenRaw || []) as Array<{ id: string; name: string }>;
-    const links = (linksRaw || []) as Array<{ child_id: string; parent_email: string; relationship: string }>;
     const classroomName = (classroomRaw as { name: string } | null)?.name || '';
 
     const childMap = new Map(children.map(c => [c.id, c.name]));
