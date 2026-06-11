@@ -13,9 +13,22 @@
 /.next/
 /out/
 
-# Capacitor native platforms (generated, don't commit)
-/ios/
-/android/
+# Capacitor native platforms.
+# audit-fix (Jun 2026): ios/ + android/ are NOW TRACKED — they hold custom
+# native config (permission strings, privacy manifest, offline view controller,
+# app icons/splash, Android permissions) that must persist and would be lost if
+# the projects were regenerated. Only the build output + pods are ignored.
+/ios/App/Pods/
+/ios/App/build/
+/ios/App/output/
+/ios/App/App/public/
+/ios/DerivedData/
+/android/.gradle/
+/android/build/
+/android/app/build/
+/android/captures/
+/android/app/src/main/assets/public/
+/android/local.properties
 
 # production
 /build
