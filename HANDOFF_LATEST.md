@@ -13,6 +13,19 @@ is months stale — CLAUDE.md is the canonical brain for this repo.
 
 ---
 
+## Jun 12, 2026 (morning) — App Store build (iOS ready to archive)
+
+The Montree iOS app (thin Capacitor-8 wrapper of montree.xyz) is now assembled and committed on
+`audit-cleanup-jun2026`. Done: in-app account deletion (Apple 5.1.1(v)) ported off the stale
+`appstore/account-deletion` branch and wired into teacher/admin settings + a new parent account
+page (run `migrations/250_account_deletion_audit.sql` / `db/RUN_THESE/03`); brand app icon + splash;
+permission strings + privacy manifest committed; offline fallback (`MontreeViewController.swift`);
+Android camera/mic/media/push permissions; **ios/ + android/ now git-tracked** (were ignored).
+The remaining steps are inherently Tredoux's (Apple enrolment, signing, Archive, upload) — full
+guide in `docs/APP_STORE_RUNBOOK.md`. Deploy this branch to montree.xyz BEFORE submitting (the app
+loads the live site). NOTE: Capacitor 8 uses Swift Package Manager + `App.xcodeproj` (no
+`.xcworkspace`, no CocoaPods); Xcode resolves the plugin packages on first open.
+
 ## Jun 12, 2026 (early hours) — Depth round: FUNCTIONALITY findings + fixes
 
 Tredoux redirected the run: security deprioritised, "does it actually work" is the lens.
