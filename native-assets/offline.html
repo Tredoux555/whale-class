@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Montree — Offline</title>
+  <style>
+    :root { --teal:#0B2D2A; --teal2:#0F3B37; --emerald:#4ADE80; --ink:#EAFBF1; }
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    html, body { margin:0; height:100%; }
+    body {
+      display:flex; flex-direction:column; align-items:center; justify-content:center;
+      min-height:100vh; padding: max(24px, env(safe-area-inset-top)) 28px max(24px, env(safe-area-inset-bottom));
+      background: linear-gradient(180deg, var(--teal2), var(--teal));
+      color: var(--ink); text-align:center;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+    .mark { width:96px; height:96px; margin-bottom:28px; }
+    h1 { font-size:24px; font-weight:700; margin:0 0 10px; letter-spacing:0.2px; }
+    p { font-size:15px; line-height:1.5; opacity:0.78; margin:0 0 28px; max-width:300px; }
+    button {
+      appearance:none; border:0; border-radius:14px; padding:15px 30px;
+      font-size:16px; font-weight:600; color:#06231F; background:var(--emerald);
+      transition: transform .08s ease, opacity .2s ease;
+    }
+    button:active { transform: scale(0.97); }
+    .hint { margin-top:18px; font-size:13px; opacity:0.5; }
+    .spin { display:none; width:20px; height:20px; border:2px solid rgba(6,35,31,.3);
+            border-top-color:#06231F; border-radius:50%; animation:s .8s linear infinite;
+            vertical-align:-4px; margin-right:8px; }
+    @keyframes s { to { transform: rotate(360deg); } }
+    .checking button { opacity:.7; }
+    .checking .spin { display:inline-block; }
+  </style>
+</head>
+<body>
+  <svg class="mark" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <rect x="486" y="600" width="52" height="190" rx="26" fill="#1C5C50"/>
+    <g fill="#4ADE80">
+      <path d="M512 196 L660 408 H364 Z"/>
+      <path d="M512 320 L700 540 H324 Z"/>
+      <path d="M512 452 L740 668 H284 Z"/>
+    </g>
+  </svg>
+  <h1>You're offline</h1>
+  <p>Montree needs a connection to load. Check your Wi-Fi or mobile data, then try again.</p>
+  <button id="retry"><span class="spin"></span><span id="label">Try again</span></button>
+  <div class="hint">Your saved work will sync once you're back online.</div>
+
+  <script>
+    // Bundled offline fallback. Capacitor loads this locally when the remote
+    // app (montree.xyz) is unreachable, so users see THIS instead of a white
+    // screen. Retry pings the server and reloads the real app when reachable.
+    var APP_URL = 'https://montree.xyz';
+    var btn = document.getElementById('retry');
+    async function check() {
+      document.body.classList.add('checking');
+      document.getElementById('label').textContent = 'Checking…';
+      try {
+        // cache-busting HEAD; no-cors so a reachable server resolves even cross-origin
+        await fetch(APP_URL + '/api/warm?ts=' + Date.now(), { mode: 'no-cors', cache: 'no-store' });
+        location.replace(APP_URL);
+      } catch (e) {
+        document.body.classList.remove('checking');
+        document.getElementById('label').textContent = 'Still offline — try again';
+      }
+    }
+    btn.addEventListener('click', check);
+    // Auto-retry when the OS reports connectivity returns.
+    window.addEventListener('online', check);
+  </script>
+</body>
+</html>

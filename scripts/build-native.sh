@@ -55,6 +55,13 @@ cat > out/index.html << 'EOF'
 </html>
 EOF
 
+# Bundle the branded offline fallback page so the native error handler
+# (MontreeViewController) can show it when montree.xyz is unreachable.
+if [ -f "$WHALE_DIR/public/offline.html" ]; then
+  cp "$WHALE_DIR/public/offline.html" "$WHALE_DIR/out/offline.html"
+  echo "📴 Bundled offline.html for native offline fallback"
+fi
+
 # Step 3: Add Capacitor platforms if they don't exist
 if [ ! -d "$WHALE_DIR/ios" ]; then
   echo "🍎 Adding iOS platform..."
@@ -111,7 +118,9 @@ if [ "$1" = "apk" ]; then
 elif [ "$1" = "ios" ]; then
   echo ""
   echo "🍎 Opening Xcode..."
-  open "$WHALE_DIR/ios/App/App.xcworkspace"
+  # Capacitor 8 uses Swift Package Manager — open the .xcodeproj directly
+  # (there is no .xcworkspace; CocoaPods is not used).
+  open "$WHALE_DIR/ios/App/App.xcodeproj"
   echo ""
   echo "In Xcode:"
   echo "  1. Select an iPhone simulator from the top bar"
