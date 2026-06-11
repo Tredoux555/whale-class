@@ -2,6 +2,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
 import { getSupabase } from '@/lib/supabase-client';
 import { verifyAdminToken } from '@/lib/story-db';
+// audit-fix (Jun 2026): durable audit trail + cooldown. The audit row goes to
+// the montree security audit table — deliberately OUTSIDE the nuke's blast
+// radius (the nuke wipes story_* logs, so it would otherwise erase its own
+// trail). This does NOT add any montree table to the nuke scope.
+import { logAudit, getClientIP, getUserAgent } from '@/lib/montree/audit-logger';
 
 export const maxDuration = 120;
 
@@ -186,6 +191,43 @@ export async function POST(request: NextRequest) {
     );
   }
 
+  const supabaseEarly = getSupabase();
+  const ip = getClientIP(request.headers);
+
+  // audit-fix (Jun 2026): cooldown — one nuke per 10 minutes. Uses the montree
+  // audit table (survives the nuke itself and container restarts). Fails OPEN
+  // on query error: the nuke is the operator's emergency brake and must not be
+  // blockable by a database hiccup — the secret code remains the authority.
+  try {
+    const tenMinAgo = new Date(Date.now() - 10 * 60 * 1000).toISOString();
+    const { data: recent } = await supabaseEarly
+      .from('montree_super_admin_audit')
+      .select('id')
+      .eq('action', 'story_nuke_fired')
+      .gte('created_at', tenMinAgo)
+      .limit(1);
+    if (recent && recent.length > 0) {
+      console.warn(`[Story NUKE] Cooldown active — refused repeat fire. ip=${ip}`);
+      return NextResponse.json(
+        { error: 'A nuke was fired in the last 10 minutes. Cooldown active.' },
+        { status: 429, headers: { 'Retry-After': '600' } },
+      );
+    }
+  } catch (e) {
+    console.error('[Story NUKE] Cooldown check failed (continuing — code is the authority):', e);
+  }
+
+  // Durable audit row BEFORE firing (so even a crash mid-wipe leaves a trail).
+  await logAudit(supabaseEarly, {
+    adminIdentifier: adminUsername ?? 'code-only',
+    action: 'story_nuke_fired',
+    resourceType: 'system',
+    resourceDetails: { adminSession: adminUsername ?? 'none' },
+    ipAddress: ip,
+    userAgent: getUserAgent(request.headers),
+    isSensitive: true,
+  });
+
   console.warn(
     `[Story NUKE] FIRING — content wipe (accounts preserved). adminSession=${adminUsername ?? 'none'} ip=${request.headers.get('x-forwarded-for') ?? 'unknown'} at=${new Date().toISOString()}`,
   );
@@ -210,6 +252,17 @@ export async function POST(request: NextRequest) {
   console.warn(
     `[Story NUKE] COMPLETE. anyError=${anyError} tables=${JSON.stringify(tables)} buckets=${JSON.stringify(buckets)}`,
   );
+
+  // Durable completion record with the per-table/bucket results.
+  await logAudit(supabase, {
+    adminIdentifier: adminUsername ?? 'code-only',
+    action: 'story_nuke_completed',
+    resourceType: 'system',
+    resourceDetails: { anyError, tables, buckets },
+    ipAddress: ip,
+    userAgent: getUserAgent(request.headers),
+    isSensitive: true,
+  });
 
   return NextResponse.json({
     success: !anyError,
