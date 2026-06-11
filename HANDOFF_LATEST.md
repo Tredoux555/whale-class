@@ -1,10 +1,32 @@
 # Whale / Montree — Latest Handoff
 
-**Last updated:** May 30, 2026, end of day (Session 139)
-**Live on Railway:** commit `d99de791` (or whatever's latest on `main`)
+**Last updated:** June 11, 2026, overnight (autonomous audit run)
+**Live on Railway:** latest `main` (`e2ab75ac` at time of writing)
+**⚠️ Unmerged work:** branch `audit-cleanup-jun2026` — security audit fixes
+(see `~/Desktop/AUDIT-2026-06/AUDIT-whale.md` + the PROGRESS LOG in
+`~/Desktop/HANDOFF_AUDIT_RUN_JUNE2026.md`). Merge is Tredoux's decision.
 
 Resume-from-here document. New session: read this, then `CLAUDE.md` for full
 project context + the migration/session notes near its end.
+NOTE: `docs/mission-control/` (brain.json / SESSION_LOG.md / mission-control.json)
+is months stale — CLAUDE.md is the canonical brain for this repo.
+
+---
+
+## Jun 11, 2026 (overnight) — Portfolio audit run, whale Phase A+B
+
+Read-only audit (4 parallel reviewers + direct verification) then surgical
+fixes on branch `audit-cleanup-jun2026`. Highlights: super-admin session
+tokens no longer signed with the login password itself (new optional
+`SUPER_ADMIN_JWT_SECRET`); login rate limiting fails closed on 6 credential
+routes; password removed from URL query strings (3 routes; impact-fund also
+had a non-timing-safe compare that accepted an EMPTY password if the env var
+was unset); story nuke got a 10-min cooldown + durable audit trail in the
+montree security log; public application forms got rate limits + input caps;
+media/photo deletes now clean up storage files. Verified: 9/9 tests, fresh
+`npm ci` + `npm run build` green, tsc error count unchanged (5,250 — all
+pre-existing). Decisions needed from Tredoux are in the master doc on the
+Desktop.
 
 ---
 
