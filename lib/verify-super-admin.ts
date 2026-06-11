@@ -6,9 +6,21 @@
 import { timingSafeEqual } from 'crypto';
 import { jwtVerify } from 'jose';
 
-function getSuperAdminSecret(): Uint8Array {
-  const secret = process.env.SUPER_ADMIN_PASSWORD || process.env.ADMIN_SECRET;
-  if (!secret) throw new Error('SUPER_ADMIN_PASSWORD or ADMIN_SECRET required');
+/**
+ * Signing key for super-admin session JWTs.
+ *
+ * audit-fix (Jun 2026): tokens used to be signed with SUPER_ADMIN_PASSWORD
+ * itself — a short password doubling as the signing key means anyone can
+ * forge admin tokens by guessing the password offline. Prefer a dedicated
+ * long random SUPER_ADMIN_JWT_SECRET (set it in Railway); the old chain is
+ * kept as fallback so nothing breaks before the env var is added.
+ */
+export function getSuperAdminTokenSecret(): Uint8Array {
+  const secret =
+    process.env.SUPER_ADMIN_JWT_SECRET ||
+    process.env.SUPER_ADMIN_PASSWORD ||
+    process.env.ADMIN_SECRET;
+  if (!secret) throw new Error('SUPER_ADMIN_JWT_SECRET, SUPER_ADMIN_PASSWORD or ADMIN_SECRET required');
   return new TextEncoder().encode(secret);
 }
 
@@ -59,7 +71,7 @@ export async function verifySuperAdminAuth(
   const token = headers.get('x-super-admin-token');
   if (token) {
     try {
-      const { payload } = await jwtVerify(token, getSuperAdminSecret());
+      const { payload } = await jwtVerify(token, getSuperAdminTokenSecret());
       if (payload.role === 'super_admin') {
         return { valid: true };
       }

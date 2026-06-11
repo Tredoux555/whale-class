@@ -8,12 +8,11 @@ import { SignJWT } from 'jose';
 import { getSupabase } from '@/lib/supabase-client';
 import { logAudit, getClientIP, getUserAgent } from '@/lib/montree/audit-logger';
 import { checkRateLimit } from '@/lib/rate-limiter';
-
-function getSuperAdminSecret(): Uint8Array {
-  const secret = process.env.SUPER_ADMIN_PASSWORD || process.env.ADMIN_SECRET;
-  if (!secret) throw new Error('SUPER_ADMIN_PASSWORD or ADMIN_SECRET required');
-  return new TextEncoder().encode(secret);
-}
+// audit-fix (Jun 2026): session tokens are now signed with a dedicated
+// SUPER_ADMIN_JWT_SECRET (falls back to the old password-derived key until
+// the env var is set in Railway). Shared with lib/verify-super-admin.ts so
+// mint + verify always use the same key.
+import { getSuperAdminTokenSecret } from '@/lib/verify-super-admin';
 
 export async function POST(req: NextRequest) {
   try {
@@ -108,7 +107,7 @@ export async function POST(req: NextRequest) {
       .setProtectedHeader({ alg: 'HS256' })
       .setIssuedAt()
       .setExpirationTime('1h')
-      .sign(getSuperAdminSecret());
+      .sign(getSuperAdminTokenSecret());
 
     return NextResponse.json({ authenticated: true, token });
   } catch (e) {
