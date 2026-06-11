@@ -13,6 +13,28 @@ is months stale — CLAUDE.md is the canonical brain for this repo.
 
 ---
 
+## Jun 12, 2026 (early hours) — Depth round: FUNCTIONALITY findings + fixes
+
+Tredoux redirected the run: security deprioritised, "does it actually work" is the lens.
+Three new reports in `~/Desktop/AUDIT-2026-06/` (FUNCTIONALITY-whale-frontend, -db-crosscheck,
+-mobile). Headlines, plain language:
+- **Parent report emails NEVER sent** — all three send routes queried `montree_child_parent_links`,
+  a table that has never existed; the failure was silent and reports were still marked "sent".
+  FIXED on the branch (`d57a13f1`) via new `lib/montree/parent-emails.ts`
+  (montree_parent_children → montree_parents, respects can_view_reports + is_active).
+- **The 9 learning games save no progress** — they POST to `/api/games/progress` + `/api/games/track`
+  which don't exist. NEXT SESSION: build these (needs a table — propose SQL in chat).
+- **Teacher signup dead-ended on a 404** right after registering; login link also pointed at a
+  non-existent page; games-hub "Match Attack" card linked the wrong route. FIXED (`e76c2c76`).
+- **21 tables referenced in code don't exist in production** (ranked in the db-crosscheck report;
+  3 already have staged SQL); **77 production tables are referenced by nothing**.
+- Reports nav broken two ways; games hub unreachable from any normal navigation. NOT fixed yet
+  (needs a product decision on where Reports should point).
+- Mobile/store: 2–4 weeks out — account-deletion branch stale + colliding migration number,
+  6 of 9 Capacitor plugins not synced (camera/mic would fail on Android), ios/android not in git.
+Branch `audit-cleanup-jun2026` now has 14 commits; build re-verified green after the last fix.
+Standing rule from Tredoux (Jun 12): everything he needs goes IN THE CHAT; docs are for memory.
+
 ## Jun 11, 2026 (overnight) — Portfolio audit run, whale Phase A+B
 
 Read-only audit (4 parallel reviewers + direct verification) then surgical
