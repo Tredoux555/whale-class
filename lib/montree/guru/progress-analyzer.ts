@@ -1,7 +1,7 @@
 // lib/montree/guru/progress-analyzer.ts
 // Helper to detect stale or inactive progress patterns for proactive suggestions
 
-import { SupabaseClient } from '@supabase/supabase-js';
+import type { UntypedClient as SupabaseClient } from '@/lib/supabase-client';
 
 export interface StaleWork {
   work_name: string;

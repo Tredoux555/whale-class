@@ -12,7 +12,7 @@
 //   This tool returns AGGREGATES — counts only. No school names, no
 //   child names, no PII. Safe to quote in a cold pitch.
 
-import type { SupabaseClient } from '@supabase/supabase-js';
+import type { UntypedClient as SupabaseClient } from '@/lib/supabase-client';
 
 export interface PlatformSignal {
   active_schools: number;

@@ -7,12 +7,49 @@
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 
+// Loose structural types for the summary payload (type-level only — shapes
+// mirror what /api/montree/super-admin/master-outreach/summary returns).
+type CampaignInfo = {
+  status?: string;
+  subject?: string;
+  note?: string;
+  throttle?: string;
+  expected_end?: string;
+  scheduled_for?: string;
+  campaign_id?: string;
+};
+type CampaignSummary = {
+  generated_at?: string;
+  totals: { combined: number; global_schools: number; china_schools: number };
+  global?: {
+    total: number;
+    deliverable: number;
+    with_email: number;
+    dead_domain: number;
+    no_mail_server: number;
+    no_email: number;
+    batches: Array<{ batch: string; count: number }>;
+    top_countries: Array<{ country: string; count: number }>;
+  };
+  china?: {
+    total: number;
+    with_phone: number;
+    with_email: number;
+    deliverable: number;
+    top_cities: Array<{ city: string; count: number }>;
+  };
+  campaigns?: Record<
+    'campaign_a_montree_pitch' | 'campaign_c_job_application' | 'campaign_d_correction',
+    CampaignInfo
+  >;
+};
+
 export default function MasterCampaignPage() {
   const [authenticated, setAuthenticated] = useState(false);
   const [password, setPassword] = useState('');
-  const [summary, setSummary] = useState(null);
+  const [summary, setSummary] = useState<CampaignSummary | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
   const [downloading, setDownloading] = useState(false);
 
   const handleLogin = async () => {
@@ -100,9 +137,12 @@ export default function MasterCampaignPage() {
     );
   }
 
-  const g = summary?.global;
-  const c = summary?.china;
-  const cam = summary?.campaigns;
+  // These are only dereferenced inside the `{summary && (...)}` JSX below,
+  // where the payload always carries global/china/campaigns. Assert presence
+  // once here (pure type-level cast — value and runtime are unchanged).
+  const g = summary?.global as NonNullable<CampaignSummary['global']>;
+  const c = summary?.china as NonNullable<CampaignSummary['china']>;
+  const cam = summary?.campaigns as NonNullable<CampaignSummary['campaigns']>;
   const deliverablePct = g ? Math.round((g.deliverable / g.with_email) * 100) : 0;
 
   return (

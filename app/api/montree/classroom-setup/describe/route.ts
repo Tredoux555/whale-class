@@ -170,17 +170,20 @@ IMPORTANT: Describe the MATERIALS, not the child or the environment. Focus on wh
     console.log(`[Describe] Sonnet vision completed in ${Date.now() - startMs}ms for "${work_name}"`);
 
     // Extract tool_use result
-    let result: {
+    // (named type instead of `typeof result` — the flow-narrowed type inside
+    // the loop is `null`, which collapsed later uses to `never`; type-level fix)
+    type DescribeResult = {
       visual_description: string;
       parent_description: string;
       why_it_matters: string;
       key_materials: string[];
       negative_descriptions: string[];
-    } | null = null;
+    };
+    let result: DescribeResult | null = null;
 
     for (const block of message.content) {
       if (block.type === 'tool_use' && block.name === 'describe_work') {
-        result = block.input as typeof result;
+        result = block.input as DescribeResult;
         break;
       }
     }

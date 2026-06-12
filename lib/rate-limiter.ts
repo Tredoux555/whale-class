@@ -3,7 +3,7 @@
 // Survives Railway container restarts (unlike in-memory approaches)
 // Uses montree_rate_limit_logs table (created in migration 122)
 
-import { SupabaseClient } from '@supabase/supabase-js';
+import type { UntypedClient as SupabaseClient } from '@/lib/supabase-client';
 
 interface RateLimitResult {
   allowed: boolean;

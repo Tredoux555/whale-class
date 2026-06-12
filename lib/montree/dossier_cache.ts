@@ -15,7 +15,7 @@
 //   runs.
 
 import { createHash } from 'crypto';
-import type { SupabaseClient } from '@supabase/supabase-js';
+import type { UntypedClient as SupabaseClient } from '@/lib/supabase-client';
 
 export type DossierAudienceType = 'parent_meeting' | 'principal_pitch';
 export type DossierOwnerRole = 'principal' | 'agent';

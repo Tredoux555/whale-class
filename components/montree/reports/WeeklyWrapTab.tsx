@@ -1053,7 +1053,10 @@ export default function WeeklyWrapTab({ classroomId, view: externalView }: Weekl
           color: T.textMuted,
           fontFamily: T.sans,
         }}>
-          <p style={{ fontSize: 18, marginBottom: 8, margin: 0, marginBottom: 8 }}>{t('weeklyWrap.noReports')}</p>
+          {/* NOTE: key order preserved from pre-dedupe duplicate-key literal — the
+              `margin: 0` shorthand intentionally comes after `marginBottom`, so the
+              effective bottom margin is 0 (matches prior runtime behavior). */}
+          <p style={{ fontSize: 18, marginBottom: 8, margin: 0 }}>{t('weeklyWrap.noReports')}</p>
           <p style={{ fontSize: 13, margin: 0, marginBottom: 16 }}>{t('weeklyWrap.clickGenerateToStart')}</p>
           {/* Cross-reference hint — the multi-week range stepper lives on the
               Weekly Admin tab, not this one. Teachers expecting "past 2 weeks"

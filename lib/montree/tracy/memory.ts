@@ -32,7 +32,7 @@
 //     The recall_memory tool is for DEEPER recall.
 //   - Astra decides what's memorable. Not every turn writes a memory.
 
-import type { SupabaseClient } from '@supabase/supabase-js';
+import type { UntypedClient as SupabaseClient } from '@/lib/supabase-client';
 
 export type PrincipalMemoryType =
   | 'preference'

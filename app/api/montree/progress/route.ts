@@ -132,13 +132,16 @@ export async function GET(request: NextRequest) {
     );
     notesQueryIndex = queryPromises.length;
     queryPromises.push(
+      // `as unknown` first: relating this builder's type to the array's
+      // element union sends supabase-js's select-parser types past tsc's
+      // instantiation-depth limit (TS2589). Pure type-level cast.
       supabase
         .from('montree_work_sessions')
         .select('id, work_name, area, notes, observed_at, teacher_id')
         .eq('child_id', childId)
         .not('notes', 'is', null)
         .order('observed_at', { ascending: false })
-        .limit(200)
+        .limit(200) as unknown as (typeof queryPromises)[number]
     );
   }
 

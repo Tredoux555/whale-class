@@ -150,8 +150,10 @@ function tokenMatchScore(query: string, candidate: string, allCandidates: string
 // NUMBER MATCHING (critical for "Box 1", "Board 2")
 // ============================================
 function numberMatchScore(query: string, candidate: string): number {
-  const queryNums = query.match(/\d+/g) || [];
-  const candidateNums = candidate.match(/\d+/g) || [];
+  // Explicit string[] — `match() || []` infers `RegExpMatchArray | never[]`,
+  // whose `.includes` parameter collapses to `never`. Type-level fix only.
+  const queryNums: string[] = query.match(/\d+/g) || [];
+  const candidateNums: string[] = candidate.match(/\d+/g) || [];
   
   if (queryNums.length === 0 && candidateNums.length === 0) return 0;
   if (queryNums.length === 0 || candidateNums.length === 0) return -10;

@@ -4,7 +4,7 @@
 // appointments resolvers. Gated on the `school_events` feature flag.
 
 import { NextResponse } from 'next/server';
-import type { SupabaseClient } from '@supabase/supabase-js';
+import type { UntypedClient as SupabaseClient } from '@/lib/supabase-client';
 import { verifyParentSession } from '@/lib/montree/verify-parent-request';
 import { isFeatureEnabled } from '@/lib/montree/features/server';
 

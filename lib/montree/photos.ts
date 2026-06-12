@@ -2,7 +2,7 @@
 // Centralized photo retrieval for Montree
 // Photos are stored in montree_media (NOT montree_child_photos which is legacy)
 
-import { SupabaseClient } from '@supabase/supabase-js';
+import type { UntypedClient as SupabaseClient } from '@/lib/supabase-client';
 import { getProxyUrl } from '@/lib/montree/media/proxy-url';
 
 export interface ChildPhoto {

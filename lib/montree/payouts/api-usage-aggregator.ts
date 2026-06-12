@@ -19,7 +19,7 @@
 // Cost field: montree_api_usage.cost_usd is in USD. We assume USD = original
 // currency for now (consistent with the rest of the billing pipeline).
 
-import type { SupabaseClient } from '@supabase/supabase-js';
+import type { UntypedClient as SupabaseClient } from '@/lib/supabase-client';
 import { monthRange } from './calculator';
 
 interface ApiUsageRow {

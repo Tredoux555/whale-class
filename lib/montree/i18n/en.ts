@@ -209,7 +209,7 @@ export const en = {
 
   // Guru
   'guru.title': 'Guru',
-  'guru.askAnything': 'Ask anything about Montessori...',
+  'guru.askAnything': 'Ask anything about {name}...',
   'guru.thinking': 'Thinking...',
 
   // Settings
@@ -437,7 +437,7 @@ export const en = {
   'guru.actionPlans': 'Action plans with timelines',
   'guru.noChildren': 'No children found',
   'guru.copiedClipboard': 'Copied to clipboard!',
-  'guru.failedConnect': 'Failed to connect. Please try again.',
+  'guru.failedConnect': 'Failed to connect',
   'guru.welcomeUpgrade': 'Welcome to Guru! You now have unlimited access.',
   'guru.upgradeCancelled': 'Upgrade cancelled. You still have free prompts available.',
   'guru.couldNotCheckout': 'Could not start checkout. Please try again.',
@@ -573,7 +573,6 @@ export const en = {
   'error.couldNotAccessCamera': 'Could not access camera',
   'success.savedTo': 'Saved to {name}',
   'error.failedToSavePhoto': 'Failed to save photo',
-  'common.saving': 'Saving...',
   'action.capture': 'Capture',
   'action.watchDemo': 'Watch Demo',
   'action.chooseFromGallery': 'Choose from gallery',
@@ -620,7 +619,6 @@ export const en = {
   'form.materialsExample': 'Small pitcher\nBowl\nSponge\nTray',
   'form.teacherNotes': 'Teacher Notes (private)',
   'form.teacherNotesPlaceholder': 'Notes for yourself about this work...',
-  'common.adding': 'Adding...',
   'action.addWork': 'Add Work',
 
   // Edit Work Modal
@@ -681,7 +679,7 @@ export const en = {
   'curriculum.nomenclatureCards': 'Nomenclature cards',
 
   // Phase 2 — Welcome Modal
-  'welcome.title': 'Welcome, {name}!',
+  'welcome.title': 'Welcome to Montree!',
   'welcome.message': "Let's get your classroom set up. The first step is adding your students so you can start tracking their progress.",
   'welcome.cta': 'Add My First Student',
 
@@ -1049,8 +1047,8 @@ export const en = {
   'weeklyReview.teacher': 'Teacher',
   'weeklyReview.parent': 'Parent',
   'weeklyReview.aiAnalysis': 'AI Analysis',
-  'weeklyReview.generating': 'Generating reports...',
-  'weeklyReview.generateFailed': 'Failed to generate reports',
+  'weeklyReview.generating': 'Analyzing this week\'s data...',
+  'weeklyReview.generateFailed': 'Failed to generate report',
   'weeklyReview.fetchFailed': 'Failed to fetch reports',
   'weeklyReview.regenerated': 'Reports regenerated!',
   'weeklyReview.notified': 'Parents notified!',
@@ -1327,7 +1325,7 @@ export const en = {
   'guru.skipForNow': 'Skip for now',
 
   // Phase 7 — Time Labels
-  'time.justNow': 'Just now',
+  'time.justNow': 'just now',
   'time.minutesAgo': '{count}m ago',
   'time.hoursAgo': '{count}h ago',
   'time.yesterday': 'Yesterday',
@@ -1342,7 +1340,6 @@ export const en = {
   'guru.expand': 'Expand',
   'guru.preparingPlan': 'Preparing your plan...',
   'guru.couldNotGeneratePlan': 'Could not generate plan',
-  'guru.failedConnect': 'Failed to connect',
   'guru.planReadyExpand': 'Plan ready! Tap to expand.',
   'guru.day': 'Day',
   'guru.missing': 'Missing',
@@ -1950,9 +1947,7 @@ export const en = {
   'guru.couldNotAnswer': "Sorry, I couldn't answer that right now. Try tapping a concern card for more help!",
   'guru.askTheGuru': 'Ask the Guru',
   'guru.quickQuestion': 'Quick Question about {name}',
-  'guru.askAnything': 'Ask anything about {name}...',
   'guru.ask': 'Ask',
-  'guru.thinking': 'Thinking...',
 
   // Audit — Voice Notes
   'voice.recordingTooShort': 'Recording too short',
@@ -2689,7 +2684,7 @@ export const en = {
   'voiceObs.eventBehavioral': 'Behavioral',
   'voiceObs.eventOther': 'Other',
   'voiceObs.atTimestamp': 'at',
-  'voiceObs.approved': 'Approve',
+  'voiceObs.approved': 'approved',
   'voiceObs.rejected': 'Reject',
   'voiceObs.pending': 'Pending',
   'voiceObs.edited': 'Edited',
@@ -2899,7 +2894,6 @@ export const en = {
   'guru.imageTooLarge': 'Image too large (max 10MB)',
   'guru.unableLoadClassroom': 'Unable to load classroom data. Please go back and try again, or select a specific student.',
   'guru.timeout': 'The Guru took too long. Please try again.',
-  'guru.thinking': 'Thinking...',
   'guru.thinkingContext': 'Building context...',
   'guru.thinkingGenerating': 'Generating response...',
   'guru.thinkingLive': 'Thinking...',
@@ -3147,14 +3141,11 @@ export const en = {
   'snap.toggleFailed': 'Failed to update visibility',
 
   // ── Weekly Review ──
-  'weeklyReview.title': 'Weekly Review',
   'weeklyReview.teacherTab': 'Teacher Review',
   'weeklyReview.parentTab': 'Parent Report',
   'weeklyReview.teacherDescription': 'Generate a structured review for your team discussion. The AI will analyze this week\'s progress, explain work connections, and suggest next steps.',
   'weeklyReview.parentDescription': 'Generate a warm, professional update for parents. Explains what their child did, why it matters, and what\'s coming next.',
   'weeklyReview.generate': 'Generate Review',
-  'weeklyReview.generating': 'Analyzing this week\'s data...',
-  'weeklyReview.generateFailed': 'Failed to generate report',
   'weeklyReview.refined': 'Report updated',
   'weeklyReview.refineFailed': 'Failed to refine report',
   'weeklyReview.refining': 'Updating...',
@@ -3266,7 +3257,7 @@ export const en = {
   // ── Parent Codes ──
   'parentCodes.loading': 'Loading parent codes...',
   'parentCodes.backToDashboard': 'Back to Dashboard',
-  'parentCodes.title': 'Parent Access Codes',
+  'parentCodes.title': 'Parent Manager',
   'parentCodes.students': 'students',
   'parentCodes.generating': 'Generating...',
   'parentCodes.generateMissing': 'Generate Missing Codes',
@@ -3335,7 +3326,6 @@ export const en = {
   'printWeekly.weekLabel': 'Week',
 
   // ── Voice Observation extras ──
-  'voiceObs.approved': 'approved',
   'voiceObs.committedDescription': 'Student progress has been updated. All audio and transcripts have been permanently deleted.',
 
   // ── Admin Settings placeholders ──
@@ -3485,7 +3475,6 @@ export const en = {
 
   // ── Welcome Page ──
   'welcome.settingUp': 'Setting up your school...',
-  'welcome.title': 'Welcome to Montree!',
   'welcome.demoReady': 'Your demo account for',
   'welcome.trialStarted': 'Welcome to Montree.',
   'welcome.demoMode': 'Demo Mode',
@@ -3507,7 +3496,7 @@ export const en = {
   'welcome.needHelp': 'Need help? Email us at',
 
   // Special Events
-  'events.title': 'Special Events',
+  'events.title': 'Events',
   'events.selectEvent': 'Select Event',
   'events.noEvent': 'No Event (Curriculum)',
   'events.createNew': 'Create New Event',
@@ -3527,8 +3516,8 @@ export const en = {
   'events.attendanceFailed': 'Failed to save attendance',
   'events.selectAnEvent': 'Select an event...',
   'events.cancel': 'Cancel',
-  'events.create': 'Create',
-  'events.creating': '...',
+  'events.create': 'Create event',
+  'events.creating': 'Creating…',
   'events.newEventPlaceholder': 'Event name...',
   'events.tagged': 'Tagged',
   'events.saveTagged': 'Save',
@@ -3581,16 +3570,16 @@ export const en = {
   'conferenceNotes.status.retracted': 'Retracted',
 
   // Evidence Tracking
-  'evidence.title': 'Evidence',
-  'evidence.photos': '{count} photos',
-  'evidence.days': '{count} days',
+  'evidence.title': 'Evidence Tracker',
+  'evidence.photos': 'photos',
+  'evidence.days': 'days',
   'evidence.strength.none': 'No evidence',
   'evidence.strength.weak': 'Weak evidence',
   'evidence.strength.moderate': 'Moderate evidence',
   'evidence.strength.strong': 'Strong evidence',
-  'evidence.confirmMastery': 'Confirm Mastery',
+  'evidence.confirmMastery': 'Confirm ⭐',
   'evidence.revokeMastery': 'Revoke Mastery',
-  'evidence.masteryConfirmed': 'Mastery confirmed',
+  'evidence.masteryConfirmed': 'Mastery confirmed!',
   'evidence.masteryRevoked': 'Mastery revoked',
   'evidence.confirmFailed': 'Failed to confirm mastery',
   'evidence.revokeFailed': 'Failed to revoke mastery',
@@ -3706,11 +3695,6 @@ export const en = {
   'weeklyWrap.approvingAll': 'Approving...',
   'weeklyWrap.reportsReadyToSend': '{count} parent reports ready to send',
   'weeklyWrap.nextWeeksFocus': "Next Week's Focus",
-  'weeklyWrap.tapToSelect': 'Tap to select',
-  'weeklyWrap.regenerateAll': '🔄 Regenerate All',
-  'weeklyWrap.parentReports': 'Parent Reports',
-  'weeklyWrap.deselectAll': 'Deselect All',
-  'weeklyWrap.selectAll': 'Select All',
   'weeklyWrap.noReportsFound': 'No reports found for this week',
   'weeklyWrap.inviteParents': 'Invite Parents',
   'weeklyWrap.sendAllToParents': 'Send All to Parents',
@@ -3913,7 +3897,7 @@ export const en = {
   'teacherNotes.childNotePlaceholder': 'Quick note about {name}...',
 
   // Pulse Generation
-  'pulse.title': 'Classroom Pulse',
+  'pulse.title': 'Pulse',
   'pulse.lastGenerated': 'Last generated {time}',
   'pulse.neverGenerated': 'Generate your first weekly pulse',
   'pulse.generate': 'Generate Weekly Pulse',
@@ -3955,7 +3939,6 @@ export const en = {
   'brief.skillInsights': 'Insights',
   'brief.skillIntelTitle': 'Skill Intelligence',
   'brief.action.skill_intelligence': '{count} skill insights need attention',
-  'evidence.title': 'Evidence Tracker',
   'evidence.readySummary': '{count} works ready for mastery',
   'evidence.noReady': 'No works ready for mastery yet',
   'evidence.strong': 'Strong',
@@ -3965,12 +3948,7 @@ export const en = {
   'evidence.readyAlert': '{count} children have works ready for mastery',
   'evidence.work': 'work',
   'evidence.works': 'works',
-  'evidence.photos': 'photos',
-  'evidence.days': 'days',
-  'evidence.confirmMastery': 'Confirm ⭐',
   'evidence.confirming': 'Confirming...',
-  'evidence.masteryConfirmed': 'Mastery confirmed!',
-  'evidence.confirmFailed': 'Failed to confirm mastery',
   'evidence.moreReady': 'more ready',
   'evidence.noData': 'No active works with evidence yet',
   // Background tasks
@@ -3997,10 +3975,6 @@ export const en = {
   'paperwork.tapToEdit': 'Tap to set week manually',
   'paperwork.updateFailed': 'Failed to update paperwork week',
 
-  'time.justNow': 'just now',
-  'time.minutesAgo': '{count}m ago',
-  'time.hoursAgo': '{count}h ago',
-  'time.daysAgo': '{count}d ago',
 
   // Focus List
   'focus.title': 'Focus List',
@@ -5110,12 +5084,10 @@ export const en = {
   'agentThread.networkError': 'Network error — please try again',
 
   // parentCodes.* — teacher-facing parent code page
-  'parentCodes.title': 'Parent Manager',
   'parentCodes.subtitle': "Generate a code for each child and share it with the parent. They enter it at montree.xyz/montree/parent to start receiving updates. The principal sees every code in the school too.",
   'parentCodes.print': 'Print',
   'parentCodes.noChildrenYet': 'No children in your classroom yet. Add students from the dashboard first.',
   'parentCodes.parentPortalAccess': 'Parent portal access',
-  'parentCodes.connected': 'Connected',
   'parentCodes.accessCodeLabel': 'ACCESS CODE',
   'parentCodes.copied': 'Copied',
   'parentCodes.copyCode': 'Copy code',
@@ -5553,7 +5525,6 @@ export const en = {
   'meetingNotes.visibilityPrivate': 'Only you can see this. The parent never gets a copy.',
 
   // Pulse hub (admin)
-  'pulse.title': 'Pulse',
   'pulse.subtitle': 'School activity, observations, and reports.',
   'pulse.loading': 'Loading…',
   'pulse.thisWeek.title': 'This week',
@@ -5570,7 +5541,6 @@ export const en = {
   'pulse.engagement.cta': 'See activity',
 
   // Events (admin)
-  'events.title': 'Events',
   'events.subtitle': 'Post events the school can see. Parents RSVP yes / no / maybe.',
   'events.featureDisabled': "Events isn't enabled for your school yet.",
   'events.migrationPending': "⚠️ The events table isn't set up yet. Tredoux needs to run migrations/218_school_events.sql.",
@@ -5600,8 +5570,6 @@ export const en = {
   'events.scopeSchoolWide': 'School-wide',
   'events.errorRequired': 'Title and start time are required.',
   'events.errorCreate': 'Failed to create.',
-  'events.creating': 'Creating…',
-  'events.create': 'Create event',
 
   // Classrooms list (admin) — strings not already under admin.*
   'admin.classrooms.title': 'Classrooms',

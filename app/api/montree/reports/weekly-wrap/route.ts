@@ -389,7 +389,9 @@ export async function POST(request: NextRequest) {
             for (const p of (photosRes.data || []) as PhotoRecord[]) {
               photoMap.set(p.id, p);
             }
-            for (const gp of (groupPhotosRes.data || []) as Array<{ media: PhotoRecord | null }>) {
+            // `as unknown` first: the embedded-relation select types `media` as
+            // an array; runtime shape is a single record. Pure type-level cast.
+            for (const gp of (groupPhotosRes.data || []) as unknown as Array<{ media: PhotoRecord | null }>) {
               if (gp.media) {
                 const capturedDate = gp.media.captured_at?.split('T')[0] || '';
                 if (capturedDate >= week_start && capturedDate <= week_end) {

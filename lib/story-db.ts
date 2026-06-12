@@ -1,5 +1,6 @@
 // Shared Supabase client for story routes
-import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { createClient } from '@supabase/supabase-js';
+import type { UntypedClient as SupabaseClient } from '@/lib/supabase-client';
 import type { NextRequest, NextResponse } from 'next/server';
 
 // 🚨 Session 113 V2 Story audit F-1.2 — httpOnly cookie name.

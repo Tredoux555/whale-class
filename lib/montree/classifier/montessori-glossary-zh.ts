@@ -10,7 +10,7 @@
 
 export const MONTESSORI_GLOSSARY_ZH: Record<string, string> = {
   // === AREAS ===
-  'Practical Life': '日常生活',
+  'Practical Life': '日常生活教育',
   'Sensorial': '感官',
   'Mathematics': '数学',
   'Language': '语言',
@@ -116,11 +116,9 @@ export const MONTESSORI_GLOSSARY_ZH: Record<string, string> = {
   'Absorbent Mind': '吸收心智',
   'Conscious Repetition': '有意识的重复',
   'Grace and Courtesy': '优雅与礼仪',
-  'Practical Life': '日常生活教育',
   'Sensorial Development': '感官发展',
   'Reading': '阅读',
   'Writing': '书写',
-  'Mathematics': '数学',
   'Cultural Exploration': '文化探索',
 
   // === CLASSROOM ELEMENTS ===
@@ -128,7 +126,6 @@ export const MONTESSORI_GLOSSARY_ZH: Record<string, string> = {
   'Work Rug': '工作毯',
   'Basket': '篮子',
   'Tray': '托盘',
-  'Control of Error': '错误控制',
   'Prepared Material': '预备教具',
   'Mixed Age': '混龄',
   'Three Hour Cycle': '三小时周期',

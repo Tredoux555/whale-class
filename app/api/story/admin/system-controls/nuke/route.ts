@@ -87,15 +87,25 @@ type Supa = ReturnType<typeof getSupabase>;
 // Tries a sequence of always-true filters: id → created_at → username
 // (covers every Story table shape). Advances to the next filter ONLY when the
 // failure is a missing-column error, so we never delete twice.
+// Loose structural type for a `.delete()` filter chain. The precise
+// `ReturnType<ReturnType<Supa['from']>['delete']>` nesting sends supabase-js's
+// builder types past tsc's instantiation-depth limit (TS2589). Type-level only.
+type DeleteChain = PromiseLike<{ error: { message: string } | null; count: number | null }> & {
+  not(column: string, operator: string, value: unknown): DeleteChain;
+  gte(column: string, value: unknown): DeleteChain;
+};
+
 async function wipeTable(supabase: Supa, table: string): Promise<number | string> {
-  const filters: Array<(q: ReturnType<ReturnType<Supa['from']>['delete']>) => ReturnType<ReturnType<Supa['from']>['delete']>> = [
+  const filters: Array<(q: DeleteChain) => DeleteChain> = [
     (q) => q.not('id', 'is', null),
     (q) => q.gte('created_at', '1970-01-01'),
     (q) => q.not('username', 'is', null),
   ];
   let lastErr = '';
   for (const applyFilter of filters) {
-    const { error, count } = await applyFilter(supabase.from(table).delete({ count: 'exact' }));
+    const { error, count } = await applyFilter(
+      supabase.from(table).delete({ count: 'exact' }) as unknown as DeleteChain
+    );
     if (!error) return count ?? 0;
     lastErr = error.message;
     // Try the next filter only if THIS one referenced a column that doesn't

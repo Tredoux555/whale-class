@@ -18,7 +18,7 @@
 //   Embeddings are negligible ($0.00002 × 5 = $0.0001).
 
 import type Anthropic from '@anthropic-ai/sdk';
-import type { SupabaseClient } from '@supabase/supabase-js';
+import type { UntypedClient as SupabaseClient } from '@/lib/supabase-client';
 import { HAIKU_MODEL } from '@/lib/ai/anthropic';
 import { embedTextBatch } from './embeddings';
 

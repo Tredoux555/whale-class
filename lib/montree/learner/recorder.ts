@@ -9,7 +9,7 @@
 // PRIVACY: only abstracted miscue events are stored (target/read_as/type/sound).
 // No audio, no transcript.
 
-import type { SupabaseClient } from '@supabase/supabase-js';
+import type { UntypedClient as SupabaseClient } from '@/lib/supabase-client';
 
 export interface MiscueEvent {
   target: string; // the word/sound the child was meant to read

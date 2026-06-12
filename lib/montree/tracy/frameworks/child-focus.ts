@@ -25,7 +25,7 @@
 // principal-typed question can't escape and forge instructions. Pattern matches
 // the canonical app/api/montree/admin/parent-question/route.ts.
 
-import type { SupabaseClient } from '@supabase/supabase-js';
+import type { UntypedClient as SupabaseClient } from '@/lib/supabase-client';
 import type Anthropic from '@anthropic-ai/sdk';
 import { randomBytes } from 'crypto';
 

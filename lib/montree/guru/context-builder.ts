@@ -1,7 +1,7 @@
 // lib/montree/guru/context-builder.ts
 // Gathers all relevant child context for the Guru AI
 
-import { SupabaseClient } from '@supabase/supabase-js';
+import type { UntypedClient as SupabaseClient } from '@/lib/supabase-client';
 
 export interface ChildContext {
   // Basic info

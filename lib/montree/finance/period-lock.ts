@@ -16,7 +16,7 @@
 // or read-only flows.
 
 import { NextResponse } from 'next/server';
-import type { SupabaseClient } from '@supabase/supabase-js';
+import type { UntypedClient as SupabaseClient } from '@/lib/supabase-client';
 
 interface PeriodLockRow {
   period_month: string;

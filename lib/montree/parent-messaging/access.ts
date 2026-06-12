@@ -20,7 +20,7 @@
 //   - school_id = parent.schoolId       (belt-and-braces)
 
 import { NextResponse } from 'next/server';
-import type { SupabaseClient } from '@supabase/supabase-js';
+import type { UntypedClient as SupabaseClient } from '@/lib/supabase-client';
 import { verifyParentSession } from '../verify-parent-request';
 import { isFeatureEnabled } from '../features/server';
 import type { MessagingParent } from './types';

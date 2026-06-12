@@ -6,7 +6,7 @@
 // failed SILENTLY, reports were saved and marked "sent" while **no parent
 // ever received an email**. This helper is the single correct lookup.
 
-import { SupabaseClient } from '@supabase/supabase-js';
+import type { UntypedClient as SupabaseClient } from '@/lib/supabase-client';
 
 export interface ParentEmailLink {
   child_id: string;

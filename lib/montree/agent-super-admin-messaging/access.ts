@@ -22,7 +22,7 @@
 //   - Both sides scope query by thread_type='agent_super_admin' explicitly
 
 import { NextRequest, NextResponse } from 'next/server';
-import type { SupabaseClient } from '@supabase/supabase-js';
+import type { UntypedClient as SupabaseClient } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '../verify-request';
 import { verifySuperAdminAuth } from '@/lib/verify-super-admin';
 import type { MessagingAgent, MessagingSuperAdmin } from './types';

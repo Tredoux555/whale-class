@@ -34,7 +34,7 @@
 
 import { anthropic } from '@/lib/ai/anthropic';
 import { resolveReportModel } from '@/lib/montree/reports/resolve-model';
-import type { SupabaseClient } from '@supabase/supabase-js';
+import type { UntypedClient as SupabaseClient } from '@/lib/supabase-client';
 import { getAILanguageInstruction } from '@/lib/montree/i18n';
 
 export interface SummarizeInput {

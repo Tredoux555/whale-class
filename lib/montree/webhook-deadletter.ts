@@ -4,7 +4,7 @@
 // Call this from the Stripe webhook handler's catch block. Idempotent via
 // the UNIQUE(stripe_event_id) constraint — duplicates are silently swallowed.
 
-import type { SupabaseClient } from '@supabase/supabase-js';
+import type { UntypedClient as SupabaseClient } from '@/lib/supabase-client';
 
 export interface DLQCaptureInput {
   source?: 'stripe' | 'other';

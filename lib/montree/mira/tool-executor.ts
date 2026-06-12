@@ -14,7 +14,7 @@
 //   logging.
 
 import type Anthropic from '@anthropic-ai/sdk';
-import type { SupabaseClient } from '@supabase/supabase-js';
+import type { UntypedClient as SupabaseClient } from '@/lib/supabase-client';
 import { randomBytes } from 'crypto';
 import { HAIKU_MODEL } from '@/lib/ai/anthropic';
 import { getLanguageName, getAILanguageInstruction } from '@/lib/montree/i18n/locale-config';

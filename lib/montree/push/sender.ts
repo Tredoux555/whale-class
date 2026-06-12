@@ -26,7 +26,7 @@
 import { createSign, sign as cryptoSign } from 'crypto';
 import { connect as http2Connect, constants as http2Constants } from 'http2';
 import type { ClientHttp2Session } from 'http2';
-import type { SupabaseClient } from '@supabase/supabase-js';
+import type { UntypedClient as SupabaseClient } from '@/lib/supabase-client';
 
 export interface PushPayload {
   title: string;

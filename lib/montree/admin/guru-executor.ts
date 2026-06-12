@@ -2,7 +2,7 @@
 // Tool execution handlers for Principal Admin Guru
 // All queries are school-scoped — principal only sees their own school's data
 
-import { SupabaseClient } from '@supabase/supabase-js';
+import type { UntypedClient as SupabaseClient } from '@/lib/supabase-client';
 
 export interface ToolInput {
   [key: string]: unknown;

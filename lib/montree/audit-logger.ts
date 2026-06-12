@@ -6,7 +6,7 @@
 // The table was created in migration 099 for super-admin tracking but serves as
 // the central security audit log. Consider renaming in a future refactoring.
 
-import { SupabaseClient } from '@supabase/supabase-js';
+import type { UntypedClient as SupabaseClient } from '@/lib/supabase-client';
 
 interface AuditEntry {
   adminIdentifier: string;     // Email, username, IP, or "anonymous"
