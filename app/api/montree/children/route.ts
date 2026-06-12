@@ -198,9 +198,16 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ children: [] });
     }
 
+    // PERF_PASS_JUN13.md Finding 2: `notes` (≤5KB/child) is deliberately NOT
+    // selected here. This is the hottest authed endpoint and no list consumer
+    // renders notes (dashboard grid, DashboardHeader search, WhosPlayingPicker,
+    // manage-students, media/albums/print/labels/etc. all read id/name/photo_url
+    // plus age/enrolled_at/classroom_id at most — caller sweep Jun 13, 2026).
+    // Detail surfaces that need notes fetch /api/montree/children/[childId],
+    // which selects '*'.
     const query = supabase
       .from('montree_children')
-      .select('id, name, age, photo_url, notes, classroom_id, enrolled_at')
+      .select('id, name, age, photo_url, classroom_id, enrolled_at')
       .in('classroom_id', allowedClassroomIds)
       .order('name');
 

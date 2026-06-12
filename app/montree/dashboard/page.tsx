@@ -31,19 +31,14 @@ const DashboardGuide = dynamic(() => import('@/components/montree/onboarding/Das
 const GuruFAQSection = dynamic(() => import('@/components/montree/guru/GuruFAQSection'), { ssr: false });
 const GuruContextBubble = dynamic(() => import('@/components/montree/guru/GuruContextBubble'), { ssr: false });
 const GuruChatThread = dynamic(() => import('@/components/montree/guru/GuruChatThread'), { ssr: false });
-const WeeklyAdminCard = dynamic(() => import('@/components/montree/voice-notes/WeeklyAdminCard'), { ssr: false });
 // BatchReportsCard and BatchNarrativesCard removed — consolidated into Weekly Wrap
 const BulkPasteImport = dynamic(() => import('@/components/montree/BulkPasteImport'), { ssr: false });
-
-const ShelfAutopilotCard = dynamic(() => import('@/components/montree/ShelfAutopilotCard'), { ssr: false });
-const AttendanceWidget = dynamic(() => import('@/components/montree/AttendanceWidget'), { ssr: false });
-const StaleWorksPanel = dynamic(() => import('@/components/montree/StaleWorksPanel'), { ssr: false });
-const ConferenceNotesPanel = dynamic(() => import('@/components/montree/ConferenceNotesPanel'), { ssr: false });
-const PulsePanel = dynamic(() => import('@/components/montree/PulsePanel'), { ssr: false });
-const EvidencePanel = dynamic(() => import('@/components/montree/EvidencePanel'), { ssr: false });
-const PaperworkPanel = dynamic(() => import('@/components/montree/PaperworkPanel'), { ssr: false });
-const DailyBriefPanel = dynamic(() => import('@/components/montree/DailyBriefPanel'), { ssr: false });
-const BirthdayBanner = dynamic(() => import('@/components/montree/BirthdayBanner'), { ssr: false });
+// PERF_PASS_JUN13.md (dead dynamic imports): WeeklyAdminCard, ShelfAutopilotCard,
+// AttendanceWidget, StaleWorksPanel, ConferenceNotesPanel, PulsePanel,
+// EvidencePanel, PaperworkPanel, DailyBriefPanel and BirthdayBanner were
+// declared here but never rendered in this page's JSX — deleted. Those panels
+// still live in components/montree/ and are imported by the pages that
+// actually render them.
 const TodaysFocusStrip = dynamic(() => import('@/components/montree/focus/TodaysFocusStrip'), { ssr: false });
 const OnboardingPathChoice = dynamic(() => import('@/components/montree/onboarding/OnboardingPathChoice'), { ssr: false });
 const ChangelogModal = dynamic(() => import('@/components/montree/ChangelogModal'), { ssr: false });
@@ -170,7 +165,7 @@ export default function DashboardPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { t } = useI18n();
-  const { isEnabled } = useFeatures();
+  const { isEnabled, loading: featuresLoading } = useFeatures();
   const [session, setSession] = useState<MontreeSession | null>(() => {
     if (typeof window === 'undefined') return null;
     return getSession();
@@ -423,9 +418,22 @@ export default function DashboardPage() {
 
   // Pending-children probe — runs once per session+classroom. Replaces the
   // old auto-redirect. We only count; we don't navigate.
+  //
+  // 🚨 Perf (PERF_PASS_JUN13.md Finding 1): this probe used to wait for the
+  // children fetch to resolve (`if (loading) return`), and the render guard
+  // below then held the skeleton until the probe came back — a THIRD
+  // serialized origin round trip on every cold load (~1–2.5s of avoidable
+  // skeleton from Asia). It now fires as soon as the feature flag is known
+  // (concurrent with the children fetch — the flag resolves synchronously
+  // from sessionStorage on warm loads), and the skeleton no longer waits on
+  // it: the dashboard renders when children arrive and the full-screen
+  // onboarding-choice takeover simply takes over if/when the probe returns
+  // pending > 0. The old `children.length === 0` short-circuit is preserved
+  // server-side — /onboarding/voice/status returns pending: [] for an empty
+  // classroom.
   useEffect(() => {
-    if (loading || !session || isParent) return;
-    if (children.length === 0) { setPendingOnboardingCount(0); return; }
+    if (!session || isParent) return;
+    if (featuresLoading) return; // flag unknown — fail-closed isEnabled would lie
     if (!isEnabled('tell_guru_onboarding')) { setPendingOnboardingCount(0); return; }
     if (searchParams.get('skipOnboarding') === '1') { setPendingOnboardingCount(0); return; }
 
@@ -444,7 +452,7 @@ export default function DashboardPage() {
         setPendingOnboardingCount(0);
       });
     return () => ctrl.abort();
-  }, [loading, session, isParent, children.length, isEnabled, searchParams]);
+  }, [session, isParent, featuresLoading, isEnabled, searchParams]);
 
   // Should we show the choice screen? Only when there are real pending
   // children, the teacher hasn't already chosen the photo path for this
@@ -489,19 +497,14 @@ export default function DashboardPage() {
     return <DashboardSkeleton />;
   }
 
-  // Hold the skeleton while the pending-children probe is in flight.
-  // Without this, teachers with un-onboarded children would see the
-  // dashboard flicker into view for ~100-300ms before the choice screen
-  // takes over. Only applies when we're actually going to probe (teacher,
-  // children present, feature enabled, no skip param).
-  const willProbe =
-    !isParent &&
-    children.length > 0 &&
-    isEnabled('tell_guru_onboarding') &&
-    searchParams.get('skipOnboarding') !== '1';
-  if (willProbe && pendingOnboardingCount === null) {
-    return <DashboardSkeleton />;
-  }
+  // NOTE (PERF_PASS_JUN13.md Finding 1): we deliberately do NOT hold the
+  // skeleton while the pending-children probe is in flight anymore. The old
+  // `willProbe` guard serialized a full extra origin round trip before first
+  // render on EVERY cold load to avoid a brief dashboard flash for the small
+  // set of teachers with un-onboarded children. The probe now starts
+  // concurrently with the children fetch (see effect above), so in the rare
+  // pending>0 case the full-screen choice takeover lands at most a beat
+  // after the grid — an acceptable trade for everyone else's cold load.
 
   // Two-path onboarding gate. When pending children exist and the teacher
   // hasn't already chosen the photo path, present the choice as a clean

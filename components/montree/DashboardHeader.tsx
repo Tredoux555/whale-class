@@ -16,6 +16,7 @@ import { getSession, clearSession, isHomeschoolParent, type MontreeSession } fro
 import { HOME_THEME } from '@/lib/montree/home-theme';
 import { useI18n } from '@/lib/montree/i18n';
 import { montreeApi } from '@/lib/montree/api';
+import { useMontreeData } from '@/lib/montree/cache';
 // InboxButton — Tredoux-DM channel. Currently hidden from the More menu
 // (Session 119, "no function"). Import preserved so the hidden JSX block
 // stays uncomment-ready; remove this import if/when that block is deleted.
@@ -188,7 +189,6 @@ function DashboardHeader() {
   const teacherMenuRef = useRef<HTMLDivElement>(null);
 
   // Student search state
-  const [students,        setStudents]       = useState<StudentOption[]>([]);
   const [searchQuery,     setSearchQuery]    = useState('');
   const [showDropdown,    setShowDropdown]   = useState(false);
   const [highlightIndex,  setHighlightIndex] = useState(-1);
@@ -237,30 +237,22 @@ function DashboardHeader() {
     setSession(sess);
   }, []);
 
-  // Fetch students (cached, 5 min TTL)
-  useEffect(() => {
-    if (!session?.classroom?.id) return;
-    if (isHomeschoolParent(session)) return;
-    const cacheKey = `montree_students_${session.classroom.id}`;
-    try {
-      const cached = sessionStorage.getItem(cacheKey);
-      if (cached) {
-        const { list, ts } = JSON.parse(cached);
-        if (Date.now() - ts < 5 * 60 * 1000) { setStudents(list); return; }
-      }
-    } catch {}
-    const controller = new AbortController();
-    montreeApi(`/api/montree/children?classroom_id=${session.classroom.id}`, { signal: controller.signal })
-      .then(res => res.json())
-      .then((data: { children?: StudentOption[] }) => {
-        if (controller.signal.aborted) return;
-        const list = (data.children || []).sort((a, b) => a.name.localeCompare(b.name));
-        setStudents(list);
-        try { sessionStorage.setItem(cacheKey, JSON.stringify({ list, ts: Date.now() })); } catch {}
-      }).catch(() => {});
-    return () => controller.abort();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [session?.classroom?.id]);
+  // Students for the search dropdown — shared SWR cache, NOT a raw fetch.
+  // 🚨 Perf (PERF_PASS_JUN13.md Finding 3): this used to be a raw montreeApi
+  // GET of the exact URL the dashboard page fetches via useMontreeData, so
+  // every cold dashboard load fired the same /children query twice (the old
+  // sessionStorage TTL only hid it on revisits). useMontreeData dedupes
+  // in-flight requests, so both consumers now share a single GET — and the
+  // in-memory cache replaces the sessionStorage layer entirely.
+  const studentsUrl =
+    session?.classroom?.id && !isHomeschoolParent(session)
+      ? `/api/montree/children?classroom_id=${session.classroom.id}`
+      : null;
+  const { data: studentsData } = useMontreeData<{ children?: StudentOption[] }>(studentsUrl);
+  const students = useMemo(
+    () => [...(studentsData?.children || [])].sort((a, b) => a.name.localeCompare(b.name)),
+    [studentsData]
+  );
 
   // Fetch teachers (cached, 5 min TTL)
   useEffect(() => {

@@ -15,14 +15,19 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Get children linked to this parent
+    // Get children linked to this parent.
+    // 🐛 BUG FIX (Jun 13, 2026): the alias was written SQL-style
+    // (`photo_url as avatar_url`), which is NOT valid PostgREST select syntax —
+    // PostgREST aliases are `alias:column`. The old string made the whole
+    // select invalid. The consumer (lib/hooks/useParentChildren.ts) reads
+    // `avatar_url`, so the response shape is unchanged by this fix.
     const { data: children, error } = await supabase
       .from('children')
       .select(`
         id,
         name,
         date_of_birth,
-        photo_url as avatar_url,
+        avatar_url:photo_url,
         created_at
       `)
       .eq('parent_id', user.id)
@@ -31,8 +36,8 @@ export async function GET(request: NextRequest) {
     if (error) throw error;
 
     // Add age calculation
-    // `as unknown` first: the `photo_url as avatar_url` select string is not
-    // parseable by supabase-js's type-level query parser. Type-only cast.
+    // `as unknown` first: no generated DB types for the `children` table, so
+    // the row type from supabase-js is opaque here. Type-only cast.
     const childrenWithAge = ((children || []) as unknown as Record<string, unknown>[]).map((child) => ({
       ...child,
       age: child.date_of_birth 
