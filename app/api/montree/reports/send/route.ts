@@ -688,6 +688,24 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // App Store build (Jun 2026): native push to parents' devices.
+    // Best-effort — never blocks or fails the email response.
+    try {
+      const { pushToParentsOfChildren } = await import('@/lib/montree/push/sender');
+      void pushToParentsOfChildren(
+        supabase,
+        [child_id],
+        {
+          title: '🌳 New progress update',
+          body: `${child.name}'s progress report is ready to view.`,
+          data: { url: '/montree/parent/dashboard', type: 'report' },
+        },
+        { requireViewReports: true }
+      );
+    } catch (e) {
+      console.error('[reports/send] push dispatch error:', e);
+    }
+
     return NextResponse.json({
       success: true,
       sent,
