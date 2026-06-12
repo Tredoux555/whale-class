@@ -19,7 +19,7 @@
 //   Monthly recurring. 30-day trial. No annual / no upfront.
 
 import Stripe from 'stripe';
-import type { SupabaseClient } from '@supabase/supabase-js';
+import type { UntypedClient as SupabaseClient } from '@/lib/supabase-client';
 import { getSupabase } from '@/lib/supabase-client';
 import { clearBudgetCache } from '@/lib/montree/api-usage';
 import { isPeriodClosed } from '@/lib/montree/finance/period-lock';
@@ -1745,14 +1745,18 @@ async function handleAlipayInvoicePaymentFailed(
 ): Promise<void> {
   const schoolIdFromMetadata = invoice.metadata?.montree_school_id || null;
 
-  let schoolRow: { id: string; name: string | null; subscription_status: string | null } | null = null;
+  // NOTE: named type instead of `typeof schoolRow` — inside the branches the
+  // flow-narrowed type of schoolRow is `null`, so `data as typeof schoolRow`
+  // collapsed every later use to `never`. Type-level fix only.
+  type SchoolRowLite = { id: string; name: string | null; subscription_status: string | null };
+  let schoolRow: SchoolRowLite | null = null;
   if (schoolIdFromMetadata) {
     const { data } = await supabase
       .from('montree_schools')
       .select('id, name, subscription_status')
       .eq('id', schoolIdFromMetadata)
       .maybeSingle();
-    schoolRow = (data as typeof schoolRow) || null;
+    schoolRow = (data as SchoolRowLite | null) || null;
   }
   if (!schoolRow && invoice.customer) {
     const customerId = typeof invoice.customer === 'string' ? invoice.customer : invoice.customer.id;
@@ -1761,7 +1765,7 @@ async function handleAlipayInvoicePaymentFailed(
       .select('id, name, subscription_status')
       .eq('stripe_customer_id', customerId)
       .maybeSingle();
-    schoolRow = (data as typeof schoolRow) || null;
+    schoolRow = (data as SchoolRowLite | null) || null;
   }
   if (!schoolRow) return;
 

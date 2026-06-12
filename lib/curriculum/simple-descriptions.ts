@@ -339,8 +339,8 @@ export const SIMPLE_DESCRIPTIONS: Record<string, { line1: string; line2: string 
     line2: "Shake and match the pairs that sound the same."
   },
   "Bells": {
-    line1: "Bells with different pitches.",
-    line2: "Strike and match pairs. Arrange low to high."
+    line1: "Graded bells on a stand.",
+    line2: "Strike and listen. Arrange by pitch."
   },
 
   // Olfactory & Gustatory
@@ -684,10 +684,6 @@ export const SIMPLE_DESCRIPTIONS: Record<string, { line1: string; line2: string 
   },
 
   // Music
-  "Bells": {
-    line1: "Graded bells on a stand.",
-    line2: "Strike and listen. Arrange by pitch."
-  },
   "Rhythm Instruments": {
     line1: "Drums, shakers, triangles.",
     line2: "Keep the beat. Follow patterns."

@@ -38,7 +38,7 @@
 // CROSS-POLLINATION:
 //   child_id must belong to schoolId. Re-verified here.
 
-import type { SupabaseClient } from '@supabase/supabase-js';
+import type { UntypedClient as SupabaseClient } from '@/lib/supabase-client';
 
 export interface DetectPatternInput {
   childId: string;

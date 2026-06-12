@@ -8,7 +8,7 @@
 //                 await db.from(t).insert(...)            (awaited directly)
 // Every call is recorded so tests can assert on scoping (eq('school_id', …)).
 
-import type { SupabaseClient } from '@supabase/supabase-js';
+import type { UntypedClient as SupabaseClient } from '@/lib/supabase-client';
 
 export interface QueryResult {
   data?: unknown;

@@ -10,7 +10,7 @@
 //   owner's token rows can be removed.
 
 import { NextRequest, NextResponse } from 'next/server';
-import type { SupabaseClient } from '@supabase/supabase-js';
+import type { UntypedClient as SupabaseClient } from '@/lib/supabase-client';
 import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { resolveAuthorizedParent } from '@/lib/montree/verify-parent-request';

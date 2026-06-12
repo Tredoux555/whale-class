@@ -20,7 +20,7 @@
 //   - Manual overrides flagged via is_manual_override — calculator NEVER touches those rows.
 //   - Recalculation refreshes pending rows only; paid rows are immutable history.
 
-import type { SupabaseClient } from '@supabase/supabase-js';
+import type { UntypedClient as SupabaseClient } from '@/lib/supabase-client';
 
 export interface CalculatorOptions {
   periodMonth: string; // 'YYYY-MM'

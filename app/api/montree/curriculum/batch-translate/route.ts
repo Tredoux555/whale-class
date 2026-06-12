@@ -63,7 +63,9 @@ export async function POST(request: NextRequest) {
     }
 
     // Filter to works missing the translated name column
-    const needsTranslation = works.filter((w: Record<string, unknown>) => !w[nameCol]);
+    // `as unknown` first: the dynamic `${nameCol}` select string is opaque to
+    // supabase-js's type-level query parser. Pure type-level cast.
+    const needsTranslation = (works as unknown as Record<string, unknown>[]).filter((w) => !w[nameCol]);
     const alreadyDone = works.length - needsTranslation.length;
 
     if (needsTranslation.length === 0) {
@@ -103,7 +105,7 @@ export async function POST(request: NextRequest) {
             .eq('id', work.id as string)
             .maybeSingle();
 
-          const translatedName = updated?.[nameCol] as string | null;
+          const translatedName = (updated as Record<string, unknown> | null)?.[nameCol] as string | null;
           return {
             name: workName,
             translated_name: translatedName || null,

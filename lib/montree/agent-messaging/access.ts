@@ -11,7 +11,7 @@
 // still has is_agent=true and is not suspended in montree_teachers.
 
 import { NextRequest, NextResponse } from 'next/server';
-import type { SupabaseClient } from '@supabase/supabase-js';
+import type { UntypedClient as SupabaseClient } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '../verify-request';
 import type { MessagingAgent } from './types';
 

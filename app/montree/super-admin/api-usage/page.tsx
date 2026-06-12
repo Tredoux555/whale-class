@@ -8,11 +8,35 @@
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 
+// Loose structural types for the dashboard payload (type-level only — shapes
+// mirror what /api/montree/admin/ai-budget already returns at runtime).
+type UsageSummary = {
+  spent?: number;
+  budget?: number;
+  percentage?: number;
+  request_count?: number;
+  action?: string;
+};
+type SchoolUsage = {
+  summary?: UsageSummary;
+  classrooms?: Array<{
+    classroom_name?: string;
+    spent: number;
+    by_endpoint?: Array<{ endpoint?: string; count?: number; cost: number }>;
+  }>;
+  daily?: Array<{ date?: string; cost: number; count?: number }>;
+};
+type SchoolRow = {
+  id: string;
+  name?: string | null;
+  usage?: SchoolUsage | null;
+};
+
 export default function ApiUsageDashboard() {
-  const [schools, setSchools] = useState([]);
+  const [schools, setSchools] = useState<SchoolRow[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [expandedSchool, setExpandedSchool] = useState(null);
+  const [error, setError] = useState<string | null>(null);
+  const [expandedSchool, setExpandedSchool] = useState<string | null>(null);
   const [password, setPassword] = useState('');
   const [authenticated, setAuthenticated] = useState(false);
 

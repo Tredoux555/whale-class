@@ -26,7 +26,7 @@
 //   school_id (or by classroom_id, which is itself school-scoped via the
 //   teacher row). Cross-school leakage is impossible by construction.
 
-import type { SupabaseClient } from '@supabase/supabase-js';
+import type { UntypedClient as SupabaseClient } from '@/lib/supabase-client';
 import type Anthropic from '@anthropic-ai/sdk';
 import { scoreNoteQuality } from './note-quality';
 

@@ -56,7 +56,19 @@ export async function GET(request: NextRequest) {
     }
 
     // Build a lookup map: work_key → visual memory entry
-    const memoryMap = new Map<string, typeof memoriesResult.data extends (infer T)[] ? T : never>();
+    // (explicit row type — the old `typeof data extends (infer T)[] ? T : never`
+    // collapsed to `never` because data is `T[] | null`; type-level fix only)
+    type VisualMemoryRow = {
+      work_name: string | null;
+      work_key: string | null;
+      area: string | null;
+      visual_description: string | null;
+      reference_photo_url: string | null;
+      source: string | null;
+      description_confidence: number | null;
+      updated_at: string | null;
+    };
+    const memoryMap = new Map<string, VisualMemoryRow>();
     if (memoriesResult.data) {
       for (const mem of memoriesResult.data) {
         if (mem.work_key) {

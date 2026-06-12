@@ -15,7 +15,7 @@
 // (lib/montree/push/sender.ts) filters parent owners by these prefs.
 
 import { NextRequest, NextResponse } from 'next/server';
-import type { SupabaseClient } from '@supabase/supabase-js';
+import type { UntypedClient as SupabaseClient } from '@/lib/supabase-client';
 import { getSupabase } from '@/lib/supabase-client';
 import { resolveAuthorizedParent } from '@/lib/montree/verify-parent-request';
 

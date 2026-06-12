@@ -2,7 +2,7 @@
 // Builds compact context for ALL children in a classroom
 // Used by Guru "Whole Class" mode for teaching group suggestions
 
-import { SupabaseClient } from '@supabase/supabase-js';
+import type { UntypedClient as SupabaseClient } from '@/lib/supabase-client';
 
 export interface ClassroomChildSummary {
   id: string;

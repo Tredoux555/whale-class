@@ -28,7 +28,7 @@
 // outlived its migration window. Removed per audit F-1.2.
 
 import { cookies } from 'next/headers';
-import type { SupabaseClient } from '@supabase/supabase-js';
+import type { UntypedClient as SupabaseClient } from '@/lib/supabase-client';
 import { verifyParentToken } from './server-auth';
 
 export interface VerifiedParentSession {

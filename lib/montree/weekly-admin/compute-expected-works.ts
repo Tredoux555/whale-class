@@ -9,7 +9,7 @@
 // children whose saved notes are missing works we'd now expect to see, which
 // drives the stale-notes banner (see CLAUDE.md Session 29/30).
 
-import type { SupabaseClient } from '@supabase/supabase-js';
+import type { UntypedClient as SupabaseClient } from '@/lib/supabase-client';
 
 const CANONICAL_AREAS = ['practical_life', 'sensorial', 'mathematics', 'language', 'cultural'] as const;
 

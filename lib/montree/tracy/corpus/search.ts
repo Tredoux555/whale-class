@@ -16,7 +16,7 @@
 //   Returns { ok: false, entries: [] } on any error. Astra's reply path
 //   degrades gracefully when corpus retrieval fails.
 
-import type { SupabaseClient } from '@supabase/supabase-js';
+import type { UntypedClient as SupabaseClient } from '@/lib/supabase-client';
 import { embedText } from './embeddings';
 
 export interface CorpusEntry {

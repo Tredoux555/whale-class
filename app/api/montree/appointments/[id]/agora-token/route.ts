@@ -244,5 +244,7 @@ async function fetchAppointmentForCaller(
     if (!hostRes.data) return null;
   }
 
-  return res.data as ApptForToken;
+  // `as unknown` first: the select string is too exotic for supabase-js's
+  // type-level query parser, which types `data` as a parse error. Type-only.
+  return res.data as unknown as ApptForToken;
 }

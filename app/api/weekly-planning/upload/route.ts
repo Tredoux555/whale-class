@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
-import type { SupabaseClient } from '@supabase/supabase-js';
+import type { UntypedClient as SupabaseClient } from '@/lib/supabase-client';
 import Anthropic from '@anthropic-ai/sdk';
 import { WHALE_CLASSROOM_ID } from '@/lib/curriculum/classroom';
 

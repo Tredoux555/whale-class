@@ -11,7 +11,7 @@
 // 'received'/'processing' is the durable evidence of an event lost to a
 // restart — queryable and manually replayable instead of silently gone.
 
-import type { SupabaseClient } from '@supabase/supabase-js';
+import type { UntypedClient as SupabaseClient } from '@/lib/supabase-client';
 
 export type InboxRecordResult =
   // Persisted (or re-armed after a Stripe retry) — safe to ack + process.

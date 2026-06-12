@@ -23,7 +23,7 @@
 // Graceful degradation: if migration 255 hasn't been run (42P01) both
 // functions log ONCE and no-op — the queue must never break the send path.
 
-import type { SupabaseClient } from '@supabase/supabase-js';
+import type { UntypedClient as SupabaseClient } from '@/lib/supabase-client';
 import { sendToDeviceToken, type PushPayload } from './sender';
 
 const MAX_ATTEMPTS = 5;

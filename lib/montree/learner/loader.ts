@@ -12,7 +12,7 @@
 //   Returns { degraded: true, state: null } when migration 244 has not been
 //   run, so callers degrade to the child's current_lesson alone.
 
-import type { SupabaseClient } from '@supabase/supabase-js';
+import type { UntypedClient as SupabaseClient } from '@/lib/supabase-client';
 
 export interface ChildLearningState {
   child_id: string;

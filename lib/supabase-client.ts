@@ -4,8 +4,23 @@
 // Singleton pattern with retry logic for Cloudflare timeouts
 
 import { createClient as createSupabaseClientJS } from '@supabase/supabase-js';
+import type { SupabaseClient } from '@supabase/supabase-js';
 
-let supabaseInstance: ReturnType<typeof createSupabaseClientJS> | null = null;
+// TYPE-LEVEL NOTE (tsc debt burn-down, Jun 2026): we have no generated
+// Database types, and on supabase-js >= 2.x the bare
+// `ReturnType<typeof createClient>` collapses every row type to `never`
+// (thousands of bogus TS2339 errors). Until `supabase gen types` is wired in,
+// the honest result type is `any`.
+//
+// NOTE: even with an `any` schema, supabase-js still runs its template-literal
+// select-string parser on every `.select('...')` — so whole-project
+// `tsc --noEmit` now needs a larger heap (NODE_OPTIONS=--max-old-space-size=4096).
+// Everything here is a pure type annotation — runtime behavior (singleton,
+// retry fetch wrapper) is unchanged.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type UntypedClient = SupabaseClient<any, 'public', any>;
+
+let supabaseInstance: UntypedClient | null = null;
 
 /**
  * Hard per-attempt timeout on every Supabase fetch.
@@ -93,7 +108,7 @@ const fetchWithRetry: typeof fetch = async (input, init) => {
  * Uses singleton pattern with retry logic for connection timeouts
  * Env vars read at runtime to avoid build-time errors
  */
-export function getSupabase() {
+export function getSupabase(): UntypedClient {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
@@ -110,7 +125,7 @@ export function getSupabase() {
       global: {
         fetch: fetchWithRetry,
       },
-    });
+    }) as unknown as UntypedClient; // pure type cast — same instance
   }
 
   return supabaseInstance;
@@ -124,13 +139,13 @@ export const createServerClient = getSupabase;
 /**
  * Client-side Supabase client (uses anon key — for browser components)
  */
-export function createSupabaseClient() {
+export function createSupabaseClient(): UntypedClient {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   if (!supabaseUrl || !supabaseAnonKey) {
     throw new Error('Missing Supabase environment variables');
   }
-  return createSupabaseClientJS(supabaseUrl, supabaseAnonKey);
+  return createSupabaseClientJS(supabaseUrl, supabaseAnonKey) as unknown as UntypedClient; // pure type cast
 }
 
 export const createBrowserClient = createSupabaseClient;

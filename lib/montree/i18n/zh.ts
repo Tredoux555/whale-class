@@ -202,7 +202,7 @@ export const zh = {
 
   // Guru
   'guru.title': '导师',
-  'guru.askAnything': '关于蒙特梭利，问我任何问题...',
+  'guru.askAnything': '询问关于{name}的任何问题...',
   'guru.thinking': '思考中...',
 
   // Settings
@@ -409,7 +409,7 @@ export const zh = {
   'guru.actionPlans': '含时间线的行动计划',
   'guru.noChildren': '未找到儿童',
   'guru.copiedClipboard': '已复制到剪贴板！',
-  'guru.failedConnect': '连接失败，请重试。',
+  'guru.failedConnect': '连接失败',
   'guru.welcomeUpgrade': '欢迎使用导师！您现在拥有无限访问权限。',
   'guru.upgradeCancelled': '升级已取消。您仍可使用免费咨询次数。',
   'guru.couldNotCheckout': '无法启动支付，请重试。',
@@ -539,7 +539,6 @@ export const zh = {
   'error.couldNotAccessCamera': '无法访问摄像头',
   'success.savedTo': '已保存到{name}',
   'error.failedToSavePhoto': '保存照片失败',
-  'common.saving': '保存中...',
   'action.capture': '拍摄',
   'action.watchDemo': '观看演示',
   'action.chooseFromGallery': '从相册选择',
@@ -586,7 +585,6 @@ export const zh = {
   'form.materialsExample': '小水壶\n碗\n海绵\n托盘',
   'form.teacherNotes': '教师备注（私密）',
   'form.teacherNotesPlaceholder': '关于此工作的个人笔记...',
-  'common.adding': '添加中...',
   'action.addWork': '添加工作',
 
   // Edit Work Modal
@@ -647,7 +645,7 @@ export const zh = {
   'curriculum.nomenclatureCards': '术语卡片',
 
   // Phase 2 — Welcome Modal
-  'welcome.title': '欢迎，{name}！',
+  'welcome.title': '欢迎来到Montree！',
   'welcome.message': '让我们开始设置你的课堂。第一步是添加学生，这样你就可以开始跟踪他们的进度。',
   'welcome.cta': '添加我的第一个学生',
 
@@ -1011,11 +1009,11 @@ export const zh = {
   'summary.recentActivity': '最近的活动',
 
   // Phase 4 — Weekly Review
-  'weeklyReview.title': '周审视',
+  'weeklyReview.title': '每周回顾',
   'weeklyReview.teacher': '老师',
   'weeklyReview.parent': '家长',
   'weeklyReview.aiAnalysis': 'AI分析',
-  'weeklyReview.generating': '正在生成报告...',
+  'weeklyReview.generating': '正在分析本周数据...',
   'weeklyReview.generateFailed': '生成报告失败',
   'weeklyReview.fetchFailed': '获取报告失败',
   'weeklyReview.regenerated': '报告已重新生成！',
@@ -1315,7 +1313,6 @@ export const zh = {
   'guru.expand': '展开',
   'guru.preparingPlan': '正在准备您的计划...',
   'guru.couldNotGeneratePlan': '无法生成计划',
-  'guru.failedConnect': '连接失败',
   'guru.planReadyExpand': '计划已就绪！点击展开。',
   'guru.day': '天',
   'guru.missing': '缺失',
@@ -1910,9 +1907,7 @@ export const zh = {
   'guru.couldNotAnswer': '抱歉，暂时无法回答。试试点击关注卡片获取更多帮助！',
   'guru.askTheGuru': '问导师',
   'guru.quickQuestion': '关于{name}的快速问题',
-  'guru.askAnything': '询问关于{name}的任何问题...',
   'guru.ask': '提问',
-  'guru.thinking': '思考中...',
 
   // Audit — Voice Notes
   'voice.recordingTooShort': '录音太短',
@@ -2649,7 +2644,7 @@ export const zh = {
   'voiceObs.eventBehavioral': '行为',
   'voiceObs.eventOther': '其他',
   'voiceObs.atTimestamp': '在',
-  'voiceObs.approved': '批准',
+  'voiceObs.approved': '已批准',
   'voiceObs.rejected': '拒绝',
   'voiceObs.pending': '待定',
   'voiceObs.edited': '已编辑',
@@ -2860,7 +2855,6 @@ export const zh = {
   'guru.imageTooLarge': '图片太大（最大10MB）',
   'guru.unableLoadClassroom': '无法加载教室数据。请返回仪表板重试，或选择一个特定学生。',
   'guru.timeout': 'Guru响应超时，请重试。',
-  'guru.thinking': '思考中...',
   'guru.thinkingContext': '正在构建上下文...',
   'guru.thinkingGenerating': '正在生成回复...',
   'guru.thinkingLive': '正在思考...',
@@ -3108,14 +3102,11 @@ export const zh = {
   'raz.critical': '严重',
 
   // ── Weekly Review ──
-  'weeklyReview.title': '每周回顾',
   'weeklyReview.teacherTab': '教师回顾',
   'weeklyReview.parentTab': '家长报告',
   'weeklyReview.teacherDescription': '生成一份结构化的回顾报告，供团队讨论。AI将分析本周进展、解释工作之间的联系，并建议下一步。',
   'weeklyReview.parentDescription': '为家长生成一份温馨专业的更新报告。解释孩子做了什么、为什么重要、以及接下来的计划。',
   'weeklyReview.generate': '生成回顾',
-  'weeklyReview.generating': '正在分析本周数据...',
-  'weeklyReview.generateFailed': '生成报告失败',
   'weeklyReview.refined': '报告已更新',
   'weeklyReview.refineFailed': '修改报告失败',
   'weeklyReview.refining': '更新中...',
@@ -3296,7 +3287,6 @@ export const zh = {
   'printWeekly.weekLabel': '第',
 
   // ── 语音观察额外 ──
-  'voiceObs.approved': '已批准',
   'voiceObs.committedDescription': '学生进度已更新。所有音频和文字记录已永久删除。',
 
   // ── 管理设置占位符 ──
@@ -3446,7 +3436,6 @@ export const zh = {
 
   // ── 欢迎页面 ──
   'welcome.settingUp': '正在设置您的学校...',
-  'welcome.title': '欢迎来到Montree！',
   'welcome.demoReady': '您的演示账户已就绪：',
   'welcome.trialStarted': '欢迎使用 Montree。',
   'welcome.demoMode': '演示模式',
@@ -3542,16 +3531,16 @@ export const zh = {
   'conferenceNotes.status.retracted': '已撤回',
 
   // 证据追踪
-  'evidence.title': '证据',
-  'evidence.photos': '{count}张照片',
-  'evidence.days': '{count}天',
+  'evidence.title': '证据追踪',
+  'evidence.photos': '张照片',
+  'evidence.days': '天',
   'evidence.strength.none': '无证据',
   'evidence.strength.weak': '弱证据',
   'evidence.strength.moderate': '中等证据',
   'evidence.strength.strong': '充分证据',
-  'evidence.confirmMastery': '确认掌握',
+  'evidence.confirmMastery': '确认 ⭐',
   'evidence.revokeMastery': '撤销掌握',
-  'evidence.masteryConfirmed': '已确认掌握',
+  'evidence.masteryConfirmed': '已确认掌握！',
   'evidence.masteryRevoked': '已撤销掌握',
   'evidence.confirmFailed': '确认掌握失败',
   'evidence.revokeFailed': '撤销掌握失败',
@@ -3592,7 +3581,7 @@ export const zh = {
   'audit.needsReview': '待审核',
   'weeklyWrap.title': '周报总结',
   'weeklyWrap.generateCount': '生成 ({count})',
-  'weeklyWrap.regenerateAll': '🔄 重新生成全部',
+  'weeklyWrap.regenerateAll': '🔄 重新生成',
   'weeklyWrap.generateAll': '✨ 生成全部',
   'weeklyWrap.teacherReview': '教师审核',
   'weeklyWrap.parentReports': '家长报告',
@@ -3667,11 +3656,6 @@ export const zh = {
   'weeklyWrap.approvingAll': '正在审批...',
   'weeklyWrap.reportsReadyToSend': '{count} 份家长报告准备就绪',
   'weeklyWrap.nextWeeksFocus': '下周重点',
-  'weeklyWrap.tapToSelect': '点击选择',
-  'weeklyWrap.regenerateAll': '🔄 重新生成',
-  'weeklyWrap.parentReports': '家长报告',
-  'weeklyWrap.deselectAll': '取消全选',
-  'weeklyWrap.selectAll': '全选',
   'weeklyWrap.noReportsFound': '没有找到报告',
   'weeklyWrap.inviteParents': '邀请家长',
   'weeklyWrap.sendAllToParents': '发送给所有家长',
@@ -3914,7 +3898,6 @@ export const zh = {
   'brief.skillInsights': '洞察',
   'brief.skillIntelTitle': '技能分析',
   'brief.action.skill_intelligence': '{count}项技能洞察需要关注',
-  'evidence.title': '证据追踪',
   'evidence.readySummary': '{count}项工作准备好掌握',
   'evidence.noReady': '暂无准备好掌握的工作',
   'evidence.strong': '充分',
@@ -3924,12 +3907,7 @@ export const zh = {
   'evidence.readyAlert': '{count}个孩子有准备好掌握的工作',
   'evidence.work': '项工作',
   'evidence.works': '项工作',
-  'evidence.photos': '张照片',
-  'evidence.days': '天',
-  'evidence.confirmMastery': '确认 ⭐',
   'evidence.confirming': '确认中...',
-  'evidence.masteryConfirmed': '已确认掌握！',
-  'evidence.confirmFailed': '确认掌握失败',
   'evidence.moreReady': '项更多',
   'evidence.noData': '暂无带有证据的活跃工作',
 
@@ -3957,10 +3935,6 @@ export const zh = {
   'paperwork.tapToEdit': '点击手动设置周数',
   'paperwork.updateFailed': '更新作业周数失败',
 
-  'time.justNow': '刚刚',
-  'time.minutesAgo': '{count}分钟前',
-  'time.hoursAgo': '{count}小时前',
-  'time.daysAgo': '{count}天前',
 
   // Focus List
   'focus.title': '关注列表',

@@ -12,7 +12,7 @@
 //   missing (migration 238 not yet run). Callers must accept null
 //   gracefully — the dossier still ships, just without rich parent data.
 
-import type { SupabaseClient } from '@supabase/supabase-js';
+import type { UntypedClient as SupabaseClient } from '@/lib/supabase-client';
 
 export interface ParentProfileLoaded {
   parent_id: string;

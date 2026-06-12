@@ -7,7 +7,7 @@
 // verifySchoolRequest() — we just need to make sure each query funnels through
 // the same school filter.
 
-import type { SupabaseClient } from '@supabase/supabase-js';
+import type { UntypedClient as SupabaseClient } from '@/lib/supabase-client';
 import type {
   ParticipantRole,
   ThreadType,

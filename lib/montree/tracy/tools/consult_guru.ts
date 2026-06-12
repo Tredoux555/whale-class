@@ -32,7 +32,7 @@
 //
 // COST: pure DB read. No AI spend.
 
-import type { SupabaseClient } from '@supabase/supabase-js';
+import type { UntypedClient as SupabaseClient } from '@/lib/supabase-client';
 
 export interface ConsultGuruInput {
   childId: string;

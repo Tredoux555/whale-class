@@ -17,7 +17,7 @@
 //                            only trust Haiku ≥0.75 if the matched work has
 //                            an entry in visual memory)
 
-import type { SupabaseClient } from '@supabase/supabase-js';
+import type { UntypedClient as SupabaseClient } from '@/lib/supabase-client';
 
 // ----- Prompt sanitization -----
 // Strips control characters that could be used for prompt injection via

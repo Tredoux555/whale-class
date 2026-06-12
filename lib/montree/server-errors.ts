@@ -6,7 +6,7 @@
 // Failures are silently logged to console (we don't want a logger that
 // itself can break the request).
 
-import type { SupabaseClient } from '@supabase/supabase-js';
+import type { UntypedClient as SupabaseClient } from '@/lib/supabase-client';
 import { getSupabase } from '@/lib/supabase-client';
 
 export interface LogServerErrorInput {

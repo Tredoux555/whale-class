@@ -22,7 +22,7 @@
 //   agent_stripe_link_generated
 //   agent_profile_changed
 
-import { SupabaseClient } from '@supabase/supabase-js';
+import type { UntypedClient as SupabaseClient } from '@/lib/supabase-client';
 
 export type AgentAuditEventType =
   | 'agent_login_issued'

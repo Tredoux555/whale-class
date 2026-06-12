@@ -1,7 +1,7 @@
 // lib/montree/super-admin/guru-executor.ts
 // Tool execution handlers for Super-Admin Guru
 
-import { SupabaseClient } from '@supabase/supabase-js';
+import type { UntypedClient as SupabaseClient } from '@/lib/supabase-client';
 
 export interface ToolInput {
   [key: string]: any;
