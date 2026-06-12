@@ -64,44 +64,35 @@ export default function MontreeLanding() {
   });
 
   // Whenever userUnmuted flips or videoLocale changes, sync the .muted
-  // property on every video element. Inactive videos stay muted always
-  // (they're background-buffering); only the active locale's video
-  // reflects userUnmuted. If the active video isn't playing audio (was
-  // muted via tap-to-unmute on first user gesture), the play() call
-  // succeeds because the user has interacted.
+  // property on every video element, play the active locale, and PAUSE
+  // the inactive one. The inactive video no longer background-plays —
+  // it sits at preload="none" showing its poster until first activated
+  // (PERF_PASS_JUN13.md finding 4: eagerly downloading BOTH locale
+  // videos cost ~11MB on first load; the first EN↔中文 toggle now pays
+  // a one-time short buffer instead). play() on a muted video needs no
+  // gesture; unmuted play() happens inside the toggle/unmute click's
+  // effect, where transient user activation still applies. Silent
+  // .catch — if play() fails the user can hit play via native controls.
+  //
+  // NOTE: the fetch() cache-prime that used to live here was removed —
+  // Lighthouse showed it RACING the <video> element's own request
+  // (force-cache doesn't dedupe an in-flight Range-semantics media
+  // request), so the EN video was downloaded twice (5.7MB × 2).
   useEffect(() => {
     (['en', 'zh'] as const).forEach((loc) => {
       const el = videoRefs.current[loc];
       if (!el) return;
       const isActive = loc === videoLocale;
       el.muted = !(isActive && userUnmuted);
-      // If the user just unmuted while the video was running, attempt
-      // to keep playing. Some browsers pause when .muted flips false
-      // on a previously-autoplay-muted video; nudging play() back keeps
-      // it seamless. Silent .catch — if it fails the user can still
-      // hit play via native controls.
-      if (isActive && userUnmuted) {
+      if (isActive) {
         el.play().catch(() => {
           /* user can re-trigger via native controls */
         });
+      } else {
+        el.pause();
       }
     });
   }, [videoLocale, userUnmuted]);
-
-  // Prime the HTTP cache for BOTH splash videos on page open. The dual
-  // <video preload="auto"> elements below also trigger the download, but
-  // some mobile browsers deprioritize the buffer of a hidden/transparent
-  // video element — this fetch() guarantees the bytes land in disk cache
-  // so swapping EN ↔ 中文 is instant. Fire-and-forget; failures are silent
-  // (the <video preload="auto"> path is the primary mechanism).
-  useEffect(() => {
-    const urls = Object.values(SPLASH_VIDEOS).map((v) => v.src);
-    urls.forEach((url) => {
-      fetch(url, { cache: 'force-cache', credentials: 'omit' }).catch(() => {
-        /* belt-and-suspenders; <video preload="auto"> is primary */
-      });
-    });
-  }, []);
 
   useEffect(() => {
     const obs = new IntersectionObserver(
@@ -131,7 +122,16 @@ export default function MontreeLanding() {
 
   return (
     <>
-      <style jsx global>{`
+      {/* Plain <style> (NOT styled-jsx) — App Router has no styled-jsx
+          StyleRegistry, so <style jsx global> renders NOTHING into the SSR
+          HTML and the CSS only attached after hydration. Result: the first
+          paint was completely unstyled, then the layout snapped into place
+          when React hydrated — Lighthouse measured CLS 0.93 on this page
+          (PERF_PASS_JUN13.md finding 4). A literal <style> element is
+          server-rendered like any other element, so the hero frame's
+          aspect-ratio box (and everything else) is reserved from the very
+          first paint. Same pattern as AmbientParticles.tsx. */}
+      <style dangerouslySetInnerHTML={{ __html: `
 * { box-sizing: border-box; margin: 0; padding: 0; }
         html { scroll-behavior: smooth; }
         html, body { min-height: 100%; }
@@ -256,9 +256,10 @@ export default function MontreeLanding() {
         /* Both EN and 中文 video elements render simultaneously, stacked
            inside the frame. Active one is opacity 1 + receives clicks /
            keyboard / native controls. Inactive one is opacity 0 + ignored
-           by AT and pointers BUT continues to play muted in the background
-           so its buffer + decode pipeline stay warm. Swapping EN ↔ 中文 is
-           just an opacity flip — no remount, no re-fetch, no buffering. */
+           by AT and pointers, paused at preload="none" (poster only — its
+           media downloads on first activation; see the JSX comment). Both
+           elements stay mounted so toggling BACK to a previously-watched
+           locale is still an instant opacity flip. */
         .m-hero-corner-video-element {
           position: absolute;
           inset: 0;
@@ -708,7 +709,7 @@ export default function MontreeLanding() {
           .m-bottom-quote { padding: 56px 24px 72px; }
           .m-footer { padding: 40px 24px 48px; }
         }
-      `}</style>
+      ` }} />
 
       {/* ── BACKGROUND GRADIENT — rendered as a real div so Next.js stacking context can't block it ── */}
       <div aria-hidden="true" style={{
@@ -822,27 +823,24 @@ export default function MontreeLanding() {
             first paint instead. */}
         <div className="m-hero-corner-video">
           <div className="m-hero-corner-video-frame">
-            {/* Dual-video preload pattern (Session 131): render BOTH EN
-                and 中文 video elements at the same time, stacked inside the
-                frame. Both autoplay muted with preload="auto" from first
-                paint — the browser downloads + decodes both files in
-                parallel. Only the active locale is visible (opacity 1) and
-                interactive (controls + pointer events + focusable + AT-
-                visible); the other is opacity 0, aria-hidden, tabIndex -1,
-                pointer-events none but STILL playing muted so its buffer
-                stays warm. Toggling EN ↔ 中文 is just an opacity flip — no
-                remount, no re-fetch, instant.
+            {/* Dual-video pattern (Session 131, slimmed in the Jun 13 perf
+                pass): BOTH EN and 中文 video elements stay mounted and
+                stacked inside the frame, but only the ACTIVE locale
+                downloads media. The inactive one sits at preload="none"
+                showing its (local, tiny) poster — its first activation
+                pays a one-time short buffer. Previously both files
+                (5.7MB + 5.3MB) downloaded eagerly with preload="auto",
+                which dominated the 13.4MB first-load weight Lighthouse
+                flagged (PERF_PASS_JUN13.md finding 4).
+
+                Active video uses preload="metadata", not "auto" — with
+                autoPlay the browser streams progressively anyway, and
+                metadata keeps the poster as the LCP candidate instead of
+                blocking on video bytes.
 
                 Key off the LOCALE (not src) so React keeps each <video>
-                element across toggles. The element instance is stable;
-                only its style + a11y props flip. The old key={src} pattern
-                tore down the player on every flip and re-buffered from
-                scratch — that's what this fixes.
-
-                Why not just one <video> with a src swap? Same reason:
-                changing src forces a fresh download every time. With two
-                <video> elements, the bytes for both files are already on
-                disk + decoded the moment you toggle.
+                element across toggles — once a locale HAS been activated,
+                toggling back to it is instant (element + buffer survive).
 
                 controls — only on the active locale's element, so the
                 hidden video's native control bar doesn't ghost-render
@@ -864,12 +862,12 @@ export default function MontreeLanding() {
                   className="m-hero-corner-video-element"
                   src={v.src}
                   poster={v.poster}
-                  autoPlay
+                  autoPlay={isActive}
                   muted
                   loop
                   controls={isActive}
                   playsInline
-                  preload="auto"
+                  preload={isActive ? 'metadata' : 'none'}
                   aria-hidden={!isActive}
                   aria-label={isActive ? 'Montree introduction video' : undefined}
                   tabIndex={isActive ? 0 : -1}

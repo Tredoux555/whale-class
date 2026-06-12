@@ -192,7 +192,16 @@ export default function MontreeExplainer() {
 
   return (
     <>
-      <style jsx global>{`
+      {/* Plain <style> (NOT styled-jsx) — App Router has no styled-jsx
+          StyleRegistry, so <style jsx global> renders NOTHING into the SSR
+          HTML; the CSS only attached after hydration, the first paint was
+          unstyled, and the layout snapped into place when React hydrated —
+          Lighthouse measured CLS 0.636 here (0.461 of it on .ex-features;
+          PERF_PASS_JUN13.md finding 8). A literal <style> element IS
+          server-rendered, so the hero frame + gallery card aspect-ratio
+          boxes are reserved from the first paint. Same fix as
+          app/montree/page.tsx and AmbientParticles.tsx. */}
+      <style dangerouslySetInnerHTML={{ __html: `
         * { box-sizing: border-box; margin: 0; padding: 0; }
         html { scroll-behavior: smooth; }
         html, body { min-height: 100%; }
@@ -361,9 +370,9 @@ export default function MontreeExplainer() {
           color: rgba(255,255,255,0.6);
         }
         .ex-hero-cta { margin-top: 36px; }
-      `}</style>
+      ` }} />
 
-      <style jsx global>{`
+      <style dangerouslySetInnerHTML={{ __html: `
         /* ── Feature gallery ── */
         .ex-features { max-width: 1180px; margin: 0 auto; padding: 80px 32px 40px; }
         .ex-features-head { text-align: center; margin-bottom: 48px; }
@@ -581,7 +590,7 @@ export default function MontreeExplainer() {
           .ex-closing { padding: 90px 20px 100px; }
           .ex-lb-close { top: 8px; right: 8px; }
         }
-      `}</style>
+      ` }} />
 
       {/* Background gradient — fixed div so the stacking context can't block it */}
       <div aria-hidden="true" style={{
@@ -619,14 +628,23 @@ export default function MontreeExplainer() {
           <p className="ex-hero-sub">{t('explainer.hero.sub')}</p>
           <div className="ex-hero-video">
             {HERO.available ? (
+              /* poster: the EN splash poster IS this film's first frame —
+                 splash v4 and main-explainer.mp4 are the same cut (see
+                 SPLASH_VIDEOS comment in app/montree/page.tsx). A local
+                 ~75KB jpg paints immediately and becomes the LCP candidate
+                 instead of the 3.5MB video. preload="metadata" (was
+                 "auto"): autoPlay streams progressively regardless, so
+                 "auto" only forced an eager full buffer (PERF_PASS_JUN13.md
+                 finding 8). */
               <video
                 src={HERO.src}
+                poster="/montree-splash-video-v4-poster.jpg"
                 autoPlay
                 muted
                 loop
                 controls
                 playsInline
-                preload="auto"
+                preload="metadata"
                 aria-label="Montree introduction video"
               />
             ) : (
