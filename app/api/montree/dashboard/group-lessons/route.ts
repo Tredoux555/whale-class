@@ -130,16 +130,27 @@ export async function GET(request: NextRequest) {
       workByNameLower.set(w.name.toLowerCase(), w);
     }
 
-    // All progress for the roster in one query
+    // All progress for the roster — paged through in 1000-row batches.
+    // 🐛 BUG FIX (PERF_PASS_JUN13.md Finding 6): this was a single un-limited
+    // query, which Supabase silently caps at 1000 rows — a busy classroom got
+    // group suggestions computed on a TRUNCATED progress set (wrong answers,
+    // no error). Same paging pattern as the sibling curriculum-gaps route.
     const childIds = children.map(c => c.id);
-    const { data: progressRows } = await supabase
-      .from('montree_child_progress')
-      .select('child_id, work_name, status')
-      .in('child_id', childIds);
+    let progressRows: Array<{ child_id: string; work_name: string; status: string }> = [];
+    for (let from = 0; ; from += 1000) {
+      const { data } = await supabase
+        .from('montree_child_progress')
+        .select('child_id, work_name, status')
+        .in('child_id', childIds)
+        .range(from, from + 999);
+      const batch = (data || []) as Array<{ child_id: string; work_name: string; status: string }>;
+      progressRows = progressRows.concat(batch);
+      if (batch.length < 1000) break;
+    }
 
     // child_id → Map(workId → status) for curriculum-matched rows
     const touchedByChild = new Map<string, Map<string, string>>();
-    for (const row of (progressRows || []) as Array<{ child_id: string; work_name: string; status: string }>) {
+    for (const row of progressRows) {
       const work = workByNameLower.get((row.work_name || '').toLowerCase());
       if (!work) continue; // off-curriculum custom note — ignore for grouping
       let m = touchedByChild.get(row.child_id);
