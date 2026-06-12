@@ -5,6 +5,7 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
+import WhosPlayingPicker from '@/components/games/WhosPlayingPicker';
 
 interface Game {
   id: string;
@@ -37,6 +38,7 @@ const CATEGORIES: Category[] = [
       { id: 'blending', name: 'Sound Blending', emoji: '🔗', description: 'Blend sounds together to make words', route: '/montree/dashboard/games/sound-games/blending', gradient: 'from-teal-500 to-cyan-500' },
       { id: 'segmenting', name: 'Sound Segmenting', emoji: '✂️', description: 'Break words into their sounds', route: '/montree/dashboard/games/sound-games/segmenting', gradient: 'from-pink-500 to-rose-500' },
       { id: 'sound-safari', name: 'Sound Safari', emoji: '🦁', description: 'Hunt for sounds in the wild', route: '/montree/dashboard/games/sound-safari', gradient: 'from-green-500 to-emerald-500' },
+      { id: 'phonics-challenge', name: 'Phonics Challenge', emoji: '🏆', description: 'Read words through the phonics stages', route: '/montree/dashboard/games/phonics-challenge', gradient: 'from-emerald-500 to-green-600', isNew: true },
     ]
   },
   {
@@ -48,6 +50,7 @@ const CATEGORIES: Category[] = [
       { id: 'letter-tracer', name: 'Letter Tracer', emoji: '✏️', description: 'Practice writing lowercase letters', route: '/montree/dashboard/games/letter-tracer', gradient: 'from-teal-500 to-green-500' },
       { id: 'capital-letter-tracer', name: 'Capital Letters', emoji: '🔠', description: 'Trace uppercase A-Z', route: '/montree/dashboard/games/capital-letter-tracer', gradient: 'from-blue-500 to-indigo-500', isNew: true },
       { id: 'word-builder', name: 'Word Builder', emoji: '🧱', description: 'Build words letter by letter', route: '/montree/dashboard/games/word-builder', gradient: 'from-indigo-500 to-purple-500' },
+      { id: 'moveable-alphabet', name: 'Moveable Alphabet', emoji: '🔤', description: 'Build CVC words with the moveable alphabet', route: '/montree/dashboard/games/word-builder-new', gradient: 'from-purple-500 to-fuchsia-500', isNew: true },
       { id: 'vocabulary-builder', name: 'Vocabulary Builder', emoji: '📖', description: 'Learn new words with pictures', route: '/montree/dashboard/games/vocabulary-builder', gradient: 'from-pink-500 to-purple-500' },
       { id: 'read-and-reveal', name: 'Read & Reveal', emoji: '🎁', description: 'Read words to reveal pictures', route: '/montree/dashboard/games/read-and-reveal', gradient: 'from-yellow-500 to-orange-500' },
     ]
@@ -131,6 +134,10 @@ export default function MontreeGamesHub() {
 
       {/* Games Grid */}
       <main className="p-4">
+        {/* "Who's playing?" — sets current_student_id / studentSession so the
+            games attach their /api/games/progress saves to a child */}
+        <WhosPlayingPicker />
+
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 max-w-4xl mx-auto">
           {activeCategory.games.map((game) => (
             <Link
