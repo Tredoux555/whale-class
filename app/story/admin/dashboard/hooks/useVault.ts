@@ -578,6 +578,34 @@ export const useVault = (getSession: () => string | null) => {
     }
   }, [vaultHeaders, vaultFiles, albumIndex, loadMedia]);
 
+  // 🚨 Session 154 streaming fix — re-resolve the CURRENTLY-VIEWED video when
+  // the <video> element errors (most commonly a signed url that expired after
+  // a long pause). Unencrypted videos get a brand-new signed url; encrypted
+  // videos drop the cached blob (it may be stale/revoked) and re-fetch via the
+  // decrypt-proxy. The viewer guards against refresh loops (one retry per url).
+  const refreshViewingMedia = useCallback(async () => {
+    const mediaFiles = vaultFiles.filter(f => isImageFile(f.filename) || isVideoFile(f.filename));
+    const file = mediaFiles[albumIndex];
+    if (!file || !isVideoFile(file.filename)) return;
+    const headers = vaultHeaders();
+    if (!headers) {
+      setVaultError('Vault locked — please re-enter password');
+      return;
+    }
+    if (thumbnailsRef.current[file.id]) {
+      try { window.URL.revokeObjectURL(thumbnailsRef.current[file.id]); } catch { /* ignore */ }
+      delete thumbnailsRef.current[file.id];
+    }
+    try {
+      const media = await loadMedia(file, headers);
+      if (media) setViewingImage({ url: media.url, filename: file.filename, isVideo: media.isVideo });
+      else setVaultError('Failed to reload video');
+    } catch (err) {
+      console.error('Video refresh error:', err);
+      setVaultError('Failed to reload video');
+    }
+  }, [vaultFiles, albumIndex, vaultHeaders, loadMedia]);
+
   const handleCloseViewer = useCallback(() => {
     setViewingImage(null);
   }, []);
@@ -603,6 +631,7 @@ export const useVault = (getSession: () => string | null) => {
     handleVaultView,
     handleCloseViewer,
     handleVaultLock,
+    refreshViewingMedia,
     // Album extras
     albumIndex,
     thumbnails,

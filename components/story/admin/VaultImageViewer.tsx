@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useCallback } from 'react';
+import { useEffect, useCallback, useRef } from 'react';
 
 interface VaultImageViewerProps {
   imageUrl: string;
@@ -13,6 +13,13 @@ interface VaultImageViewerProps {
   loading?: boolean;
   /** When true, render a <video> player instead of an <img>. */
   isVideo?: boolean;
+  /**
+   * Session 154 — called (at most once per source url) when the <video>
+   * errors, typically because a signed url expired mid-session. The parent
+   * re-resolves a FRESH url and updates `imageUrl`, which remounts the
+   * player (key={imageUrl}) and resumes playback.
+   */
+  onVideoError?: () => void;
 }
 
 export function VaultImageViewer({
@@ -25,7 +32,12 @@ export function VaultImageViewer({
   albumTotal,
   loading,
   isVideo,
+  onVideoError,
 }: VaultImageViewerProps) {
+  // One refresh attempt per url — prevents an error→refresh→error loop if
+  // the re-resolved url is also unplayable (e.g. unsupported codec).
+  const retriedUrlRef = useRef<string | null>(null);
+
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
     if (e.key === 'Escape') onClose();
     if (e.key === 'ArrowLeft' && onPrev) onPrev();
@@ -91,7 +103,17 @@ export function VaultImageViewer({
               controls
               autoPlay
               playsInline
+              /* metadata: if autoplay is blocked (iOS with sound), fetch just
+                 the moov atom for duration/first frame instead of the whole
+                 file — instant UI, no wasted bandwidth. */
+              preload="metadata"
               className="max-w-full max-h-full rounded-lg"
+              onError={() => {
+                if (onVideoError && retriedUrlRef.current !== imageUrl) {
+                  retriedUrlRef.current = imageUrl;
+                  onVideoError();
+                }
+              }}
             />
           ) : (
             <img

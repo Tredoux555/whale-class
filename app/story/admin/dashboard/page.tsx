@@ -92,6 +92,7 @@ export default function AdminDashboard() {
     handleVaultView,
     handleCloseViewer,
     handleVaultLock,
+    refreshViewingMedia,
     albumIndex,
     thumbnails,
     loadingThumbnails,
@@ -387,6 +388,7 @@ export default function AdminDashboard() {
                 failedThumbnails={failedThumbnails}
                 onNavigateAlbum={navigateAlbum}
                 onLoadThumbnail={loadThumbnail}
+                onRefreshViewingMedia={refreshViewingMedia}
               />
             )}
 

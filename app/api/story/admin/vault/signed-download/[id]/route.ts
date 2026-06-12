@@ -11,10 +11,17 @@ import { getSupabase, verifyAdminToken, verifyVaultToken } from '@/lib/story-db'
 // using the legacy decrypt-proxy route.
 export const runtime = 'nodejs';
 
-// 🚨 Security audit C2 (Jun 2026) — was 1h. A bearer signed URL to an
-// unencrypted private object is shareable/loggable for its whole life, so keep
-// it as short as interactive playback allows. 5 min is ample to start a stream.
-const SIGNED_URL_TTL_SECONDS = 5 * 60; // 5 min
+// 🚨 Security audit C2 (Jun 2026) + streaming fix (Session 154): 5 min was
+// ample to START a stream, but the <video> element keeps issuing Range
+// requests against the SAME signed url for the whole playback — a long video
+// (or a pause + resume, or a late seek) blew past the 5-min TTL and every
+// subsequent byte-range fetch 400'd, freezing playback mid-film. 1h covers
+// any realistic single viewing session while staying short-lived; issuance
+// of the url is still admin-JWT + vault-token gated, and the player only
+// requests a url at the moment of playback (never at page load) and
+// re-requests a fresh one on expiry errors, so a leaked url's useful life
+// stays bounded.
+const SIGNED_URL_TTL_SECONDS = 60 * 60; // 1 hour
 
 export async function GET(
   req: NextRequest,
