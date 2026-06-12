@@ -13,6 +13,42 @@ is months stale — CLAUDE.md is the canonical brain for this repo.
 
 ---
 
+## Jun 12, 2026 (evening) — MERGED + DEPLOYED. App Store: submission phase
+
+**State change: `audit-cleanup-jun2026` (24 commits) merged into `main` and deployed
+to montree.xyz** (verified live — new push route responding). Build + 9/9 tests green
+on the Mac before merge. All pending SQLs are RUN in the correct project (whale-class
+`dmfncjjtsoxrnvcdnvjq`): application tables (01), account-deletion audit (03), device
+tokens w/ RLS (04). A stray `montree_device_tokens` accidentally created in the
+guardian-connect project was verified empty and dropped. GC's
+`uniq_active_emergency_per_user` index confirmed present.
+
+**Apple Developer enrolment (Tredoux, in progress):** prior failure was the classic
+China trap (CN-region Apple ID needs Chinese national ID; region/card/VPN mismatches).
+Plan: NEW Apple ID, region **South Africa**, legal passport name, 2FA on, SA card,
+enrol as **Individual ($99)** via the **Apple Developer app on iPhone** (not web),
+stable single VPN exit for the whole session. 1–3 day approval. Decision made: do NOT
+wait for HK org enrolment (D-U-N-S, weeks, China-verification limbo) — convert
+individual → organization (Montree Limited) later when the HK account is funded;
+seller name is the only real difference, payouts irrelevant (revenue is web-billed).
+
+**Remaining to submission (≈ half a day once enrolment approves):**
+1. APNs key → Railway (`APNS_AUTH_KEY`/`APNS_KEY_ID`/`APNS_TEAM_ID`) — push is
+   wired but inert until set. Android's `FIREBASE_SERVICE_ACCOUNT` +
+   `google-services.json` can wait (Play Store is later).
+2. Xcode: signing → Archive → upload (`docs/APP_STORE_RUNBOOK.md`).
+3. App Store Connect listing — copy exists (`APP_STORE_LISTING_AND_REVIEW.md`);
+   screenshots NOT made yet; privacy-labels questionnaire (Claude can pre-draft
+   answers from the codebase).
+4. Reviewer demo account (throwaway school).
+5. One physical-iPhone test: login → camera → photo upload → account deletion.
+   NON-NEGOTIABLE before submitting.
+6. At submission: deselect mainland China territory (ICP filing not worth it for v1).
+Expect one possible 4.2 (thin wrapper) rejection round; response = lean on
+push/camera/offline natives, add more if needed.
+
+---
+
 ## Jun 12, 2026 (afternoon) — Native push + Android plugin sync + audit pass + Reels playbook
 
 Five commits on `audit-cleanup-jun2026` (Cowork session): `a05bae92` (Android plugin
