@@ -77,23 +77,40 @@ export async function PATCH(
   { params }: { params: { classroomId: string } }
 ) {
   try {
+    const { classroomId } = params;
     const { workId, updates } = await request.json();
     if (!workId) return NextResponse.json({ success: false, error: 'workId required' }, { status: 400 });
+    if (!updates || typeof updates !== 'object') {
+      return NextResponse.json({ success: false, error: 'updates object required' }, { status: 400 });
+    }
 
     const allowedFields = ['name', 'description', 'is_active', 'materials_on_shelf', 'custom_notes', 'sequence'];
     const sanitized: Record<string, any> = { updated_at: new Date().toISOString() };
     for (const f of allowedFields) if (updates[f] !== undefined) sanitized[f] = updates[f];
 
+    // 🚨 Audit fix M3 (Jun 2026): scope the update to THIS classroom. The
+    // update previously matched on workId alone, so any caller holding the
+    // Whale admin token could rewrite works in any classroom by guessing ids.
+    // Per-tenant scoping = the URL's classroomId must own the row.
     const { data, error } = await supabase
       .from('classroom_curriculum')
       .update(sanitized)
       .eq('id', workId)
+      .eq('classroom_id', classroomId)
       .select()
-      .single();
+      .maybeSingle();
 
     if (error) throw error;
+    if (!data) {
+      console.warn(`[classroom/curriculum PATCH] work ${workId} not found in classroom ${classroomId} — rejected`);
+      return NextResponse.json(
+        { success: false, error: 'Work not found in this classroom' },
+        { status: 404 }
+      );
+    }
     return NextResponse.json({ success: true, work: data });
   } catch (error: any) {
+    console.error('[classroom/curriculum PATCH] failed:', error.message);
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 }

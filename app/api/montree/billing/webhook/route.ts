@@ -31,6 +31,7 @@ import {
   handleSubscriptionDeleted,
   handleChargeRefunded,
 } from '@/lib/montree/billing';
+import { recordInboxEvent, markInboxStatus } from '@/lib/montree/webhook-inbox';
 import Stripe from 'stripe';
 
 export const dynamic = 'force-dynamic';
@@ -74,6 +75,36 @@ export async function POST(request: NextRequest) {
   // Always log the event we received — useful for debugging at low volume.
   console.log('[billing webhook]', event.type, event.id);
 
+  // 🚨 Audit fix H5 (Jun 2026) — inbox-first persistence. We ack Stripe with
+  // a 200 BEFORE the handler runs (Tier 3.5 perf choice below), which meant a
+  // process restart mid-handler lost the event silently: Stripe won't retry a
+  // 200, and the DLQ only catches handler ERRORS, not process death. So the
+  // verified event is persisted to montree_webhook_inbox FIRST; only then do
+  // we ack + process. Rows stuck in 'received'/'processing' = events lost to
+  // a restart, queryable + replayable instead of gone.
+  //
+  //   * already_processed → Stripe re-delivered something we fully handled;
+  //     ack and skip (downstream idempotency keys would no-op it anyway).
+  //   * persist_failed    → DB couldn't store the event; return 500 so Stripe
+  //     retries later. NEVER ack an event we couldn't durably record.
+  //   * table_missing     → migration 253 not run yet; fall back to the
+  //     pre-H5 behaviour (process without inbox) with a loud log.
+  const inbox = await recordInboxEvent(supabase, {
+    stripeEventId: event.id,
+    eventType: event.type,
+    payload: event,
+  });
+  if (inbox.outcome === 'already_processed') {
+    return NextResponse.json({ ok: true, duplicate: true, event_type: event.type });
+  }
+  if (inbox.outcome === 'persist_failed') {
+    return NextResponse.json(
+      { error: 'Failed to persist event — retry later' },
+      { status: 500 }
+    );
+  }
+  const inboxAvailable = inbox.outcome === 'recorded';
+
   // 🚨 Perf Tier 3.5 (PERF_HEALTH_CHECK.md) — fire-and-forget the handler.
   // Stripe deems the webhook delivered as soon as we respond 2xx. Previously
   // we awaited the full handler chain (Sonnet calls inside trial-converted
@@ -94,6 +125,10 @@ export async function POST(request: NextRequest) {
   //     legitimately signed events reach the IIFE.
   void (async () => {
     try {
+      // H5: mark the inbox row as in-flight (best-effort; never throws).
+      if (inboxAvailable) {
+        await markInboxStatus(supabase, event.id, 'processing');
+      }
       switch (event.type) {
         case 'invoice.paid':
         case 'invoice.payment_succeeded': {
@@ -144,9 +179,17 @@ export async function POST(request: NextRequest) {
           // Don't 500 on events we don't handle — Stripe sends many. Just log.
           console.log('[billing webhook] unhandled event type:', event.type);
       }
+      // H5: handler chain finished cleanly — close out the inbox row.
+      if (inboxAvailable) {
+        await markInboxStatus(supabase, event.id, 'processed');
+      }
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Handler failed';
       console.error('[billing webhook] handler error for', event.type, ':', msg);
+      // H5: record the failure on the inbox row (best-effort).
+      if (inboxAvailable) {
+        await markInboxStatus(supabase, event.id, 'failed', msg);
+      }
       // Capture to dead-letter queue so super-admin can find + retry later.
       // DLQ failure must not compound the original error.
       try {

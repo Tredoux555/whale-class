@@ -8,6 +8,8 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 // POST: Quick place student - sets progress for all areas
 export async function POST(
   request: NextRequest,
@@ -16,17 +18,47 @@ export async function POST(
   try {
     const { studentId } = params;
     const { placements, recordedBy } = await request.json();
-    
+
     if (!placements || typeof placements !== 'object') {
       return NextResponse.json({ success: false, error: 'placements object required' }, { status: 400 });
     }
-    
+
+    // 🚨 Audit fix M3 (Jun 2026): this legacy route is gated by the Whale
+    // admin JWT in middleware, but used to forward ANY studentId straight
+    // into the quick_place_student RPC — a token holder could forge
+    // child_work_progress rows for arbitrary ids (including ids from other
+    // tenants' tables). Cheap per-tenant scoping: the student must be a real
+    // row in the legacy Whale `children` table (single-school by design;
+    // Montree children live in montree_children and are now unreachable from
+    // here), and every work id must at least be a UUID.
+    if (!UUID_RE.test(studentId)) {
+      return NextResponse.json({ success: false, error: 'Valid studentId required' }, { status: 400 });
+    }
+    const { data: child, error: childError } = await supabase
+      .from('children')
+      .select('id')
+      .eq('id', studentId)
+      .maybeSingle();
+    if (childError) {
+      console.error('[quick-place POST] child lookup failed:', childError.message);
+      return NextResponse.json({ success: false, error: 'Child lookup failed' }, { status: 500 });
+    }
+    if (!child) {
+      console.warn(`[quick-place POST] student ${studentId} not found in Whale children — rejected`);
+      return NextResponse.json({ success: false, error: 'Student not found' }, { status: 404 });
+    }
+
     const results: any = {};
     let totalWorksSet = 0;
-    
+
     for (const [area, workId] of Object.entries(placements)) {
       if (!workId) continue;
-      
+      if (typeof workId !== 'string' || !UUID_RE.test(workId)) {
+        console.warn(`[quick-place POST] non-UUID workId for area ${area} — skipped`);
+        results[area] = { success: false, error: 'Invalid work id' };
+        continue;
+      }
+
       const { data, error } = await supabase.rpc('quick_place_student', {
         p_child_id: studentId,
         p_classroom_work_id: workId,
@@ -59,9 +91,14 @@ export async function GET(
     const { studentId } = params;
     const { searchParams } = new URL(request.url);
     const classroomId = searchParams.get('classroomId');
-    
+
     if (!classroomId) {
       return NextResponse.json({ success: false, error: 'classroomId required' }, { status: 400 });
+    }
+
+    // Audit fix M3 (Jun 2026): cheap id validation on the read path too.
+    if (!UUID_RE.test(studentId) || !UUID_RE.test(classroomId)) {
+      return NextResponse.json({ success: false, error: 'Valid studentId and classroomId required' }, { status: 400 });
     }
     
     // Get all progress
