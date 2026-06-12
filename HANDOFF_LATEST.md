@@ -57,6 +57,27 @@ so launch at most 2-3 at once and verify between waves.
 
 ---
 
+## Jun 12, 2026 (Cowork burn ~22:00) — Tier 1 items 1+2 + story-vault streaming SHIPPED to branch `burn-jun12-night2` (NOT merged)
+
+Three commits, build + 9/9 tests green on the Mac, lint-clean, tree clean:
+- `13b3d963` TIER1-1 — "Who's playing?" child picker on games hub (sets
+  `current_student_id` + `studentSession`; reuses /api/montree/children;
+  hub also gains Phonics Challenge + Moveable Alphabet cards).
+- `5620ddf1` TIER1-2 — real `/support` page (was missing from middleware
+  publicPaths → 307; uses support@montree.xyz — ⚠️ VERIFY that mailbox
+  receives mail before App Store submission); ALL Reports nav links →
+  weekly-wrap (Tredoux's decision) + redirect safety net at
+  `dashboard/reports/page.tsx`; Games entry in DashboardHeader More menu.
+- `057c96d9` STORY VAULT — fluid video playback, security unchanged:
+  signed-URL TTL 5min→1h + on-demand refresh on expiry (unencrypted);
+  Range/206 + PBKDF2 key memo + private cache headers + real video MIME +
+  4-decrypt concurrency cap (encrypted); player preload=metadata.
+  Manual test: play a >20MB vault video → instant start, scrubbing works,
+  pause 6+ min → resume works.
+
+**Merge is Tredoux's decision** (his call tonight: branch, he merges).
+Remaining Tier 1: simulator screenshots (T1-3) + reviewer demo school (T1-4).
+
 ## Jun 12, 2026 (late night) — Apple Developer enrolment: PINNED, 80% done. Exact resume point below.
 
 **DONE tonight (do not redo any of this):**
