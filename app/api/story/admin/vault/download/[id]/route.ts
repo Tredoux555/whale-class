@@ -59,7 +59,8 @@ const MEDIA_MIME: Record<string, string> = {
 // bytes. Returns the inclusive window, null to IGNORE the header (malformed
 // or multi-range — RFC 9110 allows serving 200 instead), or 'unsatisfiable'
 // (→ 416) when the syntax is fine but the window falls outside the body.
-function parseRange(
+// Exported for tests (tests/vault-range.test.ts) — not imported by other routes.
+export function parseRange(
   header: string,
   size: number
 ): { start: number; end: number } | 'unsatisfiable' | null {
