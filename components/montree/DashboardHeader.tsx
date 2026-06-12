@@ -10,7 +10,7 @@ import {
   FileText, Target, Search, Sparkles, BookOpen,
   LayoutGrid, CalendarDays, Images, FolderOpen, TrendingUp,
   Users, BookMarked, Globe, BarChart2, Settings2, LogOut, UserPlus,
-  MessageSquare, KeyRound, Calendar,
+  MessageSquare, KeyRound, Calendar, Gamepad2,
 } from 'lucide-react';
 import { getSession, clearSession, isHomeschoolParent, type MontreeSession } from '@/lib/montree/auth';
 import { HOME_THEME } from '@/lib/montree/home-theme';
@@ -208,6 +208,7 @@ function DashboardHeader() {
     if (pathname === '/montree/dashboard/parent-codes')       return 'parent-codes';
     if (pathname?.startsWith('/montree/dashboard/conversations')) return 'conversations';
     if (pathname?.startsWith('/montree/dashboard/appointments')) return 'appointments';
+    if (pathname?.startsWith('/montree/dashboard/games'))      return 'games';
     if (pathname === '/montree/dashboard/notes')              return 'notes';
     if (pathname === '/montree/dashboard/focus')              return 'focus-list';
     if (pathname?.startsWith('/montree/dashboard/photo-audit')) return 'photo-audit';
@@ -703,6 +704,18 @@ function DashboardHeader() {
                     label="Meeting Notes"
                     active={activePage === 'conversations'}
                     onClick={() => { setShowMoreMenu(false); router.push('/montree/dashboard/conversations'); }}
+                  />
+
+                  {/* Games — curriculum games hub. Previously only reachable
+                      via Settings → Quick Access / Teacher Tools; surfaced
+                      here (Tier 1, 2026-06-12) so teachers can reach it in
+                      one tap. Reuses the existing `settings.games` key
+                      (present in all 12 locales) — no i18n backfill needed. */}
+                  <MenuRow
+                    icon={Gamepad2}
+                    label={t('settings.games') || 'Games'}
+                    active={activePage === 'games'}
+                    onClick={() => { setShowMoreMenu(false); router.push('/montree/dashboard/games'); }}
                   />
 
                   {/* Appointments — HIDDEN Session 129 follow-up per user
