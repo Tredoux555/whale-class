@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url';
 // Path alias mirrors tsconfig "@/*" -> repo root.
 // Plain object (not defineConfig) so the config has no hard dependency on a
 // project-local `vitest/config` resolution — keeps it runnable across setups.
-export default {
+const config = {
   // Inline empty PostCSS so Vite does NOT load the app's Tailwind postcss
   // config — server-side tests don't touch CSS.
   css: {
@@ -22,6 +22,9 @@ export default {
     // Secrets used only by tests. Real secrets live in env / Railway.
     env: {
       MONTREE_JWT_SECRET: 'test-only-secret-do-not-use-in-prod-1234567890',
+      ADMIN_SECRET: 'test-only-admin-secret-do-not-use-in-prod-0987654321',
     },
   },
 };
+
+export default config;
