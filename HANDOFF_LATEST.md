@@ -76,7 +76,38 @@ Three commits, build + 9/9 tests green on the Mac, lint-clean, tree clean:
   pause 6+ min → resume works.
 
 **Merge is Tredoux's decision** (his call tonight: branch, he merges).
-Remaining Tier 1: simulator screenshots (T1-3) + reviewer demo school (T1-4).
+
+### Audit pass (same session): independent reviewer over the 3 commits → 1 P1 + 2 P2s, ALL FIXED in `4a3c7876`
+- P1: video error-refresh guard was url-keyed → infinite refresh loop on
+  unplayable codecs (.avi/.mkv). Now keyed by file id, one attempt per view.
+- P2: audit-log gate bypassable via `Range: bytes=1-` → now time-based
+  (one row per admin+file per 10 min).
+- P2: decrypt route cached plaintext in browser disk cache (survived vault
+  lock) → `no-store` on all responses.
+Build + 9/9 tests re-verified green after fixes.
+
+### T1-4 DONE — Apple Review School live on production (created via public APIs only)
+- Principal code **WYXMN9**, Teacher code **BAM4S9** (both verified via API).
+- School `136841a0-6b93-421e-b9f4-57e9f1451d18`, classroom `5a5c93bb-…4417`
+  (full curriculum seeded), 5 fake children (Emma Chen, Liam Park, Sofia
+  Rossi, Noah Smith, Mia Müller — no photos).
+- ⚠️ Trial expires **2026-06-19** — extend `trial_ends_at` before review.
+- ⚠️ Exclude the "Apple Reviewer" `montree_leads` row from outreach.
+- Details: `docs/APPLE_REVIEW_DEMO_SCHOOL.md` (committed on the branch).
+- Tredoux: verify both codes on a real device (10 min).
+
+### T1-3 DONE — 6 in-app screenshots captured at exactly 1290×2796
+In `~/Desktop/Montree App Store Pack/SCREENSHOTS/` (logged in as BAM4S9,
+read-only). Good: games hub, dashboard student grid, child record
+(scrolled variant `app_02b` is the stronger one). Weak, recapture later:
+snap (black camera box — headless has no camera; needs real device) and
+weekly-wrap (empty — no demo reports exist; seed one then recapture).
+Upload order + status table in `SCREENSHOTS/SCREENSHOTS_TODO.md`.
+Capture scripts kept at `/tmp/appstore_cap/` (puppeteer-core; note: auth
+rate limit is 5/15min per IP).
+
+**TIER 1 COMPLETE.** Next per burn plan: Tier 2 (missing-tables SQL staging,
+tsc debt, push polish, tests, perf pass).
 
 ## Jun 12, 2026 (late night) — Apple Developer enrolment: PINNED, 80% done. Exact resume point below.
 
