@@ -1,11 +1,13 @@
 // app/montree/parent/account/page.tsx
 //
-// Parent account management. Currently the home of in-app account deletion
-// (Apple App Store Guideline 5.1.1(v)) for parent (portal) sessions.
+// Parent account management: push-notification preferences (Tier 2 push
+// polish, Jun 2026) + in-app account deletion (Apple App Store Guideline
+// 5.1.1(v)) for parent (portal) sessions.
 'use client';
 
 import Link from 'next/link';
 import DeleteAccountSection from '@/components/montree/DeleteAccountSection';
+import ParentNotificationPrefs from '@/components/montree/ParentNotificationPrefs';
 
 export default function ParentAccountPage() {
   const clearParentSession = () => {
@@ -25,6 +27,7 @@ export default function ParentAccountPage() {
       </div>
 
       <main className="p-4 max-w-lg mx-auto space-y-6">
+        <ParentNotificationPrefs />
         <DeleteAccountSection
           endpoint="/api/montree/parent/auth/delete-account"
           redirectTo="/montree/parent"
