@@ -13,26 +13,45 @@ is months stale — CLAUDE.md is the canonical brain for this repo.
 
 ---
 
-## Jun 12, 2026 (afternoon) — Native push notifications + Android plugin sync
+## Jun 12, 2026 (afternoon) — Native push + Android plugin sync + audit pass + Reels playbook
 
-Two commits on `audit-cleanup-jun2026` (Cowork session, type-checked clean, build/tests
-NOT re-run here — Linux sandbox can't execute the Mac-native vitest/SWC binaries; run
-`npm run build` + `npx vitest run` on the Mac before merging):
-- **Android plugins synced** (`a05bae92`) — all 9 Capacitor plugins now wired into
-  `android/` (was 3 of 9; native camera/mic would have failed). Camera on Android still
-  needs `google-services.json` only for PUSH, not camera — camera works now.
-- **Push notifications end-to-end** — `montree_device_tokens` (migration 251 +
-  `db/RUN_THESE/04`), register API (teacher/principal/parent cookies), client registrar
-  in dashboard/principal/parent layouts, server sender (FCM v1 for Android, direct APNs
-  HTTP/2 for iOS — no Firebase iOS SDK needed), wired into: report send (all 3 routes,
-  respects can_view_reports), thread messages (no body leak to lock screen), broadcasts.
-  iOS entitlements + AppDelegate APNs forwarding done.
-- **To flip on (Tredoux):** run `db/RUN_THESE/04_push_device_tokens.sql`; Railway env:
-  `FIREBASE_SERVICE_ACCOUNT` (Firebase console → service account JSON, base64 ok) for
-  Android; `APNS_AUTH_KEY`+`APNS_KEY_ID`+`APNS_TEAM_ID` (Apple Dev account → Keys →
-  APNs) for iOS. Optional: `APNS_BUNDLE_ID` (defaults xyz.montree.app), `APNS_ENV`.
-  Android push also needs `android/app/google-services.json` from Firebase.
-  Unconfigured = clean no-op; nothing breaks.
+Five commits on `audit-cleanup-jun2026` (Cowork session): `a05bae92` (Android plugin
+sync), `2b1d9a06` (push end-to-end), `d1a9866d` (docs), `bd1594bb` (audit fixes),
+plus the social-guru Reels playbook commit. **AUDITED**: independent reviewer agent
+went over the push diffs; found 9 issues (4×P1, 5×P2); 8 fixed in `bd1594bb`, 1
+deferred (APNs HTTP/2 connection reuse — one connection per token send; fine below
+~50 devices, hoist a shared session in `lib/montree/push/sender.ts:sendApns` if
+fan-out grows). Build/tests NOT re-run here — this sandbox is Linux, node_modules
+binaries are Mac (vitest/SWC). **Run `npm run build` + `npx vitest run` on the Mac
+before merging.**
+
+- **Android plugins synced** — all 9 Capacitor plugins wired into `android/` (was
+  3 of 9). Native camera/mic now work on Android (permissions were already done).
+  `capacitor.plugins.json` stays gitignored by design — `cap sync` regenerates it.
+- **Push notifications end-to-end** — `montree_device_tokens` (migration 251 has
+  **RLS enabled** — audit fix, do not run the pre-fix version), register API
+  (teacher/principal/parent; homeschool_parent maps to owner_type 'parent';
+  parent auth uses resolveAuthorizedParent; 10-device cap per owner), client
+  registrar in dashboard/principal/parent layouts (session-gated + retries per
+  route change so the iOS prompt NEVER fires on a login screen), server sender
+  (FCM v1 Android / direct APNs HTTP/2 iOS, no Firebase iOS SDK; dead tokens
+  retired only on 404/UNREGISTERED/410). Wired into: all 3 report-send routes
+  (respects can_view_reports; weekly-wrap only for successfully published),
+  thread messages BOTH directions (staff→parent and parent→staff; generic body,
+  no message text on lock screens), broadcasts (parents + staff, deep links).
+  iOS: App.entitlements + CODE_SIGN_ENTITLEMENTS (both App-target configs) +
+  AppDelegate APNs forwarding.
+- **To flip on (Tredoux):** run `db/RUN_THESE/04_push_device_tokens.sql`; Railway:
+  `FIREBASE_SERVICE_ACCOUNT` (service-account JSON, base64 ok) for Android +
+  `android/app/google-services.json`; `APNS_AUTH_KEY`+`APNS_KEY_ID`+`APNS_TEAM_ID`
+  for iOS (needs Apple Dev enrolment — same blocker as archiving). Optional:
+  `APNS_BUNDLE_ID` (default xyz.montree.app), `APNS_ENV`. Unconfigured = clean
+  no-op, logged once.
+- **Social guru** — `lib/social-media-guru/knowledge/facebook-reels-playbook.md`
+  (auto-loaded): Tredoux's Jun 12 Reels analysis — 1-2s hook, 8-10AM/5-7PM only,
+  ≤4 hashtags, question-led captions, engagement CTA, seeding checklist,
+  draft-only guardrail. System prompt: platform playbooks override generic
+  formulas.
 
 ## Jun 12, 2026 (morning) — App Store build (iOS ready to archive)
 
