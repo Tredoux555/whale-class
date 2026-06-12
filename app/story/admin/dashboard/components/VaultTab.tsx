@@ -35,6 +35,9 @@ interface VaultTabProps {
   failedThumbnails: Record<number, boolean>;
   onNavigateAlbum: (direction: 'prev' | 'next') => void;
   onLoadThumbnail: (fileId: number) => void;
+  // Session 154 — re-resolve a fresh playback url when the <video> errors
+  // (expired signed url / stale blob). Wired to VaultImageViewer.onVideoError.
+  onRefreshViewingMedia: () => void;
 }
 
 export function VaultTab({
@@ -61,6 +64,7 @@ export function VaultTab({
   failedThumbnails,
   onNavigateAlbum,
   onLoadThumbnail,
+  onRefreshViewingMedia,
 }: VaultTabProps) {
   const imageFiles = vaultFiles.filter(f => isImageFile(f.filename));
   // Photos AND videos share one gallery now — videos render as a ▶ tile and
@@ -91,6 +95,7 @@ export function VaultTab({
           albumTotal={mediaFiles.length}
           loading={loadingView}
           isVideo={viewingImage.isVideo}
+          onVideoError={onRefreshViewingMedia}
         />
       )}
     <div className="space-y-4">
