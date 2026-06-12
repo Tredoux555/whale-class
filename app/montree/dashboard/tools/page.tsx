@@ -27,7 +27,7 @@ export default function ToolsPage() {
       hoverGradient: 'hover:from-purple-600 hover:to-violet-700',
     },
     {
-      href: '/montree/dashboard/reports',
+      href: '/montree/dashboard/weekly-wrap',
       icon: '📊',
       titleKey: 'teacherTools.weeklyReports' as TranslationKey,
       descKey: 'teacherTools.weeklyReportsDesc' as TranslationKey,

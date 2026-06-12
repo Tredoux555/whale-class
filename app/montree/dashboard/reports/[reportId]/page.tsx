@@ -102,7 +102,7 @@ export default function ReportViewPage() {
         <div className="text-center">
           <span className="text-4xl mb-4 block">❌</span>
           <p className="text-gray-600">{error || t('reports.reportNotFound')}</p>
-          <Link href="/montree/dashboard/reports" className="text-emerald-600 mt-4 inline-block">
+          <Link href="/montree/dashboard/weekly-wrap" className="text-emerald-600 mt-4 inline-block">
             ← {t('reports.backToReports')}
           </Link>
         </div>
@@ -120,7 +120,7 @@ export default function ReportViewPage() {
         <div className="max-w-3xl mx-auto">
           <div className="flex items-center gap-3 mb-4">
             <Link 
-              href="/montree/dashboard/reports"
+              href="/montree/dashboard/weekly-wrap"
               className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center"
             >
               ←

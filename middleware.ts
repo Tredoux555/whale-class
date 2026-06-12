@@ -266,6 +266,7 @@ export async function middleware(req: NextRequest) {
     '/pricing',     // Public pricing page — no login required
     '/privacy',     // Privacy policy — public (required by App Store / kids-data law)
     '/terms',       // Terms of service — public
+    '/support',     // Support page — public (required by App Store; montree.xyz/support)
   ];
   
   // Check if pathname matches exactly or starts with a public path

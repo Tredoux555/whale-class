@@ -55,7 +55,7 @@ function ReportViewContent() {
         <div className="text-center">
           <div className="text-5xl mb-4">😕</div>
           <p className="text-gray-600 mb-4">{error || t('reportView.noReportId' as TranslationKey)}</p>
-          <Link href="/montree/dashboard/reports" className="text-blue-500 hover:underline">
+          <Link href="/montree/dashboard/weekly-wrap" className="text-blue-500 hover:underline">
             ← {t('reportView.backToReports' as TranslationKey)}
           </Link>
         </div>
@@ -67,7 +67,7 @@ function ReportViewContent() {
   return (
     <div className="min-h-screen bg-gray-50 p-4">
       <div className="max-w-2xl mx-auto">
-        <Link href="/montree/dashboard/reports" className="text-blue-500 mb-4 inline-block">
+        <Link href="/montree/dashboard/weekly-wrap" className="text-blue-500 mb-4 inline-block">
           ← {t('reportView.backToReports' as TranslationKey)}
         </Link>
         <div className="bg-white rounded-xl p-6 shadow-sm">
