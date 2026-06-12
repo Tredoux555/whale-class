@@ -15,6 +15,63 @@ Local path: `/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/whale` (note spa
 
 ---
 
+## 🧠 SESSION — Jun 12→13, 2026 OVERNIGHT MARATHON (Cowork) — Tier 1 + Tier 2 of the burn plan, all on a branch
+
+**Canonical handoff:** `HANDOFF_LATEST.md` (morning report at the very top — read it first).
+**State: branch `burn-jun12-night2`, 14 commits, pushed. NOTHING merged/deployed — Tredoux merges.**
+Build green, 118/118 tests, i18n 12/12. Two independent audits ran during the night; every
+P1/P2 found was fixed before morning (vault refresh loop, audit-log Range bypass, plaintext
+disk-cache).
+
+**Shipped (one line each):** games child picker (sets `current_student_id`+`studentSession`;
+games finally attach to a child); real `/support` page + ALL Reports nav → weekly-wrap +
+redirect safety net + Games menu entry; story-vault video streaming (Range/206, 1h on-demand
+signed URLs, key memo, `no-store`, Safari MIME — security model unchanged); Apple Review
+demo school LIVE on production (principal **WYXMN9** / teacher **BAM4S9**, 5 fake children,
+trial expires **Jun 19** — extend!; `docs/APPLE_REVIEW_DEMO_SCHOOL.md`); 6 App Store
+screenshots @1290×2796 (snap + weekly-wrap weak, recapture later); migration **254** staged
+(campaign items ONLY — 20 other "missing" tables deliberately rejected, appendix explains);
+`docs/ORPHAN_TABLES_REPORT.md` (**7 of the 77 "orphans" are FALSE POSITIVES — keep them**);
+tests **9 → 118**; push polish (APNs h2 reuse, durable outbox migration **255** staged,
+per-parent notification prefs + parent-account toggles); **tsc 5,250 → 743** type-only
+(audited CLEAN); `docs/PERF_PASS_JUN13.md` (splash: perf 46, CLS 0.93, 13.4MB dual-locale
+eager videos; dashboard 3-RT waterfall; SSR TTFB ~600ms from `cookies()` blocking edge cache).
+
+**🚨 Cloudflare Error 1034 (intermittent, seen 23:03):** CF-on-CF — proxied record →
+Railway's Cloudflare-backed edge. Fix = flip montree.xyz + www to **DNS only** (2 min, VPN on):
+`docs/DNS_ERROR_1034_FIX.md`. Dashboard unreachable from CN network overnight, so not done.
+Uptime monitor logging to `~/Desktop/montree_uptime_overnight.log` (0 fails since 23:21);
+kill: `pkill -f montree_monitor`.
+
+**🚨 Architectural rules locked in (cumulative numbering from Session 115's #161):**
+162. **Vault decrypt route is `no-store`, always.** Decrypted vault bytes must never enter the
+     browser disk cache (vault lock can't purge it). Range/206 slices the decrypted buffer —
+     AES-GCM cannot be random-access decrypted; don't pretend otherwise.
+163. **Never key a retry/refresh guard on a URL that changes per mint** (signed URLs, blob
+     objectURLs). Key on the stable id (file id). One auto-refresh per viewing, then stop.
+164. **Vault download audit logging is time-based** (one row per admin+file per 10 min) —
+     never gate on Range offsets (`bytes=1-` bypassed it).
+165. **`UntypedClient` (lib/supabase-client.ts) + `lib/untyped-supabase.ts` are the sanctioned
+     supabase-typing escape hatch.** No per-file `as never` casts, no @ts-ignore carpets.
+     `tsc --noEmit` now needs `NODE_OPTIONS=--max-old-space-size=4096`.
+166. **All parent-facing pushes flow through the `sendPushToOwners` chokepoint** — prefs are
+     enforced there, transient failures go to `montree_push_outbox` (dead tokens NEVER enqueue).
+     Degrades to no-op until migration 255 runs.
+167. **Apple Review School (`136841a0-…`) is production data:** exclude from outreach/analytics
+     (it created a `montree_leads` row), fake children only, never real photos.
+168. **Once montree.xyz is DNS-only, keep it DNS-only.** Re-enabling the orange cloud
+     reintroduces the 1034 CF-on-CF failure mode.
+
+**Still OPEN for Tredoux (morning checklist in HANDOFF_LATEST.md):** merge+deploy the branch
+(`/support` must be live before App Store review); Cloudflare DNS flip; run migrations 254+255;
+verify demo codes on a device + extend trial; verify support@montree.xyz inbound; Apple
+Developer app enrolment (resume notes in HANDOFF_LATEST); Railway → Singapore pin. Plus the
+rediscovered Jun-10 leftovers: migration 249/home_practice, Whale→Sonnet flip, service-role
+key rotation. Perf follow-ups worth a session: splash video diet, dashboard waterfall,
+`/children` over-fetch, locale-cookie edge-caching.
+
+---
+
 ## 🧠 SESSION 141 (June 1, 2026) — Story security audit + ephemeral mode + content-only nuke
 
 **Canonical handoff:** `docs/handoffs/SESSION_141_HANDOFF.md`. Two commits on main:
@@ -8662,6 +8719,11 @@ Both local and production connect to the SAME Supabase database.
 ---
 
 ## Migrations Run (production)
+
+**Jun 12→13 2026 overnight marathon — ⏳ 2 migrations STAGED on branch `burn-jun12-night2`, pending Tredoux's Supabase run (whale-class project):**
+- ⏳ `254_missing_tables_batch.sql` (mirror: `db/RUN_THESE/07`) — `montree_campaign_items` ONLY (unblocks Campaign Command Center, currently 503s). RLS enabled, idempotent. Appendix documents 20 missing tables deliberately NOT staged (dead features / wrong-name bugs / superseded legacy).
+- ⏳ `255_push_outbox_and_prefs.sql` — `montree_push_outbox` (durable push retry queue) + `montree_parents.notification_prefs JSONB DEFAULT '{}'`. RLS house-style. Push code degrades gracefully (warn-once no-op) until run.
+(Latest RUN migrations: 252+253 on Jun 12 — games progress + outreach, verified RLS. 249 from Jun 10 night still unconfirmed — check before running.)
 
 All migrations through 169 have been run. Key ones: 147 (smart learning columns), 148 (classroom onboarding), 152-154 (teacher OS foundation), 155 (teacher OS foundation DDL), 156 (visitor tracking), 157 (teacher notes child_id), 158 (paperwork_current_week), 159 (teacher_confirmed media), 160 (dashboard feature gates + Whale Class enabled), 161 (enable weekly_admin_docs for Whale Class), 164 (cropped_storage_path on montree_media — run Apr 7 via Supabase SQL editor), 169 (guide_content_zh JSONB on montree_classroom_curriculum_works — run Apr 11). **Migration 166 (`montree_global_works_staging`) still pending** from prior session. The Apr 7 self-learning loop SQL also added safety-net columns to `montree_visual_memory` (negative_descriptions, key_materials, description_confidence, source, source_media_id, photo_url, updated_at) — all `IF NOT EXISTS`, idempotent. **Apr 12**: `story_message_history.is_from_admin BOOLEAN DEFAULT FALSE` added via Supabase SQL Editor (migration `20260118_story_session_linking.sql` was in git but never run).
 
