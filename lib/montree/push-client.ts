@@ -9,20 +9,39 @@
 // sender.ts) routes by the stored platform, so the client doesn't care.
 
 import { isNative, getPlatform } from '@/lib/montree/platform';
+import { getSession } from '@/lib/montree/auth';
+import { getParentSession } from '@/lib/montree/parent-auth';
 
 let initialized = false;
+
+/**
+ * True when SOMEONE is signed in on this device (teacher/principal session
+ * or parent session in localStorage). Audit-fix (Jun 2026): without this
+ * gate the iOS permission prompt fired on the LOGIN screen (parent/principal
+ * layouts wrap their login pages), the token POST 401'd, and the one-shot
+ * flag was burned so registration never happened post-login.
+ */
+function hasAnySession(): boolean {
+  try {
+    return !!getSession() || !!getParentSession();
+  } catch {
+    return false;
+  }
+}
 
 /**
  * Request permission, register with APNs/FCM, and store the device token
  * server-side against the current session (cookie-authenticated).
  *
- * Call after login / on authenticated layout mount. Safe to call multiple
- * times (runs once per page lifetime), safe on web (no-op), safe when the
- * push plugin isn't installed in the shell (logged no-op).
+ * Call after login / on authenticated layout mount and on route changes.
+ * Runs once per page lifetime AFTER a session exists; no-ops (without
+ * burning the one-shot flag) when signed out, on web, or when the push
+ * plugin isn't installed in the shell.
  */
 export async function initPushRegistration(): Promise<void> {
   if (initialized) return;
   if (!isNative()) return;
+  if (!hasAnySession()) return; // not signed in yet — try again on next route change
   initialized = true;
 
   try {

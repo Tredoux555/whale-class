@@ -208,5 +208,37 @@ export async function POST(
     .eq('participant_role', 'parent')
     .eq('participant_id', parent.parentId);
 
+  // App Store build (Jun 2026, audit-fix): native push to the staff side —
+  // without this, parent replies were silent on teacher/principal devices.
+  // Generic body only; never the message text.
+  try {
+    const { data: others } = await supabase
+      .from('montree_message_thread_participants')
+      .select('participant_role, participant_id')
+      .eq('thread_id', threadId)
+      .is('left_at', null);
+    const staff = (others || [])
+      .filter(
+        (p: { participant_role: string; participant_id: string }) =>
+          p.participant_role === 'teacher' || p.participant_role === 'principal'
+      )
+      .map((p: { participant_role: string; participant_id: string }) => ({
+        type: (p.participant_role === 'principal' ? 'principal' : 'teacher') as
+          | 'principal'
+          | 'teacher',
+        id: p.participant_id,
+      }));
+    if (staff.length) {
+      const { sendPushToOwners } = await import('@/lib/montree/push/sender');
+      void sendPushToOwners(supabase, staff, {
+        title: `💬 ${parent.parentName || 'A parent'}`,
+        body: 'sent you a new message',
+        data: { url: '/montree/dashboard/messages', type: 'message', threadId },
+      });
+    }
+  } catch (e) {
+    console.error('[parent messages POST] push dispatch error:', e);
+  }
+
   return NextResponse.json({ message: insertedDecrypted }, { status: 201 });
 }
