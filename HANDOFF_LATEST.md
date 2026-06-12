@@ -13,6 +13,88 @@ is months stale — CLAUDE.md is the canonical brain for this repo.
 
 ---
 
+## BURN PLAN — ~65% weekly usage available (written Jun 12 night, for the next session)
+
+Tredoux's ask: "bulletproof and Ferrari-fy" across projects. Ordered by value; each
+item notes Claude-alone vs needs-Tredoux. Run Tier 1 first; parallel agents burn fast,
+so launch at most 2-3 at once and verify between waves.
+
+**TIER 1 — Montree store/revenue path (do first):**
+1. "Who's playing?" child picker for the 9 games (closes the games-save-without-child
+   gap; mount on games hub, sets current_student_id; small). Claude-alone.
+2. Real `/support` page (App Store requirement) + fix Reports nav + make games hub
+   reachable. Needs ONE product decision from Tredoux: where Reports points.
+3. Simulator screenshots for the listing (Xcode sim on the Mac via Desktop Commander,
+   simctl commands already in the Pack) + drop them into the App Store Pack.
+4. Reviewer demo school + login codes. Needs Tredoux (10 min) — Claude can create the
+   school/children data, Tredoux confirms codes work.
+
+**TIER 2 — Montree hardening (Ferrari-fy):**
+5. Stage SQL for the top missing tables from FUNCTIONALITY-whale-db-crosscheck (21
+   referenced-but-missing, 3 already staged) + a safe-to-archive report on the 77
+   orphan tables (read-only analysis; DROPs only with sign-off).
+6. tsc debt burn-down: 5,250 errors — fix the two biggest classes first (typed-supabase
+   'never' casts via a shared untyped helper; i18n duplicate keys are mechanical).
+   Even halving it derisks every future build.
+7. Push polish: durable retry queue (webhook-inbox pattern, replaces in-memory),
+   APNs HTTP/2 connection reuse, per-parent notification preferences.
+8. Test coverage: 9 tests total today. Add vitest API tests for auth, reports send,
+   push register, games progress, account deletion. Cheap, high-value.
+9. Perf pass: Lighthouse via Chrome on the 5 hottest pages, dashboard payload audit.
+
+**TIER 3 — Guardian Connect to its own store run:**
+10. flutter analyze + merge `flutter-catchup-jun12` (pod install for share_plus),
+    then Firebase+VAPID push keys (Tredoux: Railway env), host landing page,
+    two-phone E2E test (Tredoux), lawyer review of legal drafts (Tredoux).
+
+**TIER 4 — Portfolio bulletproofing:**
+11. GitHub remotes for guardian-connect + project-sentinel (Tredoux: auth) — the Mac
+    is still the only copy of both. Weekly Supabase backup as a scheduled task.
+12. jeffy-mvp audit (discovered, never audited). riddick-chess-v2 still needs Tredoux
+    to locate the repo.
+13. Master Brain hygiene: consolidate the 4 overlapping handoff docs into this one,
+    archive stale mission-control files.
+
+---
+
+## Jun 12, 2026 (late night) — Apple Developer enrolment: PINNED, 80% done. Exact resume point below.
+
+**DONE tonight (do not redo any of this):**
+- New Gmail: `tredoux.montree@gmail.com` (recovery → tredoux555@gmail.com; CN number
+  185 4892 2404 verified). Plus-alias and dot-alias on the old Gmail were REJECTED by
+  Apple — that's why the new address exists.
+- **New Apple ID: `tredoux.montree@gmail.com`** — name Tredoux Willemse (passport-exact),
+  **region South Africa ✓** (verified in Personal Information), DOB set, 2FA on,
+  trusted number +86 185..., **SA card added** under Payment & Shipping (saved OK).
+  No shipping address (not needed).
+- Apple Developer Agreement SIGNED (free developer registration complete).
+- **Network lesson that unblocked everything: VPN OFF = China network = Apple SMS
+  delivers to +86.** Via UK VPN exit the SMS/voice verification NEVER arrives and
+  repeated attempts rate-limit the number (~60-90 min cooldown). Web account creation
+  succeeded VPN-off after the phone-number cooldown expired.
+
+**Why we stopped — web enrolment is HARD-BLOCKED by Apple, not broken:**
+`developer.apple.com/enroll` → "unable to process your request"; DevTools console:
+`UserIneligibleForWebEnrollment: "User cannot enroll on the web"` + 403 on the
+individualEnrollment service. Individuals MUST use the Apple Developer app. Do not
+retry the web flow; it cannot succeed.
+
+**RESUME HERE (iPhone, ~15 min + 1-3 day Apple review):**
+1. iPhone App Store (normal account, NO sign-out needed) → install **"Apple Developer"** app.
+2. Open it → Account tab → sign in `tredoux.montree@gmail.com` (in-app sign-in is
+   separate from the phone's iCloud/App Store accounts). 2FA code → +86 number.
+3. Enroll Now → Individual → passport scan + selfie (SA passport, good light).
+4. Phone on **cellular, VPN OFF** throughout.
+5. Payment $99: if the sheet offers the SA card on the new account → pay. If it
+   insists on billing the phone's App Store account → Settings → App Store → switch
+   **Media & Purchases only** (NOT iCloud) to the new ID, pay, switch back. 30 sec.
+6. If the app says enrolment can't be completed: the Apple ID is hours old —
+   wait 24-48 h and retry the same flow. This is normal cooling, not failure.
+7. After approval email: APNs key → Railway (see Jun 12 evening entry), then
+   `~/Desktop/Montree App Store Pack/SUBMISSION_CHECKLIST.md` end-to-end.
+
+---
+
 ## Jun 12, 2026 (night) — Burn round: games progress + H5 + M3 LIVE; App Store pack; GC Flutter branch
 
 **whale:** `burn-jun12` (2 commits) merged → main → deployed (verified: /api/games/track
