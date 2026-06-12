@@ -207,5 +207,51 @@ export async function POST(
     .eq('participant_role', partRole)
     .eq('participant_id', auth.userId);
 
+  // App Store build (Jun 2026): native push to the OTHER active participants.
+  // Notification shows sender + a generic line — never the message body
+  // (bodies can be encrypted; lock screens shouldn't leak them anyway).
+  try {
+    const { data: others } = await supabase
+      .from('montree_message_thread_participants')
+      .select('participant_role, participant_id')
+      .eq('thread_id', threadId)
+      .is('left_at', null);
+    const recipients = (others || [])
+      .filter(
+        (p: { participant_role: string; participant_id: string }) =>
+          !(p.participant_role === partRole && p.participant_id === auth.userId)
+      )
+      .map((p: { participant_role: string; participant_id: string }) => ({
+        type: (p.participant_role === 'parent'
+          ? 'parent'
+          : p.participant_role === 'principal'
+            ? 'principal'
+            : 'teacher') as 'parent' | 'principal' | 'teacher',
+        id: p.participant_id,
+      }));
+    if (recipients.length) {
+      const { sendPushToOwners } = await import('@/lib/montree/push/sender');
+      // Parents and staff land on different message surfaces — batch per group.
+      const parentRecipients = recipients.filter((r) => r.type === 'parent');
+      const staffRecipients = recipients.filter((r) => r.type !== 'parent');
+      if (parentRecipients.length) {
+        void sendPushToOwners(supabase, parentRecipients, {
+          title: `💬 ${senderName}`,
+          body: 'sent you a new message',
+          data: { url: '/montree/parent/messages', type: 'message', threadId },
+        });
+      }
+      if (staffRecipients.length) {
+        void sendPushToOwners(supabase, staffRecipients, {
+          title: `💬 ${senderName}`,
+          body: 'sent you a new message',
+          data: { url: '/montree/dashboard/messages', type: 'message', threadId },
+        });
+      }
+    }
+  } catch (e) {
+    console.error('[messages POST] push dispatch error:', e);
+  }
+
   return NextResponse.json({ message: insertedDecrypted }, { status: 201 });
 }

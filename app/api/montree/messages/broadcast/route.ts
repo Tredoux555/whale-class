@@ -215,6 +215,37 @@ export async function POST(request: NextRequest) {
     })();
   }
 
+  // App Store build (Jun 2026): native push to every recipient's devices.
+  // Fire-and-forget, same contract as the newsletter email fan-out above.
+  try {
+    const { sendPushToOwners } = await import('@/lib/montree/push/sender');
+    const pushParents = recipients
+      .filter((r) => r.role === 'parent')
+      .map((r) => ({ type: 'parent' as const, id: r.id }));
+    const pushStaff = recipients
+      .filter((r) => r.role === 'teacher' || r.role === 'principal')
+      .map((r) => ({
+        type: (r.role === 'principal' ? 'principal' : 'teacher') as 'principal' | 'teacher',
+        id: r.id,
+      }));
+    if (pushParents.length) {
+      void sendPushToOwners(supabase, pushParents, {
+        title: `📢 ${subject}`,
+        body: `New announcement from ${senderName}`,
+        data: { url: `/montree/parent/messages/${thread.id}`, type: 'broadcast' },
+      });
+    }
+    if (pushStaff.length) {
+      void sendPushToOwners(supabase, pushStaff, {
+        title: `📢 ${subject}`,
+        body: `New announcement from ${senderName}`,
+        data: { url: '/montree/dashboard/messages', type: 'broadcast' },
+      });
+    }
+  } catch (e) {
+    console.error('[broadcast] push dispatch error:', e);
+  }
+
   return NextResponse.json(
     { thread_id: thread.id, recipient_count: recipients.length },
     { status: 201 }

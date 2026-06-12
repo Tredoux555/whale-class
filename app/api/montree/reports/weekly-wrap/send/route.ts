@@ -238,6 +238,26 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // App Store build (Jun 2026): native push to parents of every child whose
+    // report was just published. Best-effort — never blocks the response.
+    if (published > 0) {
+      try {
+        const { pushToParentsOfChildren } = await import('@/lib/montree/push/sender');
+        void pushToParentsOfChildren(
+          supabase,
+          drafts.map((d) => d.child_id),
+          {
+            title: '🌳 New weekly report',
+            body: `Your child's weekly report from ${classroomName || 'class'} is ready.`,
+            data: { url: '/montree/parent/dashboard', type: 'report' },
+          },
+          { requireViewReports: true }
+        );
+      } catch (e) {
+        console.error('[weekly-wrap/send] push dispatch error:', e);
+      }
+    }
+
     return NextResponse.json({
       success: true,
       published,

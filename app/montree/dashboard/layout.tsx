@@ -6,6 +6,7 @@ import { useState, useEffect } from 'react';
 import DashboardHeader from '@/components/montree/DashboardHeader';
 import NetworkStatusBanner from '@/components/montree/NetworkStatusBanner';
 import BackgroundTaskBanner from '@/components/montree/BackgroundTaskBanner';
+import PushRegistrar from '@/components/montree/PushRegistrar';
 import { registerSyncTriggers } from '@/lib/montree/offline/sync-triggers';
 import { FeaturesProvider } from '@/lib/montree/features';
 import { getSession } from '@/lib/montree/auth';
@@ -34,6 +35,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     <FeaturesProvider schoolId={schoolId}>
       <div className="min-h-screen">
         <NetworkStatusBanner />
+        <PushRegistrar />
         <DashboardHeader />
         {children}
         <BackgroundTaskBanner />
