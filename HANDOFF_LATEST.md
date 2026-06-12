@@ -13,6 +13,27 @@ is months stale — CLAUDE.md is the canonical brain for this repo.
 
 ---
 
+## Jun 12, 2026 (afternoon) — Native push notifications + Android plugin sync
+
+Two commits on `audit-cleanup-jun2026` (Cowork session, type-checked clean, build/tests
+NOT re-run here — Linux sandbox can't execute the Mac-native vitest/SWC binaries; run
+`npm run build` + `npx vitest run` on the Mac before merging):
+- **Android plugins synced** (`a05bae92`) — all 9 Capacitor plugins now wired into
+  `android/` (was 3 of 9; native camera/mic would have failed). Camera on Android still
+  needs `google-services.json` only for PUSH, not camera — camera works now.
+- **Push notifications end-to-end** — `montree_device_tokens` (migration 251 +
+  `db/RUN_THESE/04`), register API (teacher/principal/parent cookies), client registrar
+  in dashboard/principal/parent layouts, server sender (FCM v1 for Android, direct APNs
+  HTTP/2 for iOS — no Firebase iOS SDK needed), wired into: report send (all 3 routes,
+  respects can_view_reports), thread messages (no body leak to lock screen), broadcasts.
+  iOS entitlements + AppDelegate APNs forwarding done.
+- **To flip on (Tredoux):** run `db/RUN_THESE/04_push_device_tokens.sql`; Railway env:
+  `FIREBASE_SERVICE_ACCOUNT` (Firebase console → service account JSON, base64 ok) for
+  Android; `APNS_AUTH_KEY`+`APNS_KEY_ID`+`APNS_TEAM_ID` (Apple Dev account → Keys →
+  APNs) for iOS. Optional: `APNS_BUNDLE_ID` (defaults xyz.montree.app), `APNS_ENV`.
+  Android push also needs `android/app/google-services.json` from Firebase.
+  Unconfigured = clean no-op; nothing breaks.
+
 ## Jun 12, 2026 (morning) — App Store build (iOS ready to archive)
 
 The Montree iOS app (thin Capacitor-8 wrapper of montree.xyz) is now assembled and committed on
