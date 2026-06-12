@@ -18,10 +18,14 @@
 //   - Dead tokens (APNs 410/BadDeviceToken, FCM UNREGISTERED) are marked
 //     failed_at so we stop pushing to them.
 //
-// Requires migration 251_push_device_tokens.sql.
+// Requires migration 251_push_device_tokens.sql. Migration 255 adds the
+// durable retry queue (montree_push_outbox, drained via ./outbox.ts) and
+// per-parent notification preferences (montree_parents.notification_prefs,
+// enforced once in sendPushToOwners) — both degrade gracefully until run.
 
 import { createSign, sign as cryptoSign } from 'crypto';
-import { connect as http2Connect } from 'http2';
+import { connect as http2Connect, constants as http2Constants } from 'http2';
+import type { ClientHttp2Session } from 'http2';
 import type { SupabaseClient } from '@supabase/supabase-js';
 
 export interface PushPayload {
@@ -30,6 +34,17 @@ export interface PushPayload {
   /** Optional extra data. `url` is treated as an in-app deep link path. */
   data?: Record<string, string>;
 }
+
+/**
+ * Outcome of a single-device send:
+ *   'sent'   — delivered to APNs/FCM.
+ *   'dead'   — the TOKEN is gone (APNs 410 / FCM UNREGISTERED); retire it,
+ *              never retry it.
+ *   'retry'  — transient failure (network, 5xx, 429); worth a durable retry
+ *              via montree_push_outbox (lib/montree/push/outbox.ts).
+ *   'failed' — permanent/config failure (bad payload, unconfigured); drop.
+ */
+export type SendOutcome = 'sent' | 'dead' | 'retry' | 'failed';
 
 export interface PushOwner {
   type: 'teacher' | 'principal' | 'parent';
@@ -134,12 +149,12 @@ async function getFcmAccessToken(sa: ServiceAccount): Promise<string | null> {
   }
 }
 
-/** @returns 'sent' | 'dead' (token should be retired) | 'failed' */
-async function sendFcm(token: string, payload: PushPayload): Promise<'sent' | 'dead' | 'failed'> {
+async function sendFcm(token: string, payload: PushPayload): Promise<SendOutcome> {
   const sa = getServiceAccount();
   if (!sa) return 'failed';
   const accessToken = await getFcmAccessToken(sa);
-  if (!accessToken) return 'failed';
+  // OAuth exchange failures are usually transient (network / Google 5xx).
+  if (!accessToken) return 'retry';
 
   try {
     const res = await fetch(
@@ -169,10 +184,13 @@ async function sendFcm(token: string, payload: PushPayload): Promise<'sent' | 'd
       return 'dead';
     }
     console.error('[push] FCM send failed:', res.status, text.slice(0, 300));
-    return 'failed';
+    // 429 and 5xx are transient per the FCM error contract; 4xx payload
+    // problems are permanent (retrying the same payload changes nothing).
+    return res.status === 429 || res.status >= 500 ? 'retry' : 'failed';
   } catch (e) {
+    // fetch() rejection = network-level trouble — transient by definition.
     console.error('[push] FCM send error:', e);
-    return 'failed';
+    return 'retry';
   }
 }
 
@@ -234,29 +252,105 @@ function getApnsJwt(cfg: ApnsConfig): string | null {
   }
 }
 
-/** @returns 'sent' | 'dead' | 'failed' */
-function sendApns(token: string, payload: PushPayload): Promise<'sent' | 'dead' | 'failed'> {
+// --- Shared HTTP/2 session (Jun 12 polish — deferred audit finding) ---------
+// The first cut opened one TLS+h2 connection PER TOKEN send. APNs explicitly
+// supports (and prefers) long-lived connections, so we keep ONE lazily-created
+// module-level session and multiplex every request over it:
+//   - recreated on 'error' / 'close' / GOAWAY (Apple's "please reconnect"),
+//   - closed after 60s of no sends so a quiet deploy never leaks a socket,
+//   - each request keeps its own 10s timeout that cancels only ITS stream —
+//     a slow push never tears down the connection for the rest of the batch.
+
+const APNS_IDLE_MS = 60_000;
+const APNS_REQUEST_TIMEOUT_MS = 10_000;
+
+let apnsSession: ClientHttp2Session | null = null;
+let apnsSessionHost = '';
+let apnsIdleTimer: ReturnType<typeof setTimeout> | null = null;
+
+function dropApnsSession(session: ClientHttp2Session): void {
+  if (apnsSession !== session) return;
+  apnsSession = null;
+  if (apnsIdleTimer) {
+    clearTimeout(apnsIdleTimer);
+    apnsIdleTimer = null;
+  }
+}
+
+function getApnsSession(host: string): ClientHttp2Session {
+  if (
+    apnsSession &&
+    apnsSessionHost === host &&
+    !apnsSession.closed &&
+    !apnsSession.destroyed
+  ) {
+    return apnsSession;
+  }
+  if (apnsSession && !apnsSession.destroyed) {
+    const stale = apnsSession;
+    try {
+      stale.close();
+    } catch {
+      /* already closing */
+    }
+  }
+  const session = http2Connect(host);
+  apnsSession = session;
+  apnsSessionHost = host;
+  // On any terminal session event, forget the session so the next send
+  // reconnects. In-flight streams are destroyed by node with their own
+  // 'error', so every pending sendApns resolves through its stream handlers.
+  session.on('error', (e) => {
+    console.error('[push] APNs session error:', (e as Error).message);
+    dropApnsSession(session);
+  });
+  session.on('close', () => dropApnsSession(session));
+  session.on('goaway', () => {
+    dropApnsSession(session);
+    try {
+      session.close();
+    } catch {
+      /* best-effort */
+    }
+  });
+  return session;
+}
+
+/** Re-arm the idle shutdown after each send; never keeps the process alive. */
+function touchApnsIdleTimer(): void {
+  if (apnsIdleTimer) clearTimeout(apnsIdleTimer);
+  apnsIdleTimer = setTimeout(() => {
+    apnsIdleTimer = null;
+    if (apnsSession && !apnsSession.destroyed) {
+      try {
+        apnsSession.close();
+      } catch {
+        /* best-effort */
+      }
+    }
+    apnsSession = null;
+  }, APNS_IDLE_MS);
+  apnsIdleTimer.unref?.();
+}
+
+function sendApns(token: string, payload: PushPayload): Promise<SendOutcome> {
   const cfg = getApnsConfig();
   if (!cfg) return Promise.resolve('failed');
   const jwt = getApnsJwt(cfg);
   if (!jwt) return Promise.resolve('failed');
 
   return new Promise((resolve) => {
+    let settled = false;
+    const settle = (outcome: SendOutcome) => {
+      if (settled) return;
+      settled = true;
+      resolve(outcome);
+    };
     try {
-      const client = http2Connect(cfg.host);
-      const timer = setTimeout(() => {
-        client.close();
-        console.error('[push] APNs request timed out');
-        resolve('failed');
-      }, 10_000);
+      const session = getApnsSession(cfg.host);
+      touchApnsIdleTimer();
 
-      client.on('error', (e) => {
-        clearTimeout(timer);
-        console.error('[push] APNs connection error:', e.message);
-        resolve('failed');
-      });
-
-      const req = client.request({
+      const req = session.request({
         ':method': 'POST',
         ':path': `/3/device/${token}`,
         authorization: `bearer ${jwt}`,
@@ -266,6 +360,18 @@ function sendApns(token: string, payload: PushPayload): Promise<'sent' | 'dead' 
         'content-type': 'application/json',
       });
 
+      // Per-request timeout: cancel ONLY this stream — the shared session
+      // stays up for everything else in flight.
+      const timer = setTimeout(() => {
+        console.error('[push] APNs request timed out');
+        try {
+          req.close(http2Constants.NGHTTP2_CANCEL);
+        } catch {
+          /* best-effort */
+        }
+        settle('retry');
+      }, APNS_REQUEST_TIMEOUT_MS);
+
       let status = 0;
       let bodyText = '';
       req.on('response', (headers) => {
@@ -274,19 +380,22 @@ function sendApns(token: string, payload: PushPayload): Promise<'sent' | 'dead' 
       req.on('data', (chunk) => (bodyText += chunk));
       req.on('end', () => {
         clearTimeout(timer);
-        client.close();
-        if (status === 200) return resolve('sent');
+        touchApnsIdleTimer();
+        if (status === 200) return settle('sent');
         if (status === 410 || bodyText.includes('BadDeviceToken') || bodyText.includes('Unregistered')) {
-          return resolve('dead');
+          return settle('dead');
         }
         console.error('[push] APNs send failed:', status, bodyText.slice(0, 300));
-        resolve('failed');
+        // 429 (TooManyRequests) + 5xx are transient per Apple's docs; other
+        // 4xx (bad payload, bad auth) won't improve by retrying the same send.
+        settle(status === 429 || status >= 500 || status === 0 ? 'retry' : 'failed');
       });
       req.on('error', (e) => {
+        // Stream errors include session-level teardown — connection trouble,
+        // not a verdict on the token/payload. Durable retry is worth it.
         clearTimeout(timer);
-        client.close();
-        console.error('[push] APNs stream error:', e.message);
-        resolve('failed');
+        console.error('[push] APNs stream error:', (e as Error).message);
+        settle('retry');
       });
 
       req.end(
@@ -300,7 +409,7 @@ function sendApns(token: string, payload: PushPayload): Promise<'sent' | 'dead' 
       );
     } catch (e) {
       console.error('[push] APNs unexpected error:', e);
-      resolve('failed');
+      settle('retry');
     }
   });
 }
@@ -311,6 +420,92 @@ function sendApns(token: string, payload: PushPayload): Promise<'sent' | 'dead' 
 
 export function isPushConfigured(): { ios: boolean; android: boolean } {
   return { ios: !!getApnsConfig(), android: !!getServiceAccount() };
+}
+
+/**
+ * Low-level single-device send. Shared by the live batch below and by the
+ * durable-retry drain (lib/montree/push/outbox.ts) so both paths classify
+ * outcomes identically.
+ */
+export async function sendToDeviceToken(
+  platform: 'ios' | 'android',
+  token: string,
+  payload: PushPayload
+): Promise<SendOutcome> {
+  const configured = isPushConfigured();
+  if (platform === 'android') {
+    return configured.android ? sendFcm(token, payload) : 'failed';
+  }
+  return configured.ios ? sendApns(token, payload) : 'failed';
+}
+
+// ---------------------------------------------------------------------------
+// Per-parent notification preferences (migration 255) — THE chokepoint.
+// Every push path in the app (3 report-send routes, thread messages both
+// directions, broadcasts) funnels through sendPushToOwners(), so prefs are
+// enforced exactly once, here, instead of per call site.
+// ---------------------------------------------------------------------------
+
+type PrefCategory = 'reports' | 'messages' | 'broadcasts';
+
+// Call sites already tag every payload with data.type — map it to a pref key.
+const PREF_CATEGORY_BY_PAYLOAD_TYPE: Record<string, PrefCategory> = {
+  report: 'reports',
+  message: 'messages',
+  broadcast: 'broadcasts',
+};
+
+let warnedPrefsMigrationPending = false;
+
+/**
+ * Drop parents who opted out of this payload's category.
+ * Opt-OUT model: absent key (or '{}') = enabled; only an explicit `false`
+ * blocks. Parents only — staff have no prefs (yet).
+ * Degrades gracefully: if migration 255 hasn't run (missing column/table) or
+ * the lookup fails, everyone is kept — a prefs hiccup must never mute pushes.
+ */
+async function filterOwnersByParentPrefs(
+  supabase: SupabaseClient,
+  owners: PushOwner[],
+  payload: PushPayload
+): Promise<PushOwner[]> {
+  const category = PREF_CATEGORY_BY_PAYLOAD_TYPE[payload.data?.type || ''];
+  if (!category) return owners;
+  const parentIds = [
+    ...new Set(owners.filter((o) => o?.type === 'parent' && o.id).map((o) => o.id)),
+  ];
+  if (!parentIds.length) return owners;
+  try {
+    const { data, error } = await supabase
+      .from('montree_parents')
+      .select('id, notification_prefs')
+      .in('id', parentIds);
+    if (error) {
+      const code = (error as { code?: string }).code;
+      if (code === '42703' || code === '42P01') {
+        if (!warnedPrefsMigrationPending) {
+          warnedPrefsMigrationPending = true;
+          console.warn(
+            '[push] notification_prefs missing — run migrations/255_push_outbox_and_prefs.sql ' +
+              '(parent notification preferences not enforced until then)'
+          );
+        }
+      } else {
+        console.error('[push] prefs lookup failed (sending to all):', error.message);
+      }
+      return owners;
+    }
+    const optedOut = new Set(
+      ((data || []) as Array<{ id: string; notification_prefs: Record<string, unknown> | null }>)
+        .filter((p) => p.notification_prefs?.[category] === false)
+        .map((p) => p.id)
+    );
+    if (!optedOut.size) return owners;
+    return owners.filter((o) => o?.type !== 'parent' || !optedOut.has(o.id));
+  } catch (e) {
+    console.error('[push] prefs filter unexpected error (sending to all):', e);
+    return owners;
+  }
 }
 
 /**
@@ -338,20 +533,41 @@ export async function sendPushToOwners(
   }
 
   try {
+    // Durable-retry drain (migration 255): opportunistically flush previously
+    // failed sends at the start of every batch. There is no cron
+    // infrastructure yet — when one exists, a cron route can call
+    // drainPushOutbox() directly instead. Fire-and-forget by design.
+    try {
+      const { drainPushOutbox } = await import('./outbox');
+      void drainPushOutbox(supabase);
+    } catch (e) {
+      console.error('[push] outbox drain dispatch failed:', e);
+    }
+
+    // Per-parent notification preferences — the single enforcement point.
+    const allowedOwners = await filterOwnersByParentPrefs(supabase, owners, payload);
+    if (!allowedOwners.length) return result;
+
     // Tokens are unique per device; query per owner_type to use the index.
     const byType = new Map<string, string[]>();
-    for (const o of owners) {
+    for (const o of allowedOwners) {
       if (!o?.id) continue;
       const list = byType.get(o.type) || [];
       list.push(o.id);
       byType.set(o.type, list);
     }
 
-    const rows: Array<{ id: string; token: string; platform: 'ios' | 'android' }> = [];
+    const rows: Array<{
+      id: string;
+      token: string;
+      platform: 'ios' | 'android';
+      owner_type: 'teacher' | 'principal' | 'parent';
+      owner_id: string;
+    }> = [];
     for (const [ownerType, ids] of byType) {
       const { data, error } = await supabase
         .from('montree_device_tokens')
-        .select('id, token, platform')
+        .select('id, token, platform, owner_type, owner_id')
         .eq('owner_type', ownerType)
         .in('owner_id', [...new Set(ids)])
         .is('failed_at', null);
@@ -364,27 +580,24 @@ export async function sendPushToOwners(
     if (!rows.length) return result;
 
     const deadTokenIds: string[] = [];
+    const retryRows: typeof rows = [];
     // Small batches; typical fan-out here is < 50 devices.
     const BATCH = 10;
     for (let i = 0; i < rows.length; i += BATCH) {
       const outcomes = await Promise.all(
-        rows.slice(i, i + BATCH).map(async (row) => {
-          const outcome =
-            row.platform === 'android'
-              ? configured.android
-                ? await sendFcm(row.token, payload)
-                : ('failed' as const)
-              : configured.ios
-                ? await sendApns(row.token, payload)
-                : ('failed' as const);
-          return { row, outcome };
-        })
+        rows.slice(i, i + BATCH).map(async (row) => ({
+          row,
+          outcome: await sendToDeviceToken(row.platform, row.token, payload),
+        }))
       );
       for (const { row, outcome } of outcomes) {
         if (outcome === 'sent') result.sent++;
         else {
           result.failed++;
           if (outcome === 'dead') deadTokenIds.push(row.id);
+          // Transient failures go to the durable queue; 'dead' and permanent
+          // 'failed' never do (retrying them is pointless by definition).
+          else if (outcome === 'retry') retryRows.push(row);
         }
       }
     }
@@ -395,6 +608,25 @@ export async function sendPushToOwners(
         .update({ failed_at: new Date().toISOString() })
         .in('id', deadTokenIds);
       console.log(`[push] retired ${deadTokenIds.length} dead device token(s)`);
+    }
+
+    if (retryRows.length) {
+      try {
+        const { enqueuePushRetries } = await import('./outbox');
+        await enqueuePushRetries(
+          supabase,
+          retryRows.map((r) => ({
+            tokenRowId: r.id,
+            token: r.token,
+            platform: r.platform,
+            ownerType: r.owner_type,
+            ownerId: r.owner_id,
+          })),
+          payload
+        );
+      } catch (e) {
+        console.error('[push] retry enqueue dispatch failed:', e);
+      }
     }
   } catch (e) {
     // Push must never break the calling route.
