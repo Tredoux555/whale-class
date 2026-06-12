@@ -1,3 +1,5 @@
+> ⚠️ SUPERSEDED — see /HANDOFF_LATEST.md (Jun 13).
+
 # Story Nuke — Activation & Verification Handoff (June 2026)
 
 Scope clarified by the owner: the nuke wipes **content only** (messages, media,

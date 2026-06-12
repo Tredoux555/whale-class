@@ -1,6 +1,61 @@
 # Whale / Montree — Latest Handoff
 
-**Last updated:** June 11, 2026, overnight (autonomous audit run)
+## ☀️ MORNING REPORT — Jun 12→13 overnight marathon (Cowork session)
+
+**Everything is on branch `burn-jun12-night2` (12 commits). NOTHING merged or
+deployed — your call. Build green, 118/118 tests, i18n 12/12, all verified on
+the Mac. Two independent audits ran; every P1/P2 found was fixed same-night.**
+
+### Shipped tonight (Tier 1 + Tier 2 of the burn plan, plus extras)
+1. **T1-1** "Who's playing?" child picker on games hub (games finally attach
+   progress to a child) + missing game cards.
+2. **T1-2** Real `/support` page, ALL Reports links → weekly-wrap + redirect
+   safety net, Games in the More menu. ⚠️ /support only exists on the BRANCH —
+   deploy before App Store review. ⚠️ Verify support@montree.xyz receives mail.
+3. **Story vault video streaming** (your evening ask): instant start + scrubbing
+   (Range/206), 1h on-demand signed URLs, key memoization, Safari-correct MIME.
+   Security model unchanged; audit P1 (refresh loop) + P2s (audit-log bypass,
+   plaintext disk cache) found and fixed. Test: open a big vault video.
+4. **T1-4** Apple Review School on production: principal **WYXMN9**, teacher
+   **BAM4S9**, 5 fake children. ⚠️ Trial expires **Jun 19** — extend
+   trial_ends_at. Verify codes on a real device. docs/APPLE_REVIEW_DEMO_SCHOOL.md.
+5. **T1-3** 6 in-app screenshots @1290×2796 in the App Store Pack. Weak two:
+   snap (headless = black camera) + weekly-wrap (no demo reports) — recapture later.
+6. **T2-5** Migration **254** staged (campaign items only — 20 other "missing"
+   tables deliberately not staged, see appendix) + docs/ORPHAN_TABLES_REPORT.md
+   (7 of the 77 "orphans" are FALSE POSITIVES — do not archive those).
+7. **T2-8** Tests **9 → 118** (all mocked, <1s, tenant-scoping asserted).
+8. **T2-7** Push polish: APNs HTTP/2 reuse, durable outbox (migration **255**
+   staged), per-parent notification prefs + toggles on the parent account page.
+9. **T2-6** tsc errors **5,250 → 743 (−86%)**, type-only (audited CLEAN).
+   Note: tsc --noEmit now needs NODE_OPTIONS=--max-old-space-size=4096.
+10. **T2-9** docs/PERF_PASS_JUN13.md — splash scores 46 w/ CLS 0.93 + 13.4MB
+    dual-locale eager videos; dashboard 3-round-trip waterfall; /children
+    over-fetch; SSR TTFB ~600ms from cookies() blocking edge cache.
+
+### ⚠️ Production incident you saw at 23:03 — Cloudflare Error 1034
+Intermittent CF-on-CF (proxied record → Railway's Cloudflare-backed edge).
+**Fix = 2 min with VPN on: flip montree.xyz + www to DNS-only (grey cloud).**
+Full steps: docs/DNS_ERROR_1034_FIX.md. Overnight monitor (every 2 min):
+`~/Desktop/montree_uptime_overnight.log` — **0 failures since 23:21** so far.
+Kill it with: `pkill -f montree_monitor`.
+
+### Your morning checklist (in order)
+1. Merge `burn-jun12-night2` → main → deploy (gets /support live for Apple).
+2. Cloudflare DNS-only flip (docs/DNS_ERROR_1034_FIX.md) — VPN on.
+3. Run staged migrations **254 + 255** in whale-class Supabase.
+4. Verify WYXMN9 + BAM4S9 on a real device; extend demo trial past Jun 19.
+5. Verify support@montree.xyz inbound (or forward to gmail).
+6. Apple Developer app enrolment on iPhone (resume script below, unchanged).
+7. (When ready) Railway region pin → Singapore at a quiet hour.
+
+Also still open from Jun 10 night (rediscovered during doc hygiene — they were
+only in SESSION_HANDOFF_2026-06-10_NIGHT.md): migration 249 / home_practice,
+the Whale→Sonnet model flip decision, and the service-role key rotation.
+
+---
+
+**Last updated:** June 13, 2026, overnight marathon (Cowork)
 **Live on Railway:** latest `main` (`e2ab75ac` at time of writing)
 **⚠️ Unmerged work:** branch `audit-cleanup-jun2026` — security audit fixes
 (see `~/Desktop/AUDIT-2026-06/AUDIT-whale.md` + the PROGRESS LOG in

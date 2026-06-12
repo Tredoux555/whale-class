@@ -1,3 +1,5 @@
+> ⚠️ SUPERSEDED — see /HANDOFF_LATEST.md (Jun 13).
+
 # Fixes applied — 2026-06-10
 Follow-up to `AUDIT_2026-06-10.md`. These are the items I could safely fix in code without a build to test against. Each is surgical and mirrors existing patterns in the codebase. **Nothing here is committed or deployed** — review, then push when you're ready (Railway auto-deploys on push to main).
 

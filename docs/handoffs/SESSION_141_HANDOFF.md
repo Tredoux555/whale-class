@@ -1,3 +1,5 @@
+> ⚠️ SUPERSEDED — see /HANDOFF_LATEST.md (Jun 13).
+
 # Session 141 — Story security hardening: audit + ephemeral mode + content-only nuke (June 1, 2026)
 
 **Two commits pushed to main: `38551891` (audit + ephemeral + nuke + Tier-1) → `8389bad7`
