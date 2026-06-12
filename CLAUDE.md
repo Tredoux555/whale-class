@@ -8754,6 +8754,13 @@ WHERE is_agent = true AND agent_default_share_pct IS NULL;
 ```
 Backfills NULL-pct agents to the new 20% default introduced in commit `cd33058a`. Without this, existing agents created before Session 119 still hit the "Self-service code generation disabled" wall.
 
+**Cowork session (Jun 12, 2026, afternoon) — Native push notifications. ⏳ 1 migration pending Tredoux's Supabase run:**
+- ⏳ `251_push_device_tokens.sql` (= `db/RUN_THESE/04_push_device_tokens.sql`) — `montree_device_tokens` table (token UNIQUE, platform ios|android, owner_type teacher|principal|parent, owner_id, school_id, app_version, timestamps, failed_at) + 2 partial indexes + **RLS ENABLED with no policies** (deny-all for anon; server uses service role — this line is an audit fix, don't run any earlier copy without it). Until run, `/api/montree/push/register` 500s with a logged 42P01 hint; everything else no-ops cleanly.
+- Push architecture (for future sessions): `lib/montree/push/sender.ts` = server sender, FCM HTTP v1 (Android) + direct APNs over node:http2 (iOS, ES256 JWT — NOT the undici fetch, which can't do HTTP/2). `lib/montree/push-client.ts` + `components/montree/PushRegistrar.tsx` = native-shell registration, session-gated, mounted in dashboard/principal/parent layouts (layouts persist across router.push, so it retries per route change — don't "simplify" this back to run-once-on-mount, that breaks login-screen→dashboard flows). Wired into all 3 report-send routes, both thread-message directions, broadcasts. Env gates: `FIREBASE_SERVICE_ACCOUNT`; `APNS_AUTH_KEY`/`APNS_KEY_ID`/`APNS_TEAM_ID` (+ optional `APNS_BUNDLE_ID`, `APNS_ENV`). Known deferred item: sendApns opens one HTTP/2 connection per token — hoist a shared session when fan-out exceeds ~50 devices.
+- Android: all 9 Capacitor plugins now synced into `android/` (gradle files committed; `assets/capacitor.plugins.json` regenerates on every `cap sync` and stays gitignored). Android PUSH additionally needs `android/app/google-services.json` (gradle applies google-services conditionally — safe when absent).
+- Social guru: `lib/social-media-guru/knowledge/facebook-reels-playbook.md` — Facebook Reels rules override generic caption/hashtag formulas (≤4 hashtags, 8-10AM/5-7PM, draft-only).
+- Full detail + commit SHAs: `HANDOFF_LATEST.md` Jun 12 afternoon entry.
+
 ---
 
 ## Session History
