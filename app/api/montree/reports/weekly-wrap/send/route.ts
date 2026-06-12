@@ -134,6 +134,7 @@ export async function POST(request: NextRequest) {
     let published = 0;
     let emailsSent = 0;
     const errors: Array<{ child_id: string; error: string }> = [];
+    const publishedChildIds: string[] = [];
 
     // Process each draft
     for (const draft of drafts) {
@@ -154,6 +155,7 @@ export async function POST(request: NextRequest) {
           continue;
         }
         published++;
+        publishedChildIds.push(draft.child_id);
 
         // Also mark teacher report for this child as approved
         const { error: teacherUpdateErr } = await supabase
@@ -239,13 +241,15 @@ export async function POST(request: NextRequest) {
     }
 
     // App Store build (Jun 2026): native push to parents of every child whose
-    // report was just published. Best-effort — never blocks the response.
-    if (published > 0) {
+    // report was just published (audit-fix: ONLY successfully published ones —
+    // a failed publish must not produce a "report is ready" push).
+    // Best-effort — never blocks the response.
+    if (publishedChildIds.length > 0) {
       try {
         const { pushToParentsOfChildren } = await import('@/lib/montree/push/sender');
         void pushToParentsOfChildren(
           supabase,
-          drafts.map((d) => d.child_id),
+          publishedChildIds,
           {
             title: '🌳 New weekly report',
             body: `Your child's weekly report from ${classroomName || 'class'} is ready.`,

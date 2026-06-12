@@ -13,7 +13,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
-import { verifyParentSession } from '@/lib/montree/verify-parent-request';
+import { resolveAuthorizedParent } from '@/lib/montree/verify-parent-request';
 
 // montree_device_tokens (migration 251) isn't in the generated DB types yet —
 // use the untyped client view for this table (same contract as push/sender.ts).
@@ -26,19 +26,30 @@ interface Identity {
 }
 
 async function resolveIdentity(request: NextRequest): Promise<Identity | null> {
-  // 1. Teacher / principal / homeschool-parent session
+  // 1. Teacher / principal / homeschool-parent session.
+  //    Audit-fix (Jun 2026 review): homeschool_parent maps to owner_type
+  //    'parent' — thread participants store them as participant_role
+  //    'parent' with the same userId, so pushes address them as 'parent'.
   const auth = await verifySchoolRequest(request);
   if (!(auth instanceof NextResponse)) {
     if (auth.role === 'agent') return null; // agents have no mobile surface
     return {
-      ownerType: auth.role === 'principal' ? 'principal' : 'teacher',
+      ownerType:
+        auth.role === 'principal'
+          ? 'principal'
+          : auth.role === 'homeschool_parent'
+            ? 'parent'
+            : 'teacher',
       ownerId: auth.userId,
       schoolId: auth.schoolId || null,
     };
   }
   // 2. Parent portal session (full accounts only — invite-based sessions
-  //    have no parent account row to address pushes to)
-  const parent = await verifyParentSession();
+  //    have no parent account row to address pushes to).
+  //    Audit-fix: resolveAuthorizedParent (JWT + DB re-check) instead of
+  //    verifyParentSession, so deactivated/unlinked parents can't keep
+  //    (re)registering on a stale 30-day cookie.
+  const parent = await resolveAuthorizedParent(db());
   if (parent?.parentId) {
     return { ownerType: 'parent', ownerId: parent.parentId, schoolId: null };
   }
@@ -94,6 +105,27 @@ export async function POST(request: NextRequest) {
           : '';
       console.error(`[push/register] upsert failed${hint}:`, error.message);
       return NextResponse.json({ error: 'Failed to register device' }, { status: 500 });
+    }
+
+    // Audit-fix (Jun 2026 review): cap devices per owner so the table can't
+    // be grown unboundedly from one account. Keep the 10 most recently seen.
+    try {
+      const { data: extra } = await supabase
+        .from('montree_device_tokens')
+        .select('id')
+        .eq('owner_type', identity.ownerType)
+        .eq('owner_id', identity.ownerId)
+        .order('last_seen_at', { ascending: false })
+        .range(10, 1000);
+      const extraRows = (extra || []) as Array<{ id: string }>;
+      if (extraRows.length) {
+        await supabase
+          .from('montree_device_tokens')
+          .delete()
+          .in('id', extraRows.map((r) => r.id));
+      }
+    } catch {
+      /* cap is best-effort */
     }
 
     return NextResponse.json({ ok: true });

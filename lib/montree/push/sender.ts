@@ -162,7 +162,10 @@ async function sendFcm(token: string, payload: PushPayload): Promise<'sent' | 'd
     );
     if (res.ok) return 'sent';
     const text = await res.text();
-    if (res.status === 404 || text.includes('UNREGISTERED') || text.includes('INVALID_ARGUMENT')) {
+    // Audit-fix (Jun 2026 review): retire ONLY on definitive token-gone
+    // signals. INVALID_ARGUMENT alone can mean a malformed PAYLOAD — one
+    // payload bug must not mark the whole Android fleet dead.
+    if (res.status === 404 || text.includes('UNREGISTERED')) {
       return 'dead';
     }
     console.error('[push] FCM send failed:', res.status, text.slice(0, 300));

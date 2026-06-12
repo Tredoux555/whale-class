@@ -27,3 +27,10 @@ CREATE INDEX IF NOT EXISTS idx_montree_device_tokens_owner
 CREATE INDEX IF NOT EXISTS idx_montree_device_tokens_school
   ON montree_device_tokens (school_id)
   WHERE failed_at IS NULL;
+
+-- Audit-fix (Jun 2026 review): without RLS the anon key (which ships in the
+-- client bundle) could read every token and upsert a token under a victim's
+-- owner_id — i.e. receive another user's notifications. All legitimate
+-- access goes through the server's service-role key, which bypasses RLS,
+-- so no policies are needed: enable-without-policies = deny-all for anon.
+ALTER TABLE montree_device_tokens ENABLE ROW LEVEL SECURITY;
