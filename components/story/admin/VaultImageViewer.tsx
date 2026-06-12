@@ -14,10 +14,12 @@ interface VaultImageViewerProps {
   /** When true, render a <video> player instead of an <img>. */
   isVideo?: boolean;
   /**
-   * Session 154 — called (at most once per source url) when the <video>
-   * errors, typically because a signed url expired mid-session. The parent
-   * re-resolves a FRESH url and updates `imageUrl`, which remounts the
-   * player (key={imageUrl}) and resumes playback.
+   * Session 154 — called when the <video> errors, typically because a signed
+   * url expired mid-session. The parent re-resolves a FRESH url and updates
+   * `imageUrl`, which remounts the player (key={imageUrl}) and resumes
+   * playback. The PARENT (useVault.refreshViewingMedia) enforces at most one
+   * automatic refresh per FILE per viewing — every refresh mints a new url,
+   * so a url-keyed guard alone could never terminate the retry loop.
    */
   onVideoError?: () => void;
 }
@@ -34,8 +36,10 @@ export function VaultImageViewer({
   isVideo,
   onVideoError,
 }: VaultImageViewerProps) {
-  // One refresh attempt per url — prevents an error→refresh→error loop if
-  // the re-resolved url is also unplayable (e.g. unsupported codec).
+  // Same-url debounce only: a <video> can fire `error` more than once for the
+  // SAME src, and this stops duplicate onVideoError calls for it. It can NOT
+  // stop the error→refresh→error loop (each refresh produces a new url) —
+  // the loop is terminated upstream by useVault's per-file retriedFileIdRef.
   const retriedUrlRef = useRef<string | null>(null);
 
   const handleKeyDown = useCallback((e: KeyboardEvent) => {

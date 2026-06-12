@@ -47,6 +47,15 @@ export const useVault = (getSession: () => string | null) => {
   const thumbnailsRef = useRef<Record<number, string>>({});
   const requestedRef = useRef<Set<number>>(new Set()); // track which IDs we've already requested
   const abortRef = useRef<AbortController | null>(null); // cancel batch loading on lock
+  // 🚨 Session 154 audit fix — one automatic error-refresh per FILE, not per
+  // url. Every successful refresh mints a NEW url (fresh signed token / new
+  // blob objectURL), so a url-keyed guard never trips and a permanently
+  // unplayable video (e.g. .avi/.wmv codec the browser can't decode) would
+  // loop refresh forever — each loop a signed-download + audit row, or a full
+  // download+PBKDF2+decrypt for encrypted files. Holds the file id we already
+  // auto-refreshed; cleared whenever the user views a different file or
+  // closes the viewer, so a deliberate re-open gets one fresh attempt.
+  const retriedFileIdRef = useRef<number | null>(null);
 
   // Build the standard vault-call headers. Admin session + vault token.
   // Returns null if either is missing — callers should bail in that case
@@ -193,6 +202,7 @@ export const useVault = (getSession: () => string | null) => {
     // Even though it's a 1h-TTL JWT, locking should immediately invalidate
     // access from the client side so a re-unlock is required.
     vaultTokenRef.current = null;
+    retriedFileIdRef.current = null;
     setVaultUnlocked(false);
     setVaultPassword('');
     setViewingImage(null);
@@ -509,6 +519,7 @@ export const useVault = (getSession: () => string | null) => {
   );
 
   const handleVaultView = useCallback(async (fileId: number, filename: string) => {
+    retriedFileIdRef.current = null; // new viewing — allow one fresh auto-refresh
     const mediaFiles = vaultFiles.filter(f => isImageFile(f.filename) || isVideoFile(f.filename));
     const idx = mediaFiles.findIndex(f => f.id === fileId);
     setAlbumIndex(idx >= 0 ? idx : 0);
@@ -543,6 +554,7 @@ export const useVault = (getSession: () => string | null) => {
 
   // Album navigation
   const navigateAlbum = useCallback(async (direction: 'prev' | 'next') => {
+    retriedFileIdRef.current = null; // moving to a different file — reset the one-shot guard
     const mediaFiles = vaultFiles.filter(f => isImageFile(f.filename) || isVideoFile(f.filename));
     if (mediaFiles.length <= 1) return;
 
@@ -582,11 +594,15 @@ export const useVault = (getSession: () => string | null) => {
   // the <video> element errors (most commonly a signed url that expired after
   // a long pause). Unencrypted videos get a brand-new signed url; encrypted
   // videos drop the cached blob (it may be stale/revoked) and re-fetch via the
-  // decrypt-proxy. The viewer guards against refresh loops (one retry per url).
+  // decrypt-proxy. retriedFileIdRef caps this at ONE automatic attempt per
+  // file per viewing — if the refreshed url errors too (unsupported codec,
+  // not an expired token), we stop instead of looping refresh forever.
   const refreshViewingMedia = useCallback(async () => {
     const mediaFiles = vaultFiles.filter(f => isImageFile(f.filename) || isVideoFile(f.filename));
     const file = mediaFiles[albumIndex];
     if (!file || !isVideoFile(file.filename)) return;
+    if (retriedFileIdRef.current === file.id) return; // already retried this file this viewing
+    retriedFileIdRef.current = file.id;
     const headers = vaultHeaders();
     if (!headers) {
       setVaultError('Vault locked — please re-enter password');
@@ -607,6 +623,7 @@ export const useVault = (getSession: () => string | null) => {
   }, [vaultFiles, albumIndex, vaultHeaders, loadMedia]);
 
   const handleCloseViewer = useCallback(() => {
+    retriedFileIdRef.current = null; // viewer closed — next open gets a fresh attempt
     setViewingImage(null);
   }, []);
 

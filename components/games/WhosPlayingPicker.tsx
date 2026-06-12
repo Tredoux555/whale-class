@@ -1,7 +1,8 @@
 // components/games/WhosPlayingPicker.tsx
 // "Who's playing?" child picker for the games hub (Jun 12, 2026).
 //
-// The 9 learning games attach progress to a child by reading localStorage:
+// 8 of the learning games attach progress to a child by reading localStorage
+// (phonics-challenge doesn't read these keys):
 //   - 'current_student_id'  → plain child UUID (match-attack-new, read-and-reveal,
 //     word-builder-new, sentence-scramble, sound-safari completion saves)
 //   - 'studentSession'      → JSON { childId } (LetterTraceGame /
