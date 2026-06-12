@@ -80,6 +80,33 @@ function parseRange(
   return { start, end };
 }
 
+// 🚨 Session 154 audit fix — time-based audit flood control. Video playback
+// fires dozens of Range requests per viewing, so logging every request would
+// flood vault_audit_log; but the previous heuristic (log only when no Range
+// or range.start === 0) let `Range: bytes=1-` fetch the whole file minus one
+// byte with ZERO audit rows. Instead: log at most once per admin+file per
+// 10-minute window — every playback/download session logs at least once
+// regardless of Range games, while seek-chunk flooding stays suppressed.
+// Bounded Map with FIFO eviction, same pattern as the key memo above.
+const AUDIT_WINDOW_MS = 10 * 60 * 1000;
+const AUDIT_MEMO_MAX = 500;
+const auditLastLogged = new Map<string, number>();
+
+function shouldAuditLog(adminUsername: string, fileId: number): boolean {
+  const key = `${adminUsername}:${fileId}`;
+  const now = Date.now();
+  const last = auditLastLogged.get(key);
+  if (last !== undefined && now - last < AUDIT_WINDOW_MS) return false;
+  // Delete-then-set so a refreshed entry moves to the back of the FIFO order.
+  auditLastLogged.delete(key);
+  if (auditLastLogged.size >= AUDIT_MEMO_MAX) {
+    const oldest = auditLastLogged.keys().next().value;
+    if (oldest !== undefined) auditLastLogged.delete(oldest);
+  }
+  auditLastLogged.set(key, now);
+  return true;
+}
+
 // Each request buffers ciphertext + plaintext in memory (~2× file size while
 // decrypting). Cap concurrent decrypts so a burst of playback Range requests
 // can't stack heap allocations; surplus requests get a quick 503 + Retry-After
@@ -174,14 +201,16 @@ export async function GET(
         headers: {
           'Content-Range': `bytes */${size}`,
           'Accept-Ranges': 'bytes',
+          // no-store on every response from this route — see headers below.
+          'Cache-Control': 'no-store',
         },
       });
     }
 
-    // 🚨 Session 154 — audit one row per download/playback START (no Range, or
-    // a range from byte 0), not per mid-stream chunk: a single video viewing
-    // fires dozens of Range requests and would otherwise flood the log.
-    if (!range || range.start === 0) {
+    // 🚨 Session 154 — audit at most one row per admin+file per 10-minute
+    // window (see shouldAuditLog): every session logs at least once, no
+    // matter how the Range header is shaped, without per-chunk flooding.
+    if (shouldAuditLog(adminUsername, fileId)) {
       const ipAddress = req.headers.get('x-forwarded-for') || 'unknown';
       supabase.from('vault_audit_log').insert({
         action: 'file_download',
@@ -206,11 +235,9 @@ export async function GET(
       'Content-Type': mediaMime || 'application/octet-stream',
       'Content-Disposition': `${mediaMime ? 'inline' : 'attachment'}; filename="${safeAscii}"; filename*=UTF-8''${rfc5987}`,
       'Accept-Ranges': 'bytes',
-      // Private (browser-only) cache so the SAME authenticated session can
-      // replay/seek without re-downloading + re-decrypting. No ETag is sent
-      // (deliberate — avoids If-Range complexity; expired caches simply
-      // re-request the full body, which is acceptable).
-      'Cache-Control': 'private, max-age=3600',
+      // no-store: vault lock must not leave decrypted plaintext in the
+      // browser's disk cache on a shared machine (private+max-age did).
+      'Cache-Control': 'no-store',
     };
 
     if (range) {
