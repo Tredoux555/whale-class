@@ -13,6 +13,30 @@ is months stale — CLAUDE.md is the canonical brain for this repo.
 
 ---
 
+## Jun 12, 2026 (night) — Burn round: games progress + H5 + M3 LIVE; App Store pack; GC Flutter branch
+
+**whale:** `burn-jun12` (2 commits) merged → main → deployed (verified: /api/games/track
+live). Games now save (`/api/games/progress` + `/api/games/track`, school-scoped,
+zero client changes); H5 webhook inbox-first persistence; M3 legacy admin route
+tenant-scoping. Migrations 252 + 253 RUN in whale-class with RLS (verified
+relrowsecurity=true). ⚠️ Latent UI gap: nothing sets `current_student_id`/
+`studentSession` in localStorage, so most games won't attach a child until that
+picker exists — product decision, queued.
+**App Store pack:** `~/Desktop/Montree App Store Pack/` — listing (old subtitle was
+34 chars, over Apple's 30 limit — fixed), privacy labels w/ code citations (no
+tracking SDKs confirmed), reviewer notes rewritten around login CODES (old doc
+wrongly said email/password), 5 real 1290×2796 public-page screenshots + simctl
+commands for in-app ones, phase-by-phase checklist. Tredoux fills: demo school
+codes; montree.xyz/support 307s to root — needs a real page.
+**guardian-connect:** branch `flutter-catchup-jun12` (5 commits, NOT merged):
+escalation honesty (501), static-location pivot (polling removed — also fixed
+3 never-cancelled stream leaks), alerted-count honesty, invite-by-link (+
+share_plus dep — needs pod install), Agora deferred w/ stubs. Found
+EmergencyEscalationService is dead code (never invoked). No flutter analyze
+possible on this machine — run it before merging.
+
+---
+
 ## Jun 12, 2026 (evening) — MERGED + DEPLOYED. App Store: submission phase
 
 **State change: `audit-cleanup-jun2026` (24 commits) merged into `main` and deployed
