@@ -8761,6 +8761,21 @@ Backfills NULL-pct agents to the new 20% default introduced in commit `cd33058a`
 - Social guru: `lib/social-media-guru/knowledge/facebook-reels-playbook.md` — Facebook Reels rules override generic caption/hashtag formulas (≤4 hashtags, 8-10AM/5-7PM, draft-only).
 - Full detail + commit SHAs: `HANDOFF_LATEST.md` Jun 12 afternoon entry.
 
+**Cowork session (Jun 12, 2026, evening/night) — shipped + Apple enrolment 80%:**
+- `burn-jun12` merged → main → LIVE: games progress endpoints (migrations 252+253 RUN
+  with RLS), webhook inbox-first persistence (H5), legacy admin route scoping (M3).
+  Latent gap: no UI sets `current_student_id` — games save without a child attached.
+- App Store submission pack: `~/Desktop/Montree App Store Pack/` (listing, privacy
+  labels, reviewer notes, screenshots, checklist). Tredoux still owes: demo school
+  codes, a real /support page.
+- guardian-connect `flutter-catchup-jun12` branch: UNMERGED, needs flutter analyze.
+- **Apple Developer enrolment PINNED at 80%** — Apple ID `tredoux.montree@gmail.com`
+  (region ZA, SA card attached, agreement signed). Web enrolment is HARD-BLOCKED by
+  Apple (`UserIneligibleForWebEnrollment`) — resume = Apple Developer app on iPhone,
+  passport scan, $99. Full resume script: HANDOFF_LATEST.md "Jun 12 late night".
+  Key environment lesson: Apple SMS to +86 only works VPN-OFF (China routes); via
+  VPN it rate-limits the number for ~90 min.
+
 ---
 
 ## Session History
