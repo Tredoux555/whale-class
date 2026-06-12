@@ -116,6 +116,45 @@ export async function POST(req: NextRequest) {
         await logAdminLogin(supabase, username, token, ip, userAgent);
 
         // Phase 7: Set HttpOnly cookie alongside JSON (dual mode for backward compat)
+        //
+        // ⚠️ AUDIT FINDING M1 (docs/STORY_SECURITY_AUDIT_2026-06.md) — DELIBERATELY
+        // NOT FIXED in the Jun 13 overnight pass. Returning the token in the JSON
+        // body (and replaying it as a Bearer header from sessionStorage) defeats
+        // the httpOnly cookie's XSS protection. The fix was assessed and is NOT
+        // small: an unattended token-handling refactor risks bricking the admin
+        // session flow, which is worse than the finding (M1 is Medium; it only
+        // matters if XSS already exists in the admin dashboard).
+        //
+        // Blast radius measured (Jun 13, 2026):
+        //   • 24 API route files (~50 call sites) verify via
+        //     verifyAdminToken(req.headers.get('Authorization')) — header-ONLY;
+        //     none read the 'story-admin-token' cookie except GET in this file.
+        //   • 9 client files (~21 call sites) attach `Bearer ${getSession()}`
+        //     from sessionStorage('story_admin_session'): useAuthSession,
+        //     useVault, useMessages, useAdminMessage, useSharedFiles,
+        //     useLoginLogs, useOnlineUsers, useSystemControls, OnlineUsersTab,
+        //     plus app/story/admin/page.tsx which stores data.session.
+        //
+        // EXACT MIGRATION PLAN (do in ONE attended session, in this order):
+        //   1. lib/story-db.ts: add verifyAdminRequest(req: NextRequest) that
+        //      checks the Authorization header FIRST, then falls back to the
+        //      'story-admin-token' httpOnly cookie (mirror the montree-auth
+        //      pattern in lib/montree/server-auth.ts). Switch all 24 admin
+        //      routes from verifyAdminToken(header) to verifyAdminRequest(req).
+        //      Deploy. Nothing breaks: header path still works.
+        //   2. Client: change all fetches to `credentials: 'same-origin'` (the
+        //      cookie already flows on same-origin fetches by default) and make
+        //      useAuthSession.verifySession() call GET /api/story/admin/auth
+        //      (the /me equivalent below, which already accepts the cookie)
+        //      instead of reading sessionStorage. Drop the Bearer headers and
+        //      the sessionStorage read/write/remove (3 sites in useAuthSession,
+        //      1 in admin/page.tsx). DELETE on logout already clears the cookie.
+        //   3. Server: stop returning the token here — `NextResponse.json({
+        //      success: true })` — and rotate STORY_JWT_SECRET afterwards so any
+        //      body-issued tokens still cached in sessionStorage die.
+        //   4. CSRF: the cookie is SameSite=Lax and all mutating admin routes
+        //      are POST/DELETE JSON — verify an Origin/Content-Type check or
+        //      keep requiring a custom header before relying on the cookie alone.
         const response = NextResponse.json({ session: token });
         response.cookies.set('story-admin-token', token, {
           httpOnly: true,

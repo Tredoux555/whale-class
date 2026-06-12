@@ -1,10 +1,45 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { verifyAdminToken } from '@/lib/story-db';
+import { checkRateLimit } from '@/lib/rate-limiter';
+import { getClientIP } from '@/lib/montree/audit-logger';
 
 async function verifyAdmin(request: NextRequest): Promise<boolean> {
   const admin = await verifyAdminToken(request.headers.get('Authorization'));
   return admin !== null;
+}
+
+// audit-fix M3 (Jun 2026): destructive ops were gated only by the 24h admin
+// JWT + the static, non-secret string 'CONFIRM' — a stolen admin token alone
+// could wipe everything. These actions now ALSO require per-call re-entry of
+// the admin's own password (bcrypt vs story_admin_users), the audit's accepted
+// step-up for ops strictly less destructive than the nuke (factory_reset
+// touches a subset of the nuke's tables, never secret_stories or the story
+// buckets, and preserves the audit log — the nuke keeps its own stronger
+// STORY_NUKE_CODE timing-safe gate, see ./nuke/route.ts).
+// FAIL-CLOSED: missing/invalid password, DB error, missing hash row, and
+// limiter backend error ALL deny.
+const DESTRUCTIVE_ACTIONS = new Set(['factory_reset', 'clear_vault', 'delete_all_users']);
+
+async function verifyStepUpPassword(
+  supabase: ReturnType<typeof getSupabase>,
+  adminUsername: string,
+  adminPassword: unknown
+): Promise<boolean> {
+  if (typeof adminPassword !== 'string' || adminPassword.length === 0) return false;
+  try {
+    const { data: rows, error } = await supabase
+      .from('story_admin_users')
+      .select('password_hash')
+      .eq('username', adminUsername)
+      .limit(1);
+    if (error || !rows || rows.length === 0) return false;
+    const bcrypt = await import('bcryptjs');
+    return await bcrypt.compare(adminPassword, rows[0].password_hash);
+  } catch (e) {
+    console.error('[System Controls] Step-up verification error (fail-closed):', e);
+    return false;
+  }
 }
 
 export async function POST(request: NextRequest) {
@@ -16,12 +51,54 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const { action, confirmCode } = await request.json();
+    const { action, confirmCode, adminPassword } = await request.json();
     const supabase = getSupabase();
 
     // Require confirmation code for destructive actions
     if (confirmCode !== 'CONFIRM') {
       return NextResponse.json({ error: 'Invalid confirmation code' }, { status: 400 });
+    }
+
+    // audit-fix M3 (Jun 2026): step-up gate for destructive actions — see the
+    // DESTRUCTIVE_ACTIONS comment above. Rate-limit the bcrypt oracle first
+    // (5/15min, keyed on authenticated admin + IP, fail-CLOSED — mirrors the
+    // M2 vault-unlock fix) so a stolen JWT can't brute-force the admin
+    // password through this route either.
+    if (DESTRUCTIVE_ACTIONS.has(action)) {
+      const ipAddress = getClientIP(request.headers);
+      const { allowed, retryAfterSeconds } = await checkRateLimit(
+        supabase,
+        `${adminUsername}|${ipAddress}`,
+        '/api/story/admin/system-controls#destructive',
+        5,
+        15,
+        'closed'
+      );
+      if (!allowed) {
+        return NextResponse.json(
+          { error: 'Too many attempts. Try again later.' },
+          { status: 429, headers: { 'Retry-After': String(retryAfterSeconds ?? 900) } }
+        );
+      }
+
+      const stepUpOk = await verifyStepUpPassword(supabase, adminUsername, adminPassword);
+      if (!stepUpOk) {
+        // Leave a forensic trail — a denied destructive attempt is exactly the
+        // signal that an admin token may be stolen. Fire-and-forget.
+        await supabase.from('vault_audit_log').insert({
+          action: 'destructive_action_denied',
+          admin_username: adminUsername,
+          ip_address: ipAddress,
+          details: `Step-up password check failed for action '${action}'`,
+          success: false,
+        }).then(({ error }) => {
+          if (error) console.error('[System Controls] Denied-attempt audit write failed', error);
+        });
+        return NextResponse.json(
+          { error: 'Admin password verification failed' },
+          { status: 401 }
+        );
+      }
     }
 
     let result = { success: false, message: '', affected: 0 };
@@ -160,7 +237,9 @@ export async function POST(request: NextRequest) {
         // Previously this deleted vault_audit_log + vault_unlock_attempts;
         // those are now PRESERVED. Write a final 'factory_reset fired' row
         // before the rest of the wipe so the act itself is logged.
-        const ipAddress = request.headers.get('x-forwarded-for') || 'unknown';
+        // audit-fix M2/M3 (Jun 2026): app-standard IP extraction (first XFF
+        // hop via getClientIP) instead of the raw header blob.
+        const ipAddress = getClientIP(request.headers);
         await supabase.from('vault_audit_log').insert({
           action: 'factory_reset',
           admin_username: adminUsername,

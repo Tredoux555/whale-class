@@ -31,6 +31,17 @@ export const useSystemControls = (getSession: () => string | null) => {
     async (action: string, confirmMessage: string, onSuccess?: () => Promise<void>) => {
       if (!confirm(`${confirmMessage}\n\nThis action cannot be undone. Type CONFIRM to proceed.`)) return;
 
+      // audit-fix M3 (Jun 2026): destructive actions require per-call re-entry
+      // of the admin password (server verifies bcrypt vs story_admin_users) —
+      // the 24h session token + static 'CONFIRM' alone no longer suffice.
+      // Must mirror DESTRUCTIVE_ACTIONS in api/story/admin/system-controls.
+      let adminPassword: string | undefined;
+      if (['factory_reset', 'clear_vault', 'delete_all_users'].includes(action)) {
+        const entered = prompt('🔐 Re-enter your ADMIN password to authorize this destructive action:');
+        if (!entered) return;
+        adminPassword = entered;
+      }
+
       setControlsLoading(true);
       setControlsMessage(null);
 
@@ -42,7 +53,7 @@ export const useSystemControls = (getSession: () => string | null) => {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${session}`
           },
-          body: JSON.stringify({ action, confirmCode: 'CONFIRM' })
+          body: JSON.stringify({ action, confirmCode: 'CONFIRM', ...(adminPassword ? { adminPassword } : {}) })
         });
 
         const data = await res.json();

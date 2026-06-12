@@ -1,57 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase, verifyAdminToken, getJWTSecret } from '@/lib/story-db';
+import { checkRateLimit } from '@/lib/rate-limiter';
+import { getClientIP } from '@/lib/montree/audit-logger';
 import crypto from 'crypto';
 
 const VAULT_PASSWORD_HASH = process.env.VAULT_PASSWORD_HASH;
 if (!VAULT_PASSWORD_HASH) {
   console.error('[Vault] VAULT_PASSWORD_HASH must be set in environment variables');
-}
-
-async function checkRateLimit(supabase: ReturnType<typeof getSupabase>, ipAddress: string) {
-  try {
-    const { data } = await supabase
-      .from('vault_unlock_attempts')
-      .select('*')
-      .eq('ip_address', ipAddress)
-      .gt('locked_until', new Date().toISOString())
-      .limit(1);
-    
-    if (data && data.length > 0) {
-      const lockoutTime = new Date(data[0].locked_until);
-      const minutesLeft = Math.ceil((lockoutTime.getTime() - Date.now()) / 60000);
-      return { allowed: false, lockoutMinutes: minutesLeft };
-    }
-    return { allowed: true };
-  } catch {
-    return { allowed: true };
-  }
-}
-
-async function recordAttempt(supabase: ReturnType<typeof getSupabase>, ipAddress: string, success: boolean) {
-  try {
-    if (!success) {
-      const { data: existing } = await supabase
-        .from('vault_unlock_attempts')
-        .select('attempt_count')
-        .eq('ip_address', ipAddress)
-        .limit(1);
-      
-      if (existing && existing.length > 0) {
-        const newCount = existing[0].attempt_count + 1;
-        const update: Record<string, unknown> = { attempt_count: newCount, last_attempt: new Date().toISOString() };
-        if (newCount >= 5) {
-          update.locked_until = new Date(Date.now() + 15 * 60000).toISOString();
-        }
-        await supabase.from('vault_unlock_attempts').update(update).eq('ip_address', ipAddress);
-      } else {
-        await supabase.from('vault_unlock_attempts').insert({ ip_address: ipAddress, attempt_count: 1 });
-      }
-    } else {
-      await supabase.from('vault_unlock_attempts').delete().eq('ip_address', ipAddress);
-    }
-  } catch (e) {
-    console.error('[Vault] Attempt recording error:', e);
-  }
 }
 
 export async function POST(req: NextRequest) {
@@ -62,13 +17,34 @@ export async function POST(req: NextRequest) {
     }
 
     const supabase = getSupabase();
-    const ipAddress = req.headers.get('x-forwarded-for') || 'unknown';
-    
-    const rateLimit = await checkRateLimit(supabase, ipAddress);
-    if (!rateLimit.allowed) {
+    const ipAddress = getClientIP(req.headers);
+
+    // audit-fix M2 (Jun 2026): the old bespoke limiter (vault_unlock_attempts
+    // table) was keyed on raw `x-forwarded-for` (attacker-rotatable header →
+    // unlimited bcrypt guesses) and failed OPEN on any DB error. Replaced with
+    // the shared hardened limiter (lib/rate-limiter — same one the Montree
+    // login routes use with failMode 'closed'):
+    //   • keyed on the AUTHENTICATED admin identity + IP — this route runs
+    //     post-admin-auth (verifyAdminToken above), so the key can't be spoofed
+    //     by header rotation; IP is still included via the app-standard
+    //     getClientIP chain so two stolen-token holders don't share a bucket.
+    //   • failMode 'closed' — a limiter backend error DENIES (429) instead of
+    //     letting brute force run unmetered.
+    // Semantic change: every attempt in the window counts (5/15min), not just
+    // failures — acceptable, a legit operator unlocks at most a few times/hour
+    // (vault token TTL is 1h).
+    const { allowed, retryAfterSeconds } = await checkRateLimit(
+      supabase,
+      `${adminUsername}|${ipAddress}`,
+      '/api/story/admin/vault/unlock',
+      5,
+      15,
+      'closed'
+    );
+    if (!allowed) {
       return NextResponse.json(
-        { error: `Too many attempts. Try again in ${rateLimit.lockoutMinutes} minutes.` },
-        { status: 429 }
+        { error: 'Too many unlock attempts. Try again later.' },
+        { status: 429, headers: { 'Retry-After': String(retryAfterSeconds ?? 900) } }
       );
     }
 
@@ -76,7 +52,6 @@ export async function POST(req: NextRequest) {
     const { password } = body;
 
     if (!password || typeof password !== 'string' || password.length < 8) {
-      await recordAttempt(supabase, ipAddress, false);
       return NextResponse.json({ error: 'Invalid password' }, { status: 401 });
     }
 
@@ -84,7 +59,6 @@ export async function POST(req: NextRequest) {
     const validPassword = await bcrypt.compare(password, VAULT_PASSWORD_HASH);
 
     if (!validPassword) {
-      await recordAttempt(supabase, ipAddress, false);
       await supabase.from('vault_audit_log').insert({
         action: 'unlock_attempt',
         admin_username: adminUsername,
@@ -95,8 +69,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Wrong password' }, { status: 401 });
     }
 
-    await recordAttempt(supabase, ipAddress, true);
-    
     const encryptionKey = crypto.randomBytes(32).toString('hex');
     const { SignJWT } = await import('jose');
     const token = await new SignJWT({ vaultAccess: true, encryptionKey, iat: Date.now() })
