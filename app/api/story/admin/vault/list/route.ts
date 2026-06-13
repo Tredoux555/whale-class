@@ -24,7 +24,7 @@ export async function GET(req: NextRequest) {
 
     const { data: rows, error } = await supabase
       .from('vault_files')
-      .select('id, filename, file_size, file_url, encrypted_key, uploaded_by, uploaded_at')
+      .select('id, filename, file_size, file_url, encrypted_key, thumbnail_path, uploaded_by, uploaded_at')
       .is('deleted_at', null)
       .order('uploaded_at', { ascending: false });
 
@@ -38,6 +38,11 @@ export async function GET(req: NextRequest) {
       // 'plain' marks an unencrypted direct (large-media) upload — the client
       // uses this to route downloads through the signed-url endpoint.
       encrypted: row.encrypted_key !== 'plain',
+      // fix/story-vault-mobile-jun13 — whether a small grid thumbnail exists.
+      // When true the grid loads /vault/thumbnail/[id] (a few KB) instead of
+      // the full-resolution original (fast on mobile). NULL for the existing
+      // image backlog and for videos → grid falls back to its old behaviour.
+      has_thumbnail: !!row.thumbnail_path,
       uploaded_by: row.uploaded_by,
       uploaded_at: row.uploaded_at
     }));

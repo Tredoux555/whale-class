@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase, verifyAdminToken, verifyVaultToken } from '@/lib/story-db';
 import crypto from 'crypto';
+import sharp from 'sharp';
 
 // Videos can be large + PBKDF2 + AES-GCM are CPU-bound. Bumped from default
 // 15s to 120s so multi-MB video uploads don't get killed mid-encryption.
@@ -12,6 +13,27 @@ export const runtime = 'nodejs';
 // to the admin instead of letting them think "the vault doesn't save
 // videos" when really their 80MB iPhone clip got truncated at the proxy.
 const MAX_UPLOAD_BYTES = 30 * 1024 * 1024; // 30MB safe ceiling under Railway's 32MB cap
+
+// fix/story-vault-mobile-jun13 — generate a small thumbnail for IMAGE uploads.
+// ~480px wide, JPEG q70 — a few KB instead of a multi-MB original. Stored
+// UNENCRYPTED (it is a tiny, low-resolution derivative) so the gallery grid
+// can load it fast on mobile without a per-request AES decrypt. The
+// full-resolution original stays AES-256-GCM encrypted at rest and is only
+// fetched when the viewer opens. Returns null on any failure (e.g. HEIC that
+// the bundled libvips can't decode) — the grid then falls back to the legacy
+// full-image path for that file, so a thumbnail miss is never fatal.
+async function makeThumbnail(fileBuffer: Buffer): Promise<Buffer | null> {
+  try {
+    return await sharp(fileBuffer)
+      .rotate() // honour EXIF orientation
+      .resize({ width: 480, withoutEnlargement: true })
+      .jpeg({ quality: 70 })
+      .toBuffer();
+  } catch (e) {
+    console.warn('[Vault Upload] thumbnail generation failed:', e);
+    return null;
+  }
+}
 
 function encryptFile(fileBuffer: Buffer, password: string): { encrypted: Buffer; iv: string; authTag: string } {
   const iv = crypto.randomBytes(16);
@@ -103,6 +125,26 @@ export async function POST(req: NextRequest) {
 
     const { data: urlData } = supabase.storage.from('vault-secure').getPublicUrl(`vault/${filename}`);
 
+    // fix/story-vault-mobile-jun13 — for images, generate + store a small
+    // thumbnail so the gallery grid loads fast on mobile. Best-effort: a
+    // failure here (or a non-image) just leaves thumbnail_path NULL and the
+    // grid falls back to the full image. Videos never get a thumbnail.
+    let thumbnailPath: string | null = null;
+    if (isImage) {
+      const thumb = await makeThumbnail(fileBuffer);
+      if (thumb) {
+        const thumbName = `vault/thumb-${filename.replace(/\.enc$/, '')}.jpg`;
+        const { error: thumbErr } = await supabase.storage
+          .from('vault-secure')
+          .upload(thumbName, thumb, { contentType: 'image/jpeg', upsert: false });
+        if (thumbErr) {
+          console.warn('[Vault Upload] thumbnail upload failed:', thumbErr.message);
+        } else {
+          thumbnailPath = thumbName;
+        }
+      }
+    }
+
     const { data: result, error } = await supabase
       .from('vault_files')
       .insert({
@@ -111,7 +153,8 @@ export async function POST(req: NextRequest) {
         file_url: urlData.publicUrl,
         encrypted_key: `${iv}:${authTag}`,
         file_hash: fileHash,
-        uploaded_by: adminUsername
+        uploaded_by: adminUsername,
+        thumbnail_path: thumbnailPath,
       })
       .select('id, filename, uploaded_at')
       .single();

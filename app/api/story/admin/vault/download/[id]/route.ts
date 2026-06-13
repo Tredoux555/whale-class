@@ -121,13 +121,30 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
-    const adminUsername = await verifyAdminToken(req.headers.get('authorization'));
+
+    // fix/story-vault-mobile-jun13 — accept the admin + vault tokens from query
+    // params as a fallback to the Authorization / x-vault-token headers. A bare
+    // <video src> (used to stream EXISTING encrypted videos via this route's
+    // 206/Range support, instead of downloading a full blob) cannot set custom
+    // headers, so the client passes ?at=<adminJWT>&vt=<vaultJWT>. Both are
+    // verified through the exact same jose/exp checks as the header path — this
+    // does NOT add a new trust path, only a new carrier for the same tokens.
+    // (Trade-off: a vault-token-bearing URL may land in server access logs; the
+    // token is a short-lived ≤1h JWT, same posture as the signed-download URLs.)
+    const url = new URL(req.url);
+    const authHeader =
+      req.headers.get('authorization') ||
+      (url.searchParams.get('at') ? `Bearer ${url.searchParams.get('at')}` : null);
+    const vaultTokenHeader =
+      req.headers.get('x-vault-token') || url.searchParams.get('vt');
+
+    const adminUsername = await verifyAdminToken(authHeader);
     if (!adminUsername) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     // 🚨 Session 113 V2 Story audit F-2.1 — vault token mandatory.
-    const vaultTokenValid = await verifyVaultToken(req.headers.get('x-vault-token'));
+    const vaultTokenValid = await verifyVaultToken(vaultTokenHeader);
     if (!vaultTokenValid) {
       return NextResponse.json(
         { error: 'Vault not unlocked', vault_locked: true },

@@ -58,6 +58,11 @@ export interface VaultFile {
   // Session 153 — false for unencrypted direct (large-media) uploads, which
   // download via the signed-url endpoint instead of the decrypt-proxy route.
   encrypted?: boolean;
+  // fix/story-vault-mobile-jun13 — true when a small grid thumbnail exists for
+  // this image. The grid loads /vault/thumbnail/[id] (a few KB) instead of the
+  // full original; the viewer still loads the full-resolution image. NULL for
+  // the pre-fix backlog and for videos (grid falls back to old behaviour).
+  has_thumbnail?: boolean;
 }
 
 export interface SharedFile {

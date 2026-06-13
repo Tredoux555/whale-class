@@ -1,5 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase, verifyAdminToken, verifyVaultToken } from '@/lib/story-db';
+import sharp from 'sharp';
+
+// fix/story-vault-mobile-jun13 — extensions we treat as images for thumbnail
+// generation on the direct (chunked) upload path. Videos never get a thumbnail.
+const IMAGE_EXTS = new Set([
+  'jpg', 'jpeg', 'png', 'gif', 'webp', 'heic', 'heif', 'avif',
+]);
 
 // 🚨 Session 153 — records the metadata row for a direct (large-media) vault
 // upload AFTER the browser has pushed the bytes straight to Supabase via the
@@ -58,6 +65,36 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // fix/story-vault-mobile-jun13 — direct uploads are stored UNENCRYPTED, so
+    // for large IMAGES we can download the just-landed object and build a small
+    // grid thumbnail (videos are skipped — the grid renders a ▶ tile, never a
+    // thumbnail). Best-effort: any failure leaves thumbnail_path NULL and the
+    // grid falls back to the full image. Large videos take the common case and
+    // skip this entirely.
+    let thumbnailPath: string | null = null;
+    const ext = filename.split('.').pop()?.toLowerCase() || '';
+    if (IMAGE_EXTS.has(ext)) {
+      try {
+        const { data: orig } = await supabase.storage.from('vault-secure').download(path);
+        if (orig) {
+          const origBuf = Buffer.from(await orig.arrayBuffer());
+          const thumb = await sharp(origBuf)
+            .rotate()
+            .resize({ width: 480, withoutEnlargement: true })
+            .jpeg({ quality: 70 })
+            .toBuffer();
+          const thumbName = `${path}.thumb.jpg`;
+          const { error: thumbErr } = await supabase.storage
+            .from('vault-secure')
+            .upload(thumbName, thumb, { contentType: 'image/jpeg', upsert: false });
+          if (!thumbErr) thumbnailPath = thumbName;
+          else console.warn('[Vault Finalize] thumbnail upload failed:', thumbErr.message);
+        }
+      } catch (e) {
+        console.warn('[Vault Finalize] thumbnail generation failed:', e);
+      }
+    }
+
     const { data: result, error } = await supabase
       .from('vault_files')
       .insert({
@@ -67,6 +104,7 @@ export async function POST(req: NextRequest) {
         encrypted_key: 'plain',    // sentinel: unencrypted direct upload
         file_hash: 'direct-upload',
         uploaded_by: adminUsername,
+        thumbnail_path: thumbnailPath,
       })
       .select('id, filename, uploaded_at')
       .single();

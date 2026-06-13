@@ -16,9 +16,22 @@ const MAX_VAULT_BYTES = 1024 * 1024 * 1024; // 1GB (matches the bucket limit)
 const UPLOAD_CHUNK_BYTES = 8 * 1024 * 1024; // 8MB
 
 export const useVault = (getSession: () => string | null) => {
+  // fix/story-vault-mobile-jun13 — keep the latest getSession in a ref so
+  // loadMedia (empty dep array, stable identity) can build a token-in-URL
+  // streaming link for existing encrypted videos without re-creating itself.
+  const getSessionRef = useRef(getSession);
+  getSessionRef.current = getSession;
   const [vaultPassword, setVaultPassword] = useState('');
   const [vaultUnlocked, setVaultUnlocked] = useState(false);
-  const [vaultFiles, setVaultFiles] = useState<VaultFile[]>([]);
+  const [vaultFiles, setVaultFilesState] = useState<VaultFile[]>([]);
+  // fix/story-vault-mobile-jun13 — keep a synchronous mirror of vaultFiles so
+  // loadThumbnail (stable identity, runs in a background batch) can read each
+  // file's has_thumbnail flag without taking vaultFiles as a dependency.
+  const vaultFilesRef = useRef<VaultFile[]>([]);
+  const setVaultFiles = useCallback((files: VaultFile[]) => {
+    vaultFilesRef.current = files;
+    setVaultFilesState(files);
+  }, []);
   const [uploadingVault, setUploadingVault] = useState(false);
   // Per-batch upload progress so the UI can show "Uploading 3 of 7…"
   // during multi-file uploads. Both stay 0/0 when idle.
@@ -45,6 +58,12 @@ export const useVault = (getSession: () => string | null) => {
   const [loadingThumbnails, setLoadingThumbnails] = useState<Record<number, boolean>>({});
   const [failedThumbnails, setFailedThumbnails] = useState<Record<number, boolean>>({});
   const thumbnailsRef = useRef<Record<number, string>>({});
+  // fix/story-vault-mobile-jun13 — separate cache for FULL-resolution image
+  // blobs shown in the viewer. thumbnailsRef may now hold a small grid
+  // thumbnail (a few KB) for the same file, so the viewer must NOT reuse it or
+  // it would show a low-res image blown up full-screen. Files in the pre-fix
+  // backlog (no thumbnail) still cache their one full blob here.
+  const fullImagesRef = useRef<Record<number, string>>({});
   const requestedRef = useRef<Set<number>>(new Set()); // track which IDs we've already requested
   const abortRef = useRef<AbortController | null>(null); // cancel batch loading on lock
   // 🚨 Session 154 audit fix — one automatic error-refresh per FILE, not per
@@ -88,13 +107,18 @@ export const useVault = (getSession: () => string | null) => {
     } catch {
       console.error('Failed to load vault files');
     }
-  }, [vaultHeaders]);
+  }, [vaultHeaders, setVaultFiles]);
 
   // Revoke all cached object URLs
   const revokeAllThumbnails = useCallback(() => {
     Object.values(thumbnailsRef.current).forEach(url => {
       try { window.URL.revokeObjectURL(url); } catch { /* ignore */ }
     });
+    // fix/story-vault-mobile-jun13 — also free the full-resolution viewer blobs.
+    Object.values(fullImagesRef.current).forEach(url => {
+      try { window.URL.revokeObjectURL(url); } catch { /* ignore */ }
+    });
+    fullImagesRef.current = {};
     thumbnailsRef.current = {};
     requestedRef.current = new Set();
     setThumbnails({});
@@ -102,7 +126,15 @@ export const useVault = (getSession: () => string | null) => {
     setFailedThumbnails({});
   }, []);
 
-  // Load a single thumbnail
+  // Load a single thumbnail.
+  // fix/story-vault-mobile-jun13 — when the file has a stored thumbnail
+  // (has_thumbnail), fetch the tiny /vault/thumbnail/[id] JPEG (a few KB)
+  // instead of the full-resolution original through the throttled decrypt
+  // proxy — this is what makes the grid load fast on mobile. Files without a
+  // thumbnail (the pre-fix image backlog) fall back to the full /download/[id]
+  // path, exactly as before. The thumbnail blob is cached in thumbnailsRef and
+  // shown in the grid; the VIEWER always loads the full image separately, so a
+  // small thumbnail is never shown blown-up full-screen.
   const loadThumbnail = useCallback(async (fileId: number, signal?: AbortSignal) => {
     if (thumbnailsRef.current[fileId] || requestedRef.current.has(fileId)) return;
     requestedRef.current.add(fileId);
@@ -113,10 +145,17 @@ export const useVault = (getSession: () => string | null) => {
         setLoadingThumbnails(prev => ({ ...prev, [fileId]: false }));
         return;
       }
-      const res = await fetch(`/api/story/admin/vault/download/${fileId}`, {
-        headers,
-        signal,
-      });
+      const fileMeta = vaultFilesRef.current.find(f => f.id === fileId);
+      const hasThumb = fileMeta?.has_thumbnail === true;
+      let res: Response | null = null;
+      if (hasThumb) {
+        res = await fetch(`/api/story/admin/vault/thumbnail/${fileId}`, { headers, signal });
+        // 404 → thumbnail vanished; fall back to the full image below.
+        if (res.status === 404) res = null;
+      }
+      if (!res) {
+        res = await fetch(`/api/story/admin/vault/download/${fileId}`, { headers, signal });
+      }
       if (res.ok) {
         const blob = await res.blob();
         const url = window.URL.createObjectURL(blob);
@@ -258,7 +297,17 @@ export const useVault = (getSession: () => string | null) => {
         // server in <30MB chunks and the server relays each chunk to a
         // service-key resumable upload. Stored unencrypted in the private
         // bucket (see chunked/init/route.ts for the rationale).
-        if (file.size > DIRECT_UPLOAD_THRESHOLD) {
+        //
+        // fix/story-vault-mobile-jun13 — ALL videos take this plain/streamable
+        // path regardless of size (not just >20MB ones). The encrypted path
+        // forced the whole file to download + AES-GCM decrypt into webview
+        // memory before the first frame, which stalled iOS WKWebView; the plain
+        // path serves a Range-seekable signed URL that plays natively on iOS.
+        // Approved trade-off: vault VIDEOS are no longer encrypted at rest
+        // (still gated by admin JWT + vault token + short-lived signed URLs).
+        // Images ≤20MB stay on the encrypted small-file path below.
+        const isVideo = (file.type || '').startsWith('video/') || isVideoFile(file.name);
+        if (file.size > DIRECT_UPLOAD_THRESHOLD || isVideo) {
           const initRes = await fetch('/api/story/admin/vault/chunked/init', {
             method: 'POST',
             headers: jsonHeaders,
@@ -476,6 +525,11 @@ export const useVault = (getSession: () => string | null) => {
             return next;
           });
         }
+        // fix/story-vault-mobile-jun13 — also free any cached full-res viewer blob.
+        if (fullImagesRef.current[fileId]) {
+          window.URL.revokeObjectURL(fullImagesRef.current[fileId]);
+          delete fullImagesRef.current[fileId];
+        }
         // Close viewer if viewing deleted photo
         if (viewingImage) {
           const currentMediaFiles = vaultFiles.filter(f => isImageFile(f.filename) || isVideoFile(f.filename));
@@ -501,18 +555,47 @@ export const useVault = (getSession: () => string | null) => {
     ): Promise<{ url: string; isVideo: boolean } | null> => {
       const isVid = isVideoFile(file.filename);
       if (isVid && file.encrypted === false) {
+        // PLAIN (new + large) videos — short-lived signed URL straight from
+        // Supabase storage; seekable + plays natively on iOS.
         const r = await fetch(`/api/story/admin/vault/signed-download/${file.id}`, { headers });
         const j = await r.json().catch(() => ({}));
         if (r.ok && j.url) return { url: j.url as string, isVideo: true };
         return null;
       }
-      if (thumbnailsRef.current[file.id]) return { url: thumbnailsRef.current[file.id], isVideo: isVid };
+      // fix/story-vault-mobile-jun13 — EXISTING ENCRYPTED videos: instead of
+      // fetch().blob() (which forced a full download + whole-file AES-GCM
+      // decrypt into webview memory before the first frame → iOS WKWebView
+      // stalled), point a bare <video src> at the decrypt-proxy download route,
+      // which already serves 206/Range responses. A bare <video> can't send
+      // the x-vault-token header, so we pass the admin + vault tokens as query
+      // params; the route also reads them from the query string. The browser
+      // then issues normal Range requests and the player streams progressively
+      // (each Range still triggers a server-side decrypt, but only the needed
+      // window is sent — no giant blob in webview memory, first frame is fast).
+      if (isVid) {
+        const vt = vaultTokenRef.current;
+        const session = getSessionRef.current?.();
+        if (!vt || !session) return null;
+        const qs = new URLSearchParams({ vt, at: session });
+        return {
+          url: `/api/story/admin/vault/download/${file.id}?${qs.toString()}`,
+          isVideo: true,
+        };
+      }
+      // Images — full resolution for the viewer, cached in fullImagesRef.
+      // fix/story-vault-mobile-jun13 — must NOT reuse thumbnailsRef here when a
+      // small thumbnail exists (that's the grid's low-res JPEG). When the file
+      // has NO separate thumbnail, the grid blob in thumbnailsRef IS full-res,
+      // so reuse it to avoid a second download (preserves backlog behaviour).
+      if (fullImagesRef.current[file.id]) return { url: fullImagesRef.current[file.id], isVideo: isVid };
+      if (file.has_thumbnail !== true && thumbnailsRef.current[file.id]) {
+        return { url: thumbnailsRef.current[file.id], isVideo: isVid };
+      }
       const r = await fetch(`/api/story/admin/vault/download/${file.id}`, { headers });
       if (!r.ok) return null;
       const blob = await r.blob();
       const url = window.URL.createObjectURL(blob);
-      thumbnailsRef.current[file.id] = url;
-      setThumbnails(prev => ({ ...prev, [file.id]: url }));
+      fullImagesRef.current[file.id] = url;
       return { url, isVideo: isVid };
     },
     []
@@ -526,10 +609,12 @@ export const useVault = (getSession: () => string | null) => {
     const file = mediaFiles[idx] || vaultFiles.find(f => f.id === fileId);
     if (!file) return;
 
-    // Fast path — cached image blob. Videos always re-resolve so signed urls
-    // stay fresh (and we never cache a 500MB blob).
-    if (!isVideoFile(file.filename) && thumbnailsRef.current[fileId]) {
-      setViewingImage({ url: thumbnailsRef.current[fileId], filename, isVideo: false });
+    // Fast path — cached FULL-resolution image blob. Videos always re-resolve
+    // so signed urls / Range links stay fresh. fix/story-vault-mobile-jun13:
+    // read fullImagesRef (not thumbnailsRef, which may hold the small grid
+    // thumbnail) so the viewer never shows a low-res image full-screen.
+    if (!isVideoFile(file.filename) && fullImagesRef.current[fileId]) {
+      setViewingImage({ url: fullImagesRef.current[fileId], filename, isVideo: false });
       return;
     }
 
@@ -565,9 +650,10 @@ export const useVault = (getSession: () => string | null) => {
     const targetFile = mediaFiles[newIndex];
     setAlbumIndex(newIndex);
 
-    // Cached image blob — instant. Videos always re-resolve.
-    if (!isVideoFile(targetFile.filename) && thumbnailsRef.current[targetFile.id]) {
-      setViewingImage({ url: thumbnailsRef.current[targetFile.id], filename: targetFile.filename, isVideo: false });
+    // Cached FULL-resolution image blob — instant. Videos always re-resolve.
+    // fix/story-vault-mobile-jun13 — fullImagesRef, not the grid thumbnail.
+    if (!isVideoFile(targetFile.filename) && fullImagesRef.current[targetFile.id]) {
+      setViewingImage({ url: fullImagesRef.current[targetFile.id], filename: targetFile.filename, isVideo: false });
       return;
     }
 
