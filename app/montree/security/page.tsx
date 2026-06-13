@@ -21,7 +21,7 @@ import LanguageToggle from '@/components/montree/LanguageToggle';
 export default function SecurityPage() {
   return (
     <>
-      <style jsx global>{`
+      <style dangerouslySetInnerHTML={{__html: `
         * { box-sizing: border-box; margin: 0; padding: 0; }
         html { scroll-behavior: smooth; }
         html, body { min-height: 100%; }
@@ -76,7 +76,7 @@ export default function SecurityPage() {
           .m-hero { padding: 60px 20px 40px; }
           .m-block { padding: 40px 20px; }
         }
-      `}</style>
+      `}} />
 
       <nav className="m-nav">
         <div className="m-nav-inner">
