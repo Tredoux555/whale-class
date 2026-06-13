@@ -38,6 +38,10 @@ export class FakeQuery {
   neq(...args: unknown[]) { return this.rec('neq', args); }
   in(...args: unknown[]) { return this.rec('in', args); }
   is(...args: unknown[]) { return this.rec('is', args); }
+  gte(...args: unknown[]) { return this.rec('gte', args); }
+  lte(...args: unknown[]) { return this.rec('lte', args); }
+  not(...args: unknown[]) { return this.rec('not', args); }
+  limit(...args: unknown[]) { return this.rec('limit', args); }
   order(...args: unknown[]) { return this.rec('order', args); }
   range(...args: unknown[]) { return this.rec('range', args); }
 
