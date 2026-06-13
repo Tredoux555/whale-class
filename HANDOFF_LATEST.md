@@ -106,6 +106,27 @@ Kill it with: `pkill -f montree_monitor`.
   it; should move behind an API (flagged, not fixed). Review → merge → deploy
   jeffy yourself.
 
+### Wave F — final verification (3 audits, all clean)
+- **jeffy security branch AUDITED MERGE-SAFE** (live-commerce — checked the 4
+  scariest regressions): middleware does NOT lock out admin (token sign/verify
+  match exactly, /admin/login stays public); PayFast amount-validation can't
+  reject real payments (`total_cents` IS the gross charged — no shipping/fees
+  added); Ozow removal doesn't break card/EFT; stock restore won't double-count
+  (one P3 edge on abnormal FAILED→COMPLETE, fine to merge). ⚠️ Before merging
+  jeffy, set non-default `ADMIN_PASSWORD`+`SESSION_SECRET`, `PAYFAST_PASSPHRASE`,
+  `CRON_SECRET` in Railway; confirm a real test payment completes once passphrase
+  is on (pre-existing alphabetical-sort in validateSignature — verify prod logs
+  aren't failing signatures).
+- **Vault C2** (`6f…` plan doc): large-media at-rest encryption investigated —
+  NOT implemented because the contained version would break playback (download
+  route decrypts whole-buffer; a 535MB file × 4 concurrent = OOM). Real fix =
+  streaming per-chunk AEAD + new ranged route (~2d). `docs/VAULT_C2_ENCRYPTION_PLAN.md`.
+- **🟢 FULL WHALE BRANCH PRE-MERGE REVIEW: GO.** 20 commits, 135 files
+  (+5,051/−687), cross-commit state coherent, no leftover debug, migrations
+  254/255 collision-free + graceful, i18n 12/12, no new security exposure (net
+  tightening), build green + 118/118 + eslint no new warnings. Safe to merge
+  burn-jun12-night2 → main.
+
 ### Your morning checklist (in order)
 1. Merge `burn-jun12-night2` → main → deploy (gets /support live for Apple).
 2. Cloudflare DNS-only flip (docs/DNS_ERROR_1034_FIX.md) — VPN on.
