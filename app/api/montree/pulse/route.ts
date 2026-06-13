@@ -109,10 +109,11 @@ export async function POST(req: NextRequest) {
 
     if (progressErr) {
       console.error('[Pulse] Progress fetch error:', progressErr);
-      // Release lock so teacher can retry
-      await supabase.rpc('complete_pulse_lock', { p_classroom_id: auth.classroomId }).catch((err) => {
-        console.error('[Pulse] Lock release failed:', err);
-      });
+      // Release lock so teacher can retry. Supabase's query builder resolves to
+      // { data, error } and never rejects, so a prior .catch() never fired — a
+      // failed release would silently leak the lock. Capture and log the error.
+      const { error: lockErr } = await supabase.rpc('complete_pulse_lock', { p_classroom_id: auth.classroomId });
+      if (lockErr) console.error('[Pulse] Lock release failed:', lockErr);
       return NextResponse.json({ error: 'Failed to load progress data' }, { status: 500 });
     }
 

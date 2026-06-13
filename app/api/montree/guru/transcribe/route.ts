@@ -4,6 +4,8 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
+import { checkRateLimit } from '@/lib/rate-limiter';
+import { getSupabase } from '@/lib/supabase-client';
 
 
 // Railway/Next.js default serverless timeout is 15s. AI calls can
@@ -15,6 +17,14 @@ export async function POST(request: NextRequest) {
   try {
     const auth = await verifySchoolRequest(request);
     if (auth instanceof NextResponse) return auth;
+
+    // Rate limit (Whisper bills per audio-minute) — 30/min per teacher,
+    // matching /api/montree/voice-notes/transcribe.
+    const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+    const { allowed } = await checkRateLimit(getSupabase(), ip, '/api/montree/guru/transcribe', 30, 1);
+    if (!allowed) {
+      return NextResponse.json({ success: false, error: 'Rate limit exceeded' }, { status: 429 });
+    }
 
     const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
     if (!OPENAI_API_KEY) {

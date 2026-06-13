@@ -8,7 +8,7 @@ import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { resolveReportModel } from '@/lib/montree/reports/resolve-model';
 import Anthropic from '@anthropic-ai/sdk';
-import { OPUS_MODEL } from '@/lib/ai/anthropic';
+import { AI_MODEL } from '@/lib/ai/anthropic';
 import { randomBytes } from 'crypto';
 import { getAILanguageInstruction } from '@/lib/montree/i18n/locale-config';
 import { readEncryptedField } from '@/lib/montree/messaging-crypto';
@@ -183,7 +183,7 @@ Draft ${principalFirstName}'s reply.`;
 
   try {
     const response = await anthropic.messages.create({
-      model: OPUS_MODEL,
+      model: AI_MODEL,
       max_tokens: 600,
       system: systemPrompt,
       messages: [{ role: 'user', content: userBlock }],
