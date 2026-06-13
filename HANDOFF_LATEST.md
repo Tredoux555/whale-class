@@ -127,6 +127,20 @@ Kill it with: `pkill -f montree_monitor`.
   tightening), build green + 118/118 + eslint no new warnings. Safe to merge
   burn-jun12-night2 → main.
 
+### Wave G — last burn
+- **jeffy customer-cancel fixed** (branch `security-fixes-jun13`, commit
+  `48c8428`, build green, not pushed): the cancel was a browser anon-client
+  Supabase write keyed on order id alone — now a server route
+  `/api/orders/cancel` (order_number + matching email, server-authoritative
+  cancellable-state check, calls the same idempotent stock-restore). Strictly
+  stronger auth than before. ⚠️ The component isn't mounted on any page yet
+  (no JSX call site) — wire it onto an order-tracking page when ready.
+  ⚠️ `OrderModificationRequest` in the same file still writes via anon client
+  (same pattern, left for next pass).
+- **whale security tests 118 → 143** (`eb59bc9f`): rate-limiter fail-closed,
+  system-controls bcrypt step-up (every deny branch), vault-unlock keying —
+  the wave-C hardening is now regression-locked. No product logic changed.
+
 ### Your morning checklist (in order)
 1. Merge `burn-jun12-night2` → main → deploy (gets /support live for Apple).
 2. Cloudflare DNS-only flip (docs/DNS_ERROR_1034_FIX.md) — VPN on.
