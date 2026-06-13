@@ -119,7 +119,7 @@ export default function BecomeAnAgentPage() {
 
   return (
     <>
-      <style jsx global>{`
+      <style dangerouslySetInnerHTML={{__html: `
         * { box-sizing: border-box; margin: 0; padding: 0; }
         html { scroll-behavior: smooth; }
         body {
@@ -394,7 +394,7 @@ export default function BecomeAnAgentPage() {
           font-size: 0.8125rem;
           border-top: 1px solid rgba(255,255,255,0.04);
         }
-      `}</style>
+      `}} />
 
       <div style={{ position: 'fixed', inset: 0, zIndex: 0, pointerEvents: 'none' }} aria-hidden="true">
         <div style={{

@@ -39,7 +39,7 @@ export default function PricingPage() {
 
   return (
     <>
-      <style jsx global>{`
+      <style dangerouslySetInnerHTML={{__html: `
         @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&display=swap');
         * { box-sizing: border-box; margin: 0; padding: 0; }
         html { scroll-behavior: smooth; }
@@ -69,7 +69,7 @@ export default function PricingPage() {
           transition: transform 0.15s;
         }
         input[type=range]::-webkit-slider-thumb:active { transform: scale(1.2); }
-      `}</style>
+      `}} />
 
       <div style={{ fontFamily: "'Inter', sans-serif", background: '#fefdfb', color: '#44403c', minHeight: '100vh' }}>
 
