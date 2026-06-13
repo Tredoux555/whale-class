@@ -79,6 +79,33 @@ Kill it with: `pkill -f montree_monitor`.
   no remote for that branch). MERGE-READY Claude-side. ⚠️ local main has
   DIVERGED from GitHub main — reconcile before pushing. Device build unverified.
 
+### Wave E — more perf + jeffy security (all on branches, audited/build-green)
+- **whale styled-jsx sweep** (`640554f7`): 3 more public funnel pages
+  (/pricing, /montree/become-an-agent, /montree/security) had the same
+  unstyled-first-paint CLS bug — converted. Authenticated pages + scoped
+  `<style jsx>` left for a daytime pass (need scope review).
+- **whale edge-cache** (`fbf86309`): added `Cache-Control: public, s-maxage=3600,
+  SWR=86400` to /pricing, /support, /privacy ONLY (no per-user content; the
+  montree locale cookie never fires on them). Root layout's headers() read
+  forces dynamic rendering site-wide — these 3 can still be CF-cached.
+  ⚠️ After deploy, `curl -sI` them and confirm `cf-cache-status: HIT`; if Next
+  wins the Cache-Control race, fallback is per-page revalidate. Locale-bearing
+  funnel pages (/montree, /explainer) need a bigger daytime restructure.
+- **🚨 jeffy-mvp security fixes — SEPARATE REPO + BRANCH** (NOT in whale):
+  repo `~/Desktop/Master Brain/ACTIVE/jeffy-mvp`, branch **`security-fixes-jun13`**,
+  commit `758e2d8`, build green, NOT pushed (remote exists → your call).
+  Fixed: added `middleware.ts` protecting /admin + /api/admin (reuses existing
+  jeffy_admin_session cookie — login flow was actually fine, just ungated);
+  removed fake Ozow checkout; PayFast webhook amount-validation + fail-closed;
+  stock restore on cancel/fail; giveaway cron fail-closed.
+  ⚠️ jeffy tree had 97 pre-existing uncommitted changes (your WIP — left
+  untouched, only src/ committed). ⚠️ Needs Railway env: set `PAYFAST_PASSPHRASE`
+  (webhook only warns-not-blocks until set), `CRON_SECRET` (scheduled draws now
+  503 without it), confirm `PAYFAST_ENFORCE_IP=true`. ⚠️ The customer-facing
+  cancel writes to Supabase from the browser (anon) — stock restore can't hook
+  it; should move behind an API (flagged, not fixed). Review → merge → deploy
+  jeffy yourself.
+
 ### Your morning checklist (in order)
 1. Merge `burn-jun12-night2` → main → deploy (gets /support live for Apple).
 2. Cloudflare DNS-only flip (docs/DNS_ERROR_1034_FIX.md) — VPN on.
