@@ -19,9 +19,11 @@ async function verifyAdmin(request: NextRequest): Promise<boolean> {
 // STORY_NUKE_CODE timing-safe gate, see ./nuke/route.ts).
 // FAIL-CLOSED: missing/invalid password, DB error, missing hash row, and
 // limiter backend error ALL deny.
-const DESTRUCTIVE_ACTIONS = new Set(['factory_reset', 'clear_vault', 'delete_all_users']);
+// Exported for unit testing (tests/system-controls-stepup.test.ts). Behaviour
+// is identical to the inline form — export only, no logic change.
+export const DESTRUCTIVE_ACTIONS = new Set(['factory_reset', 'clear_vault', 'delete_all_users']);
 
-async function verifyStepUpPassword(
+export async function verifyStepUpPassword(
   supabase: ReturnType<typeof getSupabase>,
   adminUsername: string,
   adminPassword: unknown
