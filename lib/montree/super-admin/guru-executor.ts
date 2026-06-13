@@ -772,10 +772,11 @@ async function executeDraftEmail(input: ToolInput, supabase: SupabaseClient): Pr
 
   // Fetch any existing lead data for context
   let leadContext = '';
+  const safeSchoolName = String(school_name).replace(/[%_\\]/g, '\\$&');
   const { data: leadData } = await supabase
     .from('montree_leads')
     .select('school_name, email, contact_person, status, source, notes')
-    .ilike('school_name', `%${school_name}%`)
+    .ilike('school_name', `%${safeSchoolName}%`)
     .limit(1);
 
   if (leadData?.[0]) {

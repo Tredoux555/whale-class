@@ -27,9 +27,11 @@ export async function GET(request: NextRequest) {
       query = query.not('file_type', 'ilike', 'video/%').not('file_type', 'ilike', 'image/%');
     }
 
-    // Search by filename
+    // Search by filename (escape LIKE metacharacters so %/_/\ in the query
+    // can't broaden or break the match).
     if (search) {
-      query = query.ilike('original_filename', `%${search}%`);
+      const safe = search.replace(/[%_\\]/g, '\\$&');
+      query = query.ilike('original_filename', `%${safe}%`);
     }
 
     // Filter by week

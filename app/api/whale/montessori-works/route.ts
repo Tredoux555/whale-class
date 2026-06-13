@@ -32,9 +32,10 @@ export async function GET(request: NextRequest) {
       `)
       .order('sequence_order', { ascending: true });
 
-    // Apply filters
+    // Apply filters (escape LIKE metacharacters in user input)
     if (search) {
-      query = query.ilike('work_name', `%${search}%`);
+      const safe = search.replace(/[%_\\]/g, '\\$&');
+      query = query.ilike('work_name', `%${safe}%`);
     }
 
     if (area) {

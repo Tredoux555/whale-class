@@ -646,27 +646,33 @@ async function executeToggleSchoolFeature(
 
   if (!featureName) return { success: false, error: 'feature_name is required' };
 
-  // Verify feature exists in global toggles
+  // Verify feature exists in the global feature catalog. The real table is
+  // montree_feature_definitions (keyed by feature_key); montree_feature_toggles
+  // never existed in the DB, so this verify always failed and the whole tool
+  // was a silent no-op.
   const { data: toggle, error: tErr } = await supabase
-    .from('montree_feature_toggles')
-    .select('feature_name, description')
-    .eq('feature_name', featureName)
+    .from('montree_feature_definitions')
+    .select('feature_key, name, description')
+    .eq('feature_key', featureName)
     .maybeSingle();
 
   if (tErr) return { success: false, error: tErr.message };
   if (!toggle) return { success: false, error: `Feature "${featureName}" does not exist` };
 
-  // Upsert school feature
+  // Upsert school feature. montree_school_features is keyed by feature_key
+  // (UNIQUE(school_id, feature_key)) — the prior feature_name column/onConflict
+  // did not exist and would have errored even past the verify.
   const { error: upsertErr } = await supabase
     .from('montree_school_features')
     .upsert(
       {
         school_id: schoolId,
-        feature_name: featureName,
+        feature_key: featureName,
         enabled,
+        enabled_by: 'guru',
         enabled_at: enabled ? new Date().toISOString() : null,
       },
-      { onConflict: 'school_id,feature_name' }
+      { onConflict: 'school_id,feature_key' }
     );
 
   if (upsertErr) return { success: false, error: upsertErr.message };

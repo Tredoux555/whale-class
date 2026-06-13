@@ -386,14 +386,24 @@ async function inferAreaFromWork(
 
   // Issue #18: Escape LIKE metacharacters to prevent unintended matches
   const escaped = workName.slice(0, 50).replace(/[%_\\]/g, '\\$&');
-  const { data } = await supabase
-    .from('montree_works')
-    .select('area')
+  // montree_works does not exist; the live table is
+  // montree_classroom_curriculum_works, which stores area_id (FK) — the human
+  // area_key lives on montree_classroom_curriculum_areas. Two-step lookup
+  // (maybeSingle so a 0-row match returns null instead of throwing).
+  const { data: work } = await supabase
+    .from('montree_classroom_curriculum_works')
+    .select('area_id')
     .ilike('name', `%${escaped}%`)
     .limit(1)
-    .single();
+    .maybeSingle();
+  if (!work?.area_id) return null;
+  const { data: area } = await supabase
+    .from('montree_classroom_curriculum_areas')
+    .select('area_key')
+    .eq('id', work.area_id as string)
+    .maybeSingle();
 
-  return (data?.area as string) || null;
+  return (area?.area_key as string) || null;
 }
 
 function safeParseJSON(str: string | null | undefined): Record<string, unknown> {
