@@ -40,6 +40,45 @@ Full steps: docs/DNS_ERROR_1034_FIX.md. Overnight monitor (every 2 min):
 `~/Desktop/montree_uptime_overnight.log` — **0 failures since 23:21** so far.
 Kill it with: `pkill -f montree_monitor`.
 
+### Wave C (later same night) — perf + security IMPLEMENTED (not just reported), audited MERGE-SAFE
+- **Splash/explainer perf** (`b68f1e70`): root cause was styled-jsx `<style jsx
+  global>` rendering NOTHING in App Router SSR → unstyled first paint → the CLS.
+  Converted to plain SSR'd `<style>`. Inactive-locale hero video no longer
+  eagerly downloads (was EN 5.7MB + ZH 5.3MB both); killed a double-fetch.
+  Expected: ~13.4MB → ~2MB first load, CLS 0.93 → ~0. ⚠️ Other styled-jsx
+  pages may have the same unstyled-first-paint issue — worth a sweep.
+- **Dashboard data path** (`e92e21f3`): voice probe parallelized (one fewer
+  serialized round trip), `/children` stops over-fetching `notes`, header
+  duplicate fetch deduped via SWR, 10 dead dynamic imports removed. Plus TWO
+  real bugs fixed: group-lessons silently truncated progress at 1000 rows;
+  whale parent route used invalid `photo_url as avatar_url` PostgREST syntax
+  (parents never got avatar_url).
+- **Story security** (`215da116`): M2 vault-unlock limiter now fail-CLOSED +
+  keyed on authed admin|IP (was fail-open + spoofable XFF); M3 factory_reset /
+  clear_vault / delete_all_users now require per-call bcrypt admin-password
+  re-entry (rate-limited, every branch denies, denied attempts audit-logged);
+  M1 (token in login body) NOT fixed by design — 24 routes verify Bearer-only,
+  4-step migration plan written at the issuance site. H1/C2 still open (design).
+
+### Wave D — portfolio
+- **Weekly Supabase backup** AUTOMATED + scheduled (launchd, Sundays 04:00).
+  Tested: 95MB / 247 tables. Backups → `~/SupabaseBackups/` (symlinked to
+  Desktop; macOS TCC blocks launchd under Desktop, so the live copy runs from
+  `~/Library/Scripts/montree/`). Docs: `whale/scripts/SUPABASE_BACKUP_README.md`.
+  ⚠️ If the service-role key rotates, update `~/Library/Scripts/montree/backup.env` too.
+- **🚨 jeffy-mvp audit** (`~/Desktop/AUDIT-2026-06/FUNCTIONALITY-jeffy-mvp.md`):
+  jeffy.co.za is LIVE with the **entire /admin surface unauthenticated** (no
+  middleware; auth helper wired to 1 of ~25 routes), a **fake Ozow checkout**
+  (real customers → "success" page, nothing collected), a **forgeable PayFast
+  webhook** if env unset, and a publicly-triggerable giveaway draw. Theoretical
+  only (near-zero traffic). Verdict: FIX (~1 day), don't archive. NOT touched —
+  awaiting your go.
+- **Guardian Connect**: flutter analyze clean (0 errors both branches);
+  `flutter-catchup-jun12` adds zero new analyzer issues. pub get + pod install
+  done (share_plus locked), committed to the branch (`c3b56de`, not pushed —
+  no remote for that branch). MERGE-READY Claude-side. ⚠️ local main has
+  DIVERGED from GitHub main — reconcile before pushing. Device build unverified.
+
 ### Your morning checklist (in order)
 1. Merge `burn-jun12-night2` → main → deploy (gets /support live for Apple).
 2. Cloudflare DNS-only flip (docs/DNS_ERROR_1034_FIX.md) — VPN on.

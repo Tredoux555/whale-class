@@ -43,7 +43,29 @@ Railway's Cloudflare-backed edge. Fix = flip montree.xyz + www to **DNS only** (
 Uptime monitor logging to `~/Desktop/montree_uptime_overnight.log` (0 fails since 23:21);
 kill: `pkill -f montree_monitor`.
 
+**Wave C/D (later same night) — perf + security implemented, all audited MERGE-SAFE:**
+Splash/explainer (`b68f1e70`): styled-jsx `<style jsx global>` renders nothing in
+App Router SSR — that was the CLS (unstyled first paint). Use plain `<style>`.
+~13.4MB→~2MB, CLS 0.93→~0. Dashboard (`e92e21f3`): probe parallelized, `/children`
+notes over-fetch removed, header fetch deduped, 10 dead imports gone + 2 real bugs
+(group-lessons 1000-row truncation; invalid `photo_url as avatar_url` → `avatar_url:photo_url`).
+Story security (`215da116`): M2 limiter fail-closed + authed key; M3 destructive
+controls need bcrypt step-up; M1 documented-not-fixed (Bearer-only across 24 routes).
+Wave D: weekly Supabase backup automated (launchd Sun 04:00, runs from
+`~/Library/Scripts/montree/` because TCC blocks Desktop); jeffy-mvp audited — LIVE
+site, /admin fully unauthenticated + fake Ozow checkout + forgeable PayFast webhook
+(`~/Desktop/AUDIT-2026-06/FUNCTIONALITY-jeffy-mvp.md`, FIX-don't-archive, NOT touched);
+Guardian Connect flutter analyze clean, branch merge-ready (local main diverged from GitHub).
+
 **🚨 Architectural rules locked in (cumulative numbering from Session 115's #161):**
+169. **styled-jsx `<style jsx>` does NOT render in App Router SSR** — it paints
+     unstyled then snaps at hydration (CLS). Use plain `<style dangerouslySetInnerHTML>`
+     with static CSS for above-the-fold layout on public pages.
+170. **Story destructive admin actions (factory_reset/clear_vault/delete_all_users)
+     require per-call bcrypt admin-password step-up, rate-limited + fail-closed.**
+     Static-string 'CONFIRM' gates are not acceptable for destructive ops.
+171. **Rate limiters on auth/destructive routes pass `failMode:'closed'` and key on
+     the authenticated identity (+IP), never raw `x-forwarded-for`.**
 162. **Vault decrypt route is `no-store`, always.** Decrypted vault bytes must never enter the
      browser disk cache (vault lock can't purge it). Range/206 slices the decrypted buffer —
      AES-GCM cannot be random-access decrypted; don't pretend otherwise.
