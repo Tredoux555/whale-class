@@ -54,9 +54,11 @@ CSRF, timing-safe compares, fail-closed rate limiting all present and correct).
 on all changed files (the 32 warnings are pre-existing `no-explicit-any`, not
 introduced here).
 
-**To deploy:** branch `health-check-jun14` is ready for review. Merge to `main` →
-Railway auto-deploys. **No new migrations needed** for these fixes. (Branch also
-carries the Jun-13 PM handoff doc + the backfill script + brain updates.)
+**Status: MERGED + DEPLOYED.** `health-check-jun14` was fast-forwarded into `main`
+(`5764c3a1 → 37b73887`) and pushed via Desktop Commander → Railway auto-deploying.
+**No new migrations needed.** The merge also carried the Jun-13 PM handoff, the
+backfill script, and the brain updates. (Earlier overnight-burn + vault-streaming
+merge = `5764c3a1`.)
 
 ### NOT fixed — documented follow-ups (deliberately deferred)
 
@@ -79,3 +81,16 @@ sweeps better done deliberately:
 - **Apple review** (live): verify demo codes WYXMN9/BAM4S9 on device, **extend demo trial past Jun 19**, recapture 2 weak screenshots, confirm support@montree.xyz inbound.
 - **Cloudflare 1034** intermittent — flip montree.xyz + www to DNS-only (`docs/DNS_ERROR_1034_FIX.md`).
 - Separate repos untouched: jeffy-mvp (`security-fixes-jun13`), Guardian Connect (`flutter-catchup-jun12`).
+
+---
+
+## 4. Marketing deliverables (this session)
+
+- **HeyGen explainer script** finalized + tightened to **4774 chars** (fits the 5000
+  cap). Natural "this is me talking" voice preserved, no stage directions.
+- **Midjourney → Kaiber video guide** — 23 scenes, each with a copy-paste-ready
+  Midjourney prompt (shared style signature baked in) + Kaiber camera/motion/evolve
+  settings. Full guide is in `docs/handoffs/COWORK_JUN13_PM_HANDOFF.md` (Part 2);
+  also delivered as a standalone `.docx` to the user (outputs folder, not in repo).
+- Also done this session: **Loom fully uninstalled** from the Mac (app + all
+  `~/Library` leftovers; only the System-Settings Login-Items entry remains, harmless).

@@ -15,7 +15,7 @@ Local path: `/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/whale` (note spa
 
 ---
 
-## 🧠 SESSION — Jun 14, 2026 (Cowork) — vault backfill DONE + system health check (fixes on branch, NOT merged)
+## 🧠 SESSION — Jun 14, 2026 (Cowork) — vault backfill DONE + system health check fixes MERGED + DEPLOYED
 
 **Canonical handoff:** `docs/handoffs/COWORK_JUN14_HEALTHCHECK.md`.
 
@@ -36,7 +36,8 @@ shape.** Deploy gates green (i18n 12/12, tests 143/143, build not blocked), NO
 CRITICAL security holes, tenant isolation well-disciplined (`audit:tenant-scoping`
 passes). 
 
-**🔧 FIXED on branch `health-check-jun14` (commit `70b46564`) — NOT merged, Tredoux merges:**
+**🔧 FIXED + MERGED + DEPLOYED** (was branch `health-check-jun14`, commit `70b46564`;
+fast-forwarded into `main` `5764c3a1 → 37b73887`, pushed via Desktop Commander → Railway auto-deploying):
 1. CRIT(functional): `pattern-learner.ts` queried non-existent `montree_works` (area
    inference dead) → two-step lookup on `montree_classroom_curriculum_works.area_id`
    → `_areas.area_key`.
@@ -54,7 +55,8 @@ passes).
 7. LOW: escaped LIKE metachars in 3 `.ilike()` (media-library, montessori-works,
    super-admin guru lead search).
 Reaudit after fixes: i18n 12/12, tests 143/143, eslint 0 errors on changed files.
-**No new migrations.** Merge `health-check-jun14` → main to deploy.
+**No new migrations.** Already merged to main (`37b73887`) + pushed; Railway auto-deploying.
+(The earlier overnight-burn + vault-streaming merge is `5764c3a1`.)
 
 **🚨 Documented follow-ups (NOT fixed — risky on live app / large sweeps):** 6 Sonnet
 routes skip the tier gate (classroom-setup/describe, photo-audit/tell-ai,
