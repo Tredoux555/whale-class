@@ -15,6 +15,114 @@ Local path: `/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/whale` (note spa
 
 ---
 
+## 🧠 SESSION — Jun 14, 2026 (Cowork) — vault backfill DONE + system health check (fixes on branch, NOT merged)
+
+**Canonical handoff:** `docs/handoffs/COWORK_JUN14_HEALTHCHECK.md`.
+
+**🗄️ Story-vault mobile backlog BACKFILLED + verified (live prod data).** The Jun-13
+deploy only sped up NEW uploads; the existing backlog still used the slow paths.
+Ran `scripts/backfill-vault-media.mjs` (idempotent) against prod: **24/24 photos**
+got ~480px thumbnails (`thumbnail_path` set), **3/3 videos** re-stored
+`encrypted_key='plain'` (range-streamable). Verified end-to-end: storage `list`
+confirms every object present, 6/6 sampled thumbnails valid JPEG, all 3 videos
+return HTTP 206 + valid MOV headers. This is LIVE data (no deploy needed) — vault
+should be smooth on phone now. Old encrypted video objects left as harmless
+orphans. Flaky VPN→Supabase(Singapore) made larger uploads need retries (the
+`from-message` 3.3MB clip especially) — the script's retry/idempotency handled it.
+
+**🩺 System health check — 4 parallel read-only audits** (security/tenant-isolation,
+AI cost/reliability, API+DB correctness, build/type/test/i18n/PWA). **Verdict: good
+shape.** Deploy gates green (i18n 12/12, tests 143/143, build not blocked), NO
+CRITICAL security holes, tenant isolation well-disciplined (`audit:tenant-scoping`
+passes). 
+
+**🔧 FIXED on branch `health-check-jun14` (commit `70b46564`) — NOT merged, Tredoux merges:**
+1. CRIT(functional): `pattern-learner.ts` queried non-existent `montree_works` (area
+   inference dead) → two-step lookup on `montree_classroom_curriculum_works.area_id`
+   → `_areas.area_key`.
+2. CRIT(functional): admin Guru feature-toggle tool used phantom `montree_feature_toggles`
+   + non-existent `feature_name` column (100% no-op) → `montree_feature_definitions(feature_key)`
+   + `montree_school_features(feature_key, enabled_by)`.
+3. HIGH(cost): `tracy/draft-response` + `tracy/scan-thread` hardcoded `OPUS_MODEL`
+   (Opus billed to non-Opus schools) → `AI_MODEL` (Sonnet).
+4. MED: `pulse/route.ts:113` `supabase.rpc(...).catch()` (never rejects → silent lock
+   leak) → capture `{error}`.
+5. MED(security): deleted 4 leftover debug routes — `debug-insight` had a
+   **cross-tenant media read** (no school_id filter), plus `debug-upload`, `clip-test`,
+   `guru/clip-test`.
+6. MED: `guru/transcribe` (Whisper) had no rate limit → added 30/min.
+7. LOW: escaped LIKE metachars in 3 `.ilike()` (media-library, montessori-works,
+   super-admin guru lead search).
+Reaudit after fixes: i18n 12/12, tests 143/143, eslint 0 errors on changed files.
+**No new migrations.** Merge `health-check-jun14` → main to deploy.
+
+**🚨 Documented follow-ups (NOT fixed — risky on live app / large sweeps):** 6 Sonnet
+routes skip the tier gate (classroom-setup/describe, photo-audit/tell-ai,
+children/[id]/weekly-admin, weekly-review/[id]/apply-shelf, onboarding/voice/custom-work,
+admin/import, + parent-meetings analyse) — monetization gate, test onboarding carefully;
+Guru generic-read allowlist/prompt-hints still name phantom `montree_works`/`montree_feature_toggles`
+(write path fixed, read hints deferred — `montree_works` is classroom-scoped, don't
+just add to GLOBAL_TABLES); lint/type debt (26 `@ts-nocheck`, ~7 React-Compiler memo
+errors, ~1400 `any` warnings, tsc baseline 5,233 vs brain's "743" — reconcile);
+legacy `whale/parent/*` dead-auth routes; 3 `whale/ai/*` missing maxDuration;
+guru child-lookup `.single()`→maybeSingle; `100vh`→`100dvh` (51 files).
+
+---
+
+## 🧠 SESSION — Jun 13, 2026 (PM, Cowork) — overnight burn MERGED + DEPLOYED + story-vault mobile fix LIVE
+
+**Canonical handoff:** `docs/handoffs/COWORK_JUN13_PM_HANDOFF.md`.
+
+**🚀 The Jun 12→13 overnight burn is now on `main` and deployed.** Merged
+`fix/story-vault-mobile-jun13` → `main` (fast-forward `3a5623fe → 5764c3a1`,
+pushed via Desktop Commander). That branch = `burn-jun12-night2` (25 commits) +
+the story-vault mobile-streaming fix on top. So the Morning-Runbook **merge step
+#1 is DONE** and Railway auto-deployed the whole release to montree.xyz.
+
+**🗄️ Story vault "media won't show on phone" — ROOT CAUSE + FIX shipped.** The fix
+was already written/audited on the branch but had **never been deployed** —
+production was still serving the old code. Old behaviour: vault VIDEOS downloaded
+the whole encrypted file + AES-decrypted it into the iOS webview before frame 1
+(WKWebView stalled); IMAGES pulled full-res through the throttled decrypt proxy.
+New behaviour (commit `5764c3a1`): videos stream **Range/206** (plain/large →
+1h signed URL; encrypted → decrypt-proxy `download/[id]` which now also reads
+`?at=`/`?vt=` query tokens so a bare `<video src>` authenticates), images get a
+**~480px thumbnail** in the grid via `/vault/thumbnail/[id]` with full-res only on
+viewer open. All five server routes + `useVault.ts` reviewed — coherent.
+
+**🧾 Migrations RUN by Tredoux (Supabase whale-class) — Runbook SQL step #2 DONE:**
+- **256** `vault_files.thumbnail_path` (HARD pre-deploy req — without it the vault
+  `list` SELECT 500s → empty grid on every device).
+- **254** `montree_campaign_items` (Campaign Command Center, was 503ing).
+- **255** `montree_push_outbox` + `montree_parents.notification_prefs`.
+- **249** `montree_home_practice_cards` + `home_practice_cards` flag.
+
+**Also now LIVE (rode the merge):** `/support` page + games "Who's playing?"
+child-picker (Apple-review blockers), story security hardening (rate-limiter
+fail-closed + bcrypt step-up on destructive admin controls), splash/dashboard
+perf pass, push notifications (APNs h2 reuse + durable outbox + parent prefs),
+tsc 5,250→743, tests 9→143.
+
+**🗑️ Loom uninstalled from the Mac** — app → Trash + leftover `~/Library/` files
+removed (Application Support/Loom, Caches/com.loom.desktop + loom-updater,
+Preferences plist, HTTPStorages, Logs). No Loom LaunchAgent. **OPEN:** the Login
+Items entry (System Settings → General → Login Items) — System-Settings access
+prompt timed out, so not removed; harmless since the app is gone.
+
+**🎬 Marketing:** HeyGen explainer script finalized + tightened to **4774 chars**
+(fits HeyGen's 5000 cap; pasted in chat). Midjourney→**Kaiber** scene-by-scene
+video production guide (23 scenes, style signature, per-scene MJ prompt + Kaiber
+camera/motion/evolve settings) written into the PM handoff doc above.
+
+**🚨 STILL OPEN (next session):** verify vault on a real phone post-deploy;
+Cloudflare 1034 DNS-only flip (`docs/DNS_ERROR_1034_FIX.md`); Apple review — verify
+demo codes WYXMN9/BAM4S9 on device + **extend trial past Jun 19** + recapture 2 weak
+screenshots + confirm support@montree.xyz inbound; Railway env confirm
+(`MONTREE_JWT_SECRET` pin etc.); Loom login-item removal; separate repos jeffy-mvp
+(`security-fixes-jun13`) + Guardian Connect (`flutter-catchup-jun12`) untouched.
+
+---
+
 ## 🧠 SESSION — Jun 12→13, 2026 OVERNIGHT MARATHON (Cowork) — Tier 1 + Tier 2 of the burn plan, all on a branch
 
 **Canonical handoff:** `HANDOFF_LATEST.md` (morning report at the very top — read it first).
