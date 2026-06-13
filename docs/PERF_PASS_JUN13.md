@@ -288,3 +288,136 @@ says otherwise.
 
 (Finding 5 — deploy so `/support` exists — is a release action, not a code fix, but do
 it tonight before the reviewer clicks the support link.)
+
+---
+
+## SSR edge-caching options (follow-up to Finding 9)
+
+### What actually forces dynamic rendering (the real cookies() story)
+
+`app/montree/layout.tsx:118-123` reads `cookies()` to get `mt_locale` and SSR-render the
+right language (no English flash). That read **does** opt the whole `/montree/*` subtree
+into dynamic rendering — but it is **not the only cause, nor the widest one**:
+
+- **Root `app/layout.tsx` reads `headers()`** (`x-hostname`, lines ~28-32 in
+  `generateMetadata` and ~178 in `RootLayout`) to serve domain-aware metadata + JSON-LD
+  (Montree vs Whale-Class branding). `headers()` is a dynamic API, so it opts **every
+  page in the app** into dynamic rendering — including the root-level `/pricing`,
+  `/support`, `/privacy`, which are **not even under the montree layout**.
+- Net effect, verified live with `curl -sI`:
+  - `/montree`, `/pricing`, `/privacy` all return
+    `cache-control: private, no-cache, no-store, max-age=0, must-revalidate`,
+    `cf-cache-status: DYNAMIC`. Cloudflare refuses to cache → Railway origin on every hit
+    → the 514–615ms TTFB floor (worse from China).
+  - `/montree` additionally carries `set-cookie: mt_locale=de` (the middleware first-visit
+    locale seed, `middleware.ts:123-132`). **This is why `/montree` cannot be naively
+    shared-cached** — different visitors get different `mt_locale` and a differently-
+    rendered locale; one cache entry would leak locale across users.
+  - `/support` still 307s in prod (build not yet deployed — matches Finding 5).
+
+How the locale is consumed: the server cookie read seeds `I18nClientWrapper` →
+`I18nProvider` (`lib/montree/i18n/context.tsx`) with `initialLocale` + pre-loaded message
+data. The provider **already has a client-side fallback**: if no `initialLocale` arrives,
+it reads `localStorage` on mount (`context.tsx:130-135`) and writes both `localStorage`
+and the `mt_locale` cookie on every switch (`context.tsx:181-187`). So a client-only
+locale resolution is technically viable — at the cost of reintroducing an English-flash on
+first paint for non-en users (the exact thing the server read was added to kill).
+
+### Blast radius — which pages are under which layout
+
+| Page | Layout chain | Per-user content? | Cacheable? |
+|---|---|---|---|
+| `/montree` (splash) | root + montree | **Yes** — locale via `mt_locale` cookie + `Set-Cookie` seed | No (per-locale) |
+| `/montree/about` | root + montree | No (English-only static), but inherits cookie read | Only if locale read removed for it |
+| `/montree/explainer` | root + montree | Locale-translated UI strings | Per-locale |
+| `/montree/support` | root + montree | redirects to `/support` | n/a |
+| `/montree/login-select`, `/montree/library`, `/montree/try`, … | root + montree | Public funnel, locale-translated | Per-locale |
+| `/montree/dashboard`, `/parent/*`, `/admin/*`, `/super-admin/*`, `/agent/*` | root (+ own) | **Yes — authed, per-user** | **Never cache** |
+| `/pricing` | **root only** | **No** — `'use client'`, no fetch/cookie/session | **Yes** |
+| `/support` | **root only** | **No** — pure server component, no dynamic reads | **Yes** |
+| `/privacy` | **root only** | **No** — pure server component | **Yes** |
+
+### The three options
+
+**Option A — split the funnel into its own non-cookie route segment.**
+Move the public marketing/funnel pages under a route group whose layout does **not** call
+`cookies()`, resolving locale client-side (localStorage) or from the URL, so those pages
+can be static/ISR + edge-cached.
+- *Effort:* **L.** A route restructure (route groups, moving `app/montree/page.tsx` and
+  siblings, splitting the layout, re-pointing internal links). The root `headers()` read
+  would also still have to be addressed or those pages stay dynamic anyway.
+- *Risk:* **High** for an overnight change — touches the shared layout every public page
+  depends on, reintroduces the non-en English-flash, easy to get the `<html lang>` /
+  translation seeding subtly wrong. **Not recommended tonight.**
+
+**Option B — middleware-based locale (rewrite to locale-prefixed path / set header).**
+Read the cookie in `middleware.ts` (it already runs on every `/montree` request and
+already computes locale on first visit) and either rewrite to a locale-prefixed path or
+inject an `x-locale` request header the layout reads instead of `cookies()`.
+- *Effort:* **M–L.** Reading a request header in the layout still counts as a dynamic read
+  unless paired with locale-prefixed *static* routes (`/en/montree`, `/zh/montree`, …),
+  which is itself an A-sized restructure plus a `generateStaticParams` matrix across 12
+  locales. A pure header-read alone does **not** make the page cacheable.
+- *Risk:* **Medium–High.** The locale-prefix variant is the "correct" long-term i18n shape
+  but is a big, link-rewriting change. **Not recommended tonight.**
+
+**Option C — keep pages dynamic, but send a cacheable `Cache-Control` for the public,
+per-user-free pages only.** A dynamically-rendered page can still carry
+`public, s-maxage=…, stale-while-revalidate=…` if it has no per-user content — Cloudflare
+will then cache the rendered HTML at a PoP near the user. The current setup sends
+`private, no-cache, no-store` (Next.js default for dynamic pages), which is the only reason
+CF reports `DYNAMIC`. Overriding it for safe paths flips them to `cf-cache-status: HIT`
+without any route restructure.
+- *Effort:* **S.** A few entries in `next.config.ts headers()`.
+- *Risk:* **Low — for the right paths only.** Safe iff the path has **no per-user content
+  and never carries `Set-Cookie`**. `/pricing`, `/support`, `/privacy` qualify: pure
+  static content, not under `/montree`, so the middleware's `mt_locale` `Set-Cookie` never
+  fires on them. **Must NOT** be applied to `/montree` or `/montree/*` (per-locale +
+  `Set-Cookie`) or any authed route — that would serve one user's locale/session from a
+  shared cache.
+
+### Recommendation
+
+**Do Option C now for `/pricing`, `/support`, `/privacy` (done — see below). It is the
+single biggest China-latency lever for the public funnel that is safe overnight:** it
+removes the 514–615ms origin round trip from three public pages with zero restructure and
+zero risk of cross-user leakage.
+
+For the locale-bearing pages (`/montree` splash, `/explainer`, the funnel), the win
+requires Option A or B and the cooperation of the root `headers()` read — **defer to a
+deliberate daytime design pass**, not an overnight change. A pragmatic middle path worth
+evaluating then: have the middleware **rewrite the `mt_locale` cookie value into the
+Cloudflare cache key (`Vary` / `Cache-Tag` by locale)** so each locale gets its own edge
+entry while still being shared across users of that locale — but only after confirming no
+`Set-Cookie` rides on the cached response (the first-visit seed would have to move so it
+doesn't poison the per-locale entry).
+
+### Change applied (safe, build-verified)
+
+Added a `Cache-Control: public, s-maxage=3600, stale-while-revalidate=86400` override in
+`next.config.ts` (`headers()`) for **exactly three paths**: `/pricing`, `/support`,
+`/privacy`.
+
+Why it is safe:
+- All three are pure static-content pages — no `cookies()`/`headers()`/`fetch`/session
+  reads of their own (`/pricing` is `'use client'` with only local UI state; `/support`
+  and `/privacy` are server components with only `metadata` + static JSX).
+- None are under `/montree`, so the middleware locale seed
+  (`middleware.ts:123`, gated on `pathname.startsWith('/montree')`) **never** sets a
+  cookie on their responses — verified live (`/pricing`, `/privacy` carry no `Set-Cookie`).
+  No per-user data can be cached.
+- The override is scoped to the exact paths; `/montree/*` and all authed routes are
+  untouched and keep their `private, no-store` posture.
+
+Effect after deploy: Cloudflare can edge-cache these three pages' HTML
+(`s-maxage=3600` CDN TTL, `stale-while-revalidate=86400` keeps them warm), turning
+`cf-cache-status: DYNAMIC` → `HIT` and removing the ~514ms origin TTFB for the most
+latency-sensitive public/App-Store-reviewer-facing pages. **Effectiveness must be
+re-verified post-deploy with `curl -sI` (Next.js can occasionally win the `Cache-Control`
+race on dynamic routes; if so, fall back to per-page `export const dynamic`/`revalidate`
+once the root `headers()` read is removed).**
+
+Build: `npm run build` on the Mac → **Compiled successfully in 27.7s, BUILD_EXIT=0**, zero
+new eslint warnings (`npx eslint next.config.ts` clean). Routes `/pricing`, `/support`,
+`/privacy` remain `ƒ (Dynamic)` in the build output — expected; Option C caches the dynamic
+output rather than making the page static. **Not committed.**

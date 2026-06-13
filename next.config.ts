@@ -86,6 +86,45 @@ const nextConfig: NextConfig = {
           { key: 'Service-Worker-Allowed', value: '/story/' },
         ],
       },
+      // ────────────────────────────────────────────────────────────────────
+      // EDGE-CACHE PUBLIC, PER-USER-FREE PAGES (Session: SSR locale-cookie pass)
+      // The root app/layout.tsx reads headers() (x-hostname) for domain-aware
+      // metadata, which opts the WHOLE page tree into Next.js dynamic rendering.
+      // As a result every page — including pure static-content pages — emits
+      //   Cache-Control: private, no-cache, no-store, max-age=0, must-revalidate
+      // so Cloudflare reports cf-cache-status: DYNAMIC and serves the Railway
+      // origin on every request (514–615ms TTFB; far worse from China). See
+      // docs/PERF_PASS_JUN13.md "SSR edge-caching options".
+      //
+      // These three paths are SAFE to edge-cache: they are pure server/client
+      // components with NO per-user content, NO cookies()/headers()/session
+      // reads of their own, and they are NOT under /montree, so the middleware's
+      // mt_locale Set-Cookie NEVER fires on them (that seed is gated on
+      // pathname.startsWith('/montree')). Verified live: /pricing + /privacy
+      // carry no Set-Cookie. Overriding Cache-Control here lets Cloudflare cache
+      // the HTML at a PoP near the user while still revalidating in the
+      // background. s-maxage = CDN TTL; stale-while-revalidate keeps it warm.
+      // NOTE: scoped to these exact paths only — do NOT widen to /montree/* or
+      // any authed surface, which would risk serving one user's locale/session
+      // from a shared cache.
+      {
+        source: '/pricing',
+        headers: [
+          { key: 'Cache-Control', value: 'public, s-maxage=3600, stale-while-revalidate=86400' },
+        ],
+      },
+      {
+        source: '/support',
+        headers: [
+          { key: 'Cache-Control', value: 'public, s-maxage=3600, stale-while-revalidate=86400' },
+        ],
+      },
+      {
+        source: '/privacy',
+        headers: [
+          { key: 'Cache-Control', value: 'public, s-maxage=3600, stale-while-revalidate=86400' },
+        ],
+      },
       // API mutation routes: no browser caching (POST/PATCH/DELETE are not cached by browsers anyway,
       // but this ensures no proxy caching). Read-only GET routes set their own Cache-Control per-route.
       // NOTE: Removed blanket max-age=0 on /api/montree/(.*) — it was overriding per-route
