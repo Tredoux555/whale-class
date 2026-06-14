@@ -36,9 +36,9 @@ tab-away.
 fail-closed). Diary/projects/coach-memory/events all encrypted at rest; dates/times/moods
 plaintext for the calendar.
 
-**Migrations (Supabase):** `257_story_personal_platform.sql` ✅ RUN. `258_story_plan_events.sql`
-⏳ **PENDING Tredoux's run** — planner events table; until run the calendar shows "couldn't load
-events" (graceful, no crash).
+**Migrations (Supabase):** `257_story_personal_platform.sql` ✅, `258_story_plan_events.sql` ✅,
+`259_story_coach_log.sql` ✅ — **ALL RUN.** Diary/projects/coach-memory/plan-events/coach-log
+tables all live + RLS-locked.
 
 **Env (Railway):** `STORY_DIARY_KEY` ✅ + `STORY_MESSAGES_PHRASE` ✅ set. `STORY_DIARY_PHRASE`
 was introduced then **dropped** (diary/coach phrase gate removed — one-layer decision).
@@ -79,9 +79,12 @@ vision, no support structure, runs hot). Knowledge base = 14 frameworks (Essenti
   adopted yet; SA trip **22 June** to his sick/possibly-dying father; expected **550ha KZN farm**
   inheritance; "dark phonics" videos undone.
 
-**Still open:** run migrations **258 + 259**; App Store decision on the covert door (hidden-feature
-risk, Apple 2.3.1 — user-set codes are fine, the *disguise* isn't); optionally have the Coach read
-recent `story_coach_log` for deeper cross-session recall.
+**Migrations 258 + 259 RUN ✅ (Jun 14 eve)** — planner saves events, Coach archives every exchange.
+Platform fully functional end-to-end.
+
+**Still open:** App Store decision on the covert door (hidden-feature risk, Apple 2.3.1 — user-set
+codes are fine, the *disguise* isn't); optionally have the Coach read recent `story_coach_log` for
+deeper cross-session recall.
 
 ---
 
