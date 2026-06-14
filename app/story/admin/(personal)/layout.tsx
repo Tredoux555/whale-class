@@ -19,6 +19,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { getStoryAdminToken } from '@/lib/story/personal-client';
 import { T } from '@/lib/story/personal-theme';
 import CoachFloat from '@/components/story/personal/CoachFloat';
+import { CoachChatProvider } from '@/lib/story/coach/coach-chat-context';
 
 const IDLE_LIMIT_MS = 15 * 60 * 1000; // 15 minutes
 const SESSION_KEY = 'story_admin_session';
@@ -170,21 +171,23 @@ export default function PersonalLayout({ children }: { children: ReactNode }) {
         </nav>
       </header>
 
-      <main
-        style={{
-          position: 'relative',
-          zIndex: 1,
-          maxWidth: T.column,
-          margin: '0 auto',
-          padding: '24px 18px 120px',
-          opacity: ready ? 1 : 0,
-          transition: 'opacity 0.25s ease',
-        }}
-      >
-        {ready ? children : null}
-      </main>
+      <CoachChatProvider>
+        <main
+          style={{
+            position: 'relative',
+            zIndex: 1,
+            maxWidth: T.column,
+            margin: '0 auto',
+            padding: '24px 18px 120px',
+            opacity: ready ? 1 : 0,
+            transition: 'opacity 0.25s ease',
+          }}
+        >
+          {ready ? children : null}
+        </main>
 
-      {ready && <CoachFloat />}
+        {ready && <CoachFloat />}
+      </CoachChatProvider>
     </div>
   );
 }
