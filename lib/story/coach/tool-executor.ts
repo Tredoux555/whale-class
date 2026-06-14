@@ -31,6 +31,8 @@ export interface CoachToolResult {
 
 const STATUSES = new Set(['active', 'paused', 'done', 'dropped']);
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+const TIME_RE = /^([01]\d|2[0-3]):[0-5]\d$/;
 const MEMORY_TYPES = new Set<CoachMemoryType>([
   'value', 'ambition', 'health_goal', 'dropped', 'pattern', 'preference', 'fact',
 ]);
@@ -216,6 +218,54 @@ export async function executeCoachTool(
         if (error) return { success: false, result_summary: 'update failed', error: error.message };
         if (!data) return { success: false, result_summary: 'not found', error: 'project not found' };
         return { success: true, result_summary: 'project updated', data: { id: data.id, status: data.status } };
+      }
+
+      case 'add_event': {
+        const date = str(input.event_date);
+        const title = (str(input.title) || '').trim();
+        if (!date || !DATE_RE.test(date)) return { success: false, result_summary: 'bad date', error: 'event_date must be YYYY-MM-DD' };
+        if (!title) return { success: false, result_summary: 'title required', error: 'title required' };
+        const rawTime = str(input.start_time);
+        const startTime = rawTime && TIME_RE.test(rawTime) ? rawTime : null;
+        const { data, error } = await supabase
+          .from('story_plan_events')
+          .insert({
+            event_date: date,
+            start_time: startTime,
+            title_enc: encryptDiaryField(title.slice(0, 300)),
+            notes_enc: encryptDiaryFieldOrNull((str(input.notes) ?? '').slice(0, 2000) || null),
+            cipher_version: 1,
+          })
+          .select('id')
+          .single();
+        if (error || !data) return { success: false, result_summary: 'create failed', error: error?.message };
+        return {
+          success: true,
+          result_summary: `event added ${date}${startTime ? ' ' + startTime : ''}`,
+          data: { id: data.id, event_date: date, start_time: startTime, title },
+        };
+      }
+
+      case 'add_diary_entry': {
+        const body = (str(input.body) || '').trim();
+        if (!body) return { success: false, result_summary: 'body required', error: 'body required' };
+        const rawDate = str(input.entry_date);
+        const entryDate = rawDate && DATE_RE.test(rawDate) ? rawDate : todayISO();
+        const mood = str(input.mood)?.trim().slice(0, 40) || null;
+        const title = str(input.title)?.slice(0, 300) ?? null;
+        const { data, error } = await supabase
+          .from('story_diary_entries')
+          .insert({
+            entry_date: entryDate,
+            mood,
+            title_enc: encryptDiaryFieldOrNull(title),
+            body_enc: encryptDiaryField(body.slice(0, 100000)),
+            cipher_version: 1,
+          })
+          .select('id')
+          .single();
+        if (error || !data) return { success: false, result_summary: 'log failed', error: error?.message };
+        return { success: true, result_summary: `diary entry logged ${entryDate}`, data: { id: data.id, entry_date: entryDate } };
       }
 
       default:

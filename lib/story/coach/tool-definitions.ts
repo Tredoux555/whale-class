@@ -117,6 +117,40 @@ export const COACH_TOOLS: Tool[] = [
     },
   },
   {
+    name: 'add_event',
+    description:
+      "Put something on Tredoux's planner — a meeting, appointment, call, deadline. Use this " +
+      'whenever he mentions a thing happening at a time. Date is required; include a time when ' +
+      'he gives one.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        event_date: { type: 'string', description: 'Date YYYY-MM-DD.' },
+        start_time: { type: 'string', description: 'Time HH:MM (24h), optional.' },
+        title: { type: 'string', description: 'Short title, e.g. "Meeting with the principal".' },
+        notes: { type: 'string', description: 'Any detail/context, optional.' },
+      },
+      required: ['event_date', 'title'],
+    },
+  },
+  {
+    name: 'add_diary_entry',
+    description:
+      "Log something to Tredoux's private diary (his psychological record) — a worry, a win, a " +
+      'reflection, how a day went. Write it in his voice. Use this whenever he shares something ' +
+      'worth keeping or processing, so it lives in his journal.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        body: { type: 'string', description: 'The entry text (markdown ok).' },
+        mood: { type: 'string', description: "Short mood tag, e.g. 'nervous', 'good', 'tired' (optional)." },
+        title: { type: 'string', description: 'Optional short title.' },
+        entry_date: { type: 'string', description: 'Date YYYY-MM-DD (optional; defaults today).' },
+      },
+      required: ['body'],
+    },
+  },
+  {
     name: 'update_project',
     description:
       'Create or modify a project. To change priority, pause, mark done, or drop a project, use this with ' +

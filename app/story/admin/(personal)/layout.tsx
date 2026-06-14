@@ -8,25 +8,26 @@
 //   • dark-forest sanctuary theme + the Planner/Projects/Coach nav
 //   • the header LOGO is the secret door to the Diary (long-press + phrase A)
 // The Planner is the innocuous front. Diary + Messages are BOTH hidden behind
-// separate phrases. Login (/story/admin) and Messages (/story/admin/dashboard)
-// live OUTSIDE this group.
+// separate phrases. Login (/story/admin) is the ONE layer — Tredoux's call:
+// "Coach is my diary, I have a right to keep it private; one layer, not two."
+// So Planner, Coach, Diary, Projects are all open behind the login. The only
+// thing still hidden is Messages (the covert comms — the Planner month-title
+// long-press door), which lives OUTSIDE this group.
 
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { getStoryAdminToken } from '@/lib/story/personal-client';
 import { T } from '@/lib/story/personal-theme';
 import CoachFloat from '@/components/story/personal/CoachFloat';
-import SecretGate from '@/components/story/personal/SecretGate';
 
 const IDLE_LIMIT_MS = 15 * 60 * 1000; // 15 minutes
 const SESSION_KEY = 'story_admin_session';
 
-// Diary is NOT in the visible nav — it's a secret door (the logo). Messages
-// is a second secret door (the Planner's month title).
 const NAV: { href: string; label: string }[] = [
   { href: '/story/admin/planner', label: 'Planner' },
-  { href: '/story/admin/projects', label: 'Projects' },
   { href: '/story/admin/coach', label: 'Coach' },
+  { href: '/story/admin/diary', label: 'Diary' },
+  { href: '/story/admin/projects', label: 'Projects' },
 ];
 
 export default function PersonalLayout({ children }: { children: ReactNode }) {
@@ -61,19 +62,6 @@ export default function PersonalLayout({ children }: { children: ReactNode }) {
     })();
     return () => { cancelled = true; };
   }, [router]);
-
-  // Revert-on-hide (spec §6): when the tab is backgrounded, fall back to the
-  // Planner front. The diary subtree + dashboard clear their own secret tokens
-  // on hide, so neither the Diary nor Messages is ever the resting view.
-  useEffect(() => {
-    const onHide = () => {
-      if (document.visibilityState === 'hidden' && !pathname.startsWith('/story/admin/planner')) {
-        router.replace('/story/admin/planner');
-      }
-    };
-    document.addEventListener('visibilitychange', onHide);
-    return () => document.removeEventListener('visibilitychange', onHide);
-  }, [pathname, router]);
 
   // 15-minute idle auto-logout.
   useEffect(() => {
@@ -128,28 +116,22 @@ export default function PersonalLayout({ children }: { children: ReactNode }) {
             gap: 12,
           }}
         >
-          {/* Logo — the secret door to the Diary (long-press 2s → phrase A). */}
-          <SecretGate
-            unlockUrl="/api/story/diary/unlock"
-            tokenKey="story_diary_view"
-            destination="/story/admin/diary"
-          >
-            <span style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <span
-                style={{
-                  width: 30, height: 30, borderRadius: 9,
-                  background: `linear-gradient(135deg, ${T.emerald}, ${T.emeraldDeep})`,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: 17, boxShadow: '0 0 18px rgba(52,211,153,0.3)',
-                }}
-              >
-                🌳
-              </span>
-              <span style={{ fontFamily: T.serif, fontSize: 17, fontWeight: 600, letterSpacing: '-0.3px', color: T.text }}>
-                Sanctuary
-              </span>
+          {/* Logo — just the home mark now (no secret door; everything's behind login). */}
+          <span style={{ display: 'flex', alignItems: 'center', gap: 10, userSelect: 'none' }}>
+            <span
+              style={{
+                width: 30, height: 30, borderRadius: 9,
+                background: `linear-gradient(135deg, ${T.emerald}, ${T.emeraldDeep})`,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: 17, boxShadow: '0 0 18px rgba(52,211,153,0.3)',
+              }}
+            >
+              🌳
             </span>
-          </SecretGate>
+            <span style={{ fontFamily: T.serif, fontSize: 17, fontWeight: 600, letterSpacing: '-0.3px', color: T.text }}>
+              Sanctuary
+            </span>
+          </span>
         </div>
         <nav
           style={{

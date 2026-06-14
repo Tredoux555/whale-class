@@ -22,6 +22,7 @@ import {
   loadCoachMemories,
   formatCoachMemoriesForPrompt,
   getCoachWisdomSummary,
+  getCoachProfile,
   computeLoad,
   formatLoadSnapshot,
 } from '@/lib/story/coach';
@@ -135,16 +136,19 @@ export async function POST(request: NextRequest) {
         controller.enqueue(encoder.encode(':keepalive\n\n'));
         controller.enqueue(sse(encoder, { type: 'thinking', text: '' }));
 
-        // Resolve context (memory + wisdom + live load) with graceful fallback.
-        const [memories, wisdomSummary, load] = await Promise.all([
+        // Resolve context (memory + wisdom + profile + live load), graceful fallback.
+        const [memories, wisdomSummary, profileSection, load] = await Promise.all([
           loadCoachMemories(supabase, 40).catch(() => []),
           getCoachWisdomSummary().catch(() => ''),
+          getCoachProfile().catch(() => ''),
           computeLoad(supabase).catch(() => null),
         ]);
         const systemPrompt = buildCoachSystemPrompt({
           todayLabel,
           memorySection: formatCoachMemoriesForPrompt(memories),
           wisdomSummary,
+          profileSection,
+          isFirstSession: memories.length === 0,
           loadSnapshot: load ? formatLoadSnapshot(load) : 'No load data available right now.',
         });
         const minimalSystemPrompt =
