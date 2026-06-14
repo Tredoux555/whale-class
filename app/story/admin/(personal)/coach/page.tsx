@@ -7,6 +7,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useCoachChat } from '@/lib/story/coach/use-coach-chat';
+import { useVoiceRecord } from '@/lib/story/coach/use-voice-record';
 import Markdown from '@/components/story/personal/Markdown';
 import { T } from '@/lib/story/personal-theme';
 
@@ -33,6 +34,9 @@ const SUGGESTIONS = [
 export default function CoachPage() {
   const { messages, busy, send, reset } = useCoachChat();
   const [draft, setDraft] = useState('');
+  const { recording, transcribing, error: voiceError, toggle: toggleMic } = useVoiceRecord(
+    (t) => setDraft((d) => (d.trim() ? d.trim() + ' ' : '') + t),
+  );
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const kickedOff = useRef(false);
 
@@ -141,13 +145,15 @@ export default function CoachPage() {
         ))}
       </div>
 
+      {voiceError && <div style={{ color: '#f87171', fontSize: 12.5, padding: '8px 2px 0' }}>{voiceError}</div>}
+
       {/* composer */}
       <div style={{ display: 'flex', gap: 8, alignItems: 'flex-end', paddingTop: 12, borderTop: `1px solid ${T.borderSoft}` }}>
         <textarea
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
           onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); submit(); } }}
-          placeholder="Talk to your coach…"
+          placeholder={recording ? 'Listening…' : transcribing ? 'Transcribing…' : 'Talk to your coach…'}
           rows={1}
           style={{
             flex: 1, resize: 'none', maxHeight: 140,
@@ -156,6 +162,20 @@ export default function CoachPage() {
             fontSize: 15, lineHeight: 1.5, padding: '11px 14px',
           }}
         />
+        <button
+          onClick={toggleMic}
+          disabled={transcribing}
+          aria-label={recording ? 'Stop recording' : 'Record voice'}
+          title="Speak to your coach"
+          style={{
+            appearance: 'none', flexShrink: 0, width: 46, height: 46, borderRadius: 14, cursor: transcribing ? 'default' : 'pointer',
+            border: `1px solid ${recording ? '#f87171' : T.borderSoft}`,
+            background: recording ? 'rgba(248,113,113,0.18)' : 'rgba(255,255,255,0.05)',
+            color: recording ? '#f87171' : T.textMid, fontSize: 18,
+          }}
+        >
+          {transcribing ? '…' : recording ? '■' : '🎤'}
+        </button>
         <button
           onClick={submit}
           disabled={busy || !draft.trim()}

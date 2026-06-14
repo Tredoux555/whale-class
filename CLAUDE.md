@@ -64,8 +64,24 @@ vision, no support structure, runs hot). Knowledge base = 14 frameworks (Essenti
 - The covert Messages door is an App Store hidden-feature risk (Apple 2.3.1) — keep the personal
   platform web-only, or drop the disguise for any public/commercial build.
 
-**Still open:** run migration 258; optional Whisper voice input to the Coach ("I just speak to it");
-App Store decision on the covert door.
+**🔑 Brain-unlock fix + voice + archive (later same eve, commits `44b08a67` + this one):**
+- **Encryption was failing closed** (Coach reported "can't write to diary/calendar/memory") because
+  `STORY_DIARY_KEY` wasn't a valid 64-hex value. Fix: `diary-crypto.ts` now **derives a stable key
+  from the always-present `STORY_JWT_SECRET`** (domain-separated) when `STORY_DIARY_KEY` is unset/
+  invalid. So encryption + the brain just work; explicit `STORY_DIARY_KEY` still honored. No migration.
+- **Voice input** — mic in the Coach composer (page + float) → `/api/story/coach/transcribe`
+  (Whisper, Story-admin gated, 5MB/90s) → text into the composer.
+- **Conversation archive** — migration **259** `story_coach_log` (encrypted question/answer +
+  tools_used, fire-and-forget from the coach route). The Coach learns via semantic memory
+  (story_coach_memory, injected each turn); the log is the durable transcript.
+- **Profile deepened** with his load-bearing context (told to the Coach, burned into about-tredoux.md):
+  Montree = freedom from the "poverty work-cycle trap" + financial-independence goal + no school
+  adopted yet; SA trip **22 June** to his sick/possibly-dying father; expected **550ha KZN farm**
+  inheritance; "dark phonics" videos undone.
+
+**Still open:** run migrations **258 + 259**; App Store decision on the covert door (hidden-feature
+risk, Apple 2.3.1 — user-set codes are fine, the *disguise* isn't); optionally have the Coach read
+recent `story_coach_log` for deeper cross-session recall.
 
 ---
 

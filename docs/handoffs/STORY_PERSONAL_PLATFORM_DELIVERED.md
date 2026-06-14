@@ -22,15 +22,24 @@ private; one layer, not two"). 15-min idle auto-logout.
   tab-away.
 
 ## Env (Railway)
-- `STORY_DIARY_KEY` ✅ — AES-256 encryption key (32-byte hex). Never typed; encrypts diary/
-  projects/coach/events at rest. **Fail-closed** without it.
+- `STORY_DIARY_KEY` — optional now. AES-256 key (64 hex chars) if you want a dedicated one.
+  **If unset/invalid, the key is derived from the always-present `STORY_JWT_SECRET`** (domain-
+  separated) — so encryption + the brain "just work" with no setup. (This fixed the "can't write
+  to diary/calendar/memory" issue.)
 - `STORY_MESSAGES_PHRASE` ✅ — the phrase typed to open Messages.
-- ~~STORY_DIARY_PHRASE~~ — **no longer needed** (the diary/coach phrase gate was removed).
+- ~~STORY_DIARY_PHRASE~~ — not needed (diary/coach phrase gate removed).
+
+## Voice + archive
+- **Voice**: mic button in the Coach composer (page + float) → `/api/story/coach/transcribe`
+  (Whisper) → text drops into the composer. Just speak to it.
+- **Archive (the brain's record)**: every Coach exchange is logged encrypted to `story_coach_log`
+  (migration 259). The Coach *learns* via semantic memory (story_coach_memory, injected each turn);
+  the log is the full durable transcript (referable by Tredoux or desktop Claude in tandem).
 
 ## Migrations (Supabase)
-- `257_story_personal_platform.sql` ✅ run (diary, projects, coach_memory, plan_days, messages_secret).
-- `258_story_plan_events.sql` ⏳ **run this** — the planner events table. Until run, the calendar
-  shows "couldn't load events" but nothing crashes.
+- `257_story_personal_platform.sql` ✅ run.
+- `258_story_plan_events.sql` ⏳ **run** — planner events (calendar shows "couldn't load" until then).
+- `259_story_coach_log.sql` ⏳ **run** — Coach conversation archive (logging silently skips until then).
 
 ## The Coach knows him (the info pack)
 `lib/story/coach/about-tredoux.md` (loaded into the system prompt every turn via
@@ -49,7 +58,9 @@ Single login is the gate. Everything personal encrypted at rest (server-readable
 Coach must read the diary to reflect). Not E2E. Messages stays covert behind its phrase door.
 
 ## Still open / next
-- Run migration 258.
-- Voice input to the Coach (Whisper) — natural follow-on to "I just speak to it" (not built yet).
+- Run migrations **258** (planner events) + **259** (coach archive).
 - App Store: the covert Messages door is a hidden-feature risk (Apple 2.3.1) — keep the personal
-  platform web-only or drop the disguise for any public/commercial build.
+  platform web-only or drop the disguise for any public/commercial build. User-set codes are fine;
+  the *hidden/disguised* feature is the issue.
+- Optional: have the Coach read recent `story_coach_log` for deeper cross-session recall (today it
+  relies on semantic memory + the client's last ~12 turns).
