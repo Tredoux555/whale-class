@@ -36,10 +36,10 @@ private; one layer, not two"). 15-min idle auto-logout.
   (migration 259). The Coach *learns* via semantic memory (story_coach_memory, injected each turn);
   the log is the full durable transcript (referable by Tredoux or desktop Claude in tandem).
 
-## Migrations (Supabase)
+## Migrations (Supabase) — ALL RUN ✅
 - `257_story_personal_platform.sql` ✅ run.
-- `258_story_plan_events.sql` ⏳ **run** — planner events (calendar shows "couldn't load" until then).
-- `259_story_coach_log.sql` ⏳ **run** — Coach conversation archive (logging silently skips until then).
+- `258_story_plan_events.sql` ✅ run (planner events).
+- `259_story_coach_log.sql` ✅ run (Coach conversation archive).
 
 ## The Coach knows him (the info pack)
 `lib/story/coach/about-tredoux.md` (loaded into the system prompt every turn via
@@ -58,7 +58,7 @@ Single login is the gate. Everything personal encrypted at rest (server-readable
 Coach must read the diary to reflect). Not E2E. Messages stays covert behind its phrase door.
 
 ## Still open / next
-- Run migrations **258** (planner events) + **259** (coach archive).
+- (Migrations 257/258/259 all run; envs set. Platform is fully functional.)
 - App Store: the covert Messages door is a hidden-feature risk (Apple 2.3.1) — keep the personal
   platform web-only or drop the disguise for any public/commercial build. User-set codes are fine;
   the *hidden/disguised* feature is the issue.
