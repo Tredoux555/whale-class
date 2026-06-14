@@ -8,6 +8,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { useCoachChat } from '@/lib/story/coach/use-coach-chat';
+import { useVoiceRecord } from '@/lib/story/coach/use-voice-record';
 import Markdown from './Markdown';
 import { T } from '@/lib/story/personal-theme';
 
@@ -16,6 +17,9 @@ export default function CoachFloat() {
   const [open, setOpen] = useState(false);
   const { messages, busy, send } = useCoachChat();
   const [draft, setDraft] = useState('');
+  const { recording, transcribing, toggle: toggleMic } = useVoiceRecord(
+    (t) => setDraft((d) => (d.trim() ? d.trim() + ' ' : '') + t),
+  );
   const scrollRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -106,9 +110,16 @@ export default function CoachFloat() {
               value={draft}
               onChange={(e) => setDraft(e.target.value)}
               onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); submit(); } }}
-              placeholder="Ask your coach…"
+              placeholder={recording ? 'Listening…' : transcribing ? 'Transcribing…' : 'Ask your coach…'}
               style={{ flex: 1, background: 'rgba(255,255,255,0.05)', border: `1px solid ${T.borderSoft}`, borderRadius: 11, outline: 'none', color: T.text, fontFamily: T.sans, fontSize: 14, padding: '9px 12px' }}
             />
+            <button onClick={toggleMic} disabled={transcribing} aria-label={recording ? 'Stop' : 'Record'}
+              style={{ appearance: 'none', width: 38, height: 38, borderRadius: 11, flexShrink: 0, cursor: transcribing ? 'default' : 'pointer',
+                border: `1px solid ${recording ? '#f87171' : T.borderSoft}`,
+                background: recording ? 'rgba(248,113,113,0.18)' : 'rgba(255,255,255,0.05)',
+                color: recording ? '#f87171' : T.textMid, fontSize: 15 }}>
+              {transcribing ? '…' : recording ? '■' : '🎤'}
+            </button>
             <button onClick={submit} disabled={busy || !draft.trim()} aria-label="Send"
               style={{ appearance: 'none', border: 'none', width: 38, height: 38, borderRadius: 11, flexShrink: 0,
                 background: busy || !draft.trim() ? 'rgba(52,211,153,0.25)' : `linear-gradient(135deg, ${T.emerald}, ${T.emeraldDeep})`,

@@ -14,7 +14,7 @@ import type Anthropic from '@anthropic-ai/sdk';
 import type { MessageParam, ContentBlockParam, ToolResultBlockParam } from '@anthropic-ai/sdk/resources/messages';
 import { getSupabase, verifyAdminToken } from '@/lib/story-db';
 import { anthropic, AI_MODEL } from '@/lib/ai/anthropic';
-import { readDiaryField } from '@/lib/story/diary-crypto';
+import { readDiaryField, encryptDiaryField, encryptDiaryFieldOrNull, isDiaryEncryptionConfigured } from '@/lib/story/diary-crypto';
 import {
   buildCoachSystemPrompt,
   COACH_TOOLS,
@@ -44,6 +44,7 @@ interface BodyShape {
   question?: string;
   history?: MessageParam[];
   reflect_entry_id?: string;
+  conversation_id?: string;
 }
 
 export async function POST(request: NextRequest) {
@@ -126,6 +127,8 @@ export async function POST(request: NextRequest) {
 
   const initialMessages: MessageParam[] = [...history, { role: 'user', content: question }];
 
+  const conversationId = typeof body.conversation_id === 'string' ? body.conversation_id.slice(0, 64) : null;
+  const toolsUsed: string[] = [];
   let totalInput = 0;
   let totalOutput = 0;
   let finalText = '';
@@ -205,6 +208,7 @@ export async function POST(request: NextRequest) {
                 type: 'tool_use', id: block.id, name: block.name, input: block.input,
               } as unknown as ContentBlockParam);
 
+              toolsUsed.push(block.name);
               controller.enqueue(sse(encoder, { type: 'tool_call', tool: block.name }));
               const result = await executeCoachTool(block.name, block.input as Record<string, unknown>, { supabase });
               controller.enqueue(sse(encoder, { type: 'tool_result', tool: block.name, success: result.success }));
@@ -290,6 +294,21 @@ export async function POST(request: NextRequest) {
         }
 
         controller.enqueue(sse(encoder, { type: 'done', duration_ms: Date.now() - startTime, in: totalInput, out: totalOutput }));
+
+        // Archive the exchange (encrypted, fire-and-forget) — the durable record.
+        // Degrades silently if migration 259 isn't run or encryption is unavailable.
+        if (isDiaryEncryptionConfigured()) {
+          void supabase
+            .from('story_coach_log')
+            .insert({
+              conversation_id: conversationId,
+              question_enc: encryptDiaryField(question.slice(0, 8000)),
+              answer_enc: encryptDiaryFieldOrNull(finalText.slice(0, 12000)),
+              tools_used: toolsUsed,
+              cipher_version: 1,
+            })
+            .then(({ error }) => { if (error) console.warn('[coach] log insert skipped:', error.message); });
+        }
       } catch (streamErr) {
         const msg = streamErr instanceof Error ? streamErr.message : 'Stream error';
         controller.enqueue(sse(encoder, { type: 'error', error: msg }));

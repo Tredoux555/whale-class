@@ -20,10 +20,18 @@ export function useCoachChat(initial: CoachMessage[] = []) {
   const [busy, setBusy] = useState(false);
   const messagesRef = useRef<CoachMessage[]>(initial);
   messagesRef.current = messages;
+  // Stable id for this chat session — groups the archive (story_coach_log).
+  const convoRef = useRef<string>('');
+  if (!convoRef.current) {
+    convoRef.current =
+      typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `c-${Date.now()}`;
+  }
 
   const reset = useCallback(() => {
     setMessages([]);
     messagesRef.current = [];
+    convoRef.current =
+      typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `c-${Date.now()}`;
   }, []);
 
   const send = useCallback(
@@ -58,7 +66,7 @@ export function useCoachChat(initial: CoachMessage[] = []) {
         const res = await fetch('/api/story/coach', {
           method: 'POST',
           headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-          body: JSON.stringify({ question: text, history, reflect_entry_id: opts?.reflectEntryId }),
+          body: JSON.stringify({ question: text, history, reflect_entry_id: opts?.reflectEntryId, conversation_id: convoRef.current }),
         });
         if (res.status === 401) {
           if (typeof window !== 'undefined') { sessionStorage.removeItem('story_admin_session'); window.location.href = '/story/admin'; }
