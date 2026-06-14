@@ -118,7 +118,13 @@ export function CoachChatProvider({ children }: { children: ReactNode }) {
           return;
         }
         if (!res.ok || !res.body) {
-          patchLast((m) => ({ ...m, streaming: false, error: true, text: 'Something went wrong. Try again.' }));
+          // Surface the REAL server error (don't swallow it) so failures are diagnosable.
+          let serverMsg = '';
+          try { serverMsg = ((await res.json()) as { error?: string })?.error || ''; } catch { /* not json */ }
+          patchLast((m) => ({
+            ...m, streaming: false, error: true,
+            text: serverMsg ? `${serverMsg} (${res.status})` : `Something went wrong (${res.status}). Try again.`,
+          }));
           return;
         }
         const reader = res.body.getReader();

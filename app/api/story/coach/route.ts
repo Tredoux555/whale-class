@@ -72,8 +72,9 @@ export async function POST(request: NextRequest) {
   if (!question && !reflectId) {
     return new Response(JSON.stringify({ error: 'question required' }), { status: 400 });
   }
-  if (question.length > 4000) {
-    return new Response(JSON.stringify({ error: 'Message too long.' }), { status: 400 });
+  // Generous — this is his journal/coach; he writes long brain-dumps.
+  if (question.length > 16000) {
+    return new Response(JSON.stringify({ error: 'That message is very long — break it into two and send again.' }), { status: 400 });
   }
 
   const supabase = getSupabase();
@@ -91,7 +92,7 @@ export async function POST(request: NextRequest) {
       if (typeof obj.content === 'string') text = obj.content;
       text = text.trim();
       if (!text) continue;
-      out.push({ role, content: text.slice(0, 4000) });
+      out.push({ role, content: text.slice(0, 16000) });
     }
     return out;
   };
