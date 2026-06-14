@@ -15,6 +15,103 @@ Local path: `/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/whale` (note spa
 
 ---
 
+## 🧠 SESSION — Jun 14, 2026 (Cowork eve) — Personal Platform (Sanctuary) BUILT + DEPLOYED
+
+**Canonical handoff:** `docs/handoffs/STORY_PERSONAL_PLATFORM_DELIVERED.md`. Built the queued
+Personal Platform from `STORY_PERSONAL_PLATFORM_BUILD.md`, then evolved it live with Tredoux.
+3 commits pushed to main (`0f10d388`, `1ea6c526`, + this profile/brain commit). Every step
+audited (ESLint `--max-warnings=0` + scoped `tsc`, all clean). Railway auto-deploying.
+
+**What `/story/admin` is now — "Sanctuary":** log in → **Planner** front. Open nav (one layer =
+the login, Tredoux's call — no extra phrase): **Planner · Coach · Diary · Projects**. The Coach
+(Sonnet) is his life-coach + therapist's ear + chief-of-staff: it KNOWS him (deep profile,
+below), runs a first-session intake, and **everything flows through it** — "I have a meeting Wed,
+I'm nervous" → it reflects, `add_event`s the meeting onto the planner, and `add_diary_entry`s how
+he feels. Planner is functional (tap a day → timed events, add/delete, gold dots). Diary =
+encrypted markdown journal. Projects = ambitions. **Messages (covert comms) is the only hidden
+thing** — long-press the Planner month-title 2s → `STORY_MESSAGES_PHRASE`; reverts+relocks on
+tab-away.
+
+**Encryption:** new `lib/story/diary-crypto.ts` — AES-256-GCM via `STORY_DIARY_KEY` (32-byte hex,
+fail-closed). Diary/projects/coach-memory/events all encrypted at rest; dates/times/moods
+plaintext for the calendar.
+
+**Migrations (Supabase):** `257_story_personal_platform.sql` ✅ RUN. `258_story_plan_events.sql`
+⏳ **PENDING Tredoux's run** — planner events table; until run the calendar shows "couldn't load
+events" (graceful, no crash).
+
+**Env (Railway):** `STORY_DIARY_KEY` ✅ + `STORY_MESSAGES_PHRASE` ✅ set. `STORY_DIARY_PHRASE`
+was introduced then **dropped** (diary/coach phrase gate removed — one-layer decision).
+
+**The Coach's info pack:** `lib/story/coach/about-tredoux.md` (loaded every turn via `profile.ts`)
+— synthesised from `ACTIVE/MASTER_BRAIN.md` + archives: father of two (son ~10, daughter ~3),
+Montessori/ESL kindergarten teacher in Beijing, the ecosystem (Montree → Montree Home → network of
+schools → Jeffy → Project Sentinel → Guardian Connect), **north star = build a school** (baked into
+the prime directive — Coach weighs big choices against it), the phonics/English-Corner job (hostile
+lead teacher), the "dark phonics" video angst, Gloria (first agent), and the emotional core (empire
+vision, no support structure, runs hot). Knowledge base = 14 frameworks (Essentialism heaviest) in
+`lib/story/coach/knowledge/`. Memory = encrypted `story_coach_memory`, supersede-on-update.
+
+**🚨 Architectural notes locked in:**
+- `/story/admin/(personal)/` route group = the Sanctuary shell (auth guard + 15-min idle logout +
+  nav + CoachFloat). Login → `/story/admin/planner`.
+- Coach SSE route `/api/story/coach` mirrors principal-agent robustness (keepalive, full-transcript
+  accumulation, empty-response recovery, forced summary, timeouts). NO tier gate (single user).
+- Coach tools: read_diary/read_projects/check_load/plan_day/plan_week/wellbeing_check/
+  consult_wisdom/recall/remember/update_project + **add_event + add_diary_entry** (everything
+  through the AI).
+- Every `/api/story/{diary,projects,events,coach,messages}` route gates on `verifyAdminToken`.
+- The covert Messages door is an App Store hidden-feature risk (Apple 2.3.1) — keep the personal
+  platform web-only, or drop the disguise for any public/commercial build.
+
+**Still open:** run migration 258; optional Whisper voice input to the Coach ("I just speak to it");
+App Store decision on the covert door.
+
+---
+
+## 🧠 SESSION — Jun 14, 2026 (Cowork PM) — Marketing pivot + subscription cost-cut
+
+**Canonical handoff:** `docs/handoffs/COWORK_JUN14_COST_CUT.md`.
+
+**Decision (Tredoux, frustrated by spend + poor results):** KILL the cinematic-AI video
+pipeline (Midjourney → Kaiber → HeyGen → ElevenLabs). It was costing ~$150–400/mo and AI
+video kept warping logos/screen text — wrong tool for selling a software product. New lean
+approach: **real app screen recordings (hero footage) + deterministic code-built brand
+cards/kinetic text (no warping, free) + own voice or ElevenLabs-lowest + film self on phone
++ assemble in CapCut.** 1 paid tool, maybe zero, down from five.
+
+**Subscription outcomes — EXECUTED Jun 14 (Tredoux clicked all final buttons himself):**
+Kaiber **CANCELLED** · HeyGen **CANCELLED** · Claude **DOWNGRADED** (kept lowest tier that
+still runs Cowork — NOT full-cancelled) · InVideo already-cancelled long ago via support
+(refund dispute ongoing) · Colossyan **no active sub** (they have no billing info) ·
+Midjourney **KEPT** (cheap + actively used for art) · ElevenLabs **KEPT** (reasonable/useful) ·
+KEPT Railway/Supabase/Stripe/Resend/GitHub (load-bearing). ⚠️ Gmail connector was erroring so
+no full receipt audit ran — if any surprise charge appears, check card statement + Apple
+Settings → Subscriptions (App-Store-billed subs can only be cancelled there).
+
+**Phonics art:** most phonics animation (letter formation, mouth shapes, sound drills,
+word-building, decodable visuals) can be code-generated (PIL/SVG) — precedent: shipped
+mouth-shape SVGs in the reading content. Midjourney not strictly required.
+
+**Video assets produced this session** (`montree/_video_assets/`, keep): `scene14_laptop_BRANDED.png`
+(laptop showing real Montree brand screen, rebuilt as glossy display), `scene15_endcard_wood.png`
+(warm gold-on-wood end card), `Montree_EndCard_16x9/9x16.png`, `Montree_Product_Screen.png`.
+
+**🆕 QUEUED BUILD (spec'd, run fresh):** Tredoux's **Personal Platform** — turn `/story/admin`
+into his private **Diary + Planner + AI Coach** (Astra-capability for his own life), with the
+existing **communication system hidden inside** + auto-reverting to the diary front on tab
+switch. Privacy (FINAL, Tredoux's call): **single tier — the AI READS the whole diary**
+(therapist-style reflection is half the point), content **encrypted at rest** (server-readable),
+the existing Story login is the gate, obscurity + hidden comms are the shield — **NOT E2E**.
+Model = **Sonnet**. Coach's prime directive = protect him from overcommitment /
+mis-prioritization / burnout / neglecting health. Grounded in a self-help knowledge base
+(Essentialism, The ONE Thing, Four Thousand Weeks, Atomic Habits, GTD, Covey, Burnout,
+Stoicism, etc.). **Canonical spec (with full build scaffolding):
+`docs/handoffs/STORY_PERSONAL_PLATFORM_BUILD.md`** (the E2E approach in `PRIVATE_JOURNAL_BUILD.md`
+is SUPERSEDED). Trigger: "build my personal platform from the handoff."
+
+---
+
 ## 🧠 SESSION — Jun 14, 2026 (Cowork) — vault backfill DONE + system health check fixes MERGED + DEPLOYED
 
 **Canonical handoff:** `docs/handoffs/COWORK_JUN14_HEALTHCHECK.md`.
