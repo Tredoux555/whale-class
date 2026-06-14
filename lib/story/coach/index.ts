@@ -9,6 +9,7 @@ export {
   type CoachMemory,
 } from './memory';
 export { getCoachWisdomSummary } from './knowledge-loader';
+export { getCoachProfile } from './profile';
 export { computeLoad, type LoadReport } from './personal-data';
 
 import type { LoadReport } from './personal-data';

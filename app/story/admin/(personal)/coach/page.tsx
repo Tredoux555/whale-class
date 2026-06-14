@@ -83,7 +83,18 @@ export default function CoachPage() {
           <div style={{ color: T.textMid, lineHeight: 1.7 }}>
             <div style={{ fontFamily: T.serif, fontSize: 20, color: T.text, marginBottom: 6 }}>I&apos;ve got you.</div>
             Ask me what to focus on, talk through what&apos;s heavy, or let&apos;s plan the day with rest built in.
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 18 }}>
+            <button
+              onClick={() => { if (!busy) void send('Let me do my first session — get to know me. Ask me what a good coach would, a couple of questions at a time.', { displayText: 'Start my first session ✦' }); }}
+              style={{
+                display: 'block', width: '100%', textAlign: 'left', marginTop: 16,
+                border: `1px solid ${T.border}`, borderRadius: 12, cursor: 'pointer',
+                background: 'linear-gradient(135deg, rgba(232,201,106,0.16), rgba(232,201,106,0.05))',
+                color: T.text, fontFamily: T.sans, fontSize: 14.5, fontWeight: 600, padding: '13px 15px',
+              }}
+            >
+              ✦ Start my first session — let Coach get to know you
+            </button>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 12 }}>
               {SUGGESTIONS.map((s) => (
                 <button
                   key={s}
