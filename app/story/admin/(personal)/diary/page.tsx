@@ -57,9 +57,15 @@ export default function DiaryHome() {
 
   return (
     <div>
+      <button
+        onClick={() => router.push('/story/admin/coach')}
+        style={{ appearance: 'none', border: 'none', background: 'transparent', color: T.textDim, fontFamily: T.sans, fontSize: 13.5, cursor: 'pointer', padding: '0 0 12px' }}
+      >
+        ← Coach
+      </button>
       <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 22 }}>
         <h1 style={{ fontFamily: T.serif, fontSize: 28, fontWeight: 600, margin: 0, letterSpacing: '-0.4px' }}>
-          Diary
+          Journal
         </h1>
         <button
           onClick={() => router.push('/story/admin/diary/new')}

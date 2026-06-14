@@ -151,7 +151,7 @@ export default function DiaryEditor() {
     return (
       <div style={{ color: T.textMid }}>
         <p>That entry doesn&apos;t exist.</p>
-        <button onClick={() => router.push('/story/admin/diary')} style={linkBtn}>← Back to diary</button>
+        <button onClick={() => router.push('/story/admin/diary')} style={linkBtn}>← Back to journal</button>
       </div>
     );
   }
@@ -160,7 +160,7 @@ export default function DiaryEditor() {
     <div>
       {/* top bar */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16, gap: 10 }}>
-        <button onClick={() => router.push('/story/admin/diary')} style={linkBtn}>← Diary</button>
+        <button onClick={() => router.push('/story/admin/diary')} style={linkBtn}>← Journal</button>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <span style={{ fontSize: 12.5, color: saveState === 'error' ? '#f87171' : T.textDim, minWidth: 56, textAlign: 'right' }}>
             {saveState === 'saving' ? 'Saving…' : saveState === 'saved' ? '✓ Saved' : saveState === 'error' ? 'Save failed' : ''}

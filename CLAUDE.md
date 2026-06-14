@@ -82,6 +82,18 @@ vision, no support structure, runs hot). Knowledge base = 14 frameworks (Essenti
 **Migrations 258 + 259 RUN ✅ (Jun 14 eve)** — planner saves events, Coach archives every exchange.
 Platform fully functional end-to-end.
 
+**Chat persistence + Coach/Diary MERGE (commit `493e3beb` + this):**
+- **Chat was wiping on tab-flick** (state died on page unmount). Fixed: chat lifted into
+  `CoachChatProvider` (mounted in the `(personal)` layout → survives Coach↔Planner↔Projects nav)
+  + mirrored to `sessionStorage` (survives reload, clears on tab close). Full Coach page + the
+  floating Coach now share ONE live conversation.
+- **Coach + Diary merged** (Tredoux: "talking to my coach IS my diary — should they not be one
+  and the same?"). Nav is now **Planner · Coach · Projects** (Diary removed). The Coach IS the
+  journal (talking = journaling; auto-writes via add_diary_entry). The old diary list is the
+  Coach's read-back **"Journal"** view, reached via a "📓 Journal" link on the Coach (+ "← Coach"
+  back) — same `story_diary_entries` table, not a co-equal tab. System prompt updated: "You ARE
+  his journal."
+
 **Still open:** App Store decision on the covert door (hidden-feature risk, Apple 2.3.1 — user-set
 codes are fine, the *disguise* isn't); optionally have the Coach read recent `story_coach_log` for
 deeper cross-session recall.

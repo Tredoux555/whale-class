@@ -6,16 +6,20 @@ with his Story comms hidden behind one covert door. Built from
 (ESLint `--max-warnings=0` + scoped `tsc`) before moving on. All new code lint+type clean.
 
 ## Final IA (one layer = the login)
-Log in → **Planner** (calendar). Open nav: **Planner · Coach · Diary · Projects** — all behind
-the single Story-admin login (Tredoux's call: "Coach is my diary, I have a right to keep it
-private; one layer, not two"). 15-min idle auto-logout.
-- **Coach** = his AI life-coach + chief-of-staff + therapist's ear (Sonnet). Knows him deeply
-  (profile below), runs a first-session intake, and **everything flows through it**: tell it
-  "I have a meeting Wednesday and I'm nervous" → it reflects, **books the event on the planner**
-  (add_event) and **logs how he feels to the diary** (add_diary_entry).
+Log in → **Planner** (calendar). Open nav: **Planner · Coach · Projects** — all behind the single
+Story-admin login (Tredoux's call: one layer, not two). 15-min idle auto-logout.
+- **Coach = his journal.** Talking to the Coach IS his journaling — they're merged (Tredoux:
+  "should they not be one and the same?"). His AI life-coach + chief-of-staff + therapist's ear
+  (Sonnet). Knows him deeply (profile below), runs a first-session intake, and **everything flows
+  through it**: tell it "I have a meeting Wednesday and I'm nervous" → it reflects, **books the
+  event on the planner** (add_event) and **logs how he feels to his journal** (add_diary_entry).
+  **Chat persists** across nav + reload (CoachChatProvider in the layout + sessionStorage); the
+  full Coach page and the floating Coach share ONE live conversation.
+- **Journal** = the Coach's read-back view of those entries (markdown editor + mood), reached via
+  the "📓 Journal" link on the Coach ("← Coach" back). Same `story_diary_entries` table; NOT a
+  co-equal nav tab.
 - **Planner** = functional calendar: tap a day → add timed events (meetings/appointments),
   delete them; gold dots mark days with events. Coach writes here too.
-- **Diary** = private encrypted journal (list + markdown editor + mood + reflect-with-Coach).
 - **Projects** = ambitions (title/why/next-action/priority/status).
 - **Messages** (the only still-hidden thing — covert comms): on the Planner, **long-press the
   month title "June 2026" for 2 seconds → type STORY_MESSAGES_PHRASE**. Reverts + re-locks on
