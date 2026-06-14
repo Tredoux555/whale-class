@@ -29,7 +29,9 @@ export default function AdminLogin() {
 
       if (res.ok) {
         sessionStorage.setItem('story_admin_session', data.session);
-        router.push('/story/admin/dashboard');
+        // Personal platform: land on the Planner front. Diary + Messages are
+        // both hidden behind their own secret phrases.
+        router.push('/story/admin/planner');
       } else {
         setError(data.error || 'Invalid credentials');
       }

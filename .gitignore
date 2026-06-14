@@ -52,6 +52,8 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+# Scoped type-check configs created by the build/audit loop (never committed)
+.tsc-*.json
 
 # data and videos (but keep guru knowledge base)
 /data/

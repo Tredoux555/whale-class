@@ -164,6 +164,27 @@ export default function AdminDashboard() {
     executeNuke
   } = useSystemControls(getSession);
 
+  // 🔒 Hidden-Messages gate (personal platform). This dashboard is the hidden
+  // comms surface — reachable ONLY after the Planner month-title long-press +
+  // secret-phrase unlock, which sets 'story_hidden_view'. Without that token,
+  // bounce to the Planner front. On tab-hide, clear the token and revert to the
+  // Planner so Messages is never the resting view. (spec §6)
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    if (!sessionStorage.getItem('story_hidden_view')) {
+      window.location.replace('/story/admin/planner');
+      return;
+    }
+    const onHide = () => {
+      if (document.visibilityState === 'hidden') {
+        sessionStorage.removeItem('story_hidden_view');
+        window.location.replace('/story/admin/planner');
+      }
+    };
+    document.addEventListener('visibilitychange', onHide);
+    return () => document.removeEventListener('visibilitychange', onHide);
+  }, []);
+
   useEffect(() => {
     const init = async () => {
       const valid = await verifySession();
