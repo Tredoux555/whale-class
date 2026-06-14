@@ -1,53 +1,55 @@
-# Personal Platform — BUILT (Jun 14, 2026, Cowork)
+# Personal Platform — DELIVERED (Jun 14, 2026, Cowork)
 
-Built from `STORY_PERSONAL_PLATFORM_BUILD.md`. `/story/admin` is now Tredoux's
-private **Diary + Planner + Projects + AI Life-Coach**, with the existing Story
-comms **hidden** behind a long-press + secret-phrase gate on the diary logo.
+`/story/admin` is now Tredoux's private **Sanctuary**: Planner + Coach + Diary + Projects,
+with his Story comms hidden behind one covert door. Built from
+`STORY_PERSONAL_PLATFORM_BUILD.md`, then evolved live with Tredoux. Every step audited
+(ESLint `--max-warnings=0` + scoped `tsc`) before moving on. All new code lint+type clean.
 
-Every step was audited (ESLint `--max-warnings=0` + scoped `tsc`) before moving on.
-All new code is lint-clean and type-clean. Dashboard pre-existing warnings/type-debt
-were left untouched (load-bearing comms file).
+## Final IA (one layer = the login)
+Log in → **Planner** (calendar). Open nav: **Planner · Coach · Diary · Projects** — all behind
+the single Story-admin login (Tredoux's call: "Coach is my diary, I have a right to keep it
+private; one layer, not two"). 15-min idle auto-logout.
+- **Coach** = his AI life-coach + chief-of-staff + therapist's ear (Sonnet). Knows him deeply
+  (profile below), runs a first-session intake, and **everything flows through it**: tell it
+  "I have a meeting Wednesday and I'm nervous" → it reflects, **books the event on the planner**
+  (add_event) and **logs how he feels to the diary** (add_diary_entry).
+- **Planner** = functional calendar: tap a day → add timed events (meetings/appointments),
+  delete them; gold dots mark days with events. Coach writes here too.
+- **Diary** = private encrypted journal (list + markdown editor + mood + reflect-with-Coach).
+- **Projects** = ambitions (title/why/next-action/priority/status).
+- **Messages** (the only still-hidden thing — covert comms): on the Planner, **long-press the
+  month title "June 2026" for 2 seconds → type STORY_MESSAGES_PHRASE**. Reverts + re-locks on
+  tab-away.
 
-## IA (final): Planner front, two secret doors
-Log in → **Planner/calendar** (the innocuous front). Two separate hidden doors, each
-its own phrase:
-- **Long-press the "Sanctuary" LOGO (top-left) 2s → phrase A → Diary.**
-- **Long-press the MONTH TITLE (e.g. "June 2026") 2s → phrase B → Messages.**
-Visible nav = Planner · Projects · Coach. Tab away/background → reverts to Planner and
-re-locks both doors. The calendar shows NO diary content (so the login alone never
-exposes the diary).
+## Env (Railway)
+- `STORY_DIARY_KEY` ✅ — AES-256 encryption key (32-byte hex). Never typed; encrypts diary/
+  projects/coach/events at rest. **Fail-closed** without it.
+- `STORY_MESSAGES_PHRASE` ✅ — the phrase typed to open Messages.
+- ~~STORY_DIARY_PHRASE~~ — **no longer needed** (the diary/coach phrase gate was removed).
 
-## 🚨 DEPLOY ORDER (this order — the IA change gates Diary + comms)
-1. **Run migration 257** in Supabase SQL Editor (`migrations/257_story_personal_platform.sql`). ✅ done
-2. **Set `STORY_DIARY_KEY`** (Railway) — 32-byte hex:
-   `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"`. ✅ done
-3. **Set `STORY_MESSAGES_PHRASE`** (Railway) — phrase B (opens Messages). ✅ done
-4. **Set `STORY_DIARY_PHRASE`** (Railway) — phrase A (opens the Diary). ← NEW, still needed.
-5. **Push to `main`** (Railway auto-deploys). Until 1–4 are set, do NOT push, or the
-   Diary + Messages doors can't open and the diary pages error.
+## Migrations (Supabase)
+- `257_story_personal_platform.sql` ✅ run (diary, projects, coach_memory, plan_days, messages_secret).
+- `258_story_plan_events.sql` ⏳ **run this** — the planner events table. Until run, the calendar
+  shows "couldn't load events" but nothing crashes.
 
-## What shipped
-- `migrations/257_story_personal_platform.sql` — story_diary_entries, story_projects,
-  story_coach_memory, story_plan_days, story_messages_secret (RLS deny-all).
-- `lib/story/diary-crypto.ts` — AES-256-GCM at-rest via `STORY_DIARY_KEY` (fail-closed).
-- Diary: `/api/story/diary` (+`/[id]`) + pages (front list, markdown editor, autosave,
-  mood, edit/preview, Reflect→Coach, delete).
-- Projects: `/api/story/projects` (+`/[id]`) + cards page (add/edit/status/priority).
-- Coach (Sonnet): `lib/story/coach/*` — 14-book knowledge base, encrypted memory,
-  10 tools, prime-directive + therapist-lens system prompt; `/api/story/coach` SSE
-  loop (keepalive, full-transcript accumulation, empty-response recovery, forced
-  summary); Coach page + floating `CoachFloat` on every screen.
-- Planner: gentle month calendar (mood dots) + "plan day/week" hand-off to Coach.
-- IA: `(personal)` route-group layout (auth guard, 15-min idle logout, nav, revert-
-  on-hide); login lands on `/story/admin/diary`.
-- Hidden Messages: `HiddenMessagesGate` (long-press logo 2s → phrase → `/api/story/messages/unlock`
-  mints a 1h token) + dashboard guard + revert-on-hide. Existing comms reused as-is.
+## The Coach knows him (the info pack)
+`lib/story/coach/about-tredoux.md` (loaded into the system prompt every turn via
+`lib/story/coach/profile.ts`) — drawn from MASTER_BRAIN + archives: family (son ~10, daughter ~3),
+the ecosystem (Montree → Montree Home → network of schools → Jeffy → Project Sentinel → Guardian
+Connect), the **north star = build a school**, the phonics/English-Corner teaching job (+ hostile
+lead teacher), the "dark phonics" video angst, Gloria (first agent), and the emotional core —
+empire-level vision, no support structure, runs hot. The Coach weighs big choices against the
+school vision and is built to be the place he offloads all of it.
 
-## How to use Messages after deploy
-Long-press the "Sanctuary" logo (top-left) for 2 seconds → type your `STORY_MESSAGES_PHRASE`
-→ Enter. You land in the comms dashboard. Tab away / background the app → it reverts to the
-Diary and re-locks (phrase needed again).
+Knowledge base: 14 frameworks (Essentialism heaviest) in `lib/story/coach/knowledge/`.
+Memory: encrypted `story_coach_memory`, supersede-on-update; intake fills it over time.
 
-## Privacy posture (as specced)
-Single tier; the Coach reads everything by design. Encrypted at rest (server holds the key).
-Not E2E — obscurity + the phrase gate + the Story login are the shield.
+## Privacy posture
+Single login is the gate. Everything personal encrypted at rest (server-readable by design — the
+Coach must read the diary to reflect). Not E2E. Messages stays covert behind its phrase door.
+
+## Still open / next
+- Run migration 258.
+- Voice input to the Coach (Whisper) — natural follow-on to "I just speak to it" (not built yet).
+- App Store: the covert Messages door is a hidden-feature risk (Apple 2.3.1) — keep the personal
+  platform web-only or drop the disguise for any public/commercial build.
