@@ -24,10 +24,12 @@ import { CoachChatProvider } from '@/lib/story/coach/coach-chat-context';
 const IDLE_LIMIT_MS = 15 * 60 * 1000; // 15 minutes
 const SESSION_KEY = 'story_admin_session';
 
+// Coach + Diary are merged conceptually: talking to the Coach IS his journaling.
+// The Coach is the single private space; the Diary (its read-back "Journal" view)
+// is reached FROM the Coach, not as a co-equal tab.
 const NAV: { href: string; label: string }[] = [
   { href: '/story/admin/planner', label: 'Planner' },
   { href: '/story/admin/coach', label: 'Coach' },
-  { href: '/story/admin/diary', label: 'Diary' },
   { href: '/story/admin/projects', label: 'Projects' },
 ];
 

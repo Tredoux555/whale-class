@@ -6,6 +6,7 @@
 // pattern) to kick off a reflection on a specific entry.
 
 import { useEffect, useRef, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { useCoachChat } from '@/lib/story/coach/use-coach-chat';
 import { useVoiceRecord } from '@/lib/story/coach/use-voice-record';
 import Markdown from '@/components/story/personal/Markdown';
@@ -32,6 +33,7 @@ const SUGGESTIONS = [
 ];
 
 export default function CoachPage() {
+  const router = useRouter();
   const { messages, busy, send, reset } = useCoachChat();
   const [draft, setDraft] = useState('');
   const { recording, transcribing, error: voiceError, toggle: toggleMic } = useVoiceRecord(
@@ -75,11 +77,16 @@ export default function CoachPage() {
     <div style={{ display: 'flex', flexDirection: 'column', minHeight: 'calc(100dvh - 200px)' }}>
       <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 16 }}>
         <h1 style={{ fontFamily: T.serif, fontSize: 28, fontWeight: 600, margin: 0, letterSpacing: '-0.4px' }}>Coach</h1>
-        {messages.length > 0 && (
-          <button onClick={reset} style={{ appearance: 'none', border: 'none', background: 'transparent', color: T.textDim, fontSize: 13, cursor: 'pointer' }}>
-            New conversation
+        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+          <button onClick={() => router.push('/story/admin/diary')} style={{ appearance: 'none', border: 'none', background: 'transparent', color: T.textDim, fontSize: 13, cursor: 'pointer' }}>
+            📓 Journal
           </button>
-        )}
+          {messages.length > 0 && (
+            <button onClick={reset} style={{ appearance: 'none', border: 'none', background: 'transparent', color: T.textDim, fontSize: 13, cursor: 'pointer' }}>
+              New conversation
+            </button>
+          )}
+        </div>
       </div>
 
       <div ref={scrollRef} style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 16, paddingBottom: 12 }}>
