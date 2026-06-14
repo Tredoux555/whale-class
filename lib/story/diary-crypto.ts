@@ -25,36 +25,52 @@ import crypto from 'crypto';
 
 const KEY_BYTES = 32; // AES-256
 
-function getKey(): Buffer {
+// Resolve a valid explicit STORY_DIARY_KEY (64 hex chars → 32 bytes) or null.
+function explicitKey(): Buffer | null {
   const raw = process.env.STORY_DIARY_KEY;
-  if (!raw) {
-    throw new Error(
-      '[diary-crypto] STORY_DIARY_KEY env var must be set (32-byte hex = 64 chars)',
-    );
+  if (!raw) return null;
+  try {
+    const b = Buffer.from(raw.trim(), 'hex');
+    return b.length === KEY_BYTES ? b : null;
+  } catch {
+    return null;
   }
-  const key = Buffer.from(raw.trim(), 'hex');
-  if (key.length !== KEY_BYTES) {
-    throw new Error(
-      `[diary-crypto] STORY_DIARY_KEY must decode to ${KEY_BYTES} bytes ` +
-        `(got ${key.length}). Use 64 hex chars.`,
-    );
+}
+
+// Fallback: derive a stable 32-byte key from the always-present STORY_JWT_SECRET
+// (domain-separated so it's never the JWT secret itself). This means the brain
+// "just works" without a second env var — encryption stays on (server-held key,
+// at-rest protection) even if STORY_DIARY_KEY was never set or was malformed.
+function derivedKey(): Buffer | null {
+  const jwt = process.env.STORY_JWT_SECRET;
+  if (!jwt) return null;
+  return crypto.createHash('sha256').update('story-personal-platform-key:v1:' + jwt).digest();
+}
+
+let _keySourceLogged = false;
+function getKey(): Buffer {
+  const explicit = explicitKey();
+  if (explicit) {
+    if (!_keySourceLogged) { _keySourceLogged = true; console.log('[diary-crypto] using STORY_DIARY_KEY'); }
+    return explicit;
   }
-  return key;
+  const derived = derivedKey();
+  if (derived) {
+    if (!_keySourceLogged) {
+      _keySourceLogged = true;
+      console.log('[diary-crypto] STORY_DIARY_KEY not set/invalid — deriving key from STORY_JWT_SECRET');
+    }
+    return derived;
+  }
+  throw new Error('[diary-crypto] no key material: set STORY_DIARY_KEY (64 hex chars) or STORY_JWT_SECRET');
 }
 
 /**
- * Cheap presence/length check — does NOT throw. Use as a guard in write paths
- * so a misconfigured key produces a clean 500 with a clear message rather than
- * a half-written row.
+ * Cheap presence check — does NOT throw. True when we have key material from
+ * EITHER a valid STORY_DIARY_KEY or STORY_JWT_SECRET (the derive fallback).
  */
 export function isDiaryEncryptionConfigured(): boolean {
-  const raw = process.env.STORY_DIARY_KEY;
-  if (!raw) return false;
-  try {
-    return Buffer.from(raw.trim(), 'hex').length === KEY_BYTES;
-  } catch {
-    return false;
-  }
+  return explicitKey() !== null || !!process.env.STORY_JWT_SECRET;
 }
 
 /** Encrypt a plaintext string → `gcm:iv:tag:ct`. THROWS if key missing/invalid. */
