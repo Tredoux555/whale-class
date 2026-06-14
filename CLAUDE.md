@@ -13,6 +13,8 @@ Local path: `/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/whale` (note spa
 
 **⚠️ STANDING RULE (Tredoux, Jun 10 2026): everything runs FROM THE CHAT.** Never tell Tredoux to "open this document/file" for SQL, commands, or instructions — paste the full SQL / command / step directly in the chat message, step by step, like a real assistant walking him through it. Documents are for archives; the chat is the workbench.
 
+**⚠️ STANDING RULE (Tredoux, Jun 14 2026): ALWAYS — ALWAYS — runtime-audit before saying "done".** Lint + `tsc` are necessary but NOT sufficient — they pass while the live feature 400s/500s/breaks. Before declaring any user-facing feature done: exercise the actual happy path (hit the route, render the page, send the message), and make failures DIAGNOSABLE — surface the real server error to the client, never swallow it into a generic "Something went wrong." A green lint is not a working feature.
+
 ---
 
 ## 🧠 SESSION — Jun 14, 2026 (Cowork eve) — Personal Platform (Sanctuary) BUILT + DEPLOYED
