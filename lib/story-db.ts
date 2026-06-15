@@ -73,6 +73,18 @@ export async function getAdminSpace(authHeader: string | null): Promise<string |
   }
 }
 
+// The media VAULT holds highly sensitive material and belongs to ONE space only.
+// It must never be reachable from any other sanctuary (e.g. Riddick's) — other
+// spaces get the chat/coach, NEVER the vault. This is the hard owner gate, applied
+// to every vault route on top of the existing vault-unlock token. Independent of
+// the token so even a future vault route that forgets the token stays sealed.
+export const VAULT_OWNER_SPACE = 'tredoux';
+
+export async function isVaultOwner(authHeader: string | null): Promise<boolean> {
+  const space = await getAdminSpace(authHeader);
+  return space === VAULT_OWNER_SPACE;
+}
+
 export async function verifyUserToken(authHeader: string | null): Promise<string | null> {
   if (!authHeader) return null;
   try {

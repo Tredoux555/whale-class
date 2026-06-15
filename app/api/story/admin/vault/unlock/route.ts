@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getSupabase, verifyAdminToken, getJWTSecret } from '@/lib/story-db';
+import { getSupabase, verifyAdminToken, getJWTSecret, isVaultOwner } from '@/lib/story-db';
 import { checkRateLimit } from '@/lib/rate-limiter';
 import { getClientIP } from '@/lib/montree/audit-logger';
 import crypto from 'crypto';
@@ -14,6 +14,12 @@ export async function POST(req: NextRequest) {
     const adminUsername = await verifyAdminToken(req.headers.get('authorization'));
     if (!adminUsername) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    // HARD VAULT LOCK: only the vault owner's space may unlock it. Any other
+    // sanctuary (e.g. Riddick's) is refused here, so it can never mint a vault
+    // token — which gates every other vault route too. The vault is yours alone.
+    if (!(await isVaultOwner(req.headers.get('authorization')))) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
     const supabase = getSupabase();

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getSupabase, verifyAdminToken, verifyVaultToken } from '@/lib/story-db';
+import { getSupabase, verifyAdminToken, verifyVaultToken, isVaultOwner } from '@/lib/story-db';
 
 // fix/story-vault-mobile-jun13 — serves the small (~480px, q70 JPEG) grid
 // thumbnail for an image vault file. Thumbnails are stored UNENCRYPTED in the
@@ -22,6 +22,11 @@ export async function GET(
     const adminUsername = await verifyAdminToken(req.headers.get('authorization'));
     if (!adminUsername) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    // Owner-space gate (defense-in-depth on top of the unlock choke point).
+    if (!(await isVaultOwner(req.headers.get('authorization')))) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
     const vaultTokenValid = await verifyVaultToken(req.headers.get('x-vault-token'));

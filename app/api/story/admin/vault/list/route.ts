@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getSupabase, verifyAdminToken, verifyVaultToken } from '@/lib/story-db';
+import { getSupabase, verifyAdminToken, verifyVaultToken, isVaultOwner } from '@/lib/story-db';
 
 export async function GET(req: NextRequest) {
   try {
@@ -12,6 +12,11 @@ export async function GET(req: NextRequest) {
     // session alone is not sufficient to list vault files; the operator
     // must have unlocked the vault within the last hour. Closes the
     // 'stealing an admin JWT = unrestricted vault access' hole.
+    // Owner-space gate (defense-in-depth on top of the unlock choke point).
+    if (!(await isVaultOwner(req.headers.get('authorization')))) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
     const vaultTokenValid = await verifyVaultToken(req.headers.get('x-vault-token'));
     if (!vaultTokenValid) {
       return NextResponse.json(
