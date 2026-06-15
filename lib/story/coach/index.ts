@@ -11,6 +11,12 @@ export {
 export { getCoachWisdomSummary } from './knowledge-loader';
 export { getCoachProfile } from './profile';
 export { computeLoad, type LoadReport } from './personal-data';
+export { loadRecentThread, type RecentThreadOpts } from './recent-thread';
+export {
+  isConsolidationDue,
+  consolidateCoachDay,
+  type ConsolidationResult,
+} from './consolidation';
 
 import type { LoadReport } from './personal-data';
 

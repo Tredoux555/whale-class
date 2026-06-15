@@ -7,7 +7,7 @@
 // served by GET /api/story/diary/[id].
 
 import { NextRequest, NextResponse } from 'next/server';
-import { getSupabase, verifyAdminToken } from '@/lib/story-db';
+import { getSupabase, verifyAdminToken, getAdminSpace } from '@/lib/story-db';
 import {
   encryptDiaryField,
   encryptDiaryFieldOrNull,
@@ -30,11 +30,14 @@ function todayISO(): string {
 export async function GET(req: NextRequest) {
   const admin = await verifyAdminToken(req.headers.get('authorization'));
   if (!admin) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  const space = await getAdminSpace(req.headers.get('authorization'));
+  if (!space) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   const supabase = getSupabase();
   const { data, error } = await supabase
     .from('story_diary_entries')
     .select('id, entry_date, mood, title_enc, body_enc, cipher_version, created_at, updated_at')
+    .eq('space', space)
     .order('entry_date', { ascending: false })
     .order('created_at', { ascending: false })
     .limit(1000);
@@ -63,6 +66,8 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   const admin = await verifyAdminToken(req.headers.get('authorization'));
   if (!admin) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  const space = await getAdminSpace(req.headers.get('authorization'));
+  if (!space) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   if (!isDiaryEncryptionConfigured()) {
     console.error('[diary] STORY_DIARY_KEY missing/invalid — refusing to write');
@@ -96,6 +101,7 @@ export async function POST(req: NextRequest) {
   const { data, error } = await supabase
     .from('story_diary_entries')
     .insert({
+      space,
       entry_date: entryDate,
       mood,
       title_enc: encryptDiaryFieldOrNull(title),

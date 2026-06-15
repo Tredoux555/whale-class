@@ -52,12 +52,14 @@ const ORDER: CoachMemoryType[] = ['value', 'ambition', 'health_goal', 'dropped',
 /** Load active (non-superseded) memories, newest first, decrypted. */
 export async function loadCoachMemories(
   supabase: SupabaseClient,
+  space: string,
   limit = 40,
 ): Promise<CoachMemory[]> {
   const cap = Math.max(1, Math.min(limit, 200));
   const { data, error } = await supabase
     .from('story_coach_memory')
     .select('id, memory_type, content_enc, cipher_version, created_at')
+    .eq('space', space)
     .is('superseded_at', null)
     .order('created_at', { ascending: false })
     .limit(cap);
@@ -108,6 +110,7 @@ type WriteResult = { ok: true; id: string } | { ok: false; error: string };
  */
 export async function writeCoachMemory(
   supabase: SupabaseClient,
+  space: string,
   input: { memory_type: CoachMemoryType; content: string; supersedes_id?: string | null },
 ): Promise<WriteResult> {
   if (!TYPES.has(input.memory_type)) {
@@ -126,6 +129,7 @@ export async function writeCoachMemory(
   const { data, error } = await supabase
     .from('story_coach_memory')
     .insert({
+      space,
       memory_type: input.memory_type,
       content_enc: encryptDiaryField(content),
       cipher_version: 1,
@@ -143,6 +147,7 @@ export async function writeCoachMemory(
       .from('story_coach_memory')
       .update({ superseded_at: new Date().toISOString(), superseded_by: newId })
       .eq('id', input.supersedes_id)
+      .eq('space', space)
       .is('superseded_at', null);
     if (supErr) {
       // Non-fatal: the new memory exists; the old one just stays active.
@@ -159,10 +164,11 @@ export async function writeCoachMemory(
  */
 export async function recallCoachMemories(
   supabase: SupabaseClient,
+  space: string,
   filters: { memory_type?: CoachMemoryType; query?: string },
   limit = 25,
 ): Promise<CoachMemory[]> {
-  const all = await loadCoachMemories(supabase, 200);
+  const all = await loadCoachMemories(supabase, space, 200);
   let rows = all;
   if (filters.memory_type && TYPES.has(filters.memory_type)) {
     rows = rows.filter((m) => m.memory_type === filters.memory_type);

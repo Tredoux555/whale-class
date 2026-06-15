@@ -4,7 +4,7 @@
 // title/why/next_action are AES-256-GCM encrypted at rest.
 
 import { NextRequest, NextResponse } from 'next/server';
-import { getSupabase, verifyAdminToken } from '@/lib/story-db';
+import { getSupabase, verifyAdminToken, getAdminSpace } from '@/lib/story-db';
 import {
   encryptDiaryField,
   encryptDiaryFieldOrNull,
@@ -21,11 +21,14 @@ const MAX_NEXT = 500;
 export async function GET(req: NextRequest) {
   const admin = await verifyAdminToken(req.headers.get('authorization'));
   if (!admin) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  const space = await getAdminSpace(req.headers.get('authorization'));
+  if (!space) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   const supabase = getSupabase();
   const { data, error } = await supabase
     .from('story_projects')
     .select('id, title_enc, why_enc, next_action_enc, status, priority, is_active, cipher_version, created_at, updated_at')
+    .eq('space', space)
     // active first, then by priority (nulls last via the secondary sort), then newest
     .order('is_active', { ascending: false })
     .order('priority', { ascending: true, nullsFirst: false })
@@ -55,6 +58,8 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   const admin = await verifyAdminToken(req.headers.get('authorization'));
   if (!admin) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  const space = await getAdminSpace(req.headers.get('authorization'));
+  if (!space) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   if (!isDiaryEncryptionConfigured()) {
     return NextResponse.json(
@@ -84,6 +89,7 @@ export async function POST(req: NextRequest) {
   const { data, error } = await supabase
     .from('story_projects')
     .insert({
+      space,
       title_enc: encryptDiaryField(title),
       why_enc: encryptDiaryFieldOrNull(why),
       next_action_enc: encryptDiaryFieldOrNull(nextAction),

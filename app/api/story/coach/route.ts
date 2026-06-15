@@ -9,10 +9,10 @@
 //   {type:'tool_result',tool,success} · {type:'text',text} · {type:'done'} ·
 //   {type:'error',error}
 
-import { NextRequest } from 'next/server';
+import { NextRequest, after } from 'next/server';
 import type Anthropic from '@anthropic-ai/sdk';
 import type { MessageParam, ContentBlockParam, ToolResultBlockParam } from '@anthropic-ai/sdk/resources/messages';
-import { getSupabase, verifyAdminToken } from '@/lib/story-db';
+import { getSupabase, verifyAdminToken, getAdminSpace } from '@/lib/story-db';
 import { anthropic, AI_MODEL } from '@/lib/ai/anthropic';
 import { readDiaryField, encryptDiaryField, encryptDiaryFieldOrNull, isDiaryEncryptionConfigured } from '@/lib/story/diary-crypto';
 import {
@@ -25,6 +25,9 @@ import {
   getCoachProfile,
   computeLoad,
   formatLoadSnapshot,
+  loadRecentThread,
+  isConsolidationDue,
+  consolidateCoachDay,
 } from '@/lib/story/coach';
 
 export const maxDuration = 180;
@@ -52,6 +55,13 @@ export async function POST(request: NextRequest) {
 
   const admin = await verifyAdminToken(request.headers.get('authorization'));
   if (!admin) {
+    return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 });
+  }
+  // The caller's sanctuary space — sourced ONLY from the verified token, never
+  // the client. Every read/write below is scoped to it so one space can never
+  // see another's data.
+  const space = await getAdminSpace(request.headers.get('authorization'));
+  if (!space) {
     return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 });
   }
   if (!anthropic) {
@@ -96,7 +106,13 @@ export async function POST(request: NextRequest) {
     }
     return out;
   };
-  const history = sanitizeHistory(body.history);
+  // Working memory: resume the running thread from the server-side archive
+  // (recent, not-yet-consolidated turns) so the Coach knows exactly where Tredoux
+  // left off — even after a reload or on another device. The client-supplied
+  // history is only a fallback for the very first turn (nothing logged yet).
+  const clientHistory = sanitizeHistory(body.history);
+  const serverThread = await loadRecentThread(supabase, space, { maxTurns: 12, withinHours: 72 });
+  const history = serverThread.length ? serverThread : clientHistory;
 
   // Reflect-on-entry: fetch the entry server-side and build a grounded prompt.
   if (reflectId) {
@@ -104,6 +120,7 @@ export async function POST(request: NextRequest) {
       .from('story_diary_entries')
       .select('entry_date, mood, title_enc, body_enc, cipher_version')
       .eq('id', reflectId)
+      .eq('space', space)
       .maybeSingle();
     if (data) {
       const title = readDiaryField(data.title_enc, data.cipher_version);
@@ -126,6 +143,25 @@ export async function POST(request: NextRequest) {
   const encoder = new TextEncoder();
   const client = anthropic as Anthropic;
 
+  // "On wake" consolidation: after this reply is sent (next/server `after()` keeps
+  // the invocation alive), if a prior day still has unconsolidated turns, fold it
+  // into long-term memory + a diary recap. Runs at most once/day (the due-check
+  // returns false once yesterday is stamped), off the user's critical path.
+  after(async () => {
+    try {
+      const due = await isConsolidationDue(supabase, space);
+      if (!due.due) return;
+      const res = await consolidateCoachDay(supabase, client, space);
+      if (res.ok && (res.turns > 0 || res.memories > 0)) {
+        console.info(`[coach] consolidated ${res.turns} turns → ${res.memories} memories`);
+      } else if (!res.ok) {
+        console.warn('[coach] consolidation failed:', res.error);
+      }
+    } catch (e) {
+      console.warn('[coach] consolidation skipped:', e instanceof Error ? e.message : 'unknown');
+    }
+  });
+
   const initialMessages: MessageParam[] = [...history, { role: 'user', content: question }];
 
   const conversationId = typeof body.conversation_id === 'string' ? body.conversation_id.slice(0, 64) : null;
@@ -142,10 +178,10 @@ export async function POST(request: NextRequest) {
 
         // Resolve context (memory + wisdom + profile + live load), graceful fallback.
         const [memories, wisdomSummary, profileSection, load] = await Promise.all([
-          loadCoachMemories(supabase, 40).catch(() => []),
+          loadCoachMemories(supabase, space, 40).catch(() => []),
           getCoachWisdomSummary().catch(() => ''),
           getCoachProfile().catch(() => ''),
-          computeLoad(supabase).catch(() => null),
+          computeLoad(supabase, space).catch(() => null),
         ]);
         const systemPrompt = buildCoachSystemPrompt({
           todayLabel,
@@ -211,7 +247,7 @@ export async function POST(request: NextRequest) {
 
               toolsUsed.push(block.name);
               controller.enqueue(sse(encoder, { type: 'tool_call', tool: block.name }));
-              const result = await executeCoachTool(block.name, block.input as Record<string, unknown>, { supabase });
+              const result = await executeCoachTool(block.name, block.input as Record<string, unknown>, { supabase, space });
               controller.enqueue(sse(encoder, { type: 'tool_result', tool: block.name, success: result.success }));
 
               const resultText = result.success ? JSON.stringify(result.data) : `Error: ${result.error || 'unknown'}`;
@@ -302,6 +338,7 @@ export async function POST(request: NextRequest) {
           void supabase
             .from('story_coach_log')
             .insert({
+              space,
               conversation_id: conversationId,
               question_enc: encryptDiaryField(question.slice(0, 8000)),
               answer_enc: encryptDiaryFieldOrNull(finalText.slice(0, 12000)),

@@ -97,7 +97,7 @@ export async function POST(req: NextRequest) {
   try {
     const { data: users, error } = await supabase
       .from('story_admin_users')
-      .select('username, password_hash')
+      .select('username, password_hash, space')
       .eq('username', username)
       .limit(1);
 
@@ -106,7 +106,10 @@ export async function POST(req: NextRequest) {
       const valid = await bcrypt.compare(password, users[0].password_hash);
 
       if (valid) {
-        const token = await new SignJWT({ username, role: 'admin' })
+        // Carry the user's space into the token so every personal route can
+        // scope data to it. Default 'tredoux' for the existing single user.
+        const space = (users[0] as { space?: string }).space || 'tredoux';
+        const token = await new SignJWT({ username, role: 'admin', space })
           .setProtectedHeader({ alg: 'HS256' })
           .setIssuedAt()
           .setExpirationTime('24h')

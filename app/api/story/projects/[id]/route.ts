@@ -3,7 +3,7 @@
 // Personal platform — single project: update / delete. Story-admin only.
 
 import { NextRequest, NextResponse } from 'next/server';
-import { getSupabase, verifyAdminToken } from '@/lib/story-db';
+import { getSupabase, verifyAdminToken, getAdminSpace } from '@/lib/story-db';
 import {
   encryptDiaryField,
   encryptDiaryFieldOrNull,
@@ -25,6 +25,8 @@ export async function PATCH(
 ) {
   const admin = await verifyAdminToken(req.headers.get('authorization'));
   if (!admin) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  const space = await getAdminSpace(req.headers.get('authorization'));
+  if (!space) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const { id } = await params;
   if (!UUID_RE.test(id)) return NextResponse.json({ error: 'Bad id' }, { status: 400 });
 
@@ -87,6 +89,7 @@ export async function PATCH(
     .from('story_projects')
     .update(patch)
     .eq('id', id)
+    .eq('space', space)
     .select('id, title_enc, why_enc, next_action_enc, status, priority, is_active, cipher_version, updated_at')
     .maybeSingle();
 
@@ -116,11 +119,13 @@ export async function DELETE(
 ) {
   const admin = await verifyAdminToken(req.headers.get('authorization'));
   if (!admin) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  const space = await getAdminSpace(req.headers.get('authorization'));
+  if (!space) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const { id } = await params;
   if (!UUID_RE.test(id)) return NextResponse.json({ error: 'Bad id' }, { status: 400 });
 
   const supabase = getSupabase();
-  const { error } = await supabase.from('story_projects').delete().eq('id', id);
+  const { error } = await supabase.from('story_projects').delete().eq('id', id).eq('space', space);
   if (error) {
     console.error('[projects] delete error:', error.message);
     return NextResponse.json({ error: 'Could not delete project' }, { status: 500 });

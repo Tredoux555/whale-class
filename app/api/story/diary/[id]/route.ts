@@ -4,7 +4,7 @@
 // Story-admin only. Encrypted at rest; decrypted server-side on read.
 
 import { NextRequest, NextResponse } from 'next/server';
-import { getSupabase, verifyAdminToken } from '@/lib/story-db';
+import { getSupabase, verifyAdminToken, getAdminSpace } from '@/lib/story-db';
 import {
   encryptDiaryField,
   encryptDiaryFieldOrNull,
@@ -26,6 +26,8 @@ export async function GET(
 ) {
   const admin = await verifyAdminToken(req.headers.get('authorization'));
   if (!admin) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  const space = await getAdminSpace(req.headers.get('authorization'));
+  if (!space) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const { id } = await params;
   if (!UUID_RE.test(id)) return NextResponse.json({ error: 'Bad id' }, { status: 400 });
 
@@ -34,6 +36,7 @@ export async function GET(
     .from('story_diary_entries')
     .select('id, entry_date, mood, title_enc, body_enc, cipher_version, created_at, updated_at')
     .eq('id', id)
+    .eq('space', space)
     .maybeSingle();
 
   if (error) {
@@ -61,6 +64,8 @@ export async function PATCH(
 ) {
   const admin = await verifyAdminToken(req.headers.get('authorization'));
   if (!admin) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  const space = await getAdminSpace(req.headers.get('authorization'));
+  if (!space) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const { id } = await params;
   if (!UUID_RE.test(id)) return NextResponse.json({ error: 'Bad id' }, { status: 400 });
 
@@ -112,6 +117,7 @@ export async function PATCH(
     .from('story_diary_entries')
     .update(patch)
     .eq('id', id)
+    .eq('space', space)
     .select('id, entry_date, mood, updated_at')
     .maybeSingle();
 
@@ -137,11 +143,13 @@ export async function DELETE(
 ) {
   const admin = await verifyAdminToken(req.headers.get('authorization'));
   if (!admin) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  const space = await getAdminSpace(req.headers.get('authorization'));
+  if (!space) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const { id } = await params;
   if (!UUID_RE.test(id)) return NextResponse.json({ error: 'Bad id' }, { status: 400 });
 
   const supabase = getSupabase();
-  const { error } = await supabase.from('story_diary_entries').delete().eq('id', id);
+  const { error } = await supabase.from('story_diary_entries').delete().eq('id', id).eq('space', space);
   if (error) {
     console.error('[diary] delete error:', error.message);
     return NextResponse.json({ error: 'Could not delete entry' }, { status: 500 });
