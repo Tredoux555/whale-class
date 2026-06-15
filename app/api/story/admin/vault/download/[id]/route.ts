@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getSupabase, verifyAdminToken, verifyVaultToken } from '@/lib/story-db';
+import { getSupabase, verifyAdminToken, verifyVaultToken, isVaultOwner } from '@/lib/story-db';
 import crypto from 'crypto';
 
 // 🚨 Session 154 streaming fix — module-level memo of PBKDF2-derived keys.
@@ -141,6 +141,12 @@ export async function GET(
     const adminUsername = await verifyAdminToken(authHeader);
     if (!adminUsername) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    // Owner-space gate (defense-in-depth on top of the unlock choke point).
+    // Uses authHeader so the ?at= query-param token path is gated too.
+    if (!(await isVaultOwner(authHeader))) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
     // 🚨 Session 113 V2 Story audit F-2.1 — vault token mandatory.
