@@ -85,3 +85,29 @@ nothing changed for him). Riddick = `riddick`. The space rides in the admin JWT
   when ready.
 - **Wife / 3rd space:** add a `story_admin_users` row with a new `space` label. Zero new code.
 - **Per-space RLS policies:** optional defence-in-depth on top of the app-layer scoping.
+
+---
+
+## AS-DEPLOYED UPDATES (Jun 15 eve) — shipped to prod via git push
+
+**Deployed commits on `main`:** `767ea07d` (sanctuary + msg channel + teacherpotato
+isolation) → `886fc0cc` (vault lockdown) → `7bbee08e` (DNS/www middleware fix). All pushed.
+
+1. **Riddick login is LIVE.** Username **`R`**, password **`iddick`** (`space='riddick'`),
+   seeded in `story_admin_users`. He signs in at **`www.teacherpotato.xyz/riddick`** and
+   lands in his own sanctuary. (Tredoux can change the password later.)
+
+2. **DNS gotcha — use `www`.** The apex `teacherpotato.xyz` still resolves to a **dead
+   parking server** (15.197.225.128 / 3.33.251.168) and 404s everything; only
+   **`www.teacherpotato.xyz`** is attached to Railway. So `middleware.ts` was updated to
+   redirect whale-only routes to `https://www.teacherpotato.xyz` (not the apex). **Real
+   fix still open:** repoint the apex `teacherpotato.xyz` DNS at Railway to match `www`.
+
+3. **VAULT hard-locked to the owner (`tredoux`).** Highly sensitive media must never be
+   reachable from Riddick's (or any) space. Added `isVaultOwner()` / `VAULT_OWNER_SPACE`
+   in `lib/story-db.ts`. The **choke point** `app/api/story/admin/vault/unlock/route.ts`
+   now refuses any non-`tredoux` space (so no other space can ever mint a vault token →
+   every vault route is gated). Plus redundant owner-gates on the byte-serving routes:
+   `list`, `signed-download/[id]`, `thumbnail/[id]`, `download/[id]`. Write routes are
+   covered by the choke point (all require the vault token). Verified: `tsc` adds **0**
+   new errors from these edits; `next.config.ts` has `ignoreBuildErrors:true` anyway.
