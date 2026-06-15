@@ -83,7 +83,10 @@ export async function middleware(req: NextRequest) {
   // Block Whale-Class routes on montree.xyz — preserve query + hash so
   // song deep links (e.g. /whale-class#song-animal-habitats) survive the redirect.
   if (isMontree && isWhaleOnlyPath) {
-    const target = new URL(pathname, 'https://teacherpotato.xyz');
+    // Redirect to the WWW host: the apex teacherpotato.xyz still points at a dead
+    // parking server (15.197.225.128 / 3.33.251.168), but www.teacherpotato.xyz is
+    // attached to Railway and serves the app. (Jun 15, 2026.)
+    const target = new URL(pathname, 'https://www.teacherpotato.xyz');
     target.search = req.nextUrl.search;
     target.hash = req.nextUrl.hash;
     return NextResponse.redirect(target);
