@@ -24,12 +24,14 @@ export interface CoachDiaryEntry {
  */
 export async function readDiaryForCoach(
   supabase: SupabaseClient,
+  space: string,
   opts: { from?: string; to?: string; limit?: number; query?: string } = {},
 ): Promise<CoachDiaryEntry[]> {
   const limit = Math.max(1, Math.min(opts.limit ?? 14, 60));
   let q = supabase
     .from('story_diary_entries')
     .select('id, entry_date, mood, title_enc, body_enc, cipher_version')
+    .eq('space', space)
     .order('entry_date', { ascending: false })
     .order('created_at', { ascending: false })
     .limit(opts.query ? 120 : limit); // over-fetch when filtering by text
@@ -71,10 +73,11 @@ export interface CoachProject {
 }
 
 /** All projects, decrypted. active=true first, then by priority, then newest. */
-export async function readProjectsForCoach(supabase: SupabaseClient): Promise<CoachProject[]> {
+export async function readProjectsForCoach(supabase: SupabaseClient, space: string): Promise<CoachProject[]> {
   const { data, error } = await supabase
     .from('story_projects')
     .select('id, title_enc, why_enc, next_action_enc, status, priority, is_active, cipher_version, created_at')
+    .eq('space', space)
     .order('is_active', { ascending: false })
     .order('priority', { ascending: true, nullsFirst: false })
     .order('created_at', { ascending: false })
@@ -108,8 +111,8 @@ export interface LoadReport {
 }
 
 /** Compute current work-in-progress load vs the WIP ceiling. */
-export async function computeLoad(supabase: SupabaseClient): Promise<LoadReport> {
-  const all = await readProjectsForCoach(supabase);
+export async function computeLoad(supabase: SupabaseClient, space: string): Promise<LoadReport> {
+  const all = await readProjectsForCoach(supabase, space);
   const active = all.filter((p) => p.status === 'active');
   const paused = all.filter((p) => p.status === 'paused');
   return {
@@ -129,13 +132,14 @@ export interface WellbeingSignal {
 }
 
 /** Recent mood signal from the diary, last `days` days. */
-export async function wellbeingSignal(supabase: SupabaseClient, days = 14): Promise<WellbeingSignal> {
+export async function wellbeingSignal(supabase: SupabaseClient, space: string, days = 14): Promise<WellbeingSignal> {
   const since = new Date();
   since.setDate(since.getDate() - Math.max(1, Math.min(days, 90)));
   const sinceISO = since.toISOString().slice(0, 10);
   const { data, error } = await supabase
     .from('story_diary_entries')
     .select('entry_date, mood')
+    .eq('space', space)
     .gte('entry_date', sinceISO)
     .order('entry_date', { ascending: false })
     .limit(60);

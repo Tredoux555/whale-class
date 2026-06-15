@@ -24,7 +24,8 @@ export type WisdomTopic =
   | 'stoicism'
   | 'frankl'
   | 'mindset'
-  | 'sleep';
+  | 'sleep'
+  | 'narcissistic_dynamics';
 
 const FILES: Record<WisdomTopic, string> = {
   essentialism: 'essentialism.md',
@@ -41,6 +42,10 @@ const FILES: Record<WisdomTopic, string> = {
   frankl: 'frankl.md',
   mindset: 'mindset.md',
   sleep: 'sleep.md',
+  // On-demand only (NOT in getCoachWisdomSummary): pulled via consult_wisdom when
+  // Tredoux raises his mother / family / boundaries, so it never skews the
+  // every-turn productivity coaching. See system-prompt.ts tool-use trigger.
+  narcissistic_dynamics: 'narcissistic-dynamics.md',
 };
 
 export const WISDOM_TOPICS = Object.keys(FILES) as WisdomTopic[];

@@ -4,7 +4,7 @@
 // title/notes encrypted at rest; date + time plaintext for calendar rendering.
 
 import { NextRequest, NextResponse } from 'next/server';
-import { getSupabase, verifyAdminToken } from '@/lib/story-db';
+import { getSupabase, verifyAdminToken, getAdminSpace } from '@/lib/story-db';
 import {
   encryptDiaryField,
   encryptDiaryFieldOrNull,
@@ -22,6 +22,8 @@ const MAX_NOTES = 2000;
 export async function GET(req: NextRequest) {
   const admin = await verifyAdminToken(req.headers.get('authorization'));
   if (!admin) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  const space = await getAdminSpace(req.headers.get('authorization'));
+  if (!space) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   const url = new URL(req.url);
   const from = url.searchParams.get('from');
@@ -31,6 +33,7 @@ export async function GET(req: NextRequest) {
   let q = supabase
     .from('story_plan_events')
     .select('id, event_date, start_time, title_enc, notes_enc, cipher_version')
+    .eq('space', space)
     .order('event_date', { ascending: true })
     .order('start_time', { ascending: true, nullsFirst: true })
     .limit(2000);
@@ -56,6 +59,8 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   const admin = await verifyAdminToken(req.headers.get('authorization'));
   if (!admin) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  const space = await getAdminSpace(req.headers.get('authorization'));
+  if (!space) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   if (!isDiaryEncryptionConfigured()) {
     return NextResponse.json({ error: 'Encryption is not configured (STORY_DIARY_KEY).' }, { status: 500 });
   }
@@ -78,6 +83,7 @@ export async function POST(req: NextRequest) {
   const { data, error } = await supabase
     .from('story_plan_events')
     .insert({
+      space,
       event_date: eventDate,
       start_time: startTime,
       title_enc: encryptDiaryField(title),

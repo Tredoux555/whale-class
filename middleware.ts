@@ -63,7 +63,14 @@ export async function middleware(req: NextRequest) {
   // entries back here ('/whale-class', '/admin', '/teacher', '/story',
   // '/games', '/auth'). /api/* must stay excluded — APIs are gated by
   // per-route auth handlers and serve both products.
-  const WHALE_ONLY_PREFIXES: string[] = [];
+  // Jun 15, 2026: teacherpotato.xyz is serving the Railway deploy again, so the
+  // private sanctuary is isolated to it — /riddick (Riddick's door) and /story
+  // (the personal platform + story system) now redirect OFF montree.xyz to
+  // teacherpotato.xyz. The family sanctuary must never be reachable on the public
+  // product domain. The rest of the split (/admin, /teacher, /games, /auth,
+  // /whale-class) stays deferred. NOTE: '/story' here only matches page routes —
+  // '/api/story/*' starts with '/api', so the APIs are untouched and serve both.
+  const WHALE_ONLY_PREFIXES: string[] = ['/riddick', '/story'];
   const isWhaleOnlyPath = WHALE_ONLY_PREFIXES.some(
     (p) => pathname === p || pathname.startsWith(p + '/'),
   );
@@ -254,6 +261,7 @@ export async function middleware(req: NextRequest) {
     '/games',      // Games hub and all game routes
     '/debug',      // Debug pages
     '/story',      // Story system (has its own auth)
+    '/riddick',    // Riddick's sanctuary door (story-admin auth via the form)
     '/montree',    // Montree app - has its own auth system (teacher/parent logins)
     '/auth/login',
     '/auth/signup',

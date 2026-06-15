@@ -51,6 +51,28 @@ export async function verifyAdminToken(authHeader: string | null): Promise<strin
   }
 }
 
+// Resolve the caller's SANCTUARY SPACE from a verified admin token. Personal
+// routes use this to scope every read/write so one person's sanctuary can never
+// see another's. Non-breaking: separate from verifyAdminToken (which still just
+// returns the username). Defaults to 'tredoux' for legacy tokens minted before
+// the `space` claim existed (they expire within 24h anyway).
+//
+// Returns null when the token is missing/invalid/not-admin — callers MUST treat
+// null as "deny" (same as a failed verifyAdminToken).
+export async function getAdminSpace(authHeader: string | null): Promise<string | null> {
+  if (!authHeader) return null;
+  try {
+    const { jwtVerify } = await import('jose');
+    const token = authHeader.replace('Bearer ', '');
+    const { payload } = await jwtVerify(token, getJWTSecret());
+    if (payload.role !== 'admin') return null;
+    const space = payload.space;
+    return typeof space === 'string' && space ? space : 'tredoux';
+  } catch {
+    return null;
+  }
+}
+
 export async function verifyUserToken(authHeader: string | null): Promise<string | null> {
   if (!authHeader) return null;
   try {

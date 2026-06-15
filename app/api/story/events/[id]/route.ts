@@ -3,7 +3,7 @@
 // Planner event — update / delete. Story-admin only.
 
 import { NextRequest, NextResponse } from 'next/server';
-import { getSupabase, verifyAdminToken } from '@/lib/story-db';
+import { getSupabase, verifyAdminToken, getAdminSpace } from '@/lib/story-db';
 import {
   encryptDiaryField,
   encryptDiaryFieldOrNull,
@@ -21,6 +21,8 @@ const MAX_NOTES = 2000;
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const admin = await verifyAdminToken(req.headers.get('authorization'));
   if (!admin) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  const space = await getAdminSpace(req.headers.get('authorization'));
+  if (!space) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const { id } = await params;
   if (!UUID_RE.test(id)) return NextResponse.json({ error: 'Bad id' }, { status: 400 });
   if (!isDiaryEncryptionConfigured()) {
@@ -59,6 +61,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     .from('story_plan_events')
     .update(patch)
     .eq('id', id)
+    .eq('space', space)
     .select('id')
     .maybeSingle();
   if (error) {
@@ -72,11 +75,13 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const admin = await verifyAdminToken(req.headers.get('authorization'));
   if (!admin) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  const space = await getAdminSpace(req.headers.get('authorization'));
+  if (!space) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const { id } = await params;
   if (!UUID_RE.test(id)) return NextResponse.json({ error: 'Bad id' }, { status: 400 });
 
   const supabase = getSupabase();
-  const { error } = await supabase.from('story_plan_events').delete().eq('id', id);
+  const { error } = await supabase.from('story_plan_events').delete().eq('id', id).eq('space', space);
   if (error) {
     console.error('[events] delete error:', error.message);
     return NextResponse.json({ error: 'Could not delete event' }, { status: 500 });

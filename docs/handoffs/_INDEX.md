@@ -10,6 +10,12 @@ Short map of where the truth lives. When in doubt: **HANDOFF_LATEST.md first.**
   history, migration log, don't-break-these). Read after HANDOFF_LATEST.
 
 ## 2. Currently relevant docs (Jun 2026)
+- `docs/handoffs/HANDOFF_RIDDICK_SANCTUARY.md` — ✅ BUILT (Jun 15): multi-space
+  personal platform. Migrations 261+262 RUN in prod; code in repo NOT yet
+  committed/deployed. Riddick = space `riddick` at `/riddick`; per-space data
+  isolation + father↔son message channel (`story_sanctuary_messages`). Next:
+  `npm run build`, set riddick's password, commit + deploy.
+- `docs/plans/RIDDICK_SANCTUARY_SPACES_PLAN.md` — the design rationale for the above.
 - `docs/APPLE_REVIEW_DEMO_SCHOOL.md` — Apple reviewer demo school (codes
   WYXMN9 / BAM4S9; ⚠️ trial expires Jun 19).
 - `docs/DNS_ERROR_1034_FIX.md` — Cloudflare Error 1034 fix (flip montree.xyz +

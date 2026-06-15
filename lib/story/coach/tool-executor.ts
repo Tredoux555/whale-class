@@ -20,6 +20,8 @@ import {
 
 export interface CoachToolDeps {
   supabase: SupabaseClient;
+  /** The caller's sanctuary space — every read/write is scoped to it. */
+  space: string;
 }
 
 export interface CoachToolResult {
@@ -52,11 +54,11 @@ export async function executeCoachTool(
   input: Record<string, unknown>,
   deps: CoachToolDeps,
 ): Promise<CoachToolResult> {
-  const { supabase } = deps;
+  const { supabase, space } = deps;
   try {
     switch (name) {
       case 'read_diary': {
-        const entries = await readDiaryForCoach(supabase, {
+        const entries = await readDiaryForCoach(supabase, space, {
           from: str(input.from),
           to: str(input.to),
           limit: num(input.limit),
@@ -66,12 +68,12 @@ export async function executeCoachTool(
       }
 
       case 'read_projects': {
-        const projects = await readProjectsForCoach(supabase);
+        const projects = await readProjectsForCoach(supabase, space);
         return { success: true, result_summary: `${projects.length} projects`, data: { projects } };
       }
 
       case 'check_load': {
-        const load = await computeLoad(supabase);
+        const load = await computeLoad(supabase, space);
         return {
           success: true,
           result_summary: `active ${load.active_count}/${load.wip_limit}${load.over_limit ? ' (over limit)' : ''}`,
@@ -81,11 +83,11 @@ export async function executeCoachTool(
 
       case 'plan_day': {
         const [load, recent, well] = await Promise.all([
-          computeLoad(supabase),
-          readDiaryForCoach(supabase, { limit: 4 }),
-          wellbeingSignal(supabase, 10),
+          computeLoad(supabase, space),
+          readDiaryForCoach(supabase, space, { limit: 4 }),
+          wellbeingSignal(supabase, space, 10),
         ]);
-        const memories = await recallCoachMemories(supabase, {}, 50);
+        const memories = await recallCoachMemories(supabase, space, {}, 50);
         return {
           success: true,
           result_summary: 'gathered day-plan context',
@@ -104,11 +106,11 @@ export async function executeCoachTool(
         const since = new Date();
         since.setDate(since.getDate() - 7);
         const [load, week, well] = await Promise.all([
-          computeLoad(supabase),
-          readDiaryForCoach(supabase, { from: since.toISOString().slice(0, 10), limit: 20 }),
-          wellbeingSignal(supabase, 14),
+          computeLoad(supabase, space),
+          readDiaryForCoach(supabase, space, { from: since.toISOString().slice(0, 10), limit: 20 }),
+          wellbeingSignal(supabase, space, 14),
         ]);
-        const memories = await recallCoachMemories(supabase, {}, 50);
+        const memories = await recallCoachMemories(supabase, space, {}, 50);
         return {
           success: true,
           result_summary: 'gathered week-plan context',
@@ -124,8 +126,8 @@ export async function executeCoachTool(
       }
 
       case 'wellbeing_check': {
-        const well = await wellbeingSignal(supabase, num(input.days) ?? 14);
-        const memories = await recallCoachMemories(supabase, { memory_type: 'health_goal' }, 20);
+        const well = await wellbeingSignal(supabase, space, num(input.days) ?? 14);
+        const memories = await recallCoachMemories(supabase, space, { memory_type: 'health_goal' }, 20);
         return {
           success: true,
           result_summary: `${well.entries_in_window} entries in window`,
@@ -146,6 +148,7 @@ export async function executeCoachTool(
         const memType = str(input.memory_type) as CoachMemoryType | undefined;
         const memories = await recallCoachMemories(
           supabase,
+          space,
           { memory_type: memType && MEMORY_TYPES.has(memType) ? memType : undefined, query: str(input.query) },
           25,
         );
@@ -158,7 +161,7 @@ export async function executeCoachTool(
         if (!memType || !MEMORY_TYPES.has(memType)) {
           return { success: false, result_summary: 'bad memory_type', error: 'memory_type invalid' };
         }
-        const res = await writeCoachMemory(supabase, {
+        const res = await writeCoachMemory(supabase, space, {
           memory_type: memType,
           content,
           supersedes_id: str(input.supersedes_id) || null,
@@ -176,6 +179,7 @@ export async function executeCoachTool(
           const { data, error } = await supabase
             .from('story_projects')
             .insert({
+              space,
               title_enc: encryptDiaryField(title),
               why_enc: encryptDiaryFieldOrNull(str(input.why) ?? null),
               next_action_enc: encryptDiaryFieldOrNull(str(input.next_action) ?? null),
@@ -213,6 +217,7 @@ export async function executeCoachTool(
           .from('story_projects')
           .update(patch)
           .eq('id', id)
+          .eq('space', space)
           .select('id, status')
           .maybeSingle();
         if (error) return { success: false, result_summary: 'update failed', error: error.message };
@@ -230,6 +235,7 @@ export async function executeCoachTool(
         const { data, error } = await supabase
           .from('story_plan_events')
           .insert({
+            space,
             event_date: date,
             start_time: startTime,
             title_enc: encryptDiaryField(title.slice(0, 300)),
@@ -256,6 +262,7 @@ export async function executeCoachTool(
         const { data, error } = await supabase
           .from('story_diary_entries')
           .insert({
+            space,
             entry_date: entryDate,
             mood,
             title_enc: encryptDiaryFieldOrNull(title),
