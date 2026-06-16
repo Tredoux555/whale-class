@@ -1742,6 +1742,7 @@ export const fr: Record<string, string> = {
   'home.portal.playing': 'En lecture',
   'home.portal.generating': 'Génération en cours...',
   'home.shelf.title': 'Votre Étagère',
+  'home.shelf.howTo': 'Comment',
   'home.shelf.loading': 'Chargement de l\'étagère...',
   'home.shelf.emptyMessage': 'Vos étagères vous attendent ! Discutez avec votre guide dans le Portail pour obtenir des suggestions de travaux personnalisées.',
   'home.shelf.tapToPresent': 'Appuyez sur un travail pour voir comment le présenter',

@@ -1742,6 +1742,7 @@ export const ru: Record<string, string> = {
   'home.portal.playing': 'Воспроизведение',
   'home.portal.generating': 'Создание...',
   'home.shelf.title': 'Ваша полка',
+  'home.shelf.howTo': 'Как',
   'home.shelf.loading': 'Загрузка полки...',
   'home.shelf.emptyMessage': 'Ваши полки ждут! Пообщайтесь со своим гидом на Портале, чтобы получить персональные рекомендации работ.',
   'home.shelf.tapToPresent': 'Нажмите на работу, чтобы посмотреть, как её презентовать',

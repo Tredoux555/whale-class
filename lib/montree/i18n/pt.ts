@@ -1742,6 +1742,7 @@ export const pt: Record<string, string> = {
   'home.portal.playing': 'Reproduzindo',
   'home.portal.generating': 'Gerando...',
   'home.shelf.title': 'Sua Prateleira',
+  'home.shelf.howTo': 'Como fazer',
   'home.shelf.loading': 'Carregando prateleira...',
   'home.shelf.emptyMessage': 'Suas prateleiras estão esperando! Converse com seu guia no Portal para obter sugestões de trabalho personalizadas.',
   'home.shelf.tapToPresent': 'Toque em um trabalho para ver como apresentá-lo',
