@@ -60,6 +60,21 @@ function templateWork(weekOf: string): WeeklyWork {
   };
 }
 
+function templateWorkExtra(weekOf: string): WeeklyWork {
+  return {
+    week_of: weekOf,
+    title: 'A Sorting Tray',
+    the_idea: 'A small tray with two bowls and a handful of objects in two clear groups (buttons by colour, or spoons and forks) for your child to sort.',
+    what_it_builds: 'The ordering mind — noticing what is the same and what is different, the root of early maths and language.',
+    materials: ['A tray', 'Two small bowls', 'A handful of objects in two obvious groups (two colours, or two kinds of thing)'],
+    make_it: ['Put the mixed objects in one bowl on the left.', 'Set the two empty bowls to the right.', 'Keep it to about 8–10 objects so it stays doable.'],
+    how_to_present: ['Sit beside your child. Slowly pick one object and look at it.', 'Place it in one bowl, saying very little.', 'Pick a different kind and place it in the other bowl.', 'Then invite: "Now you." Let them sort, and repeat as they like.'],
+    variation: 'When two groups are easy, try three — or sort by a new rule (rough/smooth, heavy/light).',
+    source: 'template',
+    source_url: null,
+  };
+}
+
 const WEEKLY_WORK_TOOL = {
   name: 'weekly_diy_work',
   description: 'Return one make-it-at-home Montessori DIY work for the week.',
@@ -141,59 +156,88 @@ export async function getWeeklyWork(supabase: SupabaseClient, args: WeeklyWorkAr
     }
   } catch { /* fall through */ }
 
-  // 3. Generate (tier-aware).
-  if (args.model && anthropic) {
-    // Ground in the child's current focus area (best-effort, cheap).
-    let focusHint = '';
+  // 3. Generate (tier-aware), then cache for the week.
+  const generated = await aiGenerateWork(
+    supabase,
+    { childId: args.childId, childName: args.childName, ageYears, model: args.model },
+    { weekOf, fresh: false },
+  );
+  if (generated) {
     try {
-      const { data: fw } = await supabase
-        .from('montree_child_focus_works')
-        .select('area, work_name')
-        .eq('child_id', args.childId)
-        .limit(1)
-        .maybeSingle();
-      if (fw?.area) focusHint = `They're currently focused on ${AREA_LABELS[fw.area as string] || fw.area}${fw.work_name ? ` (${fw.work_name})` : ''} — a related home work is ideal but not required.`;
-    } catch { /* optional */ }
-
-    const ageBit = typeof ageYears === 'number' && ageYears > 0 ? `about ${Math.round(ageYears * 10) / 10} years old` : '3 to 6 years old';
-    try {
-      const resp = await anthropic.messages.create({
-        model: args.model,
-        max_tokens: 1500,
-        system: `You are Ivy, a warm Montessori guide. Design ONE "make-it-at-home" DIY work for a child ${ageBit}, for a parent with no Montessori training to build this week from common household items. ${focusHint}
-Honour real Montessori principles: a clear single purpose, isolate one difficulty, control of error where possible, slow few-word presentation, child does it themselves and repeats. Keep materials genuinely household and the build genuinely doable. Warm, plain language. Return it via the weekly_diy_work tool.`,
-        tools: [WEEKLY_WORK_TOOL],
-        tool_choice: { type: 'tool', name: 'weekly_diy_work' },
-        messages: [{ role: 'user', content: `Make this week's DIY work for ${args.childName || 'my child'} (${ageBit}).` }],
-      });
-      const block = resp.content.find((b) => b.type === 'tool_use');
-      if (block && block.type === 'tool_use') {
-        const out = block.input as Record<string, unknown>;
-        const work: WeeklyWork = {
-          week_of: weekOf,
-          title: String(out.title || 'This week\'s work'),
-          the_idea: String(out.the_idea || ''),
-          what_it_builds: String(out.what_it_builds || ''),
-          materials: asStringArray(out.materials),
-          make_it: asStringArray(out.make_it),
-          how_to_present: asStringArray(out.how_to_present),
-          variation: typeof out.variation === 'string' ? out.variation : null,
-          source: 'generated',
-          source_url: null,
-        };
-        // Cache weekly (read-merge-write, preserve other companion keys).
-        try {
-          const companion = (settings.companion as Record<string, unknown>) || {};
-          const merged = { ...settings, companion: { ...companion, weekly_work: { week_of: weekOf, work } } };
-          await supabase.from('montree_children').update({ settings: merged }).eq('id', args.childId);
-        } catch { /* cache best-effort */ }
-        return work;
-      }
-    } catch (err) {
-      console.warn('[companion/weekly-work] generation failed, using template:', err instanceof Error ? err.message : 'unknown');
-    }
+      const companion = (settings.companion as Record<string, unknown>) || {};
+      const merged = { ...settings, companion: { ...companion, weekly_work: { week_of: weekOf, work: generated } } };
+      await supabase.from('montree_children').update({ settings: merged }).eq('id', args.childId);
+    } catch { /* cache best-effort */ }
+    return generated;
   }
 
-  // 4. Template fallback.
+  // 4. Template fallback (always available, free).
   return templateWork(weekOf);
+}
+
+/** Generate one DIY work via AI (no caching). Returns null with no AI / on failure. */
+async function aiGenerateWork(
+  supabase: SupabaseClient,
+  args: { childId: string; childName?: string; ageYears: number | null; model: string | null },
+  opts: { weekOf: string; fresh: boolean },
+): Promise<WeeklyWork | null> {
+  if (!args.model || !anthropic) return null;
+
+  let focusHint = '';
+  try {
+    const { data: fw } = await supabase
+      .from('montree_child_focus_works')
+      .select('area, work_name')
+      .eq('child_id', args.childId)
+      .limit(1)
+      .maybeSingle();
+    if (fw?.area) focusHint = `They're currently focused on ${AREA_LABELS[fw.area as string] || fw.area}${fw.work_name ? ` (${fw.work_name})` : ''} — a related home work is ideal but not required.`;
+  } catch { /* optional */ }
+
+  const ageBit = typeof args.ageYears === 'number' && args.ageYears > 0 ? `about ${Math.round(args.ageYears * 10) / 10} years old` : '3 to 6 years old';
+  const freshNudge = opts.fresh ? ' Make a DIFFERENT activity from the usual — something fresh, ideally touching a different area or interest.' : '';
+  try {
+    const resp = await anthropic.messages.create({
+      model: args.model,
+      max_tokens: 1500,
+      system: `You are Ivy, a warm Montessori guide. Design ONE "make-it-at-home" DIY work for a child ${ageBit}, for a parent with no Montessori training to build from common household items.${freshNudge} ${focusHint}
+Honour real Montessori principles: a clear single purpose, isolate one difficulty, control of error where possible, slow few-word presentation, child does it themselves and repeats. Keep materials genuinely household and the build genuinely doable. Warm, plain language. Return it via the weekly_diy_work tool.`,
+      tools: [WEEKLY_WORK_TOOL],
+      tool_choice: { type: 'tool', name: 'weekly_diy_work' },
+      messages: [{ role: 'user', content: `Make a DIY work for ${args.childName || 'my child'} (${ageBit}).` }],
+    });
+    const block = resp.content.find((b) => b.type === 'tool_use');
+    if (block && block.type === 'tool_use') {
+      const out = block.input as Record<string, unknown>;
+      return {
+        week_of: opts.weekOf,
+        title: String(out.title || 'A little work'),
+        the_idea: String(out.the_idea || ''),
+        what_it_builds: String(out.what_it_builds || ''),
+        materials: asStringArray(out.materials),
+        make_it: asStringArray(out.make_it),
+        how_to_present: asStringArray(out.how_to_present),
+        variation: typeof out.variation === 'string' ? out.variation : null,
+        source: 'generated',
+        source_url: null,
+      };
+    }
+  } catch (err) {
+    console.warn('[companion/weekly-work] generation failed:', err instanceof Error ? err.message : 'unknown');
+  }
+  return null;
+}
+
+/**
+ * An EXTRA DIY work — the "$1 DIY plan" upgrade. Fresh each call, never cached as
+ * the weekly one. Entitlement (diy_plan) is checked by the caller, not here.
+ */
+export async function generateExtraWork(supabase: SupabaseClient, args: WeeklyWorkArgs): Promise<WeeklyWork> {
+  const weekOf = weekOfMonday();
+  const gen = await aiGenerateWork(
+    supabase,
+    { childId: args.childId, childName: args.childName, ageYears: args.childAgeYears ?? null, model: args.model },
+    { weekOf, fresh: true },
+  );
+  return gen || templateWorkExtra(weekOf);
 }
