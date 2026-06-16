@@ -115,7 +115,13 @@ export type FeatureKey =
   | 'menu_manage_students'
   | 'menu_class_progress'
   | 'menu_language_semester'
-  | 'menu_classroom_setup';
+  | 'menu_classroom_setup'
+  // ── Home companion (Ivy) ───────────────────────────────────────────────
+  // The $1 "DIY plan" — every family gets ONE make-it-at-home work free each
+  // week; this entitlement unlocks extra DIY works on demand. Migration 264
+  // tables back the rest of the home system. Default OFF; flip on per family
+  // (school) when they buy the DIY plan. See lib/montree/companion/weekly-work.ts.
+  | 'diy_plan';
 
 export interface MontreeFeature {
   feature_key: FeatureKey;

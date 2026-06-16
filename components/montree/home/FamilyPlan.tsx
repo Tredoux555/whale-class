@@ -4,7 +4,7 @@
 // drops the parent back into the conversation.
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, type ReactNode } from 'react';
 import { BIO } from '@/lib/montree/bioluminescent-theme';
 
 interface HomeEvent {
@@ -48,6 +48,49 @@ function timeLabel(iso: string, allDay: boolean): string {
   catch { return ''; }
 }
 
+// A collapsible DIY-work card — used for the free weekly work and any extras.
+function WorkCard({ work, badge, footer }: { work: WeeklyWork; badge: string; footer?: ReactNode }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className={`rounded-2xl border ${BIO.border.glow} ${BIO.bg.cardSolid} overflow-hidden`} style={{ boxShadow: BIO.glow.soft }}>
+      <button onClick={() => setOpen((v) => !v)} className="w-full text-left px-4 pt-3.5 pb-3">
+        <div className="flex items-center gap-2">
+          <span className={`text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full ${BIO.bg.amberSubtle} ${BIO.text.amber}`}>{badge}</span>
+          <span className={`ml-auto ${BIO.text.muted} text-xs`}>{open ? '▾' : '▸'}</span>
+        </div>
+        <h3 className={`mt-1.5 text-base font-semibold ${BIO.text.primary}`}>{work.title}</h3>
+        <p className={`mt-1 text-[13px] leading-relaxed ${BIO.text.secondary}`}>{work.the_idea}</p>
+      </button>
+      {open && (
+        <div className={`px-4 pb-4 border-t ${BIO.border.subtle} pt-3 space-y-3`}>
+          {work.what_it_builds && (
+            <p className={`text-[13px] leading-relaxed ${BIO.text.secondary}`}><span className={BIO.text.mint}>Why it matters: </span>{work.what_it_builds}</p>
+          )}
+          {work.materials.length > 0 && (
+            <div>
+              <div className={`text-[11px] font-semibold uppercase tracking-wider ${BIO.text.secondary}`}>🧺 What you&apos;ll need</div>
+              <ul className="mt-1.5 space-y-1">{work.materials.map((m, i) => <li key={i} className={`text-[13px] ${BIO.text.primary} flex gap-2`}><span className="opacity-60">•</span>{m}</li>)}</ul>
+            </div>
+          )}
+          {work.make_it.length > 0 && (
+            <div>
+              <div className={`text-[11px] font-semibold uppercase tracking-wider ${BIO.text.secondary}`}>🌿 Make it</div>
+              <ol className="mt-1.5 space-y-1">{work.make_it.map((s, i) => <li key={i} className={`text-[13px] ${BIO.text.primary}`}>{i + 1}. {s}</li>)}</ol>
+            </div>
+          )}
+          {work.how_to_present.length > 0 && (
+            <div>
+              <div className={`text-[11px] font-semibold uppercase tracking-wider ${BIO.text.secondary}`}>👐 Show it</div>
+              <ol className="mt-1.5 space-y-1">{work.how_to_present.map((s, i) => <li key={i} className={`text-[13px] ${BIO.text.primary}`}>{i + 1}. {s}</li>)}</ol>
+            </div>
+          )}
+          {footer}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function FamilyPlan({
   childId,
   refreshTrigger,
@@ -60,7 +103,9 @@ export default function FamilyPlan({
   const [events, setEvents] = useState<HomeEvent[]>([]);
   const [routines, setRoutines] = useState<Routine[]>([]);
   const [weekly, setWeekly] = useState<WeeklyWork | null>(null);
-  const [weeklyOpen, setWeeklyOpen] = useState(false);
+  const [diyPlan, setDiyPlan] = useState(false);
+  const [extras, setExtras] = useState<WeeklyWork[]>([]);
+  const [generatingExtra, setGeneratingExtra] = useState(false);
   const [loading, setLoading] = useState(true);
 
   const load = useCallback(async () => {
@@ -81,13 +126,27 @@ export default function FamilyPlan({
     (async () => {
       try {
         const r = await fetch(`/api/montree/companion/weekly-work?child_id=${childId}`);
-        if (r.ok) { const d = await r.json(); if (!cancelled && d.work) setWeekly(d.work as WeeklyWork); }
+        if (r.ok) { const d = await r.json(); if (!cancelled) { if (d.work) setWeekly(d.work as WeeklyWork); setDiyPlan(!!d.diy_plan); } }
       } catch { /* optional */ }
     })();
     return () => { cancelled = true; };
   }, [childId]);
 
   useEffect(() => { load(); }, [load, refreshTrigger]);
+
+  // The $1 DIY plan: make an extra work beyond this week's free one.
+  const makeAnother = useCallback(async () => {
+    if (generatingExtra) return;
+    setGeneratingExtra(true);
+    try {
+      const r = await fetch('/api/montree/companion/weekly-work', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ child_id: childId }),
+      });
+      if (r.ok) { const d = await r.json(); if (d.work) setExtras((prev) => [...prev, d.work as WeeklyWork]); }
+      else if (r.status === 402) { setDiyPlan(false); } // entitlement lapsed → show the upsell
+    } catch { /* ignore */ }
+    finally { setGeneratingExtra(false); }
+  }, [childId, generatingExtra]);
 
   // Group events by day.
   const groups: Array<{ day: string; items: HomeEvent[] }> = [];
@@ -113,44 +172,38 @@ export default function FamilyPlan({
       <h2 className={`text-lg font-semibold ${BIO.text.primary}`}>Your week</h2>
       <p className={`text-xs mt-0.5 ${BIO.text.muted}`}>Ask Ivy to add anything — appointments, activities, your own reminders.</p>
 
-      {/* This week's make-it-at-home DIY work */}
+      {/* This week's free make-it-at-home DIY work, any extras, and the DIY plan */}
       {weekly && (
-        <div className={`mt-4 rounded-2xl border ${BIO.border.glow} ${BIO.bg.cardSolid} overflow-hidden`} style={{ boxShadow: BIO.glow.soft }}>
-          <button onClick={() => setWeeklyOpen((v) => !v)} className="w-full text-left px-4 pt-3.5 pb-3">
-            <div className="flex items-center gap-2">
-              <span className={`text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full ${BIO.bg.amberSubtle} ${BIO.text.amber}`}>🛠️ Make it this week</span>
-              <span className={`ml-auto ${BIO.text.muted} text-xs`}>{weeklyOpen ? '▾' : '▸'}</span>
-            </div>
-            <h3 className={`mt-1.5 text-base font-semibold ${BIO.text.primary}`}>{weekly.title}</h3>
-            <p className={`mt-1 text-[13px] leading-relaxed ${BIO.text.secondary}`}>{weekly.the_idea}</p>
-          </button>
-          {weeklyOpen && (
-            <div className={`px-4 pb-4 border-t ${BIO.border.subtle} pt-3 space-y-3`}>
-              {weekly.what_it_builds && (
-                <p className={`text-[13px] leading-relaxed ${BIO.text.secondary}`}><span className={BIO.text.mint}>Why it matters: </span>{weekly.what_it_builds}</p>
-              )}
-              {weekly.materials.length > 0 && (
-                <div>
-                  <div className={`text-[11px] font-semibold uppercase tracking-wider ${BIO.text.secondary}`}>🧺 What you&apos;ll need</div>
-                  <ul className="mt-1.5 space-y-1">
-                    {weekly.materials.map((m, i) => <li key={i} className={`text-[13px] ${BIO.text.primary} flex gap-2`}><span className="opacity-60">•</span>{m}</li>)}
-                  </ul>
-                </div>
-              )}
-              {weekly.make_it.length > 0 && (
-                <div>
-                  <div className={`text-[11px] font-semibold uppercase tracking-wider ${BIO.text.secondary}`}>🌿 Make it</div>
-                  <ol className="mt-1.5 space-y-1">
-                    {weekly.make_it.map((s, i) => <li key={i} className={`text-[13px] ${BIO.text.primary}`}>{i + 1}. {s}</li>)}
-                  </ol>
-                </div>
-              )}
-              <button
-                onClick={() => onAskIvy(`Walk me through this week's work to make: "${weekly.title}".`)}
-                className={`w-full py-2.5 rounded-full text-sm ${BIO.btn.mint}`}
-              >
-                Make it with Ivy
-              </button>
+        <div className="mt-4 space-y-3">
+          <WorkCard
+            work={weekly}
+            badge="🛠️ Make it this week"
+            footer={<button onClick={() => onAskIvy(`Walk me through this week's work to make: "${weekly.title}".`)} className={`w-full py-2.5 rounded-full text-sm ${BIO.btn.mint}`}>Make it with Ivy</button>}
+          />
+          {extras.map((w, i) => (
+            <WorkCard
+              key={i}
+              work={w}
+              badge="✨ Extra work"
+              footer={<button onClick={() => onAskIvy(`Walk me through making: "${w.title}".`)} className={`w-full py-2.5 rounded-full text-sm ${BIO.btn.mint}`}>Make it with Ivy</button>}
+            />
+          ))}
+          {diyPlan ? (
+            <button
+              onClick={makeAnother}
+              disabled={generatingExtra}
+              className={`w-full py-2.5 rounded-full text-sm ${BIO.btn.outline} disabled:opacity-50`}
+            >
+              {generatingExtra ? 'Making another…' : '✨ Make another'}
+            </button>
+          ) : (
+            <div className={`rounded-2xl border ${BIO.border.subtle} ${BIO.bg.cardSolid} px-4 py-3.5`}>
+              <p className={`text-[13px] leading-relaxed ${BIO.text.secondary}`}>
+                One make-it work is free every week. Want a fresh activity whenever you like?
+              </p>
+              <a href="/montree/admin/billing" className={`mt-2.5 inline-block px-4 py-2 rounded-full text-sm ${BIO.btn.mint}`}>
+                Unlock the DIY plan · $1
+              </a>
             </div>
           )}
         </div>
