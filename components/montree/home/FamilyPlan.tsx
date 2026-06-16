@@ -103,6 +103,7 @@ export default function FamilyPlan({
   const [events, setEvents] = useState<HomeEvent[]>([]);
   const [routines, setRoutines] = useState<Routine[]>([]);
   const [weekly, setWeekly] = useState<WeeklyWork | null>(null);
+  const [weeklyLoading, setWeeklyLoading] = useState(true);
   const [diyPlan, setDiyPlan] = useState(false);
   const [extras, setExtras] = useState<WeeklyWork[]>([]);
   const [generatingExtra, setGeneratingExtra] = useState(false);
@@ -128,6 +129,7 @@ export default function FamilyPlan({
         const r = await fetch(`/api/montree/companion/weekly-work?child_id=${childId}`);
         if (r.ok) { const d = await r.json(); if (!cancelled) { if (d.work) setWeekly(d.work as WeeklyWork); setDiyPlan(!!d.diy_plan); } }
       } catch { /* optional */ }
+      finally { if (!cancelled) setWeeklyLoading(false); }
     })();
     return () => { cancelled = true; };
   }, [childId]);
@@ -173,6 +175,12 @@ export default function FamilyPlan({
       <p className={`text-xs mt-0.5 ${BIO.text.muted}`}>Ask Ivy to add anything — appointments, activities, your own reminders.</p>
 
       {/* This week's free make-it-at-home DIY work, any extras, and the DIY plan */}
+      {!weekly && weeklyLoading && (
+        <div className={`mt-4 rounded-2xl border ${BIO.border.subtle} ${BIO.bg.cardSolid} px-4 py-4 flex items-center gap-3`}>
+          <span className="animate-pulse text-xl">🛠️</span>
+          <p className={`text-[13px] ${BIO.text.secondary}`}>Ivy is preparing this week&apos;s make-it activity…</p>
+        </div>
+      )}
       {weekly && (
         <div className="mt-4 space-y-3">
           <WorkCard

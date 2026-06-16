@@ -331,9 +331,12 @@ export async function POST(request: NextRequest) {
     }
   })();
 
-  // Greeting trigger → a gentle internal opener (not logged).
+  // Greeting trigger → a gentle internal opener (not logged). Kept FAST: name the
+  // next step in words and offer to walk through it — do NOT open the full Step
+  // Card or call tools on the greeting, so the app-open is snappy (one text turn),
+  // not a 40s+ wait while a card is generated. The card comes when they say yes.
   if (isGreeting) {
-    question = `(${parentName || 'The parent'} just opened the app.) Greet them warmly and briefly — surface the ONE next thing for ${childName}, or if you don't yet know what ${childName} loves, invite a photo of what they're drawn to right now. One step, then stop.`;
+    question = `(${parentName || 'The parent'} just opened the app.) Give a short, warm greeting — a sentence or two. Name in plain words what ${childName}'s next step is and offer to walk them through it, OR if you don't yet know what ${childName} loves, invite a photo of what they're drawn to. Do NOT open the full step card or call any tools on this turn — wait for them to say yes. Keep it brief and warm.`;
   }
 
   // Sanitize client history → text-only (fallback only).
