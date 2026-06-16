@@ -92,6 +92,16 @@ chain reliability that are the whole point. **Recommendation: keep Sonnet** — 
 low-volume, cost is trivial, quality is where it matters. Pull the caching lever (already on),
 not the model lever.
 
+**🏠 Home economics (answered Jun 16) — $8/mo ONLY works on the Haiku floor.** Step Card
+generation (`lib/montree/companion/present.ts`) is tier-resolved via `resolveReportModel`, NOT
+hardcoded — Haiku unless `ai_tier_sonnet` is ON for the school. Per-tap: ~$0.004 Haiku /
+~$0.015 Sonnet (single call, max_tokens 2048, HTTP-cached 5 min). Dominant home cost is **Ivy
+chat**: ~$3–14/mo per family on Haiku (light→heavy), ~$8–30 on Sonnet. So $8/mo holds on Haiku;
+Sonnet-everywhere ≈ $30 (Tredoux's read). **Action next session:** verify Tredoux House + home
+schools have `ai_tier_sonnet` OFF (lock the Haiku floor for home); Sonnet stays for the Coach
+only. Premium "$30 Sonnet Home" tier = per-family flag flip if ever wanted. Cheap win: prompt-
+cache the Step Card system prefix (static prompt + tool schema).
+
 ---
 
 ## 🧠 SESSION — Jun 14, 2026 (Cowork eve) — Personal Platform (Sanctuary) BUILT + DEPLOYED
