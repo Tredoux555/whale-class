@@ -20,6 +20,7 @@ export interface MontreeSession {
     id: string;
     name: string;
     slug: string;
+    plan_type?: string;
   };
   classroom: {
     id: string;
@@ -113,4 +114,14 @@ export async function recoverSession(): Promise<MontreeSession | null> {
 export function isHomeschoolParent(session?: MontreeSession | null): boolean {
   const s = session ?? getSession();
   return s?.teacher?.role === 'homeschool_parent';
+}
+
+// True for the home / Ivy experience: a homeschool parent, OR the founder
+// (teacher/principal) of a homeschool school. Lets a homeschool's owner use Ivy
+// regardless of which role their login happens to carry. Real multi-classroom
+// schools (plan_type !== 'homeschool') stay out of the parent home view.
+export function isHomeschoolContext(session?: MontreeSession | null): boolean {
+  const s = session ?? getSession();
+  if (!s) return false;
+  return s.teacher?.role === 'homeschool_parent' || s.school?.plan_type === 'homeschool';
 }

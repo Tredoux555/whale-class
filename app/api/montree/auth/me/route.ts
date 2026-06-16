@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
     const [teacherRes, adminRes, schoolRes, classroomRes] = await Promise.all([
       supabase.from('montree_teachers').select('id, name, email, role').eq('id', userId).maybeSingle(),
       supabase.from('montree_school_admins').select('id, name, email, role').eq('id', userId).eq('school_id', schoolId).maybeSingle(),
-      supabase.from('montree_schools').select('id, name, slug').eq('id', schoolId).maybeSingle(),
+      supabase.from('montree_schools').select('id, name, slug, plan_type').eq('id', schoolId).maybeSingle(),
       classroomId
         ? supabase.from('montree_classrooms').select('id, name, age_group, school_id').eq('id', classroomId).maybeSingle()
         : Promise.resolve({ data: null }),
@@ -70,9 +70,8 @@ export async function GET(request: NextRequest) {
     let classroom: { id: string; name: string; age_group: string | null } | null = null;
     if (classroomRes.data) {
       if (classroomRes.data.school_id === schoolId) {
-        // Strip school_id from response (internal field, not needed by client)
-        const { school_id: _sid, ...rest } = classroomRes.data;
-        classroom = rest;
+        // Only expose the fields the client needs (omit internal school_id).
+        classroom = { id: classroomRes.data.id, name: classroomRes.data.name, age_group: classroomRes.data.age_group };
       } else {
         console.warn(`[auth/me] Classroom ${classroomId} does not belong to school ${schoolId} — clearing`);
       }
