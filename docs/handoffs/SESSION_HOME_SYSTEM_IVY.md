@@ -147,3 +147,15 @@ was set to "Greetings" via the companion test. Reversible from the teacher dashb
 - Wire **$8 Stripe billing** for the home/companion subscription (operational).
 - Reduce the Shelf↔weekly-activity mental-model gap further if it still reads as two
   separate things (the weekly activity is a bonus in Plan; the Shelf is tracked curriculum).
+
+## 💰 Economics — $8/mo only works on the HAIKU floor (decided Jun 16)
+The Home product's AI (Ivy chat, Step Cards, weekly work, consolidation) is all
+tier-resolved via `resolveReportModel(school)` — Haiku unless `ai_tier_sonnet` is ON.
+Per-tap Step Card: ~$0.004 Haiku / ~$0.015 Sonnet (single call, HTTP-cached 5 min).
+Dominant cost is **Ivy chat**: ~$3–14/mo per family on Haiku (light→heavy), ~$8–30 on
+Sonnet. So **$8/mo holds on Haiku; Sonnet-everywhere is a ~$30 product** (Tredoux's
+own read). **Action:** verify Tredoux House (and the home schools generally) have
+`ai_tier_sonnet` OFF so home runs the Haiku floor; reserve Sonnet for the Coach
+(single user). A premium "$30 Sonnet Home" tier is a per-family flag flip if wanted.
+Cheap win: add prompt caching to the Step Card system prefix (static prompt + tool
+schema) for cross-tap savings within the 5-min window.
