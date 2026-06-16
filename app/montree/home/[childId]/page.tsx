@@ -8,7 +8,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import dynamic from 'next/dynamic';
 import { useRouter, useParams } from 'next/navigation';
-import { getSession, recoverSession, isHomeschoolParent, type MontreeSession } from '@/lib/montree/auth';
+import { getSession, recoverSession, isHomeschoolContext, setSession as persistSession, type MontreeSession } from '@/lib/montree/auth';
 import { BIO } from '@/lib/montree/bioluminescent-theme';
 import BottomTabs, { type HomeTab } from '@/components/montree/home/BottomTabs';
 import AmbientParticles from '@/components/montree/home/AmbientParticles';
@@ -50,7 +50,29 @@ export default function HomePage() {
       if (!sess) sess = await recoverSession();
       if (cancelled) return;
       if (!sess) { router.replace('/montree/login'); return; }
-      if (!isHomeschoolParent(sess)) { router.replace('/montree/dashboard'); return; }
+
+      // Allow homeschool parents AND homeschool founders (a teacher/principal
+      // whose school is a homeschool). Older localStorage sessions may not carry
+      // plan_type, so confirm via auth/me before redirecting a non-parent away.
+      let homeOk = isHomeschoolContext(sess);
+      if (!homeOk) {
+        try {
+          const meRes = await fetch('/api/montree/auth/me', { credentials: 'include' });
+          if (meRes.ok) {
+            const me = await meRes.json();
+            if (me?.school?.plan_type === 'homeschool') {
+              homeOk = true;
+              if (me.teacher && me.school) {
+                const enriched: MontreeSession = { teacher: me.teacher, school: me.school, classroom: me.classroom || null, loginAt: new Date().toISOString() };
+                persistSession(enriched);
+                sess = enriched;
+              }
+            }
+          }
+        } catch { /* fall through to redirect */ }
+      }
+      if (cancelled) return;
+      if (!homeOk) { router.replace('/montree/dashboard'); return; }
       setSession(sess);
 
       if (sess.classroom?.id) {
