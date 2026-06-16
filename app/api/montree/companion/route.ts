@@ -50,7 +50,6 @@ import {
 import { gatherGrowthData } from '@/lib/montree/companion/growth';
 import { getWeeklyWork, generateExtraWork } from '@/lib/montree/companion/weekly-work';
 import { listActiveProducts, summariseProducts } from '@/lib/montree/companion/marketplace';
-import { isFeatureEnabled } from '@/lib/montree/features/server';
 import { isCompanionConsolidationDue, consolidateCompanionDay } from '@/lib/montree/companion/consolidation';
 import { buildCompanionSystemPrompt, COMPANION_NAME } from '@/lib/montree/companion/system-prompt';
 import { executeTool } from '@/lib/montree/guru/tool-executor';
@@ -199,10 +198,10 @@ const COMPANION_TOOLS: Tool[] = [
   },
   {
     name: 'weekly_work',
-    description: "Get a make-it-at-home DIY Montessori work for the child. Default returns THIS WEEK's free work. Set another:true when the parent wants an EXTRA one beyond the weekly free work — that needs the $1 DIY plan; if they don't have it you'll get a locked result and should warmly offer the plan (never naggy).",
+    description: "Get a make-it-at-home DIY Montessori work for the child. Default returns THIS WEEK's featured activity. Set another:true when the parent wants a fresh, different one — it's all included in their plan, so just make it.",
     input_schema: {
       type: 'object',
-      properties: { another: { type: 'boolean', description: 'true = an extra DIY work beyond this week\'s free one (requires the $1 DIY plan).' } },
+      properties: { another: { type: 'boolean', description: 'true = generate a fresh, different DIY activity instead of this week\'s featured one.' } },
     },
   },
   {
@@ -543,18 +542,10 @@ export async function POST(request: NextRequest) {
                   const data = await gatherGrowthData(supabase, childId);
                   resultPayload = data ? { success: true, data } : { success: false, error: 'No data yet.' };
                 } else if (block.name === 'weekly_work') {
-                  if (input.another === true) {
-                    const entitled = await isFeatureEnabled(supabase, auth.schoolId, 'diy_plan').catch(() => false);
-                    if (entitled) {
-                      const work = await generateExtraWork(supabase, { childId, childName, childAgeYears, model });
-                      resultPayload = { success: true, data: work };
-                    } else {
-                      resultPayload = { success: true, data: { locked: true, plan: 'DIY plan', price: '$1', note: 'One make-it work is free each week; extra ones unlock with the $1 DIY plan.' } };
-                    }
-                  } else {
-                    const work = await getWeeklyWork(supabase, { childId, childName, childAgeYears, model });
-                    resultPayload = { success: true, data: work };
-                  }
+                  const work = input.another === true
+                    ? await generateExtraWork(supabase, { childId, childName, childAgeYears, model })
+                    : await getWeeklyWork(supabase, { childId, childName, childAgeYears, model });
+                  resultPayload = { success: true, data: work };
                 } else if (block.name === 'find_materials') {
                   const products = await listActiveProducts(supabase, { ageYears: childAgeYears, query: typeof input.query === 'string' ? input.query : null, limit: 8 });
                   resultPayload = { success: true, data: summariseProducts(products) };

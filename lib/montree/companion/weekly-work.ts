@@ -229,8 +229,8 @@ Honour real Montessori principles: a clear single purpose, isolate one difficult
 }
 
 /**
- * An EXTRA DIY work — the "$1 DIY plan" upgrade. Fresh each call, never cached as
- * the weekly one. Entitlement (diy_plan) is checked by the caller, not here.
+ * A fresh, different DIY work on demand ("make another") — included in the
+ * subscription, no separate charge. Fresh each call, never cached as the weekly one.
  */
 export async function generateExtraWork(supabase: SupabaseClient, args: WeeklyWorkArgs): Promise<WeeklyWork> {
   const weekOf = weekOfMonday();

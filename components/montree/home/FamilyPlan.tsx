@@ -104,7 +104,6 @@ export default function FamilyPlan({
   const [routines, setRoutines] = useState<Routine[]>([]);
   const [weekly, setWeekly] = useState<WeeklyWork | null>(null);
   const [weeklyLoading, setWeeklyLoading] = useState(true);
-  const [diyPlan, setDiyPlan] = useState(false);
   const [extras, setExtras] = useState<WeeklyWork[]>([]);
   const [generatingExtra, setGeneratingExtra] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -127,7 +126,7 @@ export default function FamilyPlan({
     (async () => {
       try {
         const r = await fetch(`/api/montree/companion/weekly-work?child_id=${childId}`);
-        if (r.ok) { const d = await r.json(); if (!cancelled) { if (d.work) setWeekly(d.work as WeeklyWork); setDiyPlan(!!d.diy_plan); } }
+        if (r.ok) { const d = await r.json(); if (!cancelled && d.work) setWeekly(d.work as WeeklyWork); }
       } catch { /* optional */ }
       finally { if (!cancelled) setWeeklyLoading(false); }
     })();
@@ -136,7 +135,7 @@ export default function FamilyPlan({
 
   useEffect(() => { load(); }, [load, refreshTrigger]);
 
-  // The $1 DIY plan: make an extra work beyond this week's free one.
+  // "Make another" — a fresh activity on demand, included in the subscription.
   const makeAnother = useCallback(async () => {
     if (generatingExtra) return;
     setGeneratingExtra(true);
@@ -145,7 +144,6 @@ export default function FamilyPlan({
         method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ child_id: childId }),
       });
       if (r.ok) { const d = await r.json(); if (d.work) setExtras((prev) => [...prev, d.work as WeeklyWork]); }
-      else if (r.status === 402) { setDiyPlan(false); } // entitlement lapsed → show the upsell
     } catch { /* ignore */ }
     finally { setGeneratingExtra(false); }
   }, [childId, generatingExtra]);
@@ -174,7 +172,7 @@ export default function FamilyPlan({
       <h2 className={`text-lg font-semibold ${BIO.text.primary}`}>Your week</h2>
       <p className={`text-xs mt-0.5 ${BIO.text.muted}`}>Ask Ivy to add anything — appointments, activities, your own reminders.</p>
 
-      {/* This week's free make-it-at-home DIY work, any extras, and the DIY plan */}
+      {/* This week's featured make-it activity, any extras, and "make another" */}
       {!weekly && weeklyLoading && (
         <div className={`mt-4 rounded-2xl border ${BIO.border.subtle} ${BIO.bg.cardSolid} px-4 py-4 flex items-center gap-3`}>
           <span className="animate-pulse text-xl">🛠️</span>
@@ -196,24 +194,13 @@ export default function FamilyPlan({
               footer={<button onClick={() => onAskIvy(`Walk me through making: "${w.title}".`)} className={`w-full py-2.5 rounded-full text-sm ${BIO.btn.mint}`}>Make it with Ivy</button>}
             />
           ))}
-          {diyPlan ? (
-            <button
-              onClick={makeAnother}
-              disabled={generatingExtra}
-              className={`w-full py-2.5 rounded-full text-sm ${BIO.btn.outline} disabled:opacity-50`}
-            >
-              {generatingExtra ? 'Making another…' : '✨ Make another'}
-            </button>
-          ) : (
-            <div className={`rounded-2xl border ${BIO.border.subtle} ${BIO.bg.cardSolid} px-4 py-3.5`}>
-              <p className={`text-[13px] leading-relaxed ${BIO.text.secondary}`}>
-                One make-it work is free every week. Want a fresh activity whenever you like?
-              </p>
-              <a href="/montree/admin/billing" className={`mt-2.5 inline-block px-4 py-2 rounded-full text-sm ${BIO.btn.mint}`}>
-                Unlock the DIY plan · $1
-              </a>
-            </div>
-          )}
+          <button
+            onClick={makeAnother}
+            disabled={generatingExtra}
+            className={`w-full py-2.5 rounded-full text-sm ${BIO.btn.outline} disabled:opacity-50`}
+          >
+            {generatingExtra ? 'Making another…' : '✨ Make another'}
+          </button>
         </div>
       )}
 
