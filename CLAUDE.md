@@ -17,6 +17,65 @@ Local path: `/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/whale` (note spa
 
 ---
 
+## 🧠 SESSION — Jun 16, 2026 (Cowork) — Montree HOME SYSTEM (Ivy) shipped + Shelf-tap how-to + Sanctuary nav trim
+
+**Canonical handoff:** `docs/handoffs/SESSION_HOME_SYSTEM_IVY.md`. 6 commits on main this
+session (`ef6fd966` greeting fast-path · `996cda42` homeschool-founder access · `fe758b84`
+MarkdownLite · `bce50cfb` kill the $1 paywall · `eb551190` Shelf→how-to card · `cff221a1`
+Sanctuary nav trim). Railway auto-deployed. **Migration 264 RUN** (4 home tables).
+
+**🏠 The Home System — a standalone $8/mo consumer product, "Ivy."** ONE parent, ONE
+subscription, a resident expert/guide/psychologist + curriculum, built on Smart-Capture +
+Guru. Lives at `/montree/home/[childId]` (BIO theme), 4 tabs: **Ivy** (companion chat +
+vision + Step Card — the front door) · **Shelf** (child's works) · **Plan** (weekly DIY +
+"✨ Make another" + calendar/routines) · **Shop** (admin-curated creator marketplace).
+`lib/montree/companion/*` + `app/api/montree/companion/*` (SSE route, 13 tools, tier-gated
+402 `feature:'companion'`, `__greeting__` fast path, companion-log + on-wake consolidation,
+per-family memory in `montree_children.settings.companion`). UI in `components/montree/home/*`.
+
+**🚨 PRICING MODEL LOCKED — do NOT reintroduce pay-per-use.** Subscription = full access to
+EVERYTHING. NO per-usage charges (Tredoux: "would infuriate me"). Weekly activity is a free
+Facebook-style DIY promo. Full curriculum + written instructions live in the **Montree
+Library** (subscriber access). The "$1 thing" is NOT a site feature — it's a SEPARATE future
+concept for third-party creators publishing works outside the curriculum, earning money to
+THEM (not Tredoux). The `diy_plan` paywall that briefly existed was ripped out entirely.
+
+**🪵 Shelf tap → Ivy's hand-held how-to card (this session's headline fix).** Real-use
+feedback: tapping a shelf work opened the TEACHER progress panel (mark presented/mastered)
+with the guide buried — a parent saw no instructions, felt lost. Fix: `present.ts` →
+`generateStepCardForWork(workName, area)` (warm card for any work); NEW `POST
+/api/montree/companion/step-card` (verified live: 401 auth, not 404); `ShelfView` gained
+optional `onPresentWork` prop — when set (home only), tap opens the Step Card modal instead
+of the teacher panel. **Teacher ShelfView path unchanged** (prop absent → old behaviour).
+
+**🔑 Home access:** `/montree/home/[childId]` gated by `isHomeschoolContext(session)` (role
+`homeschool_parent` OR `school.plan_type==='homeschool'`), confirmed via `auth/me` plan_type
+so homeschool FOUNDERS (Tredoux House) get in. `auth/me` + `MontreeSession.school` now carry
+`plan_type`. New `isHomeschoolContext()` helper in `lib/montree/auth.ts`.
+
+**🌳 Sanctuary nav trimmed.** `app/story/admin/(personal)/layout.tsx` — removed **Board** +
+**People** from the nav (Tredoux's call). Route pages stay on disk; **ALL Story logins
+untouched**. Removed the now-unused `isOwner`/whoami fetch. Nav now: Planner · Coach ·
+Projects. Restore by re-adding Board to NAV + the owner-only People entry.
+
+**🚨 Architectural notes:**
+- Home companion = `lib/montree/companion/*` (NOT Guru, NOT Coach). Reuses Guru's `executeTool`
+  for 3 progress tools; everything else is companion-native. `COMPANION_NAME='Ivy'`.
+- `MarkdownLite` (`components/montree/home/MarkdownLite.tsx`) is the safe md renderer for Ivy
+  bubbles — bold/italic/code/headings/lists/hr, NO dangerouslySetInnerHTML.
+- Every companion route: `verifySchoolRequest` + `verifyChildBelongsToSchool`. Tier via
+  `resolveReportModel` (free→402, trialing/active→haiku floor, ai_tier_sonnet→sonnet).
+- ShelfView still carries 1 pre-existing tsc error (`t={t}` ShelfPlank) + 7 pre-existing
+  eslint `any`/`<a>` warnings — NOT mine, left alone.
+
+**Open / next:** curated weekly-activity INSERT into `montree_weekly_works`; solidify the
+Montree Library creator-earning economics; soft cost-guard on "Make another"; home i18n
+sweep; wire $8 Stripe billing for the companion subscription. ⚠ Earlier chat test set Amy's
+focus work to "Greetings" on prod Whale Class — reversible from the teacher dashboard. One
+eyeball check left: tap a shelf work in the live Home product → confirm the Step Card modal.
+
+---
+
 ## 🧠 SESSION — Jun 14, 2026 (Cowork eve) — Personal Platform (Sanctuary) BUILT + DEPLOYED
 
 **Canonical handoff:** `docs/handoffs/STORY_PERSONAL_PLATFORM_DELIVERED.md`. Built the queued
