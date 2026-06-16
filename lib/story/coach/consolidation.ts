@@ -24,6 +24,7 @@ import {
 } from '@/lib/story/diary-crypto';
 import { HAIKU_MODEL } from '@/lib/ai/anthropic';
 import { loadCoachMemories, writeCoachMemory, type CoachMemoryType } from './memory';
+import { displayNameForSpace } from './profile';
 
 const VALID_TYPES: ReadonlySet<string> = new Set<CoachMemoryType>([
   'value', 'ambition', 'health_goal', 'dropped', 'pattern', 'preference', 'fact',
@@ -102,22 +103,24 @@ function parseModelJson(text: string): { memories: ExtractedMemory[]; diary_summ
   }
 }
 
-const SYSTEM_PROMPT = `You are the memory-consolidation process for Tredoux's personal life-coach — the
+function buildConsolidationSystemPrompt(name: string): string {
+  return `You are the memory-consolidation process for ${name}'s personal life-coach — the
 "sleep" pass that runs once a day. You are given the existing long-term memories and the raw
 transcript of recent coaching conversations. Distill, don't transcribe.
 
 Return STRICT JSON only, no prose, in this exact shape:
 {
-  "memories": [ { "memory_type": "value|ambition|health_goal|dropped|pattern|preference|fact", "content": "one durable fact, first-person-about-Tredoux, concise", "supersedes_id": null } ],
-  "diary_summary": "a 3-6 sentence episodic recap of the period, in a warm reflective register, as his private journal would read",
+  "memories": [ { "memory_type": "value|ambition|health_goal|dropped|pattern|preference|fact", "content": "one durable fact, first-person-about-${name}, concise", "supersedes_id": null } ],
+  "diary_summary": "a 3-6 sentence episodic recap of the period, in a warm reflective register, as their private journal would read",
   "mood": "one short lowercase word, or null"
 }
 
 Rules:
-- ONLY durable, SEMANTIC facts worth carrying for months: values, ambitions, health goals, things he said he'd drop, recurring emotional/behavioural patterns, stable preferences, stable facts. Skip transient chatter, one-off logistics, and anything already captured verbatim in existing memories.
+- ONLY durable, SEMANTIC facts worth carrying for months: values, ambitions, health goals, things they said they'd drop, recurring emotional/behavioural patterns, stable preferences, stable facts. Skip transient chatter, one-off logistics, and anything already captured verbatim in existing memories.
 - If a new insight UPDATES or CONTRADICTS an existing memory, copy that memory's id into "supersedes_id". Otherwise leave it null.
 - Be conservative: a few high-quality memories beat many shallow ones. If nothing durable emerged, return "memories": [].
-- "diary_summary" should capture how the period actually went for him (themes, wins, worries) — not a list of topics. Never invent events not in the transcript.`;
+- "diary_summary" should capture how the period actually went for them (themes, wins, worries) — not a list of topics. Never invent events not in the transcript.`;
+}
 
 /**
  * Consolidate every unconsolidated turn before today into long-term memory + a
@@ -177,7 +180,7 @@ export async function consolidateCoachDay(
     const resp = await client.messages.create({
       model: HAIKU_MODEL,
       max_tokens: 1500,
-      system: SYSTEM_PROMPT,
+      system: buildConsolidationSystemPrompt(displayNameForSpace(space)),
       messages: [
         {
           role: 'user',

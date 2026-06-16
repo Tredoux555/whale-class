@@ -23,6 +23,7 @@ import {
   formatCoachMemoriesForPrompt,
   getCoachWisdomSummary,
   getCoachProfile,
+  displayNameForSpace,
   computeLoad,
   formatLoadSnapshot,
   loadRecentThread,
@@ -180,20 +181,22 @@ export async function POST(request: NextRequest) {
         const [memories, wisdomSummary, profileSection, load] = await Promise.all([
           loadCoachMemories(supabase, space, 40).catch(() => []),
           getCoachWisdomSummary().catch(() => ''),
-          getCoachProfile().catch(() => ''),
+          getCoachProfile(space).catch(() => ''),
           computeLoad(supabase, space).catch(() => null),
         ]);
+        const coachName = displayNameForSpace(space);
         const systemPrompt = buildCoachSystemPrompt({
+          displayName: coachName,
           todayLabel,
-          memorySection: formatCoachMemoriesForPrompt(memories),
+          memorySection: formatCoachMemoriesForPrompt(memories, coachName),
           wisdomSummary,
           profileSection,
           isFirstSession: memories.length === 0,
           loadSnapshot: load ? formatLoadSnapshot(load) : 'No load data available right now.',
         });
         const minimalSystemPrompt =
-          `You are Tredoux's warm, direct life-coach. Today is ${todayLabel}. Answer his message ` +
-          `thoughtfully and concisely, protect him from overcommitment and burnout, and end with one ` +
+          `You are ${coachName}'s warm, direct life-coach. Today is ${todayLabel}. Answer their message ` +
+          `thoughtfully and concisely, protect them from overcommitment and burnout, and end with one ` +
           `clear next step.`;
 
         const conversation: MessageParam[] = [...initialMessages];

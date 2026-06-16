@@ -105,7 +105,7 @@ export async function getCoachWisdomSummary(): Promise<string> {
   return `# Your knowledge base — QUOTE these frameworks, don't improvise self-help
 
 This is a summary. For the full depth of any framework, call \`consult_wisdom\` with
-its topic key. Weight Essentialism heaviest — it's the lens that fits Tredoux best.
+its topic key. Weight Essentialism heaviest — it's the default lens for most people you coach.
 
 ## Essentialism (topic: essentialism) — disciplined pursuit of less, but better
 ${lead(b.essentialism, 900)}

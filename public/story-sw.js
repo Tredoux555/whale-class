@@ -28,18 +28,22 @@ self.addEventListener('push', (event) => {
 
   const title = data.title || 'Story';
   const callId = data.callId || null;
-  const url = callId
+  const isCall = !!callId;
+  // Calls jump to the call surface; everything else (e.g. the emergency board)
+  // carries its own target url in the payload.
+  const url = isCall
     ? '/story/call?call=' + encodeURIComponent(callId) + '&as=user'
-    : '/story/active';
+    : (data.url || '/story/active');
 
   const options = {
-    body: data.body || 'Tap to join the call.',
+    body: data.body || (isCall ? 'Tap to join the call.' : 'Tap to open.'),
     icon: '/icon-192.png',
     badge: '/icon-192.png',
-    tag: 'story-call',          // a new call replaces a stale notification
-    renotify: true,             // ...and still re-alerts the user
-    requireInteraction: true,   // stays up until the user acts (it's a call)
-    vibrate: [200, 100, 200, 100, 200],
+    // A call replaces a stale call; board messages group under their own tag.
+    tag: isCall ? 'story-call' : (data.tag || 'story-board'),
+    renotify: true,
+    requireInteraction: isCall, // calls stay up until acted on; messages don't
+    vibrate: isCall ? [200, 100, 200, 100, 200] : [120, 60, 120],
     data: { callId: callId, url: url },
   };
 

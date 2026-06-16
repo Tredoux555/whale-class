@@ -11,7 +11,7 @@ export const COACH_TOOLS: Tool[] = [
   {
     name: 'read_diary',
     description:
-      "Read Tredoux's recent diary entries (decrypted). Use when reflecting on his week, mood, " +
+      "Read this person's recent diary entries (decrypted). Use when reflecting on their week, mood, " +
       'or anything emotional/personal. Returns date, mood, title, and body. Optionally filter by ' +
       'date window or a free-text query to find entries on a theme.',
     input_schema: {
@@ -100,8 +100,8 @@ export const COACH_TOOLS: Tool[] = [
   {
     name: 'remember',
     description:
-      'Save a durable, SEMANTIC fact about Tredoux (a value, ambition, health goal, something he said ' +
-      "he'd drop, a recurring pattern, a preference). Do NOT save one-off conversation details. To " +
+      'Save a durable, SEMANTIC fact about this person (a value, ambition, health goal, something they ' +
+      "said they'd drop, a recurring pattern, a preference). Do NOT save one-off conversation details. To " +
       'update/correct an existing memory, pass supersedes_id = the old memory id.',
     input_schema: {
       type: 'object',
@@ -119,9 +119,9 @@ export const COACH_TOOLS: Tool[] = [
   {
     name: 'add_event',
     description:
-      "Put something on Tredoux's planner — a meeting, appointment, call, deadline. Use this " +
-      'whenever he mentions a thing happening at a time. Date is required; include a time when ' +
-      'he gives one.',
+      "Put something on this person's planner — a meeting, appointment, call, deadline. Use this " +
+      'whenever they mention a thing happening at a time. Date is required; include a time when ' +
+      'they give one.',
     input_schema: {
       type: 'object',
       properties: {
@@ -136,9 +136,9 @@ export const COACH_TOOLS: Tool[] = [
   {
     name: 'add_diary_entry',
     description:
-      "Log something to Tredoux's private diary (his psychological record) — a worry, a win, a " +
-      'reflection, how a day went. Write it in his voice. Use this whenever he shares something ' +
-      'worth keeping or processing, so it lives in his journal.',
+      "Log something to this person's private diary (their psychological record) — a worry, a win, a " +
+      'reflection, how a day went. Write it in their voice. Use this whenever they share something ' +
+      'worth keeping or processing, so it lives in their journal.',
     input_schema: {
       type: 'object',
       properties: {
