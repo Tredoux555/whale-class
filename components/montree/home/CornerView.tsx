@@ -174,7 +174,7 @@ export default function CornerView({ childId, childName, onAskGuide, refreshTrig
 
   if (loading) {
     return (
-      <div className={`flex-1 flex items-center justify-center ${BIO.bg.deep}`}>
+      <div className={`h-full flex items-center justify-center ${BIO.bg.deep}`}>
         <div className="text-center">
           <div className="animate-pulse text-4xl mb-3">🌿</div>
           <p className={`text-sm ${BIO.text.secondary}`}>Setting up the corner…</p>
@@ -185,7 +185,7 @@ export default function CornerView({ childId, childName, onAskGuide, refreshTrig
 
   if (fetchError) {
     return (
-      <div className={`flex-1 flex items-center justify-center ${BIO.bg.deep}`}>
+      <div className={`h-full flex items-center justify-center ${BIO.bg.deep}`}>
         <div className="text-center px-6">
           <div className="text-4xl mb-3">😔</div>
           <p className={`text-sm ${BIO.text.secondary} mb-4`}>Could not load the corner. Please check your connection.</p>
@@ -222,7 +222,7 @@ export default function CornerView({ childId, childName, onAskGuide, refreshTrig
   const empty = shelf.length === 0;
 
   return (
-    <div className={`flex-1 overflow-y-auto ${BIO.bg.gradient}`}>
+    <div className={`h-full overflow-y-auto ${BIO.bg.gradient}`}>
       <div className="max-w-2xl mx-auto px-4 pb-10">
 
         {empty ? (
