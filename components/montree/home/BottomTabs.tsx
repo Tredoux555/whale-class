@@ -15,7 +15,7 @@ interface BottomTabsProps {
 export default function BottomTabs({ activeTab, onTabChange, shelfBadge }: BottomTabsProps) {
   const tabs: Array<{ id: HomeTab; label: string; icon: string }> = [
     { id: 'ivy', label: 'Ivy', icon: '🌿' },
-    { id: 'shelf', label: 'Shelf', icon: '📚' },
+    { id: 'shelf', label: 'Corner', icon: '📚' },
     { id: 'plan', label: 'Plan', icon: '🗓️' },
     { id: 'shop', label: 'Shop', icon: '🛍️' },
   ];

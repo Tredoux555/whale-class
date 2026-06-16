@@ -1,8 +1,8 @@
 // /montree/home/[childId]/page.tsx
 // The Montree Home Experience — Ivy is the front door. Three calm surfaces:
-//   Ivy   — the companion (chat, photos, the Step Card, the whole loop)
-//   Shelf — the child's works at a glance
-//   Plan  — the family's week (calendar + routines)
+//   Ivy    — the companion (chat, photos, the Step Card, the whole loop)
+//   Corner — the child's actual growing corner (Ivy-led, one thing at a time)
+//   Plan   — the family's week (calendar + routines)
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
@@ -18,7 +18,7 @@ import StepCard, { type StepCardData } from '@/components/montree/home/StepCard'
 
 // Only the active surface renders. Defer the heavy ones.
 const IvyChat = dynamic(() => import('@/components/montree/home/IvyChat'), { ssr: false });
-const ShelfView = dynamic(() => import('@/components/montree/home/ShelfView'), { ssr: false });
+const CornerView = dynamic(() => import('@/components/montree/home/CornerView'), { ssr: false });
 const FamilyPlan = dynamic(() => import('@/components/montree/home/FamilyPlan'), { ssr: false });
 const Shop = dynamic(() => import('@/components/montree/home/Shop'), { ssr: false });
 
@@ -136,6 +136,11 @@ export default function HomePage() {
   const closeCard = useCallback(() => { setCard(null); setCardLoading(false); setCardTitle(''); }, []);
 
   const selectedChild = children.find((c) => c.id === childId) || children[0] || null;
+  // Home is a family, not a classroom. Only offer a sibling switcher for a realistic
+  // family-sized set; when this is pointed at a full class (e.g. a founder testing on
+  // their school roster), show ONLY the active child — never a class list.
+  const HOME_SIBLING_MAX = 4;
+  const siblings = children.length <= HOME_SIBLING_MAX ? children : [];
 
   if (loading || !session || (!selectedChild && children.length > 0)) {
     return (
@@ -165,9 +170,9 @@ export default function HomePage() {
           </div>
           <h1 className={`font-semibold ${BIO.text.primary} truncate`}>{selectedChild?.name?.split(' ')[0] || t('home.loading')}</h1>
 
-          {children.length > 1 && (
+          {siblings.length > 1 && (
             <div className="flex gap-1.5 ml-2 overflow-x-auto shrink-0">
-              {children.map((c) => (
+              {siblings.map((c) => (
                 <button
                   key={c.id}
                   onClick={() => router.push(`/montree/home/${c.id}`)}
@@ -204,7 +209,7 @@ export default function HomePage() {
         )}
         {activeTab === 'shelf' && (
           <ErrorBoundary title={t('home.error.title')} fallbackMessage={t('home.error.shelfFailed')} retryLabel={t('home.error.tryAgain')}>
-            <ShelfView childId={childId} classroomId={session?.classroom?.id} onAskGuide={handleAskIvy} refreshTrigger={shelfRefreshTrigger} onPresentWork={handlePresentWork} />
+            <CornerView childId={childId} childName={selectedChild?.name} classroomId={session?.classroom?.id} onAskGuide={handleAskIvy} refreshTrigger={shelfRefreshTrigger} onPresentWork={handlePresentWork} />
           </ErrorBoundary>
         )}
         {activeTab === 'plan' && (
