@@ -5,6 +5,37 @@
 
 ---
 
+## 🎨 FIRST CALL TO ACTION ON RETURN — REDESIGN THE SHELF (make it WOW)
+
+Tredoux's verdict: the **Shelf** tab (`components/montree/home/ShelfView.tsx`) "looks
+quite poor — it's what you designed three generations back. It feels very rough, like a
+draft, not a finished product. It doesn't feel good." It is the weakest surface in the
+Home product and the redesign is the top priority next session.
+
+**Do this, in order:**
+1. **RESEARCH FIRST (don't just restyle).** What does a genuinely great "child's progress
+   / works at a glance" surface look like for a PARENT (not a teacher)? Look at what
+   actually wows in this class of dashboard: calm progress dashboards, learning-app home
+   screens (Duolingo path, Khan kid), Montessori-album aesthetics, "today / this week"
+   focus cards, gentle progress rings, warm editorial layouts. The parent should open the
+   Shelf and instantly feel *"I see where my child is and what's next, and it's beautiful."*
+2. **Use the new design capability** (Claude design / stunning HTML) — this is a finished
+   consumer product at $8/mo, hold it to that bar. BIO bioluminescent theme
+   (`lib/montree/bioluminescent-theme.ts`) is the palette; elevate the composition, not
+   just the colors.
+3. **Keep the working wiring intact:** the new `onPresentWork` tap → Step Card modal (this
+   session) MUST survive the redesign — tapping a work still opens Ivy's how-to card.
+   Empty slots → `onAskGuide`. Per-area Guru reason. Search-to-add. Don't regress these.
+4. **Decide the Shelf↔weekly-activity relationship** as part of the redesign — Tredoux
+   found it confusing that the weekly DIY (Plan tab) isn't on the Shelf. Either surface
+   "this week's activity" on the Shelf too, or make the separation obviously intentional.
+5. Audit (eslint --max-warnings=0 + scoped tsc), commit via Desktop Commander, push,
+   then EYEBALL it live as a logged-in homeschool parent.
+
+The shelf is the showcase. Make it the thing families screenshot and send to friends.
+
+---
+
 ## What this session shipped
 
 ### 1. The Montree **Home System** — a standalone $8/month consumer product (Ivy)
