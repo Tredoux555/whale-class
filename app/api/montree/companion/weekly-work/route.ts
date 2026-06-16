@@ -1,15 +1,14 @@
 // app/api/montree/companion/weekly-work/route.ts
-// GET  — this week's free make-it-at-home DIY work (+ whether the family has the
-//        $1 DIY plan). Curated row wins; else Ivy generates one; else a template.
-// POST — make an EXTRA DIY work (the $1 "DIY plan"). Gated on the diy_plan
-//        entitlement; not entitled → 402 with an upsell.
+// GET  — this week's featured make-it-at-home activity. Curated row wins; else
+//        Ivy generates one for the child; else a template. Included in the plan.
+// POST — make a fresh, different activity on demand ("make another"). Also
+//        included in the subscription — no separate charge.
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { verifyChildBelongsToSchool } from '@/lib/montree/verify-child-access';
 import { resolveReportModel } from '@/lib/montree/reports/resolve-model';
-import { isFeatureEnabled } from '@/lib/montree/features/server';
 import { getWeeklyWork, generateExtraWork } from '@/lib/montree/companion/weekly-work';
 
 export const maxDuration = 60;
@@ -36,16 +35,15 @@ export async function GET(request: NextRequest) {
 
   const supabase = getSupabase();
   try {
-    const [{ name, ageYears }, { model }, diyPlan] = await Promise.all([
+    const [{ name, ageYears }, { model }] = await Promise.all([
       childAge(supabase, childId),
       resolveReportModel(supabase, auth.schoolId),
-      isFeatureEnabled(supabase, auth.schoolId, 'diy_plan').catch(() => false),
     ]);
     const work = await getWeeklyWork(supabase, { childId, childName: name, childAgeYears: ageYears, model });
-    return NextResponse.json({ work, diy_plan: diyPlan }, { headers: { 'Cache-Control': 'private, max-age=300, stale-while-revalidate=3600' } });
+    return NextResponse.json({ work }, { headers: { 'Cache-Control': 'private, max-age=300, stale-while-revalidate=3600' } });
   } catch (err) {
     console.error('[companion/weekly-work] GET error:', err);
-    return NextResponse.json({ work: null, diy_plan: false });
+    return NextResponse.json({ work: null });
   }
 }
 
@@ -63,18 +61,7 @@ export async function POST(request: NextRequest) {
 
   const supabase = getSupabase();
 
-  // Entitlement gate — one free work a week is the GET above; EXTRA works need the DIY plan.
-  const entitled = await isFeatureEnabled(supabase, auth.schoolId, 'diy_plan').catch(() => false);
-  if (!entitled) {
-    return NextResponse.json({
-      requires_upgrade: true,
-      upgrade_url: '/montree/admin/billing',
-      feature: 'diy_plan',
-      price: '$1',
-      error: 'You get one make-it-at-home work free each week. The DIY plan unlocks a fresh activity whenever you like — just $1.',
-    }, { status: 402 });
-  }
-
+  // Making another activity is part of the subscription — no extra charge.
   try {
     const [{ name, ageYears }, { model }] = await Promise.all([
       childAge(supabase, childId),
