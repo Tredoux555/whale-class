@@ -134,6 +134,63 @@ deploy/DB) — eslint + scoped-tsc + careful review only.
 
 ---
 
+## PART D — THE HOME SYSTEM (Ivy as central controller) — SHIPPED (commit `ed6ce98b`)
+
+The standalone **$8/mo home product**: one parent, one subscription, a resident Montessori
+guide + child-psychologist + curriculum + family manager — Smart Capture + Guru DNA honed into
+Ivy as the single front door. Pushed to `main`. **Inert until wired routes get traffic; safe.**
+
+### 🚨 Tredoux must do (Part D)
+1. **Run `migrations/264_home_companion.sql`** in Supabase (MONTREE `dmfncjjtsoxrnvcdnvjq`). Adds 4
+   idempotent, RLS-forced tables: `montree_home_events` (family calendar), `montree_companion_log`
+   (turn archive → consolidation + thread resume), `montree_weekly_works` (curated weekly DIY work),
+   `montree_marketplace_products` (curated shop). Until run, every feature degrades gracefully
+   (calendar/shop empty, weekly work falls to AI/template, log/consolidation no-op).
+2. **$8 home tier billing** — operational only. The home experience is tier-gated via
+   `resolveReportModel` (free → 402 upgrade panel in IvyChat). Trialing/active schools get Haiku.
+   Wiring a real $8 home Stripe price/checkout is a separate ops session (Stripe dashboard).
+3. **Curate the shop + weekly work** — both are "under the admin system": insert rows via the
+   super-admin marketplace CRUD (`/api/montree/super-admin/marketplace`, super-admin-gated) and
+   `montree_weekly_works` (deep-dive a DIY activity with Claude, insert one row/week → shows to all
+   families whose child fits the age range). No row = Ivy auto-generates per child.
+
+### What shipped
+- **Backend, all on the companion SSE route** (`/api/montree/companion`, tier-gated, child-access
+  guarded): photo/vision Smart-Capture loop (work photo → advance step; interest photo → seed
+  journey); 13 tools (educator: present_step/set_focus_work/update_progress/save_observation; memory:
+  remember/recall; family+life-coach: add_to_calendar/set_routine/list_schedule/cancel_calendar_item;
+  growth_snapshot; weekly_work; find_materials); `__greeting__` on-open greeting; per-turn archive to
+  `montree_companion_log`; cross-device thread resume; on-wake consolidation (`after()`, Haiku).
+- **Libs** in `lib/montree/companion/`: `schedule.ts`, `consolidation.ts`, `growth.ts`,
+  `weekly-work.ts`, `marketplace.ts` (+ Phase-1 present/school-context/memory/next-step/system-prompt).
+- **Routes**: GET `/companion/schedule`, GET `/companion/weekly-work`, GET `/marketplace` (parent),
+  full CRUD `/super-admin/marketplace`.
+- **Home UI** (`/montree/home/[childId]`, Ivy-first, BIO theme, 4 tabs **Ivy / Shelf / Plan / Shop**):
+  `IvyChat` (companion SSE incl. `step_card`/`state_changed`, voice + photo, 402 upgrade), `StepCard`,
+  `FamilyPlan` (calendar + routines + featured weekly DIY card), `Shop` (discounted materials, outbound
+  buy links). **PortalChat (Guru) is replaced by IvyChat on the home surface** — one companion, not many.
+
+### Audit (this build)
+eslint `--max-warnings=0` clean on all 22 files; scoped tsc clean (only pre-existing
+`curriculum-loader.ts` + `ShelfView.tsx` baseline errors); 13 tool defs = 13 dispatch handlers;
+every route auth-gated + cross-pollination-scoped; marketplace age-hint hardened with
+`verifyChildBelongsToSchool`. NOT runtime-tested (no live deploy/DB from sandbox).
+
+### Verify on production (after migration 264 + Railway deploy)
+Log in as a homeschool parent → `/montree/home/<childId>` → Ivy greets and surfaces the next step;
+send a photo of the child working → she advances it; tap **Plan** → weekly DIY card + calendar; tap
+**Shop** → curated products. Ask "how is she growing?" → growth reflection. Free/expired → upgrade panel.
+
+### Follow-ups (non-blocking)
+- i18n: new Ivy UI chrome is English (Ivy's *responses* are locale-aware via the route). Sweep later
+  with `npm run i18n:fill-ui`.
+- Super-admin marketplace + weekly-works **admin UI** (CRUD API exists; a page is a quick add).
+- Work-photo identification currently uses in-chat Sonnet vision; the two-pass identifier is a future
+  accuracy upgrade.
+- Two-sibling toggle already works (child pills in the header).
+
+---
+
 ## PART C — FUTURE (premium, now the active spine via Ivy)
 Premium Montree tier = the Coach-for-parents + the 360° child view. It's no longer "someday": Ivy's
 Guru bridge (school read) + the life-coach hat (parent planning/wellbeing) + the educator loop together
