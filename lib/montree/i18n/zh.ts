@@ -2011,6 +2011,7 @@ export const zh = {
 
   // Home Shelf
   'home.shelf.title': '您的书架',
+  'home.shelf.howTo': '怎么做',
   'home.shelf.loading': '加载书架中...',
   'home.shelf.emptyMessage': '您的书架等待填满！在对话中与指导老师交流，获取个性化的工作建议。',
   'home.shelf.tapToPresent': '点击一项工作查看展示方法',

@@ -1742,6 +1742,7 @@ export const nl: Record<string, string> = {
   'home.portal.playing': 'Afspelen',
   'home.portal.generating': 'Genereren...',
   'home.shelf.title': 'Uw boekenplank',
+  'home.shelf.howTo': 'Hoe',
   'home.shelf.loading': 'Boekenplank laden...',
   'home.shelf.emptyMessage': 'Uw boekenplanken wachten! Chat met uw gids in de Portal voor persoonlijke werksugggesties.',
   'home.shelf.tapToPresent': 'Tik op een werk om te zien hoe u het moet presenteren',

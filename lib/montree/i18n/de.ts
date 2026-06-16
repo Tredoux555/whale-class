@@ -1742,6 +1742,7 @@ export const de: Record<string, string> = {
   'home.portal.playing': 'Wird wiedergegeben',
   'home.portal.generating': 'Wird generiert...',
   'home.shelf.title': 'Ihr Regal',
+  'home.shelf.howTo': 'Anleitung',
   'home.shelf.loading': 'Regal wird geladen...',
   'home.shelf.emptyMessage': 'Ihre Regale warten! Chatten Sie mit Ihrem Ratgeber im Portal, um personalisierte Arbeitsvorschläge zu erhalten.',
   'home.shelf.tapToPresent': 'Tippen Sie auf eine Arbeit, um zu sehen, wie man sie präsentiert',

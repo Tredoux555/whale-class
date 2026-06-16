@@ -2051,6 +2051,7 @@ export const en = {
 
   // Home Shelf
   'home.shelf.title': 'Your Shelf',
+  'home.shelf.howTo': 'How-to',
   'home.shelf.loading': 'Loading shelf...',
   'home.shelf.emptyMessage': 'Your shelves are waiting! Chat with your guide in the Portal to get personalized work suggestions.',
   'home.shelf.tapToPresent': 'Tap a work to see how to present it',

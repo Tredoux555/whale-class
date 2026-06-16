@@ -1809,6 +1809,7 @@ export const es: Record<string, string> = {
   'home.portal.playing': 'Reproduciendo',
   'home.portal.generating': 'Generando...',
   'home.shelf.title': 'Tu Estantería',
+  'home.shelf.howTo': 'Cómo',
   'home.shelf.loading': 'Cargando estantería...',
   'home.shelf.emptyMessage': '¡Tus estanterías te están esperando! Chateá con tu guía en el Portal para obtener sugerencias de trabajo personalizadas.',
   'home.shelf.tapToPresent': 'Tocá un trabajo para ver cómo presentarlo',

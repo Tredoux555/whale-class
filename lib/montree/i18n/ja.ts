@@ -1742,6 +1742,7 @@ export const ja: Record<string, string> = {
   'home.portal.playing': '再生中',
   'home.portal.generating': '生成中...',
   'home.shelf.title': 'あなたのシェルフ',
+  'home.shelf.howTo': 'やり方',
   'home.shelf.loading': 'シェルフを読み込み中...',
   'home.shelf.emptyMessage': 'シェルフの準備ができています！ポータルでガイドと相談して、お子さまに合わせたワークをおすすめしてもらいましょう。',
   'home.shelf.tapToPresent': 'ワークをタップするとプレゼン方法がご確認いただけます',

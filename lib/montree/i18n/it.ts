@@ -1742,6 +1742,7 @@ export const it: Record<string, string> = {
   'home.portal.playing': 'Riproduzione in corso',
   'home.portal.generating': 'Generazione...',
   'home.shelf.title': 'Suo Scaffale',
+  'home.shelf.howTo': 'Come fare',
   'home.shelf.loading': 'Caricamento scaffale...',
   'home.shelf.emptyMessage': 'I Suoi scaffali sono in attesa! Chatti con la Sua guida nel Portale per ottenere suggerimenti di lavori personalizzati.',
   'home.shelf.tapToPresent': 'Tocchi un lavoro per vedere come presentarlo',

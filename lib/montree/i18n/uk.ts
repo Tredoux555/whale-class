@@ -1742,6 +1742,7 @@ export const uk: Record<string, string> = {
   'home.portal.playing': 'Відтворення',
   'home.portal.generating': 'Генерування...',
   'home.shelf.title': 'Ваша полиця',
+  'home.shelf.howTo': 'Як',
   'home.shelf.loading': 'Завантаження полиці...',
   'home.shelf.emptyMessage': 'Ваші полиці готові! Поговоріть зі своїм гідом у Портальному розділі, щоб отримати персоналізовані рекомендації робіт.',
   'home.shelf.tapToPresent': 'Натисніть на роботу, щоб побачити, як її представити',

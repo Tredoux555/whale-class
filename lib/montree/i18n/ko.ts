@@ -1742,6 +1742,7 @@ export const ko: Record<string, string> = {
   'home.portal.playing': '재생 중',
   'home.portal.generating': '생성 중...',
   'home.shelf.title': '내 선반',
+  'home.shelf.howTo': '방법',
   'home.shelf.loading': '선반을 불러오는 중...',
   'home.shelf.emptyMessage': '선반이 준비되어 있습니다! 포탈의 가이드와 대화하여 맞춤형 작업 제안을 받으세요.',
   'home.shelf.tapToPresent': '작업을 탭하여 제시 방법을 확인하세요',

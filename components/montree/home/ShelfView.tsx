@@ -1,7 +1,10 @@
 // components/montree/home/ShelfView.tsx
-// Visual Montessori wooden shelf — 3 planks with works as tappable 3D objects
-// Tap a work → QuickGuideModal (same as teacher experience)
-// Search bar above shelf — search all curriculum works, click to set focus work
+// The child's works at a glance — a calm, premium parent surface (NOT a teacher
+// tracker). Top: a 5-area progress-ring overview (the journey map). Below: warm
+// work cards, each with a status ring + an unmistakable "How-to →" affordance.
+//   • Home/Ivy context (onPresentWork set): tap a work → Ivy's hand-held Step Card.
+//   • Teacher context (onPresentWork absent): tap → the progress detail panel.
+// Search adds a work to the shelf. Area rings reveal Ivy's reason for that area.
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
@@ -39,21 +42,24 @@ interface ShelfViewProps {
   onPresentWork?: (work: { work_name: string; area: string }) => void;
 }
 
-// Area accent colors
+// Canonical Montessori area order + soft hue identity (used as gentle tints + ring
+// strokes only — never loud fills, so it reads premium against the BIO palette).
+const AREA_ORDER = ['practical_life', 'sensorial', 'mathematics', 'language', 'cultural'] as const;
 const AREA_COLORS: Record<string, { bg: string; glow: string; border: string }> = {
-  practical_life: { bg: '#E11D48', glow: 'rgba(225,29,72,0.25)', border: 'rgba(225,29,72,0.6)' },
-  sensorial:      { bg: '#F59E0B', glow: 'rgba(245,158,11,0.25)', border: 'rgba(245,158,11,0.6)' },
-  mathematics:    { bg: '#3B82F6', glow: 'rgba(59,130,246,0.25)', border: 'rgba(59,130,246,0.6)' },
-  language:       { bg: '#10B981', glow: 'rgba(16,185,129,0.25)', border: 'rgba(16,185,129,0.6)' },
-  cultural:       { bg: '#8B5CF6', glow: 'rgba(139,92,246,0.25)', border: 'rgba(139,92,246,0.6)' },
+  practical_life: { bg: '#F0639A', glow: 'rgba(240,99,154,0.16)', border: 'rgba(240,99,154,0.35)' },
+  sensorial:      { bg: '#F5B042', glow: 'rgba(245,176,66,0.16)', border: 'rgba(245,176,66,0.35)' },
+  mathematics:    { bg: '#5AA9FF', glow: 'rgba(90,169,255,0.16)', border: 'rgba(90,169,255,0.35)' },
+  language:       { bg: '#4ADE80', glow: 'rgba(74,222,128,0.16)', border: 'rgba(74,222,128,0.35)' },
+  cultural:       { bg: '#A78BFA', glow: 'rgba(167,139,250,0.16)', border: 'rgba(167,139,250,0.35)' },
 };
 
-// Status glow effects
-const STATUS_GLOW: Record<string, string> = {
-  not_started: 'none',
-  presented: '0 0 8px rgba(245,158,11,0.5)',
-  practicing: '0 0 12px rgba(16,185,129,0.5)',
-  mastered: '0 0 14px rgba(74,222,128,0.6), 0 0 28px rgba(74,222,128,0.2)',
+// Status → progress fraction + stroke color for the gentle rings.
+const STATUS_FRAC: Record<string, number> = { not_started: 0, presented: 0.34, practicing: 0.67, mastered: 1 };
+const STATUS_HEX: Record<string, string> = {
+  not_started: 'rgba(255,255,255,0.16)',
+  presented: '#F5B042',
+  practicing: '#10B981',
+  mastered: '#4ADE80',
 };
 
 function getWorkIcon(workName: string, area: string): string {
@@ -65,22 +71,11 @@ function getWorkIcon(workName: string, area: string): string {
   return BIO.areaIcon[area] || '📦';
 }
 
-// Split works array into 3 rows of 3 (filling from top)
-function distributeToShelves(works: ShelfWork[]): (ShelfWork | null)[][] {
-  const slots: (ShelfWork | null)[] = [];
-  // Place works in order, fill 9 slots total
-  for (let i = 0; i < 9; i++) {
-    slots.push(i < works.length ? works[i] : null);
-  }
-  return [
-    slots.slice(0, 3), // Top shelf
-    slots.slice(3, 6), // Middle shelf
-    slots.slice(6, 9), // Bottom shelf
-  ];
-}
-
 export default function ShelfView({ childId, classroomId, onAskGuide, refreshTrigger, onPresentWork }: ShelfViewProps) {
   const { t, locale } = useI18n();
+  // Typed helper so dynamic i18n keys don't need `as any`.
+  const tk = (key: string) => t(key as Parameters<typeof t>[0]);
+
   const [shelf, setShelf] = useState<ShelfWork[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -117,7 +112,7 @@ export default function ShelfView({ childId, classroomId, onAskGuide, refreshTri
   const shelfAbortRef = useRef<AbortController | null>(null);
   const guideAbortRef = useRef<AbortController | null>(null);
 
-  // Work detail panel state
+  // Work detail panel state (teacher path only)
   const [detailWork, setDetailWork] = useState<ShelfWork | null>(null);
   const [detailStatus, setDetailStatus] = useState<string>('');
   const [observation, setObservation] = useState('');
@@ -136,7 +131,6 @@ export default function ShelfView({ childId, classroomId, onAskGuide, refreshTri
       .then(data => {
         if (controller.signal.aborted) return;
         if (data.works) {
-          // Normalize API response: chinese_name → chineseName, area.area_key → area
           const normalized: CurriculumWork[] = data.works.map((w: Record<string, unknown>) => ({
             name: w.name as string,
             chineseName: (w.chinese_name as string) || undefined,
@@ -154,7 +148,7 @@ export default function ShelfView({ childId, classroomId, onAskGuide, refreshTri
     return () => controller.abort();
   }, []);
 
-  // Filter search results as user types (debounced 150ms to avoid jank on fast typing)
+  // Filter search results as user types (debounced 150ms)
   const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   useEffect(() => {
     if (!searchText.trim()) {
@@ -217,20 +211,14 @@ export default function ShelfView({ childId, classroomId, onAskGuide, refreshTri
       const res = await fetch('/api/montree/shelf', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          child_id: childId,
-          area: work.area,
-          work_name: work.name,
-        }),
+        body: JSON.stringify({ child_id: childId, area: work.area, work_name: work.name }),
       });
       if (!res.ok) {
         toast.error(t('home.shelf.progressFailed'));
         return;
       }
       const data = await res.json();
-      if (data.success) {
-        await fetchShelf();
-      }
+      if (data.success) await fetchShelf();
     } catch (err) {
       console.error('Set focus work failed:', err);
       toast.error(t('common.networkError'));
@@ -239,7 +227,7 @@ export default function ShelfView({ childId, classroomId, onAskGuide, refreshTri
     }
   }, [childId, fetchShelf, t]);
 
-  // Open guide for a work (same pattern as teacher week view)
+  // Open guide for a work (teacher path)
   const openWorkGuide = useCallback(async (workName: string) => {
     guideAbortRef.current?.abort();
     const controller = new AbortController();
@@ -254,10 +242,7 @@ export default function ShelfView({ childId, classroomId, onAskGuide, refreshTri
       let url = classroomId
         ? `/api/montree/works/guide?name=${encodeURIComponent(workName)}&classroom_id=${classroomId}`
         : `/api/montree/works/guide?name=${encodeURIComponent(workName)}`;
-      // Fix: pass locale so guide content translates to Chinese
-      if (locale && locale !== 'en') {
-        url += `&locale=${locale}`;
-      }
+      if (locale && locale !== 'en') url += `&locale=${locale}`;
       const res = await fetch(url, { signal: controller.signal });
       if (!res.ok) throw new Error('Guide fetch failed');
       const data = await res.json();
@@ -270,39 +255,32 @@ export default function ShelfView({ childId, classroomId, onAskGuide, refreshTri
     if (!controller.signal.aborted) setGuideLoading(false);
   }, [classroomId, locale]);
 
-  // Open work detail panel
-  const openWorkDetail = useCallback((work: ShelfWork) => {
-    setDetailWork(work);
-    setDetailStatus(work.status || 'not_started');
-    setObservation('');
-  }, []);
+  // Tap a work — home hands off to Ivy's Step Card; teacher opens the detail panel.
+  const handleWorkTap = useCallback((work: ShelfWork) => {
+    if (onPresentWork) onPresentWork({ work_name: work.work_name, area: work.area });
+    else {
+      setDetailWork(work);
+      setDetailStatus(work.status || 'not_started');
+      setObservation('');
+    }
+  }, [onPresentWork]);
 
-  // Close work detail panel
-  const closeWorkDetail = useCallback(() => {
-    setDetailWork(null);
-  }, []);
+  const closeWorkDetail = useCallback(() => { setDetailWork(null); }, []);
 
-  // Update progress status
+  // Update progress status (teacher path)
   const updateProgress = useCallback(async (newStatus: string) => {
     if (!detailWork || savingProgress) return;
-    const currentWork = detailWork; // capture before async
+    const currentWork = detailWork;
     setSavingProgress(true);
     try {
       const res = await fetch('/api/montree/progress/update', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          child_id: childId,
-          work_name: currentWork.work_name,
-          area: currentWork.area,
-          status: newStatus,
-        }),
+        body: JSON.stringify({ child_id: childId, work_name: currentWork.work_name, area: currentWork.area, status: newStatus }),
       });
       if (res.ok) {
         setDetailStatus(newStatus);
-        setShelf(prev => prev.map(w =>
-          w.work_name === currentWork.work_name ? { ...w, status: newStatus } : w
-        ));
+        setShelf(prev => prev.map(w => w.work_name === currentWork.work_name ? { ...w, status: newStatus } : w));
         toast.success(t('home.shelf.progressUpdated'));
       } else {
         toast.error(t('home.shelf.progressFailed'));
@@ -312,23 +290,18 @@ export default function ShelfView({ childId, classroomId, onAskGuide, refreshTri
     } finally {
       setSavingProgress(false);
     }
-  }, [detailWork, childId, t]);
+  }, [detailWork, savingProgress, childId, t]);
 
-  // Save observation
+  // Save observation (teacher path)
   const saveObservation = useCallback(async () => {
     if (!detailWork || !observation.trim() || savingObs) return;
-    const currentWork = detailWork; // capture before async
+    const currentWork = detailWork;
     setSavingObs(true);
     try {
       const res = await fetch('/api/montree/observations', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          child_id: childId,
-          observation: observation.trim(),
-          work_name: currentWork.work_name,
-          area: currentWork.area,
-        }),
+        body: JSON.stringify({ child_id: childId, observation: observation.trim(), work_name: currentWork.work_name, area: currentWork.area }),
       });
       if (res.ok) {
         toast.success(t('home.shelf.observationSaved'));
@@ -341,16 +314,13 @@ export default function ShelfView({ childId, classroomId, onAskGuide, refreshTri
     } finally {
       setSavingObs(false);
     }
-  }, [detailWork, childId, observation, t]);
-
-  // Distribute works across 3 shelves
-  const shelves = distributeToShelves(shelf);
+  }, [detailWork, observation, savingObs, childId, t]);
 
   if (loading) {
     return (
       <div className={`flex-1 flex items-center justify-center ${BIO.bg.deep}`}>
         <div className="text-center">
-          <div className="animate-pulse text-4xl mb-3">📚</div>
+          <div className="animate-pulse text-4xl mb-3">🌿</div>
           <p className={`text-sm ${BIO.text.secondary}`}>{t('home.shelf.loading')}</p>
         </div>
       </div>
@@ -366,11 +336,7 @@ export default function ShelfView({ childId, classroomId, onAskGuide, refreshTri
           <button
             onClick={() => { setFetchError(false); setLoading(true); fetchShelf(); }}
             className="px-6 py-2 rounded-xl text-sm font-medium"
-            style={{
-              background: 'rgba(74,222,128,0.15)',
-              border: '1px solid rgba(74,222,128,0.3)',
-              color: '#4ADE80',
-            }}
+            style={{ background: 'rgba(74,222,128,0.15)', border: '1px solid rgba(74,222,128,0.3)', color: '#4ADE80' }}
           >
             {t('common.tryAgain')}
           </button>
@@ -379,227 +345,189 @@ export default function ShelfView({ childId, classroomId, onAskGuide, refreshTri
     );
   }
 
+  // Per-area aggregates for the overview rings.
+  const areaSummary = AREA_ORDER.map((area) => {
+    const works = shelf.filter(w => w.area === area);
+    const frac = works.length
+      ? works.reduce((s, w) => s + (STATUS_FRAC[w.status] ?? 0), 0) / works.length
+      : 0;
+    return { area, count: works.length, frac };
+  });
+  const inProgress = shelf.filter(w => w.status === 'practicing' || w.status === 'presented').length;
+  const mastered = shelf.filter(w => w.status === 'mastered').length;
+
   return (
     <div className={`flex-1 overflow-y-auto ${BIO.bg.gradient}`}>
-      {/* Title */}
-      <h2 className={`text-center text-lg font-semibold ${BIO.text.primary} pt-5 pb-1`}>
-        {t('home.shelf.title')}
-      </h2>
-      <p className={`text-center text-xs ${BIO.text.muted} mb-2 px-6`}>
-        {t('home.shelf.tapToPresent')}
-      </p>
+      <div className="max-w-2xl mx-auto px-4">
+        {/* Header — warm journey framing */}
+        <div className="pt-6 pb-1 text-center">
+          <h2 className={`text-[22px] font-semibold ${BIO.text.primary} tracking-tight`}>
+            {t('home.shelf.title')}
+          </h2>
+          <p className={`text-xs ${BIO.text.muted} mt-1`}>{t('home.shelf.tapToPresent')}</p>
+        </div>
 
-      {/* Search bar — search all curriculum works */}
-      <div ref={searchContainerRef} className="px-4 mb-3 relative">
-        <div className="relative">
-          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-white/30 text-sm">🔍</span>
-          <input
-            ref={searchRef}
-            type="text"
-            value={searchText}
-            onChange={e => setSearchText(e.target.value)}
-            placeholder={t('home.shelf.searchPlaceholder')}
-            className="w-full pl-9 pr-8 py-2.5 rounded-xl text-sm text-white/90 placeholder-white/30 outline-none"
-            style={{
-              background: 'rgba(255,255,255,0.08)',
-              border: '1px solid rgba(255,255,255,0.12)',
-            }}
-          />
-          {searchText && (
-            <button
-              onClick={() => { setSearchText(''); setSearchResults([]); }}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40 text-xs"
+        {/* Tiny at-a-glance summary (numbers only — no copy to translate) */}
+        {shelf.length > 0 && (
+          <div className="flex items-center justify-center gap-2 mb-4 mt-2">
+            <span className="px-2.5 py-1 rounded-full text-[11px] font-medium" style={{ background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.55)' }}>
+              {shelf.length} {shelf.length === 1 ? '·' : '·'} {t('home.shelf.title').toLowerCase().includes(' ') ? '' : ''}
+              <span className="sr-only">works</span>
+              <span aria-hidden> works</span>
+            </span>
+            {inProgress > 0 && (
+              <span className="px-2.5 py-1 rounded-full text-[11px] font-medium" style={{ background: 'rgba(16,185,129,0.12)', color: '#34D399' }}>
+                ● {inProgress}
+              </span>
+            )}
+            {mastered > 0 && (
+              <span className="px-2.5 py-1 rounded-full text-[11px] font-medium" style={{ background: 'rgba(74,222,128,0.12)', color: '#4ADE80' }}>
+                ✦ {mastered}
+              </span>
+            )}
+          </div>
+        )}
+
+        {/* Area overview — 5 rings (the journey map). Tap → reason, or ask Ivy. */}
+        <div className="flex justify-between gap-1.5 mb-3">
+          {areaSummary.map(({ area, count, frac }) => {
+            const colors = AREA_COLORS[area];
+            const active = expandedArea === area;
+            const empty = count === 0;
+            return (
+              <button
+                key={area}
+                onClick={() => empty ? onAskGuide(t('home.shelf.suggestWork')) : setExpandedArea(prev => prev === area ? null : area)}
+                className="flex flex-col items-center gap-1 flex-1 min-w-0 transition-transform active:scale-95"
+                aria-label={tk(`area.${area}`)}
+                style={{ opacity: empty ? 0.4 : 1 }}
+              >
+                <Ring size={48} stroke={3} frac={empty ? 0 : Math.max(frac, 0.06)} color={colors.bg} track="rgba(255,255,255,0.07)">
+                  <span className="text-lg" style={{ filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.3))' }}>
+                    {BIO.areaIcon[area] || '📦'}
+                  </span>
+                </Ring>
+                <span className="text-[9px] leading-tight text-center truncate w-full" style={{ color: active ? colors.bg : 'rgba(255,255,255,0.5)' }}>
+                  {tk(`area.${area}`)}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Per-area Ivy reason (revealed by tapping an area ring) */}
+        {expandedArea && (() => {
+          const areaWork = shelf.find(s => s.area === expandedArea);
+          const reason = areaWork?.guru_reason;
+          const colors = AREA_COLORS[expandedArea] || AREA_COLORS.practical_life;
+          return (
+            <div
+              className="rounded-2xl px-4 py-3 mb-3"
+              style={{ background: `linear-gradient(135deg, ${colors.glow} 0%, rgba(255,255,255,0.02) 100%)`, border: `1px solid ${colors.border}` }}
             >
-              ✕
-            </button>
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-[11px] font-semibold" style={{ color: colors.bg }}>
+                  🌿 {tk(`area.${expandedArea}`)}
+                </span>
+                <button onClick={() => setExpandedArea(null)} className="text-white/30 text-xs px-1" aria-label="Close">✕</button>
+              </div>
+              <p className="text-xs text-white/65 leading-relaxed">{reason || t('home.shelf.noReason')}</p>
+            </div>
+          );
+        })()}
+
+        {/* Search — add a work to the shelf */}
+        <div ref={searchContainerRef} className="mb-4 relative">
+          <div className="relative">
+            <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/30 text-sm">🔍</span>
+            <input
+              ref={searchRef}
+              type="text"
+              value={searchText}
+              onChange={e => setSearchText(e.target.value)}
+              placeholder={t('home.shelf.searchPlaceholder')}
+              className="w-full pl-10 pr-9 py-2.5 rounded-xl text-base sm:text-sm outline-none transition-all"
+              style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.92)' }}
+              onFocus={e => { e.currentTarget.style.border = '1px solid rgba(74,222,128,0.45)'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(74,222,128,0.1)'; }}
+              onBlur={e => { e.currentTarget.style.border = '1px solid rgba(255,255,255,0.1)'; e.currentTarget.style.boxShadow = 'none'; }}
+            />
+            {searchText && (
+              <button onClick={() => { setSearchText(''); setSearchResults([]); }} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-white/40 text-xs" aria-label="Clear">✕</button>
+            )}
+          </div>
+
+          {searchResults.length > 0 && (
+            <div className="absolute left-0 right-0 top-full mt-1.5 rounded-2xl overflow-hidden z-20"
+              style={{ background: 'rgba(13,30,26,0.97)', border: '1px solid rgba(255,255,255,0.12)', backdropFilter: 'blur(14px)', boxShadow: '0 12px 32px rgba(0,0,0,0.5)' }}>
+              {searchResults.map(work => {
+                const colors = AREA_COLORS[work.area] || AREA_COLORS.practical_life;
+                return (
+                  <button
+                    key={`${work.area}-${work.name}`}
+                    onClick={() => setFocusWork(work)}
+                    disabled={settingWork}
+                    className="w-full text-left px-4 py-3 flex items-center gap-3 transition-colors hover:bg-white/5 active:bg-white/10 disabled:opacity-50"
+                  >
+                    <span className="text-lg flex-shrink-0">{getWorkIcon(work.name, work.area)}</span>
+                    <div className="flex-1 min-w-0">
+                      <div className="text-sm text-white/88 truncate">{locale === 'zh' && work.chineseName ? work.chineseName : work.name}</div>
+                      <div className="text-[10px]" style={{ color: colors.bg, opacity: 0.8 }}>{tk(`area.${work.area}`)}</div>
+                    </div>
+                    <span className="text-[10px] text-[#4ADE80]/70 flex-shrink-0">+ {t('home.shelf.setWork')}</span>
+                  </button>
+                );
+              })}
+            </div>
+          )}
+
+          {searchText.trim() && searchResults.length === 0 && allCurriculumWorks.length > 0 && (
+            <div className="absolute left-0 right-0 top-full mt-1.5 rounded-2xl py-3 px-4 z-20"
+              style={{ background: 'rgba(13,30,26,0.97)', border: '1px solid rgba(255,255,255,0.12)' }}>
+              <p className="text-xs text-white/40 text-center">{t('home.shelf.noResults')}</p>
+            </div>
           )}
         </div>
 
-        {/* Search results dropdown */}
-        {searchResults.length > 0 && (
-          <div
-            className="absolute left-4 right-4 top-full mt-1 rounded-xl overflow-hidden z-20"
-            style={{
-              background: 'rgba(20,30,25,0.95)',
-              border: '1px solid rgba(255,255,255,0.12)',
-              backdropFilter: 'blur(12px)',
-              boxShadow: '0 8px 24px rgba(0,0,0,0.5)',
-            }}
-          >
-            {searchResults.map(work => {
-              const colors = AREA_COLORS[work.area] || AREA_COLORS.practical_life;
-              return (
-                <button
-                  key={`${work.area}-${work.name}`}
-                  onClick={() => setFocusWork(work)}
-                  disabled={settingWork}
-                  className="w-full text-left px-4 py-2.5 flex items-center gap-3 transition-colors hover:bg-white/5 active:bg-white/10 disabled:opacity-50"
-                >
-                  <div
-                    className="w-2 h-2 rounded-full flex-shrink-0"
-                    style={{ backgroundColor: colors.bg }}
-                  />
-                  <div className="flex-1 min-w-0">
-                    <div className="text-sm text-white/85 truncate">
-                      {locale === 'zh' && work.chineseName ? work.chineseName : work.name}
-                    </div>
-                    <div className="text-[10px] text-white/40">
-                      {t(`area.${work.area}` as any)}
-                    </div>
-                  </div>
-                  <span className="text-[10px] text-white/25 flex-shrink-0">
-                    {t('home.shelf.setWork')}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-        )}
-
-        {/* No results */}
-        {searchText.trim() && searchResults.length === 0 && allCurriculumWorks.length > 0 && (
-          <div
-            className="absolute left-4 right-4 top-full mt-1 rounded-xl py-3 px-4 z-20"
-            style={{
-              background: 'rgba(20,30,25,0.95)',
-              border: '1px solid rgba(255,255,255,0.12)',
-            }}
-          >
-            <p className="text-xs text-white/40 text-center">{t('home.shelf.noResults')}</p>
-          </div>
-        )}
-      </div>
-
-      {/* Per-area Guru recommendation (expanded) */}
-      {expandedArea && (() => {
-        const areaWork = shelf.find(s => s.area === expandedArea);
-        const reason = areaWork?.guru_reason;
-        const colors = AREA_COLORS[expandedArea] || AREA_COLORS.practical_life;
-        return (
-          <div className="px-4 mb-3">
-            <div
-              className="rounded-xl px-4 py-3"
-              style={{
-                background: `linear-gradient(135deg, ${colors.glow} 0%, rgba(255,255,255,0.03) 100%)`,
-                border: `1px solid ${colors.border}`,
-              }}
+        {/* Works — warm cards with status rings + a clear "How-to →" affordance */}
+        {shelf.length === 0 ? (
+          <div className="rounded-2xl px-6 py-10 text-center mb-8"
+            style={{ background: BIO.glow.inner, border: '1px solid rgba(74,222,128,0.14)' }}>
+            <div className="text-4xl mb-3">🌱</div>
+            <p className={`text-sm ${BIO.text.secondary} mb-5 leading-relaxed`}>{t('home.shelf.emptyMessage')}</p>
+            <button
+              onClick={() => onAskGuide(t('home.shelf.suggestWork'))}
+              className="px-5 py-2.5 rounded-xl text-sm font-semibold"
+              style={{ background: '#4ADE80', color: '#0A1F1C', boxShadow: BIO.glow.soft }}
             >
-              <div className="flex items-center justify-between mb-1.5">
-                <span className="text-xs font-medium text-white/80">
-                  {t('home.shelf.guruReason')} — {t(`area.${expandedArea}` as any)}
-                </span>
-                <button
-                  onClick={() => setExpandedArea(null)}
-                  className="text-white/30 text-xs"
-                >
-                  ✕
-                </button>
-              </div>
-              <p className="text-xs text-white/60 leading-relaxed">
-                {reason || t('home.shelf.noReason')}
-              </p>
-            </div>
+              ✨ {t('home.shelf.askGuide')}
+            </button>
           </div>
-        );
-      })()}
-
-      {/* Shelf unit — 3 planks */}
-      <div className="px-4 pb-8">
-        {/* Shelf frame */}
-        <div
-          className="relative rounded-xl overflow-hidden"
-          style={{
-            background: 'linear-gradient(180deg, rgba(80,60,20,0.15) 0%, rgba(60,45,15,0.25) 100%)',
-            border: '1px solid rgba(139,105,20,0.2)',
-            boxShadow: '0 8px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05)',
-          }}
-        >
-          {/* Side rails */}
-          <div className="absolute left-0 top-0 bottom-0 w-2" style={{ background: BIO.shelf.plankEdge, opacity: 0.6 }} />
-          <div className="absolute right-0 top-0 bottom-0 w-2" style={{ background: BIO.shelf.plankEdge, opacity: 0.6 }} />
-
-          {/* Top cap */}
-          <div className="h-3 mx-2" style={{ background: BIO.shelf.plankEdge, borderRadius: '8px 8px 0 0' }} />
-
-          {/* 3 shelf rows */}
-          {shelves.map((row, rowIdx) => (
-            <ShelfPlank
-              key={rowIdx}
-              items={row}
-              isLast={rowIdx === 2}
-              onWorkTap={(workName: string) => {
-                const work = shelf.find(w => w.work_name === workName);
-                if (!work) return;
-                // Home/Ivy: hand the parent the how-to card. Teacher: progress panel.
-                if (onPresentWork) onPresentWork({ work_name: work.work_name, area: work.area });
-                else openWorkDetail(work);
-              }}
-              onEmptyTap={() => onAskGuide(t('home.shelf.suggestWork'))}
-              onAreaTap={(area: string) => setExpandedArea(prev => prev === area ? null : area)}
-              t={t}
-            />
-          ))}
-
-          {/* Bottom cap */}
-          <div
-            className="h-2 mx-2"
-            style={{
-              background: BIO.shelf.plankEdge,
-              borderRadius: '0 0 8px 8px',
-              boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
-            }}
-          />
-        </div>
+        ) : (
+          <div className="grid grid-cols-2 gap-3 pb-8">
+            {shelf.map((work) => (
+              <WorkCard key={work.work_name} work={work} locale={locale} t={t} onTap={() => handleWorkTap(work)} />
+            ))}
+            {/* Ask Ivy — the one elegant CTA, replaces rigid empty "+" slots */}
+            <button
+              onClick={() => onAskGuide(t('home.shelf.suggestWork'))}
+              className="rounded-2xl flex flex-col items-center justify-center gap-2 py-7 px-3 transition-all active:scale-[0.98]"
+              style={{ background: 'rgba(74,222,128,0.04)', border: '1px dashed rgba(74,222,128,0.28)', minHeight: 150 }}
+            >
+              <span className="text-2xl">✨</span>
+              <span className="text-xs font-medium text-[#4ADE80] text-center leading-tight">{t('home.shelf.askGuide')}</span>
+            </button>
+          </div>
+        )}
       </div>
 
-      {/* Empty state */}
-      {shelf.length === 0 && (
-        <div className="text-center px-6 pb-8 -mt-4">
-          <p className={`text-xs ${BIO.text.secondary}`}>
-            {t('home.shelf.emptyMessage')}
-          </p>
-        </div>
-      )}
-
-      {/* Navigation links */}
-      <div className="px-4 pb-6 flex gap-3">
-        <a
-          href={`/montree/dashboard/${childId}/progress`}
-          className="flex-1 py-3 rounded-xl text-center text-xs font-medium transition-all"
-          style={{
-            background: 'rgba(255,255,255,0.04)',
-            border: '1px solid rgba(255,255,255,0.08)',
-            color: 'rgba(255,255,255,0.6)',
-          }}
-        >
-          📊 {t('home.shelf.viewProgress')}
-        </a>
-        <a
-          href="/montree/dashboard/curriculum/browse"
-          className="flex-1 py-3 rounded-xl text-center text-xs font-medium transition-all"
-          style={{
-            background: 'rgba(255,255,255,0.04)',
-            border: '1px solid rgba(255,255,255,0.08)',
-            color: 'rgba(255,255,255,0.6)',
-          }}
-        >
-          📚 {t('home.shelf.browseCurriculum')}
-        </a>
-      </div>
-
-      {/* Work Detail Panel */}
+      {/* Work Detail Panel — TEACHER path only (onPresentWork absent) */}
       {detailWork && (
         <div className="fixed inset-0 z-50 flex items-end justify-center" style={{ background: 'rgba(0,0,0,0.6)' }} onClick={closeWorkDetail}>
           <div
             onClick={e => e.stopPropagation()}
             className="w-full max-w-lg rounded-t-2xl overflow-y-auto"
-            style={{
-              background: 'linear-gradient(180deg, #0D2B27 0%, #0A1F1C 100%)',
-              border: '1px solid rgba(74,222,128,0.15)',
-              maxHeight: '80vh',
-            }}
+            style={{ background: 'linear-gradient(180deg, #0D2B27 0%, #0A1F1C 100%)', border: '1px solid rgba(74,222,128,0.15)', maxHeight: '80vh' }}
           >
-            {/* Header */}
             <div className="flex items-center justify-between px-5 pt-5 pb-3">
               <div className="flex items-center gap-3 flex-1 min-w-0">
                 <span className="text-2xl">{getWorkIcon(detailWork.work_name, detailWork.area)}</span>
@@ -608,45 +536,38 @@ export default function ShelfView({ childId, classroomId, onAskGuide, refreshTri
                     {locale === 'zh' && detailWork.chineseName ? detailWork.chineseName : detailWork.work_name}
                   </h3>
                   <span className="text-xs" style={{ color: (AREA_COLORS[detailWork.area] || AREA_COLORS.practical_life).bg }}>
-                    {t(`area.${detailWork.area}` as any)}
+                    {tk(`area.${detailWork.area}`)}
                   </span>
                 </div>
               </div>
               <button onClick={closeWorkDetail} className="text-white/40 text-lg p-1">✕</button>
             </div>
 
-            {/* Progress Status Buttons */}
             <div className="px-5 pb-4">
               <p className="text-xs text-white/50 mb-2">{t('home.shelf.status')}</p>
               <div className="flex gap-2">
                 {(['presented', 'practicing', 'mastered'] as const).map(s => {
                   const isActive = detailStatus === s;
-                  const colors = {
-                    presented: { bg: 'rgba(245,158,11,0.15)', border: 'rgba(245,158,11,0.5)', text: '#F59E0B' },
+                  const c = {
+                    presented: { bg: 'rgba(245,176,66,0.15)', border: 'rgba(245,176,66,0.5)', text: '#F5B042' },
                     practicing: { bg: 'rgba(16,185,129,0.15)', border: 'rgba(16,185,129,0.5)', text: '#10B981' },
                     mastered: { bg: 'rgba(74,222,128,0.15)', border: 'rgba(74,222,128,0.5)', text: '#4ADE80' },
-                  };
-                  const c = colors[s];
+                  }[s];
                   return (
                     <button
                       key={s}
                       onClick={() => updateProgress(s)}
                       disabled={savingProgress}
                       className="flex-1 py-2 rounded-lg text-xs font-medium transition-all disabled:opacity-50"
-                      style={{
-                        background: isActive ? c.bg : 'rgba(255,255,255,0.04)',
-                        border: `1.5px solid ${isActive ? c.border : 'rgba(255,255,255,0.08)'}`,
-                        color: isActive ? c.text : 'rgba(255,255,255,0.5)',
-                      }}
+                      style={{ background: isActive ? c.bg : 'rgba(255,255,255,0.04)', border: `1.5px solid ${isActive ? c.border : 'rgba(255,255,255,0.08)'}`, color: isActive ? c.text : 'rgba(255,255,255,0.5)' }}
                     >
-                      {t(`home.shelf.${s}`)}
+                      {tk(`home.shelf.${s}`)}
                     </button>
                   );
                 })}
               </div>
             </div>
 
-            {/* Observation */}
             <div className="px-5 pb-4">
               <p className="text-xs text-white/50 mb-2">{t('home.shelf.observationLabel')}</p>
               <textarea
@@ -655,41 +576,25 @@ export default function ShelfView({ childId, classroomId, onAskGuide, refreshTri
                 placeholder={t('home.shelf.observationPlaceholder')}
                 rows={3}
                 className="w-full px-3 py-2.5 rounded-xl text-sm text-white/90 placeholder-white/30 resize-none outline-none"
-                style={{
-                  background: 'rgba(255,255,255,0.06)',
-                  border: '1px solid rgba(255,255,255,0.1)',
-                }}
+                style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)' }}
               />
               {observation.trim() && (
                 <button
                   onClick={saveObservation}
                   disabled={savingObs}
                   className="mt-2 px-4 py-1.5 rounded-lg text-xs font-medium transition-all disabled:opacity-50"
-                  style={{
-                    background: 'rgba(74,222,128,0.15)',
-                    border: '1px solid rgba(74,222,128,0.3)',
-                    color: '#4ADE80',
-                  }}
+                  style={{ background: 'rgba(74,222,128,0.15)', border: '1px solid rgba(74,222,128,0.3)', color: '#4ADE80' }}
                 >
                   {savingObs ? t('common.saving') : t('home.shelf.saveObservation')}
                 </button>
               )}
             </div>
 
-            {/* View Guide Button */}
             <div className="px-5 pb-5">
               <button
-                onClick={() => {
-                  const name = detailWork.work_name;
-                  closeWorkDetail();
-                  openWorkGuide(name);
-                }}
+                onClick={() => { const name = detailWork.work_name; closeWorkDetail(); openWorkGuide(name); }}
                 className="w-full py-3 rounded-xl text-sm font-medium transition-all"
-                style={{
-                  background: 'rgba(74,222,128,0.1)',
-                  border: '1px solid rgba(74,222,128,0.2)',
-                  color: '#4ADE80',
-                }}
+                style={{ background: 'rgba(74,222,128,0.1)', border: '1px solid rgba(74,222,128,0.2)', color: '#4ADE80' }}
               >
                 {t('home.shelf.viewPresentation')}
               </button>
@@ -698,20 +603,15 @@ export default function ShelfView({ childId, classroomId, onAskGuide, refreshTri
         </div>
       )}
 
-      {/* Quick Guide Modal — same component teachers use */}
+      {/* Quick Guide + Full Details modals — teacher path */}
       <QuickGuideModal
         isOpen={guideOpen}
         onClose={() => setGuideOpen(false)}
         workName={guideWorkName}
         guideData={guideData}
         loading={guideLoading}
-        onOpenFullDetails={() => {
-          setGuideOpen(false);
-          setFullDetailsOpen(true);
-        }}
+        onOpenFullDetails={() => { setGuideOpen(false); setFullDetailsOpen(true); }}
       />
-
-      {/* Full Details Modal — same component teachers use */}
       <FullDetailsModal
         isOpen={fullDetailsOpen}
         onClose={() => setFullDetailsOpen(false)}
@@ -723,171 +623,91 @@ export default function ShelfView({ childId, classroomId, onAskGuide, refreshTri
   );
 }
 
-// ─── Individual shelf plank with 3 slots ────────────────────────
-
-function ShelfPlank({
-  items,
-  isLast,
-  onWorkTap,
-  onEmptyTap,
-  onAreaTap,
-  t,
-}: {
-  items: (ShelfWork | null)[];
-  isLast: boolean;
-  onWorkTap: (workName: string) => void;
-  onEmptyTap: () => void;
-  onAreaTap: (area: string) => void;
-  t: (key: string) => string;
+// ─── A gentle progress ring (SVG arc over a soft track) ─────────────
+function Ring({ size, stroke, frac, color, track, children }: {
+  size: number; stroke: number; frac: number; color: string; track: string; children?: React.ReactNode;
 }) {
+  const r = (size - stroke) / 2;
+  const c = 2 * Math.PI * r;
+  const clamped = Math.max(0, Math.min(1, frac));
   return (
-    <div className="relative">
-      {/* Items sitting on the shelf */}
-      <div className="flex justify-around items-end px-6 pt-4 pb-2 min-h-[110px]">
-        {items.map((item, idx) => (
-          <ShelfObject
-            key={item ? item.work_name : `empty-${idx}`}
-            work={item}
-            onTap={() => item ? onWorkTap(item.work_name) : onEmptyTap()}
-            onAreaTap={item ? () => onAreaTap(item.area) : undefined}
-            t={t}
+    <div className="relative" style={{ width: size, height: size }}>
+      <svg width={size} height={size} className="absolute inset-0" style={{ transform: 'rotate(-90deg)' }}>
+        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke={track} strokeWidth={stroke} />
+        {clamped > 0 && (
+          <circle
+            cx={size / 2} cy={size / 2} r={r} fill="none" stroke={color} strokeWidth={stroke}
+            strokeLinecap="round" strokeDasharray={c} strokeDashoffset={c * (1 - clamped)}
+            style={{ transition: 'stroke-dashoffset 0.6s ease' }}
           />
-        ))}
-      </div>
-
-      {/* The wooden plank */}
-      <div className="mx-2">
-        {/* Plank surface */}
-        <div
-          className="h-3.5 relative"
-          style={{
-            background: BIO.shelf.plank,
-            boxShadow: BIO.shelf.shadow,
-          }}
-        >
-          {/* Wood grain */}
-          <div className="absolute inset-0" style={{ background: BIO.shelf.grain, opacity: 0.5 }} />
-        </div>
-        {/* Plank front edge */}
-        <div
-          className="h-2"
-          style={{
-            background: BIO.shelf.plankEdge,
-            boxShadow: BIO.shelf.edgeShadow,
-          }}
-        />
-        {/* Spacer between planks (except last) */}
-        {!isLast && <div className="h-1" />}
-      </div>
+        )}
+      </svg>
+      <div className="absolute inset-0 flex items-center justify-center">{children}</div>
     </div>
   );
 }
 
-// ─── Individual work object on the shelf ────────────────────────
-
-function ShelfObject({
-  work,
-  onTap,
-  onAreaTap,
-  t,
-}: {
-  work: ShelfWork | null;
+// ─── A single work card ─────────────────────────────────────────────
+function WorkCard({ work, locale, t, onTap }: {
+  work: ShelfWork;
+  locale: string;
+  t: ReturnType<typeof useI18n>['t'];
   onTap: () => void;
-  onAreaTap?: () => void;
-  t: (key: string) => string;
 }) {
-  const { locale } = useI18n();
-  if (!work) {
-    // Empty slot
-    return (
-      <button
-        onClick={onTap}
-        aria-label={t('home.shelf.askGuide')}
-        className="flex flex-col items-center gap-1 transition-transform active:scale-95"
-        style={{ width: '88px' }}
-      >
-        <div
-          className="w-16 h-16 rounded-xl border border-dashed border-white/12 flex items-center justify-center"
-          style={{ background: 'rgba(255,255,255,0.02)' }}
-        >
-          <span className="text-white/15 text-2xl">+</span>
-        </div>
-        <span className="text-[9px] text-white/20 text-center">{t('home.shelf.askGuide')}</span>
-      </button>
-    );
-  }
-
-  const icon = getWorkIcon(work.work_name, work.area);
+  const tk = (key: string) => t(key as Parameters<typeof t>[0]);
   const colors = AREA_COLORS[work.area] || AREA_COLORS.practical_life;
   const status = work.status || 'not_started';
+  const frac = STATUS_FRAC[status] ?? 0;
+  const ringColor = STATUS_HEX[status] || STATUS_HEX.not_started;
   const isMastered = status === 'mastered';
+  const name = locale === 'zh' && work.chineseName ? work.chineseName : work.work_name;
+  const showStatus = status !== 'not_started';
 
   return (
     <button
       onClick={onTap}
       aria-label={t('home.shelf.viewGuide').replace('{name}', work.work_name)}
-      className="flex flex-col items-center gap-1 transition-transform active:scale-95"
-      style={{ width: '88px' }}
+      className="group rounded-2xl flex flex-col items-center text-center px-3 pt-4 pb-3 transition-all active:scale-[0.98]"
+      style={{
+        background: `linear-gradient(160deg, ${colors.glow} 0%, rgba(255,255,255,0.025) 55%, rgba(0,0,0,0.12) 100%)`,
+        border: `1px solid ${isMastered ? 'rgba(74,222,128,0.4)' : 'rgba(255,255,255,0.08)'}`,
+        boxShadow: isMastered ? '0 0 18px rgba(74,222,128,0.16)' : '0 4px 14px rgba(0,0,0,0.22)',
+        minHeight: 150,
+      }}
     >
-      {/* The 3D material object */}
-      <div className="relative">
-        {/* Shadow underneath */}
-        <div
-          className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-12 h-2 rounded-full blur-sm"
-          style={{ backgroundColor: colors.glow, opacity: 0.6 }}
-        />
-
-        {/* Icon container */}
-        <div
-          className="w-16 h-16 rounded-xl flex items-center justify-center relative"
-          style={{
-            background: `linear-gradient(145deg, ${colors.glow} 0%, rgba(255,255,255,0.03) 60%, rgba(0,0,0,0.1) 100%)`,
-            border: `1.5px solid ${colors.border}`,
-            transform: 'perspective(300px) rotateY(-2deg) rotateX(3deg)',
-            boxShadow: `${STATUS_GLOW[status] || 'none'}, 0 4px 12px rgba(0,0,0,0.3)`,
-          }}
-        >
-          <span className="text-3xl" style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))' }}>
-            {icon}
-          </span>
-
-          {/* Mastered sparkle */}
-          {isMastered && (
-            <span className="absolute -top-1.5 -right-1.5 text-xs animate-pulse">⭐</span>
-          )}
-
-          {/* Status dot */}
-          {status !== 'not_started' && !isMastered && (
-            <div
-              className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 w-2 h-2 rounded-full"
-              style={{
-                backgroundColor: status === 'presented' ? '#F59E0B' : '#10B981',
-                boxShadow: `0 0 6px ${status === 'presented' ? 'rgba(245,158,11,0.6)' : 'rgba(16,185,129,0.6)'}`,
-              }}
-            />
-          )}
-        </div>
+      {/* Icon inside a status ring */}
+      <div className="relative mb-2.5">
+        <Ring size={58} stroke={3} frac={Math.max(frac, 0.04)} color={ringColor} track="rgba(255,255,255,0.08)">
+          <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ background: colors.glow }}>
+            <span className="text-xl" style={{ filter: 'drop-shadow(0 1px 3px rgba(0,0,0,0.35))' }}>
+              {getWorkIcon(work.work_name, work.area)}
+            </span>
+          </div>
+        </Ring>
+        {isMastered && <span className="absolute -top-0.5 -right-0.5 text-sm">✦</span>}
       </div>
 
       {/* Work name */}
       <span
-        className="text-[10px] font-medium text-white/75 text-center leading-tight max-w-full truncate px-0.5"
+        className="text-[13px] font-medium text-white/90 leading-snug mb-1.5"
+        style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}
       >
-        {locale === 'zh' && work.chineseName ? work.chineseName : work.work_name}
+        {name}
       </span>
 
-      {/* Area label — tappable to show Guru recommendation */}
+      {/* Status (when started) */}
+      {showStatus && (
+        <span className="text-[10px] font-medium mb-2" style={{ color: ringColor }}>
+          {tk(`home.shelf.${status}`)}
+        </span>
+      )}
+
+      {/* The unmistakable affordance */}
       <span
-        className="text-[8px] text-center cursor-pointer active:opacity-80"
-        style={{ color: colors.bg, opacity: 0.6 }}
-        onClick={e => {
-          if (onAreaTap) {
-            e.stopPropagation();
-            onAreaTap();
-          }
-        }}
+        className="mt-auto text-[10px] font-semibold px-2.5 py-1 rounded-full transition-colors"
+        style={{ background: 'rgba(74,222,128,0.1)', color: '#4ADE80' }}
       >
-        {t(`area.${work.area}` as any) || BIO.areaLabel[work.area] || work.area}
+        {t('home.shelf.howTo')} →
       </span>
     </button>
   );
