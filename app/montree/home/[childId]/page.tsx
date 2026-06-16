@@ -14,6 +14,7 @@ import BottomTabs, { type HomeTab } from '@/components/montree/home/BottomTabs';
 import AmbientParticles from '@/components/montree/home/AmbientParticles';
 import ErrorBoundary from '@/components/montree/ErrorBoundary';
 import { useI18n } from '@/lib/montree/i18n';
+import StepCard, { type StepCardData } from '@/components/montree/home/StepCard';
 
 // Only the active surface renders. Defer the heavy ones.
 const IvyChat = dynamic(() => import('@/components/montree/home/IvyChat'), { ssr: false });
@@ -115,6 +116,25 @@ export default function HomePage() {
     setActiveTab('ivy');
   }, []);
 
+  // Tapping a work on the Shelf → the hand-held how-to card for that work.
+  const [card, setCard] = useState<StepCardData | null>(null);
+  const [cardLoading, setCardLoading] = useState(false);
+  const [cardTitle, setCardTitle] = useState('');
+  const handlePresentWork = useCallback(async (work: { work_name: string; area: string }) => {
+    setCardTitle(work.work_name);
+    setCard(null);
+    setCardLoading(true);
+    try {
+      const r = await fetch('/api/montree/companion/step-card', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ child_id: childId, work_name: work.work_name, area: work.area }),
+      });
+      if (r.ok) { const d = await r.json(); if (d.card) setCard(d.card as StepCardData); }
+    } catch { /* ignore */ }
+    finally { setCardLoading(false); }
+  }, [childId]);
+  const closeCard = useCallback(() => { setCard(null); setCardLoading(false); setCardTitle(''); }, []);
+
   const selectedChild = children.find((c) => c.id === childId) || children[0] || null;
 
   if (loading || !session || (!selectedChild && children.length > 0)) {
@@ -184,7 +204,7 @@ export default function HomePage() {
         )}
         {activeTab === 'shelf' && (
           <ErrorBoundary title={t('home.error.title')} fallbackMessage={t('home.error.shelfFailed')} retryLabel={t('home.error.tryAgain')}>
-            <ShelfView childId={childId} classroomId={session?.classroom?.id} onAskGuide={handleAskIvy} refreshTrigger={shelfRefreshTrigger} />
+            <ShelfView childId={childId} classroomId={session?.classroom?.id} onAskGuide={handleAskIvy} refreshTrigger={shelfRefreshTrigger} onPresentWork={handlePresentWork} />
           </ErrorBoundary>
         )}
         {activeTab === 'plan' && (
@@ -198,6 +218,28 @@ export default function HomePage() {
           </ErrorBoundary>
         )}
       </main>
+
+      {/* How-to card for a tapped shelf work */}
+      {(cardLoading || card) && (
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4" style={{ background: 'rgba(0,0,0,0.6)' }} onClick={closeCard}>
+          <div className="w-full sm:max-w-lg max-h-[85dvh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between px-4 py-2">
+              <span className={`text-xs uppercase tracking-wider ${BIO.text.muted}`}>
+                How to do it with {selectedChild?.name?.split(' ')[0] || 'your child'}
+              </span>
+              <button onClick={closeCard} className={`w-8 h-8 rounded-full flex items-center justify-center text-lg ${BIO.btn.ghost}`} aria-label="Close">✕</button>
+            </div>
+            {card ? (
+              <StepCard card={card} />
+            ) : (
+              <div className={`rounded-2xl border ${BIO.border.glow} ${BIO.bg.cardSolid} px-5 py-8 text-center`} style={{ boxShadow: BIO.glow.medium }}>
+                <div className="animate-pulse text-3xl mb-2">🌿</div>
+                <p className={`text-sm ${BIO.text.secondary}`}>Ivy is getting the how-to for {cardTitle}…</p>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       <div className="relative z-10 shrink-0">
         <BottomTabs activeTab={activeTab} onTabChange={setActiveTab} shelfBadge={shelfBadge} />

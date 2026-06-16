@@ -15,6 +15,7 @@ import type { UntypedClient as SupabaseClient } from '@/lib/supabase-client';
 import { anthropic } from '@/lib/ai/anthropic';
 import { resolveReportModel } from '@/lib/montree/reports/resolve-model';
 import { findCurriculumWorkByName } from '@/lib/montree/curriculum-loader';
+import { AREA_LABELS_EN as AREA_LABELS } from '@/lib/montree/i18n/area-labels';
 import type { NextStep } from '@/lib/montree/companion/next-step';
 
 /** The hand-held card the parent works from. Arrays are short, ordered lists. */
@@ -308,4 +309,38 @@ ${guideContext}`;
     console.error('[companion/present] AI step card failed, using template:', err);
     return templateCard(step, guide);
   }
+}
+
+/**
+ * Build a Step Card for ANY work the parent taps (not just the sequencer's next
+ * step) — e.g. tapping a work on the Shelf. Same warm, hand-held card.
+ */
+export async function generateStepCardForWork(
+  supabase: SupabaseClient,
+  args: { childId: string; classroomId: string | null; schoolId: string; workName: string; area: string; areaLabel?: string; childName?: string; childAgeYears?: number | null; locale?: string },
+): Promise<StepCard> {
+  const step: NextStep = {
+    work_name: args.workName,
+    work_key: args.workName,
+    area: args.area,
+    area_label: args.areaLabel || AREA_LABELS[args.area] || args.area,
+    reason: `${args.childName || 'Your child'} is working on this.`,
+    reasons: [],
+    tier: 'available',
+    score: 0,
+    confidence: 'medium',
+    is_bridge: false,
+    bridge_from_area: null,
+    current_work: null,
+    current_work_status: null,
+  };
+  return generateStepCard(supabase, {
+    childId: args.childId,
+    classroomId: args.classroomId,
+    schoolId: args.schoolId,
+    step,
+    childName: args.childName,
+    childAgeYears: args.childAgeYears,
+    locale: args.locale,
+  });
 }
