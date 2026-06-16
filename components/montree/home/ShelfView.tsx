@@ -34,6 +34,9 @@ interface ShelfViewProps {
   classroomId?: string;
   onAskGuide: (message: string) => void;
   refreshTrigger?: number;
+  // When provided (home/Ivy context), tapping a shelf work calls this instead of
+  // opening the teacher progress panel — the parent gets the hand-held how-to card.
+  onPresentWork?: (work: { work_name: string; area: string }) => void;
 }
 
 // Area accent colors
@@ -76,7 +79,7 @@ function distributeToShelves(works: ShelfWork[]): (ShelfWork | null)[][] {
   ];
 }
 
-export default function ShelfView({ childId, classroomId, onAskGuide, refreshTrigger }: ShelfViewProps) {
+export default function ShelfView({ childId, classroomId, onAskGuide, refreshTrigger, onPresentWork }: ShelfViewProps) {
   const { t, locale } = useI18n();
   const [shelf, setShelf] = useState<ShelfWork[]>([]);
   const [loading, setLoading] = useState(true);
@@ -526,7 +529,10 @@ export default function ShelfView({ childId, classroomId, onAskGuide, refreshTri
               isLast={rowIdx === 2}
               onWorkTap={(workName: string) => {
                 const work = shelf.find(w => w.work_name === workName);
-                if (work) openWorkDetail(work);
+                if (!work) return;
+                // Home/Ivy: hand the parent the how-to card. Teacher: progress panel.
+                if (onPresentWork) onPresentWork({ work_name: work.work_name, area: work.area });
+                else openWorkDetail(work);
               }}
               onEmptyTap={() => onAskGuide(t('home.shelf.suggestWork'))}
               onAreaTap={(area: string) => setExpandedArea(prev => prev === area ? null : area)}
