@@ -68,11 +68,29 @@ Projects. Restore by re-adding Board to NAV + the owner-only People entry.
 - ShelfView still carries 1 pre-existing tsc error (`t={t}` ShelfPlank) + 7 pre-existing
   eslint `any`/`<a>` warnings — NOT mine, left alone.
 
-**Open / next:** curated weekly-activity INSERT into `montree_weekly_works`; solidify the
+**🎨 FIRST CALL TO ACTION ON RETURN — REDESIGN THE SHELF (`components/montree/home/ShelfView.tsx`).**
+Tredoux: "looks quite poor — what you designed three generations back, feels rough, like a
+draft, doesn't feel good." It's the weakest Home surface. RESEARCH FIRST (what wows for a
+PARENT-facing "child's works/progress at a glance" — calm progress dashboards, learning-app
+home screens, Montessori-album aesthetics, focus cards, gentle progress rings); then use the
+new design capability to make it a finished $8/mo-grade showcase. MUST keep the working wiring
+(the new `onPresentWork` tap→Step Card modal, empty→onAskGuide, per-area Guru reason,
+search-to-add). Also decide the Shelf↔weekly-activity relationship (Tredoux found the split
+confusing). Full brief in `docs/handoffs/SESSION_HOME_SYSTEM_IVY.md` (top section).
+
+**Other open / next:** curated weekly-activity INSERT into `montree_weekly_works`; solidify the
 Montree Library creator-earning economics; soft cost-guard on "Make another"; home i18n
 sweep; wire $8 Stripe billing for the companion subscription. ⚠ Earlier chat test set Amy's
-focus work to "Greetings" on prod Whale Class — reversible from the teacher dashboard. One
-eyeball check left: tap a shelf work in the live Home product → confirm the Step Card modal.
+focus work to "Greetings" on prod Whale Class — reversible from the teacher dashboard.
+
+**Coach model/cost (answered Jun 16):** Coach uses **Sonnet** (`AI_MODEL='claude-sonnet-4-6'`,
+all 3 call sites in `app/api/story/coach/route.ts`). Prompt caching IS on (`cache_control:
+ephemeral` on the system prefix). ~$0.02–0.06/message with caching (~$0.015 simple turn,
+~$0.05 tool-heavy 2-3 call turn); ~$12–24/mo at heavy single-user use. Haiku would be ~4×
+cheaper (~$0.004–0.013/msg) but degrades the emotional nuance + framework application + tool-
+chain reliability that are the whole point. **Recommendation: keep Sonnet** — single-user
+low-volume, cost is trivial, quality is where it matters. Pull the caching lever (already on),
+not the model lever.
 
 ---
 
