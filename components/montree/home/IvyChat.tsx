@@ -11,6 +11,7 @@ import { BIO } from '@/lib/montree/bioluminescent-theme';
 import { compressImage } from '@/lib/montree/cache';
 import VoiceNoteButton from '@/components/montree/guru/VoiceNoteButton';
 import StepCard, { type StepCardData } from '@/components/montree/home/StepCard';
+import MarkdownLite from '@/components/montree/home/MarkdownLite';
 
 type IvyMessage =
   | { id: string; kind: 'text'; isUser: boolean; content: string }
@@ -315,7 +316,9 @@ export default function IvyChat({
                 style={!msg.isUser ? { boxShadow: BIO.glow.soft } : undefined}
               >
                 {msg.content ? (
-                  <p className={`text-sm leading-relaxed whitespace-pre-wrap ${BIO.text.primary}`}>{msg.content}</p>
+                  msg.isUser
+                    ? <p className={`text-sm leading-relaxed whitespace-pre-wrap ${BIO.text.primary}`}>{msg.content}</p>
+                    : <div className={BIO.text.primary}><MarkdownLite text={msg.content} /></div>
                 ) : (
                   <span className={`text-sm ${BIO.text.muted}`}>…</span>
                 )}
