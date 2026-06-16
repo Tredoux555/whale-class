@@ -85,6 +85,17 @@ export async function isVaultOwner(authHeader: string | null): Promise<boolean> 
   return space === VAULT_OWNER_SPACE;
 }
 
+// The OWNER (Tredoux) is the only account permitted to administer the platform —
+// create other people's sanctuaries, list the members, etc. Same person as the
+// vault owner, so the owner space is shared. Every other space is a sealed member
+// with their own sanctuary but no admin rights over anyone else's.
+export const OWNER_SPACE = VAULT_OWNER_SPACE;
+
+export async function isOwner(authHeader: string | null): Promise<boolean> {
+  const space = await getAdminSpace(authHeader);
+  return space === OWNER_SPACE;
+}
+
 export async function verifyUserToken(authHeader: string | null): Promise<string | null> {
   if (!authHeader) return null;
   try {

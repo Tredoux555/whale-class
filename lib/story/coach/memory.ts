@@ -76,7 +76,7 @@ export async function loadCoachMemories(
 }
 
 /** Render memories as a system-prompt section. Empty string when none. */
-export function formatCoachMemoriesForPrompt(memories: CoachMemory[]): string {
+export function formatCoachMemoriesForPrompt(memories: CoachMemory[], name = 'this person'): string {
   if (!memories.length) return '';
   const byType = new Map<CoachMemoryType, CoachMemory[]>();
   for (const m of memories) {
@@ -92,9 +92,9 @@ export function formatCoachMemoriesForPrompt(memories: CoachMemory[]): string {
   }
   if (!sections.length) return '';
   return [
-    '# What you remember about Tredoux',
+    `# What you remember about ${name}`,
     '',
-    "From prior conversations and his diary, you've learned the following. Use them to inform every reply without citing the ids back to him.",
+    "From prior conversations and their diary, you've learned the following. Use them to inform every reply without citing the ids back to them.",
     '',
     sections.join('\n\n'),
     '',

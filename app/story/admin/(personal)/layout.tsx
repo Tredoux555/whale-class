@@ -31,12 +31,14 @@ const NAV: { href: string; label: string }[] = [
   { href: '/story/admin/planner', label: 'Planner' },
   { href: '/story/admin/coach', label: 'Coach' },
   { href: '/story/admin/projects', label: 'Projects' },
+  { href: '/story/admin/board', label: 'Board' },
 ];
 
 export default function PersonalLayout({ children }: { children: ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
   const [ready, setReady] = useState(false);
+  const [isOwner, setIsOwner] = useState(false);
   const lastActivity = useRef(0); // set on first idle-effect run (never call Date.now() during render)
 
   // Auth guard — verify the admin session once on mount.
@@ -59,6 +61,16 @@ export default function PersonalLayout({ children }: { children: ReactNode }) {
           return;
         }
         setReady(true);
+        // Owner-only nav (People). Best-effort; non-owners simply don't see it.
+        try {
+          const who = await fetch('/api/story/admin/whoami', {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          if (!cancelled && who.ok) {
+            const wd = await who.json();
+            setIsOwner(!!wd.isOwner);
+          }
+        } catch { /* non-fatal — nav just omits People */ }
       } catch {
         if (!cancelled) router.replace('/story/admin');
       }
@@ -146,7 +158,7 @@ export default function PersonalLayout({ children }: { children: ReactNode }) {
             overflowX: 'auto',
           }}
         >
-          {NAV.map((n) => {
+          {(isOwner ? [...NAV, { href: '/story/admin/people', label: 'People' }] : NAV).map((n) => {
             const active = pathname.startsWith(n.href);
             return (
               <button

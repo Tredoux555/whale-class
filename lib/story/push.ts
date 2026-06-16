@@ -103,3 +103,67 @@ export async function sendCallPush(
     })
   );
 }
+
+/**
+ * Alert every OTHER sanctuary member about a new emergency-board message.
+ * Fire-and-forget at the call site — a push failure never blocks the post.
+ * Targets story_member_push_subscriptions (keyed by space); prunes dead subs.
+ */
+export async function sendBoardPush(
+  senderSpace: string,
+  senderLabel: string,
+  snippet: string
+): Promise<void> {
+  if (!ensureConfigured()) return;
+
+  const supabase = getSupabase();
+
+  // Recipients = every member except the sender.
+  const { data: members, error: memErr } = await supabase
+    .from('story_admin_users')
+    .select('space')
+    .neq('space', senderSpace);
+  if (memErr || !members || members.length === 0) return;
+  const spaces = Array.from(new Set(members.map((m) => m.space as string).filter(Boolean)));
+  if (spaces.length === 0) return;
+
+  const { data: subs, error: subErr } = await supabase
+    .from('story_member_push_subscriptions')
+    .select('id, endpoint, p256dh, auth')
+    .in('space', spaces);
+  if (subErr || !subs || subs.length === 0) return;
+
+  const clean = (snippet || '').replace(/\s+/g, ' ').trim().slice(0, 120);
+  const payload = JSON.stringify({
+    title: 'Sanctuary — new message',
+    body: clean ? `${senderLabel}: ${clean}` : `${senderLabel} posted to the board.`,
+    url: '/story/admin/board',
+  });
+
+  await Promise.allSettled(
+    subs.map(async (sub) => {
+      try {
+        await webpush.sendNotification(
+          { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } },
+          payload
+        );
+        await supabase
+          .from('story_member_push_subscriptions')
+          .update({ last_used_at: new Date().toISOString() })
+          .eq('id', sub.id);
+      } catch (err: unknown) {
+        const statusCode = (err as { statusCode?: number })?.statusCode;
+        if (statusCode === 404 || statusCode === 410) {
+          await supabase.from('story_member_push_subscriptions').delete().eq('id', sub.id);
+          console.log(`[story-push] pruned dead member subscription ${sub.id}`);
+        } else {
+          console.error(
+            '[story-push] board send failed:',
+            statusCode,
+            err instanceof Error ? err.message : err
+          );
+        }
+      }
+    })
+  );
+}
