@@ -19,6 +19,8 @@ export interface StepCardData {
   yes_looks_like: string[];
   not_yet_looks_like: string[];
   is_template?: boolean;
+  /** Optional curated YouTube search phrase; falls back to "<work> Montessori presentation". */
+  video_search_term?: string;
 }
 
 function Section({ icon, title, items, ordered, tone }: {
@@ -48,8 +50,16 @@ function Section({ icon, title, items, ordered, tone }: {
   );
 }
 
-export default function StepCard({ card }: { card: StepCardData }) {
+export default function StepCard({ card, onDidIt, childName }: {
+  card: StepCardData;
+  // When provided (the Shelf-tap modal), shows an "I did this →" button that hands
+  // the report to Ivy so she logs progress + reveals the next step. Omitted inside
+  // the Ivy chat (the parent is already talking to her).
+  onDidIt?: () => void;
+  childName?: string;
+}) {
   const [open, setOpen] = useState(true);
+  const youtubeUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(card.video_search_term || `${card.work_name} Montessori presentation`)}`;
 
   return (
     <div
@@ -73,6 +83,16 @@ export default function StepCard({ card }: { card: StepCardData }) {
 
       {open && (
         <div className={`px-4 pb-4 border-t ${BIO.border.subtle} pt-1`}>
+          {/* Watch an example — a pre-made YouTube search (same as the teacher Quick Guide) */}
+          <a
+            href={youtubeUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-3 flex items-center justify-center gap-2 w-full py-2.5 rounded-xl text-[13px] font-medium transition-colors"
+            style={{ background: 'rgba(255,80,80,0.10)', border: '1px solid rgba(255,80,80,0.28)', color: '#FF9B9B' }}
+          >
+            ▶ Watch an example
+          </a>
           <Section icon="🧺" title="What you'll need" items={card.what_you_need} />
           <Section icon="🌿" title="Set it up" items={card.set_it_up} ordered />
           <Section icon="👐" title="Show it — slowly, few words" items={card.show_it} ordered />
@@ -80,9 +100,24 @@ export default function StepCard({ card }: { card: StepCardData }) {
           <Section icon="🤫" title="Better not to" items={card.dont_say} tone="warn" />
           <Section icon="✅" title="It landed when…" items={card.yes_looks_like} tone="good" />
           <Section icon="🌱" title="Not yet — and that's okay" items={card.not_yet_looks_like} tone="gentle" />
-          <p className={`mt-4 text-[11px] ${BIO.text.muted}`}>
-            When you&apos;ve tried it, tell me how it went — a word or a photo. I&apos;ll take it from there.
-          </p>
+          {onDidIt ? (
+            <>
+              <button
+                onClick={onDidIt}
+                className="mt-4 w-full py-3 rounded-xl text-sm font-semibold transition-transform active:scale-[0.98]"
+                style={{ background: '#4ADE80', color: '#0A1F1C', boxShadow: BIO.glow.soft }}
+              >
+                ✓ I did this with {childName || 'my child'} →
+              </button>
+              <p className={`mt-2 text-center text-[11px] ${BIO.text.muted}`}>
+                Tell me how it went — I&apos;ll log it and choose what&apos;s next.
+              </p>
+            </>
+          ) : (
+            <p className={`mt-4 text-[11px] ${BIO.text.muted}`}>
+              When you&apos;ve tried it, tell me how it went — a word or a photo. I&apos;ll take it from there.
+            </p>
+          )}
         </div>
       )}
     </div>

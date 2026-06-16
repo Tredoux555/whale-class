@@ -230,7 +230,16 @@ export default function HomePage() {
               <button onClick={closeCard} className={`w-8 h-8 rounded-full flex items-center justify-center text-lg ${BIO.btn.ghost}`} aria-label="Close">✕</button>
             </div>
             {card ? (
-              <StepCard card={card} />
+              <StepCard
+                card={card}
+                childName={selectedChild?.name?.split(' ')[0]}
+                onDidIt={() => {
+                  const first = selectedChild?.name?.split(' ')[0] || 'my child';
+                  const work = cardTitle;
+                  closeCard();
+                  handleAskIvy(`I just did "${work}" with ${first} — here's how it went: `);
+                }}
+              />
             ) : (
               <div className={`rounded-2xl border ${BIO.border.glow} ${BIO.bg.cardSolid} px-5 py-8 text-center`} style={{ boxShadow: BIO.glow.medium }}>
                 <div className="animate-pulse text-3xl mb-2">🌿</div>
