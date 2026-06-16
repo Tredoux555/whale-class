@@ -148,14 +148,36 @@ was set to "Greetings" via the companion test. Reversible from the teacher dashb
 - Reduce the Shelf↔weekly-activity mental-model gap further if it still reads as two
   separate things (the weekly activity is a bonus in Plan; the Shelf is tracked curriculum).
 
-## 💰 Economics — $8/mo only works on the HAIKU floor (decided Jun 16)
-The Home product's AI (Ivy chat, Step Cards, weekly work, consolidation) is all
-tier-resolved via `resolveReportModel(school)` — Haiku unless `ai_tier_sonnet` is ON.
-Per-tap Step Card: ~$0.004 Haiku / ~$0.015 Sonnet (single call, HTTP-cached 5 min).
-Dominant cost is **Ivy chat**: ~$3–14/mo per family on Haiku (light→heavy), ~$8–30 on
-Sonnet. So **$8/mo holds on Haiku; Sonnet-everywhere is a ~$30 product** (Tredoux's
-own read). **Action:** verify Tredoux House (and the home schools generally) have
-`ai_tier_sonnet` OFF so home runs the Haiku floor; reserve Sonnet for the Coach
-(single user). A premium "$30 Sonnet Home" tier is a per-family flag flip if wanted.
-Cheap win: add prompt caching to the Step Card system prefix (static prompt + tool
-schema) for cross-tap savings within the 5-min window.
+## 💰 Pricing + usage cap — UNDER DISCUSSION Jun 16 (NOT locked; design comes first)
+
+**Home runs SONNET.** Tredoux: "Sonnet is king, Haiku doesn't cut it." Do NOT flip
+home to Haiku-only (supersedes an earlier note). **Working direction (not final):**
+**two tiers, BOTH starting on Sonnet**, with **top-up** OR **fall back to Haiku** once
+the Sonnet allowance is spent — so it never hard-stops. $8 was the Haiku number; Sonnet
+≈ a $30 product. Exact prices/allowances TBD. **Priority: design the Shelf first, then
+finalize pricing.** (Earlier sketch below — ~$29 / 350 msgs — is a starting point only.)
+
+**Sustainability = a fair-use allowance, NOT pay-per-use** (the "would infuriate me"
+rule was about per-action metering + the $1 paywall, not a generous ceiling):
+- **350 Ivy CHAT messages / month + ~30 / day guardrail.**
+- **Step Card taps are FREE / uncounted** — tapping the shelf for instructions stays unlimited.
+- Hitting the cap = a **warm Ivy message** ("we've covered a lot today 🌿 — let's pick
+  this up tomorrow / next month"), **never a 402, never a paywall**.
+
+**Why it's sustainable** (Sonnet, caching already on): typical Ivy turn ~$0.05–0.08,
+heavy multi-tool/photo turn ~$0.12–0.20. Full-cap COGS ≈ $21 → ~$7 margin worst case;
+typical family (30–100 msgs) ≈ $2–6 → 80–90% margin. The cap protects the tail. A
+20×/day user would be ~$30–45/mo uncapped — hence the hard line.
+
+### 🚧 BUILD (next session, after / alongside the Shelf redesign)
+1. **Usage counters per family** — monthly + daily, in `montree_children.settings.companion`
+   (`usage: {month, monthCount, day, dayCount}`) or a small table.
+2. **Gate in `app/api/montree/companion/route.ts`** — count only CHAT turns (NOT `__greeting__`,
+   NOT `/companion/step-card`). Limits **350/mo + 30/day**. Over → stream a warm Ivy
+   "continue tomorrow" message, NOT a 402. Reset monthly + daily.
+3. **Free margin lever (do regardless):** `MAX_TOOL_ROUNDS` 6→4, `MAX_TOOL_RESULT_CHARS`
+   40_000→~15_000 — cuts worst-case heavy-turn cost 30–50%, negligible quality loss.
+4. **Step Card route:** optionally prompt-cache the static system prefix (cross-tap saving
+   in the 5-min window). Step cards stay free to the user.
+5. **Stripe:** wire the **$29/mo** Home/companion price (operational).
+Coach stays Sonnet (single user) — unchanged.

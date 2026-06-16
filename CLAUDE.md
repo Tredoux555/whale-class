@@ -24,21 +24,27 @@ session (`ef6fd966` greeting fast-path · `996cda42` homeschool-founder access �
 MarkdownLite · `bce50cfb` kill the $1 paywall · `eb551190` Shelf→how-to card · `cff221a1`
 Sanctuary nav trim). Railway auto-deployed. **Migration 264 RUN** (4 home tables).
 
-**🏠 The Home System — a standalone $8/mo consumer product, "Ivy."** ONE parent, ONE
+**🏠 The Home System — a standalone Sonnet consumer product, "Ivy."** ONE parent, ONE
 subscription, a resident expert/guide/psychologist + curriculum, built on Smart-Capture +
-Guru. Lives at `/montree/home/[childId]` (BIO theme), 4 tabs: **Ivy** (companion chat +
+Guru. (Pricing under discussion — see PRICING MODEL below; design comes first.) Lives at `/montree/home/[childId]` (BIO theme), 4 tabs: **Ivy** (companion chat +
 vision + Step Card — the front door) · **Shelf** (child's works) · **Plan** (weekly DIY +
 "✨ Make another" + calendar/routines) · **Shop** (admin-curated creator marketplace).
 `lib/montree/companion/*` + `app/api/montree/companion/*` (SSE route, 13 tools, tier-gated
 402 `feature:'companion'`, `__greeting__` fast path, companion-log + on-wake consolidation,
 per-family memory in `montree_children.settings.companion`). UI in `components/montree/home/*`.
 
-**🚨 PRICING MODEL LOCKED — do NOT reintroduce pay-per-use.** Subscription = full access to
-EVERYTHING. NO per-usage charges (Tredoux: "would infuriate me"). Weekly activity is a free
-Facebook-style DIY promo. Full curriculum + written instructions live in the **Montree
-Library** (subscriber access). The "$1 thing" is NOT a site feature — it's a SEPARATE future
-concept for third-party creators publishing works outside the curriculum, earning money to
-THEM (not Tredoux). The `diy_plan` paywall that briefly existed was ripped out entirely.
+**🚧 PRICING MODEL — UNDER DISCUSSION (Jun 16, NOT locked).** Home runs **Sonnet**
+(Tredoux: "Sonnet is king, Haiku doesn't cut it" — $8 was the Haiku number, gone). Working
+direction (NOT final): **two tiers, BOTH starting on Sonnet**, with the ability to **top up**
+OR **fall back to Haiku** when the Sonnet allowance is spent (so the product never hard-stops —
+it degrades to Haiku or the user tops up). Sustainability via a **fair-use allowance, NOT
+pay-per-use** (the "would infuriate me" rule = no per-action metering + no $1 paywall; a
+generous monthly ceiling is fine, like ChatGPT/Claude caps). **Step Card taps stay
+FREE/uncounted.** Numbers still being worked out (earlier sketch: ~350 Sonnet msgs/mo + ~30/day
+at ~$29 — revisit against the two-tier + top-up + Haiku-fallback model). Weekly activity = free
+DIY promo. Full curriculum lives in the **Montree Library** (subscriber access). The "$1 thing"
+= separate future creator concept (money to THEM). **🎯 Tredoux's priority order: DESIGN FIRST
+(make the Shelf look good), THEN finalize pricing.**
 
 **🪵 Shelf tap → Ivy's hand-held how-to card (this session's headline fix).** Real-use
 feedback: tapping a shelf work opened the TEACHER progress panel (mark presented/mastered)
@@ -92,15 +98,29 @@ chain reliability that are the whole point. **Recommendation: keep Sonnet** — 
 low-volume, cost is trivial, quality is where it matters. Pull the caching lever (already on),
 not the model lever.
 
-**🏠 Home economics (answered Jun 16) — $8/mo ONLY works on the Haiku floor.** Step Card
-generation (`lib/montree/companion/present.ts`) is tier-resolved via `resolveReportModel`, NOT
-hardcoded — Haiku unless `ai_tier_sonnet` is ON for the school. Per-tap: ~$0.004 Haiku /
-~$0.015 Sonnet (single call, max_tokens 2048, HTTP-cached 5 min). Dominant home cost is **Ivy
-chat**: ~$3–14/mo per family on Haiku (light→heavy), ~$8–30 on Sonnet. So $8/mo holds on Haiku;
-Sonnet-everywhere ≈ $30 (Tredoux's read). **Action next session:** verify Tredoux House + home
-schools have `ai_tier_sonnet` OFF (lock the Haiku floor for home); Sonnet stays for the Coach
-only. Premium "$30 Sonnet Home" tier = per-family flag flip if ever wanted. Cheap win: prompt-
-cache the Step Card system prefix (static prompt + tool schema).
+**🏠 Home economics (Jun 16, direction not final) — Home runs SONNET; an ALLOWANCE (+ Haiku
+fallback / top-up) makes it sustainable, NOT a downgrade to Haiku-only.** ⚠️ Do NOT flip home
+to Haiku-only. Tredoux: "Sonnet is king." Real Sonnet cost (caching already on in the companion
+route): typical Ivy turn ~$0.05–0.08, heavy multi-tool/photo turn ~$0.12–0.20 (tool loop up to
+MAX_TOOL_ROUNDS=6, re-sending the growing transcript + up to 40K-char tool results). A 20×/day
+family = ~$30–45/mo raw API → MUST be capped. Working model: two Sonnet tiers + top-up + Haiku
+fallback when the Sonnet allowance is spent (numbers TBD).
+
+**🚧 BUILD (after the Shelf design) — Home usage cap (fair-use, no per-action metering):**
+- Per-family usage counters (monthly + daily) — store in `montree_children.settings.companion`
+  (e.g. `usage: {month:'YYYY-MM', monthCount, day:'YYYY-MM-DD', dayCount}`) or a small table.
+- Gate in `app/api/montree/companion/route.ts`: count only CHAT turns (NOT `__greeting__`, NOT
+  Step Card taps via `/companion/step-card`). Limits: **350/month + 30/day**. Over the cap →
+  stream a warm Ivy message ("We've covered a lot today 🌿 — let's pick this up tomorrow / next
+  month"), NOT a 402, NOT an error. Reset monthly + daily (family timezone or UTC).
+- **Free margin lever (do regardless):** trim `MAX_TOOL_ROUNDS` 6→4 and `MAX_TOOL_RESULT_CHARS`
+  40_000→~15_000 — cuts worst-case heavy-turn cost 30–50% with negligible quality loss.
+- Step Card route (`present.ts`): optionally prompt-cache the static system prefix for cross-tap
+  savings within the 5-min window. Step cards stay FREE to the user.
+- Stripe: wire the **$29/mo** Home/companion price (operational).
+Margin at $29: full-cap COGS ≈ $21 → ~$7 margin worst case; typical family (30–100 msgs) ≈
+$2–6 COGS → 80–90% margin. The cap protects the tail; the average family is very profitable.
+Coach stays Sonnet (single user) — unchanged.
 
 ---
 
