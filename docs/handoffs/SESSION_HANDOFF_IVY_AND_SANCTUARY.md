@@ -51,25 +51,64 @@ For one child, or two siblings treated as individuals (never a class).
 - **ONE companion, not three** — Ivy IS the Coach extended with educator + family-manager hats + Guru-awareness, running in Montree for parents. The teacher still uses Guru. Don't make parents juggle multiple AIs.
 - **Build now.**
 
-### What's BUILT this session (local, eslint-clean, NOT yet committed/wired — safe, nothing imports them yet)
+### What's BUILT (Phase 1 spine COMPLETE — all committed + pushed, eslint-clean, scoped-tsc clean)
+Commits: `9115a8c4` (next-step + system-prompt + design docs) → `c8118b77` (Step Card + school
+bridge + memory + SSE route). Both on `main`, pushed. **Inert backend — no UI calls it yet (Phase 3),
+so it cannot break the build.** Railway auto-deploys.
 1. `lib/montree/companion/next-step.ts` — **the spine.** `pickNextStep(supabase, childId)` →
-   THE one next work + reason. Wraps the real **V3 8-factor engine** and collapses the ranked list to
-   one step. Returns `NextStep { work_name, work_key, area, area_label, reason, reasons[], tier, score,
+   THE one next work + reason. Wraps the real **V3 8-factor engine**, collapses the ranked list to one
+   step. Returns `NextStep { work_name, work_key, area, area_label, reason, reasons[], tier, score,
    confidence, is_bridge, bridge_from_area, current_work, current_work_status }`.
 2. `lib/montree/companion/system-prompt.ts` — **Ivy's brain.** `buildCompanionSystemPrompt(opts)` +
-   `COMPANION_NAME='Ivy'`. Encodes all three hats + Guru transparency + the iron rules (one step at a
-   time, hand-hold, follow the child, protect the parent, plain language). Opts include
-   `currentStepSection`, `schoolContextSection`, `memorySection`, `isFirstSession`.
+   `COMPANION_NAME='Ivy'`. Three hats + Guru transparency + iron rules. Opts: `currentStepSection`,
+   `schoolContextSection`, `memorySection`, `isFirstSession`.
+3. `lib/montree/companion/present.ts` — **Step Card generator.** `generateStepCard(supabase, {childId,
+   classroomId, schoolId, step, childName, childAgeYears, locale})`. 3-tier curriculum lookup
+   (classroom → master Brain → static JSON), tier-aware AI → `StepCard { why_now, what_you_need[],
+   set_it_up[], show_it[], say[], dont_say[], yes_looks_like[], not_yet_looks_like[], is_template }`.
+   **Free tier / AI-fail → `templateCard()` straight from curriculum (never throws).**
+4. `lib/montree/companion/school-context.ts` — **Guru bridge.** `buildSchoolContext(supabase, childId)`
+   → `{ section, hasSignal }` from per-area progress + recent teacher notes + observations. Pure read,
+   child-scoped. `''` when no signal.
+5. `lib/montree/companion/memory.ts` — **per-family memory** in `montree_children.settings.companion.memories`
+   JSONB (no migration). `loadCompanionMemories` / `formatCompanionMemoriesForPrompt` /
+   `writeCompanionMemory` (supersede + FIFO cap 120) / `recallCompanionMemories`. Types span child
+   (interest/temperament/milestone/struggle), parent (preference/value/dropped/pattern), family
+   (routine/fact).
+6. `app/api/montree/companion/route.ts` — **per-child SSE chat.** Mirrors the Coach loop (keepalive,
+   tool-loop with full-transcript accumulation, empty-response recovery, forced summary, timeouts).
+   Each turn: `verifyChildBelongsToSchool` → `pickNextStep` + `buildSchoolContext` +
+   `loadCompanionMemories` (parallel) → `buildCompanionSystemPrompt` → stream. Tools: `present_step`
+   (emits a `step_card` SSE event + tool_result), Guru's `executeTool` for `set_focus_work` /
+   `update_progress` / `save_observation`, plus `remember` / `recall`. **Tier-gated** (free → 402 with
+   `requires_upgrade` + `/montree/admin/billing`), cross-pollination guarded, `logApiUsage` fire-and-forget.
+   SSE events: `:keepalive`, `thinking`, `tool_call`, `tool_result`, `step_card`, `text`, `done`, `error`.
 
-### What's NEXT (ordered — Phase 1 finish, then 2–5)
-1. **Step Card generator** — `lib/montree/companion/present.ts`. `generateStepCard(supabase, {childId, classroomId, schoolId, step, locale})`: fetch the work's curriculum guide content from `montree_classroom_curriculum_works` (see `app/api/montree/works/guide/route.ts` for the exact columns), then AI (tier-aware) → structured card: `{ why_now, what_you_need[], set_it_up[], show_it[], say[], dont_say[], yes_looks_like[], not_yet_looks_like[] }`. Grounded in curriculum, warm plain-parent language.
-2. **Per-child SSE route** — `app/api/montree/companion/route.ts`. Mirror the SSE + tool-loop of `app/api/montree/guru/route.ts` (or `app/api/story/coach/route.ts`). On each turn: load child context, call `pickNextStep`, build the system prompt (inject step + school context + memory), stream. Tools = reuse Guru's `executeTool` (`set_focus_work`, `update_progress`, `save_observation`) + companion tools (`present_step`, `advance_step`) + family tools (calendar/routine) + later life-coach tools.
-3. **School-context (Guru bridge)** — a helper that builds `schoolContextSection` from the child's `montree_child_progress` + recent `montree_behavioral_observations` + teacher notes, so Ivy can speak to "what's happening at school." (Same DB — it's a read, not a cross-service call.)
-4. **Per-family memory** — mirror `lib/story/coach/memory.ts` + consolidation, scoped per child/family. Start in `montree_children.settings.companion` JSONB; promote to a table if it grows.
-5. **Family-manager tools** — calendar + routines. **Reuse Montree's existing calendar/appointments** (`lib/montree/calendar/*`, the events/appointments routes — Sessions 117–129) for "write to the parent's calendar." Routines = lightweight (settings JSONB or a small table).
-6. **Life-coach hat** — the parent's own planning + wellbeing. Either reuse the Coach's planner/diary/wellbeing ideas implemented against Montree data, or a lighter parent-planner. (This is the "Coach for parents" half of the premium vision.)
-7. **Phase 2 — photo-interest intake** — a NEW vision call that reads the child's INTEREST from a single photo (not "which curriculum work is this"), infers area/sensitive-period, seeds the first step. Distinct from the existing two-pass identifier.
-8. **Phase 3 — home UI** — the Step Card is the centerpiece (present → "how did it go?" → next step) under `/montree/home`, reusing `PortalChat` (chat) + `ShelfView`. Two-sibling toggle (Phase 5).
+### What's NEXT (Phase 1 done; pick up at family-manager → then 2–5)
+1. **Family-manager tools** — calendar + routines. **Reuse Montree's existing calendar/appointments**
+   (`lib/montree/calendar/*`, the events/appointments routes — Sessions 117–129) for "write to the
+   parent's calendar." Routines = lightweight (settings JSONB or a small table). Add these as new tools
+   in `COMPANION_TOOLS` + dispatch in `app/api/montree/companion/route.ts`.
+2. **Life-coach hat** — the parent's own planning + wellbeing. Reuse the Coach's planner/diary/wellbeing
+   ideas against Montree data, or a lighter parent-planner. Add as companion tools. (The "Coach for
+   parents" half of the premium vision.)
+3. **Per-family memory consolidation** — mirror `lib/story/coach/consolidation.ts`: an "on wake" pass
+   (via `after()`) that folds recent turns into durable memories. Optional; the `remember` tool already
+   captures memory inline. Would also want a server-side turn archive to resume threads across devices
+   (right now history is client-supplied + sanitized).
+4. **Phase 2 — photo-interest intake** — a NEW vision call that reads the child's INTEREST from a single
+   photo (not "which curriculum work is this"), infers area/sensitive-period, seeds the first step.
+   Distinct from the existing two-pass identifier.
+5. **Phase 3 — home UI** — wire it up. The Step Card is the centerpiece (present → "how did it go?" →
+   next step) under `/montree/home`, reusing `PortalChat` (chat) + `ShelfView`. The route streams a
+   `step_card` event the UI renders as the card. Two-sibling toggle (Phase 5).
+
+### How to verify the SSE route (once a home child exists)
+POST `/api/montree/companion` with the homeschool-parent montree-auth cookie + body
+`{ child_id, question, locale?, history? }`. Expect SSE: `:keepalive` → `thinking` → (maybe
+`tool_call`/`tool_result`/`step_card`) → `text` chunks → `done`. Free-tier schools get HTTP 402 with
+`{ requires_upgrade, upgrade_url, feature:'companion' }`. Not runtime-tested from the sandbox (no live
+deploy/DB) — eslint + scoped-tsc + careful review only.
 
 ### Integration contracts / gotchas (verified this session)
 - **V3 engine** = `generateShelfProposals(childId, childName, progress[], focusWorks[], v3Data?)` in
