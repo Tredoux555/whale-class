@@ -12,6 +12,15 @@ read. It's the native companion to the montree.xyz personal space.
 
 This file is the single entry point. To resume: read this, then `VERIFY.md`.
 
+> ✅ **COMPILES + CRYPTO PARITY VERIFIED (2026-06-18).** The app was generated with
+> XcodeGen and **built clean for the iOS simulator** (Xcode 26.3, swift-sodium
+> 0.11.0). The crypto XCTest ran green — `testKnownAnswerVectors` and
+> `testFailsClosed` both pass, proving the device crypto reproduces the deployed
+> backend's master/contentKey/authSecret/verifier/ciphertext **byte-for-byte**.
+> Three first-compile fixes were applied (base64 `.ORIGINAL`, nonce via
+> `randomBytes.buf`, `CFBundleExecutable` in Info.plist). What remains is a
+> real-device run (Secure Enclave), the account-deletion feature, and submission.
+
 ---
 
 ## 1. Where everything lives
