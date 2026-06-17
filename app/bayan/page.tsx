@@ -3,32 +3,19 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
-// Bayan's sanctuary door — identical machinery to /riddick and /story/admin.
+// Bayan's sanctuary door — plain, simple login (same machinery as /riddick).
 //
-// Posts to /api/story/admin/auth and stores the same 'story_admin_session'
-// token. Bayan's story_admin_users row carries space='bayan', so her token
-// scopes every personal API call to her own walled-off sanctuary (coach, diary,
-// planner, projects). No other space is ever visible from here, and hers is
-// never visible elsewhere — the wall is enforced server-side from the token.
-//
-// First login: her account is created WITHOUT a password (sentinel
-// 'SET_ON_FIRST_LOGIN'). The auth route replies { needsPasswordSetup: true } and
-// she sets her own private password here (via /api/story/admin/auth/claim) — so
-// no one else ever chose or knows it. After that, normal login.
+// Posts to /api/story/admin/auth and stores the 'story_admin_session' token.
+// Her story_admin_users row carries space='bayan', so her token scopes every
+// personal API call to her own walled-off sanctuary. Username is fixed to
+// 'Bayan' (this is her door) — she only types her password.
 
 export default function BayanDoor() {
-  const [mode, setMode] = useState<'login' | 'claim'>('login');
-  const [username] = useState('Bayan'); // this door is Bayan's
+  const username = 'Bayan';
   const [password, setPassword] = useState('');
-  const [confirm, setConfirm] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
-
-  const enter = (token: string) => {
-    sessionStorage.setItem('story_admin_session', token);
-    router.push('/story/admin/coach');
-  };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,12 +28,9 @@ export default function BayanDoor() {
         body: JSON.stringify({ username, password }),
       });
       const data = await res.json();
-      if (res.ok && data.needsPasswordSetup) {
-        setPassword('');
-        setConfirm('');
-        setMode('claim');
-      } else if (res.ok) {
-        enter(data.session);
+      if (res.ok && data.session) {
+        sessionStorage.setItem('story_admin_session', data.session);
+        router.push('/story/admin/coach');
       } else {
         setError(data.error || 'Invalid password');
       }
@@ -55,53 +39,6 @@ export default function BayanDoor() {
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const handleClaim = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-    if (password.length < 6) { setError('Choose a password of at least 6 characters.'); return; }
-    if (password !== confirm) { setError('The two passwords don’t match.'); return; }
-    setIsLoading(true);
-    try {
-      const res = await fetch('/api/story/admin/auth/claim', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password }),
-      });
-      const data = await res.json();
-      if (res.ok) {
-        enter(data.session);
-      } else {
-        setError(data.error || 'Could not set your password.');
-      }
-    } catch {
-      setError('Connection error. Please try again.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const labelStyle: React.CSSProperties = {
-    display: 'block',
-    fontSize: 12,
-    fontWeight: 600,
-    color: 'rgba(52,211,153,0.85)',
-    textTransform: 'uppercase',
-    letterSpacing: '0.6px',
-    marginBottom: 8,
-  };
-  const inputStyle: React.CSSProperties = {
-    width: '100%',
-    background: 'rgba(0,0,0,0.30)',
-    border: '1px solid rgba(52,211,153,0.18)',
-    borderRadius: 10,
-    padding: '12px 14px',
-    color: 'rgba(255,255,255,0.92)',
-    fontSize: 14,
-    fontFamily: 'inherit',
-    outline: 'none',
-    boxSizing: 'border-box',
   };
 
   return (
@@ -182,18 +119,24 @@ export default function BayanDoor() {
             margin: '0 0 28px',
           }}
         >
-          {mode === 'claim'
-            ? 'This is your private space. Create a password — only you will ever know it.'
-            : 'Your space'}
+          Your space
         </p>
 
-        <form
-          onSubmit={mode === 'claim' ? handleClaim : handleLogin}
-          style={{ display: 'flex', flexDirection: 'column', gap: 16 }}
-        >
+        <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
           <div>
-            <label htmlFor="bp" style={labelStyle}>
-              {mode === 'claim' ? 'Choose a password' : 'Password'}
+            <label
+              htmlFor="bp"
+              style={{
+                display: 'block',
+                fontSize: 12,
+                fontWeight: 600,
+                color: 'rgba(52,211,153,0.85)',
+                textTransform: 'uppercase',
+                letterSpacing: '0.6px',
+                marginBottom: 8,
+              }}
+            >
+              Password
             </label>
             <input
               id="bp"
@@ -202,25 +145,21 @@ export default function BayanDoor() {
               onChange={(e) => setPassword(e.target.value)}
               required
               autoFocus
-              autoComplete={mode === 'claim' ? 'new-password' : 'current-password'}
-              style={inputStyle}
+              autoComplete="current-password"
+              style={{
+                width: '100%',
+                background: 'rgba(0,0,0,0.30)',
+                border: '1px solid rgba(52,211,153,0.18)',
+                borderRadius: 10,
+                padding: '12px 14px',
+                color: 'rgba(255,255,255,0.92)',
+                fontSize: 14,
+                fontFamily: 'inherit',
+                outline: 'none',
+                boxSizing: 'border-box',
+              }}
             />
           </div>
-
-          {mode === 'claim' && (
-            <div>
-              <label htmlFor="bc" style={labelStyle}>Confirm password</label>
-              <input
-                id="bc"
-                type="password"
-                value={confirm}
-                onChange={(e) => setConfirm(e.target.value)}
-                required
-                autoComplete="new-password"
-                style={inputStyle}
-              />
-            </div>
-          )}
 
           {error && (
             <div
@@ -255,9 +194,7 @@ export default function BayanDoor() {
               marginTop: 4,
             }}
           >
-            {isLoading
-              ? (mode === 'claim' ? 'Setting up…' : 'Opening…')
-              : (mode === 'claim' ? 'Create password & enter' : 'Enter')}
+            {isLoading ? 'Opening…' : 'Enter'}
           </button>
         </form>
       </div>
