@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getSupabase, verifyAdminToken, verifyVaultToken } from '@/lib/story-db';
+import { getSupabase, verifyAdminToken, verifyVaultToken, isVaultOwner } from '@/lib/story-db';
 import crypto from 'crypto';
 
 // Videos can be large + PBKDF2 + AES-GCM are CPU-bound. Railway's default
@@ -59,6 +59,10 @@ export async function POST(req: NextRequest) {
     }
 
     // 🚨 Session 113 V2 Story audit F-2.1 — vault token mandatory.
+    if (!(await isVaultOwner(req.headers.get('authorization')))) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
     const vaultTokenValid = await verifyVaultToken(req.headers.get('x-vault-token'));
     if (!vaultTokenValid) {
       return NextResponse.json(

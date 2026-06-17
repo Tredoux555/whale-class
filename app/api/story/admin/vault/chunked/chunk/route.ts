@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { verifyAdminToken, verifyVaultToken } from '@/lib/story-db';
+import { verifyAdminToken, verifyVaultToken, isVaultOwner } from '@/lib/story-db';
 
 // 🚨 Session 153 — server-proxied chunked (resumable) upload, step 2 of 3.
 //
@@ -20,6 +20,10 @@ export async function POST(req: NextRequest) {
   try {
     const adminUsername = await verifyAdminToken(req.headers.get('authorization'));
     if (!adminUsername) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+    if (!(await isVaultOwner(req.headers.get('authorization')))) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
 
     const vaultTokenValid = await verifyVaultToken(req.headers.get('x-vault-token'));
     if (!vaultTokenValid) {
