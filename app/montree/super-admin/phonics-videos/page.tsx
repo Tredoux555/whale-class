@@ -60,15 +60,36 @@ type Item = {
 };
 
 // Pull the lesson number out of a filename. "20 - Red Rat Run.mp4" -> 20,
-// "lesson-07.mp4" -> 7, "L5 snake.mp4" -> 5. Returns null if no valid
-// lesson number is found.
+// "lesson-07.mp4" -> 7, "L5 snake.mp4" -> 5. Hardened against resolution /
+// aspect-ratio tokens so "9x16_lesson20.mp4" doesn't grab the 9. Returns null
+// (→ manual dropdown) if it can't find a confident lesson number.
 function guessLesson(name: string): number | null {
-  const base = name.replace(/\.[^.]+$/, '');
-  // First run of digits anywhere in the name.
-  const m = base.match(/\d+/);
-  if (!m) return null;
-  const n = Number(m[0]);
-  return LESSON_NUMS.has(n) ? n : null;
+  let base = name.replace(/\.[^.]+$/, '').replace(/_+/g, ' '); // _ is a separator
+
+  // 1) Explicit "lesson N" / "L20" / "#20" wins outright.
+  const explicit =
+    base.match(/\blesson\s*[-_ ]?\s*(\d{1,2})\b/i) ||
+    base.match(/\bL[-_ ]?(\d{1,2})\b/i) ||
+    base.match(/#\s*(\d{1,2})\b/);
+  if (explicit) {
+    const n = Number(explicit[1]);
+    if (LESSON_NUMS.has(n)) return n;
+  }
+
+  // 2) Strip resolution / aspect-ratio tokens that would otherwise mis-match
+  //    (9x16, 16:9, 1080p, 720, 4k, 2160).
+  base = base
+    .replace(/\d+\s*[x:×]\s*\d+/gi, ' ')
+    .replace(/\b\d{3,4}\s*p\b/gi, ' ')
+    .replace(/\b(?:4k|2k|uhd|fhd|hd)\b/gi, ' ')
+    .replace(/\b\d{3,4}\b/g, ' ');
+
+  // 3) First remaining 1–2 digit number that's a real lesson.
+  for (const tok of base.match(/\d{1,2}/g) || []) {
+    const n = Number(tok);
+    if (LESSON_NUMS.has(n)) return n;
+  }
+  return null;
 }
 
 const mb = (bytes: number) => (bytes / 1048576).toFixed(1);

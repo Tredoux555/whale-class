@@ -14,6 +14,12 @@ function getJWTSecret(): Uint8Array {
   return new TextEncoder().encode(secret);
 }
 
+// A story_admin_users row created with this sentinel as its password_hash has
+// NO password yet — the person sets their own on first login (via /auth/claim).
+// Lets us add someone (e.g. a new sanctuary) without anyone else knowing or
+// choosing their password.
+const UNCLAIMED_SENTINEL = 'SET_ON_FIRST_LOGIN';
+
 // Log admin login to database (with retry, matching user auth pattern)
 async function logAdminLogin(
   supabase: ReturnType<typeof getSupabase>,
@@ -102,6 +108,11 @@ export async function POST(req: NextRequest) {
       .limit(1);
 
     if (!error && users && users.length > 0) {
+      // First login: account exists but has no password yet → ask them to set one.
+      if (users[0].password_hash === UNCLAIMED_SENTINEL) {
+        return NextResponse.json({ needsPasswordSetup: true });
+      }
+
       const bcrypt = await import('bcryptjs');
       const valid = await bcrypt.compare(password, users[0].password_hash);
 

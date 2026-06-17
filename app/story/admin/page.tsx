@@ -7,11 +7,20 @@ import { useRouter } from 'next/navigation';
 // Identical glass-card design as `app/story/page.tsx` for visual continuity.
 
 export default function AdminLogin() {
+  const [mode, setMode] = useState<'login' | 'claim'>('login');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [confirm, setConfirm] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
+
+  const enter = (token: string) => {
+    sessionStorage.setItem('story_admin_session', token);
+    // Personal platform: land on the Planner front. Diary + Messages are
+    // both hidden behind their own secret phrases.
+    router.push('/story/admin/planner');
+  };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -27,11 +36,13 @@ export default function AdminLogin() {
 
       const data = await res.json();
 
-      if (res.ok) {
-        sessionStorage.setItem('story_admin_session', data.session);
-        // Personal platform: land on the Planner front. Diary + Messages are
-        // both hidden behind their own secret phrases.
-        router.push('/story/admin/planner');
+      if (res.ok && data.needsPasswordSetup) {
+        // First time in — let them set their own private password.
+        setPassword('');
+        setConfirm('');
+        setMode('claim');
+      } else if (res.ok) {
+        enter(data.session);
       } else {
         setError(data.error || 'Invalid credentials');
       }
@@ -40,6 +51,54 @@ export default function AdminLogin() {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleClaim = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    if (password.length < 6) { setError('Choose a password of at least 6 characters.'); return; }
+    if (password !== confirm) { setError('The two passwords don’t match.'); return; }
+    setIsLoading(true);
+
+    try {
+      const res = await fetch('/api/story/admin/auth/claim', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        enter(data.session);
+      } else {
+        setError(data.error || 'Could not set your password.');
+      }
+    } catch {
+      setError('Connection error. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const labelStyle: React.CSSProperties = {
+    display: 'block',
+    fontSize: 12,
+    fontWeight: 600,
+    color: 'rgba(52,211,153,0.85)',
+    textTransform: 'uppercase',
+    letterSpacing: '0.6px',
+    marginBottom: 8,
+  };
+  const inputStyle: React.CSSProperties = {
+    width: '100%',
+    background: 'rgba(0,0,0,0.30)',
+    border: '1px solid rgba(52,211,153,0.18)',
+    borderRadius: 10,
+    padding: '12px 14px',
+    color: 'rgba(255,255,255,0.92)',
+    fontSize: 14,
+    fontFamily: 'inherit',
+    outline: 'none',
+    boxSizing: 'border-box',
   };
 
   return (
@@ -110,7 +169,7 @@ export default function AdminLogin() {
             letterSpacing: '-0.4px',
           }}
         >
-          Story admin
+          {mode === 'claim' ? 'Welcome' : 'Story admin'}
         </h1>
         <p
           style={{
@@ -120,61 +179,33 @@ export default function AdminLogin() {
             margin: '0 0 28px',
           }}
         >
-          Whale Montessori Platform
+          {mode === 'claim'
+            ? 'This is your private space. Create a password — only you will ever know it.'
+            : 'Whale Montessori Platform'}
         </p>
 
-        <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-          <div>
-            <label
-              htmlFor="au"
-              style={{
-                display: 'block',
-                fontSize: 12,
-                fontWeight: 600,
-                color: 'rgba(52,211,153,0.85)',
-                textTransform: 'uppercase',
-                letterSpacing: '0.6px',
-                marginBottom: 8,
-              }}
-            >
-              Username
-            </label>
-            <input
-              id="au"
-              type="text"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              required
-              autoComplete="off"
-              style={{
-                width: '100%',
-                background: 'rgba(0,0,0,0.30)',
-                border: '1px solid rgba(52,211,153,0.18)',
-                borderRadius: 10,
-                padding: '12px 14px',
-                color: 'rgba(255,255,255,0.92)',
-                fontSize: 14,
-                fontFamily: 'inherit',
-                outline: 'none',
-                boxSizing: 'border-box',
-              }}
-            />
-          </div>
+        <form
+          onSubmit={mode === 'claim' ? handleClaim : handleLogin}
+          style={{ display: 'flex', flexDirection: 'column', gap: 16 }}
+        >
+          {mode === 'login' && (
+            <div>
+              <label htmlFor="au" style={labelStyle}>Username</label>
+              <input
+                id="au"
+                type="text"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                required
+                autoComplete="off"
+                style={inputStyle}
+              />
+            </div>
+          )}
 
           <div>
-            <label
-              htmlFor="ap"
-              style={{
-                display: 'block',
-                fontSize: 12,
-                fontWeight: 600,
-                color: 'rgba(52,211,153,0.85)',
-                textTransform: 'uppercase',
-                letterSpacing: '0.6px',
-                marginBottom: 8,
-              }}
-            >
-              Password
+            <label htmlFor="ap" style={labelStyle}>
+              {mode === 'claim' ? 'Choose a password' : 'Password'}
             </label>
             <input
               id="ap"
@@ -182,21 +213,25 @@ export default function AdminLogin() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              autoComplete="off"
-              style={{
-                width: '100%',
-                background: 'rgba(0,0,0,0.30)',
-                border: '1px solid rgba(52,211,153,0.18)',
-                borderRadius: 10,
-                padding: '12px 14px',
-                color: 'rgba(255,255,255,0.92)',
-                fontSize: 14,
-                fontFamily: 'inherit',
-                outline: 'none',
-                boxSizing: 'border-box',
-              }}
+              autoComplete={mode === 'claim' ? 'new-password' : 'off'}
+              style={inputStyle}
             />
           </div>
+
+          {mode === 'claim' && (
+            <div>
+              <label htmlFor="ac" style={labelStyle}>Confirm password</label>
+              <input
+                id="ac"
+                type="password"
+                value={confirm}
+                onChange={(e) => setConfirm(e.target.value)}
+                required
+                autoComplete="new-password"
+                style={inputStyle}
+              />
+            </div>
+          )}
 
           {error && (
             <div
@@ -231,7 +266,9 @@ export default function AdminLogin() {
               marginTop: 4,
             }}
           >
-            {isLoading ? 'Signing in…' : 'Sign In'}
+            {isLoading
+              ? (mode === 'claim' ? 'Setting up…' : 'Signing in…')
+              : (mode === 'claim' ? 'Create password & enter' : 'Sign In')}
           </button>
         </form>
       </div>
