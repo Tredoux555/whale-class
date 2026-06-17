@@ -10,6 +10,11 @@ import {
   readDiaryField,
   isDiaryEncryptionConfigured,
 } from '@/lib/story/diary-crypto';
+import {
+  coerceCiphertext,
+  isMissingColumnError,
+  E2E_CIPHER_VERSION,
+} from '@/lib/sanctuary-e2e/content-store';
 
 export const dynamic = 'force-dynamic';
 
@@ -30,24 +35,54 @@ export async function PATCH(
   const { id } = await params;
   if (!UUID_RE.test(id)) return NextResponse.json({ error: 'Bad id' }, { status: 400 });
 
-  if (!isDiaryEncryptionConfigured()) {
-    return NextResponse.json(
-      { error: 'Encryption is not configured (STORY_DIARY_KEY).' },
-      { status: 500 },
-    );
-  }
-
   let body: {
     title?: string;
     why?: string | null;
     next_action?: string | null;
     status?: string;
     priority?: number | null;
+    ciphertext?: string;
   };
   try {
     body = await req.json();
   } catch {
     return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
+  }
+
+  const supabase = getSupabase();
+
+  // ── e2e update: replace the opaque blob VERBATIM (no server key). ──
+  const ct = coerceCiphertext(body.ciphertext);
+  if (ct) {
+    const { data, error } = await supabase
+      .from('story_projects')
+      .update({ ciphertext: ct, cipher_version: E2E_CIPHER_VERSION })
+      .eq('id', id)
+      .eq('space', space)
+      .select('id, updated_at')
+      .maybeSingle();
+    if (error && isMissingColumnError(error)) {
+      return NextResponse.json(
+        { error: 'End-to-end storage is not enabled on this server yet.' },
+        { status: 503 },
+      );
+    }
+    if (error) {
+      console.error('[projects] e2e update error:', error.message);
+      return NextResponse.json({ error: 'Could not save project' }, { status: 500 });
+    }
+    if (!data) return NextResponse.json({ error: 'Not found' }, { status: 404 });
+    return NextResponse.json({
+      project: { id: data.id as string, ciphertext: ct, updated_at: data.updated_at as string },
+    });
+  }
+
+  // ── legacy server-key update ──
+  if (!isDiaryEncryptionConfigured()) {
+    return NextResponse.json(
+      { error: 'Encryption is not configured (STORY_DIARY_KEY).' },
+      { status: 500 },
+    );
   }
 
   const patch: Record<string, unknown> = {};
@@ -84,7 +119,6 @@ export async function PATCH(
     return NextResponse.json({ error: 'Nothing to update' }, { status: 400 });
   }
 
-  const supabase = getSupabase();
   const { data, error } = await supabase
     .from('story_projects')
     .update(patch)

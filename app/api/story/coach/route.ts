@@ -13,6 +13,7 @@ import { NextRequest, after } from 'next/server';
 import type Anthropic from '@anthropic-ai/sdk';
 import type { MessageParam, ContentBlockParam, ToolResultBlockParam } from '@anthropic-ai/sdk/resources/messages';
 import { getSupabase, verifyAdminToken, getAdminSpace } from '@/lib/story-db';
+import { selectAdminUserForAuth } from '@/lib/sanctuary-e2e/server-auth';
 import { anthropic, AI_MODEL } from '@/lib/ai/anthropic';
 import { readDiaryField, encryptDiaryField, encryptDiaryFieldOrNull, isDiaryEncryptionConfigured } from '@/lib/story/diary-crypto';
 import {
@@ -90,6 +91,14 @@ export async function POST(request: NextRequest) {
 
   const supabase = getSupabase();
 
+  // Is this an e2e (native, device-encrypted) space? Sourced from the DB by the
+  // verified username, NOT from the client — getting this wrong would persist a
+  // plaintext coach turn server-readable. For e2e spaces the Coach still answers
+  // (the explicit per-message cloud opt-in: the device assembles + sends the
+  // plaintext context for THIS turn) but persists NOTHING readable server-side.
+  // Degrades to non-e2e before migration 265 (column absent → false).
+  const isE2e = (await selectAdminUserForAuth(supabase, admin))?.e2e === true;
+
   // Sanitize client history → text-only { role, content } (same posture as
   // principal-agent: never trust client-supplied tool_use/tool_result blocks).
   const sanitizeHistory = (raw: unknown): MessageParam[] => {
@@ -112,7 +121,11 @@ export async function POST(request: NextRequest) {
   // left off — even after a reload or on another device. The client-supplied
   // history is only a fallback for the very first turn (nothing logged yet).
   const clientHistory = sanitizeHistory(body.history);
-  const serverThread = await loadRecentThread(supabase, space, { maxTurns: 12, withinHours: 72 });
+  // e2e spaces have NO server-readable thread (turns are never logged server-side
+  // for them) — use the device-supplied history only.
+  const serverThread = isE2e
+    ? []
+    : await loadRecentThread(supabase, space, { maxTurns: 12, withinHours: 72 });
   const history = serverThread.length ? serverThread : clientHistory;
 
   // Reflect-on-entry: fetch the entry server-side and build a grounded prompt.
@@ -149,6 +162,9 @@ export async function POST(request: NextRequest) {
   // into long-term memory + a diary recap. Runs at most once/day (the due-check
   // returns false once yesterday is stamped), off the user's critical path.
   after(async () => {
+    // e2e spaces persist NOTHING readable server-side — no consolidation into
+    // server-key coach memory / diary recaps. The device owns its encrypted log.
+    if (isE2e) return;
     try {
       const due = await isConsolidationDue(supabase, space);
       if (!due.due) return;
@@ -337,7 +353,9 @@ export async function POST(request: NextRequest) {
 
         // Archive the exchange (encrypted, fire-and-forget) — the durable record.
         // Degrades silently if migration 259 isn't run or encryption is unavailable.
-        if (isDiaryEncryptionConfigured()) {
+        // SKIPPED for e2e spaces: the server must persist NOTHING readable; the
+        // device keeps its own encrypted coach log.
+        if (!isE2e && isDiaryEncryptionConfigured()) {
           void supabase
             .from('story_coach_log')
             .insert({
