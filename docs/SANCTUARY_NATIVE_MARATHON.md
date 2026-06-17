@@ -18,6 +18,12 @@ or says to the coach ever leaves her phone.* This is the native-app track. The w
 ---
 
 ## THE FORK (decide this first — it shapes the whole build)
+**DECIDED (Tredoux, Jun 17 2026): Option 3 — HYBRID.** On-device model is the
+default (fully private journaling/reflection, nothing leaves the phone); a clearly
+labelled, per-message "ask the deeper coach" sends that single turn to Sonnet on her
+explicit tap. Stack therefore leans **Swift** (first-class access to Apple's on-device
+Foundation Models + Secure Enclave). Journal is always device-encrypted at rest.
+
 1. **Cloud coach (Sonnet).** Smartest. Journal encrypted at rest with a device-only key
    (nobody can read it, ever). Live coach turn is sent to the AI transiently to reply,
    then dropped (no readable storage, no logging). Backend only ever holds ciphertext.
