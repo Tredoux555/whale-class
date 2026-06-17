@@ -23,9 +23,9 @@ options:
 packages:
   Sodium:
     # swift-sodium = the same libsodium the TS reference + KAT vectors use.
-    # Pin to a known 0.9.x; verify the latest tag before shipping.
+    # Verified building at 0.11.0 (Xcode 26.3); crypto XCTest green.
     url: https://github.com/jedisct1/swift-sodium
-    from: "0.9.1"
+    from: "0.11.0"
 
 targets:
   LyfCoach:

@@ -12,7 +12,7 @@ import Sodium
 ///   crypto_generichash(32, msg)         → sodium.genericHash.hash(message:)
 ///   crypto_secretbox_easy(msg, n, key)  → sodium.secretBox.seal(message:secretKey:nonce:)
 ///   crypto_secretbox_open_easy          → sodium.secretBox.open(authenticatedCipherText:secretKey:nonce:)
-///   base64(ORIGINAL)                    → sodium.utils.bin2base64(_, variant: .original)
+///   base64(ORIGINAL)                    → sodium.utils.bin2base64(_, variant: .ORIGINAL)
 ///   constant-time compare               → sodium.utils.equals
 enum SanctuaryCryptoError: Error { case derivationFailed, encryptFailed }
 
@@ -37,7 +37,7 @@ enum SanctuaryCrypto {
         sodium.randomBytes.buf(length: saltBytes)!
     }
     static func randomNonce() -> [UInt8] {
-        sodium.secretBox.nonce()  // 24 bytes (crypto_secretbox_NONCEBYTES)
+        sodium.randomBytes.buf(length: nonceBytes)!  // 24 bytes (crypto_secretbox_NONCEBYTES)
     }
 
     // ── key hierarchy ───────────────────────────────────────────────────────
@@ -114,10 +114,10 @@ enum SanctuaryCrypto {
 
     // ── encoding helpers (ORIGINAL base64 — the locked wire/transport variant) ─
     static func b64(_ bytes: [UInt8]) -> String {
-        sodium.utils.bin2base64(bytes, variant: .original)!
+        sodium.utils.bin2base64(bytes, variant: .ORIGINAL)!
     }
     static func unb64(_ s: String) -> [UInt8]? {
-        sodium.utils.base642bin(s, variant: .original)
+        sodium.utils.base642bin(s, variant: .ORIGINAL)
     }
     static func hex(_ bytes: [UInt8]) -> String {
         sodium.utils.bin2hex(bytes)!

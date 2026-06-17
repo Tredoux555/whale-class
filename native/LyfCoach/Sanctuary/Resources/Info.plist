@@ -6,6 +6,8 @@
   <string>Lyf Coach</string>
   <key>CFBundleName</key>
   <string>Lyf Coach</string>
+  <key>CFBundleExecutable</key>
+  <string>$(EXECUTABLE_NAME)</string>
 
   <!-- Export compliance: the app uses only STANDARD encryption (TLS + libsodium)
        to protect the user's own data — it is not a cryptography tool. This
