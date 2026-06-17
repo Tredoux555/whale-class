@@ -17,6 +17,78 @@ Local path: `/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/whale` (note spa
 
 ---
 
+## 🧠 SESSION — Jun 16–17, 2026 (Cowork) — "The Corner" (Ivy-led Home) SHIPPED + Gloria contract redesign + Story Zoe-removal
+
+**Canonical handoff:** `docs/handoffs/SESSION_CORNER_GLORIA_STORY_JUN17.md`. Closes the Jun 16
+headline call-to-action ("REDESIGN THE SHELF"). 2 commits on main (`7812b150` Corner redesign +
+roster removal + Ivy tune · `0ddcfed5` scroll fix). Railway auto-deployed; verified live on
+montree.xyz.
+
+**🌿 Shelf → "The Corner" (Ivy-led).** NEW `components/montree/home/CornerView.tsx` replaces
+ShelfView for Home (old file retained, hide-don't-delete, now unimported). Not a catalog — the
+child's actual corner: ONE Ivy-chosen **spotlight** (most-recently-set non-mastered focus work +
+its per-area `guru_reason`) → "Show me how" opens the Step Card; a small growing set with an
+"↩ has a home" **order cue** on every work; a **prepare-for-next-week** nudge → Ivy; a quiet journey
+line; a tucked **"see the full library"** escape hatch. Tab renamed **Corner** (`BottomTabs.tsx`;
+HomeTab id stays `'shelf'`). Decisions locked: name = "Corner", Ivy-led + hidden see-all.
+
+**🏠 Whale Class roster removed from Home.** `app/montree/home/[childId]/page.tsx` — Home is a
+family, not a classroom: sibling switcher only when `children.length <= HOME_SIBLING_MAX (4)`; a
+full class collapses to the single active child. Swapped ShelfView→CornerView, passes `childName`.
+
+**🌱 Ivy retrained** (`lib/montree/companion/system-prompt.ts`): NEW **"Begin with order"**
+foundation — the put-it-back ritual woven into every presentation + celebrated as a milestone; an
+order bullet in Montessori truths; **homeschool-first** reframe ("If there's also a school… most
+families here have no school") so she never assumes a teacher/school.
+
+**🚨 Architectural rules locked in:**
+- Spotlight is **derived client-side** from `GET /api/montree/shelf` (most-recently-set,
+  status≠mastered, + `guru_reason`). No new endpoint.
+- Identity is **`area::name`** (focus works unique per area) for the spotlight comparator + React keys.
+- A brand-new child's Corner is **empty by design** ("Ask Ivy where to begin") — Ivy fills it via
+  chat/photos.
+- Home tab surfaces use **`h-full overflow-y-auto`** as the scroll root, NOT `flex-1` — `<main>`
+  isn't a flex container, so `flex-1` is inert and `<main overflow-hidden>` clips it (this WAS the
+  scroll bug). FamilyPlan/Shop already use `h-full`; IvyChat uses `flex flex-col h-full`.
+- New Corner copy is **hardcoded English** (added NO new i18n keys → strict-parity hook stays green).
+  i18n pass = fast-follow.
+
+**Verified live (Chrome, Amy's home):** roster gone, Corner tab, Ivy greeting + one-step, spotlight
++ reason, "has a home" cue, **Step Card fires end-to-end** (`/companion/step-card` → present.ts →
+StepCard), scroll reaches prepare-next + journey + see-all, console clean. **Next:** Step Card
+polish (the "I did it → tell Ivy" loop) + i18n pass.
+
+**🗒️ Gloria partnership contract — redesigned (Desktop, NOT git).** `~/Desktop/Montree Program/`:
+NEW `Montree_Partnership_Gloria_A4.pdf` (primary; A4 = contract standard) + `_A5.pdf` (folds once
+into an A6 envelope). Built from `Montree_Partnership_Agreement_Gloria.pdf`'s 8 clauses + note,
+brand-matched to the letter. Signing re-engineered: generous stacked blocks **anchored to the
+bottom**, **Gloria "Full name (please print)" line**, **"Place Common Seal Here" emboss zone** near
+the bottom edge (embosser reach). All 8 clauses present (first A4 clipped clause 5 → fixed via
+flowing layout). Logo: the **real gold M** (`public/Montree Logo - M.png`, cropped to a badge)
+replaces the sprout. Render: HTML+print CSS → headless Chrome (`--headless=new --print-to-pdf`);
+source HTML in the outputs scratchpad. **Open:** the LETTER (`Gloria_Letter.pdf`) still uses the
+sprout — offered to swap to the gold M (pending yes).
+
+**🚪 Story system — revert to stock + remove Zoe (SQL via Supabase SQL Editor).** Weekly story lives
+in `secret_stories` (visible `story_title`+`story_content.paragraphs`; separate encrypted
+`hidden_message` tap-to-reveal). A personal poem was set as the visible story, then reverted to the
+stock default + Zoe removed.
+- **🚨 TWO tables, TWO Zoe logins.** `story_admin_users` = admin/"sanctuary members"; **owner = the
+  row with `space = 'tredoux'`** (`OWNER_SPACE = VAULT_OWNER_SPACE = 'tredoux'`, `lib/story-db.ts`).
+  The `'tredoux'` space held THREE rows: `Tredoux`, `Z` (Zoe), `J`; Riddick = `R`/`riddick`. So a
+  `space != 'tredoux'` delete is WRONG (keeps Zoe+J, deletes Riddick) — **always SELECT first; key
+  on username.** `DELETE FROM story_admin_users WHERE username = 'Z'` removed her member login —
+  **but she STILL logged in**, because the Story **front-end (viewer) login authenticates against
+  `story_users`** (`/api/story/auth`), a different table. `story_users` held just `T` (Tredoux) +
+  `Z` (Zoe); ran `DELETE FROM story_users WHERE username = 'Z'`. **✅ Zoe now removed from BOTH
+  tables.** Lesson: a Story person can have a viewer login (`story_users`) AND a member login
+  (`story_admin_users`) — wipe both, key on username.
+- **🚨 Supabase REST (`*.supabase.co`) is unreachable from sandbox AND Mac** (VPN/GFW — HTTP 000 even
+  with a Google-DNS-pinned Cloudflare IP). The **web SQL Editor works** — all Story/DB ops go through
+  SQL pasted in chat. `J` left as-is per user's call.
+
+---
+
 ## 🧠 SESSION — Jun 16, 2026 (Cowork) — Montree HOME SYSTEM (Ivy) shipped + Shelf-tap how-to + Sanctuary nav trim
 
 **Canonical handoff:** `docs/handoffs/SESSION_HOME_SYSTEM_IVY.md`. 6 commits on main this
