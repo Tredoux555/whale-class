@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>CFBundleDisplayName</key>
+  <string>Sanctuary</string>
+  <key>CFBundleName</key>
+  <string>Sanctuary</string>
+  <key>CFBundleIdentifier</key>
+  <string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+  <key>CFBundleShortVersionString</key>
+  <string>$(MARKETING_VERSION)</string>
+  <key>CFBundleVersion</key>
+  <string>$(CURRENT_PROJECT_VERSION)</string>
+  <key>CFBundlePackageType</key>
+  <string>APPL</string>
+  <key>LSRequiresIPhoneOS</key>
+  <true/>
+
+  <!-- Face ID / Touch ID unlock for the on-device content key. -->
+  <key>NSFaceIDUsageDescription</key>
+  <string>Sanctuary uses Face ID to unlock your private, on-device-encrypted journal.</string>
+
+  <!-- App Transport Security: HTTPS only (the API is https://montree.xyz). -->
+  <key>NSAppTransportSecurity</key>
+  <dict>
+    <key>NSAllowsArbitraryLoads</key>
+    <false/>
+  </dict>
+
+  <!-- SwiftUI App lifecycle — no storyboard. -->
+  <key>UILaunchScreen</key>
+  <dict/>
+  <key>UISupportedInterfaceOrientations</key>
+  <array>
+    <string>UIInterfaceOrientationPortrait</string>
+  </array>
+  <key>UIApplicationSupportsIndirectInputEvents</key>
+  <true/>
+</dict>
+</plist>
