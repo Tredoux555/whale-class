@@ -63,7 +63,7 @@ struct DoorView: View {
                 Image(systemName: "leaf.fill")
                     .font(.system(size: 44))
                     .foregroundStyle(Theme.accent)
-                Text("Sanctuary")
+                Text("Lyf Coach")
                     .font(.system(.largeTitle, design: .serif)).bold()
                     .foregroundStyle(Theme.text)
                 Text("A quiet place that only opens for you.")

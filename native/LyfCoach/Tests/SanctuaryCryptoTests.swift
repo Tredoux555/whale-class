@@ -1,6 +1,6 @@
 import XCTest
 import Sodium
-@testable import Sanctuary
+@testable import LyfCoach
 
 /// THE PARITY PROOF. Loads the shared `vectors.json` (a copy of
 /// `lib/sanctuary-e2e/vectors.json`) and asserts the Swift crypto reproduces the

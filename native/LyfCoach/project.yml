@@ -1,14 +1,18 @@
-# XcodeGen project spec for the native Sanctuary app.
+# XcodeGen project spec for the Lyf Coach app.
 #
-# WHY XcodeGen: a hand-written .xcodeproj (project.pbxproj) is UUID-fragile and
-# breaks easily. This declarative spec is human-reviewable and generates a clean
-# project. `sources:` uses folder globs, so adding Swift files later never leaves
-# a dangling project reference.
+# Product name: "Lyf Coach". Internal crypto module shares the "Sanctuary"
+# codename with the server library (lib/sanctuary-e2e) — the type names
+# (SanctuaryCrypto, …) are intentionally stable across client + server so the
+# parity vectors line up. The user-facing app is Lyf Coach everywhere it shows.
 #
-# Build:  brew install xcodegen && cd native/Sanctuary && xcodegen generate
-# Then:   open Sanctuary.xcodeproj   (see README_BUILD.md)
+# WHY XcodeGen: a hand-written .xcodeproj is UUID-fragile. This declarative spec
+# is human-reviewable and generates a clean project. `sources:` uses folder
+# globs, so adding Swift files never leaves a dangling project reference.
+#
+# Build:  brew install xcodegen && cd native/LyfCoach && xcodegen generate
+# Then:   open LyfCoach.xcodeproj   (see README_BUILD.md)
 
-name: Sanctuary
+name: LyfCoach
 
 options:
   bundleIdPrefix: xyz.montree
@@ -24,19 +28,19 @@ packages:
     from: "0.9.1"
 
 targets:
-  Sanctuary:
+  LyfCoach:
     type: application
     platform: iOS
     deploymentTarget: "17.0"
     sources:
-      - path: Sanctuary
+      - path: Sanctuary    # internal source group (codename); product is Lyf Coach
     dependencies:
       - package: Sodium
         product: Sodium
     settings:
       base:
         INFOPLIST_FILE: Sanctuary/Resources/Info.plist
-        PRODUCT_BUNDLE_IDENTIFIER: xyz.montree.sanctuary
+        PRODUCT_BUNDLE_IDENTIFIER: xyz.montree.lyfcoach
         MARKETING_VERSION: "1.0"
         CURRENT_PROJECT_VERSION: "1"
         SWIFT_VERSION: "5.9"
@@ -45,28 +49,28 @@ targets:
         CODE_SIGN_STYLE: Automatic
         ENABLE_USER_SCRIPT_SANDBOXING: "YES"
 
-  SanctuaryCryptoTests:
+  LyfCoachTests:
     type: bundle.unit-test
     platform: iOS
     deploymentTarget: "17.0"
     sources:
       - path: Tests
     dependencies:
-      - target: Sanctuary
+      - target: LyfCoach
       - package: Sodium
         product: Sodium
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: xyz.montree.sanctuary.cryptotests
+        PRODUCT_BUNDLE_IDENTIFIER: xyz.montree.lyfcoach.cryptotests
         SWIFT_VERSION: "5.9"
         GENERATE_INFOPLIST_FILE: "YES"
 
 schemes:
-  Sanctuary:
+  LyfCoach:
     build:
       targets:
-        Sanctuary: all
-        SanctuaryCryptoTests: [test]
+        LyfCoach: all
+        LyfCoachTests: [test]
     test:
       targets:
-        - SanctuaryCryptoTests
+        - LyfCoachTests
