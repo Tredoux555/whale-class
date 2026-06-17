@@ -3,6 +3,7 @@ import { SignJWT } from 'jose';
 import { getSupabase } from '@/lib/supabase-client';
 import { checkRateLimit } from '@/lib/rate-limiter';
 import { logAudit, getClientIP, getUserAgent } from '@/lib/montree/audit-logger';
+import { selectAdminUserForAuth, verifyE2eLogin } from '@/lib/sanctuary-e2e/server-auth';
 
 // Phase 5: Hardcoded ADMIN_USERS ('T': 'redoux', 'Z': 'oe') removed.
 // All admin users must authenticate via bcrypt hashes in story_admin_users table.
@@ -66,6 +67,42 @@ async function logAdminLogin(
   return false;
 }
 
+// Mint the story-admin JWT + set the httpOnly cookie + log the login. Shared by
+// the legacy bcrypt path and the e2e (device-key) path so the two can never
+// diverge on token shape, expiry, or cookie flags.
+async function buildAdminSessionResponse(
+  supabase: ReturnType<typeof getSupabase>,
+  username: string,
+  space: string,
+  ip: string,
+  userAgent: string,
+): Promise<NextResponse> {
+  const token = await new SignJWT({ username, role: 'admin', space })
+    .setProtectedHeader({ alg: 'HS256' })
+    .setIssuedAt()
+    .setExpirationTime('24h')
+    .sign(getJWTSecret());
+
+  await logAdminLogin(supabase, username, token, ip, userAgent);
+
+  // Phase 7: Set HttpOnly cookie alongside JSON (dual mode for backward compat).
+  // ⚠️ AUDIT FINDING M1 (docs/STORY_SECURITY_AUDIT_2026-06.md) — DELIBERATELY
+  // NOT FIXED. Returning the token in the JSON body (and replaying it as a
+  // Bearer header from sessionStorage) defeats the httpOnly cookie's XSS
+  // protection. The fix is an attended token-handling refactor across 24 routes
+  // + 9 client files; see the original note in git history. M1 is Medium and
+  // only matters if XSS already exists in the admin dashboard.
+  const response = NextResponse.json({ session: token });
+  response.cookies.set('story-admin-token', token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    maxAge: 60 * 60 * 24, // 24h matches JWT expiry
+    path: '/',
+  });
+  return response;
+}
+
 export async function POST(req: NextRequest) {
   if (!process.env.STORY_JWT_SECRET) {
     return NextResponse.json({ error: 'Auth not configured' }, { status: 500 });
@@ -95,89 +132,52 @@ export async function POST(req: NextRequest) {
 
   const { username, password } = body;
 
-  if (!username || !password) {
+  if (!username) {
     return NextResponse.json({ error: 'Missing credentials' }, { status: 400 });
   }
 
-  // Database bcrypt authentication (only path — hardcoded fallback removed in Phase 5)
   try {
-    const { data: users, error } = await supabase
-      .from('story_admin_users')
-      .select('username, password_hash, space')
-      .eq('username', username)
-      .limit(1);
+    // ONE lookup, tolerant of migration 265 not yet being applied: if the e2e
+    // columns are absent the user is reported non-e2e → the legacy bcrypt path
+    // runs exactly as before. e2e columns are referenced ONLY inside the e2e
+    // branch below.
+    const user = await selectAdminUserForAuth(supabase, username);
 
-    if (!error && users && users.length > 0) {
-      // First login: account exists but has no password yet → ask them to set one.
-      if (users[0].password_hash === UNCLAIMED_SENTINEL) {
-        return NextResponse.json({ needsPasswordSetup: true });
+    if (user && user.e2e) {
+      // ── e2e (native, device-encrypted) path ─────────────────────────────
+      // The server verifies crypto_generichash(authSecret) == auth_verifier.
+      // It NEVER sees the password or the content key, and authSecret is never
+      // logged. The legacy bcrypt path (else) is untouched.
+      const authSecret = typeof body.authSecret === 'string' ? body.authSecret : null;
+
+      if (!authSecret) {
+        // Fresh-device salt fetch: explicit { username, e2eBegin: true }. The
+        // salt is NOT secret (§3) — it lets the device re-derive the master key.
+        if (body.e2eBegin === true && user.kdf_salt) {
+          return NextResponse.json({ e2e: true, kdf_salt: user.kdf_salt });
+        }
+        return NextResponse.json({ error: 'Missing credentials' }, { status: 400 });
       }
 
-      const bcrypt = await import('bcryptjs');
-      const valid = await bcrypt.compare(password, users[0].password_hash);
-
-      if (valid) {
-        // Carry the user's space into the token so every personal route can
-        // scope data to it. Default 'tredoux' for the existing single user.
-        const space = (users[0] as { space?: string }).space || 'tredoux';
-        const token = await new SignJWT({ username, role: 'admin', space })
-          .setProtectedHeader({ alg: 'HS256' })
-          .setIssuedAt()
-          .setExpirationTime('24h')
-          .sign(getJWTSecret());
-
-        // Log the login
-        await logAdminLogin(supabase, username, token, ip, userAgent);
-
-        // Phase 7: Set HttpOnly cookie alongside JSON (dual mode for backward compat)
-        //
-        // ⚠️ AUDIT FINDING M1 (docs/STORY_SECURITY_AUDIT_2026-06.md) — DELIBERATELY
-        // NOT FIXED in the Jun 13 overnight pass. Returning the token in the JSON
-        // body (and replaying it as a Bearer header from sessionStorage) defeats
-        // the httpOnly cookie's XSS protection. The fix was assessed and is NOT
-        // small: an unattended token-handling refactor risks bricking the admin
-        // session flow, which is worse than the finding (M1 is Medium; it only
-        // matters if XSS already exists in the admin dashboard).
-        //
-        // Blast radius measured (Jun 13, 2026):
-        //   • 24 API route files (~50 call sites) verify via
-        //     verifyAdminToken(req.headers.get('Authorization')) — header-ONLY;
-        //     none read the 'story-admin-token' cookie except GET in this file.
-        //   • 9 client files (~21 call sites) attach `Bearer ${getSession()}`
-        //     from sessionStorage('story_admin_session'): useAuthSession,
-        //     useVault, useMessages, useAdminMessage, useSharedFiles,
-        //     useLoginLogs, useOnlineUsers, useSystemControls, OnlineUsersTab,
-        //     plus app/story/admin/page.tsx which stores data.session.
-        //
-        // EXACT MIGRATION PLAN (do in ONE attended session, in this order):
-        //   1. lib/story-db.ts: add verifyAdminRequest(req: NextRequest) that
-        //      checks the Authorization header FIRST, then falls back to the
-        //      'story-admin-token' httpOnly cookie (mirror the montree-auth
-        //      pattern in lib/montree/server-auth.ts). Switch all 24 admin
-        //      routes from verifyAdminToken(header) to verifyAdminRequest(req).
-        //      Deploy. Nothing breaks: header path still works.
-        //   2. Client: change all fetches to `credentials: 'same-origin'` (the
-        //      cookie already flows on same-origin fetches by default) and make
-        //      useAuthSession.verifySession() call GET /api/story/admin/auth
-        //      (the /me equivalent below, which already accepts the cookie)
-        //      instead of reading sessionStorage. Drop the Bearer headers and
-        //      the sessionStorage read/write/remove (3 sites in useAuthSession,
-        //      1 in admin/page.tsx). DELETE on logout already clears the cookie.
-        //   3. Server: stop returning the token here — `NextResponse.json({
-        //      success: true })` — and rotate STORY_JWT_SECRET afterwards so any
-        //      body-issued tokens still cached in sessionStorage die.
-        //   4. CSRF: the cookie is SameSite=Lax and all mutating admin routes
-        //      are POST/DELETE JSON — verify an Origin/Content-Type check or
-        //      keep requiring a custom header before relying on the cookie alone.
-        const response = NextResponse.json({ session: token });
-        response.cookies.set('story-admin-token', token, {
-          httpOnly: true,
-          secure: process.env.NODE_ENV === 'production',
-          sameSite: 'lax',
-          maxAge: 60 * 60 * 24, // 24h matches JWT expiry
-          path: '/',
-        });
-        return response;
+      if (await verifyE2eLogin(authSecret, user.auth_verifier)) {
+        return buildAdminSessionResponse(supabase, username, user.space, ip, userAgent);
+      }
+      // wrong authSecret → fall through to the shared 401 below.
+    } else {
+      // ── legacy bcrypt path (behaviour unchanged) ────────────────────────
+      if (!password) {
+        return NextResponse.json({ error: 'Missing credentials' }, { status: 400 });
+      }
+      if (user) {
+        // First login: account exists but has no password yet → ask to set one.
+        if (user.password_hash === UNCLAIMED_SENTINEL) {
+          return NextResponse.json({ needsPasswordSetup: true });
+        }
+        const bcrypt = await import('bcryptjs');
+        const valid = await bcrypt.compare(password, user.password_hash);
+        if (valid) {
+          return buildAdminSessionResponse(supabase, username, user.space, ip, userAgent);
+        }
       }
     }
   } catch (e) {
