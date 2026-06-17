@@ -11,7 +11,7 @@ import { useRouter } from 'next/navigation';
 // 'Bayan' (this is her door) — she only types her password.
 
 export default function BayanDoor() {
-  const username = 'Bayan';
+  const username = 'B'; // her login username (space stays 'bayan' server-side)
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
