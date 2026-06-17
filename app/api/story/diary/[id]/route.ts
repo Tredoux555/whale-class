@@ -11,6 +11,12 @@ import {
   readDiaryField,
   isDiaryEncryptionConfigured,
 } from '@/lib/story/diary-crypto';
+import {
+  coerceCiphertext,
+  rowIsE2e,
+  isMissingColumnError,
+  E2E_CIPHER_VERSION,
+} from '@/lib/sanctuary-e2e/content-store';
 
 export const dynamic = 'force-dynamic';
 
@@ -32,18 +38,29 @@ export async function GET(
   if (!UUID_RE.test(id)) return NextResponse.json({ error: 'Bad id' }, { status: 400 });
 
   const supabase = getSupabase();
-  const { data, error } = await supabase
-    .from('story_diary_entries')
-    .select('id, entry_date, mood, title_enc, body_enc, cipher_version, created_at, updated_at')
-    .eq('id', id)
-    .eq('space', space)
-    .maybeSingle();
+  const COLS = 'id, entry_date, mood, title_enc, body_enc, cipher_version, created_at, updated_at';
+  const getQuery = (cols: string) =>
+    supabase.from('story_diary_entries').select(cols).eq('id', id).eq('space', space).maybeSingle();
+  let { data, error } = await getQuery(COLS + ', ciphertext');
+  if (error && isMissingColumnError(error)) ({ data, error } = await getQuery(COLS));
 
   if (error) {
     console.error('[diary] get error:', error.message);
     return NextResponse.json({ error: 'Could not load entry' }, { status: 500 });
   }
   if (!data) return NextResponse.json({ error: 'Not found' }, { status: 404 });
+
+  // e2e row → return the opaque blob VERBATIM; never decrypt.
+  if (rowIsE2e(data)) {
+    return NextResponse.json({
+      entry: {
+        id: data.id as string,
+        ciphertext: data.ciphertext as string,
+        created_at: data.created_at as string,
+        updated_at: data.updated_at as string,
+      },
+    });
+  }
 
   return NextResponse.json({
     entry: {
@@ -69,18 +86,53 @@ export async function PATCH(
   const { id } = await params;
   if (!UUID_RE.test(id)) return NextResponse.json({ error: 'Bad id' }, { status: 400 });
 
+  let body: {
+    entry_date?: string;
+    mood?: string | null;
+    title?: string | null;
+    body?: string;
+    ciphertext?: string;
+  };
+  try {
+    body = await req.json();
+  } catch {
+    return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
+  }
+
+  const supabase = getSupabase();
+
+  // ── e2e update: replace the opaque blob VERBATIM (no server key). ──
+  const ct = coerceCiphertext(body.ciphertext);
+  if (ct) {
+    const { data, error } = await supabase
+      .from('story_diary_entries')
+      .update({ ciphertext: ct, cipher_version: E2E_CIPHER_VERSION })
+      .eq('id', id)
+      .eq('space', space)
+      .select('id, updated_at')
+      .maybeSingle();
+    if (error && isMissingColumnError(error)) {
+      return NextResponse.json(
+        { error: 'End-to-end storage is not enabled on this server yet.' },
+        { status: 503 },
+      );
+    }
+    if (error) {
+      console.error('[diary] e2e update error:', error.message);
+      return NextResponse.json({ error: 'Could not save entry' }, { status: 500 });
+    }
+    if (!data) return NextResponse.json({ error: 'Not found' }, { status: 404 });
+    return NextResponse.json({
+      entry: { id: data.id as string, ciphertext: ct, updated_at: data.updated_at as string },
+    });
+  }
+
+  // ── legacy server-key update ──
   if (!isDiaryEncryptionConfigured()) {
     return NextResponse.json(
       { error: 'Encryption is not configured (STORY_DIARY_KEY).' },
       { status: 500 },
     );
-  }
-
-  let body: { entry_date?: string; mood?: string | null; title?: string | null; body?: string };
-  try {
-    body = await req.json();
-  } catch {
-    return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
   }
 
   const patch: Record<string, unknown> = {};
@@ -112,7 +164,6 @@ export async function PATCH(
     return NextResponse.json({ error: 'Nothing to update' }, { status: 400 });
   }
 
-  const supabase = getSupabase();
   const { data, error } = await supabase
     .from('story_diary_entries')
     .update(patch)

@@ -9,6 +9,11 @@ import {
   encryptDiaryFieldOrNull,
   isDiaryEncryptionConfigured,
 } from '@/lib/story/diary-crypto';
+import {
+  coerceCiphertext,
+  isMissingColumnError,
+  E2E_CIPHER_VERSION,
+} from '@/lib/sanctuary-e2e/content-store';
 
 export const dynamic = 'force-dynamic';
 
@@ -25,15 +30,48 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   if (!space) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const { id } = await params;
   if (!UUID_RE.test(id)) return NextResponse.json({ error: 'Bad id' }, { status: 400 });
-  if (!isDiaryEncryptionConfigured()) {
-    return NextResponse.json({ error: 'Encryption is not configured (STORY_DIARY_KEY).' }, { status: 500 });
-  }
-
-  let body: { event_date?: string; start_time?: string | null; title?: string; notes?: string | null };
+  let body: {
+    event_date?: string;
+    start_time?: string | null;
+    title?: string;
+    notes?: string | null;
+    ciphertext?: string;
+  };
   try {
     body = await req.json();
   } catch {
     return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
+  }
+
+  const supabase = getSupabase();
+
+  // ── e2e update: replace the opaque blob VERBATIM (no server key). ──
+  const ct = coerceCiphertext(body.ciphertext);
+  if (ct) {
+    const { data, error } = await supabase
+      .from('story_plan_events')
+      .update({ ciphertext: ct, cipher_version: E2E_CIPHER_VERSION })
+      .eq('id', id)
+      .eq('space', space)
+      .select('id')
+      .maybeSingle();
+    if (error && isMissingColumnError(error)) {
+      return NextResponse.json(
+        { error: 'End-to-end storage is not enabled on this server yet.' },
+        { status: 503 },
+      );
+    }
+    if (error) {
+      console.error('[events] e2e update error:', error.message);
+      return NextResponse.json({ error: 'Could not save event' }, { status: 500 });
+    }
+    if (!data) return NextResponse.json({ error: 'Not found' }, { status: 404 });
+    return NextResponse.json({ ok: true });
+  }
+
+  // ── legacy server-key update ──
+  if (!isDiaryEncryptionConfigured()) {
+    return NextResponse.json({ error: 'Encryption is not configured (STORY_DIARY_KEY).' }, { status: 500 });
   }
 
   const patch: Record<string, unknown> = {};
@@ -56,7 +94,6 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     return NextResponse.json({ error: 'Nothing to update' }, { status: 400 });
   }
 
-  const supabase = getSupabase();
   const { data, error } = await supabase
     .from('story_plan_events')
     .update(patch)
