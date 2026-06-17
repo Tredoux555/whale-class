@@ -17,7 +17,7 @@ The single checklist to take the build live. Ordered. Honest about done vs pendi
 
 ## What's SOURCE-COMPLETE (written + reviewed, NOT compiled here)
 
-- The full Swift app under `native/Sanctuary/` — crypto (mirrors §3), Secure-
+- The full Swift app under `native/LyfCoach/` — crypto (mirrors §3), Secure-
   Enclave key lifecycle, networking, UI (door → Planner/Coach/Projects + owner
   Vault), on-device + cloud-opt-in coach. **No Xcode in the build env**, so this
   has never been compiled/signed/run. Treat the first build as triage
@@ -109,7 +109,7 @@ signing + TestFlight.
 
 ```bash
 brew install xcodegen
-cd native/Sanctuary && xcodegen generate && open Sanctuary.xcodeproj
+cd native/LyfCoach && xcodegen generate && open LyfCoach.xcodeproj
 ```
 Xcode resolves `swift-sodium`. Set Team + bundle id (`xyz.montree.sanctuary`).
 Work the first-build triage in `README_BUILD.md` §6 (likely swift-sodium method
@@ -117,7 +117,7 @@ signatures, async annotations). Keep iterating until it builds.
 
 ### 6. Run the crypto parity test (the contract)
 
-Select **SanctuaryCryptoTests** ▸ ⌘U. It loads `Tests/vectors.json` and asserts
+Select **LyfCoachTests** ▸ ⌘U. It loads `Tests/vectors.json` and asserts
 the Swift crypto matches the reference byte-for-byte. **All green = the device
 crypto is identical to the deployed backend.** If red, fix before storing any
 data (a mismatch means the device couldn't talk to the server's e2e auth).

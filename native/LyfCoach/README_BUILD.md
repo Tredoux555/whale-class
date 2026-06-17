@@ -24,9 +24,9 @@ do.
 ## 2. Generate the Xcode project
 
 ```bash
-cd native/Sanctuary
-xcodegen generate          # produces Sanctuary.xcodeproj
-open Sanctuary.xcodeproj
+cd native/LyfCoach
+xcodegen generate          # produces LyfCoach.xcodeproj
+open LyfCoach.xcodeproj
 ```
 
 Xcode will resolve the Swift Package dependency **swift-sodium**
@@ -50,7 +50,7 @@ In the **Sanctuary** target ▸ Signing & Capabilities:
 Before trusting anything, prove the Swift crypto reproduces the reference vectors
 byte-for-byte:
 
-- Select the **SanctuaryCryptoTests** scheme (or ⌘U).
+- Select the **LyfCoachTests** scheme (or ⌘U).
 - It loads `Tests/vectors.json` (a copy of `lib/sanctuary-e2e/vectors.json`) and
   asserts `deriveMaster / deriveContentKey / deriveAuthSecret / authVerifier /
   encrypt` all match. **All green = the device crypto is identical to the server
@@ -89,7 +89,7 @@ testers. (App Store listing + privacy copy: `docs/` per Step 13.)
 ## Folder layout
 
 ```
-native/Sanctuary/
+native/LyfCoach/
   project.yml                 XcodeGen spec (app + test targets, swift-sodium)
   README_BUILD.md             this file
   Sanctuary/
@@ -101,6 +101,6 @@ native/Sanctuary/
     UI/                       door → Planner / Coach / Projects
     Resources/                Info.plist, PrivacyInfo.xcprivacy
   Tests/
-    SanctuaryCryptoTests.swift   parity XCTest
+    LyfCoachTests.swift   parity XCTest
     vectors.json                 copy of lib/sanctuary-e2e/vectors.json
 ```

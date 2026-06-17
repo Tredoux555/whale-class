@@ -26,7 +26,7 @@ The App Store listing and the in-app copy must stay within these limits.
 
 ## 1. Listing copy
 
-**Name:** Sanctuary
+**Name:** Lyf Coach
 **Subtitle:** Your private, on-device journal & coach
 
 **Promotional text (≤170 chars):**
@@ -35,7 +35,7 @@ listens. Encrypted on your device — we can't read your journal.
 
 **Description:**
 ```
-Sanctuary is a quiet, private place that only opens for you.
+Lyf Coach is a quiet, private place that only opens for you.
 
 • Journal — write freely. Your entries are encrypted on your device with a key
   only you hold. We store them, but we can't read them.
