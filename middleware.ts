@@ -265,6 +265,7 @@ export async function middleware(req: NextRequest) {
     '/debug',      // Debug pages
     '/story',      // Story system (has its own auth)
     '/riddick',    // Riddick's sanctuary door (story-admin auth via the form)
+    '/bayan',      // Bayan's sanctuary door (story-admin auth via the form)
     '/montree',    // Montree app - has its own auth system (teacher/parent logins)
     '/auth/login',
     '/auth/signup',
