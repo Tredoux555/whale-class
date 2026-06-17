@@ -70,7 +70,7 @@ export async function middleware(req: NextRequest) {
   // product domain. The rest of the split (/admin, /teacher, /games, /auth,
   // /whale-class) stays deferred. NOTE: '/story' here only matches page routes —
   // '/api/story/*' starts with '/api', so the APIs are untouched and serve both.
-  const WHALE_ONLY_PREFIXES: string[] = ['/riddick', '/story'];
+  const WHALE_ONLY_PREFIXES: string[] = ['/riddick', '/story', '/bayan'];
   const isWhaleOnlyPath = WHALE_ONLY_PREFIXES.some(
     (p) => pathname === p || pathname.startsWith(p + '/'),
   );

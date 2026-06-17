@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getSupabase, verifyAdminToken, verifyVaultToken } from '@/lib/story-db';
+import { getSupabase, verifyAdminToken, verifyVaultToken, isVaultOwner } from '@/lib/story-db';
 import crypto from 'crypto';
 
 // 🚨 Session 153 — large-media vault path.
@@ -29,6 +29,10 @@ export async function POST(req: NextRequest) {
     const adminUsername = await verifyAdminToken(req.headers.get('authorization'));
     if (!adminUsername) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    if (!(await isVaultOwner(req.headers.get('authorization')))) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
     const vaultTokenValid = await verifyVaultToken(req.headers.get('x-vault-token'));
