@@ -374,8 +374,25 @@ function CaptureContent() {
     setStep('tag-child');
   };
 
-  const handleCameraCancel = () => {
+  // Safe exit: router.back() is a silent no-op when there's no history entry
+  // (opened in a new tab, deep link, PWA cold-start, or after the error screen).
+  // That left the fullscreen camera stuck with a dead Cancel button. Fall back to
+  // a known destination if back() doesn't actually navigate away.
+  const safeExit = () => {
+    const before = window.location.pathname;
+    const fallback = preSelectedChildId
+      ? `/montree/dashboard/${preSelectedChildId}`
+      : '/montree/dashboard';
     router.back();
+    window.setTimeout(() => {
+      if (window.location.pathname === before) {
+        router.push(fallback);
+      }
+    }, 350);
+  };
+
+  const handleCameraCancel = () => {
+    safeExit();
   };
 
   // ============================================
@@ -517,7 +534,7 @@ function CaptureContent() {
         padding: selectedEvent ? '0 16px 8px' : '40px 16px 8px',
       }}>
         <button
-          onClick={() => router.back()}
+          onClick={safeExit}
           aria-label="Cancel"
           style={{
             position: 'absolute',

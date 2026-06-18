@@ -247,43 +247,55 @@ export default function CameraCapture({
         audio: withAudio,
       };
 
-      // Timeout wrapper — protects against hung getUserMedia calls on mobile
-      // when a prior stream hasn't fully released (caused "camera won't open" freezes)
-      const withTimeout = <T,>(p: Promise<T>, ms: number, label: string): Promise<T> =>
-        Promise.race([
-          p,
-          new Promise<T>((_, reject) =>
-            setTimeout(() => reject(new Error(`getUserMedia timeout (${label})`)), ms)
-          ),
-        ]);
+      // getUserMedia with a timeout that also cleans up a late-resolving stream.
+      // Two failure modes this guards against:
+      //  1) On mobile, calling getUserMedia while a prior stream is still releasing
+      //     can hang forever (the original "camera won't open" freeze).
+      //  2) If the race times out, the underlying getUserMedia keeps running and can
+      //     grab the camera moments later — leaving the camera light on with no
+      //     stream assigned. We stop that orphan stream's tracks when it lands late.
+      // The first attempt gets a generous timeout because it may be sitting on the
+      // browser's "Allow camera?" permission prompt (a human deciding). Retries are
+      // shorter since permission is already settled by then.
+      const getStream = (c: MediaStreamConstraints, ms: number, label: string): Promise<MediaStream> => {
+        let settled = false;
+        return new Promise<MediaStream>((resolve, reject) => {
+          const timer = setTimeout(() => {
+            if (!settled) { settled = true; reject(new Error(`getUserMedia timeout (${label})`)); }
+          }, ms);
+          navigator.mediaDevices.getUserMedia(c).then(
+            (s) => {
+              clearTimeout(timer);
+              if (settled) {
+                s.getTracks().forEach(track => track.stop()); // race already lost — release it
+                return;
+              }
+              settled = true;
+              resolve(s);
+            },
+            (e) => {
+              clearTimeout(timer);
+              if (!settled) { settled = true; reject(e); }
+            }
+          );
+        });
+      };
 
       let stream: MediaStream;
       try {
-        stream = await withTimeout(navigator.mediaDevices.getUserMedia(constraints), 8000, 'primary');
+        stream = await getStream(constraints, 20000, 'primary');
       } catch (firstErr) {
         if (withAudio) {
           console.warn('Camera+audio failed, retrying video-only:', firstErr);
           try {
-            stream = await withTimeout(
-              navigator.mediaDevices.getUserMedia({ video: constraints.video, audio: false }),
-              8000,
-              'video-only'
-            );
+            stream = await getStream({ video: constraints.video, audio: false }, 12000, 'video-only');
           } catch (secondErr) {
             console.warn('HD video failed, retrying basic:', secondErr);
-            stream = await withTimeout(
-              navigator.mediaDevices.getUserMedia({ video: { facingMode: facing }, audio: false }),
-              8000,
-              'basic'
-            );
+            stream = await getStream({ video: { facingMode: facing }, audio: false }, 12000, 'basic');
           }
         } else if (firstErr instanceof Error && firstErr.name === 'OverconstrainedError') {
           console.warn('HD constraints failed, retrying basic:', firstErr);
-          stream = await withTimeout(
-            navigator.mediaDevices.getUserMedia({ video: { facingMode: facing }, audio: false }),
-            8000,
-            'basic'
-          );
+          stream = await getStream({ video: { facingMode: facing }, audio: false }, 12000, 'basic');
         } else {
           throw firstErr;
         }
@@ -293,7 +305,19 @@ export default function CameraCapture({
 
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
-        await videoRef.current.play();
+        // play() can hang indefinitely on iOS Safari / the installed PWA when
+        // srcObject is reassigned rapidly. The <video autoPlay muted playsInline>
+        // attributes start playback on their own, so never let an unresolved (or
+        // rejected) play() trap us on the "initializing" spinner — proceed to
+        // 'ready' either way after a short grace period.
+        try {
+          await Promise.race([
+            videoRef.current.play(),
+            new Promise<void>((resolve) => setTimeout(resolve, 3000)),
+          ]);
+        } catch (playErr) {
+          console.warn('[CameraCapture] video.play() did not resolve cleanly, showing feed anyway:', playErr);
+        }
         setCameraState('ready');
         setCurrentFacing(facing);
       }
