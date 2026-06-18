@@ -17,6 +17,89 @@ Local path: `/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/whale` (note spa
 
 ---
 
+## 🧠 SESSION — Jun 18, 2026 (Cowork) — Sanctuary native app (renamed + icon, BUILD-VERIFIED + pushed) + AI-control Facebook piece
+
+**1 commit on main: `bdcc1f9f` (first commit of the whole `native/Sanctuary/` Swift app).** Pushed
+via Desktop Commander from the **`montree` Cowork checkout** (= same `whale-class.git`, same `main`
+Railway deploys from — pushes from here land on production `main` exactly like the `whale` checkout).
+
+**🗝️ SANCTUARY = the native, device-encrypted family app (spaces: tredoux / bayan / riddick).** This
+is the personal Sanctuary (`/story/admin` web platform) re-built as a real iOS app with end-to-end,
+on-device encryption. **Renamed this session from "Lyf Coach" → "Sanctuary"** (door title, display
+name, bundle `xyz.montree.sanctuary`, target + test target, all docs). The crypto *type names* stay
+`Sanctuary*` (e.g. `SanctuaryCrypto`) — they were always the codename, shared with the server lib so
+the KAT parity vectors line up. Canonical resume doc: **`native/Sanctuary/SANCTUARY.md`** (master
+entry); plus `VERIFY.md` (go-live checklist), `README_BUILD.md` (first-build triage), `APP_STORE.md`.
+
+**🟢 What's REAL + verified this session:**
+- **App icon shipped** — emerald sprout on a dark-forest gradient (door palette: bg `#0a1a0f`,
+  emerald `#34d399`, gold `#E8C96A`). Source `native/Sanctuary/icon-src/icon.html` → rendered 1024px
+  PNG via headless Chrome → `Sanctuary/Resources/Assets.xcassets/AppIcon.appiconset/` + Contents.json.
+  `ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon` added to `project.yml` (manual Info.plist, so it must
+  be set explicitly).
+- **`xcodegen generate` + `xcodebuild build` → BUILD SUCCEEDED** (iOS Simulator, 172s) AFTER the
+  rename + icon. The renamed target + asset catalog compile clean.
+- **Crypto XCTest (KAT vectors + fails-closed) was proven GREEN earlier** (Step 7 of the runbook) —
+  device crypto matches the deployed backend byte-for-byte. Not re-run this session (build success
+  confirms rename/icon didn't touch crypto source).
+
+**Status of the 14-step build (all steps done in prior sessions):** P1 crypto core (TS,
+`lib/sanctuary-e2e/`, 14 KAT tests) + P2 ciphertext backend (e2e auth + diary/projects/events store +
+coach no-readable-persistence guard, 17+8 unit tests, eslint/tsc clean) were **pushed + deployed
+earlier**. The e2e code is **INERT until a space is flipped to e2e** (web sanctuaries untouched —
+reads use wide-select + 42703/PGRST204 fallback). **Migration 265 + the NOT-NULL drops were RUN by
+Tredoux in Supabase** (confirmed). The Swift app (Secure-Enclave key wrap, Keychain, Face ID
+auto-lock, networking, door→Planner/Coach/Projects + owner Vault, on-device FoundationModels coach +
+explicit cloud opt-in) is source-complete and now compiles.
+
+**🚧 PENDING (this is where "continue Sanctuary properly" picks up) — all need a human + Apple acct:**
+1. **Apple Developer enrolment** ($99 + passport via the Apple Developer iPhone app). Per the Montree
+   brain's separate App-Store thread, enrolment was ~80% (web enrolment HARD-BLOCKED by Apple
+   `UserIneligibleForWebEnrollment` → must finish on the iPhone app; Apple SMS to +86 only sends
+   VPN-OFF). Same Apple account unlocks this.
+2. **Create fresh e2e accounts** (unclaimed `story_admin_users` rows, username == space label,
+   `password_hash='SET_ON_FIRST_LOGIN'`) — the app claims them on first "Set up a new sanctuary".
+   Existing bcrypt accounts are NOT auto-converted (that's a separate audited re-key).
+3. **TestFlight + on-device test** (needs a REAL device — Simulator has no Secure Enclave): claim →
+   encrypt/decrypt round-trip → Face-ID unlock → coach on-device + cloud opt-in → DB check that the
+   row's `ciphertext` starts `sb1` and `body_enc`/`entry_date` are NULL. Steps in `VERIFY.md` §7.
+4. **🚨 App-Store hard requirement NOT built yet: in-app account deletion** (Guideline 5.1.1(v)) +
+   privacy-policy URL + a demo account in reviewer notes. The native app deliberately has **no**
+   covert "Messages" door (web has one — keep it OUT of any App-Store build; Apple 2.3.1).
+5. **"Can I fire-test before the App Store?" — YES:** free Xcode dev install onto your own iPhone
+   (7-day cert expiry, 3-app limit, needs the device plugged in + your Apple ID as a personal team) —
+   no $99 needed just to run it on your phone. TestFlight/App Store need the paid account. iPhone is
+   NOT freely sideloadable like the Mac — it's dev-install / TestFlight / App Store only.
+**To resume:** open `native/Sanctuary/SANCTUARY.md`, then `VERIFY.md`. To rebuild from clean:
+`cd native/Sanctuary && xcodegen generate && open Sanctuary.xcodeproj` (Xcode resolves swift-sodium
+0.11.0). The simulator app currently installed is the OLD "Lyf Coach" build — reinstall after a
+rebuild to see the renamed Sanctuary + icon.
+
+**📣 AI-control "Facebook conversation" piece (Tredoux's ask — a post + conversation starter).** Took
+a late-night human↔AI exchange about the real danger of AI (humans handing over judgment one
+convenience at a time; the AI's answer = draw the line at **irreversibility** + **opacity**;
+Tredoux's framing = **direction + derivative + no physical control + humans hold the hard
+decisions**, the Xavier "pen can write a poem or stab an eye" analogy; transparency-to-the-human +
+the Lifecycle-Coach "data transfers to the child at 18"; closing tension = *what happens when Astra's
+read on a child conflicts with the teacher's gut — who wins?*) and turned it into 3 shareable assets
+in **`social/ai-control/`** (NOT git-committed — personal social content, lives in the workspace):
+- `conversation.html` — full styled dialogue (dark-forest, emerald/gold speaker chips, serif, pull-
+  quote, open-question close, montree.xyz footer).
+- `Where-do-you-draw-the-line.pdf` — 4-page PDF of the above (Chrome `--print-to-pdf`, backgrounds
+  preserved via `print-color-adjust:exact`).
+- `teaser-card.png` — 1080×1080 scroll-stopper: "We're not afraid of AI seizing control. We're
+  handing it over — one convenience at a time." + the gold "who should win?" question + sprout mark.
+Rebuild any: edit the `.html`, re-render with headless Chrome (`--screenshot` for PNG at
+`--window-size`, `--print-to-pdf` for the PDF).
+
+**🛠️ Repro recipe locked in (for any future Cowork image/PDF gen on the Mac):** headless Chrome at
+`/Applications/Google Chrome.app/Contents/MacOS/Google Chrome --headless --disable-gpu`. PNG:
+`--hide-scrollbars --force-device-scale-factor=1 --window-size=W,H --screenshot=out.png file://...`.
+PDF: `--no-pdf-header-footer --print-to-pdf=out.pdf file://...`. iOS app icons render full-bleed
+square, no rounded corners, no alpha (iOS masks). `Read` the output to eyeball + iterate.
+
+---
+
 ## 🧠 SESSION — Jun 16–17, 2026 (Cowork) — "The Corner" (Ivy-led Home) SHIPPED + Gloria contract redesign + Story Zoe-removal
 
 **Canonical handoff:** `docs/handoffs/SESSION_CORNER_GLORIA_STORY_JUN17.md`. Closes the Jun 16
