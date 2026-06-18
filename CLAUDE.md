@@ -19,6 +19,9 @@ Local path: `/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/whale` (note spa
 
 ## 🧠 SESSION — Jun 18, 2026 (Cowork) — Sanctuary native app (renamed + icon, BUILD-VERIFIED + pushed) + AI-control Facebook piece
 
+**Canonical handoff:** `docs/handoffs/SESSION_SANCTUARY_RENAME_JUN18.md` (standalone — file map,
+exact resume steps, pending-items table). Plus `native/Sanctuary/SANCTUARY.md` + `VERIFY.md`.
+
 **1 commit on main: `bdcc1f9f` (first commit of the whole `native/Sanctuary/` Swift app).** Pushed
 via Desktop Commander from the **`montree` Cowork checkout** (= same `whale-class.git`, same `main`
 Railway deploys from — pushes from here land on production `main` exactly like the `whale` checkout).
