@@ -1,0 +1,58 @@
+<!doctype html>
+<!-- Sanctuary app icon source. Render to 1024x1024 PNG via headless Chrome.
+     Full-bleed square, no rounded corners (iOS applies the mask), no alpha. -->
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  html, body { margin: 0; padding: 0; }
+  .icon {
+    width: 1024px; height: 1024px; position: relative; overflow: hidden;
+    background:
+      radial-gradient(circle at 50% 38%, #14361f 0%, #0d2415 45%, #081a0e 78%, #06150b 100%);
+  }
+  /* faint gold warmth from the top, like light through a canopy */
+  .glow {
+    position: absolute; inset: 0;
+    background: radial-gradient(circle at 50% 30%, rgba(232,201,106,0.14) 0%, rgba(232,201,106,0) 42%);
+  }
+  svg { position: absolute; inset: 0; }
+</style>
+</head>
+<body>
+  <div class="icon">
+    <div class="glow"></div>
+    <svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="leaf" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%"  stop-color="#5fe6ad"/>
+          <stop offset="100%" stop-color="#27b277"/>
+        </linearGradient>
+        <linearGradient id="leafDark" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%"  stop-color="#3ed09a"/>
+          <stop offset="100%" stop-color="#1d9466"/>
+        </linearGradient>
+      </defs>
+
+      <!-- stem -->
+      <path d="M512 760 C512 760 512 600 512 512"
+            stroke="#E8C96A" stroke-width="20" stroke-linecap="round" fill="none" opacity="0.92"/>
+
+      <!-- left leaf (back) -->
+      <path d="M512 600
+               C420 560 326 470 350 350
+               C470 332 556 470 512 600 Z"
+            fill="url(#leafDark)"/>
+      <!-- right leaf (front, brighter) -->
+      <path d="M512 540
+               C604 500 700 408 676 290
+               C556 272 470 408 512 540 Z"
+            fill="url(#leaf)"/>
+
+      <!-- soft inner vein highlights -->
+      <path d="M512 588 C460 548 408 478 392 392" stroke="#0d2415" stroke-width="9" fill="none" opacity="0.35" stroke-linecap="round"/>
+      <path d="M512 528 C566 488 620 420 638 336" stroke="#0a2012" stroke-width="9" fill="none" opacity="0.35" stroke-linecap="round"/>
+    </svg>
+  </div>
+</body>
+</html>
