@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <!-- Apple Privacy Manifest. Honest posture: Sanctuary does NOT track, and the
+       journal/coach/projects content is end-to-end encrypted on the device — the
+       server stores only opaque ciphertext, so no readable user content is
+       "collected" by us in the sense Apple means. -->
+  <key>NSPrivacyTracking</key>
+  <false/>
+  <key>NSPrivacyTrackingDomains</key>
+  <array/>
+
+  <!-- No collected data types: content leaves the device only as ciphertext we
+       cannot read. (If analytics are ever added, declare them here.) -->
+  <key>NSPrivacyCollectedDataTypes</key>
+  <array/>
+
+  <!-- Required-reason API declarations. UserDefaults is used to remember the
+       last space + lock preferences (CA92.1 = access info stored by this app). -->
+  <key>NSPrivacyAccessedAPITypes</key>
+  <array>
+    <dict>
+      <key>NSPrivacyAccessedAPIType</key>
+      <string>NSPrivacyAccessedAPICategoryUserDefaults</string>
+      <key>NSPrivacyAccessedAPITypeReasons</key>
+      <array>
+        <string>CA92.1</string>
+      </array>
+    </dict>
+  </array>
+</dict>
+</plist>
