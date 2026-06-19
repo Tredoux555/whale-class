@@ -17,6 +17,99 @@ Local path: `/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/whale` (note spa
 
 ---
 
+## 🧠 SESSION — Jun 19, 2026 (Cowork) — Camera demo fix + Story logins + performance healthcheck
+
+**Canonical handoff:** `docs/handoffs/SESSION_CAMERA_PERF_JUN19.md`. **5 commits on main, all pushed,
+Railway auto-deploying.** Plus Story login SQL (run by Tredoux). No migrations needed — zero schema
+changes this session.
+
+```
+2b29dc68  perf: instant curriculum in the 'This is...' tagging sheet
+5caa9a5f  perf: round 2 — cut redundant round-trips + fix 1000-row clips
+662daeee  perf: photo-audit grid — drop per-card backdrop-filter blur (~72 stacked layers)
+8c2430aa  perf: kill mobile scroll jank — drop background-attachment:fixed (24 surfaces) + Comic Neue @import
+49d5f478  Fix camera capture demo failures: safe-exit fallback + play() guard + permission-tolerant getUserMedia
+```
+
+**🚨 THE HEADLINE FINDING — the dominant "slow" is NETWORK, not code.** Live Chrome profiling on
+prod showed a **~500ms floor on EVERY API request, even trivial ones** (`auth/me` 503ms,
+`visitors/track` 543ms, `perf/vitals` 610ms); a 2nd identical `/children` fetch was 5ms (cache
+works). Endpoints doing ~no server work still take ~500ms → round-trip latency, not slow queries.
+**Strong suspect: the VPN exit node (Frankfurt) detouring every request to the Singapore server.
+Cheapest highest-leverage test = load VPN-off / Asia exit node and see if the floor collapses.** The
+code lever that matters at a high network floor is cutting round-trip COUNT — which round 2 + the
+curriculum fix do.
+
+**🎥 Camera capture demo failure (`49d5f478`) — the "took forever, didn't load, wouldn't exit" bug.**
+Three real bugs in `components/montree/media/CameraCapture.tsx` + `app/montree/dashboard/capture/page.tsx`:
+(1) Cancel/back used bare `router.back()` = silent no-op with no history → fullscreen camera stuck;
+new `safeExit()` pushes the dashboard/child page if back doesn't navigate within 350ms (both call
+sites). (2) `await videoRef.current.play()` had no timeout → could hang the init spinner forever on
+iOS/PWA; now raced vs a 3s grace timer, proceeds to `ready` either way. (3) the 8s `getUserMedia`
+timeout was killing the first-time permission prompt mid-grant → first attempt bumped 8s→20s,
+retries 12s, and late-resolving timed-out streams get their tracks stopped (no orphan camera light).
+
+**🟢 Performance healthcheck (triggered by "running slow" after a Fable makeover).** Three parallel
+deep audits (dashboard data path / API query cost / bundle weight) + verified the prior perf fixes
+(i18n `useMemo`, narrow service worker, children-cache SWR/race-guard) all survived the makeover.
+Verdict: bones healthy; the slow is mobile paint cost + a couple of data-path redundancies + the
+network floor. Shipped in staged rounds:
+- **`8c2430aa` (verified live):** dropped `background-attachment: fixed` from 24 page wrappers (full-
+  viewport repaint per scroll frame on mobile) + removed a render-blocking Comic Neue `@import` from
+  `globals.css` (only print tools use it).
+- **`662daeee` (verified live):** photo-audit grid stacked ~72 `backdrop-filter` layers (3/card × 24);
+  dropped the per-item blurs (root/checkbox/badge/group), kept solid backgrounds. 3 singletons remain
+  (modals + sticky bars).
+- **`5caa9a5f` (round 2, audited clean, NOT runtime-tested):** child page derives the guru weekly
+  summary from the main `/children/[id]` GET instead of a separate `?fields=settings` call (one fewer
+  ~500ms round-trip/open; `fetchGuruSettings` kept for `onGenerated`); `allWorks` `useMemo`'d.
+  daily-brief + progress-overview: paginated the class-wide `.in()` selects in 1000-row `.range()`
+  batches + chunked the PK `.in()` (Supabase silently caps at 1000 → was truncating evidence/attention/
+  group-photo counts on busy classes). class-progress: 4 sequential awaits → one `Promise.all`.
+- **`2b29dc68` (curriculum sheet "instant", audited, NOT runtime-tested):** the "This is…" tagging
+  sheet (teacher staple) re-fetched the full ~329-work curriculum on EVERY photo open. Rewrote
+  `lib/montree/hooks/useClassroomWorks.ts` with a **module-level cache + 60s TTL + stale-while-
+  revalidate** (fresh→instant/zero-network, stale→instant+silent refresh, `reload()`→background
+  refresh that never clears the list), and the photo-audit page now `prefetchClassroomWorks()` on
+  mount so even the first open is instant. Net: tagging N photos = ~one fetch instead of N.
+
+**🚨 Validation state.** CSS rounds (`8c2430aa`, `662daeee`) **verified live on production** (computed
+styles + blur count). Round 2 + curriculum fix are **shipped + lint-clean + audited (round 2 got an
+independent subagent audit) but NOT runtime-tested** — the live session is the Tredoux House
+**principal** (Principal Leu, no `classroomId` in JWT), and the teacher data endpoints/sheet gate on
+a teacher's classroom, so a principal session rejects at the gate (the "No classroom in session" /
+"Failed to load children" errors seen during validation were that gate, upstream of all the new code).
+**Tredoux must teacher-session-test:** child page load + back-nav, the tagging sheet opening instantly
+on several photos, photo-audit scroll smoothness, camera capture exit. (5-step checklist in the handoff.)
+
+**Deliberately NOT changed (documented so they're not re-discovered as TODOs):** `select('*')` on
+`progress/route.ts` (whole row is spread into the response → narrowing risks dropping a UI-read field
+on the hottest route); `React.memo`/`useCallback` refactor of `FocusWorksSection` (bounded payoff,
+stale-closure risk on the critical path, network dwarfs render); lazy-load `qrcode` (route-split
+already isolates it).
+
+**Story logins (SQL, run by Tredoux in the web SQL Editor — REST/direct DB unreachable from sandbox+Mac):**
+added `Z`/`oe` to `story_users` + `T`/`redoux` to `story_admin_users` (idempotent UPSERT on `username`,
+cost-10 bcrypt, admin `e2e=false` → bcrypt path, `space='tredoux'`), then **removed `Z`/`oe` from both
+tables** per follow-up. `T`/`redoux` admin login remains. Front-end story page auth = `story_users`;
+admin = `story_admin_users`.
+
+**🚨 Architectural rules locked in:** (1) bare `router.back()` on a fullscreen overlay is a trap — use
+the `safeExit()` push-fallback pattern. (2) `getUserMedia` first-attempt timeout ≥20s + stop late
+streams. (3) `background-attachment: fixed` banned on page wrappers. (4) per-item `backdrop-filter` in
+grids is a paint multiplier — reserve blur for singletons. (5) class-wide `.in(childIds)` selects MUST
+page in 1000-row `.range()` batches (chunk the id list for PK `.in()`) — mirror `dashboard/group-lessons`.
+(6) static per-classroom data (curriculum) belongs in a module cache + TTL + SWR, not a per-open
+refetch (`useClassroomWorks` / `prefetchClassroomWorks` is the reference). (7) the ~500ms network floor
+makes round-trip COUNT the highest-value code lever.
+
+**Next session:** (1) Tredoux VPN test (VPN-off / Asia exit) — biggest free win. (2) Tredoux teacher-
+session test of round 2 + curriculum. (3) re-fix anything testing surfaces (site is quiet). Optional:
+trim curriculum-sheet background refetches (call `reload()` only after a custom-work add); revisit the
+deferred `FocusWorksSection` memo only if render lag persists after the network floor is fixed.
+
+---
+
 ## 🧠 SESSION — Jun 18, 2026 (Cowork) — Sanctuary native app (renamed + icon, BUILD-VERIFIED + pushed) + AI-control Facebook piece
 
 **Canonical handoff:** `docs/handoffs/SESSION_SANCTUARY_RENAME_JUN18.md` (standalone — file map,
