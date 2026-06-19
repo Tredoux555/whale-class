@@ -186,15 +186,25 @@ export async function GET(req: NextRequest) {
 
       // 4. Evidence — aggregate from child progress
       (async () => {
-        const { data, error } = await supabase
-          .from('montree_child_progress')
-          .select('evidence_photo_count, evidence_photo_days, mastery_confirmed_at, status')
-          .in('child_id', childIds)
-          .in('status', ['presented', 'practicing', 'mastered']);
-        if (error) throw error;
+        // Paged in 1000-row batches — a single query is silently capped at 1000
+        // rows by Supabase, which truncated evidence counts for busy classrooms.
+        type EvRow = { evidence_photo_count: number | null; evidence_photo_days: number | null; mastery_confirmed_at: string | null; status: string | null };
+        let evRows: EvRow[] = [];
+        for (let from = 0; ; from += 1000) {
+          const { data, error } = await supabase
+            .from('montree_child_progress')
+            .select('evidence_photo_count, evidence_photo_days, mastery_confirmed_at, status')
+            .in('child_id', childIds)
+            .in('status', ['presented', 'practicing', 'mastered'])
+            .range(from, from + 999);
+          if (error) throw error;
+          const batch = (data || []) as EvRow[];
+          evRows = evRows.concat(batch);
+          if (batch.length < 1000) break;
+        }
 
         let strong = 0, moderate = 0, weak = 0, confirmed = 0, ready = 0;
-        for (const p of (data || [])) {
+        for (const p of evRows) {
           const count = p.evidence_photo_count || 0;
           const days = p.evidence_photo_days || 0;
           if (p.mastery_confirmed_at) confirmed++;
@@ -232,13 +242,28 @@ export async function GET(req: NextRequest) {
       (async () => {
         try {
           const { generateClassroomAttentionFlags } = await import('@/lib/montree/guru/skill-graph');
-          // Fetch progress + observations for all children in parallel
-          const [progressRes, obsRes] = await Promise.all([
-            supabase
-              .from('montree_child_progress')
-              .select('child_id, work_key, work_name, area, status, updated_at')
-              .in('child_id', childIds)
-              .in('status', ['presented', 'practicing', 'mastered']),
+          // Fetch progress + observations for all children in parallel.
+          // Progress is paged in 1000-row batches (Supabase silently caps a
+          // single query at 1000 rows, which truncated attention flags for
+          // busy classrooms); observations stay capped at the newest 500.
+          type SkillRow = { child_id: string; work_key: string | null; work_name: string | null; area: string | null; status: string | null; updated_at: string | null };
+          const [progressData, obsRes] = await Promise.all([
+            (async () => {
+              let rows: SkillRow[] = [];
+              for (let from = 0; ; from += 1000) {
+                const { data, error } = await supabase
+                  .from('montree_child_progress')
+                  .select('child_id, work_key, work_name, area, status, updated_at')
+                  .in('child_id', childIds)
+                  .in('status', ['presented', 'practicing', 'mastered'])
+                  .range(from, from + 999);
+                if (error) throw error;
+                const batch = (data || []) as SkillRow[];
+                rows = rows.concat(batch);
+                if (batch.length < 1000) break;
+              }
+              return rows;
+            })(),
             supabase
               .from('montree_behavioral_observations')
               .select('child_id, observation')
@@ -247,14 +272,12 @@ export async function GET(req: NextRequest) {
               .limit(500),
           ]);
 
-          if (progressRes.error) throw progressRes.error;
-
           // Build ChildDataForFlags[] from children + progress + observations
-          const childMap = new Map<string, { name: string; progress: typeof progressRes.data; observations: string[] }>();
+          const childMap = new Map<string, { name: string; progress: SkillRow[]; observations: string[] }>();
           for (const child of children) {
             childMap.set(child.id, { name: child.name, progress: [], observations: [] });
           }
-          for (const p of (progressRes.data || [])) {
+          for (const p of progressData) {
             const entry = childMap.get(p.child_id);
             if (entry) entry.progress.push(p);
           }

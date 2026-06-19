@@ -4,7 +4,7 @@
 // Layout handles auth + header + tabs
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import dynamic from 'next/dynamic';
 import { useParams, useRouter, notFound } from 'next/navigation';
 import Link from 'next/link';
@@ -162,7 +162,7 @@ export default function WeekPage() {
   }, [childId]);
 
   // All works combined (for checking if already added)
-  const allWorks = [...focusWorks, ...extraWorks];
+  const allWorks = useMemo(() => [...focusWorks, ...extraWorks], [focusWorks, extraWorks]);
 
   // CRITICAL: Block refetch while saving to prevent race conditions
   const [isSaving, setIsSaving] = useState(false);
@@ -377,11 +377,11 @@ export default function WeekPage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [childId, router]); // isSaving checked at runtime inside the callback, not as dependency
 
-  // Fetch guru weekly summary from child settings
-  useEffect(() => {
-    if (!childId) return;
-    fetchGuruSettings();
-  }, [childId, fetchGuruSettings]);
+  // NOTE: guru weekly summary is no longer fetched on mount via its own
+  // /children/[id]?fields=settings round-trip — it's derived from the full
+  // child GET below (same settings JSONB), saving one ~500ms request per open.
+  // fetchGuruSettings() remains for the explicit refresh after a new summary
+  // is generated (onGenerated).
 
   // Read the per-classroom "Just start with photos" opt-out flag and use it to
   // suppress TellGuruCard. Same key as the dashboard's OnboardingPathChoice gate.
@@ -427,6 +427,20 @@ export default function WeekPage() {
       const settings = childData?.child?.settings || childData?.settings;
       if (settings?.game_plan) {
         setGamePlan(settings.game_plan as GamePlan);
+      }
+      // Derive the Guru weekly summary from this SAME payload rather than a
+      // second round-trip to /children/[id]?fields=settings (one fewer ~500ms call).
+      if (settings) {
+        setGuruSettings({
+          planRow: settings.guru_weekly_plan_row || null,
+          areaDetails: settings.guru_weekly_area_details || null,
+          fullSummary: settings.guru_weekly_full_summary || null,
+          thisWeek: settings.guru_weekly_this_week || null,
+          nextWeek: settings.guru_weekly_next_week || null,
+          oneLiner: settings.guru_weekly_one_liner || null,
+          advice: settings.guru_weekly_advice || null,
+          updatedAt: settings.guru_weekly_summary_updated_at || null,
+        });
       }
     }).catch(() => {
       if (isEnabled('tell_guru_onboarding')) setHasProfile(true);

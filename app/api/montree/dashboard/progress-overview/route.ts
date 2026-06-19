@@ -146,42 +146,56 @@ export async function GET(request: NextRequest) {
   const works = (rawWorks || []) as WorkRow[];
   const workIdToWork = new Map(works.map(w => [w.id, w]));
 
-  // 4. Direct photos in date range (child_id in childIds)
-  const { data: rawMedia } = await supabase
-    .from('montree_media')
-    .select('child_id, work_id, captured_at')
-    .eq('classroom_id', classroomId)
-    .in('child_id', childIds)
-    .gte('captured_at', dateFromISO)
-    .lte('captured_at', dateToISO)
-    .not('work_id', 'is', null)
-    .eq('teacher_confirmed', true)
-    .or('identification_status.is.null,identification_status.neq.pending_review');
+  // 4. Direct photos in date range (child_id in childIds) — paged in 1000-row
+  // batches so a wide date range on a busy class can't silently clip at 1000.
+  let directMedia: MediaRow[] = [];
+  for (let from = 0; ; from += 1000) {
+    const { data } = await supabase
+      .from('montree_media')
+      .select('child_id, work_id, captured_at')
+      .eq('classroom_id', classroomId)
+      .in('child_id', childIds)
+      .gte('captured_at', dateFromISO)
+      .lte('captured_at', dateToISO)
+      .not('work_id', 'is', null)
+      .eq('teacher_confirmed', true)
+      .or('identification_status.is.null,identification_status.neq.pending_review')
+      .range(from, from + 999);
+    const batch = (data || []) as MediaRow[];
+    directMedia = directMedia.concat(batch);
+    if (batch.length < 1000) break;
+  }
 
-  const directMedia = (rawMedia || []) as MediaRow[];
-
-  // 5. Group photos via junction table
-  const { data: rawGroupLinks } = await supabase
-    .from('montree_media_children')
-    .select('child_id, media_id')
-    .in('child_id', childIds);
-
-  const groupLinks = (rawGroupLinks || []) as GroupLinkRow[];
+  // 5. Group photos via junction table — fully unbounded, so page it (this one
+  // has no date filter and grows for the life of the classroom).
+  let groupLinks: GroupLinkRow[] = [];
+  for (let from = 0; ; from += 1000) {
+    const { data } = await supabase
+      .from('montree_media_children')
+      .select('child_id, media_id')
+      .in('child_id', childIds)
+      .range(from, from + 999);
+    const batch = (data || []) as GroupLinkRow[];
+    groupLinks = groupLinks.concat(batch);
+    if (batch.length < 1000) break;
+  }
   const groupMediaIds = [...new Set(groupLinks.map(l => l.media_id))];
 
+  // Resolve group media by id — chunk the id list in 1000s; an .in() on a PK
+  // returns one row per id, so a >1000-id list would otherwise clip at 1000.
   let groupMedia: GroupMediaRow[] = [];
-  if (groupMediaIds.length > 0) {
-    const { data: rawGroupMedia } = await supabase
+  for (let i = 0; i < groupMediaIds.length; i += 1000) {
+    const idChunk = groupMediaIds.slice(i, i + 1000);
+    const { data } = await supabase
       .from('montree_media')
       .select('id, work_id, captured_at')
-      .in('id', groupMediaIds)
+      .in('id', idChunk)
       .gte('captured_at', dateFromISO)
       .lte('captured_at', dateToISO)
       .not('work_id', 'is', null)
       .eq('teacher_confirmed', true)
       .or('identification_status.is.null,identification_status.neq.pending_review');
-
-    groupMedia = (rawGroupMedia || []) as GroupMediaRow[];
+    groupMedia = groupMedia.concat((data || []) as GroupMediaRow[]);
   }
 
   // Build group media lookup
