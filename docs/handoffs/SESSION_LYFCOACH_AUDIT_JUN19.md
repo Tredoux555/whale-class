@@ -61,6 +61,15 @@
 
 ---
 
+## Marketing — Lyf Coach launch video
+Drafted a ~60s direct-to-camera launch script (coach-written, Claude-cleaned for HeyGen) →
+`~/Desktop/Lyf_Coach_Launch_Video_Script.md`. Target: people carrying it alone (30s–40s, no
+support structure, can't afford/don't trust therapy). **Three hold-points before it ships:**
+(1) don't claim "it's in the App Store" until it actually is — use the waitlist line; (2) the
+"therapist" claim was removed (Apple rejects treatment positioning + can't be backed); (3) it
+must be Tredoux's own face/avatar or the whole thing falls flat. Hold the launch line until the
+app is live.
+
 ## Gotchas & invariants (read before touching)
 - **montree `main` auto-deploys to Railway on push.** Don't push unreviewed; pushes are Tredoux's via Desktop Commander.
 - **Crypto parity contract:** `lyf-coach/Tests/vectors.json` ↔ `montree/lib/sanctuary-e2e/vectors.json` must stay byte-identical; re-run both crypto tests if either changes. Do NOT rename the crypto types.
