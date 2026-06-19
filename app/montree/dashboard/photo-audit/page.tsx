@@ -9,6 +9,7 @@ import dynamic from 'next/dynamic';
 import { toast } from 'sonner';
 import { useI18n } from '@/lib/montree/i18n';
 import { getSession } from '@/lib/montree/auth';
+import { prefetchClassroomWorks } from '@/lib/montree/hooks/useClassroomWorks';
 import { montreeApi } from '@/lib/montree/api';
 import { invalidateEnglishWeekCache } from '@/lib/montree/cache';
 import { offerEnglishAdvance } from '@/lib/montree/english-sequence/client-helper';
@@ -815,6 +816,9 @@ export default function PhotoAuditPage() {
       classroomIdInitRef.current = true;
       setClassroomIdState(classroomId);
     }
+    // Warm the "This is…" sheet's curriculum cache now, so the first time a
+    // teacher opens the tagging sheet the works list is already there (no spinner).
+    prefetchClassroomWorks(classroomId);
     // Abort previous curriculum fetch if still in-flight (prevents race on rapid area changes)
     curriculumAbortRef.current?.abort();
     const controller = new AbortController();
