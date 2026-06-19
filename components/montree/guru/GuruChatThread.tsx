@@ -693,7 +693,6 @@ export default function GuruChatThread({
           padding: '16px',
           background: T.bg,
           backgroundImage: T.glow,
-          backgroundAttachment: 'fixed',
         }}
       >
         {messages.map(msg => (

@@ -174,7 +174,6 @@ function ParentMilestonesContent() {
         minHeight: '100dvh',
         background: T.bg,
         backgroundImage: T.glow,
-        backgroundAttachment: 'fixed',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -210,7 +209,6 @@ function ParentMilestonesContent() {
       minHeight: '100dvh',
       background: T.bg,
       backgroundImage: T.glow,
-      backgroundAttachment: 'fixed',
       color: T.textPrimary,
       fontFamily: T.sans,
     }}>
@@ -473,7 +471,6 @@ function MilestonesLoadingFallback() {
       minHeight: '100dvh',
       background: T.bg,
       backgroundImage: T.glow,
-      backgroundAttachment: 'fixed',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',

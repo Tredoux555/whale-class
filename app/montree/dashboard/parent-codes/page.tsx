@@ -291,7 +291,6 @@ export default function TeacherParentCodesPage() {
         minHeight: '100vh',
         background: T.bg,
         backgroundImage: T.glow,
-        backgroundAttachment: 'fixed',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -320,7 +319,6 @@ export default function TeacherParentCodesPage() {
         minHeight: '100vh',
         background: T.bg,
         backgroundImage: T.glow,
-        backgroundAttachment: 'fixed',
         color: T.textPrimary,
         fontFamily: T.sans,
       }}

@@ -148,7 +148,6 @@ export default function ParentMessagesPage() {
         minHeight: '100dvh',
         background: T.bg,
         backgroundImage: T.glow,
-        backgroundAttachment: 'fixed',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -181,7 +180,6 @@ export default function ParentMessagesPage() {
       minHeight: '100dvh',
       background: T.bg,
       backgroundImage: T.glow,
-      backgroundAttachment: 'fixed',
       color: T.textPrimary,
       fontFamily: T.sans,
     }}>

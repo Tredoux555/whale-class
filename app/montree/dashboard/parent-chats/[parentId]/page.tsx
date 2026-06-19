@@ -237,7 +237,6 @@ export default function ParentChatStreamPage({ params }: { params: Promise<{ par
       minHeight: '100dvh',
       background: T.bg,
       backgroundImage: T.glow,
-      backgroundAttachment: 'fixed',
       color: T.textPrimary,
       fontFamily: T.sans,
       display: 'flex',
