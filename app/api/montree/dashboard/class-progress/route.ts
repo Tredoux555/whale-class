@@ -127,26 +127,45 @@ export async function GET(request: NextRequest) {
 
   const supabase = getSupabase();
 
-  // ─── 1. Active roster for this classroom ───
-  const { data: rosterRaw } = await supabase
-    .from('montree_children')
-    .select('id, name, photo_url')
-    .eq('classroom_id', classroomId)
-    .eq('is_active', true)
-    .order('name');
+  // ─── 1-3. Roster + curriculum areas + works + period photos ───
+  // These four reads are independent (each keyed on classroomId/period only),
+  // so fire them in ONE parallel batch instead of four sequential round-trips
+  // (~4×network-RTT → ~1). The empty-roster early return happens right after.
+  //
+  // Audit-fix (Session 129): the media query has an upper bound to refuse
+  // future-dated rows (clock skew, manual edit, bad test data).
+  const [rosterRes, areasRes, worksRes, candidateRes] = await Promise.all([
+    supabase
+      .from('montree_children')
+      .select('id, name, photo_url')
+      .eq('classroom_id', classroomId)
+      .eq('is_active', true)
+      .order('name'),
+    supabase
+      .from('montree_classroom_curriculum_areas')
+      .select('id, area_key')
+      .eq('classroom_id', classroomId),
+    supabase
+      .from('montree_classroom_curriculum_works')
+      .select('id, name, area_id')
+      .eq('classroom_id', classroomId),
+    supabase
+      .from('montree_media')
+      .select('id, child_id, work_id, captured_at')
+      .eq('classroom_id', classroomId)
+      .eq('teacher_confirmed', true)
+      .not('work_id', 'is', null)
+      .gte('captured_at', periodStartIso)
+      .lte('captured_at', periodEndIso),
+  ]);
 
-  const roster = (rosterRaw || []) as ChildRow[];
+  const roster = (rosterRes.data || []) as ChildRow[];
   if (roster.length === 0) {
     return emptyResponse(classroomId, period, weekStartStr, generatedAt);
   }
   const rosterIds = roster.map(c => c.id);
 
-  // ─── 2. Curriculum areas + works for this classroom ───
-  const { data: areasRaw } = await supabase
-    .from('montree_classroom_curriculum_areas')
-    .select('id, area_key')
-    .eq('classroom_id', classroomId);
-  const areas = (areasRaw || []) as AreaRow[];
+  const areas = (areasRes.data || []) as AreaRow[];
   const areaIdToKey = new Map<string, AreaKey>();
   for (const a of areas) {
     if ((AREA_ORDER as string[]).includes(a.area_key)) {
@@ -154,32 +173,10 @@ export async function GET(request: NextRequest) {
     }
   }
 
-  const { data: worksRaw } = await supabase
-    .from('montree_classroom_curriculum_works')
-    .select('id, name, area_id')
-    .eq('classroom_id', classroomId);
-  const works = (worksRaw || []) as WorkRow[];
+  const works = (worksRes.data || []) as WorkRow[];
   const workIdToWork = new Map(works.map(w => [w.id, w]));
 
-  // ─── 3. Confirmed photos in period (single SELECT, partitioned in-memory) ───
-  // One query covers BOTH the direct-child-match case AND the group-photo
-  // junction case. `directMedia` is just the subset where the media row's
-  // own `child_id` is in the roster — the rest of `candidateMedia` is only
-  // needed for the junction lookup below.
-  //
-  // Audit-fix (Session 129): added upper bound to refuse future-dated rows
-  // (clock skew, manual edit, bad test data). Dropped the redundant first
-  // SELECT that used to fire alongside this one.
-  const { data: candidateRaw } = await supabase
-    .from('montree_media')
-    .select('id, child_id, work_id, captured_at')
-    .eq('classroom_id', classroomId)
-    .eq('teacher_confirmed', true)
-    .not('work_id', 'is', null)
-    .gte('captured_at', periodStartIso)
-    .lte('captured_at', periodEndIso);
-
-  const candidateMedia = (candidateRaw || []) as MediaRow[];
+  const candidateMedia = (candidateRes.data || []) as MediaRow[];
   const candidateMediaById = new Map(candidateMedia.map(m => [m.id, m]));
   const candidateMediaIds = candidateMedia.map(m => m.id);
 
