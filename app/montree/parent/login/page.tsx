@@ -29,7 +29,6 @@ export default function ParentLoginPage() {
       minHeight: '100dvh',
       background: T.bg,
       backgroundImage: T.glow,
-      backgroundAttachment: 'fixed',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',

@@ -532,7 +532,6 @@ export default function WeeklyAdminDocsPage() {
       minHeight: '100vh',
       background: T.bg,
       backgroundImage: T.glow,
-      backgroundAttachment: 'fixed',
       paddingBottom: 80,
       color: T.textPrimary,
       fontFamily: T.sans,

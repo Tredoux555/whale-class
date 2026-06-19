@@ -428,7 +428,6 @@ export default function LanguageSemesterPage() {
       minHeight: '100vh',
       background: T.bg,
       backgroundImage: T.glow,
-      backgroundAttachment: 'fixed',
       color: T.textPrimary,
       fontFamily: T.sans,
     }}>

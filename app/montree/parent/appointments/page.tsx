@@ -207,7 +207,7 @@ export default function ParentAppointmentsPage() {
   }
 
   return (
-    <div style={{ minHeight: '100dvh', background: T.bg, backgroundImage: T.bgGradient, backgroundAttachment: 'fixed', color: T.textPrimary, fontFamily: T.sans }}>
+    <div style={{ minHeight: '100dvh', background: T.bg, backgroundImage: T.bgGradient, color: T.textPrimary, fontFamily: T.sans }}>
       <header style={{ position: 'sticky', top: 0, zIndex: 20, background: T.card, backdropFilter: 'blur(18px)', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
         <div style={{ maxWidth: 560, margin: '0 auto', padding: '10px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
           {/* Montree home anchor — universal across the parent surface. */}

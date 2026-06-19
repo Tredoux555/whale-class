@@ -59,7 +59,6 @@ export default function ParentSignupPage() {
       minHeight: '100dvh',
       background: T.bg,
       backgroundImage: T.glow,
-      backgroundAttachment: 'fixed',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',

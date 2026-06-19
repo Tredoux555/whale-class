@@ -215,7 +215,7 @@ export default function CurriculumPage() {
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: '#0a1a0f', backgroundImage: 'radial-gradient(ellipse 1100px 900px at 88% 8%, rgba(39,129,90,0.48), transparent 60%)', backgroundAttachment: 'fixed' }}>
+    <div style={{ minHeight: '100vh', background: '#0a1a0f', backgroundImage: 'radial-gradient(ellipse 1100px 900px at 88% 8%, rgba(39,129,90,0.48), transparent 60%)' }}>
       <Toaster position="top-center" richColors />
 
       {/* Contextual Tip Bubble */}
