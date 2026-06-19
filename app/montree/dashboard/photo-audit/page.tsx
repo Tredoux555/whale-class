@@ -557,7 +557,7 @@ function GetAdviceTab({ photos, classroomId }: { photos: AuditPhoto[]; classroom
         const hasAdvice = adviceText.length > 0;
 
         return (
-          <div key={child_id} style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(52,211,153,0.15)', borderRadius: 18, overflow: 'hidden', backdropFilter: 'blur(18px)', WebkitBackdropFilter: 'blur(18px)' }}>
+          <div key={child_id} style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(52,211,153,0.15)', borderRadius: 18, overflow: 'hidden' }}>
             {/* Child row */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: 12 }}>
               {/* Photo thumbnail */}
@@ -3147,7 +3147,6 @@ function AuditPhotoCardInner({ photo, selected, onToggle, onConfirm, onCorrect, 
         position: 'relative', borderRadius: 18, overflow: 'hidden',
         background: selected ? 'rgba(52,211,153,0.07)' : 'rgba(255,255,255,0.06)',
         border: `1px solid ${selected ? 'rgba(52,211,153,0.50)' : 'rgba(52,211,153,0.15)'}`,
-        backdropFilter: 'blur(18px) saturate(140%)', WebkitBackdropFilter: 'blur(18px) saturate(140%)',
         boxShadow: selected ? '0 0 0 2px rgba(52,211,153,0.25)' : 'none',
         transition: 'border-color 150ms ease, background 150ms ease',
         contentVisibility: 'auto', containIntrinsicSize: '1px 320px',
@@ -3157,7 +3156,7 @@ function AuditPhotoCardInner({ photo, selected, onToggle, onConfirm, onCorrect, 
       {/* Selection checkbox */}
       <button
         onClick={onToggle}
-        style={{ position: 'absolute', top: 10, left: 10, zIndex: 10, width: 24, height: 24, borderRadius: 6, background: selected ? 'rgba(52,211,153,0.25)' : 'rgba(7,18,12,0.65)', border: `1px solid ${selected ? 'rgba(52,211,153,0.70)' : 'rgba(255,255,255,0.25)'}`, backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'all 120ms ease' }}
+        style={{ position: 'absolute', top: 10, left: 10, zIndex: 10, width: 24, height: 24, borderRadius: 6, background: selected ? 'rgba(52,211,153,0.30)' : 'rgba(7,18,12,0.82)', border: `1px solid ${selected ? 'rgba(52,211,153,0.70)' : 'rgba(255,255,255,0.25)'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'all 120ms ease' }}
       >
         {selected && <span style={{ color: '#34d399', fontSize: 13, fontWeight: 700 }}>✓</span>}
       </button>
@@ -3168,7 +3167,7 @@ function AuditPhotoCardInner({ photo, selected, onToggle, onConfirm, onCorrect, 
       {/* Confirmed overlay — shown in "Today (All)" view so teachers can spot
           already-resolved photos at a glance while scanning the day's captures. */}
       {photo.teacher_confirmed === true && (
-        <div style={{ position: 'absolute', top: 10, left: 40, zIndex: 10, padding: '2px 8px', borderRadius: 999, background: 'rgba(52,211,153,0.85)', color: '#06281a', fontSize: 9, fontWeight: 700, letterSpacing: 0.5, backdropFilter: 'blur(6px)' }}>
+        <div style={{ position: 'absolute', top: 10, left: 40, zIndex: 10, padding: '2px 8px', borderRadius: 999, background: 'rgba(52,211,153,0.95)', color: '#06281a', fontSize: 9, fontWeight: 700, letterSpacing: 0.5 }}>
           ✓ CONFIRMED
         </div>
       )}
