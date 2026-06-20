@@ -17,6 +17,34 @@ Local path: `/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/whale` (note spa
 
 ---
 
+## 🧠 SESSION — Jun 20, 2026 (Cowork, eve) — Lyf Coach: Manifestation knowledge module (researched → drop-in → wired → pushed)
+
+**Canonical handoff:** `docs/handoffs/SESSION_MANIFESTATION_COACH_JUN20.md`. **1 commit on `main`, pushed + Railway auto-deploying:** `02146434` — Coach: add manifestation knowledge module. **No migrations, no schema.** Pure Coach-brain knowledge file + 4 additive wiring edits.
+
+**What it is.** An evidence-based **manifestation / law-of-attraction** framework for the Lyf Coach brain (`lib/story/coach/`), built from an independent web deep-dive (effect sizes, mechanisms, documented harms) + an audit of a parallel web-Claude draft. The Coach speaks the user's "manifesting / alignment / vibration" language as motivating metaphor but always delivers the validated mechanism (mental contrasting + implementation intentions, behavioral activation, self-efficacy, attention priming) and lands every reply on one concrete action.
+
+**🚨 THE ARCHITECTURE LESSON (why web-Claude's version wouldn't have worked).** The Coach knowledge base is NOT a big JSON. Each framework is a compact house-style `.md` (`# Title — Source`, bold-led principles, ~900 chars) in `lib/story/coach/knowledge/`. Loader `knowledge-loader.ts`: `getCoachWisdomSummary()` injects the FIRST ~520–900 chars of each file (the `lead()` cap) into the system prompt EVERY turn; the FULL file is pulled on demand by the `consult_wisdom` tool. So the most important idea MUST sit at the top of the file. Web-Claude's structured `daily_manifestation_practices` JSON (selection_logic/guardrails keys) could never have parsed into this brain — the right deliverable is a matching `.md` + loader wiring.
+
+**Files shipped (`02146434`):**
+- NEW `lib/story/coach/knowledge/manifestation.md` — the framework. Opening principle (vision-alone-backfires + WOOP) sized to land inside the every-turn summary; the 8 daily practices + language-translation table + hard guardrails load via `consult_wisdom`.
+- `knowledge-loader.ts` — `'manifestation'` added to the `WisdomTopic` union + `manifestation: 'manifestation.md'` in `FILES` + a `## Manifestation …` summary block weighted at **900** (same as Essentialism/Burnout, the must-hit-every-turn frameworks). 🚨 The `consult_wisdom` topic enum is AUTO-derived (`enum: WISDOM_TOPICS = Object.keys(FILES)`) — adding the `FILES` key auto-registers the tool, NO `tool-definitions.ts` edit needed.
+- `system-prompt.ts` — tool-use trigger: user says "manifest / alignment / vibration / visualise a goal" → `consult_wisdom` topic `manifestation`, always landing on vision + honest obstacle + one if-then action.
+- NEW `docs/COACH_MANIFESTATION_MASTER.md` — human-readable master doc (deep dive + web-Claude comparison + wiring + sources).
+
+**🚨 The one rule baked in (load-bearing).** Vision alone measurably BACKFIRES — positive fantasy lowers effort and even systolic blood pressure (you pre-experience the win, so the brain stops pushing); people who fantasise more positively achieve LESS. The engine is vision + the honest obstacle + one if-then plan. Pure visualisation / "it's meant to be" must never stand in for the next real move. Guardrails locked: never claim thought-without-action delivers; never victim-blame ("you attracted your illness/poverty"); on risky money calls "it's meant to be" never replaces checking the real numbers; cap revision at once (anti-rumination); person-first on real distress.
+
+**Evidence anchors:** if-then plans d≈0.65 (Gollwitzer & Sheeran 2006); WOOP/MCII g≈0.34 (2021 meta, pub-bias caveat); positive-fantasy energy/BP drop (Kappes & Oettingen 2011); self-efficacy built best by self-caused mastery wins (Bandura); behavioral activation ≈ CBT/meds; visualise the DOING not the done (PETTLEP). Honest debunk: the "RAS manifests your life" story is pop-neuroscience — the real construct is the salience network + goal-driven attentional priming.
+
+**🎛 Product decision (Tredoux, LOCKED).** NO new tab for manifestation — a behaviour shouldn't become furniture. Flow: user asks the Coach ("what exercises help me manifest my goals?") → Coach surfaces the practices → "put it in my daily schedule" → Coach drops them onto the **Planner** via its existing `add_event` tool. Nav stays THREE tabs: **Planner · Coach · Projects.** The covert messaging door stays buried, untouched, un-named. Open nuance: `add_event` schedules DATED events, not recurring — for a true set-and-forget daily ritual a small `repeat` option on Planner events is a separate future build (offered, not built).
+
+**🚨 Git/branch note.** The Cowork checkout was on `account-deletion-jun19` with a large uncommitted in-flight tree (Jun 20 Dark Phonics + native LyfCoach move). Work first committed there as `dbba2f77`, then cherry-picked clean onto `main` via an isolated `/tmp` git worktree so the dirty branch tree was never touched. Stray `dbba2f77` still sits on `account-deletion-jun19` — harmless, no-ops on eventual merge. Working checkout left exactly as found.
+
+**Where this lives:** the WEB Coach brain (`lib/story/coach/`), the canonical coach intelligence. If the native iOS Lyf Coach needs it on-device, port `manifestation.md` + the loader wiring there too.
+
+**Next:** verify Railway deploy green (couldn't run full `tsc` from Cowork; edits additive, can't break the build); optional `repeat`-events Planner build if Tredoux wants recurring rituals auto-scheduled.
+
+---
+
 ## 🧠 SESSION — Jun 20, 2026 (Cowork) — Dark Phonics flashcards + Photo-audit "Identifying…" state + songs-page restructure
 
 **Canonical handoff:** `docs/handoffs/SESSION_DARK_PHONICS_JUN20.md`. **6 commits on `main`, all pushed + Railway auto-deployed:**
