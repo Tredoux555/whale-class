@@ -71,6 +71,7 @@ interface AuditPhoto {
   status: string | null;
   identification_status?: string | null;
   identification_confidence?: number | null;
+  identification_attempted_at?: string | null;
   teacher_confirmed?: boolean;
   discussion_flag?: boolean;
   sonnet_draft?: {
@@ -1134,6 +1135,77 @@ export default function PhotoAuditPage() {
     return () => { cancelled = true; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Auto-refresh while any visible photo is still being identified. The mount
+  // sweep above fires /process; this surfaces the result without a manual
+  // refresh. Polls every 9s, capped at 8 tries (~72s), stops the instant
+  // nothing is in-flight. A photo is "in-flight" when it has no recorded
+  // identification attempt, no work, isn't confirmed, was captured within the
+  // last 10 min, and hasn't reached a draft/match state yet.
+  // Clock for recency checks, kept in state so the card render stays pure
+  // (no Date.now() in JSX — React-compiler purity rule). Ticks every 30s.
+  const [nowTs, setNowTs] = useState(0);
+  useEffect(() => {
+    setNowTs(Date.now());
+    const i = setInterval(() => setNowTs(Date.now()), 30000);
+    return () => clearInterval(i);
+  }, []);
+
+  const pollRef = useRef<{ tries: number; timer: ReturnType<typeof setTimeout> | null }>({ tries: 0, timer: null });
+  useEffect(() => {
+    const inflight = photos.some(p =>
+      !p.identification_attempted_at && !p.work_id && !p.teacher_confirmed &&
+      !!p.captured_at && (Date.now() - new Date(p.captured_at as string).getTime() < 10 * 60 * 1000) &&
+      p.identification_status !== 'haiku_drafted' &&
+      p.identification_status !== 'sonnet_drafted' &&
+      p.identification_status !== 'haiku_matched'
+    );
+    if (pollRef.current.timer) { clearTimeout(pollRef.current.timer); pollRef.current.timer = null; }
+    if (!inflight) { pollRef.current.tries = 0; return; }
+    if (pollRef.current.tries >= 8) return;
+    const timer = setTimeout(() => {
+      pollRef.current.tries += 1;
+      fetchPhotos();
+    }, 9000);
+    pollRef.current.timer = timer;
+    return () => { clearTimeout(timer); };
+  }, [photos, fetchPhotos]);
+
+  // Re-identify: reset a mis-filed (untagged / "Other") photo and re-run it
+  // through the CURRENT two-pass pipeline. Recovers photos an older prompt got
+  // wrong. The reset runs server-side (Railway→Supabase), then /process re-runs
+  // the fixed pipeline; we refetch to surface the fresh suggestion.
+  const handleReidentify = async (photo: AuditPhoto) => {
+    setProcessingId(photo.id);
+    try {
+      const r = await montreeApi('/api/montree/photo-identification/requeue', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ media_id: photo.id }),
+      });
+      if (!r.ok) {
+        const e = await r.json().catch(() => ({}));
+        toast.error(e?.error || 'Could not re-identify this photo');
+        return;
+      }
+      // Optimistically clear so the card shows a fresh run immediately.
+      setPhotos(prev => prev.map(p => p.id === photo.id
+        ? { ...p, identification_status: null, identification_attempted_at: null, identification_confidence: null, sonnet_draft: null, work_id: null }
+        : p));
+      // Re-run the fixed two-pass pipeline, then refetch to show the result.
+      await montreeApi('/api/montree/photo-identification/process', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ media_id: photo.id, locale: 'en' }),
+      });
+      fetchPhotos();
+    } catch (err) {
+      console.error('[Re-identify] failed:', err);
+      toast.error('Could not re-identify this photo');
+    } finally {
+      setProcessingId(null);
+    }
+  };
 
   const handleZoneChange = (z: Zone) => { setZone(z); setPage(0); setSelectedIds(new Set()); };
   const handleDateChange = (d: DateRange) => { setDateRange(d); setPage(0); setSelectedIds(new Set()); };
@@ -2628,12 +2700,14 @@ export default function PhotoAuditPage() {
               onConfirmDraft={() => handleConfirmHaikuDraft(photo)}
               onConfirmCandidate={(cand) => handleConfirmCandidate(photo, cand)}
               onTellAI={() => setTellAiPhoto(photo)}
+              onReidentify={() => handleReidentify(photo)}
               onPhotoTap={() => photo.url && setLightboxUrl(photo.url)}
               onSaveNote={(caption) => handleSaveNote(photo.id, caption)}
               processing={processingId === photo.id}
               workStatus={workStatuses[`${photo.child_id}:${photo.work_name}`] || null}
               onSetStatus={(status) => handleSetStatus(photo, status)}
               unifiedTagger={isEnabled('unified_photo_tagger')}
+              nowTs={nowTs}
               t={t}
             />
           ))}
@@ -3068,7 +3142,7 @@ const iconTooltipStyle: CSSProperties = {
 // cascade re-renders into every card. Critical when 200-500 photos are
 // loaded on one page. The custom comparator on memo skips re-render unless
 // the photo data, selection state, processing flag, or workStatus changed.
-function AuditPhotoCardInner({ photo, selected, onToggle, onConfirm, onCorrect, onUseAsReference, onTagChildren, onDelete, onMarkAsPaperwork, onToggleDiscussion, rerunResult, onAcceptResult, onAcceptDraft, onConfirmDraft, onConfirmCandidate, onTellAI, onPhotoTap, onSaveNote, processing, workStatus, onSetStatus, unifiedTagger, t }: {
+function AuditPhotoCardInner({ photo, selected, onToggle, onConfirm, onCorrect, onUseAsReference, onTagChildren, onDelete, onMarkAsPaperwork, onToggleDiscussion, rerunResult, onAcceptResult, onAcceptDraft, onConfirmDraft, onConfirmCandidate, onTellAI, onReidentify, onPhotoTap, onSaveNote, processing, workStatus, onSetStatus, unifiedTagger, nowTs, t }: {
   photo: AuditPhoto;
   selected: boolean;
   onToggle: () => void;
@@ -3087,12 +3161,16 @@ function AuditPhotoCardInner({ photo, selected, onToggle, onConfirm, onCorrect, 
    *  matchToCurriculumV2. Resolves to a curriculum work + attaches the photo. */
   onConfirmCandidate: (candidate: { workName: string; workKey: string | null; area: string | null }) => void;
   onTellAI: () => void;
+  onReidentify: () => void;
   onPhotoTap: () => void;
   onSaveNote: (caption: string) => void;
   processing: boolean;
   workStatus: string | null;
   onSetStatus: (status: 'presented' | 'practicing' | 'mastered') => void;
   unifiedTagger: boolean;
+  /** Clock value (ms) refreshed in the parent on an interval — used for recency
+   *  checks so the card never reads Date.now() during render (purity rule). */
+  nowTs: number;
   t: (key: string) => string;
 }) {
   const [noteText, setNoteText] = useState(photo.caption || '');
@@ -3526,8 +3604,53 @@ function AuditPhotoCardInner({ photo, selected, onToggle, onConfirm, onCorrect, 
           const hasHaikuDraftBranch = photo.identification_status === 'haiku_drafted' && photo.identification_confidence !== null;
           const hasHaikuMatchBranch = photo.identification_status === 'haiku_matched' && !!photo.work_name;
           if (hasSonnetBranch || hasHaikuDraftBranch || hasHaikuMatchBranch) return null;
+          // PROCESSING state — a fresh capture that the AI hasn't finished
+          // identifying yet (no attempt recorded, captured within 10 min, no
+          // work). Show "⏳ Identifying…" so an in-flight photo never reads as
+          // a failure. The page auto-refreshes and this flips to the AI's
+          // suggestion the moment the result lands.
+          const attempted = !!photo.identification_attempted_at;
+          const recentCapture = photo.captured_at && (nowTs - new Date(photo.captured_at).getTime() < 10 * 60 * 1000);
+          if (!attempted && !photo.work_id && recentCapture) {
+            return (
+              <div style={{ marginTop: 8 }}>
+                <div className="animate-pulse" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, fontSize: 12, padding: '10px 0', borderRadius: 8, background: 'rgba(20,184,166,0.10)', border: '1px solid rgba(20,184,166,0.28)', color: 'rgba(94,234,212,0.95)', fontWeight: 600 }}>
+                  ⏳ Identifying…
+                </div>
+                <button
+                  onClick={onTellAI}
+                  disabled={processing}
+                  style={{ width: '100%', fontSize: 10, padding: '6px 0', marginTop: 5, borderRadius: 8, background: 'rgba(139,92,246,0.08)', border: '1px solid rgba(139,92,246,0.22)', color: 'rgba(196,181,253,0.70)', fontWeight: 500, cursor: processing ? 'wait' : 'pointer', opacity: processing ? 0.5 : 1 }}
+                >
+                  🗣️ Tell AI what it is
+                </button>
+              </div>
+            );
+          }
+          // Gap 1 — always-suggest: even when the AI didn't land a tagged
+          // draft (incl. "Other"), surface its closest curriculum guesses as
+          // one-tap chips so this is never a blank dead-end.
+          const fallbackCands = (photo.sonnet_draft?.top_candidates || []).slice(0, 2);
           return (
             <div style={{ marginTop: 8 }}>
+              {fallbackCands.length > 0 && (
+                <div style={{ marginBottom: 8 }}>
+                  <div style={{ fontSize: 9, color: 'rgba(94,234,212,0.65)', marginBottom: 4, fontWeight: 600 }}>🧠 Looks like — tap to tag:</div>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+                    {fallbackCands.map((cand) => (
+                      <button
+                        key={cand.workKey || cand.workName}
+                        onClick={() => onConfirmCandidate(cand)}
+                        disabled={processing}
+                        style={{ fontSize: 10, padding: '4px 10px', borderRadius: 999, background: 'rgba(20,184,166,0.10)', border: '1px solid rgba(20,184,166,0.30)', color: 'rgba(204,251,241,0.92)', fontWeight: 500, cursor: processing ? 'wait' : 'pointer', opacity: processing ? 0.5 : 1, maxWidth: '100%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+                        title={`${cand.workName} (${Math.round((cand.score || 0) * 100)}%)`}
+                      >
+                        {cand.workName}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
               <button
                 onClick={onAcceptDraft}
                 disabled={processing}
@@ -3542,6 +3665,14 @@ function AuditPhotoCardInner({ photo, selected, onToggle, onConfirm, onCorrect, 
                 style={{ width: '100%', fontSize: 10, padding: '6px 0', marginTop: 5, borderRadius: 8, background: 'rgba(139,92,246,0.08)', border: '1px solid rgba(139,92,246,0.22)', color: 'rgba(196,181,253,0.70)', fontWeight: 500, cursor: processing ? 'wait' : 'pointer', opacity: processing ? 0.5 : 1 }}
               >
                 🗣️ Tell AI what it is
+              </button>
+              <button
+                onClick={onReidentify}
+                disabled={processing}
+                style={{ width: '100%', fontSize: 10, padding: '6px 0', marginTop: 5, borderRadius: 8, background: 'rgba(20,184,166,0.08)', border: '1px solid rgba(20,184,166,0.22)', color: 'rgba(94,234,212,0.70)', fontWeight: 500, cursor: processing ? 'wait' : 'pointer', opacity: processing ? 0.5 : 1 }}
+                title="Re-run AI identification with the latest model"
+              >
+                {processing ? '...' : '↻ Re-identify'}
               </button>
             </div>
           );

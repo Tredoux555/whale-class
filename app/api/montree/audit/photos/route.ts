@@ -47,7 +47,7 @@ export async function GET(request: NextRequest) {
     // Step 3: Query media — by default exclude teacher_confirmed photos
     let mediaQuery = supabase
       .from('montree_media')
-      .select('id, child_id, work_id, storage_path, thumbnail_path, captured_at, created_at, caption, auto_crop, classroom_id, tags, identification_status, identification_confidence, sonnet_draft, teacher_confirmed, discussion_flag', { count: 'exact' })
+      .select('id, child_id, work_id, storage_path, thumbnail_path, captured_at, created_at, caption, auto_crop, classroom_id, tags, identification_status, identification_confidence, identification_attempted_at, sonnet_draft, teacher_confirmed, discussion_flag', { count: 'exact' })
       .eq('school_id', auth.schoolId)
       .eq('media_type', 'photo')
       .gte('captured_at', dateFrom)
@@ -249,6 +249,7 @@ export async function GET(request: NextRequest) {
         status: (m.child_id && work?.name ? progressMap.get(`${m.child_id}:${work.name.toLowerCase()}`) : null) || null,
         identification_status: m.identification_status || null,
         identification_confidence: m.identification_confidence ?? null,
+        identification_attempted_at: m.identification_attempted_at || null,
         sonnet_draft: m.sonnet_draft || null,
         teacher_confirmed: m.teacher_confirmed === true,
         discussion_flag: m.discussion_flag === true,

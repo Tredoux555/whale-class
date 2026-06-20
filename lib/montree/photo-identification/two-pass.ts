@@ -79,6 +79,10 @@ const TAG_PHOTO_TOOL = {
       },
       confidence: { type: 'number', description: 'Confidence in the identification (0.0–1.0).' },
       observation: { type: 'string', description: 'Brief 1-sentence warm observation about the child\'s engagement.' },
+      best_curriculum_guess: {
+        type: 'string',
+        description: 'ALWAYS give your single best Montessori-work guess for this photo — the curriculum work it most resembles — EVEN IF is_curriculum_work is false. This powers a one-tap "looks like X?" suggestion so the teacher is never left with nothing to tap. Omit only if the photo truly contains no learning materials at all (a child\'s face, a meal, an empty room).',
+      },
       suggested_crop: {
         type: 'object',
         description: 'Suggested crop region in normalized 0-1 coordinates. Omit if not applicable.',
@@ -126,6 +130,7 @@ function validateToolOutput(rawInput: Record<string, unknown>) {
     mastery_evidence: typeof rawInput.mastery_evidence === 'string' && VALID_MASTERY.includes(rawInput.mastery_evidence) ? rawInput.mastery_evidence : 'unclear',
     confidence: typeof rawInput.confidence === 'number' && !isNaN(rawInput.confidence) ? Math.max(0, Math.min(1, rawInput.confidence)) : 0,
     observation: typeof rawInput.observation === 'string' ? rawInput.observation.trim().slice(0, 500) : '',
+    best_curriculum_guess: typeof rawInput.best_curriculum_guess === 'string' ? rawInput.best_curriculum_guess.trim().slice(0, 255) : '',
     suggested_crop,
   };
 }
@@ -601,12 +606,35 @@ Match this description to the correct Montessori work. Use the visual identifica
         const finalWorkKey = matchResult.bestMatch?.work_key || null;
 
         // Extract top 3 candidates for the audit UI quick-tap chips.
-        const topCandidates = (matchResult.candidates || []).slice(0, 3).map((c) => ({
+        let topCandidates = (matchResult.candidates || []).slice(0, 3).map((c) => ({
           workName: c.work.name,
           workKey: c.work.work_key || null,
           area: c.work.area_key || null,
           score: c.score,
         }));
+
+        // Gap 1 — ALWAYS-SUGGEST (never dead-end). When the primary match
+        // produced no candidates (e.g. is_curriculum_work=false → work_name
+        // "Other", or a name the matcher couldn't place), fall back to matching
+        // the model's best_curriculum_guess so the audit card can ALWAYS offer a
+        // one-tap "looks like X?" chip. The classification itself is unchanged —
+        // this only enriches the suggestion list so nothing is ever a blank
+        // "Untagged" wall.
+        if (topCandidates.length === 0 && validated.best_curriculum_guess) {
+          const fb = matchToCurriculumV2(
+            validated.best_curriculum_guess,
+            null,
+            input.curriculum,
+            context.correctionsMap,
+            validated.observation,
+          );
+          topCandidates = (fb.candidates || []).slice(0, 3).map((c) => ({
+            workName: c.work.name,
+            workKey: c.work.work_key || null,
+            area: c.work.area_key || null,
+            score: c.score,
+          }));
+        }
 
         identification = {
           is_curriculum_work: validated.is_curriculum_work,
