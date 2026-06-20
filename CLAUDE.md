@@ -17,6 +17,14 @@ Local path: `/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/whale` (note spa
 
 ---
 
+## 🚨 NEXT SESSION — QUEUED BUILD: Lyf Coach Family Model (Tredoux, queued Jun 20 eve)
+
+**Canonical plan: `docs/handoffs/LYF_COACH_FAMILY_MODEL_PLAN.md` — READ THIS FIRST.** Tredoux wants to build the family model on both fronts in ONE session (the model takes priority over the App Store version). Two products: (A) Lyf Coach individual (exists); (B) **Lyf Coach Family** — mum + dad + up to 2 kids, each with their own absolutely-private coach + a **one-way parent → child's-coach context link**. His private family system = Product B dogfooded, built FIRST.
+
+**🔒 The non-negotiable principle (do NOT relitigate):** the child's coach conversation is **sealed by architecture — never readable by parent or operator, even self-harm content.** Confidentiality is the engine. The parent channel is **WRITE-ONLY** (real-world observations → shape the coach's support of the child's *skills*), never a read path. The coach stays the child's ally *inside the sealed room* (steers a child in danger toward a trusted adult itself; never reports up). Substrate already exists: `lib/story/coach/` is already multi-space + E2E. **🚨 Public/App-Store child version is gated on COPPA/GDPR-K + Apple kids rules + child-psychologist + legal review — the private family version can move fast; the public one cannot ship naively.** Full architecture, build order, and open questions in the plan doc.
+
+---
+
 ## 🧠 SESSION — Jun 20, 2026 (Cowork, eve) — Lyf Coach: Manifestation knowledge module (researched → drop-in → wired → pushed)
 
 **Canonical handoff:** `docs/handoffs/SESSION_MANIFESTATION_COACH_JUN20.md`. **1 commit on `main`, pushed + Railway auto-deploying:** `02146434` — Coach: add manifestation knowledge module. **No migrations, no schema.** Pure Coach-brain knowledge file + 4 additive wiring edits.
