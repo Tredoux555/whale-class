@@ -102,6 +102,38 @@ interface AuditPhoto {
 type Zone = 'all' | 'green' | 'amber' | 'red' | 'untagged' | 'weekly_admin' | 'weekly_wrap' | 'discussion' | 'get_advice';
 type DateRange = '24h' | '7d' | '30d' | 'all';
 
+// A photo is "in-flight" (AI still identifying) when it has NOT reached any
+// terminal identification result yet. Keyed on the RESULT — terminal status /
+// work_id / sonnet_draft — NOT on identification_attempted_at: the background
+// pipeline stamps attempted_at the moment it STARTS, so keying on it hid the
+// entire 10-30s processing window behind a bare "Untagged" card that read like
+// a failure. The 10-min recency cap lets a never-processed photo fall through
+// to the Re-identify fallback instead of spinning "Identifying…" forever.
+// SINGLE source of truth — used by BOTH the auto-refresh poll and the card
+// render so the two can never drift apart (the drift was the original bug).
+const TERMINAL_IDENT_STATUSES = new Set([
+  'haiku_drafted', 'haiku_matched', 'sonnet_drafted', 'confirmed', 'failed', 'pending_review',
+]);
+const IN_FLIGHT_WINDOW_MS = 10 * 60 * 1000;
+function isPhotoInFlight(
+  photo: {
+    identification_status?: string | null;
+    work_id?: string | null;
+    teacher_confirmed?: boolean;
+    sonnet_draft?: unknown;
+    captured_at?: string | null;
+  },
+  now: number,
+): boolean {
+  if (!now) return false; // clock not ready yet (nowTs starts at 0 on first paint)
+  if (photo.work_id) return false;
+  if (photo.teacher_confirmed) return false;
+  if (photo.sonnet_draft) return false;
+  if (photo.identification_status && TERMINAL_IDENT_STATUSES.has(photo.identification_status)) return false;
+  if (!photo.captured_at) return false;
+  return now - new Date(photo.captured_at).getTime() < IN_FLIGHT_WINDOW_MS;
+}
+
 // Area picker with cross-area work search + inline add custom work form
 function AreaPickerWithSearch({
   areas, curriculum, onSelectArea, onSelectWork, onClose, onWorkAdded, classroomId, t
@@ -983,7 +1015,10 @@ export default function PhotoAuditPage() {
     try {
       const res = await fetch(
         `/api/montree/audit/photos?zone=${effectiveZone}&date_from=${dateFrom}&limit=${FETCH_LIMIT}&offset=${offsetParam}${includeConfirmedParam}`,
-        { signal: controller.signal }
+        // no-store: this is a live audit surface. The API sends max-age=30, which
+        // would serve a stale (still-processing) response to the auto-refresh
+        // poll and hide a result that already landed. Always fetch fresh here.
+        { signal: controller.signal, cache: 'no-store' }
       );
       if (controller.signal.aborted) return;
       if (!res.ok) throw new Error('fetch failed');
@@ -1157,20 +1192,14 @@ export default function PhotoAuditPage() {
 
   const pollRef = useRef<{ tries: number; timer: ReturnType<typeof setTimeout> | null }>({ tries: 0, timer: null });
   useEffect(() => {
-    const inflight = photos.some(p =>
-      !p.identification_attempted_at && !p.work_id && !p.teacher_confirmed &&
-      !!p.captured_at && (Date.now() - new Date(p.captured_at as string).getTime() < 10 * 60 * 1000) &&
-      p.identification_status !== 'haiku_drafted' &&
-      p.identification_status !== 'sonnet_drafted' &&
-      p.identification_status !== 'haiku_matched'
-    );
+    const inflight = photos.some(p => isPhotoInFlight(p, Date.now()));
     if (pollRef.current.timer) { clearTimeout(pollRef.current.timer); pollRef.current.timer = null; }
     if (!inflight) { pollRef.current.tries = 0; return; }
-    if (pollRef.current.tries >= 8) return;
+    if (pollRef.current.tries >= 10) return;
     const timer = setTimeout(() => {
       pollRef.current.tries += 1;
       fetchPhotos();
-    }, 9000);
+    }, 6000);
     pollRef.current.timer = timer;
     return () => { clearTimeout(timer); };
   }, [photos, fetchPhotos]);
@@ -3614,18 +3643,18 @@ function AuditPhotoCardInner({ photo, selected, onToggle, onConfirm, onCorrect, 
           const hasHaikuDraftBranch = photo.identification_status === 'haiku_drafted' && photo.identification_confidence !== null;
           const hasHaikuMatchBranch = photo.identification_status === 'haiku_matched' && !!photo.work_name;
           if (hasSonnetBranch || hasHaikuDraftBranch || hasHaikuMatchBranch) return null;
-          // PROCESSING state — a fresh capture that the AI hasn't finished
-          // identifying yet (no attempt recorded, captured within 10 min, no
-          // work). Show "⏳ Identifying…" so an in-flight photo never reads as
-          // a failure. The page auto-refreshes and this flips to the AI's
-          // suggestion the moment the result lands.
-          const attempted = !!photo.identification_attempted_at;
-          const recentCapture = photo.captured_at && (nowTs - new Date(photo.captured_at).getTime() < 10 * 60 * 1000);
-          if (!attempted && !photo.work_id && recentCapture) {
+          // PROCESSING state — the AI is still working on this capture (no
+          // terminal result yet, captured recently). Show a clear "Identifying…"
+          // indicator so an in-flight photo NEVER reads as a failure/Untagged.
+          // Uses the shared isPhotoInFlight() — the SAME predicate that drives
+          // the auto-refresh poll — so the spinner and the poll stay in lockstep
+          // and the card flips to the AI's result the moment it lands.
+          if (isPhotoInFlight(photo, nowTs)) {
             return (
               <div style={{ marginTop: 8 }}>
-                <div className="animate-pulse" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, fontSize: 12, padding: '10px 0', borderRadius: 8, background: 'rgba(20,184,166,0.10)', border: '1px solid rgba(20,184,166,0.28)', color: 'rgba(94,234,212,0.95)', fontWeight: 600 }}>
-                  ⏳ Identifying…
+                <div className="animate-pulse" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 3, fontSize: 12, padding: '12px 0', borderRadius: 8, background: 'rgba(20,184,166,0.10)', border: '1px solid rgba(20,184,166,0.28)', color: 'rgba(94,234,212,0.95)', fontWeight: 600 }}>
+                  <span>⏳ Identifying…</span>
+                  <span style={{ fontSize: 9.5, fontWeight: 500, color: 'rgba(94,234,212,0.7)' }}>Reading the photo — usually a few seconds</span>
                 </div>
                 <button
                   onClick={onTellAI}
