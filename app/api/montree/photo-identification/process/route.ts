@@ -100,6 +100,14 @@ export const maxDuration = 120;
 // an auditable Haiku DRAFT card with "Ask Sonnet" button. Watch Railway
 // [PhotoIdentification] GateA logs and tune from real trusted/fallback distribution.
 const HAIKU_TRUST_CONFIDENCE = 0.85;
+// First-sight auto-file: an EXACT curriculum-name match (fuzzy score 1.0) at
+// high confidence is trustworthy enough to auto-file even before this classroom
+// has built visual memory for the work. Delivers the "it just knew" moment on
+// day one for unambiguous works (Pink Tower, Number Rods, etc.). Still
+// reviewable (lands as haiku_matched with ✓/✏️) and still must resolve to a
+// real curriculum row, so a wrong-but-confident guess is caught by the teacher.
+const EXACT_MATCH_SCORE = 1.0;
+const EXACT_FIRST_SIGHT_CONFIDENCE = 0.90;
 
 // Photo bucket — confirmed against app/api/montree/media/upload/route.ts (line 155)
 const MEDIA_BUCKET = 'montree-media';
@@ -379,8 +387,15 @@ export async function POST(request: NextRequest) {
     const haikuTrusted =
       twoPassResult.success &&
       ident !== null &&
-      ident.confidence >= HAIKU_TRUST_CONFIDENCE &&
-      twoPassResult.hasVisualMemoryForMatch;
+      (
+        // Path 1 (original): high confidence AND the classroom has taught this work.
+        (ident.confidence >= HAIKU_TRUST_CONFIDENCE && twoPassResult.hasVisualMemoryForMatch) ||
+        // Path 2 (first-sight): exact curriculum-name match at high confidence,
+        // even with no prior visual memory. Never auto-files a non-work.
+        (ident.is_curriculum_work !== false &&
+          ident.matchScore >= EXACT_MATCH_SCORE &&
+          ident.confidence >= EXACT_FIRST_SIGHT_CONFIDENCE)
+      );
 
     // Phase 1 telemetry (Apr 8) — log every Gate A decision so we can tune
     // HAIKU_TRUST_CONFIDENCE and the visual memory filter from real data
@@ -496,6 +511,10 @@ export async function POST(request: NextRequest) {
             other_classified_at: new Date().toISOString(),
             other_note: ident.observation || null,
             haiku_confidence: ident.confidence,
+            // Gap 1 — always-suggest: even on "Other", carry the closest
+            // curriculum guesses so the card offers a one-tap "looks like X?"
+            // override. Lets the teacher rescue a real work the AI mis-called.
+            top_candidates: ident.topCandidates,
           },
         })
         .eq('id', mediaId);
