@@ -30,10 +30,17 @@ pre{white-space:pre-wrap;word-wrap:break-word;background:#0e0e16;border:1px soli
 audio{height:36px;max-width:100%}
 .loading{color:var(--mut);padding:40px 0;text-align:center}
 details.box>summary{outline:none}details.box>summary::-webkit-details-marker{display:none}details.box>summary::marker{content:''}details.box>summary:hover{color:var(--ink)}
+.dpsearch{margin:2px 0 10px}
+#dpq{width:100%;background:#0e0e16;border:1px solid var(--line);border-radius:10px;color:var(--ink);font-size:15px;padding:10px 12px;outline:none;-webkit-appearance:none}
+#dpq:focus{border-color:var(--ac)}
+#dpq::placeholder{color:var(--mut)}
+#dphint{display:none;color:var(--mut);font-size:13px;padding:0 0 10px}
 </style></head>
 <body>
 <header>
   <div class="brand"><span class="d">Dark</span> Phonics</div>
+  <div class="dpsearch"><input id="dpq" type="search" inputmode="search" autocomplete="off" placeholder="Find a letter, sound or word…"></div>
+  <div id="dphint"></div>
   <div class="tabs">
     <button class="tab on" data-src="/dark-phonics-songs.html">🎵 Songs</button>
     <button class="tab" data-src="/dark-phonics-singalong.html">🎤 Sing-Along Cards</button>
@@ -48,6 +55,25 @@ details.box>summary{outline:none}details.box>summary::-webkit-details-marker{dis
 <script>
 var content=document.getElementById('content');
 var tabs=document.querySelectorAll('button.tab');
+var dpq=document.getElementById('dpq');
+function dpMatch(card,term){
+  if(!term)return true;
+  var sr=(card.textContent||'').toLowerCase();
+  var lm=sr.match(/·\s*([a-z]{1,3})\s*[—-]/);
+  var letter=lm?lm[1]:'';
+  if(term.length===1)return letter?(letter.charAt(0)===term):(sr.indexOf(term)>=0);
+  return sr.indexOf(term)>=0;
+}
+function applyFilter(){
+  if(!dpq)return;
+  var term=(dpq.value||'').trim().toLowerCase();
+  var cards=content.querySelectorAll('.song,.book');var shown=0;
+  cards.forEach(function(c){var ok=dpMatch(c,term);c.style.display=ok?'':'none';if(ok)shown++;});
+  ['.note','h1','.sub'].forEach(function(s){var el=content.querySelector(s);if(el)el.style.display=term?'none':'';});
+  var hint=document.getElementById('dphint');
+  if(hint){var no=term&&shown===0;hint.textContent=no?('No lessons match “'+dpq.value.trim()+'”'):'';hint.style.display=no?'block':'none';}
+}
+if(dpq)dpq.addEventListener('input',applyFilter);
 function revealVideos(){
   fetch('/api/montree/phonics-videos',{cache:'no-store'}).then(function(r){return r.json();}).then(function(j){
     var up=(j&&j.uploaded)||[];
@@ -68,6 +94,7 @@ function load(url){
     content.innerHTML='<div class="wrap">'+(w?w.innerHTML:'Could not load this set.')+'</div>';
     window.scrollTo(0,0);
     revealVideos();
+    applyFilter();
   }).catch(function(){ content.innerHTML='<div class="wrap"><div class="loading">Could not load. <a style="color:var(--ac)" href="'+url+'">Open directly ↗</a></div></div>'; });
 }
 tabs.forEach(function(t){ t.addEventListener('click',function(){
