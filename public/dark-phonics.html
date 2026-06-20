@@ -41,6 +41,7 @@ details.box>summary{outline:none}details.box>summary::-webkit-details-marker{dis
   <div class="brand"><span class="d">Dark</span> Phonics</div>
   <div class="dpsearch"><input id="dpq" type="search" inputmode="search" autocomplete="off" placeholder="Find a letter, sound or word…"></div>
   <div id="dphint"></div>
+  <a id="dp-master" href="https://dmfncjjtsoxrnvcdnvjq.supabase.co/storage/v1/object/public/dark-phonics/flashcards/dark-phonics-flashcards-master.pdf?download=Dark-Phonics-Flashcards.pdf" download style="display:none;margin:0 0 10px;color:var(--y);font-size:13.5px;text-decoration:none;border:1px solid #4d432a;border-radius:9px;padding:7px 13px;background:#1a1606">&#128424; Print the whole flashcard deck (PDF)</a>
   <div class="tabs">
     <button class="tab on" data-src="/dark-phonics-songs.html">🎵 Songs</button>
     <button class="tab" data-src="/dark-phonics-singalong.html">🎤 Sing-Along Cards</button>
@@ -76,7 +77,7 @@ function applyFilter(){
 if(dpq)dpq.addEventListener('input',applyFilter);
 function revealVideos(){
   fetch('/api/montree/phonics-videos',{cache:'no-store'}).then(function(r){return r.json();}).then(function(j){
-    var up=(j&&j.uploaded)||[];
+    var up=(j&&j.uploaded)||[], pics=(j&&j.pictures)||[], fcs=(j&&j.flashcards)||[];
     content.querySelectorAll('.dp-video[data-lesson]').forEach(function(d){
       if(up.indexOf(parseInt(d.getAttribute('data-lesson'),10))>=0){
         var v=d.querySelector('video');
@@ -84,6 +85,18 @@ function revealVideos(){
         d.style.display='block';
       }
     });
+    // Pictures + flashcard PDFs — reveal the same way videos are revealed.
+    content.querySelectorAll('.dp-pic[data-lesson]').forEach(function(d){
+      var n=parseInt(d.getAttribute('data-lesson'),10);
+      if(pics.indexOf(n)>=0){
+        var im=d.querySelector('img');
+        if(im&&!im.getAttribute('src')){ im.src=d.getAttribute('data-psrc'); }
+        d.style.display='block';
+        if(fcs.indexOf(n)>=0){ var fl=d.querySelector('.dp-fc-dl'); if(fl){ fl.style.display='inline-block'; } }
+      }
+    });
+    var md=document.getElementById('dp-master');
+    if(md){ md.style.display=(j&&j.master)?'inline-block':'none'; }
   }).catch(function(){});
 }
 function load(url){
