@@ -17,6 +17,59 @@ Local path: `/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/whale` (note spa
 
 ---
 
+## 🧠 SESSION — Jun 20, 2026 (Cowork) — Dark Phonics flashcards + Photo-audit "Identifying…" state + songs-page restructure
+
+**Canonical handoff:** `docs/handoffs/SESSION_DARK_PHONICS_JUN20.md`. **6 commits on `main`, all pushed + Railway auto-deployed:**
+```
+c9669554  Dark Phonics: printable flashcards — picture + PDF download per card + master deck
+a7f66285  Photo audit: clear 'Identifying…' state during the whole processing window + reliable auto-refresh
+8b516ecd  Dark Phonics: Suno boxes → Creation tab + Bulk download (client-side JSZip)
+25a1ef45  Dark Phonics: bulk-download button next to heading + drop redundant Bulk tab
+d0781e57  Dark Phonics: bulk button beside heading (not far-right)
+a10cd5bc  Dark Phonics: bulk button beside the CONTENT heading (above first video); clean brand header
+```
+**No migrations, no schema changes.** All work = `public/*.html` static pages + one photo-audit page fix + one public API extension + Supabase `dark-phonics` bucket assets.
+
+**🩺 Photo recognition — the "still useless" scare was a false alarm; the fix is live + working.** The May `da701b07` `is_curriculum_work` gate (rejected work-alone/home photos because no child was "actively manipulating materials") was ALREADY fixed in a prior session (materials-centric Pass 1/Pass 2: home==classroom, no-child-in-frame OK, `best_curriculum_guess` always returned). Confirmed on prod: a no-child **Brown Stair** shelf photo returns **"🧠 HAIKU DRAFT · 92% — Brown Stair (Broad Stair)"**. The user's panic was photos caught **mid-processing** showing a bare "Untagged" card with no indicator → closed below. Do NOT reintroduce a child-presence gate.
+
+**⏳ Photo-audit "Identifying…" processing state (`a7f66285`) — the real bug + fix.** The Identifying card-state AND the auto-refresh poll were keyed on `!identification_attempted_at`, but the pipeline **stamps `attempted_at` the moment it STARTS**, so the entire 10–30s run fell through to the bare Untagged fallback (the "looks like it failed" window). Fix in `app/montree/dashboard/photo-audit/page.tsx`: a single shared `isPhotoInFlight(photo, now)` predicate keyed on the **RESULT** — in-flight = no `work_id`, not `teacher_confirmed`, no `sonnet_draft`, status NOT in terminal set `{haiku_drafted, haiku_matched, sonnet_drafted, confirmed, failed, pending_review}`, captured <10 min ago (`if(!now) return false` guards the first paint). Used by BOTH the card render AND the poll so they can't drift (the drift was the bug). Card shows **"⏳ Identifying… — Reading the photo, usually a few seconds"**, polls every 6s (cap 10 ≈ 60s), then flips to the result. Plus **`fetch(..., {cache:'no-store'})`** on the audit feed — the API's `max-age=30` was serving the poll stale (still-pending) data and hiding results that had landed.
+
+**🃏 Dark Phonics printable flashcards (`c9669554` + bucket).** Plug-and-play: picture front, letter+sound+catch back. Bucket `dark-phonics`: `pictures/lesson-NN.png` (22), `flashcards/lesson-NN.pdf` (22), `flashcards/dark-phonics-flashcards-master.pdf` (interleaved duplex deck, ~4.6MB). **Final design after 3 user-feedback iterations:** white background (first cut was black = ink-killer); dark-forest-green `#10331f` **gradient frame** fading to white over ~1.4cm (numpy vignette); **Andika font** (SIL, single-storey Montessori **ɑ** the way a child writes — NOT DejaVu's double-storey a; breve `/ă/` renders); dark-forest-green text. Songs cards gained `.dp-pic` (⬇ download picture + 🃏 flashcard PDF); public API `phonics-videos/route.ts` now returns `{uploaded, pictures, flashcards, master}`. Regen = sandbox scratch `montree/.tmp-gen-flashcards.py` (reportlab+PIL+numpy, fonts in `.tmp-fonts/`, pics in `.tmp-pics/`); upload from the Mac via single-POST `curl -H x-upsert:true`.
+
+**🎛 Songs-page restructure (`8b516ecd`→`a10cd5bc`).** Songs tab is now clean for teachers (the 147 = 49×3 Suno Title/Style/Lyrics boxes stripped from cards). New **🎛 Creation tab** (`dark-phonics-creation.html`) holds all the Suno boxes (the song-making workshop; loads in-shell, copy via delegation). New **⬇ Bulk download** (`dark-phonics-bulk.html`, opens standalone) — **client-side JSZip**: all flashcards (master PDF link), all pictures (zip 22 PNGs from API), all songs (zip `lesson-05..53.mp3`, skips 404s). Bulk button sits beside the big content `<h1>` on the songs page.
+
+**🚨 Architectural rules locked in:**
+1. `isPhotoInFlight()` is the SOLE source of truth for the audit "Identifying…" state + the poll — key on the RESULT (terminal status / work_id / sonnet_draft), NEVER on `identification_attempted_at` (the pipeline sets it at start).
+2. The photo-audit feed fetch is `cache:'no-store'` (live surface; the 30s API cache hid fresh poll results).
+3. Bulk downloads are **client-side JSZip**, not pre-built zip uploads — the `dark-phonics` bucket sends `access-control-allow-origin: *`, so the browser fetches+zips. This deliberately avoids large single-POST uploads to Supabase over the China VPN (they fail; the 43MB qu video still won't upload that way). Videos (1.8GB) are stream-only.
+4. The shell loads sub-pages via `DOMParser → .wrap innerHTML` — **`<script>` injected via innerHTML does NOT execute.** Any sub-page needing JS must open **standalone** (`target="_blank"`) OR have its logic delegated in the shell (that's why copy buttons work). The Bulk page is standalone for this reason.
+5. Flashcard font is **Andika** (single-storey a). Frame + text colour = Montree dark-forest-green `#10331f`. White background, always (ink).
+6. `da701b07` `is_curriculum_work=false` only routes to "Other" at `confidence>=0.80`; recognisable Montessori materials = a work even with no child / at home. Never re-add a child-presence gate.
+
+**Carry-overs / next:**
+- **lesson-31 (qu / "Quacky Duck") VIDEO still NOT uploaded** — 43MB, fails single-POST over VPN; needs the **browser uploader**. Staged `~/Desktop/Dark Phonics — UPLOAD THESE/lesson-31.mp4`. (Its mp3 + card are live.) No picture/flashcard for lessons 14,17,18,20,31.
+- Overwritten bucket flashcards/pictures may serve stale via Supabase CDN ~1h (cache-control 3600); hard-refresh clears it.
+- Photo recognition working (Brown Stair 92%). If a teacher sees "untagged," check mid-processing ("Identifying…") vs genuine terminal.
+- Bonus (no code, chat-only): "The Executioner" satirical UK posh-villain rap lyrics + Suno Title/Style for the user.
+
+---
+
+## 🧠 SESSION — Jun 19, 2026 (Cowork, evening) — Lyf Coach rename + standalone repo + portfolio audit + App Store prep
+
+**Canonical handoff:** `docs/handoffs/SESSION_LYFCOACH_AUDIT_JUN19.md`. **Nothing pushed — `main` untouched (`c87e082c`), no deploy.** Work sits on branch `account-deletion-jun19` + a new standalone `lyf-coach` repo.
+
+**Headlines:**
+- **"Sanctuary" → "Lyf Coach"** everywhere users see it (display name, door, Face ID, listing, bundle `xyz.montree.lyfcoach`). Kept crypto type names + `lib/sanctuary-e2e` for byte-for-byte parity. **Broke it out** into its own repo at `~/Desktop/Master Brain/ACTIVE/lyf-coach/` (stale copy left at `montree/native/Sanctuary/` → see `native/MOVED.md`). **BUILD SUCCEEDED + crypto tests 2/2 green** in the new location.
+- **Account deletion built** (App Store 5.1.1(v) blocker cleared): iOS Settings→"Delete my account" + `DELETE /api/story/admin/account` (branch `account-deletion-jun19`, `bf346dff`). **Lyf Coach privacy page** at `app/lyf-coach/privacy/page.tsx` (`bdf5c277`).
+- **Montree Stripe confirmed LIVE** (`sk_live_`, all 4 vars present) → **open for business**; first $ = Gloria closing one school. **Migration 265 run** by Tredoux.
+- **Coach direction:** Montree first; Lyf Coach = StoreKit(iOS)+PayFast(web), public app; meter CLOUD prompts only (fair-use ~150–200/mo). PayFast can't power the iOS in-app sub (Apple forces IAP).
+- Deliverables on `~/Desktop/`: `Portfolio_Audit_Jun19.md`, `Monetisation_Timeline_Jun19.md`, `Sanctuary_Coach_Monetization_Reply.md`, `Lyf_Coach_Launch_Video_Script.md`; in `lyf-coach/`: `HEALTH_CHECK_JUN19.md`.
+- **Launch video** (HeyGen script) drafted — hold-points: don't claim "in the App Store" until live (use waitlist line); "therapist" claim removed (Apple/honesty); must be Tredoux's own face/avatar.
+
+**Next:** Apple enrolment from 🇿🇦 (same dev account as Montree — shared `xyz.montree` prefix); review+push the branch; extend the demo-school trial (`montree_schools` id `136841a0-…1d18`); Gloria → first school. Then Lyf Coach monetisation build (cloud-prompt metering + StoreKit/PayFast).
+
+---
+
 ## 🧠 SESSION — Jun 19, 2026 (Cowork) — Camera demo fix + Story logins + performance healthcheck
 
 **Canonical handoff:** `docs/handoffs/SESSION_CAMERA_PERF_JUN19.md`. **5 commits on main, all pushed,
