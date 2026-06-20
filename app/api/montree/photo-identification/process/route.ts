@@ -328,12 +328,48 @@ export async function POST(request: NextRequest) {
     // return so the audit UI shows an honest error card.
     if (twoPassResult.pass1Failed) {
       console.log(`[PhotoIdentification] Pass 1 failed terminal — media=${mediaId} errors=${JSON.stringify(twoPassResult.errors)}`);
-      const { error: failedWriteErr } = await supabase
-        .from('montree_media')
-        .update({ identification_status: 'failed' })
-        .eq('id', mediaId);
-      if (failedWriteErr) {
-        console.error('[PhotoIdentification] Failed to write Pass-1-failed status:', failedWriteErr);
+      // 🚨 ALWAYS-RECOGNISE: Pass 1 (Haiku vision) failed — but never dead-end.
+      // Fall back to Sonnet, which re-examines the IMAGE directly and can
+      // describe + identify from scratch. Only if Sonnet ALSO fails do we mark
+      // failed — and even then we persist an honest note so the card is never a
+      // blank "Untagged".
+      let p1Outcome: 'pass1_failed' | 'sonnet_rescued' = 'pass1_failed';
+      try {
+        const rescue = await generateSonnetDraft({
+          photoUrl, childName, childAge, curriculum,
+          pass1Description: '', haikuGuess: null, context, locale,
+        });
+        if (rescue.success && rescue.draft) {
+          const { error: rescueWriteErr } = await supabase
+            .from('montree_media')
+            .update({
+              identification_status: 'sonnet_drafted',
+              identification_confidence: rescue.draft.confidence ?? null,
+              sonnet_draft: { ...rescue.draft, _source: 'sonnet_rescue_pass1' },
+            })
+            .eq('id', mediaId);
+          if (rescueWriteErr) console.error('[PhotoIdentification] Pass-1 Sonnet rescue write failed:', rescueWriteErr);
+          else p1Outcome = 'sonnet_rescued';
+        }
+      } catch (rescueErr) {
+        console.error('[PhotoIdentification] Pass-1 Sonnet rescue threw (non-fatal):', rescueErr);
+      }
+      if (p1Outcome !== 'sonnet_rescued') {
+        const { error: failedWriteErr } = await supabase
+          .from('montree_media')
+          .update({
+            identification_status: 'failed',
+            sonnet_draft: {
+              _source: 'pass1_failed',
+              visual_description: null,
+              observation: "I couldn't read this photo automatically — tap to tag it, or try Re-identify.",
+              top_candidates: [],
+            },
+          })
+          .eq('id', mediaId);
+        if (failedWriteErr) {
+          console.error('[PhotoIdentification] Failed to write Pass-1-failed status:', failedWriteErr);
+        }
       }
 
       // Telemetry row for the Pass 1 failure path (audit rec #5).
@@ -368,12 +404,14 @@ export async function POST(request: NextRequest) {
         }
       })();
 
-      return NextResponse.json({
-        success: false,
-        outcome: 'pass1_failed',
-        media_id: mediaId,
-        errors: twoPassResult.errors,
-      }, { status: 500 });
+      return p1Outcome === 'sonnet_rescued'
+        ? NextResponse.json({ success: true, outcome: 'sonnet_rescued', media_id: mediaId })
+        : NextResponse.json({
+            success: false,
+            outcome: 'pass1_failed',
+            media_id: mediaId,
+            errors: twoPassResult.errors,
+          }, { status: 500 });
     }
 
     // ----- Routing decision -----
@@ -741,22 +779,59 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // If Pass 2 failed entirely, mark as failed
-    const { error: failedWriteErr } = await supabase
-      .from('montree_media')
-      .update({ identification_status: 'failed' })
-      .eq('id', mediaId);
-
-    if (failedWriteErr) {
-      console.error('[PhotoIdentification] Failed to write failed status:', failedWriteErr);
+    // 🚨 ALWAYS-RECOGNISE: Pass 2 (Haiku match) produced nothing — but Pass 1
+    // gave us a real description. Don't throw it away. First try Sonnet (it has
+    // both the image AND the description) to rescue an identification; if that
+    // also fails, persist the description + an honest note so the card shows
+    // "here's what I see" and a tag path — never a blank "Untagged".
+    let p2Outcome: 'pass2_failed' | 'sonnet_rescued' = 'pass2_failed';
+    try {
+      const rescue = await generateSonnetDraft({
+        photoUrl, childName, childAge, curriculum,
+        pass1Description: twoPassResult.visualDescription,
+        haikuGuess: null, context, locale,
+      });
+      if (rescue.success && rescue.draft) {
+        const { error: rescueWriteErr } = await supabase
+          .from('montree_media')
+          .update({
+            identification_status: 'sonnet_drafted',
+            identification_confidence: rescue.draft.confidence ?? null,
+            sonnet_draft: { ...rescue.draft, _source: 'sonnet_rescue_pass2', visual_description: rescue.draft.visual_description || twoPassResult.visualDescription },
+          })
+          .eq('id', mediaId);
+        if (rescueWriteErr) console.error('[PhotoIdentification] Pass-2 Sonnet rescue write failed:', rescueWriteErr);
+        else p2Outcome = 'sonnet_rescued';
+      }
+    } catch (rescueErr) {
+      console.error('[PhotoIdentification] Pass-2 Sonnet rescue threw (non-fatal):', rescueErr);
+    }
+    if (p2Outcome !== 'sonnet_rescued') {
+      const { error: failedWriteErr } = await supabase
+        .from('montree_media')
+        .update({
+          identification_status: 'failed',
+          sonnet_draft: {
+            _source: 'pass2_failed',
+            visual_description: twoPassResult.visualDescription,
+            observation: "I can see this, but couldn't match it to a work confidently — tap to tag it.",
+            top_candidates: [],
+          },
+        })
+        .eq('id', mediaId);
+      if (failedWriteErr) {
+        console.error('[PhotoIdentification] Failed to write failed status:', failedWriteErr);
+      }
     }
 
-    return NextResponse.json({
-      success: false,
-      outcome: 'identification_failed',
-      media_id: mediaId,
-      errors: ['Pass 2 identification failed'],
-    }, { status: 500 });
+    return p2Outcome === 'sonnet_rescued'
+      ? NextResponse.json({ success: true, outcome: 'sonnet_rescued', media_id: mediaId })
+      : NextResponse.json({
+          success: false,
+          outcome: 'identification_failed',
+          media_id: mediaId,
+          errors: ['Pass 2 identification failed'],
+        }, { status: 500 });
 
   } catch (pipelineError) {
     // Safety net: if ANYTHING throws (API timeout, network error, malformed
@@ -768,7 +843,15 @@ export async function POST(request: NextRequest) {
     try {
       await supabase
         .from('montree_media')
-        .update({ identification_status: 'failed' })
+        .update({
+          identification_status: 'failed',
+          sonnet_draft: {
+            _source: 'crash',
+            visual_description: null,
+            observation: 'Something went wrong identifying this — tap to tag it, or try Re-identify.',
+            top_candidates: [],
+          },
+        })
         .eq('id', mediaId);
     } catch (writeErr) {
       console.error('[PhotoIdentification] Failed to write crash-failed status:', writeErr);
