@@ -1,0 +1,71 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dark Phonics - Suno song sheet</title>
+<style>
+:root{--bg:#0b0b12;--card:#15151f;--ink:#ececf2;--mut:#9a9ab0;--ac:#7c5cff;--ac2:#16d39a;--y:#f0b85a;}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);
+font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;line-height:1.5;padding:0 16px 80px}
+.wrap{max-width:760px;margin:0 auto}h1{font-size:30px;margin:36px 0 4px;letter-spacing:.5px}
+h1 .d{color:var(--ac)}.sub{color:var(--mut);margin:0 0 8px}
+.note{background:var(--card);border:1px solid #262636;border-radius:12px;padding:14px 16px;color:var(--mut);font-size:14px;margin:18px 0 28px}
+.note b{color:var(--ink)}
+.song{background:var(--card);border:1px solid #232333;border-radius:14px;padding:16px;margin:0 0 18px}
+.hd{display:flex;gap:10px;align-items:baseline;margin-bottom:4px;flex-wrap:wrap}
+.ls{background:var(--ac);color:#fff;font-size:12px;font-weight:600;padding:2px 8px;border-radius:999px}
+.ti{color:var(--mut);font-size:14px}
+.catch{color:var(--y);font-size:17px;font-weight:600;margin:2px 0 12px}
+.box{margin:10px 0}.lab{display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--mut);text-transform:uppercase;letter-spacing:.6px;margin-bottom:4px}
+.cp{background:#23233a;color:var(--ink);border:1px solid #34344e;border-radius:7px;font-size:12px;padding:3px 12px;cursor:pointer}
+.cp:hover{background:#2d2d4a}.cp.ok{background:var(--ac2);color:#022;border-color:var(--ac2)}
+pre{white-space:pre-wrap;word-wrap:break-word;background:#0e0e16;border:1px solid #21212f;border-radius:9px;padding:11px 13px;margin:0;font-size:13.5px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;color:#dcdce8}
+details.box>summary{outline:none}details.box>summary::-webkit-details-marker{display:none}details.box>summary::marker{content:''}
+</style></head><body><div class="wrap">
+<h1><span class="d">Bulk</span> download</h1>
+<p class="sub">Grab a whole set in one click. ZIPs are built right in your browser — no waiting on a server.</p>
+<div class="song"><div class="hd"><span class="ti">🃏 All flashcards (PDF)</span></div>
+<p class="sub" style="margin:2px 0 12px">All 22 letter cards in one print-ready PDF — picture front, sound &amp; catch on the back.</p>
+<a href="https://dmfncjjtsoxrnvcdnvjq.supabase.co/storage/v1/object/public/dark-phonics/flashcards/dark-phonics-flashcards-master.pdf?download=Dark-Phonics-Flashcards.pdf" download style="display:inline-block;background:#34d399;color:#06281a;border-radius:10px;padding:11px 18px;font-size:14px;font-weight:700;text-decoration:none">⬇ Download PDF</a></div>
+<div class="song"><div class="hd"><span class="ti">🖼 All pictures (ZIP)</span></div>
+<p class="sub" style="margin:2px 0 12px">Every flashcard picture as a high-res PNG.</p>
+<button id="zip-pics" style="background:#5eead4;color:#06281a;border:none;border-radius:10px;padding:11px 18px;font-size:14px;font-weight:700;cursor:pointer">⬇ Build &amp; download ZIP</button>
+<div id="prog-pics" style="margin-top:8px;font-size:13px;color:#9a9ab0"></div></div>
+<div class="song"><div class="hd"><span class="ti">🎵 All songs (ZIP)</span></div>
+<p class="sub" style="margin:2px 0 12px">All Dark Phonics song tracks (MP3). Large — give it a minute.</p>
+<button id="zip-songs" style="background:#f0b85a;color:#2a1e06;border:none;border-radius:10px;padding:11px 18px;font-size:14px;font-weight:700;cursor:pointer">⬇ Build &amp; download ZIP</button>
+<div id="prog-songs" style="margin-top:8px;font-size:13px;color:#9a9ab0"></div></div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script>
+var BASE="https://dmfncjjtsoxrnvcdnvjq.supabase.co/storage/v1/object/public/dark-phonics";
+function pad(n){return String(n).padStart(2,"0");}
+async function buildZip(files,zipName,btn,prog){
+  if(typeof JSZip==="undefined"){prog.textContent="Could not load the zip tool — check your connection.";return;}
+  var orig=btn.textContent; btn.disabled=true; btn.style.opacity=.6;
+  try{
+    var zip=new JSZip(), done=0, ok=0;
+    for(var i=0;i<files.length;i++){
+      done++; prog.textContent="Downloading "+done+" of "+files.length+"…";
+      try{ var r=await fetch(BASE+"/"+files[i].path,{cache:"no-store"}); if(r.ok){ zip.file(files[i].name, await r.blob()); ok++; } }catch(e){}
+    }
+    if(!ok){ prog.textContent="Nothing downloaded — check your connection."; return; }
+    prog.textContent="Zipping "+ok+" files…";
+    var blob=await zip.generateAsync({type:"blob"},function(m){prog.textContent="Zipping… "+Math.round(m.percent)+"%";});
+    var url=URL.createObjectURL(blob), a=document.createElement("a");
+    a.href=url; a.download=zipName; document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function(){URL.revokeObjectURL(url);},15000);
+    prog.textContent="✓ Saved "+ok+" files.";
+  }catch(e){ prog.textContent="Could not build the ZIP — "+e.message; }
+  finally{ btn.disabled=false; btn.style.opacity=1; btn.textContent=orig; }
+}
+document.getElementById("zip-pics").addEventListener("click",async function(){
+  var prog=document.getElementById("prog-pics"); prog.textContent="Loading list…";
+  var nums=[]; try{ var j=await (await fetch("/api/montree/phonics-videos",{cache:"no-store"})).json(); nums=j.pictures||[]; }catch(e){}
+  if(!nums.length){ prog.textContent="No pictures found."; return; }
+  buildZip(nums.map(function(n){return {path:"pictures/lesson-"+pad(n)+".png",name:"lesson-"+pad(n)+".png"};}),"Dark-Phonics-Pictures.zip",this,prog);
+});
+document.getElementById("zip-songs").addEventListener("click",function(){
+  var files=[]; for(var n=5;n<=53;n++) files.push({path:"songs/lesson-"+pad(n)+".mp3",name:"lesson-"+pad(n)+".mp3"});
+  buildZip(files,"Dark-Phonics-Songs.zip",this,document.getElementById("prog-songs"));
+});
+</script>
+</body></html>
