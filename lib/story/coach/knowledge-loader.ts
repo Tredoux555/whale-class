@@ -24,6 +24,7 @@ export type WisdomTopic =
   | 'stoicism'
   | 'frankl'
   | 'mindset'
+  | 'manifestation'
   | 'sleep'
   | 'narcissistic_dynamics';
 
@@ -41,6 +42,7 @@ const FILES: Record<WisdomTopic, string> = {
   stoicism: 'stoicism.md',
   frankl: 'frankl.md',
   mindset: 'mindset.md',
+  manifestation: 'manifestation.md',
   sleep: 'sleep.md',
   // On-demand only (NOT in getCoachWisdomSummary): pulled via consult_wisdom when
   // Tredoux raises his mother / family / boundaries, so it never skews the
@@ -145,6 +147,9 @@ ${lead(b.frankl)}
 
 ## Mindset — growth, the power of "yet" (topic: mindset)
 ${lead(b.mindset)}
+
+## Manifestation — vision + obstacle + plan, never magic (topic: manifestation)
+${lead(b.manifestation, 900)}
 
 ## Why We Sleep — sleep is non-negotiable (topic: sleep)
 ${lead(b.sleep)}`;
