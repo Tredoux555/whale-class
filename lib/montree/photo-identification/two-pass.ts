@@ -39,7 +39,11 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 
 // ----- Constants -----
 
-const PASS1_TIMEOUT_MS = 15_000;
+// Pass 1 (vision) gets a longer budget — a transient fetch/connection lag here
+// used to become a PERSISTED "failed" with no description. The route has a 120s
+// ceiling, so 25s for Pass 1 + 15s each for Pass 2/2b leaves ample headroom and
+// converts would-have-succeeded timeouts into real descriptions.
+const PASS1_TIMEOUT_MS = 25_000;
 const PASS2_TIMEOUT_MS = 15_000;
 const PASS2B_TIMEOUT_MS = 15_000;
 const PASS2B_CONFIDENCE_THRESHOLD = 0.85;

@@ -85,6 +85,10 @@ interface AuditPhoto {
     confidence?: number;
     work_key?: string;
     drafted_at?: string;
+    /** AI's short reasoning / note (esp. on Other + failed states). */
+    observation?: string;
+    /** Marker for the "Other / not a curriculum work" classification. */
+    is_other?: boolean;
     /** Top 3 fuzzy-match candidates (best-first). Powers the quick-tap chips. */
     top_candidates?: Array<{
       workName: string;
@@ -3391,6 +3395,9 @@ function AuditPhotoCardInner({ photo, selected, onToggle, onConfirm, onCorrect, 
             <p style={{ fontSize: 9, color: 'rgba(94,234,212,0.65)', textTransform: 'capitalize', margin: 0 }}>{photo.sonnet_draft.suggested_area.replace(/_/g, ' ')}</p>
           )}
           <p style={{ fontSize: 9, color: 'rgba(94,234,212,0.65)', marginTop: 4, fontStyle: 'italic' }}>Haiku identified this, but has low confidence — ask Sonnet for deeper analysis.</p>
+          {photo.sonnet_draft?.visual_description && (
+            <p style={{ fontSize: 9, color: 'rgba(204,251,241,0.72)', lineHeight: 1.4, marginTop: 5, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical' }}>👁 {photo.sonnet_draft.visual_description}</p>
+          )}
           {/* Top-3 candidate sibling chips — same pattern as haiku_matched */}
           {(() => {
             const proposed = (photo.sonnet_draft?.proposed_name || photo.work_name || '').toLowerCase().trim();
@@ -3477,6 +3484,9 @@ function AuditPhotoCardInner({ photo, selected, onToggle, onConfirm, onCorrect, 
           </div>
           <p style={{ fontSize: 12, fontWeight: 600, color: 'rgba(254,243,199,0.95)', lineHeight: 1.3, margin: '0 0 4px' }}>{photo.work_name}</p>
           <p style={{ fontSize: 9, color: 'rgba(253,230,138,0.65)', fontStyle: 'italic', margin: 0 }}>{t('audit.autoTaggedHint')}</p>
+          {photo.sonnet_draft?.visual_description && (
+            <p style={{ fontSize: 9, color: 'rgba(254,243,199,0.72)', lineHeight: 1.4, marginTop: 5, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>👁 {photo.sonnet_draft.visual_description}</p>
+          )}
           {/* Top-3 candidate chips — only render the SIBLINGS (skip the one
               the AI already picked, since ✓ Correct does the same thing).
               Saves the teacher typing when Haiku's #2 or #3 is actually right. */}
@@ -3633,6 +3643,13 @@ function AuditPhotoCardInner({ photo, selected, onToggle, onConfirm, onCorrect, 
           const fallbackCands = (photo.sonnet_draft?.top_candidates || []).slice(0, 2);
           return (
             <div style={{ marginTop: 8 }}>
+              {/* Always show what the AI saw / its note, so this is never blank. */}
+              {photo.sonnet_draft?.visual_description && (
+                <p style={{ fontSize: 9, color: 'rgba(255,255,255,0.58)', lineHeight: 1.4, marginBottom: 8, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical' }}>👁 {photo.sonnet_draft.visual_description}</p>
+              )}
+              {!photo.sonnet_draft?.visual_description && photo.sonnet_draft?.observation && (
+                <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.62)', lineHeight: 1.4, marginBottom: 8 }}>{photo.sonnet_draft.observation}</p>
+              )}
               {fallbackCands.length > 0 && (
                 <div style={{ marginBottom: 8 }}>
                   <div style={{ fontSize: 9, color: 'rgba(94,234,212,0.65)', marginBottom: 4, fontWeight: 600 }}>🧠 Looks like — tap to tag:</div>

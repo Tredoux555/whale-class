@@ -156,7 +156,12 @@ export async function POST(request: NextRequest) {
     const { error: updateErr } = await supabase
       .from('montree_media')
       .update({
-        sonnet_draft: sonnetResult.draft,
+        // Carry the prior quick-tap chips through so "Ask Sonnet" never strips
+        // the candidate suggestions that were on the Haiku draft.
+        sonnet_draft: {
+          ...sonnetResult.draft,
+          top_candidates: sonnetResult.draft.top_candidates ?? (existingDraft?.top_candidates as unknown[] | undefined),
+        },
         identification_status: 'sonnet_drafted',
       })
       .eq('id', mediaId);
