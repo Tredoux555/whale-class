@@ -64,7 +64,7 @@ const TAG_PHOTO_TOOL = {
       is_curriculum_work: {
         type: 'boolean',
         description:
-          'Set to TRUE when the photo clearly shows a Montessori curriculum work being done. Set to FALSE when the photo is NOT a curriculum work — e.g. snack time, group photo, classroom decoration, child\'s face only, free play, transitions, paperwork. When false, the work_name field MUST be set to "Other".',
+          'Set to TRUE whenever recognisable Montessori curriculum materials are present — even if no child is actively manipulating them in the frame, and whether the setting is a classroom OR a home/homeschool. Set to FALSE only for genuine non-work photos: snack/meal, sleeping/rest, group photo or a face with no materials, free play with ordinary (non-Montessori) toys, decoration, transitions, or paperwork. When false, the work_name field MUST be set to "Other".',
       },
       work_name: { type: 'string', description: 'The name of the Montessori work/activity matching the description. When is_curriculum_work=false, set to "Other".' },
       area: {
@@ -437,7 +437,7 @@ GOOD: "The child is sitting on a green rug with empty hands resting in their lap
 BAD (invents materials): "The child appears to be taking a break from a sensorial work, with hands ready to begin another activity."
 
 Be specific and factual. Do NOT guess the name of the activity. Do NOT say "Montessori work" or name any work.
-Just describe the physical scene in 2-4 sentences. Lead with the PRIMARY work the hands are engaged with. ALWAYS state what the pieces are MADE OF. If the child is NOT actively working with materials, say so plainly.`,
+Just describe the physical scene in 2-4 sentences. Lead with the PRIMARY work the hands are engaged with — or, if no child is in the frame, with the main materials laid out. ALWAYS state what the pieces are MADE OF, whether or not a child is touching them. If no child is present, note that briefly, but still describe the materials fully — do NOT editorialise about whether it counts as "work" (that judgement happens later).`,
         messages: [{
           role: 'user',
           content: [
@@ -514,17 +514,21 @@ Just describe the physical scene in 2-4 sentences. Lead with the PRIMARY work th
   // cache on every locale switch.
   const PASS2_STATIC_INSTRUCTIONS = `You are a Montessori curriculum expert. A classroom photo was described by an observer. Match the description to the correct Montessori work name using the tag_photo tool.
 
-🚨 IS THIS A CURRICULUM WORK?
-First decide whether the photo shows a child doing a Montessori curriculum work AT ALL. Many classroom photos do NOT:
-- Snack time / eating
-- Group photos / class pictures
-- A child's face only (no work materials visible)
-- Free play / outdoor play
-- Classroom decoration / setup shots
-- Transitions / lining up / sitting in circle
+🚨 IS THIS A MONTESSORI WORK?
+Decide by the MATERIALS — not by what the child is doing, and not by the room:
+- A work counts whether the child is actively using the materials, sitting beside them, OR the materials / finished work are shown on their own with NO child in the frame. A clear photo of the materials laid out is still a work photo.
+- Home and homeschool settings (a carpet, a living room, a home shelf) count EXACTLY the same as a classroom. NEVER reject a photo for being taken at home or for the absence of a child in the frame.
+- If the description names recognisable Montessori materials (e.g. number rods, red rods, brown stair / broad stair, pink tower, knobbed/knobless cylinders, sandpaper letters, spindle box, bead chains/frames, metal insets, etc.), it IS a curriculum work — set is_curriculum_work=true — even when the description says no child is touching them right now.
+
+Only set is_curriculum_work=false when the photo is genuinely NOT about Montessori materials:
+- Snack time / eating / a meal
+- Sleeping / resting / nap
+- Group photos / class pictures, or a child's face with no materials present
+- Free play with ordinary toys that are NOT Montessori materials
+- Decoration / empty-room setup / transitions / lining up
 - Paperwork / certificates / artwork on a wall
 
-When the photo is NOT a curriculum work, set:
+When it is NOT a Montessori work, set:
 - is_curriculum_work: false
 - work_name: "Other"
 - area: "unknown"
@@ -532,7 +536,7 @@ When the photo is NOT a curriculum work, set:
 - confidence: 0.9 (you're confident it's NOT a work)
 - observation: A short warm sentence describing what you see anyway ("Eric enjoying snack with friends.").
 
-When the photo IS a curriculum work, set is_curriculum_work=true and follow the rules below to identify it.
+When the photo IS a Montessori work, set is_curriculum_work=true and follow the rules below to identify it.
 
 CRITICAL RULES (for curriculum work photos):
 1. Match based on the MATERIALS DESCRIBED — the specific tool/material determines the work name
