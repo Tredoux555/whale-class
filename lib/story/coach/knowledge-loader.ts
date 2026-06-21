@@ -26,7 +26,8 @@ export type WisdomTopic =
   | 'mindset'
   | 'manifestation'
   | 'sleep'
-  | 'narcissistic_dynamics';
+  | 'narcissistic_dynamics'
+  | 'child_safeguarding';
 
 const FILES: Record<WisdomTopic, string> = {
   essentialism: 'essentialism.md',
@@ -48,6 +49,11 @@ const FILES: Record<WisdomTopic, string> = {
   // Tredoux raises his mother / family / boundaries, so it never skews the
   // every-turn productivity coaching. See system-prompt.ts tool-use trigger.
   narcissistic_dynamics: 'narcissistic-dynamics.md',
+  // On-demand only, CHILD coaches only: the safeguarding-in-the-room playbook for
+  // dark disclosures (self-harm, abuse). Summarised into the CHILD system prompt
+  // every turn (see buildChildCoachSystemPrompt); the full text loads via
+  // consult_wisdom when the moment is live. NOT in the adult summary.
+  child_safeguarding: 'child-safeguarding.md',
 };
 
 export const WISDOM_TOPICS = Object.keys(FILES) as WisdomTopic[];

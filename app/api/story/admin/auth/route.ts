@@ -213,7 +213,18 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    return NextResponse.json({ authenticated: true, username: payload.username });
+    // Family role (parent/child/adult) so the personal shell can gate the
+    // Family nav entry. Tolerant: missing column / row → 'adult' (no Family nav).
+    const space = typeof payload.space === 'string' && payload.space ? payload.space : 'tredoux';
+    let familyRole: 'adult' | 'parent' | 'child' = 'adult';
+    try {
+      const { getFamilyRole } = await import('@/lib/story/coach');
+      familyRole = await getFamilyRole(getSupabase(), space);
+    } catch {
+      /* default 'adult' */
+    }
+
+    return NextResponse.json({ authenticated: true, username: payload.username, space, family_role: familyRole });
   } catch {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }

@@ -108,10 +108,17 @@ export function CoachChatProvider({ children }: { children: ReactNode }) {
         });
 
       try {
+        // Tell the server the caller's timezone + local time, so "today/now" is
+        // theirs (not the server's). Best-effort — the server falls back if absent.
+        let clientTz: string | undefined;
+        try { clientTz = Intl.DateTimeFormat().resolvedOptions().timeZone; } catch { /* ignore */ }
         const res = await fetch('/api/story/coach', {
           method: 'POST',
           headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-          body: JSON.stringify({ question: text, history, reflect_entry_id: opts?.reflectEntryId, conversation_id: convoRef.current }),
+          body: JSON.stringify({
+            question: text, history, reflect_entry_id: opts?.reflectEntryId, conversation_id: convoRef.current,
+            client_tz: clientTz, client_now: new Date().toISOString(),
+          }),
         });
         if (res.status === 401) {
           if (typeof window !== 'undefined') { sessionStorage.removeItem('story_admin_session'); window.location.href = '/story/admin'; }
