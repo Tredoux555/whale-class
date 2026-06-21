@@ -63,9 +63,13 @@ interface BodyShape {
   /** The client's IANA timezone + local ISO datetime, so "today/now" is theirs. */
   client_tz?: string;
   client_now?: string;
+  /** An optional attached image the coach should read (vision). base64, no prefix. */
+  image?: { media_type?: string; data?: string };
 }
 
 const IANA_TZ_RE = /^[A-Za-z][A-Za-z0-9_+-]*(?:\/[A-Za-z0-9_+-]+)*$/;
+const ALLOWED_IMAGE_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/gif']);
+const MAX_IMAGE_B64 = 7_000_000; // ~5 MB decoded — the client downscales before sending
 
 export async function POST(request: NextRequest) {
   const startTime = Date.now();
@@ -96,7 +100,22 @@ export async function POST(request: NextRequest) {
   const reflectId = typeof body.reflect_entry_id === 'string' && UUID_RE.test(body.reflect_entry_id)
     ? body.reflect_entry_id
     : null;
-  if (!question && !reflectId) {
+
+  // Optional attached image the coach should READ (vision). Validated here;
+  // never persisted server-side (transient like the voice audio). Works for
+  // adult + child coaches alike — Sonnet reads the text/contents natively.
+  let image: { media_type: string; data: string } | null = null;
+  if (body.image && typeof body.image.data === 'string' && typeof body.image.media_type === 'string') {
+    const mt = body.image.media_type;
+    const data = body.image.data;
+    if (ALLOWED_IMAGE_TYPES.has(mt) && data.length > 0 && data.length <= MAX_IMAGE_B64) {
+      image = { media_type: mt, data };
+    } else if (data.length > MAX_IMAGE_B64) {
+      return new Response(JSON.stringify({ error: 'That image is too large — try a smaller photo.' }), { status: 400 });
+    }
+  }
+
+  if (!question && !reflectId && !image) {
     return new Response(JSON.stringify({ error: 'question required' }), { status: 400 });
   }
   // Generous — this is his journal/coach; he writes long brain-dumps.
@@ -233,7 +252,16 @@ export async function POST(request: NextRequest) {
     }
   });
 
-  const initialMessages: MessageParam[] = [...history, { role: 'user', content: question }];
+  // The current turn's content. With an image attached, it becomes a
+  // text+image block array so the coach can READ the image; otherwise plain text.
+  // History stays text-only (sanitized) — the image rides only on this turn.
+  const turnContent: MessageParam['content'] = image
+    ? [
+        { type: 'text', text: question || 'Please read this image and tell me what it says.' },
+        { type: 'image', source: { type: 'base64', media_type: image.media_type as 'image/jpeg' | 'image/png' | 'image/webp' | 'image/gif', data: image.data } },
+      ]
+    : question;
+  const initialMessages: MessageParam[] = [...history, { role: 'user', content: turnContent }];
 
   const conversationId = typeof body.conversation_id === 'string' ? body.conversation_id.slice(0, 64) : null;
   const toolsUsed: string[] = [];
@@ -383,7 +411,7 @@ export async function POST(request: NextRequest) {
               emptyRecoveryDone = true;
               try {
                 const recovery = await client.messages.create(
-                  { model: AI_MODEL, max_tokens: 1024, system: minimalSystemPrompt, messages: [{ role: 'user', content: question }] },
+                  { model: AI_MODEL, max_tokens: 1024, system: minimalSystemPrompt, messages: [{ role: 'user', content: turnContent }] },
                   { timeout: API_TIMEOUT_MS },
                 );
                 if (recovery.usage) { totalInput += recovery.usage.input_tokens ?? 0; totalOutput += recovery.usage.output_tokens ?? 0; }

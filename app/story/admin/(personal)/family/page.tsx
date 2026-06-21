@@ -203,10 +203,10 @@ export default function FamilyPage() {
         </div>
       )}
 
-      {recipients === null && !loadErr ? (
-        <p style={{ color: T.textDim, fontSize: 14 }}>Loading…</p>
-      ) : loadErr ? (
+      {loadErr ? (
         <p style={{ color: '#f2a3a3', fontSize: 14 }}>{loadErr}</p>
+      ) : recipients === null ? (
+        <p style={{ color: T.textDim, fontSize: 14 }}>Loading…</p>
       ) : recipients.length === 0 ? (
         <p style={{ color: T.textDim, fontSize: 14, lineHeight: 1.6 }}>
           No one linked yet. A loved one&apos;s sanctuary needs to be created and linked to you before you can feed their coach context.
