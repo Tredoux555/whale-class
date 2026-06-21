@@ -9,6 +9,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useCoachChat } from '@/lib/story/coach/use-coach-chat';
 import { useVoiceRecord } from '@/lib/story/coach/use-voice-record';
+import { fileToCoachImage, type CoachImage } from '@/lib/story/coach/image-attach';
 import Markdown from '@/components/story/personal/Markdown';
 import { T } from '@/lib/story/personal-theme';
 
@@ -39,8 +40,25 @@ export default function CoachPage() {
   const { recording, transcribing, error: voiceError, toggle: toggleMic } = useVoiceRecord(
     (t) => setDraft((d) => (d.trim() ? d.trim() + ' ' : '') + t),
   );
+  const [pendingImg, setPendingImg] = useState<CoachImage | null>(null);
+  const [imgError, setImgError] = useState('');
+  const fileRef = useRef<HTMLInputElement | null>(null);
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const kickedOff = useRef(false);
+
+  const onPickImage = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const f = e.target.files?.[0];
+    e.target.value = '';
+    if (!f) return;
+    setImgError('');
+    try {
+      const ci = await fileToCoachImage(f);
+      if (ci) setPendingImg(ci);
+      else setImgError('That file isn’t an image I can read.');
+    } catch {
+      setImgError('Could not read that image.');
+    }
+  };
 
   // Reflect-on-entry kickoff from ?reflect=<id>.
   useEffect(() => {
@@ -68,9 +86,11 @@ export default function CoachPage() {
 
   const submit = () => {
     const t = draft.trim();
-    if (!t || busy) return;
+    if ((!t && !pendingImg) || busy) return;
     setDraft('');
-    void send(t);
+    const img = pendingImg;
+    setPendingImg(null);
+    void send(t, img ? { image: { media_type: img.media_type, data: img.data }, imagePreview: img.previewUrl } : undefined);
   };
 
   return (
@@ -132,6 +152,10 @@ export default function CoachPage() {
                 border: `1px solid ${T.border}`, color: T.text, padding: '10px 14px',
                 borderRadius: 16, fontSize: 15, lineHeight: 1.55,
               }}>
+                {m.image && (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={m.image} alt="Attached" style={{ maxWidth: '100%', maxHeight: 240, borderRadius: 10, display: 'block', marginBottom: m.text ? 8 : 0 }} />
+                )}
                 {m.text}
               </div>
             ) : (
@@ -153,9 +177,32 @@ export default function CoachPage() {
       </div>
 
       {voiceError && <div style={{ color: '#f87171', fontSize: 12.5, padding: '8px 2px 0' }}>{voiceError}</div>}
+      {imgError && <div style={{ color: '#f87171', fontSize: 12.5, padding: '8px 2px 0' }}>{imgError}</div>}
+
+      {/* pending image to send */}
+      {pendingImg && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0 2px' }}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={pendingImg.previewUrl} alt="To send" style={{ width: 48, height: 48, objectFit: 'cover', borderRadius: 9, border: `1px solid ${T.border}` }} />
+          <span style={{ color: T.textMid, fontSize: 13 }}>Image ready — your coach will read it.</span>
+          <button onClick={() => setPendingImg(null)} style={{ appearance: 'none', border: 'none', background: 'transparent', color: T.textDim, fontSize: 13, cursor: 'pointer' }}>Remove</button>
+        </div>
+      )}
 
       {/* composer */}
+      <input ref={fileRef} type="file" accept="image/*" onChange={onPickImage} style={{ display: 'none' }} />
       <div style={{ display: 'flex', gap: 8, alignItems: 'flex-end', paddingTop: 12, borderTop: `1px solid ${T.borderSoft}` }}>
+        <button
+          onClick={() => fileRef.current?.click()}
+          aria-label="Attach an image to read"
+          title="Attach an image for your coach to read"
+          style={{
+            appearance: 'none', flexShrink: 0, width: 46, height: 46, borderRadius: 14, cursor: 'pointer',
+            border: `1px solid ${T.borderSoft}`, background: 'rgba(255,255,255,0.05)', color: T.textMid, fontSize: 18,
+          }}
+        >
+          📎
+        </button>
         <textarea
           value={draft}
           onChange={(e) => setDraft(e.target.value)}

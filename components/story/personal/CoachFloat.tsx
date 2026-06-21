@@ -9,6 +9,7 @@ import { useEffect, useRef, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { useCoachChat } from '@/lib/story/coach/use-coach-chat';
 import { useVoiceRecord } from '@/lib/story/coach/use-voice-record';
+import { fileToCoachImage, type CoachImage } from '@/lib/story/coach/image-attach';
 import Markdown from './Markdown';
 import { T } from '@/lib/story/personal-theme';
 
@@ -20,7 +21,16 @@ export default function CoachFloat() {
   const { recording, transcribing, toggle: toggleMic } = useVoiceRecord(
     (t) => setDraft((d) => (d.trim() ? d.trim() + ' ' : '') + t),
   );
+  const [pendingImg, setPendingImg] = useState<CoachImage | null>(null);
+  const fileRef = useRef<HTMLInputElement | null>(null);
   const scrollRef = useRef<HTMLDivElement | null>(null);
+
+  const onPickImage = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const f = e.target.files?.[0];
+    e.target.value = '';
+    if (!f) return;
+    try { const ci = await fileToCoachImage(f); if (ci) setPendingImg(ci); } catch { /* ignore */ }
+  };
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' });
@@ -31,9 +41,11 @@ export default function CoachFloat() {
 
   const submit = () => {
     const t = draft.trim();
-    if (!t || busy) return;
+    if ((!t && !pendingImg) || busy) return;
     setDraft('');
-    void send(t);
+    const img = pendingImg;
+    setPendingImg(null);
+    void send(t, img ? { image: { media_type: img.media_type, data: img.data }, imagePreview: img.previewUrl } : undefined);
   };
 
   return (
@@ -95,7 +107,13 @@ export default function CoachFloat() {
             {messages.map((m, i) => (
               <div key={i} style={{ alignSelf: m.role === 'user' ? 'flex-end' : 'flex-start', maxWidth: '90%' }}>
                 {m.role === 'user' ? (
-                  <div style={{ background: 'rgba(52,211,153,0.18)', border: `1px solid ${T.border}`, color: T.text, padding: '8px 12px', borderRadius: 13, fontSize: 14 }}>{m.text}</div>
+                  <div style={{ background: 'rgba(52,211,153,0.18)', border: `1px solid ${T.border}`, color: T.text, padding: '8px 12px', borderRadius: 13, fontSize: 14 }}>
+                    {m.image && (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={m.image} alt="Attached" style={{ maxWidth: '100%', maxHeight: 180, borderRadius: 9, display: 'block', marginBottom: m.text ? 6 : 0 }} />
+                    )}
+                    {m.text}
+                  </div>
                 ) : m.text ? (
                   <Markdown text={m.text} style={{ fontSize: 14, color: m.error ? '#f87171' : 'rgba(255,255,255,0.88)' }} />
                 ) : (
@@ -105,7 +123,19 @@ export default function CoachFloat() {
             ))}
           </div>
 
+          {pendingImg && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '0 12px 8px' }}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={pendingImg.previewUrl} alt="To send" style={{ width: 36, height: 36, objectFit: 'cover', borderRadius: 8, border: `1px solid ${T.border}` }} />
+              <span style={{ color: T.textMid, fontSize: 12.5 }}>Image ready</span>
+              <button onClick={() => setPendingImg(null)} style={{ appearance: 'none', border: 'none', background: 'transparent', color: T.textDim, fontSize: 12.5, cursor: 'pointer' }}>Remove</button>
+            </div>
+          )}
+          <input ref={fileRef} type="file" accept="image/*" onChange={onPickImage} style={{ display: 'none' }} />
           <div style={{ display: 'flex', gap: 6, padding: 12, borderTop: `1px solid ${T.borderSoft}` }}>
+            <button onClick={() => fileRef.current?.click()} aria-label="Attach image" title="Attach an image to read"
+              style={{ appearance: 'none', width: 38, height: 38, borderRadius: 11, flexShrink: 0, cursor: 'pointer',
+                border: `1px solid ${T.borderSoft}`, background: 'rgba(255,255,255,0.05)', color: T.textMid, fontSize: 15 }}>📎</button>
             <input
               value={draft}
               onChange={(e) => setDraft(e.target.value)}

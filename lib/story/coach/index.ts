@@ -1,7 +1,7 @@
 // lib/story/coach/index.ts — Coach barrel.
 
-export { buildCoachSystemPrompt, type CoachPromptOpts } from './system-prompt';
-export { COACH_TOOLS } from './tool-definitions';
+export { buildCoachSystemPrompt, buildChildCoachSystemPrompt, type CoachPromptOpts, type ChildCoachPromptOpts } from './system-prompt';
+export { COACH_TOOLS, CHILD_COACH_TOOLS } from './tool-definitions';
 export { executeCoachTool, type CoachToolDeps, type CoachToolResult } from './tool-executor';
 export {
   loadCoachMemories,

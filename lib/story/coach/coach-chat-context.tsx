@@ -20,12 +20,22 @@ export interface CoachMessage {
   streaming?: boolean;
   error?: boolean;
   tools?: string[];
+  image?: string; // preview data URL for an attached image on a user message
+}
+
+interface CoachSendOpts {
+  reflectEntryId?: string;
+  displayText?: string;
+  /** An attached image for the coach to read (base64, no prefix). */
+  image?: { media_type: string; data: string };
+  /** A data URL preview of that image, for the chat bubble. */
+  imagePreview?: string;
 }
 
 interface CoachChatValue {
   messages: CoachMessage[];
   busy: boolean;
-  send: (text: string, opts?: { reflectEntryId?: string; displayText?: string }) => Promise<void>;
+  send: (text: string, opts?: CoachSendOpts) => Promise<void>;
   reset: () => void;
 }
 
@@ -81,7 +91,7 @@ export function CoachChatProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const send = useCallback(
-    async (text: string, opts?: { reflectEntryId?: string; displayText?: string }) => {
+    async (text: string, opts?: CoachSendOpts) => {
       const token = getStoryAdminToken();
       if (!token) {
         if (typeof window !== 'undefined') window.location.href = '/story/admin';
@@ -95,7 +105,7 @@ export function CoachChatProvider({ children }: { children: ReactNode }) {
       setBusy(true);
       setMessages((prev) => [
         ...prev,
-        { role: 'user', text: userText },
+        { role: 'user', text: userText, image: opts?.imagePreview },
         { role: 'assistant', text: '', streaming: true, tools: [] },
       ]);
 
@@ -118,6 +128,7 @@ export function CoachChatProvider({ children }: { children: ReactNode }) {
           body: JSON.stringify({
             question: text, history, reflect_entry_id: opts?.reflectEntryId, conversation_id: convoRef.current,
             client_tz: clientTz, client_now: new Date().toISOString(),
+            image: opts?.image,
           }),
         });
         if (res.status === 401) {
