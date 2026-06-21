@@ -17,11 +17,16 @@ import {
   writeCoachMemory,
   type CoachMemoryType,
 } from './memory';
+import { emitFamilySignal, SIGNAL_TYPES, SIGNAL_DOMAINS, type SignalType, type SignalDomain } from './family-brain';
 
 export interface CoachToolDeps {
   supabase: SupabaseClient;
   /** The caller's sanctuary space — every read/write is scoped to it. */
   space: string;
+  /** The caller's family role (drives the family-signal source_role). */
+  role?: 'adult' | 'parent' | 'child';
+  /** The caller's IANA timezone, so "today" matches their local day. */
+  tz?: string;
 }
 
 export interface CoachToolResult {
@@ -42,6 +47,16 @@ const MEMORY_TYPES = new Set<CoachMemoryType>([
 function todayISO(): string {
   return new Date().toISOString().slice(0, 10);
 }
+/** "Today" in the caller's IANA timezone (YYYY-MM-DD). Falls back to UTC. */
+function todayInTz(tz?: string): string {
+  if (!tz) return todayISO();
+  try {
+    // en-CA renders as YYYY-MM-DD; timeZone gives the caller's local calendar day.
+    return new Intl.DateTimeFormat('en-CA', { timeZone: tz, year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
+  } catch {
+    return todayISO();
+  }
+}
 function str(v: unknown): string | undefined {
   return typeof v === 'string' ? v : undefined;
 }
@@ -54,7 +69,7 @@ export async function executeCoachTool(
   input: Record<string, unknown>,
   deps: CoachToolDeps,
 ): Promise<CoachToolResult> {
-  const { supabase, space } = deps;
+  const { supabase, space, role, tz } = deps;
   try {
     switch (name) {
       case 'read_diary': {
@@ -92,7 +107,7 @@ export async function executeCoachTool(
           success: true,
           result_summary: 'gathered day-plan context',
           data: {
-            today: todayISO(),
+            today: todayInTz(tz),
             load,
             recent_diary: recent,
             wellbeing: well,
@@ -115,7 +130,7 @@ export async function executeCoachTool(
           success: true,
           result_summary: 'gathered week-plan context',
           data: {
-            today: todayISO(),
+            today: todayInTz(tz),
             load,
             week_diary: week,
             wellbeing: well,
@@ -256,7 +271,7 @@ export async function executeCoachTool(
         const body = (str(input.body) || '').trim();
         if (!body) return { success: false, result_summary: 'body required', error: 'body required' };
         const rawDate = str(input.entry_date);
-        const entryDate = rawDate && DATE_RE.test(rawDate) ? rawDate : todayISO();
+        const entryDate = rawDate && DATE_RE.test(rawDate) ? rawDate : todayInTz(tz);
         const mood = str(input.mood)?.trim().slice(0, 40) || null;
         const title = str(input.title)?.slice(0, 300) ?? null;
         const { data, error } = await supabase
@@ -273,6 +288,31 @@ export async function executeCoachTool(
           .single();
         if (error || !data) return { success: false, result_summary: 'log failed', error: error?.message };
         return { success: true, result_summary: `diary entry logged ${entryDate}`, data: { id: data.id, entry_date: entryDate } };
+      }
+
+      case 'emit_family_signal': {
+        const signalType = str(input.signal_type) as SignalType | undefined;
+        if (!signalType || !SIGNAL_TYPES.includes(signalType)) {
+          return { success: false, result_summary: 'bad signal_type', error: `signal_type must be one of: ${SIGNAL_TYPES.join(', ')}` };
+        }
+        // The seal: a child flag is refused unless the child consented. emitFamilySignal
+        // enforces this too — belt and braces here for a clear message.
+        const consented = input.consented === true;
+        const sourceRole: 'adult' | 'parent' | 'child' = role === 'child' ? 'child' : role === 'parent' ? 'parent' : 'adult';
+        if (sourceRole === 'child' && !consented) {
+          return { success: false, result_summary: 'consent required', error: 'a child flag needs the child’s clear yes first' };
+        }
+        const rawDomain = str(input.domain) as SignalDomain | undefined;
+        const res = await emitFamilySignal(supabase, {
+          source_space: space,
+          source_role: sourceRole,
+          signal_type: signalType,
+          intensity: num(input.intensity),
+          domain: rawDomain && SIGNAL_DOMAINS.includes(rawDomain) ? rawDomain : null,
+          consented,
+        });
+        if (!res.ok) return { success: false, result_summary: 'signal not sent', error: res.error };
+        return { success: true, result_summary: 'family flag sent', data: { id: res.id } };
       }
 
       default:

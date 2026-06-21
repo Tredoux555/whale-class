@@ -17,6 +17,40 @@ export {
   consolidateCoachDay,
   type ConsolidationResult,
 } from './consolidation';
+export {
+  getFamilyRole,
+  listFamilyTargets,
+  getLinkKind,
+  canWriteContext,
+  addContextNote,
+  listContextNotesForAuthor,
+  editContextNote,
+  setContextNoteArchived,
+  loadIncomingContextForCoach,
+  formatChildContextForPrompt,
+  formatPartnerContextForPrompt,
+  isValidSpace,
+  type FamilyRole,
+  type LinkKind,
+  type FamilyTarget,
+  type ContextNote,
+  type IncomingContextNote,
+} from './family';
+export {
+  resolveFamily,
+  resolveFamilyKey,
+  emitFamilySignal,
+  runFamilyBrain,
+  loadActiveNudgeForSpace,
+  formatNudgeForPrompt,
+  familyBrainObservationForParent,
+  SIGNAL_TYPES,
+  SIGNAL_DOMAINS,
+  type SignalType,
+  type SignalDomain,
+  type FamilyMember,
+  type EmitSignalInput,
+} from './family-brain';
 
 import type { LoadReport } from './personal-data';
 

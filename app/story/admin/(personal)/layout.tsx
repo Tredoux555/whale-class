@@ -39,6 +39,9 @@ export default function PersonalLayout({ children }: { children: ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
   const [ready, setReady] = useState(false);
+  // Family role drives whether the parent's 'Family' tab shows. Only a 'parent'
+  // sees it; children/adults never do (the panel is the parent's surface only).
+  const [familyRole, setFamilyRole] = useState<string | null>(null);
   const lastActivity = useRef(0); // set on first idle-effect run (never call Date.now() during render)
 
   // Auth guard — verify the admin session once on mount.
@@ -60,6 +63,10 @@ export default function PersonalLayout({ children }: { children: ReactNode }) {
           router.replace('/story/admin');
           return;
         }
+        try {
+          const data = await res.json();
+          if (!cancelled && typeof data?.family_role === 'string') setFamilyRole(data.family_role);
+        } catch { /* non-fatal — nav just won't show Family */ }
         setReady(true);
       } catch {
         if (!cancelled) router.replace('/story/admin');
@@ -67,6 +74,11 @@ export default function PersonalLayout({ children }: { children: ReactNode }) {
     })();
     return () => { cancelled = true; };
   }, [router]);
+
+  // Parents get an extra 'Family' tab to feed their child's coach context.
+  const nav = familyRole === 'parent'
+    ? [...NAV, { href: '/story/admin/family', label: 'Family' }]
+    : NAV;
 
   // 15-minute idle auto-logout.
   useEffect(() => {
@@ -148,7 +160,7 @@ export default function PersonalLayout({ children }: { children: ReactNode }) {
             overflowX: 'auto',
           }}
         >
-          {NAV.map((n) => {
+          {nav.map((n) => {
             const active = pathname.startsWith(n.href);
             return (
               <button

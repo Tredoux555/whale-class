@@ -18,7 +18,9 @@ import { anthropic, AI_MODEL } from '@/lib/ai/anthropic';
 import { readDiaryField, encryptDiaryField, encryptDiaryFieldOrNull, isDiaryEncryptionConfigured } from '@/lib/story/diary-crypto';
 import {
   buildCoachSystemPrompt,
+  buildChildCoachSystemPrompt,
   COACH_TOOLS,
+  CHILD_COACH_TOOLS,
   executeCoachTool,
   loadCoachMemories,
   formatCoachMemoriesForPrompt,
@@ -30,6 +32,14 @@ import {
   loadRecentThread,
   isConsolidationDue,
   consolidateCoachDay,
+  getFamilyRole,
+  loadIncomingContextForCoach,
+  formatChildContextForPrompt,
+  formatPartnerContextForPrompt,
+  loadActiveNudgeForSpace,
+  formatNudgeForPrompt,
+  resolveFamilyKey,
+  runFamilyBrain,
 } from '@/lib/story/coach';
 
 export const maxDuration = 180;
@@ -50,7 +60,12 @@ interface BodyShape {
   history?: MessageParam[];
   reflect_entry_id?: string;
   conversation_id?: string;
+  /** The client's IANA timezone + local ISO datetime, so "today/now" is theirs. */
+  client_tz?: string;
+  client_now?: string;
 }
+
+const IANA_TZ_RE = /^[A-Za-z][A-Za-z0-9_+-]*(?:\/[A-Za-z0-9_+-]+)*$/;
 
 export async function POST(request: NextRequest) {
   const startTime = Date.now();
@@ -146,9 +161,33 @@ export async function POST(request: NextRequest) {
     }
   }
 
+  // Day/time, anchored to the CALLER's timezone (sent by the client), not the
+  // server's. Without this the prompt label (server-local) and the tool date
+  // defaults (UTC) could disagree by hours or a whole day. clientTz also flows
+  // into the tool deps so add_event / add_diary_entry default to the caller's day.
+  const clientTz = typeof body.client_tz === 'string' && IANA_TZ_RE.test(body.client_tz) ? body.client_tz : undefined;
+  const nowInstant = (() => {
+    if (typeof body.client_now === 'string') {
+      const d = new Date(body.client_now);
+      if (!Number.isNaN(d.getTime())) return d;
+    }
+    return new Date();
+  })();
   const todayLabel = (() => {
     try {
-      return new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+      const datePart = new Intl.DateTimeFormat('en-US', {
+        weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
+        ...(clientTz ? { timeZone: clientTz } : {}),
+      }).format(nowInstant);
+      let hour = 12;
+      try {
+        hour = Number(new Intl.DateTimeFormat('en-US', {
+          hour: '2-digit', hour12: false, hourCycle: 'h23',
+          ...(clientTz ? { timeZone: clientTz } : {}),
+        }).format(nowInstant));
+      } catch { /* keep default */ }
+      const part = hour < 5 ? 'late at night' : hour < 12 ? 'in the morning' : hour < 17 ? 'in the afternoon' : hour < 21 ? 'in the evening' : 'at night';
+      return `${datePart}, ${part}${clientTz ? '' : ' (server time)'}`;
     } catch {
       return new Date().toISOString().slice(0, 10);
     }
@@ -179,6 +218,21 @@ export async function POST(request: NextRequest) {
     }
   });
 
+  // After-the-reply: if a family signal was emitted this turn, refresh the Family
+  // Brain (re-detect the family pattern + write fresh tonal nudges). This reads
+  // ONLY structured signals + parent-authored context notes — never any sealed
+  // conversation — so it is safe to run for e2e spaces too.
+  after(async () => {
+    try {
+      if (!toolsUsed.includes('emit_family_signal')) return;
+      const familyKey = await resolveFamilyKey(supabase, space);
+      const res = await runFamilyBrain(supabase, client, AI_MODEL, familyKey);
+      if (res.nudgeCount) console.info(`[coach] family brain refreshed → ${res.nudgeCount} nudge(s)`);
+    } catch (e) {
+      console.warn('[coach] family brain skipped:', e instanceof Error ? e.message : 'unknown');
+    }
+  });
+
   const initialMessages: MessageParam[] = [...history, { role: 'user', content: question }];
 
   const conversationId = typeof body.conversation_id === 'string' ? body.conversation_id.slice(0, 64) : null;
@@ -193,27 +247,58 @@ export async function POST(request: NextRequest) {
         controller.enqueue(encoder.encode(':keepalive\n\n'));
         controller.enqueue(sse(encoder, { type: 'thinking', text: '' }));
 
-        // Resolve context (memory + wisdom + profile + live load), graceful fallback.
-        const [memories, wisdomSummary, profileSection, load] = await Promise.all([
-          loadCoachMemories(supabase, space, 40).catch(() => []),
-          getCoachWisdomSummary().catch(() => ''),
-          getCoachProfile(space).catch(() => ''),
-          computeLoad(supabase, space).catch(() => null),
-        ]);
+        // Is this a CHILD's coach? Drives the persona, toolset, and how incoming
+        // family context is framed. Tolerant (missing migration → 'adult').
+        const familyRole = await getFamilyRole(supabase, space).catch(() => 'adult' as const);
+        const isChild = familyRole === 'child';
         const coachName = displayNameForSpace(space);
-        const systemPrompt = buildCoachSystemPrompt({
-          displayName: coachName,
-          todayLabel,
-          memorySection: formatCoachMemoriesForPrompt(memories, coachName),
-          wisdomSummary,
-          profileSection,
-          isFirstSession: memories.length === 0,
-          loadSnapshot: load ? formatLoadSnapshot(load) : 'No load data available right now.',
-        });
-        const minimalSystemPrompt =
-          `You are ${coachName}'s warm, direct life-coach. Today is ${todayLabel}. Answer their message ` +
-          `thoughtfully and concisely, protect them from overcommitment and burnout, and end with one ` +
-          `clear next step.`;
+
+        // Resolve context. For a child we skip the adult productivity wisdom + load.
+        const [memories, profileSection, incomingNotes, nudgeText, wisdomSummary, load] = await Promise.all([
+          loadCoachMemories(supabase, space, 40).catch(() => []),
+          getCoachProfile(space).catch(() => ''),
+          loadIncomingContextForCoach(supabase, space).catch(() => []),
+          loadActiveNudgeForSpace(supabase, space).catch(() => null),
+          isChild ? Promise.resolve('') : getCoachWisdomSummary().catch(() => ''),
+          isChild ? Promise.resolve(null) : computeLoad(supabase, space).catch(() => null),
+        ]);
+
+        // Captain context shared INTO this coach: quiet background for a child;
+        // transparent loved-one context for an adult. WRITE-ONLY (no read path back).
+        const parentContextSection = incomingNotes.length
+          ? (isChild ? formatChildContextForPrompt(incomingNotes, coachName) : formatPartnerContextForPrompt(incomingNotes, coachName))
+          : '';
+        // A quiet Family-Brain tonal shift for this conversation (never an alert).
+        const nudgeSection = nudgeText ? formatNudgeForPrompt(nudgeText) : '';
+
+        const tools = isChild ? CHILD_COACH_TOOLS : COACH_TOOLS;
+        const systemPrompt = isChild
+          ? buildChildCoachSystemPrompt({
+              displayName: coachName,
+              todayLabel,
+              memorySection: formatCoachMemoriesForPrompt(memories, coachName),
+              profileSection,
+              parentContextSection,
+              nudgeSection,
+              isFirstSession: memories.length === 0,
+            })
+          : buildCoachSystemPrompt({
+              displayName: coachName,
+              todayLabel,
+              memorySection: formatCoachMemoriesForPrompt(memories, coachName),
+              wisdomSummary,
+              profileSection,
+              isFirstSession: memories.length === 0,
+              loadSnapshot: load ? formatLoadSnapshot(load) : 'No load data available right now.',
+              parentContextSection,
+              nudgeSection,
+            });
+        const minimalSystemPrompt = isChild
+          ? `You are ${coachName}'s warm, kind coach — a friend in their corner. Today is ${todayLabel}. Answer ` +
+            `simply and warmly, help them feel heard, and end with one small, kind next step.`
+          : `You are ${coachName}'s warm, direct life-coach. Today is ${todayLabel}. Answer their message ` +
+            `thoughtfully and concisely, protect them from overcommitment and burnout, and end with one ` +
+            `clear next step.`;
 
         const conversation: MessageParam[] = [...initialMessages];
         let toolRound = 0;
@@ -233,7 +318,7 @@ export async function POST(request: NextRequest) {
                 model: AI_MODEL,
                 max_tokens: 4096,
                 system: [{ type: 'text' as const, text: systemPrompt, cache_control: { type: 'ephemeral' as const } }],
-                tools: COACH_TOOLS,
+                tools,
                 messages: conversation,
               },
               { timeout: API_TIMEOUT_MS },
@@ -266,7 +351,7 @@ export async function POST(request: NextRequest) {
 
               toolsUsed.push(block.name);
               controller.enqueue(sse(encoder, { type: 'tool_call', tool: block.name }));
-              const result = await executeCoachTool(block.name, block.input as Record<string, unknown>, { supabase, space });
+              const result = await executeCoachTool(block.name, block.input as Record<string, unknown>, { supabase, space, role: familyRole, tz: clientTz });
               controller.enqueue(sse(encoder, { type: 'tool_result', tool: block.name, success: result.success }));
 
               const resultText = result.success ? JSON.stringify(result.data) : `Error: ${result.error || 'unknown'}`;
@@ -329,7 +414,7 @@ export async function POST(request: NextRequest) {
                 model: AI_MODEL,
                 max_tokens: 1024,
                 system: [{ type: 'text' as const, text: systemPrompt, cache_control: { type: 'ephemeral' as const } }],
-                tools: COACH_TOOLS,
+                tools,
                 tool_choice: { type: 'none' },
                 messages: conversation,
               },

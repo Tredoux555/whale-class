@@ -6,6 +6,7 @@
 
 import type { Tool } from '@anthropic-ai/sdk/resources/messages';
 import { WISDOM_TOPICS } from './knowledge-loader';
+import { SIGNAL_TYPES, SIGNAL_DOMAINS } from './family-brain';
 
 export const COACH_TOOLS: Tool[] = [
   {
@@ -167,4 +168,32 @@ export const COACH_TOOLS: Tool[] = [
       },
     },
   },
+  {
+    name: 'emit_family_signal',
+    description:
+      'Send ONE abstracted, WORDLESS flag to the family helper (the Family Brain) — a feeling-type only, ' +
+      'NEVER any words or detail of what was said. Use ONLY with the person’s clear consent (for a child, ' +
+      'only after they have explicitly agreed). NEVER use this for a safeguarding moment (self-harm, abuse, ' +
+      'someone hurting them) — that stays sealed in the room. Default to NOT sending; this is rare. The flag ' +
+      'helps the family gently notice converging stress; it never reveals anyone.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        signal_type: { type: 'string', enum: SIGNAL_TYPES as unknown as string[], description: 'The feeling/state flag.' },
+        intensity: { type: 'number', description: '1 (mild) to 3 (strong). Default 1.' },
+        domain: { type: 'string', enum: SIGNAL_DOMAINS as unknown as string[], description: 'Optional area this is about.' },
+        consented: { type: 'boolean', description: 'MUST be true — the person agreed to send this wordless flag.' },
+      },
+      required: ['signal_type', 'consented'],
+    },
+  },
 ];
+
+// The CHILD coach gets a trimmed toolset — none of the adult productivity tools
+// (projects / load / planning). Their coach keeps a journal, remembers, can
+// consult the safeguarding playbook, put something on their planner, and (only
+// with the child's consent) send a wordless family flag.
+const CHILD_TOOL_NAMES = new Set([
+  'read_diary', 'add_diary_entry', 'add_event', 'consult_wisdom', 'recall', 'remember', 'emit_family_signal',
+]);
+export const CHILD_COACH_TOOLS: Tool[] = COACH_TOOLS.filter((t) => CHILD_TOOL_NAMES.has(t.name));
