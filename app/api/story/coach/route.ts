@@ -14,7 +14,16 @@ import type Anthropic from '@anthropic-ai/sdk';
 import type { MessageParam, ContentBlockParam, ToolResultBlockParam } from '@anthropic-ai/sdk/resources/messages';
 import { getSupabase, verifyAdminToken, getAdminSpace } from '@/lib/story-db';
 import { selectAdminUserForAuth } from '@/lib/sanctuary-e2e/server-auth';
-import { anthropic, AI_MODEL } from '@/lib/ai/anthropic';
+import { anthropic, AI_MODEL, HAIKU_MODEL } from '@/lib/ai/anthropic';
+import {
+  getEntitlement,
+  getMonthlySonnetCount,
+  incrementSonnetCount,
+  sonnetCapFor,
+  currentPeriodMonth,
+  COACH_SONNET_WARN_MARGIN,
+  COACH_SONNET_OVERSHOOT,
+} from '@/lib/story/coach/entitlement';
 import { readDiaryField, encryptDiaryField, encryptDiaryFieldOrNull, isDiaryEncryptionConfigured } from '@/lib/story/diary-crypto';
 import {
   buildCoachSystemPrompt,
@@ -65,6 +74,12 @@ interface BodyShape {
   client_now?: string;
   /** An optional attached image the coach should read (vision). base64, no prefix. */
   image?: { media_type?: string; data?: string };
+  /**
+   * The model depth pinned for THIS conversation, echoed back by the client on
+   * every turn after the first (neutral token — never a model name). Absent on
+   * turn 1, where the server decides fresh.
+   */
+  pinned_mode?: 'full' | 'quiet';
 }
 
 const IANA_TZ_RE = /^[A-Za-z][A-Za-z0-9_+-]*(?:\/[A-Za-z0-9_+-]+)*$/;
@@ -132,6 +147,40 @@ export async function POST(request: NextRequest) {
   // plaintext context for THIS turn) but persists NOTHING readable server-side.
   // Degrades to non-e2e before migration 265 (column absent → false).
   const isE2e = (await selectAdminUserForAuth(supabase, admin))?.e2e === true;
+
+  // ── Prompt economy: Sonnet ('full') vs Haiku ('quiet'), PINNED per conversation ──
+  // (MONETISATION SPEC v1.0). Access is NEVER gated here — this only selects model
+  // DEPTH (rule #318). The depth is decided on the FIRST turn and pinned for the
+  // rest: the client echoes `pinned_mode` back each turn so the sitting never
+  // changes voice mid-thread; a new conversation re-decides fresh. The owner
+  // (comped) is always Sonnet, never metered. Over the monthly Sonnet cap → silent
+  // Haiku. An overshoot ceiling hard-drops even a pinned-Sonnet thread past
+  // cap+OVERSHOOT so one never-closed conversation can't farm unlimited Sonnet.
+  const pinnedMode: 'full' | 'quiet' | null =
+    body.pinned_mode === 'full' || body.pinned_mode === 'quiet' ? body.pinned_mode : null;
+  const entitlement = await getEntitlement(supabase, space);
+  const periodMonth = currentPeriodMonth();
+  const sonnetCap = sonnetCapFor(entitlement);
+  const priorSonnet = entitlement.isComped ? 0 : await getMonthlySonnetCount(supabase, space, periodMonth);
+
+  let coachMode: 'full' | 'quiet';
+  if (entitlement.isComped) {
+    coachMode = 'full';
+  } else if (pinnedMode === 'quiet') {
+    coachMode = 'quiet';
+  } else if (pinnedMode === 'full') {
+    coachMode = priorSonnet >= sonnetCap + COACH_SONNET_OVERSHOOT ? 'quiet' : 'full';
+  } else {
+    coachMode = priorSonnet < sonnetCap ? 'full' : 'quiet';
+  }
+  const coachModel = coachMode === 'full' ? AI_MODEL : HAIKU_MODEL;
+  // This turn consumes a Sonnet credit only when we actually run Sonnet for a
+  // non-comped space. The "approaching" warning fires in the WARN_MARGIN window
+  // just before the cap (≈180 free / ≈480 paid).
+  const willMeter = coachMode === 'full' && !entitlement.isComped;
+  const projectedSonnet = willMeter ? priorSonnet + 1 : priorSonnet;
+  const meterApproaching =
+    willMeter && projectedSonnet >= sonnetCap - COACH_SONNET_WARN_MARGIN && projectedSonnet < sonnetCap;
 
   // Sanitize client history → text-only { role, content } (same posture as
   // principal-agent: never trust client-supplied tool_use/tool_result blocks).
@@ -269,6 +318,18 @@ export async function POST(request: NextRequest) {
   let totalOutput = 0;
   let finalText = '';
 
+  // Meter the Sonnet turn AFTER the reply lands (off the response path). Only a
+  // non-comped 'full' turn that actually produced a reply is counted — undercount
+  // favours the user and the product never hard-stops, so this is safe.
+  after(async () => {
+    if (!willMeter || !finalText.trim()) return;
+    try {
+      await incrementSonnetCount(supabase, space, periodMonth);
+    } catch (e) {
+      console.warn('[coach] sonnet meter increment skipped:', e instanceof Error ? e.message : 'unknown');
+    }
+  });
+
   const stream = new ReadableStream<Uint8Array>({
     async start(controller) {
       try {
@@ -343,7 +404,7 @@ export async function POST(request: NextRequest) {
           try {
             response = await client.messages.create(
               {
-                model: AI_MODEL,
+                model: coachModel,
                 max_tokens: 4096,
                 system: [{ type: 'text' as const, text: systemPrompt, cache_control: { type: 'ephemeral' as const } }],
                 tools,
@@ -411,7 +472,7 @@ export async function POST(request: NextRequest) {
               emptyRecoveryDone = true;
               try {
                 const recovery = await client.messages.create(
-                  { model: AI_MODEL, max_tokens: 1024, system: minimalSystemPrompt, messages: [{ role: 'user', content: turnContent }] },
+                  { model: coachModel, max_tokens: 1024, system: minimalSystemPrompt, messages: [{ role: 'user', content: turnContent }] },
                   { timeout: API_TIMEOUT_MS },
                 );
                 if (recovery.usage) { totalInput += recovery.usage.input_tokens ?? 0; totalOutput += recovery.usage.output_tokens ?? 0; }
@@ -439,7 +500,7 @@ export async function POST(request: NextRequest) {
           try {
             const forced = await client.messages.create(
               {
-                model: AI_MODEL,
+                model: coachModel,
                 max_tokens: 1024,
                 system: [{ type: 'text' as const, text: systemPrompt, cache_control: { type: 'ephemeral' as const } }],
                 tools,
@@ -461,6 +522,11 @@ export async function POST(request: NextRequest) {
             controller.enqueue(sse(encoder, { type: 'error', error: "I couldn't put a reply together just now — try again." }));
           }
         }
+
+        // Prompt-economy meter — NEUTRAL tokens only (mode 'full'|'quiet', never a
+        // model name; rule #323). The client pins `mode` for this conversation and
+        // echoes it back next turn; `approaching` triggers the one-time warning.
+        controller.enqueue(sse(encoder, { type: 'meter', mode: coachMode, approaching: meterApproaching }));
 
         controller.enqueue(sse(encoder, { type: 'done', duration_ms: Date.now() - startTime, in: totalInput, out: totalOutput }));
 
