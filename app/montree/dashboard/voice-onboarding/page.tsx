@@ -964,7 +964,7 @@ export default function VoiceOnboardingPage() {
               Something failed during onboarding
             </h2>
             <p style={{ ...bodyStyle, fontSize: 14, color: 'rgba(255,255,255,0.7)', marginBottom: 20 }}>
-              Screenshot this whole panel and send it to Tredoux. It tells us exactly where things broke.
+              Screenshot this whole panel and send it to the Montree team. It tells us exactly where things broke.
             </p>
             <DebugRow label="Step" value={debugError.step} />
             {debugError.url && <DebugRow label="URL" value={debugError.url} mono />}

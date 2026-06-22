@@ -315,7 +315,7 @@ export default function NewMeetingPage() {
       const createData = await createRes.json();
       if (createData.migration_pending) {
         setErrorMsg(
-          'Meeting schema not yet migrated. Tredoux needs to run migrations 239-241 in Supabase.'
+          'Meeting schema not yet migrated. The Montree team is finishing setup.'
         );
         setStage('error');
         return;
