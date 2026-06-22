@@ -47,10 +47,11 @@ export default function TryMontreePage() {
   const router = useRouter();
   const { t, locale } = useI18n();
   const [step, setStep] = useState<'role' | 'details' | 'creating' | 'code'>('role');
-  // 'parent' is a UI-only entry: it collects name+email then signs up as a
-  // standard teacher (clean school app, no parent special-casing). The API
-  // never sees a 'parent' role.
-  const [selectedRole, setSelectedRole] = useState<'teacher' | 'principal' | 'parent' | null>(null);
+  // The 'Parent' card on the picker routes straight into the teacher flow —
+  // identical signup, no parent-specific handling. It's just a friendlier
+  // entry label. The "I'm a parent / this is great value" feeling happens
+  // later, inside the app — never at signup.
+  const [selectedRole, setSelectedRole] = useState<'teacher' | 'principal' | null>(null);
   const [userName, setUserName] = useState('');
   const [schoolName, setSchoolName] = useState('');
   const [userEmail, setUserEmail] = useState('');
@@ -78,7 +79,7 @@ export default function TryMontreePage() {
     }
   }, []);
 
-  const handleRoleSelect = (role: 'teacher' | 'principal' | 'parent') => {
+  const handleRoleSelect = (role: 'teacher' | 'principal') => {
     setSelectedRole(role);
     setStep('details');
     setError('');
@@ -89,9 +90,7 @@ export default function TryMontreePage() {
       setError(t('signup.pleaseEnterName'));
       return;
     }
-    // The parent entry skips the school/classroom field (signs up as a teacher;
-    // backend auto-names the classroom).
-    if (selectedRole !== 'parent' && !schoolName.trim()) {
+    if (!schoolName.trim()) {
       setError(selectedRole === 'principal' ? t('signup.pleaseEnterSchool') : t('signup.pleaseEnterSchoolClassroom'));
       return;
     }
@@ -104,8 +103,7 @@ export default function TryMontreePage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          // Parent entry is a teacher account under the hood — clean school app.
-          role: selectedRole === 'parent' ? 'teacher' : selectedRole,
+          role: selectedRole,
           name: userName.trim(),
           schoolName: schoolName.trim(),
           email: userEmail.trim(),
@@ -300,13 +298,14 @@ export default function TryMontreePage() {
                 </span>
               </button>
 
-              {/* Parent — the "$7 hack". Signs up as a STANDARD teacher account
-                  (clean school app, no parent-specific handling) so the parent
-                  flies under the radar: full Montree for their one child at the
-                  same $7/student schools pay. Always present (not part of the
-                  referral teacher/principal swap above). */}
+              {/* Parent — a friendlier entry label that drops straight into the
+                  IDENTICAL teacher signup (role 'teacher', same fields, clean
+                  school app). No parent-specific handling anywhere — that's what
+                  keeps it a "hack": they get the full school product for their
+                  one child at the same $7/student schools pay. Always present
+                  (not part of the referral teacher/principal swap above). */}
               <button
-                onClick={() => handleRoleSelect('parent')}
+                onClick={() => handleRoleSelect('teacher')}
                 className="w-full px-6 py-5 rounded-2xl text-left transition-all hover:scale-[1.01] active:scale-[0.99]"
                 style={{
                   background: 'linear-gradient(135deg, rgba(45,118,128,0.30) 0%, rgba(10,28,28,0.55) 100%)',
@@ -346,28 +345,25 @@ export default function TryMontreePage() {
                   type="text"
                   value={userName}
                   onChange={(e) => setUserName(e.target.value)}
-                  placeholder={selectedRole === 'principal' ? t('signup.namePlaceholder.principal') : selectedRole === 'parent' ? t('signup.namePlaceholder.parent') : t('signup.namePlaceholder.teacher')}
+                  placeholder={selectedRole === 'principal' ? t('signup.namePlaceholder.principal') : t('signup.namePlaceholder.teacher')}
                   className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder:text-white/50 focus:outline-none focus:border-emerald-400/50 focus:ring-1 focus:ring-emerald-400/30"
                   autoFocus
                 />
               </div>
 
-              {/* The parent entry skips this — they get a clean single classroom. */}
-              {selectedRole !== 'parent' && (
-                <div>
-                  <label className="block text-sm mb-2 text-emerald-300/70">
-                    {selectedRole === 'principal' ? t('signup.schoolName') : t('signup.schoolClassroomName')}
-                  </label>
-                  <input
-                    type="text"
-                    value={schoolName}
-                    onChange={(e) => setSchoolName(e.target.value)}
-                    placeholder={selectedRole === 'principal' ? t('signup.schoolPlaceholder.principal') : t('signup.schoolPlaceholder.teacher')}
-                    className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder:text-white/50 focus:outline-none focus:border-emerald-400/50 focus:ring-1 focus:ring-emerald-400/30"
-                    onKeyDown={(e) => e.key === 'Enter' && handleDetailsSubmit()}
-                  />
-                </div>
-              )}
+              <div>
+                <label className="block text-sm mb-2 text-emerald-300/70">
+                  {selectedRole === 'principal' ? t('signup.schoolName') : t('signup.schoolClassroomName')}
+                </label>
+                <input
+                  type="text"
+                  value={schoolName}
+                  onChange={(e) => setSchoolName(e.target.value)}
+                  placeholder={selectedRole === 'principal' ? t('signup.schoolPlaceholder.principal') : t('signup.schoolPlaceholder.teacher')}
+                  className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder:text-white/50 focus:outline-none focus:border-emerald-400/50 focus:ring-1 focus:ring-emerald-400/30"
+                  onKeyDown={(e) => e.key === 'Enter' && handleDetailsSubmit()}
+                />
+              </div>
 
               <div>
                 <label className="block text-sm mb-2 text-emerald-300/70">Email</label>
