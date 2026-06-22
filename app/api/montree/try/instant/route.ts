@@ -10,6 +10,7 @@ import { getLocationFromRequest } from '@/lib/ip-geolocation';
 import { applyGlobalTranslations } from '@/lib/montree/curriculum/apply-global-translations';
 import { isValidLocale, DEFAULT_LOCALE, type Locale } from '@/lib/montree/i18n/locales';
 import { DEFAULTS } from '@/lib/montree/constants';
+import { MINIMAL_DEFAULT_MENU } from '@/lib/montree/menu/config';
 
 /**
  * Resolve the primary locale for a new school at signup.
@@ -533,6 +534,21 @@ export async function POST(req: NextRequest) {
         }, { status: 500 });
       }
       steps.push('4-teacher-ok:' + teacher.id);
+
+      // ── Seed the minimal default dashboard menu for this NEW teacher ──
+      // Guru → Curriculum → Manage Students → Parent Manager → Parent Messages
+      // → Photo Audit visible; everything else hidden (customizable later via
+      // Manage Menu). Existing schools never get a seed → they keep their
+      // current menu. Fire-and-forget + graceful: if migration 268 (the
+      // settings column) hasn't run yet, this no-ops with a warning and the
+      // teacher simply gets the legacy menu until it does.
+      supabase
+        .from('montree_teachers')
+        .update({ settings: { menu: MINIMAL_DEFAULT_MENU } })
+        .eq('id', teacher.id)
+        .then(({ error }) => {
+          if (error) console.warn('[Trial] menu seed skipped:', error.message);
+        });
 
       // ── Stamp the school's referral / founding-agent linkage ──
       // If the user signed up with a referral code, the LINKED AGENT (not the

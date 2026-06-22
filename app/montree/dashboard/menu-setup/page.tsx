@@ -1,196 +1,231 @@
 // /montree/dashboard/menu-setup/page.tsx
-// Menu Setup — let teachers toggle which menu items appear in their school's menu
+// Manage Menu — per-teacher customizable dashboard menu.
+// Reorder items (up/down) and show/hide them. Saved to settings.menu on the
+// teacher (via /api/montree/teacher/menu). The header reads this config and
+// renders the menu from it. Teachers with no config yet start from the full
+// list (all visible) and trim; new signups arrive pre-seeded with the minimal
+// default. Does not touch school-level feature flags.
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast, Toaster } from 'sonner';
-import { getSession } from '@/lib/montree/auth';
 import { montreeApi } from '@/lib/montree/api';
-import { useFeatures } from '@/hooks/useFeatures';
+import { useI18n } from '@/lib/montree/i18n';
 import {
-  FileText, Target, Search, Sparkles, BookOpen, LayoutGrid,
-  Images, FolderOpen, TrendingUp, Users, BarChart2, CalendarDays,
-  Settings2, ChevronLeft, type LucideIcon,
+  ChevronLeft, ChevronUp, ChevronDown, Eye, EyeOff, Check,
 } from 'lucide-react';
-
-interface MenuItem {
-  key: string;
-  label: string;
-  description: string;
-  icon: LucideIcon;
-  defaultOn: boolean; // whether it's on for new schools
-}
-
-const MENU_ITEMS: MenuItem[] = [
-  // Essentials — default on for new schools
-  { key: 'menu_notes',              label: 'Notes',              description: 'Teacher notes and voice observations',          icon: FileText,    defaultOn: true },
-  { key: 'menu_curriculum',         label: 'Curriculum',         description: 'Browse curriculum works by area',               icon: BookOpen,    defaultOn: true },
-  { key: 'menu_guru',               label: 'Guru',               description: 'AI teaching assistant',                         icon: Sparkles,    defaultOn: true },
-  { key: 'menu_photo_audit',        label: 'Wrap Up',            description: 'Review and confirm weekly photos',              icon: Search,      defaultOn: true },
-  { key: 'menu_manage_students',    label: 'Manage Students',    description: 'Add, edit, and remove students',                icon: Users,       defaultOn: true },
-  // Extras — default off
-  { key: 'menu_classroom_overview', label: 'Classroom Overview', description: 'See all students at a glance',                 icon: LayoutGrid,  defaultOn: false },
-  { key: 'menu_focus_list',         label: 'Focus List',         description: 'Classroom-wide focus works view',               icon: Target,      defaultOn: false },
-  { key: 'menu_photo_albums',       label: 'Photo Albums',       description: 'Organised photo collections',                   icon: Images,      defaultOn: false },
-  { key: 'menu_library',            label: 'Library',            description: 'Content creation tools and picture bank',       icon: FolderOpen,  defaultOn: false },
-  { key: 'menu_class_progress',     label: 'Class Progress',     description: 'Progress analytics across all students',        icon: BarChart2,   defaultOn: false },
-  { key: 'menu_language_semester',  label: 'Language Semester',  description: 'Semester language summary reports',              icon: CalendarDays,defaultOn: false },
-  { key: 'menu_earnings',           label: 'My Earnings',        description: 'Teacher revenue share dashboard',               icon: TrendingUp,  defaultOn: false },
-  { key: 'menu_classroom_setup',    label: 'Classroom Setup',    description: 'Teach the AI about your materials',             icon: Settings2,   defaultOn: false },
-];
+import { MENU_REGISTRY, MENU_REGISTRY_ORDER } from '@/lib/montree/menu/registry';
+import { MENU_CONFIG_VERSION, type MenuConfig, type MenuConfigItem } from '@/lib/montree/menu/config';
 
 const SANS = "'Inter', -apple-system, system-ui, sans-serif";
 const SERIF = "var(--font-lora), Georgia, serif";
 
 export default function MenuSetupPage() {
   const router = useRouter();
-  const session = getSession();
-  const { isEnabled, invalidate } = useFeatures();
-  const [toggling, setToggling] = useState<string | null>(null);
-  const [loaded, setLoaded] = useState(false);
+  const { t } = useI18n();
+  const [items, setItems] = useState<MenuConfigItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [dirty, setDirty] = useState(false);
 
-  // Wait for features to load
   useEffect(() => {
-    const t = setTimeout(() => setLoaded(true), 500);
-    return () => clearTimeout(t);
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await montreeApi('/api/montree/teacher/menu');
+        const data = res.ok ? await res.json() : null;
+        const cfg: MenuConfig | null = data?.menu ?? null;
+        if (cancelled) return;
+        if (cfg && Array.isArray(cfg.items) && cfg.items.length > 0) {
+          setItems(cfg.items);
+        } else {
+          // No saved config → start from the full list, all visible. The
+          // teacher trims from here; saving switches them to a custom menu.
+          setItems(MENU_REGISTRY_ORDER.map((id) => ({ id, visible: true })));
+        }
+      } catch {
+        if (!cancelled) setItems(MENU_REGISTRY_ORDER.map((id) => ({ id, visible: true })));
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
   }, []);
 
-  const toggleFeature = useCallback(async (key: string, currentlyEnabled: boolean) => {
-    if (!session?.school?.id || toggling) return;
-    setToggling(key);
+  const move = useCallback((index: number, dir: -1 | 1) => {
+    setItems((prev) => {
+      const next = [...prev];
+      const target = index + dir;
+      if (target < 0 || target >= next.length) return prev;
+      [next[index], next[target]] = [next[target], next[index]];
+      return next;
+    });
+    setDirty(true);
+  }, []);
+
+  const toggle = useCallback((index: number) => {
+    setItems((prev) => prev.map((it, i) => (i === index ? { ...it, visible: !it.visible } : it)));
+    setDirty(true);
+  }, []);
+
+  const save = useCallback(async () => {
+    if (saving) return;
+    setSaving(true);
     try {
-      const res = await montreeApi('/api/montree/features', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          feature_key: key,
-          enabled: !currentlyEnabled,
-          school_id: session.school.id,
-        }),
+      const res = await montreeApi('/api/montree/teacher/menu', {
+        method: 'PATCH',
+        body: JSON.stringify({ menu: { v: MENU_CONFIG_VERSION, items } }),
       });
-      if (!res.ok) throw new Error('Toggle failed');
-      // Invalidate the features cache so the menu updates immediately
-      invalidate?.();
-      toast.success(!currentlyEnabled ? 'Enabled' : 'Disabled', { duration: 1200 });
-    } catch {
-      toast.error('Failed to update');
+      if (!res.ok) {
+        const d = await res.json().catch(() => ({}));
+        throw new Error(d?.error || 'Save failed');
+      }
+      setDirty(false);
+      toast.success('Menu saved', { duration: 1400 });
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Could not save menu');
     } finally {
-      setToggling(null);
+      setSaving(false);
     }
-  }, [session?.school?.id, toggling, invalidate]);
+  }, [saving, items]);
+
+  const labelFor = (id: MenuConfigItem['id']) => {
+    const def = MENU_REGISTRY[id];
+    if (!def) return id;
+    return def.labelKey ? t(def.labelKey) : def.label;
+  };
 
   return (
-    <div style={{ maxWidth: 560, margin: '0 auto', padding: '0 16px 40px', fontFamily: SANS }}>
+    <div style={{ maxWidth: 560, margin: '0 auto', padding: '0 16px 120px', fontFamily: SANS }}>
       <Toaster position="top-center" richColors />
 
-      {/* Back button */}
       <button
         onClick={() => router.back()}
         style={{
-          display: 'inline-flex', alignItems: 'center', gap: 4,
-          background: 'none', border: 0, color: 'rgba(255,255,255,0.5)',
-          fontSize: 13, cursor: 'pointer', padding: '8px 0', marginBottom: 8,
-          fontFamily: SANS,
+          display: 'inline-flex', alignItems: 'center', gap: 4, background: 'none',
+          border: 0, color: 'rgba(255,255,255,0.5)', fontSize: 13, cursor: 'pointer',
+          padding: '8px 0', marginBottom: 8, fontFamily: SANS,
         }}
       >
-        <ChevronLeft size={16} strokeWidth={1.75} />
-        Back
+        <ChevronLeft size={16} strokeWidth={1.75} /> Back
       </button>
 
-      {/* Header */}
-      <h1 style={{
-        fontFamily: SERIF, fontSize: 28, fontWeight: 500,
-        color: 'rgba(255,255,255,0.95)', margin: '0 0 6px',
-      }}>
-        Menu Setup
+      <h1 style={{ fontFamily: SERIF, fontSize: 28, fontWeight: 500, color: 'rgba(255,255,255,0.95)', margin: '0 0 6px' }}>
+        Manage Menu
       </h1>
-      <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.45)', margin: '0 0 28px', lineHeight: 1.5 }}>
-        Choose which tools appear in your menu. Turn on what you need, turn off what you don't.
+      <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.45)', margin: '0 0 24px', lineHeight: 1.5 }}>
+        Reorder your menu and show or hide tools. Drag the arrows to move items up or down; tap the eye to show or hide. Your changes are personal to you.
       </p>
 
-      {/* Menu items */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-        {MENU_ITEMS.map((item) => {
-          const enabled = loaded ? isEnabled(item.key as any) : item.defaultOn;
-          const isToggling = toggling === item.key;
-          const Icon = item.icon;
-
-          return (
-            <button
-              key={item.key}
-              onClick={() => toggleFeature(item.key, enabled)}
-              disabled={isToggling}
-              style={{
-                display: 'flex', alignItems: 'center', gap: 14,
-                padding: '14px 16px', borderRadius: 12,
-                background: enabled ? 'rgba(52,211,153,0.06)' : 'rgba(255,255,255,0.03)',
-                border: `1px solid ${enabled ? 'rgba(52,211,153,0.2)' : 'rgba(255,255,255,0.06)'}`,
-                cursor: isToggling ? 'wait' : 'pointer',
-                transition: 'all 180ms ease',
-                width: '100%', textAlign: 'left',
-                opacity: isToggling ? 0.6 : 1,
-                fontFamily: SANS,
-              }}
-            >
-              {/* Icon */}
-              <div style={{
-                width: 36, height: 36, borderRadius: 10,
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                background: enabled ? 'rgba(52,211,153,0.12)' : 'rgba(255,255,255,0.05)',
-                flexShrink: 0, transition: 'background 180ms ease',
-              }}>
-                <Icon
-                  size={18} strokeWidth={1.75}
-                  color={enabled ? '#34d399' : 'rgba(255,255,255,0.35)'}
-                />
-              </div>
-
-              {/* Label + description */}
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{
-                  fontSize: 14, fontWeight: 500,
-                  color: enabled ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.5)',
-                  transition: 'color 180ms ease',
-                }}>
-                  {item.label}
+      {loading ? (
+        <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: 14, padding: '40px 0', textAlign: 'center' }}>
+          Loading your menu…
+        </div>
+      ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+          {items.map((it, index) => {
+            const def = MENU_REGISTRY[it.id];
+            if (!def) return null;
+            const Icon = def.icon;
+            const visible = it.visible;
+            return (
+              <div
+                key={it.id}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 10,
+                  padding: '10px 12px', borderRadius: 12,
+                  background: visible ? 'rgba(52,211,153,0.06)' : 'rgba(255,255,255,0.03)',
+                  border: `1px solid ${visible ? 'rgba(52,211,153,0.2)' : 'rgba(255,255,255,0.06)'}`,
+                }}
+              >
+                {/* Reorder arrows */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                  <button onClick={() => move(index, -1)} disabled={index === 0} aria-label="Move up" style={arrowBtn(index === 0)}>
+                    <ChevronUp size={15} strokeWidth={2} />
+                  </button>
+                  <button onClick={() => move(index, 1)} disabled={index === items.length - 1} aria-label="Move down" style={arrowBtn(index === items.length - 1)}>
+                    <ChevronDown size={15} strokeWidth={2} />
+                  </button>
                 </div>
+
+                {/* Icon */}
                 <div style={{
-                  fontSize: 12,
-                  color: enabled ? 'rgba(255,255,255,0.4)' : 'rgba(255,255,255,0.25)',
-                  marginTop: 2, transition: 'color 180ms ease',
+                  width: 34, height: 34, borderRadius: 9, flexShrink: 0,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  background: visible ? 'rgba(52,211,153,0.12)' : 'rgba(255,255,255,0.05)',
                 }}>
-                  {item.description}
+                  <Icon size={17} strokeWidth={1.75} color={visible ? '#34d399' : 'rgba(255,255,255,0.35)'} />
                 </div>
-              </div>
 
-              {/* Toggle pill */}
-              <div style={{
-                width: 42, height: 24, borderRadius: 12, flexShrink: 0,
-                background: enabled ? '#34d399' : 'rgba(255,255,255,0.12)',
-                position: 'relative', transition: 'background 200ms ease',
-              }}>
-                <div style={{
-                  width: 18, height: 18, borderRadius: 9,
-                  background: '#fff',
-                  position: 'absolute', top: 3,
-                  left: enabled ? 21 : 3,
-                  transition: 'left 200ms ease',
-                  boxShadow: '0 1px 3px rgba(0,0,0,0.3)',
-                }} />
-              </div>
-            </button>
-          );
-        })}
-      </div>
+                {/* Label */}
+                <div style={{ flex: 1, minWidth: 0, fontSize: 14, fontWeight: 500,
+                  color: visible ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.45)' }}>
+                  {labelFor(it.id)}
+                </div>
 
-      {/* Footer note */}
-      <p style={{
-        fontSize: 12, color: 'rgba(255,255,255,0.3)', textAlign: 'center',
-        marginTop: 24, lineHeight: 1.5,
-      }}>
-        Changes apply immediately. Menu Setup and Logout are always visible.
+                {/* Show / hide */}
+                <button
+                  onClick={() => toggle(index)}
+                  aria-label={visible ? 'Hide' : 'Show'}
+                  style={{
+                    width: 40, height: 32, borderRadius: 9, flexShrink: 0,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    background: visible ? 'rgba(52,211,153,0.12)' : 'rgba(255,255,255,0.05)',
+                    border: 0, cursor: 'pointer',
+                    color: visible ? '#34d399' : 'rgba(255,255,255,0.4)',
+                  }}
+                >
+                  {visible ? <Eye size={17} strokeWidth={1.75} /> : <EyeOff size={17} strokeWidth={1.75} />}
+                </button>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.3)', textAlign: 'center', marginTop: 20, lineHeight: 1.5 }}>
+        Camera, language, and Logout are always available. Manage Menu lives at the bottom of your menu.
       </p>
+
+      {/* Sticky save bar */}
+      {!loading && (
+        <div style={{
+          position: 'fixed', left: 0, right: 0, bottom: 0,
+          padding: `12px 16px calc(12px + env(safe-area-inset-bottom))`,
+          background: 'linear-gradient(to top, rgba(6,20,14,0.98), rgba(6,20,14,0.0))',
+          display: 'flex', justifyContent: 'center', pointerEvents: 'none',
+        }}>
+          <button
+            onClick={save}
+            disabled={saving || !dirty}
+            style={{
+              pointerEvents: 'auto',
+              maxWidth: 560, width: '100%',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+              padding: '14px', borderRadius: 12, border: 0,
+              background: dirty ? 'linear-gradient(135deg, #34d399, #14b8a6)' : 'rgba(255,255,255,0.08)',
+              color: dirty ? '#06140e' : 'rgba(255,255,255,0.4)',
+              fontSize: 15, fontWeight: 700, fontFamily: SANS,
+              cursor: saving || !dirty ? 'default' : 'pointer',
+              boxShadow: dirty ? '0 10px 30px -10px rgba(52,211,153,0.6)' : 'none',
+            }}
+          >
+            <Check size={18} strokeWidth={2.2} />
+            {saving ? 'Saving…' : dirty ? 'Save menu' : 'Saved'}
+          </button>
+        </div>
+      )}
     </div>
   );
+}
+
+function arrowBtn(disabled: boolean): React.CSSProperties {
+  return {
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    width: 28, height: 22, borderRadius: 6, border: 0,
+    background: disabled ? 'transparent' : 'rgba(255,255,255,0.06)',
+    color: disabled ? 'rgba(255,255,255,0.15)' : 'rgba(255,255,255,0.7)',
+    cursor: disabled ? 'default' : 'pointer',
+  };
 }
