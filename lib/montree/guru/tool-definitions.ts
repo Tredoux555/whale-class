@@ -221,7 +221,9 @@ export const GURU_TOOLS: Tool[] = [
         challenges: { type: "array", items: { type: "string" } },
         interests: { type: "array", items: { type: "string" } },
         previous_experience: { type: "string" },
-        learning_style: { type: "string" }
+        learning_style: { type: "string" },
+        parent_knowledge_level: { type: "string", enum: ["none", "some", "trained"], description: "How much Montessori the PARENT knows: 'none' = new to it, 'some' = has read a bit, 'trained' = formally trained. Drives how much Guru explains vs speaks peer-to-peer." },
+        home_environment: { type: "string", description: "What the family already has at home to work with (Montessori materials, household items) and how much space they have. Lets Guru ground every suggestion in what they own." }
       },
       required: ["personality", "interests"]
     }
