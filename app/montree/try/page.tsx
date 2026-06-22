@@ -9,7 +9,7 @@ interface TrialResponse {
   success: boolean;
   code: string;
   token?: string;
-  role: 'teacher' | 'principal' | 'homeschool_parent';
+  role: 'teacher' | 'principal';
   error?: string;
   teacher?: {
     id: string;
@@ -17,7 +17,8 @@ interface TrialResponse {
     email: string | null;
     password_set_at: string | null;
   };
-  // homeschool_parent reuses the teacher shape (same table, same response) — see /api/montree/try/instant
+  // The 'Parent' picker entry signs up as a STANDARD teacher account — clean
+  // school app, no parent-specific handling. $7 for their one child ("the hack").
   classroom?: {
     id: string;
     name: string;
@@ -46,7 +47,10 @@ export default function TryMontreePage() {
   const router = useRouter();
   const { t, locale } = useI18n();
   const [step, setStep] = useState<'role' | 'details' | 'creating' | 'code'>('role');
-  const [selectedRole, setSelectedRole] = useState<'teacher' | 'principal' | 'homeschool_parent' | null>(null);
+  // 'parent' is a UI-only entry: it collects name+email then signs up as a
+  // standard teacher (clean school app, no parent special-casing). The API
+  // never sees a 'parent' role.
+  const [selectedRole, setSelectedRole] = useState<'teacher' | 'principal' | 'parent' | null>(null);
   const [userName, setUserName] = useState('');
   const [schoolName, setSchoolName] = useState('');
   const [userEmail, setUserEmail] = useState('');
@@ -74,7 +78,7 @@ export default function TryMontreePage() {
     }
   }, []);
 
-  const handleRoleSelect = (role: 'teacher' | 'principal' | 'homeschool_parent') => {
+  const handleRoleSelect = (role: 'teacher' | 'principal' | 'parent') => {
     setSelectedRole(role);
     setStep('details');
     setError('');
@@ -85,8 +89,9 @@ export default function TryMontreePage() {
       setError(t('signup.pleaseEnterName'));
       return;
     }
-    // Parents don't name a school/classroom — the backend auto-names it "My Home".
-    if (selectedRole !== 'homeschool_parent' && !schoolName.trim()) {
+    // The parent entry skips the school/classroom field (signs up as a teacher;
+    // backend auto-names the classroom).
+    if (selectedRole !== 'parent' && !schoolName.trim()) {
       setError(selectedRole === 'principal' ? t('signup.pleaseEnterSchool') : t('signup.pleaseEnterSchoolClassroom'));
       return;
     }
@@ -99,7 +104,8 @@ export default function TryMontreePage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          role: selectedRole,
+          // Parent entry is a teacher account under the hood — clean school app.
+          role: selectedRole === 'parent' ? 'teacher' : selectedRole,
           name: userName.trim(),
           schoolName: schoolName.trim(),
           email: userEmail.trim(),
@@ -160,26 +166,6 @@ export default function TryMontreePage() {
       localStorage.setItem('montree_principal', JSON.stringify(responseData.principal));
       localStorage.setItem('montree_school', JSON.stringify(responseData.school));
       router.push('/montree/principal/setup');
-    } else if (responseData.role === 'homeschool_parent' && responseData.teacher) {
-      // Homeschool parent reuses the teacher session shape but keeps its own
-      // role so the dashboard recognises the home-parent context (Guru as guide).
-      localStorage.setItem(
-        'montree_session',
-        JSON.stringify({
-          teacher: {
-            id: responseData.teacher.id,
-            name: responseData.teacher.name,
-            role: 'homeschool_parent',
-            email: responseData.teacher.email,
-            password_set: !!responseData.teacher.password_set_at,
-          },
-          school: responseData.school,
-          classroom: responseData.classroom || null,
-          loginAt: new Date().toISOString(),
-          onboarded: responseData.onboarded || false,
-        })
-      );
-      router.push('/montree/dashboard');
     }
   };
 
@@ -314,12 +300,13 @@ export default function TryMontreePage() {
                 </span>
               </button>
 
-              {/* Parent — self-serve single-child plan. Routes through the
-                  homeschool_parent flow: one "My Home" classroom, Guru as the
-                  guide, $7/mo for the one child. Always present (not part of the
+              {/* Parent — the "$7 hack". Signs up as a STANDARD teacher account
+                  (clean school app, no parent-specific handling) so the parent
+                  flies under the radar: full Montree for their one child at the
+                  same $7/student schools pay. Always present (not part of the
                   referral teacher/principal swap above). */}
               <button
-                onClick={() => handleRoleSelect('homeschool_parent')}
+                onClick={() => handleRoleSelect('parent')}
                 className="w-full px-6 py-5 rounded-2xl text-left transition-all hover:scale-[1.01] active:scale-[0.99]"
                 style={{
                   background: 'linear-gradient(135deg, rgba(45,118,128,0.30) 0%, rgba(10,28,28,0.55) 100%)',
@@ -359,14 +346,14 @@ export default function TryMontreePage() {
                   type="text"
                   value={userName}
                   onChange={(e) => setUserName(e.target.value)}
-                  placeholder={selectedRole === 'principal' ? t('signup.namePlaceholder.principal') : selectedRole === 'homeschool_parent' ? t('signup.namePlaceholder.parent') : t('signup.namePlaceholder.teacher')}
+                  placeholder={selectedRole === 'principal' ? t('signup.namePlaceholder.principal') : selectedRole === 'parent' ? t('signup.namePlaceholder.parent') : t('signup.namePlaceholder.teacher')}
                   className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder:text-white/50 focus:outline-none focus:border-emerald-400/50 focus:ring-1 focus:ring-emerald-400/30"
                   autoFocus
                 />
               </div>
 
-              {/* Parents skip this — they're a household of one, not a school. */}
-              {selectedRole !== 'homeschool_parent' && (
+              {/* The parent entry skips this — they get a clean single classroom. */}
+              {selectedRole !== 'parent' && (
                 <div>
                   <label className="block text-sm mb-2 text-emerald-300/70">
                     {selectedRole === 'principal' ? t('signup.schoolName') : t('signup.schoolClassroomName')}
