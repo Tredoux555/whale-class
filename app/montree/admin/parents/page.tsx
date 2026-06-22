@@ -182,8 +182,8 @@ export default function ParentsListPage() {
               color: 'rgba(232,201,106,0.92)',
             }}
           >
-            Parent-profile schema not yet migrated. Tredoux needs to run
-            migration 238 in Supabase. Until then, the profile tags below
+            Parent-profile schema not yet migrated. The Montree team is
+            finishing setup. Until then, the profile tags below
             stay empty — every parent listed here is real but their
             archetype + history fields are unpopulated.
           </div>

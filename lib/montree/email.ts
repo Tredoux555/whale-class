@@ -542,7 +542,7 @@ function generatePrincipalInviteHtml(
 
         <p style="font-size: 14px; line-height: 1.65; color: #5a7a6c; margin: 32px 0 0; padding-top: 22px; border-top: 1px solid #d8e3da;">
           Kind regards,<br>
-          Tredoux at Montree<br>
+          The Montree team<br>
           <a href="https://montree.xyz" style="color: #34d399; text-decoration: none;">montree.xyz</a>
         </p>
       </td>
@@ -581,7 +581,7 @@ You'll see ${teacherName}'s classroom — every child, every observation, every 
 When you're ready to bring more classrooms or your other teachers on, you can upgrade and we'll set up the school plan together.
 
 Kind regards,
-Tredoux at Montree
+The Montree team
 montree.xyz
   `.trim();
 }
@@ -619,10 +619,10 @@ export async function sendTrialConvertedEmail(
       <li>Every AI feature (Astra, photo identification, Weekly Wrap, parent narratives) is now unlocked.</li>
       <li>Questions or anything off? Reply to this email — it goes directly to me.</li>
     </ul>
-    <p style="font-size:14px;line-height:1.55;margin:24px 0 0;color:#5b6b73;">Kind regards,<br/>Tredoux<br/><a href="https://montree.xyz" style="color:#10b981;">montree.xyz</a></p>
+    <p style="font-size:14px;line-height:1.55;margin:24px 0 0;color:#5b6b73;">Kind regards,<br/>The Montree team<br/><a href="https://montree.xyz" style="color:#10b981;">montree.xyz</a></p>
   </div>
 </body></html>`;
-    const text = `Hi ${principalName},\n\nYour 7-day trial has finished and billing has started — thank you for trusting Montree with ${schoolName}.\n\nQuick notes:\n- Billing is $7 per active student, per month. Quantity auto-syncs.\n- Cancel any time from your billing page (Stripe customer portal).\n- Every AI feature is now unlocked.\n- Reply to this email if you have questions — it goes directly to me.\n\nKind regards,\nTredoux\nmontree.xyz`;
+    const text = `Hi ${principalName},\n\nYour 7-day trial has finished and billing has started — thank you for trusting Montree with ${schoolName}.\n\nQuick notes:\n- Billing is $7 per active student, per month. Quantity auto-syncs.\n- Cancel any time from your billing page (Stripe customer portal).\n- Every AI feature is now unlocked.\n- Reply to this email if you have questions — it goes directly to me.\n\nKind regards,\nThe Montree team\nmontree.xyz`;
     const { data, error } = await getResend().emails.send({
       from: getFromEmail(),
       to: principalEmail,
@@ -690,10 +690,10 @@ export async function sendTrialDripEmail(
   <div style="max-width:540px;margin:24px auto;padding:28px;background:#fff;border-radius:14px;border:1px solid rgba(52,211,153,0.18);">
     <p style="font-size:15px;line-height:1.6;margin:0 0 12px;color:#1f2d24;">${escapeHtml(greeting)}</p>
     ${htmlBody}
-    <p style="font-size:14px;line-height:1.55;margin:24px 0 8px;color:#5b6b73;">Kind regards,<br/>Tredoux<br/><a href="https://montree.xyz" style="color:#10b981;">montree.xyz</a></p>
+    <p style="font-size:14px;line-height:1.55;margin:24px 0 8px;color:#5b6b73;">Kind regards,<br/>The Montree team<br/><a href="https://montree.xyz" style="color:#10b981;">montree.xyz</a></p>
   </div>
 </body></html>`;
-    const text = `${greeting}\n\n${body.replace(/\*\*/g, '')}\n\n${tpl.cta}\n\nKind regards,\nTredoux\nmontree.xyz`;
+    const text = `${greeting}\n\n${body.replace(/\*\*/g, '')}\n\n${tpl.cta}\n\nKind regards,\nThe Montree team\nmontree.xyz`;
     const { data, error } = await getResend().emails.send({
       from: getFromEmail(),
       to: principalEmail,
@@ -757,10 +757,10 @@ export async function sendDemoRequestDripEmail(
   <div style="max-width:540px;margin:24px auto;padding:28px;background:#fff;border-radius:14px;border:1px solid rgba(52,211,153,0.18);">
     <p style="font-size:15px;line-height:1.6;margin:0 0 12px;color:#1f2d24;">${escapeHtml(greeting)}</p>
     ${htmlBody}
-    <p style="font-size:14px;line-height:1.55;margin:24px 0 8px;color:#5b6b73;">Kind regards,<br/>Tredoux<br/><a href="https://montree.xyz" style="color:#10b981;">montree.xyz</a></p>
+    <p style="font-size:14px;line-height:1.55;margin:24px 0 8px;color:#5b6b73;">Kind regards,<br/>The Montree team<br/><a href="https://montree.xyz" style="color:#10b981;">montree.xyz</a></p>
   </div>
 </body></html>`;
-    const text = `${greeting}\n\n${body.replace(/\*\*/g, '')}\n\nKind regards,\nTredoux\nmontree.xyz`;
+    const text = `${greeting}\n\n${body.replace(/\*\*/g, '')}\n\nKind regards,\nThe Montree team\nmontree.xyz`;
     const { data, error } = await getResend().emails.send({
       from: getFromEmail(),
       to: recipientEmail,
@@ -806,7 +806,7 @@ export async function sendDemoTrialLinkReply(
       `Card on file at signup, no charge for the first 7 days. You can try every AI feature at your own pace and we can chat afterwards.\n\n` +
       `Get started here: ${trialUrl}\n\n` +
       `Or if you'd prefer a 20-minute walkthrough on a call first, reply with a few times that work for you this week and I'll send a calendar invite.\n\n` +
-      `Kind regards,\nTredoux\nmontree.xyz`;
+      `Kind regards,\nThe Montree team\nmontree.xyz`;
     const html = `<!doctype html>
 <html><body style="margin:0;padding:0;background:#f7f9f8;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#0a1a0f;">
   <div style="max-width:540px;margin:24px auto;padding:28px;background:#fff;border-radius:14px;border:1px solid rgba(52,211,153,0.18);">
@@ -817,7 +817,7 @@ export async function sendDemoTrialLinkReply(
       <a href="${trialUrl}" style="display:inline-block;padding:12px 24px;background:#10b981;color:#fff;font-weight:600;text-decoration:none;border-radius:10px;">Get started →</a>
     </p>
     <p style="font-size:15px;line-height:1.6;margin:0 0 24px;color:#1f2d24;">Or if you'd prefer a 20-minute walkthrough on a call first, reply with a few times that work for you this week and I'll send a calendar invite.</p>
-    <p style="font-size:14px;line-height:1.55;margin:24px 0 8px;color:#5b6b73;">Kind regards,<br/>Tredoux<br/><a href="https://montree.xyz" style="color:#10b981;">montree.xyz</a></p>
+    <p style="font-size:14px;line-height:1.55;margin:24px 0 8px;color:#5b6b73;">Kind regards,<br/>The Montree team<br/><a href="https://montree.xyz" style="color:#10b981;">montree.xyz</a></p>
   </div>
 </body></html>`;
     const { data, error } = await getResend().emails.send({

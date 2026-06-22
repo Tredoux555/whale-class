@@ -37,7 +37,7 @@ export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
     date: '2026-05-11',
     title: 'Real money flows — Money tab + Stripe Connect payouts',
     summary:
-      "If you're a principal, your billing now lands as a clean P&L view for Tredoux. If you're an agent, your earnings are now read from actual paid + pending payouts (not estimates). And the Stripe Connect wire-out automation means payouts are one-click for super-admin.",
+      "If you're a principal, your billing now lands as a clean P&L view. If you're an agent, your earnings are now read from actual paid + pending payouts (not estimates). And the Stripe Connect wire-out automation means payouts are one-click for super-admin.",
     audience: 'all',
     highlights: [
       'Super-admin Money tab with full P&L (Revenue − Direct costs − Commissions − Op-expenses = Margin)',

@@ -316,7 +316,7 @@ export default function AvailabilityEditor() {
 
       {migrationPending && (
         <div style={{ padding: 14, borderRadius: 12, marginBottom: 18, background: 'rgba(232,201,106,0.10)', border: '1px solid rgba(232,201,106,0.40)', color: T.gold, fontSize: 13 }}>
-          ⚠️ The appointments table isn&apos;t set up yet. Tredoux needs to run <code>migrations/216_appointments.sql</code>.
+          ⚠️ This feature isn&apos;t set up yet — the Montree team is finishing it.
         </div>
       )}
 

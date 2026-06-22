@@ -392,7 +392,7 @@ function BillingPageContent() {
               <p className="text-white/55 text-xs">
                 {t('billing.altPaymentQ')}{' '}
                 <a
-                  href="mailto:tredoux555@gmail.com?subject=Montree%20billing%20—%20alternative%20payment&body=Hi%20Tredoux,%0A%0AI%27d%20like%20to%20talk%20about%20paying%20for%20Montree%20outside%20Stripe%20Checkout.%20Our%20situation%20is:%0A%0A"
+                  href="mailto:tredoux555@gmail.com?subject=Montree%20billing%20—%20alternative%20payment&body=Hi%20Montree%20team,%0A%0AI%27d%20like%20to%20talk%20about%20paying%20for%20Montree%20outside%20Stripe%20Checkout.%20Our%20situation%20is:%0A%0A"
                   className="text-emerald-300 hover:text-emerald-200 underline underline-offset-2"
                 >
                   {t('billing.altPaymentLink')}
