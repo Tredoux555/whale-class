@@ -51,8 +51,12 @@ async function spaceForCustomer(supabase: Supa, customerId: string | null): Prom
     .eq('stripe_customer_id', customerId)
     .limit(1)
     .maybeSingle();
-  if (error || !data) return null;
-  return (data.space as string) ?? null;
+  // A DB ERROR must NOT be swallowed as "not our customer" — returning null on a
+  // transient blip would ack a real paid event (Stripe won't retry a 200) and the
+  // customer would never activate. Throw so the route 500s and Stripe retries.
+  // Only a genuine no-row (data == null, no error) means "not ours" → ack-skip.
+  if (error) throw new Error(`spaceForCustomer lookup failed: ${error.message}`);
+  return data ? ((data.space as string) ?? null) : null;
 }
 
 /** Insert a ledger row; swallow the (source, source_ref) unique-violation replay. */
@@ -107,7 +111,7 @@ async function setSubscriptionState(
 
 // Read invoice fields through a loose shape — Stripe has moved some of these
 // (tax, subscription) across SDK type versions; the runtime fields are present
-// for the pinned 2024-12-18.acacia API version regardless of installed types.
+// for the pinned API version regardless of the installed type definitions.
 interface InvoiceFields {
   id: string;
   currency?: string;
