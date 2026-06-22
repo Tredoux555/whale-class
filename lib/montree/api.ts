@@ -11,6 +11,8 @@
 //     body: JSON.stringify({ name: 'Alice', age: 4 }),
 //   });
 
+import { recordDebugError } from '@/lib/montree/debug/error-log';
+
 const TOKEN_KEY = 'montree_token';
 
 // In-flight GET request deduplication — prevents duplicate concurrent fetches
@@ -145,8 +147,13 @@ export async function montreeApi(
     clearTimeout(timeoutId);
 
     if (!response) {
-      // All attempts failed with network error — rethrow the last one so the
-      // caller's catch() handles it.
+      // All attempts failed with network error — record for the on-screen
+      // monitor, then rethrow the last one so the caller's catch() handles it.
+      recordDebugError({
+        kind: 'api',
+        origin: `${method} ${url}`,
+        message: lastError instanceof Error ? lastError.message : 'Network request failed',
+      });
       throw lastError || new Error('Network request failed');
     }
 
@@ -155,6 +162,17 @@ export async function montreeApi(
       clearToken();
       // Don't redirect here — let the calling component handle it
       // (some pages may want to show a message, others redirect to login)
+    }
+
+    // Surface any error status to the on-screen monitor (cheap, capped,
+    // no-ops visually unless the user has debug mode on).
+    if (response.status >= 400) {
+      recordDebugError({
+        kind: 'api',
+        origin: `${method} ${url}`,
+        status: response.status,
+        message: response.statusText || `HTTP ${response.status}`,
+      });
     }
 
     return response;

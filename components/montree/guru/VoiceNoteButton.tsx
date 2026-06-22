@@ -58,14 +58,17 @@ export default function VoiceNoteButton({ onTranscription, disabled }: VoiceNote
           const ext = (recorder.mimeType || '').includes('mp4') ? 'mp4' : 'webm';
           formData.append('audio', blob, `recording.${ext}`);
 
+          // Bounded timeout so a hung network/route can't leave the button
+          // spinning forever. The route itself caps + retries server-side;
+          // on failure we drop back to idle so the user can tap to retry.
           const res = await fetch('/api/montree/guru/transcribe', {
             method: 'POST',
             body: formData,
+            signal: AbortSignal.timeout(80000),
           });
-          if (!res.ok) throw new Error(`Transcription failed: ${res.status}`);
 
-          const data = await res.json();
-          if (data.success && data.text) {
+          const data = await res.json().catch(() => ({}));
+          if (res.ok && data.success && data.text) {
             onTranscription(data.text);
           } else {
             setError(data.error || t('voice.transcriptionFailed'));
