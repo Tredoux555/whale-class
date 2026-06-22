@@ -84,3 +84,33 @@ lint misses) BEFORE every push — not eslint alone.
 tsc --noEmit clean across coach/family/image surface; eslint clean on all changed files;
 independent seal audit 8/8; migrations 266+267 run + verified; every push staged-diff-checked
 to only the intended files.
+
+---
+
+## Continued (later Jun 21) — deploy + ops/backups
+
+**Deploy:** all work on `main` (`2b1272ee` → `3816b9eb` → `3fca2f79` → `9b1d3633` handoff).
+The first family commit RED the build (missing barrel exports); `3816b9eb` fixed it +
+verified with a real `tsc` pass. The green redeploy follows that commit — confirm on Railway
+if any doubt, but the export gap is closed and the surface type-checks.
+
+**Coach vision is live** (`3816b9eb`): 📎 on the full Coach page + floating coach reads
+images (Sonnet vision, no OCR, image never persisted, adult + child). No migration.
+
+**Two-tier model + marketing LOCKED:** `docs/lyf-coach/LYF_COACH_GTM_PLAN.md` (Sealed first
+~$15–20, Family ~$50 gated; brain = gentle default + optional steer; **App Store is action #1**)
++ `LYF_COACH_SCRIPTS.md`.
+
+**Backups (ops, this session — not code):**
+- **Master Brain snapshot** (~2.17 GB logical, 27,603 files, node_modules/.next excluded,
+  full `.git` history) copied to the **exFAT "Extreme SSD"** drive at
+  `/Volumes/Extreme SSD/MasterBrain-Backup-2026-06-21` — that drive is now **unplugged but holds the backup**.
+- The **1 TB "Extreme 55DD"** drive (which had an old Time Machine backup + an "Extreme SSD"
+  volume, both void) was **erased → single APFS volume → encrypted Time Machine**, now running
+  (~183 GB full-system first backup). Encryption password is Tredoux's (only key). Three-way
+  protection now: live (Railway/Supabase) + Master Brain snapshot + encrypted Time Machine.
+
+**Still pending for next session:** (1) **captain-directive into the Family Brain** (offered,
+NOT built); (2) **App Store Phase 0** (Apple enrolment → hard-requirements → TestFlight → ship
+Sealed Individual); (3) Family public tier regulatory gate. Run `npm install` in `montree`
+before any local build (node_modules not in the snapshot, by design).
