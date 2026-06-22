@@ -28,6 +28,16 @@ export const COACH_SONNET_CAP_PAID = 500;
  */
 export const COACH_SONNET_WARN_MARGIN = 20;
 
+/**
+ * Anti-abuse overshoot ceiling. The model is pinned per conversation, so a
+ * conversation that started on Sonnet stays on Sonnet even past the cap — but
+ * only up to `cap + COACH_SONNET_OVERSHOOT`. Beyond that a still-open thread is
+ * hard-dropped to the quieter model mid-conversation, so one never-closed
+ * conversation can't farm unlimited Sonnet. Overshoot cost is accepted; tone
+ * consistency within a sitting is the priority.
+ */
+export const COACH_SONNET_OVERSHOOT = 100;
+
 /** The applicable monthly Sonnet cap for an entitlement (paid vs free). */
 export function sonnetCapFor(entitlement: { entitled: boolean }): number {
   return entitlement.entitled ? COACH_SONNET_CAP_PAID : COACH_SONNET_CAP_FREE;

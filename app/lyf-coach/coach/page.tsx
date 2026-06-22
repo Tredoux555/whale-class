@@ -1,12 +1,11 @@
 'use client';
 
-// The Coach — full conversation page. Reflects on the diary, guards against
-// overcommitment, plans the day/week with built-in rest. Reads ?reflect=<id>
-// from the URL (via window.location, per the project's Suspense-avoidance
-// pattern) to kick off a reflection on a specific entry.
+// Lyf Coach — the public conversation surface. Reuses the SAME shared coach
+// machinery as the Sanctuary coach (useCoachChat provider, voice, image, the
+// prompt-economy meter + [Upgrade]) — only the chrome differs: no diary/journal,
+// no reflect kickoff, just a clean coach for a word-of-mouth subscriber.
 
 import { useEffect, useRef, useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { useCoachChat } from '@/lib/story/coach/use-coach-chat';
 import { useVoiceRecord } from '@/lib/story/coach/use-voice-record';
 import { fileToCoachImage, type CoachImage } from '@/lib/story/coach/image-attach';
@@ -15,7 +14,7 @@ import CoachUpgradeButton from '@/components/story/personal/CoachUpgradeButton';
 import { T } from '@/lib/story/personal-theme';
 
 const TOOL_LABEL: Record<string, string> = {
-  read_diary: 'reading your diary',
+  read_diary: 'reflecting',
   read_projects: 'looking at your projects',
   check_load: 'checking your load',
   plan_day: 'planning today',
@@ -34,8 +33,7 @@ const SUGGESTIONS = [
   'Plan my week.',
 ];
 
-export default function CoachPage() {
-  const router = useRouter();
+export default function LyfCoachConversationPage() {
   const { messages, busy, send, reset } = useCoachChat();
   const [draft, setDraft] = useState('');
   const { recording, transcribing, error: voiceError, toggle: toggleMic } = useVoiceRecord(
@@ -45,7 +43,6 @@ export default function CoachPage() {
   const [imgError, setImgError] = useState('');
   const fileRef = useRef<HTMLInputElement | null>(null);
   const scrollRef = useRef<HTMLDivElement | null>(null);
-  const kickedOff = useRef(false);
 
   const onPickImage = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0];
@@ -60,26 +57,6 @@ export default function CoachPage() {
       setImgError('Could not read that image.');
     }
   };
-
-  // Reflect-on-entry kickoff from ?reflect=<id>.
-  useEffect(() => {
-    if (kickedOff.current) return;
-    kickedOff.current = true;
-    if (typeof window === 'undefined') return;
-    const params = new URLSearchParams(window.location.search);
-    const reflectId = params.get('reflect');
-    const ask = params.get('ask');
-    if (reflectId && /^[0-9a-f-]{36}$/i.test(reflectId)) {
-      void send('Reflect on this diary entry.', {
-        reflectEntryId: reflectId,
-        displayText: 'Reflect on this entry ✦',
-      });
-      window.history.replaceState(null, '', '/story/admin/coach');
-    } else if (ask && ask.trim()) {
-      void send(ask.trim().slice(0, 400));
-      window.history.replaceState(null, '', '/story/admin/coach');
-    }
-  }, [send]);
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' });
@@ -98,16 +75,11 @@ export default function CoachPage() {
     <div style={{ display: 'flex', flexDirection: 'column', minHeight: 'calc(100dvh - 200px)' }}>
       <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 16 }}>
         <h1 style={{ fontFamily: T.serif, fontSize: 28, fontWeight: 600, margin: 0, letterSpacing: '-0.4px' }}>Coach</h1>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-          <button onClick={() => router.push('/story/admin/diary')} style={{ appearance: 'none', border: 'none', background: 'transparent', color: T.textDim, fontSize: 13, cursor: 'pointer' }}>
-            📓 Journal
+        {messages.length > 0 && (
+          <button onClick={reset} style={{ appearance: 'none', border: 'none', background: 'transparent', color: T.textDim, fontSize: 13, cursor: 'pointer' }}>
+            New conversation
           </button>
-          {messages.length > 0 && (
-            <button onClick={reset} style={{ appearance: 'none', border: 'none', background: 'transparent', color: T.textDim, fontSize: 13, cursor: 'pointer' }}>
-              New conversation
-            </button>
-          )}
-        </div>
+        )}
       </div>
 
       <div ref={scrollRef} style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 16, paddingBottom: 12 }}>
@@ -124,7 +96,7 @@ export default function CoachPage() {
                 color: T.text, fontFamily: T.sans, fontSize: 14.5, fontWeight: 600, padding: '13px 15px',
               }}
             >
-              ✦ Start my first session — let Coach get to know you
+              ✦ Start my first session — let your coach get to know you
             </button>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 12 }}>
               {SUGGESTIONS.map((s) => (
@@ -181,7 +153,6 @@ export default function CoachPage() {
       {voiceError && <div style={{ color: '#f87171', fontSize: 12.5, padding: '8px 2px 0' }}>{voiceError}</div>}
       {imgError && <div style={{ color: '#f87171', fontSize: 12.5, padding: '8px 2px 0' }}>{imgError}</div>}
 
-      {/* pending image to send */}
       {pendingImg && (
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0 2px' }}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -191,7 +162,6 @@ export default function CoachPage() {
         </div>
       )}
 
-      {/* composer */}
       <input ref={fileRef} type="file" accept="image/*" onChange={onPickImage} style={{ display: 'none' }} />
       <div style={{ display: 'flex', gap: 8, alignItems: 'flex-end', paddingTop: 12, borderTop: `1px solid ${T.borderSoft}` }}>
         <button
@@ -215,7 +185,7 @@ export default function CoachPage() {
             flex: 1, resize: 'none', maxHeight: 140,
             background: 'rgba(255,255,255,0.05)', border: `1px solid ${T.borderSoft}`,
             borderRadius: 14, outline: 'none', color: T.text, fontFamily: T.sans,
-            fontSize: 15, lineHeight: 1.5, padding: '11px 14px',
+            fontSize: 16, lineHeight: 1.5, padding: '11px 14px',
           }}
         />
         <button

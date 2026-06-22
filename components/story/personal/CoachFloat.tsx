@@ -11,6 +11,7 @@ import { useCoachChat } from '@/lib/story/coach/use-coach-chat';
 import { useVoiceRecord } from '@/lib/story/coach/use-voice-record';
 import { fileToCoachImage, type CoachImage } from '@/lib/story/coach/image-attach';
 import Markdown from './Markdown';
+import CoachUpgradeButton from './CoachUpgradeButton';
 import { T } from '@/lib/story/personal-theme';
 
 export default function CoachFloat() {
@@ -114,10 +115,15 @@ export default function CoachFloat() {
                     )}
                     {m.text}
                   </div>
-                ) : m.text ? (
-                  <Markdown text={m.text} style={{ fontSize: 14, color: m.error ? '#f87171' : 'rgba(255,255,255,0.88)' }} />
                 ) : (
-                  <span style={{ color: T.textDim, fontSize: 13 }}>thinking…</span>
+                  <>
+                    {m.text ? (
+                      <Markdown text={m.text} style={{ fontSize: 14, color: m.error ? '#f87171' : 'rgba(255,255,255,0.88)' }} />
+                    ) : (
+                      <span style={{ color: T.textDim, fontSize: 13 }}>thinking…</span>
+                    )}
+                    {m.notice === 'quiet' && <CoachUpgradeButton />}
+                  </>
                 )}
               </div>
             ))}
