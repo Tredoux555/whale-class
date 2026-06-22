@@ -18,6 +18,9 @@ import AppLockOverlay from "@/components/montree/AppLockOverlay";
 // briefly confirms 'Back online' when connectivity returns. Pointer-events
 // none, so it never blocks interaction. Self-gates pathname.
 import OnlineStatusBanner from "@/components/montree/OnlineStatusBanner";
+// On-screen error monitor for tablet testing. Hidden by default; enable on the
+// device with ?debug=1. Self-gates (renders null unless debug mode is on).
+import DebugErrorMonitor from "@/components/montree/DebugErrorMonitor";
 import { isValidLocale, DEFAULT_LOCALE, type Locale } from "@/lib/montree/i18n/locales";
 
 export const metadata: Metadata = {
@@ -128,6 +131,7 @@ export default async function MontreeLayout({
       <WebVitalsReporter />
       <AppLockOverlay />
       <OnlineStatusBanner />
+      <DebugErrorMonitor />
       {children}
     </I18nClientWrapper>
   );

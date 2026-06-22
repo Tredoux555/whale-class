@@ -60,19 +60,51 @@ export async function POST(request: NextRequest) {
       // Whisper will reject truly invalid formats anyway
     }
 
-    // Send to OpenAI Whisper
-    const whisperFormData = new FormData();
-    whisperFormData.append('file', audioFile, audioFile.name || 'recording.webm');
-    whisperFormData.append('model', 'whisper-1');
-    whisperFormData.append('language', 'en');
+    // Send to OpenAI Whisper — bounded timeout + one retry on transient
+    // failure (network blip / 429 / 5xx). A hung OpenAI call must not eat the
+    // whole maxDuration window and leave the client spinning. FormData is
+    // rebuilt per attempt (a consumed multipart stream can't be re-sent).
+    const callWhisper = (): Promise<Response> => {
+      const wf = new FormData();
+      wf.append('file', audioFile, audioFile.name || 'recording.webm');
+      wf.append('model', 'whisper-1');
+      wf.append('language', 'en');
+      return fetch('https://api.openai.com/v1/audio/transcriptions', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${OPENAI_API_KEY}` },
+        body: wf,
+        signal: AbortSignal.timeout(35000), // 35s/attempt → ≤~71s worst case, under maxDuration=90
+      });
+    };
 
-    const whisperResponse = await fetch('https://api.openai.com/v1/audio/transcriptions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${OPENAI_API_KEY}`,
-      },
-      body: whisperFormData,
-    });
+    let whisperResponse: Response | null = null;
+    let lastErr: unknown = null;
+    for (let attempt = 1; attempt <= 2; attempt++) {
+      try {
+        const r = await callWhisper();
+        // Retry once on transient server-side failure
+        if ((r.status === 429 || r.status >= 500) && attempt === 1) {
+          await new Promise((res) => setTimeout(res, 600));
+          continue;
+        }
+        whisperResponse = r;
+        break;
+      } catch (err) {
+        lastErr = err; // network error or AbortSignal timeout
+        if (attempt === 1) {
+          await new Promise((res) => setTimeout(res, 600));
+          continue;
+        }
+      }
+    }
+
+    if (!whisperResponse) {
+      console.error('[Transcribe] Whisper unreachable after retry:', lastErr);
+      return NextResponse.json(
+        { success: false, error: 'Transcription timed out — please try again' },
+        { status: 504 }
+      );
+    }
 
     if (!whisperResponse.ok) {
       console.error('[Transcribe] Whisper API error:', whisperResponse.status);
