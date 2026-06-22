@@ -20,8 +20,12 @@ import { assertPeriodOpen, periodMonthOf } from '@/lib/montree/finance/period-lo
 export const dynamic = 'force-dynamic';
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-const VALID_TYPES = ['income', 'direct_cost', 'commission', 'op_expense', 'fx_adjustment'] as const;
+// tax_collected / tax_remitted are VAT pass-through liability rows (migration 269).
+// They are valid filter values but DELIBERATELY excluded from the P&L margin —
+// collected VAT is money held for a tax authority, never revenue or cost.
+const VALID_TYPES = ['income', 'direct_cost', 'commission', 'op_expense', 'fx_adjustment', 'tax_collected', 'tax_remitted'] as const;
 type LedgerType = (typeof VALID_TYPES)[number];
+const VALID_PRODUCTS = ['montree', 'lyf_coach'] as const;
 
 interface LedgerRow {
   id: string;
@@ -41,6 +45,8 @@ interface LedgerRow {
   usd_amount: number;
   source: string;
   source_ref: string | null;
+  product: string;
+  jurisdiction: string | null;
   created_at: string;
   notes: string | null;
 }
@@ -70,6 +76,7 @@ export async function GET(request: NextRequest) {
     const sourceFilter = searchParams.get('source');
     const schoolIdFilter = searchParams.get('school_id');
     const agentIdFilter = searchParams.get('agent_id');
+    const productFilter = searchParams.get('product'); // 'montree' | 'lyf_coach' — omit for consolidated
 
     let q = supabase
       .from('montree_finance_transactions')
@@ -93,6 +100,9 @@ export async function GET(request: NextRequest) {
     if (sourceFilter) q = q.eq('source', sourceFilter);
     if (schoolIdFilter && UUID_RE.test(schoolIdFilter)) q = q.eq('school_id', schoolIdFilter);
     if (agentIdFilter && UUID_RE.test(agentIdFilter)) q = q.eq('agent_id', agentIdFilter);
+    if (productFilter && (VALID_PRODUCTS as readonly string[]).includes(productFilter)) {
+      q = q.eq('product', productFilter);
+    }
 
     const { data, error } = await q;
     if (error) {
@@ -127,6 +137,13 @@ export async function GET(request: NextRequest) {
     const fxAdj = totalsByType.fx_adjustment?.usd || 0;
     const margin = income - directCost - commission - opExpense + fxAdj;
 
+    // VAT is a pass-through LIABILITY, never P&L — collected on behalf of a tax
+    // authority and remitted to them. It is surfaced for visibility but is
+    // EXCLUDED from `margin` by design. Per-jurisdiction balance owed =
+    // tax_collected − tax_remitted (computed in the Tax view, Phase E).
+    const taxCollected = totalsByType.tax_collected?.usd || 0;
+    const taxRemitted = totalsByType.tax_remitted?.usd || 0;
+
     return NextResponse.json({
       rows,
       totals_by_type: totalsByType,
@@ -137,6 +154,12 @@ export async function GET(request: NextRequest) {
         op_expense: Math.round(opExpense * 10000) / 10000,
         fx_adjustment: Math.round(fxAdj * 10000) / 10000,
         margin: Math.round(margin * 10000) / 10000,
+      },
+      // Pass-through VAT liability (NOT part of margin).
+      tax_liability: {
+        collected: Math.round(taxCollected * 10000) / 10000,
+        remitted: Math.round(taxRemitted * 10000) / 10000,
+        owed: Math.round((taxCollected - taxRemitted) * 10000) / 10000,
       },
     });
   } catch (err) {

@@ -10,6 +10,7 @@ import {
   E2E_NO_PASSWORD,
 } from '@/lib/sanctuary-e2e/server-auth';
 import { ready } from '@/lib/sanctuary-e2e/crypto';
+import { startCoachTrial } from '@/lib/story/coach/billing';
 
 // First-login password claim.
 //
@@ -96,6 +97,11 @@ async function handleE2eClaim(
   }
 
   const space = user.space || 'tredoux';
+
+  // Instant 7-day Lyf Coach trial on account activation (no card, no Stripe
+  // object). Idempotent + best-effort — never blocks the claim/login.
+  await startCoachTrial(supabase, space);
+
   const token = await new SignJWT({ username, role: 'admin', space })
     .setProtectedHeader({ alg: 'HS256' })
     .setIssuedAt()
@@ -201,8 +207,11 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Log them straight in.
+    // Instant 7-day Lyf Coach trial on activation (idempotent, best-effort).
     const space = user.space || 'tredoux';
+    await startCoachTrial(supabase, space);
+
+    // Log them straight in.
     const token = await new SignJWT({ username, role: 'admin', space })
       .setProtectedHeader({ alg: 'HS256' })
       .setIssuedAt()
