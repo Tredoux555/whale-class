@@ -27,6 +27,8 @@ import MontreeLogo from './MonteeLogo';
 import InvitePrincipalModal from './InvitePrincipalModal';
 import { toast } from 'sonner';
 import { useFeatures } from '@/hooks/useFeatures';
+import { MENU_REGISTRY } from '@/lib/montree/menu/registry';
+import type { MenuConfig } from '@/lib/montree/menu/config';
 
 // ── Design tokens ──────────────────────────────────────────────────────────────
 const C = {
@@ -170,6 +172,11 @@ function DashboardHeader() {
   const [showInvitePrincipal, setShowInvitePrincipal] = useState(false);
   const moreMenuRef = useRef<HTMLDivElement>(null);
 
+  // Customizable menu config (per-teacher, settings.menu). null = no custom
+  // config → render the legacy flag-gated menu below (existing schools
+  // untouched). New signups are seeded with the minimal default at signup.
+  const [menuConfig, setMenuConfig] = useState<MenuConfig | null>(null);
+
   // Voice note state
   const [isRecording,      setIsRecording]      = useState(false);
   const [showChildPicker,  setShowChildPicker]  = useState(false);
@@ -230,6 +237,19 @@ function DashboardHeader() {
     if (pathname === '/montree/dashboard/menu-setup')        return 'menu-setup';
     return null;
   }, [pathname]);
+
+  // Load this teacher's custom menu config (if any). Only sets state when a
+  // config exists — otherwise menuConfig stays null and the legacy menu renders.
+  useEffect(() => {
+    const tid = session?.teacher?.id;
+    if (!tid) return;
+    let cancelled = false;
+    montreeApi('/api/montree/teacher/menu')
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => { if (!cancelled && d && d.menu) setMenuConfig(d.menu as MenuConfig); })
+      .catch(() => { /* no config / offline → legacy menu */ });
+    return () => { cancelled = true; };
+  }, [session?.teacher?.id]);
 
   useEffect(() => {
     const sess = getSession();
@@ -646,6 +666,35 @@ function DashboardHeader() {
 
               {showMoreMenu && (
                 <div role="menu" style={MENU_PANEL_STYLE}>
+                  {/* Customizable section. When the teacher has a saved menu
+                      config (settings.menu), render from it — order + visibility,
+                      config is the source of truth. Otherwise fall back to the
+                      legacy flag-gated render below, so existing schools (which
+                      have no config) are byte-for-byte unchanged. The utility
+                      items (Invite principal / Menu Management / Logout) below
+                      the divider are always shown in both branches. */}
+                  {menuConfig ? (
+                    menuConfig.items.filter((i) => i.visible).map((i) => {
+                      const def = MENU_REGISTRY[i.id];
+                      if (!def) return null;
+                      const label = def.labelKey ? t(def.labelKey) : def.label;
+                      const route = def.id === 'guru' && childIdFromPath
+                        ? `/montree/dashboard/guru?child=${childIdFromPath}`
+                        : def.route;
+                      const active = pathname === def.route
+                        || (def.route !== '/montree/dashboard' && !!pathname?.startsWith(def.route));
+                      return (
+                        <MenuRow
+                          key={def.id}
+                          icon={def.icon}
+                          label={label}
+                          active={active}
+                          onClick={() => { setShowMoreMenu(false); router.push(route); }}
+                        />
+                      );
+                    })
+                  ) : (
+                  <>
                   {/* Session 119: Classroom Overview pinned to the TOP of the
                       menu (was buried in "extras" behind menu_classroom_overview
                       flag). Tredoux explicitly asked for this — it's the most
@@ -802,6 +851,8 @@ function DashboardHeader() {
                   )}
                   {isEnabled('menu_classroom_setup') && (
                     <MenuRow icon={Settings2} label={t('nav.classroomBuilder') || 'Classroom Setup'} active={activePage === 'classroom-setup'} onClick={() => { setShowMoreMenu(false); router.push('/montree/dashboard/classroom-builder'); }} />
+                  )}
+                  </>
                   )}
                   <Divider />
 
