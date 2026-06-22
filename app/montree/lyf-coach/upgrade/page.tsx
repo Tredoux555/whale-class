@@ -23,7 +23,7 @@ export default function LyfCoachUpgradePage() {
     try {
       const token = getStoryAdminToken();
       if (!token) {
-        window.location.href = '/lyf-coach/login';
+        window.location.href = '/montree/lyf-coach/login';
         return;
       }
       const res = await fetch(path, {

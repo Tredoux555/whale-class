@@ -6,7 +6,7 @@
 // messages door here. Public accounts are role='adult' + space-scoped, so the
 // owner's family world is already sealed off server-side; this front door keeps
 // it out of sight too. Provides the shared CoachChatProvider so the coach hooks
-// work, guards the session, and bounces to /lyf-coach/login (never /story/admin).
+// work, guards the session, and bounces to /montree/lyf-coach/login (never /story/admin).
 
 import { useEffect, useState, type ReactNode } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
@@ -27,7 +27,7 @@ export default function LyfCoachAppLayout({ children }: { children: ReactNode })
     let cancelled = false;
     const token = getStoryAdminToken();
     if (!token) {
-      router.replace('/lyf-coach/login');
+      router.replace('/montree/lyf-coach/login');
       return;
     }
     (async () => {
@@ -36,12 +36,12 @@ export default function LyfCoachAppLayout({ children }: { children: ReactNode })
         if (cancelled) return;
         if (!res.ok) {
           try { sessionStorage.removeItem(SESSION_KEY); } catch { /* non-fatal */ }
-          router.replace('/lyf-coach/login');
+          router.replace('/montree/lyf-coach/login');
           return;
         }
         setReady(true);
       } catch {
-        if (!cancelled) router.replace('/lyf-coach/login');
+        if (!cancelled) router.replace('/montree/lyf-coach/login');
       }
     })();
     return () => { cancelled = true; };
@@ -56,7 +56,7 @@ export default function LyfCoachAppLayout({ children }: { children: ReactNode })
       });
     } catch { /* clear locally regardless */ }
     try { sessionStorage.removeItem(SESSION_KEY); } catch { /* non-fatal */ }
-    window.location.href = '/lyf-coach';
+    window.location.href = '/montree/lyf-coach';
   }
 
   const navBtn = (label: string, onClick: () => void, active = false): ReactNode => (
@@ -94,8 +94,8 @@ export default function LyfCoachAppLayout({ children }: { children: ReactNode })
           </button>
         </div>
         <nav style={{ maxWidth: T.column, margin: '0 auto', padding: '10px 18px 0', display: 'flex', gap: 14 }}>
-          {navBtn('Coach', () => router.push('/lyf-coach/coach'), pathname === '/lyf-coach/coach')}
-          {navBtn('Upgrade', () => router.push('/lyf-coach/upgrade'), pathname === '/lyf-coach/upgrade')}
+          {navBtn('Coach', () => router.push('/montree/lyf-coach/coach'), pathname === '/montree/lyf-coach/coach')}
+          {navBtn('Upgrade', () => router.push('/montree/lyf-coach/upgrade'), pathname === '/montree/lyf-coach/upgrade')}
         </nav>
       </header>
 

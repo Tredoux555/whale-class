@@ -10,7 +10,7 @@ import { T } from '@/lib/story/personal-theme';
 
 // Matches lib/story/personal-client.ts getStoryAdminToken().
 const SESSION_KEY = 'story_admin_session';
-const COACH_HOME = '/lyf-coach/coach';
+const COACH_HOME = '/montree/lyf-coach/coach';
 
 const inputStyle: React.CSSProperties = {
   width: '100%',

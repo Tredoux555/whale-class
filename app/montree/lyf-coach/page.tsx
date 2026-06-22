@@ -36,7 +36,7 @@ export default function LyfCoachLandingPage() {
 
         <p style={{ marginTop: 18, marginBottom: 0, fontSize: 13.5, color: T.textMid, textAlign: 'center' }}>
           Already have an account?{' '}
-          <Link href="/lyf-coach/login" style={{ color: T.emerald, textDecoration: 'none', fontWeight: 600 }}>
+          <Link href="/montree/lyf-coach/login" style={{ color: T.emerald, textDecoration: 'none', fontWeight: 600 }}>
             Sign in
           </Link>
         </p>
