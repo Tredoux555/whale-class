@@ -250,11 +250,15 @@ export async function createCoachCheckoutSession(
       mode: 'subscription',
       customer: customerId,
       line_items: [{ price: priceId, quantity: 1 }],
-      // Tax-exclusive: Stripe Tax computes the customer's local VAT and adds it
-      // on top of the $14.99 / $99. Only collects where we're registered.
-      automatic_tax: { enabled: true },
-      customer_update: { address: 'auto' },
-      tax_id_collection: { enabled: true },
+      // Stripe Tax is OFF for launch — with zero tax registrations it would
+      // collect $0 VAT anyway, and HK accounts may not have Stripe Tax. Pricing
+      // is tax-EXCLUSIVE, so when you enable Stripe Tax + register a jurisdiction
+      // (e.g. EU OSS), switch this to:
+      //   automatic_tax: { enabled: true },
+      //   customer_update: { address: 'auto' },
+      //   tax_id_collection: { enabled: true },
+      // and VAT rides on top with no price change.
+      automatic_tax: { enabled: false },
       subscription_data: { metadata: { product: COACH_PRODUCT, space } },
       success_url: `${cfg.app_url}${successPath}`,
       cancel_url: `${cfg.app_url}${cancelPath}`,
