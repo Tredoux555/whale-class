@@ -9,7 +9,7 @@ interface TrialResponse {
   success: boolean;
   code: string;
   token?: string;
-  role: 'teacher' | 'principal';
+  role: 'teacher' | 'principal' | 'homeschool_parent';
   error?: string;
   teacher?: {
     id: string;
@@ -17,6 +17,7 @@ interface TrialResponse {
     email: string | null;
     password_set_at: string | null;
   };
+  // homeschool_parent reuses the teacher shape (same table, same response) — see /api/montree/try/instant
   classroom?: {
     id: string;
     name: string;
@@ -45,7 +46,7 @@ export default function TryMontreePage() {
   const router = useRouter();
   const { t, locale } = useI18n();
   const [step, setStep] = useState<'role' | 'details' | 'creating' | 'code'>('role');
-  const [selectedRole, setSelectedRole] = useState<'teacher' | 'principal' | null>(null);
+  const [selectedRole, setSelectedRole] = useState<'teacher' | 'principal' | 'homeschool_parent' | null>(null);
   const [userName, setUserName] = useState('');
   const [schoolName, setSchoolName] = useState('');
   const [userEmail, setUserEmail] = useState('');
@@ -73,7 +74,7 @@ export default function TryMontreePage() {
     }
   }, []);
 
-  const handleRoleSelect = (role: 'teacher' | 'principal') => {
+  const handleRoleSelect = (role: 'teacher' | 'principal' | 'homeschool_parent') => {
     setSelectedRole(role);
     setStep('details');
     setError('');
@@ -84,7 +85,8 @@ export default function TryMontreePage() {
       setError(t('signup.pleaseEnterName'));
       return;
     }
-    if (!schoolName.trim()) {
+    // Parents don't name a school/classroom — the backend auto-names it "My Home".
+    if (selectedRole !== 'homeschool_parent' && !schoolName.trim()) {
       setError(selectedRole === 'principal' ? t('signup.pleaseEnterSchool') : t('signup.pleaseEnterSchoolClassroom'));
       return;
     }
@@ -158,6 +160,26 @@ export default function TryMontreePage() {
       localStorage.setItem('montree_principal', JSON.stringify(responseData.principal));
       localStorage.setItem('montree_school', JSON.stringify(responseData.school));
       router.push('/montree/principal/setup');
+    } else if (responseData.role === 'homeschool_parent' && responseData.teacher) {
+      // Homeschool parent reuses the teacher session shape but keeps its own
+      // role so the dashboard recognises the home-parent context (Guru as guide).
+      localStorage.setItem(
+        'montree_session',
+        JSON.stringify({
+          teacher: {
+            id: responseData.teacher.id,
+            name: responseData.teacher.name,
+            role: 'homeschool_parent',
+            email: responseData.teacher.email,
+            password_set: !!responseData.teacher.password_set_at,
+          },
+          school: responseData.school,
+          classroom: responseData.classroom || null,
+          loginAt: new Date().toISOString(),
+          onboarded: responseData.onboarded || false,
+        })
+      );
+      router.push('/montree/dashboard');
     }
   };
 
@@ -292,6 +314,30 @@ export default function TryMontreePage() {
                 </span>
               </button>
 
+              {/* Parent — self-serve single-child plan. Routes through the
+                  homeschool_parent flow: one "My Home" classroom, Guru as the
+                  guide, $7/mo for the one child. Always present (not part of the
+                  referral teacher/principal swap above). */}
+              <button
+                onClick={() => handleRoleSelect('homeschool_parent')}
+                className="w-full px-6 py-5 rounded-2xl text-left transition-all hover:scale-[1.01] active:scale-[0.99]"
+                style={{
+                  background: 'linear-gradient(135deg, rgba(45,118,128,0.30) 0%, rgba(10,28,28,0.55) 100%)',
+                  border: '1px solid rgba(125,205,217,0.22)',
+                  boxShadow: '0 1px 0 rgba(125,205,217,0.14) inset, 0 12px 32px -12px rgba(6,20,14,0.8)',
+                }}
+              >
+                <span className="text-lg font-medium text-white block">
+                  🏡 {t('signup.homeParent')}
+                </span>
+                <span
+                  className="text-sm font-normal mt-1 block"
+                  style={{ color: 'rgba(150,208,217,0.6)' }}
+                >
+                  {t('signup.homeParentDesc')}
+                </span>
+              </button>
+
             </div>
           </div>
         )}
@@ -313,25 +359,28 @@ export default function TryMontreePage() {
                   type="text"
                   value={userName}
                   onChange={(e) => setUserName(e.target.value)}
-                  placeholder={selectedRole === 'principal' ? t('signup.namePlaceholder.principal') : t('signup.namePlaceholder.teacher')}
+                  placeholder={selectedRole === 'principal' ? t('signup.namePlaceholder.principal') : selectedRole === 'homeschool_parent' ? t('signup.namePlaceholder.parent') : t('signup.namePlaceholder.teacher')}
                   className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder:text-white/50 focus:outline-none focus:border-emerald-400/50 focus:ring-1 focus:ring-emerald-400/30"
                   autoFocus
                 />
               </div>
 
-              <div>
-                <label className="block text-sm mb-2 text-emerald-300/70">
-                  {selectedRole === 'principal' ? t('signup.schoolName') : t('signup.schoolClassroomName')}
-                </label>
-                <input
-                  type="text"
-                  value={schoolName}
-                  onChange={(e) => setSchoolName(e.target.value)}
-                  placeholder={selectedRole === 'principal' ? t('signup.schoolPlaceholder.principal') : t('signup.schoolPlaceholder.teacher')}
-                  className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder:text-white/50 focus:outline-none focus:border-emerald-400/50 focus:ring-1 focus:ring-emerald-400/30"
-                  onKeyDown={(e) => e.key === 'Enter' && handleDetailsSubmit()}
-                />
-              </div>
+              {/* Parents skip this — they're a household of one, not a school. */}
+              {selectedRole !== 'homeschool_parent' && (
+                <div>
+                  <label className="block text-sm mb-2 text-emerald-300/70">
+                    {selectedRole === 'principal' ? t('signup.schoolName') : t('signup.schoolClassroomName')}
+                  </label>
+                  <input
+                    type="text"
+                    value={schoolName}
+                    onChange={(e) => setSchoolName(e.target.value)}
+                    placeholder={selectedRole === 'principal' ? t('signup.schoolPlaceholder.principal') : t('signup.schoolPlaceholder.teacher')}
+                    className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder:text-white/50 focus:outline-none focus:border-emerald-400/50 focus:ring-1 focus:ring-emerald-400/30"
+                    onKeyDown={(e) => e.key === 'Enter' && handleDetailsSubmit()}
+                  />
+                </div>
+              )}
 
               <div>
                 <label className="block text-sm mb-2 text-emerald-300/70">Email</label>
@@ -341,6 +390,7 @@ export default function TryMontreePage() {
                   onChange={(e) => setUserEmail(e.target.value)}
                   placeholder="e.g. sarah@school.com"
                   className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder:text-white/50 focus:outline-none focus:border-emerald-400/50 focus:ring-1 focus:ring-emerald-400/30"
+                  onKeyDown={(e) => e.key === 'Enter' && handleDetailsSubmit()}
                 />
                 <p className="text-xs text-slate-400 mt-1">So we can help you get started and recover your code</p>
               </div>
