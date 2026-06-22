@@ -244,13 +244,15 @@ If you have previous messages, build on them naturally:
 const AREA_LABELS = AREA_LABELS_EN;
 
 const INTAKE_MODE = `MODE: INTAKE
-This is a new family. Your goal:
-1. Ask about the child — personality, interests, challenges, any Montessori experience
-2. Ask 2-3 follow-up questions to understand the child deeply
-3. When you have enough info, call save_child_profile with structured data
-4. Then set up the shelf: call set_focus_work once for each of the 5 areas
-5. Call save_checkin to schedule the first weekly check-in (7 days)
-6. Explain what you've set up and walk them through the first work`;
+This is a new family. Your goal (warm and conversational — a couple of questions at a time, never a form):
+1. Ask about the child — personality, interests, challenges
+2. Gently learn how much Montessori the PARENT already knows — are they new to it, have they read a bit, or are they trained? This tells you how much to explain as you go.
+3. Ask what they already have at home to work with, and where the child mostly plays (their space) — so everything you suggest fits their real home
+4. Ask 2-3 follow-up questions to understand the child deeply
+5. When you have enough, call save_child_profile with the structured data — INCLUDING parent_knowledge_level and home_environment
+6. Then set up the shelf: call set_focus_work once for each of the 5 areas
+7. Call save_checkin to schedule the first weekly check-in (7 days)
+8. Explain what you've set up and walk them through the first work`;
 
 const CHECKIN_MODE = `MODE: WEEKLY CHECK-IN
 It's time for this child's weekly check-in. Your goal:
@@ -735,6 +737,26 @@ export function buildConversationalPrompt(
     ? `CHILD PROFILE (from intake):\n${JSON.stringify(childContext.guru_child_profile)}`
     : '';
 
+  // Parent-only: tune the voice to the PARENT's Montessori knowledge and ground
+  // suggestions in what they actually have at home (both captured during intake →
+  // guru_child_profile). Empty for teachers / before intake is done.
+  let homeFitContext = '';
+  const guruProfile = childContext.guru_child_profile as Record<string, unknown> | undefined;
+  if (guruProfile) {
+    const kl = guruProfile.parent_knowledge_level;
+    if (kl === 'none') {
+      homeFitContext += '\nPARENT KNOWLEDGE: New to Montessori — explain every term the moment you use it, assume no prior knowledge, and reassure often.\n';
+    } else if (kl === 'some') {
+      homeFitContext += '\nPARENT KNOWLEDGE: Has read a little — use plain words, name a term when it helps and explain it briefly, and don\'t over-explain the basics.\n';
+    } else if (kl === 'trained') {
+      homeFitContext += '\nPARENT KNOWLEDGE: Montessori-trained — you may speak peer-to-peer, use the proper material and concept names, and go straight to the nuance.\n';
+    }
+    const home = guruProfile.home_environment;
+    if (typeof home === 'string' && home.trim()) {
+      homeFitContext += `\nHOME ENVIRONMENT: ${home.trim()}\nPrefer activities built from what they already have; only suggest acquiring something when there's genuinely no household alternative.\n`;
+    }
+  }
+
   // Build parent emotional state context
   let parentStateContext = '';
   const parentState = childSettings?.guru_parent_current_state as Record<string, unknown> | undefined;
@@ -813,6 +835,10 @@ export function buildConversationalPrompt(
   systemPrompt += '\n\n' + shelfContext;
   if (profileContext) {
     systemPrompt += '\n\n' + profileContext;
+  }
+  // Parent-only: knowledge dial + "work with what they have"
+  if (!isTeacher && homeFitContext) {
+    systemPrompt += '\n' + homeFitContext;
   }
   if (concernContext) {
     systemPrompt += '\n' + concernContext;
