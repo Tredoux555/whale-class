@@ -128,3 +128,78 @@ export async function sendCoachWelcomeFirst100Email(toEmail: string): Promise<vo
     console.error('[lyf-coach] welcome email threw:', e);
   }
 }
+
+// ── New-signup operator ping ─────────────────────────────────────────────────
+
+/** Where new-signup pings land. Defaults to the spec address; env-overridable. */
+function signupNotifyTo(): string {
+  return process.env.LYF_COACH_SIGNUP_NOTIFY_TO || 'hello@montree.xyz';
+}
+
+function signupNotifyHtml(opts: { username: string; when: string; founder: string }): string {
+  return `
+    <div style="background:#0a1a0f;color:#e8f0ea;font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;padding:24px;border-radius:14px;max-width:480px;margin:0 auto">
+      <h1 style="font-family:Georgia,serif;color:#fff;font-size:19px;margin:0 0 14px">New Lyf Coach signup</h1>
+      <table style="border-collapse:collapse;font-size:14px;line-height:1.6">
+        <tr><td style="color:#8fb3a0;padding:2px 14px 2px 0">Username</td><td style="color:#e8f0ea">${opts.username}</td></tr>
+        <tr><td style="color:#8fb3a0;padding:2px 14px 2px 0">Time</td><td style="color:#e8f0ea">${opts.when}</td></tr>
+        <tr><td style="color:#8fb3a0;padding:2px 14px 2px 0">Founder</td><td style="color:#e8f0ea">${opts.founder}</td></tr>
+      </table>
+      <p style="line-height:1.6;color:#8fb3a0;font-size:12px;margin-top:18px">&mdash; Lyf Coach signup ping</p>
+    </div>`;
+}
+
+/**
+ * Real-time operator ping when a new public Lyf Coach account signs up. Sent to
+ * hello@montree.xyz (signupNotifyTo). Best-effort; logs and swallows every
+ * failure — NEVER throws, NEVER blocks signup.
+ *
+ * Founder status is finalised at email verification (first 100 VERIFIED), so at
+ * signup we report whether the founder window is still open. `founderWindowOpen`
+ * is null when the verified count couldn't be read (reported as "unknown" — we
+ * never falsely imply founder status on a read error).
+ */
+export async function sendSignupNotificationEmail(opts: {
+  username: string;
+  founderWindowOpen: boolean | null;
+  verifiedCount: number | null;
+}): Promise<void> {
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) {
+    console.warn('[lyf-coach] RESEND_API_KEY missing — signup ping not sent for', opts.username);
+    return;
+  }
+  const when = new Date().toISOString();
+  const slots =
+    opts.verifiedCount != null && Number.isFinite(opts.verifiedCount)
+      ? ` (${opts.verifiedCount}/${FIRST_N_WELCOME} verified)`
+      : '';
+  const founder =
+    opts.founderWindowOpen === null
+      ? 'window status unknown'
+      : opts.founderWindowOpen
+        ? `in the founding ${FIRST_N_WELCOME} — window OPEN${slots}, confirmed when they verify their email`
+        : `NOT in the founding ${FIRST_N_WELCOME} — cohort full`;
+
+  const text =
+    `New Lyf Coach signup\n\n` +
+    `Username: ${opts.username}\n` +
+    `Time: ${when}\n` +
+    `Founder: ${founder}\n\n` +
+    `— Lyf Coach signup ping`;
+
+  try {
+    const { Resend } = await import('resend');
+    const resend = new Resend(apiKey);
+    const { error } = await resend.emails.send({
+      from: verifyFrom(),
+      to: signupNotifyTo(),
+      subject: `New Lyf Coach signup — ${opts.username}`,
+      html: signupNotifyHtml({ username: opts.username, when, founder }),
+      text,
+    });
+    if (error) console.error('[lyf-coach] signup ping send error:', error);
+  } catch (e) {
+    console.error('[lyf-coach] signup ping threw:', e);
+  }
+}
