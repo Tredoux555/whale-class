@@ -40,12 +40,31 @@ export default function LyfCoachAppLayout({ children }: { children: ReactNode })
   // login (never /story/admin) on any failure.
   useEffect(() => {
     let cancelled = false;
-    const token = getStoryAdminToken();
-    if (!token) {
-      router.replace('/lyf-coach/login');
-      return;
-    }
     (async () => {
+      // Resolve the session token. Logged-in users have it in sessionStorage
+      // (AuthForm stashes it on signup/login). A user who JUST clicked the
+      // email-verification link arrives holding ONLY the httpOnly cookie the
+      // verify redirect set — recover it via the /session bridge and mirror it
+      // into sessionStorage so they land straight in the app, never bounced to
+      // a login or confirmation page.
+      let token = getStoryAdminToken();
+      if (!token) {
+        try {
+          const sres = await fetch('/api/lyf-coach/session');
+          if (cancelled) return;
+          if (sres.ok) {
+            const sdata = (await sres.json().catch(() => null)) as { session?: string } | null;
+            if (sdata?.session) {
+              try { sessionStorage.setItem(SESSION_KEY, sdata.session); } catch { /* private mode */ }
+              token = sdata.session;
+            }
+          }
+        } catch { /* fall through to the login bounce */ }
+      }
+      if (!token) {
+        if (!cancelled) router.replace('/lyf-coach/login');
+        return;
+      }
       try {
         const res = await fetch('/api/story/admin/auth', {
           headers: { Authorization: `Bearer ${token}` },
