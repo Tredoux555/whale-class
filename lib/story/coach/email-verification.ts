@@ -5,6 +5,7 @@
 // nothing in the signup / resend paths.
 
 import { randomBytes } from 'crypto';
+import type { UntypedClient } from '@/lib/supabase-client';
 
 export const VERIFY_TOKEN_TTL_MS = 7 * 24 * 60 * 60 * 1000; // links valid 7 days
 
@@ -63,5 +64,67 @@ export async function sendCoachVerificationEmail(toEmail: string, token: string)
     if (error) console.error('[lyf-coach] verification email send error:', error);
   } catch (e) {
     console.error('[lyf-coach] verification email threw:', e);
+  }
+}
+
+// ── First-100 welcome bonus ─────────────────────────────────────────────────
+
+/** Welcome-bonus cohort size: the first N VERIFIED public accounts. */
+export const FIRST_N_WELCOME = 100;
+
+/**
+ * Count of VERIFIED public-web accounts. Called from /verify AFTER the row is
+ * flipped email_verified=true, so the just-verified account is included. Only
+ * public web signups ever run /verify, so email_verified=true IS the public
+ * cohort — owner/family rows never verify. Returns +Infinity on ANY error so a
+ * read failure can never wrongly grant the bonus.
+ */
+export async function countVerifiedPublicAccounts(supabase: UntypedClient): Promise<number> {
+  const { count, error } = await supabase
+    .from('story_admin_users')
+    .select('space', { count: 'exact', head: true })
+    .eq('email_verified', true);
+  if (error) {
+    console.warn('[lyf-coach] first-100 count error:', error.message);
+    return Number.POSITIVE_INFINITY;
+  }
+  return count ?? Number.POSITIVE_INFINITY;
+}
+
+function welcomeHtml(): string {
+  // Body text is VERBATIM per spec — do not edit the wording.
+  return `
+    <div style="background:#0a1a0f;color:#e8f0ea;font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;padding:32px;border-radius:16px;max-width:520px;margin:0 auto">
+      <h1 style="font-family:Georgia,serif;color:#fff;font-size:23px;margin:0 0 14px">You're one of the first.</h1>
+      <p style="line-height:1.7;color:#cfe3d6;font-size:15px">You're one of the first 100 people through the door. I built this alone, in Beijing, while teaching kindergarten by day. As a thank you &mdash; I've given you 1000 prompts this month instead of 500. Full depth, no limits. Use it well. Tell me what you think.</p>
+      <p style="line-height:1.6;color:#8fb3a0;font-size:13px;margin-top:24px">&mdash; The Lyf Coach team</p>
+    </div>`;
+}
+
+/**
+ * Send the first-100 welcome email (verbatim copy). Best-effort; NEVER throws.
+ * Sender resolves to hello@montree.xyz via verifyFrom().
+ */
+export async function sendCoachWelcomeFirst100Email(toEmail: string): Promise<void> {
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) {
+    console.warn('[lyf-coach] RESEND_API_KEY missing — welcome email not sent to', toEmail);
+    return;
+  }
+  const text =
+    "You're one of the first 100 people through the door. I built this alone, in Beijing, while teaching kindergarten by day. As a thank you — I've given you 1000 prompts this month instead of 500. Full depth, no limits. Use it well. Tell me what you think.\n\n— The Lyf Coach team";
+  try {
+    const { Resend } = await import('resend');
+    const resend = new Resend(apiKey);
+    const { error } = await resend.emails.send({
+      from: verifyFrom(),
+      to: toEmail,
+      subject: "You're one of the first.",
+      html: welcomeHtml(),
+      text,
+    });
+    if (error) console.error('[lyf-coach] welcome email send error:', error);
+  } catch (e) {
+    console.error('[lyf-coach] welcome email threw:', e);
   }
 }

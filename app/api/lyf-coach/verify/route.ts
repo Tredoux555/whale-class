@@ -7,7 +7,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/story-db';
 import { mintCoachPublicToken, coachSessionCookie } from '@/lib/story/coach/public-account';
-import { VERIFY_TOKEN_TTL_MS } from '@/lib/story/coach/email-verification';
+import {
+  VERIFY_TOKEN_TTL_MS,
+  FIRST_N_WELCOME,
+  countVerifiedPublicAccounts,
+  sendCoachWelcomeFirst100Email,
+} from '@/lib/story/coach/email-verification';
+import { currentPeriodMonth } from '@/lib/story/coach/entitlement';
 
 export const dynamic = 'force-dynamic';
 
@@ -59,6 +65,41 @@ export async function GET(req: NextRequest) {
   if (upErr) {
     console.error('[lyf-coach/verify] confirm error:', upErr);
     return bounce('/lyf-coach/login?verify=error');
+  }
+
+  // First-100 welcome bonus. Single-fire: the token was just cleared above, so a
+  // replayed link bounces 'invalid' before reaching here. Entirely best-effort —
+  // a failure here must NEVER block the login redirect below. We only send the
+  // "1000 prompts" email if the stamp actually landed (so we never promise a cap
+  // the entitlement layer can't honour, e.g. if migration 271 hasn't run yet).
+  try {
+    const verifiedCount = await countVerifiedPublicAccounts(supabase);
+    console.log(
+      `[lyf-coach/verify][welcome] verifiedCount=${verifiedCount} threshold=${FIRST_N_WELCOME} space=${row.space}`,
+    );
+    if (verifiedCount <= FIRST_N_WELCOME) {
+      const period = currentPeriodMonth();
+      const { error: bonusErr } = await supabase
+        .from('story_admin_users')
+        .update({ welcome_bonus_period: period })
+        .eq('space', row.space);
+      if (bonusErr) {
+        if (bonusErr.code === '42703') {
+          console.warn('[lyf-coach/verify][welcome] welcome_bonus_period column missing — run migration 271; email skipped');
+        } else {
+          console.error('[lyf-coach/verify][welcome] stamp error:', bonusErr);
+        }
+      } else {
+        // row.username IS the lowercased email on public accounts.
+        console.log(`[lyf-coach/verify][welcome] stamped ${period} — sending welcome to ${row.username}`);
+        await sendCoachWelcomeFirst100Email(row.username);
+        console.log('[lyf-coach/verify][welcome] welcome email send attempted');
+      }
+    } else {
+      console.log('[lyf-coach/verify][welcome] cohort full — no bonus');
+    }
+  } catch (e) {
+    console.error('[lyf-coach/verify][welcome] step failed:', e);
   }
 
   // Log in on this device too, then land in the coach. The cookie->sessionStorage
