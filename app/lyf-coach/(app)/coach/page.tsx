@@ -78,6 +78,9 @@ export default function LyfCoachConversationPage() {
     // when the founder bonus was actually granted. Show the line once, then strip
     // the param so a refresh won't replay it.
     const welcome = params.get('welcome') === '1';
+    // One-time post-hydration URL read (runs once via the kickedOff guard); a lazy
+    // useState initializer reading window would cause an SSR hydration mismatch.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (welcome) setFounderWelcome(true);
     if (ask && ask.trim()) {
       void send(ask.trim().slice(0, 400));
