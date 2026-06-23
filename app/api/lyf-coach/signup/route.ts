@@ -10,7 +10,13 @@ import {
   coachSessionCookie,
   MIN_PASSWORD_LEN,
 } from '@/lib/story/coach/public-account';
-import { generateVerifyToken, sendCoachVerificationEmail } from '@/lib/story/coach/email-verification';
+import {
+  generateVerifyToken,
+  sendCoachVerificationEmail,
+  countVerifiedPublicAccounts,
+  sendSignupNotificationEmail,
+  FIRST_N_WELCOME,
+} from '@/lib/story/coach/email-verification';
 
 // POST /api/lyf-coach/signup — PUBLIC, word-of-mouth Lyf Coach signup.
 //
@@ -133,6 +139,27 @@ export async function POST(req: NextRequest) {
         await sendCoachVerificationEmail(email, verifyToken);
       } catch (e) {
         console.error('[lyf-coach/signup] verification email step failed:', e);
+      }
+    })();
+
+    // Fire-and-forget operator ping: a real-time heads-up that a new account
+    // signed up. Kept SEPARATE from the verification step above so it fires even
+    // if the verify-token persist 42703's out. NEVER blocks or breaks signup.
+    // Founder status is finalised at /verify (first 100 VERIFIED); here we report
+    // whether the founder window is still open as a projection. countVerified...
+    // returns +Infinity on a read error -> founderWindowOpen=null (never a false
+    // founder claim).
+    void (async () => {
+      try {
+        const verifiedCount = await countVerifiedPublicAccounts(supabase);
+        const known = Number.isFinite(verifiedCount);
+        await sendSignupNotificationEmail({
+          username: email,
+          founderWindowOpen: known ? verifiedCount < FIRST_N_WELCOME : null,
+          verifiedCount: known ? verifiedCount : null,
+        });
+      } catch (e) {
+        console.error('[lyf-coach/signup] signup ping step failed:', e);
       }
     })();
 
