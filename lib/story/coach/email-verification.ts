@@ -92,12 +92,11 @@ export async function countVerifiedPublicAccounts(supabase: UntypedClient): Prom
 }
 
 function welcomeHtml(): string {
-  // Bright-emerald celebration card, white text. Body text is VERBATIM per spec —
-  // do not edit the wording.
+  // Bright-emerald celebration card, white text. Copy is fixed per spec.
   return `
     <div style="background:#00a86b;color:#ffffff;font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;padding:36px 32px;border-radius:16px;max-width:520px;margin:0 auto">
       <h1 style="font-family:Georgia,serif;color:#ffffff;font-size:24px;margin:0 0 16px">You're one of the first.</h1>
-      <p style="line-height:1.7;color:#ffffff;font-size:15px;margin:0">You're one of the first 100 people through the door. I built this alone, in Beijing, while teaching kindergarten by day. As a thank you &mdash; I've given you 1000 prompts this month instead of 500. Full depth, no limits. Use it well. Tell me what you think.</p>
+      <p style="line-height:1.7;color:#ffffff;font-size:15px;margin:0">Congratulations &mdash; you're one of the first 100 people to sign up. As a thank you, I've unlocked 1000 prompts for you this month. Full depth, no limits. Use it well.</p>
       <p style="line-height:1.6;color:rgba(255,255,255,0.85);font-size:13px;margin:26px 0 0">&mdash; The Lyf Coach team</p>
     </div>`;
 }
@@ -113,7 +112,7 @@ export async function sendCoachWelcomeFirst100Email(toEmail: string): Promise<vo
     return;
   }
   const text =
-    "You're one of the first 100 people through the door. I built this alone, in Beijing, while teaching kindergarten by day. As a thank you — I've given you 1000 prompts this month instead of 500. Full depth, no limits. Use it well. Tell me what you think.\n\n— The Lyf Coach team";
+    "Congratulations — you're one of the first 100 people to sign up. As a thank you, I've unlocked 1000 prompts for you this month. Full depth, no limits. Use it well.\n\n— The Lyf Coach team";
   try {
     const { Resend } = await import('resend');
     const resend = new Resend(apiKey);

@@ -38,6 +38,8 @@ const SUGGESTIONS = [
   'Plan my week.',
 ];
 
+const FOUNDER_WELCOME_DISMISSED_KEY = 'lyfcoach.founderWelcomeDismissed.v1';
+
 export default function LyfCoachConversationPage() {
   const { messages, busy, send, reset } = useCoachChat();
   const [draft, setDraft] = useState('');
@@ -78,10 +80,12 @@ export default function LyfCoachConversationPage() {
     // when the founder bonus was actually granted. Show the line once, then strip
     // the param so a refresh won't replay it.
     const welcome = params.get('welcome') === '1';
+    let founderDismissed = false;
+    try { founderDismissed = localStorage.getItem(FOUNDER_WELCOME_DISMISSED_KEY) === '1'; } catch { /* private mode */ }
     // One-time post-hydration URL read (runs once via the kickedOff guard); a lazy
     // useState initializer reading window would cause an SSR hydration mismatch.
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    if (welcome) setFounderWelcome(true);
+    if (welcome && !founderDismissed) setFounderWelcome(true);
     if (ask && ask.trim()) {
       void send(ask.trim().slice(0, 400));
     }
@@ -103,6 +107,11 @@ export default function LyfCoachConversationPage() {
     void send(t, img ? { image: { media_type: img.media_type, data: img.data }, imagePreview: img.previewUrl } : undefined);
   };
 
+  const dismissFounderWelcome = () => {
+    setFounderWelcome(false);
+    try { localStorage.setItem(FOUNDER_WELCOME_DISMISSED_KEY, '1'); } catch { /* private mode */ }
+  };
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', minHeight: 'calc(100dvh - 200px)' }}>
       <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 16 }}>
@@ -114,17 +123,22 @@ export default function LyfCoachConversationPage() {
         )}
       </div>
 
-      {founderWelcome && messages.length === 0 && (
-        <div
-          role="status"
+      {founderWelcome && (
+        <button
+          type="button"
+          onClick={dismissFounderWelcome}
+          aria-label="Dismiss"
           style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12,
+            width: '100%', textAlign: 'left', appearance: 'none', cursor: 'pointer',
             margin: '0 0 16px', padding: '12px 14px', borderRadius: 12,
             border: '1px solid rgba(52,211,153,0.38)', background: 'rgba(52,211,153,0.09)',
-            color: T.emerald, fontSize: 14, fontWeight: 600, lineHeight: 1.5,
+            color: T.emerald, fontFamily: T.sans, fontSize: 14, fontWeight: 600, lineHeight: 1.5,
           }}
         >
-          Congratulations &mdash; you&apos;re one of the first 100. Log into the app to receive your bonus.
-        </div>
+          <span>Congratulations &mdash; you&apos;re one of the first 100. You have 1000 prompts this month.</span>
+          <span aria-hidden style={{ opacity: 0.65, fontSize: 16, flexShrink: 0 }}>&times;</span>
+        </button>
       )}
 
       <div ref={scrollRef} style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 16, paddingBottom: 12 }}>
