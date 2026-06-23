@@ -3,7 +3,7 @@
 // Super-admin — Lyf Coach dashboard. Custom overview (signups, visits, activity,
 // MRR, coach usage) + subscriber roster + VAT/tax. BILLING & USAGE METADATA ONLY —
 // never coach conversation content (privacy boundary, rule #319). Token via
-// sessionStorage 'super-admin-token'; backing APIs enforce verifySuperAdminAuth.
+// sessionStorage 'sa_session'; backing APIs enforce verifySuperAdminAuth.
 
 import { useCallback, useEffect, useState, type CSSProperties } from 'react';
 import { useRouter } from 'next/navigation';
@@ -62,7 +62,7 @@ export default function LyfCoachAdminPage() {
         fetch('/api/montree/super-admin/lyf-coach/tax', { headers: { 'x-super-admin-token': t } }),
       ]);
       if (oRes.status === 401 || sRes.status === 401 || tRes.status === 401) {
-        sessionStorage.removeItem('super-admin-token');
+        sessionStorage.removeItem('sa_session');
         router.replace('/montree/super-admin');
         return;
       }
@@ -79,7 +79,7 @@ export default function LyfCoachAdminPage() {
   }, [router]);
 
   useEffect(() => {
-    const t = typeof window !== 'undefined' ? sessionStorage.getItem('super-admin-token') : null;
+    const t = typeof window !== 'undefined' ? sessionStorage.getItem('sa_session') : null;
     if (!t) { router.replace('/montree/super-admin'); return; }
     setToken(t);
     void load(t);
