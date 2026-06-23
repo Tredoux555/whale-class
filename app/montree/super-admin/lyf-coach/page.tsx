@@ -30,6 +30,8 @@ type Tab = 'overview' | 'subscribers' | 'billing';
 const BG = '#0a1a0f';
 const EMERALD = '#34d399';
 const GOLD = '#E8C96A';
+const DANGER = '#f87171';
+const OWNER_SPACE = 'tredoux'; // owner's own sanctuary — never offer cancel/delete
 const usd = (n: number) => `$${(Math.round(n * 100) / 100).toFixed(2)}`;
 const fmtDate = (s: string | null) => (s ? new Date(s).toLocaleDateString() : '—');
 const fmtDuration = (sec: number) => (sec >= 60 ? `${Math.floor(sec / 60)}m ${sec % 60}s` : `${sec}s`);
@@ -50,6 +52,11 @@ export default function LyfCoachAdminPage() {
   const [taxTotals, setTaxTotals] = useState<{ collected: number; remitted: number; owed: number } | null>(null);
   const [regs, setRegs] = useState<Registration[]>([]);
   const [msg, setMsg] = useState<string | null>(null);
+
+  // Member management (cancel / delete) modal.
+  const [modal, setModal] = useState<{ kind: 'cancel' | 'delete'; space: string; label: string } | null>(null);
+  const [confirmText, setConfirmText] = useState('');
+  const [busy, setBusy] = useState(false);
 
   const headers = useCallback((t: string) => ({ 'x-super-admin-token': t, 'Content-Type': 'application/json' }), []);
 
@@ -117,7 +124,39 @@ export default function LyfCoachAdminPage() {
     if (res.ok) void load(token);
   }
 
+  function openCancel(space: string, label: string) { setMsg(null); setConfirmText(''); setModal({ kind: 'cancel', space, label }); }
+  function openDelete(space: string, label: string) { setMsg(null); setConfirmText(''); setModal({ kind: 'delete', space, label }); }
+
+  async function runMemberAction() {
+    if (!modal || !token) return;
+    if (modal.kind === 'delete' && confirmText !== modal.label) return;
+    setBusy(true);
+    try {
+      const res = await fetch('/api/montree/super-admin/lyf-coach/member', {
+        method: modal.kind === 'delete' ? 'DELETE' : 'PATCH',
+        headers: headers(token),
+        body: JSON.stringify({ space: modal.space }),
+      });
+      const d = await res.json().catch(() => null);
+      if (res.ok) {
+        setMsg(modal.kind === 'delete'
+          ? `Deleted ${modal.label} — every trace scrubbed.`
+          : `Cancelled ${modal.label}'s subscription.`);
+        setModal(null);
+        setConfirmText('');
+        void load(token);
+      } else {
+        setMsg(d?.error || 'Action failed.');
+      }
+    } finally {
+      setBusy(false);
+    }
+  }
+
   const card: CSSProperties = { background: 'rgba(8,20,12,0.55)', border: '1px solid rgba(52,211,153,0.2)', borderRadius: 14, padding: 18, marginBottom: 18 };
+  const dangerBtn: CSSProperties = { fontSize: 12, padding: '4px 10px', borderRadius: 8, border: `1px solid ${DANGER}66`, background: 'transparent', color: DANGER, cursor: 'pointer' };
+  const cancelBtn: CSSProperties = { fontSize: 12, padding: '4px 10px', borderRadius: 8, border: `1px solid ${GOLD}66`, background: 'transparent', color: GOLD, cursor: 'pointer', marginRight: 8 };
+  const actionTd: CSSProperties = { padding: '8px 10px', fontSize: 13, borderBottom: '1px solid rgba(255,255,255,0.05)', textAlign: 'right', whiteSpace: 'nowrap' };
   const th: CSSProperties = { textAlign: 'left', padding: '8px 10px', fontSize: 12, color: '#9fc7b0', borderBottom: '1px solid rgba(255,255,255,0.08)' };
   const td: CSSProperties = { padding: '8px 10px', fontSize: 13, borderBottom: '1px solid rgba(255,255,255,0.05)' };
   const tileStyle: CSSProperties = { flex: '1 1 140px', minWidth: 140, background: 'rgba(8,20,12,0.55)', border: '1px solid rgba(52,211,153,0.2)', borderRadius: 14, padding: '16px 18px' };
@@ -191,13 +230,18 @@ export default function LyfCoachAdminPage() {
                 <p style={{ opacity: 0.6, fontSize: 13 }}>No signups yet.</p>
               ) : (
                 <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                  <thead><tr><th style={th}>Member</th><th style={th}>Status</th><th style={th}>Joined</th></tr></thead>
+                  <thead><tr><th style={th}>Member</th><th style={th}>Status</th><th style={th}>Joined</th><th style={th}></th></tr></thead>
                   <tbody>
                     {overview.recent_signups.map((r) => (
                       <tr key={r.space}>
                         <td style={td}>{r.label}</td>
                         <td style={td}>{r.status || '—'}</td>
                         <td style={td}>{fmtDate(r.created_at)}</td>
+                        <td style={actionTd}>
+                          {r.space === OWNER_SPACE
+                            ? <span style={{ opacity: 0.4, fontSize: 12 }}>owner</span>
+                            : <button style={dangerBtn} onClick={() => openDelete(r.space, r.label)}>Delete</button>}
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -247,7 +291,7 @@ export default function LyfCoachAdminPage() {
               <p style={{ opacity: 0.6, fontSize: 13 }}>No subscribers yet.</p>
             ) : (
               <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                <thead><tr><th style={th}>Member</th><th style={th}>Plan</th><th style={th}>Status</th><th style={th}>Renews / ends</th></tr></thead>
+                <thead><tr><th style={th}>Member</th><th style={th}>Plan</th><th style={th}>Status</th><th style={th}>Renews / ends</th><th style={th}></th></tr></thead>
                 <tbody>
                   {subs.map((s) => (
                     <tr key={s.space}>
@@ -255,6 +299,18 @@ export default function LyfCoachAdminPage() {
                       <td style={td}>{s.plan || '—'}</td>
                       <td style={td}>{s.status}</td>
                       <td style={td}>{fmtDate(s.current_period_end)}</td>
+                      <td style={actionTd}>
+                        {s.space === OWNER_SPACE ? (
+                          <span style={{ opacity: 0.4, fontSize: 12 }}>owner</span>
+                        ) : (
+                          <>
+                            {s.status !== 'canceled' && (
+                              <button style={cancelBtn} onClick={() => openCancel(s.space, s.label)}>Cancel</button>
+                            )}
+                            <button style={dangerBtn} onClick={() => openDelete(s.space, s.label)}>Delete</button>
+                          </>
+                        )}
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -329,6 +385,50 @@ export default function LyfCoachAdminPage() {
               )}
             </div>
           </>
+        )}
+
+        {/* Member action confirmation */}
+        {modal && (
+          <div onClick={() => { if (!busy) { setModal(null); setConfirmText(''); } }}
+            style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.62)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20, zIndex: 50 }}>
+            <div onClick={(e) => e.stopPropagation()}
+              style={{ background: '#0c1f13', border: `1px solid ${modal.kind === 'delete' ? `${DANGER}66` : `${GOLD}66`}`, borderRadius: 16, padding: 22, maxWidth: 460, width: '100%' }}>
+              {modal.kind === 'delete' ? (
+                <>
+                  <h3 style={{ margin: '0 0 8px', fontSize: 18, color: DANGER, fontFamily: 'Lora, Georgia, serif' }}>Delete {modal.label}?</h3>
+                  <p style={{ fontSize: 13, opacity: 0.85, margin: '0 0 14px', lineHeight: 1.55 }}>
+                    Permanently removes the account, cancels any active subscription, and erases <b>every trace</b> — Coach history, diary, planner, projects, visits and login records. This cannot be undone.
+                  </p>
+                  <label style={{ fontSize: 12, opacity: 0.7 }}>Type <b style={{ color: '#fff' }}>{modal.label}</b> to confirm</label>
+                  <input value={confirmText} onChange={(e) => setConfirmText(e.target.value)} autoFocus
+                    style={{ width: '100%', boxSizing: 'border-box', marginTop: 6, marginBottom: 16, padding: '10px 12px', borderRadius: 9, border: '1px solid rgba(255,255,255,0.15)', background: 'rgba(0,0,0,0.3)', color: '#fff', fontSize: 14 }} />
+                </>
+              ) : (
+                <>
+                  <h3 style={{ margin: '0 0 8px', fontSize: 18, color: GOLD, fontFamily: 'Lora, Georgia, serif' }}>Cancel {modal.label}&apos;s subscription?</h3>
+                  <p style={{ fontSize: 13, opacity: 0.85, margin: '0 0 16px', lineHeight: 1.55 }}>
+                    Billing stops and the status moves to <b>canceled</b>. The account and all their data stay intact — they can re-subscribe later.
+                  </p>
+                </>
+              )}
+              <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
+                <button onClick={() => { setModal(null); setConfirmText(''); }} disabled={busy}
+                  style={{ fontSize: 13, padding: '9px 16px', borderRadius: 9, border: '1px solid rgba(255,255,255,0.15)', background: 'transparent', color: '#cfe', cursor: busy ? 'default' : 'pointer' }}>
+                  Keep
+                </button>
+                <button onClick={runMemberAction}
+                  disabled={busy || (modal.kind === 'delete' && confirmText !== modal.label)}
+                  style={{
+                    fontSize: 13, padding: '9px 16px', borderRadius: 9, border: 'none', fontWeight: 700, color: '#06140c',
+                    background: modal.kind === 'delete' ? DANGER : GOLD,
+                    cursor: busy || (modal.kind === 'delete' && confirmText !== modal.label) ? 'default' : 'pointer',
+                    opacity: busy || (modal.kind === 'delete' && confirmText !== modal.label) ? 0.5 : 1,
+                  }}>
+                  {busy ? 'Working…' : modal.kind === 'delete' ? 'Delete permanently' : 'Cancel subscription'}
+                </button>
+              </div>
+            </div>
+          </div>
         )}
       </div>
     </div>
