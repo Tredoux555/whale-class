@@ -72,6 +72,7 @@ export async function GET(req: NextRequest) {
   // a failure here must NEVER block the login redirect below. We only send the
   // "1000 prompts" email if the stamp actually landed (so we never promise a cap
   // the entitlement layer can't honour, e.g. if migration 271 hasn't run yet).
+  let welcomeGranted = false;
   try {
     const verifiedCount = await countVerifiedPublicAccounts(supabase);
     console.log(
@@ -90,6 +91,9 @@ export async function GET(req: NextRequest) {
           console.error('[lyf-coach/verify][welcome] stamp error:', bonusErr);
         }
       } else {
+        // Bonus is granted by the STAMP (not the email) — flag it so the
+        // post-verify coach page can show the first-100 line.
+        welcomeGranted = true;
         // row.username IS the lowercased email on public accounts.
         console.log(`[lyf-coach/verify][welcome] stamped ${period} — sending welcome to ${row.username}`);
         await sendCoachWelcomeFirst100Email(row.username);
@@ -105,7 +109,10 @@ export async function GET(req: NextRequest) {
   // Log in on this device too, then land in the coach. The cookie->sessionStorage
   // bridge runs on /lyf-coach/coach.
   const jwt = await mintCoachPublicToken(row.username, row.space);
-  const res = NextResponse.redirect(new URL('/lyf-coach/coach?verified=1', APP_URL), 303);
+  const coachPath = welcomeGranted
+    ? '/lyf-coach/coach?verified=1&welcome=1'
+    : '/lyf-coach/coach?verified=1';
+  const res = NextResponse.redirect(new URL(coachPath, APP_URL), 303);
   res.cookies.set(coachSessionCookie(jwt));
   return res;
 }

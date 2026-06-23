@@ -46,6 +46,7 @@ export default function LyfCoachConversationPage() {
   );
   const [pendingImg, setPendingImg] = useState<CoachImage | null>(null);
   const [imgError, setImgError] = useState('');
+  const [founderWelcome, setFounderWelcome] = useState(false);
   const fileRef = useRef<HTMLInputElement | null>(null);
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const kickedOff = useRef(false);
@@ -73,8 +74,15 @@ export default function LyfCoachConversationPage() {
     if (typeof window === 'undefined') return;
     const params = new URLSearchParams(window.location.search);
     const ask = params.get('ask');
+    // First-100 post-verify moment: /verify redirects here with ?welcome=1 ONLY
+    // when the founder bonus was actually granted. Show the line once, then strip
+    // the param so a refresh won't replay it.
+    const welcome = params.get('welcome') === '1';
+    if (welcome) setFounderWelcome(true);
     if (ask && ask.trim()) {
       void send(ask.trim().slice(0, 400));
+    }
+    if ((ask && ask.trim()) || welcome) {
       window.history.replaceState(null, '', '/lyf-coach/coach');
     }
   }, [send]);
@@ -102,6 +110,19 @@ export default function LyfCoachConversationPage() {
           </button>
         )}
       </div>
+
+      {founderWelcome && messages.length === 0 && (
+        <div
+          role="status"
+          style={{
+            margin: '0 0 16px', padding: '12px 14px', borderRadius: 12,
+            border: '1px solid rgba(52,211,153,0.38)', background: 'rgba(52,211,153,0.09)',
+            color: T.emerald, fontSize: 14, fontWeight: 600, lineHeight: 1.5,
+          }}
+        >
+          Congratulations &mdash; you&apos;re one of the first 100. Log into the app to receive your bonus.
+        </div>
+      )}
 
       <div ref={scrollRef} style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 16, paddingBottom: 12 }}>
         {messages.length === 0 && (
