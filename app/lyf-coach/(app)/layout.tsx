@@ -1,14 +1,14 @@
 'use client';
 
 // PUBLIC Lyf Coach app shell — a carbon copy of the Sanctuary (personal) tabbed
-// shell, hosted under /montree/lyf-coach for word-of-mouth subscribers.
+// shell, hosted under /lyf-coach for word-of-mouth subscribers.
 //
 // Deliberately stripped of every owner-only surface:
 //   • Header reads "Sanctuary" with the emerald mark (no covert Diary door on it).
 //   • Nav is Planner · Coach · Projects ONLY — NO Family tab, NO Board/People,
 //     NO covert Messages door (that lives behind the Planner month-title in the
 //     owner build and is intentionally absent here).
-//   • Session guard bounces to /montree/lyf-coach/login (NEVER /story/admin).
+//   • Session guard bounces to /lyf-coach/login (NEVER /story/admin).
 //
 // Public accounts are space-scoped (role='adult') so the owner's family world is
 // already sealed off server-side; this front door keeps it out of sight too.
@@ -25,9 +25,9 @@ const SESSION_KEY = 'story_admin_session';
 
 // Planner · Coach · Projects. NO Family. NO owner doors.
 const NAV: { href: string; label: string }[] = [
-  { href: '/montree/lyf-coach/planner', label: 'Planner' },
-  { href: '/montree/lyf-coach/coach', label: 'Coach' },
-  { href: '/montree/lyf-coach/projects', label: 'Projects' },
+  { href: '/lyf-coach/planner', label: 'Planner' },
+  { href: '/lyf-coach/coach', label: 'Coach' },
+  { href: '/lyf-coach/projects', label: 'Projects' },
 ];
 
 export default function LyfCoachAppLayout({ children }: { children: ReactNode }) {
@@ -41,7 +41,7 @@ export default function LyfCoachAppLayout({ children }: { children: ReactNode })
     let cancelled = false;
     const token = getStoryAdminToken();
     if (!token) {
-      router.replace('/montree/lyf-coach/login');
+      router.replace('/lyf-coach/login');
       return;
     }
     (async () => {
@@ -52,12 +52,12 @@ export default function LyfCoachAppLayout({ children }: { children: ReactNode })
         if (cancelled) return;
         if (!res.ok) {
           try { sessionStorage.removeItem(SESSION_KEY); } catch { /* non-fatal */ }
-          router.replace('/montree/lyf-coach/login');
+          router.replace('/lyf-coach/login');
           return;
         }
         setReady(true);
       } catch {
-        if (!cancelled) router.replace('/montree/lyf-coach/login');
+        if (!cancelled) router.replace('/lyf-coach/login');
       }
     })();
     return () => { cancelled = true; };
@@ -72,7 +72,7 @@ export default function LyfCoachAppLayout({ children }: { children: ReactNode })
       });
     } catch { /* clear locally regardless */ }
     try { sessionStorage.removeItem(SESSION_KEY); } catch { /* non-fatal */ }
-    window.location.href = '/montree/lyf-coach';
+    window.location.href = '/lyf-coach';
   }
 
   return (

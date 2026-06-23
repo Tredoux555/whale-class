@@ -69,8 +69,8 @@ function newConvoId(): string {
 // Bounce target on a lost/expired session — path-aware so a public Lyf Coach
 // user goes to the Lyf Coach login, not the Sanctuary one.
 function coachLoginPath(): string {
-  if (typeof window !== 'undefined' && window.location.pathname.startsWith('/montree/lyf-coach')) {
-    return '/montree/lyf-coach/login';
+  if (typeof window !== 'undefined' && window.location.pathname.startsWith('/lyf-coach')) {
+    return '/lyf-coach/login';
   }
   return '/story/admin';
 }

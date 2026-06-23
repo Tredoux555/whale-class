@@ -75,7 +75,7 @@ export default function LyfCoachConversationPage() {
     const ask = params.get('ask');
     if (ask && ask.trim()) {
       void send(ask.trim().slice(0, 400));
-      window.history.replaceState(null, '', '/montree/lyf-coach/coach');
+      window.history.replaceState(null, '', '/lyf-coach/coach');
     }
   }, [send]);
 

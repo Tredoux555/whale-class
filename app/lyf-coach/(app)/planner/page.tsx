@@ -179,8 +179,8 @@ export default function PlannerPage() {
           Let the coach surface the one thing that matters — and put rest in the plan.
         </div>
         <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-          <button onClick={() => router.push('/montree/lyf-coach/coach?ask=' + encodeURIComponent('Plan my day — the one thing that matters, a short list, and rest built in.'))} style={primaryBtn}>Plan my day</button>
-          <button onClick={() => router.push('/montree/lyf-coach/coach?ask=' + encodeURIComponent('Plan my week — the few things that matter, with reasons, and rest protected.'))} style={ghostBtn}>Plan my week</button>
+          <button onClick={() => router.push('/lyf-coach/coach?ask=' + encodeURIComponent('Plan my day — the one thing that matters, a short list, and rest built in.'))} style={primaryBtn}>Plan my day</button>
+          <button onClick={() => router.push('/lyf-coach/coach?ask=' + encodeURIComponent('Plan my week — the few things that matter, with reasons, and rest protected.'))} style={ghostBtn}>Plan my week</button>
         </div>
       </div>
     </div>
