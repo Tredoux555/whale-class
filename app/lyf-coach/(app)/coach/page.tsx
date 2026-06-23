@@ -38,8 +38,6 @@ const SUGGESTIONS = [
   'Plan my week.',
 ];
 
-const FOUNDER_WELCOME_DISMISSED_KEY = 'lyfcoach.founderWelcomeDismissed.v1';
-
 export default function LyfCoachConversationPage() {
   const { messages, busy, send, reset } = useCoachChat();
   const [draft, setDraft] = useState('');
@@ -48,7 +46,6 @@ export default function LyfCoachConversationPage() {
   );
   const [pendingImg, setPendingImg] = useState<CoachImage | null>(null);
   const [imgError, setImgError] = useState('');
-  const [founderWelcome, setFounderWelcome] = useState(false);
   const fileRef = useRef<HTMLInputElement | null>(null);
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const kickedOff = useRef(false);
@@ -68,28 +65,19 @@ export default function LyfCoachConversationPage() {
   };
 
   // ?ask=<text> kickoff — lets the Planner's "Plan my day / week" buttons start
-  // the conversation here. Clears the param to keep the URL clean. No AI greeting
-  // kickoff otherwise — the static welcome below is what greets the user.
+  // the conversation here. Also strips the post-verify ?welcome / ?verified params
+  // (the welcome banner is now server-backed in the app layout). Clears the URL.
   useEffect(() => {
     if (kickedOff.current) return;
     kickedOff.current = true;
     if (typeof window === 'undefined') return;
     const params = new URLSearchParams(window.location.search);
     const ask = params.get('ask');
-    // First-100 post-verify moment: /verify redirects here with ?welcome=1 ONLY
-    // when the founder bonus was actually granted. Show the line once, then strip
-    // the param so a refresh won't replay it.
-    const welcome = params.get('welcome') === '1';
-    let founderDismissed = false;
-    try { founderDismissed = localStorage.getItem(FOUNDER_WELCOME_DISMISSED_KEY) === '1'; } catch { /* private mode */ }
-    // One-time post-hydration URL read (runs once via the kickedOff guard); a lazy
-    // useState initializer reading window would cause an SSR hydration mismatch.
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    if (welcome && !founderDismissed) setFounderWelcome(true);
+    const hadParams = Boolean(ask) || params.has('welcome') || params.has('verified');
     if (ask && ask.trim()) {
       void send(ask.trim().slice(0, 400));
     }
-    if ((ask && ask.trim()) || welcome) {
+    if (hadParams) {
       window.history.replaceState(null, '', '/lyf-coach/coach');
     }
   }, [send]);
@@ -107,11 +95,6 @@ export default function LyfCoachConversationPage() {
     void send(t, img ? { image: { media_type: img.media_type, data: img.data }, imagePreview: img.previewUrl } : undefined);
   };
 
-  const dismissFounderWelcome = () => {
-    setFounderWelcome(false);
-    try { localStorage.setItem(FOUNDER_WELCOME_DISMISSED_KEY, '1'); } catch { /* private mode */ }
-  };
-
   return (
     <div style={{ display: 'flex', flexDirection: 'column', minHeight: 'calc(100dvh - 200px)' }}>
       <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 16 }}>
@@ -122,24 +105,6 @@ export default function LyfCoachConversationPage() {
           </button>
         )}
       </div>
-
-      {founderWelcome && (
-        <button
-          type="button"
-          onClick={dismissFounderWelcome}
-          aria-label="Dismiss"
-          style={{
-            display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12,
-            width: '100%', textAlign: 'left', appearance: 'none', cursor: 'pointer',
-            margin: '0 0 16px', padding: '12px 14px', borderRadius: 12,
-            border: '1px solid rgba(52,211,153,0.38)', background: 'rgba(52,211,153,0.09)',
-            color: T.emerald, fontFamily: T.sans, fontSize: 14, fontWeight: 600, lineHeight: 1.5,
-          }}
-        >
-          <span>Congratulations &mdash; you&apos;re one of the first 100. You have 1000 prompts this month.</span>
-          <span aria-hidden style={{ opacity: 0.65, fontSize: 16, flexShrink: 0 }}>&times;</span>
-        </button>
-      )}
 
       <div ref={scrollRef} style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 16, paddingBottom: 12 }}>
         {messages.length === 0 && (
