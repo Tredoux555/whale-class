@@ -1,6 +1,6 @@
 # Session — Jun 24, 2026 (Cowork) — Lyf Coach UI fixes (verify redirect + welcome banner) + git checkout cleanup
 
-Two shipped commits on `main` + a full home-checkout cleanup. Plus an unshipped uploads feature parked in a patch, and the App-Store account-deletion endpoint preserved on a branch.
+Four shipped commits on `main` + a full home-checkout cleanup. Plus an unshipped uploads feature parked in a patch, and the App-Store account-deletion endpoint preserved on a branch.
 
 ---
 
@@ -10,6 +10,8 @@ Two shipped commits on `main` + a full home-checkout cleanup. Plus an unshipped 
 |---|---|
 | `b703518d` | **Fix 1 — email-verification redirect lands in the app.** |
 | `8c36b299` | **Fix 2 — first-login welcome banner (server-backed, two variants).** |
+| `2153d91c` | **Follow-up — one login path (shared `coachLoginPath` helper).** |
+| `8324a909` | **Follow-up — welcome banner restyled to the classy founder-banner look.** |
 
 ### Fix 1 — verify link → straight into the app (`b703518d`)
 **Bug:** `GET /api/lyf-coach/verify` verifies, sets the httpOnly `story-admin-token` cookie, and redirects to `/lyf-coach/coach`. But the `(app)` layout guard authenticated **only** from `sessionStorage` (`getStoryAdminToken()`), which only signup/login populate — so a freshly-verified user (empty sessionStorage) was bounced to `/lyf-coach/login`. The verify route's promised "cookie→sessionStorage bridge" was never wired in (the backend `GET /api/lyf-coach/session` existed; nothing called it).
@@ -26,6 +28,13 @@ Two shipped commits on `main` + a full home-checkout cleanup. Plus an unshipped 
 - **Founder synergy:** the verify route already appends `?welcome=1` and stamps `welcome_bonus_period` for the first 100 — the variant keys off that column.
 
 **Audit:** ESLint `--max-warnings=0` clean on all touched files; new files parse/type-clean; no dangling refs to removed founder symbols.
+
+### Follow-up A — one login path (`2153d91c`)
+**Bug:** public coach surfaces bounced to `/lyf-coach/login`, but two shared client modules still hardcoded `/story/admin` (the owner Sanctuary login) — `lib/story/personal-client.ts` (`bounceToLogin`, used by public planner/projects/coach data loads) and `lib/story/coach/use-voice-record.ts`. So a logged-out public user got the layout's `/lyf-coach/login` AND a shared-module `/story/admin` redirect at once — two login paths. (`coach-chat-context.tsx` had already been made path-aware with an inline helper.)
+**Fix:** extracted one path-aware helper `lib/story/login-path.ts` → `coachLoginPath()` (returns `/lyf-coach/login` when `window.location.pathname` starts with `/lyf-coach`, else `/story/admin`). Wired `personal-client`, `use-voice-record`, and the coach chat provider (replacing its inline copy) through it. Public surface → one clean path; owner Sanctuary (`/story/admin/(personal)/*`) unchanged.
+
+### Follow-up B — welcome banner restyle (`8324a909`)
+The Fix 2 banner shipped as a loud solid-`#00a86b`/white block with a glow. Restyled `WelcomeBanner` to match the **original founder banner** (the classy Sanctuary look): soft emerald tint `rgba(52,211,153,0.09)`, thin emerald border `rgba(52,211,153,0.38)`, `T.emerald` text, 14px, soft × at 0.65 opacity. **🚨 This intentionally overrides the original Fix 2 spec (`#00a86b` / white text)** per "cleaner and more classy" — the canonical welcome-banner style is now the emerald-tinted card. Two-variant copy + dismiss + server `first_login_shown` logic unchanged. (If the intended reference was the neutral `VerifyEmailBanner` glass+gold-dot style instead, it's a quick swap.)
 
 ---
 
