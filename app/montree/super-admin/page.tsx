@@ -639,6 +639,18 @@ export default function SuperAdminPage() {
             <p className="text-slate-400 text-sm mt-2">
               {adminData.schools.length} schools · {trialSchools.length} trial · {freeSchools.length} free · {paidSchools.length} paid
             </p>
+            <Link
+              href="/montree/super-admin/lyf-coach"
+              className="inline-flex items-center gap-1 mt-3 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors"
+              style={{
+                background: 'rgba(8,20,12,0.55)',
+                border: '1px solid rgba(52,211,153,0.35)',
+                color: '#34d399',
+              }}
+              title="Lyf Coach — signups, visits, subscribers, billing & tax"
+            >
+              🌿 Lyf Coach Admin →
+            </Link>
           </div>
           {/* Cleaned up Session 90: kept the three actively-used links
               (Community Library, API Usage, Register School). Stale routes
