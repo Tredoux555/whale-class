@@ -267,6 +267,7 @@ export async function middleware(req: NextRequest) {
     '/riddick',    // Riddick's sanctuary door (story-admin auth via the form)
     '/bayan',      // Bayan's sanctuary door (story-admin auth via the form)
     '/montree',    // Montree app - has its own auth system (teacher/parent logins)
+    '/lyf-coach',  // Lyf Coach web — public signup/login/coach + privacy pages (own client-side auth; APIs live under /api/lyf-coach)
     '/auth/login',
     '/auth/signup',
     '/auth/reset-password',
