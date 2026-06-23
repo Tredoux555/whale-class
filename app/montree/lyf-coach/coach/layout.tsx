@@ -11,7 +11,7 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { getStoryAdminToken } from '@/lib/story/personal-client';
-import { CoachChatProvider } from '@/lib/story/coach/coach-chat-context';
+import { CoachChatProvider, useCoachChat } from '@/lib/story/coach/coach-chat-context';
 import { LyfCoachMark } from '@/components/story/lyf-coach/PublicShell';
 import { T } from '@/lib/story/personal-theme';
 
@@ -19,7 +19,6 @@ const SESSION_KEY = 'story_admin_session';
 
 export default function LyfCoachAppLayout({ children }: { children: ReactNode }) {
   const router = useRouter();
-  const pathname = usePathname();
   const [ready, setReady] = useState(false);
 
   // Verify the session once on mount; bounce to the Lyf Coach login on failure.
@@ -59,6 +58,23 @@ export default function LyfCoachAppLayout({ children }: { children: ReactNode })
     window.location.href = '/montree/lyf-coach';
   }
 
+  // The provider wraps the shell so the nav can read the conversation state
+  // (to keep Upgrade off the calm first-session screen).
+  return (
+    <CoachChatProvider>
+      <Shell ready={ready} onSignOut={signOut}>{children}</Shell>
+    </CoachChatProvider>
+  );
+}
+
+function Shell({ ready, onSignOut, children }: { ready: boolean; onSignOut: () => void; children: ReactNode }) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const { messages } = useCoachChat();
+  // Keep Upgrade off the first-session screen — it only appears once a
+  // conversation has begun, so the first impression stays calm, not transactional.
+  const showUpgrade = messages.length > 0;
+
   const navBtn = (label: string, onClick: () => void, active = false): ReactNode => (
     <button
       onClick={onClick}
@@ -87,7 +103,7 @@ export default function LyfCoachAppLayout({ children }: { children: ReactNode })
         <div style={{ maxWidth: T.column, margin: '0 auto', padding: '14px 18px 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
           <LyfCoachMark size={28} />
           <button
-            onClick={signOut}
+            onClick={onSignOut}
             style={{ appearance: 'none', border: 'none', background: 'transparent', color: T.textDim, fontSize: 13, cursor: 'pointer' }}
           >
             Sign out
@@ -95,20 +111,18 @@ export default function LyfCoachAppLayout({ children }: { children: ReactNode })
         </div>
         <nav style={{ maxWidth: T.column, margin: '0 auto', padding: '10px 18px 0', display: 'flex', gap: 14 }}>
           {navBtn('Coach', () => router.push('/montree/lyf-coach/coach'), pathname === '/montree/lyf-coach/coach')}
-          {navBtn('Upgrade', () => router.push('/montree/lyf-coach/upgrade'), pathname === '/montree/lyf-coach/upgrade')}
+          {showUpgrade && navBtn('Upgrade', () => router.push('/montree/lyf-coach/upgrade'), pathname === '/montree/lyf-coach/upgrade')}
         </nav>
       </header>
 
-      <CoachChatProvider>
-        <main
-          style={{
-            position: 'relative', zIndex: 1, maxWidth: T.column, margin: '0 auto',
-            padding: '24px 18px 120px', opacity: ready ? 1 : 0, transition: 'opacity 0.25s ease',
-          }}
-        >
-          {ready ? children : null}
-        </main>
-      </CoachChatProvider>
+      <main
+        style={{
+          position: 'relative', zIndex: 1, maxWidth: T.column, margin: '0 auto',
+          padding: '24px 18px 120px', opacity: ready ? 1 : 0, transition: 'opacity 0.25s ease',
+        }}
+      >
+        {ready ? children : null}
+      </main>
     </div>
   );
 }
