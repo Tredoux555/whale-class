@@ -55,7 +55,7 @@ export default function LyfCoachWebPrivacyPage() {
         scrambled (hashed), so we can&rsquo;t see it.<br />
         <strong>What you share with your coach:</strong> your conversations, notes, and anything you write
         or record in the app. This is the heart of Lyf Coach, and we treat it that way.<br />
-        <strong>Payment details:</strong> when you subscribe, payment is handled by PayFast. They process
+        <strong>Payment details:</strong> when you subscribe, payment is handled by Stripe. They process
         your card &mdash; we never see or store your card number.<br />
         <strong>Basic technical data:</strong> like most apps, our servers keep limited logs (for example,
         when something errors) to keep the service running and secure. We keep this minimal.
@@ -80,8 +80,8 @@ export default function LyfCoachWebPrivacyPage() {
       <Section title="Who can see your data">
         <strong>You.</strong> Always.<br />
         <strong>The services that run Lyf Coach:</strong> our hosting provider (Railway), our database
-        provider (Supabase), and Anthropic (for AI responses). They handle your data only to deliver the
-        service, under their own privacy and security commitments.<br />
+        provider (Supabase), Anthropic (for AI responses), and Stripe (for payments). They handle your data
+        only to deliver the service, under their own privacy and security commitments.<br />
         <strong>No one else.</strong> No advertisers. No data brokers. We don&rsquo;t sell your data, and we
         don&rsquo;t share it with third parties beyond the infrastructure above.<br /><br />
         One honest note: because Lyf Coach (web) runs in the cloud rather than only on your device, it

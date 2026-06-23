@@ -1,9 +1,9 @@
 'use client';
 
-// Super-admin — Lyf Coach billing & tax. Subscribers (BILLING METADATA ONLY —
-// never coach content, rule #319) + VAT liability per jurisdiction with a
-// record-remittance action + the tax register. Token via sessionStorage
-// 'super-admin-token'; backing APIs enforce verifySuperAdminAuth.
+// Super-admin — Lyf Coach dashboard. Custom overview (signups, visits, activity,
+// MRR, coach usage) + subscriber roster + VAT/tax. BILLING & USAGE METADATA ONLY —
+// never coach conversation content (privacy boundary, rule #319). Token via
+// sessionStorage 'super-admin-token'; backing APIs enforce verifySuperAdminAuth.
 
 import { useCallback, useEffect, useState, type CSSProperties } from 'react';
 import { useRouter } from 'next/navigation';
@@ -12,18 +12,36 @@ interface Subscriber { space: string; label: string; plan: string | null; status
 interface Summary { active: number; trialing: number; past_due: number; canceled: number; other: number }
 interface Jurisdiction { country: string; collected: number; remitted: number; owed: number }
 interface Registration { id: string; scheme: string; covers_country: string | null; registration_number: string | null; filing_frequency: string; next_filing_due: string | null; status: string }
+interface Overview {
+  month: string;
+  members: number;
+  viewers: number;
+  signups: { new_members_7d: number; new_members_30d: number; new_viewers_7d: number };
+  subscriptions: Summary & { est_mrr_usd: number };
+  visits: { total: number; last_7d: number };
+  online_now: number;
+  coach_usage_this_month: number;
+  recent_signups: Array<{ space: string; label: string; status: string | null; created_at: string | null }>;
+  recent_visits: Array<{ username: string; visited_at: string; duration_seconds: number }>;
+}
+
+type Tab = 'overview' | 'subscribers' | 'billing';
 
 const BG = '#0a1a0f';
 const EMERALD = '#34d399';
 const GOLD = '#E8C96A';
 const usd = (n: number) => `$${(Math.round(n * 100) / 100).toFixed(2)}`;
+const fmtDate = (s: string | null) => (s ? new Date(s).toLocaleDateString() : '—');
+const fmtDuration = (sec: number) => (sec >= 60 ? `${Math.floor(sec / 60)}m ${sec % 60}s` : `${sec}s`);
 
 export default function LyfCoachAdminPage() {
   const router = useRouter();
   const [token, setToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [pending, setPending] = useState(false);
+  const [tab, setTab] = useState<Tab>('overview');
 
+  const [overview, setOverview] = useState<Overview | null>(null);
   const [subs, setSubs] = useState<Subscriber[]>([]);
   const [summary, setSummary] = useState<Summary | null>(null);
   const [mrr, setMrr] = useState(0);
@@ -38,18 +56,21 @@ export default function LyfCoachAdminPage() {
   const load = useCallback(async (t: string) => {
     setLoading(true);
     try {
-      const [sRes, tRes] = await Promise.all([
+      const [oRes, sRes, tRes] = await Promise.all([
+        fetch('/api/montree/super-admin/lyf-coach/overview', { headers: { 'x-super-admin-token': t } }),
         fetch('/api/montree/super-admin/lyf-coach/subscribers', { headers: { 'x-super-admin-token': t } }),
         fetch('/api/montree/super-admin/lyf-coach/tax', { headers: { 'x-super-admin-token': t } }),
       ]);
-      if (sRes.status === 401 || tRes.status === 401) {
+      if (oRes.status === 401 || sRes.status === 401 || tRes.status === 401) {
         sessionStorage.removeItem('super-admin-token');
         router.replace('/montree/super-admin');
         return;
       }
+      const o = await oRes.json().catch(() => null);
       const s = await sRes.json().catch(() => null);
       const tx = await tRes.json().catch(() => null);
       if (s?.migration_pending || tx?.migration_pending) setPending(true);
+      if (o && !o.error) setOverview(o as Overview);
       if (s) { setSubs(s.subscribers || []); setSummary(s.summary || null); setMrr(s.est_mrr_usd || 0); }
       if (tx) { setJurisdictions(tx.jurisdictions || []); setTaxTotals(tx.totals || null); setRegs(tx.registrations || []); }
     } finally {
@@ -99,48 +120,84 @@ export default function LyfCoachAdminPage() {
   const card: CSSProperties = { background: 'rgba(8,20,12,0.55)', border: '1px solid rgba(52,211,153,0.2)', borderRadius: 14, padding: 18, marginBottom: 18 };
   const th: CSSProperties = { textAlign: 'left', padding: '8px 10px', fontSize: 12, color: '#9fc7b0', borderBottom: '1px solid rgba(255,255,255,0.08)' };
   const td: CSSProperties = { padding: '8px 10px', fontSize: 13, borderBottom: '1px solid rgba(255,255,255,0.05)' };
+  const tileStyle: CSSProperties = { flex: '1 1 140px', minWidth: 140, background: 'rgba(8,20,12,0.55)', border: '1px solid rgba(52,211,153,0.2)', borderRadius: 14, padding: '16px 18px' };
+
+  const Tile = ({ label, value, sub, accent }: { label: string; value: string | number; sub?: string; accent?: string }) => (
+    <div style={tileStyle}>
+      <div style={{ fontSize: 12, color: '#9fc7b0', marginBottom: 6 }}>{label}</div>
+      <div style={{ fontSize: 26, fontWeight: 700, color: accent || '#fff', fontFamily: 'Lora, Georgia, serif' }}>{value}</div>
+      {sub && <div style={{ fontSize: 12, opacity: 0.6, marginTop: 4 }}>{sub}</div>}
+    </div>
+  );
+
+  const TabBtn = ({ id, children }: { id: Tab; children: React.ReactNode }) => (
+    <button
+      onClick={() => setTab(id)}
+      style={{
+        background: 'transparent', border: 'none', cursor: 'pointer', padding: '10px 4px', fontSize: 14,
+        color: tab === id ? '#fff' : '#9fc7b0', fontWeight: tab === id ? 700 : 500,
+        borderBottom: tab === id ? `2px solid ${EMERALD}` : '2px solid transparent',
+      }}
+    >
+      {children}
+    </button>
+  );
 
   return (
     <div style={{ minHeight: '100vh', background: BG, color: '#e8f0ea', padding: '28px 20px' }}>
-      <div style={{ maxWidth: 920, margin: '0 auto' }}>
-        <h1 style={{ fontFamily: 'Lora, Georgia, serif', fontSize: 28, margin: '0 0 4px', color: '#fff' }}>Lyf Coach — billing &amp; tax</h1>
-        <p style={{ opacity: 0.6, margin: '0 0 20px', fontSize: 13 }}>Billing metadata only. No coach conversation content is shown here.</p>
+      <div style={{ maxWidth: 980, margin: '0 auto' }}>
+        <button onClick={() => router.push('/montree/super-admin')}
+          style={{ background: 'transparent', border: 'none', color: '#9fc7b0', cursor: 'pointer', fontSize: 13, padding: 0, marginBottom: 10 }}>
+          ← Montree Admin
+        </button>
+        <h1 style={{ fontFamily: 'Lora, Georgia, serif', fontSize: 28, margin: '0 0 4px', color: '#fff' }}>🌿 Lyf Coach Admin</h1>
+        <p style={{ opacity: 0.6, margin: '0 0 18px', fontSize: 13 }}>
+          {overview
+            ? `${overview.members} members · ${overview.subscriptions.active} active · ${overview.subscriptions.trialing} trial · ${usd(overview.subscriptions.est_mrr_usd)} MRR`
+            : 'Billing & usage metadata only. No coach conversation content is shown here.'}
+        </p>
 
         {pending && (
           <div style={{ ...card, borderColor: GOLD, color: GOLD }}>⚠ Run migration 269 in Supabase — billing columns/tables aren&apos;t live yet.</div>
         )}
         {msg && <div style={{ ...card, borderColor: EMERALD }}>{msg}</div>}
+
+        {/* Tabs */}
+        <div style={{ display: 'flex', gap: 22, borderBottom: '1px solid rgba(255,255,255,0.08)', marginBottom: 20 }}>
+          <TabBtn id="overview">Overview</TabBtn>
+          <TabBtn id="subscribers">Subscribers</TabBtn>
+          <TabBtn id="billing">Billing &amp; Tax</TabBtn>
+        </div>
+
         {loading && <div style={{ opacity: 0.6 }}>Loading…</div>}
 
-        {!loading && (
+        {/* OVERVIEW TAB */}
+        {!loading && tab === 'overview' && (
           <>
-            {/* Subscribers */}
+            <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', marginBottom: 18 }}>
+              <Tile label="Members" value={overview?.members ?? 0} sub={`+${overview?.signups.new_members_7d ?? 0} this week`} />
+              <Tile label="Active subscribers" value={overview?.subscriptions.active ?? 0} accent={EMERALD} />
+              <Tile label="Trialing" value={overview?.subscriptions.trialing ?? 0} accent={GOLD} />
+              <Tile label="Est. MRR" value={usd(overview?.subscriptions.est_mrr_usd ?? 0)} accent={EMERALD} />
+              <Tile label="Visits (7d)" value={overview?.visits.last_7d ?? 0} sub={`${overview?.visits.total ?? 0} all-time`} />
+              <Tile label="Online now" value={overview?.online_now ?? 0} />
+              <Tile label="Coach msgs (mo)" value={overview?.coach_usage_this_month ?? 0} sub={overview?.month} />
+              <Tile label="Viewers" value={overview?.viewers ?? 0} sub={`+${overview?.signups.new_viewers_7d ?? 0} this week`} />
+            </div>
+
             <div style={card}>
-              <h2 style={{ fontSize: 16, margin: '0 0 12px' }}>Subscribers</h2>
-              {summary && (
-                <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 14 }}>
-                  {(['active', 'trialing', 'past_due', 'canceled'] as const).map((k) => (
-                    <span key={k} style={{ fontSize: 13, padding: '6px 12px', borderRadius: 9, background: 'rgba(255,255,255,0.05)' }}>
-                      {k}: <b>{summary[k]}</b>
-                    </span>
-                  ))}
-                  <span style={{ fontSize: 13, padding: '6px 12px', borderRadius: 9, background: 'rgba(52,211,153,0.15)', color: EMERALD }}>
-                    est. MRR: <b>{usd(mrr)}</b>
-                  </span>
-                </div>
-              )}
-              {subs.length === 0 ? (
-                <p style={{ opacity: 0.6, fontSize: 13 }}>No subscribers yet.</p>
+              <h2 style={{ fontSize: 16, margin: '0 0 12px' }}>Recent signups</h2>
+              {(!overview || overview.recent_signups.length === 0) ? (
+                <p style={{ opacity: 0.6, fontSize: 13 }}>No signups yet.</p>
               ) : (
                 <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                  <thead><tr><th style={th}>Member</th><th style={th}>Plan</th><th style={th}>Status</th><th style={th}>Renews / ends</th></tr></thead>
+                  <thead><tr><th style={th}>Member</th><th style={th}>Status</th><th style={th}>Joined</th></tr></thead>
                   <tbody>
-                    {subs.map((s) => (
-                      <tr key={s.space}>
-                        <td style={td}>{s.label}</td>
-                        <td style={td}>{s.plan || '—'}</td>
-                        <td style={td}>{s.status}</td>
-                        <td style={td}>{s.current_period_end ? new Date(s.current_period_end).toLocaleDateString() : '—'}</td>
+                    {overview.recent_signups.map((r) => (
+                      <tr key={r.space}>
+                        <td style={td}>{r.label}</td>
+                        <td style={td}>{r.status || '—'}</td>
+                        <td style={td}>{fmtDate(r.created_at)}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -148,7 +205,67 @@ export default function LyfCoachAdminPage() {
               )}
             </div>
 
-            {/* Tax */}
+            <div style={card}>
+              <h2 style={{ fontSize: 16, margin: '0 0 12px' }}>Recent visits</h2>
+              {(!overview || overview.recent_visits.length === 0) ? (
+                <p style={{ opacity: 0.6, fontSize: 13 }}>No visits recorded yet.</p>
+              ) : (
+                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                  <thead><tr><th style={th}>Who</th><th style={th}>When</th><th style={th}>On page</th></tr></thead>
+                  <tbody>
+                    {overview.recent_visits.map((v, i) => (
+                      <tr key={`${v.username}-${v.visited_at}-${i}`}>
+                        <td style={td}>{v.username}</td>
+                        <td style={td}>{new Date(v.visited_at).toLocaleString()}</td>
+                        <td style={td}>{fmtDuration(v.duration_seconds)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </div>
+          </>
+        )}
+
+        {/* SUBSCRIBERS TAB */}
+        {!loading && tab === 'subscribers' && (
+          <div style={card}>
+            <h2 style={{ fontSize: 16, margin: '0 0 12px' }}>Subscribers</h2>
+            {summary && (
+              <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 14 }}>
+                {(['active', 'trialing', 'past_due', 'canceled'] as const).map((k) => (
+                  <span key={k} style={{ fontSize: 13, padding: '6px 12px', borderRadius: 9, background: 'rgba(255,255,255,0.05)' }}>
+                    {k}: <b>{summary[k]}</b>
+                  </span>
+                ))}
+                <span style={{ fontSize: 13, padding: '6px 12px', borderRadius: 9, background: 'rgba(52,211,153,0.15)', color: EMERALD }}>
+                  est. MRR: <b>{usd(mrr)}</b>
+                </span>
+              </div>
+            )}
+            {subs.length === 0 ? (
+              <p style={{ opacity: 0.6, fontSize: 13 }}>No subscribers yet.</p>
+            ) : (
+              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                <thead><tr><th style={th}>Member</th><th style={th}>Plan</th><th style={th}>Status</th><th style={th}>Renews / ends</th></tr></thead>
+                <tbody>
+                  {subs.map((s) => (
+                    <tr key={s.space}>
+                      <td style={td}>{s.label}</td>
+                      <td style={td}>{s.plan || '—'}</td>
+                      <td style={td}>{s.status}</td>
+                      <td style={td}>{fmtDate(s.current_period_end)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+        )}
+
+        {/* BILLING & TAX TAB */}
+        {!loading && tab === 'billing' && (
+          <>
             <div style={card}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
                 <h2 style={{ fontSize: 16, margin: 0 }}>VAT liability</h2>
@@ -183,7 +300,6 @@ export default function LyfCoachAdminPage() {
               )}
             </div>
 
-            {/* Register */}
             <div style={card}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
                 <h2 style={{ fontSize: 16, margin: 0 }}>Tax register</h2>
@@ -204,7 +320,7 @@ export default function LyfCoachAdminPage() {
                         <td style={td}>{r.covers_country || 'multi'}</td>
                         <td style={td}>{r.registration_number || '—'}</td>
                         <td style={td}>{r.filing_frequency}</td>
-                        <td style={td}>{r.next_filing_due ? new Date(r.next_filing_due).toLocaleDateString() : '—'}</td>
+                        <td style={td}>{fmtDate(r.next_filing_due)}</td>
                         <td style={td}>{r.status}</td>
                       </tr>
                     ))}
