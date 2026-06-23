@@ -19,6 +19,7 @@ import {
   createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode,
 } from 'react';
 import { getStoryAdminToken } from '@/lib/story/personal-client';
+import { coachLoginPath } from '@/lib/story/login-path';
 
 export interface CoachMessage {
   role: 'user' | 'assistant';
@@ -64,15 +65,6 @@ const CoachChatContext = createContext<CoachChatValue | null>(null);
 
 function newConvoId(): string {
   return typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `c-${Date.now()}`;
-}
-
-// Bounce target on a lost/expired session — path-aware so a public Lyf Coach
-// user goes to the Lyf Coach login, not the Sanctuary one.
-function coachLoginPath(): string {
-  if (typeof window !== 'undefined' && window.location.pathname.startsWith('/lyf-coach')) {
-    return '/lyf-coach/login';
-  }
-  return '/story/admin';
 }
 
 export function CoachChatProvider({ children }: { children: ReactNode }) {
