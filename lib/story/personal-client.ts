@@ -7,6 +7,8 @@
 
 'use client';
 
+import { coachLoginPath } from '@/lib/story/login-path';
+
 const SESSION_KEY = 'story_admin_session';
 
 export function getStoryAdminToken(): string | null {
@@ -17,7 +19,7 @@ export function getStoryAdminToken(): string | null {
 function bounceToLogin(): void {
   if (typeof window !== 'undefined') {
     sessionStorage.removeItem(SESSION_KEY);
-    window.location.href = '/story/admin';
+    window.location.href = coachLoginPath();
   }
 }
 

@@ -6,6 +6,7 @@
 
 import { useCallback, useRef, useState } from 'react';
 import { getStoryAdminToken } from '@/lib/story/personal-client';
+import { coachLoginPath } from '@/lib/story/login-path';
 
 export function useVoiceRecord(onText: (text: string) => void) {
   const [recording, setRecording] = useState(false);
@@ -39,7 +40,7 @@ export function useVoiceRecord(onText: (text: string) => void) {
         setTranscribing(true);
         try {
           const token = getStoryAdminToken();
-          if (!token) { window.location.href = '/story/admin'; return; }
+          if (!token) { window.location.href = coachLoginPath(); return; }
           const form = new FormData();
           form.append('audio', blob, 'recording.webm');
           const res = await fetch('/api/story/coach/transcribe', {
