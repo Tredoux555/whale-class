@@ -148,6 +148,27 @@ export async function POST(request: NextRequest) {
   // Degrades to non-e2e before migration 265 (column absent → false).
   const isE2e = (await selectAdminUserForAuth(supabase, admin))?.e2e === true;
 
+  // ── Hard email-verification gate (bot protection) ──────────────────────────
+  // A public web account (e2e=false) must confirm its email before ANY coach /
+  // prompt access — applies to every signup, founding-100 or not. Native e2e
+  // accounts authenticate by device and are exempt. Only an explicit
+  // email_verified=false blocks; a read error / pre-migration absent column
+  // fails OPEN so a transient issue never locks anyone out. Owner/family/legacy
+  // rows were grandfathered verified=true by migration 270.
+  if (!isE2e) {
+    const { data: acct } = await supabase
+      .from('story_admin_users')
+      .select('email_verified')
+      .eq('space', space)
+      .maybeSingle();
+    if (acct && acct.email_verified === false) {
+      return new Response(
+        JSON.stringify({ error: 'email_unverified', message: 'Check your email to confirm your account before we begin.' }),
+        { status: 403, headers: { 'Content-Type': 'application/json' } },
+      );
+    }
+  }
+
   // ── Prompt economy: Sonnet ('full') vs Haiku ('quiet'), PINNED per conversation ──
   // (MONETISATION SPEC v1.0). Access is NEVER gated here — this only selects model
   // DEPTH (rule #318). The depth is decided on the FIRST turn and pinned for the

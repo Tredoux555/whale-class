@@ -56,6 +56,25 @@ export default function LyfCoachAppLayout({ children }: { children: ReactNode })
           router.replace('/lyf-coach/login');
           return;
         }
+        // Hard email-verification gate (bot protection): an unverified account gets
+        // NO access to the coach/prompts — bounce to the holding screen until they
+        // confirm. verify-status is fail-open (verified=true on any read error) so a
+        // transient blip never locks anyone out; the coach API enforces the same
+        // gate server-side as the real backstop.
+        try {
+          const vs = await fetch('/api/lyf-coach/verify-status', {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          if (cancelled) return;
+          if (vs.ok) {
+            const vd = await vs.json().catch(() => null);
+            if (vd && vd.email_verified === false) {
+              router.replace('/lyf-coach/verify-pending');
+              return;
+            }
+          }
+        } catch { /* fail-open — the coach API backstops the gate server-side */ }
+        if (cancelled) return;
         setReady(true);
       } catch {
         if (!cancelled) router.replace('/lyf-coach/login');
