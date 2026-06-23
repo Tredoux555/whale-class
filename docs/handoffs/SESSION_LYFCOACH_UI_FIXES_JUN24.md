@@ -17,7 +17,7 @@ Two shipped commits on `main` + a full home-checkout cleanup. Plus an unshipped 
 **Note:** bare `/lyf-coach` is the public **signup** page, not the app — so the redirect intentionally targets `/lyf-coach/coach` (the app), honouring "land directly in the app".
 
 ### Fix 2 — first-login welcome banner (`8c36b299`)
-- **Migration 272** (`migrations/272_lyf_coach_first_login_shown.sql`) — adds `first_login_shown boolean NOT NULL DEFAULT false` to `story_admin_users`. **⏳ MUST be run in Supabase** — banner is inert (42703 → `show:false`) until then.
+- **Migration 272** (`migrations/272_lyf_coach_first_login_shown.sql`) — adds `first_login_shown boolean NOT NULL DEFAULT false` to `story_admin_users`. **✅ RUN — confirmed Jun 24 (column verified present via information_schema).** Banner is now live.
 - `app/api/lyf-coach/welcome/route.ts` — `GET` decides `{ show, variant }` read-only (`show` = `email_verified && !first_login_shown`; `variant = welcome_bonus_period ? 'founder' : 'standard'`). `POST` atomically stamps `first_login_shown=true WHERE first_login_shown=false` (idempotent / race-safe). Auth = Bearer or `story-admin-token` cookie (mirrors verify-status).
 - `components/story/lyf-coach/WelcomeBanner.tsx` — full-width `#00a86b`, white text, dismiss-on-click; fetches on mount, fires the POST stamp "the moment it renders". Belt-and-braces `sessionStorage` guard; server flag is the durable "never again".
 - Wired into `app/lyf-coach/(app)/layout.tsx` (renders above `VerifyEmailBanner`).
@@ -31,7 +31,7 @@ Two shipped commits on `main` + a full home-checkout cleanup. Plus an unshipped 
 
 ## ⏳ Pending / next session
 
-1. **🚨 Run migration 272** in the Supabase SQL Editor — Fix 2 banner stays inert until then.
+1. ~~Run migration 272~~ ✅ **DONE (Jun 24)** — `first_login_shown` column confirmed present; Fix 2 banner is live.
 2. **Test Fix 1 + Fix 2 end-to-end** (fresh signup → click verify link → land in coach → welcome banner shows once, dismiss, never returns). Tredoux testing.
 3. **Existing verified users** will see the welcome banner once on next load (column defaults false). Acceptable in the founding-100 phase; one-line backfill (`UPDATE story_admin_users SET first_login_shown=true WHERE email_verified=true;`) if you'd rather suppress it for pre-existing accounts.
 
