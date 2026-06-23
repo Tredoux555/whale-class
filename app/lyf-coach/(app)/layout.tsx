@@ -21,6 +21,7 @@ import { getStoryAdminToken } from '@/lib/story/personal-client';
 import { T } from '@/lib/story/personal-theme';
 import { CoachChatProvider } from '@/lib/story/coach/coach-chat-context';
 import VerifyEmailBanner from '@/components/story/lyf-coach/VerifyEmailBanner';
+import WelcomeBanner from '@/components/story/lyf-coach/WelcomeBanner';
 
 const SESSION_KEY = 'story_admin_session';
 
@@ -221,6 +222,7 @@ export default function LyfCoachAppLayout({ children }: { children: ReactNode })
             transition: 'opacity 0.25s ease',
           }}
         >
+          {ready ? <WelcomeBanner /> : null}
           {ready ? <VerifyEmailBanner /> : null}
           {ready ? children : null}
         </main>
