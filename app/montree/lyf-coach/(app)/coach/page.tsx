@@ -3,7 +3,12 @@
 // Lyf Coach — the public conversation surface. Reuses the SAME shared coach
 // machinery as the Sanctuary coach (useCoachChat provider, voice, image, the
 // prompt-economy meter + [Upgrade]) — only the chrome differs: no diary/journal,
-// no reflect kickoff, just a clean coach for a word-of-mouth subscriber.
+// just a clean coach for a word-of-mouth subscriber.
+//
+// Opening message is a STATIC, calm greeting (no AI kickoff). It reads ?ask=
+// from the URL (via window.location, per the project's Suspense-avoidance
+// pattern) so the Planner's "Plan my day / Plan my week" buttons land here and
+// start the conversation.
 
 import { useEffect, useRef, useState } from 'react';
 import { useCoachChat } from '@/lib/story/coach/use-coach-chat';
@@ -43,6 +48,7 @@ export default function LyfCoachConversationPage() {
   const [imgError, setImgError] = useState('');
   const fileRef = useRef<HTMLInputElement | null>(null);
   const scrollRef = useRef<HTMLDivElement | null>(null);
+  const kickedOff = useRef(false);
 
   const onPickImage = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0];
@@ -57,6 +63,21 @@ export default function LyfCoachConversationPage() {
       setImgError('Could not read that image.');
     }
   };
+
+  // ?ask=<text> kickoff — lets the Planner's "Plan my day / week" buttons start
+  // the conversation here. Clears the param to keep the URL clean. No AI greeting
+  // kickoff otherwise — the static welcome below is what greets the user.
+  useEffect(() => {
+    if (kickedOff.current) return;
+    kickedOff.current = true;
+    if (typeof window === 'undefined') return;
+    const params = new URLSearchParams(window.location.search);
+    const ask = params.get('ask');
+    if (ask && ask.trim()) {
+      void send(ask.trim().slice(0, 400));
+      window.history.replaceState(null, '', '/montree/lyf-coach/coach');
+    }
+  }, [send]);
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' });
@@ -85,25 +106,11 @@ export default function LyfCoachConversationPage() {
       <div ref={scrollRef} style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 16, paddingBottom: 12 }}>
         {messages.length === 0 && (
           <div style={{ color: T.textMid, lineHeight: 1.75, paddingTop: 12 }}>
-            <div style={{ fontFamily: T.serif, fontSize: 22, color: T.text, marginBottom: 12 }}>I&apos;ve got you.</div>
             <div style={{ maxWidth: 460 }}>
-              Ask me what to focus on, talk through what&apos;s heavy, or let&apos;s plan the day with rest built in.
+              <p style={{ margin: '0 0 14px' }}>Hey. Whatever brought you here &mdash; I&apos;m glad you came.</p>
+              <p style={{ margin: 0 }}>You don&apos;t need to explain yourself or have it all figured out. Just tell me what&apos;s on your mind. We&apos;ll take it from there.</p>
             </div>
-            {/* Primary CTA — deliberately dominant: larger, bolder, a soft gold lift. */}
-            <button
-              onClick={() => { if (!busy) void send('Let me do my first session — get to know me. Ask me what a good coach would, a couple of questions at a time.', { displayText: 'Start my first session ✦' }); }}
-              style={{
-                display: 'block', width: '100%', textAlign: 'left', marginTop: 32,
-                border: '1px solid rgba(232,201,106,0.45)', borderRadius: 14, cursor: 'pointer',
-                background: 'linear-gradient(135deg, rgba(232,201,106,0.20), rgba(232,201,106,0.06))',
-                color: T.text, fontFamily: T.sans, fontSize: 16, fontWeight: 700,
-                padding: '17px 20px', letterSpacing: '-0.2px',
-                boxShadow: '0 8px 26px rgba(232,201,106,0.14)',
-              }}
-            >
-              ✦ Start my first session — let your coach get to know you
-            </button>
-            {/* Quiet secondary prompts — clearly subordinate to the CTA above. */}
+            {/* Quiet starter prompts. */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 32 }}>
               {SUGGESTIONS.map((s) => (
                 <button
