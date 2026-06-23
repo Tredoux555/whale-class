@@ -84,21 +84,27 @@ export default function LyfCoachConversationPage() {
 
       <div ref={scrollRef} style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 16, paddingBottom: 12 }}>
         {messages.length === 0 && (
-          <div style={{ color: T.textMid, lineHeight: 1.7 }}>
-            <div style={{ fontFamily: T.serif, fontSize: 20, color: T.text, marginBottom: 6 }}>I&apos;ve got you.</div>
-            Ask me what to focus on, talk through what&apos;s heavy, or let&apos;s plan the day with rest built in.
+          <div style={{ color: T.textMid, lineHeight: 1.75, paddingTop: 12 }}>
+            <div style={{ fontFamily: T.serif, fontSize: 22, color: T.text, marginBottom: 12 }}>I&apos;ve got you.</div>
+            <div style={{ maxWidth: 460 }}>
+              Ask me what to focus on, talk through what&apos;s heavy, or let&apos;s plan the day with rest built in.
+            </div>
+            {/* Primary CTA — deliberately dominant: larger, bolder, a soft gold lift. */}
             <button
               onClick={() => { if (!busy) void send('Let me do my first session — get to know me. Ask me what a good coach would, a couple of questions at a time.', { displayText: 'Start my first session ✦' }); }}
               style={{
-                display: 'block', width: '100%', textAlign: 'left', marginTop: 16,
-                border: `1px solid ${T.border}`, borderRadius: 12, cursor: 'pointer',
-                background: 'linear-gradient(135deg, rgba(232,201,106,0.16), rgba(232,201,106,0.05))',
-                color: T.text, fontFamily: T.sans, fontSize: 14.5, fontWeight: 600, padding: '13px 15px',
+                display: 'block', width: '100%', textAlign: 'left', marginTop: 32,
+                border: '1px solid rgba(232,201,106,0.45)', borderRadius: 14, cursor: 'pointer',
+                background: 'linear-gradient(135deg, rgba(232,201,106,0.20), rgba(232,201,106,0.06))',
+                color: T.text, fontFamily: T.sans, fontSize: 16, fontWeight: 700,
+                padding: '17px 20px', letterSpacing: '-0.2px',
+                boxShadow: '0 8px 26px rgba(232,201,106,0.14)',
               }}
             >
               ✦ Start my first session — let your coach get to know you
             </button>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 12 }}>
+            {/* Quiet secondary prompts — clearly subordinate to the CTA above. */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 32 }}>
               {SUGGESTIONS.map((s) => (
                 <button
                   key={s}
@@ -106,7 +112,7 @@ export default function LyfCoachConversationPage() {
                   style={{
                     appearance: 'none', textAlign: 'left',
                     border: `1px solid ${T.borderSoft}`, background: 'rgba(255,255,255,0.03)',
-                    color: T.textMid, fontFamily: T.sans, fontSize: 14, padding: '11px 14px',
+                    color: T.textMid, fontFamily: T.sans, fontSize: 14, padding: '12px 15px',
                     borderRadius: 12, cursor: 'pointer',
                   }}
                 >
@@ -179,7 +185,7 @@ export default function LyfCoachConversationPage() {
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
           onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); submit(); } }}
-          placeholder={recording ? 'Listening…' : transcribing ? 'Transcribing…' : 'Talk to your coach…'}
+          placeholder={recording ? 'Listening…' : transcribing ? 'Transcribing…' : "What's on your mind?"}
           rows={1}
           style={{
             flex: 1, resize: 'none', maxHeight: 140,
