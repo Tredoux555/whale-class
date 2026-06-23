@@ -21,6 +21,9 @@ export const COACH_SONNET_CAP_FREE = 200;
 /** Paid ($14.99/mo) monthly Sonnet allowance before the silent Haiku fallback. */
 export const COACH_SONNET_CAP_PAID = 500;
 
+/** First-100 welcome bonus: bigger first-calendar-month Sonnet allowance. */
+export const COACH_SONNET_CAP_WELCOME = 1000;
+
 /**
  * Show the "near your cloud limit" copy this many Sonnet turns BEFORE the cap.
  * Cap-relative so it fires correctly for both tiers (free 200 → warn at 180;
@@ -38,8 +41,19 @@ export const COACH_SONNET_WARN_MARGIN = 20;
  */
 export const COACH_SONNET_OVERSHOOT = 100;
 
-/** The applicable monthly Sonnet cap for an entitlement (paid vs free). */
-export function sonnetCapFor(entitlement: { entitled: boolean }): number {
+/**
+ * The applicable monthly Sonnet cap. First-100 welcome bonus (1000) wins for the
+ * bonus month only; otherwise paid (500) / free (200). Backward-compatible —
+ * welcomeBonusPeriod + periodMonth are optional, so existing { entitled } callers
+ * are unchanged.
+ */
+export function sonnetCapFor(
+  entitlement: { entitled: boolean; welcomeBonusPeriod?: string | null },
+  periodMonth: string = currentPeriodMonth(),
+): number {
+  if (entitlement.welcomeBonusPeriod && entitlement.welcomeBonusPeriod === periodMonth) {
+    return COACH_SONNET_CAP_WELCOME;
+  }
   return entitlement.entitled ? COACH_SONNET_CAP_PAID : COACH_SONNET_CAP_FREE;
 }
 
@@ -71,6 +85,8 @@ export interface CoachEntitlement {
   periodEnd: string | null;
   /** Owner / comped space — never billed, never metered. */
   isComped: boolean;
+  /** 'YYYY-MM' of a first-100 welcome bonus, or null. 1000-cap iff === currentPeriodMonth(). */
+  welcomeBonusPeriod: string | null;
 }
 
 const COMPED: CoachEntitlement = {
@@ -79,6 +95,7 @@ const COMPED: CoachEntitlement = {
   status: 'comped',
   periodEnd: null,
   isComped: true,
+  welcomeBonusPeriod: null,
 };
 
 /**
@@ -99,16 +116,27 @@ export async function getEntitlement(
   // TODO(Family): when the Family plan ships, also comp spaces linked as a
   // child/partner under a captain whose plan='family' (story_coach_context_links).
 
-  const { data, error } = await supabase
+  let { data, error } = await supabase
     .from('story_admin_users')
-    .select('plan, subscription_status, current_period_end')
+    .select('plan, subscription_status, current_period_end, welcome_bonus_period')
     .eq('space', space)
     .limit(1)
     .maybeSingle();
 
+  // If migration 271 hasn't run, welcome_bonus_period is missing (42703). Retry
+  // with the core columns so existing paid users are NEVER dropped to free.
+  if (error && isMissingSchema(error)) {
+    ({ data, error } = await supabase
+      .from('story_admin_users')
+      .select('plan, subscription_status, current_period_end')
+      .eq('space', space)
+      .limit(1)
+      .maybeSingle());
+  }
+
   if (error) {
     if (!isMissingSchema(error)) console.warn('[coach/entitlement] lookup error:', error.message);
-    return { entitled: false, plan: null, status: null, periodEnd: null, isComped: false };
+    return { entitled: false, plan: null, status: null, periodEnd: null, isComped: false, welcomeBonusPeriod: null };
   }
 
   const plan = (data?.plan as string | null) ?? null;
@@ -119,7 +147,8 @@ export async function getEntitlement(
   const periodOk = !periodEnd || Date.parse(periodEnd) > Date.now();
   const entitled = !!status && ENTITLED_STATUSES.has(status) && periodOk;
 
-  return { entitled, plan, status, periodEnd, isComped: false };
+  const welcomeBonusPeriod = (data?.welcome_bonus_period as string | null) ?? null;
+  return { entitled, plan, status, periodEnd, isComped: false, welcomeBonusPeriod };
 }
 
 // ── Cloud-prompt meter (per space, per month) ──────────────────────────────────
