@@ -10,6 +10,7 @@ import {
   coachSessionCookie,
   MIN_PASSWORD_LEN,
 } from '@/lib/story/coach/public-account';
+import { generateVerifyToken, sendCoachVerificationEmail } from '@/lib/story/coach/email-verification';
 
 // POST /api/lyf-coach/signup — PUBLIC, word-of-mouth Lyf Coach signup.
 //
@@ -107,6 +108,33 @@ export async function POST(req: NextRequest) {
 
     // Instant 7-day trial (idempotent, best-effort — never blocks signup).
     await startCoachTrial(supabase, space);
+
+    // Fire-and-forget email verification. NEVER blocks or breaks signup — the
+    // user is being logged in below regardless. A SEPARATE best-effort UPDATE
+    // sets the token so that if migration 270 hasn't run yet (columns absent →
+    // 42703) signup is wholly unaffected and the account is treated as verified.
+    void (async () => {
+      try {
+        const verifyToken = generateVerifyToken();
+        const { error: tokErr } = await supabase
+          .from('story_admin_users')
+          .update({
+            email_verified: false,
+            email_verify_token: verifyToken,
+            email_verify_sent_at: new Date().toISOString(),
+          })
+          .eq('space', space);
+        if (tokErr) {
+          if (tokErr.code !== '42703') {
+            console.error('[lyf-coach/signup] verify-token persist error:', tokErr.code, tokErr.message);
+          }
+          return;
+        }
+        await sendCoachVerificationEmail(email, verifyToken);
+      } catch (e) {
+        console.error('[lyf-coach/signup] verification email step failed:', e);
+      }
+    })();
 
     const token = await mintCoachPublicToken(email, space);
     const response = NextResponse.json({ session: token });
