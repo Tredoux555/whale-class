@@ -173,3 +173,94 @@ export async function ingestDocFiles(files: File[], token: string): Promise<Extr
   }
   return postToExtract(zip, token);
 }
+
+// ── Save-to-documents flow (SEPARATE from context-attach above) ─────────────
+// The above (ingestDocFiles) COMBINES a drop into one coach-context blob. This
+// flow instead processes EACH file on its own → one saved document per file.
+// Used only by the "Save to my documents" zone, never the composer.
+
+// Document kinds the save-to-documents zone accepts. Spec: HTML, MD, TXT, PDF.
+// (htm/markdown included as obvious aliases.)
+const SAVE_DOC_EXT = new Set(['html', 'htm', 'md', 'markdown', 'txt', 'pdf']);
+
+function extLower(name: string): string {
+  return (name.split('/').pop() || name).split('.').pop()?.toLowerCase() || '';
+}
+
+/** Title from a filename: drop the path + extension. "Brand Tokens.md" → "Brand Tokens". */
+export function titleFromFilename(name: string): string {
+  const base = (name.split('/').pop() || name).trim();
+  const dot = base.lastIndexOf('.');
+  const stem = dot > 0 ? base.slice(0, dot) : base;
+  return stem.trim() || 'Untitled';
+}
+
+/** doc_type inferred from extension (spec mapping; sensible default otherwise). */
+export function docTypeFromExt(name: string): string {
+  switch (extLower(name)) {
+    case 'html':
+    case 'htm':
+      return 'export';
+    case 'pdf':
+      return 'spec';
+    case 'md':
+    case 'markdown':
+    case 'txt':
+      return 'brief';
+    default:
+      return 'doc';
+  }
+}
+
+export interface ExtractedFileDoc {
+  filename: string;  // relative path (folder) or bare name
+  title: string;     // filename, extension stripped — pre-filled, user-editable
+  doc_type: string;  // inferred from extension — user-editable
+  content: string;   // extracted text/HTML
+  chars: number;
+}
+
+export interface IndividualExtractResult {
+  docs: ExtractedFileDoc[];
+  skipped: string[]; // unsupported type, junk path, or empty/unreadable
+  errors: { filename: string; error: string }[];
+}
+
+/**
+ * Extract a dropped/picked set into ONE document per file (never zipped, never
+ * combined). A single file yields one doc; multiple files yield one doc each;
+ * a folder (already flattened by filesFromDataTransfer) yields one doc per valid
+ * member. Invalid types + junk paths are skipped, not errored.
+ */
+export async function extractFilesIndividually(
+  files: File[],
+  token: string,
+): Promise<IndividualExtractResult> {
+  const docs: ExtractedFileDoc[] = [];
+  const skipped: string[] = [];
+  const errors: { filename: string; error: string }[] = [];
+
+  for (const f of files) {
+    const name = relPath(f);
+    if (f.size === 0 || SKIP_PATH.test('/' + name) || !SAVE_DOC_EXT.has(extLower(name))) {
+      skipped.push(name);
+      continue;
+    }
+    try {
+      const res = await postToExtract(f, token); // single file → extracted text
+      const content = (res.text || '').trim();
+      if (!content) { skipped.push(name); continue; }
+      docs.push({
+        filename: name,
+        title: titleFromFilename(name),
+        doc_type: docTypeFromExt(name),
+        content,
+        chars: res.chars ?? content.length,
+      });
+    } catch (e) {
+      errors.push({ filename: name, error: e instanceof Error ? e.message : 'could not read' });
+    }
+  }
+
+  return { docs, skipped, errors };
+}
