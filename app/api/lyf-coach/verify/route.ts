@@ -27,7 +27,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Auth not configured' }, { status: 500 });
   }
   const token = req.nextUrl.searchParams.get('token');
-  if (!token) return bounce('/lyf-coach/login?verify=missing');
+  if (!token) return bounce('/lyf-coach/verify-pending?verify=missing');
 
   const supabase = getSupabase();
   const { data, error } = await supabase
@@ -38,11 +38,11 @@ export async function GET(req: NextRequest) {
     .maybeSingle();
 
   if (error) {
-    if (error.code === '42703' || error.code === '42P01') return bounce('/lyf-coach/login?verify=unavailable');
+    if (error.code === '42703' || error.code === '42P01') return bounce('/lyf-coach/verify-pending?verify=unavailable');
     console.error('[lyf-coach/verify] lookup error:', error);
-    return bounce('/lyf-coach/login?verify=error');
+    return bounce('/lyf-coach/verify-pending?verify=error');
   }
-  if (!data) return bounce('/lyf-coach/login?verify=invalid');
+  if (!data) return bounce('/lyf-coach/verify-pending?verify=invalid');
 
   const row = data as {
     username: string; space: string;
@@ -52,7 +52,7 @@ export async function GET(req: NextRequest) {
   if (row.email_verify_sent_at) {
     const sent = new Date(row.email_verify_sent_at).getTime();
     if (Number.isFinite(sent) && Date.now() - sent > VERIFY_TOKEN_TTL_MS) {
-      return bounce('/lyf-coach/login?verify=expired');
+      return bounce('/lyf-coach/verify-pending?verify=expired');
     }
   }
 
@@ -64,7 +64,7 @@ export async function GET(req: NextRequest) {
     .eq('email_verify_token', token);
   if (upErr) {
     console.error('[lyf-coach/verify] confirm error:', upErr);
-    return bounce('/lyf-coach/login?verify=error');
+    return bounce('/lyf-coach/verify-pending?verify=error');
   }
 
   // First-100 welcome bonus. Single-fire: the token was just cleared above, so a

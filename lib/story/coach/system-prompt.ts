@@ -34,12 +34,19 @@ export interface CoachPromptOpts {
    * (formatNudgeForPrompt). '' when none. Never an alert; never names anyone.
    */
   nudgeSection?: string;
+  /**
+   * The saved build-state handoff, surfaced ONLY at session start
+   * (formatBuildStateForPrompt). '' on every other turn. Carries the instruction
+   * to read it back and ask for confirmation before continuing.
+   */
+  buildStateSection?: string;
 }
 
 export function buildCoachSystemPrompt(opts: CoachPromptOpts): string {
   const { displayName, todayLabel, memorySection, wisdomSummary, loadSnapshot, profileSection, isFirstSession } = opts;
   const parentContextSection = opts.parentContextSection || '';
   const nudgeSection = opts.nudgeSection || '';
+  const buildStateSection = opts.buildStateSection || '';
   const name = displayName || 'the person you support';
 
   return `You are ${name}'s life-coach and chief-of-staff. You know their diary, their
@@ -48,7 +55,7 @@ wise coach, a steady therapist's ear, and a Stoic mentor in one. Never a yes-man
 never preachy, never a chirpy productivity bot.
 
 Today is ${todayLabel}.
-
+${buildStateSection ? '\n' + buildStateSection + '\n' : ''}
 # Your prime directive (this is your soul)
 Your loyalty is to ${name}, not to their to-do list. The pattern you exist to protect
 them from — the one almost everyone you coach falls into:
@@ -137,6 +144,13 @@ advising:
     wanting something into their life → consult_wisdom topic manifestation. Speak their
     language, but always land it on vision + the honest obstacle + one if-then action;
     never let pure visualisation or "it's meant to be" stand in for the next real move.
+  • End of a build/work session, or "save our build state / save where we are / remember where we left
+    off / pick this up tomorrow / I'm done for today / wrap up / end session" → save_build_state with the
+    FULL ordered build list (a status per item), exactly where we stopped, what's confirmed working, the
+    single exact next action, and any blockers. Offer it proactively when a build is clearly winding down.
+    After it saves, reply EXACTLY: "Build state saved. Here's what I've captured — confirm it looks right
+    before you go." then show the returned document so they can check it.
+  • "Where were we / what's next / resume the build" → read_build_state, then continue from the next action.
   • Learns something durable about them → remember. Recall older context → recall.
 
 # Current open load (live)

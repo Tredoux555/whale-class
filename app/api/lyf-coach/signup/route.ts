@@ -16,6 +16,7 @@ import {
   countVerifiedPublicAccounts,
   sendSignupNotificationEmail,
   FIRST_N_WELCOME,
+  type VerifyEmailStatus,
 } from '@/lib/story/coach/email-verification';
 
 // POST /api/lyf-coach/signup — PUBLIC, word-of-mouth Lyf Coach signup.
@@ -115,11 +116,17 @@ export async function POST(req: NextRequest) {
     // Instant 7-day trial (idempotent, best-effort — never blocks signup).
     await startCoachTrial(supabase, space);
 
-    // Fire-and-forget email verification. NEVER blocks or breaks signup — the
-    // user is being logged in below regardless. A SEPARATE best-effort UPDATE
-    // sets the token so that if migration 270 hasn't run yet (columns absent →
-    // 42703) signup is wholly unaffected and the account is treated as verified.
+    // Fire-and-forget post-signup emails. NEVER blocks or breaks signup — the
+    // user is logged in below regardless. Both steps live in ONE task so the
+    // operator ping can REPORT whether the user's confirmation email went out:
+    //   1. persist the verify token, then send the confirmation email, capturing
+    //      a status that NEVER throws (a 42703 = migration 270 not run → columns
+    //      absent → account treated as verified, no email);
+    //   2. ALWAYS send the operator ping, carrying that status.
+    // The verify step is fully guarded, so the ping fires no matter what — the
+    // original "ping always fires" guarantee is preserved.
     void (async () => {
+      let verifyEmailStatus: VerifyEmailStatus = 'unknown';
       try {
         const verifyToken = generateVerifyToken();
         const { error: tokErr } = await supabase
@@ -131,25 +138,33 @@ export async function POST(req: NextRequest) {
           })
           .eq('space', space);
         if (tokErr) {
-          if (tokErr.code !== '42703') {
+          // 42703 = verify columns absent (migration 270 not run) → no email
+          // expected. Any other error means the token didn't persist, so the
+          // confirmation link would be dead — don't send it.
+          if (tokErr.code === '42703') {
+            verifyEmailStatus = 'skipped_migration';
+          } else {
             console.error('[lyf-coach/signup] verify-token persist error:', tokErr.code, tokErr.message);
+            verifyEmailStatus = 'persist_failed';
           }
-          return;
+        } else {
+          const sendRes = await sendCoachVerificationEmail(email, verifyToken);
+          verifyEmailStatus = sendRes.ok
+            ? 'sent'
+            : sendRes.reason === 'not_configured'
+              ? 'not_configured'
+              : 'send_failed';
         }
-        await sendCoachVerificationEmail(email, verifyToken);
       } catch (e) {
         console.error('[lyf-coach/signup] verification email step failed:', e);
+        verifyEmailStatus = 'error';
       }
-    })();
 
-    // Fire-and-forget operator ping: a real-time heads-up that a new account
-    // signed up. Kept SEPARATE from the verification step above so it fires even
-    // if the verify-token persist 42703's out. NEVER blocks or breaks signup.
-    // Founder status is finalised at /verify (first 100 VERIFIED); here we report
-    // whether the founder window is still open as a projection. countVerified...
-    // returns +Infinity on a read error -> founderWindowOpen=null (never a false
-    // founder claim).
-    void (async () => {
+      // Operator ping — ALWAYS fires, now carrying the confirmation-email outcome.
+      // Founder status is finalised at /verify (first 100 VERIFIED); here we report
+      // whether the founder window is still open as a projection. countVerified...
+      // returns +Infinity on a read error -> founderWindowOpen=null (never a false
+      // founder claim).
       try {
         const verifiedCount = await countVerifiedPublicAccounts(supabase);
         const known = Number.isFinite(verifiedCount);
@@ -157,6 +172,7 @@ export async function POST(req: NextRequest) {
           username: email,
           founderWindowOpen: known ? verifiedCount < FIRST_N_WELCOME : null,
           verifiedCount: known ? verifiedCount : null,
+          verifyEmailStatus,
         });
       } catch (e) {
         console.error('[lyf-coach/signup] signup ping step failed:', e);

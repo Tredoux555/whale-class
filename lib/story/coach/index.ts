@@ -13,6 +13,17 @@ export { getCoachProfile, displayNameForSpace } from './profile';
 export { computeLoad, type LoadReport } from './personal-data';
 export { loadRecentThread, type RecentThreadOpts } from './recent-thread';
 export {
+  writeBuildState,
+  loadCurrentBuildState,
+  listActiveBuildProjects,
+  formatBuildStateForPrompt,
+  renderBuildStateDoc,
+  type BuildStateInput,
+  type BuildListItem,
+  type StepStatus,
+  type CurrentBuildState,
+} from './build-state';
+export {
   isConsolidationDue,
   consolidateCoachDay,
   type ConsolidationResult,

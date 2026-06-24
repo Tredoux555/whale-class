@@ -18,6 +18,13 @@ import {
   type CoachMemoryType,
 } from './memory';
 import { emitFamilySignal, SIGNAL_TYPES, SIGNAL_DOMAINS, type SignalType, type SignalDomain } from './family-brain';
+import {
+  writeBuildState,
+  loadCurrentBuildState,
+  listActiveBuildProjects,
+  type BuildListItem,
+  type StepStatus,
+} from './build-state';
 
 export interface CoachToolDeps {
   supabase: SupabaseClient;
@@ -27,6 +34,8 @@ export interface CoachToolDeps {
   role?: 'adult' | 'parent' | 'child';
   /** The caller's IANA timezone, so "today" matches their local day. */
   tz?: string;
+  /** True for end-to-end private spaces (no server-readable store → build-state off). */
+  isE2e?: boolean;
 }
 
 export interface CoachToolResult {
@@ -69,7 +78,7 @@ export async function executeCoachTool(
   input: Record<string, unknown>,
   deps: CoachToolDeps,
 ): Promise<CoachToolResult> {
-  const { supabase, space, role, tz } = deps;
+  const { supabase, space, role, tz, isE2e } = deps;
   try {
     switch (name) {
       case 'read_diary': {
@@ -288,6 +297,49 @@ export async function executeCoachTool(
           .single();
         if (error || !data) return { success: false, result_summary: 'log failed', error: error?.message };
         return { success: true, result_summary: `diary entry logged ${entryDate}`, data: { id: data.id, entry_date: entryDate } };
+      }
+
+      case 'save_build_state': {
+        if (isE2e) {
+          return { success: false, result_summary: 'unavailable here', error: 'Build state isn’t available in an end-to-end private space.' };
+        }
+        const project = str(input.project) || '';
+        const next_action = str(input.next_action) || '';
+        if (!project.trim()) return { success: false, result_summary: 'project required', error: 'project is required' };
+        if (!next_action.trim()) return { success: false, result_summary: 'next_action required', error: 'next_action is required' };
+        const rawList = Array.isArray(input.build_list) ? input.build_list : [];
+        const build_list: BuildListItem[] = rawList
+          .map((it) => {
+            const o = it && typeof it === 'object' ? (it as Record<string, unknown>) : {};
+            const s = str(o.status);
+            const status: StepStatus = s === 'done' || s === 'in_progress' || s === 'not_started' ? s : 'not_started';
+            return { text: str(o.text) || '', status };
+          })
+          .filter((it) => it.text.trim());
+        const confirmed = Array.isArray(input.confirmed) ? input.confirmed.map((x) => str(x) || '').filter(Boolean) : [];
+        const blockers = Array.isArray(input.blockers) ? input.blockers.map((x) => str(x) || '').filter(Boolean) : [];
+        const res = await writeBuildState(
+          supabase,
+          space,
+          { project, build_list, current_step: str(input.current_step) || '', confirmed, next_action, blockers },
+          tz,
+        );
+        if (!res.ok) return { success: false, result_summary: 'save failed', error: res.error };
+        return { success: true, result_summary: 'build state saved', data: { id: res.id, document: res.doc } };
+      }
+
+      case 'read_build_state': {
+        if (isE2e) return { success: true, result_summary: 'no saved build state', data: { found: false } };
+        const current = await loadCurrentBuildState(supabase, space, str(input.project));
+        if (!current) return { success: true, result_summary: 'no saved build state', data: { found: false } };
+        const others = (await listActiveBuildProjects(supabase, space)).filter(
+          (p) => p.toLowerCase() !== current.project.toLowerCase(),
+        );
+        return {
+          success: true,
+          result_summary: `build state for ${current.project}`,
+          data: { found: true, project: current.project, document: current.doc, other_projects: others },
+        };
       }
 
       case 'emit_family_signal': {

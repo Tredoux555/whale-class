@@ -11,7 +11,7 @@ import { jwtVerify } from 'jose';
 import { getSupabase, getJWTSecret } from '@/lib/story-db';
 import { checkRateLimit } from '@/lib/rate-limiter';
 import { getClientIP } from '@/lib/montree/audit-logger';
-import { generateVerifyToken, sendCoachVerificationEmail } from '@/lib/story/coach/email-verification';
+import { generateVerifyToken, sendCoachVerificationEmail, VERIFY_TOKEN_TTL_MS } from '@/lib/story/coach/email-verification';
 
 export const dynamic = 'force-dynamic';
 
@@ -74,7 +74,7 @@ export async function POST(req: NextRequest) {
 
   const { data, error } = await supabase
     .from('story_admin_users')
-    .select('email_verified, username')
+    .select('email_verified, username, email_verify_token, email_verify_sent_at')
     .eq('space', who.space)
     .limit(1)
     .maybeSingle();
@@ -87,7 +87,15 @@ export async function POST(req: NextRequest) {
   if (data.email_verified !== false) return NextResponse.json({ ok: true, already_verified: true });
 
   const email = typeof data.username === 'string' ? data.username : who.username;
-  const verifyToken = generateVerifyToken();
+  // Reuse the existing token while it's still valid so EVERY confirmation email
+  // (the signup one + every resend) carries ONE working link — clicking an older
+  // email in the thread must never dead-end. Only mint a new token when there
+  // isn't one or it has expired. We refresh sent_at so the link the user just
+  // received is good for a full TTL window.
+  const existingToken = typeof data.email_verify_token === 'string' ? data.email_verify_token : '';
+  const sentAtMs = data.email_verify_sent_at ? new Date(data.email_verify_sent_at as string).getTime() : 0;
+  const stillValid = !!existingToken && Number.isFinite(sentAtMs) && Date.now() - sentAtMs < VERIFY_TOKEN_TTL_MS;
+  const verifyToken = stillValid ? existingToken : generateVerifyToken();
   const { error: upErr } = await supabase
     .from('story_admin_users')
     .update({ email_verify_token: verifyToken, email_verify_sent_at: new Date().toISOString() })

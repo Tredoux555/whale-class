@@ -39,6 +39,9 @@ import {
   computeLoad,
   formatLoadSnapshot,
   loadRecentThread,
+  loadCurrentBuildState,
+  listActiveBuildProjects,
+  formatBuildStateForPrompt,
   isConsolidationDue,
   consolidateCoachDay,
   getFamilyRole,
@@ -232,6 +235,12 @@ export async function POST(request: NextRequest) {
     : await loadRecentThread(supabase, space, { maxTurns: 12, withinHours: 72 });
   const history = serverThread.length ? serverThread : clientHistory;
 
+  // Start of a session = first turn of a fresh client conversation (no device-side
+  // history). On that turn we surface the saved build state so the next session
+  // resumes without being asked. A mid-conversation reload restores client history,
+  // so it won't re-trigger; "New conversation" clears it, so it will.
+  const isSessionStart = clientHistory.length === 0;
+
   // Reflect-on-entry: fetch the entry server-side and build a grounded prompt.
   if (reflectId) {
     const { data } = await supabase
@@ -276,7 +285,17 @@ export async function POST(request: NextRequest) {
         }).format(nowInstant));
       } catch { /* keep default */ }
       const part = hour < 5 ? 'late at night' : hour < 12 ? 'in the morning' : hour < 17 ? 'in the afternoon' : hour < 21 ? 'in the evening' : 'at night';
-      return `${datePart}, ${part}${clientTz ? '' : ' (server time)'}`;
+      // Exact local clock time (HH:MM, 24h) so the coach knows the precise time,
+      // not just the coarse part-of-day. Best-effort — falls back to the phrase alone.
+      let timePart = '';
+      try {
+        timePart = new Intl.DateTimeFormat('en-GB', {
+          hour: '2-digit', minute: '2-digit', hour12: false, hourCycle: 'h23',
+          ...(clientTz ? { timeZone: clientTz } : {}),
+        }).format(nowInstant);
+      } catch { /* no exact time available */ }
+      const timeAndPhrase = timePart ? `${timePart} (${part})` : part;
+      return `${datePart}, ${timeAndPhrase}${clientTz ? '' : ' (server time)'}`;
     } catch {
       return new Date().toISOString().slice(0, 10);
     }
@@ -381,6 +400,20 @@ export async function POST(request: NextRequest) {
         // A quiet Family-Brain tonal shift for this conversation (never an alert).
         const nudgeSection = nudgeText ? formatNudgeForPrompt(nudgeText) : '';
 
+        // Session-start handoff: on the first turn of a fresh conversation, surface
+        // the saved build state so the next session resumes unprompted. Adult coach
+        // only, and not during a diary-reflection kickoff (that's a different intent).
+        let buildStateSection = '';
+        // Not for e2e spaces: their state has no server-readable store (same reason
+        // serverThread is empty for them) — keeping the seal intact.
+        if (!isChild && !isE2e && isSessionStart && !reflectId) {
+          const current = await loadCurrentBuildState(supabase, space).catch(() => null);
+          if (current) {
+            const others = await listActiveBuildProjects(supabase, space).catch(() => [] as string[]);
+            buildStateSection = formatBuildStateForPrompt(current, others);
+          }
+        }
+
         const tools = isChild ? CHILD_COACH_TOOLS : COACH_TOOLS;
         const systemPrompt = isChild
           ? buildChildCoachSystemPrompt({
@@ -402,6 +435,7 @@ export async function POST(request: NextRequest) {
               loadSnapshot: load ? formatLoadSnapshot(load) : 'No load data available right now.',
               parentContextSection,
               nudgeSection,
+              buildStateSection,
             });
         const minimalSystemPrompt = isChild
           ? `You are ${coachName}'s warm, kind coach — a friend in their corner. Today is ${todayLabel}. Answer ` +
@@ -461,7 +495,7 @@ export async function POST(request: NextRequest) {
 
               toolsUsed.push(block.name);
               controller.enqueue(sse(encoder, { type: 'tool_call', tool: block.name }));
-              const result = await executeCoachTool(block.name, block.input as Record<string, unknown>, { supabase, space, role: familyRole, tz: clientTz });
+              const result = await executeCoachTool(block.name, block.input as Record<string, unknown>, { supabase, space, role: familyRole, tz: clientTz, isE2e });
               controller.enqueue(sse(encoder, { type: 'tool_result', tool: block.name, success: result.success }));
 
               const resultText = result.success ? JSON.stringify(result.data) : `Error: ${result.error || 'unknown'}`;
