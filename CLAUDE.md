@@ -25,6 +25,35 @@ Local path: `/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/whale` (note spa
 
 ---
 
+## 🧠 SESSION — Jun 24, 2026 (Cowork, PM) — Lyf Coach: build-state handoff + signup confirm-flow rework + coach UX + document/multi-photo upload
+
+**Canonical handoff:** `docs/handoffs/SESSION_LYFCOACH_JUN24_PM.md`. **5 commits on `main`, all pushed + Railway auto-deploying:** `ca6d4761` (build-state + confirm-flow + coach UX) · `0fadba03` (verify-pending celebration) · `e9f96024` (verify-pending terminal, never opens coach) · `98a29cfd` (owner coach copy + Save&end parity) · `b8be066c` (document + multi-photo upload, both coaches). **🚨 ONE migration pending Tredoux's Supabase run: `migrations/273_story_coach_build_state.sql`** — until run, `save_build_state` soft-fails gracefully (no breakage); everything else live. `unpdf` added to package.json (Railway installs on deploy). No new env vars.
+
+**1. Build-state session handoff (NEW system).** Dedicated store `story_coach_build_state` (NOT memory/diary/projects — see rule below). `lib/story/coach/build-state.ts` (render canonical doc + write/supersede-per-project + load + format), `save_build_state`/`read_build_state` tools (adult-only, E2E-refused), session-start surfacing in `app/api/story/coach/route.ts` (`isSessionStart = clientHistory.length===0` → inject `# Where we left off` on turn 1 only), trigger-phrase intent map + confirmation line in `system-prompt.ts`, and a "✓ Save & end session" composer button on both coaches.
+
+**2. Signup confirm-flow rework.** DB-diagnosed: resend ROTATED the verify token (old emails dead-ended `verify=invalid`) and failures dumped users on login. Fixes: **token REUSE on resend** (within TTL) so every email in a thread works; verify failures → `/lyf-coach/verify-pending` (not login); **verify-pending is a passive auto-advancer** (poll + focus/visibility re-check), manual "I've confirmed" button removed — ONE path (the email link); **terminal celebration** when verified mid-wait ("Congratulations — you're in" + first-100/1000-prompts when `founder`, closeable, NEVER navigates to /coach → no duplicate coach tab); already-verified-on-first-load → straight to /coach. `founder` read from `verify-status` GET (`welcome_bonus_period`), stable.
+
+**3. Operator signup ping** now reports the confirmation-email outcome (✅ sent / 🚨 SEND FAILED / NOT SENT…) — two fire-and-forget blocks merged into one (verify step resolves a never-throwing status; ping always fires carrying it). `sendCoachVerificationEmail` returns a result.
+
+**4. Coach UX.** Exact HH:MM in the coach time label; copy button on every finished reply (`components/story/personal/CopyButton.tsx`); Save & end session — all on BOTH coaches.
+
+**5. Document + multi-photo upload (BOTH coaches).** Rebuilt the parked `coach_uploads.patch` on current code (stale → rebuilt, not `git apply`). NEW `app/api/story/coach/extract-document/route.ts` (PDF=unpdf, DOCX=mammoth, text decode; `verifyAdminToken`; 10MB + 200k-char caps). Route accepts `images[]`(≤5)+`document_text` → multi-block turn (doc context first), backward-compatible with legacy single `image`. `coach-chat-context.tsx` sends images[]/document. Both coach pages: 📎 multi-photo + 📄 doc + attachment tray + spinner.
+
+**🚨 Architectural rules locked in:**
+1. **Build-state = `story_coach_build_state`** — never a memory type (semantic-only, 1000-char cap), diary (append-only), or project (WIP model). One ACTIVE per project, supersede-on-save, encrypted, surfaced at session start only.
+2. **Build-state tools adult-only + E2E-refused** (no server-readable build text for sealed rooms).
+3. **Verify token REUSED on resend** (within TTL), never rotated — every email in a thread must work.
+4. **Verify failures → verify-pending, never login.**
+5. **verify-pending NEVER navigates to /coach** — the email link is the single path in; the waiting tab becomes a terminal closeable welcome (kills the duplicate-coach-tab problem).
+6. **`founder` = `welcome_bonus_period` set**, via `verify-status` GET (stable, not the one-shot `first_login_shown`).
+7. **Operator signup ping always fires AND reports the confirmation-email outcome.**
+8. **Coach upload route is backward-compatible** (`images[]`+`document` AND legacy `image`) — floating companion untouched.
+9. **🚨 TWO coach page files drift** — `app/lyf-coach/(app)/coach/page.tsx` + `app/story/admin/(personal)/coach/page.tsx`. Every coach UI feature must be added to BOTH. **Long-term fix: extract a shared `<CoachConversation>` component (recommended, not yet built).**
+
+**Verification:** all 5 commits on origin/main (LOCAL==REMOTE==`b8be066c`), zero uncommitted, `eslint --max-warnings=0` clean on all 16 touched files. **Next:** run migration 273; end-to-end test (checklist in handoff); `coach_uploads.patch` at repo root is now redundant (safe to delete); consider the shared-coach-component refactor.
+
+---
+
 ## 🧠 SESSION — Jun 24, 2026 (Cowork) — Lyf Coach UI fixes (verify→app redirect + welcome banner) + home-checkout cleanup
 
 **Canonical handoff:** `docs/handoffs/SESSION_LYFCOACH_UI_FIXES_JUN24.md`. **4 code commits on `main`, pushed + Railway auto-deploying:** `b703518d` (Fix 1) · `8c36b299` (Fix 2) · `2153d91c` (one login path) · `8324a909` (banner restyle). **✅ Migration 272 RUN (confirmed Jun 24 — `first_login_shown` column verified present)** — Fix 2 banner is LIVE.
