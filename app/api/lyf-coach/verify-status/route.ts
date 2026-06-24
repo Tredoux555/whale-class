@@ -40,7 +40,7 @@ export async function GET(req: NextRequest) {
   const supabase = getSupabase();
   const { data, error } = await supabase
     .from('story_admin_users')
-    .select('email_verified, username')
+    .select('email_verified, username, welcome_bonus_period')
     .eq('space', who.space)
     .limit(1)
     .maybeSingle();
@@ -54,7 +54,10 @@ export async function GET(req: NextRequest) {
   }
   const verified = data ? data.email_verified !== false : true;
   const email = data && typeof data.username === 'string' ? data.username : who.username;
-  return NextResponse.json({ email_verified: verified, email });
+  // founder = granted the first-100 welcome bonus (stamped at verify). Drives the
+  // "you're in" celebration copy on the verify-pending screen.
+  const founder = !!(data && data.welcome_bonus_period);
+  return NextResponse.json({ email_verified: verified, email, founder });
 }
 
 export async function POST(req: NextRequest) {
