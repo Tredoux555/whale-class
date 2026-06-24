@@ -20,8 +20,8 @@ export const T = {
   text: 'rgba(255,255,255,0.95)',
   textMid: 'rgba(255,255,255,0.62)',
   textDim: 'rgba(255,255,255,0.42)',
-  serif: 'var(--font-lora), Georgia, serif',
-  sans: '"Inter", -apple-system, BlinkMacSystemFont, sans-serif',
+  serif: 'var(--font-newsreader), Georgia, serif',
+  sans: 'var(--font-hanken), system-ui, sans-serif',
   column: 680,
 } as const;
 

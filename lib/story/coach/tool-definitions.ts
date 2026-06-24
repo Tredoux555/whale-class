@@ -216,6 +216,42 @@ export const COACH_TOOLS: Tool[] = [
     },
   },
   {
+    name: 'save_document',
+    description:
+      'Save a DOCUMENT to durable storage so it persists and can be read back in future sessions — a design ' +
+      'doc, brief, spec, or export (e.g. brand tokens, a UI spec, a finished plan). Use when they ask to ' +
+      '"save this as a document / save this doc / keep this", or when you produce a substantial artifact worth ' +
+      'keeping. Documents accumulate (a new save does NOT overwrite earlier ones) — title them clearly and tag ' +
+      'them so they\'re findable later. This is for artifacts, not fleeting facts (use remember for those) or ' +
+      'session handoffs (use save_build_state for those).',
+    input_schema: {
+      type: 'object',
+      properties: {
+        title: { type: 'string', description: 'A clear, specific title.' },
+        content: { type: 'string', description: 'The full document text or HTML.' },
+        doc_type: { type: 'string', description: "Kind of document, e.g. 'design', 'brief', 'spec', 'export'." },
+        tags: { type: 'array', items: { type: 'string' }, description: "Lowercase tags for retrieval, e.g. ['lyfcoach','brand','tokens']." },
+      },
+      required: ['title', 'content'],
+    },
+  },
+  {
+    name: 'read_document',
+    description:
+      'Find and read back saved documents. Use when they reference an earlier doc ("the brand tokens", "that ' +
+      'spec we saved") or you need the content of something stored before. Search by a title query and/or by ' +
+      'tags (a document matches if it carries ANY of the given tags). Returns the most recent matches, newest ' +
+      'first, with their full content.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        query: { type: 'string', description: 'Free-text matched against the title (optional).' },
+        tags: { type: 'array', items: { type: 'string' }, description: 'Match documents carrying ANY of these tags (optional).' },
+        limit: { type: 'number', description: 'Max documents to return (default 10, max 25).' },
+      },
+    },
+  },
+  {
     name: 'emit_family_signal',
     description:
       'Send ONE abstracted, WORDLESS flag to the family helper (the Family Brain) — a feeling-type only, ' +
