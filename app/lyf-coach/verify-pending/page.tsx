@@ -4,12 +4,11 @@
 // any unverified session here; new signups land here too. Lives OUTSIDE the
 // (app) route group so it never re-triggers the layout gate (no redirect loop).
 //
-// PASSIVE WAITING ROOM — ONE PATH. There is no manual "I've confirmed" step. The
-// single path is: click the email link. This page polls AND re-checks the instant
-// the tab regains focus. If it was ALREADY verified on first load (a returning
-// user) it goes straight to the coach; if it flips verified WHILE waiting here, it
-// turns into a "you're in" celebration (so we don't just open a second identical
-// coach tab). Just a resend fallback + sign out alongside.
+// PASSIVE WAITING ROOM — ONE PATH IN. The single path into the coach is the email
+// confirmation link (which lands ITS OWN tab in the coach). This tab never opens
+// the coach itself. It polls + re-checks on focus, and the moment the account is
+// verified it turns into a terminal "you're in" welcome the user can simply close
+// — so we never end up with two coach tabs. Resend fallback + sign out alongside.
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -70,18 +69,15 @@ export default function VerifyPendingPage() {
         const data = await res.json().catch(() => null);
         if (data?.email_verified === true) {
           done = true;
-          // Already verified on the FIRST check → returning user, straight in.
-          // Verified DURING the wait (a poll/focus transition) → celebrate here
-          // instead of opening a second identical coach tab.
-          if (initial) {
-            router.replace('/lyf-coach/coach');
-          } else {
-            setFounder(data.founder === true);
-            setStage('celebrating');
-            // The celebration IS the welcome moment — stamp first-login so the
-            // in-app banner doesn't repeat it. Best-effort; ignore the result.
-            void fetch('/api/lyf-coach/welcome', { method: 'POST', headers: authHeaders() }).catch(() => {});
-          }
+          // Verified → terminal "you're in" welcome. We NEVER navigate to /coach
+          // from this tab: the email-confirmation tab is the single path into the
+          // coach, so opening it here too would just create a second coach tab.
+          // This is just a welcome window the user can close.
+          setFounder(data.founder === true);
+          setStage('celebrating');
+          // This IS the welcome moment — stamp first-login so the in-app banner
+          // doesn't repeat it. Best-effort; ignore the result.
+          void fetch('/api/lyf-coach/welcome', { method: 'POST', headers: authHeaders() }).catch(() => {});
           return;
         }
         if (data && typeof data.email === 'string') setEmail(data.email);
@@ -144,20 +140,12 @@ export default function VerifyPendingPage() {
             <p style={{ margin: '0 0 6px', color: T.textMid, fontSize: 15, lineHeight: 1.7 }}>
               Welcome to your Sanctuary. Welcome to Lyf Coach.
             </p>
-            <p style={{ margin: '0 0 26px', color: T.textMid, fontSize: 15, lineHeight: 1.7 }}>
+            <p style={{ margin: '0 0 18px', color: T.textMid, fontSize: 15, lineHeight: 1.7 }}>
               This is the first step of your new life.
             </p>
-            <button
-              onClick={() => router.push('/lyf-coach/coach')}
-              style={{
-                width: '100%', padding: '14px', borderRadius: 12, border: 'none', cursor: 'pointer',
-                fontSize: 16, fontWeight: 700, color: '#06140c',
-                background: `linear-gradient(135deg, ${T.emerald}, ${T.emeraldDeep})`,
-                boxShadow: '0 6px 20px rgba(52,211,153,0.22)',
-              }}
-            >
-              Take the first step →
-            </button>
+            <p style={{ margin: 0, color: T.textDim, fontSize: 13, lineHeight: 1.6 }}>
+              You&apos;re all set — you can close this window.
+            </p>
           </>
         ) : (
           <>
