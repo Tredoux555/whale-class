@@ -27,7 +27,9 @@ export interface CoachMessage {
   streaming?: boolean;
   error?: boolean;
   tools?: string[];
-  image?: string; // preview data URL for an attached image on a user message
+  image?: string; // legacy single preview data URL (kept for old sessionStorage hydration)
+  images?: string[]; // preview data URLs for attached images on a user message (up to 5)
+  docName?: string;  // filename of an attached document on a user message
   // Prompt-economy notice (MONETISATION SPEC v1.0). 'approaching' = near the
   // monthly cloud limit; 'quiet' = now on the quieter mode (renders the
   // [Upgrade] button). Shown at most once per session, enforced by the provider.
@@ -47,10 +49,14 @@ const COPY_HAIKU =
 interface CoachSendOpts {
   reflectEntryId?: string;
   displayText?: string;
-  /** An attached image for the coach to read (base64, no prefix). */
+  /** An attached image for the coach to read (base64, no prefix). LEGACY single-image path. */
   image?: { media_type: string; data: string };
   /** A data URL preview of that image, for the chat bubble. */
   imagePreview?: string;
+  /** Up to 5 attached images (each with its own preview), read as separate vision blocks. */
+  images?: { media_type: string; data: string; previewUrl: string }[];
+  /** An extracted document the coach should review (text injected before the prompt). */
+  document?: { text: string; name: string };
 }
 
 interface CoachChatValue {
@@ -144,6 +150,17 @@ export function CoachChatProvider({ children }: { children: ReactNode }) {
         return;
       }
       const userText = opts?.displayText ?? text;
+      // Normalize attachments: prefer the new plural `images`, fall back to the
+      // legacy singular `image` (Sanctuary coach + floating companion still send
+      // that). Cap at 5. previews drive the chat-bubble thumbnails.
+      const imgs = (opts?.images?.length
+        ? opts.images
+        : opts?.image
+          ? [{ ...opts.image, previewUrl: opts.imagePreview || '' }]
+          : []
+      ).slice(0, 5);
+      const previews = imgs.map((i) => i.previewUrl).filter(Boolean);
+      const docName = opts?.document?.name;
       const history = messagesRef.current
         // Exclude streaming/error placeholders AND the prompt-economy notices
         // (canned copy) so the model never sees its own limit messages as dialogue.
@@ -153,7 +170,9 @@ export function CoachChatProvider({ children }: { children: ReactNode }) {
       setBusy(true);
       setMessages((prev) => [
         ...prev,
-        { role: 'user', text: userText, image: opts?.imagePreview },
+        // `image` (first preview) keeps the legacy single-image renderers working;
+        // `images` drives the multi-thumbnail bubble; `docName` shows a doc chip.
+        { role: 'user', text: userText, image: previews[0], images: previews, docName },
         { role: 'assistant', text: '', streaming: true, tools: [] },
       ]);
 
@@ -176,7 +195,9 @@ export function CoachChatProvider({ children }: { children: ReactNode }) {
           body: JSON.stringify({
             question: text, history, reflect_entry_id: opts?.reflectEntryId, conversation_id: convoRef.current,
             client_tz: clientTz, client_now: new Date().toISOString(),
-            image: opts?.image,
+            images: imgs.map(({ media_type, data }) => ({ media_type, data })),
+            document_text: opts?.document?.text,
+            document_name: opts?.document?.name,
             // The model depth pinned for this conversation (absent on turn 1).
             pinned_mode: pinnedModeRef.current ?? undefined,
           }),

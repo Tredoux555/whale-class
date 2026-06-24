@@ -77,6 +77,11 @@ interface BodyShape {
   client_now?: string;
   /** An optional attached image the coach should read (vision). base64, no prefix. */
   image?: { media_type?: string; data?: string };
+  /** Up to 5 attached images — each read as a separate vision block on this turn. */
+  images?: Array<{ media_type?: string; data?: string }>;
+  /** Extracted text of an uploaded document, injected as context before the prompt. */
+  document_text?: string;
+  document_name?: string;
   /**
    * The model depth pinned for THIS conversation, echoed back by the client on
    * every turn after the first (neutral token — never a model name). Absent on
@@ -88,6 +93,8 @@ interface BodyShape {
 const IANA_TZ_RE = /^[A-Za-z][A-Za-z0-9_+-]*(?:\/[A-Za-z0-9_+-]+)*$/;
 const ALLOWED_IMAGE_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/gif']);
 const MAX_IMAGE_B64 = 7_000_000; // ~5 MB decoded — the client downscales before sending
+const MAX_IMAGES = 5;             // up to 5 photos per message
+const MAX_DOC_CHARS = 200_000;    // defensive re-cap of extracted document text
 
 export async function POST(request: NextRequest) {
   const startTime = Date.now();
@@ -119,21 +126,32 @@ export async function POST(request: NextRequest) {
     ? body.reflect_entry_id
     : null;
 
-  // Optional attached image the coach should READ (vision). Validated here;
-  // never persisted server-side (transient like the voice audio). Works for
-  // adult + child coaches alike — Sonnet reads the text/contents natively.
-  let image: { media_type: string; data: string } | null = null;
-  if (body.image && typeof body.image.data === 'string' && typeof body.image.media_type === 'string') {
-    const mt = body.image.media_type;
-    const data = body.image.data;
-    if (ALLOWED_IMAGE_TYPES.has(mt) && data.length > 0 && data.length <= MAX_IMAGE_B64) {
-      image = { media_type: mt, data };
-    } else if (data.length > MAX_IMAGE_B64) {
-      return new Response(JSON.stringify({ error: 'That image is too large — try a smaller photo.' }), { status: 400 });
-    }
+  // Optional attached images the coach should READ (vision). Up to 5, each a
+  // separate vision block on THIS turn only — never persisted server-side
+  // (transient like the voice audio). Accepts the new `images[]` AND the legacy
+  // singular `image`, so the Sanctuary coach + floating companion keep working
+  // unchanged. Invalid/oversized entries are skipped so one bad photo never fails
+  // the whole batch (the client downscales before sending). Adult + child alike.
+  const rawImages: Array<{ media_type?: string; data?: string }> = [];
+  if (Array.isArray(body.images)) rawImages.push(...body.images);
+  if (body.image) rawImages.push(body.image);
+  const images: { media_type: string; data: string }[] = [];
+  for (const img of rawImages) {
+    if (images.length >= MAX_IMAGES) break;
+    if (!img || typeof img.data !== 'string' || typeof img.media_type !== 'string') continue;
+    if (!ALLOWED_IMAGE_TYPES.has(img.media_type)) continue;
+    if (img.data.length === 0 || img.data.length > MAX_IMAGE_B64) continue;
+    images.push({ media_type: img.media_type, data: img.data });
   }
 
-  if (!question && !reflectId && !image) {
+  // Extracted document text (from /extract-document), injected as context before
+  // the user's prompt below. Transient — only `question` is logged, never the doc.
+  const docText = typeof body.document_text === 'string'
+    ? body.document_text.slice(0, MAX_DOC_CHARS).trim()
+    : '';
+  const docName = typeof body.document_name === 'string' ? body.document_name.slice(0, 200).trim() : '';
+
+  if (!question && !reflectId && !images.length && !docText) {
     return new Response(JSON.stringify({ error: 'question required' }), { status: 400 });
   }
   // Generous — this is his journal/coach; he writes long brain-dumps.
@@ -341,13 +359,37 @@ export async function POST(request: NextRequest) {
     }
   });
 
-  // The current turn's content. With an image attached, it becomes a
-  // text+image block array so the coach can READ the image; otherwise plain text.
-  // History stays text-only (sanitized) — the image rides only on this turn.
-  const turnContent: MessageParam['content'] = image
+  // The current turn's content. With a document and/or images attached it becomes
+  // a block array; otherwise plain text. History stays text-only (sanitized) — the
+  // document + images ride ONLY on this turn. Document context goes FIRST (before
+  // the user's prompt), then the prompt, then image blocks. A leading context
+  // block (not the cached top-level system string) keeps the prompt cache intact
+  // while still giving the coach the document.
+  type ImgMediaType = 'image/jpeg' | 'image/png' | 'image/webp' | 'image/gif';
+  const hasAttachment = images.length > 0 || !!docText;
+  const turnContent: MessageParam['content'] = hasAttachment
     ? [
-        { type: 'text', text: question || 'Please read this image and tell me what it says.' },
-        { type: 'image', source: { type: 'base64', media_type: image.media_type as 'image/jpeg' | 'image/png' | 'image/webp' | 'image/gif', data: image.data } },
+        ...(docText
+          ? [{
+              type: 'text' as const,
+              text:
+                `The user has shared the following document for your review` +
+                `${docName ? ` (${docName})` : ''}:\n\n"""\n${docText}\n"""\n\n` +
+                `Read it as a careful business advisor would: understand the key terms, ` +
+                `flag anything unclear, one-sided, or risky, and be ready to answer questions ` +
+                `about it. Don't summarise it unless asked — respond to what the user says next.`,
+            }]
+          : []),
+        {
+          type: 'text' as const,
+          text: question || (docText
+            ? "I've shared a document above — take a look and tell me what stands out."
+            : 'Please read these images and tell me what they show.'),
+        },
+        ...images.map((img) => ({
+          type: 'image' as const,
+          source: { type: 'base64' as const, media_type: img.media_type as ImgMediaType, data: img.data },
+        })),
       ]
     : question;
   const initialMessages: MessageParam[] = [...history, { role: 'user', content: turnContent }];
