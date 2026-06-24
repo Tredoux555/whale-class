@@ -14,6 +14,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useCoachChat } from '@/lib/story/coach/use-coach-chat';
 import { useVoiceRecord } from '@/lib/story/coach/use-voice-record';
 import { fileToCoachImage, type CoachImage } from '@/lib/story/coach/image-attach';
+import { ingestDocFiles, filesFromDataTransfer, splitDropped } from '@/lib/story/coach/file-attach';
 import { getStoryAdminToken } from '@/lib/story/personal-client';
 import Markdown from '@/components/story/personal/Markdown';
 import CoachUpgradeButton from '@/components/story/personal/CoachUpgradeButton';
@@ -41,10 +42,13 @@ const SUGGESTIONS = [
 ];
 
 const MAX_PHOTOS = 5;
+// Wide-open: PDFs, Word, text, code, HTML, zips — and anything else (the server
+// reads it as text if it can, refuses binaries with a friendly message). The
+// folder button uses webkitdirectory instead of an accept filter.
 const DOC_ACCEPT =
-  '.pdf,.docx,.txt,.csv,.md,.tsv,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain,text/csv,text/markdown';
+  '.pdf,.docx,.txt,.csv,.md,.tsv,.zip,.html,.htm,.json,.xml,.yaml,.yml,.js,.jsx,.ts,.tsx,.py,.css,.rtf,application/pdf,application/zip,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/*';
 
-interface PendingDoc { name: string; text: string; chars: number; truncated: boolean }
+interface PendingDoc { name: string; text: string; chars: number; truncated: boolean; fileCount?: number }
 
 export default function LyfCoachConversationPage() {
   const { messages, busy, send, reset } = useCoachChat();
@@ -56,16 +60,18 @@ export default function LyfCoachConversationPage() {
   const [pendingDoc, setPendingDoc] = useState<PendingDoc | null>(null);
   const [docBusy, setDocBusy] = useState(false);
   const [attachError, setAttachError] = useState('');
+  const [dragOver, setDragOver] = useState(false);
   const photoRef = useRef<HTMLInputElement | null>(null);
   const docRef = useRef<HTMLInputElement | null>(null);
+  const folderRef = useRef<HTMLInputElement | null>(null);
+  const dragDepth = useRef(0);
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const kickedOff = useRef(false);
 
-  // Pick photos — multi-select, capped at 5 total. Each is downscaled client-side
-  // (image-attach) and read as a separate vision block on send.
-  const onPickPhotos = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || []);
-    e.target.value = '';
+  // Add photos — multi-select, capped at 5 total. Each is downscaled client-side
+  // (image-attach) and read as a separate vision block on send. Shared by the 📎
+  // button and drag-drop.
+  const addPhotos = async (files: File[]) => {
     if (!files.length) return;
     setAttachError('');
     const room = MAX_PHOTOS - pendingImgs.length;
@@ -82,39 +88,72 @@ export default function LyfCoachConversationPage() {
     if (files.length > room) setAttachError(`Added the first ${room} — up to ${MAX_PHOTOS} photos per message.`);
   };
 
+  const onPickPhotos = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    e.target.value = '';
+    await addPhotos(files);
+  };
+
   const removeImg = (idx: number) => setPendingImgs((prev) => prev.filter((_, i) => i !== idx));
 
-  // Pick a document — uploaded to the server, full text extracted, held until send.
-  const onPickDoc = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const f = e.target.files?.[0];
-    e.target.value = '';
-    if (!f) return;
+  // Ingest any non-image input (a file, a zip, or a whole folder). A single file
+  // goes straight to the extractor; multiple files / a folder are zipped
+  // client-side and the server unpacks + extracts every readable member. Shared
+  // by the 📄 button, the 📁 folder button, and drag-drop.
+  const addDocs = async (files: File[]) => {
+    if (!files.length) return;
     setAttachError('');
-    if (f.size > 10 * 1024 * 1024) { setAttachError('That file is too large — the limit is 10MB.'); return; }
     const token = getStoryAdminToken();
-    if (!token) { setAttachError('Please sign in again to attach a document.'); return; }
+    if (!token) { setAttachError('Please sign in again to attach files.'); return; }
     setDocBusy(true);
     try {
-      const fd = new FormData();
-      fd.append('file', f);
-      const res = await fetch('/api/story/coach/extract-document', {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${token}` },
-        body: fd,
-      });
-      if (!res.ok) {
-        let msg = 'Could not read that document.';
-        try { msg = ((await res.json()) as { error?: string })?.error || msg; } catch { /* not json */ }
-        setAttachError(msg);
-        return;
-      }
-      const data = (await res.json()) as { name: string; text: string; chars: number; truncated?: boolean };
-      setPendingDoc({ name: data.name, text: data.text, chars: data.chars, truncated: !!data.truncated });
-    } catch {
-      setAttachError('Could not upload that document. Try again.');
+      const data = await ingestDocFiles(files, token);
+      setPendingDoc({ name: data.name, text: data.text, chars: data.chars, truncated: !!data.truncated, fileCount: data.fileCount });
+    } catch (err) {
+      setAttachError(err instanceof Error ? err.message : 'Could not read those files. Try again.');
     } finally {
       setDocBusy(false);
     }
+  };
+
+  const onPickDoc = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    e.target.value = '';
+    await addDocs(files);
+  };
+
+  // Folder picker (webkitdirectory) — every file inside comes through at once.
+  const onPickFolder = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    e.target.value = '';
+    await addDocs(files);
+  };
+
+  // Drag-and-drop onto the conversation — files, a zip, or a whole folder.
+  const onDragEnter = (e: React.DragEvent) => {
+    if (!Array.from(e.dataTransfer.types || []).includes('Files')) return;
+    e.preventDefault();
+    dragDepth.current += 1;
+    setDragOver(true);
+  };
+  const onDragOver = (e: React.DragEvent) => {
+    if (Array.from(e.dataTransfer.types || []).includes('Files')) e.preventDefault();
+  };
+  const onDragLeave = () => {
+    dragDepth.current = Math.max(0, dragDepth.current - 1);
+    if (dragDepth.current === 0) setDragOver(false);
+  };
+  const onDrop = async (e: React.DragEvent) => {
+    if (!Array.from(e.dataTransfer.types || []).includes('Files')) return;
+    e.preventDefault();
+    dragDepth.current = 0;
+    setDragOver(false);
+    if (docBusy) return;
+    const all = await filesFromDataTransfer(e.dataTransfer);
+    if (!all.length) return;
+    const { images, docs } = splitDropped(all);
+    if (images.length) await addPhotos(images);
+    if (docs.length) await addDocs(docs);
   };
 
   // ?ask=<text> kickoff — lets the Planner's "Plan my day / week" buttons start
@@ -167,7 +206,24 @@ export default function LyfCoachConversationPage() {
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', minHeight: 'calc(100dvh - 200px)' }}>
+    <div
+      onDragEnter={onDragEnter}
+      onDragOver={onDragOver}
+      onDragLeave={onDragLeave}
+      onDrop={onDrop}
+      style={{ position: 'relative', display: 'flex', flexDirection: 'column', minHeight: 'calc(100dvh - 200px)' }}
+    >
+      {dragOver && (
+        <div style={{
+          position: 'absolute', inset: 0, zIndex: 20, borderRadius: 16,
+          border: `2px dashed ${T.gold}`, background: 'rgba(6,20,12,0.86)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          color: T.text, fontFamily: T.sans, fontSize: 15, textAlign: 'center', padding: 24,
+          pointerEvents: 'none',
+        }}>
+          <span>Drop a file, a zip, or a whole folder — I’ll read it.</span>
+        </div>
+      )}
       <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 16 }}>
         <h1 style={{ fontFamily: T.serif, fontSize: 28, fontWeight: 600, margin: 0, letterSpacing: '-0.4px' }}>Coach</h1>
         {messages.length > 0 && (
@@ -298,11 +354,14 @@ export default function LyfCoachConversationPage() {
               background: 'rgba(232,201,106,0.12)', border: `1px solid rgba(232,201,106,0.3)`,
               borderRadius: 10, padding: '7px 11px', fontSize: 13, color: T.text,
             }}>
-              <span aria-hidden>📄</span>
+              <span aria-hidden>{pendingDoc.fileCount && pendingDoc.fileCount > 1 ? '📁' : '📄'}</span>
               <span style={{ display: 'flex', flexDirection: 'column', lineHeight: 1.3 }}>
                 <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 200 }}>{pendingDoc.name}</span>
                 <span style={{ color: T.textDim, fontSize: 11.5 }}>
-                  Ready to review{pendingDoc.truncated ? ' · long doc, trimmed' : ''}
+                  {pendingDoc.fileCount && pendingDoc.fileCount > 1
+                    ? `${pendingDoc.fileCount} files read`
+                    : 'Ready to review'}
+                  {pendingDoc.truncated ? ' · trimmed to fit' : ''}
                 </span>
               </span>
               <button
@@ -318,7 +377,15 @@ export default function LyfCoachConversationPage() {
       )}
 
       <input ref={photoRef} type="file" accept="image/*" multiple onChange={onPickPhotos} style={{ display: 'none' }} />
-      <input ref={docRef} type="file" accept={DOC_ACCEPT} onChange={onPickDoc} style={{ display: 'none' }} />
+      <input ref={docRef} type="file" accept={DOC_ACCEPT} multiple onChange={onPickDoc} style={{ display: 'none' }} />
+      {/* Folder picker — webkitdirectory isn't in the React types, so spread it in. */}
+      <input
+        ref={folderRef}
+        type="file"
+        onChange={onPickFolder}
+        style={{ display: 'none' }}
+        {...({ webkitdirectory: '', directory: '', mozdirectory: '' } as Record<string, string>)}
+      />
       <style>{`@keyframes lc-spin { to { transform: rotate(360deg); } }`}</style>
       <div style={{ display: 'flex', gap: 8, alignItems: 'flex-end', paddingTop: 12, borderTop: `1px solid ${T.borderSoft}` }}>
         <button
@@ -338,8 +405,8 @@ export default function LyfCoachConversationPage() {
         <button
           onClick={() => docRef.current?.click()}
           disabled={docBusy}
-          aria-label="Attach a document to review"
-          title="Attach a document for your coach to review (PDF, Word, text, CSV · up to 10MB)"
+          aria-label="Attach a file to review"
+          title="Attach files for your coach to read — PDF, Word, text, code, HTML, or a zip (up to 25MB)"
           style={{
             appearance: 'none', flexShrink: 0, width: 46, height: 46, borderRadius: 14,
             cursor: docBusy ? 'default' : 'pointer',
@@ -347,6 +414,19 @@ export default function LyfCoachConversationPage() {
           }}
         >
           {docBusy ? '…' : '📄'}
+        </button>
+        <button
+          onClick={() => folderRef.current?.click()}
+          disabled={docBusy}
+          aria-label="Attach a whole folder"
+          title="Attach a whole folder — your coach reads every file inside"
+          style={{
+            appearance: 'none', flexShrink: 0, width: 46, height: 46, borderRadius: 14,
+            cursor: docBusy ? 'default' : 'pointer',
+            border: `1px solid ${T.borderSoft}`, background: 'rgba(255,255,255,0.05)', color: T.textMid, fontSize: 18,
+          }}
+        >
+          📁
         </button>
         <textarea
           value={draft}
