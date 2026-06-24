@@ -169,6 +169,53 @@ export const COACH_TOOLS: Tool[] = [
     },
   },
   {
+    name: 'save_build_state',
+    description:
+      'Save a recoverable BUILD/SESSION HANDOFF so the NEXT session resumes without re-explaining context. ' +
+      'Call this whenever they signal the end of a build/work session or ask to save where things are — e.g. ' +
+      '"save our build state", "save the session", "remember where we are/left off", "pick this up tomorrow", ' +
+      '"I\'m done for today", "wrap up", "end session". Offer it proactively when a build session is clearly ' +
+      'winding down. Capture the FULL ordered build list with a status per item, exactly where we stopped, what ' +
+      'is confirmed working, the single exact next action, and any blockers. Saving again for the same project ' +
+      'REPLACES its previous state. After it saves, read the captured handoff back and ask them to confirm.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        project: { type: 'string', description: 'The feature/project name this build belongs to.' },
+        build_list: {
+          type: 'array',
+          description: 'The ordered build list — every item, in order.',
+          items: {
+            type: 'object',
+            properties: {
+              text: { type: 'string', description: 'The build item.' },
+              status: { type: 'string', enum: ['done', 'in_progress', 'not_started'] },
+            },
+            required: ['text', 'status'],
+          },
+        },
+        current_step: { type: 'string', description: 'Exactly where we stopped, e.g. "Step 3: wiring the route — in progress".' },
+        confirmed: { type: 'array', items: { type: 'string' }, description: 'What was tested and passed (optional).' },
+        next_action: { type: 'string', description: 'The single exact next action to take.' },
+        blockers: { type: 'array', items: { type: 'string' }, description: 'Blockers, open questions, pending decisions (optional).' },
+      },
+      required: ['project', 'build_list', 'current_step', 'next_action'],
+    },
+  },
+  {
+    name: 'read_build_state',
+    description:
+      'Read back the saved build/session handoff (the recoverable state from last time). Use when they ask ' +
+      '"where were we?", "what\'s next?", or want to resume a build. Optionally pass a project name to pick a ' +
+      'specific one; otherwise returns the most recently saved state.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        project: { type: 'string', description: 'Which build to read (optional; defaults to the most recent).' },
+      },
+    },
+  },
+  {
     name: 'emit_family_signal',
     description:
       'Send ONE abstracted, WORDLESS flag to the family helper (the Family Brain) — a feeling-type only, ' +

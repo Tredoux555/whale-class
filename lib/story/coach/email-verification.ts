@@ -41,15 +41,25 @@ function verifyText(link: string): string {
   return `Confirm your email\n\nYou're already in — this just confirms your email so we can keep your account secure.\n\nConfirm: ${link}\n\nIf you didn't create a Lyf Coach account, ignore this email.\n— The Lyf Coach team`;
 }
 
-/** Send the confirmation email. Best-effort; logs and swallows every failure. */
-export async function sendCoachVerificationEmail(toEmail: string, token: string): Promise<void> {
+/**
+ * Outcome of a verification-email attempt. The send is still best-effort and
+ * NEVER throws — the returned result just lets callers (e.g. the operator ping)
+ * report whether it actually went out.
+ */
+export type VerifySendResult =
+  | { ok: true }
+  | { ok: false; reason: 'not_configured' | 'send_error' | 'exception' };
+
+/** Send the confirmation email. Best-effort; logs and swallows every failure,
+ *  returning a result so callers can report the outcome. */
+export async function sendCoachVerificationEmail(toEmail: string, token: string): Promise<VerifySendResult> {
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://montree.xyz';
   const link = `${appUrl}/api/lyf-coach/verify?token=${encodeURIComponent(token)}`;
 
   const apiKey = process.env.RESEND_API_KEY;
   if (!apiKey) {
     console.warn('[lyf-coach] RESEND_API_KEY missing — verification email not sent. Link:', link);
-    return;
+    return { ok: false, reason: 'not_configured' };
   }
   try {
     const { Resend } = await import('resend');
@@ -61,9 +71,14 @@ export async function sendCoachVerificationEmail(toEmail: string, token: string)
       html: verifyHtml(link),
       text: verifyText(link),
     });
-    if (error) console.error('[lyf-coach] verification email send error:', error);
+    if (error) {
+      console.error('[lyf-coach] verification email send error:', error);
+      return { ok: false, reason: 'send_error' };
+    }
+    return { ok: true };
   } catch (e) {
     console.error('[lyf-coach] verification email threw:', e);
+    return { ok: false, reason: 'exception' };
   }
 }
 
@@ -131,12 +146,42 @@ export async function sendCoachWelcomeFirst100Email(toEmail: string): Promise<vo
 
 // ── New-signup operator ping ─────────────────────────────────────────────────
 
+/**
+ * What happened to the user's confirmation email at signup — surfaced in the
+ * operator ping so a silent send failure can never hide again.
+ *   sent              persisted token + emailed OK
+ *   send_failed       persisted, but Resend errored/threw → user did NOT get it
+ *   not_configured    RESEND_API_KEY missing → nothing sent
+ *   skipped_migration verify columns absent (migration 270 not run) → auto-verified
+ *   persist_failed    token UPDATE errored → link would be dead, so not sent
+ *   error             unexpected exception in the verify step
+ *   unknown           status not supplied
+ */
+export type VerifyEmailStatus =
+  | 'sent'
+  | 'send_failed'
+  | 'not_configured'
+  | 'skipped_migration'
+  | 'persist_failed'
+  | 'error'
+  | 'unknown';
+
+const VERIFY_STATUS_LABEL: Record<VerifyEmailStatus, string> = {
+  sent: '✅ sent to the user',
+  send_failed: '🚨 SEND FAILED (Resend error) — user did NOT receive it',
+  not_configured: '🚨 NOT SENT — RESEND_API_KEY missing',
+  skipped_migration: 'ℹ️ skipped — verify columns absent (account auto-verified)',
+  persist_failed: '🚨 NOT SENT — token persist failed',
+  error: '🚨 NOT SENT — unexpected error',
+  unknown: 'unknown',
+};
+
 /** Where new-signup pings land. Defaults to the spec address; env-overridable. */
 function signupNotifyTo(): string {
   return process.env.LYF_COACH_SIGNUP_NOTIFY_TO || 'hello@montree.xyz';
 }
 
-function signupNotifyHtml(opts: { username: string; when: string; founder: string }): string {
+function signupNotifyHtml(opts: { username: string; when: string; founder: string; confirmation: string }): string {
   return `
     <div style="background:#0a1a0f;color:#e8f0ea;font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;padding:24px;border-radius:14px;max-width:480px;margin:0 auto">
       <h1 style="font-family:Georgia,serif;color:#fff;font-size:19px;margin:0 0 14px">New Lyf Coach signup</h1>
@@ -144,6 +189,7 @@ function signupNotifyHtml(opts: { username: string; when: string; founder: strin
         <tr><td style="color:#8fb3a0;padding:2px 14px 2px 0">Username</td><td style="color:#e8f0ea">${opts.username}</td></tr>
         <tr><td style="color:#8fb3a0;padding:2px 14px 2px 0">Time</td><td style="color:#e8f0ea">${opts.when}</td></tr>
         <tr><td style="color:#8fb3a0;padding:2px 14px 2px 0">Founder</td><td style="color:#e8f0ea">${opts.founder}</td></tr>
+        <tr><td style="color:#8fb3a0;padding:2px 14px 2px 0;vertical-align:top">Confirmation email</td><td style="color:#e8f0ea">${opts.confirmation}</td></tr>
       </table>
       <p style="line-height:1.6;color:#8fb3a0;font-size:12px;margin-top:18px">&mdash; Lyf Coach signup ping</p>
     </div>`;
@@ -163,6 +209,8 @@ export async function sendSignupNotificationEmail(opts: {
   username: string;
   founderWindowOpen: boolean | null;
   verifiedCount: number | null;
+  /** Outcome of the user's confirmation email (so a silent failure is visible). */
+  verifyEmailStatus?: VerifyEmailStatus;
 }): Promise<void> {
   const apiKey = process.env.RESEND_API_KEY;
   if (!apiKey) {
@@ -170,6 +218,7 @@ export async function sendSignupNotificationEmail(opts: {
     return;
   }
   const when = new Date().toISOString();
+  const confirmation = VERIFY_STATUS_LABEL[opts.verifyEmailStatus ?? 'unknown'];
   const slots =
     opts.verifiedCount != null && Number.isFinite(opts.verifiedCount)
       ? ` (${opts.verifiedCount}/${FIRST_N_WELCOME} verified)`
@@ -185,7 +234,8 @@ export async function sendSignupNotificationEmail(opts: {
     `New Lyf Coach signup\n\n` +
     `Username: ${opts.username}\n` +
     `Time: ${when}\n` +
-    `Founder: ${founder}\n\n` +
+    `Founder: ${founder}\n` +
+    `Confirmation email: ${confirmation}\n\n` +
     `— Lyf Coach signup ping`;
 
   try {
@@ -195,7 +245,7 @@ export async function sendSignupNotificationEmail(opts: {
       from: verifyFrom(),
       to: signupNotifyTo(),
       subject: `New Lyf Coach signup — ${opts.username}`,
-      html: signupNotifyHtml({ username: opts.username, when, founder }),
+      html: signupNotifyHtml({ username: opts.username, when, founder, confirmation }),
       text,
     });
     if (error) console.error('[lyf-coach] signup ping send error:', error);
