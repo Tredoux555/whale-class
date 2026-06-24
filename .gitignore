@@ -84,6 +84,10 @@ Montree_Promo_Final.mp4
 Montessori Documents/
 generated-images/
 
+# Coach document store — local .md "desktop double" written by save_document
+# in local dev. Never committed; the DB row is the source of truth.
+coach-docs/
+
 # GitHub PAT for Cowork push (never commit this)
 .github-pat
 phonics-images/

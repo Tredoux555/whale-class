@@ -25,6 +25,7 @@ import {
   type BuildListItem,
   type StepStatus,
 } from './build-state';
+import { saveDocument, readDocuments } from './documents';
 
 export interface CoachToolDeps {
   supabase: SupabaseClient;
@@ -339,6 +340,40 @@ export async function executeCoachTool(
           success: true,
           result_summary: `build state for ${current.project}`,
           data: { found: true, project: current.project, document: current.doc, other_projects: others },
+        };
+      }
+
+      case 'save_document': {
+        if (isE2e) {
+          return { success: false, result_summary: 'unavailable here', error: 'Documents aren’t available in an end-to-end private space.' };
+        }
+        const title = str(input.title) || '';
+        const content = str(input.content) || '';
+        if (!title.trim()) return { success: false, result_summary: 'title required', error: 'title is required' };
+        if (!content.trim()) return { success: false, result_summary: 'content required', error: 'content is required' };
+        const tags = Array.isArray(input.tags) ? input.tags.map((x) => str(x) || '').filter(Boolean) : [];
+        const res = await saveDocument(supabase, space, {
+          title,
+          content,
+          doc_type: str(input.doc_type),
+          tags,
+        });
+        if (!res.ok) return { success: false, result_summary: 'save failed', error: res.error };
+        return { success: true, result_summary: `document saved: ${title}`, data: { id: res.id, mirrored: res.mirrored } };
+      }
+
+      case 'read_document': {
+        if (isE2e) return { success: true, result_summary: 'no documents', data: { found: false, documents: [] } };
+        const tags = Array.isArray(input.tags) ? input.tags.map((x) => str(x) || '').filter(Boolean) : [];
+        const docs = await readDocuments(supabase, space, {
+          query: str(input.query),
+          tags,
+          limit: num(input.limit),
+        });
+        return {
+          success: true,
+          result_summary: `${docs.length} document${docs.length === 1 ? '' : 's'}`,
+          data: { found: docs.length > 0, documents: docs },
         };
       }
 

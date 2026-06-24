@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, Lora } from "next/font/google";
+import { Inter, Lora, Newsreader, Hanken_Grotesk } from "next/font/google";
 import { headers } from "next/headers";
 import "./globals.css";
 
@@ -20,6 +20,25 @@ const lora = Lora({
   subsets: ["latin"],
   weight: ["400", "500", "600"],
   variable: "--font-lora",
+  display: "swap",
+});
+
+// Newsreader + Hanken Grotesk — the Lyf Coach / personal-platform typeface pair
+// (serif headings + grotesk body). Loaded here alongside Inter + Lora (which
+// Montree still uses) and exposed as CSS variables; lib/story/personal-theme.ts
+// points T.serif → --font-newsreader and T.sans → --font-hanken.
+const newsreader = Newsreader({
+  subsets: ["latin"],
+  weight: ["400", "500", "600"],
+  style: ["normal", "italic"],
+  variable: "--font-newsreader",
+  display: "swap",
+});
+
+const hanken = Hanken_Grotesk({
+  subsets: ["latin"],
+  weight: ["400", "500", "600"],
+  variable: "--font-hanken",
   display: "swap",
 });
 
@@ -181,7 +200,7 @@ export default async function RootLayout({
 
   return (
     <html lang="en">
-      <body className={`${inter.variable} ${lora.variable} antialiased`}>
+      <body className={`${inter.variable} ${lora.variable} ${newsreader.variable} ${hanken.variable} antialiased`}>
         {!isTeacherPotato && (
           <script
             type="application/ld+json"
