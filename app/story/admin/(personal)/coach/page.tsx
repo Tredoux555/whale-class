@@ -15,6 +15,7 @@ import { getStoryAdminToken } from '@/lib/story/personal-client';
 import Markdown from '@/components/story/personal/Markdown';
 import CoachUpgradeButton from '@/components/story/personal/CoachUpgradeButton';
 import CopyButton from '@/components/story/personal/CopyButton';
+import SaveDocumentsZone from '@/components/story/personal/SaveDocumentsZone';
 import { T } from '@/lib/story/personal-theme';
 
 const TOOL_LABEL: Record<string, string> = {
@@ -238,6 +239,9 @@ export default function CoachPage() {
           )}
         </div>
       </div>
+
+      {/* Save-to-documents — a DISTINCT surface (top, own icon/label), never the composer drop. */}
+      <SaveDocumentsZone />
 
       <div ref={scrollRef} style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 16, paddingBottom: 12 }}>
         {messages.length === 0 && (
