@@ -12,6 +12,7 @@ import { useVoiceRecord } from '@/lib/story/coach/use-voice-record';
 import { fileToCoachImage, type CoachImage } from '@/lib/story/coach/image-attach';
 import Markdown from '@/components/story/personal/Markdown';
 import CoachUpgradeButton from '@/components/story/personal/CoachUpgradeButton';
+import CopyButton from '@/components/story/personal/CopyButton';
 import { T } from '@/lib/story/personal-theme';
 
 const TOOL_LABEL: Record<string, string> = {
@@ -94,6 +95,14 @@ export default function CoachPage() {
     void send(t, img ? { image: { media_type: img.media_type, data: img.data }, imagePreview: img.previewUrl } : undefined);
   };
 
+  // Explicit wrap-up — routes through the normal send path so the coach
+  // synthesises the build state from the conversation and saves it via
+  // save_build_state, then reads it back.
+  const endAndSave = () => {
+    if (busy) return;
+    void send('Save our build state and end the session.');
+  };
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', minHeight: 'calc(100dvh - 200px)' }}>
       <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 16 }}>
@@ -172,6 +181,7 @@ export default function CoachPage() {
                   <span style={{ color: T.textDim }}>thinking…</span>
                 ) : null}
                 {m.notice === 'quiet' && <CoachUpgradeButton />}
+                {m.text && !m.streaming && !m.error && !m.notice && <CopyButton text={m.text} />}
               </div>
             )}
           </div>
@@ -246,6 +256,28 @@ export default function CoachPage() {
           ↑
         </button>
       </div>
+
+      {messages.length > 0 && (
+        <div style={{ display: 'flex', justifyContent: 'flex-end', paddingTop: 8 }}>
+          <button
+            onClick={endAndSave}
+            disabled={busy}
+            title="Save a recoverable build state so you can pick up exactly here next time"
+            style={{
+              appearance: 'none', display: 'inline-flex', alignItems: 'center', gap: 6,
+              border: `1px solid ${T.borderSoft}`, background: 'rgba(255,255,255,0.04)',
+              color: busy ? T.textDim : T.textMid, fontFamily: T.sans, fontSize: 13,
+              padding: '7px 12px', borderRadius: 11, cursor: busy ? 'default' : 'pointer',
+            }}
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M20 6 9 17l-5-5" />
+            </svg>
+            Save &amp; end session
+          </button>
+        </div>
+      )}
     </div>
   );
 }
