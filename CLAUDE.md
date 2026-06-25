@@ -17,6 +17,30 @@ Local path: `/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/whale` (note spa
 
 ---
 
+## 🚪 LYF COACH HAS MOVED OUT — standalone repo (Jun 25 2026)
+
+**The public web Lyf Coach (the individual product) was EXTRACTED from this
+monorepo into its own standalone repo + given a dark-gold brand makeover. All Lyf
+Coach build work happens THERE now, not here.**
+
+- **Repo:** `~/Desktop/Master Brain/ACTIVE/lyfcoach-web` (own `CLAUDE.md` +
+  `docs/handoffs/SESSION_STANDALONE_BUILD.md` + `docs/CUTOVER.md`).
+- **Domain:** `lyfcoach.co` · **Host:** Railway · **DB:** its OWN fresh Supabase ·
+  **Billing:** its OWN Stripe product. 100% independent — no shared git/DB/Stripe.
+- **What's built there:** 8 screens (`/ /login /signup /verify-pending /coach
+  /upgrade /settings`) + `/privacy`, the ported coach brain, 5-tier pricing
+  (Free $0/Starter $3/Builder $9.99/Pro $20/Unlimited $50) with model-pin metering.
+  Build green; **not deployed yet** (needs accounts/DNS per its CUTOVER.md).
+
+**🚨 The in-Montree copy is now LEGACY** — `app/lyf-coach/*`, `app/api/story/coach/*`,
+`lib/story/*`, `app/story/*`, `native/Sanctuary|lyf-coach`. It STILL serves
+montree.xyz, so **do not delete it until the standalone is live on lyfcoach.co and
+DNS has cut over** — then decommission. **Do NOT build new public-coach features in
+Montree** — build them in `lyfcoach-web`. The standalone deliberately stripped all
+Montree coupling + personal data; don't re-introduce it by editing the Montree copy.
+
+---
+
 ## 🚨 NEXT SESSION — QUEUED BUILD: Lyf Coach Family Model (Tredoux, queued Jun 20 eve)
 
 **Canonical plan: `docs/handoffs/LYF_COACH_FAMILY_MODEL_PLAN.md` — READ THIS FIRST.** Tredoux wants to build the family model on both fronts in ONE session (the model takes priority over the App Store version). Two products: (A) Lyf Coach individual (exists); (B) **Lyf Coach Family** — mum + dad + up to 2 kids, each with their own absolutely-private coach + a **one-way parent → child's-coach context link**. His private family system = Product B dogfooded, built FIRST.
