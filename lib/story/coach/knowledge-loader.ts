@@ -113,65 +113,21 @@ export async function getWisdom(topic: WisdomTopic): Promise<string> {
   return b[topic] ?? b.essentialism;
 }
 
-/** Compact summary for the system prompt — each file's lead, quote-ready. */
+/**
+ * Compact INDEX for the system prompt — the menu, not the meal. The full text of any
+ * framework loads on demand via consult_wisdom. We deliberately no longer inject all 15
+ * summaries every turn: that buried the coach in ~2,200 tokens of self-help and made it
+ * quote frameworks reflexively instead of listening. Listen first; reach for one only
+ * when it earns its place.
+ */
 export async function getCoachWisdomSummary(): Promise<string> {
-  const b = await getBundle();
-  const lead = (s: string, max = 520) => {
-    const t = s.trim();
-    if (t.length <= max) return t;
-    const cut = t.slice(0, max);
-    const lastBreak = cut.lastIndexOf('\n\n');
-    return (lastBreak > 160 ? cut.slice(0, lastBreak) : cut) + '\n…';
-  };
-  return `# Your knowledge base — QUOTE these frameworks, don't improvise self-help
-
-This is a summary. For the full depth of any framework, call \`consult_wisdom\` with
-its topic key. Weight Essentialism heaviest — it's the default lens for most people you coach.
-
-## Essentialism (topic: essentialism) — disciplined pursuit of less, but better
-${lead(b.essentialism, 900)}
-
-## The ONE Thing (topic: one_thing)
-${lead(b.one_thing)}
-
-## Four Thousand Weeks (topic: four_thousand_weeks)
-${lead(b.four_thousand_weeks)}
-
-## Atomic Habits (topic: atomic_habits)
-${lead(b.atomic_habits)}
-
-## Getting Things Done (topic: gtd)
-${lead(b.gtd)}
-
-## Deep Work (topic: deep_work)
-${lead(b.deep_work)}
-
-## 7 Habits — Quadrant II (topic: seven_habits)
-${lead(b.seven_habits)}
-
-## Burnout — complete the stress cycle (topic: burnout)
-${lead(b.burnout, 900)}
-
-## Indistractable (topic: indistractable)
-${lead(b.indistractable)}
-
-## The War of Art — beat Resistance, ship (topic: war_of_art)
-${lead(b.war_of_art)}
-
-## Stoicism — dichotomy of control (topic: stoicism)
-${lead(b.stoicism)}
-
-## Man's Search for Meaning (topic: frankl)
-${lead(b.frankl)}
-
-## Mindset — growth, the power of "yet" (topic: mindset)
-${lead(b.mindset)}
-
-## Manifestation — vision + obstacle + plan, never magic (topic: manifestation)
-${lead(b.manifestation, 900)}
-
-## Why We Sleep — sleep is non-negotiable (topic: sleep)
-${lead(b.sleep)}`;
+  return `# Your knowledge library (consult on demand — do NOT quote unprompted)
+You hold deep frameworks you can pull IN FULL with \`consult_wisdom\` when one genuinely fits
+THIS person in THIS moment — never to perform or to sound clever. Listen first; reach for a
+framework only when it earns its place, then quote it precisely. The library:
+Essentialism · The ONE Thing · Four Thousand Weeks · Atomic Habits · GTD · Deep Work ·
+7 Habits · Burnout (complete the stress cycle) · Indistractable · The War of Art ·
+Stoicism (dichotomy of control) · Frankl (meaning) · Mindset · Manifestation · Why We Sleep.`;
 }
 
 /** Test/dev only. */
