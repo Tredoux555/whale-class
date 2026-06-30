@@ -116,6 +116,7 @@ Return STRICT JSON only, no prose, in this exact shape:
 }
 
 Rules:
+- ALWAYS preserve IDENTITY as a "fact" and NEVER treat it as chatter to skip: the name ${name} gave their coach, and the names/relationships of the key people in ${name}'s life. If ${name} names or renames their coach, record it (e.g. "${name} named their coach 'Ion'."). A coach forgetting its own name is the worst failure there is — protect it above everything.
 - ONLY durable, SEMANTIC facts worth carrying for months: values, ambitions, health goals, things they said they'd drop, recurring emotional/behavioural patterns, stable preferences, stable facts. Skip transient chatter, one-off logistics, and anything already captured verbatim in existing memories.
 - If a new insight UPDATES or CONTRADICTS an existing memory, copy that memory's id into "supersedes_id". Otherwise leave it null.
 - Be conservative: a few high-quality memories beat many shallow ones. If nothing durable emerged, return "memories": [].
