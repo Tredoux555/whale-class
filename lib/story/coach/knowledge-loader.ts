@@ -27,7 +27,9 @@ export type WisdomTopic =
   | 'manifestation'
   | 'sleep'
   | 'narcissistic_dynamics'
-  | 'child_safeguarding';
+  | 'child_safeguarding'
+  | 'video_scripts'
+  | 'tiktok_growth';
 
 const FILES: Record<WisdomTopic, string> = {
   essentialism: 'essentialism.md',
@@ -54,6 +56,17 @@ const FILES: Record<WisdomTopic, string> = {
   // every turn (see buildChildCoachSystemPrompt); the full text loads via
   // consult_wisdom when the moment is live. NOT in the adult summary.
   child_safeguarding: 'child-safeguarding.md',
+  // On-demand only (NOT in getCoachWisdomSummary): Tredoux's own content/marketing
+  // script brain — pulled via consult_wisdom when he asks for help writing a TikTok /
+  // Reels / YouTube / promo script. Kept out of the every-turn summary so it never
+  // skews normal coaching.
+  video_scripts: 'video-scripts.md',
+  // On-demand only (NOT in getCoachWisdomSummary): Tredoux's TikTok GROWTH brain — the
+  // distribution/growth layer (algorithm, posting strategy, small-budget Spark Ads,
+  // view→sign-up conversion, decided positions). Pulled via consult_wisdom when he asks
+  // about why a video flopped / the algorithm / posting strategy / paid / conversion.
+  // Kept out of the every-turn summary so it never skews normal coaching.
+  tiktok_growth: 'tiktok-growth.md',
 };
 
 export const WISDOM_TOPICS = Object.keys(FILES) as WisdomTopic[];
