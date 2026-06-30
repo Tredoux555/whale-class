@@ -49,6 +49,17 @@ Montree coupling + personal data; don't re-introduce it by editing the Montree c
 
 ---
 
+## 🔒 SESSION — Jul 1, 2026 (Cowork) — Supabase security lockdown + coach two-lens refocus + Ion fix + TikTok growth brains
+
+**Canonical handoff:** `docs/handoffs/SESSION_SECURITY_AND_COACH_REFOCUS_JUL1.md`. **9 commits pushed across two repos, all Railway auto-deploying.**
+
+- **🔒 Security: migrations 275–278 ALL RUN in prod by Tredoux.** Supabase linter flagged ~115 public tables with RLS off (session tokens, child profiles, finances). 275 = enable RLS on 118 tables + 4 views; 276 = pin search_path + revoke RPC execute from anon/authenticated; 277 = drop ~25 "USING(true)" permissive policies (kept `parent_signups` public insert); 278 = stop public-bucket file listing. App unaffected (server uses service-role key → bypasses RLS). **Breach check: only 6 accounts, all family — no compromise.** 🚨 STILL OPEN: rotate anon+service keys + force re-login (session-token residual); comp Bayan/family (entitlement TODO); re-run Security Advisor. Watch `child_work_completion` realtime after deploy.
+- **🧠 Coach refocus (Montree) `f14d37a1`:** killed the every-turn 15-framework dump (8,940→607 chars; now on-demand via consult_wisdom), re-centered the prime directive on the PERSON (heal + reach goals), demoted chief-of-staff to a tool, presence-before-action, Stoic temperament. Two operating lenses (psychology + self-help). Verified live.
+- **🪪 "Who's Ion?" fix `4290a08c`:** coach forgot its own name because nightly Haiku consolidation pruned it (no coach-name field). Pinned in `about-bayan.md` + general system-prompt identity rule + consolidation now protects identity. (Proper fix later: `coach_name` column + UI.)
+- **📈 TikTok brains:** `tiktok_growth` module + master-upgraded `video-scripts.md` added to montree (`81dfbc40`, on-demand) AND lyfcoach-web (`a02b04d`,`b93e1c3`, purpose-scoped). Decided positions: story-only (product never in-video), volume beats a cold algorithm, 12–20s. Content deliverables (100 hooks, scripts, growth-specialist module, QR, zoom MP4) in `~/Downloads`.
+
+---
+
 ## 🧠 SESSION — Jun 24, 2026 (Cowork, PM) — Lyf Coach: build-state handoff + signup confirm-flow rework + coach UX + document/multi-photo upload
 
 **Canonical handoff:** `docs/handoffs/SESSION_LYFCOACH_JUN24_PM.md`. **5 commits on `main`, all pushed + Railway auto-deploying:** `ca6d4761` (build-state + confirm-flow + coach UX) · `0fadba03` (verify-pending celebration) · `e9f96024` (verify-pending terminal, never opens coach) · `98a29cfd` (owner coach copy + Save&end parity) · `b8be066c` (document + multi-photo upload, both coaches). **🚨 ONE migration pending Tredoux's Supabase run: `migrations/273_story_coach_build_state.sql`** — until run, `save_build_state` soft-fails gracefully (no breakage); everything else live. `unpdf` added to package.json (Railway installs on deploy). No new env vars.
