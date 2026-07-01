@@ -29,7 +29,8 @@ export type WisdomTopic =
   | 'narcissistic_dynamics'
   | 'child_safeguarding'
   | 'video_scripts'
-  | 'tiktok_growth';
+  | 'tiktok_growth'
+  | 'china_campaign';
 
 const FILES: Record<WisdomTopic, string> = {
   essentialism: 'essentialism.md',
@@ -67,6 +68,13 @@ const FILES: Record<WisdomTopic, string> = {
   // about why a video flopped / the algorithm / posting strategy / paid / conversion.
   // Kept out of the every-turn summary so it never skews normal coaching.
   tiktok_growth: 'tiktok-growth.md',
+  // On-demand only (NOT in getCoachWisdomSummary): Tredoux's LIVE Montree China launch
+  // campaign (July 2026) — the execution playbook the coach paces him through step by
+  // step (accounts → ghost-school assets → batch-film → 20-day cadence → principal
+  // demos). Pulled via consult_wisdom whenever he raises the China launch, 小红书 /
+  // Douyin / 视频号, kindergarten marketing, or asks "what's my next step" on the
+  // campaign. Full script pack lives in docs/marketing/CHINA_LAUNCH_CAMPAIGN.md.
+  china_campaign: 'china-campaign.md',
 };
 
 export const WISDOM_TOPICS = Object.keys(FILES) as WisdomTopic[];
