@@ -5,7 +5,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { getSession, type MontreeSession } from '@/lib/montree/auth';
+import { getSession, recoverSession, setSession as persistSession, type MontreeSession } from '@/lib/montree/auth';
 import { useI18n } from '@/lib/montree/i18n';
 import { BIO } from '@/lib/montree/bioluminescent-theme';
 import AmbientParticles from '@/components/montree/home/AmbientParticles';
@@ -22,12 +22,35 @@ export default function SetupPage() {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    const sess = getSession();
-    if (!sess) {
-      router.replace('/montree/login');
-      return;
-    }
-    setSession(sess);
+    let cancelled = false;
+    (async () => {
+      // localStorage first, then httpOnly-cookie recovery (mirrors the home page).
+      let sess = getSession();
+      if (!sess) sess = await recoverSession();
+      if (cancelled) return;
+      if (!sess) {
+        router.replace('/montree/login');
+        return;
+      }
+      // A stale or principal-shaped session may carry no classroom — the one
+      // thing this page needs. Enrich from auth/me before giving up, so a
+      // first-time family never hits a dead "Session error" wall here.
+      if (!sess.classroom?.id) {
+        try {
+          const meRes = await fetch('/api/montree/auth/me', { credentials: 'include' });
+          if (meRes.ok) {
+            const me = await meRes.json();
+            if (me?.classroom?.id && me.teacher && me.school) {
+              const enriched: MontreeSession = { teacher: me.teacher, school: me.school, classroom: me.classroom, loginAt: new Date().toISOString() };
+              persistSession(enriched);
+              sess = enriched;
+            }
+          }
+        } catch { /* fall through — submit will surface a clear message */ }
+      }
+      if (!cancelled) setSession(sess);
+    })();
+    return () => { cancelled = true; };
   }, [router]);
 
   const handleSubmit = async () => {
@@ -44,7 +67,9 @@ export default function SetupPage() {
       // Validate classroom exists before API call
       const classroomId = session?.classroom?.id;
       if (!classroomId) {
-        setError(t('home.setup.sessionError'));
+        // Post-enrichment this only happens for classroom-less logins (e.g. a
+        // principal session). Say what to DO, not just that something's wrong.
+        setError("This login isn't connected to a home space. Please log in again with your own code.");
         setSaving(false);
         return;
       }
