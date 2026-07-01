@@ -41,6 +41,10 @@ export async function GET(request: NextRequest) {
         .select('id, storage_path, caption, captured_at')
         .eq('child_id', childId)
         .eq('media_type', 'photo')
+        // Canonical parent-facing hide gate (rule #140): default-true with
+        // explicit-hide override. Group-photo junction (montree_media_children)
+        // deliberately omitted — home photos always carry child_id directly.
+        .neq('parent_visible', false)
         .order('captured_at', { ascending: false })
         .limit(30),
       supabase
@@ -99,14 +103,13 @@ export async function GET(request: NextRequest) {
     const interests = memories.filter((m) => m.memory_type === 'interest' && m.content);
     const insight = interests.length > 0 ? interests[0].content : null;
 
-    const response = NextResponse.json({
-      success: true,
-      child_name: childName,
-      insight,
-      events: events.slice(0, 40),
-    });
-    response.headers.set('Cache-Control', 'private, max-age=30, stale-while-revalidate=120');
-    return response;
+    // no-store, always (rule #185: session-scoped endpoints don't cache) — a
+    // max-age here serves the tab-open refresh a stale body and the moment the
+    // parent just captured never appears (the Session-119 photo-audit lesson).
+    return NextResponse.json(
+      { success: true, child_name: childName, insight, events: events.slice(0, 40) },
+      { headers: { 'Cache-Control': 'private, no-store' } },
+    );
   } catch (err) {
     console.error('[companion/journey] error:', err);
     return NextResponse.json({ error: 'Could not load the journey right now.' }, { status: 500 });

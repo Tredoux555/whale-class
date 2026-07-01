@@ -44,7 +44,7 @@ export default function JourneyView({ childId, childName, onAskIvy, refreshTrigg
 
   const load = useCallback(async () => {
     try {
-      const r = await fetch(`/api/montree/companion/journey?child_id=${childId}`);
+      const r = await fetch(`/api/montree/companion/journey?child_id=${childId}`, { cache: 'no-store' });
       if (!r.ok) { setLoading(false); return; }
       const d = await r.json();
       setEvents(Array.isArray(d.events) ? d.events : []);

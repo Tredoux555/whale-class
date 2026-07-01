@@ -21,11 +21,19 @@ export async function GET(request: NextRequest) {
 
   const supabase = getSupabase();
   try {
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('montree_child_mental_profiles')
       .select('id')
       .eq('child_id', childId)
       .maybeSingle();
+    if (error) {
+      // supabase-js resolves errors instead of throwing — without this check a
+      // transient DB error would read as "no profile" (fail-CLOSED), re-showing
+      // First Meeting and letting its minimal chip profile overwrite a rich one
+      // via the onboard upsert. Fail OPEN, always.
+      console.error('[companion/placement] query error:', error);
+      return NextResponse.json({ success: true, has_profile: true });
+    }
     return NextResponse.json(
       { success: true, has_profile: !!data },
       { headers: { 'Cache-Control': 'private, no-store' } },

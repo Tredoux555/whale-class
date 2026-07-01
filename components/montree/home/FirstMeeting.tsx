@@ -92,7 +92,11 @@ export default function FirstMeeting({ childId, childName, classroomId, onComple
   const handlePhoto = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (fileInputRef.current) fileInputRef.current.value = '';
-    if (!file || !file.type.startsWith('image/')) { onComplete(); return; }
+    // Dialog cancelled or a bad pick → stay on the photo step (Skip is right
+    // there); never silently "complete" as if the photo went through.
+    if (!file) return;
+    if (!file.type.startsWith('image/')) { toast.error('Please choose a photo.'); return; }
+    if (file.size > 10 * 1024 * 1024) { toast.error('That photo is too large.'); return; }
     const compressed = await compressImage(file).catch(() => file);
     onComplete(compressed);
   }, [onComplete]);

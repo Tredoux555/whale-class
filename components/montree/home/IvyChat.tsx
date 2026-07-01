@@ -260,30 +260,35 @@ export default function IvyChat({
   }, []);
 
   // Auto-send a capture handed down from the Today surface. If Ivy is mid-reply
-  // when the capture arrives, park it and flush the moment she's done — a
-  // parent's photo must never be silently dropped.
-  const pendingAutoRef = useRef<{ image?: File; text?: string } | null>(null);
+  // when the capture arrives, park it in a FIFO queue and flush as she finishes —
+  // a parent's capture must never be silently dropped OR overwritten.
+  const pendingAutoRef = useRef<Array<{ image?: File; text?: string }>>([]);
   const lastAutoRef = useRef<File | string | null>(null);
   useEffect(() => {
-    if (!autoSendImage && !autoSendText) return;
-    // Identity guard: never double-send the same capture, even if the parent
-    // forgets to null the prop after onAutoSendConsumed.
+    if (!autoSendImage && !autoSendText) {
+      // Parent cleared the props after consumption — reset the identity guard so
+      // a GENUINE re-capture of the same phrase ("pour it again!") sends again.
+      lastAutoRef.current = null;
+      return;
+    }
+    // Identity guard: never double-send the same capture within one prop cycle
+    // (StrictMode double-invoke, or a parent that forgets to null the prop).
     const token: File | string | null = autoSendImage || autoSendText || null;
     if (token === lastAutoRef.current) return;
     lastAutoRef.current = token;
     const payload = { image: autoSendImage || undefined, text: autoSendText || undefined };
     onAutoSendConsumed?.();
     if (sending) {
-      pendingAutoRef.current = payload;
+      pendingAutoRef.current.push(payload);
       return;
     }
     runSend({ text: payload.text || '', imageFile: payload.image });
   }, [autoSendImage, autoSendText, onAutoSendConsumed, runSend, sending]);
 
   useEffect(() => {
-    if (sending || !pendingAutoRef.current) return;
-    const payload = pendingAutoRef.current;
-    pendingAutoRef.current = null;
+    if (sending || pendingAutoRef.current.length === 0) return;
+    const payload = pendingAutoRef.current.shift();
+    if (!payload) return;
     runSend({ text: payload.text || '', imageFile: payload.image });
   }, [sending, runSend]);
 
@@ -411,7 +416,7 @@ export default function IvyChat({
               placeholder={childName ? `Tell Ivy about ${childName.split(' ')[0]}…` : 'Tell Ivy anything…'}
               disabled={sending}
               rows={1}
-              className={`w-full px-4 py-2.5 rounded-2xl border ${BIO.border.dim} ${BIO.bg.cardSolid} ${BIO.text.primary} text-sm placeholder:text-white/30 resize-none focus:outline-none focus:border-[#4ADE80]/30 focus:ring-1 focus:ring-[#4ADE80]/10 disabled:opacity-50`}
+              className={`w-full px-4 py-2.5 rounded-2xl border ${BIO.border.dim} ${BIO.bg.cardSolid} ${BIO.text.primary} text-base sm:text-sm placeholder:text-white/30 resize-none focus:outline-none focus:border-[#4ADE80]/30 focus:ring-1 focus:ring-[#4ADE80]/10 disabled:opacity-50`}
               style={{ maxHeight: '120px' }}
             />
           </div>
