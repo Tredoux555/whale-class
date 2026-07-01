@@ -1,8 +1,17 @@
 // /montree/home/[childId]/page.tsx
-// The Montree Home Experience — Ivy is the front door. Three calm surfaces:
-//   Ivy    — the companion (chat, photos, the Step Card, the whole loop)
-//   Corner — the child's actual growing corner (Ivy-led, one thing at a time)
-//   Plan   — the family's week (calendar + routines)
+// The Montree Home Experience — camera-first (vision plan, Jul 2 2026).
+// Three calm surfaces:
+//   Today   — the capture surface IS the front door ("show me what Marina is
+//             doing"); Ivy's conversation is the response surface underneath.
+//   Journey — moments, milestones, and Ivy's insight. Never a report card.
+//   Plan    — the family's week (Shop folded in behind a sub-toggle).
+// First visit for a child with no profile → the First Meeting placement chat.
+//
+// ARCHITECTURAL RULES (do not break):
+// - IvyChat stays MOUNTED (hidden, not unmounted) while other tabs show, so
+//   the conversation never resets on tab switches or camera↔chat toggles.
+// - Tapping the ACTIVE Today tab returns to the capture surface.
+// - New home copy is jargon-free: no areas, no statuses, no shelf language.
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
@@ -16,9 +25,11 @@ import ErrorBoundary from '@/components/montree/ErrorBoundary';
 import { useI18n } from '@/lib/montree/i18n';
 import StepCard, { type StepCardData } from '@/components/montree/home/StepCard';
 
-// Only the active surface renders. Defer the heavy ones.
+// Only what's needed renders. Defer the heavy surfaces.
 const IvyChat = dynamic(() => import('@/components/montree/home/IvyChat'), { ssr: false });
-const CornerView = dynamic(() => import('@/components/montree/home/CornerView'), { ssr: false });
+const TodayCapture = dynamic(() => import('@/components/montree/home/TodayCapture'), { ssr: false });
+const JourneyView = dynamic(() => import('@/components/montree/home/JourneyView'), { ssr: false });
+const FirstMeeting = dynamic(() => import('@/components/montree/home/FirstMeeting'), { ssr: false });
 const FamilyPlan = dynamic(() => import('@/components/montree/home/FamilyPlan'), { ssr: false });
 const Shop = dynamic(() => import('@/components/montree/home/Shop'), { ssr: false });
 
@@ -36,11 +47,19 @@ export default function HomePage() {
   const [session, setSession] = useState<MontreeSession | null>(null);
   const [children, setChildren] = useState<Child[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<HomeTab>('ivy');
-  const [shelfBadge, setShelfBadge] = useState(false);
+  const [activeTab, setActiveTab] = useState<HomeTab>('today');
+  const [captureMode, setCaptureMode] = useState(true);
+  const [journeyBadge, setJourneyBadge] = useState(false);
   const [shelfRefreshTrigger, setShelfRefreshTrigger] = useState(0);
   const [planRefreshTrigger, setPlanRefreshTrigger] = useState(0);
+  const [journeyRefreshTrigger, setJourneyRefreshTrigger] = useState(0);
   const [ivyPrefill, setIvyPrefill] = useState('');
+  const [planSurface, setPlanSurface] = useState<'week' | 'shop'>('week');
+  // First Meeting gate: null = checking, false = needs placement, true = met.
+  const [hasProfile, setHasProfile] = useState<boolean | null>(null);
+  // A capture handed to Ivy (from TodayCapture or the First Meeting's photo).
+  const [pendingImage, setPendingImage] = useState<File | null>(null);
+  const [pendingText, setPendingText] = useState<string | null>(null);
   const { t } = useI18n();
 
   // Auth — localStorage first, then httpOnly-cookie recovery.
@@ -100,23 +119,65 @@ export default function HomePage() {
     return () => { cancelled = true; };
   }, [router, childId]);
 
+  // First Meeting gate — has Ivy met this child yet?
+  useEffect(() => {
+    let cancelled = false;
+    setHasProfile(null);
+    (async () => {
+      try {
+        const r = await fetch(`/api/montree/companion/placement?child_id=${childId}`);
+        if (cancelled) return;
+        if (!r.ok) { setHasProfile(true); return; } // fail open — never trap the family
+        const d = await r.json();
+        setHasProfile(d.has_profile !== false);
+      } catch {
+        if (!cancelled) setHasProfile(true);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [childId]);
+
   const handleShelfUpdated = useCallback(() => {
     setShelfRefreshTrigger((p) => p + 1);
-    setShelfBadge(true);
-    setTimeout(() => setShelfBadge(false), 3000);
+    setJourneyRefreshTrigger((p) => p + 1);
+    setJourneyBadge(true);
+    setTimeout(() => setJourneyBadge(false), 3000);
   }, []);
 
   const handleScheduleUpdated = useCallback(() => {
     setPlanRefreshTrigger((p) => p + 1);
   }, []);
 
-  // Shelf "ask the guide" and Plan "ask Ivy" both route into the conversation.
+  // Journey "the map", Plan "ask Ivy" — everything routes into the conversation.
   const handleAskIvy = useCallback((message: string) => {
     setIvyPrefill(message);
-    setActiveTab('ivy');
+    setActiveTab('today');
+    setCaptureMode(false);
   }, []);
 
-  // Tapping a work on the Shelf → the hand-held how-to card for that work.
+  // Tab logic: tapping the ACTIVE Today tab returns to the capture surface.
+  const handleTabChange = useCallback((tab: HomeTab) => {
+    if (tab === 'today' && activeTab === 'today') {
+      setCaptureMode(true);
+      return;
+    }
+    setActiveTab(tab);
+    if (tab === 'journey') setJourneyRefreshTrigger((p) => p + 1);
+  }, [activeTab]);
+
+  // Capture → conversation handoffs.
+  const handlePhoto = useCallback((file: File) => {
+    setPendingImage(file);
+    setCaptureMode(false);
+  }, []);
+  const handleWords = useCallback((text: string) => {
+    setPendingText(text);
+    setCaptureMode(false);
+  }, []);
+  const handleKeyboard = useCallback(() => setCaptureMode(false), []);
+  const handleAutoSendConsumed = useCallback(() => { setPendingImage(null); setPendingText(null); }, []);
+
+  // Tapping the Today chip (or a Journey work) → the hand-held how-to card.
   const [card, setCard] = useState<StepCardData | null>(null);
   const [cardLoading, setCardLoading] = useState(false);
   const [cardTitle, setCardTitle] = useState('');
@@ -135,6 +196,17 @@ export default function HomePage() {
   }, [childId]);
   const closeCard = useCallback(() => { setCard(null); setCardLoading(false); setCardTitle(''); }, []);
 
+  // First Meeting complete → straight into the loop (photo goes to Ivy).
+  const handleFirstMeetingComplete = useCallback((firstPhoto?: File) => {
+    setHasProfile(true);
+    if (firstPhoto) {
+      setPendingImage(firstPhoto);
+      setCaptureMode(false);
+    } else {
+      setCaptureMode(true);
+    }
+  }, []);
+
   const selectedChild = children.find((c) => c.id === childId) || children[0] || null;
   // Home is a family, not a classroom. Only offer a sibling switcher for a realistic
   // family-sized set; when this is pointed at a full class (e.g. a founder testing on
@@ -142,7 +214,7 @@ export default function HomePage() {
   const HOME_SIBLING_MAX = 4;
   const siblings = children.length <= HOME_SIBLING_MAX ? children : [];
 
-  if (loading || !session || (!selectedChild && children.length > 0)) {
+  if (loading || !session || (!selectedChild && children.length > 0) || hasProfile === null) {
     return (
       <div className={`h-dvh flex items-center justify-center ${BIO.bg.deep}`}>
         <AmbientParticles />
@@ -153,6 +225,8 @@ export default function HomePage() {
       </div>
     );
   }
+
+  const childName = selectedChild?.name || '';
 
   return (
     <div className={`h-dvh flex flex-col ${BIO.bg.deep}`}>
@@ -193,38 +267,83 @@ export default function HomePage() {
       </header>
 
       <main className="relative z-10 flex-1 overflow-hidden">
-        {activeTab === 'ivy' && (
+        {hasProfile === false ? (
           <ErrorBoundary title={t('home.error.title')} fallbackMessage={t('home.error.chatFailed')} retryLabel={t('home.error.tryAgain')}>
-            <IvyChat
+            <FirstMeeting
               key={childId}
               childId={childId}
-              childName={selectedChild?.name || ''}
+              childName={childName}
               classroomId={session?.classroom?.id}
-              onShelfUpdated={handleShelfUpdated}
-              onScheduleUpdated={handleScheduleUpdated}
-              prefillMessage={ivyPrefill}
-              onPrefillConsumed={() => setIvyPrefill('')}
+              onComplete={handleFirstMeetingComplete}
             />
           </ErrorBoundary>
-        )}
-        {activeTab === 'shelf' && (
-          <ErrorBoundary title={t('home.error.title')} fallbackMessage={t('home.error.shelfFailed')} retryLabel={t('home.error.tryAgain')}>
-            <CornerView childId={childId} childName={selectedChild?.name} classroomId={session?.classroom?.id} onAskGuide={handleAskIvy} refreshTrigger={shelfRefreshTrigger} onPresentWork={handlePresentWork} />
-          </ErrorBoundary>
-        )}
-        {activeTab === 'plan' && (
-          <ErrorBoundary title={t('home.error.title')} fallbackMessage={t('home.error.chatFailed')} retryLabel={t('home.error.tryAgain')}>
-            <FamilyPlan childId={childId} refreshTrigger={planRefreshTrigger} onAskIvy={handleAskIvy} />
-          </ErrorBoundary>
-        )}
-        {activeTab === 'shop' && (
-          <ErrorBoundary title={t('home.error.title')} fallbackMessage={t('home.error.chatFailed')} retryLabel={t('home.error.tryAgain')}>
-            <Shop childId={childId} onAskIvy={handleAskIvy} />
-          </ErrorBoundary>
+        ) : (
+          <>
+            {/* Today: IvyChat stays mounted underneath; the capture surface overlays it. */}
+            <div className={activeTab === 'today' ? 'h-full relative' : 'hidden'}>
+              <ErrorBoundary title={t('home.error.title')} fallbackMessage={t('home.error.chatFailed')} retryLabel={t('home.error.tryAgain')}>
+                <IvyChat
+                  key={childId}
+                  childId={childId}
+                  childName={childName}
+                  classroomId={session?.classroom?.id}
+                  onShelfUpdated={handleShelfUpdated}
+                  onScheduleUpdated={handleScheduleUpdated}
+                  prefillMessage={ivyPrefill}
+                  onPrefillConsumed={() => setIvyPrefill('')}
+                  autoSendImage={pendingImage}
+                  autoSendText={pendingText}
+                  onAutoSendConsumed={handleAutoSendConsumed}
+                />
+                {captureMode && (
+                  <div className="absolute inset-0 z-20">
+                    <TodayCapture
+                      childId={childId}
+                      childName={childName}
+                      onPhoto={handlePhoto}
+                      onWords={handleWords}
+                      onKeyboard={handleKeyboard}
+                      onSpotlightTap={handlePresentWork}
+                      refreshTrigger={shelfRefreshTrigger}
+                    />
+                  </div>
+                )}
+              </ErrorBoundary>
+            </div>
+
+            {activeTab === 'journey' && (
+              <ErrorBoundary title={t('home.error.title')} fallbackMessage={t('home.error.shelfFailed')} retryLabel={t('home.error.tryAgain')}>
+                <JourneyView childId={childId} childName={childName} onAskIvy={handleAskIvy} refreshTrigger={journeyRefreshTrigger} />
+              </ErrorBoundary>
+            )}
+
+            {activeTab === 'plan' && (
+              <ErrorBoundary title={t('home.error.title')} fallbackMessage={t('home.error.chatFailed')} retryLabel={t('home.error.tryAgain')}>
+                <div className="h-full flex flex-col">
+                  <div className="flex justify-center gap-2 pt-3 pb-1 shrink-0">
+                    {(['week', 'shop'] as const).map((s) => (
+                      <button
+                        key={s}
+                        onClick={() => setPlanSurface(s)}
+                        className={`px-4 py-1.5 rounded-full text-xs font-medium transition-all ${planSurface === s ? `${BIO.bg.mintSubtle} ${BIO.text.mint}` : `${BIO.text.muted} hover:text-white/50`}`}
+                      >
+                        {s === 'week' ? 'The week' : 'Shop'}
+                      </button>
+                    ))}
+                  </div>
+                  <div className="flex-1 min-h-0">
+                    {planSurface === 'week'
+                      ? <FamilyPlan childId={childId} refreshTrigger={planRefreshTrigger} onAskIvy={handleAskIvy} />
+                      : <Shop childId={childId} onAskIvy={handleAskIvy} />}
+                  </div>
+                </div>
+              </ErrorBoundary>
+            )}
+          </>
         )}
       </main>
 
-      {/* How-to card for a tapped shelf work */}
+      {/* How-to card for the Today chip / a tapped work */}
       {(cardLoading || card) && (
         <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4" style={{ background: 'rgba(0,0,0,0.6)' }} onClick={closeCard}>
           <div className="w-full sm:max-w-lg max-h-[85dvh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
@@ -255,9 +374,11 @@ export default function HomePage() {
         </div>
       )}
 
-      <div className="relative z-10 shrink-0">
-        <BottomTabs activeTab={activeTab} onTabChange={setActiveTab} shelfBadge={shelfBadge} />
-      </div>
+      {hasProfile !== false && (
+        <div className="relative z-10 shrink-0">
+          <BottomTabs activeTab={activeTab} onTabChange={handleTabChange} journeyBadge={journeyBadge} />
+        </div>
+      )}
     </div>
   );
 }
