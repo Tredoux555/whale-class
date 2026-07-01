@@ -1,23 +1,25 @@
 // components/montree/home/BottomTabs.tsx
-// Home navigation: Ivy (companion chat) | Shelf (the works) | Plan (the week)
+// Home navigation (camera-first, vision plan Jul 2 2026):
+//   Today (capture + Ivy) | Journey (moments) | Plan (the week, Shop folded in)
+// Tapping the ACTIVE Today tab returns to the capture surface — the parent
+// component handles that (onTabChange fires on every tap, including active).
 'use client';
 
 import { BIO } from '@/lib/montree/bioluminescent-theme';
 
-export type HomeTab = 'ivy' | 'shelf' | 'plan' | 'shop';
+export type HomeTab = 'today' | 'journey' | 'plan';
 
 interface BottomTabsProps {
   activeTab: HomeTab;
   onTabChange: (tab: HomeTab) => void;
-  shelfBadge?: boolean;
+  journeyBadge?: boolean;
 }
 
-export default function BottomTabs({ activeTab, onTabChange, shelfBadge }: BottomTabsProps) {
+export default function BottomTabs({ activeTab, onTabChange, journeyBadge }: BottomTabsProps) {
   const tabs: Array<{ id: HomeTab; label: string; icon: string }> = [
-    { id: 'ivy', label: 'Ivy', icon: '🌿' },
-    { id: 'shelf', label: 'Corner', icon: '📚' },
+    { id: 'today', label: 'Today', icon: '📷' },
+    { id: 'journey', label: 'Journey', icon: '🌱' },
     { id: 'plan', label: 'Plan', icon: '🗓️' },
-    { id: 'shop', label: 'Shop', icon: '🛍️' },
   ];
 
   return (
@@ -32,7 +34,7 @@ export default function BottomTabs({ activeTab, onTabChange, shelfBadge }: Botto
         >
           <span className="text-xl relative">
             {tab.icon}
-            {tab.id === 'shelf' && shelfBadge && (
+            {tab.id === 'journey' && journeyBadge && (
               <span className="absolute -top-1 -right-2 w-2.5 h-2.5 rounded-full bg-[#4ADE80] animate-ping" />
             )}
           </span>

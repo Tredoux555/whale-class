@@ -25,6 +25,12 @@ interface IvyChatProps {
   onScheduleUpdated?: () => void;
   prefillMessage?: string;
   onPrefillConsumed?: () => void;
+  // Camera-first Today surface (vision plan Jul 2 2026): a capture handed down
+  // from TodayCapture auto-sends into the conversation. Image arrives already
+  // compressed. Consumed exactly once via onAutoSendConsumed.
+  autoSendImage?: File | null;
+  autoSendText?: string | null;
+  onAutoSendConsumed?: () => void;
 }
 
 const TOOL_STATUS: Record<string, string> = {
@@ -51,6 +57,9 @@ export default function IvyChat({
   onScheduleUpdated,
   prefillMessage,
   onPrefillConsumed,
+  autoSendImage,
+  autoSendText,
+  onAutoSendConsumed,
 }: IvyChatProps) {
   const [messages, setMessages] = useState<IvyMessage[]>([]);
   const [inputText, setInputText] = useState('');
@@ -103,10 +112,11 @@ export default function IvyChat({
     setMessages((prev) => prev.map((m) => (m.id === id && m.kind === 'text' ? { ...m, content: m.content + text } : m)));
   }, [ensureAssistant]);
 
-  const runSend = useCallback(async (opts: { text?: string; isGreeting?: boolean }) => {
+  const runSend = useCallback(async (opts: { text?: string; isGreeting?: boolean; imageFile?: File }) => {
     if (sending) return;
     const text = (opts.text || '').trim();
-    const hasImage = !!selectedImage;
+    const imageToSend = opts.imageFile ?? selectedImage;
+    const hasImage = !!imageToSend;
     if (!opts.isGreeting && !text && !hasImage) return;
 
     sendAbortRef.current?.abort();
@@ -127,10 +137,10 @@ export default function IvyChat({
     try {
       // Upload image first (if any) → https url for the route's vision.
       let imageUrl: string | null = null;
-      if (hasImage && selectedImage) {
+      if (hasImage && imageToSend) {
         try {
           const fd = new FormData();
-          fd.append('file', selectedImage);
+          fd.append('file', imageToSend);
           fd.append('child_id', childId);
           if (classroomId) fd.append('classroom_id', classroomId);
           const up = await fetch('/api/montree/media/upload', { method: 'POST', body: fd, signal: controller.signal });
@@ -224,8 +234,10 @@ export default function IvyChat({
     } catch (err) {
       clearTimeout(hardTimeout);
       if (err instanceof DOMException && err.name === 'AbortError') {
-        toast.error('That took too long — please try again.');
-      } else {
+        // A superseded greeting (aborted by a newer send) fails silently —
+        // only a real user message earns the timeout toast.
+        if (!opts.isGreeting) toast.error('That took too long — please try again.');
+      } else if (!opts.isGreeting) {
         toast.error('Connection problem — please try again.');
       }
     } finally {
@@ -236,13 +248,44 @@ export default function IvyChat({
     }
   }, [sending, selectedImage, childId, classroomId, appendAssistantText, onShelfUpdated, onScheduleUpdated]);
 
-  // Greet once on mount.
+  // Greet once on mount — unless the chat opens WITH a capture (First Meeting's
+  // photo, or a Today-surface capture on first open). The capture IS the greeting;
+  // firing both would abort the greeting mid-stream and race the sends.
   useEffect(() => {
     if (greetedRef.current) return;
     greetedRef.current = true;
+    if (autoSendImage || autoSendText) return;
     runSend({ isGreeting: true });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Auto-send a capture handed down from the Today surface. If Ivy is mid-reply
+  // when the capture arrives, park it and flush the moment she's done — a
+  // parent's photo must never be silently dropped.
+  const pendingAutoRef = useRef<{ image?: File; text?: string } | null>(null);
+  const lastAutoRef = useRef<File | string | null>(null);
+  useEffect(() => {
+    if (!autoSendImage && !autoSendText) return;
+    // Identity guard: never double-send the same capture, even if the parent
+    // forgets to null the prop after onAutoSendConsumed.
+    const token: File | string | null = autoSendImage || autoSendText || null;
+    if (token === lastAutoRef.current) return;
+    lastAutoRef.current = token;
+    const payload = { image: autoSendImage || undefined, text: autoSendText || undefined };
+    onAutoSendConsumed?.();
+    if (sending) {
+      pendingAutoRef.current = payload;
+      return;
+    }
+    runSend({ text: payload.text || '', imageFile: payload.image });
+  }, [autoSendImage, autoSendText, onAutoSendConsumed, runSend, sending]);
+
+  useEffect(() => {
+    if (sending || !pendingAutoRef.current) return;
+    const payload = pendingAutoRef.current;
+    pendingAutoRef.current = null;
+    runSend({ text: payload.text || '', imageFile: payload.image });
+  }, [sending, runSend]);
 
   useEffect(() => () => { sendAbortRef.current?.abort(); }, []);
 
