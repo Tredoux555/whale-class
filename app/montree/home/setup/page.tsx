@@ -107,23 +107,28 @@ export default function SetupPage() {
         localStorage.setItem('montree_session', JSON.stringify(parsed));
       }
 
-      // Get the created child ID
-      // The onboarding endpoint returns { success: true, children: [...] }
+      // Get the created child ID.
+      // 🚨 The onboarding endpoint returns { success: true, students: [...] } —
+      // NOT `children`. The old `data.children` read was always undefined, so
+      // every setup fell through to a last-index fallback on a NAME-ORDERED
+      // list and could open a different child entirely (the "created Marina,
+      // landed on YueZe" bug on a founder's class roster).
       let childId: string | null = null;
-      if (data.children && data.children.length > 0) {
-        childId = data.children[data.children.length - 1].id;
+      const created = (data.students || data.children || []) as Array<{ id?: string; name?: string }>;
+      if (created.length > 0 && created[created.length - 1]?.id) {
+        childId = created[created.length - 1].id as string;
       }
 
       if (!childId) {
-        // Fallback: fetch children to get the ID
+        // Fallback: fetch the roster and match the child WE JUST NAMED —
+        // never "whoever sorts last".
         try {
-          const childrenRes = await fetch(`/api/montree/children?classroom_id=${classroomId}`);
+          const childrenRes = await fetch(`/api/montree/children?classroom_id=${classroomId}`, { cache: 'no-store' });
           if (childrenRes.ok) {
             const childrenData = await childrenRes.json();
-            const kids = childrenData.children || [];
-            if (kids.length > 0) {
-              childId = kids[kids.length - 1].id;
-            }
+            const kids = (childrenData.children || []) as Array<{ id: string; name?: string }>;
+            const match = kids.find((k) => (k.name || '').trim().toLowerCase() === trimmedName.toLowerCase());
+            if (match) childId = match.id;
           }
         } catch { /* Fallback fetch failed — will redirect to dashboard */ }
       }
