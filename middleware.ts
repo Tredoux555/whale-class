@@ -280,6 +280,7 @@ export async function middleware(req: NextRequest) {
     '/privacy',     // Privacy policy — public (required by App Store / kids-data law)
     '/terms',       // Terms of service — public
     '/support',     // Support page — public (required by App Store; montree.xyz/support)
+    '/welcome',     // Outreach landing pages (/welcome/[code]) — cold-email links, must load anonymously
   ];
   
   // Check if pathname matches exactly or starts with a public path
