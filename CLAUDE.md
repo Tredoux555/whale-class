@@ -41,6 +41,47 @@ Montree coupling + personal data; don't re-introduce it by editing the Montree c
 
 ---
 
+## 🎯 SESSION — Jul 3, 2026 (Cowork) — CHINA OUTREACH CODE SYSTEM — SHIPPED + VERIFIED LIVE
+
+**2 commits on main (`363f6c6d`, `967fc9f3`), Railway deployed, migrations 279 + 279b RUN by
+Claude via the Supabase pooler (aws-1-ap-southeast-1.pooler.supabase.com:5432 — direct db host
+still dead; .env DATABASE_URL points at the dead host, rewrite user to `postgres.<ref>` on the
+pooler). End-to-end runtime-verified on production, test data cleaned up.**
+
+Every school in the 95-school China cold-email list has a unique code (`CN-ETON-001` format).
+Cold email carries `https://montree.xyz/welcome/{code}` → personalized greeting + visit tracking
+→ `montree_ref` cookie (90d) → principal register pre-fills an optional referral field → on
+signup the outreach row flips `registered` + links the school id.
+
+- **Table `montree_outreach_schools`** (migration 279): status not_contacted|emailed|visited|
+  registered, visit_count, timestamps, contact_email/name/notes. RLS deny-all (service role
+  only). Atomic visit RPC `montree_outreach_record_visit(p_code)` — case-insensitive, never
+  downgrades 'registered'; REVOKEd from anon/authenticated per 276 posture.
+- **Seed 279b**: 95 rows WITH researched emails (3 parallel web agents, Jul 3). HQ email lives
+  ONLY on the flagship code per network (CN-ETON-001, CN-HONG-001, CN-NEBU-001, CN-WEIM-001,
+  CN-HTD-001); sibling campuses carry pointer notes — never blast 50 Etonkids campuses.
+- **Key intel**: Hongwen = Montessori Academy = Far East Horizon (ONE email info@hongwenfeh.com
+  covers both brands + likely MICC); Kidtopia CN-BEIJ-001 = CN-KIDT-001 (same school,
+  kidtopia2012@163.com); Etonkids HQ fresh email 4008189098@etonkids.com (old liqian@ bounced);
+  Guidepost HK regional admissions@guidepost.hk; ⚠ MSB Beijing (info@msb.edu.cn) + Guidepost
+  Shanghai already contacted in the Apr 2026 campaign — follow up, don't cold-send. No email
+  exists for: HTD (forms/hotline only), Learn Room, Alpha SH, JJB GZ, Radcliffe, CN-QING-002.
+  Campaign sheet: `docs/outreach/China_Outreach_Emails_Jul2026.xlsx`.
+- **Pages/routes**: `app/welcome/[code]/page.tsx` (server component, direct RPC — no internal
+  HTTP; force-dynamic; noindex; garbage codes render generic page + write nothing) +
+  `RefCookie.tsx`; `lib/montree/outreach/redeem.ts` (fire-and-forget, idempotent, never blocks
+  registration) wired into `/api/montree/principal/register`; optional referral field on
+  `/montree/principal/register` (2 i18n keys × 12 locales, parity 100%); super-admin **🎯
+  Outreach tab** (`OutreachCodesTab.tsx` + `/api/montree/super-admin/outreach-codes` GET/PATCH
+  mark_emailed — stamps emailed_at, only promotes from not_contacted).
+- **🚨 Middleware allow-list catch (the runtime-audit win)**: unknown paths on montree.xyz 307
+  → `/` for anonymous visitors — `/welcome` had to be added to `publicPaths` in middleware.ts
+  or every cold-email click bounced. Lint/tsc could never catch this; the live curl did. Rule:
+  ANY new anonymous top-level page route MUST be added to middleware `publicPaths`.
+- **Verified live**: valid code greets by name + increments count; refresh re-increments;
+  lowercase code works; garbage → generic 200, zero writes; e2e registration with referral code
+  → row registered + school linked; then test school deleted + rows reset to pristine.
+
 ## 📚 SESSION — Jul 2, 2026 (Cowork) — 26-WEEK SOUND CURRICULUM (next year's classroom English) — Weeks 1+2 BUILT
 
 **Canonical handoff: `docs/handoffs/SESSION_CURRICULUM_26WEEK_JUL2.md` — READ FIRST to resume.**
