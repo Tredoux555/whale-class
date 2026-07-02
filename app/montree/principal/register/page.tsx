@@ -2,7 +2,7 @@
 // Session 105: Principal Registration - Create account + school
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useI18n } from '@/lib/montree/i18n';
@@ -22,6 +22,22 @@ export default function PrincipalRegisterPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [referralCode, setReferralCode] = useState('');
+
+  // Outreach attribution: /welcome/[code] drops a `montree_ref` cookie
+  // (90 days). Pre-fill the optional referral field from it so schools
+  // arriving from a cold-email link get attributed without typing anything.
+  useEffect(() => {
+    try {
+      const m = document.cookie.match(/(?:^|;\s*)montree_ref=([^;]+)/);
+      if (m && m[1]) {
+        const fromCookie = decodeURIComponent(m[1]).trim().toUpperCase();
+        if (/^[A-Z0-9-]{4,32}$/.test(fromCookie)) setReferralCode(fromCookie);
+      }
+    } catch {
+      // Cookie unreadable — field stays empty, registration unaffected.
+    }
+  }, []);
 
   const generateSlug = (name: string) => {
     return name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').substring(0, 50);
@@ -52,6 +68,7 @@ export default function PrincipalRegisterPage() {
           principalName,
           email,
           password,
+          referralCode: referralCode.trim() || undefined,
         }),
       });
 
@@ -192,6 +209,20 @@ export default function PrincipalRegisterPage() {
                   placeholder={t('principalRegister.confirmPasswordPlaceholder')}
                   className="w-full p-4 bg-white/10 backdrop-blur border border-white/20 rounded-xl text-white placeholder-white/40 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/20 outline-none transition-all"
                   required
+                />
+              </div>
+
+              <div>
+                <label className="block text-emerald-300/80 text-sm mb-2">{t('principalRegister.referralCodeLabel')}</label>
+                <input
+                  type="text"
+                  value={referralCode}
+                  onChange={(e) => setReferralCode(e.target.value.toUpperCase())}
+                  placeholder={t('principalRegister.referralCodePlaceholder')}
+                  className="w-full p-4 bg-white/10 backdrop-blur border border-white/20 rounded-xl text-white placeholder-white/40 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/20 outline-none transition-all"
+                  maxLength={32}
+                  autoComplete="off"
+                  spellCheck={false}
                 />
               </div>
 

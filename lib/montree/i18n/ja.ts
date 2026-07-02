@@ -138,6 +138,8 @@ export const ja: Record<string, string> = {
   'principalRegister.passwordPlaceholder': '6文字以上',
   'principalRegister.confirmPasswordLabel': 'パスワードを確認',
   'principalRegister.confirmPasswordPlaceholder': '••••••••',
+  'principalRegister.referralCodeLabel': '紹介コード（任意）',
+  'principalRegister.referralCodePlaceholder': '招待メールに記載されています',
   'principalRegister.back': '← 戻る',
   'principalRegister.createAccount': 'アカウントを作成',
   'principalRegister.creatingAccount': '作成中...',

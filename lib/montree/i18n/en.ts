@@ -168,6 +168,8 @@ export const en = {
   'principalRegister.passwordPlaceholder': 'At least 6 characters',
   'principalRegister.confirmPasswordLabel': 'Confirm Password',
   'principalRegister.confirmPasswordPlaceholder': '••••••••',
+  'principalRegister.referralCodeLabel': 'Referral code (optional)',
+  'principalRegister.referralCodePlaceholder': 'From your invitation email',
   'principalRegister.back': '← Back',
   'principalRegister.createAccount': 'Create Account',
   'principalRegister.creatingAccount': 'Creating...',
