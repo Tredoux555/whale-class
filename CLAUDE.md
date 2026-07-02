@@ -17,6 +17,20 @@ Local path: `/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/whale` (note spa
 
 ---
 
+## 🌟 THE NORTH STAR VISION (Tredoux, Jul 3 2026 — PERMANENT, read this before any product decision)
+
+**The long-term product is the app everyone keeps in their pocket: their identity of
+themselves.** The thing that knows a person better than they know themselves and helps them
+with every facet of life. One day it connects to everything they live with — car navigation,
+work, fridge, diet, family — and **Lyf Coach is the seed of that app.** Every product in the
+ecosystem (Marriage Counsellor, Relationship Navigator, Family Plan, Montree Home) is an entry
+point into the SAME identity + memory, not a separate product. **Trust is the entire asset** —
+this only works if people trust it with everything, which is why the privacy architecture
+(E2E, sealed rooms, per-person memory with explicit one-way links) is not a feature, it is the
+foundation. When prioritizing: features that deepen the memory/identity moat and earn trust
+beat features that chase a niche. This is what we are building. Don't lose it between sessions.
+---
+
 ## 🚪 LYF COACH HAS MOVED OUT — standalone repo (Jun 25 2026)
 
 **The public web Lyf Coach (the individual product) was EXTRACTED from this
