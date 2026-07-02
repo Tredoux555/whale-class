@@ -41,6 +41,37 @@ Montree coupling + personal data; don't re-introduce it by editing the Montree c
 
 ---
 
+## 📚 SESSION — Jul 2, 2026 (Cowork) — 26-WEEK SOUND CURRICULUM (next year's classroom English) — Weeks 1+2 BUILT
+
+**Canonical handoff: `docs/handoffs/SESSION_CURRICULUM_26WEEK_JUL2.md` — READ FIRST to resume.**
+**Framework: `docs/curriculum/26_WEEK_SOUND_CURRICULUM.md` (spine for all 26 weeks + locked rules + pipeline).**
+
+Tredoux's own phonics curriculum for next school year — one letter/sound per week in a custom
+utility-first order (A→T→M→C→S→N→P→I→H→D→O→G→B→E→R→U→F→L→W→J→K→V→Y→X→Qu→Z). Each letter unlocks
+a word (a→at→mat→cat…) → a real sentence → 2 dark-trap Suno songs + a book + a full Montessori
+printable pack. 26 weeks = 26 books + an album + a complete English shelf.
+
+- **🚨 CONTENT project, NOT app code.** Specs + build scripts in `docs/curriculum/` (committed);
+  physical outputs (PDFs/mp3s/MJ images) live in `~/Desktop/English Curriculum 2026/Week NN/` (NOT git).
+- **✅ Week 1 (A) + Week 2 (T) fully built**: books (*It's a…* + *Where Is Segina?*), 3 Suno tracks,
+  full packs (worksheets w/ stroke arrows, 3-part cards, sentence strips, dictionary journals
+  color+trace+write, SVG coloring pages, matching sheets, bingo 6 boards + duplex calling cards,
+  vowel wall, t/not-t sort labels, hand-drawn SVG Big Map A3 color + colorable versions).
+- **Assembly line**: `docs/curriculum/tools/build_weekNN_{book,pack}.py` → HTML → headless-Chrome
+  PDF. Printables use HIS generator house formats (card-generator print-utils 7.5cm squares +
+  21×6.5 sentence strips, picture-bingo duplex geometry short-edge flip, #2D5A27 frames, Comic
+  Sans); books = dark forest #0a1a0f + Andika + gold word-of-week + author mark.
+- **Locked rules**: Segina = peg-doll girl based on real student's outfit (print "Segina", Suno
+  lyrics "Sejeena" phonetic); TWO songs/week (sound song stutter pattern "T-t-turtle!" + word
+  song frame); one pattern per song; asset-manifest-first (exact filenames + MJ prompts in the
+  week file before building); potato is a permanent bingo joke tile; sound work (Dwyer I Spy +
+  sandpaper trace→say→match) every week, pure initial-sound lists with exclusions flagged.
+- **NEXT: Week 3 — M · mat/am · prepositions · *On the Mat* (last teacher-read book). Then
+  Week 4 — C · cat — FIRST DECODABLE BOOK (*The Cat Is on the Mat*, the levitating cat, digraph
+  th + sight words the/is, the cast begins).**
+
+---
+
 ## 🚨 NEXT SESSION — QUEUED BUILD: Lyf Coach Family Model (Tredoux, queued Jun 20 eve)
 
 **Canonical plan: `docs/handoffs/LYF_COACH_FAMILY_MODEL_PLAN.md` — READ THIS FIRST.** Tredoux wants to build the family model on both fronts in ONE session (the model takes priority over the App Store version). Two products: (A) Lyf Coach individual (exists); (B) **Lyf Coach Family** — mum + dad + up to 2 kids, each with their own absolutely-private coach + a **one-way parent → child's-coach context link**. His private family system = Product B dogfooded, built FIRST.
