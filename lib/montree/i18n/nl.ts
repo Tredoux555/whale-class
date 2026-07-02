@@ -138,6 +138,8 @@ export const nl: Record<string, string> = {
   'principalRegister.passwordPlaceholder': 'Minimaal 6 karakters',
   'principalRegister.confirmPasswordLabel': 'Wachtwoord bevestigen',
   'principalRegister.confirmPasswordPlaceholder': '••••••••',
+  'principalRegister.referralCodeLabel': 'Verwijzingscode (optioneel)',
+  'principalRegister.referralCodePlaceholder': 'Uit uw uitnodigingsmail',
   'principalRegister.back': '← Terug',
   'principalRegister.createAccount': 'Account aanmaken',
   'principalRegister.creatingAccount': 'Wordt aangemaakt...',

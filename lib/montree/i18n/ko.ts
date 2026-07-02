@@ -138,6 +138,8 @@ export const ko: Record<string, string> = {
   'principalRegister.passwordPlaceholder': '최소 6자 이상',
   'principalRegister.confirmPasswordLabel': '비밀번호 확인',
   'principalRegister.confirmPasswordPlaceholder': '••••••••',
+  'principalRegister.referralCodeLabel': '추천 코드 (선택)',
+  'principalRegister.referralCodePlaceholder': '초대 이메일에서 확인하세요',
   'principalRegister.back': '← 뒤로가기',
   'principalRegister.createAccount': '계정 생성',
   'principalRegister.creatingAccount': '생성 중입니다...',

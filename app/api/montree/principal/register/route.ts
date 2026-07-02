@@ -5,8 +5,9 @@ import { getSupabase } from '@/lib/supabase-client';
 import { hashPassword } from '@/lib/montree/password';
 import { validatePassword } from '@/lib/password-policy';
 import { checkRateLimit } from '@/lib/rate-limiter';
-import { getClientIP, getUserAgent } from '@/lib/montree/audit-logger';
+import { getClientIP } from '@/lib/montree/audit-logger';
 import { createMontreeToken, setMontreeAuthCookie } from '@/lib/montree/server-auth';
+import { redeemOutreachCode } from '@/lib/montree/outreach/redeem';
 
 function generateSlug(name: string): string {
   return name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').substring(0, 50);
@@ -16,7 +17,6 @@ export async function POST(request: NextRequest) {
   try {
     const supabase = getSupabase();
     const ip = getClientIP(request.headers);
-    const userAgent = getUserAgent(request.headers);
 
     // Rate limiting (3 attempts per IP per 15 min for registration)
     const { allowed, retryAfterSeconds } = await checkRateLimit(
@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { schoolName, principalName, email, password } = await request.json();
+    const { schoolName, principalName, email, password, referralCode } = await request.json();
 
     // Validate
     if (!schoolName?.trim()) {
@@ -117,6 +117,17 @@ export async function POST(request: NextRequest) {
       // Rollback school creation
       await supabase.from('montree_schools').delete().eq('id', school.id);
       return NextResponse.json({ error: 'Failed to create principal account' }, { status: 500 });
+    }
+
+    // Outreach attribution (China cold-email campaign, Jul 2026): if the
+    // signup carried a referral code (typed, or pre-filled from the
+    // montree_ref cookie set by /welcome/[code]), mark that outreach row as
+    // registered. Fire-and-forget — a redeem failure must NEVER block
+    // registration (handoff hard rule). Idempotent inside the helper.
+    if (referralCode && typeof referralCode === 'string') {
+      void redeemOutreachCode(supabase, referralCode, school.id).catch((err) =>
+        console.error('[register] outreach redeem failed:', err)
+      );
     }
 
     // Log the principal in immediately by minting a session token + cookie.

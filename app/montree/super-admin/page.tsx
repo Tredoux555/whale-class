@@ -24,6 +24,7 @@ const AgentsTab = dynamic(() => import('@/components/montree/super-admin/Referra
 const MoneyTab = dynamic(() => import('@/components/montree/super-admin/MoneyTab'), { ssr: false });
 const HealthTab = dynamic(() => import('@/components/montree/super-admin/HealthTab'), { ssr: false });
 const WebhookDLQTab = dynamic(() => import('@/components/montree/super-admin/WebhookDLQTab'), { ssr: false });
+const OutreachCodesTab = dynamic(() => import('@/components/montree/super-admin/OutreachCodesTab'), { ssr: false });
 const ServerErrorsTab = dynamic(() => import('@/components/montree/super-admin/ServerErrorsTab'), { ssr: false });
 const AgentApplicationAlert = dynamic(() => import('@/components/montree/super-admin/AgentApplicationAlert'), { ssr: false });
 const AgentInboxTab = dynamic(() => import('@/components/montree/super-admin/AgentInboxTab'), { ssr: false });
@@ -39,7 +40,7 @@ interface DmMessage {
   created_at: string;
 }
 
-type TabType = 'schools' | 'feedback' | 'leads' | 'visitors' | 'agents' | 'agent-inbox' | 'money' | 'campaign' | 'playbook' | 'health' | 'dlq' | 'errors';
+type TabType = 'schools' | 'feedback' | 'leads' | 'visitors' | 'agents' | 'agent-inbox' | 'money' | 'campaign' | 'playbook' | 'health' | 'dlq' | 'errors' | 'outreach';
 
 const SESSION_TIMEOUT_MS = 15 * 60 * 1000; // 15 minutes
 
@@ -346,7 +347,7 @@ export default function SuperAdminPage() {
     if (typeof window === 'undefined') return;
     const sp = new URLSearchParams(window.location.search);
     const tab = sp.get('tab');
-    const valid: TabType[] = ['schools', 'feedback', 'leads', 'visitors', 'agents', 'agent-inbox', 'money', 'campaign', 'playbook', 'health', 'dlq', 'errors'];
+    const valid: TabType[] = ['schools', 'feedback', 'leads', 'visitors', 'agents', 'agent-inbox', 'money', 'campaign', 'playbook', 'health', 'dlq', 'errors', 'outreach'];
     if (tab && (valid as string[]).includes(tab)) {
       setActiveTab(tab as TabType);
     }
@@ -759,6 +760,7 @@ export default function SuperAdminPage() {
           <SuperAdminTab active={activeTab === 'agent-inbox'} onClick={() => setActiveTab('agent-inbox')} icon="📬" label="Agent Inbox" />
           <SuperAdminTab active={activeTab === 'money'} onClick={() => setActiveTab('money')} icon="💰" label="Money" />
           <SuperAdminTab active={activeTab === 'campaign'} onClick={() => setActiveTab('campaign')} icon="📣" label="Campaign" />
+          <SuperAdminTab active={activeTab === 'outreach'} onClick={() => setActiveTab('outreach')} icon="🎯" label="Outreach" />
           <SuperAdminTab active={activeTab === 'playbook'} onClick={() => setActiveTab('playbook')} icon="🎬" label="Playbook" />
           <SuperAdminTab active={activeTab === 'health'} onClick={() => setActiveTab('health')} icon="🩺" label="Health" />
           <SuperAdminTab active={activeTab === 'dlq'} onClick={() => setActiveTab('dlq')} icon="⚠️" label="DLQ" />
@@ -851,6 +853,10 @@ export default function SuperAdminPage() {
 
         {activeTab === 'dlq' && (
           <WebhookDLQTab sessionToken={saToken} />
+        )}
+
+        {activeTab === 'outreach' && (
+          <OutreachCodesTab sessionToken={saToken} />
         )}
 
         {activeTab === 'errors' && (

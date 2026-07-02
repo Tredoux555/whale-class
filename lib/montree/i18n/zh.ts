@@ -161,6 +161,8 @@ export const zh = {
   'principalRegister.passwordPlaceholder': '至少6个字符',
   'principalRegister.confirmPasswordLabel': '确认密码',
   'principalRegister.confirmPasswordPlaceholder': '••••••••',
+  'principalRegister.referralCodeLabel': '推荐码（选填）',
+  'principalRegister.referralCodePlaceholder': '来自您的邀请邮件',
   'principalRegister.back': '← 返回',
   'principalRegister.createAccount': '创建账户',
   'principalRegister.creatingAccount': '正在创建...',

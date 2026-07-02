@@ -138,6 +138,8 @@ export const uk: Record<string, string> = {
   'principalRegister.passwordPlaceholder': 'Мінімум 6 символів',
   'principalRegister.confirmPasswordLabel': 'Підтвердити пароль',
   'principalRegister.confirmPasswordPlaceholder': '••••••••',
+  'principalRegister.referralCodeLabel': 'Код запрошення (необов’язково)',
+  'principalRegister.referralCodePlaceholder': 'З вашого листа-запрошення',
   'principalRegister.back': '← Назад',
   'principalRegister.createAccount': 'Створити акаунт',
   'principalRegister.creatingAccount': 'Створення...',

@@ -138,6 +138,8 @@ export const ru: Record<string, string> = {
   'principalRegister.passwordPlaceholder': 'Минимум 6 символов',
   'principalRegister.confirmPasswordLabel': 'Подтвердите пароль',
   'principalRegister.confirmPasswordPlaceholder': '••••••••',
+  'principalRegister.referralCodeLabel': 'Код приглашения (необязательно)',
+  'principalRegister.referralCodePlaceholder': 'Из вашего письма-приглашения',
   'principalRegister.back': '← Назад',
   'principalRegister.createAccount': 'Создать аккаунт',
   'principalRegister.creatingAccount': 'Создание...',

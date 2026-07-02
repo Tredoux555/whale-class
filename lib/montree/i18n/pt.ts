@@ -138,6 +138,8 @@ export const pt: Record<string, string> = {
   'principalRegister.passwordPlaceholder': 'No mínimo 6 caracteres',
   'principalRegister.confirmPasswordLabel': 'Confirmar Senha',
   'principalRegister.confirmPasswordPlaceholder': '••••••••',
+  'principalRegister.referralCodeLabel': 'Código de indicação (opcional)',
+  'principalRegister.referralCodePlaceholder': 'Do seu e-mail de convite',
   'principalRegister.back': '← Voltar',
   'principalRegister.createAccount': 'Criar Conta',
   'principalRegister.creatingAccount': 'Criando...',
