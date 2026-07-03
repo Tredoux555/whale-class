@@ -116,6 +116,33 @@ offset by the two new cache breakpoints.
 3. Whale Class regression sniff: capture any photo, confirm normal behavior
    (`gvmInjected:0`, unchanged outcomes).
 
+## 5b. Privacy posture — plain answers (Tredoux raised this Jul 3; keep these TRUE)
+
+Tredoux's exact fear: *"are schools sharing my data? Is there any chance of cross
+contamination from my class? This would kill my app dead in the water."* The answers
+below are the contract. Any change that makes one of them false needs an explicit
+design review first.
+
+1. **What the global table contains:** 235 descriptions of STANDARD Montessori
+   MATERIALS ("ten pink graduated cubes stacked as a tower"). NO photos, NO child
+   names, NO teacher notes, NO classroom names, NO observations. Audited pre-seed:
+   zero roster-name hits + defensive scrub + photo URLs deliberately not copied.
+   Equivalent in kind to the VISUAL_ID_GUIDE that already ships in every school's
+   prompt — product content, not customer data.
+2. **Whose data:** Whale Class's own (Tredoux's classroom), curated ONCE by the seed
+   script. No other school contributed anything and no other school CAN — the table
+   is runtime-read-only. There is no code path where any school's activity writes
+   into it.
+3. **No poison vector:** a school elsewhere confirming photos WRONG affects only its
+   own private classroom moat. It can never contaminate the global pool or any other
+   school's matching. (This is exactly why v1 rejected the audit doc's live
+   cross-school learning pool.)
+4. **No contamination INTO Whale Class:** verified live — Whale's own moat fills the
+   entire prompt budget, global injects ZERO entries there. Whale behavior unchanged.
+5. **Kill switch:** `UPDATE montree_global_visual_memory SET is_active = false;` —
+   loader returns empty global context and the whole system degrades gracefully to
+   pre-Jul-3 behavior. Nothing is load-bearing on the global layer.
+
 ## 6. Future (deliberately NOT built)
 - **Path 1.5** (global VM + conf ≥0.90 auto-file) — decide from telemetry after ~2
   weeks of new-school data.
