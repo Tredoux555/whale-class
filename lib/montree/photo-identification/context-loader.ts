@@ -16,6 +16,11 @@
 //                            (used by the new pipeline's "Haiku trust" rule:
 //                            only trust Haiku ≥0.75 if the matched work has
 //                            an entry in visual memory)
+//   - globalVisualMemory*:   the GLOBAL baseline moat (montree_global_visual_memory,
+//                            migration 281) — read-only curated descriptions of
+//                            STANDARD works that kill the cold-start problem.
+//                            Injected into Pass 2 with leftover budget + fed to
+//                            Pass 2b candidates. NEVER a Gate A trust input.
 
 import type { UntypedClient as SupabaseClient } from '@/lib/supabase-client';
 
@@ -34,6 +39,29 @@ function sanitizeForPrompt(input: string, maxLen: number = 200): string {
 
 // ----- Public types -----
 
+/**
+ * A structured entry from the GLOBAL visual memory (montree_global_visual_memory,
+ * migration 281) — the read-only baseline moat for STANDARD works, seeded from
+ * curated Whale Class entries. Used two ways:
+ *   1. A budget-capped subset is injected into the Pass 2 prompt as the
+ *      LIBRARY-VERIFIED WORKS block (cold-start classrooms get baseline
+ *      descriptions on day one).
+ *   2. The FULL set feeds Pass 2b candidate building so the image
+ *      re-examination discriminator can run even with ZERO classroom memory
+ *      (the Bright Stars Cylinder-Block-vs-Spindle-Boxes cold-start failure).
+ *
+ * 🚨 Global entries NEVER satisfy Gate A Path 1 — visualMemoryWorkNames stays
+ * CLASSROOM-ONLY. Auto-file trust requires local teacher verification.
+ */
+export interface GlobalVisualMemoryEntry {
+  /** Canonical work name from the static curriculum */
+  name: string;
+  area: string | null;
+  looksLike: string;
+  keyMaterials: string;
+  distinguishFrom: string;
+}
+
 export interface IdentificationContext {
   /** lowercase original_work_name → corrected_work_name (for matchToCurriculumV2) */
   correctionsMap: Map<string, string>;
@@ -45,6 +73,14 @@ export interface IdentificationContext {
   visualMemoryWorkNames: Set<string>;
   /** Number of visual memory entries actually injected into the prompt */
   visualMemoryInjectedCount: number;
+  /** Prompt-ready "LIBRARY-VERIFIED WORKS" block (global baseline), or empty string */
+  globalVisualMemoryContext: string;
+  /** Lowercased work names whose GLOBAL entry was injected into the Pass 2 prompt */
+  globalVisualMemoryWorkNames: Set<string>;
+  /** Number of global entries actually injected into the prompt */
+  globalVisualMemoryInjectedCount: number;
+  /** FULL active global entry set (structured) for Pass 2b candidate building */
+  globalVisualMemoryEntries: GlobalVisualMemoryEntry[];
 }
 
 const EMPTY_CONTEXT: IdentificationContext = {
@@ -53,6 +89,10 @@ const EMPTY_CONTEXT: IdentificationContext = {
   visualMemoryContext: '',
   visualMemoryWorkNames: new Set(),
   visualMemoryInjectedCount: 0,
+  globalVisualMemoryContext: '',
+  globalVisualMemoryWorkNames: new Set(),
+  globalVisualMemoryInjectedCount: 0,
+  globalVisualMemoryEntries: [],
 };
 
 // ----- Loader -----
@@ -76,7 +116,7 @@ export async function loadIdentificationContext(
   const { classroomId, useV2 = false } = opts;
   if (!classroomId) return EMPTY_CONTEXT;
 
-  const [correctionsResult, visualMemoryResult] = await Promise.allSettled([
+  const [correctionsResult, visualMemoryResult, globalMemoryResult] = await Promise.allSettled([
     supabase
       .from('montree_guru_corrections')
       .select('original_work_name, corrected_work_name')
@@ -90,6 +130,15 @@ export async function loadIdentificationContext(
       .order('description_confidence', { ascending: false })
       .order('updated_at', { ascending: false })
       .limit(200), // raised from 100 (Apr 30 audit) so the adaptive char budget below has headroom
+    // GLOBAL baseline moat (migration 281) — read-only, standard works only,
+    // seeded from curated Whale Class entries. Soft-fails to empty when the
+    // table doesn't exist yet (42P01) via allSettled + the guard below.
+    supabase
+      .from('montree_global_visual_memory')
+      .select('work_name, area, visual_description, key_materials, negative_descriptions, description_confidence')
+      .eq('is_active', true)
+      .order('description_confidence', { ascending: false })
+      .limit(300),
   ]);
 
   // ----- Corrections -----
@@ -122,6 +171,16 @@ export async function loadIdentificationContext(
   let visualMemoryContext = '';
   const visualMemoryWorkNames = new Set<string>();
   let visualMemoryInjectedCount = 0;
+
+  // Shared prompt budget across the classroom block AND the global block —
+  // the 20KB v2 ceiling exists because larger contexts drowned Haiku's
+  // attention (Session 117 regression). Classroom entries fill first; global
+  // entries fill whatever budget remains. Natural decay: a cold classroom
+  // gets ~a full budget of global baseline, a mature classroom gets ~none.
+  const VM_CHAR_BUDGET = useV2 ? 20_000 : 50_000; // ~5K vs ~12.5K tokens
+  const VM_HARD_CEILING = useV2 ? 40 : 100;
+  const VM_MIN_FLOOR = useV2 ? 15 : 30; // budget can only stop AFTER N entries packed
+  let classroomCharsUsed = 0;
 
   if (visualMemoryResult.status === 'fulfilled') {
     const memories = visualMemoryResult.value?.data;
@@ -201,9 +260,7 @@ export async function loadIdentificationContext(
         // up to a 100-entry sanity ceiling. Entries are already sorted by
         // (description_confidence DESC, updated_at DESC) by the SELECT, so
         // we naturally fill the budget with the highest-quality recent entries.
-        const VM_CHAR_BUDGET = useV2 ? 20_000 : 50_000; // ~5K vs ~12.5K tokens
-        const VM_HARD_CEILING = useV2 ? 40 : 100;
-        const VM_MIN_FLOOR = useV2 ? 15 : 30; // budget can only stop AFTER N entries packed
+        // (Budget constants hoisted above so the global block shares them.)
         const capped: string[] = [];
         let runningChars = 0;
         for (const entry of verifiedEntries) {
@@ -212,6 +269,7 @@ export async function loadIdentificationContext(
           capped.push(entry);
           runningChars += entry.length;
         }
+        classroomCharsUsed = runningChars;
         visualMemoryInjectedCount = capped.length;
         visualMemoryContext = `\n\nCLASSROOM-VERIFIED WORKS (teacher has confirmed these — match to these when the description fits):\n\n${capped.join('\n\n')}\n\nThese are teacher-confirmed descriptions of materials in THIS classroom. When the photo description closely matches a verified work's KEY MATERIALS, prefer that match over the generic guide. Pay attention to DISTINGUISH FROM entries to avoid common confusions.`;
 
@@ -225,20 +283,113 @@ export async function loadIdentificationContext(
     }
   }
 
+  // ----- Global visual memory (the "master brain" baseline, migration 281) -----
+  //
+  // Two products:
+  //   1. globalVisualMemoryEntries — the FULL structured active set, consumed
+  //      by Pass 2b candidate building (targeted retrieval by name — cheap).
+  //   2. globalVisualMemoryContext — a prompt block for Pass 2, filled from
+  //      whatever CHAR BUDGET the classroom block left over. Entries whose
+  //      work already has a CLASSROOM entry are skipped (classroom wins), and
+  //      entries carrying DISTINGUISH FROM discriminators are packed first
+  //      (confusion pairs are the highest-value content per token).
+  let globalVisualMemoryContext = '';
+  const globalVisualMemoryWorkNames = new Set<string>();
+  let globalVisualMemoryInjectedCount = 0;
+  const globalVisualMemoryEntries: GlobalVisualMemoryEntry[] = [];
+
+  if (globalMemoryResult.status === 'fulfilled' && !globalMemoryResult.value?.error) {
+    const globals = globalMemoryResult.value?.data;
+    if (globals && globals.length > 0) {
+      type GlobalRow = {
+        work_name: string;
+        area: string | null;
+        visual_description: string;
+        key_materials: string[] | null;
+        negative_descriptions: string[] | null;
+        description_confidence: number | null;
+      };
+
+      for (const g of globals as GlobalRow[]) {
+        const name = sanitizeForPrompt(g.work_name, 100);
+        const looksLike = sanitizeForPrompt(g.visual_description, 300);
+        if (!name || !looksLike) continue;
+        const keyMaterials = Array.isArray(g.key_materials) && g.key_materials.length > 0
+          ? g.key_materials.map((k: string) => sanitizeForPrompt(k, 60)).join(', ')
+          : '';
+        const distinguishFrom = Array.isArray(g.negative_descriptions) && g.negative_descriptions.length > 0
+          ? g.negative_descriptions.map((n: string) => sanitizeForPrompt(n, 240)).join('; ')
+          : '';
+        globalVisualMemoryEntries.push({
+          name,
+          area: g.area ? sanitizeForPrompt(g.area, 30) : null,
+          looksLike,
+          keyMaterials,
+          distinguishFrom,
+        });
+      }
+
+      // Prompt injection: leftover budget only, discriminator-carrying entries
+      // first (then the confidence order the SELECT already established).
+      const remainingBudget = Math.max(0, VM_CHAR_BUDGET - classroomCharsUsed);
+      const remainingCeiling = Math.max(0, VM_HARD_CEILING - visualMemoryInjectedCount);
+      if (remainingBudget > 1_000 && remainingCeiling > 0) {
+        const injectable = globalVisualMemoryEntries
+          .filter(e => !visualMemoryWorkNames.has(e.name.toLowerCase()))
+          .sort((a, b) => (b.distinguishFrom ? 1 : 0) - (a.distinguishFrom ? 1 : 0));
+
+        const capped: string[] = [];
+        let runningChars = 0;
+        for (const e of injectable) {
+          let entry = `- "${e.name}" (${e.area || 'unknown'}):\n  LOOKS LIKE: ${e.looksLike}`;
+          if (e.keyMaterials) entry += `\n  KEY MATERIALS: ${e.keyMaterials}`;
+          if (e.distinguishFrom) entry += `\n  DISTINGUISH FROM: ${e.distinguishFrom}`;
+          if (capped.length >= remainingCeiling) break;
+          if (runningChars + entry.length > remainingBudget && capped.length > 0) break;
+          capped.push(entry);
+          runningChars += entry.length;
+          globalVisualMemoryWorkNames.add(e.name.toLowerCase());
+        }
+
+        if (capped.length > 0) {
+          globalVisualMemoryInjectedCount = capped.length;
+          globalVisualMemoryContext = `\n\nLIBRARY-VERIFIED WORKS (baseline descriptions of STANDARD Montessori materials from verified classrooms — this classroom's own teacher has NOT confirmed these yet; when both lists describe the same work, the CLASSROOM-VERIFIED entry above always wins):\n\n${capped.join('\n\n')}\n\nUse these the same way as classroom-verified works: match on KEY MATERIALS and respect DISTINGUISH FROM discriminators. Because the teacher here hasn't confirmed them, be slightly more conservative with confidence than you would be for a classroom-verified match.`;
+        }
+      }
+    }
+  }
+
   return {
     correctionsMap,
     correctionsContext,
     visualMemoryContext,
     visualMemoryWorkNames,
     visualMemoryInjectedCount,
+    globalVisualMemoryContext,
+    globalVisualMemoryWorkNames,
+    globalVisualMemoryInjectedCount,
+    globalVisualMemoryEntries,
   };
 }
 
 /**
  * Convenience: returns true if `workName` has an entry in the loaded visual
  * memory set (case-insensitive). Used by the new pipeline's "Haiku trust" rule.
+ *
+ * 🚨 CLASSROOM-ONLY by design — global entries never make this true, so Gate A
+ * Path 1 (auto-file trust) can never fire off the global baseline alone.
  */
 export function hasVisualMemoryFor(ctx: IdentificationContext, workName: string): boolean {
   if (!workName) return false;
   return ctx.visualMemoryWorkNames.has(workName.trim().toLowerCase());
+}
+
+/**
+ * Returns true if `workName` had a GLOBAL baseline entry injected into the
+ * Pass 2 prompt. Telemetry / future trust-tuning signal only — NOT a Gate A
+ * trust input in v1.
+ */
+export function hasGlobalVisualMemoryFor(ctx: IdentificationContext, workName: string): boolean {
+  if (!workName) return false;
+  return ctx.globalVisualMemoryWorkNames.has(workName.trim().toLowerCase());
 }

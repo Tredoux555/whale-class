@@ -34,6 +34,7 @@ SENSORIAL — the #1 confusion zone:
 - COLOR BOX vs FABRIC MATCHING. DISCRIMINATOR: rigid WOODEN/PLASTIC painted squares matched by COLOR (child LOOKS) → Color Box. Soft CLOTH/FABRIC swatches matched by TEXTURE (child FEELS with eyes closed) → Fabric Matching. If pieces are rigid colored squares → COLOR BOX. If pieces are soft foldable fabric → FABRIC MATCHING. This is the #1 most confused pair in the entire curriculum.
 - RED RODS (Sensorial) vs NUMBER RODS (Mathematics). DISCRIMINATOR: all red → Red Rods. Red AND blue alternating → Number Rods. CHECK FOR BLUE SECTIONS — they determine the area as well as the work.
 - CYLINDER BLOCKS vs KNOBLESS CYLINDERS. DISCRIMINATOR: cylinders with knobs in a wooden block → Cylinder Blocks. Cylinders without knobs, free-standing in colored boxes → Knobless Cylinders.
+- CYLINDER BLOCKS (Sensorial) vs SPINDLE BOXES (Mathematics). DISCRIMINATOR: a SOLID wooden block/board with round recessed sockets where each socket holds ONE cylinder with a small KNOB → Cylinder Blocks. An OPEN box with compartments labeled with printed NUMERALS 0-9, holding BUNDLES of many thin identical sticks → Spindle Boxes. Knobbed cylinders in sockets → ALWAYS Cylinder Blocks. Printed numerals + loose stick bundles → ALWAYS Spindle Boxes. The area follows the work (Sensorial vs Mathematics).
 - BINOMIAL CUBE vs TRINOMIAL CUBE. DISCRIMINATOR: 8 pieces → Binomial. 27 pieces → Trinomial.
 - PINK TOWER vs BROWN STAIR vs RED RODS. DISCRIMINATOR: cubes → Pink Tower. Prisms/rectangular blocks → Brown Stair. Long thin rods → Red Rods.
 - SOUND BOXES vs SMELLING BOTTLES. DISCRIMINATOR: shaking cylinders → Sound Boxes. Sniffing bottles → Smelling Bottles.
@@ -49,6 +50,7 @@ LANGUAGE — second most-confused area:
 
 MATHEMATICS:
 - NUMBER RODS (Math, red+blue alternating) vs RED RODS (Sensorial, all red). See sensorial list above.
+- SPINDLE BOXES (Math) vs CYLINDER BLOCKS (Sensorial). See sensorial list above — numerals + stick bundles vs knobbed cylinders in sockets.
 - GOLDEN BEADS (uniform gold colour) vs SHORT BEAD STAIR (each bar a different colour, 1-9).
 - STAMP GAME (small printed tiles) vs LARGE NUMBER CARDS (big wooden cards).
 - SMALL BEAD FRAME (4 wires) vs LARGE BEAD FRAME (7 wires) — count the rows.
