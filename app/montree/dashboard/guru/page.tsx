@@ -3,7 +3,7 @@
 // Both roles get WhatsApp-style conversational chat with role-specific personas
 'use client';
 
-import { useState, useEffect, useRef, Suspense } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { toast, Toaster } from 'sonner';
 import { getSession, isHomeschoolParent, type MontreeSession } from '@/lib/montree/auth';
@@ -48,13 +48,11 @@ function GuruContent() {
   // live so it stays correct across safe-area insets, the 2-row teacher header,
   // and orientation changes.
   const [chatHeight, setChatHeight] = useState('100dvh');
-  const measuredRef = useRef(false);
   useEffect(() => {
     const measure = () => {
       const header = document.querySelector('[data-dashboard-header]') as HTMLElement | null;
       const h = header?.offsetHeight ?? 0;
       setChatHeight(h > 0 ? `calc(100dvh - ${h}px)` : '100dvh');
-      if (h > 0) measuredRef.current = true;
     };
     measure();
     window.addEventListener('resize', measure);
