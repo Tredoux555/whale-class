@@ -38,7 +38,11 @@
 // stuck on the v9 shell were still running the OLD vault uploader that rejects
 // anything over 30MB — which is exactly why "I still can't upload from iPhone".
 // v10 purges the stale shell on next app open so the chunked uploader loads.
-const CACHE_NAME = 'montree-v10';
+// Bumped to v11 (Jul 3, 2026) — REBRAND: gold damascus M replaces the teal
+// sprout across every icon (/montree-icons/*, favicon, apple-touch). The SW
+// serves /montree-icons/ cache-first, so without this bump existing installs
+// keep the old sprout forever. v11 purges the icon cache on next app open.
+const CACHE_NAME = 'montree-v11';
 const OFFLINE_URL = '/montree/offline';
 
 // Only cache immutable assets — static files that change with build hashes.
