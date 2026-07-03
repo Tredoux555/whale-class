@@ -17,7 +17,6 @@ import {
   CalendarDays,
   Mic,
   FileText,
-  Gamepad2,
   Globe,
   Target,
   Images,
@@ -49,7 +48,7 @@ export const MENU_REGISTRY: Record<MenuItemId, MenuItemDef> = {
   calendar: { id: 'calendar', labelKey: 'nav.calendar', label: 'Calendar', route: '/montree/calendar', icon: Calendar },
   meeting_notes: { id: 'meeting_notes', labelKey: null, label: 'Meeting Notes', route: '/montree/dashboard/conversations', icon: Mic },
   notes: { id: 'notes', labelKey: 'nav.notes', label: 'Notes', route: '/montree/dashboard/notes', icon: FileText },
-  games: { id: 'games', labelKey: 'settings.games', label: 'Games', route: '/montree/dashboard/games', icon: Gamepad2 },
+  // 'games' removed Jul 3 2026 — feature retired from all teacher-facing nav.
   english_corner: { id: 'english_corner', labelKey: 'dashboard.englishCorner', label: 'English Corner', route: '/montree/dashboard/language-tracker', icon: Globe },
   focus_list: { id: 'focus_list', labelKey: 'dashboard.focusList', label: 'Focus List', route: '/montree/dashboard/focus', icon: Target },
   weekly_plan: { id: 'weekly_plan', labelKey: 'dashboard.weeklyPlan', label: 'Weekly Plan', route: '/montree/dashboard/weekly-admin-docs', icon: CalendarDays },

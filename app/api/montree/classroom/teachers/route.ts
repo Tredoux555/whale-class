@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
+import { MINIMAL_DEFAULT_MENU } from '@/lib/montree/menu/config';
 
 // GET /api/montree/classroom/teachers?classroom_id=UUID
 // Returns all teachers for the given classroom
@@ -113,6 +114,8 @@ export async function POST(request: NextRequest) {
         password_hash: legacySha256(loginCode),
         role: 'teacher',
         is_active: true,
+        // Seed the minimal default menu — Jul 3 2026 menu cleanup.
+        settings: { menu: MINIMAL_DEFAULT_MENU },
       })
       .select('id, name, login_code, role, created_at')
       .maybeSingle();
@@ -134,6 +137,7 @@ export async function POST(request: NextRequest) {
             password_hash: legacySha256(retryCode),
             role: 'teacher',
             is_active: true,
+            settings: { menu: MINIMAL_DEFAULT_MENU },
           })
           .select('id, name, login_code, role, created_at')
           .maybeSingle();

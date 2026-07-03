@@ -34,14 +34,7 @@ export default function ToolsPage() {
       gradient: 'from-blue-500 to-indigo-600',
       hoverGradient: 'hover:from-blue-600 hover:to-indigo-700',
     },
-    {
-      href: '/montree/dashboard/games',
-      icon: '🎮',
-      titleKey: 'teacherTools.englishGames' as TranslationKey,
-      descKey: 'teacherTools.englishGamesDesc' as TranslationKey,
-      gradient: 'from-cyan-500 to-blue-600',
-      hoverGradient: 'hover:from-cyan-600 hover:to-blue-700',
-    },
+    // Games card REMOVED Jul 3 2026 — feature retired from teacher-facing nav.
     {
       href: '/admin/curriculum-editor',
       icon: '📚',

@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { legacySha256 } from '@/lib/montree/password';
+import { MINIMAL_DEFAULT_MENU } from '@/lib/montree/menu/config';
 
 function generateLoginCode(): string {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -90,6 +91,9 @@ export async function POST(request: NextRequest) {
         login_code: loginCode.toUpperCase(),
         role: 'teacher',
         is_active: true,
+        // Seed the minimal default menu (Wrap Up / Parent Manager / Notes /
+        // Guru / Manage Students) — Jul 3 2026 menu cleanup.
+        settings: { menu: MINIMAL_DEFAULT_MENU },
       })
       .select()
       .single();

@@ -10,7 +10,7 @@ import {
   FileText, Target, Search, Sparkles, BookOpen,
   LayoutGrid, CalendarDays, Images, FolderOpen, TrendingUp,
   Users, BookMarked, Globe, BarChart2, Settings2, LogOut, UserPlus,
-  MessageSquare, KeyRound, Calendar, Gamepad2,
+  MessageSquare, KeyRound, Calendar,
 } from 'lucide-react';
 import { getSession, clearSession, isHomeschoolParent, type MontreeSession } from '@/lib/montree/auth';
 import { HOME_THEME } from '@/lib/montree/home-theme';
@@ -738,26 +738,22 @@ function DashboardHeader() {
                     onClick={() => { setShowMoreMenu(false); router.push('/montree/dashboard/parent-codes'); }}
                   />
 
-                  {/* Meeting Notes — Session 114: voice-record parent meetings,
-                      summary saved, audio never persisted. Tier-gated server-side. */}
+                  {/* Meeting Notes — HIDDEN Jul 3 2026 per Tredoux menu cleanup.
+                      Route stays on disk (hide-don't-delete rule #56); the item
+                      remains in MENU_REGISTRY so teachers can re-enable it via
+                      Menu Management. To restore here: uncomment.
                   <MenuRow
                     icon={Mic}
                     label="Meeting Notes"
                     active={activePage === 'conversations'}
                     onClick={() => { setShowMoreMenu(false); router.push('/montree/dashboard/conversations'); }}
                   />
+                  */}
 
-                  {/* Games — curriculum games hub. Previously only reachable
-                      via Settings → Quick Access / Teacher Tools; surfaced
-                      here (Tier 1, 2026-06-12) so teachers can reach it in
-                      one tap. Reuses the existing `settings.games` key
-                      (present in all 12 locales) — no i18n backfill needed. */}
-                  <MenuRow
-                    icon={Gamepad2}
-                    label={t('settings.games') || 'Games'}
-                    active={activePage === 'games'}
-                    onClick={() => { setShowMoreMenu(false); router.push('/montree/dashboard/games'); }}
-                  />
+                  {/* Games — REMOVED Jul 3 2026 per Tredoux: "makes the app
+                      look amateur — off the table completely". Also removed
+                      from MENU_REGISTRY, Settings quick-access, and Tools.
+                      Routes stay on disk (hide-don't-delete). */}
 
                   {/* Appointments — HIDDEN Session 129 follow-up per user
                       consolidation request: "the two should be consolidated
