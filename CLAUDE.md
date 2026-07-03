@@ -55,6 +55,24 @@ Montree coupling + personal data; don't re-introduce it by editing the Montree c
 
 ---
 
+## 🎯 SESSION — Jul 3, 2026 (Cowork, pt 2) — REBRAND: GOLD DAMASCUS M — SHIPPED + LIVE-VERIFIED
+
+**The official Montree logo is now the gold damascus serif "M" on deep forest green
+(`#03261D`). The teal sprout is RETIRED everywhere.** Full detail:
+`docs/handoffs/SESSION_REBRAND_GOLD_M_JUL3.md`. Commits `c4106137` (47 files: master
+`public/Montree Logo - M.png` 2048², all favicons/PWA/apple-touch/SVG-wrapper/native
+icons, `MonteeLogo.tsx` rewritten — same API, renders `public/brand/m-tile.png` /
+`m-mark.png`, 58 usages across 25+ screens updated with zero call-site changes,
+marketing images, `docs/marketing/social-pack/` + `~/Desktop/Montree Social Media
+Pack/` + `~/Desktop/Montree Douyin Avatar.png`) + `de54fd07` (**SW cache bump v10→v11**
+— montree-sw serves `/montree-icons/` cache-first; without the bump installed PWAs
+keep the sprout forever; Tredoux caught it live on his phone). Live-verified:
+`montree.xyz/montree-icons/icon-192.png` serves the M. ⚠️ Gotchas recorded: Turbopack
+requires ICO-embedded PNGs in RGBA (PIL default RGB broke `next build`); iPhone
+home-screen icons never refresh — remove + re-add. `MONTREE_BRAND_PALETTE.md` updated
++ now tracked. Open: Douyin avatar upload (file on Desktop); optional wordmark lockup;
+optional manifest screenshot regen.
+
 ## 🎯 SESSION — Jul 3, 2026 (Cowork) — CHINA OUTREACH CODE SYSTEM — SHIPPED + VERIFIED LIVE
 
 **2 commits on main (`363f6c6d`, `967fc9f3`), Railway deployed, migrations 279 + 279b RUN by
@@ -8164,9 +8182,14 @@ CSS approach: `<style jsx global>` block with custom class names (`.m-nav`, `.m-
 
 **"The magic of Montree" is confirmed as the brand tagline.** Use everywhere.
 
-**B. Sprout logo — `components/montree/MonteeLogo.tsx`:**
+**B. Logo — `components/montree/MonteeLogo.tsx`:**
 
-SVG sprout component: asymmetric two leaves on a stem inside a rounded square gradient background (`#34d399 → #14b8a6`). Props: `size` (default 32), `showBackground` (default true), `className`. Used in nav and footer of landing page.
+> ⚠️ **REBRANDED Jul 3 2026** — the sprout below is HISTORICAL. The component now renders
+> the gold damascus serif "M" on deep forest green (`public/brand/m-tile.png` /
+> `m-mark.png`), same props (`size`, `showBackground`, `className`). See
+> `docs/handoffs/SESSION_REBRAND_GOLD_M_JUL3.md` + `MONTREE_BRAND_PALETTE.md`.
+
+Original (retired) SVG sprout component: asymmetric two leaves on a stem inside a rounded square gradient background (`#34d399 → #14b8a6`). Props: `size` (default 32), `showBackground` (default true), `className`. Used in nav and footer of landing page.
 
 ```tsx
 export default function MontreeLogo({ size = 32, showBackground = true, className = '' }) {
