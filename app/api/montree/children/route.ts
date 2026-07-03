@@ -41,6 +41,18 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Classroom not found' }, { status: 404 });
     }
 
+    // SECURITY: Cross-pollination guard — the classroom MUST belong to the
+    // authenticated school. Without this, a stale client session (or malicious
+    // caller) can insert children into another school's classroom.
+    // Incident: Jul 1 2026 — "Marina" written into Whale Class from a
+    // freshly-created account whose browser still held the old classroomId.
+    if (classroom.school_id !== auth.schoolId) {
+      console.error('[SECURITY] Cross-school child insert blocked:', {
+        classroomId, classroomSchool: classroom.school_id, authSchool: auth.schoolId, userId: auth.userId,
+      });
+      return NextResponse.json({ error: 'Classroom does not belong to your school' }, { status: 403 });
+    }
+
     // Create the child (note: school_id column doesn't exist in table - use classroom_id only)
     // Age must be integer (database constraint)
     const { data: child, error: childError } = await supabase

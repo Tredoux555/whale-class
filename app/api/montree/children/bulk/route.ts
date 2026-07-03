@@ -259,6 +259,21 @@ export async function POST(request: NextRequest) {
     }
     const schoolId = classroomData.school_id;
 
+    // SECURITY: Cross-pollination guard — the classroom MUST belong to the
+    // authenticated school. Deriving schoolId from a client-supplied classroom
+    // without this check lets a stale session (or malicious caller) bulk-insert
+    // children into another school's classroom. Same class of bug as the
+    // Jul 1 2026 "Marina in Whale Class" incident on the single-add route.
+    if (schoolId !== auth.schoolId) {
+      console.error('[SECURITY] Cross-school bulk import blocked:', {
+        classroomId, classroomSchool: schoolId, authSchool: auth.schoolId, userId: auth.userId,
+      });
+      return NextResponse.json(
+        { success: false, created: 0, errors: ['Classroom does not belong to your school'], children: [] },
+        { status: 403 }
+      );
+    }
+
     // Fetch curriculum data (non-fatal: students can still be created without progress)
     let areaMap: Record<string, string> = {};
     let works: Array<{ id: string; work_key: string; name: string; name_chinese: string | null; area_id: string; sequence: number }> = [];

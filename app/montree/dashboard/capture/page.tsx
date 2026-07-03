@@ -326,7 +326,16 @@ function CaptureContent() {
       });
     } catch (err) {
       console.error('Failed to enqueue photo:', err);
-      toast.error(t('offline.queueFull') || 'Photo queue full', { duration: 5000 });
+      // DIAGNOSABILITY: only show "queue full" when the queue is actually full.
+      // This catch used to blanket-label EVERY enqueue failure (IndexedDB
+      // unavailable, storage quota, private browsing...) as "Photo queue full",
+      // which sent debugging in the wrong direction. Surface the real error.
+      const msg = err instanceof Error ? err.message : String(err);
+      if (/queue is full/i.test(msg)) {
+        toast.error(t('offline.queueFull') || 'Photo queue full', { duration: 5000 });
+      } else {
+        toast.error(`Photo could not be saved: ${msg}`, { duration: 8000 });
+      }
       return;
     }
 
