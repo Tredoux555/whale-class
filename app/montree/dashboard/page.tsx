@@ -165,7 +165,7 @@ export default function DashboardPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { t } = useI18n();
-  const { isEnabled, loading: featuresLoading } = useFeatures();
+  const { isEnabled } = useFeatures();
   const [session, setSession] = useState<MontreeSession | null>(() => {
     if (typeof window === 'undefined') return null;
     return getSession();
@@ -416,47 +416,25 @@ export default function DashboardPage() {
     }
   }, [session?.classroom?.id]);
 
-  // Pending-children probe — runs once per session+classroom. Replaces the
-  // old auto-redirect. We only count; we don't navigate.
+  // ── Onboarding choice is a ONE-TIME, in-session moment (Jul 3 2026) ──
+  // The old mount-time probe hit /onboarding/voice/status on EVERY login and
+  // hijacked the dashboard with the "How would you like to get started?"
+  // takeover whenever any child lacked a mental profile — so a teacher who
+  // added one student saw the get-started face on every single return visit
+  // (the localStorage skip flag is per-browser, so it never stuck across
+  // Safari/PWA silos). Tredoux: "I created one student. It should be enough
+  // to signal for the app to go directly into the class default face."
   //
-  // 🚨 Perf (PERF_PASS_JUN13.md Finding 1): this probe used to wait for the
-  // children fetch to resolve (`if (loading) return`), and the render guard
-  // below then held the skeleton until the probe came back — a THIRD
-  // serialized origin round trip on every cold load (~1–2.5s of avoidable
-  // skeleton from Asia). It now fires as soon as the feature flag is known
-  // (concurrent with the children fetch — the flag resolves synchronously
-  // from sessionStorage on warm loads), and the skeleton no longer waits on
-  // it: the dashboard renders when children arrive and the full-screen
-  // onboarding-choice takeover simply takes over if/when the probe returns
-  // pending > 0. The old `children.length === 0` short-circuit is preserved
-  // server-side — /onboarding/voice/status returns pending: [] for an empty
-  // classroom.
-  useEffect(() => {
-    if (!session || isParent) return;
-    if (featuresLoading) return; // flag unknown — fail-closed isEnabled would lie
-    if (!isEnabled('tell_guru_onboarding')) { setPendingOnboardingCount(0); return; }
-    if (searchParams.get('skipOnboarding') === '1') { setPendingOnboardingCount(0); return; }
+  // New contract: the takeover appears ONLY in the same session, immediately
+  // after students are imported/created (the onImported callback below bumps
+  // pendingOnboardingCount). A returning login ALWAYS lands on the class
+  // dashboard. Voice onboarding stays reachable per-child via TellGuruCard on
+  // the child page, and the orchestrator at /montree/dashboard/voice-onboarding
+  // still works by direct navigation.
 
-    const ctrl = new AbortController();
-    fetch('/api/montree/onboarding/voice/status', { signal: ctrl.signal })
-      .then(r => r.ok ? r.json() : null)
-      .then(data => {
-        if (!data?.success) { setPendingOnboardingCount(0); return; }
-        const pending: Array<{ id: string }> = data.pending || [];
-        setPendingOnboardingCount(pending.length);
-      })
-      .catch(err => {
-        if (err?.name !== 'AbortError') {
-          console.error('[Dashboard] Voice onboarding status check failed:', err);
-        }
-        setPendingOnboardingCount(0);
-      });
-    return () => ctrl.abort();
-  }, [session, isParent, featuresLoading, isEnabled, searchParams]);
-
-  // Should we show the choice screen? Only when there are real pending
-  // children, the teacher hasn't already chosen the photo path for this
-  // classroom, and this is a teacher (not a parent).
+  // Should we show the choice screen? Only right after an in-session import,
+  // when the teacher hasn't already chosen the photo path, and this is a
+  // teacher (not a parent).
   const showOnboardingChoice =
     !isParent &&
     !loading &&
