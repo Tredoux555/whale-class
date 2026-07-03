@@ -98,6 +98,15 @@ prod via the pooler + global moat already SEEDED (235 rows) — nothing pending 
   pair = Set + counterpart map (both directions) + seed-script negatives + re-run seed · the 20KB
   Pass 2 budget is SHARED (classroom first, global fills remainder — never additive) · keep both
   cache breakpoints.
+- **🔒 PRIVACY CONTRACT (Tredoux raised "are schools sharing my data?" — these must stay TRUE,
+  full FAQ in handoff §5b):** the global table holds ONLY generic descriptions of standard
+  Montessori MATERIALS (no photos / child names / notes / classroom names — pre-seed audit found
+  zero name hits, photo URLs deliberately not copied); it's Whale Class's own data curated once;
+  NO school can write to it at runtime (no poison vector — bad confirmations elsewhere stay in
+  that school's private moat); Whale Class itself injects 0 global entries (own moat fills the
+  budget — verified live); kill switch = `UPDATE montree_global_visual_memory SET is_active=false;`
+  → graceful degradation to pre-Jul-3 behavior. Any change that breaks one of these answers needs
+  an explicit design review, not a drive-by edit.
 
 ---
 
