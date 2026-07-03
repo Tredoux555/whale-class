@@ -94,3 +94,14 @@ phonics-images/
 phonics-images.zip
 _ARCHIVE/
 _video_assets/
+
+# Cold-start harness — esbuild bundle + scratch (regenerated per run; keep
+# retest-cold-start.mjs, pipeline-entry.ts, and the append_*.mjs authoring
+# utilities tracked, ignore everything else in _harness).
+scripts/_harness/pipeline.bundle.mjs
+scripts/_harness/_*
+scripts/_harness/probe.mjs
+scripts/_harness/find_ctrl.mjs
+scripts/_harness/find_photos.mjs
+scripts/_harness/verify_seed.mjs
+scripts/_revert_seed.mjs

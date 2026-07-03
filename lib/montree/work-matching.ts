@@ -209,6 +209,16 @@ export const CROSS_AREA_CONFUSION_WORK_NAMES: ReadonlySet<string> = new Set<stri
   'cylinder blocks combined',
   'spindle box',
   'spindle boxes',
+  // Language ↔ Mathematics — single textured characters mounted one-per-board.
+  // Sandpaper Letters (pink/blue boards, alphabet) vs Sandpaper Numerals
+  // (green boards, digits 0-9). Registered with the Canonical Seed (Jul 3 2026):
+  // both are "rough character on a coloured board, finger-traced" and text
+  // descriptions converge; only the board colour + character type (letter vs
+  // digit) disambiguates, so Pass 2b image re-examination is forced.
+  // ('sandpaper numbers' is a common Haiku alias for 'Sandpaper Numerals'.)
+  'sandpaper letters',
+  'sandpaper numerals',
+  'sandpaper numbers',
 ]);
 
 /**
@@ -238,6 +248,13 @@ export const CROSS_AREA_CONFUSION_COUNTERPARTS: Readonly<Record<string, readonly
   'cylinder block 4': ['spindle boxes'],
   'cylinder blocks': ['spindle boxes'],
   'cylinder blocks combined': ['spindle boxes'],
+  // Sandpaper Letters (language) ↔ Sandpaper Numerals (mathematics). Counterpart
+  // VALUES must match a global work_name exactly ('Sandpaper Numerals' /
+  // 'Sandpaper Letters' lowercased); the 'sandpaper numbers' KEY is a Haiku alias
+  // that points at the canonical 'sandpaper letters' counterpart.
+  'sandpaper letters': ['sandpaper numerals'],
+  'sandpaper numerals': ['sandpaper letters'],
+  'sandpaper numbers': ['sandpaper letters'],
 };
 
 /** Returns true if either the raw Haiku name OR the matcher's resolved name appears in the cross-area confusion list. */

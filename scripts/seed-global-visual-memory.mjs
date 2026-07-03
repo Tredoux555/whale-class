@@ -3,24 +3,36 @@
 // Seeds montree_global_visual_memory (migration 281) — the read-only global
 // baseline moat ("master brain" v1) that kills photo-ID cold starts.
 //
-// Sources, in order:
-//   1. WHALE SEED — Whale Class's teacher-validated STANDARD-work entries
-//      (source IN teacher_setup/correction, confidence >= 0.80, real standard
-//      work_key). Descriptions are scrubbed (roster names removed defensively,
-//      whitespace normalized, capped at a fingerprint/sentence boundary).
-//      Classroom photo URLs / media ids are deliberately NOT copied —
-//      provenance is recorded via source_classroom_id only.
-//   2. CURATED — hand-authored canonical entries for confusion-critical
-//      standard works Whale doesn't cover, plus curated negative_descriptions
-//      (discriminators) merged onto the confusion-pair works.
+// Sources & PRECEDENCE (Canonical Seed, Jul 3 2026 — the precedence FLIP):
+//   1. CURATED (authoritative for standard works) — Opus-authored, spec-grounded
+//      discriminative checklists in scripts/data/curated-visual-memory/*.json.
+//      For any work_key present in the curated files, the curated
+//      visual_description REPLACES Whale's (Whale's classroom-biased text carried
+//      no discriminative "NOT its look-alike" signal, which was the whole
+//      cold-start defect). Whale's own negative_descriptions for that key ARE
+//      merged in AFTER the curated ones (dedupe by 60-char prefix). source='curated'.
+//   2. WHALE SEED (fallback for NOT-YET-CURATED works) — Whale Class's
+//      teacher-validated STANDARD-work entries (source IN teacher_setup/correction,
+//      confidence >= 0.80, real standard work_key). Descriptions scrubbed (roster
+//      names removed defensively, whitespace normalized, capped at a
+//      fingerprint/sentence boundary). Photo URLs / media ids deliberately NOT
+//      copied — provenance recorded via source_classroom_id only. source='whale_seed'.
+//
+// Curated data is VALIDATED before any write (scripts/validate-curated-visual-memory.mjs):
+// unknown work_keys, over-long descriptions, name/area mismatch, roster-name
+// hits, duplicate keys, and non-mutual negatives all HARD-FAIL the seed.
+//
+// Per-area curated confidence (drives Pass 2 prompt-packing order — higher
+// confidence packs first, so 0.95 curated naturally outranks capped-0.95 Whale):
+//   practical_life = 0.85 (PL works vary per classroom; authored around functional
+//                          signature, not exact materials)
+//   everything else = 0.95
 //
 // Idempotent: upserts ON CONFLICT (work_key). Re-run any time.
-// Curated negatives are deduped by 60-char prefix (same rule as
-// appendNegativeExample in corrections/route.ts).
 //
 // Usage:
-//   node scripts/seed-global-visual-memory.mjs            # seed
-//   node scripts/seed-global-visual-memory.mjs --dry-run  # report only
+//   node scripts/seed-global-visual-memory.mjs            # validate + seed
+//   node scripts/seed-global-visual-memory.mjs --dry-run  # validate + report only
 //
 // 🚨 v1 CONTRACT: this script is the ONLY writer of the global table.
 // No runtime code path writes to it. See migration 281 header.
@@ -29,6 +41,7 @@ import { Client } from 'pg';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { validateCuratedData } from './validate-curated-visual-memory.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const REPO = path.join(__dirname, '..');
@@ -48,6 +61,11 @@ const ROSTER_RE = new RegExp(`\\b(${ROSTER.join('|')})(?:'s)?\\b`, 'gi');
 
 const DESC_CAP = 900; // seed-side cap; the context loader caps again at prompt time
 const FINGERPRINT_SEP = ' || ';
+
+// Per-area confidence for curated rows (see header).
+function confidenceForArea(area) {
+  return area === 'practical_life' ? 0.85 : 0.95;
+}
 
 // ---------------------------------------------------------------------------
 // Canonical work_key → { name, area } from the static curriculum JSONs
@@ -92,9 +110,11 @@ function scrub(text) {
 }
 
 // Merge negatives with 60-char-prefix dedupe (mirrors appendNegativeExample).
+// `existing` is kept first — curated negatives lead, Whale negatives append.
 function mergeNegatives(existing, additions) {
   const out = Array.isArray(existing) ? existing.filter((n) => typeof n === 'string') : [];
   for (const add of additions) {
+    if (typeof add !== 'string' || !add) continue;
     const prefix = add.slice(0, 60).toLowerCase();
     if (!out.some((n) => n.slice(0, 60).toLowerCase() === prefix)) out.push(add);
   }
@@ -102,134 +122,35 @@ function mergeNegatives(existing, additions) {
 }
 
 // ---------------------------------------------------------------------------
-// Curated discriminator negatives, keyed by work_key. Merged onto BOTH the
-// Whale-seeded rows and the curated rows. These mirror (and extend) the
-// CROSS_AREA_CONFUSION pairs in lib/montree/work-matching.ts — when a new
-// pair is registered there, add its discriminators here too.
-// ---------------------------------------------------------------------------
-const NEG_SPINDLE_VS_CYLINDER =
-  'NOT Spindle Boxes: Spindle Boxes show printed numerals 0-9 above open compartments holding BUNDLES of thin identical sticks; Cylinder Blocks are a solid wooden block where each round socket holds a single KNOBBED cylinder of graduated size.';
-const NEG_CYLINDER_VS_SPINDLE =
-  'NOT Cylinder Blocks: if the material is a SOLID wooden block/board with round recessed sockets where each socket holds ONE cylinder with a small KNOB (no printed numerals, no loose stick bundles), it is a Cylinder Block (Sensorial). Spindle Boxes always show printed numerals 0-9 and many thin identical loose spindles.';
-
-const CURATED_NEGATIVES = {
-  ma_spindle_box: [NEG_CYLINDER_VS_SPINDLE],
-  se_cylinder_block_1: [NEG_SPINDLE_VS_CYLINDER],
-  se_cylinder_block_2: [NEG_SPINDLE_VS_CYLINDER],
-  se_cylinder_block_3: [NEG_SPINDLE_VS_CYLINDER],
-  se_cylinder_block_4: [NEG_SPINDLE_VS_CYLINDER],
-  se_cylinder_blocks_combined: [NEG_SPINDLE_VS_CYLINDER],
-  se_red_rods: [
-    'NOT Number Rods: Number Rods alternate RED AND BLUE painted segments; Red Rods are entirely red with no blue.',
-  ],
-  ma_number_rods: [
-    'NOT Red Rods: Red Rods are ALL red with no blue segments; Number Rods alternate red and blue segments.',
-  ],
-  la_metal_insets: [
-    'NOT Geometric Cabinet: the Geometric Cabinet is a WIDE cabinet of pull-out drawers with several flat shape insets per drawer; Metal Insets are individual square frames (one shape each) held in a vertical rack, used with colored pencils for tracing.',
-  ],
-  se_geometric_cabinet: [
-    'NOT Metal Insets: Metal Insets are square frames with one shape each in a vertical rack, used with pencils for tracing; the Geometric Cabinet is a wide multi-drawer cabinet of flat shape insets.',
-  ],
-  se_color_box_3: [
-    'NOT Fabric Matching: color tablets are rigid painted wood/plastic matched by LOOKING; fabric swatches are soft foldable cloth matched by TOUCH.',
-  ],
-  se_fabric_matching: [
-    'NOT Color Box: Color Box pieces are rigid painted tablets matched visually; Fabric Matching uses soft cloth swatches matched by texture, often with eyes closed.',
-  ],
-  la_sandpaper_letters: [
-    'NOT Moveable Alphabet: Moveable Alphabet letters are many LOOSE cut-out letters arranged on a mat to build words; Sandpaper Letters are single textured letters mounted one-per-board on pink or blue boards for finger tracing.',
-    'NOT Sandpaper Numbers: Sandpaper Numbers show DIGITS 0-9 on GREEN boards; Sandpaper Letters show alphabet characters on pink (vowel) or blue (consonant) boards.',
-  ],
-  la_moveable_alphabet: [
-    'NOT Sandpaper Letters: Sandpaper Letters are single rough letters fixed on pink/blue boards and traced with fingers; the Moveable Alphabet is a compartmented box of many loose smooth letters used to BUILD words on a mat.',
-  ],
-};
-
-// ---------------------------------------------------------------------------
-// Curated canonical entries for confusion-critical standard works that
-// Whale's moat does not cover with teacher-validated entries.
-// ---------------------------------------------------------------------------
-const CURATED_ENTRIES = [
-  {
-    work_key: 'se_knobless_cylinders',
-    visual_description:
-      'Four flat wooden boxes with colored lids (yellow, green, red, blue), each holding ten smooth cylinders of a single bright color with NO knobs. The cylinders stand free on the table or mat — they do not sit in holes in a block. Children grade them by size, build towers, or match them alongside the knobbed cylinder blocks.',
-    key_materials: ['four colored-lid wooden boxes', 'ten same-color smooth cylinders per box', 'no knobs', 'no base block — cylinders stand free'],
-    negative_descriptions: [
-      'NOT Cylinder Blocks: Cylinder Blocks are a single natural-wood block with round sockets where each cylinder has a small KNOB and fits into a matching hole; Knobless Cylinders are loose, brightly colored (one color per set), knob-free, and free-standing.',
-    ],
-  },
-  {
-    work_key: 'ma_sandpaper_numerals',
-    visual_description:
-      'Individual numerals 0-9 cut from fine sandpaper, each mounted on its own GREEN-painted rectangular wooden board. The child traces the rough numeral with two fingers. Boards are a uniform size and often stored upright in a wooden box.',
-    key_materials: ['green wooden boards', 'sandpaper numerals 0-9', 'wooden storage box'],
-    negative_descriptions: [
-      'NOT Sandpaper Letters: letters appear on PINK (vowel) or BLUE (consonant) boards and show alphabet characters; Sandpaper Numbers are on GREEN boards and show digits 0-9.',
-    ],
-  },
-  {
-    work_key: 'se_color_box_1',
-    visual_description:
-      'A small wooden box holding six rigid color tablets — three matched pairs of red, yellow, and blue. Each tablet is a hard rectangle with a painted center strip and lighter holding edges. The child pairs identical colors by sight on a table or mat.',
-    key_materials: ['small wooden box', 'six rigid color tablets', 'three primary-color pairs'],
-    negative_descriptions: [
-      'NOT Fabric Matching: color tablets are rigid painted wood/plastic matched by LOOKING; fabric swatches are soft foldable cloth matched by TOUCH.',
-    ],
-  },
-  {
-    work_key: 'se_color_box_2',
-    visual_description:
-      'A wooden box holding twenty-two rigid color tablets — eleven matched pairs spanning primary and secondary colors (red, yellow, blue, orange, green, purple, pink, brown, grey, black, white). The child pairs identical colors, often laying them out in two columns on a mat.',
-    key_materials: ['wooden box', 'twenty-two rigid color tablets', 'eleven color pairs'],
-    negative_descriptions: [
-      'NOT Fabric Matching: color tablets are rigid painted wood/plastic matched by LOOKING; fabric swatches are soft foldable cloth matched by TOUCH.',
-    ],
-  },
-  {
-    work_key: 'ma_golden_beads_intro',
-    visual_description:
-      'Uniformly GOLD-colored beads presented as loose unit beads, ten-bead bars, hundred squares (flat 10×10 bead squares), and thousand cubes (10×10×10 bead blocks), usually arranged on trays or in wooden boxes. Used for decimal-system quantity work — building, exchanging, and combining quantities.',
-    key_materials: ['gold unit beads', 'ten-bars', 'hundred squares', 'thousand cubes', 'wooden trays'],
-    negative_descriptions: [
-      'NOT Short Bead Stair: bead-stair bars are each a DIFFERENT color (1 red, 2 green, 3 pink...); golden bead material is uniformly gold.',
-    ],
-  },
-  {
-    work_key: 'se_sound_boxes',
-    visual_description:
-      'Two wooden boxes each holding six sealed wooden cylinders — one set with red lids, one with blue lids. The child shakes a cylinder beside the ear and pairs it with the matching sound from the other set. The cylinders are opaque with nothing visible inside.',
-    key_materials: ['two wooden boxes', 'six red-lid cylinders', 'six blue-lid cylinders', 'sealed shaker cylinders'],
-    negative_descriptions: [
-      'NOT Spindle Boxes or Cylinder Blocks: sound cylinders are sealed shakers with colored LIDS held to the ear — no knobs, no numbered compartments.',
-      'NOT Smelling Bottles: sound cylinders are shaken next to the ear; smelling bottles are opened and sniffed.',
-    ],
-  },
-  {
-    work_key: 'se_touch_tablets',
-    visual_description:
-      'A wooden box of small rectangular tablets, each surfaced with a different grade of sandpaper roughness. The child feels each tablet with the fingertips (often blindfolded or with eyes closed) and pairs or grades them from roughest to smoothest.',
-    key_materials: ['wooden box', 'small paired sandpaper tablets', 'graded roughness'],
-    negative_descriptions: [
-      'NOT Touch Boards: Touch Boards are larger flat boards with alternating rough/smooth strips; Touch Tablets are small loose paired tablets stored in a box.',
-      'NOT Sandpaper Letters or Numbers: touch tablets have plain sandpaper surfaces with NO letter or numeral shapes.',
-    ],
-  },
-  {
-    work_key: 'ma_cards_counters',
-    visual_description:
-      'Wooden or card numerals 1-10 laid in a row on a mat, with fifty-five small identical red counters (flat discs) placed in pairs beneath each numeral to show its quantity — odd numbers end with a single centered counter. The layout emphasizes odd/even visually.',
-    key_materials: ['numeral cards 1-10', 'fifty-five red disc counters', 'work mat'],
-    negative_descriptions: [
-      'NOT Spindle Boxes: Cards and Counters uses flat numeral cards plus loose red discs arranged on a mat; Spindle Boxes is a wooden box with numbered compartments holding bundles of sticks.',
-    ],
-  },
-];
-
-// ---------------------------------------------------------------------------
 
 async function main() {
+  const canonical = loadCanonicalMap();
+  console.log(`Canonical curriculum map: ${canonical.size} standard works`);
+
+  // ---- 0. Validate curated data — refuse to seed on any failure ----
+  const v = validateCuratedData();
+  if (v.warnings.length) v.warnings.forEach((w) => console.warn('⚠', w));
+  if (!v.ok) {
+    console.error(`\n❌ Curated validation FAILED (${v.errors.length}). Refusing to seed:`);
+    v.errors.forEach((e) => console.error(`  - ${e}`));
+    process.exit(1);
+  }
+  console.log(`Curated data validated: ${v.entries.length} entries`);
+
+  // Build curated map (canonical name/area, scrubbed text, per-area confidence).
+  const curatedByKey = new Map();
+  for (const e of v.entries) {
+    const canon = canonical.get(e.work_key); // validator guaranteed this exists
+    curatedByKey.set(e.work_key, {
+      work_name: canon.name,
+      area: canon.area,
+      visual_description: scrub(e.visual_description),
+      key_materials: Array.isArray(e.key_materials) ? e.key_materials.slice(0, 20) : null,
+      negative_descriptions: (e.negative_descriptions || []).map((n) => scrub(n)).filter(Boolean),
+      confidence: confidenceForArea(canon.area),
+    });
+  }
+
   const client = new Client({
     host: 'aws-1-ap-southeast-1.pooler.supabase.com',
     port: 5432,
@@ -239,9 +160,6 @@ async function main() {
     ssl: { rejectUnauthorized: false },
   });
   await client.connect();
-
-  const canonical = loadCanonicalMap();
-  console.log(`Canonical curriculum map: ${canonical.size} standard works`);
 
   // ---- 1. Whale extraction ----
   const { rows: whaleRows } = await client.query(
@@ -258,9 +176,11 @@ async function main() {
   );
   console.log(`Whale seed candidates: ${whaleRows.length}`);
 
-  const upserts = new Map(); // work_key → row
-
+  // Whale map (work_key → scrubbed fields) — used for non-curated keys AND for
+  // merging Whale's negatives onto curated keys.
+  const whaleByKey = new Map();
   let skippedNonCanonical = 0;
+  let skippedThin = 0;
   for (const r of whaleRows) {
     const canon = canonical.get(r.work_key);
     if (!canon) {
@@ -270,52 +190,66 @@ async function main() {
       continue;
     }
     const desc = scrub(r.visual_description);
-    if (!desc || desc.length < 40) continue; // too thin to be useful
-    upserts.set(r.work_key, {
-      work_key: r.work_key,
+    if (!desc || desc.length < 40) { skippedThin++; continue; } // too thin to be useful
+    whaleByKey.set(r.work_key, {
       work_name: canon.name, // canonical name, NOT Whale's local name
       area: canon.area,
       visual_description: desc,
       key_materials: Array.isArray(r.key_materials) ? r.key_materials.slice(0, 20) : null,
-      negative_descriptions: mergeNegatives(
-        (r.negative_descriptions || []).map((n) => scrub(n)).filter(Boolean),
-        CURATED_NEGATIVES[r.work_key] || [],
-      ),
-      source: 'whale_seed',
-      source_classroom_id: WHALE_CLASSROOM_ID,
-      description_confidence: Math.min(Number(r.description_confidence) || 0.85, 0.95),
+      negative_descriptions: (r.negative_descriptions || []).map((n) => scrub(n)).filter(Boolean),
+      confidence: Math.min(Number(r.description_confidence) || 0.85, 0.95),
     });
   }
-  if (skippedNonCanonical > 0) console.log(`Skipped ${skippedNonCanonical} rows with non-canonical work_keys`);
+  if (skippedNonCanonical > 0) console.log(`Skipped ${skippedNonCanonical} Whale rows with non-canonical work_keys`);
+  if (skippedThin > 0) console.log(`Skipped ${skippedThin} Whale rows with too-thin descriptions`);
 
-  // ---- 2. Curated entries (fill gaps only — Whale's real-classroom entries win) ----
-  let curatedAdded = 0;
-  for (const e of CURATED_ENTRIES) {
-    if (upserts.has(e.work_key)) continue;
-    const canon = canonical.get(e.work_key);
-    if (!canon) {
-      console.warn(`⚠ curated entry ${e.work_key} not in static curriculum — skipped`);
-      continue;
-    }
-    upserts.set(e.work_key, {
-      work_key: e.work_key,
-      work_name: canon.name,
-      area: canon.area,
-      visual_description: e.visual_description,
-      key_materials: e.key_materials,
-      negative_descriptions: e.negative_descriptions,
+  // ---- 2. Assemble upserts — CURATED is authoritative (the precedence flip) ----
+  const upserts = new Map(); // work_key → row
+
+  // 2a. Curated keys: curated visual_description REPLACES Whale; Whale negatives
+  //     merged in AFTER the curated negatives (curated discriminators lead).
+  for (const [k, c] of curatedByKey) {
+    const whale = whaleByKey.get(k);
+    upserts.set(k, {
+      work_key: k,
+      work_name: c.work_name,
+      area: c.area,
+      visual_description: c.visual_description,
+      key_materials: c.key_materials,
+      negative_descriptions: mergeNegatives(c.negative_descriptions, whale?.negative_descriptions || []),
       source: 'curated',
       source_classroom_id: null,
-      description_confidence: 0.9,
+      description_confidence: c.confidence,
     });
-    curatedAdded++;
   }
-  console.log(`Curated gap-fill entries: ${curatedAdded}`);
+
+  // 2b. Whale keys NOT curated: stand as-is (fallback).
+  let whaleKept = 0;
+  for (const [k, w] of whaleByKey) {
+    if (upserts.has(k)) continue; // curated wins
+    upserts.set(k, {
+      work_key: k,
+      work_name: w.work_name,
+      area: w.area,
+      visual_description: w.visual_description,
+      key_materials: w.key_materials,
+      negative_descriptions: w.negative_descriptions,
+      source: 'whale_seed',
+      source_classroom_id: WHALE_CLASSROOM_ID,
+      description_confidence: w.confidence,
+    });
+    whaleKept++;
+  }
+
+  const curatedCount = curatedByKey.size;
+  const whaleOverwritten = [...curatedByKey.keys()].filter((k) => whaleByKey.has(k)).length;
+  console.log(`Curated rows: ${curatedCount} (${whaleOverwritten} overwrite a prior Whale entry)`);
+  console.log(`Whale fallback rows: ${whaleKept}`);
   console.log(`Total upserts: ${upserts.size}`);
 
   if (DRY_RUN) {
-    for (const [k, v] of upserts) {
-      console.log(`- ${k} (${v.source}, conf ${v.description_confidence}, negs ${v.negative_descriptions?.length || 0}) "${v.work_name}"`);
+    for (const [k, val] of upserts) {
+      console.log(`- ${k} (${val.source}, conf ${val.description_confidence}, negs ${val.negative_descriptions?.length || 0}) "${val.work_name}"`);
     }
     await client.end();
     console.log('DRY RUN — nothing written.');
@@ -365,15 +299,20 @@ async function main() {
   const { rows: [{ count }] } = await client.query(
     'SELECT count(*) FROM montree_global_visual_memory WHERE is_active',
   );
+  const { rows: bySource } = await client.query(
+    'SELECT source, count(*)::int FROM montree_global_visual_memory GROUP BY source ORDER BY source',
+  );
   console.log(`✅ Wrote ${written} rows. Active global entries: ${count}`);
+  console.log(`   by source: ${JSON.stringify(bySource)}`);
 
   // Post-check: the confusion cluster that triggered this build
   const { rows: check } = await client.query(
-    `SELECT work_key, work_name, array_length(negative_descriptions, 1) AS negs
+    `SELECT work_key, work_name, source, description_confidence AS conf,
+            array_length(negative_descriptions, 1) AS negs
      FROM montree_global_visual_memory
      WHERE work_key IN ('ma_spindle_box','se_cylinder_block_1','se_knobless_cylinders')`,
   );
-  check.forEach((r) => console.log(`   check: ${r.work_key} → "${r.work_name}" (negs: ${r.negs})`));
+  check.forEach((r) => console.log(`   check: ${r.work_key} → "${r.work_name}" (${r.source}, conf ${r.conf}, negs: ${r.negs})`));
 
   await client.end();
 }
