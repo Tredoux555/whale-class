@@ -2,6 +2,8 @@
 
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { getSession } from '@/lib/montree/auth';
 import { useI18n } from '@/lib/montree/i18n';
 import LanguageToggle from '@/components/montree/LanguageToggle';
 import MontreeLogo from '@/components/montree/MonteeLogo';
@@ -39,7 +41,65 @@ type SplashVideoLocale = keyof typeof SPLASH_VIDEOS;
 
 export default function MontreeLanding() {
   const { t } = useI18n();
+  const router = useRouter();
   const revealRefs = useRef<HTMLElement[]>([]);
+
+  // ── PWA app-mode launch (Jul 3 2026, Tredoux) ──
+  // When Montree is opened FROM THE HOME SCREEN (standalone display mode),
+  // it must act like an app: a signed-in user goes straight to their school,
+  // never the marketing splash. The manifest start_url is /montree and iOS
+  // bakes it in at install time, so this redirect is the fix that also works
+  // for already-installed icons. Regular browser visits are unaffected.
+  useEffect(() => {
+    const standalone =
+      window.matchMedia?.('(display-mode: standalone)').matches ||
+      (navigator as unknown as { standalone?: boolean }).standalone === true;
+    if (!standalone) return;
+
+    let cancelled = false;
+
+    // 1. Teacher / homeschool session in localStorage — instant, no network.
+    const sess = getSession();
+    if (sess?.school?.id) {
+      router.replace('/montree/dashboard');
+      return;
+    }
+
+    // 2. Principal session (cockpit stores its own localStorage keys).
+    try {
+      if (localStorage.getItem('montree_principal')) {
+        router.replace('/montree/admin');
+        return;
+      }
+    } catch { /* storage unavailable — fall through */ }
+
+    // 3. Cookie-only sessions (localStorage wiped on PWA relaunch is a known
+    //    iOS behaviour): ask the server. Teacher + principal via auth/me,
+    //    then parent via the parent session check. Stay on splash if none.
+    (async () => {
+      try {
+        const r = await fetch('/api/montree/auth/me', { credentials: 'include' });
+        if (r.ok) {
+          const d = await r.json();
+          if (!cancelled && d?.authenticated) {
+            router.replace(d.role === 'principal' ? '/montree/admin' : '/montree/dashboard');
+            return;
+          }
+        }
+      } catch { /* offline / no session — stay */ }
+      try {
+        const p = await fetch('/api/montree/parent/auth/access-code', { credentials: 'include' });
+        if (p.ok) {
+          const d = await p.json();
+          if (!cancelled && (d?.authenticated || d?.valid)) {
+            router.replace('/montree/parent/dashboard');
+          }
+        }
+      } catch { /* stay on splash */ }
+    })();
+
+    return () => { cancelled = true; };
+  }, [router]);
 
   // Video-only locale state. Defaults to EN on every fresh page load.
   // Not persisted — keep it simple; toggle is a stateless visual switch.
