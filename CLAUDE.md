@@ -111,6 +111,36 @@ the newly-seeded **Bright Stars / Sarah** test account.
 
 ---
 
+## 🔬 QUEUED FOR FABLE (Jul 3, 2026) — PHOTO-ID EFFICIENCY REVIEW + "MASTER BRAIN" (cross-school shared moat)
+
+**Handoff: `docs/handoffs/SESSION_PHOTO_ID_COLDSTART_AUDIT_JUL3.md`.** Read-only audit — NO code changed.
+
+- **Finding (cold-start misID).** On the new Bright Stars/Sarah account a standard **Cylinder Block**
+  photo showed "Untagged." The pipeline RAN (~5s after capture); Haiku Pass 2 confidently MISmatched it
+  to **"Spindle Boxes" (Mathematics)** at 0.85. It couldn't auto-tag or self-correct because the account
+  has **0 visual-memory** (the per-classroom moat, `montree_visual_memory.classroom_id`, loaded in
+  `context-loader.ts`): auto-match Path 1 needs VM for the matched work (none), Path 2 needs conf ≥0.90
+  (had 0.85), and Pass 2b builds its candidates from VM so it never ran. Cylinder Block ↔ Spindle Box
+  also isn't in `CROSS_AREA_CONFUSION_WORK_NAMES` (`work-matching.ts`). Ground fix: teacher taps
+  ✏️ Wrong → "Cylinder Block 1" → seeds the first VM entry, moat starts learning. The bare "Untagged"
+  with no draft chip in the screenshot is likely a **STALE client** — the DB row is `haiku_drafted` +
+  conf 0.85 and the card SHOULD render "Spindle Boxes · ✓ Correct / ✏️ Wrong" (`photo-audit/page.tsx:3412`);
+  refresh to confirm, else it's a display bug to chase.
+- **🔬 Fable is reviewing the photo-ID function** (`app/api/montree/photo-identification/process/route.ts`
+  + `two-pass.ts` + `context-loader.ts`) for efficiency/improvements. Brief: handoff §🔬 Task A.
+- **🧠 "Master brain" (cross-school shared moat) — theorised, recommend handing architecture to Fable.**
+  FEASIBLE: `montree_visual_memory` rows carry a canonical `work_key` (stable across schools for STANDARD
+  works; custom stays private). Precedent = `montree_guru_brain` id='global' — but that's the CHAT brain,
+  NOT photo-ID; a photo-ID master brain is new infra. Design: a `montree_global_visual_memory` keyed by
+  work_key, populated from teacher-CONFIRMED standard-work IDs across all schools, injected as a FALLBACK
+  when the classroom moat is empty → **no cold starts**. Hard parts (why it's an upper-model job):
+  poison/abuse resistance, cross-tenant privacy (scrub child refs from `visual_description`, standard
+  works only, consent — this repo had a cross-tenant fix THIS session), description robustness, retrieval
+  cost, trust math. Cheap bootstrap: seed the global pool from Whale Class's mature 65+ entries.
+  **Recommendation: Fable designs the architecture (Task B), then Sonnet builds it 3x3x3.**
+
+---
+
 ## 🚨 SESSION — Jul 3, 2026 (Cowork, pt 3) — CROSS-TENANT SECURITY FIX + PHOTO-QUEUE DEATH-SPIRAL + MENU CLEANUP + PWA APP-MODE LAUNCH
 
 **Canonical handoff: `docs/handoffs/SESSION_CROSS_TENANT_QUEUE_MENU_JUL3.md` — READ FIRST.**
