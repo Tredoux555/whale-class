@@ -55,6 +55,58 @@ Montree coupling + personal data; don't re-introduce it by editing the Montree c
 
 ---
 
+## 🚨 SESSION — Jul 3, 2026 (Cowork, pt 3) — CROSS-TENANT SECURITY FIX + PHOTO-QUEUE DEATH-SPIRAL + MENU CLEANUP + PWA APP-MODE LAUNCH
+
+**Canonical handoff: `docs/handoffs/SESSION_CROSS_TENANT_QUEUE_MENU_JUL3.md` — READ FIRST.**
+4 commits on main (`311d3ee5` → `1dd30e7d` → `da770a21` → `0581ee14`), Railway deployed.
+No migrations. Plus 2 prod DB ops via the pooler (stray-child delete + menu seed).
+
+- **🚨 CRITICAL FIXED — cross-tenant child creation.** `POST /children` AND `POST
+  /children/bulk` accepted a body `classroomId` with only an EXISTENCE check — never
+  verified `classroom.school_id === auth.schoolId`. Real incident: "Marina" written into
+  Whale Class on Jul 1 23:49 UTC during the Bayan's Home signup (stale localStorage
+  `montree_session` supplied the old classroomId; server accepted). Both routes now 403
+  + `[SECURITY]` log. Stray Marina row (`f5d06fa0`, zero dependents verified) DELETED
+  from prod. **RULE: any route that WRITES under a client-supplied classroomId MUST
+  verify classroom ownership — existence ≠ ownership.** ⚠ Open: ~40 more routes touch
+  classroomId without an obvious check (most scope via JWT) — walk the write paths in a
+  dedicated audit.
+- **Photo "queue full" on new accounts — death spiral fixed.** The offline photo queue
+  (IndexedDB) is per-BROWSER, not per-account. Foreign-school entries 403'd on upload
+  (`school_id mismatch`), `uploadEntry` treated every 403 as AUTH_EXPIRED and HALTED the
+  whole sync loop → queue never drained → 200 cap → capture bricked in the Safari tab
+  (installed PWA = separate storage, kept working). Fixes in
+  `lib/montree/offline/sync-manager.ts`: NEW `purgeForeignEntries()` in the queue-full
+  path (self-heals), `syncQueue` filters to the active school, `school_id mismatch` 403
+  → `permanent_failure` + `SCHOOL_MISMATCH` (never halts sync), `aggressiveCleanup`
+  gained a stale >7d failed/pending last-resort tier. Capture toast no longer blanket-
+  labels every enqueue error as "queue full" — real `err.message` surfaces. ⏳ Tredoux
+  to retest capture on the new account.
+- **Menu cleanup (Tredoux spec).** New-user default = **Wrap Up → Parent Manager →
+  Notes → Guru → Manage Students, that's it** (`MINIMAL_DEFAULT_MENU` reordered).
+  **Games RETIRED from all teacher-facing nav** (More menu, MENU_REGISTRY, Settings
+  tile, Tools card — routes stay on disk; `sanitizeMenuConfig` drops the id from saved
+  configs). Meeting Notes hidden (re-enable per teacher via Menu Management). **Root
+  cause of the cluttered menu on his new account: the seed only existed in
+  try/instant's teacher branch — principal-created teachers got no seed.** Seed now on
+  EVERY teacher-creation path (principal setup ×2, admin add-teacher, classroom
+  add-teacher, try/instant both branches). **RULE: new teacher-creation routes MUST
+  seed `settings.menu`.** Sarah's Bright Stars row seeded directly in prod. ❓ Open:
+  parent dashboard API still returns games links to parents — strip or keep?
+- **PWA app-mode launch.** Home-screen opens landed on the marketing splash. Splash now
+  redirects standalone-mode sessions to their surface (teacher→dashboard,
+  principal→admin, parent→parent dashboard; localStorage first, cookie fallback).
+  In-page redirect (NOT manifest) because iOS bakes `start_url` at install time — fixes
+  already-installed icons. Browser visits untouched.
+- **Ops notes:** sandbox git commits hit `Operation not permitted` on `.git` lock files
+  — commit+push via Desktop Commander with `rm -f .git/index.lock .git/HEAD.lock`
+  first. Pooler DB access from the sandbox works via repo `node_modules/pg` (host
+  `aws-1-ap-southeast-1.pooler.supabase.com:5432`, user `postgres.dmfncjjtsoxrnvcdnvjq`,
+  password from `.env.local`). Whale Class roster is now 22 active children.
+- **Next:** 5-step device verification (handoff §Verification); signup client-state
+  hard reset (wipe stale localStorage on new-account creation); classroomId write-path
+  audit; parent-games decision.
+
 ## 🎯 SESSION — Jul 3, 2026 (Cowork, pt 2) — REBRAND: GOLD DAMASCUS M — SHIPPED + LIVE-VERIFIED
 
 **The official Montree logo is now the gold damascus serif "M" on deep forest green
