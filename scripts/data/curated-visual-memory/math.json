@@ -574,7 +574,7 @@
       "work_key": "ma_unit_division_board",
       "work_name": "Unit Division Board",
       "area": "mathematics",
-      "visual_description": "A pegged wooden board similar in style to the Multiplication Bead Board, but here loose red beads representing a dividend are distributed evenly by the child across a fixed set of rows (the divisor) to find the quotient, with a printed numeral strip for reading the division fact. The defining picture is beads being dealt evenly down fixed columns/rows on a small pegged board, distinguishing the sharing action from multiplication's array-building action.",
+      "visual_description": "A pegged wooden board similar in style to the Multiplication Bead Board, but here loose GREEN beads represent the dividend and a row of GREEN skittles across the top stands for the divisor; the child deals the green beads out evenly, one under each skittle, until the whole dividend is shared, then reads the quotient. The defining picture is GREEN beads being dealt evenly down the columns beneath a row of green skittles on a small pegged board — the green beads (not the multiplication board's RED beads) and the sharing action are the distinguishing features.",
       "key_materials": [
         "Pegged wooden board with rows/columns of holes",
         "Loose small red beads being distributed evenly",
@@ -650,7 +650,7 @@
       "work_key": "ma_large_bead_frame",
       "work_name": "Large Bead Frame",
       "area": "mathematics",
-      "visual_description": "A large freestanding wooden frame with SEVEN OR MORE horizontal wire rows extending place value well beyond thousands (into ten-thousands, hundred-thousands, millions), all beads typically a UNIFORM colour (unlike the colour-coded Small Bead Frame), with a printed place-value guide card mounted separately for reference. Worked at a table or on the floor for large multi-digit operations, often with a paper recording booklet beside it. The defining picture is a noticeably larger, taller frame than the Small Bead Frame, with many more rows and uniform-coloured beads.",
+      "visual_description": "A large freestanding wooden frame with SEVEN horizontal wire rows extending place value well beyond thousands (into ten-thousands, hundred-thousands, millions), the bead rows colour-coded by place value in the repeating green/blue/red pattern (green units, blue tens, red hundreds, then repeating up the frame) with a printed place-value label down the left side. Worked at a table or on the floor for large multi-digit operations, often with a paper recording booklet beside it. The defining picture is a noticeably larger, taller frame than the Small Bead Frame, distinguished by its MANY MORE rows (seven vs four) rather than by colour.",
       "key_materials": [
         "Large freestanding wooden frame, seven or more beaded wire rows",
         "Beads typically a uniform colour across rows (not place-value colour-coded)",
