@@ -438,7 +438,7 @@ function DashboardHeader() {
   // ── Parent portal — original HOME_THEME header (unchanged) ───────────────
   if (isHome) {
     return (
-      <header className={`${HOME_THEME.headerBg} text-white shadow-lg sticky top-0 z-50 pt-[env(safe-area-inset-top)] print:hidden`}>
+      <header data-dashboard-header className={`${HOME_THEME.headerBg} text-white shadow-lg sticky top-0 z-50 pt-[env(safe-area-inset-top)] print:hidden`}>
         <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
           <Link href="/montree/dashboard" className="flex items-center gap-2 hover:opacity-90 transition-opacity">
             <span className="text-xl sm:text-2xl">🌳</span>
@@ -492,6 +492,7 @@ function DashboardHeader() {
       `}</style>
 
       <header
+        data-dashboard-header
         className="print:hidden"
         style={{
           position: 'sticky', top: 0, zIndex: 50,
