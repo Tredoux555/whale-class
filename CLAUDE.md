@@ -103,6 +103,15 @@ No migrations. Plus 2 prod DB ops via the pooler (stray-child delete + menu seed
   first. Pooler DB access from the sandbox works via repo `node_modules/pg` (host
   `aws-1-ap-southeast-1.pooler.supabase.com:5432`, user `postgres.dmfncjjtsoxrnvcdnvjq`,
   password from `.env.local`). Whale Class roster is now 22 active children.
+- **Onboarding choice screen demoted to a one-time post-import moment (`e13ae634`).**
+  The "How would you like to get started?" takeover used to probe
+  `/onboarding/voice/status` on EVERY dashboard load and hijack the screen whenever any
+  child lacked a mental profile — one student = get-started face on every login (the
+  localStorage skip flag never stuck across Safari/PWA silos). Probe deleted; the
+  takeover now fires only in-session right after `onImported` bumps
+  `pendingOnboardingCount`. Returning logins ALWAYS land on the class dashboard. Voice
+  onboarding stays reachable via TellGuruCard + direct `/dashboard/voice-onboarding`
+  nav. Bonus: one fewer API round-trip per dashboard load.
 - **Next:** 5-step device verification (handoff §Verification); signup client-state
   hard reset (wipe stale localStorage on new-account creation); classroomId write-path
   audit; parent-games decision.
