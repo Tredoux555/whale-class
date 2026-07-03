@@ -3,7 +3,7 @@
 // Both roles get WhatsApp-style conversational chat with role-specific personas
 'use client';
 
-import { useState, useEffect, Suspense } from 'react';
+import { useState, useEffect, useRef, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { toast, Toaster } from 'sonner';
 import { getSession, isHomeschoolParent, type MontreeSession } from '@/lib/montree/auth';
@@ -40,6 +40,37 @@ function GuruContent() {
   const [guruStatus, setGuruStatus] = useState<GuruStatus | null>(null);
   const [showPaywall, setShowPaywall] = useState(false);
   const [checkoutLoading, setCheckoutLoading] = useState(false);
+
+  // Chat fills the viewport MINUS the sticky DashboardHeader (which lives above
+  // {children} in the shared dashboard layout). Without this, the page is a full
+  // 100dvh block starting BELOW the header → the composer falls off the bottom of
+  // the screen and Guru looks broken (Tredoux, Jul 3 2026). We measure the header
+  // live so it stays correct across safe-area insets, the 2-row teacher header,
+  // and orientation changes.
+  const [chatHeight, setChatHeight] = useState('100dvh');
+  const measuredRef = useRef(false);
+  useEffect(() => {
+    const measure = () => {
+      const header = document.querySelector('[data-dashboard-header]') as HTMLElement | null;
+      const h = header?.offsetHeight ?? 0;
+      setChatHeight(h > 0 ? `calc(100dvh - ${h}px)` : '100dvh');
+      if (h > 0) measuredRef.current = true;
+    };
+    measure();
+    window.addEventListener('resize', measure);
+    window.addEventListener('orientationchange', measure);
+    const header = document.querySelector('[data-dashboard-header]');
+    let ro: ResizeObserver | undefined;
+    if (header && typeof ResizeObserver !== 'undefined') {
+      ro = new ResizeObserver(measure);
+      ro.observe(header);
+    }
+    return () => {
+      window.removeEventListener('resize', measure);
+      window.removeEventListener('orientationchange', measure);
+      ro?.disconnect();
+    };
+  }, []);
 
   // Load session, children, and guru status
   useEffect(() => {
@@ -135,7 +166,7 @@ function GuruContent() {
   if (pageLoading) {
     if (!isParent) {
       return (
-        <div style={{ height: '100dvh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#0a1a0f', backgroundImage: 'radial-gradient(ellipse 1100px 900px at 88% 8%, rgba(39,129,90,0.48), transparent 60%)' }}>
+        <div style={{ height: chatHeight, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#0a1a0f', backgroundImage: 'radial-gradient(ellipse 1100px 900px at 88% 8%, rgba(39,129,90,0.48), transparent 60%)' }}>
           <div style={{ textAlign: 'center' }}>
             <div className="animate-pulse" style={{ width: 48, height: 48, borderRadius: 14, background: 'rgba(52,211,153,0.10)', border: '1px solid rgba(52,211,153,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 10px' }}>
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#34d399" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg>
@@ -146,7 +177,7 @@ function GuruContent() {
       );
     }
     return (
-      <div className={`h-dvh flex items-center justify-center ${HOME_THEME.pageBg}`}>
+      <div className={`flex items-center justify-center ${HOME_THEME.pageBg}`} style={{ height: chatHeight }}>
         <div className="animate-bounce text-4xl">{guruEmoji}</div>
       </div>
     );
@@ -156,7 +187,7 @@ function GuruContent() {
   const activeChild = selectedChild || children[0];
 
   return (
-    <div className="h-dvh flex flex-col">
+    <div className="flex flex-col" style={{ height: chatHeight }}>
       <Toaster position="top-center" />
 
       {/* Paywall Modal (homeschool parents only) */}

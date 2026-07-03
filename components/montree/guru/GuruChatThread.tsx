@@ -774,7 +774,9 @@ export default function GuruChatThread({
       <div style={{
         background: 'linear-gradient(180deg, rgba(10,26,15,0) 0%, rgba(10,26,15,0.85) 30%, rgba(10,26,15,0.95) 100%)',
         borderTop: `1px solid ${T.cardBorder}`,
-        padding: '14px 16px 18px',
+        // Bottom pad clears the iPhone home indicator now that the chat sizes
+        // to fill the viewport exactly (composer bottom = screen bottom).
+        padding: '14px 16px calc(18px + env(safe-area-inset-bottom))',
       }}>
         {/* Image preview */}
         {pendingImage && (
